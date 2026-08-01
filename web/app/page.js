@@ -14,6 +14,9 @@ export default async function Home() {
         <div className="ticker-track" id="tickerTrack"></div>
       </div>
 
+      <a href="#hero" className="brandmark brandmark-nav">
+        <span className="ring"></span>Singularity Dynasty
+      </a>
       <ThemeToggle />
       <button
         className="menu-btn"
@@ -28,8 +31,8 @@ export default async function Home() {
         <nav>
           <a href="#hero">Signal</a>
           <a href="#tools">Tools</a>
-          <a href="#feed">Feed</a>
           <a href="#pricing">Pricing</a>
+          <a href="#feed">Feed</a>
           <a href="#playground">Play</a>
           <a href={user ? "/account" : "/login"}>
             {user ? "Account" : "Sign In"}
@@ -54,16 +57,16 @@ export default async function Home() {
           aria-label="Tools section"
         ></a>
         <a
-          href="#feed"
-          className="orbit-dot"
-          data-label="Feed"
-          aria-label="Feed section"
-        ></a>
-        <a
           href="#pricing"
           className="orbit-dot"
           data-label="Pricing"
           aria-label="Pricing section"
+        ></a>
+        <a
+          href="#feed"
+          className="orbit-dot"
+          data-label="Feed"
+          aria-label="Feed section"
         ></a>
         <a
           href="#playground"
@@ -86,9 +89,6 @@ export default async function Home() {
       <header className="hero" id="hero">
         <div className="wrap">
           <div>
-            <div className="brandmark hero-brand">
-              <span className="ring"></span>Singularity Dynasty
-            </div>
             <div className="eyebrow">Dynasty · Best Ball · Data Gravity</div>
             <h1>
               Every stat, every trend —<br />
@@ -317,68 +317,6 @@ export default async function Home() {
           </div>
         </section>
 
-        <section id="feed" className="feed-section">
-          <div className="section-head reveal">
-            <div className="eyebrow blue">The Feed</div>
-            <h2>Cutting-edge dynasty &amp; fantasy football, in your inbox.</h2>
-            <p>
-              Model notes, ranking shifts, and rookie-comp breakdowns —
-              written for dynasty and best ball players who want an edge
-              sharper than the mock consensus, delivered every Tuesday before
-              waivers process.
-            </p>
-          </div>
-
-          <div className="feed-grid">
-            <form className="feed-form reveal" id="feedForm">
-              <label className="feed-label mono" htmlFor="feedEmail">
-                EMAIL ADDRESS
-              </label>
-              <div className="feed-input-row">
-                <input
-                  type="email"
-                  id="feedEmail"
-                  className="feed-input"
-                  placeholder="you@domain.com"
-                  required
-                />
-                <button type="submit" className="btn-primary feed-submit">
-                  Subscribe
-                </button>
-              </div>
-              <p className="feed-fineprint">
-                No spam. Unsubscribe anytime. One email a week, regressed for
-                relevance.
-              </p>
-              <p className="feed-success mono">
-                Signal locked. Check your inbox next Tuesday.
-              </p>
-            </form>
-
-            <div className="feed-posts reveal d1">
-              <div className="feed-posts-label mono">Recent Drops</div>
-              <a href="#" className="feed-post">
-                <span className="feed-post-title">
-                  Why Ceiling Beats Consistency in Best Ball
-                </span>
-                <span className="feed-post-date mono">JUL 28</span>
-              </a>
-              <a href="#" className="feed-post">
-                <span className="feed-post-title">
-                  The Regression Behind This Week&apos;s Riser
-                </span>
-                <span className="feed-post-date mono">JUL 21</span>
-              </a>
-              <a href="#" className="feed-post">
-                <span className="feed-post-title">
-                  Reading Rookie Comps Without Overfitting
-                </span>
-                <span className="feed-post-date mono">JUL 14</span>
-              </a>
-            </div>
-          </div>
-        </section>
-
         <section id="pricing">
           <div className="section-head reveal">
             <div className="eyebrow">Pricing</div>
@@ -466,6 +404,68 @@ export default async function Home() {
               </ul>
               <a href="#" className="round-btn outline" data-plan="singularity">
                 Reach Singularity
+              </a>
+            </div>
+          </div>
+        </section>
+
+        <section id="feed" className="feed-section">
+          <div className="section-head reveal">
+            <div className="eyebrow blue">The Feed</div>
+            <h2>Cutting-edge dynasty &amp; fantasy football, in your inbox.</h2>
+            <p>
+              Model notes, ranking shifts, and rookie-comp breakdowns —
+              written for dynasty and best ball players who want an edge
+              sharper than the mock consensus, delivered every Tuesday before
+              waivers process.
+            </p>
+          </div>
+
+          <div className="feed-grid">
+            <form className="feed-form reveal" id="feedForm">
+              <label className="feed-label mono" htmlFor="feedEmail">
+                EMAIL ADDRESS
+              </label>
+              <div className="feed-input-row">
+                <input
+                  type="email"
+                  id="feedEmail"
+                  className="feed-input"
+                  placeholder="you@domain.com"
+                  required
+                />
+                <button type="submit" className="btn-primary feed-submit">
+                  Subscribe
+                </button>
+              </div>
+              <p className="feed-fineprint">
+                No spam. Unsubscribe anytime. One email a week, regressed for
+                relevance.
+              </p>
+              <p className="feed-success mono">
+                Signal locked. Check your inbox next Tuesday.
+              </p>
+            </form>
+
+            <div className="feed-posts reveal d1">
+              <div className="feed-posts-label mono">Recent Drops</div>
+              <a href="#" className="feed-post">
+                <span className="feed-post-title">
+                  Why Ceiling Beats Consistency in Best Ball
+                </span>
+                <span className="feed-post-date mono">JUL 28</span>
+              </a>
+              <a href="#" className="feed-post">
+                <span className="feed-post-title">
+                  The Regression Behind This Week&apos;s Riser
+                </span>
+                <span className="feed-post-date mono">JUL 21</span>
+              </a>
+              <a href="#" className="feed-post">
+                <span className="feed-post-title">
+                  Reading Rookie Comps Without Overfitting
+                </span>
+                <span className="feed-post-date mono">JUL 14</span>
               </a>
             </div>
           </div>
