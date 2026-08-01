@@ -1,36 +1,37 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Singularity Dynasty — web app
 
-## Getting Started
+Next.js 16 app for the Singularity Dynasty landing page, Stripe checkout, and Supabase auth. See the root [`CLAUDE.md`](../CLAUDE.md) for full project context.
 
-First, run the development server:
+## Setup
 
 ```bash
+npm install
+cp .env.local.example .env.local   # fill in your own Stripe/Supabase keys
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Runs at [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## Local webhook testing
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Stripe CLI (`~/bin/stripe` if not on PATH):
 
-## Learn More
+```bash
+stripe listen --forward-to localhost:3000/api/webhooks/stripe
+```
 
-To learn more about Next.js, take a look at the following resources:
+Or use the scripts in `scripts/` to exercise checkout/webhook logic directly without a browser:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+node --env-file=.env.local scripts/create-test-user.mjs
+node --env-file=.env.local scripts/test-webhook-provisioning.mjs <user_id> <email>
+node --env-file=.env.local scripts/check-profile.mjs <user_id>
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Database
 
-## Deploy on Vercel
+Schema lives in `supabase/migrations/`. Apply via the Supabase SQL Editor (copy/paste) or `supabase db push` once the CLI is authenticated.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Deploy
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Vercel, connected to this repo. Set the same variables from `.env.local.example` in the Vercel project settings, and register a production webhook endpoint in the Stripe Dashboard pointing at `https://<your-domain>/api/webhooks/stripe`.
