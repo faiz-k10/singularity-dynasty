@@ -225,16 +225,41 @@ export default function InteractiveScript() {
     }
     if (track) buildTicker();
 
-    /* ---- stripe placeholder ---- */
+    /* ---- stripe checkout ---- */
     document.querySelectorAll("[data-plan]").forEach((btn) => {
       btn.addEventListener(
         "click",
-        (e) => {
+        async (e) => {
           e.preventDefault();
           const plan = btn.getAttribute("data-plan");
-          alert(
-            `Wire this button to your Stripe Payment Link or Checkout session for the "${plan}" plan.`
-          );
+
+          if (plan === "stargazer") {
+            alert("Stargazer is free — account creation is coming soon.");
+            return;
+          }
+
+          const billing = annual ? "annual" : "monthly";
+          const originalText = btn.textContent;
+          btn.textContent = "Redirecting…";
+          btn.style.pointerEvents = "none";
+
+          try {
+            const res = await fetch("/api/checkout", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ plan, billing }),
+            });
+            const data = await res.json();
+            if (!res.ok || !data.url) {
+              throw new Error(data.error || "Checkout failed");
+            }
+            window.location.href = data.url;
+          } catch (err) {
+            console.error(err);
+            alert("Something went wrong starting checkout. Please try again.");
+            btn.textContent = originalText;
+            btn.style.pointerEvents = "";
+          }
         },
         { signal }
       );

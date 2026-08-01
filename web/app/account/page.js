@@ -1,0 +1,65 @@
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import { signout } from "../login/actions";
+
+export const metadata = {
+  title: "Your Account — Singularity Dynasty",
+};
+
+const TIER_LABELS = {
+  stargazer: "Stargazer",
+  explorer: "Explorer",
+  singularity: "Singularity",
+};
+
+export default async function AccountPage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("tier, email")
+    .eq("id", user.id)
+    .single();
+
+  const tier = profile?.tier || "stargazer";
+
+  return (
+    <div className="auth-page">
+      <div className="wrap auth-wrap">
+        <Link href="/" className="brandmark auth-back">
+          <span className="ring"></span>Singularity Dynasty
+        </Link>
+
+        <div className="auth-card reveal in">
+          <div className="eyebrow blue">Account</div>
+          <h1>Welcome back.</h1>
+          <p className="auth-sub">{profile?.email || user.email}</p>
+
+          <div className="account-tier">
+            <span className="hub-tag">Current Tier</span>
+            <div className="account-tier-name">{TIER_LABELS[tier]}</div>
+          </div>
+
+          <div className="auth-actions">
+            <Link href="/#pricing" className="btn-primary">
+              {tier === "singularity" ? "Manage Plan" : "Upgrade Plan"}
+            </Link>
+            <form>
+              <button formAction={signout} className="btn-ghost">
+                Sign Out
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

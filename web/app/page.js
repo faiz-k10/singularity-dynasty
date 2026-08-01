@@ -1,6 +1,12 @@
 import InteractiveScript from "./InteractiveScript";
+import { createClient } from "@/lib/supabase/server";
 
-export default function Home() {
+export default async function Home() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   return (
     <>
       <div className="ticker-bar">
@@ -26,6 +32,9 @@ export default function Home() {
           <a href="#feed">Feed</a>
           <a href="#pricing">Pricing</a>
           <a href="#playground">Play</a>
+          <a href={user ? "/account" : "/login"}>
+            {user ? "Account" : "Sign In"}
+          </a>
           <a href="#pricing" className="rm-cta">
             Get Started →
           </a>
