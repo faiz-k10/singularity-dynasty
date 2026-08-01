@@ -337,7 +337,7 @@ export default async function Home() {
               <span className="knob"></span>
             </button>
             <span>Annual</span>
-            <span className="save-tag">Save ~20%</span>
+            <span className="save-tag">~20% Off</span>
           </div>
 
           <div className="rounds">
