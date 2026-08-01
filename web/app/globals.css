@@ -546,6 +546,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .auth-form label{display:block; margin-bottom:6px;}
 .auth-input{width:100%; margin-bottom:16px; display:block;}
 .auth-actions{display:flex; gap:12px; flex-wrap:wrap; margin-top:8px;}
+.auth-actions.center{justify-content:center;}
 .auth-actions form{display:contents;}
 
 .account-tier{background:var(--void-panel-2); border:1px solid var(--line); border-radius:12px; padding:18px 20px; margin-bottom:24px;}

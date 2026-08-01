@@ -25,7 +25,7 @@ export default function ContactPage() {
             anything else — reach out and we&apos;ll get back to you.
           </p>
 
-          <div className="auth-actions">
+          <div className="auth-actions center">
             <a href={`mailto:${SUPPORT_EMAIL}`} className="btn-primary">
               {SUPPORT_EMAIL}
             </a>

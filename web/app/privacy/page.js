@@ -21,21 +21,21 @@ export default function PrivacyPage() {
 
           <h2>1. Information We Collect</h2>
           <p>
-            <strong>Account information:</strong> when you create an
+            <strong>Account information:</strong> When you create an
             account, we collect your email address and password. Passwords
             are handled by our authentication provider, Supabase, and are
             never visible to us in plain text.
           </p>
           <p>
-            <strong>Payment information:</strong> if you subscribe to a paid
-            tier, payment is processed by Stripe. We do not collect or
-            store your full card number, CVC, or other card details —
-            Stripe handles that directly and shares with us only what&apos;s
-            needed to manage your subscription (such as your subscription
-            status and a customer reference ID).
+            <strong>Payment information:</strong> If you subscribe to a paid
+            tier, payment is processed by Stripe. We do not collect or store
+            your full card number, CVC, or other card details — Stripe
+            handles that directly and shares with us only what&apos;s needed
+            to manage your subscription (such as your subscription status
+            and a customer reference ID).
           </p>
           <p>
-            <strong>Usage data:</strong> we may collect basic technical data
+            <strong>Usage data:</strong> We may collect basic technical data
             (such as browser type and general usage patterns) to keep the
             Service running and to understand how it&apos;s used.
           </p>
