@@ -1,4 +1,5 @@
 import { Space_Grotesk, Inter, IBM_Plex_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -31,6 +32,18 @@ export default function RootLayout({ children }) {
       lang="en"
       className={`${spaceGrotesk.variable} ${inter.variable} ${ibmPlexMono.variable}`}
     >
+      <head>
+        <Script id="theme-init" strategy="beforeInteractive">
+          {`
+            try {
+              var stored = localStorage.getItem('theme');
+              if (stored === 'light' || stored === 'dark') {
+                document.documentElement.setAttribute('data-theme', stored);
+              }
+            } catch (e) {}
+          `}
+        </Script>
+      </head>
       <body>{children}</body>
     </html>
   );

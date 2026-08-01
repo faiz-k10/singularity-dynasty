@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { login, signup } from "./actions";
+import ThemeToggle from "../ThemeToggle";
+import InteractiveScript from "../InteractiveScript";
 
 export const metadata = {
   title: "Sign In — Singularity Dynasty",
@@ -12,6 +14,7 @@ export default async function LoginPage({ searchParams }) {
 
   return (
     <div className="auth-page">
+      <ThemeToggle />
       <div className="wrap auth-wrap">
         <Link href="/" className="brandmark auth-back">
           <span className="ring"></span>Singularity Dynasty
@@ -65,6 +68,7 @@ export default async function LoginPage({ searchParams }) {
           </form>
         </div>
       </div>
+      <InteractiveScript />
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import InteractiveScript from "./InteractiveScript";
+import ThemeToggle from "./ThemeToggle";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function Home() {
@@ -13,9 +14,7 @@ export default async function Home() {
         <div className="ticker-track" id="tickerTrack"></div>
       </div>
 
-      <a href="#hero" className="brandmark">
-        <span className="ring"></span>Singularity Dynasty
-      </a>
+      <ThemeToggle />
       <button
         className="menu-btn"
         id="menuBtn"
@@ -87,6 +86,9 @@ export default async function Home() {
       <header className="hero" id="hero">
         <div className="wrap">
           <div>
+            <div className="brandmark hero-brand">
+              <span className="ring"></span>Singularity Dynasty
+            </div>
             <div className="eyebrow">Dynasty · Best Ball · Data Gravity</div>
             <h1>
               Every stat, every trend —<br />
@@ -418,7 +420,7 @@ export default async function Home() {
             </div>
 
             <div className="round-card featured reveal d1">
-              <div className="round-label">Most Popular</div>
+              <div className="round-label">Standard Access</div>
               <h3>Explorer</h3>
               <div className="round-price">
                 <sup>$</sup>

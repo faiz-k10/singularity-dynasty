@@ -41,6 +41,31 @@ export default function InteractiveScript() {
       });
     }
 
+    /* ---- theme toggle ---- */
+    const themeToggle = document.getElementById("themeToggle");
+    if (themeToggle) {
+      themeToggle.addEventListener(
+        "click",
+        () => {
+          const root = document.documentElement;
+          const systemPrefersLight = window.matchMedia(
+            "(prefers-color-scheme: light)"
+          ).matches;
+          const current =
+            root.getAttribute("data-theme") ||
+            (systemPrefersLight ? "light" : "dark");
+          const next = current === "light" ? "dark" : "light";
+          root.setAttribute("data-theme", next);
+          try {
+            localStorage.setItem("theme", next);
+          } catch {
+            // Safari private mode etc. — theme just won't persist.
+          }
+        },
+        { signal }
+      );
+    }
+
     /* ---- orbit side-nav: smooth scroll + scrollspy ---- */
     const orbitDots = document.querySelectorAll(".orbit-dot");
     orbitDots.forEach((dot) => {
@@ -427,6 +452,13 @@ export default function InteractiveScript() {
       const palette = ["#FFC773", "#FF7A45", "#3DDCFF"];
       let pulse = 0;
 
+      const systemLight = window.matchMedia("(prefers-color-scheme: light)");
+      function trailColor() {
+        const explicit = document.documentElement.getAttribute("data-theme");
+        const isLight = explicit ? explicit === "light" : systemLight.matches;
+        return isLight ? "rgba(250,248,243,0.28)" : "rgba(16,16,24,0.28)";
+      }
+
       function resize() {
         const rect = frame.getBoundingClientRect();
         const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -484,7 +516,7 @@ export default function InteractiveScript() {
 
       function tick(t) {
         if (rafCancelled) return;
-        ctx.fillStyle = "rgba(16,16,24,0.28)";
+        ctx.fillStyle = trailColor();
         ctx.fillRect(0, 0, W, H);
 
         for (let i = particles.length - 1; i >= 0; i--) {
@@ -528,7 +560,7 @@ export default function InteractiveScript() {
       );
 
       if (reducedMotion) {
-        ctx.fillStyle = "#101018";
+        ctx.fillStyle = trailColor();
         ctx.fillRect(0, 0, W, H);
         drawCore(0);
         frame.addEventListener("pointerdown", () => collapse(), { signal });
