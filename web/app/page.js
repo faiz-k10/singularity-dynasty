@@ -2,11 +2,27 @@ import InteractiveScript from "./InteractiveScript";
 import ThemeToggle from "./ThemeToggle";
 import { createClient } from "@/lib/supabase/server";
 
+function formatPostDate(iso) {
+  return new Date(iso)
+    .toLocaleDateString("en-US", { month: "short", day: "numeric" })
+    .toUpperCase();
+}
+
 export default async function Home() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const [
+    {
+      data: { user },
+    },
+    { data: posts },
+  ] = await Promise.all([
+    supabase.auth.getUser(),
+    supabase
+      .from("posts")
+      .select("id, title, url, published_at")
+      .order("published_at", { ascending: false })
+      .limit(3),
+  ]);
 
   return (
     <>
@@ -449,24 +465,20 @@ export default async function Home() {
 
             <div className="feed-posts reveal d1">
               <div className="feed-posts-label mono">Recent Drops</div>
-              <a href="#" className="feed-post">
-                <span className="feed-post-title">
-                  Why Ceiling Beats Consistency in Best Ball
-                </span>
-                <span className="feed-post-date mono">JUL 28</span>
-              </a>
-              <a href="#" className="feed-post">
-                <span className="feed-post-title">
-                  The Regression Behind This Week&apos;s Riser
-                </span>
-                <span className="feed-post-date mono">JUL 21</span>
-              </a>
-              <a href="#" className="feed-post">
-                <span className="feed-post-title">
-                  Reading Rookie Comps Without Overfitting
-                </span>
-                <span className="feed-post-date mono">JUL 14</span>
-              </a>
+              {posts && posts.length > 0 ? (
+                posts.map((post) => (
+                  <a href={post.url} className="feed-post" key={post.id}>
+                    <span className="feed-post-title">{post.title}</span>
+                    <span className="feed-post-date mono">
+                      {formatPostDate(post.published_at)}
+                    </span>
+                  </a>
+                ))
+              ) : (
+                <p className="feed-post-empty">
+                  First drop lands soon — subscribe to catch it.
+                </p>
+              )}
             </div>
           </div>
         </section>

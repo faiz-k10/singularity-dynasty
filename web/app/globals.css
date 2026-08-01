@@ -493,6 +493,7 @@ section{padding:96px 0 20px; position:relative;}
 .feed-post:hover{color:var(--horizon-gold); transform:translateX(4px);}
 .feed-post-title{font-size:13.5px; font-weight:500; line-height:1.4;}
 .feed-post-date{font-size:10.5px; color:var(--neon-blue-dim); flex-shrink:0;}
+.feed-post-empty{font-size:13.5px; color:var(--star-dim); padding:12px 0;}
 
 @media (max-width:860px){
   .feed-grid{grid-template-columns:1fr;}
