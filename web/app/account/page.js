@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { signout } from "../login/actions";
+import { openBillingPortal } from "./actions";
 import ThemeToggle from "../ThemeToggle";
 import InteractiveScript from "../InteractiveScript";
 
@@ -27,7 +28,7 @@ export default async function AccountPage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("tier, email")
+    .select("tier, email, stripe_customer_id")
     .eq("id", user.id)
     .single();
 
@@ -52,9 +53,17 @@ export default async function AccountPage() {
           </div>
 
           <div className="auth-actions">
-            <Link href="/#pricing" className="btn-primary">
-              {tier === "singularity" ? "Manage Plan" : "Upgrade Plan"}
-            </Link>
+            {profile?.stripe_customer_id ? (
+              <form>
+                <button formAction={openBillingPortal} className="btn-primary">
+                  Manage Billing
+                </button>
+              </form>
+            ) : (
+              <Link href="/#pricing" className="btn-primary">
+                Upgrade Plan
+              </Link>
+            )}
             <form>
               <button formAction={signout} className="btn-ghost">
                 Sign Out
