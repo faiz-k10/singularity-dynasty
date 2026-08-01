@@ -1,3 +1,4 @@
+import Link from "next/link";
 import InteractiveScript from "./InteractiveScript";
 import ThemeToggle from "./ThemeToggle";
 import { createClient } from "@/lib/supabase/server";
@@ -520,13 +521,18 @@ export default async function Home() {
           <div className="flinks">
             <a href="#tools">Tools</a>
             <a href="#pricing">Pricing</a>
-            <a href="#">Contact</a>
-            <a href="#">Terms</a>
+            <a href="/contact">Contact</a>
+            <a href="/privacy">Privacy</a>
+            <a href="/terms">Terms</a>
+            <a href="/disclaimer">Disclaimer</a>
           </div>
           <div className="fcoord mono">VOID // #07070C</div>
           <div className="fsmall">
             © 2026 Singularity Dynasty. Not affiliated with the NFL or any
-            fantasy football platform.
+            fantasy football platform. Content is for informational and
+            entertainment purposes only and is not intended for use in
+            gambling, betting, or wagering of any kind — see our{" "}
+            <Link href="/disclaimer">Disclaimer</Link>.
           </div>
         </div>
       </footer>
