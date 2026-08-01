@@ -52,21 +52,24 @@ Shown in smaller cards (in this order):
   - `supabase/migrations/0001_profiles.sql` — the `profiles` table schema (id, email, tier, stripe_customer_id, stripe_subscription_id) with RLS + auto-create trigger on signup
   - `scripts/` — dev utilities: `create-stripe-products.mjs` (idempotent, creates the 4 Prices), `create-test-user.mjs`, `test-webhook-provisioning.mjs`, `test-webhook-cancellation.mjs`, `check-profile.mjs` (all bypass the browser to test Stripe/Supabase plumbing directly — useful since browser-automation click reliability was flaky in this environment)
 
-**What's working (verified end-to-end locally):**
+**Live:** https://web-kohl-ten-94.vercel.app (Vercel project `erem/web`, auto-deploys on push to `main`, Root Directory set to `web`)
+
+**What's working (verified end-to-end, both locally and in production):**
 - Stripe: real Checkout Sessions for Explorer/Singularity × monthly/annual, correct pricing, `client_reference_id` set when the shopper is signed in
-- Webhook: signature verification, price→tier resolution, provisions/reverts `profiles.tier` on checkout completion, subscription update, and cancellation
+- Webhook: signature verification, price→tier resolution, provisions/reverts `profiles.tier` on checkout completion, subscription update, and cancellation — registered against the live URL in Stripe (endpoint id `we_1TziBWLS7Fbu3eML3Yaa0DjW`, its own `whsec_` stored in Vercel, separate from the local one)
 - Supabase auth: email/password signup and signin, session cookies via `@supabase/ssr`, protected `/account` route, nav reflects auth state
-- Full loop tested live: sign in → account shows "Stargazer" → simulated purchase → account shows "Explorer" → simulated cancellation → reverts to "Stargazer"
+- Full loop tested live on the production URL: sign in → account shows tier → simulated purchase → account updates to the purchased tier → simulated cancellation → reverts to "Stargazer"
 
 **Known local-dev quirks (not code bugs):**
-- The Stripe CLI and Supabase CLI both needed installing via direct GitHub-release binaries to `~/bin` instead of Homebrew, because this machine's Xcode Command Line Tools are outdated (`brew install` fails; fixing it needs `sudo`/the user's password, which cannot be run from here).
+- The Stripe CLI and Supabase CLI both needed installing via direct GitHub-release binaries to `~/bin` instead of Homebrew, because this machine's Xcode Command Line Tools are outdated (`brew install` fails; fixing it needs `sudo`/the user's password, which cannot be run from here). Same story for the Vercel CLI, except that one installs cleanly via `npm install -g vercel` since it's pure JS.
 - Supabase's built-in email sender has a low rate limit on the free tier; "Confirm email" was turned off in Supabase Auth settings for local testing (**should be turned back on before going live**).
 - Supabase validates signup email domains for deliverability — `example.com`/`.test` addresses are rejected; use a real domain (e.g. `mailinator.com` for disposable test inboxes) when testing signup by hand.
+- Setting a Vercel project's Root Directory via `vercel project update` isn't exposed in the CLI; had to PATCH `https://api.vercel.com/v9/projects/{id}` directly using the token from `~/Library/Application Support/com.vercel.cli/auth.json`.
 
-**Credentials:** all live in `web/.env.local` (gitignored). `.env.local.example` documents every key needed. Stripe is in **test mode**. Supabase project: `nkzazbqjupexwnehkktl`. GitHub repo: `faiz-k10/singularity-dynasty` (private).
+**Credentials:** all live in `web/.env.local` (gitignored) and mirrored in Vercel's project env vars (Production/Preview/Development). `.env.local.example` documents every key needed. Stripe is in **test mode**. Supabase project: `nkzazbqjupexwnehkktl`. GitHub repo: `faiz-k10/singularity-dynasty` (private). Vercel project: `erem/web`.
 
 ## Next steps
-1. **Deploy to Vercel** — connect the GitHub repo, set the same env vars there, register the production Stripe webhook endpoint (a separate `whsec_` from the local one), re-enable Supabase email confirmation before going live.
+1. Re-enable Supabase email confirmation before real users sign up (currently off for local testing convenience).
 2. Replace placeholder mock-panel data with real data from sports APIs, likely moving more of the front end to interactive dashboards behind auth.
 3. Build out the six features listed above as real product pages, gated by `profiles.tier`, not just marketing previews.
 4. Consider a billing-portal link (Stripe Customer Portal) on the account page so subscribers can self-manage/cancel.
