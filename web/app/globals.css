@@ -465,6 +465,10 @@ section{padding:96px 0 20px; position:relative;}
 .round-btn.outline{background:transparent; border:1px solid var(--line); color:var(--star);}
 .round-btn.outline:hover{border-color:var(--star-dim);}
 
+.pricing-assurance{text-align:center; max-width:520px; margin:36px auto 0;}
+.pricing-assurance .mono{display:block; font-size:11px; letter-spacing:0.1em; color:var(--horizon-gold); margin-bottom:9px;}
+.pricing-assurance p{font-size:13px; line-height:1.6; color:var(--star-dim);}
+
 /* ---------- FEED — NEWSLETTER / BLOG ---------- */
 .feed-section{padding:90px 0 100px;}
 .feed-grid{display:grid; grid-template-columns:1.1fr 0.9fr; gap:28px; align-items:start;}

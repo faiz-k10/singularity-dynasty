@@ -423,6 +423,15 @@ export default async function Home() {
               </a>
             </div>
           </div>
+
+          <div className="pricing-assurance reveal d2">
+            <span className="mono">14-DAY REFUND · CANCEL ANYTIME</span>
+            <p>
+              Not seeing signal in your first two weeks? Full refund, no
+              questions asked. Cancel from your account any time — no
+              lock-in, no retention maze.
+            </p>
+          </div>
         </section>
 
         <section id="feed" className="feed-section">
