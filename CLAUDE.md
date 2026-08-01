@@ -62,17 +62,16 @@ Shown in smaller cards (in this order):
 
 **Known local-dev quirks (not code bugs):**
 - The Stripe CLI and Supabase CLI both needed installing via direct GitHub-release binaries to `~/bin` instead of Homebrew, because this machine's Xcode Command Line Tools are outdated (`brew install` fails; fixing it needs `sudo`/the user's password, which cannot be run from here). Same story for the Vercel CLI, except that one installs cleanly via `npm install -g vercel` since it's pure JS.
-- Supabase's built-in email sender has a low rate limit on the free tier; "Confirm email" was turned off in Supabase Auth settings for local testing (**should be turned back on before going live**).
+- Supabase's built-in email sender has a low rate limit on the free tier, which is why "Confirm email" was temporarily switched off during local testing. **It has since been re-enabled** — new signups now require clicking a confirmation link before they can sign in.
 - Supabase validates signup email domains for deliverability — `example.com`/`.test` addresses are rejected; use a real domain (e.g. `mailinator.com` for disposable test inboxes) when testing signup by hand.
 - Setting a Vercel project's Root Directory via `vercel project update` isn't exposed in the CLI; had to PATCH `https://api.vercel.com/v9/projects/{id}` directly using the token from `~/Library/Application Support/com.vercel.cli/auth.json`.
 
 **Credentials:** all live in `web/.env.local` (gitignored) and mirrored in Vercel's project env vars (Production/Preview/Development). `.env.local.example` documents every key needed. Stripe is in **test mode**. Supabase project: `nkzazbqjupexwnehkktl`. GitHub repo: `faiz-k10/singularity-dynasty` (private). Vercel project: `erem/web`.
 
 ## Next steps
-1. Re-enable Supabase email confirmation before real users sign up (currently off for local testing convenience).
-2. Replace placeholder mock-panel data with real data from sports APIs, likely moving more of the front end to interactive dashboards behind auth.
-3. Build out the six features listed above as real product pages, gated by `profiles.tier`, not just marketing previews.
-4. Consider a billing-portal link (Stripe Customer Portal) on the account page so subscribers can self-manage/cancel.
+1. Replace placeholder mock-panel data with real data from sports APIs, likely moving more of the front end to interactive dashboards behind auth.
+2. Build out the six features listed above as real product pages, gated by `profiles.tier`, not just marketing previews.
+3. Consider a billing-portal link (Stripe Customer Portal) on the account page so subscribers can self-manage/cancel.
 
 ## Do not change without being asked
 - The six features listed above and their advertised order
