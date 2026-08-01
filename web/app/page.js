@@ -282,6 +282,9 @@ export default async function Home() {
                   season, adjusted for opponent-strength and matchup
                   efficiency data.
                 </p>
+                <Link href="/tools/redraft-rankings" className="hub-panel-link">
+                  View Live Rankings →
+                </Link>
               </div>
 
               <div className="hub-panel" data-panel="4">
