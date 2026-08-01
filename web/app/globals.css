@@ -314,9 +314,15 @@ section{padding:96px 0 20px; position:relative;}
 /* ---------- FEATURE PRIMITIVES (reused inside orbital hub) ---------- */
 .feature-list{list-style:none; display:flex; flex-direction:column; gap:10px; margin-top:18px;}
 .feature-list li{display:flex; gap:10px; align-items:flex-start; font-size:13.5px; color:var(--star);}
-.feature-list li::before{content:''; width:9px; height:9px; margin-top:5px; flex-shrink:0; border-radius:50%; opacity:0.95;}
-.feature-list.gold li::before{background:var(--horizon-gold);}
-.feature-list.blue li::before{background:var(--neon-blue);}
+.feature-list li::before{
+  content:''; width:14px; height:14px; margin-top:3px; flex-shrink:0; border-radius:50%; opacity:0.95;
+  /* waxing-gibbous bullet: a "shadow" bite drawn in the current panel's own
+     background color, so it blends seamlessly in both light and dark mode
+     instead of a color baked into a static SVG. */
+  background-image:radial-gradient(circle 4.5px at -1px 7px, var(--void-panel) 99%, transparent 100%);
+}
+.feature-list.gold li::before{background-color:var(--horizon-gold);}
+.feature-list.blue li::before{background-color:var(--neon-blue);}
 
 .mock-panel{background:var(--void-panel-2); border:1px solid var(--line); border-radius:10px; padding:18px;}
 .mock-head{display:flex; justify-content:space-between; align-items:baseline; border-bottom:1px solid var(--line); padding-bottom:9px; margin-bottom:12px;}
