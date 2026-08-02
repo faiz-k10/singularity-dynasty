@@ -20,7 +20,7 @@ function sortPositions(positions) {
   });
 }
 
-function RankingsTable({ rows, showPosition }) {
+function RankingsTable({ rows, showPosition, showTeam = true, showNotes = true }) {
   return (
     <div className="rankings-table-wrap">
       <table className="rankings-table">
@@ -29,8 +29,8 @@ function RankingsTable({ rows, showPosition }) {
             <th>Rank</th>
             <th>Player</th>
             {showPosition && <th>Pos</th>}
-            <th>Team</th>
-            <th>Notes</th>
+            {showTeam && <th>Team</th>}
+            {showNotes && <th>Notes</th>}
           </tr>
         </thead>
         <tbody>
@@ -39,8 +39,8 @@ function RankingsTable({ rows, showPosition }) {
               <td className="mono">{row.displayRank}</td>
               <td>{row.player_name}</td>
               {showPosition && <td className="mono">{row.position}</td>}
-              <td className="mono">{row.team || "—"}</td>
-              <td className="tool-notes">{row.notes || ""}</td>
+              {showTeam && <td className="mono">{row.team || "—"}</td>}
+              {showNotes && <td className="tool-notes">{row.notes || ""}</td>}
             </tr>
           ))}
         </tbody>
@@ -109,11 +109,11 @@ export default async function RedraftRankingsPage({ searchParams }) {
         ) : (
           <>
             <div className="board-toggle">
-              <Link href="?view=position" className={view === "position" ? "active" : ""}>
-                By Position
-              </Link>
               <Link href="?view=overall" className={view === "overall" ? "active" : ""}>
                 Overall
+              </Link>
+              <Link href="?view=position" className={view === "position" ? "active" : ""}>
+                By Position
               </Link>
             </div>
 
@@ -123,20 +123,24 @@ export default async function RedraftRankingsPage({ searchParams }) {
                 showPosition
               />
             ) : (
-              positions.map((pos) => (
-                <div className="draft-round" key={pos}>
-                  <div className="draft-round-title">
-                    {pos} · {byPosition[pos].length}
+              <div className="position-columns">
+                {positions.map((pos) => (
+                  <div className="position-col" key={pos}>
+                    <div className="draft-round-title">
+                      {pos} · {byPosition[pos].length}
+                    </div>
+                    <RankingsTable
+                      rows={byPosition[pos].map((r, i) => ({
+                        ...r,
+                        displayRank: `${pos}${i + 1}`,
+                      }))}
+                      showPosition={false}
+                      showTeam={false}
+                      showNotes={false}
+                    />
                   </div>
-                  <RankingsTable
-                    rows={byPosition[pos].map((r, i) => ({
-                      ...r,
-                      displayRank: `${pos}${i + 1}`,
-                    }))}
-                    showPosition={false}
-                  />
-                </div>
-              ))
+                ))}
+              </div>
             )}
           </>
         )}

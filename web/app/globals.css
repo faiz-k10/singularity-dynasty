@@ -630,6 +630,14 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
   padding:3px 8px; border-radius:20px; cursor:default;
 }
 
+/* Redraft Rankings — By Position view, columns side by side rather than
+   stacked sections */
+.position-columns{display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:18px; align-items:start;}
+.position-columns .rankings-table{font-size:12.5px; table-layout:fixed;}
+.position-columns .rankings-table th, .position-columns .rankings-table td{padding:9px 12px;}
+.position-columns .rankings-table td:nth-child(2){white-space:normal; line-height:1.35;}
+@media (max-width:640px){.position-columns{grid-template-columns:1fr;}}
+
 @media (prefers-reduced-motion:reduce){
   .reveal{opacity:1; transform:none; filter:none; transition:none;}
   .os-ring{animation:none;}
