@@ -379,12 +379,8 @@ section{padding:96px 0 20px; position:relative;}
   .orbital-selector{--orbit-r:420px; display:grid; place-items:center; min-height:960px;}
   .orbit-track{display:block; position:absolute; top:50%; left:50%; width:calc(var(--orbit-r) * 2); height:calc(var(--orbit-r) * 2); margin:calc(var(--orbit-r) * -1) 0 0 calc(var(--orbit-r) * -1); border:1px dashed rgba(var(--neon-blue-rgb), var(--orbit-alpha)); border-radius:50%; z-index:1; pointer-events:none;}
   .orbital-hub{
-    width:400px; height:500px; display:flex; flex-direction:column; justify-content:center; overflow-y:auto;
-    scrollbar-width:thin; scrollbar-color:var(--horizon-gold) transparent;
+    width:400px; height:590px; display:flex; flex-direction:column; justify-content:center;
   }
-  .orbital-hub::-webkit-scrollbar{width:5px;}
-  .orbital-hub::-webkit-scrollbar-track{background:transparent;}
-  .orbital-hub::-webkit-scrollbar-thumb{background:var(--horizon-gold); border-radius:10px;}
   .orbital-nodes{position:absolute; inset:0; z-index:3; pointer-events:none; overflow:visible; padding:0; display:block;}
   .node{
     position:absolute; top:50%; left:50%; width:150px; flex:none; pointer-events:auto;
