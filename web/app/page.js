@@ -291,6 +291,37 @@ export default async function Home() {
                   season, adjusted for opponent-strength and matchup
                   efficiency data.
                 </p>
+                <div className="mock-panel" style={{ marginTop: "18px" }}>
+                  <div className="mock-head">
+                    <h4>Redraft Weekly Rankings</h4>
+                    <span className="mono">WEEK 09</span>
+                  </div>
+                  <div className="board-row">
+                    <span className="board-rank">1</span>
+                    <span className="board-name">
+                      Christian McCaffrey <span className="board-pos">RB</span>
+                    </span>
+                    <span className="board-tier tier-s">S</span>
+                  </div>
+                  <div className="board-row">
+                    <span className="board-rank">2</span>
+                    <span className="board-name">
+                      Justin Jefferson <span className="board-pos">WR</span>
+                    </span>
+                    <span className="board-tier tier-s">S</span>
+                  </div>
+                  <div className="board-row">
+                    <span className="board-rank">3</span>
+                    <span className="board-name">
+                      Josh Allen <span className="board-pos">QB</span>
+                    </span>
+                    <span className="board-tier tier-a">A</span>
+                  </div>
+                </div>
+                <ul className="feature-list gold">
+                  <li>Refreshed every week, not just at the start of the season</li>
+                  <li>Adjusted for opponent-strength and matchup efficiency</li>
+                </ul>
                 <Link href="/tools/redraft-rankings" className="hub-panel-link">
                   View Live Rankings →
                 </Link>
