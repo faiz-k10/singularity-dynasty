@@ -633,10 +633,36 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 /* Redraft Rankings — By Position view, columns side by side rather than
    stacked sections */
 .position-columns{display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:18px; align-items:start;}
+.position-columns .rankings-table-wrap{overflow:visible;}
 .position-columns .rankings-table{font-size:12.5px; table-layout:fixed;}
 .position-columns .rankings-table th, .position-columns .rankings-table td{padding:9px 12px;}
-.position-columns .rankings-table td:nth-child(2){white-space:normal; line-height:1.35;}
+.position-columns .rankings-table td:nth-child(2){white-space:normal; line-height:1.35; position:relative;}
 @media (max-width:640px){.position-columns{grid-template-columns:1fr;}}
+
+.tool-hint{font-size:12.5px; color:var(--star-dim); margin:-20px 0 20px;}
+
+/* Player name hover/focus popover — Team/Proj/Notes squeezed out of the
+   narrow By Position columns */
+.player-hover{position:relative; border-bottom:1px dotted var(--star-dim); cursor:default;}
+.player-popover{
+  position:absolute; left:50%; top:calc(100% + 8px); transform:translateX(-50%) translateY(-4px);
+  width:200px; z-index:30; background:var(--void-panel-2); border:1px solid var(--line); border-radius:10px;
+  padding:12px 14px; box-shadow:0 20px 40px rgba(var(--shadow-rgb),0.5);
+  opacity:0; visibility:hidden; pointer-events:none; white-space:normal;
+  transition:opacity .15s ease, transform .15s ease, visibility .15s ease;
+}
+.player-hover:hover .player-popover, .player-hover:focus-visible .player-popover{
+  opacity:1; visibility:visible; transform:translateX(-50%) translateY(0); pointer-events:auto;
+}
+.position-col:first-child .player-popover{left:0; transform:translateY(-4px);}
+.position-col:first-child .player-hover:hover .player-popover,
+.position-col:first-child .player-hover:focus-visible .player-popover{transform:translateY(0);}
+.position-col:last-child .player-popover{left:auto; right:0; transform:translateY(-4px);}
+.position-col:last-child .player-hover:hover .player-popover,
+.position-col:last-child .player-hover:focus-visible .player-popover{transform:translateY(0);}
+.player-popover-row{display:flex; justify-content:space-between; gap:12px; font-size:12px; color:var(--star-dim); padding:2px 0;}
+.player-popover-row span:last-child{font-family:var(--font-ibm-plex-mono), monospace; color:var(--star);}
+.player-popover-notes{margin-top:8px; padding-top:8px; border-top:1px dashed var(--line); font-size:12px; line-height:1.5; color:var(--star-dim);}
 
 @media (prefers-reduced-motion:reduce){
   .reveal{opacity:1; transform:none; filter:none; transition:none;}

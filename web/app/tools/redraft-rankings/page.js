@@ -20,7 +20,42 @@ function sortPositions(positions) {
   });
 }
 
-function RankingsTable({ rows, showPosition, showTeam = true, showNotes = true }) {
+function formatProjection(value) {
+  return value === null || value === undefined ? "—" : Number(value).toFixed(1);
+}
+
+function PlayerCell({ row, withPopover }) {
+  if (!withPopover) {
+    return <td>{row.player_name}</td>;
+  }
+  return (
+    <td>
+      <span className="player-hover" tabIndex={0}>
+        {row.player_name}
+        <div className="player-popover">
+          <div className="player-popover-row">
+            <span>Team</span>
+            <span>{row.team || "—"}</span>
+          </div>
+          <div className="player-popover-row">
+            <span>Proj</span>
+            <span>{formatProjection(row.projection)}</span>
+          </div>
+          {row.notes && <div className="player-popover-notes">{row.notes}</div>}
+        </div>
+      </span>
+    </td>
+  );
+}
+
+function RankingsTable({
+  rows,
+  showPosition,
+  showTeam = true,
+  showProjection = false,
+  showNotes = true,
+  popoverOnName = false,
+}) {
   return (
     <div className="rankings-table-wrap">
       <table className="rankings-table">
@@ -30,6 +65,7 @@ function RankingsTable({ rows, showPosition, showTeam = true, showNotes = true }
             <th>Player</th>
             {showPosition && <th>Pos</th>}
             {showTeam && <th>Team</th>}
+            {showProjection && <th>Proj</th>}
             {showNotes && <th>Notes</th>}
           </tr>
         </thead>
@@ -37,9 +73,12 @@ function RankingsTable({ rows, showPosition, showTeam = true, showNotes = true }
           {rows.map((row) => (
             <tr key={`${row.position}-${row.rank}`}>
               <td className="mono">{row.displayRank}</td>
-              <td>{row.player_name}</td>
+              <PlayerCell row={row} withPopover={popoverOnName} />
               {showPosition && <td className="mono">{row.position}</td>}
               {showTeam && <td className="mono">{row.team || "—"}</td>}
+              {showProjection && (
+                <td className="mono">{formatProjection(row.projection)}</td>
+              )}
               {showNotes && <td className="tool-notes">{row.notes || ""}</td>}
             </tr>
           ))}
@@ -69,7 +108,7 @@ export default async function RedraftRankingsPage({ searchParams }) {
   if (latest) {
     const { data } = await supabase
       .from("redraft_rankings")
-      .select("rank, player_name, position, team, notes")
+      .select("rank, player_name, position, team, projection, notes")
       .eq("season", latest.season)
       .eq("week", latest.week)
       .order("rank", { ascending: true });
@@ -121,26 +160,33 @@ export default async function RedraftRankingsPage({ searchParams }) {
               <RankingsTable
                 rows={rankings.map((r) => ({ ...r, displayRank: r.rank }))}
                 showPosition
+                showProjection
               />
             ) : (
-              <div className="position-columns">
-                {positions.map((pos) => (
-                  <div className="position-col" key={pos}>
-                    <div className="draft-round-title">
-                      {pos} · {byPosition[pos].length}
+              <>
+                <p className="tool-hint">
+                  Hover or tap a name for projection, team, and notes.
+                </p>
+                <div className="position-columns">
+                  {positions.map((pos) => (
+                    <div className="position-col" key={pos}>
+                      <div className="draft-round-title">
+                        {pos} · {byPosition[pos].length}
+                      </div>
+                      <RankingsTable
+                        rows={byPosition[pos].map((r, i) => ({
+                          ...r,
+                          displayRank: `${pos}${i + 1}`,
+                        }))}
+                        showPosition={false}
+                        showTeam={false}
+                        showNotes={false}
+                        popoverOnName
+                      />
                     </div>
-                    <RankingsTable
-                      rows={byPosition[pos].map((r, i) => ({
-                        ...r,
-                        displayRank: `${pos}${i + 1}`,
-                      }))}
-                      showPosition={false}
-                      showTeam={false}
-                      showNotes={false}
-                    />
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              </>
             )}
           </>
         )}
