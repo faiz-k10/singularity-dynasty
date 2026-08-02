@@ -21,10 +21,27 @@ const ibmPlexMono = IBM_Plex_Mono({
   weight: ["400", "500", "600"],
 });
 
+const SITE_URL = "https://web-kohl-ten-94.vercel.app";
+const TITLE = "Singularity Dynasty — Where the Data Reaches Its Endpoint";
+const DESCRIPTION =
+  "Dynasty and best ball fantasy football rankings, prospect grades, and season simulations — where the data reaches its endpoint.";
+
 export const metadata = {
-  title: "Singularity Dynasty — Where the Data Reaches Its Endpoint",
-  description:
-    "Dynasty and best ball fantasy football rankings, prospect grades, and season simulations — where the data reaches its endpoint.",
+  metadataBase: new URL(SITE_URL),
+  title: TITLE,
+  description: DESCRIPTION,
+  openGraph: {
+    title: TITLE,
+    description: DESCRIPTION,
+    url: SITE_URL,
+    siteName: "Singularity Dynasty",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: TITLE,
+    description: DESCRIPTION,
+  },
 };
 
 export default function RootLayout({ children }) {
