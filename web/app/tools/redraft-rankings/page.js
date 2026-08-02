@@ -33,21 +33,23 @@ function PlayerCell({ row, withPopover }) {
       <span className="player-hover" tabIndex={0}>
         {row.player_name}
         <div className="player-popover">
-          <div className="player-popover-row">
-            <span>Team</span>
-            <span>{row.team || "—"}</span>
+          <div className="player-popover-card">
+            <div className="player-popover-row">
+              <span>Team</span>
+              <span>{row.team || "—"}</span>
+            </div>
+            <div className="player-popover-row">
+              <span>Proj</span>
+              <span>{formatProjection(row.projection)}</span>
+            </div>
+            {row.notes && <div className="player-popover-notes">{row.notes}</div>}
+            <Link
+              href={`/tools/compare-players?p1=${encodeURIComponent(row.player_name)}`}
+              className="player-popover-compare"
+            >
+              + Compare
+            </Link>
           </div>
-          <div className="player-popover-row">
-            <span>Proj</span>
-            <span>{formatProjection(row.projection)}</span>
-          </div>
-          {row.notes && <div className="player-popover-notes">{row.notes}</div>}
-          <Link
-            href={`/tools/compare-players?p1=${encodeURIComponent(row.player_name)}`}
-            className="player-popover-compare"
-          >
-            + Compare
-          </Link>
         </div>
       </span>
     </td>
