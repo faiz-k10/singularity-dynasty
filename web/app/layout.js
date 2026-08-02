@@ -49,6 +49,7 @@ export default function RootLayout({ children }) {
     <html
       lang="en"
       className={`${spaceGrotesk.variable} ${inter.variable} ${ibmPlexMono.variable}`}
+      suppressHydrationWarning
     >
       <head>
         <Script id="theme-init" strategy="beforeInteractive">
