@@ -585,14 +585,18 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .tool-wrap h1{font-size:clamp(30px,4vw,42px); margin-bottom:14px;}
 .tool-sub{color:var(--star-dim); font-size:15px; max-width:560px; margin-bottom:36px;}
 .tool-empty{background:var(--void-panel); border:1px solid var(--line); border-radius:16px; padding:32px; color:var(--star-dim); font-size:14px;}
-.rankings-table-wrap{background:var(--void-panel); border:1px solid var(--line); border-radius:16px; overflow:hidden; box-shadow:0 30px 70px rgba(var(--shadow-rgb),0.4);}
+/* overflow-x (not hidden) so wide tables scroll within their own card on
+   narrow screens instead of silently clipping columns — this is what was
+   cutting off Ceiling/Range on Player Simulations on mobile. */
+.rankings-table-wrap{background:var(--void-panel); border:1px solid var(--line); border-radius:16px; overflow-x:auto; box-shadow:0 30px 70px rgba(var(--shadow-rgb),0.4);}
 .rankings-table{width:100%; border-collapse:collapse; font-size:14px;}
 .rankings-table th{
   text-align:left; font-family:var(--font-ibm-plex-mono), monospace; font-size:11px; letter-spacing:0.08em;
   text-transform:uppercase; color:var(--star-dim); padding:14px 18px; border-bottom:1px solid var(--line);
-  background:var(--void-panel-2);
+  background:var(--void-panel-2); white-space:nowrap;
 }
-.rankings-table td{padding:12px 18px; border-bottom:1px dashed var(--line); color:var(--star);}
+.rankings-table td{padding:12px 18px; border-bottom:1px dashed var(--line); color:var(--star); white-space:nowrap;}
+.tool-notes{white-space:normal !important; min-width:180px;}
 .rankings-table tr:last-child td{border-bottom:none;}
 .rankings-table tr:hover td{background:rgba(var(--neon-blue-rgb),0.05);}
 .tool-notes{color:var(--star-dim); font-size:13px;}
@@ -607,7 +611,6 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 }
 
 /* Player Season Simulations — floor/median/ceiling range bar */
-.sim-table td{white-space:nowrap;}
 .sim-bar-track{position:relative; width:140px; height:8px; background:var(--void-panel-2); border-radius:4px;}
 .sim-bar-range{position:absolute; top:0; bottom:0; background:linear-gradient(90deg, var(--neon-blue-dim), var(--horizon-gold)); border-radius:4px; min-width:3px;}
 .sim-bar-median{position:absolute; top:-3px; width:2px; height:14px; background:var(--star); border-radius:1px;}
