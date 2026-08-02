@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { getUserTier } from "@/lib/tier";
 import ThemeToggle from "../../ThemeToggle";
 import InteractiveScript from "../../InteractiveScript";
 
@@ -11,21 +11,7 @@ const TEASER_LIMIT = 10;
 const PAID_TIERS = ["explorer", "singularity"];
 
 export default async function RedraftRankingsPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  let tier = "stargazer";
-  if (user) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("tier")
-      .eq("id", user.id)
-      .single();
-    tier = profile?.tier || "stargazer";
-  }
-
+  const { supabase, tier } = await getUserTier();
   const hasFullAccess = PAID_TIERS.includes(tier);
 
   const { data: latest } = await supabase

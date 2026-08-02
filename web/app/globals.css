@@ -606,6 +606,31 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
   .rankings-table th, .rankings-table td{padding:10px 12px;}
 }
 
+/* Player Season Simulations — floor/median/ceiling range bar */
+.sim-table td{white-space:nowrap;}
+.sim-bar-track{position:relative; width:140px; height:8px; background:var(--void-panel-2); border-radius:4px;}
+.sim-bar-range{position:absolute; top:0; bottom:0; background:linear-gradient(90deg, var(--neon-blue-dim), var(--horizon-gold)); border-radius:4px; min-width:3px;}
+.sim-bar-median{position:absolute; top:-3px; width:2px; height:14px; background:var(--star); border-radius:1px;}
+@media (max-width:640px){.sim-bar-track{width:80px;}}
+
+/* Dynasty Draft Board — round grouping, stack flags, startup/rookie toggle */
+.board-toggle{display:inline-flex; gap:4px; background:var(--void-panel-2); border:1px solid var(--line); border-radius:30px; padding:4px; margin-bottom:32px;}
+.board-toggle a{
+  padding:8px 20px; border-radius:24px; font-size:13px; font-weight:600; text-decoration:none; color:var(--star-dim);
+  transition:background .2s ease, color .2s ease;
+}
+.board-toggle a.active{background:var(--horizon-gold); color:#1A0D05;}
+.draft-round{margin-bottom:32px;}
+.draft-round-title{
+  font-family:var(--font-ibm-plex-mono), monospace; font-size:12px; letter-spacing:0.08em; text-transform:uppercase;
+  color:var(--neon-blue); margin-bottom:12px;
+}
+.stack-badge{
+  font-family:var(--font-ibm-plex-mono), monospace; font-size:10px; font-weight:700; letter-spacing:0.05em;
+  background:rgba(255,122,69,0.15); color:var(--horizon-gold); border:1px solid rgba(255,122,69,0.35);
+  padding:3px 8px; border-radius:20px; cursor:default;
+}
+
 @media (prefers-reduced-motion:reduce){
   .reveal{opacity:1; transform:none; filter:none; transition:none;}
   .os-ring{animation:none;}

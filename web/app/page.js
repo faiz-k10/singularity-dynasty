@@ -221,6 +221,9 @@ export default async function Home() {
                   <li>10,000 simulated outcomes per player, every week</li>
                   <li>10th / 50th / 90th percentile floor, median, and ceiling</li>
                 </ul>
+                <Link href="/tools/player-simulations" className="hub-panel-link">
+                  View Live Simulations →
+                </Link>
               </div>
 
               <div className="hub-panel" data-panel="1">
@@ -262,6 +265,9 @@ export default async function Home() {
                   <li>Ceiling-weighted by standard deviation, not median consistency</li>
                   <li>Recalculated weekly as sample size grows</li>
                 </ul>
+                <Link href="/tools/best-ball-rankings" className="hub-panel-link">
+                  View Live Rankings →
+                </Link>
               </div>
 
               <div className="hub-panel" data-panel="2">
@@ -272,6 +278,9 @@ export default async function Home() {
                   round, with correlated stacks auto-flagged via
                   roster-construction analysis.
                 </p>
+                <Link href="/tools/draft-board" className="hub-panel-link">
+                  View Live Board →
+                </Link>
               </div>
 
               <div className="hub-panel" data-panel="3">
@@ -305,6 +314,9 @@ export default async function Home() {
                   quarterbacks, with side-by-side statistical comps against
                   past prospects using athletic and production percentiles.
                 </p>
+                <Link href="/tools/prospect-rankings" className="hub-panel-link">
+                  View Live Board →
+                </Link>
               </div>
             </div>
 
