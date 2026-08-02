@@ -16,6 +16,7 @@ export default function sitemap() {
     "draft-board",
     "player-simulations",
     "prospect-rankings",
+    "compare-players",
   ].map((slug) => ({
     url: `/tools/${slug}`,
     changeFrequency: "weekly",

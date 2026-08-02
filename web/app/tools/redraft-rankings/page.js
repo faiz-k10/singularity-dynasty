@@ -147,12 +147,17 @@ export default async function RedraftRankingsPage({ searchParams }) {
           </div>
         ) : (
           <>
-            <div className="board-toggle">
-              <Link href="?view=overall" className={view === "overall" ? "active" : ""}>
-                Overall
-              </Link>
-              <Link href="?view=position" className={view === "position" ? "active" : ""}>
-                By Position
+            <div className="toggle-row-flex">
+              <div className="board-toggle">
+                <Link href="?view=overall" className={view === "overall" ? "active" : ""}>
+                  Overall
+                </Link>
+                <Link href="?view=position" className={view === "position" ? "active" : ""}>
+                  By Position
+                </Link>
+              </div>
+              <Link href="/tools/compare-players" className="hub-panel-link">
+                Compare Players →
               </Link>
             </div>
 
