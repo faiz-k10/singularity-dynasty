@@ -92,7 +92,7 @@ Shown in smaller cards (in this order):
 2. Publish real data into the five live `/tools/*` tables (Supabase Table Editor) — they're all wired up correctly but currently empty, showing "check back soon" placeholders. Also still true for the `posts` table (Feed section).
 4. Mobile responsiveness pass — everything so far has only been verified at desktop widths.
 5. Before accepting real payments: switch Stripe from test to live mode (new live Products/Prices via `create-stripe-products.mjs`, new live webhook endpoint, re-run `setup-billing-portal.mjs` against live keys), and have an actual attorney review the Privacy/Terms/Disclaimer boilerplate.
-6. Nice-to-haves flagged but not started: a custom domain (would also allow replacing the personal-Gmail contact address), Open Graph/Twitter card meta tags for social link previews, and a sitemap.xml/robots.txt once there's real content to index.
+6. Nice-to-have still open: a custom domain (would also allow replacing the personal-Gmail contact address). Open Graph/Twitter card image, branded favicon/apple-icon, sitemap.xml, and robots.txt are all done — see `app/opengraph-image.js`, `app/icon.js`, `app/apple-icon.js`, `app/sitemap.js`, `app/robots.js` (all code-generated via `next/og`'s `ImageResponse`, no external image assets).
 
 ## Do not change without being asked
 - The six features listed above and their advertised order
