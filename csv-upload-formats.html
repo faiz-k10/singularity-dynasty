@@ -204,9 +204,9 @@
       <div>
         <div class="codeblock-label">
           <span>CSV header row</span>
-          <button class="copy-btn" data-copy="season,week,rank,player_name,position,team,notes">Copy</button>
+          <button class="copy-btn" data-copy="season,week,rank,player_name,position,team,projection,notes">Copy</button>
         </div>
-        <div class="codeblock"><code>season,week,rank,player_name,position,team,notes</code></div>
+        <div class="codeblock"><code>season,week,rank,player_name,position,team,projection,notes</code></div>
       </div>
 
       <table class="spec-table">
@@ -214,18 +214,19 @@
         <tbody>
           <tr><td class="col-name">season</td><td><span class="req no">optional</span></td><td class="col-note">Defaults to the current year if left blank</td></tr>
           <tr><td class="col-name">week</td><td><span class="req yes">required</span></td><td class="col-note">NFL week number, e.g. 1–18</td></tr>
-          <tr><td class="col-name">rank</td><td><span class="req yes">required</span></td><td class="col-note">1 = top ranked</td></tr>
+          <tr><td class="col-name">rank</td><td><span class="req yes">required</span></td><td class="col-note">1 = top ranked overall — the By Position view on the live page derives QB1/RB1/etc. from this automatically</td></tr>
           <tr><td class="col-name">player_name</td><td><span class="req yes">required</span></td><td class="col-note">Full name, e.g. CeeDee Lamb</td></tr>
           <tr><td class="col-name">position</td><td><span class="req yes">required</span></td><td class="col-note">QB / RB / WR / TE</td></tr>
           <tr><td class="col-name">team</td><td><span class="req no">optional</span></td><td class="col-note">3-letter code, e.g. DAL</td></tr>
-          <tr><td class="col-name">notes</td><td><span class="req no">optional</span></td><td class="col-note">Short blurb shown next to the row</td></tr>
+          <tr><td class="col-name">projection</td><td><span class="req no">optional</span></td><td class="col-note">Projected fantasy points, numeric (e.g. 18.4). Shown as its own column in Overall view; shown in a hover popover on the name in By Position view</td></tr>
+          <tr><td class="col-name">notes</td><td><span class="req no">optional</span></td><td class="col-note">Short blurb — shown in the Notes column in Overall view, and in the same hover popover as projection in By Position view</td></tr>
         </tbody>
       </table>
 
       <div class="example-wrap">
         <table class="example-table">
-          <thead><tr><th>season</th><th>week</th><th>rank</th><th>player_name</th><th>position</th><th>team</th><th>notes</th></tr></thead>
-          <tbody><tr><td>2026</td><td>1</td><td>1</td><td>CeeDee Lamb</td><td>WR</td><td>DAL</td><td>Elite floor and ceiling this matchup.</td></tr></tbody>
+          <thead><tr><th>season</th><th>week</th><th>rank</th><th>player_name</th><th>position</th><th>team</th><th>projection</th><th>notes</th></tr></thead>
+          <tbody><tr><td>2026</td><td>1</td><td>1</td><td>CeeDee Lamb</td><td>WR</td><td>DAL</td><td>18.9</td><td>Elite floor and ceiling this matchup.</td></tr></tbody>
         </table>
       </div>
 
