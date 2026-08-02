@@ -7,7 +7,7 @@ export const metadata = {
   title: "Compare Players — Singularity Dynasty",
 };
 
-const SLOTS = ["p1", "p2", "p3", "p4"];
+const SLOTS = ["p1", "p2", "p3"];
 
 function formatProjection(value) {
   return value === null || value === undefined ? "—" : Number(value).toFixed(1);
@@ -54,7 +54,7 @@ export default async function ComparePlayersPage({ searchParams }) {
         </div>
         <h1>Compare Players</h1>
         <p className="tool-sub">
-          Pick two to four players from this week&apos;s redraft rankings to
+          Pick two or three players from this week&apos;s redraft rankings to
           see them side by side.
         </p>
 

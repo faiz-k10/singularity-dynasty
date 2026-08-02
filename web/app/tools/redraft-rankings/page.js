@@ -42,6 +42,12 @@ function PlayerCell({ row, withPopover }) {
             <span>{formatProjection(row.projection)}</span>
           </div>
           {row.notes && <div className="player-popover-notes">{row.notes}</div>}
+          <Link
+            href={`/tools/compare-players?p1=${encodeURIComponent(row.player_name)}`}
+            className="player-popover-compare"
+          >
+            + Compare
+          </Link>
         </div>
       </span>
     </td>
