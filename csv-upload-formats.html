@@ -1,0 +1,477 @@
+<title>CSV Upload Formats — Singularity Dynasty</title>
+<style>
+  :root{
+    --void:#07070C; --void-panel:#101018; --void-panel-2:#15151F; --line:#232333;
+    --star:#F5F3EE; --star-dim:#9997A8;
+    --horizon-gold:#FFC773; --horizon:#FF7A45; --neon-blue:#3DDCFF; --neon-blue-dim:#1F8FB0;
+    --shadow: 0 20px 50px rgba(0,0,0,0.45);
+    --font-display: -apple-system, "SF Pro Display", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+    --font-body: -apple-system, "Inter", "Segoe UI", system-ui, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="dark"]){
+      --void:#FAF8F3; --void-panel:#FFFFFF; --void-panel-2:#F2EFE6; --line:#E7E2D5;
+      --star:#15131C; --star-dim:#68636F;
+      --horizon-gold:#B8720E; --horizon:#FF7A45; --neon-blue:#0A7F99; --neon-blue-dim:#0B6B85;
+      --shadow: 0 20px 50px rgba(80,70,50,0.12);
+    }
+  }
+  :root[data-theme="dark"]{
+    --void:#07070C; --void-panel:#101018; --void-panel-2:#15151F; --line:#232333;
+    --star:#F5F3EE; --star-dim:#9997A8;
+    --horizon-gold:#FFC773; --horizon:#FF7A45; --neon-blue:#3DDCFF; --neon-blue-dim:#1F8FB0;
+    --shadow: 0 20px 50px rgba(0,0,0,0.45);
+  }
+  :root[data-theme="light"]{
+    --void:#FAF8F3; --void-panel:#FFFFFF; --void-panel-2:#F2EFE6; --line:#E7E2D5;
+    --star:#15131C; --star-dim:#68636F;
+    --horizon-gold:#B8720E; --horizon:#FF7A45; --neon-blue:#0A7F99; --neon-blue-dim:#0B6B85;
+    --shadow: 0 20px 50px rgba(80,70,50,0.12);
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    background:var(--void); color:var(--star); font-family:var(--font-body);
+    font-size:15px; line-height:1.6; padding:56px 20px 100px; -webkit-font-smoothing:antialiased;
+  }
+  .page{max-width:840px; margin:0 auto; display:flex; flex-direction:column; gap:44px;}
+
+  /* header */
+  .masthead{display:flex; flex-direction:column; gap:14px;}
+  .eyebrow{
+    font-family:var(--font-mono); font-size:11px; letter-spacing:0.14em; text-transform:uppercase;
+    color:var(--horizon-gold); display:flex; align-items:center; gap:10px;
+  }
+  .eyebrow::before{content:''; width:22px; height:1px; background:var(--horizon-gold);}
+  h1{
+    font-family:var(--font-display); font-weight:700; font-size:clamp(28px,4vw,38px);
+    letter-spacing:-0.01em; margin:0; text-wrap:balance;
+  }
+  .lede{color:var(--star-dim); max-width:60ch; font-size:15.5px; margin:0;}
+
+  /* how-to strip */
+  .howto{
+    background:var(--void-panel); border:1px solid var(--line); border-radius:14px;
+    padding:22px 24px; display:grid; grid-template-columns:repeat(4,1fr); gap:20px;
+    box-shadow:var(--shadow);
+  }
+  .howto-step{display:flex; flex-direction:column; gap:6px;}
+  .howto-num{
+    font-family:var(--font-mono); font-size:11px; color:var(--neon-blue); letter-spacing:0.08em;
+  }
+  .howto-step p{margin:0; font-size:13.5px; color:var(--star); line-height:1.5;}
+  .howto-step p span{color:var(--star-dim);}
+
+  /* quick nav */
+  .quicknav{display:flex; flex-wrap:wrap; gap:8px;}
+  .quicknav a{
+    font-family:var(--font-mono); font-size:12px; text-decoration:none; color:var(--star-dim);
+    background:var(--void-panel); border:1px solid var(--line); border-radius:20px; padding:7px 14px;
+    transition:border-color .15s ease, color .15s ease;
+  }
+  .quicknav a:hover{border-color:var(--horizon-gold); color:var(--horizon-gold);}
+
+  /* table cards */
+  .tcard{
+    background:var(--void-panel); border:1px solid var(--line); border-radius:16px; overflow:hidden;
+    box-shadow:var(--shadow); scroll-margin-top:24px;
+  }
+  .tcard-head{padding:24px 26px 20px; border-bottom:1px solid var(--line);}
+  .tcard-toprow{display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap;}
+  .tcard-name{font-family:var(--font-display); font-weight:700; font-size:20px; margin:0;}
+  .tcard-table{font-family:var(--font-mono); font-size:12px; color:var(--star-dim);}
+  .tcard-purpose{color:var(--star-dim); font-size:13.5px; margin:8px 0 0; max-width:60ch;}
+  .tier{
+    font-family:var(--font-mono); font-size:10px; letter-spacing:0.06em; text-transform:uppercase;
+    padding:4px 10px; border-radius:20px; font-weight:600; white-space:nowrap;
+  }
+  .tier-free{background:rgba(61,220,255,0.12); color:var(--neon-blue); border:1px solid rgba(61,220,255,0.3);}
+  .tier-explorer{background:rgba(255,199,115,0.12); color:var(--horizon-gold); border:1px solid rgba(255,199,115,0.3);}
+  .tier-singularity{background:rgba(255,122,69,0.14); color:var(--horizon); border:1px solid rgba(255,122,69,0.35);}
+
+  .tcard-body{padding:22px 26px 26px; display:flex; flex-direction:column; gap:20px;}
+
+  .codeblock-label{
+    font-family:var(--font-mono); font-size:10.5px; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--star-dim); margin-bottom:8px; display:flex; align-items:center; justify-content:space-between;
+  }
+  .codeblock{
+    position:relative; background:var(--void-panel-2); border:1px solid var(--line); border-radius:10px;
+    padding:14px 16px; overflow-x:auto;
+  }
+  .codeblock code{
+    font-family:var(--font-mono); font-size:13px; color:var(--horizon-gold); white-space:pre;
+  }
+  .copy-btn{
+    font-family:var(--font-mono); font-size:10.5px; letter-spacing:0.04em; color:var(--star-dim);
+    background:transparent; border:1px solid var(--line); border-radius:20px; padding:4px 11px;
+    cursor:pointer; transition:border-color .15s ease, color .15s ease;
+  }
+  .copy-btn:hover{border-color:var(--neon-blue); color:var(--neon-blue);}
+  .copy-btn:focus-visible{outline:2px solid var(--neon-blue); outline-offset:2px;}
+  .copy-btn.copied{border-color:var(--up,#6FE3A8); color:var(--up,#6FE3A8);}
+
+  .spec-table{width:100%; border-collapse:collapse; font-size:13px;}
+  .spec-table th{
+    text-align:left; font-family:var(--font-mono); font-size:10.5px; letter-spacing:0.06em; text-transform:uppercase;
+    color:var(--star-dim); padding:0 12px 8px 0; font-weight:500; border-bottom:1px solid var(--line);
+  }
+  .spec-table td{padding:9px 12px 9px 0; border-bottom:1px dashed var(--line); vertical-align:top;}
+  .spec-table tr:last-child td{border-bottom:none;}
+  .col-name{font-family:var(--font-mono); font-size:12.5px; color:var(--star);}
+  .req{
+    font-family:var(--font-mono); font-size:10px; letter-spacing:0.04em; padding:2px 8px; border-radius:10px;
+    white-space:nowrap; display:inline-block;
+  }
+  .req.yes{background:rgba(255,122,69,0.12); color:var(--horizon);}
+  .req.no{background:var(--void-panel-2); color:var(--star-dim); border:1px solid var(--line);}
+  .col-note{color:var(--star-dim); font-size:12.5px;}
+
+  .example-wrap{overflow-x:auto;}
+  .example-table{width:100%; border-collapse:collapse; font-size:12.5px; font-variant-numeric:tabular-nums;}
+  .example-table th{
+    text-align:left; font-family:var(--font-mono); font-size:10px; letter-spacing:0.05em; text-transform:uppercase;
+    color:var(--star-dim); padding:0 14px 7px 0; font-weight:500;
+  }
+  .example-table td{padding:6px 14px 6px 0; color:var(--star); white-space:nowrap; font-family:var(--font-mono); font-size:12px;}
+
+  .batch-note{
+    font-size:12.5px; color:var(--star-dim); background:rgba(61,220,255,0.06); border:1px solid rgba(61,220,255,0.2);
+    border-radius:10px; padding:12px 14px; line-height:1.6;
+  }
+  .batch-note strong{color:var(--star); font-weight:600;}
+
+  @media (max-width:640px){
+    .howto{grid-template-columns:1fr 1fr;}
+    .tcard-head, .tcard-body{padding-left:18px; padding-right:18px;}
+  }
+</style>
+
+<div class="page">
+
+  <div class="masthead">
+    <div class="eyebrow">Publishing Reference</div>
+    <h1>CSV upload formats, one per tool.</h1>
+    <p class="lede">
+      Seven tables power the site. Match the column headers below exactly —
+      Supabase's importer maps by header name, not position — and everything
+      else (badges, gating, page layout) is already wired up.
+    </p>
+  </div>
+
+  <div class="howto">
+    <div class="howto-step">
+      <div class="howto-num">01</div>
+      <p>Open your <span>Supabase project</span> → Table Editor</p>
+    </div>
+    <div class="howto-step">
+      <div class="howto-num">02</div>
+      <p>Pick the table, click <span>Insert → Import data from CSV</span></p>
+    </div>
+    <div class="howto-step">
+      <div class="howto-num">03</div>
+      <p>Upload your file — <span>headers must match exactly</span></p>
+    </div>
+    <div class="howto-step">
+      <div class="howto-num">04</div>
+      <p>Save. The live page reflects it <span>immediately</span>.</p>
+    </div>
+  </div>
+
+  <nav class="quicknav">
+    <a href="#redraft">Redraft Rankings</a>
+    <a href="#bestball">Best Ball Rankings</a>
+    <a href="#draftboard">Draft Board</a>
+    <a href="#simulations">Player Simulations</a>
+    <a href="#prospects">Prospect Rankings</a>
+    <a href="#posts">Feed Posts</a>
+  </nav>
+
+  <!-- REDRAFT RANKINGS -->
+  <section class="tcard" id="redraft">
+    <div class="tcard-head">
+      <div class="tcard-toprow">
+        <div>
+          <h2 class="tcard-name">Redraft Weekly Rankings</h2>
+          <div class="tcard-table">table: redraft_rankings</div>
+        </div>
+        <span class="tier tier-free">Free — everyone</span>
+      </div>
+      <p class="tcard-purpose">Standard redraft rankings, refreshed weekly. Shown in full to every visitor.</p>
+    </div>
+    <div class="tcard-body">
+      <div>
+        <div class="codeblock-label">
+          <span>CSV header row</span>
+          <button class="copy-btn" data-copy="season,week,rank,player_name,position,team,notes">Copy</button>
+        </div>
+        <div class="codeblock"><code>season,week,rank,player_name,position,team,notes</code></div>
+      </div>
+
+      <table class="spec-table">
+        <thead><tr><th>Column</th><th>Required</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td class="col-name">season</td><td><span class="req no">optional</span></td><td class="col-note">Defaults to the current year if left blank</td></tr>
+          <tr><td class="col-name">week</td><td><span class="req yes">required</span></td><td class="col-note">NFL week number, e.g. 1–18</td></tr>
+          <tr><td class="col-name">rank</td><td><span class="req yes">required</span></td><td class="col-note">1 = top ranked</td></tr>
+          <tr><td class="col-name">player_name</td><td><span class="req yes">required</span></td><td class="col-note">Full name, e.g. CeeDee Lamb</td></tr>
+          <tr><td class="col-name">position</td><td><span class="req yes">required</span></td><td class="col-note">QB / RB / WR / TE</td></tr>
+          <tr><td class="col-name">team</td><td><span class="req no">optional</span></td><td class="col-note">3-letter code, e.g. DAL</td></tr>
+          <tr><td class="col-name">notes</td><td><span class="req no">optional</span></td><td class="col-note">Short blurb shown next to the row</td></tr>
+        </tbody>
+      </table>
+
+      <div class="example-wrap">
+        <table class="example-table">
+          <thead><tr><th>season</th><th>week</th><th>rank</th><th>player_name</th><th>position</th><th>team</th><th>notes</th></tr></thead>
+          <tbody><tr><td>2026</td><td>1</td><td>1</td><td>CeeDee Lamb</td><td>WR</td><td>DAL</td><td>Elite floor and ceiling this matchup.</td></tr></tbody>
+        </table>
+      </div>
+
+      <div class="batch-note"><strong>Publishing a new week:</strong> just import a CSV with a higher <code>week</code> number — the page always shows whichever season/week is highest. Old weeks stay in the table as history, no need to delete anything.</div>
+    </div>
+  </section>
+
+  <!-- BEST BALL RANKINGS -->
+  <section class="tcard" id="bestball">
+    <div class="tcard-head">
+      <div class="tcard-toprow">
+        <div>
+          <h2 class="tcard-name">Best Ball Rankings</h2>
+          <div class="tcard-table">table: best_ball_rankings</div>
+        </div>
+        <span class="tier tier-explorer">Explorer & up</span>
+      </div>
+      <p class="tcard-purpose">Ceiling-weighted rankings for tournament best ball. Free tier sees the top 10.</p>
+    </div>
+    <div class="tcard-body">
+      <div>
+        <div class="codeblock-label">
+          <span>CSV header row</span>
+          <button class="copy-btn" data-copy="season,week,rank,player_name,position,team,notes">Copy</button>
+        </div>
+        <div class="codeblock"><code>season,week,rank,player_name,position,team,notes</code></div>
+      </div>
+
+      <table class="spec-table">
+        <thead><tr><th>Column</th><th>Required</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td class="col-name">season</td><td><span class="req no">optional</span></td><td class="col-note">Defaults to the current year</td></tr>
+          <tr><td class="col-name">week</td><td><span class="req yes">required</span></td><td class="col-note">Treat as a revision number — bump it each time you republish</td></tr>
+          <tr><td class="col-name">rank</td><td><span class="req yes">required</span></td><td class="col-note">1 = highest ceiling</td></tr>
+          <tr><td class="col-name">player_name</td><td><span class="req yes">required</span></td><td class="col-note">Full name</td></tr>
+          <tr><td class="col-name">position</td><td><span class="req yes">required</span></td><td class="col-note">QB / RB / WR / TE</td></tr>
+          <tr><td class="col-name">team</td><td><span class="req no">optional</span></td><td class="col-note">3-letter code</td></tr>
+          <tr><td class="col-name">notes</td><td><span class="req no">optional</span></td><td class="col-note">Short blurb</td></tr>
+        </tbody>
+      </table>
+
+      <div class="example-wrap">
+        <table class="example-table">
+          <thead><tr><th>season</th><th>week</th><th>rank</th><th>player_name</th><th>position</th><th>team</th><th>notes</th></tr></thead>
+          <tbody><tr><td>2026</td><td>1</td><td>1</td><td>Ja'Marr Chase</td><td>WR</td><td>CIN</td><td>Highest weekly ceiling in the field.</td></tr></tbody>
+        </table>
+      </div>
+
+      <div class="batch-note"><strong>Free tier sees:</strong> top 10 rows only, with an upgrade prompt below. Paid subscribers see everything you import.</div>
+    </div>
+  </section>
+
+  <!-- DRAFT BOARD -->
+  <section class="tcard" id="draftboard">
+    <div class="tcard-head">
+      <div class="tcard-toprow">
+        <div>
+          <h2 class="tcard-name">Dynasty Draft Board</h2>
+          <div class="tcard-table">table: draft_board</div>
+        </div>
+        <span class="tier tier-explorer">Explorer & up</span>
+      </div>
+      <p class="tcard-purpose">Round-by-round startup or rookie board. Free tier sees Round 1 only.</p>
+    </div>
+    <div class="tcard-body">
+      <div>
+        <div class="codeblock-label">
+          <span>CSV header row</span>
+          <button class="copy-btn" data-copy="season,board_type,round,pick,player_name,position,team,is_stack,stack_note">Copy</button>
+        </div>
+        <div class="codeblock"><code>season,board_type,round,pick,player_name,position,team,is_stack,stack_note</code></div>
+      </div>
+
+      <table class="spec-table">
+        <thead><tr><th>Column</th><th>Required</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td class="col-name">season</td><td><span class="req no">optional</span></td><td class="col-note">Defaults to the current year</td></tr>
+          <tr><td class="col-name">board_type</td><td><span class="req no">optional</span></td><td class="col-note">"startup" or "rookie" — defaults to startup</td></tr>
+          <tr><td class="col-name">round</td><td><span class="req yes">required</span></td><td class="col-note">1, 2, 3…</td></tr>
+          <tr><td class="col-name">pick</td><td><span class="req yes">required</span></td><td class="col-note">Pick number within the round</td></tr>
+          <tr><td class="col-name">player_name</td><td><span class="req yes">required</span></td><td class="col-note">Full name</td></tr>
+          <tr><td class="col-name">position</td><td><span class="req yes">required</span></td><td class="col-note">QB / RB / WR / TE</td></tr>
+          <tr><td class="col-name">team</td><td><span class="req no">optional</span></td><td class="col-note">3-letter code</td></tr>
+          <tr><td class="col-name">is_stack</td><td><span class="req no">optional</span></td><td class="col-note">TRUE or FALSE — shows a STACK badge on the pick</td></tr>
+          <tr><td class="col-name">stack_note</td><td><span class="req no">optional</span></td><td class="col-note">Tooltip text on the STACK badge, e.g. which players it pairs with</td></tr>
+        </tbody>
+      </table>
+
+      <div class="example-wrap">
+        <table class="example-table">
+          <thead><tr><th>season</th><th>board_type</th><th>round</th><th>pick</th><th>player_name</th><th>position</th><th>team</th><th>is_stack</th><th>stack_note</th></tr></thead>
+          <tbody><tr><td>2026</td><td>startup</td><td>1</td><td>1</td><td>CeeDee Lamb</td><td>WR</td><td>DAL</td><td>TRUE</td><td>Pairs with Dak Prescott (Round 3)</td></tr></tbody>
+        </table>
+      </div>
+
+      <div class="batch-note"><strong>Startup vs. rookie:</strong> both live in the same table, split by <code>board_type</code> — the live page has a toggle between them. <strong>Republishing:</strong> this one isn't weekly; a full re-import under a higher <code>season</code> is the way to publish a new version.</div>
+    </div>
+  </section>
+
+  <!-- PLAYER SIMULATIONS -->
+  <section class="tcard" id="simulations">
+    <div class="tcard-head">
+      <div class="tcard-toprow">
+        <div>
+          <h2 class="tcard-name">Player Season Simulations</h2>
+          <div class="tcard-table">table: player_simulations</div>
+        </div>
+        <span class="tier tier-singularity">Singularity only</span>
+      </div>
+      <p class="tcard-purpose">Floor / median / ceiling per player from your season-long model. Explorer does not unlock this one.</p>
+    </div>
+    <div class="tcard-body">
+      <div>
+        <div class="codeblock-label">
+          <span>CSV header row</span>
+          <button class="copy-btn" data-copy="season,player_name,position,team,floor,median,ceiling,notes">Copy</button>
+        </div>
+        <div class="codeblock"><code>season,player_name,position,team,floor,median,ceiling,notes</code></div>
+      </div>
+
+      <table class="spec-table">
+        <thead><tr><th>Column</th><th>Required</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td class="col-name">season</td><td><span class="req no">optional</span></td><td class="col-note">Defaults to the current year</td></tr>
+          <tr><td class="col-name">player_name</td><td><span class="req yes">required</span></td><td class="col-note">Full name</td></tr>
+          <tr><td class="col-name">position</td><td><span class="req yes">required</span></td><td class="col-note">QB / RB / WR / TE</td></tr>
+          <tr><td class="col-name">team</td><td><span class="req no">optional</span></td><td class="col-note">3-letter code</td></tr>
+          <tr><td class="col-name">floor</td><td><span class="req yes">required</span></td><td class="col-note">10th percentile, numeric (e.g. fantasy pts/game)</td></tr>
+          <tr><td class="col-name">median</td><td><span class="req yes">required</span></td><td class="col-note">50th percentile — sets the default sort order</td></tr>
+          <tr><td class="col-name">ceiling</td><td><span class="req yes">required</span></td><td class="col-note">90th percentile, numeric</td></tr>
+          <tr><td class="col-name">notes</td><td><span class="req no">optional</span></td><td class="col-note">Short blurb</td></tr>
+        </tbody>
+      </table>
+
+      <div class="example-wrap">
+        <table class="example-table">
+          <thead><tr><th>season</th><th>player_name</th><th>position</th><th>team</th><th>floor</th><th>median</th><th>ceiling</th></tr></thead>
+          <tbody><tr><td>2026</td><td>CeeDee Lamb</td><td>WR</td><td>DAL</td><td>8.2</td><td>16.4</td><td>28.1</td></tr></tbody>
+        </table>
+      </div>
+
+      <div class="batch-note"><strong>floor / median / ceiling</strong> render as a range bar on the live page — keep them in the same unit (points per game works well) so the bars stay comparable across players.</div>
+    </div>
+  </section>
+
+  <!-- PROSPECT RANKINGS -->
+  <section class="tcard" id="prospects">
+    <div class="tcard-head">
+      <div class="tcard-toprow">
+        <div>
+          <h2 class="tcard-name">WR/QB Prospect Rankings</h2>
+          <div class="tcard-table">table: prospect_rankings</div>
+        </div>
+        <span class="tier tier-singularity">Singularity only</span>
+      </div>
+      <p class="tcard-purpose">Rookie boards for WR and QB with comps. Free tier sees the top 5 at each position.</p>
+    </div>
+    <div class="tcard-body">
+      <div>
+        <div class="codeblock-label">
+          <span>CSV header row</span>
+          <button class="copy-btn" data-copy="draft_class,rank,player_name,position,school,comp,notes">Copy</button>
+        </div>
+        <div class="codeblock"><code>draft_class,rank,player_name,position,school,comp,notes</code></div>
+      </div>
+
+      <table class="spec-table">
+        <thead><tr><th>Column</th><th>Required</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td class="col-name">draft_class</td><td><span class="req no">optional</span></td><td class="col-note">The NFL draft year this class belongs to — defaults to current year</td></tr>
+          <tr><td class="col-name">rank</td><td><span class="req yes">required</span></td><td class="col-note">Rank within its position group, not overall</td></tr>
+          <tr><td class="col-name">player_name</td><td><span class="req yes">required</span></td><td class="col-note">Full name</td></tr>
+          <tr><td class="col-name">position</td><td><span class="req yes">required</span></td><td class="col-note">Must be exactly WR or QB</td></tr>
+          <tr><td class="col-name">school</td><td><span class="req no">optional</span></td><td class="col-note">College</td></tr>
+          <tr><td class="col-name">comp</td><td><span class="req no">optional</span></td><td class="col-note">"Comp: early-career Justin Jefferson" style note — shown in the Comp column</td></tr>
+          <tr><td class="col-name">notes</td><td><span class="req no">optional</span></td><td class="col-note">Falls back into the Comp column if comp is blank</td></tr>
+        </tbody>
+      </table>
+
+      <div class="example-wrap">
+        <table class="example-table">
+          <thead><tr><th>draft_class</th><th>rank</th><th>player_name</th><th>position</th><th>school</th><th>comp</th></tr></thead>
+          <tbody><tr><td>2027</td><td>1</td><td>Sample WR One</td><td>WR</td><td>Ohio State</td><td>Comp: early-career Justin Jefferson.</td></tr></tbody>
+        </table>
+      </div>
+
+      <div class="batch-note"><strong>Ranks reset per position</strong> — your #1 WR and #1 QB both use rank 1, since the live page groups and displays them in separate Wide Receivers / Quarterbacks sections.</div>
+    </div>
+  </section>
+
+  <!-- POSTS / FEED -->
+  <section class="tcard" id="posts">
+    <div class="tcard-head">
+      <div class="tcard-toprow">
+        <div>
+          <h2 class="tcard-name">Feed — Recent Drops</h2>
+          <div class="tcard-table">table: posts</div>
+        </div>
+        <span class="tier tier-free">Free — everyone</span>
+      </div>
+      <p class="tcard-purpose">Not a ranking table — these are link cards to your write-ups, shown on the homepage.</p>
+    </div>
+    <div class="tcard-body">
+      <div>
+        <div class="codeblock-label">
+          <span>CSV header row</span>
+          <button class="copy-btn" data-copy="title,url,published_at">Copy</button>
+        </div>
+        <div class="codeblock"><code>title,url,published_at</code></div>
+      </div>
+
+      <table class="spec-table">
+        <thead><tr><th>Column</th><th>Required</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td class="col-name">title</td><td><span class="req yes">required</span></td><td class="col-note">Headline shown on the card</td></tr>
+          <tr><td class="col-name">url</td><td><span class="req no">optional</span></td><td class="col-note">Where the card links — defaults to "#" if blank</td></tr>
+          <tr><td class="col-name">published_at</td><td><span class="req no">optional</span></td><td class="col-note">Date, e.g. 2026-08-01 — defaults to the import time</td></tr>
+        </tbody>
+      </table>
+
+      <div class="example-wrap">
+        <table class="example-table">
+          <thead><tr><th>title</th><th>url</th><th>published_at</th></tr></thead>
+          <tbody><tr><td>Why Ceiling Beats Consistency in Best Ball</td><td>https://singularitydynasty.com/blog/ceiling</td><td>2026-08-01</td></tr></tbody>
+        </table>
+      </div>
+
+      <div class="batch-note">The homepage shows the <strong>3 most recent</strong> posts by <code>published_at</code>, newest first.</div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  document.querySelectorAll('.copy-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var text = btn.getAttribute('data-copy');
+      navigator.clipboard.writeText(text).then(function(){
+        var original = btn.textContent;
+        btn.textContent = 'Copied';
+        btn.classList.add('copied');
+        setTimeout(function(){
+          btn.textContent = original;
+          btn.classList.remove('copied');
+        }, 1400);
+      });
+    });
+  });
+</script>
