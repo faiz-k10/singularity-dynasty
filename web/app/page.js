@@ -380,7 +380,7 @@ export default async function Home() {
               <div className="round-desc">Enough to get a real read on your team.</div>
               <ul className="round-features">
                 <li>Weekly dynasty rankings (top 200)</li>
-                <li>QB/WR prospect rankings &amp; comparisons</li>
+                <li>Redraft weekly rankings</li>
                 <li>Basic waiver wire watchlist</li>
                 <li>1 saved team</li>
               </ul>
@@ -407,7 +407,6 @@ export default async function Home() {
                 <li>Full dynasty rankings &amp; tiers (500+ players)</li>
                 <li>Dynasty draft board</li>
                 <li>Best ball rankings</li>
-                <li>Redraft weekly rankings</li>
                 <li>5 saved teams</li>
               </ul>
               <a href="#" className="round-btn primary" data-plan="explorer">
@@ -430,6 +429,7 @@ export default async function Home() {
                 <li>Everything in Explorer</li>
                 <li>Team analysis</li>
                 <li>Player season simulations</li>
+                <li>QB/WR prospect rankings &amp; comparisons</li>
                 <li>Unlimited saved teams</li>
                 <li>Early access to new tools</li>
                 <li>Priority Discord access</li>

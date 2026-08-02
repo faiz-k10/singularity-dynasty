@@ -7,12 +7,9 @@ export const metadata = {
   title: "Redraft Weekly Rankings — Singularity Dynasty",
 };
 
-const TEASER_LIMIT = 10;
-const PAID_TIERS = ["explorer", "singularity"];
-
+// Free for everyone (Stargazer) per the pricing copy — no tier gating here.
 export default async function RedraftRankingsPage() {
-  const { supabase, tier } = await getUserTier();
-  const hasFullAccess = PAID_TIERS.includes(tier);
+  const { supabase } = await getUserTier();
 
   const { data: latest } = await supabase
     .from("redraft_rankings")
@@ -23,26 +20,16 @@ export default async function RedraftRankingsPage() {
     .maybeSingle();
 
   let rankings = [];
-  let totalCount = 0;
 
   if (latest) {
-    let query = supabase
+    const { data } = await supabase
       .from("redraft_rankings")
-      .select("rank, player_name, position, team, notes", { count: "exact" })
+      .select("rank, player_name, position, team, notes")
       .eq("season", latest.season)
       .eq("week", latest.week)
       .order("rank", { ascending: true });
-
-    if (!hasFullAccess) {
-      query = query.limit(TEASER_LIMIT);
-    }
-
-    const { data, count } = await query;
     rankings = data || [];
-    totalCount = count || 0;
   }
-
-  const isTeaser = !hasFullAccess && totalCount > rankings.length;
 
   return (
     <div className="tool-page">
@@ -58,7 +45,8 @@ export default async function RedraftRankingsPage() {
         <h1>Redraft Weekly Rankings</h1>
         <p className="tool-sub">
           Standard redraft rankings, refreshed every week of the season and
-          adjusted for opponent-strength and matchup efficiency data.
+          adjusted for opponent-strength and matchup efficiency data. Free
+          for every Stargazer.
         </p>
 
         {rankings.length === 0 ? (
@@ -68,45 +56,30 @@ export default async function RedraftRankingsPage() {
             </p>
           </div>
         ) : (
-          <>
-            <div className="rankings-table-wrap">
-              <table className="rankings-table">
-                <thead>
-                  <tr>
-                    <th>Rank</th>
-                    <th>Player</th>
-                    <th>Pos</th>
-                    <th>Team</th>
-                    <th>Notes</th>
+          <div className="rankings-table-wrap">
+            <table className="rankings-table">
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Player</th>
+                  <th>Pos</th>
+                  <th>Team</th>
+                  <th>Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rankings.map((row) => (
+                  <tr key={row.rank}>
+                    <td className="mono">{row.rank}</td>
+                    <td>{row.player_name}</td>
+                    <td className="mono">{row.position}</td>
+                    <td className="mono">{row.team || "—"}</td>
+                    <td className="tool-notes">{row.notes || ""}</td>
                   </tr>
-                </thead>
-                <tbody>
-                  {rankings.map((row) => (
-                    <tr key={row.rank}>
-                      <td className="mono">{row.rank}</td>
-                      <td>{row.player_name}</td>
-                      <td className="mono">{row.position}</td>
-                      <td className="mono">{row.team || "—"}</td>
-                      <td className="tool-notes">{row.notes || ""}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {isTeaser && (
-              <div className="tool-paywall reveal in">
-                <p>
-                  You&apos;re seeing the top {TEASER_LIMIT} of {totalCount}{" "}
-                  ranked players. Unlock the full board with Explorer or
-                  Singularity.
-                </p>
-                <Link href="/#pricing" className="btn-primary">
-                  See Pricing
-                </Link>
-              </div>
-            )}
-          </>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </main>
       <InteractiveScript />

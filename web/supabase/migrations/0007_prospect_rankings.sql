@@ -1,8 +1,8 @@
 -- WR/QB prospect rankings & comparisons. Scoped by draft_class (the NFL
 -- draft year the class belongs to) rather than season/week — shows
 -- whichever draft_class has the most recent rows, split by position.
--- This is a Stargazer (free-tier) feature per the pricing copy, so unlike
--- the other /tools/* pages it is NOT tier-gated on the page side.
+-- Singularity-only per the pricing copy (teaser: top 5 per position for
+-- everyone else) — gating happens in /tools/prospect-rankings/page.js.
 create table public.prospect_rankings (
   id uuid primary key default gen_random_uuid(),
   draft_class integer not null default extract(year from now())::integer,

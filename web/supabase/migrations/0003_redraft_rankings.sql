@@ -14,10 +14,8 @@ create table public.redraft_rankings (
 
 alter table public.redraft_rankings enable row level security;
 
--- Public read is safe here: the /tools/redraft-rankings page itself decides
--- server-side how many rows a given visitor's tier is allowed to see and
--- only ever fetches that many, so a free visitor's page never receives the
--- full paid dataset over the wire in the first place.
+-- Free for everyone (Stargazer tier and up) per the pricing copy — the
+-- /tools/redraft-rankings page applies no tier gating at all.
 create policy "Anyone can read redraft rankings"
   on public.redraft_rankings for select
   using (true);

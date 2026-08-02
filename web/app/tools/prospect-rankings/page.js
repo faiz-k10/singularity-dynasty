@@ -7,10 +7,31 @@ export const metadata = {
   title: "WR/QB Prospect Rankings — Singularity Dynasty",
 };
 
-// Included free in Stargazer per the pricing copy — no tier gating here,
-// unlike the other /tools/* pages.
+const TEASER_LIMIT_PER_POSITION = 5;
+// Singularity-only per the pricing copy.
+const PAID_TIERS = ["singularity"];
+
+async function fetchPosition(supabase, draftClass, position, hasFullAccess) {
+  let query = supabase
+    .from("prospect_rankings")
+    .select("rank, player_name, position, school, comp, notes", {
+      count: "exact",
+    })
+    .eq("draft_class", draftClass)
+    .eq("position", position)
+    .order("rank", { ascending: true });
+
+  if (!hasFullAccess) {
+    query = query.limit(TEASER_LIMIT_PER_POSITION);
+  }
+
+  const { data, count } = await query;
+  return { rows: data || [], total: count || 0 };
+}
+
 export default async function ProspectRankingsPage() {
-  const { supabase } = await getUserTier();
+  const { supabase, tier } = await getUserTier();
+  const hasFullAccess = PAID_TIERS.includes(tier);
 
   const { data: latest } = await supabase
     .from("prospect_rankings")
@@ -19,19 +40,19 @@ export default async function ProspectRankingsPage() {
     .limit(1)
     .maybeSingle();
 
-  let prospects = [];
+  let wrs = { rows: [], total: 0 };
+  let qbs = { rows: [], total: 0 };
+
   if (latest) {
-    const { data } = await supabase
-      .from("prospect_rankings")
-      .select("rank, player_name, position, school, comp, notes")
-      .eq("draft_class", latest.draft_class)
-      .order("position", { ascending: true })
-      .order("rank", { ascending: true });
-    prospects = data || [];
+    [wrs, qbs] = await Promise.all([
+      fetchPosition(supabase, latest.draft_class, "WR", hasFullAccess),
+      fetchPosition(supabase, latest.draft_class, "QB", hasFullAccess),
+    ]);
   }
 
-  const wrs = prospects.filter((p) => p.position === "WR");
-  const qbs = prospects.filter((p) => p.position === "QB");
+  const totalRows = wrs.rows.length + qbs.rows.length;
+  const totalCount = wrs.total + qbs.total;
+  const isTeaser = !hasFullAccess && totalCount > totalRows;
 
   const renderGroup = (label, rows) =>
     rows.length > 0 && (
@@ -77,17 +98,30 @@ export default async function ProspectRankingsPage() {
         <p className="tool-sub">
           Incoming rookie rankings for wide receivers and quarterbacks, with
           statistical comps against past prospects using athletic and
-          production percentiles. Free for every Stargazer.
+          production percentiles.
         </p>
 
-        {prospects.length === 0 ? (
+        {totalRows === 0 ? (
           <div className="tool-empty">
             <p>Prospect boards publish ahead of the draft — check back soon.</p>
           </div>
         ) : (
           <>
-            {renderGroup("Wide Receivers", wrs)}
-            {renderGroup("Quarterbacks", qbs)}
+            {renderGroup("Wide Receivers", wrs.rows)}
+            {renderGroup("Quarterbacks", qbs.rows)}
+
+            {isTeaser && (
+              <div className="tool-paywall reveal in">
+                <p>
+                  You&apos;re seeing the top {TEASER_LIMIT_PER_POSITION} at
+                  each position ({totalRows} of {totalCount} prospects).
+                  Unlock the full boards with Singularity.
+                </p>
+                <Link href="/#pricing" className="btn-primary">
+                  See Pricing
+                </Link>
+              </div>
+            )}
           </>
         )}
       </main>
