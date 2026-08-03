@@ -10,6 +10,10 @@ export const metadata = {
 const TEASER_LIMIT = 10;
 const PAID_TIERS = ["explorer", "singularity"];
 
+function formatScore(value) {
+  return value === null || value === undefined ? "—" : Number(value).toFixed(1);
+}
+
 export default async function BestBallRankingsPage() {
   const { supabase, tier } = await getUserTier();
   const hasFullAccess = PAID_TIERS.includes(tier);
@@ -28,7 +32,10 @@ export default async function BestBallRankingsPage() {
   if (latest) {
     let query = supabase
       .from("best_ball_rankings")
-      .select("rank, player_name, position, team, notes", { count: "exact" })
+      .select(
+        "rank, player_name, position, team, ceiling_score, playoff_ceiling_score, notes",
+        { count: "exact" }
+      )
       .eq("season", latest.season)
       .eq("week", latest.week)
       .order("rank", { ascending: true });
@@ -76,6 +83,8 @@ export default async function BestBallRankingsPage() {
                     <th>Player</th>
                     <th>Pos</th>
                     <th>Team</th>
+                    <th>This Week</th>
+                    <th>Playoffs (Wk 15-17)</th>
                     <th>Notes</th>
                   </tr>
                 </thead>
@@ -86,6 +95,8 @@ export default async function BestBallRankingsPage() {
                       <td>{row.player_name}</td>
                       <td className="mono">{row.position}</td>
                       <td className="mono">{row.team || "—"}</td>
+                      <td className="mono">{formatScore(row.ceiling_score)}</td>
+                      <td className="mono">{formatScore(row.playoff_ceiling_score)}</td>
                       <td className="tool-notes">{row.notes || ""}</td>
                     </tr>
                   ))}

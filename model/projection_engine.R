@@ -49,7 +49,7 @@ load_history <- function(seasons = 2023:2025) {
   stats <- load_player_stats(seasons = seasons)
   reg <- stats[stats$season_type == "REG",
                c("player_display_name", "position", "season", "week",
-                 "fantasy_points_ppr", "carries", "targets")]
+                 "fantasy_points_ppr", "carries", "targets", "team")]
   reg <- reg[reg$position %in% c("QB", "RB", "WR", "TE"), ]
   reg <- reg[!is.na(reg$fantasy_points_ppr), ]
   reg <- reg[!(reg$week %in% EXCLUDE_WEEKS), ]
@@ -123,6 +123,57 @@ player_availability <- function(player_games_df) {
   min(sum(a_by_yr * yw), 1)
 }
 
+# ============================= SHRINKAGE TRIGGERS =============================
+#
+# Two independent triggers, only one needs your manual input:
+#
+# 1. TEAM CHANGE — fully automatic, zero manual input. Compares each
+#    player's most recent team in their game log against their current
+#    (offseason) team from load_players()$latest_team.
+#
+# 2. TEAM-LEVEL OC/HC CHANGE — manual, via context_flags.csv in this
+#    directory. One row per team per season. Set context_changed to TRUE
+#    for any team whose offensive coordinator or head coach changed since
+#    last season (fill in `reason` for your own reference — not used by
+#    the code). Refresh this once per offseason, ~32 rows, by hand — this
+#    is the "your input" the model needs. Nothing else about shrinkage
+#    requires manual entry.
+#
+# A player is shrink-eligible if EITHER trigger fires for their (team,
+# season). Severity is not tiered — both triggers use the same
+# SHRINK_OWN_SHARE, per product decision (see README).
+
+detect_team_changes <- function(reg, eligible_players) {
+  latest <- load_players()[, c("display_name", "position", "latest_team")]
+  changed <- character(0)
+  for (p in eligible_players) {
+    d <- reg[reg$player_display_name == p, ]
+    d <- d[order(d$season, d$week), ]
+    last_known_team <- tail(d$team, 1)
+    pos <- d$position[1]
+    cur <- latest$latest_team[latest$display_name == p & latest$position == pos]
+    if (length(cur) == 1 && !is.na(cur) && !is.na(last_known_team) && cur != last_known_team) {
+      changed <- c(changed, p)
+    }
+  }
+  changed
+}
+
+load_context_flags <- function(path = "context_flags.csv") {
+  if (!file.exists(path)) return(NULL)
+  flags <- read.csv(path, stringsAsFactors = FALSE)
+  flags[flags$context_changed %in% c(TRUE, "TRUE", "true", "1"), c("team", "season")]
+}
+
+# Which teams are flagged for the season being projected (uses the most
+# recent season in the loaded history + 1, i.e. the upcoming season).
+flagged_teams_for_projection <- function(reg, flags_path = "context_flags.csv") {
+  flags <- load_context_flags(flags_path)
+  if (is.null(flags) || nrow(flags) == 0) return(character(0))
+  proj_season <- max(reg$season) + 1
+  flags$team[flags$season == proj_season]
+}
+
 # ============================= PROJECTION =============================
 
 # Produces one row per eligible player: weekly floor/median/ceiling (for
@@ -130,11 +181,31 @@ player_availability <- function(player_games_df) {
 # Season Simulations), and a weeks-15-17 playoff ceiling (for Best Ball's
 # second column). No shrinkage applied here — shrink_project() below is the
 # entry point once a context-flag table exists.
-project_all <- function(seasons = 2023:2025, n_sims = 30000, seed = 42) {
+project_all <- function(seasons = 2023:2025, n_sims = 30000, seed = 42,
+                         flags_path = "context_flags.csv", apply_shrinkage = TRUE) {
   set.seed(seed)
   reg <- load_history(seasons)
   counts <- table(reg$player_display_name)
   eligible <- names(counts[counts >= MIN_GAMES])
+
+  shrink_players <- character(0)
+  baseline_rb <- NULL
+  if (apply_shrinkage) {
+    team_changed <- detect_team_changes(reg, eligible)
+    flagged_teams <- flagged_teams_for_projection(reg, flags_path)
+    latest <- load_players()[, c("display_name", "position", "latest_team")]
+    team_ctx <- eligible[sapply(eligible, function(p) {
+      pos <- reg$position[reg$player_display_name == p][1]
+      cur <- latest$latest_team[latest$display_name == p & latest$position == pos]
+      length(cur) == 1 && !is.na(cur) && cur %in% flagged_teams
+    })]
+    shrink_players <- union(team_changed, team_ctx)
+    if (length(shrink_players) > 0) {
+      baseline_rb <- build_rb_common_pool(reg, eligible)
+    }
+    cat("Shrink-eligible players this run:", length(shrink_players), "\n")
+    if (length(shrink_players) > 0) cat(" -", paste(shrink_players, collapse = ", "), "\n")
+  }
 
   rows <- vector("list", length(eligible))
   names(rows) <- eligible
@@ -155,13 +226,25 @@ project_all <- function(seasons = 2023:2025, n_sims = 30000, seed = 42) {
     })
     playoff <- replicate(n_sims, sum(sample(x, 3, replace = TRUE, prob = wc)))
 
+    shrink_this_player <- p %in% shrink_players && pos == "RB" && !is.null(baseline_rb)
+    if (shrink_this_player) {
+      fl  <- shrunk_quantile(x, wm, baseline_rb$pool, baseline_rb$weights, FLOOR_Q[pos])
+      med <- shrunk_quantile(x, wm, baseline_rb$pool, baseline_rb$weights, 0.50)
+      cei <- shrunk_quantile(x, wc, baseline_rb$pool, baseline_rb$weights, CEIL_Q[pos])
+    } else {
+      fl  <- weighted_quantile(x, wm, FLOOR_Q[pos])
+      med <- weighted_quantile(x, wm, 0.50)
+      cei <- weighted_quantile(x, wc, CEIL_Q[pos])
+    }
+
     rows[[p]] <- data.frame(
       player_name = p, position = pos, games = n,
       touches_per_game = round(mean(d$touches), 1),
       availability_pct = round(100 * avail, 0),
-      floor = round(weighted_quantile(x, wm, FLOOR_Q[pos]), 1),
-      median = round(weighted_quantile(x, wm, 0.50), 1),
-      ceiling = round(weighted_quantile(x, wc, CEIL_Q[pos]), 1),
+      shrunk = shrink_this_player,
+      floor = round(fl, 1),
+      median = round(med, 1),
+      ceiling = round(cei, 1),
       season_median = round(quantile(szn, 0.50), 0),
       playoff_ceiling = round(quantile(playoff, CEIL_Q[pos]), 1)
     )

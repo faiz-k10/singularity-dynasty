@@ -250,9 +250,9 @@
       <div>
         <div class="codeblock-label">
           <span>CSV header row</span>
-          <button class="copy-btn" data-copy="season,week,rank,player_name,position,team,notes">Copy</button>
+          <button class="copy-btn" data-copy="season,week,rank,player_name,position,team,ceiling_score,playoff_ceiling_score,notes">Copy</button>
         </div>
-        <div class="codeblock"><code>season,week,rank,player_name,position,team,notes</code></div>
+        <div class="codeblock"><code>season,week,rank,player_name,position,team,ceiling_score,playoff_ceiling_score,notes</code></div>
       </div>
 
       <table class="spec-table">
@@ -264,14 +264,16 @@
           <tr><td class="col-name">player_name</td><td><span class="req yes">required</span></td><td class="col-note">Full name</td></tr>
           <tr><td class="col-name">position</td><td><span class="req yes">required</span></td><td class="col-note">QB / RB / WR / TE</td></tr>
           <tr><td class="col-name">team</td><td><span class="req no">optional</span></td><td class="col-note">3-letter code</td></tr>
+          <tr><td class="col-name">ceiling_score</td><td><span class="req no">optional</span></td><td class="col-note">This week's ceiling-weighted projection, numeric (e.g. 24.6). Shown in its own column</td></tr>
+          <tr><td class="col-name">playoff_ceiling_score</td><td><span class="req no">optional</span></td><td class="col-note">Combined ceiling projection for fantasy playoff weeks 15-17, numeric (e.g. 78.3). Recompute and republish weekly along with ceiling_score — it isn't a running total, it's a fresh 3-week-ahead projection each time</td></tr>
           <tr><td class="col-name">notes</td><td><span class="req no">optional</span></td><td class="col-note">Short blurb</td></tr>
         </tbody>
       </table>
 
       <div class="example-wrap">
         <table class="example-table">
-          <thead><tr><th>season</th><th>week</th><th>rank</th><th>player_name</th><th>position</th><th>team</th><th>notes</th></tr></thead>
-          <tbody><tr><td>2026</td><td>1</td><td>1</td><td>Ja'Marr Chase</td><td>WR</td><td>CIN</td><td>Highest weekly ceiling in the field.</td></tr></tbody>
+          <thead><tr><th>season</th><th>week</th><th>rank</th><th>player_name</th><th>position</th><th>team</th><th>ceiling_score</th><th>playoff_ceiling_score</th><th>notes</th></tr></thead>
+          <tbody><tr><td>2026</td><td>1</td><td>1</td><td>Ja'Marr Chase</td><td>WR</td><td>CIN</td><td>24.6</td><td>78.3</td><td>Highest weekly ceiling in the field.</td></tr></tbody>
         </table>
       </div>
 
