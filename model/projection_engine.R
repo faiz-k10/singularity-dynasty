@@ -42,8 +42,9 @@ LOW_SAMPLE_SHRINK_THRESHOLD <- 20  # players with MIN_GAMES <= n < this get the 
                                     # (see below) -- no tiered baseline pool exists yet
                                     # for QB/WR/TE, so low-sample players there are
                                     # flagged but not actually shrunk.
-BELLCOW_TPG_CUTOFF_PCTILE <- 0.85  # RB workload percentile above which a player is
-                                    # excluded from the "common tier" shrinkage baseline
+HIGH_USAGE_CUTOFF_PCTILE <- 0.85  # workload percentile (per position) above which a
+                                   # player is excluded from the "common tier"
+                                   # shrinkage baseline -- applies to all 4 positions
 
 # Week 18 is deliberately excluded from all history: it shows the same ~8%
 # scoring depression as week 1 (rested starters / backups), which was
@@ -57,13 +58,17 @@ load_history <- function(seasons = 2023:2025) {
   stats <- load_player_stats(seasons = seasons)
   reg <- stats[stats$season_type == "REG",
                c("player_display_name", "position", "season", "week",
-                 "fantasy_points_ppr", "carries", "targets", "team")]
+                 "fantasy_points_ppr", "carries", "targets", "attempts", "team")]
   reg <- reg[reg$position %in% c("QB", "RB", "WR", "TE"), ]
   reg <- reg[!is.na(reg$fantasy_points_ppr), ]
   reg <- reg[!(reg$week %in% EXCLUDE_WEEKS), ]
   reg$carries[is.na(reg$carries)] <- 0
   reg$targets[is.na(reg$targets)] <- 0
+  reg$attempts[is.na(reg$attempts)] <- 0
   reg$touches <- reg$carries + reg$targets
+  # Usage metric per position, for tiered shrinkage baseline pools: RB uses
+  # touches (carries+targets), WR/TE use targets, QB uses pass attempts.
+  reg$usage <- ifelse(reg$position == "QB", reg$attempts, reg$touches)
   reg[order(reg$player_display_name, reg$season, reg$week), ]
 }
 
@@ -103,18 +108,23 @@ shrunk_quantile <- function(own_x, own_w, baseline_x, baseline_w, q, own_share =
   own_share * own_q + (1 - own_share) * base_q
 }
 
-# Objective RB workload tiering: excludes rare "bellcow" RBs (top ~15% by
-# touches/game) from the baseline pool that other RBs shrink toward, so a
-# limited-role back doesn't get pulled toward a McCaffrey/Bijan-level
-# baseline. Preserves the pool's own right tail (a common-tier back can
-# still simulate a big game) — only the center moves down.
-build_rb_common_pool <- function(reg, eligible_players) {
-  rb_players <- eligible_players[sapply(eligible_players, function(p)
-    reg$position[reg$player_display_name == p][1] == "RB")]
-  tpg <- sapply(rb_players, function(p) mean(reg$touches[reg$player_display_name == p]))
-  cutoff <- as.numeric(quantile(tpg, BELLCOW_TPG_CUTOFF_PCTILE))
-  common_rbs <- rb_players[tpg < cutoff]
-  pool <- reg$fantasy_points_ppr[reg$position == "RB" & reg$player_display_name %in% common_rbs]
+# Objective workload tiering, generalized across all four positions:
+# excludes the rare top-usage players (top ~15% by the position's usage
+# metric — touches/game for RB/WR/TE, pass attempts/game for QB) from the
+# baseline pool that other players at that position shrink toward, so a
+# limited-role player doesn't get pulled toward a workhorse-level baseline.
+# Preserves the pool's own right tail (a common-tier player can still
+# simulate a big game) — only the center moves down. Originally built and
+# validated for RB only (see README "RB tiering" section); the RB-specific
+# validation doesn't automatically carry over to QB/WR/TE, which use the
+# same mechanism but haven't been individually stress-tested the way RB was.
+build_common_pool <- function(reg, eligible_players, position) {
+  pos_players <- eligible_players[sapply(eligible_players, function(p)
+    reg$position[reg$player_display_name == p][1] == position)]
+  upg <- sapply(pos_players, function(p) mean(reg$usage[reg$player_display_name == p]))
+  cutoff <- as.numeric(quantile(upg, HIGH_USAGE_CUTOFF_PCTILE))
+  common_players <- pos_players[upg < cutoff]
+  pool <- reg$fantasy_points_ppr[reg$position == position & reg$player_display_name %in% common_players]
   list(pool = pool, weights = rep(1 / length(pool), length(pool)), cutoff = cutoff)
 }
 
@@ -133,26 +143,41 @@ player_availability <- function(player_games_df) {
 
 # ============================= SHRINKAGE TRIGGERS =============================
 #
-# Two independent triggers, only one needs your manual input:
+# Three triggers, all using the same SHRINK_OWN_SHARE blend (severity is
+# deliberately uniform — see README):
 #
 # 1. TEAM CHANGE — fully automatic, zero manual input. Compares each
 #    player's most recent team in their game log against their current
 #    (offseason) team from load_players()$latest_team.
 #
-# 2. TEAM-LEVEL OC/HC CHANGE — manual, via context_flags.csv in this
-#    directory. One row per team per season. Set context_changed to TRUE
-#    for any team whose offensive coordinator or head coach changed since
-#    last season (fill in `reason` for your own reference — not used by
-#    the code). Refresh this once per offseason, ~32 rows, by hand — this
-#    is the "your input" the model needs. Nothing else about shrinkage
-#    requires manual entry.
+# 2. LOW SAMPLE SIZE — fully automatic. Any eligible player with fewer than
+#    LOW_SAMPLE_SHRINK_THRESHOLD games gets shrunk regardless of why. A
+#    manual per-team OC/HC-change flag (context_flags.csv) used to be a
+#    third trigger here; it was removed as unnecessary upkeep once this
+#    threshold-based trigger turned out to catch the cases that mattered
+#    (e.g. RJ Harvey) on its own.
 #
-# A player is shrink-eligible if EITHER trigger fires for their (team,
-# season). Severity is not tiered — both triggers use the same
-# SHRINK_OWN_SHARE, per product decision (see README).
+# 3. PLAYER-LEVEL MANUAL FLAG — via player_flags.csv in this directory. For
+#    situations neither of the above catches — most commonly, an
+#    established player (well above the low-sample threshold) whose recent
+#    volume was driven by a circumstance that's since reversed (a returning
+#    teammate, a resolved injury) but who isn't a fresh team change either.
+#    One row per player per season, added by hand as you notice a case like
+#    this — the current (offseason) depth-chart situation isn't something
+#    historical box scores can tell you.
+#
+# A player is shrink-eligible if ANY trigger fires.
+
+# load_player_stats()$team and load_players()$latest_team disagree on
+# exactly one code -- Arizona is "ARI" in one and "AZ" in the other (found
+# via a false-positive team-change flag on Trey McBride, who never left
+# Arizona; verified no other team code differs between the two sources).
+# Without this, that one mismatch alone falsely flags every Arizona player.
+normalize_team <- function(team) ifelse(team == "AZ", "ARI", team)
 
 detect_team_changes <- function(reg, eligible_players) {
   latest <- load_players()[, c("display_name", "position", "latest_team")]
+  latest$latest_team <- normalize_team(latest$latest_team)
   changed <- character(0)
   for (p in eligible_players) {
     d <- reg[reg$player_display_name == p, ]
@@ -167,34 +192,6 @@ detect_team_changes <- function(reg, eligible_players) {
   changed
 }
 
-load_context_flags <- function(path = "context_flags.csv") {
-  if (!file.exists(path)) return(NULL)
-  flags <- read.csv(path, stringsAsFactors = FALSE)
-  flags[flags$context_changed %in% c(TRUE, "TRUE", "true", "1"), c("team", "season")]
-}
-
-# Which teams are flagged for the season being projected (uses the most
-# recent season in the loaded history + 1, i.e. the upcoming season).
-flagged_teams_for_projection <- function(reg, flags_path = "context_flags.csv") {
-  flags <- load_context_flags(flags_path)
-  if (is.null(flags) || nrow(flags) == 0) return(character(0))
-  proj_season <- max(reg$season) + 1
-  flags$team[flags$season == proj_season]
-}
-
-# 3RD SHRINK TRIGGER — player-level, manual, via player_flags.csv.
-#
-# Team change and team-level OC/HC change (above) both cover "this player's
-# situation changed." This one covers the opposite case: a player's RECENT
-# games look strong, but that recent stretch was driven by a circumstance
-# that's reversing — most commonly, a returning teammate who will compete
-# for the same touches again (e.g. RJ Harvey's 2025 volume was driven by
-# J.K. Dobbins' injury; Dobbins is healthy for 2026, so Harvey's
-# recency-weighted numbers overstate what his role will actually look like).
-#
-# This can't be auto-detected — it requires knowing the *current* (offseason)
-# roster/depth-chart situation, which isn't in historical box scores. One
-# row per player per season, added by hand as you notice cases like this.
 flagged_players_for_projection <- function(reg, flags_path = "player_flags.csv") {
   if (!file.exists(flags_path)) return(character(0))
   flags <- read.csv(flags_path, stringsAsFactors = FALSE)
@@ -211,7 +208,6 @@ flagged_players_for_projection <- function(reg, flags_path = "player_flags.csv")
 # second column). No shrinkage applied here — shrink_project() below is the
 # entry point once a context-flag table exists.
 project_all <- function(seasons = 2023:2025, n_sims = 30000, seed = 42,
-                         flags_path = "context_flags.csv",
                          player_flags_path = "player_flags.csv",
                          apply_shrinkage = TRUE) {
   set.seed(seed)
@@ -220,21 +216,18 @@ project_all <- function(seasons = 2023:2025, n_sims = 30000, seed = 42,
   eligible <- names(counts[counts >= MIN_GAMES])
 
   shrink_players <- character(0)
-  baseline_rb <- NULL
+  baseline_pools <- list()
   if (apply_shrinkage) {
     team_changed <- detect_team_changes(reg, eligible)
-    flagged_teams <- flagged_teams_for_projection(reg, flags_path)
-    latest <- load_players()[, c("display_name", "position", "latest_team")]
-    team_ctx <- eligible[sapply(eligible, function(p) {
-      pos <- reg$position[reg$player_display_name == p][1]
-      cur <- latest$latest_team[latest$display_name == p & latest$position == pos]
-      length(cur) == 1 && !is.na(cur) && cur %in% flagged_teams
-    })]
     player_ctx <- intersect(eligible, flagged_players_for_projection(reg, player_flags_path))
     low_sample <- names(counts[counts >= MIN_GAMES & counts < LOW_SAMPLE_SHRINK_THRESHOLD])
-    shrink_players <- union(union(union(team_changed, team_ctx), player_ctx), low_sample)
+    shrink_players <- union(union(team_changed, player_ctx), low_sample)
     if (length(shrink_players) > 0) {
-      baseline_rb <- build_rb_common_pool(reg, eligible)
+      shrink_positions <- unique(sapply(shrink_players, function(p)
+        reg$position[reg$player_display_name == p][1]))
+      for (pos in shrink_positions) {
+        baseline_pools[[pos]] <- build_common_pool(reg, eligible, pos)
+      }
     }
     cat("Shrink-eligible players this run:", length(shrink_players), "\n")
     if (length(shrink_players) > 0) cat(" -", paste(shrink_players, collapse = ", "), "\n")
@@ -259,11 +252,12 @@ project_all <- function(seasons = 2023:2025, n_sims = 30000, seed = 42,
     })
     playoff <- replicate(n_sims, sum(sample(x, 3, replace = TRUE, prob = wc)))
 
-    shrink_this_player <- p %in% shrink_players && pos == "RB" && !is.null(baseline_rb)
+    shrink_this_player <- p %in% shrink_players && !is.null(baseline_pools[[pos]])
     if (shrink_this_player) {
-      fl  <- shrunk_quantile(x, wm, baseline_rb$pool, baseline_rb$weights, FLOOR_Q[pos])
-      med <- shrunk_quantile(x, wm, baseline_rb$pool, baseline_rb$weights, 0.50)
-      cei <- shrunk_quantile(x, wc, baseline_rb$pool, baseline_rb$weights, CEIL_Q[pos])
+      base <- baseline_pools[[pos]]
+      fl  <- shrunk_quantile(x, wm, base$pool, base$weights, FLOOR_Q[pos])
+      med <- shrunk_quantile(x, wm, base$pool, base$weights, 0.50)
+      cei <- shrunk_quantile(x, wc, base$pool, base$weights, CEIL_Q[pos])
     } else {
       fl  <- weighted_quantile(x, wm, FLOOR_Q[pos])
       med <- weighted_quantile(x, wm, 0.50)
@@ -298,7 +292,11 @@ if (sys.nframe() == 0) {
   write.csv(df, "projections.csv", row.names = FALSE)
   cat("Wrote projections.csv (", nrow(df), "rows ) to", getwd(), "\n\n")
 
-  rb <- df[df$position == "RB", ]
-  cat("=== Redraft RB 1-15 (by weekly median) — console preview only ===\n")
-  print(head(rb[order(-rb$median), ], 15), row.names = FALSE)
+  cat("=== Top 5 by weekly median, every position — full results are all in projections.csv ===\n")
+  for (pos in c("QB", "RB", "WR", "TE")) {
+    sub <- df[df$position == pos, ]
+    cat("\n--", pos, "--\n")
+    print(head(sub[order(-sub$median), c("player_name","games","median","ceiling","shrunk")], 5),
+          row.names = FALSE)
+  }
 }

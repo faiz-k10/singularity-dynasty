@@ -139,15 +139,20 @@ independent (real injuries cluster into multi-week absences, so this
 somewhat understates season-total variance). Fine for the durable/injured
 split among clear starters; noisier further down the depth chart.
 
-## RB tiering for shrinkage (RB only, not yet built for WR/QB/TE)
+## Workload tiering for shrinkage (all 4 positions)
 
-The pool a shrunk player's projection blends toward excludes "bellcow" RBs
-(top 15% by touches/game — objectively defined, not a named list) so a
-limited-role back doesn't regress toward a McCaffrey/Bijan-level baseline.
-The common-tier pool's median is meaningfully lower than the full pool's
-(6.8 vs 8.5 PPG) while its right tail is barely touched (max 51.3 vs 55.4) —
-a common-tier back can still simulate a big game, they just don't regress
-toward "bellcow-typical" production by default.
+The pool a shrunk player's projection blends toward excludes the top ~15%
+by usage at their position — touches/game (carries+targets) for RB/WR/TE,
+pass attempts/game for QB — so a limited-role player doesn't regress toward
+a workhorse-level baseline. `build_common_pool()` is position-generic; the
+underlying mechanism was originally built and validated for RB only (a
+common-tier RB pool's median came out meaningfully lower than the full
+pool's — 6.8 vs 8.5 PPG — while its right tail barely moved, 51.3 vs 55.4,
+which is exactly the intended shape: a common-tier player can still
+simulate a big game, they just don't regress toward workhorse-typical
+production by default). Extended to QB/WR/TE afterward using the same
+mechanism and cutoff percentile — that extension has **not** been
+individually stress-tested against real players the way RB was.
 
 ## Shrinkage mechanism — a real bug found and fixed
 
@@ -170,48 +175,47 @@ side's quantile **separately** and blending the two numbers
 (`shrunk_quantile()` in the engine) — guaranteed to land between the two
 inputs, no exceptions.
 
-**Four triggers, all wired up, all using the same 80/20 blend:**
+**Three triggers, all wired up, all using the same 80/20 blend, all
+applying to every position:**
 
 1. **Team change** — fully automatic. Compares each player's most recent
    team in their game log against their current (offseason) team via
    `load_players()`. Zero manual input.
-2. **Team-level OC/HC change** — manual, via `context_flags.csv` (32 rows,
-   one per team, refreshed once per offseason — `context_changed = TRUE`
-   for any team with a new OC or HC). The one recurring manual input this
-   engine actually needs.
-3. **Player-level manual flag** — `player_flags.csv`, one row per
-   player/season/reason. For situations neither of the above catches —
-   e.g. a player's recent volume was driven by a now-resolved circumstance
-   (a returning teammate, an injury that's since healed). Built and wired,
-   but currently empty/unused: the concrete case that motivated it (RJ
-   Harvey's 2025 volume being driven by J.K. Dobbins' injury, with Dobbins
-   healthy for 2026) ended up handled by trigger 4 instead, once the
-   eligibility floor dropped to 8 and pulled Harvey under the low-sample
-   line anyway. Still worth using for cases the sample-size trigger
-   *doesn't* catch — e.g. an established veteran (25+ games) whose role
-   just changed for a reason unrelated to team/OC.
-4. **Low sample size** — automatic. Any player with fewer than
+2. **Low sample size** — automatic. Any player with fewer than
    `LOW_SAMPLE_SHRINK_THRESHOLD = 20` games gets shrunk, regardless of why.
-   This was the resolution to a real back-and-forth: the original plan was
-   a manual per-player flag for cases like RJ Harvey (see trigger 3), but
-   games-played turned out to be a cheap, general-purpose proxy for exactly
-   the kind of role uncertainty that motivated the manual-flag idea in the
-   first place — most "this player's recent role may not be real" cases
-   also happen to be low-sample cases. It's blunter (doesn't know *why*
-   a player is at 16 games, just that they are) but requires zero ongoing
-   manual judgment.
+   This is what actually resolved the RJ Harvey case (his 2025 volume was
+   driven by J.K. Dobbins' injury; Dobbins is healthy for 2026) — games-
+   played turned out to be a cheap, general-purpose proxy for exactly the
+   kind of role uncertainty a manual flag would otherwise be needed for.
+   Blunter than a manual flag (doesn't know *why* a player is at 16 games,
+   just that they are) but requires zero ongoing judgment.
+3. **Player-level manual flag** — `player_flags.csv`, one row per
+   player/season/reason. For the case trigger 2 *doesn't* catch: an
+   established player (25+ games, well above the low-sample line) whose
+   role changed for a reason the model has no other way to see. Built,
+   wired, currently empty — no case has needed it yet, but the mechanism
+   is ready.
 
-**Severity is uniform across all four triggers, deliberately** — the user's
+**A fourth trigger — a manually maintained per-team OC/HC-change flag
+(`context_flags.csv`, ~32 rows refreshed once per offseason) — existed
+earlier this session and was removed.** It was the only trigger requiring
+recurring manual upkeep, and turned out to be unnecessary: every real case
+it was meant to catch ended up covered by trigger 2 once the eligibility
+floor dropped to 8 games. Removed rather than left as unused surface area.
+
+**Severity is uniform across all triggers, deliberately** — the user's
 call: the real distinguishing factor is "does this player have an
 established personal track record at all," not the specific reason for the
-flag, so all four use the same `SHRINK_OWN_SHARE = 0.80` rather than
+flag, so every trigger uses the same `SHRINK_OWN_SHARE = 0.80` rather than
 different blend strengths per trigger type.
 
-**Scope limitation, real and current:** all four triggers only actually
-shrink RB players in practice (`build_rb_common_pool()` is RB-only — see
-next section). A WR/QB/TE player can be flagged by any trigger and still
-show `shrunk = FALSE` in the output, because there's no tiered baseline pool
-for those positions to blend toward yet.
+**A real bug found while extending this to all positions:**
+`load_player_stats()$team` and `load_players()$latest_team` disagree on
+exactly one team code — Arizona is `"ARI"` in one and `"AZ"` in the other
+(confirmed the only mismatch across all 32 teams). Before normalizing this
+in `detect_team_changes()`, every Arizona player was being falsely flagged
+as a team change — caught via Trey McBride showing `shrunk = TRUE` despite
+47 games and no real team change. `normalize_team()` fixes it.
 
 ## Deferred — explicitly out of scope for now
 
@@ -219,24 +223,18 @@ for those positions to blend toward yet.
   rankings). The live `/tools/redraft-rankings` page copy says
   "matchup-adjusted" — nothing in this engine does that yet. Real gap
   between current copy and current capability until this is built.
-- **WR/QB/TE tiering** for shrinkage baselines. Only RB has the
-  bellcow-exclusion treatment; the other three positions' baseline pools are
-  untiered (all eligible players pooled together), and as a direct
-  consequence, low-sample WR/QB/TE players are flagged shrink-eligible by
-  trigger 4 above but don't actually get shrunk — `shrunk_quantile()` has
-  nothing to blend them toward yet.
 - **Role-stability / touch-volume signal — partially, not fully,
   mitigated.** The model still has no direct concept of "does this player
   currently hold the role that produced their historical games." The
   under-20-games shrink trigger catches this indirectly for genuinely
   low-sample players (which is why it resolved the RJ Harvey case), but it's
   a proxy, not a fix: an established veteran (25+ games) whose role changes
-  for a reason unrelated to a team/OC switch — a new free-agent signing at
+  for a reason unrelated to a team switch — a new free-agent signing at
   their position, a rookie draft pick expected to cut into touches — isn't
-  covered by any of the four triggers and would need a manual
-  `player_flags.csv` entry (trigger 3) to catch. A real touches/game or
-  snap-share signal feeding directly into the ranking, rather than relying
-  on games-played as a stand-in for role uncertainty, is still the more
+  covered by the team-change or low-sample triggers and would need a manual
+  `player_flags.csv` entry to catch. A real touches/game or snap-share
+  signal feeding directly into the ranking, rather than relying on
+  games-played as a stand-in for role uncertainty, is still the more
   correct long-term fix.
 
 ## Output → schema mapping
