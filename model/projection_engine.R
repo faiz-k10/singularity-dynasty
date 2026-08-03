@@ -19,21 +19,29 @@ suppressMessages(library(nflreadr))
 # tested out-of-sample against the 2023-2025 projection window. See README.md
 # for the backtest methodology and sample sizes per position.
 
-MIN_GAMES <- 15   # eligibility floor. Below this a player isn't covered yet
-                  # (deferred: rookies/low-sample players need the shrinkage
-                  # path wired to a real trigger — see "Deferred" in README)
+MIN_GAMES <- 8    # eligibility floor. Every player below LOW_SAMPLE_SHRINK_THRESHOLD
+                  # (20) gets the 80/20 blend automatically, so low-sample players
+                  # are covered but not fully trusted on their own history alone.
 
 MED_DECAY   <- c(RB = 0.87, QB = 0.90, WR = 0.89, TE = 0.92)  # Redraft Rankings
-CEIL_DECAY  <- c(RB = 0.89, QB = 0.98, WR = 0.92, TE = 0.93)  # Best Ball Rankings
-CEIL_Q      <- c(RB = 0.94, QB = 0.94, WR = 0.92, TE = 0.93)  # calibrated internal quantile for "ceiling"
-FLOOR_Q     <- c(RB = 0.08, QB = 0.09, WR = 0.12, TE = 0.12)  # calibrated internal quantile for "floor"
+CEIL_DECAY  <- c(RB = 0.89, QB = 0.98, WR = 0.93, TE = 0.91)  # Best Ball Rankings
+CEIL_Q      <- c(RB = 0.96, QB = 0.96, WR = 0.94, TE = 0.96)  # calibrated internal quantile for "ceiling"
+FLOOR_Q     <- c(RB = 0.09, QB = 0.08, WR = 0.12, TE = 0.13)  # calibrated internal quantile for "floor"
 
 MAX_GAMES_PER_SEASON <- 16   # 17 weeks minus 1 bye (weeks 1-17; week 18 excluded — see below)
 AVAILABILITY_YEAR_DECAY <- 0.6  # not backtested — a judgment call weighting recent seasons'
                                  # availability more heavily than older ones
 
-SHRINK_OWN_SHARE <- 0.80  # 80/20 blend for context-flagged players (team/OC/HC change).
+SHRINK_OWN_SHARE <- 0.80  # 80/20 blend for context-flagged players (team/OC/HC change,
+                           # manual player_flags.csv, and low-sample below).
                            # NOT backtested — locked by product judgment, revisit later.
+LOW_SAMPLE_SHRINK_THRESHOLD <- 20  # players with MIN_GAMES <= n < this get the 80/20
+                                    # blend automatically -- everyone below 20 games
+                                    # is covered but not fully trusted on their own
+                                    # history alone. Currently only takes effect at RB
+                                    # (see below) -- no tiered baseline pool exists yet
+                                    # for QB/WR/TE, so low-sample players there are
+                                    # flagged but not actually shrunk.
 BELLCOW_TPG_CUTOFF_PCTILE <- 0.85  # RB workload percentile above which a player is
                                     # excluded from the "common tier" shrinkage baseline
 
@@ -174,6 +182,27 @@ flagged_teams_for_projection <- function(reg, flags_path = "context_flags.csv") 
   flags$team[flags$season == proj_season]
 }
 
+# 3RD SHRINK TRIGGER — player-level, manual, via player_flags.csv.
+#
+# Team change and team-level OC/HC change (above) both cover "this player's
+# situation changed." This one covers the opposite case: a player's RECENT
+# games look strong, but that recent stretch was driven by a circumstance
+# that's reversing — most commonly, a returning teammate who will compete
+# for the same touches again (e.g. RJ Harvey's 2025 volume was driven by
+# J.K. Dobbins' injury; Dobbins is healthy for 2026, so Harvey's
+# recency-weighted numbers overstate what his role will actually look like).
+#
+# This can't be auto-detected — it requires knowing the *current* (offseason)
+# roster/depth-chart situation, which isn't in historical box scores. One
+# row per player per season, added by hand as you notice cases like this.
+flagged_players_for_projection <- function(reg, flags_path = "player_flags.csv") {
+  if (!file.exists(flags_path)) return(character(0))
+  flags <- read.csv(flags_path, stringsAsFactors = FALSE)
+  if (nrow(flags) == 0) return(character(0))
+  proj_season <- max(reg$season) + 1
+  flags$player_name[flags$season == proj_season]
+}
+
 # ============================= PROJECTION =============================
 
 # Produces one row per eligible player: weekly floor/median/ceiling (for
@@ -182,7 +211,9 @@ flagged_teams_for_projection <- function(reg, flags_path = "context_flags.csv") 
 # second column). No shrinkage applied here — shrink_project() below is the
 # entry point once a context-flag table exists.
 project_all <- function(seasons = 2023:2025, n_sims = 30000, seed = 42,
-                         flags_path = "context_flags.csv", apply_shrinkage = TRUE) {
+                         flags_path = "context_flags.csv",
+                         player_flags_path = "player_flags.csv",
+                         apply_shrinkage = TRUE) {
   set.seed(seed)
   reg <- load_history(seasons)
   counts <- table(reg$player_display_name)
@@ -199,7 +230,9 @@ project_all <- function(seasons = 2023:2025, n_sims = 30000, seed = 42,
       cur <- latest$latest_team[latest$display_name == p & latest$position == pos]
       length(cur) == 1 && !is.na(cur) && cur %in% flagged_teams
     })]
-    shrink_players <- union(team_changed, team_ctx)
+    player_ctx <- intersect(eligible, flagged_players_for_projection(reg, player_flags_path))
+    low_sample <- names(counts[counts >= MIN_GAMES & counts < LOW_SAMPLE_SHRINK_THRESHOLD])
+    shrink_players <- union(union(union(team_changed, team_ctx), player_ctx), low_sample)
     if (length(shrink_players) > 0) {
       baseline_rb <- build_rb_common_pool(reg, eligible)
     }
@@ -252,11 +285,20 @@ project_all <- function(seasons = 2023:2025, n_sims = 30000, seed = 42,
   do.call(rbind, rows)
 }
 
-# ============================= EXAMPLE USAGE =============================
+# ============================= RUN =============================
+# Run from a terminal: Rscript projection_engine.R
+# Writes projections.csv (every eligible player, every position) into this
+# same directory — open it in Excel/Numbers, or use it as the source for
+# formatting a Supabase upload CSV for player_simulations /
+# best_ball_rankings / redraft_rankings.
 if (sys.nframe() == 0) {
   df <- project_all()
-  cat("Eligible players:", nrow(df), "\n\n")
+  cat("\nEligible players:", nrow(df), "\n")
+
+  write.csv(df, "projections.csv", row.names = FALSE)
+  cat("Wrote projections.csv (", nrow(df), "rows ) to", getwd(), "\n\n")
+
   rb <- df[df$position == "RB", ]
-  cat("=== Redraft RB 1-15 (by weekly median) ===\n")
+  cat("=== Redraft RB 1-15 (by weekly median) — console preview only ===\n")
   print(head(rb[order(-rb$median), ], 15), row.names = FALSE)
 }
