@@ -46,7 +46,7 @@ export default async function Home() {
       .eq("week", latestRedraft.week)
       .not("trend", "is", null)
       .order("rank", { ascending: true })
-      .limit(20);
+      .limit(50);
     tickerPlayers = (tickerRows || []).map((r) => ({ name: r.player_name, trend: r.trend }));
   }
 
