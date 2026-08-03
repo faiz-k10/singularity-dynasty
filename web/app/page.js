@@ -186,7 +186,6 @@ export default async function Home() {
           </div>
 
           <div className="orbital-selector reveal">
-            <div className="orbit-track"></div>
 
             <div className="orbital-hub">
               <div className="hub-panel active" data-panel="0">
@@ -351,31 +350,58 @@ export default async function Home() {
               </div>
             </div>
 
-            <div className="orbital-nodes">
-              <button className="node active" data-panel="0" style={{ "--ang": "-90deg" }}>
-                <span className="node-num">01</span>
-                <span className="node-label">Player Season Simulations</span>
-              </button>
-              <button className="node" data-panel="1" style={{ "--ang": "-30deg" }}>
-                <span className="node-num">02</span>
-                <span className="node-label">Best Ball Rankings</span>
-              </button>
-              <button className="node" data-panel="2" style={{ "--ang": "30deg" }}>
-                <span className="node-num">03</span>
-                <span className="node-label">Dynasty Draft Board</span>
-              </button>
-              <button className="node" data-panel="3" style={{ "--ang": "90deg" }}>
-                <span className="node-num">04</span>
-                <span className="node-label">Redraft Weekly Rankings</span>
-              </button>
-              <button className="node" data-panel="4" style={{ "--ang": "150deg" }}>
-                <span className="node-num">05</span>
-                <span className="node-label">Team Analysis</span>
-              </button>
-              <button className="node" data-panel="5" style={{ "--ang": "210deg" }}>
-                <span className="node-num">06</span>
-                <span className="node-label">WR/QB Prospect Rankings &amp; Comparisons</span>
-              </button>
+            <div className="orbital-arc">
+              <div className="orbit-track"></div>
+              <div className="orbital-nodes">
+                <button
+                  className="node active"
+                  data-panel="0"
+                  style={{ "--nx": "-475px", "--ny": "127px" }}
+                >
+                  <span className="node-num">01</span>
+                  <span className="node-label">Player Season Simulations</span>
+                </button>
+                <button
+                  className="node"
+                  data-panel="1"
+                  style={{ "--nx": "-294px", "--ny": "46px" }}
+                >
+                  <span className="node-num">02</span>
+                  <span className="node-label">Best Ball Rankings</span>
+                </button>
+                <button
+                  className="node"
+                  data-panel="2"
+                  style={{ "--nx": "-99px", "--ny": "5px" }}
+                >
+                  <span className="node-num">03</span>
+                  <span className="node-label">Dynasty Draft Board</span>
+                </button>
+                <button
+                  className="node"
+                  data-panel="3"
+                  style={{ "--nx": "99px", "--ny": "5px" }}
+                >
+                  <span className="node-num">04</span>
+                  <span className="node-label">Redraft Weekly Rankings</span>
+                </button>
+                <button
+                  className="node"
+                  data-panel="4"
+                  style={{ "--nx": "294px", "--ny": "46px" }}
+                >
+                  <span className="node-num">05</span>
+                  <span className="node-label">Team Analysis</span>
+                </button>
+                <button
+                  className="node"
+                  data-panel="5"
+                  style={{ "--nx": "475px", "--ny": "127px" }}
+                >
+                  <span className="node-num">06</span>
+                  <span className="node-label">WR/QB Prospect Rankings &amp; Comparisons</span>
+                </button>
+              </div>
             </div>
           </div>
         </section>
