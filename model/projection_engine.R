@@ -141,74 +141,31 @@ player_availability <- function(player_games_df) {
   min(sum(a_by_yr * yw), 1)
 }
 
-# ============================= SHRINKAGE TRIGGERS =============================
+# ============================= SHRINKAGE TRIGGER =============================
 #
-# Three triggers, all using the same SHRINK_OWN_SHARE blend (severity is
-# deliberately uniform — see README):
+# One trigger: LOW SAMPLE SIZE, fully automatic. Any eligible player with
+# fewer than LOW_SAMPLE_SHRINK_THRESHOLD games gets the SHRINK_OWN_SHARE
+# blend applied, regardless of why their sample is small.
 #
-# 1. TEAM CHANGE — fully automatic, zero manual input. Compares each
-#    player's most recent team in their game log against their current
-#    (offseason) team from load_players()$latest_team.
+# Two other triggers existed earlier this session and were both removed:
+# a manual per-team OC/HC-change flag (context_flags.csv), and automatic
+# team-change detection (comparing load_player_stats() history against
+# load_players()$latest_team). Both were removed by the user's direct
+# instruction, in favor of relying on this single sample-size trigger.
 #
-# 2. LOW SAMPLE SIZE — fully automatic. Any eligible player with fewer than
-#    LOW_SAMPLE_SHRINK_THRESHOLD games gets shrunk regardless of why. A
-#    manual per-team OC/HC-change flag (context_flags.csv) used to be a
-#    third trigger here; it was removed as unnecessary upkeep once this
-#    threshold-based trigger turned out to catch the cases that mattered
-#    (e.g. RJ Harvey) on its own.
-#
-# 3. PLAYER-LEVEL MANUAL FLAG — via player_flags.csv in this directory. For
-#    situations neither of the above catches — most commonly, an
-#    established player (well above the low-sample threshold) whose recent
-#    volume was driven by a circumstance that's since reversed (a returning
-#    teammate, a resolved injury) but who isn't a fresh team change either.
-#    One row per player per season, added by hand as you notice a case like
-#    this — the current (offseason) depth-chart situation isn't something
-#    historical box scores can tell you.
-#
-# A player is shrink-eligible if ANY trigger fires.
-
-# load_player_stats()$team and load_players()$latest_team disagree on
-# exactly one code -- Arizona is "ARI" in one and "AZ" in the other (found
-# via a false-positive team-change flag on Trey McBride, who never left
-# Arizona; verified no other team code differs between the two sources).
-# Without this, that one mismatch alone falsely flags every Arizona player.
-normalize_team <- function(team) ifelse(team == "AZ", "ARI", team)
-
-detect_team_changes <- function(reg, eligible_players) {
-  latest <- load_players()[, c("display_name", "position", "latest_team")]
-  latest$latest_team <- normalize_team(latest$latest_team)
-  changed <- character(0)
-  for (p in eligible_players) {
-    d <- reg[reg$player_display_name == p, ]
-    d <- d[order(d$season, d$week), ]
-    last_known_team <- tail(d$team, 1)
-    pos <- d$position[1]
-    cur <- latest$latest_team[latest$display_name == p & latest$position == pos]
-    if (length(cur) == 1 && !is.na(cur) && !is.na(last_known_team) && cur != last_known_team) {
-      changed <- c(changed, p)
-    }
-  }
-  changed
-}
-
-flagged_players_for_projection <- function(reg, flags_path = "player_flags.csv") {
-  if (!file.exists(flags_path)) return(character(0))
-  flags <- read.csv(flags_path, stringsAsFactors = FALSE)
-  if (nrow(flags) == 0) return(character(0))
-  proj_season <- max(reg$season) + 1
-  flags$player_name[flags$season == proj_season]
-}
+# Real consequence worth knowing: an established player (25+ games) who
+# switches teams — the original motivating case for shrinkage, before RJ
+# Harvey — no longer gets any shrink adjustment under this design unless
+# they also happen to be under the low-sample threshold. Team-change alone
+# is no longer a signal this engine acts on.
 
 # ============================= PROJECTION =============================
 
 # Produces one row per eligible player: weekly floor/median/ceiling (for
 # Redraft + Best Ball), season median (availability-adjusted, for Player
 # Season Simulations), and a weeks-15-17 playoff ceiling (for Best Ball's
-# second column). No shrinkage applied here — shrink_project() below is the
-# entry point once a context-flag table exists.
+# second column).
 project_all <- function(seasons = 2023:2025, n_sims = 30000, seed = 42,
-                         player_flags_path = "player_flags.csv",
                          apply_shrinkage = TRUE) {
   set.seed(seed)
   reg <- load_history(seasons)
@@ -218,10 +175,7 @@ project_all <- function(seasons = 2023:2025, n_sims = 30000, seed = 42,
   shrink_players <- character(0)
   baseline_pools <- list()
   if (apply_shrinkage) {
-    team_changed <- detect_team_changes(reg, eligible)
-    player_ctx <- intersect(eligible, flagged_players_for_projection(reg, player_flags_path))
-    low_sample <- names(counts[counts >= MIN_GAMES & counts < LOW_SAMPLE_SHRINK_THRESHOLD])
-    shrink_players <- union(union(team_changed, player_ctx), low_sample)
+    shrink_players <- names(counts[counts >= MIN_GAMES & counts < LOW_SAMPLE_SHRINK_THRESHOLD])
     if (length(shrink_players) > 0) {
       shrink_positions <- unique(sapply(shrink_players, function(p)
         reg$position[reg$player_display_name == p][1]))

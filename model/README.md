@@ -175,47 +175,50 @@ side's quantile **separately** and blending the two numbers
 (`shrunk_quantile()` in the engine) — guaranteed to land between the two
 inputs, no exceptions.
 
-**Three triggers, all wired up, all using the same 80/20 blend, all
-applying to every position:**
+**One trigger, applying to every position: low sample size.** Any player
+with fewer than `LOW_SAMPLE_SHRINK_THRESHOLD = 20` games gets the
+`SHRINK_OWN_SHARE = 0.80` blend applied, regardless of why their sample is
+small. This is what actually resolved the RJ Harvey case (his 2025 volume
+was driven by J.K. Dobbins' injury; Dobbins is healthy for 2026) —
+games-played turned out to be a cheap, general-purpose proxy for exactly
+the kind of role uncertainty a manual flag would otherwise be needed for.
 
-1. **Team change** — fully automatic. Compares each player's most recent
-   team in their game log against their current (offseason) team via
-   `load_players()`. Zero manual input.
-2. **Low sample size** — automatic. Any player with fewer than
-   `LOW_SAMPLE_SHRINK_THRESHOLD = 20` games gets shrunk, regardless of why.
-   This is what actually resolved the RJ Harvey case (his 2025 volume was
-   driven by J.K. Dobbins' injury; Dobbins is healthy for 2026) — games-
-   played turned out to be a cheap, general-purpose proxy for exactly the
-   kind of role uncertainty a manual flag would otherwise be needed for.
-   Blunter than a manual flag (doesn't know *why* a player is at 16 games,
-   just that they are) but requires zero ongoing judgment.
-3. **Player-level manual flag** — `player_flags.csv`, one row per
-   player/season/reason. For the case trigger 2 *doesn't* catch: an
-   established player (25+ games, well above the low-sample line) whose
-   role changed for a reason the model has no other way to see. Built,
-   wired, currently empty — no case has needed it yet, but the mechanism
-   is ready.
+**Two other triggers existed earlier this session and were both removed,
+by the user's direct instruction:**
 
-**A fourth trigger — a manually maintained per-team OC/HC-change flag
-(`context_flags.csv`, ~32 rows refreshed once per offseason) — existed
-earlier this session and was removed.** It was the only trigger requiring
-recurring manual upkeep, and turned out to be unnecessary: every real case
-it was meant to catch ended up covered by trigger 2 once the eligibility
-floor dropped to 8 games. Removed rather than left as unused surface area.
+- **Team change** (automatic — comparing each player's most recent team
+  against their current offseason team via `load_players()`).
+- **Player-level manual flag** (`player_flags.csv`, one row per
+  player/season/reason, for cases the low-sample trigger doesn't catch).
+- Before either was removed, a third trigger — a manually maintained
+  per-team OC/HC-change flag (`context_flags.csv`) — had *already* been
+  removed for the same reason: every case it was meant to catch ended up
+  covered by the low-sample trigger anyway.
 
-**Severity is uniform across all triggers, deliberately** — the user's
-call: the real distinguishing factor is "does this player have an
-established personal track record at all," not the specific reason for the
-flag, so every trigger uses the same `SHRINK_OWN_SHARE = 0.80` rather than
-different blend strengths per trigger type.
+**Real, current consequence of only having one trigger:** an established
+player (25+ games) who switches teams — Kenny Gainwell's team change was
+the original motivating case for building shrinkage in the first place,
+before RJ Harvey — no longer gets any adjustment unless they also happen to
+be under the low-sample threshold. Verified directly: Gainwell (47 games,
+PIT→TB) now shows `shrunk = FALSE`. Team change alone is no longer a
+signal this engine acts on.
 
-**A real bug found while extending this to all positions:**
-`load_player_stats()$team` and `load_players()$latest_team` disagree on
-exactly one team code — Arizona is `"ARI"` in one and `"AZ"` in the other
-(confirmed the only mismatch across all 32 teams). Before normalizing this
-in `detect_team_changes()`, every Arizona player was being falsely flagged
-as a team change — caught via Trey McBride showing `shrunk = TRUE` despite
-47 games and no real team change. `normalize_team()` fixes it.
+**Severity was uniform across triggers when there were multiple** — the
+user's call: the real distinguishing factor was "does this player have an
+established personal track record at all," not the specific reason for a
+flag, so every trigger used the same `SHRINK_OWN_SHARE = 0.80` rather than
+different blend strengths. Now moot with only one trigger, but the
+`shrunk_quantile()` mechanism itself is unaffected by any of this — same
+math, just one caller left.
+
+**A real bug found while extending this to all positions (still fixed,
+though the code that used it — `detect_team_changes()` — was later
+removed):** `load_player_stats()$team` and `load_players()$latest_team`
+disagreed on exactly one team code — Arizona was `"ARI"` in one and `"AZ"`
+in the other (confirmed the only mismatch across all 32 teams), which was
+silently flagging every Arizona player as a false team change. Caught via
+Trey McBride showing `shrunk = TRUE` despite 47 games and no real move.
+Worth remembering if team-change detection is ever reintroduced.
 
 ## Deferred — explicitly out of scope for now
 
@@ -224,18 +227,17 @@ as a team change — caught via Trey McBride showing `shrunk = TRUE` despite
   "matchup-adjusted" — nothing in this engine does that yet. Real gap
   between current copy and current capability until this is built.
 - **Role-stability / touch-volume signal — partially, not fully,
-  mitigated.** The model still has no direct concept of "does this player
-  currently hold the role that produced their historical games." The
-  under-20-games shrink trigger catches this indirectly for genuinely
-  low-sample players (which is why it resolved the RJ Harvey case), but it's
-  a proxy, not a fix: an established veteran (25+ games) whose role changes
-  for a reason unrelated to a team switch — a new free-agent signing at
-  their position, a rookie draft pick expected to cut into touches — isn't
-  covered by the team-change or low-sample triggers and would need a manual
-  `player_flags.csv` entry to catch. A real touches/game or snap-share
-  signal feeding directly into the ranking, rather than relying on
-  games-played as a stand-in for role uncertainty, is still the more
-  correct long-term fix.
+  mitigated, and less so now than earlier this session.** The model still
+  has no direct concept of "does this player currently hold the role that
+  produced their historical games." The under-20-games shrink trigger
+  catches this indirectly for genuinely low-sample players (which is why
+  it resolved the RJ Harvey case), but it's a proxy, not a fix — and with
+  team-change detection and the manual per-player flag both removed, an
+  established player (25+ games) whose role changes for *any* reason,
+  including a straightforward team switch, gets no adjustment at all
+  anymore. A real touches/game or snap-share signal feeding directly into
+  the ranking is still the more correct long-term fix; right now there's
+  no manual escape hatch for this case either, by design.
 
 ## Output → schema mapping
 
@@ -243,8 +245,11 @@ Current Supabase schemas (see `web/supabase/migrations/`):
 
 - `player_simulations` has real `floor`/`median`/`ceiling` numeric columns —
   direct fit for this engine's season-total output.
-- `best_ball_rankings` / `redraft_rankings` currently only have `rank` +
-  `notes` (no numeric projection columns). To display the actual weekly
-  ceiling score, the weeks-15-17 playoff ceiling, or the weekly
-  median/floor, those tables need new numeric columns added via a migration
-  — not yet written.
+- `redraft_rankings` has a `projection` numeric column (migration 0008) —
+  direct fit for this engine's weekly `median`.
+- `best_ball_rankings` has `ceiling_score` and `playoff_ceiling_score`
+  numeric columns (migration 0009) — direct fit for this engine's weekly
+  `ceiling` and `playoff_ceiling`.
+- None of this is wired up as an actual publish step yet — `project_all()`
+  writes `projections.csv` locally; turning that into formatted CSVs (or a
+  direct write) per destination table is still a manual step.
