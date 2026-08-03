@@ -5,6 +5,8 @@ import ThemeToggle from "../../ThemeToggle";
 import InteractiveScript from "../../InteractiveScript";
 import SortableTh from "../SortableTh";
 import ExportCsvButton from "../ExportCsvButton";
+import TrendTag from "../TrendTag";
+import ConfidenceBadge from "../ConfidenceBadge";
 
 export const metadata = {
   title: "Best Ball Rankings — Singularity Dynasty",
@@ -55,7 +57,7 @@ export default async function BestBallRankingsPage({ searchParams }) {
     let query = supabase
       .from("best_ball_rankings")
       .select(
-        "rank, player_name, position, team, ceiling_score, ceiling_range_low, ceiling_probability, playoff_ceiling_score, notes",
+        "rank, player_name, position, team, ceiling_score, ceiling_range_low, ceiling_probability, playoff_ceiling_score, trend, sample_confidence, notes",
         { count: "exact" }
       )
       .eq("season", latest.season)
@@ -115,6 +117,8 @@ export default async function BestBallRankingsPage({ searchParams }) {
                     { key: "ceiling_range_low", label: "This Week Low" },
                     { key: "ceiling_probability", label: "This Week %" },
                     { key: "playoff_ceiling_score", label: "Playoffs (Wk 15-17)" },
+                    { key: "trend", label: "Trend" },
+                    { key: "sample_confidence", label: "Confidence" },
                     { key: "notes", label: "Notes" },
                   ]}
                   rows={sortedRankings}
@@ -142,7 +146,10 @@ export default async function BestBallRankingsPage({ searchParams }) {
                   {sortedRankings.map((row) => (
                     <tr key={row.rank}>
                       <td className="mono">{row.rank}</td>
-                      <td>{row.player_name}</td>
+                      <td>
+                        <ConfidenceBadge confidence={row.sample_confidence} /> {row.player_name}{" "}
+                        <TrendTag trend={row.trend} />
+                      </td>
                       <td className="mono">{row.position}</td>
                       <td className="mono">{row.team || "—"}</td>
                       <td className="mono ceiling-cell">

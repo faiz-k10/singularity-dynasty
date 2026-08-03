@@ -25,6 +25,31 @@ export default async function Home() {
       .limit(3),
   ]);
 
+  // Ticker: real RISING/FALLING/STEADY data from the latest published
+  // redraft_rankings week (free-for-everyone table, so this always has the
+  // broadest player pool available). Falls back to InteractiveScript's own
+  // randomized sample if nothing's published yet.
+  const { data: latestRedraft } = await supabase
+    .from("redraft_rankings")
+    .select("season, week")
+    .order("season", { ascending: false })
+    .order("week", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  let tickerPlayers = [];
+  if (latestRedraft) {
+    const { data: tickerRows } = await supabase
+      .from("redraft_rankings")
+      .select("player_name, trend")
+      .eq("season", latestRedraft.season)
+      .eq("week", latestRedraft.week)
+      .not("trend", "is", null)
+      .order("rank", { ascending: true })
+      .limit(20);
+    tickerPlayers = (tickerRows || []).map((r) => ({ name: r.player_name, trend: r.trend }));
+  }
+
   return (
     <>
       <div className="ticker-bar">
@@ -610,7 +635,7 @@ export default async function Home() {
         </div>
       </footer>
 
-      <InteractiveScript />
+      <InteractiveScript tickerPlayers={tickerPlayers} />
     </>
   );
 }

@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 
-export default function InteractiveScript() {
+export default function InteractiveScript({ tickerPlayers } = {}) {
   useEffect(() => {
     const controller = new AbortController();
     const { signal } = controller;
@@ -245,8 +245,12 @@ export default function InteractiveScript() {
       );
     }
 
-    /* ---- ticker: RISING / FALLING / STEADY, randomized ---- */
-    const tickerNames = [
+    /* ---- ticker: RISING / FALLING / STEADY, from real model data ----
+       tickerPlayers (passed from the server-rendered homepage) is the
+       source of truth: real player names + real trend classifications
+       from redraft_rankings. Falls back to a small randomized sample only
+       if the prop wasn't provided (e.g. no rankings published yet). */
+    const fallbackNames = [
       "CeeDee Lamb",
       "Bijan Robinson",
       "Justin Fields",
@@ -259,12 +263,15 @@ export default function InteractiveScript() {
     const tickerCategories = ["RISING", "FALLING", "STEADY"];
     const track = document.getElementById("tickerTrack");
     function buildTicker() {
-      const items = tickerNames.map((name) => ({
-        name,
-        cat: tickerCategories[
-          Math.floor(Math.random() * tickerCategories.length)
-        ],
-      }));
+      const items =
+        tickerPlayers && tickerPlayers.length > 0
+          ? tickerPlayers.map((p) => ({ name: p.name, cat: p.trend }))
+          : fallbackNames.map((name) => ({
+              name,
+              cat: tickerCategories[
+                Math.floor(Math.random() * tickerCategories.length)
+              ],
+            }));
       let html = "";
       for (let rep = 0; rep < 2; rep++) {
         items.forEach((item) => {

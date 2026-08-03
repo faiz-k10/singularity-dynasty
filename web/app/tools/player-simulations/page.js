@@ -5,6 +5,8 @@ import ThemeToggle from "../../ThemeToggle";
 import InteractiveScript from "../../InteractiveScript";
 import SortableTh from "../SortableTh";
 import ExportCsvButton from "../ExportCsvButton";
+import TrendTag from "../TrendTag";
+import ConfidenceBadge from "../ConfidenceBadge";
 
 export const metadata = {
   title: "Player Season Simulations — Singularity Dynasty",
@@ -40,9 +42,10 @@ export default async function PlayerSimulationsPage({ searchParams }) {
   if (latest) {
     let query = supabase
       .from("player_simulations")
-      .select("player_name, position, team, floor, median, ceiling, notes", {
-        count: "exact",
-      })
+      .select(
+        "player_name, position, team, floor, median, ceiling, trend, sample_confidence, notes",
+        { count: "exact" }
+      )
       .eq("season", latest.season)
       .order("median", { ascending: false });
 
@@ -96,6 +99,8 @@ export default async function PlayerSimulationsPage({ searchParams }) {
                     { key: "floor", label: "Floor" },
                     { key: "median", label: "Median" },
                     { key: "ceiling", label: "Ceiling" },
+                    { key: "trend", label: "Trend" },
+                    { key: "sample_confidence", label: "Confidence" },
                   ]}
                   rows={sortedSims}
                 />
@@ -117,7 +122,10 @@ export default async function PlayerSimulationsPage({ searchParams }) {
                 <tbody>
                   {sortedSims.map((row) => (
                     <tr key={row.player_name}>
-                      <td>{row.player_name}</td>
+                      <td>
+                        <ConfidenceBadge confidence={row.sample_confidence} /> {row.player_name}{" "}
+                        <TrendTag trend={row.trend} />
+                      </td>
                       <td className="mono">{row.position}</td>
                       <td className="mono">{row.team || "—"}</td>
                       <td className="mono">{row.floor}</td>

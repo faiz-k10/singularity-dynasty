@@ -5,6 +5,8 @@ import ThemeToggle from "../../ThemeToggle";
 import InteractiveScript from "../../InteractiveScript";
 import SortableTh from "../SortableTh";
 import ExportCsvButton from "../ExportCsvButton";
+import TrendTag from "../TrendTag";
+import ConfidenceBadge from "../ConfidenceBadge";
 
 export const metadata = {
   title: "Redraft Weekly Rankings — Singularity Dynasty",
@@ -37,12 +39,17 @@ function formatProjection(value) {
 
 function PlayerCell({ row, withPopover }) {
   if (!withPopover) {
-    return <td>{row.player_name}</td>;
+    return (
+      <td>
+        <ConfidenceBadge confidence={row.sample_confidence} /> {row.player_name}{" "}
+        <TrendTag trend={row.trend} />
+      </td>
+    );
   }
   return (
     <td>
       <span className="player-hover" tabIndex={0}>
-        {row.player_name}
+        <ConfidenceBadge confidence={row.sample_confidence} /> {row.player_name}
         <div className="player-popover">
           <div className="player-popover-card">
             <div className="player-popover-row">
@@ -52,6 +59,10 @@ function PlayerCell({ row, withPopover }) {
             <div className="player-popover-row">
               <span>Proj</span>
               <span>{formatProjection(row.projection)}</span>
+            </div>
+            <div className="player-popover-row">
+              <span>Trend</span>
+              <span><TrendTag trend={row.trend} /></span>
             </div>
             {row.notes && <div className="player-popover-notes">{row.notes}</div>}
             <Link
@@ -135,7 +146,7 @@ export default async function RedraftRankingsPage({ searchParams }) {
   if (latest) {
     const { data } = await supabase
       .from("redraft_rankings")
-      .select("rank, player_name, position, team, projection, notes")
+      .select("rank, player_name, position, team, projection, trend, sample_confidence, notes")
       .eq("season", latest.season)
       .eq("week", latest.week)
       .order("rank", { ascending: true });
@@ -213,6 +224,8 @@ export default async function RedraftRankingsPage({ searchParams }) {
                       { key: "position", label: "Position" },
                       { key: "team", label: "Team" },
                       { key: "projection", label: "Projection" },
+                      { key: "trend", label: "Trend" },
+                      { key: "sample_confidence", label: "Confidence" },
                       { key: "notes", label: "Notes" },
                     ]}
                     rows={overallRows}

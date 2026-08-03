@@ -227,11 +227,27 @@ project_all <- function(seasons = 2023:2025, n_sims = 30000, seed = 42,
       cei <- weighted_quantile(x, wc, CEIL_Q[pos])
     }
 
+    # Trend: last-4-games simple average vs. the weighted median baseline
+    # above, +/-10% band. Same comparison that caught Aaron Jones/Kamara's
+    # decline and RJ Harvey's Dobbins-driven spike earlier this session,
+    # now surfaced as its own tag rather than something found by hand.
+    recent4 <- mean(tail(x, 4))
+    trend <- if (med <= 0) {
+      "STEADY"
+    } else if (recent4 > med * 1.10) {
+      "RISING"
+    } else if (recent4 < med * 0.90) {
+      "FALLING"
+    } else {
+      "STEADY"
+    }
+
     rows[[p]] <- data.frame(
       player_name = p, position = pos, team = team, games = n,
       touches_per_game = round(mean(d$touches), 1),
       availability_pct = round(100 * avail, 0),
       shrunk = shrink_this_player,
+      trend = trend,
       floor = round(fl, 1),
       median = round(med, 1),
       ceiling = round(cei, 1),
@@ -256,12 +272,16 @@ project_all <- function(seasons = 2023:2025, n_sims = 30000, seed = 42,
 # season, per the existing convention documented for both tables.
 export_for_supabase <- function(df, seasons = 2023:2025, week = 1) {
   season <- max(seasons) + 1
+  confidence <- ifelse(df$shrunk, "building", "established")
 
   redraft <- df[order(-df$median), ]
   write.csv(data.frame(
     season = season, week = week, rank = seq_len(nrow(redraft)),
     player_name = redraft$player_name, position = redraft$position,
-    team = redraft$team, projection = redraft$median, notes = ""
+    team = redraft$team, projection = redraft$median,
+    trend = redraft$trend,
+    sample_confidence = ifelse(redraft$shrunk, "building", "established"),
+    notes = ""
   ), "upload_redraft_rankings.csv", row.names = FALSE)
 
   # ceiling_range_low / ceiling_probability are NOT written here -- they're
@@ -275,13 +295,18 @@ export_for_supabase <- function(df, seasons = 2023:2025, week = 1) {
     player_name = bb$player_name, position = bb$position, team = bb$team,
     ceiling_score = round(bb$ceiling),
     playoff_ceiling_score = round(bb$playoff_ceiling),
+    trend = bb$trend,
+    sample_confidence = ifelse(bb$shrunk, "building", "established"),
     notes = ""
   ), "upload_best_ball_rankings.csv", row.names = FALSE)
 
   write.csv(data.frame(
     season = season, player_name = df$player_name, position = df$position,
     team = df$team, floor = df$season_floor, median = df$season_median,
-    ceiling = df$season_ceiling, notes = ""
+    ceiling = df$season_ceiling,
+    trend = df$trend,
+    sample_confidence = confidence,
+    notes = ""
   ), "upload_player_simulations.csv", row.names = FALSE)
 
   cat("Wrote upload_redraft_rankings.csv, upload_best_ball_rankings.csv,",
