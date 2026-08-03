@@ -27,18 +27,6 @@ MED_DECAY   <- c(RB = 0.87, QB = 0.90, WR = 0.89, TE = 0.92)  # Redraft Rankings
 CEIL_DECAY  <- c(RB = 0.89, QB = 0.98, WR = 0.93, TE = 0.91)  # Best Ball Rankings
 CEIL_Q      <- c(RB = 0.96, QB = 0.96, WR = 0.94, TE = 0.96)  # calibrated internal quantile for "ceiling"
 FLOOR_Q     <- c(RB = 0.09, QB = 0.08, WR = 0.12, TE = 0.13)  # calibrated internal quantile for "floor"
-CEIL_RANGE_LOW_Q <- CEIL_Q - 0.10  # lower bound of the Best Ball ceiling range (e.g. RB:
-                                    # 0.86 vs ceiling's 0.96). NOT backtested like CEIL_Q
-                                    # itself -- a judgment call pending validation.
-                                    # IMPORTANT: because the range low and its hit-probability
-                                    # both derive from quantiles of the SAME weighted game log,
-                                    # ceiling_probability lands close to a FIXED ~10pt-of-mass
-                                    # figure per position (currently ~14% RB/QB/TE, ~16% WR) by
-                                    # construction, not a strongly player-differentiating stat --
-                                    # it varies player-to-player only through sample size/ties,
-                                    # not through any real skill signal. Revisit if that's not
-                                    # what's wanted.
-
 MAX_GAMES_PER_SEASON <- 16   # 17 weeks minus 1 bye (weeks 1-17; week 18 excluded — see below)
 AVAILABILITY_YEAR_DECAY <- 0.6  # not backtested — a judgment call weighting recent seasons'
                                  # availability more heavily than older ones
@@ -233,17 +221,11 @@ project_all <- function(seasons = 2023:2025, n_sims = 30000, seed = 42,
       fl  <- shrunk_quantile(x, wm, base$pool, base$weights, FLOOR_Q[pos])
       med <- shrunk_quantile(x, wm, base$pool, base$weights, 0.50)
       cei <- shrunk_quantile(x, wc, base$pool, base$weights, CEIL_Q[pos])
-      cei_low <- shrunk_quantile(x, wc, base$pool, base$weights, CEIL_RANGE_LOW_Q[pos])
     } else {
       fl  <- weighted_quantile(x, wm, FLOOR_Q[pos])
       med <- weighted_quantile(x, wm, 0.50)
       cei <- weighted_quantile(x, wc, CEIL_Q[pos])
-      cei_low <- weighted_quantile(x, wc, CEIL_RANGE_LOW_Q[pos])
     }
-    # Probability of clearing the range's low end, grounded in the player's
-    # own weighted game log (not the baseline pool, even when shrunk) --
-    # this is "how often does THIS player personally clear that bar."
-    cei_pct <- round(100 * sum(wc[x >= cei_low]) / sum(wc), 0)
 
     rows[[p]] <- data.frame(
       player_name = p, position = pos, team = team, games = n,
@@ -253,8 +235,6 @@ project_all <- function(seasons = 2023:2025, n_sims = 30000, seed = 42,
       floor = round(fl, 1),
       median = round(med, 1),
       ceiling = round(cei, 1),
-      ceiling_range_low = round(cei_low, 1),
-      ceiling_probability = cei_pct,
       # Season floor/ceiling use plain 10th/90th percentile of the 30,000-draw
       # simulated distribution directly -- NOT the calibrated FLOOR_Q/CEIL_Q,
       # which correct for small-sample bias in a *historical* game log. The
@@ -284,14 +264,17 @@ export_for_supabase <- function(df, seasons = 2023:2025, week = 1) {
     team = redraft$team, projection = redraft$median, notes = ""
   ), "upload_redraft_rankings.csv", row.names = FALSE)
 
+  # ceiling_range_low / ceiling_probability are NOT written here -- they're
+  # computed separately by ceiling_range.R (reads this same CSV, adds those
+  # two columns, writes upload_ceiling_range.csv), then published as a
+  # second PATCH pass. Keeping that logic in one place rather than
+  # duplicating it here.
   bb <- df[order(-df$ceiling), ]
   write.csv(data.frame(
     season = season, week = week, rank = seq_len(nrow(bb)),
     player_name = bb$player_name, position = bb$position, team = bb$team,
-    ceiling_score = bb$ceiling,
-    ceiling_range_low = bb$ceiling_range_low,
-    ceiling_probability = bb$ceiling_probability,
-    playoff_ceiling_score = bb$playoff_ceiling,
+    ceiling_score = round(bb$ceiling),
+    playoff_ceiling_score = round(bb$playoff_ceiling),
     notes = ""
   ), "upload_best_ball_rankings.csv", row.names = FALSE)
 

@@ -53,7 +53,7 @@ for (i in seq_len(nrow(df))) {
 
   rows[[i]] <- data.frame(
     player_name = p,
-    ceiling_range_low = round(range_low, 1),
+    ceiling_range_low = round(range_low, 0),
     ceiling_probability = round(100 * prob, 0)
   )
 }

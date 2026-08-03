@@ -22,16 +22,17 @@ const COLUMN_TYPES = {
 };
 
 function formatScore(value) {
-  return value === null || value === undefined ? "—" : Number(value).toFixed(1);
+  return value === null || value === undefined ? "—" : Math.round(Number(value));
 }
 
-// "21.2-24.6" when a range is published, falling back to the single ceiling
+// "21-25" when a range is published, falling back to the single ceiling
 // number if ceiling_range_low hasn't been uploaded for this row yet.
+// Whole numbers throughout — easier to scan at a glance than decimals.
 function formatCeilingRange(row) {
   if (row.ceiling_score === null || row.ceiling_score === undefined) return "—";
-  const high = Number(row.ceiling_score).toFixed(1);
-  if (row.ceiling_range_low === null || row.ceiling_range_low === undefined) return high;
-  return `${Number(row.ceiling_range_low).toFixed(1)}-${high}`;
+  const high = Math.round(Number(row.ceiling_score));
+  if (row.ceiling_range_low === null || row.ceiling_range_low === undefined) return String(high);
+  return `${Math.round(Number(row.ceiling_range_low))}-${high}`;
 }
 
 export default async function BestBallRankingsPage({ searchParams }) {
