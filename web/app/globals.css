@@ -385,22 +385,25 @@ section{padding:96px 0 20px; position:relative;}
    clearance above/below/beside the hub simultaneously.
 
    The six --nx/--ny node offsets and .orbit-track's dimensions are all
-   derived from the same circle: radius 950px, centered 950px directly
+   derived from the same circle: radius 1730px, centered 1730px directly
    below the arc's shallow (top) point, parametrized as
      x = R*sin(t), y = R*(1 - cos(t))
-   for t stepped evenly from -30deg to 30deg across the 6 nodes. Change
-   the radius/angle span and every one of those numbers moves together —
-   don't hand-tune only one node's offset without redoing the rest. */
+   for t stepped evenly from -16deg to 16deg across the 6 nodes (a bigger
+   radius over a narrower angle than the first pass, for a flatter,
+   more horizon-like curve at roughly the same 950px horizontal footprint).
+   Change the radius/angle span and every one of those numbers moves
+   together — don't hand-tune only one node's offset without redoing
+   the rest. */
 @media (min-width:1180px){
   .orbital-selector{display:flex; flex-direction:column; align-items:center;}
   .orbital-hub{width:400px; height:590px; display:flex; flex-direction:column; justify-content:center;}
-  .orbital-arc{position:relative; width:100%; height:220px; margin-top:28px;}
+  .orbital-arc{position:relative; width:100%; height:160px; margin-top:28px;}
   .orbit-track{
-    display:block; position:absolute; top:0; left:50%; width:1000px; height:140px; margin-left:-500px;
+    display:block; position:absolute; top:0; left:50%; width:1000px; height:80px; margin-left:-500px;
     overflow:hidden; z-index:1; pointer-events:none;
   }
   .orbit-track::before{
-    content:''; position:absolute; top:0; left:50%; width:1900px; height:1900px; margin-left:-950px;
+    content:''; position:absolute; top:0; left:50%; width:3460px; height:3460px; margin-left:-1730px;
     border-radius:50%; border:1px dashed rgba(var(--neon-blue-rgb), var(--orbit-alpha));
   }
   .orbital-nodes{position:absolute; inset:0; z-index:3; pointer-events:none; overflow:visible; padding:0; display:block;}
