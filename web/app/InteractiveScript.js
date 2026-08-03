@@ -193,6 +193,39 @@ export default function InteractiveScript() {
       );
     });
 
+    /* ---- CSV export (Singularity-only — the button/data only exist in the
+       DOM for eligible users, this just wires up the click) ---- */
+    function csvEscape(value) {
+      const str = value === null || value === undefined ? "" : String(value);
+      return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
+    }
+    document.querySelectorAll("[data-csv-export]").forEach((btn) => {
+      btn.addEventListener(
+        "click",
+        () => {
+          const src = document.getElementById(btn.getAttribute("data-csv-export"));
+          if (!src) return;
+          const { columns, rows } = JSON.parse(src.textContent);
+          const lines = [columns.map((c) => csvEscape(c.label)).join(",")];
+          rows.forEach((row) => {
+            lines.push(columns.map((c) => csvEscape(row[c.key])).join(","));
+          });
+          const blob = new Blob([lines.join("\n")], {
+            type: "text/csv;charset=utf-8;",
+          });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = btn.getAttribute("data-csv-filename") || "export.csv";
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+        },
+        { signal }
+      );
+    });
+
     /* ---- billing toggle ---- */
     const toggle = document.getElementById("billingToggle");
     let annual = false;

@@ -1,13 +1,24 @@
 import Link from "next/link";
 import { getUserTier } from "@/lib/tier";
+import { resolveSort, sortRows } from "@/lib/sortLink";
 import ThemeToggle from "../../ThemeToggle";
 import InteractiveScript from "../../InteractiveScript";
+import SortableTh from "../SortableTh";
+import ExportCsvButton from "../ExportCsvButton";
 
 export const metadata = {
   title: "Redraft Weekly Rankings — Singularity Dynasty",
 };
 
 const POSITION_ORDER = ["QB", "RB", "WR", "TE"];
+const OVERALL_COLUMN_TYPES = {
+  rank: "number",
+  player_name: "string",
+  position: "string",
+  team: "string",
+  projection: "number",
+};
+const POSITION_COLUMN_TYPES = { rank: "number", player_name: "string" };
 
 function sortPositions(positions) {
   return [...positions].sort((a, b) => {
@@ -63,17 +74,23 @@ function RankingsTable({
   showProjection = false,
   showNotes = true,
   popoverOnName = false,
+  sortKey,
+  sortDir,
+  currentParams,
 }) {
+  const sortProps = { activeSort: sortKey, activeDir: sortDir, currentParams };
   return (
     <div className="rankings-table-wrap">
       <table className="rankings-table">
         <thead>
           <tr>
-            <th>Rank</th>
-            <th>Player</th>
-            {showPosition && <th>Pos</th>}
-            {showTeam && <th>Team</th>}
-            {showProjection && <th>Proj</th>}
+            <SortableTh label="Rank" sortKey="rank" {...sortProps} />
+            <SortableTh label="Player" sortKey="player_name" {...sortProps} />
+            {showPosition && <SortableTh label="Pos" sortKey="position" {...sortProps} />}
+            {showTeam && <SortableTh label="Team" sortKey="team" {...sortProps} />}
+            {showProjection && (
+              <SortableTh label="Proj" sortKey="projection" {...sortProps} />
+            )}
             {showNotes && <th>Notes</th>}
           </tr>
         </thead>
@@ -101,7 +118,7 @@ export default async function RedraftRankingsPage({ searchParams }) {
   const params = await searchParams;
   const view = params?.view === "overall" ? "overall" : "position";
 
-  const { supabase } = await getUserTier();
+  const { supabase, tier } = await getUserTier();
 
   const { data: latest } = await supabase
     .from("redraft_rankings")
@@ -128,6 +145,22 @@ export default async function RedraftRankingsPage({ searchParams }) {
     (byPosition[row.position] ??= []).push(row);
   });
   const positions = sortPositions(Object.keys(byPosition));
+  const byPositionLabeled = {};
+  positions.forEach((pos) => {
+    byPositionLabeled[pos] = byPosition[pos].map((r, i) => ({
+      ...r,
+      displayRank: `${pos}${i + 1}`,
+    }));
+  });
+
+  const { sortKey, sortDir } = resolveSort(params, "rank", "asc");
+  const overallRows = sortRows(
+    rankings.map((r) => ({ ...r, displayRank: r.rank })),
+    sortKey,
+    sortDir,
+    OVERALL_COLUMN_TYPES
+  );
+  const canExport = tier === "singularity" && rankings.length > 0;
 
   return (
     <div className="tool-page">
@@ -164,16 +197,36 @@ export default async function RedraftRankingsPage({ searchParams }) {
                   By Position
                 </Link>
               </div>
-              <Link href="/tools/compare-players" className="hub-panel-link">
-                Compare Players →
-              </Link>
+              <div className="toggle-row-actions">
+                <Link href="/tools/compare-players" className="hub-panel-link">
+                  Compare Players →
+                </Link>
+                {canExport && (
+                  <ExportCsvButton
+                    id="csv-redraft-rankings"
+                    filename={`redraft-rankings-week${latest.week}-${latest.season}.csv`}
+                    columns={[
+                      { key: "rank", label: "Rank" },
+                      { key: "player_name", label: "Player" },
+                      { key: "position", label: "Position" },
+                      { key: "team", label: "Team" },
+                      { key: "projection", label: "Projection" },
+                      { key: "notes", label: "Notes" },
+                    ]}
+                    rows={overallRows}
+                  />
+                )}
+              </div>
             </div>
 
             {view === "overall" ? (
               <RankingsTable
-                rows={rankings.map((r) => ({ ...r, displayRank: r.rank }))}
+                rows={overallRows}
                 showPosition
                 showProjection
+                sortKey={sortKey}
+                sortDir={sortDir}
+                currentParams={params}
               />
             ) : (
               <>
@@ -187,14 +240,19 @@ export default async function RedraftRankingsPage({ searchParams }) {
                         {pos} · {byPosition[pos].length}
                       </div>
                       <RankingsTable
-                        rows={byPosition[pos].map((r, i) => ({
-                          ...r,
-                          displayRank: `${pos}${i + 1}`,
-                        }))}
+                        rows={sortRows(
+                          byPositionLabeled[pos],
+                          sortKey,
+                          sortDir,
+                          POSITION_COLUMN_TYPES
+                        )}
                         showPosition={false}
                         showTeam={false}
                         showNotes={false}
                         popoverOnName
+                        sortKey={sortKey}
+                        sortDir={sortDir}
+                        currentParams={params}
                       />
                     </div>
                   ))}

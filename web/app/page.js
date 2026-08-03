@@ -488,6 +488,7 @@ export default async function Home() {
                 <li>Player season simulations</li>
                 <li>QB/WR prospect rankings &amp; comparisons</li>
                 <li>Unlimited saved teams</li>
+                <li>CSV data export</li>
                 <li>Early access to new tools</li>
                 <li>Priority Discord access</li>
               </ul>

@@ -616,6 +616,17 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
   text-transform:uppercase; color:var(--star-dim); padding:14px 18px; border-bottom:1px solid var(--line);
   background:var(--void-panel-2); white-space:nowrap;
 }
+.rankings-table th a{color:inherit; text-decoration:none; cursor:pointer;}
+.rankings-table th a:hover{color:var(--neon-blue);}
+.rankings-table th a.sort-active{color:var(--horizon-gold);}
+.tool-export-row{display:flex; justify-content:flex-end; margin-bottom:20px;}
+.export-csv-btn{
+  background:transparent; color:var(--neon-blue); border:1px solid rgba(var(--neon-blue-rgb),0.4); border-radius:20px;
+  padding:8px 16px; font-family:var(--font-ibm-plex-mono), monospace; font-size:12px; font-weight:600; letter-spacing:0.02em;
+  cursor:pointer; display:inline-flex; align-items:center; white-space:nowrap;
+  transition:border-color .2s ease, color .2s ease, box-shadow .2s ease;
+}
+.export-csv-btn:hover{border-color:var(--neon-blue); box-shadow:0 0 0 1px rgba(var(--neon-blue-rgb),0.15); color:var(--star);}
 .rankings-table td{padding:12px 18px; border-bottom:1px dashed var(--line); color:var(--star); white-space:nowrap;}
 .tool-notes{white-space:normal !important; min-width:180px;}
 .rankings-table tr:last-child td{border-bottom:none;}
@@ -642,6 +653,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .toggle-row-flex{display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px 20px; margin-bottom:32px;}
 .toggle-row-flex .board-toggle{margin-bottom:0;}
 .toggle-row-flex .hub-panel-link{margin-top:0;}
+.toggle-row-actions{display:flex; align-items:center; gap:18px; flex-wrap:wrap;}
 .board-toggle a{
   padding:8px 20px; border-radius:24px; font-size:13px; font-weight:600; text-decoration:none; color:var(--star-dim);
   transition:background .2s ease, color .2s ease;

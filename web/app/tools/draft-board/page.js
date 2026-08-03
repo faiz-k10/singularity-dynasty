@@ -1,13 +1,22 @@
 import Link from "next/link";
 import { getUserTier } from "@/lib/tier";
+import { resolveSort, sortRows } from "@/lib/sortLink";
 import ThemeToggle from "../../ThemeToggle";
 import InteractiveScript from "../../InteractiveScript";
+import SortableTh from "../SortableTh";
+import ExportCsvButton from "../ExportCsvButton";
 
 export const metadata = {
   title: "Dynasty Draft Board — Singularity Dynasty",
 };
 
 const PAID_TIERS = ["explorer", "singularity"];
+const COLUMN_TYPES = {
+  pick: "number",
+  player_name: "string",
+  position: "string",
+  team: "string",
+};
 
 export default async function DraftBoardPage({ searchParams }) {
   const params = await searchParams;
@@ -63,6 +72,9 @@ export default async function DraftBoardPage({ searchParams }) {
     .sort((a, b) => a - b);
 
   const isTeaser = !hasFullAccess && totalRounds > 1;
+  const { sortKey, sortDir } = resolveSort(params, "pick", "asc");
+  const sortProps = { activeSort: sortKey, activeDir: sortDir, currentParams: params };
+  const canExport = tier === "singularity" && picks.length > 0;
 
   return (
     <div className="tool-page">
@@ -80,19 +92,37 @@ export default async function DraftBoardPage({ searchParams }) {
           analysis.
         </p>
 
-        <div className="board-toggle">
-          <Link
-            href="?type=startup"
-            className={boardType === "startup" ? "active" : ""}
-          >
-            Startup
-          </Link>
-          <Link
-            href="?type=rookie"
-            className={boardType === "rookie" ? "active" : ""}
-          >
-            Rookie
-          </Link>
+        <div className="toggle-row-flex">
+          <div className="board-toggle">
+            <Link
+              href="?type=startup"
+              className={boardType === "startup" ? "active" : ""}
+            >
+              Startup
+            </Link>
+            <Link
+              href="?type=rookie"
+              className={boardType === "rookie" ? "active" : ""}
+            >
+              Rookie
+            </Link>
+          </div>
+          {canExport && (
+            <ExportCsvButton
+              id="csv-draft-board"
+              filename={`draft-board-${boardType}-${latest.season}.csv`}
+              columns={[
+                { key: "round", label: "Round" },
+                { key: "pick", label: "Pick" },
+                { key: "player_name", label: "Player" },
+                { key: "position", label: "Position" },
+                { key: "team", label: "Team" },
+                { key: "is_stack", label: "Stack" },
+                { key: "stack_note", label: "Stack Note" },
+              ]}
+              rows={picks}
+            />
+          )}
         </div>
 
         {picks.length === 0 ? (
@@ -101,46 +131,49 @@ export default async function DraftBoardPage({ searchParams }) {
           </div>
         ) : (
           <>
-            {roundNumbers.map((roundNum) => (
-              <div className="draft-round" key={roundNum}>
-                <div className="draft-round-title">Round {roundNum}</div>
-                <div className="rankings-table-wrap">
-                  <table className="rankings-table">
-                    <thead>
-                      <tr>
-                        <th>Pick</th>
-                        <th>Player</th>
-                        <th>Pos</th>
-                        <th>Team</th>
-                        <th></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {rounds[roundNum].map((p) => (
-                        <tr key={p.pick}>
-                          <td className="mono">
-                            {roundNum}.{String(p.pick).padStart(2, "0")}
-                          </td>
-                          <td>{p.player_name}</td>
-                          <td className="mono">{p.position}</td>
-                          <td className="mono">{p.team || "—"}</td>
-                          <td>
-                            {p.is_stack && (
-                              <span
-                                className="stack-badge"
-                                title={p.stack_note || "Correlated stack"}
-                              >
-                                STACK
-                              </span>
-                            )}
-                          </td>
+            {roundNumbers.map((roundNum) => {
+              const roundRows = sortRows(rounds[roundNum], sortKey, sortDir, COLUMN_TYPES);
+              return (
+                <div className="draft-round" key={roundNum}>
+                  <div className="draft-round-title">Round {roundNum}</div>
+                  <div className="rankings-table-wrap">
+                    <table className="rankings-table">
+                      <thead>
+                        <tr>
+                          <SortableTh label="Pick" sortKey="pick" {...sortProps} />
+                          <SortableTh label="Player" sortKey="player_name" {...sortProps} />
+                          <SortableTh label="Pos" sortKey="position" {...sortProps} />
+                          <SortableTh label="Team" sortKey="team" {...sortProps} />
+                          <th></th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {roundRows.map((p) => (
+                          <tr key={p.pick}>
+                            <td className="mono">
+                              {roundNum}.{String(p.pick).padStart(2, "0")}
+                            </td>
+                            <td>{p.player_name}</td>
+                            <td className="mono">{p.position}</td>
+                            <td className="mono">{p.team || "—"}</td>
+                            <td>
+                              {p.is_stack && (
+                                <span
+                                  className="stack-badge"
+                                  title={p.stack_note || "Correlated stack"}
+                                >
+                                  STACK
+                                </span>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
 
             {isTeaser && (
               <div className="tool-paywall reveal in">

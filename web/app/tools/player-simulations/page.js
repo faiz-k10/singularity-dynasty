@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { getUserTier } from "@/lib/tier";
+import { resolveSort, sortRows } from "@/lib/sortLink";
 import ThemeToggle from "../../ThemeToggle";
 import InteractiveScript from "../../InteractiveScript";
+import SortableTh from "../SortableTh";
+import ExportCsvButton from "../ExportCsvButton";
 
 export const metadata = {
   title: "Player Season Simulations — Singularity Dynasty",
@@ -10,8 +13,17 @@ export const metadata = {
 const TEASER_LIMIT = 10;
 // Singularity-only per the pricing copy — Explorer does not include this.
 const PAID_TIERS = ["singularity"];
+const COLUMN_TYPES = {
+  player_name: "string",
+  position: "string",
+  team: "string",
+  floor: "number",
+  median: "number",
+  ceiling: "number",
+};
 
-export default async function PlayerSimulationsPage() {
+export default async function PlayerSimulationsPage({ searchParams }) {
+  const params = await searchParams;
   const { supabase, tier } = await getUserTier();
   const hasFullAccess = PAID_TIERS.includes(tier);
 
@@ -44,7 +56,11 @@ export default async function PlayerSimulationsPage() {
   }
 
   const isTeaser = !hasFullAccess && totalCount > sims.length;
+  const { sortKey, sortDir } = resolveSort(params, "median", "desc");
+  const sortedSims = sortRows(sims, sortKey, sortDir, COLUMN_TYPES);
   const maxCeiling = sims.reduce((m, s) => Math.max(m, s.ceiling), 1);
+  const sortProps = { activeSort: sortKey, activeDir: sortDir, currentParams: params };
+  const canExport = tier === "singularity" && sims.length > 0;
 
   return (
     <div className="tool-page">
@@ -68,21 +84,38 @@ export default async function PlayerSimulationsPage() {
           </div>
         ) : (
           <>
+            {canExport && (
+              <div className="tool-export-row">
+                <ExportCsvButton
+                  id="csv-player-simulations"
+                  filename={`player-simulations-${latest.season}.csv`}
+                  columns={[
+                    { key: "player_name", label: "Player" },
+                    { key: "position", label: "Position" },
+                    { key: "team", label: "Team" },
+                    { key: "floor", label: "Floor" },
+                    { key: "median", label: "Median" },
+                    { key: "ceiling", label: "Ceiling" },
+                  ]}
+                  rows={sortedSims}
+                />
+              </div>
+            )}
             <div className="rankings-table-wrap">
               <table className="rankings-table sim-table">
                 <thead>
                   <tr>
-                    <th>Player</th>
-                    <th>Pos</th>
-                    <th>Team</th>
-                    <th>Floor</th>
-                    <th>Median</th>
-                    <th>Ceiling</th>
+                    <SortableTh label="Player" sortKey="player_name" {...sortProps} />
+                    <SortableTh label="Pos" sortKey="position" {...sortProps} />
+                    <SortableTh label="Team" sortKey="team" {...sortProps} />
+                    <SortableTh label="Floor" sortKey="floor" {...sortProps} />
+                    <SortableTh label="Median" sortKey="median" {...sortProps} />
+                    <SortableTh label="Ceiling" sortKey="ceiling" {...sortProps} />
                     <th>Range</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {sims.map((row) => (
+                  {sortedSims.map((row) => (
                     <tr key={row.player_name}>
                       <td>{row.player_name}</td>
                       <td className="mono">{row.position}</td>
