@@ -77,8 +77,10 @@ function RankingsTable({
   sortKey,
   sortDir,
   currentParams,
+  sortParam = "sort",
+  dirParam = "dir",
 }) {
-  const sortProps = { activeSort: sortKey, activeDir: sortDir, currentParams };
+  const sortProps = { activeSort: sortKey, activeDir: sortDir, currentParams, sortParam, dirParam };
   return (
     <div className="rankings-table-wrap">
       <table className="rankings-table">
@@ -234,28 +236,41 @@ export default async function RedraftRankingsPage({ searchParams }) {
                   Hover or tap a name for projection, team, and notes.
                 </p>
                 <div className="position-columns">
-                  {positions.map((pos) => (
-                    <div className="position-col" key={pos}>
-                      <div className="draft-round-title">
-                        {pos} · {byPosition[pos].length}
+                  {positions.map((pos) => {
+                    const sortParam = `${pos.toLowerCase()}_sort`;
+                    const dirParam = `${pos.toLowerCase()}_dir`;
+                    const { sortKey: posSortKey, sortDir: posSortDir } = resolveSort(
+                      params,
+                      "rank",
+                      "asc",
+                      sortParam,
+                      dirParam
+                    );
+                    return (
+                      <div className="position-col" key={pos}>
+                        <div className="draft-round-title">
+                          {pos} · {byPosition[pos].length}
+                        </div>
+                        <RankingsTable
+                          rows={sortRows(
+                            byPositionLabeled[pos],
+                            posSortKey,
+                            posSortDir,
+                            POSITION_COLUMN_TYPES
+                          )}
+                          showPosition={false}
+                          showTeam={false}
+                          showNotes={false}
+                          popoverOnName
+                          sortKey={posSortKey}
+                          sortDir={posSortDir}
+                          currentParams={params}
+                          sortParam={sortParam}
+                          dirParam={dirParam}
+                        />
                       </div>
-                      <RankingsTable
-                        rows={sortRows(
-                          byPositionLabeled[pos],
-                          sortKey,
-                          sortDir,
-                          POSITION_COLUMN_TYPES
-                        )}
-                        showPosition={false}
-                        showTeam={false}
-                        showNotes={false}
-                        popoverOnName
-                        sortKey={sortKey}
-                        sortDir={sortDir}
-                        currentParams={params}
-                      />
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </>
             )}

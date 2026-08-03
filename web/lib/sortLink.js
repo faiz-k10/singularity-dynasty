@@ -1,18 +1,40 @@
 // Shared by every /tools/* table: sort state lives entirely in the URL
 // (?sort=col&dir=asc|desc), matching the existing view/type toggle pattern
 // on these pages — no client component needed just to sort a table.
+//
+// Pages that render several independent tables at once (redraft's By
+// Position columns, draft board's per-round tables, prospect rankings'
+// WR/QB groups) pass a namespaced sortParam/dirParam per table (e.g.
+// "qb_sort"/"qb_dir") so sorting one table doesn't re-sort the others.
 
-export function resolveSort(params, defaultKey, defaultDir = "asc") {
-  const sortKey = params?.sort || defaultKey;
-  const sortDir = params?.sort ? (params?.dir === "desc" ? "desc" : "asc") : defaultDir;
+export function resolveSort(
+  params,
+  defaultKey,
+  defaultDir = "asc",
+  sortParam = "sort",
+  dirParam = "dir"
+) {
+  const sortKey = params?.[sortParam] || defaultKey;
+  const sortDir = params?.[sortParam]
+    ? params?.[dirParam] === "desc"
+      ? "desc"
+      : "asc"
+    : defaultDir;
   return { sortKey, sortDir };
 }
 
-export function sortHref(currentParams, sortKey, activeSort, activeDir) {
+export function sortHref(
+  currentParams,
+  sortKey,
+  activeSort,
+  activeDir,
+  sortParam = "sort",
+  dirParam = "dir"
+) {
   const params = new URLSearchParams(currentParams || {});
   const nextDir = activeSort === sortKey && activeDir === "asc" ? "desc" : "asc";
-  params.set("sort", sortKey);
-  params.set("dir", nextDir);
+  params.set(sortParam, sortKey);
+  params.set(dirParam, nextDir);
   return `?${params.toString()}`;
 }
 

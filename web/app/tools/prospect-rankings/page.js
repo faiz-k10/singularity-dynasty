@@ -58,12 +58,24 @@ export default async function ProspectRankingsPage({ searchParams }) {
   const totalRows = wrs.rows.length + qbs.rows.length;
   const totalCount = wrs.total + qbs.total;
   const isTeaser = !hasFullAccess && totalCount > totalRows;
-  const { sortKey, sortDir } = resolveSort(params, "rank", "asc");
-  const sortProps = { activeSort: sortKey, activeDir: sortDir, currentParams: params };
   const canExport = tier === "singularity" && totalRows > 0;
 
-  const renderGroup = (label, rows) => {
-    const sorted = sortRows(rows, sortKey, sortDir, COLUMN_TYPES);
+  // Each group (WR/QB) sorts independently via a namespaced sort/dir param
+  // pair so sorting one table doesn't re-sort the other.
+  const wrSort = resolveSort(params, "rank", "asc", "wr_sort", "wr_dir");
+  const qbSort = resolveSort(params, "rank", "asc", "qb_sort", "qb_dir");
+  const sortedWrs = sortRows(wrs.rows, wrSort.sortKey, wrSort.sortDir, COLUMN_TYPES);
+  const sortedQbs = sortRows(qbs.rows, qbSort.sortKey, qbSort.sortDir, COLUMN_TYPES);
+
+  const renderGroup = (label, rows, sortState, sortParam, dirParam) => {
+    const sortProps = {
+      activeSort: sortState.sortKey,
+      activeDir: sortState.sortDir,
+      currentParams: params,
+      sortParam,
+      dirParam,
+    };
+    const sorted = sortRows(rows, sortState.sortKey, sortState.sortDir, COLUMN_TYPES);
     return (
       rows.length > 0 && (
         <div className="draft-round" key={label}>
@@ -131,15 +143,12 @@ export default async function ProspectRankingsPage({ searchParams }) {
                     { key: "school", label: "School" },
                     { key: "comp", label: "Comp" },
                   ]}
-                  rows={[
-                    ...sortRows(wrs.rows, sortKey, sortDir, COLUMN_TYPES),
-                    ...sortRows(qbs.rows, sortKey, sortDir, COLUMN_TYPES),
-                  ]}
+                  rows={[...sortedWrs, ...sortedQbs]}
                 />
               </div>
             )}
-            {renderGroup("Wide Receivers", wrs.rows)}
-            {renderGroup("Quarterbacks", qbs.rows)}
+            {renderGroup("Wide Receivers", wrs.rows, wrSort, "wr_sort", "wr_dir")}
+            {renderGroup("Quarterbacks", qbs.rows, qbSort, "qb_sort", "qb_dir")}
 
             {isTeaser && (
               <div className="tool-paywall reveal in">

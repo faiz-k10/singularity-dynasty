@@ -72,8 +72,6 @@ export default async function DraftBoardPage({ searchParams }) {
     .sort((a, b) => a - b);
 
   const isTeaser = !hasFullAccess && totalRounds > 1;
-  const { sortKey, sortDir } = resolveSort(params, "pick", "asc");
-  const sortProps = { activeSort: sortKey, activeDir: sortDir, currentParams: params };
   const canExport = tier === "singularity" && picks.length > 0;
 
   return (
@@ -132,6 +130,22 @@ export default async function DraftBoardPage({ searchParams }) {
         ) : (
           <>
             {roundNumbers.map((roundNum) => {
+              const sortParam = `r${roundNum}_sort`;
+              const dirParam = `r${roundNum}_dir`;
+              const { sortKey, sortDir } = resolveSort(
+                params,
+                "pick",
+                "asc",
+                sortParam,
+                dirParam
+              );
+              const sortProps = {
+                activeSort: sortKey,
+                activeDir: sortDir,
+                currentParams: params,
+                sortParam,
+                dirParam,
+              };
               const roundRows = sortRows(rounds[roundNum], sortKey, sortDir, COLUMN_TYPES);
               return (
                 <div className="draft-round" key={roundNum}>
