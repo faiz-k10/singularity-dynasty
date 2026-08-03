@@ -25,6 +25,15 @@ function formatScore(value) {
   return value === null || value === undefined ? "—" : Number(value).toFixed(1);
 }
 
+// "21.2-24.6" when a range is published, falling back to the single ceiling
+// number if ceiling_range_low hasn't been uploaded for this row yet.
+function formatCeilingRange(row) {
+  if (row.ceiling_score === null || row.ceiling_score === undefined) return "—";
+  const high = Number(row.ceiling_score).toFixed(1);
+  if (row.ceiling_range_low === null || row.ceiling_range_low === undefined) return high;
+  return `${Number(row.ceiling_range_low).toFixed(1)}-${high}`;
+}
+
 export default async function BestBallRankingsPage({ searchParams }) {
   const params = await searchParams;
   const { supabase, tier } = await getUserTier();
@@ -45,7 +54,7 @@ export default async function BestBallRankingsPage({ searchParams }) {
     let query = supabase
       .from("best_ball_rankings")
       .select(
-        "rank, player_name, position, team, ceiling_score, playoff_ceiling_score, notes",
+        "rank, player_name, position, team, ceiling_score, ceiling_range_low, ceiling_probability, playoff_ceiling_score, notes",
         { count: "exact" }
       )
       .eq("season", latest.season)
@@ -102,6 +111,8 @@ export default async function BestBallRankingsPage({ searchParams }) {
                     { key: "position", label: "Position" },
                     { key: "team", label: "Team" },
                     { key: "ceiling_score", label: "This Week" },
+                    { key: "ceiling_range_low", label: "This Week Low" },
+                    { key: "ceiling_probability", label: "This Week %" },
                     { key: "playoff_ceiling_score", label: "Playoffs (Wk 15-17)" },
                     { key: "notes", label: "Notes" },
                   ]}
@@ -133,7 +144,13 @@ export default async function BestBallRankingsPage({ searchParams }) {
                       <td>{row.player_name}</td>
                       <td className="mono">{row.position}</td>
                       <td className="mono">{row.team || "—"}</td>
-                      <td className="mono">{formatScore(row.ceiling_score)}</td>
+                      <td className="mono ceiling-cell">
+                        {formatCeilingRange(row)}
+                        {row.ceiling_probability !== null &&
+                          row.ceiling_probability !== undefined && (
+                            <span className="ceiling-pct">{row.ceiling_probability}%</span>
+                          )}
+                      </td>
                       <td className="mono">{formatScore(row.playoff_ceiling_score)}</td>
                       <td className="tool-notes">{row.notes || ""}</td>
                     </tr>

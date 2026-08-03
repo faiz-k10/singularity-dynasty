@@ -27,6 +27,17 @@ MED_DECAY   <- c(RB = 0.87, QB = 0.90, WR = 0.89, TE = 0.92)  # Redraft Rankings
 CEIL_DECAY  <- c(RB = 0.89, QB = 0.98, WR = 0.93, TE = 0.91)  # Best Ball Rankings
 CEIL_Q      <- c(RB = 0.96, QB = 0.96, WR = 0.94, TE = 0.96)  # calibrated internal quantile for "ceiling"
 FLOOR_Q     <- c(RB = 0.09, QB = 0.08, WR = 0.12, TE = 0.13)  # calibrated internal quantile for "floor"
+CEIL_RANGE_LOW_Q <- CEIL_Q - 0.10  # lower bound of the Best Ball ceiling range (e.g. RB:
+                                    # 0.86 vs ceiling's 0.96). NOT backtested like CEIL_Q
+                                    # itself -- a judgment call pending validation.
+                                    # IMPORTANT: because the range low and its hit-probability
+                                    # both derive from quantiles of the SAME weighted game log,
+                                    # ceiling_probability lands close to a FIXED ~10pt-of-mass
+                                    # figure per position (currently ~14% RB/QB/TE, ~16% WR) by
+                                    # construction, not a strongly player-differentiating stat --
+                                    # it varies player-to-player only through sample size/ties,
+                                    # not through any real skill signal. Revisit if that's not
+                                    # what's wanted.
 
 MAX_GAMES_PER_SEASON <- 16   # 17 weeks minus 1 bye (weeks 1-17; week 18 excluded — see below)
 AVAILABILITY_YEAR_DECAY <- 0.6  # not backtested — a judgment call weighting recent seasons'
@@ -187,6 +198,13 @@ project_all <- function(seasons = 2023:2025, n_sims = 30000, seed = 42,
     if (length(shrink_players) > 0) cat(" -", paste(shrink_players, collapse = ", "), "\n")
   }
 
+  # Current team for DISPLAY only (not a shrinkage signal — that trigger was
+  # removed). Falls back to the most recent team in the game log if a
+  # player isn't found in load_players() (rare -- retired/inactive edge
+  # cases). Same "AZ" -> "ARI" mismatch as before applies here too.
+  current_team <- load_players()[, c("display_name", "position", "latest_team")]
+  current_team$latest_team <- ifelse(current_team$latest_team == "AZ", "ARI", current_team$latest_team)
+
   rows <- vector("list", length(eligible))
   names(rows) <- eligible
 
@@ -195,6 +213,9 @@ project_all <- function(seasons = 2023:2025, n_sims = 30000, seed = 42,
     x <- d$fantasy_points_ppr
     pos <- d$position[1]
     n <- length(x)
+
+    team <- current_team$latest_team[current_team$display_name == p & current_team$position == pos]
+    team <- if (length(team) == 1 && !is.na(team)) team else tail(d$team, 1)
 
     wm <- recency_weights(n, MED_DECAY[pos])
     wc <- recency_weights(n, CEIL_DECAY[pos])
@@ -212,25 +233,76 @@ project_all <- function(seasons = 2023:2025, n_sims = 30000, seed = 42,
       fl  <- shrunk_quantile(x, wm, base$pool, base$weights, FLOOR_Q[pos])
       med <- shrunk_quantile(x, wm, base$pool, base$weights, 0.50)
       cei <- shrunk_quantile(x, wc, base$pool, base$weights, CEIL_Q[pos])
+      cei_low <- shrunk_quantile(x, wc, base$pool, base$weights, CEIL_RANGE_LOW_Q[pos])
     } else {
       fl  <- weighted_quantile(x, wm, FLOOR_Q[pos])
       med <- weighted_quantile(x, wm, 0.50)
       cei <- weighted_quantile(x, wc, CEIL_Q[pos])
+      cei_low <- weighted_quantile(x, wc, CEIL_RANGE_LOW_Q[pos])
     }
+    # Probability of clearing the range's low end, grounded in the player's
+    # own weighted game log (not the baseline pool, even when shrunk) --
+    # this is "how often does THIS player personally clear that bar."
+    cei_pct <- round(100 * sum(wc[x >= cei_low]) / sum(wc), 0)
 
     rows[[p]] <- data.frame(
-      player_name = p, position = pos, games = n,
+      player_name = p, position = pos, team = team, games = n,
       touches_per_game = round(mean(d$touches), 1),
       availability_pct = round(100 * avail, 0),
       shrunk = shrink_this_player,
       floor = round(fl, 1),
       median = round(med, 1),
       ceiling = round(cei, 1),
+      ceiling_range_low = round(cei_low, 1),
+      ceiling_probability = cei_pct,
+      # Season floor/ceiling use plain 10th/90th percentile of the 30,000-draw
+      # simulated distribution directly -- NOT the calibrated FLOOR_Q/CEIL_Q,
+      # which correct for small-sample bias in a *historical* game log. The
+      # season sim doesn't have that problem; it's already a large Monte
+      # Carlo sample, so a plain empirical quantile is the right tool here.
+      season_floor = round(quantile(szn, 0.10), 0),
       season_median = round(quantile(szn, 0.50), 0),
+      season_ceiling = round(quantile(szn, 0.90), 0),
       playoff_ceiling = round(quantile(playoff, CEIL_Q[pos]), 1)
     )
   }
   do.call(rbind, rows)
+}
+
+# ============================= SUPABASE EXPORT =============================
+# Reshapes project_all()'s output into the three CSVs each table actually
+# expects (see web/csv-upload-formats.html for the canonical column specs).
+# `week` defaults to 1 -- bump it each time you republish through the
+# season, per the existing convention documented for both tables.
+export_for_supabase <- function(df, seasons = 2023:2025, week = 1) {
+  season <- max(seasons) + 1
+
+  redraft <- df[order(-df$median), ]
+  write.csv(data.frame(
+    season = season, week = week, rank = seq_len(nrow(redraft)),
+    player_name = redraft$player_name, position = redraft$position,
+    team = redraft$team, projection = redraft$median, notes = ""
+  ), "upload_redraft_rankings.csv", row.names = FALSE)
+
+  bb <- df[order(-df$ceiling), ]
+  write.csv(data.frame(
+    season = season, week = week, rank = seq_len(nrow(bb)),
+    player_name = bb$player_name, position = bb$position, team = bb$team,
+    ceiling_score = bb$ceiling,
+    ceiling_range_low = bb$ceiling_range_low,
+    ceiling_probability = bb$ceiling_probability,
+    playoff_ceiling_score = bb$playoff_ceiling,
+    notes = ""
+  ), "upload_best_ball_rankings.csv", row.names = FALSE)
+
+  write.csv(data.frame(
+    season = season, player_name = df$player_name, position = df$position,
+    team = df$team, floor = df$season_floor, median = df$season_median,
+    ceiling = df$season_ceiling, notes = ""
+  ), "upload_player_simulations.csv", row.names = FALSE)
+
+  cat("Wrote upload_redraft_rankings.csv, upload_best_ball_rankings.csv,",
+      "upload_player_simulations.csv (season =", season, ", week =", week, ")\n")
 }
 
 # ============================= RUN =============================
@@ -245,6 +317,7 @@ if (sys.nframe() == 0) {
 
   write.csv(df, "projections.csv", row.names = FALSE)
   cat("Wrote projections.csv (", nrow(df), "rows ) to", getwd(), "\n\n")
+  export_for_supabase(df)
 
   cat("=== Top 5 by weekly median, every position — full results are all in projections.csv ===\n")
   for (pos in c("QB", "RB", "WR", "TE")) {
