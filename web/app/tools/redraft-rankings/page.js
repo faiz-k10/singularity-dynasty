@@ -4,8 +4,8 @@ import { resolveSort, sortRows } from "@/lib/sortLink";
 import ThemeToggle from "../../ThemeToggle";
 import InteractiveScript from "../../InteractiveScript";
 import ExportCsvButton from "../ExportCsvButton";
-import RankingsTable from "../RankingsTable";
 import OverallSearch from "../OverallSearch";
+import PositionFilterSearch from "../PositionFilterSearch";
 
 export const metadata = {
   title: "Redraft Weekly Rankings — Singularity Dynasty",
@@ -19,7 +19,12 @@ const OVERALL_COLUMN_TYPES = {
   team: "string",
   projection: "number",
 };
-const POSITION_COLUMN_TYPES = { rank: "number", player_name: "string" };
+const POSITION_COLUMN_TYPES = {
+  rank: "number",
+  player_name: "string",
+  team: "string",
+  projection: "number",
+};
 
 function sortPositions(positions) {
   return [...positions].sort((a, b) => {
@@ -81,6 +86,30 @@ export default async function RedraftRankingsPage({ searchParams }) {
     OVERALL_COLUMN_TYPES
   );
   const canExport = tier === "singularity" && rankings.length > 0;
+
+  // Per-position sort still resolves server-side from URL params (each
+  // position keeps its own ?xx_sort=/&xx_dir= pair); which positions are
+  // VISIBLE and the player-name search are both client-side state, handled
+  // by PositionFilterSearch below.
+  const positionData = {};
+  positions.forEach((pos) => {
+    const sortParam = `${pos.toLowerCase()}_sort`;
+    const dirParam = `${pos.toLowerCase()}_dir`;
+    const { sortKey: posSortKey, sortDir: posSortDir } = resolveSort(
+      params,
+      "rank",
+      "asc",
+      sortParam,
+      dirParam
+    );
+    positionData[pos] = {
+      rows: sortRows(byPositionLabeled[pos], posSortKey, posSortDir, POSITION_COLUMN_TYPES),
+      sortKey: posSortKey,
+      sortDir: posSortDir,
+      sortParam,
+      dirParam,
+    };
+  });
 
   return (
     <div className="tool-page">
@@ -149,48 +178,11 @@ export default async function RedraftRankingsPage({ searchParams }) {
                 currentParams={params}
               />
             ) : (
-              <>
-                <p className="tool-hint">
-                  Hover or tap a name for projection, team, and notes.
-                </p>
-                <div className="position-columns">
-                  {positions.map((pos) => {
-                    const sortParam = `${pos.toLowerCase()}_sort`;
-                    const dirParam = `${pos.toLowerCase()}_dir`;
-                    const { sortKey: posSortKey, sortDir: posSortDir } = resolveSort(
-                      params,
-                      "rank",
-                      "asc",
-                      sortParam,
-                      dirParam
-                    );
-                    return (
-                      <div className="position-col" key={pos}>
-                        <div className="draft-round-title">
-                          {pos} · {byPosition[pos].length}
-                        </div>
-                        <RankingsTable
-                          rows={sortRows(
-                            byPositionLabeled[pos],
-                            posSortKey,
-                            posSortDir,
-                            POSITION_COLUMN_TYPES
-                          )}
-                          showPosition={false}
-                          showTeam={false}
-                          showNotes={false}
-                          popoverOnName
-                          sortKey={posSortKey}
-                          sortDir={posSortDir}
-                          currentParams={params}
-                          sortParam={sortParam}
-                          dirParam={dirParam}
-                        />
-                      </div>
-                    );
-                  })}
-                </div>
-              </>
+              <PositionFilterSearch
+                positions={positions}
+                positionData={positionData}
+                currentParams={params}
+              />
             )}
           </>
         )}
