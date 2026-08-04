@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getUserTier } from "@/lib/tier";
 import ThemeToggle from "../../ThemeToggle";
 import InteractiveScript from "../../InteractiveScript";
+import STAT_LABELS from "../statLabels";
 
 export const metadata = {
   title: "Compare Players — Season Simulations — Singularity Dynasty",
@@ -32,7 +33,7 @@ export default async function ComparePlayerSimsPage({ searchParams }) {
   if (latest) {
     let query = supabase
       .from("player_simulations")
-      .select("player_name, position, team, floor, median, ceiling, notes")
+      .select("player_name, position, team, floor, median, ceiling, stat_ranges, notes")
       .eq("season", latest.season)
       .eq("week", latest.week)
       .order("median", { ascending: false });
@@ -47,6 +48,16 @@ export default async function ComparePlayerSimsPage({ searchParams }) {
 
   const byName = new Map(sims.map((r) => [r.player_name, r]));
   const selected = SLOTS.map((slot) => byName.get(params?.[slot])).filter(Boolean);
+
+  // Union of stat keys across the selected players, in the shared fixed
+  // order -- comparing a QB against a WR means each row only makes sense
+  // for some of the players, so a player missing a given stat just shows
+  // "—" in that column rather than the row being dropped entirely.
+  const statKeysPresent = new Set();
+  for (const r of selected) {
+    if (r.stat_ranges) Object.keys(r.stat_ranges).forEach((k) => statKeysPresent.add(k));
+  }
+  const compareStats = STAT_LABELS.filter(([key]) => statKeysPresent.has(key));
 
   return (
     <div className="tool-page">
@@ -161,6 +172,19 @@ export default async function ComparePlayerSimsPage({ searchParams }) {
                         </td>
                       ))}
                     </tr>
+                    {compareStats.map(([key, label]) => (
+                      <tr key={key}>
+                        <th>{label}</th>
+                        {selected.map((r) => {
+                          const v = r.stat_ranges && r.stat_ranges[key];
+                          return (
+                            <td className="mono" key={r.player_name}>
+                              {v ? `${v.floor}–${v.median}–${v.ceiling}` : "—"}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))}
                     <tr>
                       <th>Notes</th>
                       {selected.map((r) => (

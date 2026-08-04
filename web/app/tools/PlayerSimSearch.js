@@ -5,20 +5,7 @@ import SortableTh from "./SortableTh";
 import TrendTag from "./TrendTag";
 import ConfidenceBadge from "./ConfidenceBadge";
 import TeamBadge from "./TeamBadge";
-
-// Fixed display order (matches STAT_COLS in projection_engine.R) --
-// position-dependent, a WR's stat_ranges simply won't have passing_*
-// keys, so this list just skips whatever the row doesn't carry.
-const STAT_LABELS = [
-  ["passing_yards", "Pass Yards"],
-  ["passing_tds", "Pass TDs"],
-  ["passing_interceptions", "INTs"],
-  ["rushing_yards", "Rush Yards"],
-  ["rushing_tds", "Rush TDs"],
-  ["receptions", "Receptions"],
-  ["receiving_yards", "Rec Yards"],
-  ["receiving_tds", "Rec TDs"],
-];
+import STAT_LABELS from "./statLabels";
 
 // Detail row unfolded below a player when their name is clicked -- one
 // open at a time (clicking a different player folds this one and opens
