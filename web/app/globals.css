@@ -687,7 +687,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
   flex-shrink:0; cursor:default;
 }
 .trend-tag.up{color:var(--up); background:rgba(var(--up-rgb),0.15); border-color:rgba(var(--up-rgb),0.35);}
-.trend-tag.down{color:var(--down); background:rgba(var(--down-rgb),0.15); border-color:rgba(var(--down-rgb),0.35);}
+.trend-tag.down{color:var(--down); background:rgba(var(--down-rgb),0.15); border-color:rgba(var(--down-rgb),0.35); transform:translateY(1px);}
 .trend-tag.steady{color:var(--neon-blue-dim); border-color:var(--line);}
 
 .confidence-badge{

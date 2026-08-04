@@ -57,9 +57,14 @@ MATCHUP_FULL_SAMPLE_GAMES <- 8  # games at which a defense's own fantasy-points-
                                  # (pre-cap) -- reuses the same "half-season,
                                  # trust it" benchmark as MIN_GAMES elsewhere.
                                  # NOT separately backtested for defense.
-MATCHUP_MULT_FLOOR <- 0.80  # opponent-strength multiplier clamp -- keeps a
-MATCHUP_MULT_CEIL  <- 1.20  # small defensive sample or one fluke game from
-                             # swinging a projection too far. Product judgment,
+MATCHUP_MULT_FLOOR <- 0.90  # opponent-strength multiplier clamp -- keeps a
+MATCHUP_MULT_CEIL  <- 1.10  # small defensive sample or one fluke game from
+                             # swinging a projection too far. Narrowed from an
+                             # initial +/-20% after live review found it was
+                             # moving final rankings more than intended --
+                             # most defenses were hitting the cap outright, so
+                             # the cap (not the raw signal) was the dominant
+                             # lever. Product judgment,
                              # not backtested.
 
 # Week 18 is deliberately excluded from all history: it shows the same ~8%
