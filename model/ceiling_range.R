@@ -15,10 +15,10 @@
 
 source("projection_engine.R")
 
-# Same week used for the matching export_for_supabase() run -- keep these
-# in sync when republishing, so an OUT player gets zeroed here too instead
-# of showing a nonzero ceiling_range_low next to a 0 ceiling_score.
-WEEK <- 1
+# Same date-derived week export_for_supabase() resolves to, so an OUT
+# player gets zeroed here too instead of showing a nonzero
+# ceiling_range_low next to a 0 ceiling_score.
+WEEK <- current_nfl_week(max(2023:2025) + 1)
 out_players <- tryCatch(load_out_players(max(2023:2025) + 1, WEEK), error = function(e) character(0))
 
 reg <- load_history(2023:2025)

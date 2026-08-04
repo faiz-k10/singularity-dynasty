@@ -158,11 +158,26 @@ player_availability <- function(player_games_df) {
 # they also happen to be under the low-sample threshold. Team-change alone
 # is no longer a signal this engine acts on.
 
-# Week 1 opponent per team, for Redraft's Opponent column. Update the
-# `week` argument as the real season progresses (still just pulls whatever
-# week of the already-released schedule you ask for -- this isn't tied to
-# our internal publish-batch "week" counter, which is a different thing).
-load_week1_opponents <- function(season, week = 1) {
+# The real NFL week to publish for, by date -- not a manually bumped
+# counter. A week counts as "current" until every one of its games has
+# been played; before the season starts, every week is still upcoming, so
+# this correctly resolves to 1. After the season ends, falls back to the
+# final week rather than erroring.
+current_nfl_week <- function(season) {
+  sch <- load_schedules(season)
+  sch <- sch[!is.na(sch$week), ]
+  gameday <- as.numeric(as.Date(sch$gameday))
+  today <- as.numeric(Sys.Date())
+  weeks <- sort(unique(sch$week))
+  week_end <- sapply(weeks, function(w) max(gameday[sch$week == w]))
+  upcoming <- weeks[week_end >= today]
+  if (length(upcoming) == 0) return(max(weeks))
+  min(upcoming)
+}
+
+# Opponent per team for the given week, for Redraft/Best Ball's Opponent
+# column.
+load_opponents <- function(season, week) {
   sch <- load_schedules(season)
   wk <- sch[sch$week == week, c("away_team", "home_team")]
   setNames(c(wk$home_team, wk$away_team), c(wk$away_team, wk$home_team))
@@ -226,7 +241,8 @@ project_all <- function(seasons = 2023:2025, n_sims = 30000, seed = 42,
   # cases). Same "AZ" -> "ARI" mismatch as before applies here too.
   current_team <- load_players()[, c("display_name", "position", "latest_team")]
   current_team$latest_team <- ifelse(current_team$latest_team == "AZ", "ARI", current_team$latest_team)
-  week1_opponent <- load_week1_opponents(max(seasons) + 1, week = 1)
+  publish_week <- current_nfl_week(max(seasons) + 1)
+  week_opponent <- load_opponents(max(seasons) + 1, publish_week)
 
   rows <- vector("list", length(eligible))
   names(rows) <- eligible
@@ -277,7 +293,7 @@ project_all <- function(seasons = 2023:2025, n_sims = 30000, seed = 42,
       "STEADY"
     }
 
-    opp <- week1_opponent[team]
+    opp <- week_opponent[team]
     opp <- if (length(opp) == 1 && !is.na(opp)) unname(opp) else NA_character_
 
     rows[[p]] <- data.frame(
@@ -300,16 +316,24 @@ project_all <- function(seasons = 2023:2025, n_sims = 30000, seed = 42,
       playoff_ceiling = round(quantile(playoff, CEIL_Q[pos]), 1)
     )
   }
-  do.call(rbind, rows)
+  out <- do.call(rbind, rows)
+  attr(out, "publish_week") <- publish_week
+  out
 }
 
 # ============================= SUPABASE EXPORT =============================
 # Reshapes project_all()'s output into the three CSVs each table actually
 # expects (see web/csv-upload-formats.html for the canonical column specs).
-# `week` defaults to 1 -- bump it each time you republish through the
-# season, per the existing convention documented for both tables.
-export_for_supabase <- function(df, seasons = 2023:2025, week = 1) {
+# `week` defaults to whatever project_all() resolved by date (its
+# `publish_week` attribute) -- no more manually bumping a counter each
+# time you republish. Pass an explicit `week` to override (e.g.
+# backfilling a past week).
+export_for_supabase <- function(df, seasons = 2023:2025, week = NULL) {
   season <- max(seasons) + 1
+  if (is.null(week)) {
+    week <- attr(df, "publish_week")
+    if (is.null(week)) week <- current_nfl_week(season)
+  }
   confidence <- ifelse(df$shrunk, "building", "established")
 
   # Official "Out" designations for this week -- weekly projection/ceiling
