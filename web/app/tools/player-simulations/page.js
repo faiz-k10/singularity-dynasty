@@ -7,7 +7,7 @@ import SortableTh from "../SortableTh";
 import ExportCsvButton from "../ExportCsvButton";
 import TrendTag from "../TrendTag";
 import ConfidenceBadge from "../ConfidenceBadge";
-import TEAM_COLORS from "../teamColors";
+import TeamBadge from "../TeamBadge";
 
 export const metadata = {
   title: "Player Season Simulations — Singularity Dynasty",
@@ -150,13 +150,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
                       </td>
                       <td className="mono">{row.position}</td>
                       <td className="mono">
-                        {row.team && (
-                          <span
-                            className="team-chip"
-                            style={{ background: TEAM_COLORS[row.team] || "var(--line)" }}
-                          ></span>
-                        )}
-                        {row.team || "—"}
+                        <TeamBadge team={row.team} />
                       </td>
                       <td className="mono">{row.floor}</td>
                       <td className="mono heat-cell" style={{ "--heat": medianHeat(row) }}>

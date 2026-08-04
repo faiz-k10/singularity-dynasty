@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import SortableTh from "./SortableTh";
 import TrendTag from "./TrendTag";
 import ConfidenceBadge from "./ConfidenceBadge";
-import TEAM_COLORS from "./teamColors";
+import TeamBadge from "./TeamBadge";
 
 function formatScore(value) {
   return value === null || value === undefined ? "—" : Math.round(Number(value));
@@ -113,13 +113,7 @@ export default function BestBallSearch({ rows, sortKey, sortDir, currentParams, 
                   </td>
                   <td className="mono">{row.positionLabel || row.position}</td>
                   <td className="mono">
-                    {row.team && (
-                      <span
-                        className="team-chip"
-                        style={{ background: TEAM_COLORS[row.team] || "var(--line)" }}
-                      ></span>
-                    )}
-                    {row.team || "—"}
+                    <TeamBadge team={row.team} />
                   </td>
                   <td className="mono">{row.opponent || "—"}</td>
                   <td className="mono ceiling-cell heat-cell" style={{ "--heat": row.heat || 0 }}>

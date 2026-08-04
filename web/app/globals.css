@@ -700,8 +700,14 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .rankings-table tbody tr[data-pos="WR"] td:first-child{border-left-color:var(--pos-wr);}
 .rankings-table tbody tr[data-pos="TE"] td:first-child{border-left-color:var(--pos-te);}
 
-/* Team color chip next to the team code */
-.team-chip{display:inline-block; width:9px; height:9px; border-radius:2px; margin-right:6px; vertical-align:middle;}
+/* Team badge -- stylized team-color pill with the team code, NOT the real
+   NFL logo artwork (unlicensed trademarked marks). Replaces the plain
+   team-code text in the Team column. */
+.team-badge{
+  display:inline-flex; align-items:center; justify-content:center; min-width:34px; height:19px;
+  padding:0 7px; border-radius:9px; font-family:var(--font-ibm-plex-mono), monospace;
+  font-size:10.5px; font-weight:700; letter-spacing:0.02em;
+}
 
 /* Heat-tint for a table's primary value column (Median / Projection /
    This Week), relative to other players at the same position --

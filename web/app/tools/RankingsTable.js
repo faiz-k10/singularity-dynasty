@@ -2,7 +2,7 @@ import Link from "next/link";
 import SortableTh from "./SortableTh";
 import TrendTag from "./TrendTag";
 import ConfidenceBadge from "./ConfidenceBadge";
-import TEAM_COLORS from "./teamColors";
+import TeamBadge from "./TeamBadge";
 
 function formatProjection(value) {
   return value === null || value === undefined ? "—" : Number(value).toFixed(1);
@@ -88,13 +88,7 @@ export default function RankingsTable({
               {showPosition && <td className="mono">{row.positionLabel || row.position}</td>}
               {showTeam && (
                 <td className="mono">
-                  {row.team && (
-                    <span
-                      className="team-chip"
-                      style={{ background: TEAM_COLORS[row.team] || "var(--line)" }}
-                    ></span>
-                  )}
-                  {row.team || "—"}
+                  <TeamBadge team={row.team} />
                 </td>
               )}
               {showOpponent && <td className="mono">{row.opponent || "—"}</td>}
