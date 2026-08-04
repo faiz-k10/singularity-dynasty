@@ -80,6 +80,7 @@ export default function RankingsSearch({
         <RankingsTable
           rows={filteredRows}
           showPosition
+          showOpponent
           showProjection
           sortKey={sortKey}
           sortDir={sortDir}

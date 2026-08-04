@@ -158,6 +158,16 @@ player_availability <- function(player_games_df) {
 # they also happen to be under the low-sample threshold. Team-change alone
 # is no longer a signal this engine acts on.
 
+# Week 1 opponent per team, for Redraft's Opponent column. Update the
+# `week` argument as the real season progresses (still just pulls whatever
+# week of the already-released schedule you ask for -- this isn't tied to
+# our internal publish-batch "week" counter, which is a different thing).
+load_week1_opponents <- function(season, week = 1) {
+  sch <- load_schedules(season)
+  wk <- sch[sch$week == week, c("away_team", "home_team")]
+  setNames(c(wk$home_team, wk$away_team), c(wk$away_team, wk$home_team))
+}
+
 # ============================= PROJECTION =============================
 
 # Produces one row per eligible player: weekly floor/median/ceiling (for
@@ -204,6 +214,7 @@ project_all <- function(seasons = 2023:2025, n_sims = 30000, seed = 42,
   # cases). Same "AZ" -> "ARI" mismatch as before applies here too.
   current_team <- load_players()[, c("display_name", "position", "latest_team")]
   current_team$latest_team <- ifelse(current_team$latest_team == "AZ", "ARI", current_team$latest_team)
+  week1_opponent <- load_week1_opponents(max(seasons) + 1, week = 1)
 
   rows <- vector("list", length(eligible))
   names(rows) <- eligible
@@ -254,8 +265,11 @@ project_all <- function(seasons = 2023:2025, n_sims = 30000, seed = 42,
       "STEADY"
     }
 
+    opp <- week1_opponent[team]
+    opp <- if (length(opp) == 1 && !is.na(opp)) unname(opp) else NA_character_
+
     rows[[p]] <- data.frame(
-      player_name = p, position = pos, team = team, games = n,
+      player_name = p, position = pos, team = team, opponent = opp, games = n,
       touches_per_game = round(mean(d$touches), 1),
       availability_pct = round(100 * avail, 0),
       shrunk = shrink_this_player,
@@ -290,7 +304,7 @@ export_for_supabase <- function(df, seasons = 2023:2025, week = 1) {
   write.csv(data.frame(
     season = season, week = week, rank = seq_len(nrow(redraft)),
     player_name = redraft$player_name, position = redraft$position,
-    team = redraft$team, projection = redraft$median,
+    team = redraft$team, opponent = redraft$opponent, projection = redraft$median,
     trend = redraft$trend,
     sample_confidence = ifelse(redraft$shrunk, "building", "established"),
     notes = ""

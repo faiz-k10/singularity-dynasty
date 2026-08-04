@@ -16,6 +16,7 @@ const OVERALL_COLUMN_TYPES = {
   player_name: "string",
   position: "string",
   team: "string",
+  opponent: "string",
   projection: "number",
 };
 
@@ -49,11 +50,21 @@ export default async function RedraftRankingsPage({ searchParams }) {
   if (latest) {
     const { data } = await supabase
       .from("redraft_rankings")
-      .select("rank, player_name, position, team, projection, trend, sample_confidence, notes")
+      .select(
+        "rank, player_name, position, team, opponent, projection, trend, sample_confidence, notes"
+      )
       .eq("season", latest.season)
       .eq("week", latest.week)
       .order("rank", { ascending: true });
-    rankings = data || [];
+
+    // Position-relative rank (RB1, WR23, ...) computed once from the
+    // natural rank order -- stays fixed on each row even if the table is
+    // later re-sorted by a different column via SortableTh.
+    const positionCounters = {};
+    rankings = (data || []).map((r) => {
+      positionCounters[r.position] = (positionCounters[r.position] || 0) + 1;
+      return { ...r, positionLabel: `${r.position}${positionCounters[r.position]}` };
+    });
   }
 
   const positions = sortPositions([...new Set(rankings.map((r) => r.position))]);
@@ -107,6 +118,7 @@ export default async function RedraftRankingsPage({ searchParams }) {
                       { key: "player_name", label: "Player" },
                       { key: "position", label: "Position" },
                       { key: "team", label: "Team" },
+                      { key: "opponent", label: "Opponent" },
                       { key: "projection", label: "Projection" },
                       { key: "trend", label: "Trend" },
                       { key: "sample_confidence", label: "Confidence" },

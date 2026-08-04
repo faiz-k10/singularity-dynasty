@@ -52,6 +52,7 @@ export default function RankingsTable({
   rows,
   showPosition,
   showTeam = true,
+  showOpponent = false,
   showProjection = false,
   showNotes = true,
   popoverOnName = false,
@@ -71,6 +72,7 @@ export default function RankingsTable({
             <SortableTh label="Player" sortKey="player_name" {...sortProps} />
             {showPosition && <SortableTh label="Pos" sortKey="position" {...sortProps} />}
             {showTeam && <SortableTh label="Team" sortKey="team" {...sortProps} />}
+            {showOpponent && <SortableTh label="Opp" sortKey="opponent" {...sortProps} />}
             {showProjection && (
               <SortableTh label="Proj" sortKey="projection" {...sortProps} />
             )}
@@ -82,8 +84,9 @@ export default function RankingsTable({
             <tr key={`${row.position}-${row.rank}`}>
               <td className="mono">{row.displayRank}</td>
               <PlayerCell row={row} withPopover={popoverOnName} />
-              {showPosition && <td className="mono">{row.position}</td>}
+              {showPosition && <td className="mono">{row.positionLabel || row.position}</td>}
               {showTeam && <td className="mono">{row.team || "—"}</td>}
+              {showOpponent && <td className="mono">{row.opponent || "—"}</td>}
               {showProjection && (
                 <td className="mono">{formatProjection(row.projection)}</td>
               )}
