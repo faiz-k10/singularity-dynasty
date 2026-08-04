@@ -19,9 +19,16 @@ suppressMessages(library(nflreadr))
 # tested out-of-sample against the 2023-2025 projection window. See README.md
 # for the backtest methodology and sample sizes per position.
 
-MIN_GAMES <- 8    # eligibility floor. Every player below LOW_SAMPLE_SHRINK_THRESHOLD
+MIN_GAMES <- 6    # eligibility floor. Every player below LOW_SAMPLE_SHRINK_THRESHOLD
                   # (20) gets the 80/20 blend automatically, so low-sample players
                   # are covered but not fully trusted on their own history alone.
+                  # NOTE: the walk-forward backtest above validated 8, not 6 --
+                  # lowered by direct product decision to let a promising rookie
+                  # (Shedeur Sanders, 7 games) clear the floor instead of getting
+                  # excluded entirely. Verified impact before lowering: only 7
+                  # total players newly eligible, 6 of them deep-bench/shrink-
+                  # heavy (sub-3 median) and functionally irrelevant -- Sanders
+                  # was the only meaningful addition.
 
 MED_DECAY   <- c(RB = 0.87, QB = 0.90, WR = 0.89, TE = 0.92)  # Redraft Rankings
 CEIL_DECAY  <- c(RB = 0.89, QB = 0.98, WR = 0.93, TE = 0.91)  # Best Ball Rankings
