@@ -230,13 +230,21 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
   # Recency weighting only knows "games ago" within a player's own log --
   # it can't tell "played last week" from "played 5 weeks into last
   # season with a full season of nothing since." A player with zero games
-  # in the most recent loaded season (e.g. hurt, benched, off a roster
-  # all year) still passes MIN_GAMES on old history alone and gets ranked
-  # as if that stale history were current. Found via Sam Howell (0 games
-  # in 2025, ranked ~51st on 2024 history) -- require real presence in the
-  # most recent season to stay eligible at all.
-  most_recent_season <- max(reg$season)
-  played_recently <- unique(reg$player_display_name[reg$season == most_recent_season])
+  # in the last completed season (e.g. hurt, benched, off a roster all
+  # year) still passes MIN_GAMES on old history alone and gets ranked as
+  # if that stale history were current. Found via Sam Howell (0 games in
+  # 2025, ranked ~51st on 2024 history) -- require real presence in the
+  # last completed season to stay eligible at all.
+  #
+  # Deliberately fixed to TARGET_SEASON - 1 (the last full season), NOT
+  # `max(reg$season)`. Once TARGET_SEASON's own games are folded into reg
+  # (see history_seasons()), max(reg$season) would become TARGET_SEASON
+  # itself -- which would instantly drop any player who simply hasn't
+  # played yet this week (early bye-adjacent absence, minor stuff), rather
+  # than letting a real cold/inactive season drag them down the rankings
+  # naturally via the recency-weighted numbers once games start counting.
+  last_completed_season <- TARGET_SEASON - 1
+  played_recently <- unique(reg$player_display_name[reg$season == last_completed_season])
   eligible <- intersect(eligible, played_recently)
 
   shrink_players <- character(0)
