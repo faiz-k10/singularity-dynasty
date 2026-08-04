@@ -383,7 +383,6 @@ export default async function Home() {
                   data-panel="0"
                   style={{ "--nx": "-477px", "--ny": "67px" }}
                 >
-                  <span className="node-num">01</span>
                   <span className="node-label">Player Season Simulations</span>
                 </button>
                 <button
@@ -391,7 +390,6 @@ export default async function Home() {
                   data-panel="1"
                   style={{ "--nx": "-289px", "--ny": "24px" }}
                 >
-                  <span className="node-num">02</span>
                   <span className="node-label">Best Ball Rankings</span>
                 </button>
                 <button
@@ -399,7 +397,6 @@ export default async function Home() {
                   data-panel="2"
                   style={{ "--nx": "-97px", "--ny": "3px" }}
                 >
-                  <span className="node-num">03</span>
                   <span className="node-label">Dynasty Draft Board</span>
                 </button>
                 <button
@@ -407,7 +404,6 @@ export default async function Home() {
                   data-panel="3"
                   style={{ "--nx": "97px", "--ny": "3px" }}
                 >
-                  <span className="node-num">04</span>
                   <span className="node-label">Redraft Weekly Rankings</span>
                 </button>
                 <button
@@ -415,7 +411,6 @@ export default async function Home() {
                   data-panel="4"
                   style={{ "--nx": "289px", "--ny": "24px" }}
                 >
-                  <span className="node-num">05</span>
                   <span className="node-label">Team Analysis</span>
                 </button>
                 <button
@@ -423,7 +418,6 @@ export default async function Home() {
                   data-panel="5"
                   style={{ "--nx": "477px", "--ny": "67px" }}
                 >
-                  <span className="node-num">06</span>
                   <span className="node-label">WR/QB Prospect Rankings &amp; Comparisons</span>
                 </button>
               </div>

@@ -262,8 +262,17 @@ export default function InteractiveScript({ tickerPlayers } = {}) {
     ];
     const tickerCategories = ["RISING", "FALLING", "STEADY"];
     const track = document.getElementById("tickerTrack");
+    // Fisher-Yates -- shuffles display ORDER only, trend values stay real.
+    function shuffle(arr) {
+      const a = arr.slice();
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
     function buildTicker() {
-      const items =
+      const items = shuffle(
         tickerPlayers && tickerPlayers.length > 0
           ? tickerPlayers.map((p) => ({ name: p.name, cat: p.trend }))
           : fallbackNames.map((name) => ({
@@ -271,7 +280,12 @@ export default function InteractiveScript({ tickerPlayers } = {}) {
               cat: tickerCategories[
                 Math.floor(Math.random() * tickerCategories.length)
               ],
-            }));
+            }))
+      );
+      // Original pace was 40s for the 8-name fallback list -- scale the
+      // duration with item count so more players (e.g. top 50) doesn't
+      // just mean covering more ground in the same 40s (i.e. faster).
+      track.style.animationDuration = `${(40 * items.length) / 8}s`;
       let html = "";
       for (let rep = 0; rep < 2; rep++) {
         items.forEach((item) => {

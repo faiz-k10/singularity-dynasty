@@ -373,11 +373,9 @@ section{padding:96px 0 20px; position:relative;}
   text-align:left; color:var(--star); cursor:pointer; display:flex; flex-direction:column; gap:4px;
   transition:border-color .25s ease, background .25s ease, transform .25s var(--ease), box-shadow .25s ease;
 }
-.node-num{font-family:var(--font-ibm-plex-mono), monospace; font-size:10px; color:var(--neon-blue-dim); letter-spacing:0.08em;}
-.node-label{font-family:var(--font-space-grotesk), sans-serif; font-size:12px; font-weight:600; line-height:1.25;}
+.node-label{font-family:var(--font-space-grotesk), sans-serif; font-size:15px; font-weight:600; line-height:1.3;}
 .node:hover{border-color:var(--neon-blue);}
 .node.active{border-color:var(--horizon-gold); background:linear-gradient(180deg, rgba(255,199,115,0.10), var(--void-panel)); box-shadow:0 12px 28px rgba(255,122,69,0.18);}
-.node.active .node-num{color:var(--horizon-gold);}
 
 /* Curved-horizon hub-and-node layout. Nodes sit along a shallow, wide arc
    below the hub instead of orbiting it on all sides — this is what keeps
