@@ -15,6 +15,12 @@
 
 source("projection_engine.R")
 
+# Same week used for the matching export_for_supabase() run -- keep these
+# in sync when republishing, so an OUT player gets zeroed here too instead
+# of showing a nonzero ceiling_range_low next to a 0 ceiling_score.
+WEEK <- 1
+out_players <- tryCatch(load_out_players(max(2023:2025) + 1, WEEK), error = function(e) character(0))
+
 reg <- load_history(2023:2025)
 counts <- table(reg$player_display_name)
 eligible <- names(counts[counts >= MIN_GAMES])
@@ -51,10 +57,11 @@ for (i in seq_len(nrow(df))) {
     prob <- own_prob
   }
 
+  is_out <- p %in% out_players
   rows[[i]] <- data.frame(
     player_name = p,
-    ceiling_range_low = round(range_low, 0),
-    ceiling_probability = round(100 * prob, 0)
+    ceiling_range_low = if (is_out) 0 else round(range_low, 0),
+    ceiling_probability = if (is_out) 0 else round(100 * prob, 0)
   )
 }
 out <- do.call(rbind, rows)

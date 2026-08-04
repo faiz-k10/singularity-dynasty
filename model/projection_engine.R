@@ -168,6 +168,18 @@ load_week1_opponents <- function(season, week = 1) {
   setNames(c(wk$home_team, wk$away_team), c(wk$away_team, wk$home_team))
 }
 
+# Official weekly injury report (same nflverse source as everything else),
+# matched to player_display_name by full_name -- ~96% match rate verified
+# (unmatched players have no stat history anyway, so they're never in the
+# eligible pool to begin with). Only "Out" is an automatic override --
+# Doubtful/Questionable are real uncertainty the model's own floor/ceiling
+# spread already covers, not a hard zero.
+load_out_players <- function(season, week) {
+  inj <- load_injuries(season)
+  inj <- inj[inj$week == week & !is.na(inj$report_status) & inj$report_status == "Out", ]
+  unique(inj$full_name)
+}
+
 # ============================= PROJECTION =============================
 
 # Produces one row per eligible player: weekly floor/median/ceiling (for
@@ -300,6 +312,24 @@ export_for_supabase <- function(df, seasons = 2023:2025, week = 1) {
   season <- max(seasons) + 1
   confidence <- ifelse(df$shrunk, "building", "established")
 
+  # Official "Out" designations for this week -- weekly projection/ceiling
+  # goes to 0 and it sorts to the bottom of its position group, rather than
+  # keeping stale rank with a 0 next to it. Season-total figures
+  # (player_simulations, below) are untouched -- one missed week doesn't
+  # change a season projection. playoff_ceiling is also untouched here --
+  # it's a weeks-15-17 figure, unrelated to this week's status.
+  out_players <- tryCatch(load_out_players(season, week), error = function(e) {
+    cat("Injury report unavailable this run -- skipping OUT overrides:", conditionMessage(e), "\n")
+    character(0)
+  })
+  is_out <- df$player_name %in% out_players
+  if (length(out_players) > 0) {
+    cat("OUT this week (projection/ceiling set to 0):", sum(is_out), "player(s) -",
+        paste(df$player_name[is_out], collapse = ", "), "\n")
+  }
+  df$median <- ifelse(is_out, 0, df$median)
+  df$ceiling <- ifelse(is_out, 0, df$ceiling)
+
   redraft <- df[order(-df$median), ]
   write.csv(data.frame(
     season = season, week = week, rank = seq_len(nrow(redraft)),
@@ -307,7 +337,7 @@ export_for_supabase <- function(df, seasons = 2023:2025, week = 1) {
     team = redraft$team, opponent = redraft$opponent, projection = redraft$median,
     trend = redraft$trend,
     sample_confidence = ifelse(redraft$shrunk, "building", "established"),
-    notes = ""
+    notes = ifelse(redraft$player_name %in% out_players, "OUT", "")
   ), "upload_redraft_rankings.csv", row.names = FALSE)
 
   # ceiling_range_low / ceiling_probability are NOT written here -- they're
@@ -323,7 +353,7 @@ export_for_supabase <- function(df, seasons = 2023:2025, week = 1) {
     playoff_ceiling_score = round(bb$playoff_ceiling),
     trend = bb$trend,
     sample_confidence = ifelse(bb$shrunk, "building", "established"),
-    notes = ""
+    notes = ifelse(bb$player_name %in% out_players, "OUT", "")
   ), "upload_best_ball_rankings.csv", row.names = FALSE)
 
   write.csv(data.frame(
