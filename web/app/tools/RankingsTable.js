@@ -86,9 +86,9 @@ export default function RankingsTable({
             <tr key={`${row.position}-${row.rank}`} data-pos={row.position}>
               <td className="mono">{row.displayRank}</td>
               <PlayerCell row={row} withPopover={popoverOnName} />
-              {showPosition && <td className="mono">{row.positionLabel || row.position}</td>}
+              {showPosition && <td className="mono align-left">{row.positionLabel || row.position}</td>}
               {showTeam && (
-                <td className="mono">
+                <td className="mono align-left">
                   <TeamBadge team={row.team} />
                 </td>
               )}

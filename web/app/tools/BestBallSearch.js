@@ -114,8 +114,8 @@ export default function BestBallSearch({ rows, sortKey, sortDir, currentParams, 
                     <TrendTag trend={row.trend} /> {row.player_name}{" "}
                     <ConfidenceBadge confidence={row.sample_confidence} />
                   </td>
-                  <td className="mono">{row.positionLabel || row.position}</td>
-                  <td className="mono">
+                  <td className="mono align-left">{row.positionLabel || row.position}</td>
+                  <td className="mono align-left">
                     <TeamBadge team={row.team} />
                   </td>
                   <td
