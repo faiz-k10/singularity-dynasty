@@ -267,8 +267,20 @@ current_nfl_week <- function(season) {
 
 # Opponent per team for the given week, for Redraft/Best Ball's Opponent
 # column.
+#
+# load_schedules() returns a data.table, not a plain data.frame -- inside
+# `sch[sch$week == week, ...]`, data.table's non-standard evaluation
+# resolves the bare `week` on the right of `==` to the *column* `week`
+# (since a column of that name exists), not this function's `week`
+# parameter, silently turning the filter into `sch$week == sch$week`
+# (true for every row, all 17 weeks) instead of `sch$week == 1`. Found
+# via a real wrong-opponent report -- every team's Opponent was being
+# computed from whichever row happened to survive R's row-decides-first
+# tie resolution across all 17 weeks, not the actual current week.
+# as.data.frame() strips data.table's class so `[` uses ordinary base-R
+# scoping (the parameter always wins), eliminating the whole bug class.
 load_opponents <- function(season, week) {
-  sch <- load_schedules(season)
+  sch <- as.data.frame(load_schedules(season))
   wk <- sch[sch$week == week, c("away_team", "home_team")]
   setNames(c(wk$home_team, wk$away_team), c(wk$away_team, wk$home_team))
 }
@@ -313,8 +325,15 @@ compute_matchup_multipliers <- function(seasons = defense_history_seasons()) {
 # eligible pool to begin with). Only "Out" is an automatic override --
 # Doubtful/Questionable are real uncertainty the model's own floor/ceiling
 # spread already covers, not a hard zero.
+#
+# Same data.table NSE bug as load_opponents() above (parameter `week`
+# colliding with a column named `week`) -- as.data.frame() fixes it here
+# too. Never triggered visibly yet since load_injuries(2026) still errors
+# pre-season, but would have marked every injured player across the
+# entire loaded window "OUT" the first time this started actually
+# running, not just this week's real list.
 load_out_players <- function(season, week) {
-  inj <- load_injuries(season)
+  inj <- as.data.frame(load_injuries(season))
   inj <- inj[inj$week == week & !is.na(inj$report_status) & inj$report_status == "Out", ]
   unique(inj$full_name)
 }
