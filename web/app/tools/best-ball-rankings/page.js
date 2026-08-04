@@ -3,10 +3,8 @@ import { getUserTier } from "@/lib/tier";
 import { resolveSort, sortRows } from "@/lib/sortLink";
 import ThemeToggle from "../../ThemeToggle";
 import InteractiveScript from "../../InteractiveScript";
-import SortableTh from "../SortableTh";
 import ExportCsvButton from "../ExportCsvButton";
-import TrendTag from "../TrendTag";
-import ConfidenceBadge from "../ConfidenceBadge";
+import BestBallSearch from "../BestBallSearch";
 
 export const metadata = {
   title: "Best Ball Rankings — Singularity Dynasty",
@@ -14,6 +12,7 @@ export const metadata = {
 
 const TEASER_LIMIT = 10;
 const PAID_TIERS = ["explorer", "singularity"];
+const POSITION_ORDER = ["QB", "RB", "WR", "TE"];
 const COLUMN_TYPES = {
   rank: "number",
   player_name: "string",
@@ -24,18 +23,15 @@ const COLUMN_TYPES = {
   playoff_ceiling_score: "number",
 };
 
-function formatScore(value) {
-  return value === null || value === undefined ? "—" : Math.round(Number(value));
-}
-
-// "21-25" when a range is published, falling back to the single ceiling
-// number if ceiling_range_low hasn't been uploaded for this row yet.
-// Whole numbers throughout — easier to scan at a glance than decimals.
-function formatCeilingRange(row) {
-  if (row.ceiling_score === null || row.ceiling_score === undefined) return "—";
-  const high = Math.round(Number(row.ceiling_score));
-  if (row.ceiling_range_low === null || row.ceiling_range_low === undefined) return String(high);
-  return `${Math.round(Number(row.ceiling_range_low))}-${high}`;
+function sortPositions(positions) {
+  return [...positions].sort((a, b) => {
+    const ai = POSITION_ORDER.indexOf(a);
+    const bi = POSITION_ORDER.indexOf(b);
+    if (ai === -1 && bi === -1) return a.localeCompare(b);
+    if (ai === -1) return 1;
+    if (bi === -1) return -1;
+    return ai - bi;
+  });
 }
 
 export default async function BestBallRankingsPage({ searchParams }) {
@@ -86,7 +82,7 @@ export default async function BestBallRankingsPage({ searchParams }) {
   const { sortKey, sortDir } = resolveSort(params, "rank", "asc");
   const sortedRankings = sortRows(rankings, sortKey, sortDir, COLUMN_TYPES);
   const canExport = tier === "singularity" && rankings.length > 0;
-  const sortProps = { activeSort: sortKey, activeDir: sortDir, currentParams: params };
+  const positions = sortPositions([...new Set(rankings.map((r) => r.position))]);
 
   return (
     <div className="tool-page">
@@ -135,49 +131,13 @@ export default async function BestBallRankingsPage({ searchParams }) {
                 />
               </div>
             )}
-            <div className="rankings-table-wrap">
-              <table className="rankings-table">
-                <thead>
-                  <tr>
-                    <SortableTh label="Rank" sortKey="rank" {...sortProps} />
-                    <SortableTh label="Player" sortKey="player_name" {...sortProps} />
-                    <SortableTh label="Pos" sortKey="position" {...sortProps} />
-                    <SortableTh label="Team" sortKey="team" {...sortProps} />
-                    <SortableTh label="Opp" sortKey="opponent" {...sortProps} />
-                    <SortableTh label="This Week" sortKey="ceiling_score" {...sortProps} />
-                    <SortableTh
-                      label="Playoffs (Wk 15-17)"
-                      sortKey="playoff_ceiling_score"
-                      {...sortProps}
-                    />
-                    <th>Notes</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sortedRankings.map((row) => (
-                    <tr key={row.rank}>
-                      <td className="mono">{row.rank}</td>
-                      <td>
-                        <ConfidenceBadge confidence={row.sample_confidence} /> {row.player_name}{" "}
-                        <TrendTag trend={row.trend} />
-                      </td>
-                      <td className="mono">{row.positionLabel || row.position}</td>
-                      <td className="mono">{row.team || "—"}</td>
-                      <td className="mono">{row.opponent || "—"}</td>
-                      <td className="mono ceiling-cell">
-                        {formatCeilingRange(row)}
-                        {row.ceiling_probability !== null &&
-                          row.ceiling_probability !== undefined && (
-                            <span className="ceiling-pct">{row.ceiling_probability}%</span>
-                          )}
-                      </td>
-                      <td className="mono">{formatScore(row.playoff_ceiling_score)}</td>
-                      <td className="tool-notes">{row.notes || ""}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <BestBallSearch
+              rows={sortedRankings}
+              sortKey={sortKey}
+              sortDir={sortDir}
+              currentParams={params}
+              positions={positions}
+            />
 
             {isTeaser && (
               <div className="tool-paywall reveal in">
