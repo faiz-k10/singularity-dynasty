@@ -108,29 +108,34 @@ export default async function BestBallRankingsPage({ searchParams }) {
           </div>
         ) : (
           <>
-            {canExport && (
-              <div className="tool-export-row">
-                <ExportCsvButton
-                  id="csv-best-ball-rankings"
-                  filename={`best-ball-rankings-week${latest.week}-${latest.season}.csv`}
-                  columns={[
-                    { key: "rank", label: "Rank" },
-                    { key: "player_name", label: "Player" },
-                    { key: "position", label: "Position" },
-                    { key: "team", label: "Team" },
-                    { key: "opponent", label: "Opponent" },
-                    { key: "ceiling_score", label: "This Week" },
-                    { key: "ceiling_range_low", label: "This Week Low" },
-                    { key: "ceiling_probability", label: "This Week %" },
-                    { key: "playoff_ceiling_score", label: "Playoffs (Wk 15-17)" },
-                    { key: "trend", label: "Trend" },
-                    { key: "sample_confidence", label: "Confidence" },
-                    { key: "notes", label: "Notes" },
-                  ]}
-                  rows={sortedRankings}
-                />
+            <div className="toggle-row-flex">
+              <div className="toggle-row-actions">
+                <Link href="/tools/compare-best-ball" className="hub-panel-link">
+                  Compare Players →
+                </Link>
+                {canExport && (
+                  <ExportCsvButton
+                    id="csv-best-ball-rankings"
+                    filename={`best-ball-rankings-week${latest.week}-${latest.season}.csv`}
+                    columns={[
+                      { key: "rank", label: "Rank" },
+                      { key: "player_name", label: "Player" },
+                      { key: "position", label: "Position" },
+                      { key: "team", label: "Team" },
+                      { key: "opponent", label: "Opponent" },
+                      { key: "ceiling_score", label: "This Week" },
+                      { key: "ceiling_range_low", label: "This Week Low" },
+                      { key: "ceiling_probability", label: "This Week %" },
+                      { key: "playoff_ceiling_score", label: "Playoffs (Wk 15-17)" },
+                      { key: "trend", label: "Trend" },
+                      { key: "sample_confidence", label: "Confidence" },
+                      { key: "notes", label: "Notes" },
+                    ]}
+                    rows={sortedRankings}
+                  />
+                )}
               </div>
-            )}
+            </div>
             <BestBallSearch
               rows={sortedRankings}
               sortKey={sortKey}
