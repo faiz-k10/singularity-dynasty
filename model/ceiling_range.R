@@ -34,7 +34,7 @@ last_completed_season <- TARGET_SEASON - 1
 played_recently <- unique(reg$player_display_name[reg$season == last_completed_season])
 eligible <- intersect(eligible, played_recently)
 
-qb_starters <- tryCatch(load_qb_starters(TARGET_SEASON), error = function(e) NULL)
+qb_starters <- tryCatch(select_team_qbs(TARGET_SEASON, eligible), error = function(e) NULL)
 if (!is.null(qb_starters)) {
   player_positions <- reg$position[match(eligible, reg$player_display_name)]
   eligible <- eligible[!(player_positions == "QB" & !(eligible %in% qb_starters))]

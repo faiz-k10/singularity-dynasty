@@ -254,15 +254,29 @@ load_out_players <- function(season, week) {
   unique(inj$full_name)
 }
 
-# Current starting QB per team, from the latest depth-chart snapshot --
-# matched to player_display_name by player_name (verified 32/32 exact
+# One QB per team: the current depth-chart starter (pos_rank 1), falling
+# back to the next-ranked QB on that team's chart if the starter isn't in
+# `eligible_players` -- e.g. Deshaun Watson is Cleveland's named 2026
+# starter but has zero 2025 games, so he fails the separate last-season-
+# presence eligibility check. Without this fallback, that team would show
+# no QB at all rather than whoever's actually next in line and has real
+# recent history to project from.
+#
+# Matched to player_display_name by player_name (verified 32/32 exact
 # match against the model's own naming, unlike load_out_players' ~96%).
 # Unlike stats/injuries, depth charts aren't gated by most_recent_season()
 # -- daily snapshots are already available for TARGET_SEASON.
-load_qb_starters <- function(season) {
+select_team_qbs <- function(season, eligible_players) {
   dc <- load_depth_charts(season)
-  latest <- dc[dc$dt == max(dc$dt) & dc$pos_abb == "QB" & dc$pos_rank == 1, ]
-  unique(latest$player_name)
+  latest <- dc[dc$dt == max(dc$dt) & dc$pos_abb == "QB", ]
+  latest <- latest[order(latest$team, latest$pos_rank), ]
+  picks <- sapply(unique(latest$team), function(tm) {
+    chart <- latest[latest$team == tm, ]
+    chart <- chart[order(chart$pos_rank), ]
+    pick <- chart$player_name[chart$player_name %in% eligible_players]
+    if (length(pick) == 0) NA_character_ else pick[1]
+  })
+  unique(picks[!is.na(picks)])
 }
 
 # ============================= PROJECTION =============================
@@ -301,9 +315,11 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
   # Backup QBs excluded entirely (all three tables) -- current depth
   # chart, not last season's history, since a QB's competition/starter
   # status can change independent of how they performed historically.
-  # Fails safe: if depth-chart data is unavailable, skip this filter
-  # rather than accidentally dropping every QB.
-  qb_starters <- tryCatch(load_qb_starters(target_season), error = function(e) {
+  # Falls back to the next eligible QB on a team's chart if the nominal
+  # starter isn't eligible (see select_team_qbs()). Fails safe: if
+  # depth-chart data is unavailable, skip this filter rather than
+  # accidentally dropping every QB.
+  qb_starters <- tryCatch(select_team_qbs(target_season, eligible), error = function(e) {
     cat("Depth chart unavailable this run -- skipping backup-QB filter:", conditionMessage(e), "\n")
     NULL
   })
