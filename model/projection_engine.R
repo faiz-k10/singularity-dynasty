@@ -13,6 +13,7 @@
 # per CLAUDE.md, same as the other five tools' data.
 
 suppressMessages(library(nflreadr))
+suppressMessages(library(jsonlite))
 
 # ============================= LOCKED PARAMETERS =============================
 # Backtested via walk-forward validation (no lookahead) on 2022-2024 data,
@@ -73,6 +74,22 @@ MATCHUP_MULT_CEIL  <- 1.10  # small defensive sample or one fluke game from
 # normal week and is the final week of most fantasy playoffs.
 EXCLUDE_WEEKS <- c(18)
 
+# Granular per-stat season projections for Player Season Simulations
+# (floor/median/ceiling for each, not just total fantasy points). All 8
+# columns are simulated for every player regardless of position (simpler,
+# uniform code path) -- STAT_COLS_BY_POSITION below decides which ones
+# actually get published for a given position, so a WR's export doesn't
+# carry meaningless passing_yards fields.
+STAT_COLS <- c("passing_yards", "passing_tds", "passing_interceptions",
+               "rushing_yards", "rushing_tds",
+               "receptions", "receiving_yards", "receiving_tds")
+STAT_COLS_BY_POSITION <- list(
+  QB = c("passing_yards", "passing_tds", "passing_interceptions", "rushing_yards", "rushing_tds"),
+  RB = c("rushing_yards", "rushing_tds", "receptions", "receiving_yards", "receiving_tds"),
+  WR = c("receptions", "receiving_yards", "receiving_tds"),
+  TE = c("receptions", "receiving_yards", "receiving_tds")
+)
+
 # The season we're publishing rankings/projections FOR. Fixed -- does NOT
 # shift automatically when the calendar rolls over; bump it by hand once
 # the 2027 season actually starts being the one to project.
@@ -104,16 +121,25 @@ defense_history_seasons <- function(target_season = TARGET_SEASON) {
 # ============================= DATA LOADING =============================
 
 load_history <- function(seasons = history_seasons()) {
-  stats <- load_player_stats(seasons = seasons)
+  # as.data.frame(): load_player_stats() returns a data.table, and its
+  # non-standard `[` evaluation gets confused when a variable (STAT_COLS)
+  # is nested inside the column-selector c(...) alongside literal string
+  # names -- it silently returns a flat character vector instead of
+  # subsetting columns, rather than erroring. Same fix already applied to
+  # load_opponents()/load_out_players() earlier for the same root cause
+  # (data.table NSE), applied here preventatively too.
+  stats <- as.data.frame(load_player_stats(seasons = seasons))
   reg <- stats[stats$season_type == "REG",
                c("player_display_name", "position", "season", "week",
-                 "fantasy_points_ppr", "carries", "targets", "attempts", "team")]
+                 "fantasy_points_ppr", "carries", "targets", "attempts", "team",
+                 STAT_COLS)]
   reg <- reg[reg$position %in% c("QB", "RB", "WR", "TE"), ]
   reg <- reg[!is.na(reg$fantasy_points_ppr), ]
   reg <- reg[!(reg$week %in% EXCLUDE_WEEKS), ]
   reg$carries[is.na(reg$carries)] <- 0
   reg$targets[is.na(reg$targets)] <- 0
   reg$attempts[is.na(reg$attempts)] <- 0
+  for (col in STAT_COLS) reg[[col]][is.na(reg[[col]])] <- 0
   reg$touches <- reg$carries + reg$targets
   # Usage metric per position, for tiered shrinkage baseline pools: RB uses
   # touches (carries+targets), WR/TE use targets, QB uses pass attempts.
@@ -254,7 +280,7 @@ TAIL_ABSENCE_CUTOFF_WEEK <- 10  # last game in the prior season at or before
 # this correctly resolves to 1. After the season ends, falls back to the
 # final week rather than erroring.
 current_nfl_week <- function(season) {
-  sch <- load_schedules(season)
+  sch <- as.data.frame(load_schedules(season))
   sch <- sch[!is.na(sch$week), ]
   gameday <- as.numeric(as.Date(sch$gameday))
   today <- as.numeric(Sys.Date())
@@ -292,7 +318,10 @@ load_opponents <- function(season, week) {
 # -- no separate data source needed. Returns a named vector keyed
 # "TEAM POS" (e.g. "PIT RB") -> multiplier.
 compute_matchup_multipliers <- function(seasons = defense_history_seasons()) {
-  stats <- load_player_stats(seasons = seasons)
+  # as.data.frame(): see load_history()'s comment -- same defensive fix
+  # against data.table's NSE quirks, applied consistently everywhere this
+  # codebase loads an nflreadr table directly.
+  stats <- as.data.frame(load_player_stats(seasons = seasons))
   d <- stats[stats$season_type == "REG",
              c("position", "season", "week", "opponent_team", "fantasy_points_ppr")]
   d <- d[d$position %in% c("QB", "RB", "WR", "TE"), ]
@@ -351,7 +380,7 @@ load_out_players <- function(season, week) {
 # Unlike stats/injuries, depth charts aren't gated by most_recent_season()
 # -- daily snapshots are already available for TARGET_SEASON.
 select_team_qbs <- function(season, eligible_players) {
-  dc <- load_depth_charts(season)
+  dc <- as.data.frame(load_depth_charts(season))
   latest <- dc[dc$dt == max(dc$dt) & dc$pos_abb == "QB", ]
   latest <- latest[order(latest$team, latest$pos_rank), ]
   picks <- sapply(unique(latest$team), function(tm) {
@@ -440,7 +469,7 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
   # removed). Falls back to the most recent team in the game log if a
   # player isn't found in load_players() (rare -- retired/inactive edge
   # cases). Same "AZ" -> "ARI" mismatch as before applies here too.
-  current_team <- load_players()[, c("display_name", "position", "latest_team")]
+  current_team <- as.data.frame(load_players())[, c("display_name", "position", "latest_team")]
   current_team$latest_team <- ifelse(current_team$latest_team == "AZ", "ARI", current_team$latest_team)
   publish_week <- current_nfl_week(target_season)
   week_opponent <- load_opponents(target_season, publish_week)
@@ -474,10 +503,47 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
     wc <- recency_weights(n, CEIL_DECAY[pos])
     avail <- player_availability(d, target_season, completed_weeks)
 
-    szn <- replicate(n_sims, {
+    # Season sim now samples GAME INDICES (not points values directly) so
+    # the same simulated set of games produces both the points total and
+    # each granular stat's total together -- a big rushing-yards game
+    # stays a big fantasy-points game within the same draw, instead of
+    # each stat being resampled independently and losing that
+    # correlation. Granular stats are NOT shrink-blended, matching the
+    # existing season_floor/median/ceiling precedent (season totals rely
+    # on the availability dampening above, not the low-sample blend that
+    # only applies to weekly figures).
+    idx <- seq_len(n)
+    relevant_stats <- STAT_COLS_BY_POSITION[[pos]]
+    sim_result <- replicate(n_sims, {
       g <- sum(runif(MAX_GAMES_PER_SEASON) < avail)
-      if (g == 0) 0 else sum(sample(x, g, replace = TRUE, prob = wm))
+      if (g == 0) {
+        c(points = 0, if (!is.null(relevant_stats)) setNames(rep(0, length(relevant_stats)), relevant_stats))
+      } else {
+        sampled <- sample(idx, g, replace = TRUE, prob = wm)
+        pts <- sum(x[sampled])
+        if (!is.null(relevant_stats)) {
+          c(points = pts, sapply(relevant_stats, function(col) sum(d[[col]][sampled])))
+        } else {
+          c(points = pts)
+        }
+      }
     })
+    szn <- sim_result["points", ]
+    # Percentiles are purely statistical (10th/50th/90th), same as every
+    # other floor/median/ceiling in this engine -- for interceptions,
+    # that means "ceiling" is the 90th percentile of INTs thrown, i.e.
+    # the worst case, not "best." Left as-is rather than special-cased;
+    # the frontend shows it as a plain range, not a good/bad framing.
+    stat_ranges <- if (!is.null(relevant_stats)) {
+      setNames(lapply(relevant_stats, function(col) {
+        v <- sim_result[col, ]
+        list(floor = round(as.numeric(quantile(v, 0.10)), 0),
+             median = round(as.numeric(quantile(v, 0.50)), 0),
+             ceiling = round(as.numeric(quantile(v, 0.90)), 0))
+      }), relevant_stats)
+    } else {
+      list()
+    }
     playoff <- replicate(n_sims, sum(sample(x, 3, replace = TRUE, prob = wc)))
 
     shrink_this_player <- p %in% shrink_players && !is.null(baseline_pools[[pos]])
@@ -539,7 +605,12 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
       season_floor = round(quantile(szn, 0.10), 0),
       season_median = round(quantile(szn, 0.50), 0),
       season_ceiling = round(quantile(szn, 0.90), 0),
-      playoff_ceiling = round(quantile(playoff, CEIL_Q[pos]), 1)
+      playoff_ceiling = round(quantile(playoff, CEIL_Q[pos]), 1),
+      # Granular per-stat floor/median/ceiling (passing/rushing/receiving
+      # yards & TDs, INTs, receptions -- position-dependent, see
+      # STAT_COLS_BY_POSITION), serialized to JSON for a single jsonb
+      # column rather than ~24 sparse numeric columns most rows wouldn't use.
+      stat_ranges_json = jsonlite::toJSON(stat_ranges, auto_unbox = TRUE)
     )
   }
   out <- do.call(rbind, rows)
@@ -614,6 +685,7 @@ export_for_supabase <- function(df, target_season = TARGET_SEASON, week = NULL) 
     ceiling = df$season_ceiling,
     trend = df$trend,
     sample_confidence = confidence,
+    stat_ranges = df$stat_ranges_json,
     notes = ""
   ), "upload_player_simulations.csv", row.names = FALSE)
 

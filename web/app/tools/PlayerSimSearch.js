@@ -6,6 +6,43 @@ import TrendTag from "./TrendTag";
 import ConfidenceBadge from "./ConfidenceBadge";
 import TeamBadge from "./TeamBadge";
 
+// Fixed display order (matches STAT_COLS in projection_engine.R) --
+// position-dependent, a WR's stat_ranges simply won't have passing_*
+// keys, so this list just skips whatever the row doesn't carry.
+const STAT_LABELS = [
+  ["passing_yards", "Pass Yards"],
+  ["passing_tds", "Pass TDs"],
+  ["passing_interceptions", "INTs"],
+  ["rushing_yards", "Rush Yards"],
+  ["rushing_tds", "Rush TDs"],
+  ["receptions", "Receptions"],
+  ["receiving_yards", "Rec Yards"],
+  ["receiving_tds", "Rec TDs"],
+];
+
+function StatBreakdown({ row }) {
+  const ranges = row.stat_ranges;
+  if (!ranges || Object.keys(ranges).length === 0) return null;
+  return (
+    <span className="player-hover" tabIndex={0}>
+      <TrendTag trend={row.trend} /> {row.player_name}{" "}
+      <ConfidenceBadge confidence={row.sample_confidence} />
+      <div className="player-popover">
+        <div className="player-popover-card">
+          {STAT_LABELS.filter(([key]) => ranges[key]).map(([key, label]) => (
+            <div className="player-popover-row" key={key}>
+              <span>{label}</span>
+              <span>
+                {ranges[key].floor}–{ranges[key].median}–{ranges[key].ceiling}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </span>
+  );
+}
+
 // Same pattern as RankingsSearch (Redraft) / BestBallSearch: position-pill
 // filter + player name search, both client-side. Sorting stays
 // server-driven via the existing URL-param mechanism.
@@ -89,8 +126,14 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
               {filteredRows.map((row) => (
                 <tr key={row.player_name} data-pos={row.position}>
                   <td className="player-cell">
-                    <TrendTag trend={row.trend} /> {row.player_name}{" "}
-                    <ConfidenceBadge confidence={row.sample_confidence} />
+                    {row.stat_ranges && Object.keys(row.stat_ranges).length > 0 ? (
+                      <StatBreakdown row={row} />
+                    ) : (
+                      <>
+                        <TrendTag trend={row.trend} /> {row.player_name}{" "}
+                        <ConfidenceBadge confidence={row.sample_confidence} />
+                      </>
+                    )}
                   </td>
                   <td className="mono align-left">{row.position}</td>
                   <td className="mono align-left">
