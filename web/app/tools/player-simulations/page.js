@@ -31,8 +31,9 @@ export default async function PlayerSimulationsPage({ searchParams }) {
 
   const { data: latest } = await supabase
     .from("player_simulations")
-    .select("season")
+    .select("season, week")
     .order("season", { ascending: false })
+    .order("week", { ascending: false })
     .limit(1)
     .maybeSingle();
 
@@ -47,6 +48,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
         { count: "exact" }
       )
       .eq("season", latest.season)
+      .eq("week", latest.week)
       .order("median", { ascending: false });
 
     if (!hasFullAccess) {
@@ -73,7 +75,9 @@ export default async function PlayerSimulationsPage({ searchParams }) {
       </Link>
 
       <main className="wrap tool-wrap">
-        <div className="eyebrow">{latest ? `${latest.season} Season` : "Simulations"}</div>
+        <div className="eyebrow">
+          {latest ? `${latest.season} Season · Updated Week ${latest.week}` : "Simulations"}
+        </div>
         <h1>Player Season Simulations</h1>
         <p className="tool-sub">
           Full-season Monte Carlo simulations run 10,000 times per player,
@@ -83,7 +87,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
 
         {sims.length === 0 ? (
           <div className="tool-empty">
-            <p>Simulations publish each season — check back soon.</p>
+            <p>Simulations publish weekly during the season — check back soon.</p>
           </div>
         ) : (
           <>
@@ -91,7 +95,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
               <div className="tool-export-row">
                 <ExportCsvButton
                   id="csv-player-simulations"
-                  filename={`player-simulations-${latest.season}.csv`}
+                  filename={`player-simulations-week${latest.week}-${latest.season}.csv`}
                   columns={[
                     { key: "player_name", label: "Player" },
                     { key: "position", label: "Position" },

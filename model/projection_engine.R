@@ -381,7 +381,7 @@ export_for_supabase <- function(df, seasons = 2023:2025, week = NULL) {
   ), "upload_best_ball_rankings.csv", row.names = FALSE)
 
   write.csv(data.frame(
-    season = season, player_name = df$player_name, position = df$position,
+    season = season, week = week, player_name = df$player_name, position = df$position,
     team = df$team, floor = df$season_floor, median = df$season_median,
     ceiling = df$season_ceiling,
     trend = df$trend,
