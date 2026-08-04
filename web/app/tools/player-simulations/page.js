@@ -7,6 +7,7 @@ import SortableTh from "../SortableTh";
 import ExportCsvButton from "../ExportCsvButton";
 import TrendTag from "../TrendTag";
 import ConfidenceBadge from "../ConfidenceBadge";
+import TEAM_COLORS from "../teamColors";
 
 export const metadata = {
   title: "Player Season Simulations — Singularity Dynasty",
@@ -23,6 +24,19 @@ const COLUMN_TYPES = {
   median: "number",
   ceiling: "number",
 };
+
+// Volatility badge: (ceiling - floor) / median. Thresholds calibrated
+// against the live 2026 dataset -- "Consistent" is roughly the bottom
+// quartile (workhorse-type tight distributions), "Boom/Bust" the top
+// quartile (committee/role players with wide swings). Middle half stays
+// untagged rather than forcing every row into a bucket.
+function volatilityTag(row) {
+  if (!row.median || row.median <= 0) return null;
+  const ratio = (row.ceiling - row.floor) / row.median;
+  if (ratio <= 0.5) return { cls: "consistent", label: "Consistent" };
+  if (ratio >= 1.25) return { cls: "boom", label: "Boom/Bust" };
+  return null;
+}
 
 export default async function PlayerSimulationsPage({ searchParams }) {
   const params = await searchParams;
@@ -66,6 +80,23 @@ export default async function PlayerSimulationsPage({ searchParams }) {
   const maxCeiling = sims.reduce((m, s) => Math.max(m, s.ceiling), 1);
   const sortProps = { activeSort: sortKey, activeDir: sortDir, currentParams: params };
   const canExport = tier === "singularity" && sims.length > 0;
+
+  // Median heat-tint is position-relative -- QBs score far higher raw
+  // totals than TEs, so a global min/max would make every QB look "hot"
+  // and every TE look "cold" regardless of how they actually rank among
+  // their own position.
+  const medianRangeByPos = {};
+  for (const row of sims) {
+    const r = medianRangeByPos[row.position] || { min: Infinity, max: -Infinity };
+    r.min = Math.min(r.min, row.median);
+    r.max = Math.max(r.max, row.median);
+    medianRangeByPos[row.position] = r;
+  }
+  function medianHeat(row) {
+    const r = medianRangeByPos[row.position];
+    if (!r || r.max === r.min) return 0;
+    return (row.median - r.min) / (r.max - r.min);
+  }
 
   return (
     <div className="tool-page">
@@ -124,36 +155,50 @@ export default async function PlayerSimulationsPage({ searchParams }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {sortedSims.map((row) => (
-                    <tr key={row.player_name}>
+                  {sortedSims.map((row) => {
+                    const vol = volatilityTag(row);
+                    return (
+                    <tr key={row.player_name} data-pos={row.position}>
                       <td>
                         <ConfidenceBadge confidence={row.sample_confidence} /> {row.player_name}{" "}
-                        <TrendTag trend={row.trend} />
+                        <TrendTag trend={row.trend} />{" "}
+                        {vol && <span className={`vol-badge ${vol.cls}`}>{vol.label}</span>}
                       </td>
                       <td className="mono">{row.position}</td>
-                      <td className="mono">{row.team || "—"}</td>
-                      <td className="mono">{row.floor}</td>
                       <td className="mono">
+                        {row.team && (
+                          <span
+                            className="team-chip"
+                            style={{ background: TEAM_COLORS[row.team] || "var(--line)" }}
+                          ></span>
+                        )}
+                        {row.team || "—"}
+                      </td>
+                      <td className="mono">{row.floor}</td>
+                      <td className="mono median-heat" style={{ "--heat": medianHeat(row) }}>
                         <strong>{row.median}</strong>
                       </td>
                       <td className="mono">{row.ceiling}</td>
                       <td>
                         <div className="sim-bar-track">
                           <div
-                            className="sim-bar-range"
+                            className="sim-bar-typical"
                             style={{
                               left: `${(row.floor / maxCeiling) * 100}%`,
-                              width: `${((row.ceiling - row.floor) / maxCeiling) * 100}%`,
+                              width: `${((row.median - row.floor) / maxCeiling) * 100}%`,
                             }}
                           ></div>
                           <div
-                            className="sim-bar-median"
-                            style={{ left: `${(row.median / maxCeiling) * 100}%` }}
+                            className="sim-bar-upside"
+                            style={{
+                              left: `${(row.median / maxCeiling) * 100}%`,
+                              width: `${((row.ceiling - row.median) / maxCeiling) * 100}%`,
+                            }}
                           ></div>
                         </div>
                       </td>
                     </tr>
-                  ))}
+                  );})}
                 </tbody>
               </table>
             </div>

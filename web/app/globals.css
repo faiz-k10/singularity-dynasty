@@ -12,6 +12,10 @@
   --neon-blue-glow:rgba(61,220,255,0.28);
   --up:#6FE3A8;
   --down:#FF6B6B;
+  --pos-qb:#FFC773;
+  --pos-rb:#3DDCFF;
+  --pos-wr:#B98CFF;
+  --pos-te:#5FD9A0;
   --radius:3px;
   --ease:cubic-bezier(.16,.84,.44,1);
   --px:0; --py:0;
@@ -41,6 +45,10 @@
     --neon-blue-dim:#0B6B85;
     --up:#1C8F52;
     --down:#D63F39;
+    --pos-qb:#B8720E;
+    --pos-rb:#0A7F99;
+    --pos-wr:#7B4FCC;
+    --pos-te:#1C8F52;
     --scrim-rgb:255,253,249;
     --star-dot-rgb:20,19,28;
     --shadow-rgb:80,70,50;
@@ -60,6 +68,10 @@
   --neon-blue-dim:#0B6B85;
   --up:#1C8F52;
   --down:#D63F39;
+  --pos-qb:#B8720E;
+  --pos-rb:#0A7F99;
+  --pos-wr:#7B4FCC;
+  --pos-te:#1C8F52;
   --scrim-rgb:255,253,249;
   --star-dot-rgb:20,19,28;
   --shadow-rgb:80,70,50;
@@ -667,11 +679,43 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
   background:var(--void-panel-2); border:1px solid var(--line); border-radius:10px; padding:1px 6px;
 }
 
-/* Player Season Simulations — floor/median/ceiling range bar */
+/* Player Season Simulations — floor/median/ceiling range bar. Two-tone:
+   floor->median filled solid (the "typical" range), median->ceiling
+   lighter/faded (the "upside" range) -- the color change at the boundary
+   marks the median instead of a separate tick, so a glance shows both
+   where a player usually lands and how much more is possible. */
 .sim-bar-track{position:relative; width:140px; height:8px; background:var(--void-panel-2); border-radius:4px;}
-.sim-bar-range{position:absolute; top:0; bottom:0; background:linear-gradient(90deg, var(--neon-blue-dim), var(--horizon-gold)); border-radius:4px; min-width:3px;}
-.sim-bar-median{position:absolute; top:-3px; width:2px; height:14px; background:var(--star); border-radius:1px;}
+.sim-bar-typical{position:absolute; top:0; bottom:0; background:var(--neon-blue-dim); border-radius:4px 0 0 4px; min-width:3px;}
+.sim-bar-upside{position:absolute; top:0; bottom:0; background:var(--horizon-gold); opacity:0.45; border-radius:0 4px 4px 0; min-width:2px;}
 @media (max-width:640px){.sim-bar-track{width:80px;}}
+
+/* Position-colored left accent on each sim row -- QB/RB/WR/TE, so the eye
+   can group by position even though the table isn't grouped/sorted that
+   way by default. */
+/* border-collapse:collapse doesn't reliably render a <tr> border, so this
+   goes on the row's first <td> instead. */
+.sim-table tbody tr td:first-child{border-left:3px solid transparent;}
+.sim-table tbody tr[data-pos="QB"] td:first-child{border-left-color:var(--pos-qb);}
+.sim-table tbody tr[data-pos="RB"] td:first-child{border-left-color:var(--pos-rb);}
+.sim-table tbody tr[data-pos="WR"] td:first-child{border-left-color:var(--pos-wr);}
+.sim-table tbody tr[data-pos="TE"] td:first-child{border-left-color:var(--pos-te);}
+
+/* Team color chip next to the team code */
+.team-chip{display:inline-block; width:9px; height:9px; border-radius:2px; margin-right:6px; vertical-align:middle;}
+
+/* Boom/bust volatility badge, derived from (ceiling-floor)/median --
+   same pill styling as trend-tag/confidence-badge for visual consistency. */
+.vol-badge{
+  display:inline-flex; align-items:center; font-size:10.5px; font-weight:600;
+  font-family:var(--font-ibm-plex-mono), monospace; letter-spacing:0.03em;
+  padding:1px 7px; border-radius:10px; background:var(--void-panel-2); border:1px solid var(--line);
+}
+.vol-badge.boom{color:var(--horizon-gold); border-color:rgba(255,199,115,0.35);}
+.vol-badge.consistent{color:var(--neon-blue-dim); border-color:var(--line);}
+
+/* Median column heat-tint, relative to other players at the same
+   position -- intensity set inline per-row via --heat (0-1). */
+.median-heat{background:rgba(var(--neon-blue-rgb), calc(var(--heat, 0) * 0.35));}
 
 /* Dynasty Draft Board — round grouping, stack flags, startup/rookie toggle */
 .board-toggle{display:inline-flex; gap:4px; background:var(--void-panel-2); border:1px solid var(--line); border-radius:30px; padding:4px; margin-bottom:32px;}
