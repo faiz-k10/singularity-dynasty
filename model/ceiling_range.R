@@ -21,12 +21,18 @@ source("projection_engine.R")
 WEEK <- current_nfl_week(TARGET_SEASON)
 out_players <- tryCatch(load_out_players(TARGET_SEASON, WEEK), error = function(e) character(0))
 
-# Same history window (including the target season's own games, once they
-# exist) that produced projections.csv -- must match exactly, or the
-# recency weights/game counts here won't line up with df below.
+# Same history window AND the same eligibility filter as project_all() --
+# both must match exactly, or the baseline pools below get built from a
+# different player universe than the one that actually produced
+# projections.csv (found: 107 stale/inactive players -- the same category
+# the Sam Howell fix excludes -- were leaking into these pools before this
+# filter was added here).
 reg <- load_history(history_seasons())
 counts <- table(reg$player_display_name)
 eligible <- names(counts[counts >= MIN_GAMES])
+last_completed_season <- TARGET_SEASON - 1
+played_recently <- unique(reg$player_display_name[reg$season == last_completed_season])
+eligible <- intersect(eligible, played_recently)
 
 df <- read.csv("projections.csv", stringsAsFactors = FALSE)
 
