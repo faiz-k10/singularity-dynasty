@@ -25,19 +25,6 @@ const COLUMN_TYPES = {
   ceiling: "number",
 };
 
-// Volatility badge: (ceiling - floor) / median. Thresholds calibrated
-// against the live 2026 dataset -- "Consistent" is roughly the bottom
-// quartile (workhorse-type tight distributions), "Boom/Bust" the top
-// quartile (committee/role players with wide swings). Middle half stays
-// untagged rather than forcing every row into a bucket.
-function volatilityTag(row) {
-  if (!row.median || row.median <= 0) return null;
-  const ratio = (row.ceiling - row.floor) / row.median;
-  if (ratio <= 0.5) return { cls: "consistent", label: "Consistent" };
-  if (ratio >= 1.25) return { cls: "boom", label: "Boom/Bust" };
-  return null;
-}
-
 export default async function PlayerSimulationsPage({ searchParams }) {
   const params = await searchParams;
   const { supabase, tier } = await getUserTier();
@@ -142,7 +129,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
               </div>
             )}
             <div className="rankings-table-wrap">
-              <table className="rankings-table sim-table">
+              <table className="rankings-table">
                 <thead>
                   <tr>
                     <SortableTh label="Player" sortKey="player_name" {...sortProps} />
@@ -155,14 +142,11 @@ export default async function PlayerSimulationsPage({ searchParams }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {sortedSims.map((row) => {
-                    const vol = volatilityTag(row);
-                    return (
+                  {sortedSims.map((row) => (
                     <tr key={row.player_name} data-pos={row.position}>
                       <td>
                         <ConfidenceBadge confidence={row.sample_confidence} /> {row.player_name}{" "}
-                        <TrendTag trend={row.trend} />{" "}
-                        {vol && <span className={`vol-badge ${vol.cls}`}>{vol.label}</span>}
+                        <TrendTag trend={row.trend} />
                       </td>
                       <td className="mono">{row.position}</td>
                       <td className="mono">
@@ -175,7 +159,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
                         {row.team || "—"}
                       </td>
                       <td className="mono">{row.floor}</td>
-                      <td className="mono median-heat" style={{ "--heat": medianHeat(row) }}>
+                      <td className="mono heat-cell" style={{ "--heat": medianHeat(row) }}>
                         <strong>{row.median}</strong>
                       </td>
                       <td className="mono">{row.ceiling}</td>
@@ -198,7 +182,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
                         </div>
                       </td>
                     </tr>
-                  );})}
+                  ))}
                 </tbody>
               </table>
             </div>

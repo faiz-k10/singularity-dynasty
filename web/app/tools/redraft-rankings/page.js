@@ -65,6 +65,22 @@ export default async function RedraftRankingsPage({ searchParams }) {
       positionCounters[r.position] = (positionCounters[r.position] || 0) + 1;
       return { ...r, positionLabel: `${r.position}${positionCounters[r.position]}` };
     });
+
+    // Projection heat-tint is position-relative -- QBs score far higher
+    // raw totals than TEs, so a global min/max would make every QB look
+    // "hot" regardless of how they actually rank among their own position.
+    const projRangeByPos = {};
+    for (const r of rankings) {
+      const range = projRangeByPos[r.position] || { min: Infinity, max: -Infinity };
+      range.min = Math.min(range.min, r.projection);
+      range.max = Math.max(range.max, r.projection);
+      projRangeByPos[r.position] = range;
+    }
+    rankings = rankings.map((r) => {
+      const range = projRangeByPos[r.position];
+      const heat = range && range.max > range.min ? (r.projection - range.min) / (range.max - range.min) : 0;
+      return { ...r, heat };
+    });
   }
 
   const positions = sortPositions([...new Set(rankings.map((r) => r.position))]);

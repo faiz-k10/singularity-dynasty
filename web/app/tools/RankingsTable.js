@@ -2,6 +2,7 @@ import Link from "next/link";
 import SortableTh from "./SortableTh";
 import TrendTag from "./TrendTag";
 import ConfidenceBadge from "./ConfidenceBadge";
+import TEAM_COLORS from "./teamColors";
 
 function formatProjection(value) {
   return value === null || value === undefined ? "—" : Number(value).toFixed(1);
@@ -81,14 +82,26 @@ export default function RankingsTable({
         </thead>
         <tbody>
           {rows.map((row) => (
-            <tr key={`${row.position}-${row.rank}`}>
+            <tr key={`${row.position}-${row.rank}`} data-pos={row.position}>
               <td className="mono">{row.displayRank}</td>
               <PlayerCell row={row} withPopover={popoverOnName} />
               {showPosition && <td className="mono">{row.positionLabel || row.position}</td>}
-              {showTeam && <td className="mono">{row.team || "—"}</td>}
+              {showTeam && (
+                <td className="mono">
+                  {row.team && (
+                    <span
+                      className="team-chip"
+                      style={{ background: TEAM_COLORS[row.team] || "var(--line)" }}
+                    ></span>
+                  )}
+                  {row.team || "—"}
+                </td>
+              )}
               {showOpponent && <td className="mono">{row.opponent || "—"}</td>}
               {showProjection && (
-                <td className="mono">{formatProjection(row.projection)}</td>
+                <td className="mono heat-cell" style={{ "--heat": row.heat || 0 }}>
+                  {formatProjection(row.projection)}
+                </td>
               )}
               {showNotes && <td className="tool-notes">{row.notes || ""}</td>}
             </tr>

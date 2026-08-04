@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import SortableTh from "./SortableTh";
 import TrendTag from "./TrendTag";
 import ConfidenceBadge from "./ConfidenceBadge";
+import TEAM_COLORS from "./teamColors";
 
 function formatScore(value) {
   return value === null || value === undefined ? "—" : Math.round(Number(value));
@@ -104,16 +105,24 @@ export default function BestBallSearch({ rows, sortKey, sortDir, currentParams, 
             </thead>
             <tbody>
               {filteredRows.map((row) => (
-                <tr key={row.rank}>
+                <tr key={row.rank} data-pos={row.position}>
                   <td className="mono">{row.rank}</td>
                   <td>
                     <ConfidenceBadge confidence={row.sample_confidence} /> {row.player_name}{" "}
                     <TrendTag trend={row.trend} />
                   </td>
                   <td className="mono">{row.positionLabel || row.position}</td>
-                  <td className="mono">{row.team || "—"}</td>
+                  <td className="mono">
+                    {row.team && (
+                      <span
+                        className="team-chip"
+                        style={{ background: TEAM_COLORS[row.team] || "var(--line)" }}
+                      ></span>
+                    )}
+                    {row.team || "—"}
+                  </td>
                   <td className="mono">{row.opponent || "—"}</td>
-                  <td className="mono ceiling-cell">
+                  <td className="mono ceiling-cell heat-cell" style={{ "--heat": row.heat || 0 }}>
                     {formatCeilingRange(row)}
                     {row.ceiling_probability !== null &&
                       row.ceiling_probability !== undefined && (

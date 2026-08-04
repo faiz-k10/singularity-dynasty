@@ -75,6 +75,22 @@ export default async function BestBallRankingsPage({ searchParams }) {
       positionCounters[r.position] = (positionCounters[r.position] || 0) + 1;
       return { ...r, positionLabel: `${r.position}${positionCounters[r.position]}` };
     });
+
+    // Ceiling heat-tint is position-relative -- QBs score far higher raw
+    // totals than TEs, so a global min/max would make every QB look "hot"
+    // regardless of how they actually rank among their own position.
+    const ceilRangeByPos = {};
+    for (const r of rankings) {
+      const range = ceilRangeByPos[r.position] || { min: Infinity, max: -Infinity };
+      range.min = Math.min(range.min, r.ceiling_score);
+      range.max = Math.max(range.max, r.ceiling_score);
+      ceilRangeByPos[r.position] = range;
+    }
+    rankings = rankings.map((r) => {
+      const range = ceilRangeByPos[r.position];
+      const heat = range && range.max > range.min ? (r.ceiling_score - range.min) / (range.max - range.min) : 0;
+      return { ...r, heat };
+    });
     totalCount = count || 0;
   }
 
