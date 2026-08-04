@@ -33,7 +33,6 @@ function sortPositions(positions) {
 // Free for everyone (Stargazer) per the pricing copy — no tier gating here.
 export default async function RedraftRankingsPage({ searchParams }) {
   const params = await searchParams;
-  const view = params?.view === "overall" ? "overall" : "position";
 
   const { supabase, tier } = await getUserTier();
 
@@ -95,14 +94,6 @@ export default async function RedraftRankingsPage({ searchParams }) {
         ) : (
           <>
             <div className="toggle-row-flex">
-              <div className="board-toggle">
-                <Link href="?view=overall" className={view === "overall" ? "active" : ""}>
-                  Overall
-                </Link>
-                <Link href="?view=position" className={view === "position" ? "active" : ""}>
-                  By Position
-                </Link>
-              </div>
               <div className="toggle-row-actions">
                 <Link href="/tools/compare-players" className="hub-panel-link">
                   Compare Players →
@@ -132,7 +123,7 @@ export default async function RedraftRankingsPage({ searchParams }) {
               sortKey={sortKey}
               sortDir={sortDir}
               currentParams={params}
-              positions={view === "position" ? positions : undefined}
+              positions={positions}
             />
           </>
         )}
