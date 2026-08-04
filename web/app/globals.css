@@ -859,6 +859,30 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 }
 .player-popover-compare:hover{background:rgba(255,199,115,0.2); border-color:var(--horizon-gold);}
 
+/* Player Season Simulations -- click-to-expand stat detail. One row open
+   at a time: clicking a player folds whatever was open and unfolds
+   theirs (state lives in PlayerSimSearch.js, not CSS -- this just styles
+   the trigger and the unfolded table). */
+.player-expand-trigger{
+  all:unset; display:inline-flex; align-items:center; gap:4px; cursor:pointer;
+  color:var(--star); font:inherit;
+}
+.player-expand-trigger:hover{color:var(--neon-blue);}
+.expand-chevron{font-size:9px; color:var(--star-dim); margin-left:2px;}
+.stat-detail-row td{background:var(--void-panel-2); padding:14px 18px;}
+/* Explicit text-align throughout -- this table is nested inside a
+   .rankings-table cell, so it's still a CSS descendant of .rankings-table
+   and would otherwise inherit that table's td{text-align:center} rule. */
+.stat-detail-table{width:100%; max-width:420px; border-collapse:collapse; font-size:13px;}
+.stat-detail-table th{
+  text-align:left; font-family:var(--font-ibm-plex-mono), monospace; font-size:10px; letter-spacing:0.06em;
+  text-transform:uppercase; color:var(--star-dim); padding:6px 10px; border-bottom:1px solid var(--line);
+}
+.stat-detail-table th:not(:first-child){text-align:center;}
+.stat-detail-table td{padding:6px 10px; border-bottom:1px dashed var(--line); color:var(--star); text-align:center;}
+.stat-detail-table td:first-child{text-align:left;}
+.stat-detail-table tr:last-child td{border-bottom:none;}
+
 /* ---------- COMPARE PLAYERS ---------- */
 .compare-form{
   display:flex; flex-wrap:wrap; gap:16px; align-items:flex-end;

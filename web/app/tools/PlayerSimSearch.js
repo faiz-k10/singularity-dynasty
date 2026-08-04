@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import SortableTh from "./SortableTh";
 import TrendTag from "./TrendTag";
 import ConfidenceBadge from "./ConfidenceBadge";
@@ -20,26 +20,40 @@ const STAT_LABELS = [
   ["receiving_tds", "Rec TDs"],
 ];
 
-function StatBreakdown({ row }) {
+// Detail row unfolded below a player when their name is clicked -- one
+// open at a time (clicking a different player folds this one and opens
+// theirs). colSpan must match the number of columns in the main row.
+function StatDetailRow({ row, colSpan }) {
   const ranges = row.stat_ranges;
-  if (!ranges || Object.keys(ranges).length === 0) return null;
+  const entries = STAT_LABELS.filter(([key]) => ranges && ranges[key]);
+  if (entries.length === 0) return null;
   return (
-    <span className="player-hover" tabIndex={0}>
-      <TrendTag trend={row.trend} /> {row.player_name}{" "}
-      <ConfidenceBadge confidence={row.sample_confidence} />
-      <div className="player-popover">
-        <div className="player-popover-card">
-          {STAT_LABELS.filter(([key]) => ranges[key]).map(([key, label]) => (
-            <div className="player-popover-row" key={key}>
-              <span>{label}</span>
-              <span>
-                {ranges[key].floor}–{ranges[key].median}–{ranges[key].ceiling}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
-    </span>
+    <tr className="stat-detail-row">
+      <td colSpan={colSpan}>
+        <table className="stat-detail-table">
+          <thead>
+            <tr>
+              <th>Stat</th>
+              <th>Floor</th>
+              <th>Median</th>
+              <th>Ceiling</th>
+            </tr>
+          </thead>
+          <tbody>
+            {entries.map(([key, label]) => (
+              <tr key={key}>
+                <td>{label}</td>
+                <td className="mono">{ranges[key].floor}</td>
+                <td className="mono">
+                  <strong>{ranges[key].median}</strong>
+                </td>
+                <td className="mono">{ranges[key].ceiling}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </td>
+    </tr>
   );
 }
 
@@ -50,6 +64,7 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
   const showPositionFilter = Array.isArray(positions) && positions.length > 0;
   const [selected, setSelected] = useState(positions || []);
   const [query, setQuery] = useState("");
+  const [expanded, setExpanded] = useState(null); // player_name currently unfolded, or null
   const sortProps = { activeSort: sortKey, activeDir: sortDir, currentParams };
 
   function toggle(pos) {
@@ -123,11 +138,24 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
               </tr>
             </thead>
             <tbody>
-              {filteredRows.map((row) => (
-                <tr key={row.player_name} data-pos={row.position}>
+              {filteredRows.map((row) => {
+                const hasStats = row.stat_ranges && Object.keys(row.stat_ranges).length > 0;
+                const isExpanded = hasStats && expanded === row.player_name;
+                return (
+                <Fragment key={row.player_name}>
+                <tr data-pos={row.position}>
                   <td className="player-cell">
-                    {row.stat_ranges && Object.keys(row.stat_ranges).length > 0 ? (
-                      <StatBreakdown row={row} />
+                    {hasStats ? (
+                      <button
+                        type="button"
+                        className="player-expand-trigger"
+                        onClick={() => setExpanded(isExpanded ? null : row.player_name)}
+                        aria-expanded={isExpanded}
+                      >
+                        <TrendTag trend={row.trend} /> {row.player_name}{" "}
+                        <ConfidenceBadge confidence={row.sample_confidence} />
+                        <span className="expand-chevron">{isExpanded ? "▲" : "▼"}</span>
+                      </button>
                     ) : (
                       <>
                         <TrendTag trend={row.trend} /> {row.player_name}{" "}
@@ -163,7 +191,10 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                     </div>
                   </td>
                 </tr>
-              ))}
+                {isExpanded && <StatDetailRow row={row} colSpan={7} />}
+                </Fragment>
+                );
+              })}
             </tbody>
           </table>
         </div>
