@@ -21,6 +21,13 @@ source("projection_engine.R")
 WEEK <- current_nfl_week(TARGET_SEASON)
 out_players <- tryCatch(load_out_players(TARGET_SEASON, WEEK), error = function(e) character(0))
 
+# Same opponent-strength multipliers project_all() used to produce
+# df$median/df$ceiling below -- range_low is already matchup-adjusted, so
+# the reference distribution used to compute P(X > range_low) needs the
+# same adjustment, or a favorable matchup's shifted threshold gets
+# checked against an unadjusted (too-low) distribution and vice versa.
+matchup_mult <- tryCatch(compute_matchup_multipliers(), error = function(e) NULL)
+
 # Same history window AND the same eligibility filter as project_all() --
 # both must match exactly, or the baseline pools below get built from a
 # different player universe than the one that actually produced
@@ -67,12 +74,19 @@ for (i in seq_len(nrow(df))) {
   n <- length(x)
   wc <- recency_weights(n, CEIL_DECAY[pos])
 
+  mult <- 1
+  opp <- df$opponent[i]
+  if (!is.null(matchup_mult) && !is.na(opp) && opp != "") {
+    mult_key <- paste(opp, pos)
+    if (mult_key %in% names(matchup_mult)) mult <- matchup_mult[[mult_key]]
+  }
+
   range_low <- df$median[i] + 0.5 * (df$ceiling[i] - df$median[i])
 
-  own_prob <- weighted_exceed_prob(x, wc, range_low)
+  own_prob <- weighted_exceed_prob(x * mult, wc, range_low)
   if (df$shrunk[i] && !is.null(baseline_pools[[pos]])) {
     base <- baseline_pools[[pos]]
-    base_prob <- mean(base$pool > range_low)
+    base_prob <- mean(base$pool * mult > range_low)
     prob <- SHRINK_OWN_SHARE * own_prob + (1 - SHRINK_OWN_SHARE) * base_prob
   } else {
     prob <- own_prob

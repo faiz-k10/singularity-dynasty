@@ -52,6 +52,16 @@ HIGH_USAGE_CUTOFF_PCTILE <- 0.85  # workload percentile (per position) above whi
                                    # player is excluded from the "common tier"
                                    # shrinkage baseline -- applies to all 4 positions
 
+MATCHUP_FULL_SAMPLE_GAMES <- 8  # games at which a defense's own fantasy-points-
+                                 # allowed-by-position number is fully trusted
+                                 # (pre-cap) -- reuses the same "half-season,
+                                 # trust it" benchmark as MIN_GAMES elsewhere.
+                                 # NOT separately backtested for defense.
+MATCHUP_MULT_FLOOR <- 0.80  # opponent-strength multiplier clamp -- keeps a
+MATCHUP_MULT_CEIL  <- 1.20  # small defensive sample or one fluke game from
+                             # swinging a projection too far. Product judgment,
+                             # not backtested.
+
 # Week 18 is deliberately excluded from all history: it shows the same ~8%
 # scoring depression as week 1 (rested starters / backups), which was
 # distorting recency-weighted projections. Week 17 is NOT excluded — it's a
@@ -75,6 +85,15 @@ TARGET_SEASON <- 2026
 history_seasons <- function(target_season = TARGET_SEASON, lookback_years = 3) {
   latest <- min(target_season, most_recent_season())
   (target_season - lookback_years):latest
+}
+
+# Opponent-strength window: current + prior season only, NOT the full
+# 3-year lookback used for player history. Defensive personnel/scheme
+# turns over much faster than offensive skill talent -- a 2023 defense
+# says little about this year's unit under a new DC.
+defense_history_seasons <- function(target_season = TARGET_SEASON) {
+  latest <- min(target_season, most_recent_season())
+  (target_season - 1):latest
 }
 
 # ============================= DATA LOADING =============================
@@ -249,6 +268,40 @@ load_opponents <- function(season, week) {
   setNames(c(wk$home_team, wk$away_team), c(wk$away_team, wk$home_team))
 }
 
+# Opponent-strength multiplier per (defense, position): fantasy points
+# allowed relative to league average that position, shrunk toward 1.0
+# (neutral) by games played and capped to [MATCHUP_MULT_FLOOR,
+# MATCHUP_MULT_CEIL]. Uses load_player_stats()'s own opponent_team field
+# -- no separate data source needed. Returns a named vector keyed
+# "TEAM POS" (e.g. "PIT RB") -> multiplier.
+compute_matchup_multipliers <- function(seasons = defense_history_seasons()) {
+  stats <- load_player_stats(seasons = seasons)
+  d <- stats[stats$season_type == "REG",
+             c("position", "season", "week", "opponent_team", "fantasy_points_ppr")]
+  d <- d[d$position %in% c("QB", "RB", "WR", "TE"), ]
+  d <- d[!is.na(d$fantasy_points_ppr) & !is.na(d$opponent_team), ]
+
+  # Points allowed per defense-week-position: sum across all opposing
+  # players of that position who faced that defense that week.
+  allowed <- aggregate(fantasy_points_ppr ~ opponent_team + position + season + week,
+                        data = d, FUN = sum)
+  names(allowed)[names(allowed) == "opponent_team"] <- "defense"
+
+  league_avg <- tapply(allowed$fantasy_points_ppr, allowed$position, mean)
+  defense_avg <- aggregate(fantasy_points_ppr ~ defense + position, data = allowed, FUN = mean)
+  defense_games <- aggregate(fantasy_points_ppr ~ defense + position, data = allowed, FUN = length)
+  names(defense_games)[3] <- "games"
+
+  m <- merge(defense_avg, defense_games, by = c("defense", "position"))
+  m$league_avg <- league_avg[m$position]
+  m$raw_mult <- m$fantasy_points_ppr / m$league_avg
+  m$shrink_share <- pmin(m$games / MATCHUP_FULL_SAMPLE_GAMES, 1)
+  m$mult <- 1 + m$shrink_share * (m$raw_mult - 1)
+  m$mult <- pmin(pmax(m$mult, MATCHUP_MULT_FLOOR), MATCHUP_MULT_CEIL)
+
+  setNames(m$mult, paste(m$defense, m$position))
+}
+
 # Official weekly injury report (same nflverse source as everything else),
 # matched to player_display_name by full_name -- ~96% match rate verified
 # (unmatched players have no stat history anyway, so they're never in the
@@ -369,6 +422,18 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
   week_opponent <- load_opponents(target_season, publish_week)
   completed_weeks <- max(publish_week - 1, 0)
 
+  # Opponent-strength adjustment for THIS week's matchup -- weekly
+  # figures only (Redraft/Best Ball floor/median/ceiling). Season sims
+  # and playoff_ceiling stay untouched, same reasoning as the OUT
+  # override: a season total or a weeks-15-17 figure isn't tied to one
+  # matchup. Fails safe: if unavailable, every multiplier is effectively
+  # 1 (no adjustment) rather than erroring.
+  matchup_mult <- tryCatch(compute_matchup_multipliers(), error = function(e) {
+    cat("Matchup data unavailable this run -- skipping opponent-strength adjustment:",
+        conditionMessage(e), "\n")
+    NULL
+  })
+
   rows <- vector("list", length(eligible))
   names(rows) <- eligible
 
@@ -420,6 +485,16 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
 
     opp <- week_opponent[team]
     opp <- if (length(opp) == 1 && !is.na(opp)) unname(opp) else NA_character_
+
+    if (!is.null(matchup_mult) && !is.na(opp)) {
+      mult_key <- paste(opp, pos)
+      if (mult_key %in% names(matchup_mult)) {
+        mult <- matchup_mult[[mult_key]]
+        fl  <- fl * mult
+        med <- med * mult
+        cei <- cei * mult
+      }
+    }
 
     rows[[p]] <- data.frame(
       player_name = p, position = pos, team = team, opponent = opp, games = n,
