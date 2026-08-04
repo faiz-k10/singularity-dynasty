@@ -691,7 +691,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
   display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px;
   font-size:10px; font-weight:700; font-family:var(--font-ibm-plex-mono), monospace;
   border-radius:50%; background:var(--void-panel-2); border:1px solid var(--line);
-  flex-shrink:0; cursor:default;
+  flex-shrink:0; cursor:default; vertical-align:middle;
 }
 .trend-tag.up{color:var(--up); background:rgba(var(--up-rgb),0.15); border-color:rgba(var(--up-rgb),0.35);}
 .trend-tag.down{color:var(--down); background:rgba(var(--down-rgb),0.15); border-color:rgba(var(--down-rgb),0.35);}
@@ -707,7 +707,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 
 .confidence-badge{
   display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px;
-  border-radius:50%; font-size:10px; flex-shrink:0; cursor:default;
+  border-radius:50%; font-size:10px; flex-shrink:0; cursor:default; vertical-align:middle;
 }
 .confidence-badge.gold{background:rgba(255,199,115,0.18); color:var(--horizon-gold); border:1px solid rgba(255,199,115,0.4);}
 .confidence-badge.silver{background:rgba(160,170,185,0.15); color:#A0AAB9; border:1px solid rgba(160,170,185,0.35);}
