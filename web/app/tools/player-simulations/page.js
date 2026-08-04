@@ -3,11 +3,8 @@ import { getUserTier } from "@/lib/tier";
 import { resolveSort, sortRows } from "@/lib/sortLink";
 import ThemeToggle from "../../ThemeToggle";
 import InteractiveScript from "../../InteractiveScript";
-import SortableTh from "../SortableTh";
 import ExportCsvButton from "../ExportCsvButton";
-import TrendTag from "../TrendTag";
-import ConfidenceBadge from "../ConfidenceBadge";
-import TeamBadge from "../TeamBadge";
+import PlayerSimSearch from "../PlayerSimSearch";
 
 export const metadata = {
   title: "Player Season Simulations — Singularity Dynasty",
@@ -16,6 +13,7 @@ export const metadata = {
 const TEASER_LIMIT = 10;
 // Singularity-only per the pricing copy — Explorer does not include this.
 const PAID_TIERS = ["singularity"];
+const POSITION_ORDER = ["QB", "RB", "WR", "TE"];
 const COLUMN_TYPES = {
   player_name: "string",
   position: "string",
@@ -24,6 +22,17 @@ const COLUMN_TYPES = {
   median: "number",
   ceiling: "number",
 };
+
+function sortPositions(positions) {
+  return [...positions].sort((a, b) => {
+    const ai = POSITION_ORDER.indexOf(a);
+    const bi = POSITION_ORDER.indexOf(b);
+    if (ai === -1 && bi === -1) return a.localeCompare(b);
+    if (ai === -1) return 1;
+    if (bi === -1) return -1;
+    return ai - bi;
+  });
+}
 
 export default async function PlayerSimulationsPage({ searchParams }) {
   const params = await searchParams;
@@ -65,25 +74,25 @@ export default async function PlayerSimulationsPage({ searchParams }) {
   const { sortKey, sortDir } = resolveSort(params, "median", "desc");
   const sortedSims = sortRows(sims, sortKey, sortDir, COLUMN_TYPES);
   const maxCeiling = sims.reduce((m, s) => Math.max(m, s.ceiling), 1);
-  const sortProps = { activeSort: sortKey, activeDir: sortDir, currentParams: params };
   const canExport = tier === "singularity" && sims.length > 0;
+  const positions = sortPositions([...new Set(sims.map((r) => r.position))]);
 
   // Median heat-tint is position-relative -- QBs score far higher raw
   // totals than TEs, so a global min/max would make every QB look "hot"
   // and every TE look "cold" regardless of how they actually rank among
   // their own position.
   const medianRangeByPos = {};
-  for (const row of sims) {
+  for (const row of sortedSims) {
     const r = medianRangeByPos[row.position] || { min: Infinity, max: -Infinity };
     r.min = Math.min(r.min, row.median);
     r.max = Math.max(r.max, row.median);
     medianRangeByPos[row.position] = r;
   }
-  function medianHeat(row) {
+  const simsWithHeat = sortedSims.map((row) => {
     const r = medianRangeByPos[row.position];
-    if (!r || r.max === r.min) return 0;
-    return (row.median - r.min) / (r.max - r.min);
-  }
+    const heat = r && r.max > r.min ? (row.median - r.min) / (r.max - r.min) : 0;
+    return { ...row, heat };
+  });
 
   return (
     <div className="tool-page">
@@ -109,77 +118,39 @@ export default async function PlayerSimulationsPage({ searchParams }) {
           </div>
         ) : (
           <>
-            {canExport && (
-              <div className="tool-export-row">
-                <ExportCsvButton
-                  id="csv-player-simulations"
-                  filename={`player-simulations-week${latest.week}-${latest.season}.csv`}
-                  columns={[
-                    { key: "player_name", label: "Player" },
-                    { key: "position", label: "Position" },
-                    { key: "team", label: "Team" },
-                    { key: "floor", label: "Floor" },
-                    { key: "median", label: "Median" },
-                    { key: "ceiling", label: "Ceiling" },
-                    { key: "trend", label: "Trend" },
-                    { key: "sample_confidence", label: "Confidence" },
-                  ]}
-                  rows={sortedSims}
-                />
+            <div className="toggle-row-flex">
+              <div className="toggle-row-actions">
+                <Link href="/tools/compare-player-sims" className="hub-panel-link">
+                  Compare Players →
+                </Link>
+                {canExport && (
+                  <ExportCsvButton
+                    id="csv-player-simulations"
+                    filename={`player-simulations-week${latest.week}-${latest.season}.csv`}
+                    columns={[
+                      { key: "player_name", label: "Player" },
+                      { key: "position", label: "Position" },
+                      { key: "team", label: "Team" },
+                      { key: "floor", label: "Floor" },
+                      { key: "median", label: "Median" },
+                      { key: "ceiling", label: "Ceiling" },
+                      { key: "trend", label: "Trend" },
+                      { key: "sample_confidence", label: "Confidence" },
+                    ]}
+                    rows={sortedSims}
+                  />
+                )}
               </div>
-            )}
-            <div className="rankings-table-wrap">
-              <table className="rankings-table">
-                <thead>
-                  <tr>
-                    <SortableTh label="Player" sortKey="player_name" {...sortProps} />
-                    <SortableTh label="Pos" sortKey="position" {...sortProps} />
-                    <SortableTh label="Team" sortKey="team" {...sortProps} />
-                    <SortableTh label="Floor" sortKey="floor" {...sortProps} />
-                    <SortableTh label="Median" sortKey="median" {...sortProps} />
-                    <SortableTh label="Ceiling" sortKey="ceiling" {...sortProps} />
-                    <th>Range</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sortedSims.map((row) => (
-                    <tr key={row.player_name} data-pos={row.position}>
-                      <td>
-                        <ConfidenceBadge confidence={row.sample_confidence} /> {row.player_name}{" "}
-                        <TrendTag trend={row.trend} />
-                      </td>
-                      <td className="mono">{row.position}</td>
-                      <td className="mono">
-                        <TeamBadge team={row.team} />
-                      </td>
-                      <td className="mono">{row.floor}</td>
-                      <td className="mono heat-cell" style={{ "--heat": medianHeat(row) }}>
-                        <strong>{row.median}</strong>
-                      </td>
-                      <td className="mono">{row.ceiling}</td>
-                      <td>
-                        <div className="sim-bar-track">
-                          <div
-                            className="sim-bar-typical"
-                            style={{
-                              left: `${(row.floor / maxCeiling) * 100}%`,
-                              width: `${((row.median - row.floor) / maxCeiling) * 100}%`,
-                            }}
-                          ></div>
-                          <div
-                            className="sim-bar-upside"
-                            style={{
-                              left: `${(row.median / maxCeiling) * 100}%`,
-                              width: `${((row.ceiling - row.median) / maxCeiling) * 100}%`,
-                            }}
-                          ></div>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
             </div>
+
+            <PlayerSimSearch
+              rows={simsWithHeat}
+              sortKey={sortKey}
+              sortDir={sortDir}
+              currentParams={params}
+              positions={positions}
+              maxCeiling={maxCeiling}
+            />
 
             {isTeaser && (
               <div className="tool-paywall reveal in">

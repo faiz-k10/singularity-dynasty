@@ -12,10 +12,14 @@
   --neon-blue-glow:rgba(61,220,255,0.28);
   --up:#6FE3A8;
   --down:#FF6B6B;
-  --pos-qb:#FFC773;
-  --pos-rb:#3DDCFF;
-  --pos-wr:#B98CFF;
-  --pos-te:#5FD9A0;
+  /* Categorical palette validated with the dataviz skill's validator
+     (OKLCH-spread hues, passes all-pairs CVD ΔE + normal-vision floor +
+     contrast in both modes) -- picked for more separation than the
+     original brand-adjacent set. */
+  --pos-qb:#d16022;
+  --pos-rb:#3986e4;
+  --pos-wr:#b55fba;
+  --pos-te:#00a36d;
   --radius:3px;
   --ease:cubic-bezier(.16,.84,.44,1);
   --px:0; --py:0;
@@ -45,10 +49,10 @@
     --neon-blue-dim:#0B6B85;
     --up:#1C8F52;
     --down:#D63F39;
-    --pos-qb:#B8720E;
-    --pos-rb:#0A7F99;
-    --pos-wr:#7B4FCC;
-    --pos-te:#1C8F52;
+    --pos-qb:#af4000;
+    --pos-rb:#1467c2;
+    --pos-wr:#95419a;
+    --pos-te:#008451;
     --scrim-rgb:255,253,249;
     --star-dot-rgb:20,19,28;
     --shadow-rgb:80,70,50;
@@ -68,10 +72,10 @@
   --neon-blue-dim:#0B6B85;
   --up:#1C8F52;
   --down:#D63F39;
-  --pos-qb:#B8720E;
-  --pos-rb:#0A7F99;
-  --pos-wr:#7B4FCC;
-  --pos-te:#1C8F52;
+  --pos-qb:#af4000;
+  --pos-rb:#1467c2;
+  --pos-wr:#95419a;
+  --pos-te:#008451;
   --scrim-rgb:255,253,249;
   --star-dot-rgb:20,19,28;
   --shadow-rgb:80,70,50;
