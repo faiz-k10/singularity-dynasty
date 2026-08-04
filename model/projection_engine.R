@@ -254,6 +254,17 @@ load_out_players <- function(season, week) {
   unique(inj$full_name)
 }
 
+# Current starting QB per team, from the latest depth-chart snapshot --
+# matched to player_display_name by player_name (verified 32/32 exact
+# match against the model's own naming, unlike load_out_players' ~96%).
+# Unlike stats/injuries, depth charts aren't gated by most_recent_season()
+# -- daily snapshots are already available for TARGET_SEASON.
+load_qb_starters <- function(season) {
+  dc <- load_depth_charts(season)
+  latest <- dc[dc$dt == max(dc$dt) & dc$pos_abb == "QB" & dc$pos_rank == 1, ]
+  unique(latest$player_name)
+}
+
 # ============================= PROJECTION =============================
 
 # Produces one row per eligible player: weekly floor/median/ceiling (for
@@ -286,6 +297,22 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
   last_completed_season <- TARGET_SEASON - 1
   played_recently <- unique(reg$player_display_name[reg$season == last_completed_season])
   eligible <- intersect(eligible, played_recently)
+
+  # Backup QBs excluded entirely (all three tables) -- current depth
+  # chart, not last season's history, since a QB's competition/starter
+  # status can change independent of how they performed historically.
+  # Fails safe: if depth-chart data is unavailable, skip this filter
+  # rather than accidentally dropping every QB.
+  qb_starters <- tryCatch(load_qb_starters(target_season), error = function(e) {
+    cat("Depth chart unavailable this run -- skipping backup-QB filter:", conditionMessage(e), "\n")
+    NULL
+  })
+  if (!is.null(qb_starters)) {
+    player_positions <- reg$position[match(eligible, reg$player_display_name)]
+    is_backup_qb <- player_positions == "QB" & !(eligible %in% qb_starters)
+    cat("Backup QBs removed:", sum(is_backup_qb), "-", paste(eligible[is_backup_qb], collapse = ", "), "\n")
+    eligible <- eligible[!is_backup_qb]
+  }
 
   shrink_players <- character(0)
   baseline_pools <- list()
