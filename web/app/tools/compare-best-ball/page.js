@@ -8,6 +8,8 @@ export const metadata = {
 };
 
 const SLOTS = ["p1", "p2", "p3"];
+const TEASER_LIMIT = 10;
+const PAID_TIERS = ["explorer", "singularity"];
 
 function formatScore(value) {
   return value === null || value === undefined ? "—" : Math.round(Number(value));
@@ -22,11 +24,13 @@ function formatCeilingRange(r) {
   return `${Math.round(Number(r.ceiling_range_low))}-${high}`;
 }
 
-// Free for everyone, same as Best Ball Rankings itself — this is a view
-// over that same dataset, not a separate tier-gated feature.
+// Same tier gate as Best Ball Rankings itself -- this is a view over that
+// same dataset, so a free user must not be able to use it to see or
+// compare players past the top-10 teaser boundary.
 export default async function CompareBestBallPage({ searchParams }) {
   const params = await searchParams;
-  const { supabase } = await getUserTier();
+  const { supabase, tier } = await getUserTier();
+  const hasFullAccess = PAID_TIERS.includes(tier);
 
   const { data: latest } = await supabase
     .from("best_ball_rankings")
@@ -38,7 +42,7 @@ export default async function CompareBestBallPage({ searchParams }) {
 
   let rankings = [];
   if (latest) {
-    const { data } = await supabase
+    let query = supabase
       .from("best_ball_rankings")
       .select(
         "rank, player_name, position, team, opponent, ceiling_score, ceiling_range_low, ceiling_probability, playoff_ceiling_score, notes"
@@ -46,6 +50,12 @@ export default async function CompareBestBallPage({ searchParams }) {
       .eq("season", latest.season)
       .eq("week", latest.week)
       .order("rank", { ascending: true });
+
+    if (!hasFullAccess) {
+      query = query.limit(TEASER_LIMIT);
+    }
+
+    const { data } = await query;
     rankings = data || [];
   }
 
@@ -68,6 +78,18 @@ export default async function CompareBestBallPage({ searchParams }) {
           Pick two or three players from this week&apos;s Best Ball
           Rankings to see them side by side.
         </p>
+
+        {!hasFullAccess && rankings.length > 0 && (
+          <div className="tool-paywall reveal in">
+            <p>
+              Free access covers the top {TEASER_LIMIT} players. Unlock
+              every player with Explorer or Singularity.
+            </p>
+            <Link href="/#pricing" className="btn-primary">
+              See Pricing
+            </Link>
+          </div>
+        )}
 
         {rankings.length === 0 ? (
           <div className="tool-empty">
