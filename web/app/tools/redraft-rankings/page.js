@@ -4,8 +4,7 @@ import { resolveSort, sortRows } from "@/lib/sortLink";
 import ThemeToggle from "../../ThemeToggle";
 import InteractiveScript from "../../InteractiveScript";
 import ExportCsvButton from "../ExportCsvButton";
-import OverallSearch from "../OverallSearch";
-import PositionFilterSearch from "../PositionFilterSearch";
+import RankingsSearch from "../RankingsSearch";
 
 export const metadata = {
   title: "Redraft Weekly Rankings — Singularity Dynasty",
@@ -16,12 +15,6 @@ const OVERALL_COLUMN_TYPES = {
   rank: "number",
   player_name: "string",
   position: "string",
-  team: "string",
-  projection: "number",
-};
-const POSITION_COLUMN_TYPES = {
-  rank: "number",
-  player_name: "string",
   team: "string",
   projection: "number",
 };
@@ -36,7 +29,6 @@ function sortPositions(positions) {
     return ai - bi;
   });
 }
-
 
 // Free for everyone (Stargazer) per the pricing copy — no tier gating here.
 export default async function RedraftRankingsPage({ searchParams }) {
@@ -65,18 +57,7 @@ export default async function RedraftRankingsPage({ searchParams }) {
     rankings = data || [];
   }
 
-  const byPosition = {};
-  rankings.forEach((row) => {
-    (byPosition[row.position] ??= []).push(row);
-  });
-  const positions = sortPositions(Object.keys(byPosition));
-  const byPositionLabeled = {};
-  positions.forEach((pos) => {
-    byPositionLabeled[pos] = byPosition[pos].map((r, i) => ({
-      ...r,
-      displayRank: `${pos}${i + 1}`,
-    }));
-  });
+  const positions = sortPositions([...new Set(rankings.map((r) => r.position))]);
 
   const { sortKey, sortDir } = resolveSort(params, "rank", "asc");
   const overallRows = sortRows(
@@ -86,30 +67,6 @@ export default async function RedraftRankingsPage({ searchParams }) {
     OVERALL_COLUMN_TYPES
   );
   const canExport = tier === "singularity" && rankings.length > 0;
-
-  // Per-position sort still resolves server-side from URL params (each
-  // position keeps its own ?xx_sort=/&xx_dir= pair); which positions are
-  // VISIBLE and the player-name search are both client-side state, handled
-  // by PositionFilterSearch below.
-  const positionData = {};
-  positions.forEach((pos) => {
-    const sortParam = `${pos.toLowerCase()}_sort`;
-    const dirParam = `${pos.toLowerCase()}_dir`;
-    const { sortKey: posSortKey, sortDir: posSortDir } = resolveSort(
-      params,
-      "rank",
-      "asc",
-      sortParam,
-      dirParam
-    );
-    positionData[pos] = {
-      rows: sortRows(byPositionLabeled[pos], posSortKey, posSortDir, POSITION_COLUMN_TYPES),
-      sortKey: posSortKey,
-      sortDir: posSortDir,
-      sortParam,
-      dirParam,
-    };
-  });
 
   return (
     <div className="tool-page">
@@ -170,20 +127,13 @@ export default async function RedraftRankingsPage({ searchParams }) {
               </div>
             </div>
 
-            {view === "overall" ? (
-              <OverallSearch
-                rows={overallRows}
-                sortKey={sortKey}
-                sortDir={sortDir}
-                currentParams={params}
-              />
-            ) : (
-              <PositionFilterSearch
-                positions={positions}
-                positionData={positionData}
-                currentParams={params}
-              />
-            )}
+            <RankingsSearch
+              rows={overallRows}
+              sortKey={sortKey}
+              sortDir={sortDir}
+              currentParams={params}
+              positions={view === "position" ? positions : undefined}
+            />
           </>
         )}
       </main>
