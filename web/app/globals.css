@@ -679,7 +679,14 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    the tier-s gold styling for "established", a neutral silver for "building". */
 /* Fixed-size circle, same dimensions as .confidence-badge right next to
    it -- previously an auto-width pill, which made the arrow glyphs
-   (up/down) and the dash (steady) render at visibly different sizes. */
+   (up/down) and the dash (steady) render at visibly different sizes.
+   Up/down are drawn as pure CSS triangles (::before, a bordered-box
+   arrowhead) rather than the Unicode ▲/▼ glyphs -- those measured as
+   centered in this environment's font rendering but still looked visibly
+   off-center on a real device after two rounds of pixel-offset tuning
+   (1px, then 1.5px). A glyph's vertical metrics vary by renderer in ways
+   this codebase can't verify across every device; a CSS shape has no
+   such variance, so this is deterministic everywhere. */
 .trend-tag{
   display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px;
   font-size:10px; font-weight:700; font-family:var(--font-ibm-plex-mono), monospace;
@@ -687,8 +694,16 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
   flex-shrink:0; cursor:default;
 }
 .trend-tag.up{color:var(--up); background:rgba(var(--up-rgb),0.15); border-color:rgba(var(--up-rgb),0.35);}
-.trend-tag.down{color:var(--down); background:rgba(var(--down-rgb),0.15); border-color:rgba(var(--down-rgb),0.35); transform:translateY(1.5px);}
+.trend-tag.down{color:var(--down); background:rgba(var(--down-rgb),0.15); border-color:rgba(var(--down-rgb),0.35);}
 .trend-tag.steady{color:var(--neon-blue-dim); border-color:var(--line);}
+.trend-tag.up::before{
+  content:""; width:0; height:0; border-left:4px solid transparent; border-right:4px solid transparent;
+  border-bottom:6px solid var(--up);
+}
+.trend-tag.down::before{
+  content:""; width:0; height:0; border-left:4px solid transparent; border-right:4px solid transparent;
+  border-top:6px solid var(--down);
+}
 
 .confidence-badge{
   display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px;
