@@ -151,9 +151,32 @@ build_common_pool <- function(reg, eligible_players, position) {
 # season-total simulation (Player Season Simulations) — weekly figures
 # (Redraft, Best Ball) stay pure per-game numbers per product decision;
 # availability is a season-total concept, not a single-week one.
-player_availability <- function(player_games_df) {
+#
+# `completed_weeks` (weeks of `target_season` that have fully finished,
+# per current_nfl_week() -- 0 before the season starts) matters because
+# TARGET_SEASON's own games are now folded into history (see
+# history_seasons()). A completed PAST season correctly divides by the
+# full 16-game season. But dividing TARGET_SEASON's games-so-far by that
+# same 16 right after Week 1 would read a healthy player who's played
+# every game as ~6% available -- an in-progress season isn't a bad past
+# season, it just hasn't happened yet. Divide TARGET_SEASON by how much
+# of it has actually elapsed instead, so "played every game so far" reads
+# as ~100% available, not "barely available."
+player_availability <- function(player_games_df, target_season = TARGET_SEASON,
+                                 completed_weeks = 0) {
   yrs <- sort(unique(player_games_df$season))
-  a_by_yr <- sapply(yrs, function(s) min(sum(player_games_df$season == s) / MAX_GAMES_PER_SEASON, 1))
+  # A player who has missed the season entirely so far has ZERO rows for
+  # target_season -- it wouldn't appear in `yrs` at all, so they'd never
+  # get penalized for it. Force it in once the season is underway, so
+  # "0 games out of completed_weeks" actually counts as 0%, not "no data,
+  # skip this year."
+  if (completed_weeks > 0 && !(target_season %in% yrs)) {
+    yrs <- sort(c(yrs, target_season))
+  }
+  a_by_yr <- sapply(yrs, function(s) {
+    denom <- if (s == target_season && completed_weeks > 0) completed_weeks else MAX_GAMES_PER_SEASON
+    min(sum(player_games_df$season == s) / denom, 1)
+  })
   yw <- AVAILABILITY_YEAR_DECAY ^ ((length(yrs) - 1):0)
   yw <- yw / sum(yw)
   min(sum(a_by_yr * yw), 1)
@@ -270,6 +293,7 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
   current_team$latest_team <- ifelse(current_team$latest_team == "AZ", "ARI", current_team$latest_team)
   publish_week <- current_nfl_week(target_season)
   week_opponent <- load_opponents(target_season, publish_week)
+  completed_weeks <- max(publish_week - 1, 0)
 
   rows <- vector("list", length(eligible))
   names(rows) <- eligible
@@ -285,7 +309,7 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
 
     wm <- recency_weights(n, MED_DECAY[pos])
     wc <- recency_weights(n, CEIL_DECAY[pos])
-    avail <- player_availability(d)
+    avail <- player_availability(d, target_season, completed_weeks)
 
     szn <- replicate(n_sims, {
       g <- sum(runif(MAX_GAMES_PER_SEASON) < avail)
