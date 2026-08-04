@@ -349,7 +349,7 @@ export_for_supabase <- function(df, seasons = 2023:2025, week = 1) {
   write.csv(data.frame(
     season = season, week = week, rank = seq_len(nrow(bb)),
     player_name = bb$player_name, position = bb$position, team = bb$team,
-    ceiling_score = round(bb$ceiling),
+    opponent = bb$opponent, ceiling_score = round(bb$ceiling),
     playoff_ceiling_score = round(bb$playoff_ceiling),
     trend = bb$trend,
     sample_confidence = ifelse(bb$shrunk, "building", "established"),

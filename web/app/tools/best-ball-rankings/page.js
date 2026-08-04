@@ -19,6 +19,7 @@ const COLUMN_TYPES = {
   player_name: "string",
   position: "string",
   team: "string",
+  opponent: "string",
   ceiling_score: "number",
   playoff_ceiling_score: "number",
 };
@@ -57,7 +58,7 @@ export default async function BestBallRankingsPage({ searchParams }) {
     let query = supabase
       .from("best_ball_rankings")
       .select(
-        "rank, player_name, position, team, ceiling_score, ceiling_range_low, ceiling_probability, playoff_ceiling_score, trend, sample_confidence, notes",
+        "rank, player_name, position, team, opponent, ceiling_score, ceiling_range_low, ceiling_probability, playoff_ceiling_score, trend, sample_confidence, notes",
         { count: "exact" }
       )
       .eq("season", latest.season)
@@ -69,7 +70,15 @@ export default async function BestBallRankingsPage({ searchParams }) {
     }
 
     const { data, count } = await query;
-    rankings = data || [];
+
+    // Position-relative rank (RB1, WR23, ...) computed once from the
+    // natural rank order -- stays fixed on each row even if the table is
+    // later re-sorted by a different column via SortableTh.
+    const positionCounters = {};
+    rankings = (data || []).map((r) => {
+      positionCounters[r.position] = (positionCounters[r.position] || 0) + 1;
+      return { ...r, positionLabel: `${r.position}${positionCounters[r.position]}` };
+    });
     totalCount = count || 0;
   }
 
@@ -113,6 +122,7 @@ export default async function BestBallRankingsPage({ searchParams }) {
                     { key: "player_name", label: "Player" },
                     { key: "position", label: "Position" },
                     { key: "team", label: "Team" },
+                    { key: "opponent", label: "Opponent" },
                     { key: "ceiling_score", label: "This Week" },
                     { key: "ceiling_range_low", label: "This Week Low" },
                     { key: "ceiling_probability", label: "This Week %" },
@@ -133,6 +143,7 @@ export default async function BestBallRankingsPage({ searchParams }) {
                     <SortableTh label="Player" sortKey="player_name" {...sortProps} />
                     <SortableTh label="Pos" sortKey="position" {...sortProps} />
                     <SortableTh label="Team" sortKey="team" {...sortProps} />
+                    <SortableTh label="Opp" sortKey="opponent" {...sortProps} />
                     <SortableTh label="This Week" sortKey="ceiling_score" {...sortProps} />
                     <SortableTh
                       label="Playoffs (Wk 15-17)"
@@ -150,8 +161,9 @@ export default async function BestBallRankingsPage({ searchParams }) {
                         <ConfidenceBadge confidence={row.sample_confidence} /> {row.player_name}{" "}
                         <TrendTag trend={row.trend} />
                       </td>
-                      <td className="mono">{row.position}</td>
+                      <td className="mono">{row.positionLabel || row.position}</td>
                       <td className="mono">{row.team || "—"}</td>
+                      <td className="mono">{row.opponent || "—"}</td>
                       <td className="mono ceiling-cell">
                         {formatCeilingRange(row)}
                         {row.ceiling_probability !== null &&
