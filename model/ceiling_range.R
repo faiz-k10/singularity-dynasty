@@ -36,8 +36,14 @@ eligible <- intersect(eligible, played_recently)
 
 df <- read.csv("projections.csv", stringsAsFactors = FALSE)
 
-# Same shrink-eligible set and baseline pools as the main engine run.
-shrink_players <- names(counts[counts >= MIN_GAMES & counts < LOW_SAMPLE_SHRINK_THRESHOLD])
+# Same shrink-eligible set and baseline pools as the main engine run --
+# both triggers (low-sample AND tail-absence), or these baseline pools
+# fall out of sync with what actually produced projections.csv.
+low_sample_players <- names(counts[counts >= MIN_GAMES & counts < LOW_SAMPLE_SHRINK_THRESHOLD])
+last_season_reg <- reg[reg$season == last_completed_season, ]
+last_week_last_season <- tapply(last_season_reg$week, last_season_reg$player_display_name, max)
+tail_absence_players <- names(last_week_last_season[last_week_last_season <= TAIL_ABSENCE_CUTOFF_WEEK])
+shrink_players <- union(low_sample_players, tail_absence_players)
 baseline_pools <- list()
 if (length(shrink_players) > 0) {
   shrink_positions <- unique(sapply(shrink_players, function(p)

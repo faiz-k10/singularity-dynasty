@@ -182,23 +182,40 @@ player_availability <- function(player_games_df, target_season = TARGET_SEASON,
   min(sum(a_by_yr * yw), 1)
 }
 
-# ============================= SHRINKAGE TRIGGER =============================
+# ============================= SHRINKAGE TRIGGERS =============================
 #
-# One trigger: LOW SAMPLE SIZE, fully automatic. Any eligible player with
+# Trigger 1: LOW SAMPLE SIZE, fully automatic. Any eligible player with
 # fewer than LOW_SAMPLE_SHRINK_THRESHOLD games gets the SHRINK_OWN_SHARE
 # blend applied, regardless of why their sample is small.
 #
+# Trigger 2: DIDN'T FINISH THE LAST COMPLETED SEASON. Weekly figures
+# (Redraft/Best Ball) are built purely from a player's own game log with
+# recency weighting -- they have no concept of "has this player's season
+# ended," unlike Player Season Simulations' availability calc (which
+# already discounts a player who went down and never came back, via
+# per-year games-played fractions). Found via James Conner: played weeks
+# 1-3 of 2025, then nothing -- still "established" on 31 total games, so
+# weekly projections ranked him like a healthy every-week starter with no
+# penalty at all. If a player's last game in the last completed season
+# was at or before TAIL_ABSENCE_CUTOFF_WEEK, they get the same 80/20
+# blend toward the positional baseline as low-sample players -- an
+# automatic, data-driven rule (not a per-player list), matching the
+# season-ended shape without needing to know *why* (injury, benching,
+# etc.).
+TAIL_ABSENCE_CUTOFF_WEEK <- 10  # last game in the prior season at or before
+                                 # this week => didn't finish that season
+
 # Two other triggers existed earlier this session and were both removed:
 # a manual per-team OC/HC-change flag (context_flags.csv), and automatic
 # team-change detection (comparing load_player_stats() history against
 # load_players()$latest_team). Both were removed by the user's direct
-# instruction, in favor of relying on this single sample-size trigger.
+# instruction, in favor of relying on automatic, data-driven triggers only.
 #
 # Real consequence worth knowing: an established player (25+ games) who
 # switches teams — the original motivating case for shrinkage, before RJ
 # Harvey — no longer gets any shrink adjustment under this design unless
-# they also happen to be under the low-sample threshold. Team-change alone
-# is no longer a signal this engine acts on.
+# they also happen to trigger low-sample or tail-absence. Team-change
+# alone is still not a signal this engine acts on.
 
 # The real NFL week to publish for, by date -- not a manually bumped
 # counter. A week counts as "current" until every one of its games has
@@ -273,7 +290,13 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
   shrink_players <- character(0)
   baseline_pools <- list()
   if (apply_shrinkage) {
-    shrink_players <- names(counts[counts >= MIN_GAMES & counts < LOW_SAMPLE_SHRINK_THRESHOLD])
+    low_sample_players <- names(counts[counts >= MIN_GAMES & counts < LOW_SAMPLE_SHRINK_THRESHOLD])
+
+    last_season_reg <- reg[reg$season == last_completed_season, ]
+    last_week_last_season <- tapply(last_season_reg$week, last_season_reg$player_display_name, max)
+    tail_absence_players <- names(last_week_last_season[last_week_last_season <= TAIL_ABSENCE_CUTOFF_WEEK])
+
+    shrink_players <- union(low_sample_players, tail_absence_players)
     if (length(shrink_players) > 0) {
       shrink_positions <- unique(sapply(shrink_players, function(p)
         reg$position[reg$player_display_name == p][1]))
@@ -281,7 +304,8 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
         baseline_pools[[pos]] <- build_common_pool(reg, eligible, pos)
       }
     }
-    cat("Shrink-eligible players this run:", length(shrink_players), "\n")
+    cat("Shrink-eligible players this run:", length(shrink_players),
+        "(", length(low_sample_players), "low-sample,", length(tail_absence_players), "tail-absence )\n")
     if (length(shrink_players) > 0) cat(" -", paste(shrink_players, collapse = ", "), "\n")
   }
 
