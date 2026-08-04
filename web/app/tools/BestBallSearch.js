@@ -110,7 +110,7 @@ export default function BestBallSearch({ rows, sortKey, sortDir, currentParams, 
                 return (
                 <tr key={row.rank} data-pos={row.position}>
                   <td className="mono">{row.rank}</td>
-                  <td>
+                  <td className="player-cell">
                     <TrendTag trend={row.trend} /> {row.player_name}{" "}
                     <ConfidenceBadge confidence={row.sample_confidence} />
                   </td>

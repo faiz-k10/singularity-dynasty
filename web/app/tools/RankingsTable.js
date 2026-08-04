@@ -12,14 +12,14 @@ function formatProjection(value) {
 function PlayerCell({ row, withPopover }) {
   if (!withPopover) {
     return (
-      <td>
+      <td className="player-cell">
         <TrendTag trend={row.trend} /> {row.player_name}{" "}
         <ConfidenceBadge confidence={row.sample_confidence} />
       </td>
     );
   }
   return (
-    <td>
+    <td className="player-cell">
       <span className="player-hover" tabIndex={0}>
         <ConfidenceBadge confidence={row.sample_confidence} /> {row.player_name}
         <div className="player-popover">
