@@ -51,7 +51,7 @@ export default async function RedraftRankingsPage({ searchParams }) {
     const { data } = await supabase
       .from("redraft_rankings")
       .select(
-        "rank, player_name, position, team, opponent, projection, trend, sample_confidence, notes"
+        "rank, player_name, position, team, opponent, projection, matchup_mult, trend, sample_confidence, notes"
       )
       .eq("season", latest.season)
       .eq("week", latest.week)

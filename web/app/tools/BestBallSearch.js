@@ -5,6 +5,7 @@ import SortableTh from "./SortableTh";
 import TrendTag from "./TrendTag";
 import ConfidenceBadge from "./ConfidenceBadge";
 import TeamBadge from "./TeamBadge";
+import MatchupBadge from "./MatchupBadge";
 
 function formatScore(value) {
   return value === null || value === undefined ? "—" : Math.round(Number(value));
@@ -108,14 +109,17 @@ export default function BestBallSearch({ rows, sortKey, sortDir, currentParams, 
                 <tr key={row.rank} data-pos={row.position}>
                   <td className="mono">{row.rank}</td>
                   <td>
-                    <ConfidenceBadge confidence={row.sample_confidence} /> {row.player_name}{" "}
-                    <TrendTag trend={row.trend} />
+                    <TrendTag trend={row.trend} /> {row.player_name}{" "}
+                    <ConfidenceBadge confidence={row.sample_confidence} />
                   </td>
                   <td className="mono">{row.positionLabel || row.position}</td>
                   <td className="mono">
                     <TeamBadge team={row.team} />
                   </td>
-                  <td className="mono">{row.opponent || "—"}</td>
+                  <td className="mono">
+                    {row.opponent || "—"}
+                    <MatchupBadge mult={row.matchup_mult} />
+                  </td>
                   <td className="mono ceiling-cell heat-cell" style={{ "--heat": row.heat || 0 }}>
                     {formatCeilingRange(row)}
                     {row.ceiling_probability !== null &&

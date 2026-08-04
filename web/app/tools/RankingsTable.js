@@ -3,6 +3,7 @@ import SortableTh from "./SortableTh";
 import TrendTag from "./TrendTag";
 import ConfidenceBadge from "./ConfidenceBadge";
 import TeamBadge from "./TeamBadge";
+import MatchupBadge from "./MatchupBadge";
 
 function formatProjection(value) {
   return value === null || value === undefined ? "—" : Number(value).toFixed(1);
@@ -12,8 +13,8 @@ function PlayerCell({ row, withPopover }) {
   if (!withPopover) {
     return (
       <td>
-        <ConfidenceBadge confidence={row.sample_confidence} /> {row.player_name}{" "}
-        <TrendTag trend={row.trend} />
+        <TrendTag trend={row.trend} /> {row.player_name}{" "}
+        <ConfidenceBadge confidence={row.sample_confidence} />
       </td>
     );
   }
@@ -91,7 +92,12 @@ export default function RankingsTable({
                   <TeamBadge team={row.team} />
                 </td>
               )}
-              {showOpponent && <td className="mono">{row.opponent || "—"}</td>}
+              {showOpponent && (
+                <td className="mono">
+                  {row.opponent || "—"}
+                  <MatchupBadge mult={row.matchup_mult} />
+                </td>
+              )}
               {showProjection && (
                 <td className="mono heat-cell" style={{ "--heat": row.heat || 0 }}>
                   {formatProjection(row.projection)}

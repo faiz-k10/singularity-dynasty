@@ -89,8 +89,8 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
               {filteredRows.map((row) => (
                 <tr key={row.player_name} data-pos={row.position}>
                   <td>
-                    <ConfidenceBadge confidence={row.sample_confidence} /> {row.player_name}{" "}
-                    <TrendTag trend={row.trend} />
+                    <TrendTag trend={row.trend} /> {row.player_name}{" "}
+                    <ConfidenceBadge confidence={row.sample_confidence} />
                   </td>
                   <td className="mono">{row.position}</td>
                   <td className="mono">

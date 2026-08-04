@@ -486,6 +486,7 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
     opp <- week_opponent[team]
     opp <- if (length(opp) == 1 && !is.na(opp)) unname(opp) else NA_character_
 
+    mult <- 1  # neutral by default; overwritten below when matchup data covers this opponent+position
     if (!is.null(matchup_mult) && !is.na(opp)) {
       mult_key <- paste(opp, pos)
       if (mult_key %in% names(matchup_mult)) {
@@ -502,6 +503,7 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
       availability_pct = round(100 * avail, 0),
       shrunk = shrink_this_player,
       trend = trend,
+      matchup_mult = round(mult, 2),
       floor = round(fl, 1),
       median = round(med, 1),
       ceiling = round(cei, 1),
@@ -559,6 +561,7 @@ export_for_supabase <- function(df, target_season = TARGET_SEASON, week = NULL) 
     season = season, week = week, rank = seq_len(nrow(redraft)),
     player_name = redraft$player_name, position = redraft$position,
     team = redraft$team, opponent = redraft$opponent, projection = redraft$median,
+    matchup_mult = redraft$matchup_mult,
     trend = redraft$trend,
     sample_confidence = ifelse(redraft$shrunk, "building", "established"),
     notes = ifelse(redraft$player_name %in% out_players, "OUT", "")
@@ -574,6 +577,7 @@ export_for_supabase <- function(df, target_season = TARGET_SEASON, week = NULL) 
     season = season, week = week, rank = seq_len(nrow(bb)),
     player_name = bb$player_name, position = bb$position, team = bb$team,
     opponent = bb$opponent, ceiling_score = round(bb$ceiling),
+    matchup_mult = bb$matchup_mult,
     playoff_ceiling_score = round(bb$playoff_ceiling),
     trend = bb$trend,
     sample_confidence = ifelse(bb$shrunk, "building", "established"),

@@ -54,7 +54,7 @@ export default async function BestBallRankingsPage({ searchParams }) {
     let query = supabase
       .from("best_ball_rankings")
       .select(
-        "rank, player_name, position, team, opponent, ceiling_score, ceiling_range_low, ceiling_probability, playoff_ceiling_score, trend, sample_confidence, notes",
+        "rank, player_name, position, team, opponent, ceiling_score, matchup_mult, ceiling_range_low, ceiling_probability, playoff_ceiling_score, trend, sample_confidence, notes",
         { count: "exact" }
       )
       .eq("season", latest.season)
