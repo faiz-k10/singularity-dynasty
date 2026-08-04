@@ -3,7 +3,7 @@ import SortableTh from "./SortableTh";
 import TrendTag from "./TrendTag";
 import ConfidenceBadge from "./ConfidenceBadge";
 import TeamBadge from "./TeamBadge";
-import MatchupBadge from "./MatchupBadge";
+import { matchupTint } from "./MatchupBadge";
 
 function formatProjection(value) {
   return value === null || value === undefined ? "—" : Number(value).toFixed(1);
@@ -92,12 +92,18 @@ export default function RankingsTable({
                   <TeamBadge team={row.team} />
                 </td>
               )}
-              {showOpponent && (
-                <td className="mono">
-                  {row.opponent || "—"}
-                  <MatchupBadge mult={row.matchup_mult} />
-                </td>
-              )}
+              {showOpponent && (() => {
+                const tint = matchupTint(row.matchup_mult);
+                return (
+                  <td
+                    className={`mono${tint ? ` matchup-cell ${tint.cls}` : ""}`}
+                    style={tint ? { "--heat": tint.heat } : undefined}
+                    title={tint ? tint.label : undefined}
+                  >
+                    {row.opponent || "—"}
+                  </td>
+                );
+              })()}
               {showProjection && (
                 <td className="mono heat-cell" style={{ "--heat": row.heat || 0 }}>
                   {formatProjection(row.projection)}

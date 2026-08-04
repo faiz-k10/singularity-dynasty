@@ -5,7 +5,7 @@ import SortableTh from "./SortableTh";
 import TrendTag from "./TrendTag";
 import ConfidenceBadge from "./ConfidenceBadge";
 import TeamBadge from "./TeamBadge";
-import MatchupBadge from "./MatchupBadge";
+import { matchupTint } from "./MatchupBadge";
 
 function formatScore(value) {
   return value === null || value === undefined ? "—" : Math.round(Number(value));
@@ -105,7 +105,9 @@ export default function BestBallSearch({ rows, sortKey, sortDir, currentParams, 
               </tr>
             </thead>
             <tbody>
-              {filteredRows.map((row) => (
+              {filteredRows.map((row) => {
+                const tint = matchupTint(row.matchup_mult);
+                return (
                 <tr key={row.rank} data-pos={row.position}>
                   <td className="mono">{row.rank}</td>
                   <td>
@@ -116,9 +118,12 @@ export default function BestBallSearch({ rows, sortKey, sortDir, currentParams, 
                   <td className="mono">
                     <TeamBadge team={row.team} />
                   </td>
-                  <td className="mono">
+                  <td
+                    className={`mono${tint ? ` matchup-cell ${tint.cls}` : ""}`}
+                    style={tint ? { "--heat": tint.heat } : undefined}
+                    title={tint ? tint.label : undefined}
+                  >
                     {row.opponent || "—"}
-                    <MatchupBadge mult={row.matchup_mult} />
                   </td>
                   <td className="mono ceiling-cell heat-cell" style={{ "--heat": row.heat || 0 }}>
                     {formatCeilingRange(row)}
@@ -130,7 +135,8 @@ export default function BestBallSearch({ rows, sortKey, sortDir, currentParams, 
                   <td className="mono">{formatScore(row.playoff_ceiling_score)}</td>
                   <td className="tool-notes">{row.notes || ""}</td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
         </div>
