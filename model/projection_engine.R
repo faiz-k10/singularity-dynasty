@@ -51,9 +51,28 @@ HIGH_USAGE_CUTOFF_PCTILE <- 0.85  # workload percentile (per position) above whi
 # normal week and is the final week of most fantasy playoffs.
 EXCLUDE_WEEKS <- c(18)
 
+# The season we're publishing rankings/projections FOR. Fixed -- does NOT
+# shift automatically when the calendar rolls over; bump it by hand once
+# the 2027 season actually starts being the one to project.
+TARGET_SEASON <- 2026
+
+# Seasons of history to feed the model: the fixed 3-year lookback, PLUS
+# the target season itself -- but ONLY once nflreadr considers it a real,
+# loadable season (its most_recent_season() flips over on the actual
+# season-opener date). load_player_stats() hard-errors, rather than
+# returning zero rows, for any season beyond that -- so this must gate on
+# most_recent_season(), not just "does the target season have data yet".
+# Once it does become loadable, this folds the target season's own games
+# in as the most-recent (most heavily weighted) data instead of
+# projections staying frozen on last year's numbers all season.
+history_seasons <- function(target_season = TARGET_SEASON, lookback_years = 3) {
+  latest <- min(target_season, most_recent_season())
+  (target_season - lookback_years):latest
+}
+
 # ============================= DATA LOADING =============================
 
-load_history <- function(seasons = 2023:2025) {
+load_history <- function(seasons = history_seasons()) {
   stats <- load_player_stats(seasons = seasons)
   reg <- stats[stats$season_type == "REG",
                c("player_display_name", "position", "season", "week",
@@ -201,8 +220,8 @@ load_out_players <- function(season, week) {
 # Redraft + Best Ball), season median (availability-adjusted, for Player
 # Season Simulations), and a weeks-15-17 playoff ceiling (for Best Ball's
 # second column).
-project_all <- function(seasons = 2023:2025, n_sims = 30000, seed = 42,
-                         apply_shrinkage = TRUE) {
+project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
+                         apply_shrinkage = TRUE, target_season = TARGET_SEASON) {
   set.seed(seed)
   reg <- load_history(seasons)
   counts <- table(reg$player_display_name)
@@ -241,8 +260,8 @@ project_all <- function(seasons = 2023:2025, n_sims = 30000, seed = 42,
   # cases). Same "AZ" -> "ARI" mismatch as before applies here too.
   current_team <- load_players()[, c("display_name", "position", "latest_team")]
   current_team$latest_team <- ifelse(current_team$latest_team == "AZ", "ARI", current_team$latest_team)
-  publish_week <- current_nfl_week(max(seasons) + 1)
-  week_opponent <- load_opponents(max(seasons) + 1, publish_week)
+  publish_week <- current_nfl_week(target_season)
+  week_opponent <- load_opponents(target_season, publish_week)
 
   rows <- vector("list", length(eligible))
   names(rows) <- eligible
@@ -328,8 +347,8 @@ project_all <- function(seasons = 2023:2025, n_sims = 30000, seed = 42,
 # `publish_week` attribute) -- no more manually bumping a counter each
 # time you republish. Pass an explicit `week` to override (e.g.
 # backfilling a past week).
-export_for_supabase <- function(df, seasons = 2023:2025, week = NULL) {
-  season <- max(seasons) + 1
+export_for_supabase <- function(df, target_season = TARGET_SEASON, week = NULL) {
+  season <- target_season
   if (is.null(week)) {
     week <- attr(df, "publish_week")
     if (is.null(week)) week <- current_nfl_week(season)

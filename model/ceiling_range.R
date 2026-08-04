@@ -18,10 +18,13 @@ source("projection_engine.R")
 # Same date-derived week export_for_supabase() resolves to, so an OUT
 # player gets zeroed here too instead of showing a nonzero
 # ceiling_range_low next to a 0 ceiling_score.
-WEEK <- current_nfl_week(max(2023:2025) + 1)
-out_players <- tryCatch(load_out_players(max(2023:2025) + 1, WEEK), error = function(e) character(0))
+WEEK <- current_nfl_week(TARGET_SEASON)
+out_players <- tryCatch(load_out_players(TARGET_SEASON, WEEK), error = function(e) character(0))
 
-reg <- load_history(2023:2025)
+# Same history window (including the target season's own games, once they
+# exist) that produced projections.csv -- must match exactly, or the
+# recency weights/game counts here won't line up with df below.
+reg <- load_history(history_seasons())
 counts <- table(reg$player_display_name)
 eligible <- names(counts[counts >= MIN_GAMES])
 
