@@ -262,11 +262,20 @@ player_availability <- function(player_games_df, target_season = TARGET_SEASON,
 TAIL_ABSENCE_CUTOFF_WEEK <- 10  # last game in the prior season at or before
                                  # this week => didn't finish that season
 
-# Two other triggers existed earlier this session and were both removed:
-# a manual per-team OC/HC-change flag (context_flags.csv), and automatic
-# team-change detection (comparing load_player_stats() history against
-# load_players()$latest_team). Both were removed by the user's direct
-# instruction, in favor of relying on automatic, data-driven triggers only.
+# Trigger 3: TEAM CHANGE, fully automatic. Compares each eligible player's
+# last known team in their own game log against their current-season
+# roster team from load_rosters(target_season). A new team means a new
+# offense/role/QB that last season's box scores can't speak to -- see the
+# implementation in project_all() for the AZ/ARI normalization and
+# fail-safe details. This was removed once already (commit 3b27ec0,
+# "Simplify to a single shrinkage trigger") and re-added on direct
+# instruction; it now reuses load_rosters(), the same season-scoped
+# source as the no-current-team eligibility filter, rather than the old
+# load_players()$latest_team rolling snapshot.
+#
+# A manual per-team OC/HC-change flag (context_flags.csv) also existed
+# alongside the original team-change trigger and was removed in the same
+# commit; it has NOT been re-added.
 #
 # Real consequence worth knowing: an established player (25+ games) who
 # switches teams — the original motivating case for shrinkage, before RJ
@@ -443,6 +452,26 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
     eligible <- eligible[!is_backup_qb]
   }
 
+  # Not currently on any NFL roster this season (retired, cut, unsigned
+  # free agent) -- current_team's latest_team/tail(d$team,1) fallback
+  # below still assigns these players a team string (their last known
+  # one), so filtering on a blank/NA team wouldn't catch them; this
+  # checks actual season-scoped roster presence instead. Matched by
+  # display_name + position (same convention as the QB depth-chart
+  # lookup above). Fails safe: if roster data is unavailable, skip the
+  # filter rather than accidentally dropping every player.
+  rosters_this_season <- tryCatch(as.data.frame(load_rosters(target_season)), error = function(e) {
+    cat("Roster data unavailable this run -- skipping no-team filter:", conditionMessage(e), "\n")
+    NULL
+  })
+  if (!is.null(rosters_this_season)) {
+    player_positions <- reg$position[match(eligible, reg$player_display_name)]
+    rostered_keys <- unique(paste(rosters_this_season$full_name, rosters_this_season$position))
+    has_no_team <- !(paste(eligible, player_positions) %in% rostered_keys)
+    cat("No current team this season -- removed:", sum(has_no_team), "-", paste(eligible[has_no_team], collapse = ", "), "\n")
+    eligible <- eligible[!has_no_team]
+  }
+
   shrink_players <- character(0)
   baseline_pools <- list()
   if (apply_shrinkage) {
@@ -452,7 +481,37 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
     last_week_last_season <- tapply(last_season_reg$week, last_season_reg$player_display_name, max)
     tail_absence_players <- names(last_week_last_season[last_week_last_season <= TAIL_ABSENCE_CUTOFF_WEEK])
 
-    shrink_players <- union(low_sample_players, tail_absence_players)
+    # Trigger 3: TEAM CHANGE, fully automatic -- compares each eligible
+    # player's last known team in their own game log against their
+    # CURRENT (this-season) roster team from load_rosters(target_season),
+    # the same source used for the no-current-team filter above (more
+    # reliable than the old load_players()$latest_team, which is a single
+    # rolling snapshot rather than season-scoped). A new team means a new
+    # offense/role/QB that last season's box scores can't speak to, same
+    # reasoning as low-sample and tail-absence. Re-added after being
+    # removed in 3b27ec0 -- re-requested directly. Fails safe: if roster
+    # data is unavailable (rosters_this_season is NULL), this trigger
+    # simply contributes nothing rather than erroring.
+    team_change_players <- character(0)
+    if (!is.null(rosters_this_season)) {
+      normalize_team <- function(team) ifelse(team == "AZ", "ARI", team)
+      reg_ord <- reg[order(reg$player_display_name, reg$season, reg$week), ]
+      last_rows <- reg_ord[!duplicated(reg_ord$player_display_name, fromLast = TRUE), ]
+      last_team_map <- setNames(normalize_team(last_rows$team),
+                                 paste(last_rows$player_display_name, last_rows$position))
+      current_roster <- rosters_this_season[!duplicated(paste(rosters_this_season$full_name, rosters_this_season$position)), ]
+      current_team_map <- setNames(normalize_team(current_roster$team),
+                                    paste(current_roster$full_name, current_roster$position))
+
+      player_positions <- reg$position[match(eligible, reg$player_display_name)]
+      keys <- paste(eligible, player_positions)
+      last_team <- unname(last_team_map[keys])
+      cur_team <- unname(current_team_map[keys])
+      changed <- !is.na(last_team) & !is.na(cur_team) & last_team != cur_team
+      team_change_players <- eligible[changed]
+    }
+
+    shrink_players <- union(union(low_sample_players, tail_absence_players), team_change_players)
     if (length(shrink_players) > 0) {
       shrink_positions <- unique(sapply(shrink_players, function(p)
         reg$position[reg$player_display_name == p][1]))
@@ -461,7 +520,8 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
       }
     }
     cat("Shrink-eligible players this run:", length(shrink_players),
-        "(", length(low_sample_players), "low-sample,", length(tail_absence_players), "tail-absence )\n")
+        "(", length(low_sample_players), "low-sample,", length(tail_absence_players), "tail-absence,",
+        length(team_change_players), "team-change )\n")
     if (length(shrink_players) > 0) cat(" -", paste(shrink_players, collapse = ", "), "\n")
   }
 
