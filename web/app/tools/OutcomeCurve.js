@@ -49,13 +49,15 @@ function buildOutcomeModel(floor, median, ceiling) {
   return { cdf, pdf, min, max };
 }
 
-export default function OutcomeCurve({ label, floor, median, ceiling, initialThreshold }) {
+export default function OutcomeCurve({ label, floor, median, ceiling, initialThreshold, decimals = 0 }) {
   const uid = useId();
   const model = useMemo(
     () => buildOutcomeModel(floor, median, ceiling),
     [floor, median, ceiling]
   );
   const [threshold, setThreshold] = useState(initialThreshold ?? median);
+  const fmt = (x) => x.toFixed(decimals);
+  const step = decimals > 0 ? 1 / 10 ** decimals : 1;
 
   const plotW = WIDTH - PAD_X * 2;
   const plotH = HEIGHT - PAD_TOP - PAD_BOTTOM;
@@ -125,7 +127,7 @@ export default function OutcomeCurve({ label, floor, median, ceiling, initialThr
             textAnchor="middle"
             className="curve-tick-label"
           >
-            {Math.round(x)}
+            {fmt(x)}
           </text>
         ))}
       </svg>
@@ -135,14 +137,14 @@ export default function OutcomeCurve({ label, floor, median, ceiling, initialThr
         className="outcome-curve-slider"
         min={model.min}
         max={model.max}
-        step={1}
-        value={Math.round(threshold)}
+        step={step}
+        value={fmt(threshold)}
         onChange={(e) => setThreshold(Number(e.target.value))}
         aria-label={`Drag to see the odds ${label} finishes above a given value`}
       />
 
       <div className="outcome-curve-readout">
-        <strong>{oddsAbove}%</strong> chance of {Math.round(threshold)}+ {label}
+        <strong>{oddsAbove}%</strong> chance of {fmt(threshold)}+ {label}
       </div>
     </div>
   );
