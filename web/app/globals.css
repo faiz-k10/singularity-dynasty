@@ -1060,6 +1060,29 @@ tr.stat-row-selected .stat-row-trigger{color:var(--horizon-gold);}
 }
 .compare-select:focus{border-color:var(--neon-blue); box-shadow:0 0 0 3px rgba(61,220,255,0.15);}
 .compare-submit{border:none; flex-shrink:0;}
+
+/* Compare Players -- type-ahead picker replacing a plain <select> now that
+   the pool runs into the hundreds. A hidden input still carries the real
+   form value (see ComparePlayerPickers.js), so this is styling only. */
+.compare-picker{position:relative;}
+.compare-picker-input{width:100%; box-sizing:border-box; padding-right:32px;}
+.compare-picker-clear{
+  all:unset; position:absolute; right:12px; top:50%; transform:translateY(-50%);
+  cursor:pointer; color:var(--star-dim); font-size:16px; line-height:1; padding:2px 4px;
+}
+.compare-picker-clear:hover{color:var(--star);}
+.compare-picker-list{
+  position:absolute; top:calc(100% + 6px); left:0; right:0; z-index:20;
+  background:var(--void-panel-2); border:1px solid var(--line); border-radius:10px;
+  box-shadow:0 20px 40px rgba(var(--shadow-rgb),0.5); max-height:260px; overflow-y:auto;
+  list-style:none; margin:0; padding:6px;
+}
+.compare-picker-list li button{
+  all:unset; display:flex; justify-content:space-between; align-items:center; width:100%; box-sizing:border-box;
+  padding:9px 12px; border-radius:8px; cursor:pointer; font-size:13.5px; color:var(--star);
+}
+.compare-picker-list li button:hover{background:rgba(var(--neon-blue-rgb),0.1); color:var(--neon-blue);}
+.compare-picker-pos{font-family:var(--font-ibm-plex-mono), monospace; font-size:11px; color:var(--star-dim);}
 .compare-table-wrap{overflow-x:auto; background:var(--void-panel); border:1px solid var(--line); border-radius:16px; box-shadow:0 30px 70px rgba(var(--shadow-rgb),0.4);}
 .compare-table{width:100%; border-collapse:collapse; font-size:14px;}
 .compare-table th, .compare-table td{padding:12px 20px; border-bottom:1px dashed var(--line); text-align:left; white-space:nowrap;}

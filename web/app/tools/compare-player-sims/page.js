@@ -3,7 +3,8 @@ import { getUserTier } from "@/lib/tier";
 import ThemeToggle from "../../ThemeToggle";
 import InteractiveScript from "../../InteractiveScript";
 import STAT_LABELS from "../statLabels";
-import TeamBadge from "../TeamBadge";
+import ComparePlayerPickers from "../ComparePlayerPickers";
+import CompareStatsTable from "../CompareStatsTable";
 
 export const metadata = {
   title: "Compare Players — Season Simulations — Singularity Dynasty",
@@ -11,6 +12,7 @@ export const metadata = {
 
 const SLOTS = ["p1", "p2", "p3"];
 const TEASER_LIMIT = 10;
+const GAMES_PER_SEASON = 17;
 // Singularity-only, same as Player Season Simulations itself -- this is a
 // view over that same dataset, so the tier gate has to match exactly or
 // a free/Explorer user could use this tool to see players past the
@@ -34,7 +36,7 @@ export default async function ComparePlayerSimsPage({ searchParams }) {
   if (latest) {
     let query = supabase
       .from("player_simulations")
-      .select("player_name, position, team, floor, median, ceiling, stat_ranges, notes")
+      .select("player_name, position, team, floor, median, ceiling, stat_ranges, trend, sample_confidence, notes")
       .eq("season", latest.season)
       .eq("week", latest.week)
       .order("median", { ascending: false });
@@ -68,6 +70,25 @@ export default async function ComparePlayerSimsPage({ searchParams }) {
     if (r.stat_ranges) Object.keys(r.stat_ranges).forEach((k) => statKeysPresent.add(k));
   }
   const compareStats = STAT_LABELS.filter(([key]) => statKeysPresent.has(key));
+
+  // Same position-relative heat-tint and Range-bar scale as Player Season
+  // Simulations' own table, computed across the full fetched pool (not
+  // just the 2-3 selected) so a compared player's heat and bar length
+  // read against the same population the main table uses.
+  const medianRangeByPos = {};
+  for (const row of sims) {
+    const r = medianRangeByPos[row.position] || { min: Infinity, max: -Infinity };
+    r.min = Math.min(r.min, row.median);
+    r.max = Math.max(r.max, row.median);
+    medianRangeByPos[row.position] = r;
+  }
+  const maxCeiling = sims.reduce((m, s) => Math.max(m, s.ceiling), 1);
+  const selectedWithHeat = selected.map((row) => {
+    const r = medianRangeByPos[row.position];
+    const heat = r && r.max > r.min ? (row.median - r.min) / (r.max - r.min) : 0;
+    return { ...row, heat };
+  });
+  const playerOptions = sims.map((r) => ({ player_name: r.player_name, position: r.position }));
 
   return (
     <div className="tool-page">
@@ -105,107 +126,19 @@ export default async function ComparePlayerSimsPage({ searchParams }) {
         ) : (
           <>
             <form className="compare-form">
-              {SLOTS.map((slot, i) => (
-                <div className="compare-form-field" key={slot}>
-                  <label htmlFor={slot} className="feed-label mono">
-                    Player {i + 1}
-                  </label>
-                  <select
-                    id={slot}
-                    name={slot}
-                    defaultValue={params?.[slot] || ""}
-                    className="compare-select"
-                  >
-                    <option value="">— None —</option>
-                    {sims.map((r) => (
-                      <option value={r.player_name} key={r.player_name}>
-                        {r.player_name} ({r.position})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              ))}
-              <button type="submit" className="btn-primary compare-submit">
-                Compare
-              </button>
+              <ComparePlayerPickers
+                players={playerOptions}
+                defaults={{ p1: params?.p1 || "", p2: params?.p2 || "", p3: params?.p3 || "" }}
+              />
             </form>
 
-            {selected.length >= 2 ? (
-              <div className="compare-table-wrap">
-                <table className="compare-table">
-                  <thead>
-                    <tr>
-                      <th></th>
-                      {selected.map((r) => (
-                        <th key={r.player_name}>{r.player_name}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <th>Position</th>
-                      {selected.map((r) => (
-                        <td className="mono" key={r.player_name}>
-                          {r.positionLabel || r.position}
-                        </td>
-                      ))}
-                    </tr>
-                    <tr>
-                      <th>Team</th>
-                      {selected.map((r) => (
-                        <td className="mono" key={r.player_name}>
-                          <TeamBadge team={r.team} />
-                        </td>
-                      ))}
-                    </tr>
-                    <tr>
-                      <th>Floor</th>
-                      {selected.map((r) => (
-                        <td className="mono" key={r.player_name}>
-                          {r.floor}
-                        </td>
-                      ))}
-                    </tr>
-                    <tr>
-                      <th>Median</th>
-                      {selected.map((r) => (
-                        <td className="mono" key={r.player_name}>
-                          <strong>{r.median}</strong>
-                        </td>
-                      ))}
-                    </tr>
-                    <tr>
-                      <th>Ceiling</th>
-                      {selected.map((r) => (
-                        <td className="mono" key={r.player_name}>
-                          {r.ceiling}
-                        </td>
-                      ))}
-                    </tr>
-                    {compareStats.map(([key, label]) => (
-                      <tr key={key}>
-                        <th>{label}</th>
-                        {selected.map((r) => {
-                          const v = r.stat_ranges && r.stat_ranges[key];
-                          return (
-                            <td className="mono" key={r.player_name}>
-                              {v ? `${v.floor}–${v.median}–${v.ceiling}` : "—"}
-                            </td>
-                          );
-                        })}
-                      </tr>
-                    ))}
-                    <tr>
-                      <th>Notes</th>
-                      {selected.map((r) => (
-                        <td className="tool-notes" key={r.player_name}>
-                          {r.notes || ""}
-                        </td>
-                      ))}
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+            {selectedWithHeat.length >= 2 ? (
+              <CompareStatsTable
+                selected={selectedWithHeat}
+                compareStats={compareStats}
+                maxCeiling={maxCeiling}
+                gamesPerSeason={GAMES_PER_SEASON}
+              />
             ) : (
               <p className="tool-hint">Pick at least two players, then hit Compare.</p>
             )}
