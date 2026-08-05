@@ -73,14 +73,25 @@ function StatDetailRow({ row, colSpan }) {
   );
 }
 
+// Floor/median/ceiling arrive as season totals -- Per Game divides by
+// gamesPerSeason for display only. Sorting, heat-tint, and the Range bar
+// all stay driven by the season totals underneath regardless of which
+// unit is showing, since scaling every value by the same constant
+// doesn't change relative order or ratios.
+function formatStat(value, unit, gamesPerSeason) {
+  if (unit === "season") return String(Math.round(value));
+  return (value / gamesPerSeason).toFixed(1);
+}
+
 // Same pattern as RankingsSearch (Redraft) / BestBallSearch: position-pill
 // filter + player name search, both client-side. Sorting stays
 // server-driven via the existing URL-param mechanism.
-export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams, positions, maxCeiling }) {
+export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams, positions, maxCeiling, gamesPerSeason }) {
   const showPositionFilter = Array.isArray(positions) && positions.length > 0;
   const [selected, setSelected] = useState(positions || []);
   const [query, setQuery] = useState("");
   const [expanded, setExpanded] = useState(() => new Set()); // player_names currently unfolded
+  const [unit, setUnit] = useState("pergame");
   const sortProps = { activeSort: sortKey, activeDir: sortDir, currentParams };
 
   function toggle(pos) {
@@ -112,6 +123,27 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
 
   return (
     <>
+      <div className="unit-toggle-row">
+        <div className="unit-toggle" role="group" aria-label="Display unit">
+          <button
+            type="button"
+            className={unit === "pergame" ? "active" : ""}
+            onClick={() => setUnit("pergame")}
+            aria-pressed={unit === "pergame"}
+          >
+            Per Game
+          </button>
+          <button
+            type="button"
+            className={unit === "season" ? "active" : ""}
+            onClick={() => setUnit("season")}
+            aria-pressed={unit === "season"}
+          >
+            Season
+          </button>
+        </div>
+      </div>
+
       {showPositionFilter && (
         <div className="position-filter-row">
           {positions.map((pos) => (
@@ -194,11 +226,11 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                   <td className="mono align-left">
                     <TeamBadge team={row.team} />
                   </td>
-                  <td className="mono">{row.floor.toFixed(1)}</td>
+                  <td className="mono">{formatStat(row.floor, unit, gamesPerSeason)}</td>
                   <td className="mono heat-cell" style={{ "--heat": row.heat || 0 }}>
-                    <strong>{row.median.toFixed(1)}</strong>
+                    <strong>{formatStat(row.median, unit, gamesPerSeason)}</strong>
                   </td>
-                  <td className="mono">{row.ceiling.toFixed(1)}</td>
+                  <td className="mono">{formatStat(row.ceiling, unit, gamesPerSeason)}</td>
                   <td>
                     <div className="sim-bar-track">
                       <div

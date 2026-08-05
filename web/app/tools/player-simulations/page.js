@@ -67,20 +67,17 @@ export default async function PlayerSimulationsPage({ searchParams }) {
     }
 
     const { data, count } = await query;
-    // Published floor/median/ceiling are season totals -- converted to a
-    // plain per-game rate (total / 17) right here so every consumer below
-    // (table, heat-tint, range bar, CSV export) sees the same number the
-    // page displays. Not adjusted for missed-game/injury scenarios: a
-    // trial where the player sits out half the season still pulls this
-    // rate down in that trial, same as it pulls down the season total,
-    // since the simulation doesn't publish a per-trial games-played count
-    // a true injury-adjusted rate would need.
-    sims = (data || []).map((row) => ({
-      ...row,
-      floor: Math.round((row.floor / GAMES_PER_SEASON) * 10) / 10,
-      median: Math.round((row.median / GAMES_PER_SEASON) * 10) / 10,
-      ceiling: Math.round((row.ceiling / GAMES_PER_SEASON) * 10) / 10,
-    }));
+    // Published floor/median/ceiling are season totals -- kept as-is here.
+    // PlayerSimSearch converts to a per-game rate client-side for its Per
+    // Game / Season toggle. Sorting, heat-tint, and the Range bar below
+    // are unaffected either way: dividing every value by the same
+    // constant doesn't change relative order or ratios. Not adjusted for
+    // missed-game/injury scenarios: a trial where the player sits out
+    // half the season still pulls the per-game rate down in that trial,
+    // same as it pulls down the season total, since the simulation
+    // doesn't publish a per-trial games-played count a true
+    // injury-adjusted rate would need.
+    sims = data || [];
     totalCount = count || 0;
   }
 
@@ -107,6 +104,17 @@ export default async function PlayerSimulationsPage({ searchParams }) {
     const heat = r && r.max > r.min ? (row.median - r.min) / (r.max - r.min) : 0;
     return { ...row, heat };
   });
+  // CSV export stays in points-per-game terms regardless of the on-page
+  // toggle -- it's baked into server-rendered HTML at request time (see
+  // ExportCsvButton's comment), not reactive to PlayerSimSearch's client
+  // state, so it needs its own converted copy independent of what the
+  // table happens to be displaying.
+  const csvRows = sortedSims.map((row) => ({
+    ...row,
+    floor: Math.round((row.floor / GAMES_PER_SEASON) * 10) / 10,
+    median: Math.round((row.median / GAMES_PER_SEASON) * 10) / 10,
+    ceiling: Math.round((row.ceiling / GAMES_PER_SEASON) * 10) / 10,
+  }));
 
   return (
     <div className="tool-page">
@@ -123,7 +131,8 @@ export default async function PlayerSimulationsPage({ searchParams }) {
         <p className="tool-sub">
           Full-season Monte Carlo simulations run 10,000 times per player,
           distilled to a 10th / 50th / 90th percentile floor, median, and
-          ceiling — shown here as points per game.
+          ceiling — toggle between points per game and full-season totals
+          below.
         </p>
 
         {sims.length === 0 ? (
@@ -151,7 +160,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
                       { key: "trend", label: "Trend" },
                       { key: "sample_confidence", label: "Confidence" },
                     ]}
-                    rows={sortedSims}
+                    rows={csvRows}
                   />
                 )}
               </div>
@@ -164,6 +173,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
               currentParams={params}
               positions={positions}
               maxCeiling={maxCeiling}
+              gamesPerSeason={GAMES_PER_SEASON}
             />
 
             {isTeaser && (
