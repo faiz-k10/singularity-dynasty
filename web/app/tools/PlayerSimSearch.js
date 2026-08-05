@@ -13,10 +13,43 @@ import STAT_LABELS from "./statLabels";
 function StatDetailRow({ row, colSpan }) {
   const ranges = row.stat_ranges;
   const entries = STAT_LABELS.filter(([key]) => ranges && ranges[key]);
-  if (entries.length === 0) return null;
+  const hasBoomBust = row.bust_pct != null && row.normal_pct != null && row.boom_pct != null;
+  if (entries.length === 0 && !hasBoomBust) return null;
   return (
     <tr className="stat-detail-row">
       <td colSpan={colSpan}>
+        {hasBoomBust && (
+          <div className="boom-bust-block">
+            <div className="boom-bust-label">
+              Season outcome spread — how often this player's own
+              simulated seasons land 20%+ below (bust) or above (boom)
+              their median
+            </div>
+            <div className="boom-bust-track">
+              <div
+                className="boom-bust-seg bust"
+                style={{ width: `${row.bust_pct}%` }}
+                title={`Bust: ${row.bust_pct}%`}
+              ></div>
+              <div
+                className="boom-bust-seg normal"
+                style={{ width: `${row.normal_pct}%` }}
+                title={`Normal: ${row.normal_pct}%`}
+              ></div>
+              <div
+                className="boom-bust-seg boom"
+                style={{ width: `${row.boom_pct}%` }}
+                title={`Boom: ${row.boom_pct}%`}
+              ></div>
+            </div>
+            <div className="boom-bust-legend">
+              <span><i className="dot bust"></i>{row.bust_pct}% bust</span>
+              <span><i className="dot normal"></i>{row.normal_pct}% normal</span>
+              <span><i className="dot boom"></i>{row.boom_pct}% boom</span>
+            </div>
+          </div>
+        )}
+        {entries.length > 0 && (
         <table className="stat-detail-table">
           <thead>
             <tr>
@@ -68,6 +101,7 @@ function StatDetailRow({ row, colSpan }) {
             })}
           </tbody>
         </table>
+        )}
       </td>
     </tr>
   );
@@ -155,7 +189,9 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
             </thead>
             <tbody>
               {filteredRows.map((row) => {
-                const hasStats = row.stat_ranges && Object.keys(row.stat_ranges).length > 0;
+                const hasStats =
+                  (row.stat_ranges && Object.keys(row.stat_ranges).length > 0) ||
+                  (row.bust_pct != null && row.normal_pct != null && row.boom_pct != null);
                 const isExpanded = hasStats && expanded === row.player_name;
                 return (
                 <Fragment key={row.player_name}>

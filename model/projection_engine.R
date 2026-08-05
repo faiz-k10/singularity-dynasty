@@ -529,6 +529,19 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
       }
     })
     szn <- sim_result["points", ]
+
+    # Boom/bust profile: share of simulated seasons landing 20%+ below vs.
+    # above THIS PLAYER'S OWN median (not a fixed league-wide point
+    # threshold, which would need constant recalibration as scoring
+    # environments shift). Answers "how spiky is this range" in a way
+    # floor/median/ceiling alone can't -- two players can share the same
+    # three numbers while one is a steady workhorse and the other a
+    # week-to-week coin flip.
+    szn_med <- as.numeric(quantile(szn, 0.50))
+    bust_pct <- round(100 * mean(szn < 0.8 * szn_med))
+    boom_pct <- round(100 * mean(szn > 1.2 * szn_med))
+    normal_pct <- 100 - bust_pct - boom_pct
+
     # Percentiles are purely statistical (10th/50th/90th), same as every
     # other floor/median/ceiling in this engine -- for interceptions,
     # that means "ceiling" is the 90th percentile of INTs thrown, i.e.
@@ -605,6 +618,9 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
       season_floor = round(quantile(szn, 0.10), 0),
       season_median = round(quantile(szn, 0.50), 0),
       season_ceiling = round(quantile(szn, 0.90), 0),
+      bust_pct = bust_pct,
+      normal_pct = normal_pct,
+      boom_pct = boom_pct,
       playoff_ceiling = round(quantile(playoff, CEIL_Q[pos]), 1),
       # Granular per-stat floor/median/ceiling (passing/rushing/receiving
       # yards & TDs, INTs, receptions -- position-dependent, see
@@ -686,6 +702,7 @@ export_for_supabase <- function(df, target_season = TARGET_SEASON, week = NULL) 
     trend = df$trend,
     sample_confidence = confidence,
     stat_ranges = df$stat_ranges_json,
+    bust_pct = df$bust_pct, normal_pct = df$normal_pct, boom_pct = df$boom_pct,
     notes = ""
   ), "upload_player_simulations.csv", row.names = FALSE)
 

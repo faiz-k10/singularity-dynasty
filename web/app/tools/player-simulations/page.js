@@ -54,7 +54,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
     let query = supabase
       .from("player_simulations")
       .select(
-        "player_name, position, team, floor, median, ceiling, stat_ranges, trend, sample_confidence, notes",
+        "player_name, position, team, floor, median, ceiling, stat_ranges, bust_pct, normal_pct, boom_pct, trend, sample_confidence, notes",
         { count: "exact" }
       )
       .eq("season", latest.season)
