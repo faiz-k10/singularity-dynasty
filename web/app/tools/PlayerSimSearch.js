@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useMemo, useState } from "react";
+import Link from "next/link";
 import SortableTh from "./SortableTh";
 import TrendTag from "./TrendTag";
 import ConfidenceBadge from "./ConfidenceBadge";
@@ -174,6 +175,12 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
             {filteredRows.length} of {rows.length}
           </span>
         )}
+      </div>
+
+      <div className="compare-link-row">
+        <Link href="/tools/compare-player-sims" className="hub-panel-link">
+          Compare Players →
+        </Link>
       </div>
 
       {showPositionFilter && selected.length === 0 ? (

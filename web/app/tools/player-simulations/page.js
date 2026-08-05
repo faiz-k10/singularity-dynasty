@@ -141,12 +141,9 @@ export default async function PlayerSimulationsPage({ searchParams }) {
           </div>
         ) : (
           <>
-            <div className="toggle-row-flex">
-              <div className="toggle-row-actions">
-                <Link href="/tools/compare-player-sims" className="hub-panel-link">
-                  Compare Players →
-                </Link>
-                {canExport && (
+            {canExport && (
+              <div className="toggle-row-flex">
+                <div className="toggle-row-actions">
                   <ExportCsvButton
                     id="csv-player-simulations"
                     filename={`player-simulations-week${latest.week}-${latest.season}.csv`}
@@ -162,9 +159,9 @@ export default async function PlayerSimulationsPage({ searchParams }) {
                     ]}
                     rows={csvRows}
                   />
-                )}
+                </div>
               </div>
-            </div>
+            )}
 
             <PlayerSimSearch
               rows={simsWithHeat}

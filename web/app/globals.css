@@ -458,6 +458,13 @@ section{padding:96px 0 20px; position:relative;}
 }
 .hub-panel-link:hover{color:var(--horizon-gold);}
 
+/* Player Season Simulations -- Compare Players link sits right under the
+   search field. Zeroes out .hub-panel-link's own margin so this wrapper's
+   padding is the only spacing, keeping it tight to the field above and
+   below rather than the roomier gap used elsewhere. */
+.compare-link-row{padding:4px 0;}
+.compare-link-row .hub-panel-link{margin:0;}
+
 .orbital-nodes{position:static; display:flex; gap:10px; overflow-x:auto; padding:22px 2px 10px; margin:0; scroll-snap-type:x mandatory; list-style:none;}
 .node{
   position:static; flex:0 0 168px; scroll-snap-align:start;
