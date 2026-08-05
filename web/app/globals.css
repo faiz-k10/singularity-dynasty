@@ -982,7 +982,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 /* Explicit text-align throughout -- this table is nested inside a
    .rankings-table cell, so it's still a CSS descendant of .rankings-table
    and would otherwise inherit that table's td{text-align:center} rule. */
-.stat-detail-table{width:100%; max-width:600px; border-collapse:collapse; font-size:13px;}
+.stat-detail-table{max-width:600px; border-collapse:collapse; font-size:13px;}
 .stat-detail-table th{
   text-align:left; font-family:var(--font-ibm-plex-mono), monospace; font-size:10px; letter-spacing:0.06em;
   text-transform:uppercase; color:var(--star-dim); padding:6px 10px; border-bottom:1px solid var(--line);
