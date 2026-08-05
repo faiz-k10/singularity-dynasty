@@ -71,6 +71,9 @@ export default async function Home() {
           <span className="ring"></span>Singularity Dynasty
         </a>
         <nav className="top-nav-bar" id="topNavBar" aria-label="Primary">
+          <a href="#pricing" className="tn-cta">
+            Get Started
+          </a>
           <a href="#hero">Signal</a>
           <a href="#tools">Tools</a>
           <a href="#pricing">Pricing</a>
@@ -78,9 +81,6 @@ export default async function Home() {
           <a href="#playground">Play</a>
           <a href={user ? "/account" : "/login"} className="tn-account">
             {user ? "Account" : "Sign In"}
-          </a>
-          <a href="#pricing" className="tn-cta">
-            Get Started
           </a>
         </nav>
         <div className="site-header-spacer" aria-hidden="true"></div>
