@@ -161,6 +161,12 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
         </div>
       )}
 
+      <div className="compare-link-row">
+        <Link href="/tools/compare-player-sims" className="hub-panel-link">
+          Player Comparison →
+        </Link>
+      </div>
+
       <div className="player-search-row">
         <input
           type="search"
@@ -175,12 +181,6 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
             {filteredRows.length} of {rows.length}
           </span>
         )}
-      </div>
-
-      <div className="compare-link-row">
-        <Link href="/tools/compare-player-sims" className="hub-panel-link">
-          Player Comparison →
-        </Link>
       </div>
 
       {showPositionFilter && selected.length === 0 ? (

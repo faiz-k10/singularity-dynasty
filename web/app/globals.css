@@ -458,13 +458,15 @@ section{padding:96px 0 20px; position:relative;}
 }
 .hub-panel-link:hover{color:var(--horizon-gold);}
 
-/* Player Season Simulations -- Player Comparison link sits right under the
-   search field. .player-search-row's own margin-bottom is collapsed here
-   (only when this row follows it) so it doesn't stack with this row's
-   padding and read as a bigger gap above than below; .hub-panel-link's
+/* Player Season Simulations -- Player Comparison link sits right above the
+   search field (whichever row actually precedes it -- position-filter-row
+   when positions exist, unit-toggle-row otherwise -- has its own
+   margin-bottom collapsed here so it doesn't stack with this row's
+   padding and read as a bigger gap above than below). .hub-panel-link's
    own margin is zeroed for the same reason, leaving this padding as the
    only spacing on either side. */
-.player-search-row:has(+ .compare-link-row){margin-bottom:0;}
+.position-filter-row:has(+ .compare-link-row){margin-bottom:0;}
+.unit-toggle-row:has(+ .compare-link-row){margin-bottom:0;}
 .compare-link-row{padding:8px 0;}
 .compare-link-row .hub-panel-link{margin:0;}
 
