@@ -1043,7 +1043,7 @@ tr.stat-row-selected .stat-row-trigger{color:var(--horizon-gold);}
    --up-rgb) rather than inventing a new color language. Sits above the
    stat-detail-table when one is present, but stands alone (e.g. a
    position with no granular stat_ranges) when it isn't. */
-.boom-bust-block{max-width:600px; margin-bottom:14px;}
+.boom-bust-block{max-width:600px; margin:0 auto 14px;}
 .boom-bust-label{
   font-size:11px; color:var(--star-dim); margin-bottom:8px; line-height:1.4;
 }
@@ -1057,7 +1057,7 @@ tr.stat-row-selected .stat-row-trigger{color:var(--horizon-gold);}
 .boom-bust-seg.boom{background:rgba(var(--up-rgb),0.6);}
 .boom-bust-legend{
   display:flex; gap:16px; margin-top:8px; font-family:var(--font-ibm-plex-mono), monospace;
-  font-size:11px; color:var(--star);
+  font-size:11px; color:var(--star); justify-content:center;
 }
 .boom-bust-legend .dot{
   display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:5px; vertical-align:middle;
@@ -1065,6 +1065,24 @@ tr.stat-row-selected .stat-row-trigger{color:var(--horizon-gold);}
 .boom-bust-legend .dot.bust{background:rgba(var(--down-rgb),0.85);}
 .boom-bust-legend .dot.normal{background:rgba(var(--star-dim-rgb),0.85);}
 .boom-bust-legend .dot.boom{background:rgba(var(--up-rgb),0.85);}
+
+/* Interactive variant of .boom-bust-block -- shown instead of it whenever
+   a stat table (and odds curve) is also on screen, so clicking the season
+   spread picks "Fantasy Points" as the curve's subject, the same way a
+   stat row does. Fully self-contained box model (not layered on top of
+   .boom-bust-block) so `all:unset` can't fight another rule over which
+   one wins the cascade. */
+.boom-bust-trigger{
+  all:unset; box-sizing:border-box; display:block; width:100%; max-width:600px; margin:0 auto 14px;
+  cursor:pointer; border-radius:10px; padding:10px;
+  transition:background 0.15s var(--ease), box-shadow 0.15s var(--ease);
+}
+.boom-bust-trigger:hover{background:var(--void-panel);}
+.boom-bust-trigger.is-selected{
+  background:var(--void-panel);
+  box-shadow:inset 0 0 0 1px rgba(var(--matchup-neutral-rgb),0.5);
+}
+.boom-bust-trigger.is-selected .boom-bust-label{color:var(--horizon-gold);}
 
 /* ---------- COMPARE PLAYERS ---------- */
 .compare-form{
