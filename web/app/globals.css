@@ -189,6 +189,19 @@ body::before{
   .brandmark-nav{top:40px; left:16px; font-size:15px; padding:9px 16px 9px 10px;}
   .brandmark-nav .ring{width:16px; height:16px;}
 }
+
+/* Player Season Simulations -- same pill as .brandmark-nav, layered with
+   this modifier rather than duplicated: static instead of pinned (scrolls
+   away with the page like normal content instead of persisting over it),
+   and hovers to a dark neon-blue glow instead of .brandmark-nav's gold.
+   Page-specific -- other tool pages keep the original fixed/gold pill. */
+.brandmark-static{position:static; margin:46px 0 0 28px;}
+.brandmark-static:hover{
+  border-color:var(--neon-blue-dim);
+  background:rgba(var(--neon-blue-rgb),0.14);
+  box-shadow:0 10px 24px rgba(var(--shadow-rgb),0.25), 0 0 18px var(--neon-blue-glow);
+}
+@media (max-width:640px){.brandmark-static{margin:40px 0 0 16px;}}
 .menu-btn{
   position:fixed; top:50px; right:24px; z-index:90;
   width:44px; height:44px; border-radius:50%;
