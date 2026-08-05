@@ -1,8 +1,9 @@
-// One-off publisher for model/upload_player_simulations.csv -- UPDATES
-// existing rows matched by (player_name, season, week), rather than
-// delete+reinsert, since this republish is the same season/week that's
-// already live (just adding bust_pct/normal_pct/boom_pct + refreshed
-// floor/median/ceiling), not a new week's data.
+// Publisher for model/upload_player_simulations.csv -- UPDATES existing
+// rows matched by (player_name, season, week) rather than delete+reinsert,
+// since this republish is normally the same season/week that's already
+// live. Also INSERTS any player present in the fresh CSV but missing from
+// the table -- eligibility churns week to week (roster moves, new
+// call-ups), so this isn't a one-time concern.
 // Run: node --env-file=.env.local scripts/publish-player-simulations.mjs
 import { createClient } from "@supabase/supabase-js";
 import { readFileSync } from "fs";
@@ -87,6 +88,16 @@ function toPayload(r) {
   };
 }
 
+function toInsertPayload(r) {
+  return {
+    season: Number(r.season),
+    week: Number(r.week),
+    player_name: r.player_name,
+    position: r.position,
+    ...toPayload(r),
+  };
+}
+
 // Bounded concurrency -- 485 sequential round trips would be slow, but
 // firing all 485 at once risks overwhelming the connection pool.
 async function runPool(items, concurrency, worker) {
@@ -125,9 +136,20 @@ await runPool(rows, 15, async (r) => {
 });
 
 console.log(`Updated: ${updated}`);
+
 if (missing.length > 0) {
-  console.log(`No existing row found for ${missing.length} player(s) (not inserted -- update-only script):`, missing.slice(0, 20).join(", "), missing.length > 20 ? "…" : "");
+  const missingRows = rows.filter((r) => missing.includes(r.player_name)).map(toInsertPayload);
+  const { error: insErr, data: insData } = await supabase
+    .from("player_simulations")
+    .insert(missingRows)
+    .select("player_name");
+  if (insErr) {
+    console.log(`Insert failed for ${missing.length} newly-eligible player(s):`, insErr.message);
+    process.exit(1);
+  }
+  console.log(`Inserted ${insData?.length ?? missingRows.length} newly-eligible player(s):`, missing.join(", "));
 }
+
 if (failed.length > 0) {
   console.log(`Failed: ${failed.length}`, failed.slice(0, 10));
   process.exit(1);

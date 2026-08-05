@@ -130,7 +130,7 @@ load_history <- function(seasons = history_seasons()) {
   # (data.table NSE), applied here preventatively too.
   stats <- as.data.frame(load_player_stats(seasons = seasons))
   reg <- stats[stats$season_type == "REG",
-               c("player_display_name", "position", "season", "week",
+               c("player_id", "player_display_name", "position", "season", "week",
                  "fantasy_points_ppr", "carries", "targets", "attempts", "team",
                  STAT_COLS)]
   reg <- reg[reg$position %in% c("QB", "RB", "WR", "TE"), ]
@@ -479,19 +479,25 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
   # below still assigns these players a team string (their last known
   # one), so filtering on a blank/NA team wouldn't catch them; this
   # checks actual season-scoped roster presence instead. Matched by
-  # display_name + position (same convention as the QB depth-chart
-  # lookup above). Fails safe: if roster data is unavailable, skip the
-  # filter rather than accidentally dropping every player.
+  # gsis_id, NOT name+position -- found via Kenny Gainwell (game log:
+  # "Kenny Gainwell"; load_rosters(): "Kenneth Gainwell", legal name),
+  # an active Buccaneer who name-matching silently misidentified as a
+  # free agent and dropped from every table. gsis_id is stable across
+  # both nflreadr sources regardless of which name variant either one
+  # uses. Fails safe in both directions: a player whose own id can't be
+  # found is left alone (kept) rather than assumed teamless, and if
+  # roster data is unavailable at all, the filter is skipped entirely.
+  id_by_name <- setNames(reg$player_id[match(eligible, reg$player_display_name)], eligible)
   rosters_this_season <- tryCatch(as.data.frame(load_rosters(target_season)), error = function(e) {
     cat("Roster data unavailable this run -- skipping no-team filter:", conditionMessage(e), "\n")
     NULL
   })
   if (!is.null(rosters_this_season)) {
-    player_positions <- reg$position[match(eligible, reg$player_display_name)]
-    rostered_keys <- unique(paste(rosters_this_season$full_name, rosters_this_season$position))
-    has_no_team <- !(paste(eligible, player_positions) %in% rostered_keys)
+    rostered_ids <- unique(rosters_this_season$gsis_id)
+    has_no_team <- !is.na(id_by_name) & !(id_by_name %in% rostered_ids)
     cat("No current team this season -- removed:", sum(has_no_team), "-", paste(eligible[has_no_team], collapse = ", "), "\n")
     eligible <- eligible[!has_no_team]
+    id_by_name <- id_by_name[!has_no_team]
   }
 
   shrink_players <- character(0)
@@ -517,20 +523,23 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
     # simply contributes nothing rather than erroring.
     team_change_players <- character(0)
     if (!is.null(rosters_this_season)) {
+      # Matched by gsis_id, same reasoning and same bug (Kenny/Kenneth
+      # Gainwell) as the no-current-team filter above -- name+position
+      # matching would both miss real team changes for players whose
+      # game-log name differs from their roster name, AND could
+      # false-positive "changed teams" for a player who never actually
+      # moved, purely from the name mismatch alone.
       normalize_team <- function(team) ifelse(team == "AZ", "ARI", team)
       reg_ord <- reg[order(reg$player_display_name, reg$season, reg$week), ]
       last_rows <- reg_ord[!duplicated(reg_ord$player_display_name, fromLast = TRUE), ]
-      last_team_map <- setNames(normalize_team(last_rows$team),
-                                 paste(last_rows$player_display_name, last_rows$position))
-      current_roster <- rosters_this_season[!duplicated(paste(rosters_this_season$full_name, rosters_this_season$position)), ]
-      current_team_map <- setNames(normalize_team(current_roster$team),
-                                    paste(current_roster$full_name, current_roster$position))
+      last_team_by_id <- setNames(normalize_team(last_rows$team), last_rows$player_id)
+      current_roster <- rosters_this_season[!duplicated(rosters_this_season$gsis_id), ]
+      current_team_by_id <- setNames(normalize_team(current_roster$team), current_roster$gsis_id)
 
-      player_positions <- reg$position[match(eligible, reg$player_display_name)]
-      keys <- paste(eligible, player_positions)
-      last_team <- unname(last_team_map[keys])
-      cur_team <- unname(current_team_map[keys])
-      changed <- !is.na(last_team) & !is.na(cur_team) & last_team != cur_team
+      pid <- id_by_name[eligible]
+      last_team <- unname(last_team_by_id[pid])
+      cur_team <- unname(current_team_by_id[pid])
+      changed <- !is.na(pid) & !is.na(last_team) & !is.na(cur_team) & last_team != cur_team
       team_change_players <- eligible[changed]
     }
 

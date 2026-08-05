@@ -99,9 +99,18 @@ const tables = [
       notes: r.notes || null,
     }),
   },
-];
+].map((t) => ({
+  ...t,
+  toInsertPayload: (r) => ({
+    season: Number(r.season),
+    week: Number(r.week),
+    player_name: r.player_name,
+    position: r.position,
+    ...t.toPayload(r),
+  }),
+}));
 
-for (const { table, csv, toPayload } of tables) {
+for (const { table, csv, toPayload, toInsertPayload } of tables) {
   const csvPath = new URL(csv, import.meta.url);
   const rows = parseCsv(readFileSync(csvPath, "utf8"));
   if (rows.length === 0) {
@@ -135,9 +144,17 @@ for (const { table, csv, toPayload } of tables) {
   });
 
   console.log(`${table}: updated ${updated}`);
+
   if (missing.length > 0) {
-    console.log(`${table}: no existing row for ${missing.length}:`, missing.slice(0, 20).join(", "), missing.length > 20 ? "…" : "");
+    const missingRows = rows.filter((r) => missing.includes(r.player_name)).map(toInsertPayload);
+    const { error: insErr, data: insData } = await supabase.from(table).insert(missingRows).select("player_name");
+    if (insErr) {
+      console.log(`${table}: insert failed for ${missing.length} newly-eligible player(s):`, insErr.message);
+    } else {
+      console.log(`${table}: inserted ${insData?.length ?? missingRows.length} newly-eligible player(s):`, missing.join(", "));
+    }
   }
+
   if (failed.length > 0) {
     console.log(`${table}: failed ${failed.length}`, failed.slice(0, 10));
   }
