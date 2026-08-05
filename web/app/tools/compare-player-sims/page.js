@@ -3,6 +3,7 @@ import { getUserTier } from "@/lib/tier";
 import ThemeToggle from "../../ThemeToggle";
 import InteractiveScript from "../../InteractiveScript";
 import STAT_LABELS from "../statLabels";
+import TeamBadge from "../TeamBadge";
 
 export const metadata = {
   title: "Compare Players — Season Simulations — Singularity Dynasty",
@@ -43,7 +44,16 @@ export default async function ComparePlayerSimsPage({ searchParams }) {
     }
 
     const { data } = await query;
-    sims = data || [];
+
+    // Position-relative rank (RB1, WR23, ...) computed from the same
+    // median-descending order the query already fetches in -- Player
+    // Season Simulations doesn't have a rank column to key off, unlike
+    // Redraft/Best Ball, so this uses the query's own natural order.
+    const positionCounters = {};
+    sims = (data || []).map((r) => {
+      positionCounters[r.position] = (positionCounters[r.position] || 0) + 1;
+      return { ...r, positionLabel: `${r.position}${positionCounters[r.position]}` };
+    });
   }
 
   const byName = new Map(sims.map((r) => [r.player_name, r]));
@@ -136,7 +146,7 @@ export default async function ComparePlayerSimsPage({ searchParams }) {
                       <th>Position</th>
                       {selected.map((r) => (
                         <td className="mono" key={r.player_name}>
-                          {r.position}
+                          {r.positionLabel || r.position}
                         </td>
                       ))}
                     </tr>
@@ -144,7 +154,7 @@ export default async function ComparePlayerSimsPage({ searchParams }) {
                       <th>Team</th>
                       {selected.map((r) => (
                         <td className="mono" key={r.player_name}>
-                          {r.team || "—"}
+                          <TeamBadge team={r.team} />
                         </td>
                       ))}
                     </tr>

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getUserTier } from "@/lib/tier";
 import ThemeToggle from "../../ThemeToggle";
 import InteractiveScript from "../../InteractiveScript";
+import TeamBadge from "../TeamBadge";
 
 export const metadata = {
   title: "Compare Players — Singularity Dynasty",
@@ -35,7 +36,15 @@ export default async function ComparePlayersPage({ searchParams }) {
       .eq("season", latest.season)
       .eq("week", latest.week)
       .order("rank", { ascending: true });
-    rankings = data || [];
+
+    // Position-relative rank (RB1, WR23, ...), same computation as the
+    // main Redraft Rankings table -- this page runs its own query, so it
+    // needs its own copy rather than inheriting the other page's.
+    const positionCounters = {};
+    rankings = (data || []).map((r) => {
+      positionCounters[r.position] = (positionCounters[r.position] || 0) + 1;
+      return { ...r, positionLabel: `${r.position}${positionCounters[r.position]}` };
+    });
   }
 
   const byName = new Map(rankings.map((r) => [r.player_name, r]));
@@ -114,7 +123,7 @@ export default async function ComparePlayersPage({ searchParams }) {
                       <th>Position</th>
                       {selected.map((r) => (
                         <td className="mono" key={r.player_name}>
-                          {r.position}
+                          {r.positionLabel || r.position}
                         </td>
                       ))}
                     </tr>
@@ -122,7 +131,7 @@ export default async function ComparePlayersPage({ searchParams }) {
                       <th>Team</th>
                       {selected.map((r) => (
                         <td className="mono" key={r.player_name}>
-                          {r.team || "—"}
+                          <TeamBadge team={r.team} />
                         </td>
                       ))}
                     </tr>
