@@ -16,6 +16,23 @@ export default function InteractiveScript({ tickerPlayers } = {}) {
     const observers = [];
     let rafCancelled = false;
 
+    /* ---- scroll to hash on initial load ----
+       html{scroll-behavior:smooth} (globals.css) silently breaks the
+       browser's native scroll-to-fragment-on-load in some cases, leaving
+       the page stuck at the top. Wasn't visible before since every
+       top-nav-bar/radial-menu link was same-page-only (#section); now
+       they point at /#section and can land here fresh from another page,
+       so this needs to be handled explicitly instead of relying on the
+       browser's default. "instant" (not "auto") to actually bypass the
+       CSS smooth-scroll and match normal anchor-navigation semantics --
+       scrollIntoView's "auto" just inherits the CSS scroll-behavior. */
+    if (window.location.hash) {
+      const hashTarget = document.querySelector(window.location.hash);
+      if (hashTarget) {
+        hashTarget.scrollIntoView({ behavior: "instant", block: "start" });
+      }
+    }
+
     /* ---- radial mobile menu ---- */
     const menuBtn = document.getElementById("menuBtn");
     const radialMenu = document.getElementById("radialMenu");
@@ -66,21 +83,31 @@ export default function InteractiveScript({ tickerPlayers } = {}) {
       );
     }
 
-    /* ---- orbit side-nav + top nav bar: smooth scroll + scrollspy ---- */
+    /* ---- orbit side-nav + top nav bar: smooth scroll + scrollspy ----
+       Top-nav-bar/radial-menu links point at /#section (not bare #section)
+       so they work as a real navigation back to the homepage from any other
+       page. Only intercept + smooth-scroll when the link's path matches
+       where we already are -- otherwise let the browser do a normal
+       cross-page navigation to /#section. */
     const orbitDots = document.querySelectorAll(".orbit-dot");
     const topNavLinks = document.querySelectorAll(
-      ".top-nav-bar a[href^='#']:not(.tn-cta)"
+      ".top-nav-bar a[href*='#']:not(.tn-cta)"
     );
     const spyLinks = document.querySelectorAll(
-      ".orbit-dot, .top-nav-bar a[href^='#']"
+      ".orbit-dot, .top-nav-bar a[href*='#'], .radial-menu a[href*='#']"
     );
     spyLinks.forEach((link) => {
       link.addEventListener(
         "click",
         (e) => {
-          e.preventDefault();
-          const target = document.querySelector(link.getAttribute("href"));
+          const href = link.getAttribute("href");
+          const hashIndex = href.indexOf("#");
+          if (hashIndex === -1) return;
+          const path = href.slice(0, hashIndex) || "/";
+          if (path !== window.location.pathname) return;
+          const target = document.querySelector(href.slice(hashIndex));
           if (target) {
+            e.preventDefault();
             target.scrollIntoView({
               behavior: reducedMotion ? "auto" : "smooth",
               block: "start",

@@ -1,6 +1,4 @@
-import Link from "next/link";
-import ThemeToggle from "../ThemeToggle";
-import InteractiveScript from "../InteractiveScript";
+import SiteHeader from "../SiteHeader";
 
 export const metadata = {
   title: "Contact — Singularity Dynasty",
@@ -11,12 +9,8 @@ const SUPPORT_EMAIL = "eremruh11@gmail.com";
 export default function ContactPage() {
   return (
     <div className="auth-page">
-      <ThemeToggle />
+      <SiteHeader />
       <div className="wrap auth-wrap">
-        <Link href="/" className="brandmark auth-back">
-          <span className="ring"></span>Singularity Dynasty
-        </Link>
-
         <div className="auth-card reveal in">
           <div className="eyebrow blue">Contact</div>
           <h1>Get in touch.</h1>
@@ -32,7 +26,6 @@ export default function ContactPage() {
           </div>
         </div>
       </div>
-      <InteractiveScript />
     </div>
   );
 }

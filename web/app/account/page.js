@@ -3,8 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { signout } from "../login/actions";
 import { openBillingPortal } from "./actions";
-import ThemeToggle from "../ThemeToggle";
-import InteractiveScript from "../InteractiveScript";
+import SiteHeader from "../SiteHeader";
 
 export const metadata = {
   title: "Your Account — Singularity Dynasty",
@@ -36,12 +35,8 @@ export default async function AccountPage() {
 
   return (
     <div className="auth-page">
-      <ThemeToggle />
+      <SiteHeader />
       <div className="wrap auth-wrap">
-        <Link href="/" className="brandmark auth-back">
-          <span className="ring"></span>Singularity Dynasty
-        </Link>
-
         <div className="auth-card reveal in">
           <div className="eyebrow blue">Account</div>
           <h1>Welcome back.</h1>
@@ -72,7 +67,6 @@ export default async function AccountPage() {
           </div>
         </div>
       </div>
-      <InteractiveScript />
     </div>
   );
 }

@@ -1,6 +1,4 @@
-import Link from "next/link";
-import ThemeToggle from "../../ThemeToggle";
-import InteractiveScript from "../../InteractiveScript";
+import SiteHeader from "../../SiteHeader";
 
 export const metadata = {
   title: "Best Ball Rankings — Singularity Dynasty",
@@ -12,10 +10,7 @@ export const metadata = {
 export default function BestBallRankingsPage() {
   return (
     <div className="tool-page">
-      <ThemeToggle />
-      <Link href="/" className="brandmark brandmark-nav">
-        <span className="ring"></span>Singularity Dynasty
-      </Link>
+      <SiteHeader />
 
       <main className="wrap tool-wrap">
         <div className="eyebrow">Best Ball</div>
@@ -24,7 +19,6 @@ export default function BestBallRankingsPage() {
           <p>This tool is paused for now — check back soon.</p>
         </div>
       </main>
-      <InteractiveScript />
     </div>
   );
 }

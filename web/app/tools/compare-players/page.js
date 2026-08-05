@@ -1,7 +1,5 @@
-import Link from "next/link";
 import { getUserTier } from "@/lib/tier";
-import ThemeToggle from "../../ThemeToggle";
-import InteractiveScript from "../../InteractiveScript";
+import SiteHeader from "../../SiteHeader";
 import TeamBadge from "../TeamBadge";
 
 export const metadata = {
@@ -52,10 +50,7 @@ export default async function ComparePlayersPage({ searchParams }) {
 
   return (
     <div className="tool-page">
-      <ThemeToggle />
-      <Link href="/" className="brandmark brandmark-nav">
-        <span className="ring"></span>Singularity Dynasty
-      </Link>
+      <SiteHeader />
 
       <main className="wrap tool-wrap">
         <div className="eyebrow">
@@ -160,7 +155,6 @@ export default async function ComparePlayersPage({ searchParams }) {
           </>
         )}
       </main>
-      <InteractiveScript />
     </div>
   );
 }

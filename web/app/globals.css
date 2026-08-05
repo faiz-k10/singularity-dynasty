@@ -171,37 +171,6 @@ body::before{
   box-shadow:0 0 10px 1px rgba(255,122,69,0.5), 0 0 16px 3px rgba(61,220,255,0.25);
   flex-shrink:0;
 }
-/* Pinned to the viewport (doesn't scroll away) with an opaque blurred backdrop
-   so it never collides illegibly with page content underneath, unlike the
-   earlier plain-text version. */
-.brandmark-nav{
-  position:fixed; top:46px; left:28px; z-index:80;
-  font-size:19px; font-weight:700;
-  background:rgba(var(--scrim-rgb),0.78); backdrop-filter:blur(10px);
-  border:1px solid var(--line); border-radius:30px;
-  padding:12px 24px 12px 14px;
-  box-shadow:0 10px 24px rgba(var(--shadow-rgb),0.25);
-  transition:border-color .2s ease, transform .2s var(--ease);
-}
-.brandmark-nav:hover{border-color:var(--horizon-gold); transform:scale(1.03);}
-.brandmark-nav .ring{width:20px; height:20px;}
-@media (max-width:640px){
-  .brandmark-nav{top:40px; left:16px; font-size:15px; padding:9px 16px 9px 10px;}
-  .brandmark-nav .ring{width:16px; height:16px;}
-}
-
-/* Player Season Simulations -- same pill as .brandmark-nav, layered with
-   this modifier rather than duplicated: static instead of pinned (scrolls
-   away with the page like normal content instead of persisting over it),
-   and hovers to a dark neon-blue glow instead of .brandmark-nav's gold.
-   Page-specific -- other tool pages keep the original fixed/gold pill. */
-.brandmark-static{position:static; margin:46px 0 0 28px;}
-.brandmark-static:hover{
-  border-color:var(--neon-blue-dim);
-  background:rgba(var(--neon-blue-rgb),0.14);
-  box-shadow:0 10px 24px rgba(var(--shadow-rgb),0.25), 0 0 18px var(--neon-blue-glow);
-}
-@media (max-width:640px){.brandmark-static{margin:40px 0 0 16px;}}
 .menu-btn{
   position:fixed; top:50px; right:24px; z-index:90;
   width:44px; height:44px; border-radius:50%;
@@ -665,7 +634,9 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 }
 
 /* ---------- AUTH (login / account pages) ---------- */
-.auth-page{position:relative; min-height:100vh; display:flex; align-items:center; justify-content:center; overflow:hidden; padding:80px 0;}
+/* top padding matches .hero/.tool-wrap -- clears the fixed ticker +
+   site-header banner that SiteHeader now renders on every page. */
+.auth-page{position:relative; min-height:100vh; display:flex; align-items:center; justify-content:center; overflow:hidden; padding:150px 0 80px;}
 .auth-page::before{
   content:''; position:absolute; top:-180px; right:-160px; width:640px; height:640px;
   background:radial-gradient(circle, rgba(255,122,69,0.25) 0%, rgba(255,122,69,0.08) 35%, transparent 68%);
@@ -677,7 +648,6 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
   filter:blur(14px); pointer-events:none; z-index:-1;
 }
 .auth-wrap{display:flex; flex-direction:column; align-items:center; gap:36px;}
-.auth-back{position:static;}
 .auth-card{
   width:100%; max-width:420px; background:var(--void-panel); border:1px solid var(--line); border-radius:16px;
   padding:36px; position:relative; overflow:hidden; box-shadow:0 30px 70px rgba(var(--shadow-rgb),0.5);

@@ -1,6 +1,5 @@
 import Link from "next/link";
-import InteractiveScript from "./InteractiveScript";
-import ThemeToggle from "./ThemeToggle";
+import SiteHeader from "./SiteHeader";
 import { createClient } from "@/lib/supabase/server";
 
 function formatPostDate(iso) {
@@ -11,96 +10,15 @@ function formatPostDate(iso) {
 
 export default async function Home() {
   const supabase = await createClient();
-  const [
-    {
-      data: { user },
-    },
-    { data: posts },
-  ] = await Promise.all([
-    supabase.auth.getUser(),
-    supabase
-      .from("posts")
-      .select("id, title, url, published_at")
-      .order("published_at", { ascending: false })
-      .limit(3),
-  ]);
-
-  // Ticker: real RISING/FALLING/STEADY data from the latest published
-  // redraft_rankings week (free-for-everyone table, so this always has the
-  // broadest player pool available). Falls back to InteractiveScript's own
-  // randomized sample if nothing's published yet.
-  const { data: latestRedraft } = await supabase
-    .from("redraft_rankings")
-    .select("season, week")
-    .order("season", { ascending: false })
-    .order("week", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  let tickerPlayers = [];
-  if (latestRedraft) {
-    const { data: tickerRows } = await supabase
-      .from("redraft_rankings")
-      .select("player_name, trend")
-      .eq("season", latestRedraft.season)
-      .eq("week", latestRedraft.week)
-      .not("trend", "is", null)
-      .order("rank", { ascending: true })
-      .limit(50);
-    tickerPlayers = (tickerRows || []).map((r) => ({ name: r.player_name, trend: r.trend }));
-  }
+  const { data: posts } = await supabase
+    .from("posts")
+    .select("id, title, url, published_at")
+    .order("published_at", { ascending: false })
+    .limit(3);
 
   return (
     <>
-      <div className="ticker-bar">
-        <div className="ticker-track" id="tickerTrack"></div>
-      </div>
-
-      <ThemeToggle />
-      <button
-        className="menu-btn"
-        id="menuBtn"
-        aria-label="Open menu"
-        aria-expanded="false"
-      >
-        ☰
-      </button>
-
-      <header className="site-header">
-        <a href="#hero" className="brandmark">
-          <span className="ring"></span>Singularity Dynasty
-        </a>
-        <nav className="top-nav-bar" id="topNavBar" aria-label="Primary">
-          <a href="#pricing" className="tn-cta">
-            Get Started
-          </a>
-          <a href="#hero">Signal</a>
-          <a href="#tools">Tools</a>
-          <a href="#pricing">Pricing</a>
-          <a href="#feed">Feed</a>
-          <a href="#playground">Play</a>
-          <a href={user ? "/account" : "/login"} className="tn-account">
-            {user ? "Account" : "Sign In"}
-          </a>
-        </nav>
-        <div className="site-header-spacer" aria-hidden="true"></div>
-      </header>
-
-      <div className="radial-menu" id="radialMenu">
-        <nav>
-          <a href="#hero">Signal</a>
-          <a href="#tools">Tools</a>
-          <a href="#pricing">Pricing</a>
-          <a href="#feed">Feed</a>
-          <a href="#playground">Play</a>
-          <a href={user ? "/account" : "/login"}>
-            {user ? "Account" : "Sign In"}
-          </a>
-          <a href="#pricing" className="rm-cta">
-            Get Started →
-          </a>
-        </nav>
-      </div>
+      <SiteHeader />
 
       <nav className="orbit-nav" id="orbitNav">
         <a
@@ -593,8 +511,6 @@ export default async function Home() {
           </div>
         </div>
       </footer>
-
-      <InteractiveScript tickerPlayers={tickerPlayers} />
     </>
   );
 }

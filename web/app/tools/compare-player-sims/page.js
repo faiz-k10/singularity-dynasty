@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { getUserTier } from "@/lib/tier";
-import ThemeToggle from "../../ThemeToggle";
-import InteractiveScript from "../../InteractiveScript";
+import SiteHeader from "../../SiteHeader";
 import STAT_LABELS from "../statLabels";
 import ComparePlayerPickers from "../ComparePlayerPickers";
 import CompareStatsTable from "../CompareStatsTable";
@@ -92,10 +91,7 @@ export default async function ComparePlayerSimsPage({ searchParams }) {
 
   return (
     <div className="tool-page">
-      <ThemeToggle />
-      <Link href="/" className="brandmark brandmark-nav">
-        <span className="ring"></span>Singularity Dynasty
-      </Link>
+      <SiteHeader />
 
       <main className="wrap tool-wrap">
         <div className="eyebrow">
@@ -145,7 +141,6 @@ export default async function ComparePlayerSimsPage({ searchParams }) {
           </>
         )}
       </main>
-      <InteractiveScript />
     </div>
   );
 }

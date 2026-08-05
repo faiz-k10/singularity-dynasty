@@ -1,6 +1,5 @@
 import Link from "next/link";
-import ThemeToggle from "../ThemeToggle";
-import InteractiveScript from "../InteractiveScript";
+import SiteHeader from "../SiteHeader";
 
 export const metadata = {
   title: "Terms of Service — Singularity Dynasty",
@@ -9,12 +8,8 @@ export const metadata = {
 export default function TermsPage() {
   return (
     <div className="auth-page">
-      <ThemeToggle />
+      <SiteHeader />
       <div className="wrap auth-wrap">
-        <Link href="/" className="brandmark auth-back">
-          <span className="ring"></span>Singularity Dynasty
-        </Link>
-
         <div className="legal-card reveal in">
           <h1>Terms of Service</h1>
           <p className="legal-updated">Last updated: August 2026</p>
@@ -167,7 +162,6 @@ export default function TermsPage() {
           </p>
         </div>
       </div>
-      <InteractiveScript />
     </div>
   );
 }

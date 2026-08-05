@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { getUserTier } from "@/lib/tier";
 import { resolveSort, sortRows } from "@/lib/sortLink";
-import ThemeToggle from "../../ThemeToggle";
-import InteractiveScript from "../../InteractiveScript";
+import SiteHeader from "../../SiteHeader";
 import ExportCsvButton from "../ExportCsvButton";
 import PlayerSimSearch from "../PlayerSimSearch";
 
@@ -118,10 +117,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
 
   return (
     <div className="tool-page">
-      <ThemeToggle />
-      <Link href="/" className="brandmark brandmark-nav brandmark-static">
-        <span className="ring"></span>Singularity Dynasty
-      </Link>
+      <SiteHeader />
 
       <main className="wrap tool-wrap">
         <div className="eyebrow">
@@ -187,7 +183,6 @@ export default async function PlayerSimulationsPage({ searchParams }) {
           </>
         )}
       </main>
-      <InteractiveScript />
     </div>
   );
 }
