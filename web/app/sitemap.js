@@ -12,7 +12,6 @@ export default function sitemap() {
   // visitors see a real teaser on each, not a login wall.
   const tools = [
     "redraft-rankings",
-    "best-ball-rankings",
     "draft-board",
     "player-simulations",
     "prospect-rankings",

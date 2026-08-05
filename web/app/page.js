@@ -267,50 +267,6 @@ export default async function Home() {
                 </Link>
               </div>
 
-              <div className="hub-panel" data-panel="1">
-                <span className="hub-tag">CEILING-WEIGHTED</span>
-                <h3>Best Ball Rankings</h3>
-                <p>
-                  Rankings tuned specifically for best ball formats,
-                  regression-weighted for weekly ceiling and variance instead
-                  of week-to-week consistency.
-                </p>
-                <div className="mock-panel" style={{ marginTop: "18px" }}>
-                  <div className="mock-head">
-                    <h4>Best Ball Rankings</h4>
-                    <span className="mono">CEILING-WEIGHTED</span>
-                  </div>
-                  <div className="board-row">
-                    <span className="board-rank">1</span>
-                    <span className="board-name">
-                      Ja&apos;Marr Chase <span className="board-pos">WR</span>
-                    </span>
-                    <span className="board-tier tier-s">S</span>
-                  </div>
-                  <div className="board-row">
-                    <span className="board-rank">2</span>
-                    <span className="board-name">
-                      Puka Nacua <span className="board-pos">WR</span>
-                    </span>
-                    <span className="board-tier tier-s">S</span>
-                  </div>
-                  <div className="board-row">
-                    <span className="board-rank">3</span>
-                    <span className="board-name">
-                      Bijan Robinson <span className="board-pos">RB</span>
-                    </span>
-                    <span className="board-tier tier-s">S</span>
-                  </div>
-                </div>
-                <ul className="feature-list blue">
-                  <li>Ceiling-weighted by standard deviation, not median consistency</li>
-                  <li>Recalculated weekly as sample size grows</li>
-                </ul>
-                <Link href="/tools/best-ball-rankings" className="hub-panel-link">
-                  View Live Rankings →
-                </Link>
-              </div>
-
               <div className="hub-panel" data-panel="2">
                 <span className="hub-tag">ROUND-BY-ROUND</span>
                 <h3>Dynasty Draft Board</h3>
@@ -404,29 +360,22 @@ export default async function Home() {
                 </button>
                 <button
                   className="node"
-                  data-panel="1"
-                  style={{ "--nx": "-289px", "--ny": "24px" }}
-                >
-                  <span className="node-label">Best Ball Rankings</span>
-                </button>
-                <button
-                  className="node"
                   data-panel="2"
-                  style={{ "--nx": "-97px", "--ny": "3px" }}
+                  style={{ "--nx": "-241px", "--ny": "17px" }}
                 >
                   <span className="node-label">Dynasty Draft Board</span>
                 </button>
                 <button
                   className="node"
                   data-panel="3"
-                  style={{ "--nx": "97px", "--ny": "3px" }}
+                  style={{ "--nx": "0px", "--ny": "0px" }}
                 >
                   <span className="node-label">Redraft Weekly Rankings</span>
                 </button>
                 <button
                   className="node"
                   data-panel="4"
-                  style={{ "--nx": "289px", "--ny": "24px" }}
+                  style={{ "--nx": "241px", "--ny": "17px" }}
                 >
                   <span className="node-label">Team Analysis</span>
                 </button>
@@ -499,7 +448,6 @@ export default async function Home() {
                 <li>Everything in Stargazer</li>
                 <li>Full dynasty rankings &amp; tiers (500+ players)</li>
                 <li>Dynasty draft board</li>
-                <li>Best ball rankings</li>
                 <li>5 saved teams</li>
               </ul>
               <a href="#" className="round-btn primary" data-plan="explorer">
