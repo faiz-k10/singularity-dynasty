@@ -83,6 +83,7 @@ export default async function Home() {
             Get Started
           </a>
         </nav>
+        <div className="site-header-spacer" aria-hidden="true"></div>
       </header>
 
       <div className="radial-menu" id="radialMenu">

@@ -225,13 +225,18 @@ body::before{
 .site-header{
   position:fixed; top:0; left:0; right:0; z-index:78;
   margin-top:34px; /* clears the ticker strip above it */
-  display:flex; align-items:center; justify-content:space-between; gap:24px;
-  padding:16px 150px 16px 28px;
+  display:flex; align-items:center; gap:24px;
+  padding:16px 28px;
   background:rgba(var(--scrim-rgb),0.78); backdrop-filter:blur(10px);
   border-bottom:1px solid var(--line);
 }
-.site-header .brandmark{flex-shrink:0;}
-.top-nav-bar{display:flex; align-items:center; gap:28px;}
+/* brand and the spacer are equal flex zones either side of the nav, so the
+   nav links land dead-center in the bar regardless of brand width — rather
+   than justify-content:space-between, which crowded them against the
+   fixed theme toggle on the right. */
+.site-header .brandmark{flex:1 1 0; flex-shrink:0; min-width:0;}
+.site-header-spacer{flex:1 1 0;}
+.top-nav-bar{display:flex; align-items:center; gap:28px; flex:0 0 auto;}
 .top-nav-bar a{
   font-family:var(--font-space-grotesk), sans-serif; font-size:13.5px; font-weight:600;
   color:var(--star-dim); text-decoration:none; letter-spacing:0.01em; white-space:nowrap;
@@ -244,8 +249,7 @@ body::before{
 }
 .top-nav-bar a.tn-cta:hover{box-shadow:0 6px 18px rgba(255,122,69,0.35); color:#1A0D05;}
 @media (max-width:1179px){
-  .top-nav-bar{display:none;}
-  .site-header{padding-right:80px;}
+  .top-nav-bar, .site-header-spacer{display:none;}
 }
 @media (max-width:640px){
   .site-header{padding-left:16px;}
