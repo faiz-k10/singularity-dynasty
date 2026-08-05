@@ -230,13 +230,14 @@ body::before{
   background:rgba(var(--scrim-rgb),0.78); backdrop-filter:blur(10px);
   border-bottom:1px solid var(--line);
 }
-/* brand and the spacer are equal flex zones either side of the nav, so the
-   nav links land dead-center in the bar regardless of brand width — rather
-   than justify-content:space-between, which crowded them against the
-   fixed theme toggle on the right. */
+/* brand, nav, and the spacer are equal flex zones, so the nav gets a wide
+   band in the middle of the bar (not just an auto-width cluster) and its
+   links spread out with justify-content:space-between to fill it — rather
+   than justify-content:space-between on the whole header, which crowded
+   the links against the fixed theme toggle on the right. */
 .site-header .brandmark{flex:1 1 0; flex-shrink:0; min-width:0;}
 .site-header-spacer{flex:1 1 0;}
-.top-nav-bar{display:flex; align-items:center; gap:28px; flex:0 0 auto;}
+.top-nav-bar{display:flex; align-items:center; justify-content:space-between; gap:20px; flex:1.6 1 0;}
 .top-nav-bar a{
   font-family:var(--font-space-grotesk), sans-serif; font-size:13.5px; font-weight:600;
   color:var(--star-dim); text-decoration:none; letter-spacing:0.01em; white-space:nowrap;
