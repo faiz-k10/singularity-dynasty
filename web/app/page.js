@@ -76,7 +76,7 @@ export default async function Home() {
           <a href="#pricing">Pricing</a>
           <a href="#feed">Feed</a>
           <a href="#playground">Play</a>
-          <a href={user ? "/account" : "/login"}>
+          <a href={user ? "/account" : "/login"} className="tn-account">
             {user ? "Account" : "Sign In"}
           </a>
           <a href="#pricing" className="tn-cta">

@@ -239,14 +239,29 @@ body::before{
 .site-header-spacer{flex:1 1 0;}
 .top-nav-bar{display:flex; align-items:center; justify-content:space-between; gap:20px; flex:1.6 1 0;}
 .top-nav-bar a{
-  font-family:var(--font-space-grotesk), sans-serif; font-size:13.5px; font-weight:600;
-  color:var(--star-dim); text-decoration:none; letter-spacing:0.01em; white-space:nowrap;
-  transition:color .2s ease;
+  font-family:var(--font-space-grotesk), sans-serif; font-size:14.5px; font-weight:700;
+  color:var(--star); text-decoration:none; letter-spacing:0.015em; white-space:nowrap;
+  position:relative; padding:6px 1px; transition:color .2s ease;
 }
-.top-nav-bar a:hover, .top-nav-bar a.active{color:var(--star);}
+/* underline indicator (not the account/CTA buttons, which read as buttons
+   already) — grows in on hover and stays put for the active section. */
+.top-nav-bar a:not(.tn-cta):not(.tn-account)::after{
+  content:''; position:absolute; left:1px; right:1px; bottom:0; height:2px;
+  background:var(--horizon-gold); border-radius:2px;
+  transform:scaleX(0); transform-origin:left; transition:transform .25s var(--ease);
+}
+.top-nav-bar a:not(.tn-cta):not(.tn-account):hover,
+.top-nav-bar a:not(.tn-cta):not(.tn-account).active{color:var(--horizon-gold);}
+.top-nav-bar a:not(.tn-cta):not(.tn-account):hover::after,
+.top-nav-bar a:not(.tn-cta):not(.tn-account).active::after{transform:scaleX(1);}
+.top-nav-bar a.tn-account{
+  color:var(--star); border:1px solid var(--line); border-radius:20px; padding:8px 18px;
+  transition:border-color .2s ease, color .2s ease;
+}
+.top-nav-bar a.tn-account:hover{border-color:var(--neon-blue); color:var(--neon-blue);}
 .top-nav-bar a.tn-cta{
   background:linear-gradient(135deg, var(--horizon-gold), var(--horizon));
-  color:#1A0D05; padding:9px 20px; border-radius:20px; font-weight:700;
+  color:#1A0D05; padding:9px 22px; border-radius:20px; font-weight:700;
 }
 .top-nav-bar a.tn-cta:hover{box-shadow:0 6px 18px rgba(255,122,69,0.35); color:#1A0D05;}
 @media (max-width:1179px){
