@@ -8,6 +8,7 @@ import ConfidenceBadge from "./ConfidenceBadge";
 import TeamBadge from "./TeamBadge";
 import STAT_LABELS from "./statLabels";
 import OutcomeCurve from "./OutcomeCurve";
+import PositionPercentile from "./PositionPercentile";
 
 // Detail row unfolded below a player when their name is clicked -- one
 // open at a time (clicking a different player folds this one and opens
@@ -25,6 +26,13 @@ function StatDetailRow({ row, colSpan }) {
   return (
     <tr className="stat-detail-row">
       <td colSpan={colSpan}>
+        <PositionPercentile
+          position={row.position}
+          poolSize={row.positionPoolSize}
+          floorPctile={row.floorPctile}
+          medianPctile={row.medianPctile}
+          ceilingPctile={row.ceilingPctile}
+        />
         <div className="stat-detail-cols">
           <table className="stat-detail-table">
             <thead>

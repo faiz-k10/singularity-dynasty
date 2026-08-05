@@ -983,6 +983,30 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .rankings-table tr.row-expandable{cursor:pointer;}
 .rankings-table tr.row-expandable:hover td{background:rgba(var(--neon-blue-rgb),0.08);}
 .stat-detail-row td{background:var(--void-panel-2); padding:14px 18px;}
+
+/* Percentile-rank-vs-position, shown above the per-stat breakdown below --
+   distinct from .sim-bar-track (this player's own floor-to-ceiling
+   spread): these three bars are 0-100th percentile against every other
+   player at the same position, so the same number reads very differently
+   in a deep WR pool vs. a shallow TE one. Same blue/gold language as
+   .sim-bar-typical/.sim-bar-upside just beside it. */
+.position-percentile{padding-bottom:16px; margin-bottom:16px; border-bottom:1px dashed var(--line);}
+.position-percentile-head{
+  font-family:var(--font-ibm-plex-mono), monospace; font-size:10px; letter-spacing:0.08em;
+  text-transform:uppercase; color:var(--star-dim); margin-bottom:10px;
+}
+.pctile-row{display:flex; align-items:center; gap:12px; margin-bottom:8px;}
+.pctile-row:last-child{margin-bottom:0;}
+.pctile-label{width:52px; flex-shrink:0; font-size:12.5px; color:var(--star-dim);}
+.pctile-track{position:relative; flex:1 1 auto; max-width:280px; height:6px; border-radius:3px; background:var(--void-panel-2);}
+.pctile-fill{position:absolute; top:0; left:0; bottom:0; border-radius:3px; background:var(--neon-blue-dim); opacity:0.55;}
+.pctile-marker{
+  position:absolute; top:50%; width:10px; height:10px; border-radius:50%;
+  background:var(--horizon-gold); border:2px solid var(--void-panel-2);
+  transform:translate(-50%, -50%);
+}
+.pctile-value{width:40px; flex-shrink:0; text-align:right; font-family:var(--font-ibm-plex-mono), monospace; font-size:12.5px; color:var(--star);}
+@media (max-width:640px){.pctile-track{max-width:none;}}
 /* Explicit text-align throughout -- this table is nested inside a
    .rankings-table cell, so it's still a CSS descendant of .rankings-table
    and would otherwise inherit that table's td{text-align:center} rule. */

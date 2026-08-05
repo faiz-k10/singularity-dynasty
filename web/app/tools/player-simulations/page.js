@@ -92,16 +92,44 @@ export default async function PlayerSimulationsPage({ searchParams }) {
   // and every TE look "cold" regardless of how they actually rank among
   // their own position.
   const medianRangeByPos = {};
+  // Percentile rank vs. position reuses the same per-position grouping,
+  // but only with full access: the teaser query is limited to the top
+  // TEASER_LIMIT players by median globally, so whichever few players of
+  // a given position happen to make that cut aren't a representative
+  // pool to rank against.
+  const statsByPos = hasFullAccess ? {} : null;
   for (const row of sortedSims) {
     const r = medianRangeByPos[row.position] || { min: Infinity, max: -Infinity };
     r.min = Math.min(r.min, row.median);
     r.max = Math.max(r.max, row.median);
     medianRangeByPos[row.position] = r;
+    if (statsByPos) {
+      const pool = (statsByPos[row.position] ??= { floor: [], median: [], ceiling: [] });
+      pool.floor.push(row.floor);
+      pool.median.push(row.median);
+      pool.ceiling.push(row.ceiling);
+    }
+  }
+  // Share of the player's own position pool that this number beats -- e.g.
+  // a ceiling percentile of 85 is higher than 85% of other players at the
+  // position. Distinct from the min/max heat-tint above.
+  function percentileRank(value, pool) {
+    if (!pool || pool.length <= 1) return null;
+    const lower = pool.filter((v) => v < value).length;
+    return Math.round((lower / (pool.length - 1)) * 100);
   }
   const simsWithHeat = sortedSims.map((row) => {
     const r = medianRangeByPos[row.position];
     const heat = r && r.max > r.min ? (row.median - r.min) / (r.max - r.min) : 0;
-    return { ...row, heat };
+    const pool = statsByPos?.[row.position];
+    return {
+      ...row,
+      heat,
+      floorPctile: pool ? percentileRank(row.floor, pool.floor) : null,
+      medianPctile: pool ? percentileRank(row.median, pool.median) : null,
+      ceilingPctile: pool ? percentileRank(row.ceiling, pool.ceiling) : null,
+      positionPoolSize: pool ? pool.floor.length : null,
+    };
   });
   // CSV export stays in points-per-game terms regardless of the on-page
   // toggle -- it's baked into server-rendered HTML at request time (see
