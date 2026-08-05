@@ -218,18 +218,20 @@ body::before{
 :root[data-theme="light"] .theme-toggle .icon-sun{display:block;}
 :root[data-theme="light"] .theme-toggle .icon-moon{display:none;}
 
-/* ---------- TOP NAV BAR (wide viewports — replaces the hamburger; the
-   hamburger + radial-menu below remain as the mobile/tablet fallback where
-   a full link row doesn't fit next to the brandmark pill and theme toggle) ---------- */
-.top-nav-wrap{position:fixed; top:44px; left:0; right:0; z-index:80; display:flex; justify-content:center; pointer-events:none;}
-.top-nav-bar{
-  pointer-events:auto;
-  display:flex; align-items:center; gap:28px;
+/* ---------- SITE HEADER (full-width top bar — replaces the hamburger on
+   wide viewports; the hamburger + radial-menu below remain as the
+   mobile/tablet fallback where a full link row doesn't fit). Spans the
+   entire viewport edge-to-edge rather than floating as a pill. ---------- */
+.site-header{
+  position:fixed; top:0; left:0; right:0; z-index:78;
+  margin-top:34px; /* clears the ticker strip above it */
+  display:flex; align-items:center; justify-content:space-between; gap:24px;
+  padding:16px 150px 16px 28px;
   background:rgba(var(--scrim-rgb),0.78); backdrop-filter:blur(10px);
-  border:1px solid var(--line); border-radius:30px;
-  padding:13px 16px 13px 28px;
-  box-shadow:0 10px 24px rgba(var(--shadow-rgb),0.25);
+  border-bottom:1px solid var(--line);
 }
+.site-header .brandmark{flex-shrink:0;}
+.top-nav-bar{display:flex; align-items:center; gap:28px;}
 .top-nav-bar a{
   font-family:var(--font-space-grotesk), sans-serif; font-size:13.5px; font-weight:600;
   color:var(--star-dim); text-decoration:none; letter-spacing:0.01em; white-space:nowrap;
@@ -242,7 +244,11 @@ body::before{
 }
 .top-nav-bar a.tn-cta:hover{box-shadow:0 6px 18px rgba(255,122,69,0.35); color:#1A0D05;}
 @media (max-width:1179px){
-  .top-nav-wrap{display:none;}
+  .top-nav-bar{display:none;}
+  .site-header{padding-right:80px;}
+}
+@media (max-width:640px){
+  .site-header{padding-left:16px;}
 }
 @media (min-width:1180px){
   .menu-btn{display:none;}

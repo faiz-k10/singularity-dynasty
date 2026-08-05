@@ -56,9 +56,6 @@ export default async function Home() {
         <div className="ticker-track" id="tickerTrack"></div>
       </div>
 
-      <a href="#hero" className="brandmark brandmark-nav">
-        <span className="ring"></span>Singularity Dynasty
-      </a>
       <ThemeToggle />
       <button
         className="menu-btn"
@@ -69,7 +66,10 @@ export default async function Home() {
         ☰
       </button>
 
-      <div className="top-nav-wrap">
+      <header className="site-header">
+        <a href="#hero" className="brandmark">
+          <span className="ring"></span>Singularity Dynasty
+        </a>
         <nav className="top-nav-bar" id="topNavBar" aria-label="Primary">
           <a href="#hero">Signal</a>
           <a href="#tools">Tools</a>
@@ -83,7 +83,7 @@ export default async function Home() {
             Get Started
           </a>
         </nav>
-      </div>
+      </header>
 
       <div className="radial-menu" id="radialMenu">
         <nav>
