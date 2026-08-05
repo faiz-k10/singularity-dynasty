@@ -80,13 +80,22 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
   const showPositionFilter = Array.isArray(positions) && positions.length > 0;
   const [selected, setSelected] = useState(positions || []);
   const [query, setQuery] = useState("");
-  const [expanded, setExpanded] = useState(null); // player_name currently unfolded, or null
+  const [expanded, setExpanded] = useState(() => new Set()); // player_names currently unfolded
   const sortProps = { activeSort: sortKey, activeDir: sortDir, currentParams };
 
   function toggle(pos) {
     setSelected((prev) =>
       prev.includes(pos) ? prev.filter((p) => p !== pos) : [...prev, pos]
     );
+  }
+
+  function toggleExpanded(name) {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(name)) next.delete(name);
+      else next.add(name);
+      return next;
+    });
   }
 
   const filteredRows = useMemo(() => {
@@ -156,28 +165,30 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
             <tbody>
               {filteredRows.map((row) => {
                 const hasStats = row.stat_ranges && Object.keys(row.stat_ranges).length > 0;
-                const isExpanded = hasStats && expanded === row.player_name;
+                const isExpanded = hasStats && expanded.has(row.player_name);
                 return (
                 <Fragment key={row.player_name}>
-                <tr data-pos={row.position}>
+                <tr
+                  data-pos={row.position}
+                  className={hasStats ? "row-expandable" : undefined}
+                  onClick={hasStats ? () => toggleExpanded(row.player_name) : undefined}
+                  role={hasStats ? "button" : undefined}
+                  tabIndex={hasStats ? 0 : undefined}
+                  aria-expanded={hasStats ? isExpanded : undefined}
+                  onKeyDown={
+                    hasStats
+                      ? (e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            toggleExpanded(row.player_name);
+                          }
+                        }
+                      : undefined
+                  }
+                >
                   <td className="player-cell">
-                    {hasStats ? (
-                      <button
-                        type="button"
-                        className="player-expand-trigger"
-                        onClick={() => setExpanded(isExpanded ? null : row.player_name)}
-                        aria-expanded={isExpanded}
-                      >
-                        <TrendTag trend={row.trend} /> {row.player_name}{" "}
-                        <ConfidenceBadge confidence={row.sample_confidence} />
-                        <span className="expand-chevron">{isExpanded ? "▲" : "▼"}</span>
-                      </button>
-                    ) : (
-                      <>
-                        <TrendTag trend={row.trend} /> {row.player_name}{" "}
-                        <ConfidenceBadge confidence={row.sample_confidence} />
-                      </>
-                    )}
+                    <TrendTag trend={row.trend} /> {row.player_name}{" "}
+                    <ConfidenceBadge confidence={row.sample_confidence} />
                   </td>
                   <td className="mono align-left">{row.position}</td>
                   <td className="mono align-left">
