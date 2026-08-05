@@ -10,7 +10,7 @@ export const metadata = {
   title: "Player Season Simulations — Singularity Dynasty",
 };
 
-const TEASER_LIMIT = 10;
+const TEASER_LIMIT = 50;
 const GAMES_PER_SEASON = 17;
 // Singularity-only per the pricing copy — Explorer does not include this.
 const PAID_TIERS = ["singularity"];
