@@ -11,6 +11,7 @@ export const metadata = {
 };
 
 const TEASER_LIMIT = 10;
+const GAMES_PER_SEASON = 17;
 // Singularity-only per the pricing copy — Explorer does not include this.
 const PAID_TIERS = ["singularity"];
 const POSITION_ORDER = ["QB", "RB", "WR", "TE"];
@@ -54,7 +55,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
     let query = supabase
       .from("player_simulations")
       .select(
-        "player_name, position, team, floor, median, ceiling, stat_ranges, bust_pct, normal_pct, boom_pct, trend, sample_confidence, notes",
+        "player_name, position, team, floor, median, ceiling, stat_ranges, trend, sample_confidence, notes",
         { count: "exact" }
       )
       .eq("season", latest.season)
@@ -66,7 +67,20 @@ export default async function PlayerSimulationsPage({ searchParams }) {
     }
 
     const { data, count } = await query;
-    sims = data || [];
+    // Published floor/median/ceiling are season totals -- converted to a
+    // plain per-game rate (total / 17) right here so every consumer below
+    // (table, heat-tint, range bar, CSV export) sees the same number the
+    // page displays. Not adjusted for missed-game/injury scenarios: a
+    // trial where the player sits out half the season still pulls this
+    // rate down in that trial, same as it pulls down the season total,
+    // since the simulation doesn't publish a per-trial games-played count
+    // a true injury-adjusted rate would need.
+    sims = (data || []).map((row) => ({
+      ...row,
+      floor: Math.round((row.floor / GAMES_PER_SEASON) * 10) / 10,
+      median: Math.round((row.median / GAMES_PER_SEASON) * 10) / 10,
+      ceiling: Math.round((row.ceiling / GAMES_PER_SEASON) * 10) / 10,
+    }));
     totalCount = count || 0;
   }
 
@@ -109,7 +123,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
         <p className="tool-sub">
           Full-season Monte Carlo simulations run 10,000 times per player,
           distilled to a 10th / 50th / 90th percentile floor, median, and
-          ceiling.
+          ceiling — shown here as points per game.
         </p>
 
         {sims.length === 0 ? (
@@ -131,9 +145,9 @@ export default async function PlayerSimulationsPage({ searchParams }) {
                       { key: "player_name", label: "Player" },
                       { key: "position", label: "Position" },
                       { key: "team", label: "Team" },
-                      { key: "floor", label: "Floor" },
-                      { key: "median", label: "Median" },
-                      { key: "ceiling", label: "Ceiling" },
+                      { key: "floor", label: "Floor (PPG)" },
+                      { key: "median", label: "Median (PPG)" },
+                      { key: "ceiling", label: "Ceiling (PPG)" },
                       { key: "trend", label: "Trend" },
                       { key: "sample_confidence", label: "Confidence" },
                     ]}

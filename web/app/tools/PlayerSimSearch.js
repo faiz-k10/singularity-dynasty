@@ -8,92 +8,22 @@ import TeamBadge from "./TeamBadge";
 import STAT_LABELS from "./statLabels";
 import OutcomeCurve from "./OutcomeCurve";
 
-const SEASON_KEY = "__season__";
-// The bust/boom legend's own 20%-below / 20%-above language, expressed as
-// the exact point values that land on -- lets picking either boundary
-// jump the curve straight to it instead of just picking "season mode" at
-// some arbitrary default.
-const SEASON_BOUNDARY_MULT = { bust: 0.8, median: 1, boom: 1.2 };
-// Points Per Game is a plain total/17 -- it is NOT a per-trial "points
-// while active" rate, so a player who's out half the season in a given
-// simulated trial still drags this figure down in that trial, same as it
-// drags down the season total. Publishing a true injury-adjusted rate
-// would need per-trial games-played data the simulation doesn't publish.
-const GAMES_PER_SEASON = 17;
-
 // Detail row unfolded below a player when their name is clicked -- one
 // open at a time (clicking a different player folds this one and opens
 // theirs). colSpan must match the number of columns in the main row.
 function StatDetailRow({ row, colSpan }) {
   const ranges = row.stat_ranges;
   const entries = STAT_LABELS.filter(([key]) => ranges && ranges[key]);
-  const hasBoomBust = row.bust_pct != null && row.normal_pct != null && row.boom_pct != null;
-  const showCurve = entries.length > 0;
-  // Clicking a stat row -- or a bust/normal/boom legend chip above it --
-  // drives the odds curve. Defaults to the first available stat so the
-  // curve is never empty on open.
+  // Clicking a stat row drives the odds curve beside the table -- defaults
+  // to the first available stat so the curve is never empty on open.
   const [selectedKey, setSelectedKey] = useState(entries[0]?.[0]);
-  const [seasonBoundary, setSeasonBoundary] = useState("median");
-  const isSeasonSelected = selectedKey === SEASON_KEY;
+  const selectedEntry = entries.find(([key]) => key === selectedKey) || entries[0];
 
-  function selectSeasonBoundary(boundary) {
-    setSelectedKey(SEASON_KEY);
-    setSeasonBoundary(boundary);
-  }
-
-  const selectedTarget = isSeasonSelected
-    ? {
-        label: "Points Per Game",
-        floor: row.floor / GAMES_PER_SEASON,
-        median: row.median / GAMES_PER_SEASON,
-        ceiling: row.ceiling / GAMES_PER_SEASON,
-      }
-    : (() => {
-        const match = entries.find(([key]) => key === selectedKey) || entries[0];
-        return match ? { label: match[1], ...ranges[match[0]] } : null;
-      })();
-  // Only meaningful for the season target -- a fresh mount per boundary
-  // (via the OutcomeCurve `key` below) is what makes clicking bust, then
-  // boom, then bust again each actually move the slider.
-  const seasonInitialThreshold =
-    (row.median / GAMES_PER_SEASON) * SEASON_BOUNDARY_MULT[seasonBoundary];
-
-  if (entries.length === 0 && !hasBoomBust) return null;
+  if (entries.length === 0) return null;
 
   return (
     <tr className="stat-detail-row">
       <td colSpan={colSpan}>
-        {hasBoomBust && (
-          <div className="boom-bust-block">
-            <div className="boom-bust-label">
-              Season outcome spread — how often this player's own
-              simulated seasons land 20%+ below (bust) or above (boom)
-              their median
-            </div>
-            <div className="boom-bust-legend">
-              {["bust", "normal", "boom"].map((zone) => {
-                const pct = row[`${zone}_pct`];
-                const boundary = zone === "normal" ? "median" : zone;
-                const isActive = showCurve && isSeasonSelected && seasonBoundary === boundary;
-                const inner = <><i className={`dot ${zone}`}></i>{pct}% {zone}</>;
-                return showCurve ? (
-                  <button
-                    key={zone}
-                    type="button"
-                    className={`boom-bust-legend-btn ${isActive ? "is-active" : ""}`}
-                    onClick={() => selectSeasonBoundary(boundary)}
-                    aria-pressed={isActive}
-                  >
-                    {inner}
-                  </button>
-                ) : (
-                  <span key={zone}>{inner}</span>
-                );
-              })}
-            </div>
-          </div>
-        )}
-        {showCurve && (
         <div className="stat-detail-cols">
           <table className="stat-detail-table">
             <thead>
@@ -130,19 +60,14 @@ function StatDetailRow({ row, colSpan }) {
               })}
             </tbody>
           </table>
-          {selectedTarget && (
-            <OutcomeCurve
-              key={isSeasonSelected ? `season-${seasonBoundary}` : selectedKey}
-              label={selectedTarget.label}
-              floor={selectedTarget.floor}
-              median={selectedTarget.median}
-              ceiling={selectedTarget.ceiling}
-              initialThreshold={isSeasonSelected ? seasonInitialThreshold : undefined}
-              decimals={isSeasonSelected ? 1 : 0}
-            />
-          )}
+          <OutcomeCurve
+            key={selectedEntry[0]}
+            label={selectedEntry[1]}
+            floor={ranges[selectedEntry[0]].floor}
+            median={ranges[selectedEntry[0]].median}
+            ceiling={ranges[selectedEntry[0]].ceiling}
+          />
         </div>
-        )}
       </td>
     </tr>
   );
@@ -230,9 +155,7 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
             </thead>
             <tbody>
               {filteredRows.map((row) => {
-                const hasStats =
-                  (row.stat_ranges && Object.keys(row.stat_ranges).length > 0) ||
-                  (row.bust_pct != null && row.normal_pct != null && row.boom_pct != null);
+                const hasStats = row.stat_ranges && Object.keys(row.stat_ranges).length > 0;
                 const isExpanded = hasStats && expanded === row.player_name;
                 return (
                 <Fragment key={row.player_name}>
@@ -260,11 +183,11 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                   <td className="mono align-left">
                     <TeamBadge team={row.team} />
                   </td>
-                  <td className="mono">{row.floor}</td>
+                  <td className="mono">{row.floor.toFixed(1)}</td>
                   <td className="mono heat-cell" style={{ "--heat": row.heat || 0 }}>
-                    <strong>{row.median}</strong>
+                    <strong>{row.median.toFixed(1)}</strong>
                   </td>
-                  <td className="mono">{row.ceiling}</td>
+                  <td className="mono">{row.ceiling.toFixed(1)}</td>
                   <td>
                     <div className="sim-bar-track">
                       <div

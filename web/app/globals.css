@@ -1037,34 +1037,6 @@ tr.stat-row-selected .stat-row-trigger{color:var(--horizon-gold);}
   color:var(--horizon-gold); font-family:var(--font-ibm-plex-mono), monospace; font-size:14px;
 }
 
-/* Boom/bust spread -- how often this player's OWN simulated seasons land
-   20%+ below/above their own median, as a plain legend (no bar visual).
-   Reuses the same red/gray/green vocabulary as .matchup-cell (--down-rgb
-   / --up-rgb) rather than inventing a new color language. Sits above the
-   stat-detail-table when one is present, but stands alone (e.g. a
-   position with no granular stat_ranges) when it isn't. */
-.boom-bust-block{max-width:600px; margin:0 auto 14px;}
-.boom-bust-label{
-  font-size:11px; color:var(--star-dim); margin-bottom:8px; line-height:1.4;
-}
-.boom-bust-legend{
-  display:flex; gap:16px; margin-top:8px; font-family:var(--font-ibm-plex-mono), monospace;
-  font-size:11px; color:var(--star); justify-content:center;
-}
-.boom-bust-legend .dot{
-  display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:5px; vertical-align:middle;
-}
-.boom-bust-legend .dot.bust{background:rgba(var(--down-rgb),0.85);}
-.boom-bust-legend .dot.normal{background:rgba(var(--star-dim-rgb),0.85);}
-.boom-bust-legend .dot.boom{background:rgba(var(--up-rgb),0.85);}
-
-/* Legend chips are the click target for the bust/normal/boom boundaries --
-   picking one jumps the odds curve straight to that boundary's exact
-   point value. */
-.boom-bust-legend-btn{all:unset; cursor:pointer; display:inline-flex; align-items:center;}
-.boom-bust-legend-btn:hover{color:var(--neon-blue);}
-.boom-bust-legend-btn.is-active{color:var(--horizon-gold);}
-
 /* ---------- COMPARE PLAYERS ---------- */
 .compare-form{
   display:flex; flex-wrap:wrap; gap:16px; align-items:flex-end;
