@@ -233,6 +233,9 @@ export default async function Home() {
               <div className="hub-panel active" data-panel="0">
                 <span className="hub-tag">API LIVE · 10,000 RUNS</span>
                 <h3>Player Season Simulations</h3>
+                <Link href="/tools/player-simulations" className="hub-panel-link">
+                  View Live Simulations →
+                </Link>
                 <p>
                   Full-season Monte Carlo simulations run 10,000 times per
                   player, mapping a full probability distribution of outcomes
@@ -262,27 +265,27 @@ export default async function Home() {
                   <li>10,000 simulated outcomes per player, every week</li>
                   <li>10th / 50th / 90th percentile floor, median, and ceiling</li>
                 </ul>
-                <Link href="/tools/player-simulations" className="hub-panel-link">
-                  View Live Simulations →
-                </Link>
               </div>
 
               <div className="hub-panel" data-panel="2">
                 <span className="hub-tag">ROUND-BY-ROUND</span>
                 <h3>Dynasty Draft Board</h3>
+                <Link href="/tools/draft-board" className="hub-panel-link">
+                  View Live Board →
+                </Link>
                 <p>
                   A full startup and rookie draft board, laid out round by
                   round, with correlated stacks auto-flagged via
                   roster-construction analysis.
                 </p>
-                <Link href="/tools/draft-board" className="hub-panel-link">
-                  View Live Board →
-                </Link>
               </div>
 
               <div className="hub-panel" data-panel="3">
                 <span className="hub-tag">MATCHUP-ADJUSTED</span>
                 <h3>Redraft Weekly Rankings</h3>
+                <Link href="/tools/redraft-rankings" className="hub-panel-link">
+                  View Live Rankings →
+                </Link>
                 <p>
                   Standard redraft rankings refreshed every week of the
                   season, adjusted for opponent-strength and matchup
@@ -319,9 +322,6 @@ export default async function Home() {
                   <li>Refreshed every week, not just at the start of the season</li>
                   <li>Adjusted for opponent-strength and matchup efficiency</li>
                 </ul>
-                <Link href="/tools/redraft-rankings" className="hub-panel-link">
-                  View Live Rankings →
-                </Link>
               </div>
 
               <div className="hub-panel" data-panel="4">
@@ -337,14 +337,14 @@ export default async function Home() {
               <div className="hub-panel" data-panel="5">
                 <span className="hub-tag">PERCENTILE COMPS</span>
                 <h3>WR/QB Prospect Rankings &amp; Comparisons</h3>
+                <Link href="/tools/prospect-rankings" className="hub-panel-link">
+                  View Live Board →
+                </Link>
                 <p>
                   Incoming rookie rankings for wide receivers and
                   quarterbacks, with side-by-side statistical comps against
                   past prospects using athletic and production percentiles.
                 </p>
-                <Link href="/tools/prospect-rankings" className="hub-panel-link">
-                  View Live Board →
-                </Link>
               </div>
             </div>
 

@@ -453,7 +453,7 @@ section{padding:96px 0 20px; position:relative;}
 .hub-panel h3{font-size:20px; margin-bottom:10px;}
 .hub-panel p{font-size:13.5px; color:var(--star-dim); line-height:1.6;}
 .hub-panel-link{
-  display:inline-block; margin-top:14px; font-family:var(--font-ibm-plex-mono), monospace; font-size:12px;
+  display:inline-block; margin-bottom:14px; font-family:var(--font-ibm-plex-mono), monospace; font-size:12px;
   color:var(--neon-blue); text-decoration:none; letter-spacing:0.02em;
 }
 .hub-panel-link:hover{color:var(--horizon-gold);}
