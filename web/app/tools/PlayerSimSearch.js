@@ -179,7 +179,7 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
 
       <div className="compare-link-row">
         <Link href="/tools/compare-player-sims" className="hub-panel-link">
-          Compare Players →
+          Player Comparison →
         </Link>
       </div>
 
