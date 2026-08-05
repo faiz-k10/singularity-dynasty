@@ -235,7 +235,8 @@ body::before{
    links spread out with justify-content:space-between to fill it — rather
    than justify-content:space-between on the whole header, which crowded
    the links against the fixed theme toggle on the right. */
-.site-header .brandmark{flex:1 1 0; flex-shrink:0; min-width:0;}
+.site-header .brandmark{flex:1 1 0; flex-shrink:0; min-width:0; font-size:20px; gap:12px;}
+.site-header .brandmark .ring{width:22px; height:22px;}
 .site-header-spacer{flex:1 1 0;}
 .top-nav-bar{display:flex; align-items:center; justify-content:space-between; gap:20px; flex:1.6 1 0;}
 .top-nav-bar a{
