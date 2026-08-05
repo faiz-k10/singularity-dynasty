@@ -6,6 +6,7 @@ import TrendTag from "./TrendTag";
 import ConfidenceBadge from "./ConfidenceBadge";
 import TeamBadge from "./TeamBadge";
 import STAT_LABELS from "./statLabels";
+import OutcomeCurve from "./OutcomeCurve";
 
 // Detail row unfolded below a player when their name is clicked -- one
 // open at a time (clicking a different player folds this one and opens
@@ -14,6 +15,10 @@ function StatDetailRow({ row, colSpan }) {
   const ranges = row.stat_ranges;
   const entries = STAT_LABELS.filter(([key]) => ranges && ranges[key]);
   const hasBoomBust = row.bust_pct != null && row.normal_pct != null && row.boom_pct != null;
+  // Clicking a stat row drives the odds curve beside the table -- defaults
+  // to the first available stat so the curve is never empty on open.
+  const [selectedKey, setSelectedKey] = useState(entries[0]?.[0]);
+  const selectedEntry = entries.find(([key]) => key === selectedKey) || entries[0];
   if (entries.length === 0 && !hasBoomBust) return null;
   return (
     <tr className="stat-detail-row">
@@ -50,31 +55,52 @@ function StatDetailRow({ row, colSpan }) {
           </div>
         )}
         {entries.length > 0 && (
-        <table className="stat-detail-table">
-          <thead>
-            <tr>
-              <th>Stat</th>
-              <th>Floor</th>
-              <th>Median</th>
-              <th>Ceiling</th>
-            </tr>
-          </thead>
-          <tbody>
-            {entries.map(([key, label]) => {
-              const { floor, median, ceiling } = ranges[key];
-              return (
-                <tr key={key}>
-                  <td>{label}</td>
-                  <td className="mono">{floor}</td>
-                  <td className="mono">
-                    <strong>{median}</strong>
-                  </td>
-                  <td className="mono">{ceiling}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+        <div className="stat-detail-cols">
+          <table className="stat-detail-table">
+            <thead>
+              <tr>
+                <th>Stat</th>
+                <th>Floor</th>
+                <th>Median</th>
+                <th>Ceiling</th>
+              </tr>
+            </thead>
+            <tbody>
+              {entries.map(([key, label]) => {
+                const { floor, median, ceiling } = ranges[key];
+                const isSelected = key === selectedKey;
+                return (
+                  <tr key={key} className={isSelected ? "stat-row-selected" : ""}>
+                    <td>
+                      <button
+                        type="button"
+                        className="stat-row-trigger"
+                        onClick={() => setSelectedKey(key)}
+                        aria-pressed={isSelected}
+                      >
+                        {label}
+                      </button>
+                    </td>
+                    <td className="mono">{floor}</td>
+                    <td className="mono">
+                      <strong>{median}</strong>
+                    </td>
+                    <td className="mono">{ceiling}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+          {selectedEntry && (
+            <OutcomeCurve
+              key={selectedEntry[0]}
+              label={selectedEntry[1]}
+              floor={ranges[selectedEntry[0]].floor}
+              median={ranges[selectedEntry[0]].median}
+              ceiling={ranges[selectedEntry[0]].ceiling}
+            />
+          )}
+        </div>
         )}
       </td>
     </tr>

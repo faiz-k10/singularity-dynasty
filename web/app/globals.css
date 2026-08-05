@@ -992,6 +992,51 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .stat-detail-table td:first-child{text-align:left;}
 .stat-detail-table tr:last-child td{border-bottom:none;}
 
+.stat-detail-cols{display:flex; gap:28px; flex-wrap:wrap; align-items:flex-start; max-width:600px;}
+
+.stat-row-trigger{all:unset; cursor:pointer; display:inline-block;}
+.stat-row-trigger:hover{color:var(--neon-blue);}
+tr.stat-row-selected td{background:var(--void-panel);}
+tr.stat-row-selected .stat-row-trigger{color:var(--horizon-gold);}
+
+/* Odds curve beside the stat table -- reconstructs a distribution from
+   floor/median/ceiling and lets you drag a threshold to see the odds of
+   clearing it. Blue/gold split matches .sim-bar-typical/.sim-bar-upside,
+   the same below-median/above-median color language used everywhere else
+   in this table. */
+.outcome-curve{flex:1 1 220px; min-width:200px; max-width:320px;}
+.outcome-curve-label{
+  font-family:var(--font-ibm-plex-mono), monospace; font-size:10px; letter-spacing:0.08em;
+  text-transform:uppercase; color:var(--star-dim); margin-bottom:4px;
+}
+.outcome-curve-svg{width:100%; display:block;}
+.outcome-curve-svg .curve-line{fill:none; stroke:var(--star-dim); stroke-width:1.25;}
+.outcome-curve-svg .curve-threshold{stroke:var(--horizon-gold); stroke-width:1.5;}
+.outcome-curve-svg .curve-tick-label{
+  font-family:var(--font-ibm-plex-mono), monospace; font-size:8px; fill:var(--star-dim);
+}
+.outcome-curve-svg .grad-below-start{stop-color:var(--neon-blue-dim); stop-opacity:0.32;}
+.outcome-curve-svg .grad-below-end{stop-color:var(--neon-blue-dim); stop-opacity:0.02;}
+.outcome-curve-svg .grad-above-start{stop-color:var(--horizon-gold); stop-opacity:0.55;}
+.outcome-curve-svg .grad-above-end{stop-color:var(--horizon-gold); stop-opacity:0.04;}
+
+.outcome-curve-slider{
+  -webkit-appearance:none; appearance:none; width:100%; height:4px; margin:2px 0 8px;
+  background:var(--void-panel); border-radius:2px; outline:none;
+}
+.outcome-curve-slider::-webkit-slider-thumb{
+  -webkit-appearance:none; width:14px; height:14px; border-radius:50%;
+  background:var(--horizon-gold); border:2px solid var(--void); cursor:pointer;
+}
+.outcome-curve-slider::-moz-range-thumb{
+  width:14px; height:14px; border-radius:50%; background:var(--horizon-gold);
+  border:2px solid var(--void); cursor:pointer;
+}
+.outcome-curve-readout{font-size:12.5px; color:var(--star); line-height:1.4;}
+.outcome-curve-readout strong{
+  color:var(--horizon-gold); font-family:var(--font-ibm-plex-mono), monospace; font-size:14px;
+}
+
 /* Boom/bust spread -- three-segment bar showing how often this player's
    OWN simulated seasons land 20%+ below/above their own median. Reuses
    the same red/gray/green vocabulary as .matchup-cell (--down-rgb /
