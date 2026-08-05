@@ -183,6 +183,28 @@ shrunk_quantile <- function(own_x, own_w, baseline_x, baseline_w, q, own_share =
   own_share * own_q + (1 - own_share) * base_q
 }
 
+# Weighted MEAN (not quantile) -- used only for the raw per-stat weekly
+# values that power Redraft's custom scoring settings. Deliberately mean,
+# not median: a fantasy score is a LINEAR combination of its raw
+# components (points = 0.1*yards + 6*tds + ...), and mean is the only
+# statistic where mean(sum of components) == sum(mean of components).
+# Median doesn't have that property -- verified directly that summing
+# each raw stat's median independently understates the real total by
+# ~40% for a player like Jahmyr Gibbs, because touchdowns are "lumpy"
+# (most individual games are 0 TDs even for a player who scores in
+# most weeks on average), so a per-game median silently rounds a real
+# scoring threat down to zero. Mean has no such blind spot. Shrinkage
+# blending is also linear (own_share*A + (1-own_share)*B), so it
+# commutes with the scoring formula too -- the reconstructed total
+# stays mathematically exact even for shrink-eligible players.
+weighted_mean <- function(x, w) sum(x * w) / sum(w)
+
+shrunk_mean <- function(own_x, own_w, baseline_x, baseline_w, own_share = SHRINK_OWN_SHARE) {
+  own_m <- weighted_mean(own_x, own_w)
+  base_m <- weighted_mean(baseline_x, baseline_w)
+  own_share * own_m + (1 - own_share) * base_m
+}
+
 # Objective workload tiering, generalized across all four positions:
 # excludes the rare top-usage players (top ~15% by the position's usage
 # metric — touches/game for RB/WR/TE, pass attempts/game for QB) from the
@@ -193,13 +215,13 @@ shrunk_quantile <- function(own_x, own_w, baseline_x, baseline_w, q, own_share =
 # validated for RB only (see README "RB tiering" section); the RB-specific
 # validation doesn't automatically carry over to QB/WR/TE, which use the
 # same mechanism but haven't been individually stress-tested the way RB was.
-build_common_pool <- function(reg, eligible_players, position) {
+build_common_pool <- function(reg, eligible_players, position, stat_col = "fantasy_points_ppr") {
   pos_players <- eligible_players[sapply(eligible_players, function(p)
     reg$position[reg$player_display_name == p][1] == position)]
   upg <- sapply(pos_players, function(p) mean(reg$usage[reg$player_display_name == p]))
   cutoff <- as.numeric(quantile(upg, HIGH_USAGE_CUTOFF_PCTILE))
   common_players <- pos_players[upg < cutoff]
-  pool <- reg$fantasy_points_ppr[reg$position == position & reg$player_display_name %in% common_players]
+  pool <- reg[[stat_col]][reg$position == position & reg$player_display_name %in% common_players]
   list(pool = pool, weights = rep(1 / length(pool), length(pool)), cutoff = cutoff)
 }
 
@@ -474,6 +496,7 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
 
   shrink_players <- character(0)
   baseline_pools <- list()
+  stat_pools <- list()
   if (apply_shrinkage) {
     low_sample_players <- names(counts[counts >= MIN_GAMES & counts < LOW_SAMPLE_SHRINK_THRESHOLD])
 
@@ -517,6 +540,15 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
         reg$position[reg$player_display_name == p][1]))
       for (pos in shrink_positions) {
         baseline_pools[[pos]] <- build_common_pool(reg, eligible, pos)
+        # Same 80/20 blend, but per raw stat column instead of the blended
+        # fantasy_points_ppr total -- powers Redraft's custom scoring
+        # settings (PPR/TE premium/passing-TD/INT toggles), which need to
+        # recompute a player's points from their own component stats
+        # rather than a single fixed-scoring number.
+        stat_pools[[pos]] <- list()
+        for (col in STAT_COLS_BY_POSITION[[pos]]) {
+          stat_pools[[pos]][[col]] <- build_common_pool(reg, eligible, pos, stat_col = col)
+        }
       }
     }
     cat("Shrink-eligible players this run:", length(shrink_players),
@@ -660,6 +692,32 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
       }
     }
 
+    # Weekly per-stat MEANS (raw components -- receptions, yards, TDs,
+    # INTs), same weighting/shrinkage/matchup-mult treatment as `med`
+    # above, just one column at a time instead of the blended
+    # fantasy_points_ppr total -- and mean rather than median, see
+    # weighted_mean()'s comment for why median silently loses touchdown
+    # value here. Powers Redraft's custom scoring settings: the frontend
+    # recomputes a fantasy-point total from these raw components under
+    # the user's own PPR/TE-premium/passing-TD/INT choices, rather than
+    # being stuck with the single fixed-scoring `median` baked in here.
+    relevant_weekly_stats <- STAT_COLS_BY_POSITION[[pos]]
+    weekly_scoring_stats <- if (!is.null(relevant_weekly_stats)) {
+      setNames(lapply(relevant_weekly_stats, function(col) {
+        col_x <- d[[col]]
+        stat_val <- if (shrink_this_player && !is.null(stat_pools[[pos]][[col]])) {
+          base <- stat_pools[[pos]][[col]]
+          shrunk_mean(col_x, wm, base$pool, base$weights)
+        } else {
+          weighted_mean(col_x, wm)
+        }
+        round(stat_val * mult, 2)
+      }), relevant_weekly_stats)
+    } else {
+      list()
+    }
+    weekly_scoring_stats_json <- jsonlite::toJSON(weekly_scoring_stats, auto_unbox = TRUE)
+
     rows[[p]] <- data.frame(
       player_name = p, position = pos, team = team, opponent = opp, games = n,
       touches_per_game = round(mean(d$touches), 1),
@@ -670,6 +728,7 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
       floor = round(fl, 1),
       median = round(med, 1),
       ceiling = round(cei, 1),
+      weekly_scoring_stats_json = weekly_scoring_stats_json,
       # Season floor/ceiling use plain 10th/90th percentile of the 30,000-draw
       # simulated distribution directly -- NOT the calibrated FLOOR_Q/CEIL_Q,
       # which correct for small-sample bias in a *historical* game log. The
@@ -728,6 +787,11 @@ export_for_supabase <- function(df, target_season = TARGET_SEASON, week = NULL) 
   df$ceiling <- ifelse(is_out, 0, df$ceiling)
 
   redraft <- df[order(-df$median), ]
+  # OUT players get their fixed-scoring projection zeroed above -- the raw
+  # component stats that power custom scoring need the same override,
+  # otherwise a user's own PPR/TD/INT settings would reconstruct a
+  # nonzero point total for a player the site otherwise shows as 0.
+  redraft_scoring_stats <- ifelse(redraft$player_name %in% out_players, "{}", redraft$weekly_scoring_stats_json)
   write.csv(data.frame(
     season = season, week = week, rank = seq_len(nrow(redraft)),
     player_name = redraft$player_name, position = redraft$position,
@@ -735,6 +799,7 @@ export_for_supabase <- function(df, target_season = TARGET_SEASON, week = NULL) 
     matchup_mult = redraft$matchup_mult,
     trend = redraft$trend,
     sample_confidence = ifelse(redraft$shrunk, "building", "established"),
+    scoring_stats = redraft_scoring_stats,
     notes = ifelse(redraft$player_name %in% out_players, "OUT", "")
   ), "upload_redraft_rankings.csv", row.names = FALSE)
 

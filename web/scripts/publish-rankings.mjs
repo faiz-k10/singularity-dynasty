@@ -80,6 +80,7 @@ const tables = [
       matchup_mult: r.matchup_mult === "" ? null : Number(r.matchup_mult),
       trend: r.trend,
       sample_confidence: r.sample_confidence,
+      scoring_stats: r.scoring_stats ? JSON.parse(r.scoring_stats) : null,
       notes: r.notes || null,
     }),
   },

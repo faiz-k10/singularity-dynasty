@@ -4,7 +4,7 @@ import { resolveSort, sortRows } from "@/lib/sortLink";
 import ThemeToggle from "../../ThemeToggle";
 import InteractiveScript from "../../InteractiveScript";
 import ExportCsvButton from "../ExportCsvButton";
-import RankingsSearch from "../RankingsSearch";
+import RedraftRankingsClient from "./RedraftRankingsClient";
 
 export const metadata = {
   title: "Redraft Weekly Rankings — Singularity Dynasty",
@@ -51,7 +51,7 @@ export default async function RedraftRankingsPage({ searchParams }) {
     const { data } = await supabase
       .from("redraft_rankings")
       .select(
-        "rank, player_name, position, team, opponent, projection, matchup_mult, trend, sample_confidence, notes"
+        "rank, player_name, position, team, opponent, projection, matchup_mult, trend, sample_confidence, scoring_stats, notes"
       )
       .eq("season", latest.season)
       .eq("week", latest.week)
@@ -146,8 +146,8 @@ export default async function RedraftRankingsPage({ searchParams }) {
               </div>
             </div>
 
-            <RankingsSearch
-              rows={overallRows}
+            <RedraftRankingsClient
+              rawRows={overallRows}
               sortKey={sortKey}
               sortDir={sortDir}
               currentParams={params}
