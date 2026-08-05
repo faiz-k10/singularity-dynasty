@@ -24,19 +24,48 @@ function StatDetailRow({ row, colSpan }) {
               <th>Floor</th>
               <th>Median</th>
               <th>Ceiling</th>
+              <th>Range</th>
             </tr>
           </thead>
           <tbody>
-            {entries.map(([key, label]) => (
-              <tr key={key}>
-                <td>{label}</td>
-                <td className="mono">{ranges[key].floor}</td>
-                <td className="mono">
-                  <strong>{ranges[key].median}</strong>
-                </td>
-                <td className="mono">{ranges[key].ceiling}</td>
-              </tr>
-            ))}
+            {entries.map(([key, label]) => {
+              // Normalized against this stat's OWN ceiling (not shared
+              // across rows) -- rushing_yards (~1800) and rushing_tds
+              // (~12) are wildly different scales, so each bar has to
+              // use its own row as the 0-100% reference, same idea as
+              // the main table's Range column but per-row instead of
+              // per-column-of-players.
+              const { floor, median, ceiling } = ranges[key];
+              const max = ceiling || 1;
+              return (
+                <tr key={key}>
+                  <td>{label}</td>
+                  <td className="mono">{floor}</td>
+                  <td className="mono">
+                    <strong>{median}</strong>
+                  </td>
+                  <td className="mono">{ceiling}</td>
+                  <td>
+                    <div className="sim-bar-track">
+                      <div
+                        className="sim-bar-typical"
+                        style={{
+                          left: `${(floor / max) * 100}%`,
+                          width: `${((median - floor) / max) * 100}%`,
+                        }}
+                      ></div>
+                      <div
+                        className="sim-bar-upside"
+                        style={{
+                          left: `${(median / max) * 100}%`,
+                          width: `${((ceiling - median) / max) * 100}%`,
+                        }}
+                      ></div>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </td>
