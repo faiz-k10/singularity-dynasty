@@ -3,7 +3,7 @@
 import { useId, useMemo, useState } from "react";
 
 const Z90 = 1.2816; // standard-normal z-score at the 90th percentile
-const SAMPLES = 48;
+const SAMPLES = 90; // line-segment resolution only -- the two-piece shape (and its kink at the median when sigmaLow != sigmaHigh) is unchanged by this
 const WIDTH = 300;
 const HEIGHT = 128;
 const PAD_X = 6;

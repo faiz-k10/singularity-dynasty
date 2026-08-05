@@ -992,7 +992,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .stat-detail-table td:first-child{text-align:left;}
 .stat-detail-table tr:last-child td{border-bottom:none;}
 
-.stat-detail-cols{display:flex; gap:28px; flex-wrap:wrap; align-items:flex-start; max-width:600px;}
+.stat-detail-cols{display:flex; gap:28px; flex-wrap:wrap; align-items:flex-start;}
 
 .stat-row-trigger{all:unset; cursor:pointer; display:inline-block;}
 .stat-row-trigger:hover{color:var(--neon-blue);}
@@ -1004,7 +1004,7 @@ tr.stat-row-selected .stat-row-trigger{color:var(--horizon-gold);}
    clearing it. Blue/gold split matches .sim-bar-typical/.sim-bar-upside,
    the same below-median/above-median color language used everywhere else
    in this table. */
-.outcome-curve{flex:1 1 220px; min-width:200px; max-width:320px;}
+.outcome-curve{flex:1 1 320px; min-width:260px; max-width:520px;}
 .outcome-curve-label{
   font-family:var(--font-ibm-plex-mono), monospace; font-size:10px; letter-spacing:0.08em;
   text-transform:uppercase; color:var(--star-dim); margin-bottom:4px;
