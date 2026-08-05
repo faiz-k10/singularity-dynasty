@@ -9,6 +9,11 @@ import STAT_LABELS from "./statLabels";
 import OutcomeCurve from "./OutcomeCurve";
 
 const SEASON_KEY = "__season__";
+// The bust/boom bar's own 20%-below / 20%-above language, expressed as
+// the exact point values that land on -- lets a click on either segment
+// jump the curve straight to that boundary instead of just picking
+// "season mode" at some arbitrary default.
+const SEASON_BOUNDARY_MULT = { bust: 0.8, median: 1, boom: 1.2 };
 
 // Detail row unfolded below a player when their name is clicked -- one
 // open at a time (clicking a different player folds this one and opens
@@ -18,68 +23,86 @@ function StatDetailRow({ row, colSpan }) {
   const entries = STAT_LABELS.filter(([key]) => ranges && ranges[key]);
   const hasBoomBust = row.bust_pct != null && row.normal_pct != null && row.boom_pct != null;
   const showCurve = entries.length > 0;
-  // Clicking a stat row -- or the season boom/bust bar above it -- drives
-  // the odds curve. Defaults to the first available stat so the curve is
-  // never empty on open.
+  // Clicking a stat row -- or a segment/legend chip on the season bust/
+  // normal/boom bar above it -- drives the odds curve. Defaults to the
+  // first available stat so the curve is never empty on open.
   const [selectedKey, setSelectedKey] = useState(entries[0]?.[0]);
-  const selectedTarget =
-    selectedKey === SEASON_KEY
-      ? { label: "Fantasy Points", floor: row.floor, median: row.median, ceiling: row.ceiling }
-      : (() => {
-          const match = entries.find(([key]) => key === selectedKey) || entries[0];
-          return match ? { label: match[1], ...ranges[match[0]] } : null;
-        })();
+  const [seasonBoundary, setSeasonBoundary] = useState("median");
+  const isSeasonSelected = selectedKey === SEASON_KEY;
+
+  function selectSeasonBoundary(boundary) {
+    setSelectedKey(SEASON_KEY);
+    setSeasonBoundary(boundary);
+  }
+
+  const selectedTarget = isSeasonSelected
+    ? { label: "Fantasy Points", floor: row.floor, median: row.median, ceiling: row.ceiling }
+    : (() => {
+        const match = entries.find(([key]) => key === selectedKey) || entries[0];
+        return match ? { label: match[1], ...ranges[match[0]] } : null;
+      })();
+  // Only meaningful for the season target -- a fresh mount per boundary
+  // (via the OutcomeCurve `key` below) is what makes clicking bust, then
+  // boom, then bust again each actually move the slider.
+  const seasonInitialThreshold = row.median * SEASON_BOUNDARY_MULT[seasonBoundary];
 
   if (entries.length === 0 && !hasBoomBust) return null;
-
-  const boomBustInner = (
-    <>
-      <div className="boom-bust-label">
-        Season outcome spread — how often this player's own
-        simulated seasons land 20%+ below (bust) or above (boom)
-        their median
-      </div>
-      <div className="boom-bust-track">
-        <div
-          className="boom-bust-seg bust"
-          style={{ width: `${row.bust_pct}%` }}
-          title={`Bust: ${row.bust_pct}%`}
-        ></div>
-        <div
-          className="boom-bust-seg normal"
-          style={{ width: `${row.normal_pct}%` }}
-          title={`Normal: ${row.normal_pct}%`}
-        ></div>
-        <div
-          className="boom-bust-seg boom"
-          style={{ width: `${row.boom_pct}%` }}
-          title={`Boom: ${row.boom_pct}%`}
-        ></div>
-      </div>
-      <div className="boom-bust-legend">
-        <span><i className="dot bust"></i>{row.bust_pct}% bust</span>
-        <span><i className="dot normal"></i>{row.normal_pct}% normal</span>
-        <span><i className="dot boom"></i>{row.boom_pct}% boom</span>
-      </div>
-    </>
-  );
 
   return (
     <tr className="stat-detail-row">
       <td colSpan={colSpan}>
         {hasBoomBust && (
-          showCurve ? (
-            <button
-              type="button"
-              className={`boom-bust-trigger ${selectedKey === SEASON_KEY ? "is-selected" : ""}`}
-              onClick={() => setSelectedKey(SEASON_KEY)}
-              aria-pressed={selectedKey === SEASON_KEY}
-            >
-              {boomBustInner}
-            </button>
-          ) : (
-            <div className="boom-bust-block">{boomBustInner}</div>
-          )
+          <div className="boom-bust-block">
+            <div className="boom-bust-label">
+              Season outcome spread — how often this player's own
+              simulated seasons land 20%+ below (bust) or above (boom)
+              their median
+            </div>
+            <div className="boom-bust-track">
+              {["bust", "normal", "boom"].map((zone) => {
+                const pct = row[`${zone}_pct`];
+                const boundary = zone === "normal" ? "median" : zone;
+                const isActive = showCurve && isSeasonSelected && seasonBoundary === boundary;
+                const commonProps = {
+                  className: `boom-bust-seg ${zone} ${isActive ? "is-active" : ""}`,
+                  style: { width: `${pct}%` },
+                  title: `${zone[0].toUpperCase()}${zone.slice(1)}: ${pct}%`,
+                };
+                return showCurve ? (
+                  <button
+                    key={zone}
+                    type="button"
+                    {...commonProps}
+                    onClick={() => selectSeasonBoundary(boundary)}
+                    aria-pressed={isActive}
+                  ></button>
+                ) : (
+                  <div key={zone} {...commonProps}></div>
+                );
+              })}
+            </div>
+            <div className="boom-bust-legend">
+              {["bust", "normal", "boom"].map((zone) => {
+                const pct = row[`${zone}_pct`];
+                const boundary = zone === "normal" ? "median" : zone;
+                const isActive = showCurve && isSeasonSelected && seasonBoundary === boundary;
+                const inner = <><i className={`dot ${zone}`}></i>{pct}% {zone}</>;
+                return showCurve ? (
+                  <button
+                    key={zone}
+                    type="button"
+                    className={`boom-bust-legend-btn ${isActive ? "is-active" : ""}`}
+                    onClick={() => selectSeasonBoundary(boundary)}
+                    aria-pressed={isActive}
+                  >
+                    {inner}
+                  </button>
+                ) : (
+                  <span key={zone}>{inner}</span>
+                );
+              })}
+            </div>
+          </div>
         )}
         {showCurve && (
         <div className="stat-detail-cols">
@@ -120,11 +143,12 @@ function StatDetailRow({ row, colSpan }) {
           </table>
           {selectedTarget && (
             <OutcomeCurve
-              key={selectedKey}
+              key={isSeasonSelected ? `season-${seasonBoundary}` : selectedKey}
               label={selectedTarget.label}
               floor={selectedTarget.floor}
               median={selectedTarget.median}
               ceiling={selectedTarget.ceiling}
+              initialThreshold={isSeasonSelected ? seasonInitialThreshold : undefined}
             />
           )}
         </div>

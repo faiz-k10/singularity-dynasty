@@ -1051,10 +1051,20 @@ tr.stat-row-selected .stat-row-trigger{color:var(--horizon-gold);}
   display:flex; width:100%; height:10px; border-radius:5px; overflow:hidden;
   background:var(--void-panel-2); border:1px solid var(--line);
 }
-.boom-bust-seg{height:100%; min-width:0;}
+.boom-bust-seg{
+  height:100%; min-width:0; border:none; padding:0; font:inherit;
+  transition:filter 0.15s var(--ease), box-shadow 0.15s var(--ease);
+}
 .boom-bust-seg.bust{background:rgba(var(--down-rgb),0.55);}
 .boom-bust-seg.normal{background:rgba(var(--star-dim-rgb),0.4);}
 .boom-bust-seg.boom{background:rgba(var(--up-rgb),0.6);}
+/* Only <button> segments (a stat table -- and curve -- is on screen) get
+   the pointer/hover/active treatment; the plain-<div> fallback (no table,
+   nothing for a click to drive) is untouched by these three rules since
+   it's never given the is-active class or a hover-able button element. */
+button.boom-bust-seg{cursor:pointer;}
+button.boom-bust-seg:hover{filter:brightness(1.3);}
+.boom-bust-seg.is-active{box-shadow:inset 0 0 0 2px var(--horizon-gold); filter:brightness(1.3);}
 .boom-bust-legend{
   display:flex; gap:16px; margin-top:8px; font-family:var(--font-ibm-plex-mono), monospace;
   font-size:11px; color:var(--star); justify-content:center;
@@ -1066,23 +1076,12 @@ tr.stat-row-selected .stat-row-trigger{color:var(--horizon-gold);}
 .boom-bust-legend .dot.normal{background:rgba(var(--star-dim-rgb),0.85);}
 .boom-bust-legend .dot.boom{background:rgba(var(--up-rgb),0.85);}
 
-/* Interactive variant of .boom-bust-block -- shown instead of it whenever
-   a stat table (and odds curve) is also on screen, so clicking the season
-   spread picks "Fantasy Points" as the curve's subject, the same way a
-   stat row does. Fully self-contained box model (not layered on top of
-   .boom-bust-block) so `all:unset` can't fight another rule over which
-   one wins the cascade. */
-.boom-bust-trigger{
-  all:unset; box-sizing:border-box; display:block; width:100%; max-width:600px; margin:0 auto 14px;
-  cursor:pointer; border-radius:10px; padding:10px;
-  transition:background 0.15s var(--ease), box-shadow 0.15s var(--ease);
-}
-.boom-bust-trigger:hover{background:var(--void-panel);}
-.boom-bust-trigger.is-selected{
-  background:var(--void-panel);
-  box-shadow:inset 0 0 0 1px rgba(var(--matchup-neutral-rgb),0.5);
-}
-.boom-bust-trigger.is-selected .boom-bust-label{color:var(--horizon-gold);}
+/* Legend doubles as a (bigger, easier-to-hit) click target for the same
+   bust/normal/boom boundaries as the bar segments above -- picking either
+   jumps the odds curve straight to that boundary's exact point value. */
+.boom-bust-legend-btn{all:unset; cursor:pointer; display:inline-flex; align-items:center;}
+.boom-bust-legend-btn:hover{color:var(--neon-blue);}
+.boom-bust-legend-btn.is-active{color:var(--horizon-gold);}
 
 /* ---------- COMPARE PLAYERS ---------- */
 .compare-form{

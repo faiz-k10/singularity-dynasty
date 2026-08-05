@@ -49,13 +49,13 @@ function buildOutcomeModel(floor, median, ceiling) {
   return { cdf, pdf, min, max };
 }
 
-export default function OutcomeCurve({ label, floor, median, ceiling }) {
+export default function OutcomeCurve({ label, floor, median, ceiling, initialThreshold }) {
   const uid = useId();
   const model = useMemo(
     () => buildOutcomeModel(floor, median, ceiling),
     [floor, median, ceiling]
   );
-  const [threshold, setThreshold] = useState(median);
+  const [threshold, setThreshold] = useState(initialThreshold ?? median);
 
   const plotW = WIDTH - PAD_X * 2;
   const plotH = HEIGHT - PAD_TOP - PAD_BOTTOM;
