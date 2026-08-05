@@ -218,6 +218,36 @@ body::before{
 :root[data-theme="light"] .theme-toggle .icon-sun{display:block;}
 :root[data-theme="light"] .theme-toggle .icon-moon{display:none;}
 
+/* ---------- TOP NAV BAR (wide viewports — replaces the hamburger; the
+   hamburger + radial-menu below remain as the mobile/tablet fallback where
+   a full link row doesn't fit next to the brandmark pill and theme toggle) ---------- */
+.top-nav-wrap{position:fixed; top:44px; left:0; right:0; z-index:80; display:flex; justify-content:center; pointer-events:none;}
+.top-nav-bar{
+  pointer-events:auto;
+  display:flex; align-items:center; gap:28px;
+  background:rgba(var(--scrim-rgb),0.78); backdrop-filter:blur(10px);
+  border:1px solid var(--line); border-radius:30px;
+  padding:13px 16px 13px 28px;
+  box-shadow:0 10px 24px rgba(var(--shadow-rgb),0.25);
+}
+.top-nav-bar a{
+  font-family:var(--font-space-grotesk), sans-serif; font-size:13.5px; font-weight:600;
+  color:var(--star-dim); text-decoration:none; letter-spacing:0.01em; white-space:nowrap;
+  transition:color .2s ease;
+}
+.top-nav-bar a:hover, .top-nav-bar a.active{color:var(--star);}
+.top-nav-bar a.tn-cta{
+  background:linear-gradient(135deg, var(--horizon-gold), var(--horizon));
+  color:#1A0D05; padding:9px 20px; border-radius:20px; font-weight:700;
+}
+.top-nav-bar a.tn-cta:hover{box-shadow:0 6px 18px rgba(255,122,69,0.35); color:#1A0D05;}
+@media (max-width:1179px){
+  .top-nav-wrap{display:none;}
+}
+@media (min-width:1180px){
+  .menu-btn{display:none;}
+}
+
 .radial-menu{
   position:fixed; inset:0; z-index:85;
   background:radial-gradient(circle at 82% 8%, rgba(255,122,69,0.16), transparent 45%), var(--void);

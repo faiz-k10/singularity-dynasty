@@ -69,6 +69,22 @@ export default async function Home() {
         ☰
       </button>
 
+      <div className="top-nav-wrap">
+        <nav className="top-nav-bar" id="topNavBar" aria-label="Primary">
+          <a href="#hero">Signal</a>
+          <a href="#tools">Tools</a>
+          <a href="#pricing">Pricing</a>
+          <a href="#feed">Feed</a>
+          <a href="#playground">Play</a>
+          <a href={user ? "/account" : "/login"}>
+            {user ? "Account" : "Sign In"}
+          </a>
+          <a href="#pricing" className="tn-cta">
+            Get Started
+          </a>
+        </nav>
+      </div>
+
       <div className="radial-menu" id="radialMenu">
         <nav>
           <a href="#hero">Signal</a>

@@ -66,14 +66,20 @@ export default function InteractiveScript({ tickerPlayers } = {}) {
       );
     }
 
-    /* ---- orbit side-nav: smooth scroll + scrollspy ---- */
+    /* ---- orbit side-nav + top nav bar: smooth scroll + scrollspy ---- */
     const orbitDots = document.querySelectorAll(".orbit-dot");
-    orbitDots.forEach((dot) => {
-      dot.addEventListener(
+    const topNavLinks = document.querySelectorAll(
+      ".top-nav-bar a[href^='#']:not(.tn-cta)"
+    );
+    const spyLinks = document.querySelectorAll(
+      ".orbit-dot, .top-nav-bar a[href^='#']"
+    );
+    spyLinks.forEach((link) => {
+      link.addEventListener(
         "click",
         (e) => {
           e.preventDefault();
-          const target = document.querySelector(dot.getAttribute("href"));
+          const target = document.querySelector(link.getAttribute("href"));
           if (target) {
             target.scrollIntoView({
               behavior: reducedMotion ? "auto" : "smooth",
@@ -97,6 +103,12 @@ export default function InteractiveScript({ tickerPlayers } = {}) {
                 dot.classList.toggle(
                   "active",
                   dot.getAttribute("href") === "#" + id
+                );
+              });
+              topNavLinks.forEach((link) => {
+                link.classList.toggle(
+                  "active",
+                  link.getAttribute("href") === "#" + id
                 );
               });
             }
