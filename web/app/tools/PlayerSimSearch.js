@@ -9,6 +9,7 @@ import TeamBadge from "./TeamBadge";
 import STAT_LABELS from "./statLabels";
 import OutcomeCurve from "./OutcomeCurve";
 import PositionPercentile from "./PositionPercentile";
+import StatRadar from "./StatRadar";
 
 // Detail row unfolded below a player when their name is clicked -- one
 // open at a time (clicking a different player folds this one and opens
@@ -20,22 +21,14 @@ function StatDetailRow({ row, colSpan, positionPeers }) {
   // to the first available stat so the curve is never empty on open.
   const [selectedKey, setSelectedKey] = useState(entries[0]?.[0]);
   const selectedEntry = entries.find(([key]) => key === selectedKey) || entries[0];
+  const radarEntries = entries.map(([key, label]) => [key, label, row.statPercentiles?.[key]]);
 
   if (entries.length === 0) return null;
 
   return (
     <tr className="stat-detail-row">
       <td colSpan={colSpan}>
-        <PositionPercentile
-          playerName={row.player_name}
-          position={row.position}
-          poolSize={row.positionPoolSize}
-          floorPctile={row.floorPctile}
-          medianPctile={row.medianPctile}
-          ceilingPctile={row.ceilingPctile}
-          peers={positionPeers}
-        />
-        <div className="stat-detail-cols">
+        <div className="stat-detail-grid">
           <table className="stat-detail-table">
             <thead>
               <tr>
@@ -77,6 +70,16 @@ function StatDetailRow({ row, colSpan, positionPeers }) {
             floor={ranges[selectedEntry[0]].floor}
             median={ranges[selectedEntry[0]].median}
             ceiling={ranges[selectedEntry[0]].ceiling}
+          />
+          <StatRadar entries={radarEntries} selectedKey={selectedKey} />
+          <PositionPercentile
+            playerName={row.player_name}
+            position={row.position}
+            poolSize={row.positionPoolSize}
+            floorPctile={row.floorPctile}
+            medianPctile={row.medianPctile}
+            ceilingPctile={row.ceilingPctile}
+            peers={positionPeers}
           />
         </div>
       </td>

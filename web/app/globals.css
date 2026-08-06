@@ -984,7 +984,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .rankings-table tr.row-expandable:hover td{background:rgba(var(--neon-blue-rgb),0.08);}
 .stat-detail-row td{background:var(--void-panel-2); padding:14px 18px;}
 
-/* Percentile-rank-vs-position, shown above the per-stat breakdown below --
+/* Percentile-rank-vs-position, bottom-right of the 2x2 grid below --
    distinct from .sim-bar-track (this player's own floor-to-ceiling
    spread): these three sliders are 0-100th percentile against every other
    player at the same position, so the same number reads very differently
@@ -992,7 +992,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    PositionPercentile.js's comp-finder -- styled like .outcome-curve-slider
    (track + gold thumb, no fill gradient) for the same drag-affordance
    language used everywhere else in this table. */
-.position-percentile{padding-bottom:16px; margin-bottom:16px; border-bottom:1px dashed var(--line);}
+.position-percentile{grid-area:sliders; min-width:0;}
 .position-percentile-head{
   font-family:var(--font-ibm-plex-mono), monospace; font-size:10px; letter-spacing:0.08em;
   text-transform:uppercase; color:var(--star-dim); margin-bottom:10px;
@@ -1019,7 +1019,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 /* Explicit text-align throughout -- this table is nested inside a
    .rankings-table cell, so it's still a CSS descendant of .rankings-table
    and would otherwise inherit that table's td{text-align:center} rule. */
-.stat-detail-table{max-width:600px; border-collapse:collapse; font-size:13px;}
+.stat-detail-table{grid-area:table; min-width:0; border-collapse:collapse; font-size:13px;}
 .stat-detail-table th{
   text-align:left; font-family:var(--font-ibm-plex-mono), monospace; font-size:10px; letter-spacing:0.06em;
   text-transform:uppercase; color:var(--star-dim); padding:6px 10px; border-bottom:1px solid var(--line);
@@ -1029,7 +1029,26 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .stat-detail-table td:first-child{text-align:left;}
 .stat-detail-table tr:last-child td{border-bottom:none;}
 
-.stat-detail-cols{display:flex; gap:28px; flex-wrap:wrap; align-items:flex-start;}
+/* Table / curve / radar / sliders as a fixed 2x2: table top-left, curve
+   top-right, radar bottom-left, sliders bottom-right -- table and radar
+   share the per-stat axis (numbers vs. shape), curve and sliders are the
+   two draggable elements, so pairing them left/right and top/bottom
+   groups by "what it's about" on one axis and "how you use it" on the
+   other. Collapses to a single stacked column, same reading order, below
+   860px where two real columns stop having room to breathe. */
+.stat-detail-grid{
+  display:grid; grid-template-columns:1fr 1fr;
+  grid-template-areas:
+    "table curve"
+    "radar sliders";
+  column-gap:32px; row-gap:24px; align-items:start;
+}
+@media (max-width:860px){
+  .stat-detail-grid{
+    grid-template-columns:1fr;
+    grid-template-areas:"table" "curve" "radar" "sliders";
+  }
+}
 
 .stat-row-trigger{all:unset; cursor:pointer; display:inline-block;}
 .stat-row-trigger:hover{color:var(--neon-blue);}
@@ -1041,7 +1060,7 @@ tr.stat-row-selected .stat-row-trigger{color:var(--horizon-gold);}
    clearing it. Blue/gold split matches .sim-bar-typical/.sim-bar-upside,
    the same below-median/above-median color language used everywhere else
    in this table. */
-.outcome-curve{flex:1 1 320px; min-width:260px; max-width:520px;}
+.outcome-curve{grid-area:curve; min-width:0;}
 .outcome-curve-label{
   font-family:var(--font-ibm-plex-mono), monospace; font-size:10px; letter-spacing:0.08em;
   text-transform:uppercase; color:var(--star-dim); margin-bottom:4px;
@@ -1073,6 +1092,29 @@ tr.stat-row-selected .stat-row-trigger{color:var(--horizon-gold);}
 .outcome-curve-readout strong{
   color:var(--horizon-gold); font-family:var(--font-ibm-plex-mono), monospace; font-size:14px;
 }
+
+/* Per-stat percentile shape -- third panel beside the stat table and
+   curve, same row/column data as the table but plotted as percentile vs.
+   position instead of raw numbers, so two players with similar season
+   totals but different usage (big-play vs. possession, say) show up as
+   visibly different polygons. Blue fill/gold outline matches the
+   below/above-median language used by .sim-bar-typical/.sim-bar-upside
+   and the curve's own gradient right next to it. The active point/label
+   (whichever stat row is selected, driving the curve) picks up the same
+   gold used for .stat-row-selected. */
+.stat-radar{grid-area:radar; min-width:0; max-width:340px;}
+.stat-radar-label{
+  font-family:var(--font-ibm-plex-mono), monospace; font-size:10px; letter-spacing:0.08em;
+  text-transform:uppercase; color:var(--star-dim); margin-bottom:4px;
+}
+.stat-radar-svg{width:100%; display:block;}
+.radar-ring{fill:none; stroke:var(--line); stroke-width:1;}
+.radar-spoke{stroke:var(--line); stroke-width:1;}
+.radar-shape{fill:rgba(var(--neon-blue-rgb),0.18); stroke:var(--horizon-gold); stroke-width:1.5; stroke-linejoin:round;}
+.radar-point{fill:var(--horizon-gold);}
+.radar-point-active{fill:var(--star); stroke:var(--horizon-gold); stroke-width:2;}
+.radar-axis-label{font-family:var(--font-ibm-plex-mono), monospace; font-size:9.5px; fill:var(--star-dim);}
+.radar-axis-label-active{fill:var(--horizon-gold); font-weight:700;}
 
 /* ---------- COMPARE PLAYERS ---------- */
 .compare-form{

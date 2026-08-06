@@ -118,10 +118,30 @@ export default async function PlayerSimulationsPage({ searchParams }) {
     const lower = pool.filter((v) => v < value).length;
     return Math.round((lower / (pool.length - 1)) * 100);
   }
+  // Same idea, per individual stat (rushing yards, receptions, etc.) for
+  // the radar chart in the expanded row -- one pool per position+stat key,
+  // built from each player's median value for that stat (the radar's
+  // single representative point per axis, same role median plays for the
+  // three season-total sliders above).
+  const statPoolByPos = {};
+  for (const row of sortedSims) {
+    if (!row.stat_ranges) continue;
+    const pool = (statPoolByPos[row.position] ??= {});
+    for (const [key, range] of Object.entries(row.stat_ranges)) {
+      (pool[key] ??= []).push(range.median);
+    }
+  }
   const simsWithHeat = sortedSims.map((row) => {
     const r = medianRangeByPos[row.position];
     const heat = r && r.max > r.min ? (row.median - r.min) / (r.max - r.min) : 0;
     const pool = statsByPos[row.position];
+    const statPool = statPoolByPos[row.position];
+    const statPercentiles = {};
+    if (row.stat_ranges) {
+      for (const [key, range] of Object.entries(row.stat_ranges)) {
+        statPercentiles[key] = percentileRank(range.median, statPool?.[key]);
+      }
+    }
     return {
       ...row,
       heat,
@@ -129,6 +149,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
       medianPctile: pool ? percentileRank(row.median, pool.median) : null,
       ceilingPctile: pool ? percentileRank(row.ceiling, pool.ceiling) : null,
       positionPoolSize: pool ? pool.floor.length : null,
+      statPercentiles,
     };
   });
   // Percentile profile of every player at each position, for
