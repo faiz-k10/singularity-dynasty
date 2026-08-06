@@ -131,6 +131,19 @@ export default async function PlayerSimulationsPage({ searchParams }) {
       positionPoolSize: pool ? pool.floor.length : null,
     };
   });
+  // Percentile profile of every player at each position, for
+  // PositionPercentile's drag-to-find-a-comp sliders -- built once here
+  // instead of shipping the whole rows array to the client a second time.
+  const positionPeers = {};
+  for (const row of simsWithHeat) {
+    if (row.floorPctile == null) continue;
+    (positionPeers[row.position] ??= []).push({
+      name: row.player_name,
+      floorPctile: row.floorPctile,
+      medianPctile: row.medianPctile,
+      ceilingPctile: row.ceilingPctile,
+    });
+  }
   // CSV export stays in points-per-game terms regardless of the on-page
   // toggle -- it's baked into server-rendered HTML at request time (see
   // ExportCsvButton's comment), not reactive to PlayerSimSearch's client
@@ -195,6 +208,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
               positions={positions}
               maxCeiling={maxCeiling}
               gamesPerSeason={GAMES_PER_SEASON}
+              positionPeers={positionPeers}
             />
 
             {isTeaser && (

@@ -13,7 +13,7 @@ import PositionPercentile from "./PositionPercentile";
 // Detail row unfolded below a player when their name is clicked -- one
 // open at a time (clicking a different player folds this one and opens
 // theirs). colSpan must match the number of columns in the main row.
-function StatDetailRow({ row, colSpan }) {
+function StatDetailRow({ row, colSpan, positionPeers }) {
   const ranges = row.stat_ranges;
   const entries = STAT_LABELS.filter(([key]) => ranges && ranges[key]);
   // Clicking a stat row drives the odds curve beside the table -- defaults
@@ -27,11 +27,13 @@ function StatDetailRow({ row, colSpan }) {
     <tr className="stat-detail-row">
       <td colSpan={colSpan}>
         <PositionPercentile
+          playerName={row.player_name}
           position={row.position}
           poolSize={row.positionPoolSize}
           floorPctile={row.floorPctile}
           medianPctile={row.medianPctile}
           ceilingPctile={row.ceilingPctile}
+          peers={positionPeers}
         />
         <div className="stat-detail-cols">
           <table className="stat-detail-table">
@@ -95,7 +97,7 @@ function formatStat(value, unit, gamesPerSeason) {
 // Same pattern as RankingsSearch (Redraft) / BestBallSearch: position-pill
 // filter + player name search, both client-side. Sorting stays
 // server-driven via the existing URL-param mechanism.
-export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams, positions, maxCeiling, gamesPerSeason }) {
+export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams, positions, maxCeiling, gamesPerSeason, positionPeers }) {
   const showPositionFilter = Array.isArray(positions) && positions.length > 0;
   const [selected, setSelected] = useState(positions || []);
   const [query, setQuery] = useState("");
@@ -265,7 +267,13 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                     </div>
                   </td>
                 </tr>
-                {isExpanded && <StatDetailRow row={row} colSpan={7} />}
+                {isExpanded && (
+                  <StatDetailRow
+                    row={row}
+                    colSpan={7}
+                    positionPeers={positionPeers?.[row.position]}
+                  />
+                )}
                 </Fragment>
                 );
               })}

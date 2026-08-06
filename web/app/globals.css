@@ -986,10 +986,12 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 
 /* Percentile-rank-vs-position, shown above the per-stat breakdown below --
    distinct from .sim-bar-track (this player's own floor-to-ceiling
-   spread): these three bars are 0-100th percentile against every other
+   spread): these three sliders are 0-100th percentile against every other
    player at the same position, so the same number reads very differently
-   in a deep WR pool vs. a shallow TE one. Same blue/gold language as
-   .sim-bar-typical/.sim-bar-upside just beside it. */
+   in a deep WR pool vs. a shallow TE one. Draggable -- see
+   PositionPercentile.js's comp-finder -- styled like .outcome-curve-slider
+   (track + gold thumb, no fill gradient) for the same drag-affordance
+   language used everywhere else in this table. */
 .position-percentile{padding-bottom:16px; margin-bottom:16px; border-bottom:1px dashed var(--line);}
 .position-percentile-head{
   font-family:var(--font-ibm-plex-mono), monospace; font-size:10px; letter-spacing:0.08em;
@@ -998,15 +1000,22 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .pctile-row{display:flex; align-items:center; gap:12px; margin-bottom:8px;}
 .pctile-row:last-child{margin-bottom:0;}
 .pctile-label{width:52px; flex-shrink:0; font-size:12.5px; color:var(--star-dim);}
-.pctile-track{position:relative; flex:1 1 auto; max-width:280px; height:6px; border-radius:3px; background:var(--void-panel-2);}
-.pctile-fill{position:absolute; top:0; left:0; bottom:0; border-radius:3px; background:var(--neon-blue-dim); opacity:0.55;}
-.pctile-marker{
-  position:absolute; top:50%; width:10px; height:10px; border-radius:50%;
-  background:var(--horizon-gold); border:2px solid var(--void-panel-2);
-  transform:translate(-50%, -50%);
+.pctile-slider{
+  -webkit-appearance:none; appearance:none; flex:1 1 auto; max-width:280px; height:6px;
+  margin:0; background:var(--void-panel-2); border-radius:3px; outline:none; cursor:pointer;
+}
+.pctile-slider::-webkit-slider-thumb{
+  -webkit-appearance:none; width:14px; height:14px; border-radius:50%;
+  background:var(--horizon-gold); border:2px solid var(--void-panel-2); cursor:pointer;
+}
+.pctile-slider::-moz-range-thumb{
+  width:14px; height:14px; border-radius:50%; border:2px solid var(--void-panel-2);
+  background:var(--horizon-gold); cursor:pointer;
 }
 .pctile-value{width:40px; flex-shrink:0; text-align:right; font-family:var(--font-ibm-plex-mono), monospace; font-size:12.5px; color:var(--star);}
-@media (max-width:640px){.pctile-track{max-width:none;}}
+.pctile-match{margin-top:12px; font-size:12px; color:var(--star-dim);}
+.pctile-match strong{color:var(--horizon-gold); font-family:var(--font-space-grotesk), sans-serif; font-weight:600;}
+@media (max-width:640px){.pctile-slider{max-width:none;}}
 /* Explicit text-align throughout -- this table is nested inside a
    .rankings-table cell, so it's still a CSS descendant of .rankings-table
    and would otherwise inherit that table's td{text-align:center} rule. */
