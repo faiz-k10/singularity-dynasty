@@ -92,23 +92,23 @@ export default async function PlayerSimulationsPage({ searchParams }) {
   // and every TE look "cold" regardless of how they actually rank among
   // their own position.
   const medianRangeByPos = {};
-  // Percentile rank vs. position reuses the same per-position grouping,
-  // but only with full access: the teaser query is limited to the top
-  // TEASER_LIMIT players by median globally, so whichever few players of
-  // a given position happen to make that cut aren't a representative
-  // pool to rank against.
-  const statsByPos = hasFullAccess ? {} : null;
+  // Percentile rank vs. position reuses the same per-position grouping as
+  // the heat-tint above, and the same rule: computed from whatever pool
+  // the current viewer actually has, teaser-limited or not. The teaser
+  // query only returns the top TEASER_LIMIT players by median globally, so
+  // a given position's pool is smaller there -- PositionPercentile's
+  // "VS N POSITIONS" label says the real N rather than implying a full
+  // field, so a small sample reads as small instead of misleading.
+  const statsByPos = {};
   for (const row of sortedSims) {
     const r = medianRangeByPos[row.position] || { min: Infinity, max: -Infinity };
     r.min = Math.min(r.min, row.median);
     r.max = Math.max(r.max, row.median);
     medianRangeByPos[row.position] = r;
-    if (statsByPos) {
-      const pool = (statsByPos[row.position] ??= { floor: [], median: [], ceiling: [] });
-      pool.floor.push(row.floor);
-      pool.median.push(row.median);
-      pool.ceiling.push(row.ceiling);
-    }
+    const pool = (statsByPos[row.position] ??= { floor: [], median: [], ceiling: [] });
+    pool.floor.push(row.floor);
+    pool.median.push(row.median);
+    pool.ceiling.push(row.ceiling);
   }
   // Share of the player's own position pool that this number beats -- e.g.
   // a ceiling percentile of 85 is higher than 85% of other players at the
@@ -121,7 +121,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
   const simsWithHeat = sortedSims.map((row) => {
     const r = medianRangeByPos[row.position];
     const heat = r && r.max > r.min ? (row.median - r.min) / (r.max - r.min) : 0;
-    const pool = statsByPos?.[row.position];
+    const pool = statsByPos[row.position];
     return {
       ...row,
       heat,
