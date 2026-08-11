@@ -32,7 +32,9 @@ export function sortHref(
   dirParam = "dir"
 ) {
   const params = new URLSearchParams(currentParams || {});
-  const nextDir = activeSort === sortKey && activeDir === "asc" ? "desc" : "asc";
+  // First click on a column defaults to descending (highest values first,
+  // the more common thing to want for rankings/stats), then toggles.
+  const nextDir = activeSort === sortKey && activeDir === "desc" ? "asc" : "desc";
   params.set(sortParam, sortKey);
   params.set(dirParam, nextDir);
   return `?${params.toString()}`;
