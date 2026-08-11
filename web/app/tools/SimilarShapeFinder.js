@@ -1,9 +1,6 @@
 "use client";
 
-// Plain squared distance across whatever stat keys the two players share
-// -- same metric PositionPercentile uses for its floor/median/ceiling
-// comp finder, just applied to the full per-stat percentile vector
-// instead of three season-total percentiles.
+// Plain squared distance across whatever stat keys the two players share.
 function shapeDistance(a, b, keys) {
   let sum = 0;
   for (const key of keys) {

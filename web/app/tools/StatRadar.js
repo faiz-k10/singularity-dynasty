@@ -32,13 +32,12 @@ function polygonPath(entries, n, frac, startDeg, pctileAt) {
   return pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ") + " Z";
 }
 
-// Same percentile-vs-position math as the sliders above, one axis per
-// stat instead of one slider for the season total -- so a big-play deep
+// Percentile-vs-position math, one axis per stat -- so a big-play deep
 // threat and a possession-chain WR with similar season totals show up as
 // visibly different shapes instead of two similar-looking rows in the
-// table. selectedKey highlights whichever stat is currently driving
-// OutcomeCurve beside it, so clicking a stat row ties both visuals
-// together instead of leaving the radar static.
+// table. selectedKey highlights whichever stat row was last clicked in
+// the table beside it, so the two visuals stay tied together instead of
+// the radar being static.
 // compareEntries is an optional second shape, same [key, label, pctile]
 // tuples in the same order/positions as entries (see SimilarShapeFinder),
 // drawn as a dashed overlay so a comp's shape can be held up against the

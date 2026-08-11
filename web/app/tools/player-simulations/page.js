@@ -99,14 +99,6 @@ export default async function PlayerSimulationsPage({ searchParams }) {
   // every QB look "hot" and every TE look "cold" regardless of how they
   // actually rank among their own position.
   const rangeByPos = { floor: {}, median: {}, ceiling: {} };
-  // Percentile rank vs. position reuses the same per-position grouping as
-  // the heat-tint above, and the same rule: computed from whatever pool
-  // the current viewer actually has, teaser-limited or not. The teaser
-  // query only returns the top TEASER_LIMIT players by median globally, so
-  // a given position's pool is smaller there -- PositionPercentile's
-  // "VS N POSITIONS" label says the real N rather than implying a full
-  // field, so a small sample reads as small instead of misleading.
-  const statsByPos = {};
   for (const row of sortedSims) {
     for (const col of ["floor", "median", "ceiling"]) {
       const r = rangeByPos[col][row.position] || { min: Infinity, max: -Infinity };
@@ -114,21 +106,17 @@ export default async function PlayerSimulationsPage({ searchParams }) {
       r.max = Math.max(r.max, row[col]);
       rangeByPos[col][row.position] = r;
     }
-    const pool = (statsByPos[row.position] ??= { floor: [], median: [], ceiling: [] });
-    pool.floor.push(row.floor);
-    pool.median.push(row.median);
-    pool.ceiling.push(row.ceiling);
   }
   function heatFor(col, row) {
     const r = rangeByPos[col][row.position];
     return r && r.max > r.min ? (row[col] - r.min) / (r.max - r.min) : 0;
   }
-  // Share of the player's own position pool that this number beats -- e.g.
-  // a ceiling percentile of 85 is higher than 85% of other players at the
-  // position. Distinct from the min/max heat-tint above.
-  // invert flips "higher raw value = higher percentile" for stats where
-  // more is actually worse (interceptions) -- everything else keeps the
-  // default higher-is-better direction.
+  // Share of the player's own position pool that a stat's median beats --
+  // e.g. a percentile of 85 is higher than 85% of other players at the
+  // position (used by the radar chart below). invert flips "higher raw
+  // value = higher percentile" for stats where more is actually worse
+  // (interceptions) -- everything else keeps the default higher-is-better
+  // direction.
   function percentileRank(value, pool, invert = false) {
     if (!pool || pool.length <= 1) return null;
     const lower = pool.filter((v) => (invert ? v > value : v < value)).length;
@@ -152,7 +140,6 @@ export default async function PlayerSimulationsPage({ searchParams }) {
     const heat = heatFor("median", row);
     const floorHeat = heatFor("floor", row);
     const ceilingHeat = heatFor("ceiling", row);
-    const pool = statsByPos[row.position];
     const statPool = statPoolByPos[row.position];
     const statPercentiles = {};
     if (row.stat_ranges) {
@@ -165,26 +152,9 @@ export default async function PlayerSimulationsPage({ searchParams }) {
       heat,
       floorHeat,
       ceilingHeat,
-      floorPctile: pool ? percentileRank(row.floor, pool.floor) : null,
-      medianPctile: pool ? percentileRank(row.median, pool.median) : null,
-      ceilingPctile: pool ? percentileRank(row.ceiling, pool.ceiling) : null,
-      positionPoolSize: pool ? pool.floor.length : null,
       statPercentiles,
     };
   });
-  // Percentile profile of every player at each position, for
-  // PositionPercentile's drag-to-find-a-comp sliders -- built once here
-  // instead of shipping the whole rows array to the client a second time.
-  const positionPeers = {};
-  for (const row of simsWithHeat) {
-    if (row.floorPctile == null) continue;
-    (positionPeers[row.position] ??= []).push({
-      name: row.player_name,
-      floorPctile: row.floorPctile,
-      medianPctile: row.medianPctile,
-      ceilingPctile: row.ceilingPctile,
-    });
-  }
   // Peer pool for SimilarShapeFinder, grouped by the exact set of stat
   // keys a player carries rather than by position -- QBs only match QBs
   // (unique passing keys), but WRs and TEs share one pool since they
@@ -262,7 +232,6 @@ export default async function PlayerSimulationsPage({ searchParams }) {
               currentParams={params}
               positions={positions}
               maxCeiling={maxCeiling}
-              positionPeers={positionPeers}
               shapePeers={shapePeers}
             />
 
