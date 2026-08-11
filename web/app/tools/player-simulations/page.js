@@ -94,11 +94,11 @@ export default async function PlayerSimulationsPage({ searchParams }) {
   const canExport = tier === "singularity" && sims.length > 0;
   const positions = sortPositions([...new Set(sims.map((r) => r.position))]);
 
-  // Median heat-tint is position-relative -- QBs score far higher raw
-  // totals than TEs, so a global min/max would make every QB look "hot"
-  // and every TE look "cold" regardless of how they actually rank among
-  // their own position.
-  const medianRangeByPos = {};
+  // Heat-tint (Floor/Median/Ceiling columns) is position-relative -- QBs
+  // score far higher raw totals than TEs, so a global min/max would make
+  // every QB look "hot" and every TE look "cold" regardless of how they
+  // actually rank among their own position.
+  const rangeByPos = { floor: {}, median: {}, ceiling: {} };
   // Percentile rank vs. position reuses the same per-position grouping as
   // the heat-tint above, and the same rule: computed from whatever pool
   // the current viewer actually has, teaser-limited or not. The teaser
@@ -108,14 +108,20 @@ export default async function PlayerSimulationsPage({ searchParams }) {
   // field, so a small sample reads as small instead of misleading.
   const statsByPos = {};
   for (const row of sortedSims) {
-    const r = medianRangeByPos[row.position] || { min: Infinity, max: -Infinity };
-    r.min = Math.min(r.min, row.median);
-    r.max = Math.max(r.max, row.median);
-    medianRangeByPos[row.position] = r;
+    for (const col of ["floor", "median", "ceiling"]) {
+      const r = rangeByPos[col][row.position] || { min: Infinity, max: -Infinity };
+      r.min = Math.min(r.min, row[col]);
+      r.max = Math.max(r.max, row[col]);
+      rangeByPos[col][row.position] = r;
+    }
     const pool = (statsByPos[row.position] ??= { floor: [], median: [], ceiling: [] });
     pool.floor.push(row.floor);
     pool.median.push(row.median);
     pool.ceiling.push(row.ceiling);
+  }
+  function heatFor(col, row) {
+    const r = rangeByPos[col][row.position];
+    return r && r.max > r.min ? (row[col] - r.min) / (r.max - r.min) : 0;
   }
   // Share of the player's own position pool that this number beats -- e.g.
   // a ceiling percentile of 85 is higher than 85% of other players at the
@@ -143,8 +149,9 @@ export default async function PlayerSimulationsPage({ searchParams }) {
     }
   }
   const simsWithHeat = sortedSims.map((row) => {
-    const r = medianRangeByPos[row.position];
-    const heat = r && r.max > r.min ? (row.median - r.min) / (r.max - r.min) : 0;
+    const heat = heatFor("median", row);
+    const floorHeat = heatFor("floor", row);
+    const ceilingHeat = heatFor("ceiling", row);
     const pool = statsByPos[row.position];
     const statPool = statPoolByPos[row.position];
     const statPercentiles = {};
@@ -156,6 +163,8 @@ export default async function PlayerSimulationsPage({ searchParams }) {
     return {
       ...row,
       heat,
+      floorHeat,
+      ceilingHeat,
       floorPctile: pool ? percentileRank(row.floor, pool.floor) : null,
       medianPctile: pool ? percentileRank(row.median, pool.median) : null,
       ceilingPctile: pool ? percentileRank(row.ceiling, pool.ceiling) : null,

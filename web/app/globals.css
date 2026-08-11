@@ -35,6 +35,7 @@
   --star-dot-rgb:245,243,238;
   --shadow-rgb:0,0,0;
   --neon-blue-rgb:61,220,255;
+  --horizon-gold-rgb:255,199,115;
   --up-rgb:111,227,168;
   --down-rgb:255,107,107;
   --matchup-neutral-rgb:240,196,61;
@@ -68,6 +69,7 @@
     --star-dot-rgb:20,19,28;
     --shadow-rgb:80,70,50;
     --neon-blue-rgb:10,127,153;
+    --horizon-gold-rgb:184,114,14;
     --up-rgb:28,143,82;
     --down-rgb:214,63,57;
     --matchup-neutral-rgb:168,123,0;
@@ -96,6 +98,7 @@
   --star-dot-rgb:20,19,28;
   --shadow-rgb:80,70,50;
   --neon-blue-rgb:10,127,153;
+  --horizon-gold-rgb:184,114,14;
   --up-rgb:28,143,82;
   --down-rgb:214,63,57;
   --matchup-neutral-rgb:168,123,0;
@@ -822,6 +825,10 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    This Week), relative to other players at the same position --
    intensity set inline per-row via --heat (0-1). */
 .heat-cell{background:rgba(var(--neon-blue-rgb), calc(var(--heat, 0) * 0.35));}
+/* Same pattern, gold instead of blue -- used on Floor/Ceiling so they read
+   as a distinct signal from the Median column's heat-cell rather than
+   implying the same "good/bad" scale. */
+.heat-cell-alt{background:rgba(var(--horizon-gold-rgb), calc(var(--heat, 0) * 0.35));}
 
 /* Dynasty Draft Board — round grouping, stack flags, startup/rookie toggle */
 .board-toggle{display:inline-flex; gap:4px; background:var(--void-panel-2); border:1px solid var(--line); border-radius:30px; padding:4px; margin-bottom:32px;}

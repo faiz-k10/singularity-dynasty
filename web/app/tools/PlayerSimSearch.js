@@ -274,11 +274,15 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                   <td className="mono align-left">
                     <TeamBadge team={row.team} />
                   </td>
-                  <td className="mono">{formatStat(row.floor)}</td>
+                  <td className="mono heat-cell-alt" style={{ "--heat": row.floorHeat || 0 }}>
+                    {formatStat(row.floor)}
+                  </td>
                   <td className="mono heat-cell" style={{ "--heat": row.heat || 0 }}>
                     <strong>{formatStat(row.median)}</strong>
                   </td>
-                  <td className="mono">{formatStat(row.ceiling)}</td>
+                  <td className="mono heat-cell-alt" style={{ "--heat": row.ceilingHeat || 0 }}>
+                    {formatStat(row.ceiling)}
+                  </td>
                   <td>
                     <div className="sim-bar-track">
                       <div
