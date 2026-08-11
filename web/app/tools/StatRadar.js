@@ -39,12 +39,19 @@ function polygonPath(entries, n, frac, startDeg, pctileAt) {
 // table. selectedKey highlights whichever stat is currently driving
 // OutcomeCurve beside it, so clicking a stat row ties both visuals
 // together instead of leaving the radar static.
-export default function StatRadar({ entries, selectedKey, startDeg = -90 }) {
+// compareEntries is an optional second shape, same [key, label, pctile]
+// tuples in the same order/positions as entries (see SimilarShapeFinder),
+// drawn as a dashed overlay so a comp's shape can be held up against the
+// player's own without leaving the row.
+export default function StatRadar({ entries, selectedKey, startDeg = -90, compareEntries }) {
   if (!entries || entries.length < 3) return null;
   const n = entries.length;
 
   const shapePath = polygonPath(entries, n, null, startDeg, ([, , pctile]) => (pctile ?? 0) / 100);
   const shapePoints = entries.map(([, , pctile], i) => pointAt(i, n, (pctile ?? 0) / 100, startDeg));
+  const comparePath = compareEntries
+    ? polygonPath(compareEntries, n, null, startDeg, ([, , pctile]) => (pctile ?? 0) / 100)
+    : null;
 
   return (
     <div className="stat-radar">
@@ -64,6 +71,7 @@ export default function StatRadar({ entries, selectedKey, startDeg = -90 }) {
             <line key={i} x1={CENTER} y1={CENTER} x2={outer.x} y2={outer.y} className="radar-spoke" />
           );
         })}
+        {comparePath && <path d={comparePath} className="radar-shape-compare" />}
         <path d={shapePath} className="radar-shape" />
         {shapePoints.map((p, i) => {
           const isActive = entries[i][0] === selectedKey;

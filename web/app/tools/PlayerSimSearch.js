@@ -10,6 +10,7 @@ import STAT_LABELS from "./statLabels";
 import OutcomeCurve from "./OutcomeCurve";
 import PositionPercentile from "./PositionPercentile";
 import StatRadar from "./StatRadar";
+import SimilarShapeFinder from "./SimilarShapeFinder";
 
 // Per-position vertex order for the radar, chosen so a fixed clockwise-
 // from-top layout (see StatRadar's angleFor) lands specific stats on
@@ -37,15 +38,26 @@ function radarLayoutFor(entries, position) {
 // Detail row unfolded below a player when their name is clicked -- one
 // open at a time (clicking a different player folds this one and opens
 // theirs). colSpan must match the number of columns in the main row.
-function StatDetailRow({ row, colSpan, positionPeers }) {
+function StatDetailRow({ row, colSpan, positionPeers, shapePeers }) {
   const ranges = row.stat_ranges;
   const entries = STAT_LABELS.filter(([key]) => ranges && ranges[key]);
   // Clicking a stat row drives the odds curve beside the table -- defaults
   // to the first available stat so the curve is never empty on open.
   const [selectedKey, setSelectedKey] = useState(entries[0]?.[0]);
+  // Which "most similar shape" comp (if any) is overlaid on the radar --
+  // a name rather than the row object since it's toggled off by re-
+  // clicking the same match in SimilarShapeFinder.
+  const [compareName, setCompareName] = useState(null);
   const selectedEntry = entries.find(([key]) => key === selectedKey) || entries[0];
   const radarEntriesRaw = entries.map(([key, label]) => [key, label, row.statPercentiles?.[key]]);
   const { entries: radarEntries, startDeg: radarStartDeg } = radarLayoutFor(radarEntriesRaw, row.position);
+
+  const shapeSignature = entries.map(([key]) => key).sort().join("|");
+  const shapePool = shapePeers?.[shapeSignature];
+  const compareRow = compareName ? shapePool?.find((p) => p.name === compareName) : null;
+  const compareEntries = compareRow
+    ? radarEntries.map(([key, label]) => [key, label, compareRow.statPercentiles?.[key]])
+    : null;
 
   if (entries.length === 0) return null;
 
@@ -95,7 +107,22 @@ function StatDetailRow({ row, colSpan, positionPeers }) {
             median={ranges[selectedEntry[0]].median}
             ceiling={ranges[selectedEntry[0]].ceiling}
           />
-          <StatRadar entries={radarEntries} selectedKey={selectedKey} startDeg={radarStartDeg} />
+          <div className="radar-cell">
+            <StatRadar
+              entries={radarEntries}
+              selectedKey={selectedKey}
+              startDeg={radarStartDeg}
+              compareEntries={compareEntries}
+            />
+            <SimilarShapeFinder
+              ownName={row.player_name}
+              statPercentiles={row.statPercentiles}
+              keys={entries.map(([key]) => key)}
+              peers={shapePool}
+              selectedName={compareName}
+              onSelect={setCompareName}
+            />
+          </div>
           <PositionPercentile
             playerName={row.player_name}
             position={row.position}
@@ -118,7 +145,7 @@ function formatStat(value) {
 // Same pattern as RankingsSearch (Redraft) / BestBallSearch: position-pill
 // filter + player name search, both client-side. Sorting stays
 // server-driven via the existing URL-param mechanism.
-export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams, positions, maxCeiling, positionPeers }) {
+export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams, positions, maxCeiling, positionPeers, shapePeers }) {
   const showPositionFilter = Array.isArray(positions) && positions.length > 0;
   const [selected, setSelected] = useState(positions || []);
   const [query, setQuery] = useState("");
@@ -276,6 +303,7 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                     row={row}
                     colSpan={7}
                     positionPeers={positionPeers?.[row.position]}
+                    shapePeers={shapePeers}
                   />
                 )}
                 </Fragment>

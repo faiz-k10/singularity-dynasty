@@ -176,6 +176,21 @@ export default async function PlayerSimulationsPage({ searchParams }) {
       ceilingPctile: row.ceilingPctile,
     });
   }
+  // Peer pool for SimilarShapeFinder, grouped by the exact set of stat
+  // keys a player carries rather than by position -- QBs only match QBs
+  // (unique passing keys), but WRs and TEs share one pool since they
+  // carry the identical 3 receiving keys, so "similar shape" can surface
+  // a cross-position comp there instead of being siloed like the sliders.
+  const shapePeers = {};
+  for (const row of simsWithHeat) {
+    if (!row.stat_ranges) continue;
+    const signature = Object.keys(row.stat_ranges).sort().join("|");
+    (shapePeers[signature] ??= []).push({
+      name: row.player_name,
+      position: row.position,
+      statPercentiles: row.statPercentiles,
+    });
+  }
   // CSV export stays in points-per-game terms regardless of the on-page
   // toggle -- it's baked into server-rendered HTML at request time (see
   // ExportCsvButton's comment), not reactive to PlayerSimSearch's client
@@ -200,8 +215,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
         <p className="tool-sub">
           Full-season Monte Carlo simulations run 10,000 times per player,
           distilled to a 10th / 50th / 90th percentile floor, median, and
-          ceiling — toggle between points per game and full-season totals
-          below.
+          ceiling.
         </p>
 
         {sims.length === 0 ? (
@@ -240,6 +254,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
               positions={positions}
               maxCeiling={maxCeiling}
               positionPeers={positionPeers}
+              shapePeers={shapePeers}
             />
 
             {isTeaser && (
