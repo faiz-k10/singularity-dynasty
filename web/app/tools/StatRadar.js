@@ -54,7 +54,11 @@ function bandPath(entries, n, startDeg, outerAt, innerAt) {
 // tuples (median only, no band) in the same order/positions as entries
 // (see SimilarShapeFinder), drawn as a dashed overlay so a comp's shape
 // can be held up against the player's own without leaving the row.
-export default function StatRadar({ entries, selectedKey, startDeg = -90, compareEntries }) {
+// onSelectKey (optional) makes each vertex itself clickable -- mirrors
+// the stat table's own row trigger, so selection can be driven from
+// either visual and both stay in sync via the shared selectedKey state
+// one level up in StatDetailRow.
+export default function StatRadar({ entries, selectedKey, startDeg = -90, compareEntries, onSelectKey }) {
   if (!entries || entries.length < 3) return null;
   const n = entries.length;
 
@@ -103,32 +107,48 @@ export default function StatRadar({ entries, selectedKey, startDeg = -90, compar
         {ceilingOutline && <path d={ceilingOutline} className="radar-band-outline" />}
         {comparePath && <path d={comparePath} className="radar-shape-compare" />}
         <path d={shapePath} className="radar-shape" />
-        {shapePoints.map((p, i) => {
-          const isActive = entries[i][0] === selectedKey;
-          return (
-            <circle
-              key={entries[i][0]}
-              cx={p.x}
-              cy={p.y}
-              r={isActive ? 4.5 : 3}
-              className={isActive ? "radar-point radar-point-active" : "radar-point"}
-            />
-          );
-        })}
         {entries.map(([key, label], i) => {
-          const p = pointAt(i, n, 1.2, startDeg);
+          const point = shapePoints[i];
+          const labelPos = pointAt(i, n, 1.2, startDeg);
           const isActive = key === selectedKey;
+          const select = () => onSelectKey?.(key);
           return (
-            <text
+            <g
               key={key}
-              x={p.x}
-              y={p.y}
-              textAnchor={labelAnchor(i, n, startDeg)}
-              dominantBaseline="middle"
-              className={isActive ? "radar-axis-label radar-axis-label-active" : "radar-axis-label"}
+              className={onSelectKey ? "radar-vertex" : undefined}
+              onClick={onSelectKey ? select : undefined}
+              role={onSelectKey ? "button" : undefined}
+              tabIndex={onSelectKey ? 0 : undefined}
+              aria-pressed={onSelectKey ? isActive : undefined}
+              aria-label={onSelectKey ? label : undefined}
+              onKeyDown={
+                onSelectKey
+                  ? (e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        select();
+                      }
+                    }
+                  : undefined
+              }
             >
-              {label}
-            </text>
+              {onSelectKey && <circle cx={point.x} cy={point.y} r={14} className="radar-vertex-hit" />}
+              <circle
+                cx={point.x}
+                cy={point.y}
+                r={isActive ? 4.5 : 3}
+                className={isActive ? "radar-point radar-point-active" : "radar-point"}
+              />
+              <text
+                x={labelPos.x}
+                y={labelPos.y}
+                textAnchor={labelAnchor(i, n, startDeg)}
+                dominantBaseline="middle"
+                className={isActive ? "radar-axis-label radar-axis-label-active" : "radar-axis-label"}
+              >
+                {label}
+              </text>
+            </g>
           );
         })}
       </svg>

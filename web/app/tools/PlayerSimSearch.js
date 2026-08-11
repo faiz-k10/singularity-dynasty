@@ -111,6 +111,7 @@ function StatDetailRow({ row, colSpan, shapePeers }) {
               selectedKey={selectedKey}
               startDeg={radarStartDeg}
               compareEntries={compareEntries}
+              onSelectKey={setSelectedKey}
             />
             <SimilarShapeFinder
               ownName={row.player_name}

@@ -1051,6 +1051,14 @@ tr.stat-row-selected .stat-row-trigger{color:var(--horizon-gold);}
 .radar-point-active{fill:var(--star); stroke:var(--horizon-gold); stroke-width:2;}
 .radar-axis-label{font-family:var(--font-ibm-plex-mono), monospace; font-size:9.5px; fill:var(--star-dim);}
 .radar-axis-label-active{fill:var(--horizon-gold); font-weight:700;}
+/* Clickable vertex -- mirrors .stat-row-trigger so a stat can be
+   selected from either the table or the radar and both stay in sync.
+   The 14px hit circle is invisible but clickable/hoverable; the visible
+   3px point stays small so the shape itself doesn't look cluttered. */
+.radar-vertex{cursor:pointer;}
+.radar-vertex-hit{fill:transparent;}
+.radar-vertex:hover .radar-point{fill:var(--star);}
+.radar-vertex:hover .radar-axis-label{fill:var(--horizon-gold);}
 .radar-shape-compare{fill:none; stroke:var(--neon-blue); stroke-width:1.5; stroke-dasharray:4 3; stroke-linejoin:round;}
 /* Floor-to-ceiling band around the median shape -- same gold family as
    .radar-shape (this player's own numbers) so it doesn't read as a second
