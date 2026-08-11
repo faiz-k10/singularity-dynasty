@@ -1004,7 +1004,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
   text-transform:uppercase; color:var(--star-dim); padding:6px 10px; border-bottom:1px solid var(--line);
 }
 .stat-detail-table th:not(:first-child){text-align:center;}
-.stat-detail-table td{padding:6px 10px; border-bottom:1px dashed var(--line); color:var(--star); text-align:center;}
+.stat-detail-table td{padding:0; border-bottom:1px dashed var(--line); color:var(--star); text-align:center;}
 .stat-detail-table td:first-child{text-align:left;}
 .stat-detail-table tr:last-child td{border-bottom:none;}
 
@@ -1024,8 +1024,18 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
   }
 }
 
-.stat-row-trigger{all:unset; cursor:pointer; display:inline-block;}
-.stat-row-trigger:hover{color:var(--neon-blue);}
+/* Fills the entire td (not just a tight box around the digits) so a
+   click anywhere in a Floor/Median/Ceiling cell registers -- these
+   columns are much wider than a 2-4 digit number, and with the number
+   centered, most of the visible cell used to be dead space outside the
+   old inline-block button's hit area. td's own padding moved onto the
+   button so the button's box covers the cell edge-to-edge; text-align
+   inherits from the td (center, or left for the Stat name column). */
+.stat-row-trigger{
+  all:unset; cursor:pointer; display:block; width:100%; box-sizing:border-box;
+  padding:6px 10px; text-align:inherit;
+}
+.stat-row-trigger:hover{color:var(--neon-blue); background:rgba(var(--neon-blue-rgb),0.08);}
 .stat-row-trigger-active{color:var(--horizon-gold);}
 tr.stat-row-selected td{background:var(--void-panel);}
 
