@@ -1003,7 +1003,17 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
   text-align:left; font-family:var(--font-ibm-plex-mono), monospace; font-size:10px; letter-spacing:0.06em;
   text-transform:uppercase; color:var(--star-dim); padding:6px 10px; border-bottom:1px solid var(--line);
 }
-.stat-detail-table th:not(:first-child){text-align:center;}
+.stat-detail-table th:not(:first-child){text-align:center; padding:0;}
+/* Floor/Median/Ceiling column headers -- clicking one switches which
+   layer is highlighted on the radar for whichever stat row is currently
+   selected, same fill-the-cell pattern as .stat-row-trigger below so the
+   whole header cell is clickable, not just the label text. */
+.stat-header-trigger{
+  all:unset; cursor:pointer; display:block; width:100%; box-sizing:border-box;
+  padding:6px 10px; text-align:inherit;
+}
+.stat-header-trigger:hover{color:var(--neon-blue);}
+.stat-header-trigger-active{color:var(--horizon-gold);}
 .stat-detail-table td{padding:0; border-bottom:1px dashed var(--line); color:var(--star); text-align:center;}
 .stat-detail-table td:first-child{text-align:left;}
 .stat-detail-table tr:last-child td{border-bottom:none;}

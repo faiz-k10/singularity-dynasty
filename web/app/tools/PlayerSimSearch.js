@@ -82,9 +82,18 @@ function StatDetailRow({ row, colSpan, shapePeers }) {
             <thead>
               <tr>
                 <th>Stat</th>
-                <th>Floor</th>
-                <th>Median</th>
-                <th>Ceiling</th>
+                {["floor", "median", "ceiling"].map((layer) => (
+                  <th key={layer}>
+                    <button
+                      type="button"
+                      className={`stat-header-trigger${selectedLayer === layer ? " stat-header-trigger-active" : ""}`}
+                      onClick={() => setSelectedLayer(layer)}
+                      aria-pressed={selectedLayer === layer}
+                    >
+                      {layer === "floor" ? "Floor" : layer === "median" ? "Median" : "Ceiling"}
+                    </button>
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
