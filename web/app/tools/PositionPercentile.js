@@ -39,13 +39,14 @@ function PctileSlider({ label, value, onChange }) {
   );
 }
 
-// Three independent percentile sliders (floor/median/ceiling don't move
-// together -- a player can be a safer floor than their ceiling suggests,
-// or vice versa) that search the same position pool from page.js for
-// whichever player's own three percentiles land closest to the dragged
-// values, by plain squared distance across all three dimensions equally
-// weighted. Only renders with a percentile profile in the first place --
-// see page.js for when that's null (position pool of 1).
+// Three percentile sliders that move as one unit -- dragging any of them
+// shifts all three by the same delta, so the gaps between floor/median/
+// ceiling (how much safer the floor is than the ceiling, etc.) stay fixed
+// while the whole group slides along the 0-100 range. They search the same
+// position pool from page.js for whichever player's own three percentiles
+// land closest to the shifted values, by plain squared distance across all
+// three dimensions equally weighted. Only renders with a percentile profile
+// in the first place -- see page.js for when that's null (position pool of 1).
 export default function PositionPercentile({
   playerName,
   position,
@@ -55,9 +56,21 @@ export default function PositionPercentile({
   ceilingPctile,
   peers,
 }) {
-  const [floor, setFloor] = useState(floorPctile);
-  const [median, setMedian] = useState(medianPctile);
-  const [ceiling, setCeiling] = useState(ceilingPctile);
+  const [offset, setOffset] = useState(0);
+
+  // Bounds on the shared offset so the whole group stays within 0-100
+  // without needing to clamp each slider (and thus distort) individually.
+  const offsetMin = -Math.min(floorPctile, medianPctile, ceilingPctile);
+  const offsetMax = 100 - Math.max(floorPctile, medianPctile, ceilingPctile);
+
+  const floor = floorPctile + offset;
+  const median = medianPctile + offset;
+  const ceiling = ceilingPctile + offset;
+
+  function handleDrag(basePctile, newValue) {
+    const clamped = Math.min(offsetMax, Math.max(offsetMin, newValue - basePctile));
+    setOffset(clamped);
+  }
 
   const bestFit = useMemo(() => {
     if (!peers || peers.length === 0) return null;
@@ -80,7 +93,7 @@ export default function PositionPercentile({
     return null;
   }
 
-  const isOwnProfile = floor === floorPctile && median === medianPctile && ceiling === ceilingPctile;
+  const isOwnProfile = offset === 0;
 
   return (
     <div className="position-percentile">
@@ -88,9 +101,9 @@ export default function PositionPercentile({
         VS {poolSize} {position}
         {poolSize === 1 ? "" : "S"} · DRAG TO FIND A COMP
       </div>
-      <PctileSlider label="Floor" value={floor} onChange={setFloor} />
-      <PctileSlider label="Median" value={median} onChange={setMedian} />
-      <PctileSlider label="Ceiling" value={ceiling} onChange={setCeiling} />
+      <PctileSlider label="Floor" value={floor} onChange={(v) => handleDrag(floorPctile, v)} />
+      <PctileSlider label="Median" value={median} onChange={(v) => handleDrag(medianPctile, v)} />
+      <PctileSlider label="Ceiling" value={ceiling} onChange={(v) => handleDrag(ceilingPctile, v)} />
       {bestFit && (
         <div className="pctile-match mono">
           {isOwnProfile ? (

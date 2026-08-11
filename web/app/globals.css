@@ -1039,14 +1039,14 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .stat-detail-grid{
   display:grid; grid-template-columns:1fr 1fr;
   grid-template-areas:
-    "table curve"
-    "radar sliders";
+    "table sliders"
+    "curve radar";
   column-gap:32px; row-gap:24px; align-items:start;
 }
 @media (max-width:860px){
   .stat-detail-grid{
     grid-template-columns:1fr;
-    grid-template-areas:"table" "curve" "radar" "sliders";
+    grid-template-areas:"table" "sliders" "curve" "radar";
   }
 }
 
