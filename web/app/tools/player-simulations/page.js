@@ -120,11 +120,15 @@ export default async function PlayerSimulationsPage({ searchParams }) {
   // Share of the player's own position pool that this number beats -- e.g.
   // a ceiling percentile of 85 is higher than 85% of other players at the
   // position. Distinct from the min/max heat-tint above.
-  function percentileRank(value, pool) {
+  // invert flips "higher raw value = higher percentile" for stats where
+  // more is actually worse (interceptions) -- everything else keeps the
+  // default higher-is-better direction.
+  function percentileRank(value, pool, invert = false) {
     if (!pool || pool.length <= 1) return null;
-    const lower = pool.filter((v) => v < value).length;
+    const lower = pool.filter((v) => (invert ? v > value : v < value)).length;
     return Math.round((lower / (pool.length - 1)) * 100);
   }
+  const INVERTED_STATS = new Set(["passing_interceptions"]);
   // Same idea, per individual stat (rushing yards, receptions, etc.) for
   // the radar chart in the expanded row -- one pool per position+stat key,
   // built from each player's median value for that stat (the radar's
@@ -146,7 +150,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
     const statPercentiles = {};
     if (row.stat_ranges) {
       for (const [key, range] of Object.entries(row.stat_ranges)) {
-        statPercentiles[key] = percentileRank(range.median, statPool?.[key]);
+        statPercentiles[key] = percentileRank(range.median, statPool?.[key], INVERTED_STATS.has(key));
       }
     }
     return {
@@ -235,7 +239,6 @@ export default async function PlayerSimulationsPage({ searchParams }) {
               currentParams={params}
               positions={positions}
               maxCeiling={maxCeiling}
-              gamesPerSeason={GAMES_PER_SEASON}
               positionPeers={positionPeers}
             />
 
