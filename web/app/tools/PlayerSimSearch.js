@@ -48,7 +48,13 @@ function StatDetailRow({ row, colSpan, shapePeers }) {
   // a name rather than the row object since it's toggled off by re-
   // clicking the same match in SimilarShapeFinder.
   const [compareName, setCompareName] = useState(null);
-  const radarEntriesRaw = entries.map(([key, label]) => [key, label, row.statPercentiles?.[key]]);
+  const radarEntriesRaw = entries.map(([key, label]) => [
+    key,
+    label,
+    row.statPercentiles?.[key],
+    row.statFloorPercentiles?.[key],
+    row.statCeilingPercentiles?.[key],
+  ]);
   const { entries: radarEntries, startDeg: radarStartDeg } = radarLayoutFor(radarEntriesRaw, row.position);
 
   const shapeSignature = entries.map(([key]) => key).sort().join("|");

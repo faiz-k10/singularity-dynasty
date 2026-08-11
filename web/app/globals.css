@@ -1052,6 +1052,11 @@ tr.stat-row-selected .stat-row-trigger{color:var(--horizon-gold);}
 .radar-axis-label{font-family:var(--font-ibm-plex-mono), monospace; font-size:9.5px; fill:var(--star-dim);}
 .radar-axis-label-active{fill:var(--horizon-gold); font-weight:700;}
 .radar-shape-compare{fill:none; stroke:var(--neon-blue); stroke-width:1.5; stroke-dasharray:4 3; stroke-linejoin:round;}
+/* Floor-to-ceiling band around the median shape -- same gold family as
+   .radar-shape (this player's own numbers) so it doesn't read as a second
+   comp the way the neon-blue .radar-shape-compare overlay does. */
+.radar-band{fill:rgba(var(--horizon-gold-rgb),0.12); stroke:none;}
+.radar-band-outline{fill:none; stroke:var(--horizon-gold); stroke-width:1; stroke-dasharray:3 3; opacity:0.55; stroke-linejoin:round;}
 
 /* Similar-shape finder -- ranks the current player's stat-percentile
    pool (same signature of stat keys, so QBs only match QBs but WRs and

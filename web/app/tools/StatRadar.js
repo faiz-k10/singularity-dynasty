@@ -32,22 +32,50 @@ function polygonPath(entries, n, frac, startDeg, pctileAt) {
   return pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ") + " Z";
 }
 
+// Two polygon subpaths in one <path fill-rule="evenodd">, so the ring
+// between them (outer minus inner) fills as a band instead of a solid
+// shape -- used to shade the floor-to-ceiling spread around the median.
+function bandPath(entries, n, startDeg, outerAt, innerAt) {
+  return (
+    polygonPath(entries, n, null, startDeg, outerAt) + " " + polygonPath(entries, n, null, startDeg, innerAt)
+  );
+}
+
 // Percentile-vs-position math, one axis per stat -- so a big-play deep
 // threat and a possession-chain WR with similar season totals show up as
 // visibly different shapes instead of two similar-looking rows in the
-// table. selectedKey highlights whichever stat row was last clicked in
-// the table beside it, so the two visuals stay tied together instead of
-// the radar being static.
-// compareEntries is an optional second shape, same [key, label, pctile]
-// tuples in the same order/positions as entries (see SimilarShapeFinder),
-// drawn as a dashed overlay so a comp's shape can be held up against the
-// player's own without leaving the row.
+// table. entries are [key, label, medianPctile, floorPctile,
+// ceilingPctile] tuples -- the median draws as the solid shape, floor/
+// ceiling as a shaded band around it so a stat with a wide floor-to-
+// ceiling spread visibly bulges out on that axis. selectedKey highlights
+// whichever stat row was last clicked in the table beside it, so the two
+// visuals stay tied together instead of the radar being static.
+// compareEntries is an optional second shape, [key, label, pctile]
+// tuples (median only, no band) in the same order/positions as entries
+// (see SimilarShapeFinder), drawn as a dashed overlay so a comp's shape
+// can be held up against the player's own without leaving the row.
 export default function StatRadar({ entries, selectedKey, startDeg = -90, compareEntries }) {
   if (!entries || entries.length < 3) return null;
   const n = entries.length;
 
   const shapePath = polygonPath(entries, n, null, startDeg, ([, , pctile]) => (pctile ?? 0) / 100);
   const shapePoints = entries.map(([, , pctile], i) => pointAt(i, n, (pctile ?? 0) / 100, startDeg));
+  const hasBand = entries.some(([, , , floorPctile, ceilingPctile]) => floorPctile != null || ceilingPctile != null);
+  const bandFillPath = hasBand
+    ? bandPath(
+        entries,
+        n,
+        startDeg,
+        ([, , medianPctile, , ceilingPctile]) => (ceilingPctile ?? medianPctile ?? 0) / 100,
+        ([, , medianPctile, floorPctile]) => (floorPctile ?? medianPctile ?? 0) / 100
+      )
+    : null;
+  const floorOutline = hasBand
+    ? polygonPath(entries, n, null, startDeg, ([, , medianPctile, floorPctile]) => (floorPctile ?? medianPctile ?? 0) / 100)
+    : null;
+  const ceilingOutline = hasBand
+    ? polygonPath(entries, n, null, startDeg, ([, , medianPctile, , ceilingPctile]) => (ceilingPctile ?? medianPctile ?? 0) / 100)
+    : null;
   const comparePath = compareEntries
     ? polygonPath(compareEntries, n, null, startDeg, ([, , pctile]) => (pctile ?? 0) / 100)
     : null;
@@ -70,6 +98,9 @@ export default function StatRadar({ entries, selectedKey, startDeg = -90, compar
             <line key={i} x1={CENTER} y1={CENTER} x2={outer.x} y2={outer.y} className="radar-spoke" />
           );
         })}
+        {bandFillPath && <path d={bandFillPath} fillRule="evenodd" className="radar-band" />}
+        {floorOutline && <path d={floorOutline} className="radar-band-outline" />}
+        {ceilingOutline && <path d={ceilingOutline} className="radar-band-outline" />}
         {comparePath && <path d={comparePath} className="radar-shape-compare" />}
         <path d={shapePath} className="radar-shape" />
         {shapePoints.map((p, i) => {

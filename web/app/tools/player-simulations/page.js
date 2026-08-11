@@ -125,15 +125,19 @@ export default async function PlayerSimulationsPage({ searchParams }) {
   const INVERTED_STATS = new Set(["passing_interceptions"]);
   // Same idea, per individual stat (rushing yards, receptions, etc.) for
   // the radar chart in the expanded row -- one pool per position+stat key,
-  // built from each player's median value for that stat (the radar's
-  // single representative point per axis, same role median plays for the
-  // three season-total sliders above).
+  // each holding every player's floor/median/ceiling for that stat, so a
+  // player's own floor and ceiling can be ranked against the same-metric
+  // pool (not against the median pool) for the radar's floor-to-ceiling
+  // band around the median shape.
   const statPoolByPos = {};
   for (const row of sortedSims) {
     if (!row.stat_ranges) continue;
     const pool = (statPoolByPos[row.position] ??= {});
     for (const [key, range] of Object.entries(row.stat_ranges)) {
-      (pool[key] ??= []).push(range.median);
+      const p = (pool[key] ??= { floor: [], median: [], ceiling: [] });
+      p.floor.push(range.floor);
+      p.median.push(range.median);
+      p.ceiling.push(range.ceiling);
     }
   }
   const simsWithHeat = sortedSims.map((row) => {
@@ -142,9 +146,15 @@ export default async function PlayerSimulationsPage({ searchParams }) {
     const ceilingHeat = heatFor("ceiling", row);
     const statPool = statPoolByPos[row.position];
     const statPercentiles = {};
+    const statFloorPercentiles = {};
+    const statCeilingPercentiles = {};
     if (row.stat_ranges) {
       for (const [key, range] of Object.entries(row.stat_ranges)) {
-        statPercentiles[key] = percentileRank(range.median, statPool?.[key], INVERTED_STATS.has(key));
+        const pool = statPool?.[key];
+        const invert = INVERTED_STATS.has(key);
+        statPercentiles[key] = percentileRank(range.median, pool?.median, invert);
+        statFloorPercentiles[key] = percentileRank(range.floor, pool?.floor, invert);
+        statCeilingPercentiles[key] = percentileRank(range.ceiling, pool?.ceiling, invert);
       }
     }
     return {
@@ -153,6 +163,8 @@ export default async function PlayerSimulationsPage({ searchParams }) {
       floorHeat,
       ceilingHeat,
       statPercentiles,
+      statFloorPercentiles,
+      statCeilingPercentiles,
     };
   });
   // Peer pool for SimilarShapeFinder, grouped by the exact set of stat
