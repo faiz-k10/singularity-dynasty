@@ -14,13 +14,15 @@ import SimilarShapeFinder from "./SimilarShapeFinder";
 
 // Per-position vertex order for the radar, chosen so a fixed clockwise-
 // from-top layout (see StatRadar's angleFor) lands specific stats on
-// specific vertices: QB/RB pentagons put their 3 "top" stats at indices
-// 0/1/4 (top, upper-right, upper-left) and their 2 "bottom" stats at
-// indices 2/3 (lower-right, lower-left); WR/TE triangles are flipped
-// point-down via RADAR_START_DEG so index 0 lands at the bottom instead.
+// specific vertices: index 0 is the top vertex, 1 upper-right, 2 lower-
+// right, 3 lower-left, 4 upper-left. QB/RB pentagons read left-to-right
+// as upper-left/top/upper-right for the 3 "top" stats (indices 4/0/1)
+// and lower-left/lower-right for the 2 "bottom" stats (indices 3/2);
+// WR/TE triangles are flipped point-down via RADAR_START_DEG so index 0
+// lands at the bottom instead.
 const RADAR_ORDER = {
-  QB: ["passing_yards", "passing_tds", "rushing_yards", "rushing_tds", "passing_interceptions"],
-  RB: ["receiving_yards", "receiving_tds", "rushing_yards", "rushing_tds", "receptions"],
+  QB: ["passing_interceptions", "passing_yards", "rushing_yards", "rushing_tds", "passing_tds"],
+  RB: ["receptions", "receiving_yards", "rushing_yards", "rushing_tds", "receiving_tds"],
   WR: ["receiving_tds", "receiving_yards", "receptions"],
   TE: ["receiving_tds", "receiving_yards", "receptions"],
 };
