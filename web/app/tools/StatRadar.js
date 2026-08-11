@@ -57,29 +57,25 @@ function bandPath(entries, n, startDeg, outerAt, innerAt) {
 // onSelectKey (optional) makes each vertex itself clickable -- mirrors
 // the stat table's own row trigger, so selection can be driven from
 // either visual and both stay in sync via the shared selectedKey state
-// one level up in StatDetailRow.
-export default function StatRadar({ entries, selectedKey, startDeg = -90, compareEntries, onSelectKey }) {
+// one level up in StatDetailRow. selectedLayer ("floor"/"median"/
+// "ceiling") points at which specific number is active -- e.g. clicking
+// the Floor cell for a stat lights up that stat's floor marker and
+// thickens the floor band outline, instead of only ever emphasizing the
+// median point regardless of which column was clicked.
+export default function StatRadar({ entries, selectedKey, startDeg = -90, compareEntries, onSelectKey, selectedLayer = "median" }) {
   if (!entries || entries.length < 3) return null;
   const n = entries.length;
 
   const shapePath = polygonPath(entries, n, null, startDeg, ([, , pctile]) => (pctile ?? 0) / 100);
   const shapePoints = entries.map(([, , pctile], i) => pointAt(i, n, (pctile ?? 0) / 100, startDeg));
   const hasBand = entries.some(([, , , floorPctile, ceilingPctile]) => floorPctile != null || ceilingPctile != null);
-  const bandFillPath = hasBand
-    ? bandPath(
-        entries,
-        n,
-        startDeg,
-        ([, , medianPctile, , ceilingPctile]) => (ceilingPctile ?? medianPctile ?? 0) / 100,
-        ([, , medianPctile, floorPctile]) => (floorPctile ?? medianPctile ?? 0) / 100
-      )
-    : null;
-  const floorOutline = hasBand
-    ? polygonPath(entries, n, null, startDeg, ([, , medianPctile, floorPctile]) => (floorPctile ?? medianPctile ?? 0) / 100)
-    : null;
-  const ceilingOutline = hasBand
-    ? polygonPath(entries, n, null, startDeg, ([, , medianPctile, , ceilingPctile]) => (ceilingPctile ?? medianPctile ?? 0) / 100)
-    : null;
+  const floorAt = ([, , medianPctile, floorPctile]) => (floorPctile ?? medianPctile ?? 0) / 100;
+  const ceilingAt = ([, , medianPctile, , ceilingPctile]) => (ceilingPctile ?? medianPctile ?? 0) / 100;
+  const floorPoints = hasBand ? entries.map((entry, i) => pointAt(i, n, floorAt(entry), startDeg)) : null;
+  const ceilingPoints = hasBand ? entries.map((entry, i) => pointAt(i, n, ceilingAt(entry), startDeg)) : null;
+  const bandFillPath = hasBand ? bandPath(entries, n, startDeg, ceilingAt, floorAt) : null;
+  const floorOutline = hasBand ? polygonPath(entries, n, null, startDeg, floorAt) : null;
+  const ceilingOutline = hasBand ? polygonPath(entries, n, null, startDeg, ceilingAt) : null;
   const comparePath = compareEntries
     ? polygonPath(compareEntries, n, null, startDeg, ([, , pctile]) => (pctile ?? 0) / 100)
     : null;
@@ -103,14 +99,27 @@ export default function StatRadar({ entries, selectedKey, startDeg = -90, compar
           );
         })}
         {bandFillPath && <path d={bandFillPath} fillRule="evenodd" className="radar-band" />}
-        {floorOutline && <path d={floorOutline} className="radar-band-outline" />}
-        {ceilingOutline && <path d={ceilingOutline} className="radar-band-outline" />}
+        {floorOutline && (
+          <path
+            d={floorOutline}
+            className={selectedLayer === "floor" ? "radar-band-outline radar-band-outline-active" : "radar-band-outline"}
+          />
+        )}
+        {ceilingOutline && (
+          <path
+            d={ceilingOutline}
+            className={selectedLayer === "ceiling" ? "radar-band-outline radar-band-outline-active" : "radar-band-outline"}
+          />
+        )}
         {comparePath && <path d={comparePath} className="radar-shape-compare" />}
         <path d={shapePath} className="radar-shape" />
         {entries.map(([key, label], i) => {
           const point = shapePoints[i];
           const labelPos = pointAt(i, n, 1.2, startDeg);
           const isActive = key === selectedKey;
+          const isMedianActive = isActive && selectedLayer === "median";
+          const isFloorActive = isActive && selectedLayer === "floor";
+          const isCeilingActive = isActive && selectedLayer === "ceiling";
           const select = () => onSelectKey?.(key);
           return (
             <g
@@ -133,11 +142,27 @@ export default function StatRadar({ entries, selectedKey, startDeg = -90, compar
               }
             >
               {onSelectKey && <circle cx={point.x} cy={point.y} r={14} className="radar-vertex-hit" />}
+              {floorPoints && (
+                <circle
+                  cx={floorPoints[i].x}
+                  cy={floorPoints[i].y}
+                  r={isFloorActive ? 4.5 : 0}
+                  className="radar-point-floor"
+                />
+              )}
+              {ceilingPoints && (
+                <circle
+                  cx={ceilingPoints[i].x}
+                  cy={ceilingPoints[i].y}
+                  r={isCeilingActive ? 4.5 : 0}
+                  className="radar-point-ceiling"
+                />
+              )}
               <circle
                 cx={point.x}
                 cy={point.y}
-                r={isActive ? 4.5 : 3}
-                className={isActive ? "radar-point radar-point-active" : "radar-point"}
+                r={isMedianActive ? 4.5 : 3}
+                className={isMedianActive ? "radar-point radar-point-active" : "radar-point"}
               />
               <text
                 x={labelPos.x}

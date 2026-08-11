@@ -42,8 +42,16 @@ function StatDetailRow({ row, colSpan, shapePeers }) {
   const ranges = row.stat_ranges;
   const entries = STAT_LABELS.filter(([key]) => ranges && ranges[key]);
   // Clicking a stat row highlights the matching point on the radar --
-  // defaults to the first available stat.
+  // defaults to the first available stat. selectedLayer tracks which of
+  // Floor/Median/Ceiling was clicked so the radar can point at that
+  // specific number (its own marker + a bolder band outline) instead of
+  // only ever emphasizing the median point.
   const [selectedKey, setSelectedKey] = useState(entries[0]?.[0]);
+  const [selectedLayer, setSelectedLayer] = useState("median");
+  function selectStat(key, layer = "median") {
+    setSelectedKey(key);
+    setSelectedLayer(layer);
+  }
   // Which "most similar shape" comp (if any) is overlaid on the radar --
   // a name rather than the row object since it's toggled off by re-
   // clicking the same match in SimilarShapeFinder.
@@ -83,23 +91,36 @@ function StatDetailRow({ row, colSpan, shapePeers }) {
               {entries.map(([key, label]) => {
                 const { floor, median, ceiling } = ranges[key];
                 const isSelected = key === selectedKey;
+                function cellProps(layer) {
+                  const isActive = isSelected && selectedLayer === layer;
+                  return {
+                    className: `stat-row-trigger${isActive ? " stat-row-trigger-active" : ""}`,
+                    onClick: () => selectStat(key, layer),
+                    "aria-pressed": isActive,
+                  };
+                }
                 return (
                   <tr key={key} className={isSelected ? "stat-row-selected" : ""}>
                     <td>
-                      <button
-                        type="button"
-                        className="stat-row-trigger"
-                        onClick={() => setSelectedKey(key)}
-                        aria-pressed={isSelected}
-                      >
+                      <button type="button" {...cellProps("median")}>
                         {label}
                       </button>
                     </td>
-                    <td className="mono">{floor}</td>
                     <td className="mono">
-                      <strong>{median}</strong>
+                      <button type="button" {...cellProps("floor")}>
+                        {floor}
+                      </button>
                     </td>
-                    <td className="mono">{ceiling}</td>
+                    <td className="mono">
+                      <button type="button" {...cellProps("median")}>
+                        <strong>{median}</strong>
+                      </button>
+                    </td>
+                    <td className="mono">
+                      <button type="button" {...cellProps("ceiling")}>
+                        {ceiling}
+                      </button>
+                    </td>
                   </tr>
                 );
               })}
@@ -109,9 +130,10 @@ function StatDetailRow({ row, colSpan, shapePeers }) {
             <StatRadar
               entries={radarEntries}
               selectedKey={selectedKey}
+              selectedLayer={selectedLayer}
               startDeg={radarStartDeg}
               compareEntries={compareEntries}
-              onSelectKey={setSelectedKey}
+              onSelectKey={(key) => selectStat(key, "median")}
             />
             <SimilarShapeFinder
               ownName={row.player_name}

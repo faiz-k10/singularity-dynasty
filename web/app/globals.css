@@ -1026,8 +1026,8 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 
 .stat-row-trigger{all:unset; cursor:pointer; display:inline-block;}
 .stat-row-trigger:hover{color:var(--neon-blue);}
+.stat-row-trigger-active{color:var(--horizon-gold);}
 tr.stat-row-selected td{background:var(--void-panel);}
-tr.stat-row-selected .stat-row-trigger{color:var(--horizon-gold);}
 
 /* Per-stat percentile shape -- second panel beside the stat table, same
    row/column data as the table but plotted as percentile vs. position
@@ -1064,7 +1064,14 @@ tr.stat-row-selected .stat-row-trigger{color:var(--horizon-gold);}
    .radar-shape (this player's own numbers) so it doesn't read as a second
    comp the way the neon-blue .radar-shape-compare overlay does. */
 .radar-band{fill:rgba(var(--horizon-gold-rgb),0.12); stroke:none;}
-.radar-band-outline{fill:none; stroke:var(--horizon-gold); stroke-width:1; stroke-dasharray:3 3; opacity:0.55; stroke-linejoin:round;}
+.radar-band-outline{fill:none; stroke:var(--horizon-gold); stroke-width:1; stroke-dasharray:3 3; opacity:0.55; stroke-linejoin:round; transition:opacity .15s ease, stroke-width .15s ease;}
+.radar-band-outline-active{opacity:1; stroke-width:2;}
+/* Floor/ceiling markers -- invisible (r:0) until that exact number is
+   the active selectedLayer, so clicking a Floor or Ceiling cell in the
+   table points at precisely that value on the radar instead of only
+   ever highlighting the median point regardless of which column was
+   clicked. */
+.radar-point-floor, .radar-point-ceiling{fill:var(--star); stroke:var(--horizon-gold); stroke-width:2; transition:r .15s ease;}
 
 /* Similar-shape finder -- ranks the current player's stat-percentile
    pool (same signature of stat keys, so QBs only match QBs but WRs and
