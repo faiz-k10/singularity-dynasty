@@ -11,6 +11,29 @@ import OutcomeCurve from "./OutcomeCurve";
 import PositionPercentile from "./PositionPercentile";
 import StatRadar from "./StatRadar";
 
+// Per-position vertex order for the radar, chosen so a fixed clockwise-
+// from-top layout (see StatRadar's angleFor) lands specific stats on
+// specific vertices: QB/RB pentagons put their 3 "top" stats at indices
+// 0/1/4 (top, upper-right, upper-left) and their 2 "bottom" stats at
+// indices 2/3 (lower-right, lower-left); WR/TE triangles are flipped
+// point-down via RADAR_START_DEG so index 0 lands at the bottom instead.
+const RADAR_ORDER = {
+  QB: ["passing_yards", "passing_tds", "rushing_yards", "rushing_tds", "passing_interceptions"],
+  RB: ["receiving_yards", "receiving_tds", "rushing_yards", "rushing_tds", "receptions"],
+  WR: ["receiving_tds", "receiving_yards", "receptions"],
+  TE: ["receiving_tds", "receiving_yards", "receptions"],
+};
+const RADAR_START_DEG = { WR: 90, TE: 90 };
+
+function radarLayoutFor(entries, position) {
+  const order = RADAR_ORDER[position];
+  if (!order) return { entries, startDeg: -90 };
+  const byKey = new Map(entries.map((entry) => [entry[0], entry]));
+  const ordered = order.map((key) => byKey.get(key)).filter(Boolean);
+  const leftover = entries.filter(([key]) => !order.includes(key));
+  return { entries: [...ordered, ...leftover], startDeg: RADAR_START_DEG[position] ?? -90 };
+}
+
 // Detail row unfolded below a player when their name is clicked -- one
 // open at a time (clicking a different player folds this one and opens
 // theirs). colSpan must match the number of columns in the main row.
@@ -21,7 +44,8 @@ function StatDetailRow({ row, colSpan, positionPeers }) {
   // to the first available stat so the curve is never empty on open.
   const [selectedKey, setSelectedKey] = useState(entries[0]?.[0]);
   const selectedEntry = entries.find(([key]) => key === selectedKey) || entries[0];
-  const radarEntries = entries.map(([key, label]) => [key, label, row.statPercentiles?.[key]]);
+  const radarEntriesRaw = entries.map(([key, label]) => [key, label, row.statPercentiles?.[key]]);
+  const { entries: radarEntries, startDeg: radarStartDeg } = radarLayoutFor(radarEntriesRaw, row.position);
 
   if (entries.length === 0) return null;
 
@@ -71,7 +95,7 @@ function StatDetailRow({ row, colSpan, positionPeers }) {
             median={ranges[selectedEntry[0]].median}
             ceiling={ranges[selectedEntry[0]].ceiling}
           />
-          <StatRadar entries={radarEntries} selectedKey={selectedKey} />
+          <StatRadar entries={radarEntries} selectedKey={selectedKey} startDeg={radarStartDeg} />
           <PositionPercentile
             playerName={row.player_name}
             position={row.position}
