@@ -58,8 +58,13 @@ function compareValues(a, b, type) {
 
 export function sortRows(rows, sortKey, dir, columnTypes) {
   if (!sortKey || !columnTypes[sortKey]) return rows;
-  const sorted = [...rows].sort((a, b) =>
-    compareValues(a[sortKey], b[sortKey], columnTypes[sortKey])
-  );
-  return dir === "desc" ? sorted.reverse() : sorted;
+  // Flip the comparator's sign rather than sorting ascending and
+  // .reverse()-ing the whole array -- reversing also flips the relative
+  // order of tied rows, which breaks Array.sort's stability guarantee and
+  // desyncs display order from anything computed off the original row
+  // order (e.g. player-simulations' positionRank), producing exactly the
+  // kind of "higher-ranked player shown below a lower-ranked one" bug a
+  // stable sort should never produce.
+  const mult = dir === "desc" ? -1 : 1;
+  return [...rows].sort((a, b) => mult * compareValues(a[sortKey], b[sortKey], columnTypes[sortKey]));
 }
