@@ -228,6 +228,7 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
           <table className="rankings-table">
             <thead>
               <tr>
+                <th className="row-num-th">#</th>
                 <SortableTh label="Player" sortKey="player_name" {...sortProps} />
                 <SortableTh label="Pos" sortKey="position" {...sortProps} />
                 <SortableTh label="Team" sortKey="team" {...sortProps} />
@@ -238,7 +239,7 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
               </tr>
             </thead>
             <tbody>
-              {filteredRows.map((row) => {
+              {filteredRows.map((row, index) => {
                 const hasStats = row.stat_ranges && Object.keys(row.stat_ranges).length > 0;
                 const isExpanded = hasStats && expanded.has(row.player_name);
                 return (
@@ -261,6 +262,7 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                       : undefined
                   }
                 >
+                  <td className="mono align-left row-num-cell">{index + 1}</td>
                   <td className="player-cell">
                     <TrendTag trend={row.trend} /> {row.player_name}{" "}
                     <ConfidenceBadge confidence={row.sample_confidence} />
@@ -305,7 +307,7 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                 {isExpanded && (
                   <StatDetailRow
                     row={row}
-                    colSpan={7}
+                    colSpan={8}
                     positionPeers={positionPeers?.[row.position]}
                     shapePeers={shapePeers}
                   />
