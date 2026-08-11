@@ -1084,7 +1084,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
    .radar-shape (this player's own numbers) so it doesn't read as a second
    comp the way the neon-blue .radar-shape-compare overlay does. */
 .radar-band{fill:rgba(var(--horizon-gold-rgb),0.12); stroke:none;}
-.radar-band-outline{fill:none; stroke:var(--horizon-gold); stroke-width:1; stroke-dasharray:3 3; opacity:0.55; stroke-linejoin:round; transition:opacity .15s ease, stroke-width .15s ease;}
+.radar-band-outline{fill:none; stroke:var(--horizon-gold); stroke-width:1; opacity:0.55; stroke-linejoin:round; transition:opacity .15s ease, stroke-width .15s ease;}
 .radar-band-outline-active{opacity:1; stroke-width:2;}
 /* Floor/ceiling markers -- invisible (r:0) until that exact number is
    the active selectedLayer, so clicking a Floor or Ceiling cell in the
