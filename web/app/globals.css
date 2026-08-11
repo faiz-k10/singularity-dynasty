@@ -717,6 +717,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .export-csv-btn:hover{border-color:var(--neon-blue); box-shadow:0 0 0 1px rgba(var(--neon-blue-rgb),0.15); color:var(--star);}
 .rankings-table td{padding:12px 18px; border-bottom:1px dashed var(--line); color:var(--star); white-space:nowrap; text-align:center;}
 .rankings-table td.player-cell, .rankings-table td.align-left{text-align:left;}
+.pos-rank{color:var(--star-dim); font-size:11px; margin-left:2px;}
 .tool-notes{white-space:normal !important; min-width:180px; text-align:left;}
 .rankings-table tr:last-child td{border-bottom:none;}
 .rankings-table tr:hover td{background:rgba(var(--neon-blue-rgb),0.05);}

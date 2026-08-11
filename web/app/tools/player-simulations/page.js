@@ -9,7 +9,7 @@ export const metadata = {
   title: "Player Season Simulations — Singularity Dynasty",
 };
 
-const TEASER_LIMIT = 50;
+const TEASER_LIMIT = 200;
 const GAMES_PER_SEASON = 17;
 // Singularity-only per the pricing copy — Explorer does not include this.
 const PAID_TIERS = ["singularity"];
@@ -76,7 +76,14 @@ export default async function PlayerSimulationsPage({ searchParams }) {
     // same as it pulls down the season total, since the simulation
     // doesn't publish a per-trial games-played count a true
     // injury-adjusted rate would need.
-    sims = data || [];
+    // Position rank (QB1, RB2, ...) is assigned here, off the query's
+    // fixed median-desc order, so it stays a stable "positional ranking"
+    // independent of whatever column the viewer sorts the table by below.
+    const posRankCounters = {};
+    sims = (data || []).map((row) => {
+      posRankCounters[row.position] = (posRankCounters[row.position] || 0) + 1;
+      return { ...row, positionRank: posRankCounters[row.position] };
+    });
     totalCount = count || 0;
   }
 

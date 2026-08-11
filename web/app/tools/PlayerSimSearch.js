@@ -266,7 +266,12 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                     <TrendTag trend={row.trend} /> {row.player_name}{" "}
                     <ConfidenceBadge confidence={row.sample_confidence} />
                   </td>
-                  <td className="mono align-left">{row.position}</td>
+                  <td className="mono align-left">
+                    {row.position}
+                    {row.positionRank != null && (
+                      <span className="pos-rank">{row.positionRank}</span>
+                    )}
+                  </td>
                   <td className="mono align-left">
                     <TeamBadge team={row.team} />
                   </td>
