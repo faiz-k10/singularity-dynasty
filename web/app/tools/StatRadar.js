@@ -112,7 +112,10 @@ export default function StatRadar({ entries, selectedKey, startDeg = -90, compar
           />
         )}
         {comparePath && <path d={comparePath} className="radar-shape-compare" />}
-        <path d={shapePath} className="radar-shape" />
+        <path
+          d={shapePath}
+          className={selectedLayer === "median" ? "radar-shape radar-shape-active" : "radar-shape"}
+        />
         {entries.map(([key, label], i) => {
           const point = shapePoints[i];
           const labelPos = pointAt(i, n, 1.2, startDeg);
