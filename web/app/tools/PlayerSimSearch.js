@@ -44,10 +44,12 @@ function StatDetailRow({ row, colSpan, shapePeers }) {
   // Clicking a stat row highlights the matching point on the radar --
   // defaults to the first available stat. selectedLayer tracks which of
   // Floor/Median/Ceiling was clicked so the radar can point at that
-  // specific number (its own marker + a bolder band outline) instead of
-  // only ever emphasizing the median point.
+  // specific number (its own marker + a bolder line) instead of only
+  // ever emphasizing the median. Starts null (nothing bold) -- median
+  // isn't pre-selected, so all three lines render at the same weight
+  // until the viewer actually clicks one.
   const [selectedKey, setSelectedKey] = useState(entries[0]?.[0]);
-  const [selectedLayer, setSelectedLayer] = useState("median");
+  const [selectedLayer, setSelectedLayer] = useState(null);
   function selectStat(key, layer = "median") {
     setSelectedKey(key);
     setSelectedLayer(layer);

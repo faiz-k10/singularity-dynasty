@@ -62,7 +62,7 @@ function bandPath(entries, n, startDeg, outerAt, innerAt) {
 // the Floor cell for a stat lights up that stat's floor marker and
 // thickens the floor band outline, instead of only ever emphasizing the
 // median point regardless of which column was clicked.
-export default function StatRadar({ entries, selectedKey, startDeg = -90, compareEntries, onSelectKey, selectedLayer = "median" }) {
+export default function StatRadar({ entries, selectedKey, startDeg = -90, compareEntries, onSelectKey, selectedLayer = null }) {
   if (!entries || entries.length < 3) return null;
   const n = entries.length;
 
