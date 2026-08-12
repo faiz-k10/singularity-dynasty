@@ -998,7 +998,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 /* Explicit text-align throughout -- this table is nested inside a
    .rankings-table cell, so it's still a CSS descendant of .rankings-table
    and would otherwise inherit that table's td{text-align:center} rule. */
-.stat-detail-table{grid-area:table; min-width:0; border-collapse:collapse; font-size:13px;}
+.stat-detail-table{width:100%; min-width:0; border-collapse:collapse; font-size:13px;}
 .stat-detail-table th{
   text-align:left; font-family:var(--font-ibm-plex-mono), monospace; font-size:10px; letter-spacing:0.06em;
   text-transform:uppercase; color:var(--star-dim); padding:6px 10px; border-bottom:1px solid var(--line);
@@ -1018,21 +1018,42 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .stat-detail-table td:first-child{text-align:left;}
 .stat-detail-table tr:last-child td{border-bottom:none;}
 
-/* Table left, radar right -- table and radar share the per-stat axis
-   (numbers vs. shape), so they're the two halves of one row. Collapses
-   to a single stacked column below 860px where two real columns stop
-   having room to breathe. */
+/* Three organized panels -- stat table, radar shape, and the similar-
+   shape comp list -- side by side as equal-height cards instead of the
+   old two-column layout that stacked the comp list under the radar
+   (and left a tall gap of empty space under the shorter table beside
+   it, since the two columns' content heights rarely matched). Radar
+   gets a bit more room since the chart itself needs it; finder gets a
+   bit less since it's just a short list. Collapses to two columns with
+   the comp list spanning full-width below once there's not enough room
+   for three real columns, then to a single stacked column on narrow
+   screens. */
 .stat-detail-grid{
-  display:grid; grid-template-columns:1fr 1fr;
-  grid-template-areas: "table radar";
-  column-gap:32px; row-gap:24px; align-items:start;
+  display:grid; grid-template-columns:1.1fr 1fr 0.9fr;
+  grid-template-areas: "table radar finder";
+  column-gap:20px; row-gap:20px; align-items:stretch;
 }
-@media (max-width:860px){
+@media (max-width:1100px){
   .stat-detail-grid{
-    grid-template-columns:1fr;
-    grid-template-areas:"table" "radar";
+    grid-template-columns:1fr 1fr;
+    grid-template-areas:"table radar" "finder finder";
   }
 }
+@media (max-width:640px){
+  .stat-detail-grid{
+    grid-template-columns:1fr;
+    grid-template-areas:"table" "radar" "finder";
+  }
+}
+/* Shared card chrome for the three panels above -- a shade lighter than
+   the void-panel-2 background behind the whole expanded row, with its
+   own border, so each reads as a distinct organized section instead of
+   floating loosely in one big area. */
+.stat-panel{
+  background:var(--void-panel); border:1px solid var(--line); border-radius:12px;
+  padding:14px 16px; min-width:0;
+}
+.stat-panel-radar{max-width:340px; display:flex; flex-direction:column; align-items:center;}
 
 /* Fills the entire td (not just a tight box around the digits) so a
    click anywhere in a Floor/Median/Ceiling cell registers -- these
@@ -1057,8 +1078,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
    median language used by .sim-bar-typical/.sim-bar-upside elsewhere in
    this table. The active point/label (whichever stat row is selected)
    picks up the same gold used for .stat-row-selected. */
-.radar-cell{grid-area:radar; min-width:0; max-width:340px;}
-.stat-radar{min-width:0;}
+.stat-radar{min-width:0; width:100%;}
 .stat-radar-label{
   font-family:var(--font-ibm-plex-mono), monospace; font-size:10px; letter-spacing:0.08em;
   text-transform:uppercase; color:var(--star-dim); margin-bottom:4px;
@@ -1098,7 +1118,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
    pool (same signature of stat keys, so QBs only match QBs but WRs and
    TEs share a pool since they carry the exact same 3 keys) by Euclidean
    distance and lets you toggle one onto the radar as a dashed overlay. */
-.shape-finder{margin-top:14px;}
+.shape-finder{grid-area:finder;}
 .shape-finder-label{
   font-family:var(--font-ibm-plex-mono), monospace; font-size:10px; letter-spacing:0.08em;
   text-transform:uppercase; color:var(--star-dim); margin-bottom:6px;

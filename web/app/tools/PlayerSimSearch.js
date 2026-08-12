@@ -80,64 +80,66 @@ function StatDetailRow({ row, colSpan, shapePeers }) {
     <tr className="stat-detail-row">
       <td colSpan={colSpan}>
         <div className="stat-detail-grid">
-          <table className="stat-detail-table">
-            <thead>
-              <tr>
-                <th>Stat</th>
-                {["floor", "median", "ceiling"].map((layer) => (
-                  <th key={layer}>
-                    <button
-                      type="button"
-                      className={`stat-header-trigger${selectedLayer === layer ? " stat-header-trigger-active" : ""}`}
-                      onClick={() => setSelectedLayer(layer)}
-                      aria-pressed={selectedLayer === layer}
-                    >
-                      {layer === "floor" ? "Floor" : layer === "median" ? "Median" : "Ceiling"}
-                    </button>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {entries.map(([key, label]) => {
-                const { floor, median, ceiling } = ranges[key];
-                const isSelected = key === selectedKey;
-                function cellProps(layer) {
-                  const isActive = isSelected && selectedLayer === layer;
-                  return {
-                    className: `stat-row-trigger${isActive ? " stat-row-trigger-active" : ""}`,
-                    onClick: () => selectStat(key, layer),
-                    "aria-pressed": isActive,
-                  };
-                }
-                return (
-                  <tr key={key} className={isSelected ? "stat-row-selected" : ""}>
-                    <td>
-                      <button type="button" {...cellProps("median")}>
-                        {label}
+          <div className="stat-panel stat-panel-table">
+            <table className="stat-detail-table">
+              <thead>
+                <tr>
+                  <th>Stat</th>
+                  {["floor", "median", "ceiling"].map((layer) => (
+                    <th key={layer}>
+                      <button
+                        type="button"
+                        className={`stat-header-trigger${selectedLayer === layer ? " stat-header-trigger-active" : ""}`}
+                        onClick={() => setSelectedLayer(layer)}
+                        aria-pressed={selectedLayer === layer}
+                      >
+                        {layer === "floor" ? "Floor" : layer === "median" ? "Median" : "Ceiling"}
                       </button>
-                    </td>
-                    <td className="mono">
-                      <button type="button" {...cellProps("floor")}>
-                        {floor}
-                      </button>
-                    </td>
-                    <td className="mono">
-                      <button type="button" {...cellProps("median")}>
-                        <strong>{median}</strong>
-                      </button>
-                    </td>
-                    <td className="mono">
-                      <button type="button" {...cellProps("ceiling")}>
-                        {ceiling}
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-          <div className="radar-cell">
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {entries.map(([key, label]) => {
+                  const { floor, median, ceiling } = ranges[key];
+                  const isSelected = key === selectedKey;
+                  function cellProps(layer) {
+                    const isActive = isSelected && selectedLayer === layer;
+                    return {
+                      className: `stat-row-trigger${isActive ? " stat-row-trigger-active" : ""}`,
+                      onClick: () => selectStat(key, layer),
+                      "aria-pressed": isActive,
+                    };
+                  }
+                  return (
+                    <tr key={key} className={isSelected ? "stat-row-selected" : ""}>
+                      <td>
+                        <button type="button" {...cellProps("median")}>
+                          {label}
+                        </button>
+                      </td>
+                      <td className="mono">
+                        <button type="button" {...cellProps("floor")}>
+                          {floor}
+                        </button>
+                      </td>
+                      <td className="mono">
+                        <button type="button" {...cellProps("median")}>
+                          <strong>{median}</strong>
+                        </button>
+                      </td>
+                      <td className="mono">
+                        <button type="button" {...cellProps("ceiling")}>
+                          {ceiling}
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          <div className="stat-panel stat-panel-radar">
             <StatRadar
               entries={radarEntries}
               selectedKey={selectedKey}
@@ -146,15 +148,15 @@ function StatDetailRow({ row, colSpan, shapePeers }) {
               compareEntries={compareEntries}
               onSelectKey={(key) => selectStat(key, "median")}
             />
-            <SimilarShapeFinder
-              ownName={row.player_name}
-              statPercentiles={row.statPercentiles}
-              keys={entries.map(([key]) => key)}
-              peers={shapePool}
-              selectedName={compareName}
-              onSelect={setCompareName}
-            />
           </div>
+          <SimilarShapeFinder
+            ownName={row.player_name}
+            statPercentiles={row.statPercentiles}
+            keys={entries.map(([key]) => key)}
+            peers={shapePool}
+            selectedName={compareName}
+            onSelect={setCompareName}
+          />
         </div>
       </td>
     </tr>

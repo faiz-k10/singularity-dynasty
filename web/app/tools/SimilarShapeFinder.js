@@ -27,7 +27,7 @@ export default function SimilarShapeFinder({ ownName, statPercentiles, keys, pee
   if (ranked.length === 0) return null;
 
   return (
-    <div className="shape-finder">
+    <div className="shape-finder stat-panel stat-panel-finder">
       <div className="shape-finder-label mono">Most similar shape</div>
       <div className="shape-finder-list">
         {ranked.map((p) => {
