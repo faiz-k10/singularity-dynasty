@@ -2,13 +2,26 @@ const SIZE = 280;
 const CENTER = SIZE / 2;
 // Labels wrap one word per line (see labelWords/LABEL_LINE_EM below), so
 // the margin they need past the chart is roughly one word wide instead
-// of a full two-word name -- that's what lets MAX_R sit this close to
-// the viewBox half-width (140) without "Pass Yards"/"Rush Yards" style
-// labels clipping on the near-horizontal vertices. "Receptions" is the
-// one label that's a single unsplittable word and stays the tightest
-// fit; verified against it directly rather than by character-width math.
-const MAX_R = 92;
-const LABEL_FRAC = 1.04;
+// of a full two-word name -- except "Receptions", which has no space to
+// break on and stays a single ~10-character run. That word lands on the
+// near-horizontal vertex of the WR/TE triangle (RADAR_ORDER in
+// PlayerSimSearch.js puts "receptions" at index 2, cos ~0.87 off
+// startDeg=90), which is the actual binding constraint on MAX_R *
+// LABEL_FRAC -- go past ~96 viewBox units of label radius there and
+// "Receptions" clips the right edge of the viewBox.
+//
+// The gap that matters for readability isn't ring-to-label, it's
+// point-to-label: a vertex's dot sits at its own percentile, up to
+// MAX_R for a ~100th-percentile stat, i.e. right at the ring. A two-
+// line label's first word also shifts back toward the point by half a
+// line (LABEL_LINE_EM/2) to stay vertically centered on labelPos, so
+// the true clearance is smaller than LABEL_FRAC alone suggests -- a
+// too-small gap read as the label sitting on top of the point/ring
+// (see "Rec"/"TDs" screenshot). MAX_R/LABEL_FRAC below put ~16 viewBox
+// units of radius between the ring and the label anchor (vs. the
+// original ~4), while staying under the ~96-unit Receptions ceiling.
+const MAX_R = 70;
+const LABEL_FRAC = 1.23;
 const LABEL_LINE_EM = 1.05;
 const RINGS = [0.25, 0.5, 0.75, 1];
 

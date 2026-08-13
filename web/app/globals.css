@@ -1053,7 +1053,12 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
   background:var(--void-panel); border:1px solid var(--line); border-radius:12px;
   padding:14px 16px; min-width:0;
 }
-.stat-panel-radar{max-width:340px; display:flex; flex-direction:column; align-items:center;}
+/* 440 (not the old 340) so the panel actually uses close to its natural
+   grid-column width instead of capping well under it -- StatRadar's own
+   point-to-label gap is a fraction of the rendered size, so a wider box
+   gives the labels real physical breathing room on top of that, and
+   offsets MAX_R having come down to fit the bigger gap. */
+.stat-panel-radar{max-width:440px; display:flex; flex-direction:column; align-items:center;}
 
 /* Fills the entire td (not just a tight box around the digits) so a
    click anywhere in a Floor/Median/Ceiling cell registers -- these
