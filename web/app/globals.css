@@ -1117,21 +1117,42 @@ tr.stat-row-selected td{background:var(--void-panel);}
 /* Similar-shape finder -- ranks the current player's stat-percentile
    pool (same signature of stat keys, so QBs only match QBs but WRs and
    TEs share a pool since they carry the exact same 3 keys) by Euclidean
-   distance and lets you toggle one onto the radar as a dashed overlay. */
+   distance and lets you toggle one onto the radar as a dashed overlay.
+   Neon-blue is this panel's color throughout (name border/text, active
+   F/M/C pill) since it matches .radar-shape-compare's own dashed-blue
+   overlay -- gold stays reserved for "this is your own player" so the
+   two never get visually confused on the chart. */
 .shape-finder{grid-area:finder;}
 .shape-finder-label{
   font-family:var(--font-ibm-plex-mono), monospace; font-size:10px; letter-spacing:0.08em;
   text-transform:uppercase; color:var(--star-dim); margin-bottom:6px;
 }
-.shape-finder-list{display:flex; flex-direction:column; gap:4px;}
+.shape-finder-list{display:flex; flex-direction:column; gap:6px;}
 .shape-finder-item{
-  all:unset; cursor:pointer; display:flex; justify-content:space-between; align-items:center;
-  padding:6px 10px; border-radius:8px; border:1px solid var(--line); color:var(--star);
-  font-size:12.5px; transition:border-color .15s ease, color .15s ease;
+  display:flex; justify-content:space-between; align-items:center; gap:8px;
+  padding:6px 8px 6px 10px; border-radius:8px; border:1px solid var(--line);
+  transition:border-color .15s ease;
 }
-.shape-finder-item:hover{border-color:var(--neon-blue);}
-.shape-finder-item.active{border-color:var(--neon-blue); color:var(--neon-blue); background:rgba(var(--neon-blue-rgb),0.08);}
-.shape-finder-pos{color:var(--star-dim); font-size:10.5px;}
+.shape-finder-item:hover, .shape-finder-item.active{border-color:var(--neon-blue);}
+.shape-finder-item.active{background:rgba(var(--neon-blue-rgb),0.08);}
+.shape-finder-name{
+  all:unset; cursor:pointer; display:flex; align-items:baseline; gap:6px; min-width:0;
+  color:var(--star); font-size:12.5px; transition:color .15s ease;
+}
+.shape-finder-name span:first-child{overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.shape-finder-item.active .shape-finder-name{color:var(--neon-blue);}
+.shape-finder-pos{color:var(--star-dim); font-size:10.5px; flex-shrink:0;}
+/* F/M/C picker -- same three-way pattern as the main table's Floor/
+   Median/Ceiling headers, shrunk to a compact pill group so it reads as
+   part of the row rather than a second control bolted on. */
+.shape-finder-layers{display:flex; gap:2px; flex-shrink:0;}
+.shape-finder-layer-btn{
+  all:unset; cursor:pointer; width:20px; height:20px; display:flex; align-items:center;
+  justify-content:center; border-radius:5px; font-size:10px; color:var(--star-dim);
+  transition:background .15s ease, color .15s ease;
+}
+.shape-finder-layer-btn:hover{color:var(--star);}
+.shape-finder-layer-btn.active{background:var(--neon-blue); color:var(--void);}
 
 /* ---------- COMPARE PLAYERS ---------- */
 .compare-form{

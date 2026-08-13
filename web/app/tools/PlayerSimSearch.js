@@ -55,9 +55,20 @@ function StatDetailRow({ row, colSpan, shapePeers }) {
     setSelectedLayer(layer);
   }
   // Which "most similar shape" comp (if any) is overlaid on the radar --
-  // a name rather than the row object since it's toggled off by re-
-  // clicking the same match in SimilarShapeFinder.
+  // a name rather than the row object since it's looked up fresh from
+  // shapePool below. compareLayer is which of that comp's Floor/Median/
+  // Ceiling is showing; selecting a comp defaults to its median, but each
+  // row in SimilarShapeFinder carries its own F/M/C picker to switch it.
   const [compareName, setCompareName] = useState(null);
+  const [compareLayer, setCompareLayer] = useState("median");
+  function selectCompare(name, layer) {
+    if (compareName === name && compareLayer === layer) {
+      setCompareName(null);
+    } else {
+      setCompareName(name);
+      setCompareLayer(layer);
+    }
+  }
   const radarEntriesRaw = entries.map(([key, label]) => [
     key,
     label,
@@ -70,8 +81,14 @@ function StatDetailRow({ row, colSpan, shapePeers }) {
   const shapeSignature = entries.map(([key]) => key).sort().join("|");
   const shapePool = shapePeers?.[shapeSignature];
   const compareRow = compareName ? shapePool?.find((p) => p.name === compareName) : null;
+  const comparePctiles =
+    compareLayer === "floor"
+      ? compareRow?.statFloorPercentiles
+      : compareLayer === "ceiling"
+      ? compareRow?.statCeilingPercentiles
+      : compareRow?.statPercentiles;
   const compareEntries = compareRow
-    ? radarEntries.map(([key, label]) => [key, label, compareRow.statPercentiles?.[key]])
+    ? radarEntries.map(([key, label]) => [key, label, comparePctiles?.[key]])
     : null;
 
   if (entries.length === 0) return null;
@@ -155,7 +172,8 @@ function StatDetailRow({ row, colSpan, shapePeers }) {
             keys={entries.map(([key]) => key)}
             peers={shapePool}
             selectedName={compareName}
-            onSelect={setCompareName}
+            selectedLayer={compareLayer}
+            onSelect={selectCompare}
           />
         </div>
       </td>

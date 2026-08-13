@@ -186,6 +186,8 @@ export default async function PlayerSimulationsPage({ searchParams }) {
       name: row.player_name,
       position: row.position,
       statPercentiles: row.statPercentiles,
+      statFloorPercentiles: row.statFloorPercentiles,
+      statCeilingPercentiles: row.statCeilingPercentiles,
     });
   }
   // CSV export stays in points-per-game terms regardless of the on-page
