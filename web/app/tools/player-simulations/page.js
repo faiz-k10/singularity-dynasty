@@ -124,20 +124,15 @@ export default async function PlayerSimulationsPage({ searchParams }) {
   }
   const INVERTED_STATS = new Set(["passing_interceptions"]);
   // Same idea, per individual stat (rushing yards, receptions, etc.) for
-  // the radar chart in the expanded row -- one pool per position+stat key,
-  // each holding every player's floor/median/ceiling for that stat, so a
-  // player's own floor and ceiling can be ranked against the same-metric
-  // pool (not against the median pool) for the radar's floor-to-ceiling
-  // band around the median shape.
+  // the radar chart in the expanded row -- one median pool per
+  // position+stat key. Floor and ceiling are ranked against this same
+  // pool too (see below), so there's only ever one array to build here.
   const statPoolByPos = {};
   for (const row of sortedSims) {
     if (!row.stat_ranges) continue;
     const pool = (statPoolByPos[row.position] ??= {});
     for (const [key, range] of Object.entries(row.stat_ranges)) {
-      const p = (pool[key] ??= { floor: [], median: [], ceiling: [] });
-      p.floor.push(range.floor);
-      p.median.push(range.median);
-      p.ceiling.push(range.ceiling);
+      (pool[key] ??= []).push(range.median);
     }
   }
   const simsWithHeat = sortedSims.map((row) => {
@@ -152,9 +147,20 @@ export default async function PlayerSimulationsPage({ searchParams }) {
       for (const [key, range] of Object.entries(row.stat_ranges)) {
         const pool = statPool?.[key];
         const invert = INVERTED_STATS.has(key);
-        statPercentiles[key] = percentileRank(range.median, pool?.median, invert);
-        statFloorPercentiles[key] = percentileRank(range.floor, pool?.floor, invert);
-        statCeilingPercentiles[key] = percentileRank(range.ceiling, pool?.ceiling, invert);
+        // Floor and ceiling rank against the MEDIAN pool, not their own
+        // floor/ceiling pools -- floor/median/ceiling for one player are
+        // all draws from that same player's own distribution, so a
+        // better player tends to have a higher floor AND median AND
+        // ceiling together. Ranking each independently against its own
+        // similarly-shifted pool preserves that correlation and makes
+        // all three percentiles land nearly on top of each other for
+        // most players. Putting floor/ceiling on the median pool's scale
+        // instead measures "how does my floor/ceiling compare to peers'
+        // typical production," which spreads the band out to actually
+        // reflect this player's own variance.
+        statPercentiles[key] = percentileRank(range.median, pool, invert);
+        statFloorPercentiles[key] = percentileRank(range.floor, pool, invert);
+        statCeilingPercentiles[key] = percentileRank(range.ceiling, pool, invert);
       }
     }
     return {
