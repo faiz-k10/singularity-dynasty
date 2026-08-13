@@ -23,7 +23,9 @@ const LAYER_LABEL = { floor: "Floor", median: "Median", ceiling: "Ceiling" };
 // --up/--down pair TrendTag/the ticker already use, so "ahead" reads the
 // same color language site-wide instead of introducing a new green/red.
 // The +/-N number is the same comparison spelled out as a plain number
-// for whoever doesn't want to read bar positions.
+// for whoever doesn't want to read bar positions -- "pctl" rides along
+// in dim text right on the number instead of a separate legend, so the
+// unit is obvious in place without a key to cross-reference.
 function CompareBar({ label, playerPctile, compPctile }) {
   if (playerPctile == null || compPctile == null) return null;
   const diff = Math.round(playerPctile) - Math.round(compPctile);
@@ -40,6 +42,7 @@ function CompareBar({ label, playerPctile, compPctile }) {
       </div>
       <span className={`shape-compare-diff shape-compare-diff-${dir}`}>
         {diff > 0 ? `+${diff}` : diff === 0 ? "±0" : diff}
+        <span className="shape-compare-diff-unit">pctl</span>
       </span>
     </div>
   );
@@ -117,22 +120,6 @@ export default function SimilarShapeFinder({
   return (
     <div className="shape-finder stat-panel stat-panel-finder">
       <div className="shape-finder-label mono">Most similar shape</div>
-      {playerPctiles && (
-        <div className="shape-compare-legend">
-          <span className="shape-compare-legend-item">
-            <span className="shape-compare-legend-dot shape-compare-legend-dot-player" />
-            Player
-          </span>
-          <span className="shape-compare-legend-item">
-            <span className="shape-compare-legend-dot shape-compare-legend-dot-comp" />
-            Comp
-          </span>
-          <span className="shape-compare-legend-item shape-compare-legend-note">
-            +/&minus; percentile points &middot; <span className="shape-compare-diff-up">green</span> = player ahead,{" "}
-            <span className="shape-compare-diff-down">red</span> = comp ahead
-          </span>
-        </div>
-      )}
       <div className="shape-finder-list">
         {ranked.map((p) => {
           const isActive = selectedName === p.name;
