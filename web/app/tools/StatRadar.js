@@ -86,10 +86,12 @@ function bandPath(entries, n, startDeg, outerAt, innerAt) {
 // the stat table's own row trigger, so selection can be driven from
 // either visual and both stay in sync via the shared selectedKey state
 // one level up in StatDetailRow. selectedLayer ("floor"/"median"/
-// "ceiling") points at which specific number is active -- e.g. clicking
-// the Floor cell for a stat lights up that stat's floor marker and
-// thickens the floor band outline, instead of only ever emphasizing the
-// median point regardless of which column was clicked.
+// "ceiling") points at which specific number is active -- selecting a
+// stat (any cell in its row) shows all three of its floor/median/
+// ceiling markers at once, since that's the full picture for that one
+// axis; selectedLayer just picks which of the three renders a touch
+// bigger and which band outline goes bold, e.g. clicking the Floor cell
+// for a stat emphasizes that stat's floor marker specifically.
 export default function StatRadar({ entries, selectedKey, startDeg = -90, compareEntries, onSelectKey, selectedLayer = null }) {
   if (!entries || entries.length < 3) return null;
   const n = entries.length;
@@ -177,7 +179,7 @@ export default function StatRadar({ entries, selectedKey, startDeg = -90, compar
                 <circle
                   cx={floorPoints[i].x}
                   cy={floorPoints[i].y}
-                  r={isFloorActive ? 4.5 : 0}
+                  r={isActive ? (isFloorActive ? 4.5 : 3.5) : 0}
                   className="radar-point-floor"
                 />
               )}
@@ -185,14 +187,14 @@ export default function StatRadar({ entries, selectedKey, startDeg = -90, compar
                 <circle
                   cx={ceilingPoints[i].x}
                   cy={ceilingPoints[i].y}
-                  r={isCeilingActive ? 4.5 : 0}
+                  r={isActive ? (isCeilingActive ? 4.5 : 3.5) : 0}
                   className="radar-point-ceiling"
                 />
               )}
               <circle
                 cx={point.x}
                 cy={point.y}
-                r={isMedianActive ? 4.5 : 3}
+                r={isMedianActive ? 4.5 : isActive ? 3.5 : 3}
                 className={isMedianActive ? "radar-point radar-point-active" : "radar-point"}
               />
               <text
