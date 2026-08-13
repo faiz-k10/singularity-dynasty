@@ -1073,6 +1073,11 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 }
 .stat-row-trigger:hover{color:var(--neon-blue); background:rgba(var(--neon-blue-rgb),0.08);}
 .stat-row-trigger-active{color:var(--horizon-gold);}
+/* Whole-column echo of the selected Floor/Median/Ceiling layer -- a dim
+   gold background/text so every row's number in that column reads as
+   "the thing currently on the radar", distinct from the brighter, bolder
+   .stat-row-trigger-active cell that's both the selected row AND layer. */
+.stat-row-trigger-column{color:var(--horizon-gold); background:rgba(var(--horizon-gold-rgb),0.08);}
 tr.stat-row-selected td{background:var(--void-panel);}
 
 /* Per-stat percentile shape -- second panel beside the stat table, same

@@ -120,10 +120,26 @@ function StatDetailRow({ row, colSpan, shapePeers }) {
                 {entries.map(([key, label]) => {
                   const { floor, median, ceiling } = ranges[key];
                   const isSelected = key === selectedKey;
-                  function cellProps(layer) {
+                  // Two independent "dim" reasons light up a cell along
+                  // with the one exact selected-row/selected-layer
+                  // intersection (which gets the stronger "active"
+                  // treatment instead): columnHighlight echoes whichever
+                  // Floor/Median/Ceiling column was last clicked across
+                  // every row, rowHighlight echoes the selected stat's
+                  // other two numbers across its own row -- together that's
+                  // what makes clicking "INTs" light up its whole row and
+                  // clicking "Floor" light up its whole column. Both are
+                  // off for the Stat-name button (it only reuses
+                  // cellProps("median") to route clicks to the median
+                  // layer, and dims separately, see below) so an unrelated
+                  // Median-column selection doesn't light up every name.
+                  function cellProps(layer, { columnHighlight = true, rowHighlight = true } = {}) {
                     const isActive = isSelected && selectedLayer === layer;
+                    const isDim =
+                      !isActive &&
+                      ((columnHighlight && selectedLayer === layer) || (rowHighlight && isSelected));
                     return {
-                      className: `stat-row-trigger${isActive ? " stat-row-trigger-active" : ""}`,
+                      className: `stat-row-trigger${isActive ? " stat-row-trigger-active" : isDim ? " stat-row-trigger-column" : ""}`,
                       onClick: () => selectStat(key, layer),
                       "aria-pressed": isActive,
                     };
@@ -131,7 +147,7 @@ function StatDetailRow({ row, colSpan, shapePeers }) {
                   return (
                     <tr key={key} className={isSelected ? "stat-row-selected" : ""}>
                       <td>
-                        <button type="button" {...cellProps("median")}>
+                        <button type="button" {...cellProps("median", { columnHighlight: false })}>
                           {label}
                         </button>
                       </td>
