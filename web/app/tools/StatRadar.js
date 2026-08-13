@@ -1,13 +1,22 @@
 const SIZE = 280;
 const CENTER = SIZE / 2;
-// Smaller than the viewBox half-width (140) on purpose -- axis labels sit
-// past the chart at LABEL_FRAC and need real room to render without
-// clipping against the viewBox edge, especially the longer names
-// ("Pass Yards", "Receptions") on the near-horizontal vertices where
-// cos(angle) is close to 1.
-const MAX_R = 76;
-const LABEL_FRAC = 1.15;
+// Labels wrap one word per line (see labelWords/LABEL_LINE_EM below), so
+// the margin they need past the chart is roughly one word wide instead
+// of a full two-word name -- that's what lets MAX_R sit this close to
+// the viewBox half-width (140) without "Pass Yards"/"Rush Yards" style
+// labels clipping on the near-horizontal vertices. "Receptions" is the
+// one label that's a single unsplittable word and stays the tightest
+// fit; verified against it directly rather than by character-width math.
+const MAX_R = 92;
+const LABEL_FRAC = 1.04;
+const LABEL_LINE_EM = 1.05;
 const RINGS = [0.25, 0.5, 0.75, 1];
+
+// One word per line so "Pass Yards" reads as "Pass" / "Yards" instead of
+// needing full-string-width margin on the horizontal vertices.
+function labelWords(label) {
+  return label.split(" ");
+}
 
 // startDeg places vertex 0: -90 is straight up (the default point-up
 // layout), 90 is straight down (used to flip WR/TE into a point-down
@@ -180,7 +189,15 @@ export default function StatRadar({ entries, selectedKey, startDeg = -90, compar
                 dominantBaseline="middle"
                 className={isActive ? "radar-axis-label radar-axis-label-active" : "radar-axis-label"}
               >
-                {label}
+                {labelWords(label).map((word, wi, words) => (
+                  <tspan
+                    key={wi}
+                    x={labelPos.x}
+                    dy={wi === 0 ? `${-(words.length - 1) * (LABEL_LINE_EM / 2)}em` : `${LABEL_LINE_EM}em`}
+                  >
+                    {word}
+                  </tspan>
+                ))}
               </text>
             </g>
           );
