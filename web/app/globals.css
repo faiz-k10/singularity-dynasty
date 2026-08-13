@@ -1183,11 +1183,21 @@ tr.stat-row-selected td{background:var(--void-panel);}
 }
 .shape-compare-row{display:grid; grid-template-columns:44px 1fr 34px; align-items:center; gap:8px; padding:2px 0;}
 .shape-compare-row-label{font-size:10.5px; color:var(--star-dim);}
-.shape-compare-track{position:relative; height:4px; border-radius:2px; background:var(--void-panel-2);}
+/* margin-bottom on the track (not the row) reserves room for the "50"
+   label below without disturbing the row's own vertical centering. */
+.shape-compare-track{position:relative; height:4px; border-radius:2px; background:var(--void-panel-2); margin-bottom:9px;}
 .shape-compare-fill{position:absolute; top:0; bottom:0; border-radius:inherit;}
 .shape-compare-fill-up{background:rgba(var(--up-rgb),0.55);}
 .shape-compare-fill-down{background:rgba(var(--down-rgb),0.55);}
 .shape-compare-fill-even{background:var(--star-dim); opacity:0.4;}
+/* Fixed 50th-percentile reference line + label -- always dead center
+   regardless of where the two ticks land, so "ahead of/behind average"
+   reads at a glance instead of eyeballing a 0-100 position. */
+.shape-compare-midtick{position:absolute; left:50%; top:-2px; bottom:-2px; width:1px; background:rgba(var(--star-dim-rgb),0.45); transform:translateX(-50%);}
+.shape-compare-midtick-label{
+  position:absolute; left:50%; top:calc(100% + 2px); transform:translateX(-50%);
+  font-family:var(--font-ibm-plex-mono), monospace; font-size:8px; line-height:1; color:var(--star-dim);
+}
 .shape-compare-tick{
   position:absolute; top:50%; width:8px; height:8px; border-radius:50%;
   transform:translate(-50%, -50%); border:2px solid var(--void-panel);
@@ -1243,7 +1253,12 @@ tr.stat-row-selected td{background:var(--void-panel);}
   font-family:var(--font-ibm-plex-mono), monospace; font-size:12px; color:var(--star); text-align:right;
   font-variant-numeric:tabular-nums;
 }
-.pctile-bar{position:relative; height:6px; border-radius:3px; background:var(--void-panel-2); overflow:hidden;}
+/* overflow was hidden here for the fill's rounded corners, but that also
+   clipped a below-the-bar "50" label -- the fill already carries its own
+   border-radius:inherit, so dropping overflow:hidden doesn't change how
+   the fill itself renders. margin-bottom reserves the room that label
+   needs without disturbing .pctile-row's own vertical centering. */
+.pctile-bar{position:relative; height:6px; border-radius:3px; background:var(--void-panel-2); margin-bottom:9px;}
 .pctile-bar-lg{height:10px; border-radius:5px; margin-top:10px;}
 .pctile-bar-fill{position:absolute; top:0; left:0; bottom:0; border-radius:inherit; transition:width .2s ease;}
 /* Same four break points as PercentileCard.js's tier() -- weak/below
@@ -1256,6 +1271,14 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .pctile-bar-avg{background:var(--neon-blue);}
 .pctile-bar-above{background:var(--horizon-gold); opacity:0.7;}
 .pctile-bar-elite{background:var(--horizon-gold);}
+/* 50th-percentile reference -- same fixed-center tick+label pattern as
+   .shape-compare-midtick on the comp bars, so both bar systems on this
+   page share the same "here's average" visual language. */
+.pctile-bar-midtick{position:absolute; left:50%; top:-2px; bottom:-2px; width:1px; background:rgba(var(--star-dim-rgb),0.45); transform:translateX(-50%);}
+.pctile-bar-midtick-label{
+  position:absolute; left:50%; top:calc(100% + 2px); transform:translateX(-50%);
+  font-family:var(--font-ibm-plex-mono), monospace; font-size:8px; line-height:1; color:var(--star-dim);
+}
 .pctile-hero{display:flex; align-items:baseline; gap:10px;}
 .pctile-hero-value{font-family:var(--font-space-grotesk); font-size:32px; font-weight:700; color:var(--star); line-height:1;}
 .pctile-hero-tier{

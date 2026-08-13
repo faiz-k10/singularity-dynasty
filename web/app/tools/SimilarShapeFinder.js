@@ -37,6 +37,11 @@ function CompareBar({ label, playerPctile, compPctile }) {
       <span className="shape-compare-row-label">{label}</span>
       <div className="shape-compare-track">
         <div className={`shape-compare-fill shape-compare-fill-${dir}`} style={{ left: `${lo}%`, width: `${hi - lo}%` }} />
+        {/* 50th-percentile reference -- fixed at center regardless of
+            either tick's position, so "ahead of/behind average" is a
+            glance instead of a mental 0-100 estimate. */}
+        <div className="shape-compare-midtick" />
+        <span className="shape-compare-midtick-label">50</span>
         <div className="shape-compare-tick shape-compare-tick-comp" style={{ left: `${compPctile}%` }} />
         <div className="shape-compare-tick shape-compare-tick-player" style={{ left: `${playerPctile}%` }} />
       </div>

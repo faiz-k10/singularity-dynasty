@@ -26,11 +26,18 @@ function tier(pctile) {
   return { label: "Weak", cls: "weak" };
 }
 
+// 50th-percentile reference tick + label -- fixed dead center regardless
+// of the fill's own width, mirroring the same reference mark on
+// SimilarShapeFinder's comp bars, so "above/below average" reads at a
+// glance here too instead of eyeballing where the fill ends on a 0-100
+// scale.
 function PercentileBar({ pctile, size }) {
   const t = tier(pctile);
   return (
     <div className={`pctile-bar${size === "lg" ? " pctile-bar-lg" : ""}`}>
       <div className={`pctile-bar-fill pctile-bar-${t.cls}`} style={{ width: `${Math.max(pctile, 2)}%` }} />
+      <div className="pctile-bar-midtick" />
+      <span className="pctile-bar-midtick-label">50</span>
     </div>
   );
 }
