@@ -1168,6 +1168,63 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .shape-finder-layer-btn:hover{color:var(--star);}
 .shape-finder-layer-btn.active{background:var(--neon-blue); color:var(--void);}
 
+/* Percentile card -- sits under the stat table, spelling out in words
+   whatever the table/radar selection above is currently pointing at
+   (see PercentileCard.js for the row/column/cell mode split). A top
+   border instead of its own full card chrome so it reads as part of the
+   table panel it lives in, not a fourth panel competing with the three
+   .stat-panel siblings. */
+/* white-space:normal because this card sits inside the outer rankings
+   table's <td> (the stat-detail-row is a colSpan row in .rankings-table)
+   -- .rankings-table td sets white-space:nowrap directly on that cell,
+   which inherits into every descendant text node, including this prose
+   paragraph, unless reset here. */
+.pctile-card{margin-top:14px; padding-top:14px; border-top:1px dashed var(--line); white-space:normal;}
+.pctile-card-empty{color:var(--star-dim); font-size:12.5px; line-height:1.5;}
+.pctile-card-empty p{margin:0;}
+.pctile-card-head{display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin-bottom:10px;}
+.pctile-card-title{font-family:var(--font-space-grotesk); font-size:14px; font-weight:600; color:var(--star);}
+.pctile-card-sub{
+  font-family:var(--font-ibm-plex-mono), monospace; font-size:10px; letter-spacing:0.06em;
+  text-transform:uppercase; color:var(--star-dim); white-space:nowrap;
+}
+.pctile-rows{display:flex; flex-direction:column; gap:2px;}
+/* Each row is its own button (fills the row, mirrors .stat-row-trigger)
+   so clicking a Floor/Median/Ceiling breakdown or a stat in the ranked
+   column list drives the exact same selection as clicking the table
+   cell it describes -- one more surface synced to the same state. */
+.pctile-row{
+  all:unset; cursor:pointer; display:grid; grid-template-columns:64px 1fr 40px; align-items:center;
+  gap:10px; padding:5px 6px; border-radius:6px; box-sizing:border-box; width:100%;
+}
+.pctile-row:hover{background:rgba(var(--neon-blue-rgb),0.08);}
+.pctile-row-active{background:rgba(var(--horizon-gold-rgb),0.1);}
+.pctile-row-label{font-size:12px; color:var(--star-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.pctile-row-active .pctile-row-label{color:var(--star);}
+.pctile-row-value{
+  font-family:var(--font-ibm-plex-mono), monospace; font-size:12px; color:var(--star); text-align:right;
+  font-variant-numeric:tabular-nums;
+}
+.pctile-bar{position:relative; height:6px; border-radius:3px; background:var(--void-panel-2); overflow:hidden;}
+.pctile-bar-lg{height:10px; border-radius:5px; margin-top:10px;}
+.pctile-bar-fill{position:absolute; top:0; left:0; bottom:0; border-radius:inherit; transition:width .2s ease;}
+/* Same four break points as PercentileCard.js's tier() -- weak/below
+   stay in the "typical" blue family used elsewhere (.sim-bar-typical),
+   average bridges to it, above/elite move into the gold "upside" family
+   (.sim-bar-upside) so a glance at the color alone roughly tracks the
+   number without reading it. */
+.pctile-bar-weak{background:var(--star-dim); opacity:0.5;}
+.pctile-bar-below{background:var(--neon-blue-dim);}
+.pctile-bar-avg{background:var(--neon-blue);}
+.pctile-bar-above{background:var(--horizon-gold); opacity:0.7;}
+.pctile-bar-elite{background:var(--horizon-gold);}
+.pctile-hero{display:flex; align-items:baseline; gap:10px;}
+.pctile-hero-value{font-family:var(--font-space-grotesk); font-size:32px; font-weight:700; color:var(--star); line-height:1;}
+.pctile-hero-tier{
+  font-family:var(--font-ibm-plex-mono), monospace; font-size:11px; letter-spacing:0.05em; text-transform:uppercase;
+  padding:3px 8px; border-radius:20px; color:var(--void); font-weight:600;
+}
+
 /* ---------- COMPARE PLAYERS ---------- */
 .compare-form{
   display:flex; flex-wrap:wrap; gap:16px; align-items:flex-end;

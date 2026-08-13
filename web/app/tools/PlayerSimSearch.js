@@ -9,6 +9,7 @@ import TeamBadge from "./TeamBadge";
 import STAT_LABELS from "./statLabels";
 import StatRadar from "./StatRadar";
 import SimilarShapeFinder from "./SimilarShapeFinder";
+import PercentileCard from "./PercentileCard";
 
 // Per-position vertex order for the radar, chosen so a fixed clockwise-
 // from-top layout (see StatRadar's angleFor) lands specific stats on
@@ -87,6 +88,16 @@ function StatDetailRow({ row, colSpan, shapePeers }) {
     row.statCeilingPercentiles?.[key],
   ]);
   const { entries: radarEntries, startDeg: radarStartDeg } = radarLayoutFor(radarEntriesRaw, row.position);
+  // Table-order (not radar-vertex-order) percentile lookup for the card
+  // under the table -- same three percentiles the radar already plots,
+  // just spelled out as numbers instead of shape.
+  const percentileStats = entries.map(([key, label]) => ({
+    key,
+    label,
+    floorPctile: row.statFloorPercentiles?.[key],
+    medianPctile: row.statPercentiles?.[key],
+    ceilingPctile: row.statCeilingPercentiles?.[key],
+  }));
 
   const shapeSignature = entries.map(([key]) => key).sort().join("|");
   const shapePool = shapePeers?.[shapeSignature];
@@ -180,6 +191,7 @@ function StatDetailRow({ row, colSpan, shapePeers }) {
                 })}
               </tbody>
             </table>
+            <PercentileCard stats={percentileStats} position={row.position} selection={selection} onSelectCell={selectCell} />
           </div>
           <div className="stat-panel stat-panel-radar">
             <StatRadar
