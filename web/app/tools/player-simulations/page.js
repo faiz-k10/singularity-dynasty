@@ -168,8 +168,31 @@ export default async function PlayerSimulationsPage({ searchParams }) {
   // the radar chart in the expanded row -- one median pool per
   // position+stat key. Floor and ceiling are ranked against this same
   // pool too (see below), so there's only ever one array to build here.
+  //
+  // Built from a separate, always-untruncated query (poolRows below) --
+  // NOT from sortedSims, which is capped to TEASER_LIMIT rows for a
+  // free/signed-out viewer. Percentile math comparing one player against
+  // "the position" has to mean the whole position regardless of who's
+  // looking; a teaser-truncated pool (capped across all positions by
+  // overall fantasy median, before splitting by position) can silently
+  // drop whichever player anchors one end of a position's stat range,
+  // which then reads as a wrong/confusing percentile for anyone still
+  // in the visible pool near that end -- verified live: with the full
+  // 32-QB pool Kyler Murray's passing-yards floor was clearly 3rd
+  // percentile, but the free-tier's 31-QB teaser pool (missing one low
+  // outlier) pushed it down to a misleading 0th, indistinguishable from
+  // a genuinely far-below-everyone floor like Shedeur Sanders'.
+  let poolRows = sortedSims;
+  if (!hasFullAccess && latest) {
+    const { data: fullData } = await supabase
+      .from("player_simulations")
+      .select("position, stat_ranges")
+      .eq("season", latest.season)
+      .eq("week", latest.week);
+    poolRows = fullData || [];
+  }
   const statPoolByPos = {};
-  for (const row of sortedSims) {
+  for (const row of poolRows) {
     if (!row.stat_ranges) continue;
     const pool = (statPoolByPos[row.position] ??= {});
     for (const [key, range] of Object.entries(row.stat_ranges)) {
