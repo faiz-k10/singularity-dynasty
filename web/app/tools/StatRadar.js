@@ -1,6 +1,12 @@
 const SIZE = 280;
 const CENTER = SIZE / 2;
-const MAX_R = 85;
+// Smaller than the viewBox half-width (140) on purpose -- axis labels sit
+// past the chart at LABEL_FRAC and need real room to render without
+// clipping against the viewBox edge, especially the longer names
+// ("Pass Yards", "Receptions") on the near-horizontal vertices where
+// cos(angle) is close to 1.
+const MAX_R = 76;
+const LABEL_FRAC = 1.15;
 const RINGS = [0.25, 0.5, 0.75, 1];
 
 // startDeg places vertex 0: -90 is straight up (the default point-up
@@ -118,7 +124,7 @@ export default function StatRadar({ entries, selectedKey, startDeg = -90, compar
         />
         {entries.map(([key, label], i) => {
           const point = shapePoints[i];
-          const labelPos = pointAt(i, n, 1.2, startDeg);
+          const labelPos = pointAt(i, n, LABEL_FRAC, startDeg);
           const isActive = key === selectedKey;
           const isMedianActive = isActive && selectedLayer === "median";
           const isFloorActive = isActive && selectedLayer === "floor";

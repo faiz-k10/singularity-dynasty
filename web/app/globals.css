@@ -1083,7 +1083,11 @@ tr.stat-row-selected td{background:var(--void-panel);}
   font-family:var(--font-ibm-plex-mono), monospace; font-size:10px; letter-spacing:0.08em;
   text-transform:uppercase; color:var(--star-dim); margin-bottom:4px;
 }
-.stat-radar-svg{width:100%; display:block;}
+/* overflow:visible is a safety net, not the fix -- StatRadar's MAX_R and
+   LABEL_FRAC are sized so labels fit inside the viewBox on their own;
+   this just keeps an edge case from getting hard-clipped instead of
+   only slightly crowding the panel edge. */
+.stat-radar-svg{width:100%; display:block; overflow:visible;}
 .radar-ring{fill:none; stroke:var(--line); stroke-width:1;}
 .radar-spoke{stroke:var(--line); stroke-width:1;}
 .radar-shape{fill:rgba(var(--neon-blue-rgb),0.18); stroke:var(--horizon-gold); stroke-width:1.25; stroke-linejoin:round; transition:stroke-width .15s ease;}
