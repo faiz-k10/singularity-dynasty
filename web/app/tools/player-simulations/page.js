@@ -117,10 +117,51 @@ export default async function PlayerSimulationsPage({ searchParams }) {
   // value = higher percentile" for stats where more is actually worse
   // (interceptions) -- everything else keeps the default higher-is-better
   // direction.
+  //
+  // Linearly interpolates within the gap a value falls into rather than
+  // just counting how many pool entries are strictly below it. Floor/
+  // ceiling get ranked against the (much sparser) median pool -- see
+  // statFloorPercentiles/statCeilingPercentiles below -- so two floors
+  // that both land in the same gap between consecutive median values
+  // used to come out as the literal same percentile despite being very
+  // different numbers (e.g. a 32-QB median pool with nothing between
+  // 1289 and 1903 gave a 1655 floor and a 1321 floor an identical rank).
+  // Interpolating within that gap by exactly where the value falls
+  // fixes that while still landing on the original simple count for a
+  // value that's itself a pool member (the normal case for a median
+  // percentile, which is always ranked against a pool that includes its
+  // own value).
   function percentileRank(value, pool, invert = false) {
     if (!pool || pool.length <= 1) return null;
-    const lower = pool.filter((v) => (invert ? v > value : v < value)).length;
-    return Math.round((lower / (pool.length - 1)) * 100);
+    const dir = invert ? -1 : 1;
+    const sorted = pool.map((v) => v * dir).sort((a, b) => a - b);
+    const v = value * dir;
+    const n = sorted.length;
+    const below = sorted.filter((x) => x < v).length;
+    const above = sorted.filter((x) => x > v).length;
+    const tied = n - below - above;
+
+    let rank;
+    if (tied > 0) {
+      // v exactly matches one or more pool values -- mid-rank of the tie
+      // block, which reduces to plain `below` when v is uniquely present
+      // (tied === 1), matching the original un-interpolated formula.
+      rank = below + (tied - 1) / 2;
+    } else {
+      const loIdx = below - 1;
+      const hiIdx = below;
+      if (loIdx < 0) {
+        const gap = sorted[1] - sorted[0];
+        rank = gap > 0 ? Math.max(0, (v - sorted[0]) / gap) : 0;
+      } else if (hiIdx >= n) {
+        const gap = sorted[n - 1] - sorted[n - 2];
+        rank = gap > 0 ? Math.min(n - 1, n - 2 + (v - sorted[n - 2]) / gap) : n - 1;
+      } else {
+        const gap = sorted[hiIdx] - sorted[loIdx];
+        rank = gap > 0 ? loIdx + (v - sorted[loIdx]) / gap : loIdx;
+      }
+    }
+    return Math.round((rank / (n - 1)) * 100);
   }
   const INVERTED_STATS = new Set(["passing_interceptions"]);
   // Same idea, per individual stat (rushing yards, receptions, etc.) for
