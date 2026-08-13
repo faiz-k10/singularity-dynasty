@@ -56,25 +56,48 @@ function CompareBar({ label, playerPctile, compPctile }) {
 // Renders the CompareBar row(s) relevant to whatever's selected in the
 // stat table/radar above (see StatDetailRow's `selection`): one bar per
 // Floor/Median/Ceiling for a selected stat (row mode), one bar for a
-// selected stat+layer (cell mode), or nothing for a whole-column
-// selection or no selection at all, since neither pins one stat to
-// compare against.
-function CompareBars({ selection, stats, player, peer }) {
-  if (!selection || selection.mode === "column") return null;
+// selected stat+layer (cell mode), or -- mirroring PercentileCard's own
+// column mode -- one ranked bar per stat, all in that one layer, for a
+// whole-column selection. stats already carries the player's own
+// {floorPctile, medianPctile, ceilingPctile} per stat key (built once in
+// PlayerSimSearch.js), so this reads player numbers straight off it
+// rather than needing them threaded in separately; peer is the one
+// comp's own statFloorPercentiles/statPercentiles/statCeilingPercentiles.
+function compPctileFor(peer, layer, key) {
+  const table = layer === "floor" ? peer.statFloorPercentiles : layer === "ceiling" ? peer.statCeilingPercentiles : peer.statPercentiles;
+  return table?.[key];
+}
+
+function CompareBars({ selection, stats, peer }) {
+  if (!selection) return null;
+
+  if (selection.mode === "column") {
+    const layer = selection.layer;
+    const pctileKey = `${layer}Pctile`;
+    const ranked = [...stats].sort((a, b) => (b[pctileKey] ?? 0) - (a[pctileKey] ?? 0));
+    return (
+      <div className="shape-compare">
+        <div className="shape-compare-head">{LAYER_LABEL[layer]} vs. player</div>
+        {ranked.map((stat) => (
+          <CompareBar key={stat.key} label={stat.label} playerPctile={stat[pctileKey]} compPctile={compPctileFor(peer, layer, stat.key)} />
+        ))}
+      </div>
+    );
+  }
+
   const stat = stats.find((s) => s.key === selection.key);
   if (!stat) return null;
-  const playerByLayer = { floor: player.floorPctile, median: player.medianPctile, ceiling: player.ceilingPctile };
-  const compByLayer = {
-    floor: peer.statFloorPercentiles?.[selection.key],
-    median: peer.statPercentiles?.[selection.key],
-    ceiling: peer.statCeilingPercentiles?.[selection.key],
-  };
   const layers = selection.mode === "cell" ? [selection.layer] : ["floor", "median", "ceiling"];
   return (
     <div className="shape-compare">
       <div className="shape-compare-head">{stat.label} vs. player</div>
       {layers.map((layer) => (
-        <CompareBar key={layer} label={LAYER_LABEL[layer]} playerPctile={playerByLayer[layer]} compPctile={compByLayer[layer]} />
+        <CompareBar
+          key={layer}
+          label={LAYER_LABEL[layer]}
+          playerPctile={stat[`${layer}Pctile`]}
+          compPctile={compPctileFor(peer, layer, selection.key)}
+        />
       ))}
     </div>
   );
@@ -92,8 +115,6 @@ function CompareBars({ selection, stats, player, peer }) {
 export default function SimilarShapeFinder({
   ownName,
   statPercentiles,
-  statFloorPercentiles,
-  statCeilingPercentiles,
   stats,
   keys,
   peers,
@@ -103,16 +124,6 @@ export default function SimilarShapeFinder({
   selection,
 }) {
   if (!peers || peers.length === 0 || !keys || keys.length === 0) return null;
-  // The player's own three percentiles for whatever stat is selected --
-  // computed once here (doesn't vary per comp) and handed to every
-  // CompareBars below alongside that comp's own peer object.
-  const playerPctiles = selection?.key
-    ? {
-        floorPctile: statFloorPercentiles?.[selection.key],
-        medianPctile: statPercentiles?.[selection.key],
-        ceilingPctile: statCeilingPercentiles?.[selection.key],
-      }
-    : null;
 
   const ranked = peers
     .filter((p) => p.name !== ownName)
@@ -158,9 +169,7 @@ export default function SimilarShapeFinder({
                   })}
                 </div>
               </div>
-              {playerPctiles && stats && (
-                <CompareBars selection={selection} stats={stats} player={playerPctiles} peer={p} />
-              )}
+              {stats && <CompareBars selection={selection} stats={stats} peer={p} />}
             </div>
           );
         })}

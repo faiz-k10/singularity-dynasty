@@ -1181,8 +1181,11 @@ tr.stat-row-selected td{background:var(--void-panel);}
   font-family:var(--font-ibm-plex-mono), monospace; font-size:9.5px; letter-spacing:0.06em;
   text-transform:uppercase; color:var(--star-dim); margin-bottom:6px;
 }
-.shape-compare-row{display:grid; grid-template-columns:44px 1fr 34px; align-items:center; gap:8px; padding:2px 0;}
-.shape-compare-row-label{font-size:10.5px; color:var(--star-dim);}
+.shape-compare-row{display:grid; grid-template-columns:52px 1fr 34px; align-items:center; gap:8px; padding:2px 0;}
+/* Wider than Floor/Median/Ceiling need on their own -- column mode
+   (see CompareBars) puts a full stat name (e.g. "Pass Yards") here
+   instead, so it needs the same overflow handling as .pctile-row-label. */
+.shape-compare-row-label{font-size:10.5px; color:var(--star-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
 /* margin-bottom on the track (not the row) reserves room for the "50"
    label below without disturbing the row's own vertical centering. */
 .shape-compare-track{position:relative; height:4px; border-radius:2px; background:var(--void-panel-2); margin-bottom:9px;}
