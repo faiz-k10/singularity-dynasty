@@ -1167,6 +1167,40 @@ tr.stat-row-selected td{background:var(--void-panel);}
 }
 .shape-finder-layer-btn:hover{color:var(--star);}
 .shape-finder-layer-btn.active{background:var(--neon-blue); color:var(--void);}
+.shape-finder-entry{display:flex; flex-direction:column;}
+
+/* Diverging comparison bars under each comp -- see CompareBar/CompareBars
+   in SimilarShapeFinder.js. Two ticks (player gold, comp neon-blue, same
+   colors those two already own everywhere else on this page) sit on one
+   0-100 track; the span between them fills green/red by who's ahead,
+   using the site's existing --up/--down pair (TrendTag, the ticker) so
+   "ahead" reads the same color language here as everywhere else instead
+   of a one-off green/red. */
+.shape-compare{margin:8px 2px 4px; padding-top:8px; border-top:1px dashed var(--line);}
+.shape-compare-head{
+  font-family:var(--font-ibm-plex-mono), monospace; font-size:9.5px; letter-spacing:0.06em;
+  text-transform:uppercase; color:var(--star-dim); margin-bottom:6px;
+}
+.shape-compare-row{display:grid; grid-template-columns:44px 1fr 34px; align-items:center; gap:8px; padding:2px 0;}
+.shape-compare-row-label{font-size:10.5px; color:var(--star-dim);}
+.shape-compare-track{position:relative; height:4px; border-radius:2px; background:var(--void-panel-2);}
+.shape-compare-fill{position:absolute; top:0; bottom:0; border-radius:inherit;}
+.shape-compare-fill-up{background:rgba(var(--up-rgb),0.55);}
+.shape-compare-fill-down{background:rgba(var(--down-rgb),0.55);}
+.shape-compare-fill-even{background:var(--star-dim); opacity:0.4;}
+.shape-compare-tick{
+  position:absolute; top:50%; width:8px; height:8px; border-radius:50%;
+  transform:translate(-50%, -50%); border:2px solid var(--void-panel);
+}
+.shape-compare-tick-player{background:var(--horizon-gold); z-index:2;}
+.shape-compare-tick-comp{background:var(--neon-blue); z-index:1;}
+.shape-compare-diff{
+  font-family:var(--font-ibm-plex-mono), monospace; font-size:11px; text-align:right;
+  font-variant-numeric:tabular-nums;
+}
+.shape-compare-diff-up{color:var(--up);}
+.shape-compare-diff-down{color:var(--down);}
+.shape-compare-diff-even{color:var(--star-dim);}
 
 /* Percentile card -- sits under the stat table, spelling out in words
    whatever the table/radar selection above is currently pointing at

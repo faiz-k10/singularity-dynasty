@@ -205,11 +205,15 @@ function StatDetailRow({ row, colSpan, shapePeers }) {
           <SimilarShapeFinder
             ownName={row.player_name}
             statPercentiles={row.statPercentiles}
+            statFloorPercentiles={row.statFloorPercentiles}
+            statCeilingPercentiles={row.statCeilingPercentiles}
+            stats={percentileStats}
             keys={entries.map(([key]) => key)}
             peers={shapePool}
             selectedName={compareName}
             selectedLayer={compareLayer}
             onSelect={selectCompare}
+            selection={selection}
           />
         </div>
       </td>
