@@ -41,18 +41,28 @@ function radarLayoutFor(entries, position) {
 function StatDetailRow({ row, colSpan, shapePeers }) {
   const ranges = row.stat_ranges;
   const entries = STAT_LABELS.filter(([key]) => ranges && ranges[key]);
-  // Clicking a stat row highlights the matching point on the radar --
-  // defaults to the first available stat. selectedLayer tracks which of
-  // Floor/Median/Ceiling was clicked so the radar can point at that
-  // specific number (its own marker + a bolder line) instead of only
-  // ever emphasizing the median. Starts null (nothing bold) -- median
-  // isn't pre-selected, so all three lines render at the same weight
-  // until the viewer actually clicks one.
-  const [selectedKey, setSelectedKey] = useState(entries[0]?.[0]);
-  const [selectedLayer, setSelectedLayer] = useState(null);
-  function selectStat(key, layer = "median") {
-    setSelectedKey(key);
-    setSelectedLayer(layer);
+  // One selection at a time, in one of three modes, so a new click always
+  // fully replaces whatever was highlighted before instead of stacking on
+  // top of it (two separate key/layer state vars used to let a stale key
+  // from one click linger alongside a fresh layer from the next):
+  //   "row"    -- clicked a stat name -- highlights all 3 of its numbers
+  //               and all 3 of its markers on the radar, none emphasized
+  //               over the others.
+  //   "column" -- clicked a Floor/Median/Ceiling header -- highlights that
+  //               number in every row, and that layer's marker on every
+  //               radar vertex (floor/ceiling markers are otherwise
+  //               hidden, so this is what makes them visible at all).
+  //   "cell"   -- clicked one specific number -- highlights only that
+  //               number and only its one radar marker, nothing else.
+  const [selection, setSelection] = useState(null);
+  function selectRow(key) {
+    setSelection({ mode: "row", key, layer: null });
+  }
+  function selectColumn(layer) {
+    setSelection({ mode: "column", key: null, layer });
+  }
+  function selectCell(key, layer) {
+    setSelection({ mode: "cell", key, layer });
   }
   // Which "most similar shape" comp (if any) is overlaid on the radar --
   // a name rather than the row object since it's looked up fresh from
@@ -106,9 +116,9 @@ function StatDetailRow({ row, colSpan, shapePeers }) {
                     <th key={layer}>
                       <button
                         type="button"
-                        className={`stat-header-trigger${selectedLayer === layer ? " stat-header-trigger-active" : ""}`}
-                        onClick={() => setSelectedLayer(layer)}
-                        aria-pressed={selectedLayer === layer}
+                        className={`stat-header-trigger${selection?.mode === "column" && selection.layer === layer ? " stat-header-trigger-active" : ""}`}
+                        onClick={() => selectColumn(layer)}
+                        aria-pressed={selection?.mode === "column" && selection.layer === layer}
                       >
                         {layer === "floor" ? "Floor" : layer === "median" ? "Median" : "Ceiling"}
                       </button>
@@ -119,35 +129,34 @@ function StatDetailRow({ row, colSpan, shapePeers }) {
               <tbody>
                 {entries.map(([key, label]) => {
                   const { floor, median, ceiling } = ranges[key];
-                  const isSelected = key === selectedKey;
-                  // Two independent "dim" reasons light up a cell along
-                  // with the one exact selected-row/selected-layer
-                  // intersection (which gets the stronger "active"
-                  // treatment instead): columnHighlight echoes whichever
-                  // Floor/Median/Ceiling column was last clicked across
-                  // every row, rowHighlight echoes the selected stat's
-                  // other two numbers across its own row -- together that's
-                  // what makes clicking "INTs" light up its whole row and
-                  // clicking "Floor" light up its whole column. Both are
-                  // off for the Stat-name button (it only reuses
-                  // cellProps("median") to route clicks to the median
-                  // layer, and dims separately, see below) so an unrelated
-                  // Median-column selection doesn't light up every name.
-                  function cellProps(layer, { columnHighlight = true, rowHighlight = true } = {}) {
-                    const isActive = isSelected && selectedLayer === layer;
-                    const isDim =
-                      !isActive &&
-                      ((columnHighlight && selectedLayer === layer) || (rowHighlight && isSelected));
+                  const isRowMode = selection?.mode === "row" && selection.key === key;
+                  // A cell's own highlight only ever comes from one of the
+                  // three modes at a time (whichever the current selection
+                  // is in) -- no more separately-tracked row/column dims
+                  // that could both apply after a stale click, which is
+                  // what "column" clicking still highlighted the previous
+                  // row's numbers too.
+                  function cellProps(layer) {
+                    const isCellActive = selection?.mode === "cell" && selection.key === key && selection.layer === layer;
+                    const isColumnDim = selection?.mode === "column" && selection.layer === layer;
+                    const isRowDim = isRowMode;
                     return {
-                      className: `stat-row-trigger${isActive ? " stat-row-trigger-active" : isDim ? " stat-row-trigger-column" : ""}`,
-                      onClick: () => selectStat(key, layer),
-                      "aria-pressed": isActive,
+                      className: `stat-row-trigger${
+                        isCellActive ? " stat-row-trigger-active" : isColumnDim || isRowDim ? " stat-row-trigger-column" : ""
+                      }`,
+                      onClick: () => selectCell(key, layer),
+                      "aria-pressed": isCellActive,
                     };
                   }
                   return (
-                    <tr key={key} className={isSelected ? "stat-row-selected" : ""}>
+                    <tr key={key} className={isRowMode ? "stat-row-selected" : ""}>
                       <td>
-                        <button type="button" {...cellProps("median", { columnHighlight: false })}>
+                        <button
+                          type="button"
+                          className={`stat-row-trigger${isRowMode ? " stat-row-trigger-active" : ""}`}
+                          onClick={() => selectRow(key)}
+                          aria-pressed={isRowMode}
+                        >
                           {label}
                         </button>
                       </td>
@@ -175,11 +184,10 @@ function StatDetailRow({ row, colSpan, shapePeers }) {
           <div className="stat-panel stat-panel-radar">
             <StatRadar
               entries={radarEntries}
-              selectedKey={selectedKey}
-              selectedLayer={selectedLayer}
+              selection={selection}
               startDeg={radarStartDeg}
               compareEntries={compareEntries}
-              onSelectKey={(key) => selectStat(key, "median")}
+              onSelectKey={selectRow}
             />
           </div>
           <SimilarShapeFinder

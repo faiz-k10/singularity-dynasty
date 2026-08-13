@@ -75,26 +75,31 @@ function bandPath(entries, n, startDeg, outerAt, innerAt) {
 // table. entries are [key, label, medianPctile, floorPctile,
 // ceilingPctile] tuples -- the median draws as the solid shape, floor/
 // ceiling as a shaded band around it so a stat with a wide floor-to-
-// ceiling spread visibly bulges out on that axis. selectedKey highlights
-// whichever stat row was last clicked in the table beside it, so the two
-// visuals stay tied together instead of the radar being static.
+// ceiling spread visibly bulges out on that axis.
 // compareEntries is an optional second shape, [key, label, pctile]
 // tuples (median only, no band) in the same order/positions as entries
 // (see SimilarShapeFinder), drawn as a dashed overlay so a comp's shape
 // can be held up against the player's own without leaving the row.
 // onSelectKey (optional) makes each vertex itself clickable -- mirrors
-// the stat table's own row trigger, so selection can be driven from
-// either visual and both stay in sync via the shared selectedKey state
-// one level up in StatDetailRow. selectedLayer ("floor"/"median"/
-// "ceiling") points at which specific number is active -- selecting a
-// stat (any cell in its row) shows all three of its floor/median/
-// ceiling markers at once, since that's the full picture for that one
-// axis; selectedLayer just picks which of the three renders a touch
-// bigger and which band outline goes bold, e.g. clicking the Floor cell
-// for a stat emphasizes that stat's floor marker specifically.
-export default function StatRadar({ entries, selectedKey, startDeg = -90, compareEntries, onSelectKey, selectedLayer = null }) {
+// the stat table's own row trigger (clicking a stat name), so selection
+// can be driven from either visual and both stay in sync via the shared
+// selection state one level up in StatDetailRow.
+//
+// selection is one of three shapes (or null): {mode:"row", key} shows
+// all three floor/median/ceiling markers on that one vertex, evenly
+// weighted, mirroring "clicked this stat's name". {mode:"column",
+// layer} shows that one layer's marker on *every* vertex plus bolds its
+// band/shape outline, mirroring "clicked the Floor/Median/Ceiling
+// header" -- floor/ceiling markers are otherwise hidden entirely, so
+// this is what makes them visible across the whole chart at once.
+// {mode:"cell", key, layer} shows just the one marker at that exact
+// vertex+layer, nothing else -- mirrors clicking one specific number in
+// the table. Each mode fully replaces the last (see StatDetailRow), so
+// there's never a mix of a stale row and a fresh column both lit up.
+export default function StatRadar({ entries, selection = null, startDeg = -90, compareEntries, onSelectKey }) {
   if (!entries || entries.length < 3) return null;
   const n = entries.length;
+  const columnLayer = selection?.mode === "column" ? selection.layer : null;
 
   const shapePath = polygonPath(entries, n, null, startDeg, ([, , pctile]) => (pctile ?? 0) / 100);
   const shapePoints = entries.map(([, , pctile], i) => pointAt(i, n, (pctile ?? 0) / 100, startDeg));
@@ -132,27 +137,34 @@ export default function StatRadar({ entries, selectedKey, startDeg = -90, compar
         {floorOutline && (
           <path
             d={floorOutline}
-            className={selectedLayer === "floor" ? "radar-band-outline radar-band-outline-active" : "radar-band-outline"}
+            className={columnLayer === "floor" ? "radar-band-outline radar-band-outline-active" : "radar-band-outline"}
           />
         )}
         {ceilingOutline && (
           <path
             d={ceilingOutline}
-            className={selectedLayer === "ceiling" ? "radar-band-outline radar-band-outline-active" : "radar-band-outline"}
+            className={columnLayer === "ceiling" ? "radar-band-outline radar-band-outline-active" : "radar-band-outline"}
           />
         )}
         {comparePath && <path d={comparePath} className="radar-shape-compare" />}
         <path
           d={shapePath}
-          className={selectedLayer === "median" ? "radar-shape radar-shape-active" : "radar-shape"}
+          className={columnLayer === "median" ? "radar-shape radar-shape-active" : "radar-shape"}
         />
         {entries.map(([key, label], i) => {
           const point = shapePoints[i];
           const labelPos = pointAt(i, n, LABEL_FRAC, startDeg);
-          const isActive = key === selectedKey;
-          const isMedianActive = isActive && selectedLayer === "median";
-          const isFloorActive = isActive && selectedLayer === "floor";
-          const isCeilingActive = isActive && selectedLayer === "ceiling";
+          const isRowSel = selection?.mode === "row" && selection.key === key;
+          const cellLayer = selection?.mode === "cell" && selection.key === key ? selection.layer : null;
+          const isActive = isRowSel || cellLayer !== null;
+          const isMedianActive = cellLayer === "median" || columnLayer === "median";
+          // 4.5 for the one exact cell selected, 4 for a whole-column
+          // selection (every vertex gets this), 3.5 for a whole-row
+          // selection (this vertex's other two markers), 0/3 (median's
+          // always-visible baseline) otherwise.
+          const floorR = cellLayer === "floor" ? 4.5 : columnLayer === "floor" ? 4 : isRowSel ? 3.5 : 0;
+          const ceilingR = cellLayer === "ceiling" ? 4.5 : columnLayer === "ceiling" ? 4 : isRowSel ? 3.5 : 0;
+          const medianR = cellLayer === "median" ? 4.5 : columnLayer === "median" ? 4 : isRowSel ? 3.5 : 3;
           const select = () => onSelectKey?.(key);
           return (
             <g
@@ -175,26 +187,14 @@ export default function StatRadar({ entries, selectedKey, startDeg = -90, compar
               }
             >
               {onSelectKey && <circle cx={point.x} cy={point.y} r={14} className="radar-vertex-hit" />}
-              {floorPoints && (
-                <circle
-                  cx={floorPoints[i].x}
-                  cy={floorPoints[i].y}
-                  r={isActive ? (isFloorActive ? 4.5 : 3.5) : 0}
-                  className="radar-point-floor"
-                />
-              )}
+              {floorPoints && <circle cx={floorPoints[i].x} cy={floorPoints[i].y} r={floorR} className="radar-point-floor" />}
               {ceilingPoints && (
-                <circle
-                  cx={ceilingPoints[i].x}
-                  cy={ceilingPoints[i].y}
-                  r={isActive ? (isCeilingActive ? 4.5 : 3.5) : 0}
-                  className="radar-point-ceiling"
-                />
+                <circle cx={ceilingPoints[i].x} cy={ceilingPoints[i].y} r={ceilingR} className="radar-point-ceiling" />
               )}
               <circle
                 cx={point.x}
                 cy={point.y}
-                r={isMedianActive ? 4.5 : isActive ? 3.5 : 3}
+                r={medianR}
                 className={isMedianActive ? "radar-point radar-point-active" : "radar-point"}
               />
               <text
