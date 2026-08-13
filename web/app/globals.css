@@ -1201,6 +1201,23 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .shape-compare-diff-up{color:var(--up);}
 .shape-compare-diff-down{color:var(--down);}
 .shape-compare-diff-even{color:var(--star-dim);}
+/* Legend explaining the diverging bars above -- shown once for the whole
+   panel (not repeated per comp) so a first-time viewer knows the +/-N is
+   percentile points, and which color means the player is ahead, before
+   running into the numbers themselves. white-space:normal for the same
+   reason as .pctile-card -- this whole panel sits inside the outer
+   rankings table's <td>, which sets white-space:nowrap and that
+   inherits into descendant text unless reset. */
+.shape-compare-legend{
+  display:flex; flex-wrap:wrap; align-items:center; gap:6px 10px; margin:-2px 0 10px;
+  font-size:10.5px; color:var(--star-dim); white-space:normal;
+}
+.shape-compare-legend-item{display:inline-flex; align-items:center; gap:5px;}
+.shape-compare-legend-note{flex-basis:100%;}
+.shape-compare-legend-dot{width:7px; height:7px; border-radius:50%; flex-shrink:0;}
+.shape-compare-legend-dot-player{background:var(--horizon-gold);}
+.shape-compare-legend-dot-comp{background:var(--neon-blue);}
+.shape-compare-legend-note{color:var(--star-dim);}
 
 /* Percentile card -- sits under the stat table, spelling out in words
    whatever the table/radar selection above is currently pointing at

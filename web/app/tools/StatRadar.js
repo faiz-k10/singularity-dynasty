@@ -160,11 +160,16 @@ export default function StatRadar({ entries, selection = null, startDeg = -90, c
           const isMedianActive = cellLayer === "median" || columnLayer === "median";
           // 4.5 for the one exact cell selected, 4 for a whole-column
           // selection (every vertex gets this), 3.5 for a whole-row
-          // selection (this vertex's other two markers), 0/3 (median's
-          // always-visible baseline) otherwise.
+          // selection (this vertex's other two markers), 0 otherwise --
+          // median's dot follows the exact same on-only-when-selected rule
+          // as floor/ceiling now (it used to stay visible at r=3 as a
+          // permanent baseline, which read as "always selected" even when
+          // nothing was). The connecting shapePath line below is what
+          // stays permanently visible -- that's the actual chart, not a
+          // selection marker.
           const floorR = cellLayer === "floor" ? 4.5 : columnLayer === "floor" ? 4 : isRowSel ? 3.5 : 0;
           const ceilingR = cellLayer === "ceiling" ? 4.5 : columnLayer === "ceiling" ? 4 : isRowSel ? 3.5 : 0;
-          const medianR = cellLayer === "median" ? 4.5 : columnLayer === "median" ? 4 : isRowSel ? 3.5 : 3;
+          const medianR = cellLayer === "median" ? 4.5 : columnLayer === "median" ? 4 : isRowSel ? 3.5 : 0;
           const select = () => onSelectKey?.(key);
           return (
             <g

@@ -117,6 +117,22 @@ export default function SimilarShapeFinder({
   return (
     <div className="shape-finder stat-panel stat-panel-finder">
       <div className="shape-finder-label mono">Most similar shape</div>
+      {playerPctiles && (
+        <div className="shape-compare-legend">
+          <span className="shape-compare-legend-item">
+            <span className="shape-compare-legend-dot shape-compare-legend-dot-player" />
+            Player
+          </span>
+          <span className="shape-compare-legend-item">
+            <span className="shape-compare-legend-dot shape-compare-legend-dot-comp" />
+            Comp
+          </span>
+          <span className="shape-compare-legend-item shape-compare-legend-note">
+            +/&minus; percentile points &middot; <span className="shape-compare-diff-up">green</span> = player ahead,{" "}
+            <span className="shape-compare-diff-down">red</span> = comp ahead
+          </span>
+        </div>
+      )}
       <div className="shape-finder-list">
         {ranked.map((p) => {
           const isActive = selectedName === p.name;
