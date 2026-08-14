@@ -812,7 +812,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .tier-toggle a:hover{color:var(--star);}
 .tier-toggle a.active{background:var(--horizon-gold); color:#1A0D05;}
 .tier-banner-row td{
-  padding:2px 16px; background:rgba(var(--horizon-gold-rgb), 0.08);
+  padding:1px 16px; background:rgba(var(--horizon-gold-rgb), 0.08);
   border-top:1px solid rgba(var(--horizon-gold-rgb), 0.3);
   border-bottom:1px solid rgba(var(--horizon-gold-rgb), 0.3);
 }
