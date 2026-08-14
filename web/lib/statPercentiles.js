@@ -5,12 +5,24 @@ export const INVERTED_STATS = new Set(["passing_interceptions"]);
 
 // Share of a position pool that a value beats, as an interpolated 0-100
 // rank rather than a plain count of pool members strictly below it --
-// linearly interpolates within whatever gap a value falls into (and
-// mid-ranks exact ties), which reduces to the plain-count formula
-// whenever the value is itself a pool member (the normal case for a
-// median percentile, always ranked against a pool that includes its own
-// value). invert flips "higher raw value = higher percentile" for stats
-// where more is actually worse (interceptions).
+// linearly interpolates within whatever gap a value falls into whenever
+// the value isn't itself a pool member. invert flips "higher raw value =
+// higher percentile" for stats where more is actually worse
+// (interceptions).
+//
+// Ties rank at the bottom of their own tied block (rank = count strictly
+// below), not the block's midpoint -- a value literally cannot "beat" a
+// player it's tied with, so it shouldn't get credit as if it did.
+// Averaging across the tie (the previous approach) reads as statistically
+// principled but produces misleading numbers for a stat where the same
+// value is extremely common: 0 receiving TDs, say, tied with most of a
+// combined floor/median/ceiling pool, doesn't read as "34th percentile"
+// under this rule -- it reads as 0th, correctly, since nothing in the
+// pool is actually below it. The tradeoff is symmetric at the top: many
+// players tied for the pool's actual maximum won't individually show
+// 100th unless the max is unique to them, only "beats everyone who isn't
+// also at the max" -- accurate to what the number is supposed to mean,
+// just less flattering than crediting a tie as if it were a win.
 export function percentileRank(value, pool, invert = false) {
   if (!pool || pool.length <= 1) return null;
   const dir = invert ? -1 : 1;
@@ -23,7 +35,7 @@ export function percentileRank(value, pool, invert = false) {
 
   let rank;
   if (tied > 0) {
-    rank = below + (tied - 1) / 2;
+    rank = below;
   } else {
     const loIdx = below - 1;
     const hiIdx = below;
