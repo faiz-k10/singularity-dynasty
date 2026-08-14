@@ -209,6 +209,7 @@ const TIER_METRICS = [
   { key: "floor", label: "Floor" },
   { key: "median", label: "Median" },
   { key: "ceiling", label: "Ceiling" },
+  { key: "por", label: "POR" },
 ];
 
 // Tiers only read as contiguous blocks when the table is actually sorted
@@ -223,7 +224,7 @@ const TIER_METRICS = [
 // the already-loaded rows in the browser, instant, and falls back to the
 // server-provided sortKey/sortDir whenever no override is set, so real
 // column-header clicks (SortableTh) are unaffected.
-const TIER_COLUMN_TYPES = { floor: "number", median: "number", ceiling: "number" };
+const TIER_COLUMN_TYPES = { floor: "number", median: "number", ceiling: "number", por: "number" };
 
 // League Size / QB Format toggles change POR's replacement-level baseline
 // (lib/replacementValue.js), which needs the full player pool -- including

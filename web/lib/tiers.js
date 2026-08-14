@@ -1,13 +1,16 @@
 // Gap-based tiering: within each position, sort players by the chosen
-// metric (floor/median/ceiling) and start a new tier wherever the drop to
-// the next player is unusually large relative to that position's other
+// metric (floor/median/ceiling/por) and start a new tier wherever the drop
+// to the next player is unusually large relative to that position's other
 // gaps (mean gap + 1.5 stdev -- loose enough that ordinary bunching noise
 // stays in one tier; a real standout still clears it easily), rather than
 // a fixed player-count per tier. Computed separately per metric since the
 // *shape* of the drop-offs differs -- a QB's ceiling column clusters
 // differently than its floor column, so a QB2/QB3 tier line by ceiling
-// isn't necessarily the same line by floor.
-const METRICS = ["floor", "median", "ceiling"];
+// isn't necessarily the same line by floor. por (points over replacement)
+// slots in the same way -- callers must attach a `por` field to each row
+// before calling computeTierMaps if they want that tier breakdown, since
+// it's a derived stat rather than one of the raw published columns.
+const METRICS = ["floor", "median", "ceiling", "por"];
 
 function groupByGaps(arr, metric) {
   const gaps = [];
@@ -64,7 +67,7 @@ export function computeTierMaps(poolRows) {
     (byPos[row.position] ??= []).push(row);
   }
 
-  const tierByName = { floor: {}, median: {}, ceiling: {} };
+  const tierByName = { floor: {}, median: {}, ceiling: {}, por: {} };
 
   for (const metric of METRICS) {
     for (const pos in byPos) {
