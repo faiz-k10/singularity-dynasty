@@ -794,12 +794,14 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .sim-bar-upside{position:absolute; top:0; bottom:0; background:var(--horizon-gold); opacity:0.45; border-radius:0 4px 4px 0; min-width:2px;}
 @media (max-width:640px){.sim-bar-track{width:80px;}}
 
-/* Tier column (Player Season Simulations) -- gap-based tiers computed
+/* Tier banner (Player Season Simulations) -- gap-based tiers computed
    server-side (lib/tiers.js) per position, one set per Floor/Median/
    Ceiling metric. Toggle mirrors .compare-radar-layer-toggle's pill
-   pattern; the badge fades by tier number via --tier-alpha rather than a
-   fixed per-tier color, so it stays consistent across positions with
-   different tier counts. */
+   pattern. The banner is a full-width row dropped in above the first
+   player of each new tier (tracked per position, since positions
+   interleave in this table's normal sort order) rather than a per-row
+   column, so it reads as a section break instead of one more number to
+   scan per row. */
 .tier-toggle-row{display:flex; align-items:center; gap:10px; margin-bottom:20px; flex-wrap:wrap;}
 .tier-toggle-label{font-size:13px; color:var(--star-dim); font-weight:600;}
 .tier-toggle{display:inline-flex; gap:4px; background:var(--void-panel-2); border:1px solid var(--line); border-radius:30px; padding:4px;}
@@ -809,12 +811,16 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 }
 .tier-toggle button:hover{color:var(--star);}
 .tier-toggle button.active{background:var(--horizon-gold); color:#1A0D05;}
-.tier-badge{
-  display:inline-block; padding:2px 8px; border-radius:20px; font-size:11px; font-weight:700;
-  background:rgba(var(--horizon-gold-rgb), calc(var(--tier-alpha, 1) * 0.28));
-  color:var(--horizon-gold);
-  border:1px solid rgba(var(--horizon-gold-rgb), calc(var(--tier-alpha, 1) * 0.5));
+.tier-banner-row td{
+  padding:8px 16px; background:rgba(var(--horizon-gold-rgb), 0.08);
+  border-top:1px solid rgba(var(--horizon-gold-rgb), 0.3);
+  border-bottom:1px solid rgba(var(--horizon-gold-rgb), 0.3);
 }
+.tier-banner-label{
+  display:flex; align-items:center; gap:10px; font-size:11px; font-weight:700;
+  letter-spacing:0.06em; text-transform:uppercase; color:var(--horizon-gold); white-space:nowrap;
+}
+.tier-banner-label::after{content:""; flex:1; height:1px; background:rgba(var(--horizon-gold-rgb), 0.25);}
 
 /* Position-colored left accent on every rankings row (Redraft, Best Ball,
    Player Simulations alike) -- QB/RB/WR/TE, so the eye can group by

@@ -210,14 +210,6 @@ const TIER_METRICS = [
   { key: "ceiling", label: "Ceiling" },
 ];
 
-// Fades with tier number rather than needing each position's tier count --
-// a T1 stays fully saturated gold regardless of position, a T6 is faint,
-// same visual language every position uses instead of a per-position scale.
-function tierBadgeStyle(tier) {
-  const alpha = Math.max(0.15, 1 - (tier - 1) * 0.15);
-  return { "--tier-alpha": alpha };
-}
-
 // Same pattern as RankingsSearch (Redraft) / BestBallSearch: position-pill
 // filter + player name search, both client-side. Sorting stays
 // server-driven via the existing URL-param mechanism.
@@ -326,7 +318,6 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                 <SortableTh label="Player" sortKey="player_name" {...sortProps} />
                 <SortableTh label="Pos" sortKey="position" {...sortProps} />
                 <SortableTh label="Team" sortKey="team" {...sortProps} />
-                <th>Tier</th>
                 <SortableTh label="Floor" sortKey="floor" {...sortProps} />
                 <SortableTh label="Median" sortKey="median" {...sortProps} />
                 <SortableTh label="Ceiling" sortKey="ceiling" {...sortProps} />
@@ -334,11 +325,32 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
               </tr>
             </thead>
             <tbody>
-              {filteredRows.map((row, index) => {
-                const hasStats = row.stat_ranges && Object.keys(row.stat_ranges).length > 0;
-                const isExpanded = hasStats && expanded.has(row.player_name);
-                return (
+              {(() => {
+                // Banner spans the full table width and drops in right
+                // above the first row of each new tier, tracked
+                // per-position -- tiers are computed per position (lib/
+                // tiers.js), and positions interleave in this table's
+                // normal (non-grouped) sort order, so "tier changed" has
+                // to mean "changed for that row's own position," not
+                // just "differs from the row directly above."
+                const lastTierByPos = {};
+                return filteredRows.map((row, index) => {
+                  const hasStats = row.stat_ranges && Object.keys(row.stat_ranges).length > 0;
+                  const isExpanded = hasStats && expanded.has(row.player_name);
+                  const tier = row.tiers?.[tierMetric];
+                  const showTierBanner = tier != null && lastTierByPos[row.position] !== tier;
+                  if (tier != null) lastTierByPos[row.position] = tier;
+                  return (
                 <Fragment key={row.player_name}>
+                {showTierBanner && (
+                  <tr className="tier-banner-row" aria-hidden="true">
+                    <td colSpan={8}>
+                      <span className="tier-banner-label">
+                        {row.position} · Tier {tier}
+                      </span>
+                    </td>
+                  </tr>
+                )}
                 <tr
                   data-pos={row.position}
                   className={hasStats ? "row-expandable" : undefined}
@@ -371,13 +383,6 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                   <td className="mono align-left">
                     <TeamBadge team={row.team} />
                   </td>
-                  <td className="mono align-left">
-                    {row.tiers?.[tierMetric] != null && (
-                      <span className="tier-badge" style={tierBadgeStyle(row.tiers[tierMetric])}>
-                        T{row.tiers[tierMetric]}
-                      </span>
-                    )}
-                  </td>
                   <td className="mono heat-cell-alt" style={{ "--heat": row.floorHeat || 0 }}>
                     {formatStat(row.floor)}
                   </td>
@@ -409,13 +414,14 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                 {isExpanded && (
                   <StatDetailRow
                     row={row}
-                    colSpan={9}
+                    colSpan={8}
                     shapePeers={shapePeers}
                   />
                 )}
                 </Fragment>
-                );
-              })}
+                  );
+                });
+              })()}
             </tbody>
           </table>
         </div>
