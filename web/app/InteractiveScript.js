@@ -26,10 +26,12 @@ export default function InteractiveScript({ tickerPlayers } = {}) {
        browser's default. "instant" (not "auto") to actually bypass the
        CSS smooth-scroll and match normal anchor-navigation semantics --
        scrollIntoView's "auto" just inherits the CSS scroll-behavior. */
+    let landedViaHash = false;
     if (window.location.hash) {
       const hashTarget = document.querySelector(window.location.hash);
       if (hashTarget) {
         hashTarget.scrollIntoView({ behavior: "instant", block: "start" });
+        landedViaHash = true;
       }
     }
 
@@ -179,9 +181,22 @@ export default function InteractiveScript({ tickerPlayers } = {}) {
     );
     updateEH();
 
-    /* ---- scroll reveal ---- */
+    /* ---- scroll reveal ----
+       threshold:0.15 means an element only earns "in" once 15% of ITS
+       OWN height has crossed into view -- fine for a user scrolling
+       down from the top, since everything above the fold reveals
+       naturally as they go. But landing straight on a section via a nav
+       link's #hash (see scroll-to-hash above) can leave content near
+       the bottom of that section only barely peeking above the fold at
+       less than 15%, e.g. Feed's subscribe form -- and since nothing
+       re-triggers the observer unless the user scrolls further, that
+       content stays permanently blurred/dim even though it's the exact
+       thing they navigated here to see. The reveal-on-arrival premise
+       doesn't apply to a deep-link landing anyway (they didn't scroll
+       past anything to get here), so hash landings skip the animation
+       entirely, same as the reduced-motion case. */
     const revealEls = document.querySelectorAll(".reveal");
-    if (reducedMotion || !("IntersectionObserver" in window)) {
+    if (reducedMotion || landedViaHash || !("IntersectionObserver" in window)) {
       revealEls.forEach((el) => el.classList.add("in"));
     } else {
       const ro = new IntersectionObserver(
