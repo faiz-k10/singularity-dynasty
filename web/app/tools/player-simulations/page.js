@@ -1,5 +1,8 @@
 import Link from "next/link";
-import { getUserTier } from "@/lib/tier";
+import { unstable_cache } from "next/cache";
+import { resolveTier } from "@/lib/tier";
+import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import { resolveSort, sortRows } from "@/lib/sortLink";
 import { buildStatPoolByPos, computeStatPercentiles } from "@/lib/statPercentiles";
 import { computeTierMaps, computeGlobalTierMap } from "@/lib/tiers";
@@ -27,6 +30,45 @@ const COLUMN_TYPES = {
   por: "number",
 };
 
+// The full published week's data (all 425-ish rows) is identical for
+// every visitor regardless of tier or the League Size / QB Format
+// toggles -- gating happens afterward, in JS, on this same cached result
+// (see poolRows/sims below). Caching the fetch itself is what makes the
+// toggles fast: without it, every single toggle click is a full page
+// navigation that re-runs two sequential Supabase round trips just to
+// re-read data that hasn't changed since the last click. A 60s window is
+// long enough that a burst of toggle clicks all hit the cache, short
+// enough that a new weekly publish shows up within a minute without
+// needing a manual revalidate.
+const getCachedWeekData = unstable_cache(
+  async () => {
+    const publicSupabase = createPublicClient();
+    const { data: latest } = await publicSupabase
+      .from("player_simulations")
+      .select("season, week")
+      .order("season", { ascending: false })
+      .order("week", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (!latest) return { latest: null, rows: [], totalCount: 0 };
+
+    const { data, count } = await publicSupabase
+      .from("player_simulations")
+      .select(
+        "player_name, position, team, floor, median, ceiling, stat_ranges, trend, sample_confidence, notes",
+        { count: "exact" }
+      )
+      .eq("season", latest.season)
+      .eq("week", latest.week)
+      .order("median", { ascending: false });
+
+    return { latest, rows: data || [], totalCount: count || 0 };
+  },
+  ["player-simulations-latest-week"],
+  { revalidate: 60 }
+);
+
 function sortPositions(positions) {
   return [...positions].sort((a, b) => {
     const ai = POSITION_ORDER.indexOf(a);
@@ -40,41 +82,28 @@ function sortPositions(positions) {
 
 export default async function PlayerSimulationsPage({ searchParams }) {
   const params = await searchParams;
-  const { supabase, tier } = await getUserTier();
-  const hasFullAccess = PAID_TIERS.includes(tier);
+  const supabase = await createClient();
   // POR's replacement-level baseline depends on league settings the viewer
   // picks via the League Size / QB Format toggles -- unknown values fall
   // back to the standard 12-team, single-QB assumption.
   const leagueTeams = params?.teams === "10" ? 10 : 12;
   const superflex = params?.qb === "sf";
 
-  const { data: latest } = await supabase
-    .from("player_simulations")
-    .select("season, week")
-    .order("season", { ascending: false })
-    .order("week", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  // Tier resolution (auth + profile lookup) is per-visitor and can't be
+  // cached, but it doesn't depend on the week's data, so it runs
+  // concurrently with that (cached) fetch instead of one blocking the
+  // other.
+  const [{ tier }, { latest, rows, totalCount: fetchedCount }] = await Promise.all([
+    resolveTier(supabase),
+    getCachedWeekData(),
+  ]);
+  const hasFullAccess = PAID_TIERS.includes(tier);
 
   let sims = [];
+  let poolRows = [];
   let totalCount = 0;
 
   if (latest) {
-    let query = supabase
-      .from("player_simulations")
-      .select(
-        "player_name, position, team, floor, median, ceiling, stat_ranges, trend, sample_confidence, notes",
-        { count: "exact" }
-      )
-      .eq("season", latest.season)
-      .eq("week", latest.week)
-      .order("median", { ascending: false });
-
-    if (!hasFullAccess) {
-      query = query.limit(TEASER_LIMIT);
-    }
-
-    const { data, count } = await query;
     // Published floor/median/ceiling are season totals -- kept as-is here.
     // PlayerSimSearch converts to a per-game rate client-side for its Per
     // Game / Season toggle. Sorting, heat-tint, and the Range bar below
@@ -86,14 +115,16 @@ export default async function PlayerSimulationsPage({ searchParams }) {
     // doesn't publish a per-trial games-played count a true
     // injury-adjusted rate would need.
     // Position rank (QB1, RB2, ...) is assigned here, off the query's
-    // fixed median-desc order, so it stays a stable "positional ranking"
-    // independent of whatever column the viewer sorts the table by below.
+    // fixed median-desc order (the FULL population, not a teaser-capped
+    // slice), so it stays a stable "positional ranking" independent of
+    // whatever column the viewer sorts the table by below.
     const posRankCounters = {};
-    sims = (data || []).map((row) => {
+    poolRows = rows.map((row) => {
       posRankCounters[row.position] = (posRankCounters[row.position] || 0) + 1;
       return { ...row, positionRank: posRankCounters[row.position] };
     });
-    totalCount = count || 0;
+    sims = hasFullAccess ? poolRows : poolRows.slice(0, TEASER_LIMIT);
+    totalCount = fetchedCount;
   }
 
   const isTeaser = !hasFullAccess && totalCount > sims.length;
@@ -103,30 +134,16 @@ export default async function PlayerSimulationsPage({ searchParams }) {
 
   // Heat-tint, the Range-bar scale, and per-stat percentiles all read as
   // "the population" and have to mean the WHOLE league regardless of who's
-  // looking, not just whatever sims happens to hold. For a free/
-  // signed-out viewer sims is capped to TEASER_LIMIT (200) rows --
-  // that used to double as the heat-tint min/max pool and the Range bar's
-  // maxCeiling too, not just the percentile pool, so a teaser-truncated
-  // fetch could silently drop whichever player anchors one end of a
-  // position's stat range (or the single highest season ceiling site-
-  // wide) and distort the heat color / bar width for every visible row
-  // near that end, on top of the percentile-specific bug this same
-  // untruncated fetch was already added to fix -- verified live: with the
-  // full 32-QB pool Kyler Murray's passing-yards floor was clearly 3rd
-  // percentile, but the free-tier's 31-QB teaser pool (missing one low
-  // outlier) pushed it down to a misleading 0th, indistinguishable from a
-  // genuinely far-below-everyone floor like Shedeur Sanders'. One
-  // always-untruncated fetch now feeds heat-tint, maxCeiling, AND
-  // percentiles instead of just the last of the three.
-  let poolRows = sims;
-  if (!hasFullAccess && latest) {
-    const { data: fullData } = await supabase
-      .from("player_simulations")
-      .select("player_name, position, stat_ranges, floor, median, ceiling")
-      .eq("season", latest.season)
-      .eq("week", latest.week);
-    poolRows = fullData || [];
-  }
+  // looking, not just whatever sims happens to hold -- poolRows (above)
+  // is always the full untruncated fetch, never the teaser-capped slice,
+  // so a teaser-truncated fetch can't silently drop whichever player
+  // anchors one end of a position's stat range (or the single highest
+  // season ceiling site-wide) and distort the heat color / bar width for
+  // every visible row near that end. Verified live when this was still a
+  // bug: with the full 32-QB pool Kyler Murray's passing-yards floor was
+  // clearly 3rd percentile, but a free-tier 31-QB teaser pool (missing
+  // one low outlier) pushed it down to a misleading 0th, indistinguishable
+  // from a genuinely far-below-everyone floor like Shedeur Sanders'.
   const maxCeiling = poolRows.reduce((m, s) => Math.max(m, s.ceiling), 1);
 
   // Position-relative -- QBs score far higher raw totals than TEs, so a
