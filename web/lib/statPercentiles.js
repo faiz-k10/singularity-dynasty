@@ -48,37 +48,33 @@ export function percentileRank(value, pool, invert = false) {
 // looking. A teaser-truncated pool can silently drop whichever player
 // anchors one end of a position's stat range, which then reads as a
 // wrong/confusing percentile for anyone still in the visible pool near
-// that end. Floor, median, and ceiling each get their own pool (every
-// player's floor, every player's median, every player's ceiling) rather
-// than sharing one -- see computeStatPercentiles below for why.
+// that end. Every player's floor, median, AND ceiling all go into the
+// same pool -- see computeStatPercentiles below for why.
 export function buildStatPoolByPos(rows) {
   const statPoolByPos = {};
   for (const row of rows) {
     if (!row.stat_ranges) continue;
     const pool = (statPoolByPos[row.position] ??= {});
     for (const [key, range] of Object.entries(row.stat_ranges)) {
-      const layers = (pool[key] ??= { floor: [], median: [], ceiling: [] });
-      layers.floor.push(range.floor);
-      layers.median.push(range.median);
-      layers.ceiling.push(range.ceiling);
+      const combined = (pool[key] ??= []);
+      combined.push(range.floor, range.median, range.ceiling);
     }
   }
   return statPoolByPos;
 }
 
 // Per-stat {statPercentiles, statFloorPercentiles, statCeilingPercentiles}
-// for one row, ranked against statPoolByPos. Each layer ranks against its
-// own layer's pool -- a ceiling of 27 has to beat other players'
-// ceilings to read as elite, not other players' medians. Ranking against
-// the shared median pool (the previous approach) broke down past the
-// pool's own max: percentileRank's top-end extrapolation clamps to rank
-// n-1 for any value beyond the last pool member, so two players with
-// very different ceilings (e.g. 17 and 27 rushing TDs) could both land
-// at a flat 100th percentile once both exceeded every player's median --
-// intuitively wrong, since 27 is unambiguously better than 17. A
-// same-layer pool doesn't have that gap: the actual ceiling values
-// populate the top of the ceiling pool, so 27 outranks 17 there instead
-// of both maxing out against a pool of smaller numbers.
+// for one row, ranked against statPoolByPos. Floor, median, and ceiling
+// all rank against the SAME combined pool (every player's floor, median,
+// and ceiling values for that stat, pooled together) instead of three
+// separate same-layer pools -- one full spectrum of "what any player's
+// outcome for this stat might look like," rather than three parallel but
+// disconnected rankings. This also sidesteps percentileRank's top-end
+// extrapolation problem: since every player's actual ceiling is itself a
+// member of the pool, a high ceiling never has to be clamped against a
+// pool that stops short of it the way ranking ceilings against a
+// medians-only pool once did (e.g. two very different ceilings both
+// reading as a flat 100th percentile).
 export function computeStatPercentiles(row, statPoolByPos) {
   const statPercentiles = {};
   const statFloorPercentiles = {};
@@ -86,11 +82,11 @@ export function computeStatPercentiles(row, statPoolByPos) {
   if (row.stat_ranges) {
     const statPool = statPoolByPos[row.position];
     for (const [key, range] of Object.entries(row.stat_ranges)) {
-      const layers = statPool?.[key];
+      const pool = statPool?.[key];
       const invert = INVERTED_STATS.has(key);
-      statPercentiles[key] = percentileRank(range.median, layers?.median, invert);
-      statFloorPercentiles[key] = percentileRank(range.floor, layers?.floor, invert);
-      statCeilingPercentiles[key] = percentileRank(range.ceiling, layers?.ceiling, invert);
+      statPercentiles[key] = percentileRank(range.median, pool, invert);
+      statFloorPercentiles[key] = percentileRank(range.floor, pool, invert);
+      statCeilingPercentiles[key] = percentileRank(range.ceiling, pool, invert);
     }
   }
   return { statPercentiles, statFloorPercentiles, statCeilingPercentiles };
