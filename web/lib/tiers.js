@@ -50,7 +50,19 @@ function medianMadThreshold(gaps) {
   return medianGap + 9 * mad * 1.4826;
 }
 
-function groupByGaps(arr, metric, thresholdFn) {
+// maxSpan is a second, independent break condition on top of the gap
+// threshold: gap-based tiering only reacts to one unusually large step
+// between adjacent players, not to a tier's cumulative width, so a long
+// run of players declining in small, individually-unremarkable steps
+// (mostly 0.1-3 points) can still rack up a huge total spread -- verified
+// on the real POR pool, where a 33-player run each just barely under the
+// gap threshold still spanned 33 points top to bottom, and a later 144-
+// player run spanned 186 points. maxSpan forces a break once a tier's
+// running width (current player vs. the tier's first player) exceeds it,
+// regardless of how small the step that crossed the line was. Optional --
+// per-position tiering (computeTierMaps) doesn't pass one, since its
+// pools are small enough that this hasn't come up.
+function groupByGaps(arr, metric, thresholdFn, maxSpan) {
   const gaps = [];
   for (let i = 1; i < arr.length; i++) {
     gaps.push(arr[i - 1][metric] - arr[i][metric]);
@@ -60,10 +72,12 @@ function groupByGaps(arr, metric, thresholdFn) {
   const groups = [[arr[0]]];
   for (let i = 1; i < arr.length; i++) {
     const gap = arr[i - 1][metric] - arr[i][metric];
-    if (gap > threshold && gap > 0) {
+    const currentGroup = groups[groups.length - 1];
+    const span = maxSpan != null ? currentGroup[0][metric] - arr[i][metric] : 0;
+    if ((gap > threshold && gap > 0) || (maxSpan != null && span > maxSpan)) {
       groups.push([arr[i]]);
     } else {
-      groups[groups.length - 1].push(arr[i]);
+      currentGroup.push(arr[i]);
     }
   }
   return groups;
@@ -73,8 +87,12 @@ function groupByGaps(arr, metric, thresholdFn) {
 // truly a class apart -- fold them into whichever neighboring tier they're
 // numerically closer to. The very top tier is exempt: a real "alone at
 // the top" standout (a clear position-1 with real separation) is a
-// legitimate, expected tier shape, not something to paper over.
-function mergeSingletons(groups, metric) {
+// legitimate, expected tier shape, not something to paper over. Same
+// exemption applies (via maxSpan) at the bottom: if merging a singleton
+// into either neighbor would blow that neighbor's span past the cap, it's
+// a genuine outlier -- not noise to paper over -- so it stays on its own
+// rather than dragging a merged tier's width back out past maxSpan.
+function mergeSingletons(groups, metric, maxSpan) {
   let i = 1;
   while (i < groups.length) {
     if (groups[i].length !== 1) {
@@ -85,7 +103,18 @@ function mergeSingletons(groups, metric) {
     const prevGap = value !== undefined ? groups[i - 1][groups[i - 1].length - 1][metric] - value : Infinity;
     const nextGap = i < groups.length - 1 ? value - groups[i + 1][0][metric] : Infinity;
 
-    if (prevGap <= nextGap) {
+    const hasNext = i < groups.length - 1;
+    const prevSpan = maxSpan != null ? groups[i - 1][0][metric] - value : 0;
+    const nextSpan = maxSpan != null && hasNext ? value - groups[i + 1][groups[i + 1].length - 1][metric] : 0;
+    const prevOk = maxSpan == null || prevSpan <= maxSpan;
+    const nextOk = hasNext && (maxSpan == null || nextSpan <= maxSpan);
+
+    if (!prevOk && !nextOk) {
+      i++;
+      continue;
+    }
+
+    if (prevOk && (prevGap <= nextGap || !nextOk)) {
       groups[i - 1].push(groups[i][0]);
     } else {
       groups[i + 1].unshift(groups[i][0]);
@@ -134,11 +163,21 @@ export function computeTierMaps(poolRows) {
 // flag: two players 2 points apart landing in different tiers because
 // they happen to play different positions. So POR tiers are computed
 // once, across the whole pool, with no position grouping at all.
+// Matches the span of the already-good tiers the gap threshold alone
+// produces near the top of the pool (14.8-15.8 points) -- keeps the cap
+// from feeling arbitrary relative to what "one tier" already looks like
+// elsewhere on the same page.
+const MAX_POR_TIER_SPAN = 16;
+
 export function computeGlobalTierMap(poolRows, metric) {
   const arr = [...poolRows].sort((a, b) => b[metric] - a[metric]);
   if (arr.length === 0) return {};
 
-  const groups = mergeSingletons(groupByGaps(arr, metric, medianMadThreshold), metric);
+  const groups = mergeSingletons(
+    groupByGaps(arr, metric, medianMadThreshold, MAX_POR_TIER_SPAN),
+    metric,
+    MAX_POR_TIER_SPAN
+  );
   const tierByName = {};
   groups.forEach((group, tierIndex) => {
     for (const player of group) {
