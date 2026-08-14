@@ -1341,6 +1341,39 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .compare-table tbody td{color:var(--star);}
 .compare-table tbody td.tool-notes{white-space:normal; min-width:220px;}
 
+/* Percentile Shapes -- one radar + percentile card per compared player
+   (ComparePlayerRadars.js), below the plain-numbers table above. Reuses
+   StatRadar/PercentileCard unchanged, driven by one shared selection so
+   clicking a stat under any player highlights it on every player's card
+   at once instead of needing to hold three separate percentiles in your
+   head. */
+.compare-radar-section{margin-top:36px;}
+.compare-radar-head{margin-bottom:20px;}
+.compare-radar-head h2{font-size:22px; margin-bottom:6px;}
+.compare-radar-head .tool-sub{margin-bottom:14px;}
+.compare-radar-layer-toggle{display:inline-flex; gap:4px; background:var(--void-panel-2); border:1px solid var(--line); border-radius:30px; padding:4px;}
+.compare-radar-layer-toggle button{
+  all:unset; cursor:pointer; padding:7px 16px; border-radius:24px; font-size:12.5px; color:var(--star-dim);
+  transition:background .15s ease, color .15s ease;
+}
+.compare-radar-layer-toggle button:hover{color:var(--star);}
+.compare-radar-layer-toggle button.active{background:var(--horizon-gold); color:#1A0D05;}
+/* auto-fit rather than a fixed 2/3-column split -- 2 selected players get
+   two wide cards, 3 get three narrower ones, and it reflows to one column
+   on narrow screens without a separate media-query breakpoint. */
+.compare-radar-grid{
+  display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:20px;
+}
+.compare-radar-card{
+  background:var(--void-panel); border:1px solid var(--line); border-radius:16px; padding:20px;
+  box-shadow:0 30px 70px rgba(var(--shadow-rgb),0.4); display:flex; flex-direction:column; align-items:center; min-width:0;
+}
+.compare-radar-card-head{display:flex; align-items:baseline; gap:8px; justify-content:center; margin-bottom:4px; width:100%;}
+.compare-radar-card-name{font-family:var(--font-space-grotesk), sans-serif; font-weight:600; font-size:15px; color:var(--star);}
+.compare-radar-card-pos{font-size:11px; color:var(--star-dim);}
+.compare-radar-card .stat-radar{width:100%;}
+.compare-radar-card .pctile-card{width:100%; box-sizing:border-box;}
+
 @media (prefers-reduced-motion:reduce){
   .reveal{opacity:1; transform:none; filter:none; transition:none;}
   .os-ring{animation:none;}

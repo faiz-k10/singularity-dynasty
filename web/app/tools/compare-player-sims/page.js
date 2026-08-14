@@ -1,9 +1,12 @@
 import Link from "next/link";
 import { getUserTier } from "@/lib/tier";
+import { buildStatPoolByPos, computeStatPercentiles } from "@/lib/statPercentiles";
 import SiteHeader from "../../SiteHeader";
 import STAT_LABELS from "../statLabels";
 import ComparePlayerPickers from "../ComparePlayerPickers";
 import CompareStatsTable from "../CompareStatsTable";
+import ComparePlayerRadars from "../ComparePlayerRadars";
+import { radarLayoutFor } from "../radarLayout";
 
 export const metadata = {
   title: "Compare Players — Season Simulations — Singularity Dynasty",
@@ -89,6 +92,55 @@ export default async function ComparePlayerSimsPage({ searchParams }) {
   });
   const playerOptions = sims.map((r) => ({ player_name: r.player_name, position: r.position }));
 
+  // Percentile pool built from a separate, always-untruncated query --
+  // NOT from `sims`, which is capped to TEASER_LIMIT rows for a free/
+  // signed-out viewer (same fix as Player Season Simulations' own page;
+  // see lib/statPercentiles.js). Only needed when someone's actually
+  // selected, so this skips the extra query on a bare picker-only load.
+  let comparePlayers = [];
+  if (selectedWithHeat.length > 0 && latest) {
+    let poolRows = sims;
+    if (!hasFullAccess) {
+      const { data: fullData } = await supabase
+        .from("player_simulations")
+        .select("position, stat_ranges")
+        .eq("season", latest.season)
+        .eq("week", latest.week);
+      poolRows = fullData || [];
+    }
+    const statPoolByPos = buildStatPoolByPos(poolRows);
+    comparePlayers = selectedWithHeat.map((row) => {
+      const { statPercentiles, statFloorPercentiles, statCeilingPercentiles } = computeStatPercentiles(
+        row,
+        statPoolByPos
+      );
+      const entries = STAT_LABELS.filter(([key]) => row.stat_ranges && row.stat_ranges[key]);
+      const percentileStats = entries.map(([key, label]) => ({
+        key,
+        label,
+        floorPctile: statFloorPercentiles[key],
+        medianPctile: statPercentiles[key],
+        ceilingPctile: statCeilingPercentiles[key],
+      }));
+      const radarEntriesRaw = entries.map(([key, label]) => [
+        key,
+        label,
+        statPercentiles[key],
+        statFloorPercentiles[key],
+        statCeilingPercentiles[key],
+      ]);
+      const { entries: radarEntries, startDeg: radarStartDeg } = radarLayoutFor(radarEntriesRaw, row.position);
+      return {
+        name: row.player_name,
+        position: row.position,
+        positionLabel: row.positionLabel,
+        percentileStats,
+        radarEntries,
+        radarStartDeg,
+      };
+    });
+  }
+
   return (
     <div className="tool-page">
       <SiteHeader />
@@ -129,12 +181,15 @@ export default async function ComparePlayerSimsPage({ searchParams }) {
             </form>
 
             {selectedWithHeat.length >= 2 ? (
-              <CompareStatsTable
-                selected={selectedWithHeat}
-                compareStats={compareStats}
-                maxCeiling={maxCeiling}
-                gamesPerSeason={GAMES_PER_SEASON}
-              />
+              <>
+                <CompareStatsTable
+                  selected={selectedWithHeat}
+                  compareStats={compareStats}
+                  maxCeiling={maxCeiling}
+                  gamesPerSeason={GAMES_PER_SEASON}
+                />
+                <ComparePlayerRadars players={comparePlayers} />
+              </>
             ) : (
               <p className="tool-hint">Pick at least two players, then hit Compare.</p>
             )}

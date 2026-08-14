@@ -73,6 +73,23 @@ export default function PercentileCard({ stats, position, selection, onSelectCel
     );
   }
 
+  // Row/cell selections name one specific stat key, which -- on the
+  // Compare Players page, where this same selection is shared across
+  // players of different positions -- might just not exist for this
+  // particular player (a passing_yards selection has nothing to show
+  // for a compared WR). A quiet fallback here instead of rendering
+  // nothing keeps that player's card in place rather than leaving an
+  // unexplained gap in the grid; never triggers on the single-player
+  // page, where `stats` always belongs to the same player selection.key
+  // was set from.
+  if ((selection.mode === "row" || selection.mode === "cell") && !stats.some((s) => s.key === selection.key)) {
+    return (
+      <div className="pctile-card pctile-card-empty">
+        <p>Doesn&apos;t apply to {position}.</p>
+      </div>
+    );
+  }
+
   if (selection.mode === "row") {
     const stat = stats.find((s) => s.key === selection.key);
     if (!stat) return null;
