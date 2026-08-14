@@ -1,16 +1,9 @@
-// Gap-based tiering: within each position, sort players by the chosen
-// metric (floor/median/ceiling/por) and start a new tier wherever the drop
-// to the next player is unusually large relative to that position's other
-// gaps (mean gap + 1.5 stdev -- loose enough that ordinary bunching noise
-// stays in one tier; a real standout still clears it easily), rather than
-// a fixed player-count per tier. Computed separately per metric since the
-// *shape* of the drop-offs differs -- a QB's ceiling column clusters
-// differently than its floor column, so a QB2/QB3 tier line by ceiling
-// isn't necessarily the same line by floor. por (points over replacement)
-// slots in the same way -- callers must attach a `por` field to each row
-// before calling computeTierMaps if they want that tier breakdown, since
-// it's a derived stat rather than one of the raw published columns.
-const METRICS = ["floor", "median", "ceiling", "por"];
+// Gap-based tiering: sort players by the chosen metric and start a new
+// tier wherever the drop to the next player is unusually large relative
+// to the other gaps in that same list (mean gap + 1.5 stdev -- loose
+// enough that ordinary bunching noise stays in one tier; a real standout
+// still clears it easily), rather than a fixed player-count per tier.
+const METRICS = ["floor", "median", "ceiling"];
 
 function groupByGaps(arr, metric) {
   const gaps = [];
@@ -61,13 +54,16 @@ function mergeSingletons(groups, metric) {
   return groups;
 }
 
+// floor/median/ceiling are raw stat totals -- a QB's median is on a wholly
+// different scale than a TE's, so tiering has to happen separately within
+// each position or the whole thing just reflects position, not tier.
 export function computeTierMaps(poolRows) {
   const byPos = {};
   for (const row of poolRows) {
     (byPos[row.position] ??= []).push(row);
   }
 
-  const tierByName = { floor: {}, median: {}, ceiling: {}, por: {} };
+  const tierByName = { floor: {}, median: {}, ceiling: {} };
 
   for (const metric of METRICS) {
     for (const pos in byPos) {
@@ -83,5 +79,28 @@ export function computeTierMaps(poolRows) {
     }
   }
 
+  return tierByName;
+}
+
+// POR is already position-adjusted -- each player's score is measured
+// against his OWN position's replacement level, which is exactly what
+// makes it comparable ACROSS positions (that's the whole point of the
+// stat). Tiering it per-position like the raw stats above would silently
+// re-introduce a position axis into a number specifically built to not
+// have one, and produces exactly the nonsense a viewer would (rightly)
+// flag: two players 2 points apart landing in different tiers because
+// they happen to play different positions. So POR tiers are computed
+// once, across the whole pool, with no position grouping at all.
+export function computeGlobalTierMap(poolRows, metric) {
+  const arr = [...poolRows].sort((a, b) => b[metric] - a[metric]);
+  if (arr.length === 0) return {};
+
+  const groups = mergeSingletons(groupByGaps(arr, metric), metric);
+  const tierByName = {};
+  groups.forEach((group, tierIndex) => {
+    for (const player of group) {
+      tierByName[player.player_name] = tierIndex + 1;
+    }
+  });
   return tierByName;
 }

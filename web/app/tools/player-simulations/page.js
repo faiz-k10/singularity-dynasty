@@ -2,7 +2,7 @@ import Link from "next/link";
 import { getUserTier } from "@/lib/tier";
 import { resolveSort, sortRows } from "@/lib/sortLink";
 import { buildStatPoolByPos, computeStatPercentiles } from "@/lib/statPercentiles";
-import { computeTierMaps } from "@/lib/tiers";
+import { computeTierMaps, computeGlobalTierMap } from "@/lib/tiers";
 import { computeReplacementValues } from "@/lib/replacementValue";
 import SiteHeader from "../../SiteHeader";
 import ExportCsvButton from "../ExportCsvButton";
@@ -146,22 +146,20 @@ export default async function PlayerSimulationsPage({ searchParams }) {
     return r && r.max > r.min ? (row[col] - r.min) / (r.max - r.min) : 0;
   }
   const statPoolByPos = buildStatPoolByPos(poolRows);
-  // Same reasoning as heatFor/maxCeiling above -- the replacement-level
-  // baseline has to be drawn from the whole population, not whatever a
-  // teaser-truncated fetch happens to include.
-  const porByName = computeReplacementValues(poolRows, { teams: leagueTeams, superflex });
-  // computeTierMaps needs a `por` field on each row to tier by it -- por
-  // isn't one of the raw published columns, so it has to be attached to
-  // poolRows before tiering runs, not after.
-  const poolRowsWithPor = poolRows.map((row) => ({ ...row, por: porByName[row.player_name] }));
   // Always derived from poolRows (the full, untruncated population), same
   // reasoning as heatFor/maxCeiling above -- a teaser-truncated pool would
   // both miscount tiers and drop whichever player anchors a tier boundary.
-  const tierByName = computeTierMaps(poolRowsWithPor);
-  // por is computed off the pool, not a raw column from Supabase, so it
-  // has to be attached before sorting -- sorting sims first (like the
-  // other columns used to) would leave por absent from every row at sort
-  // time and silently no-op a "sort by POR" click.
+  const tierByName = computeTierMaps(poolRows);
+  // Same reasoning as tierByName/heatFor above -- the replacement-level
+  // baseline has to be drawn from the whole population, not whatever a
+  // teaser-truncated fetch happens to include.
+  const porByName = computeReplacementValues(poolRows, { teams: leagueTeams, superflex });
+  // Unlike floor/median/ceiling, POR tiers are computed once across the
+  // WHOLE pool rather than per-position -- POR is already measured
+  // against each player's own position's replacement level, so it's
+  // meant to be compared across positions, not re-siloed by one.
+  const poolRowsWithPor = poolRows.map((row) => ({ ...row, por: porByName[row.player_name] }));
+  const porTierByName = computeGlobalTierMap(poolRowsWithPor, "por");
   const simsWithComputed = sims.map((row) => {
     const heat = heatFor("median", row);
     const floorHeat = heatFor("floor", row);
@@ -176,7 +174,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
         floor: tierByName.floor[row.player_name],
         median: tierByName.median[row.player_name],
         ceiling: tierByName.ceiling[row.player_name],
-        por: tierByName.por[row.player_name],
+        por: porTierByName[row.player_name],
       },
       ...computeStatPercentiles(row, statPoolByPos),
     };

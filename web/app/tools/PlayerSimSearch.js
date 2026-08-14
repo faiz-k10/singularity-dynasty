@@ -416,28 +416,38 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
             <tbody>
               {(() => {
                 // Banner spans the full table width and drops in right
-                // above the first row of each new tier, tracked
-                // per-position -- tiers are computed per position (lib/
-                // tiers.js). displayRows stays in true points-descending
-                // order (positions interleave -- a RB can outscore a QB),
-                // so lastTierByPos is keyed per position rather than a
-                // single running value: it only fires a new banner when
-                // THIS row's own position's tier changes, regardless of
-                // what other positions' rows sit in between.
+                // above the first row of each new tier. Floor/Median/
+                // Ceiling tiers are computed per position (lib/tiers.js),
+                // so lastTierByPos is keyed per position -- displayRows
+                // stays in true points-descending order (positions
+                // interleave -- a RB can outscore a QB), and this only
+                // fires a new banner when THIS row's own position's tier
+                // changes, regardless of what other positions' rows sit
+                // in between. POR tiers are computed globally instead
+                // (POR is already position-adjusted, meant to be compared
+                // ACROSS positions), so they use one running lastGlobalTier
+                // instead and the banner drops the position prefix -- a
+                // POR tier can and should span multiple positions.
                 const lastTierByPos = {};
+                let lastGlobalTier = null;
+                const isGlobalTiering = tierMetric === "por";
                 return displayRows.map((row, index) => {
                   const hasStats = row.stat_ranges && Object.keys(row.stat_ranges).length > 0;
                   const isExpanded = hasStats && expanded.has(row.player_name);
                   const tier = bannersEnabled ? row.tiers?.[tierMetric] : null;
-                  const showTierBanner = tier != null && lastTierByPos[row.position] !== tier;
-                  if (tier != null) lastTierByPos[row.position] = tier;
+                  const showTierBanner =
+                    tier != null && (isGlobalTiering ? lastGlobalTier !== tier : lastTierByPos[row.position] !== tier);
+                  if (tier != null) {
+                    if (isGlobalTiering) lastGlobalTier = tier;
+                    else lastTierByPos[row.position] = tier;
+                  }
                   return (
                 <Fragment key={row.player_name}>
                 {showTierBanner && (
                   <tr className="tier-banner-row" aria-hidden="true">
                     <td colSpan={9}>
                       <span className="tier-banner-label">
-                        {row.position} · Tier {tier}
+                        {isGlobalTiering ? `Tier ${tier}` : `${row.position} · Tier ${tier}`}
                       </span>
                     </td>
                   </tr>
