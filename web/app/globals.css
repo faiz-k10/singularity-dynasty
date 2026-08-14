@@ -1232,15 +1232,23 @@ tr.stat-row-selected td{background:var(--void-panel);}
    column list drives the exact same selection as clicking the table
    cell it describes -- one more surface synced to the same state. */
 .pctile-row{
-  all:unset; cursor:pointer; display:grid; grid-template-columns:64px 1fr 40px; align-items:center;
+  all:unset; cursor:pointer; display:grid; grid-template-columns:64px 1fr 46px; align-items:center;
   gap:10px; padding:5px 6px; border-radius:6px; box-sizing:border-box; width:100%;
 }
 .pctile-row:hover{background:rgba(var(--neon-blue-rgb),0.08);}
 .pctile-row-active{background:rgba(var(--horizon-gold-rgb),0.1);}
 .pctile-row-label{font-size:12px; color:var(--star-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
 .pctile-row-active .pctile-row-label{color:var(--star);}
-.pctile-row-value{
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:12px; color:var(--star); text-align:right;
+/* Raw value stacked over its percentile -- the number the table itself
+   would show, on top, with the ordinal as a dimmer subscript underneath
+   so the shape/percentile view still carries the actual stat. */
+.pctile-row-value{display:flex; flex-direction:column; align-items:flex-end; line-height:1.25;}
+.pctile-row-raw{
+  font-family:var(--font-ibm-plex-mono), monospace; font-size:12px; color:var(--star);
+  font-variant-numeric:tabular-nums;
+}
+.pctile-row-ordinal{
+  font-family:var(--font-ibm-plex-mono), monospace; font-size:10px; color:var(--star-dim);
   font-variant-numeric:tabular-nums;
 }
 /* overflow was hidden here for the fill's rounded corners, but that also
@@ -1269,8 +1277,14 @@ tr.stat-row-selected td{background:var(--void-panel);}
   position:absolute; left:50%; top:calc(100% + 2px); transform:translateX(-50%);
   font-family:var(--font-ibm-plex-mono), monospace; font-size:8px; line-height:1; color:var(--star-dim);
 }
-.pctile-hero{display:flex; align-items:baseline; gap:10px;}
+.pctile-hero{display:flex; align-items:baseline; gap:10px; flex-wrap:wrap;}
 .pctile-hero-value{font-family:var(--font-space-grotesk); font-size:32px; font-weight:700; color:var(--star); line-height:1;}
+/* The raw stat value is the headline number now (pctile-hero-value);
+   this is its percentile read out in plain text right beside it. */
+.pctile-hero-pctile{
+  font-family:var(--font-ibm-plex-mono), monospace; font-size:13px; color:var(--star-dim);
+  font-variant-numeric:tabular-nums;
+}
 .pctile-hero-tier{
   font-family:var(--font-ibm-plex-mono), monospace; font-size:11px; letter-spacing:0.05em; text-transform:uppercase;
   padding:3px 8px; border-radius:20px; color:var(--void); font-weight:600;

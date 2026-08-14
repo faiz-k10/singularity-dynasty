@@ -75,20 +75,31 @@ export default async function ComparePlayerSimsPage({ searchParams }) {
   // Same position-relative heat-tint and Range-bar scale as Player Season
   // Simulations' own table, computed across the full fetched pool (not
   // just the 2-3 selected) so a compared player's heat and bar length
-  // read against the same population the main table uses.
-  const medianRangeByPos = {};
+  // read against the same population the main table uses. Floor/Ceiling
+  // get their own min/max pool each, same as the main table's Floor/
+  // Ceiling columns, rather than reusing Median's -- a player's floor and
+  // ceiling don't rank the same way relative to the position as their
+  // median does.
+  const rangeByPos = { floor: {}, median: {}, ceiling: {} };
   for (const row of sims) {
-    const r = medianRangeByPos[row.position] || { min: Infinity, max: -Infinity };
-    r.min = Math.min(r.min, row.median);
-    r.max = Math.max(r.max, row.median);
-    medianRangeByPos[row.position] = r;
+    for (const col of ["floor", "median", "ceiling"]) {
+      const r = rangeByPos[col][row.position] || { min: Infinity, max: -Infinity };
+      r.min = Math.min(r.min, row[col]);
+      r.max = Math.max(r.max, row[col]);
+      rangeByPos[col][row.position] = r;
+    }
+  }
+  function heatFor(col, row) {
+    const r = rangeByPos[col][row.position];
+    return r && r.max > r.min ? (row[col] - r.min) / (r.max - r.min) : 0;
   }
   const maxCeiling = sims.reduce((m, s) => Math.max(m, s.ceiling), 1);
-  const selectedWithHeat = selected.map((row) => {
-    const r = medianRangeByPos[row.position];
-    const heat = r && r.max > r.min ? (row.median - r.min) / (r.max - r.min) : 0;
-    return { ...row, heat };
-  });
+  const selectedWithHeat = selected.map((row) => ({
+    ...row,
+    heat: heatFor("median", row),
+    floorHeat: heatFor("floor", row),
+    ceilingHeat: heatFor("ceiling", row),
+  }));
   const playerOptions = sims.map((r) => ({ player_name: r.player_name, position: r.position }));
 
   // Percentile pool built from a separate, always-untruncated query --
@@ -120,6 +131,9 @@ export default async function ComparePlayerSimsPage({ searchParams }) {
         floorPctile: statFloorPercentiles[key],
         medianPctile: statPercentiles[key],
         ceilingPctile: statCeilingPercentiles[key],
+        floorValue: row.stat_ranges[key]?.floor,
+        medianValue: row.stat_ranges[key]?.median,
+        ceilingValue: row.stat_ranges[key]?.ceiling,
       }));
       const radarEntriesRaw = entries.map(([key, label]) => [
         key,

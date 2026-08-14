@@ -9,8 +9,9 @@ function formatStat(value) {
 }
 
 // Mirrors Player Season Simulations' own table: trend tag + confidence
-// badge per player, position-relative heat-tint on Median, and the
-// floor-median-ceiling Range bar, all in season totals.
+// badge per player, position-relative heat-tint (blue on Median, gold on
+// Floor/Ceiling -- same .heat-cell / .heat-cell-alt split as the main
+// table), and the floor-median-ceiling Range bar, all in season totals.
 export default function CompareStatsTable({ selected, compareStats, maxCeiling }) {
   return (
     <>
@@ -46,7 +47,7 @@ export default function CompareStatsTable({ selected, compareStats, maxCeiling }
             <tr>
               <th>Floor</th>
               {selected.map((r) => (
-                <td className="mono" key={r.player_name}>
+                <td className="mono heat-cell-alt" style={{ "--heat": r.floorHeat || 0 }} key={r.player_name}>
                   {formatStat(r.floor)}
                 </td>
               ))}
@@ -62,7 +63,7 @@ export default function CompareStatsTable({ selected, compareStats, maxCeiling }
             <tr>
               <th>Ceiling</th>
               {selected.map((r) => (
-                <td className="mono" key={r.player_name}>
+                <td className="mono heat-cell-alt" style={{ "--heat": r.ceilingHeat || 0 }} key={r.player_name}>
                   {formatStat(r.ceiling)}
                 </td>
               ))}

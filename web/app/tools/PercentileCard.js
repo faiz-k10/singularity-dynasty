@@ -26,6 +26,10 @@ function tier(pctile) {
   return { label: "Weak", cls: "weak" };
 }
 
+function formatValue(value) {
+  return value == null ? "—" : String(Math.round(value));
+}
+
 // 50th-percentile reference tick + label -- fixed dead center regardless
 // of the fill's own width, mirroring the same reference mark on
 // SimilarShapeFinder's comp bars, so "above/below average" reads at a
@@ -44,13 +48,19 @@ function PercentileBar({ pctile, size }) {
 
 // One row per Floor/Median/Ceiling (row mode) or per stat (column mode) --
 // same shape either way, just a different label + click target, so the
-// two modes share this row markup instead of diverging visually.
-function PercentileRow({ label, pctile, isActive, onClick }) {
+// two modes share this row markup instead of diverging visually. Shows
+// the raw stat value (what the table itself would show) stacked over the
+// percentile, so the shape/percentile view doesn't require flipping back
+// to the table to see the actual number behind it.
+function PercentileRow({ label, value, pctile, isActive, onClick }) {
   return (
     <button type="button" className={`pctile-row${isActive ? " pctile-row-active" : ""}`} onClick={onClick}>
       <span className="pctile-row-label">{label}</span>
       <PercentileBar pctile={pctile} />
-      <span className="pctile-row-value">{ordinal(pctile)}</span>
+      <span className="pctile-row-value">
+        <span className="pctile-row-raw">{formatValue(value)}</span>
+        <span className="pctile-row-ordinal">{ordinal(pctile)}</span>
+      </span>
     </button>
   );
 }
@@ -104,6 +114,7 @@ export default function PercentileCard({ stats, position, selection, onSelectCel
             <PercentileRow
               key={layer}
               label={LAYER_LABEL[layer]}
+              value={stat[`${layer}Value`]}
               pctile={stat[`${layer}Pctile`]}
               onClick={() => onSelectCell(stat.key, layer)}
             />
@@ -117,6 +128,7 @@ export default function PercentileCard({ stats, position, selection, onSelectCel
     const stat = stats.find((s) => s.key === selection.key);
     if (!stat) return null;
     const pctile = stat[`${selection.layer}Pctile`];
+    const value = stat[`${selection.layer}Value`];
     const t = tier(pctile);
     return (
       <div className="pctile-card">
@@ -127,7 +139,8 @@ export default function PercentileCard({ stats, position, selection, onSelectCel
           <span className="pctile-card-sub">vs. {position} pool</span>
         </div>
         <div className="pctile-hero">
-          <span className="pctile-hero-value">{ordinal(pctile)}</span>
+          <span className="pctile-hero-value">{formatValue(value)}</span>
+          <span className="pctile-hero-pctile">{ordinal(pctile)}</span>
           <span className={`pctile-hero-tier pctile-bar-${t.cls}`}>{t.label}</span>
         </div>
         <PercentileBar pctile={pctile} size="lg" />
@@ -150,6 +163,7 @@ export default function PercentileCard({ stats, position, selection, onSelectCel
           <PercentileRow
             key={stat.key}
             label={stat.label}
+            value={stat[`${layer}Value`]}
             pctile={stat[`${layer}Pctile`]}
             onClick={() => onSelectCell(stat.key, layer)}
           />

@@ -66,13 +66,18 @@ function StatDetailRow({ row, colSpan, shapePeers }) {
   const { entries: radarEntries, startDeg: radarStartDeg } = radarLayoutFor(radarEntriesRaw, row.position);
   // Table-order (not radar-vertex-order) percentile lookup for the card
   // under the table -- same three percentiles the radar already plots,
-  // just spelled out as numbers instead of shape.
+  // just spelled out as numbers instead of shape. Raw floor/median/
+  // ceiling values ride along too, so the card can show the actual stat
+  // next to its percentile instead of the percentile alone.
   const percentileStats = entries.map(([key, label]) => ({
     key,
     label,
     floorPctile: row.statFloorPercentiles?.[key],
     medianPctile: row.statPercentiles?.[key],
     ceilingPctile: row.statCeilingPercentiles?.[key],
+    floorValue: ranges[key]?.floor,
+    medianValue: ranges[key]?.median,
+    ceilingValue: ranges[key]?.ceiling,
   }));
 
   const shapeSignature = entries.map(([key]) => key).sort().join("|");
