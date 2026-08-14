@@ -35,6 +35,77 @@ MED_DECAY   <- c(RB = 0.87, QB = 0.90, WR = 0.89, TE = 0.92)  # Redraft Rankings
 CEIL_DECAY  <- c(RB = 0.89, QB = 0.98, WR = 0.93, TE = 0.91)  # Best Ball Rankings
 CEIL_Q      <- c(RB = 0.96, QB = 0.96, WR = 0.94, TE = 0.96)  # calibrated internal quantile for "ceiling"
 FLOOR_Q     <- c(RB = 0.09, QB = 0.08, WR = 0.12, TE = 0.13)  # calibrated internal quantile for "floor"
+
+# Granular per-stat SEASON projections (stat_ranges below -- Player Season
+# Simulations' per-stat floor/median/ceiling) get their own decay and
+# calibrated quantiles, split by stat-group instead of reusing the single
+# per-position MED_DECAY/FLOOR_Q/CEIL_Q above. Backtested separately via
+# walk-forward validation against REAL SEASON TOTALS (2022-2025 test
+# folds, each scored using only the 3 seasons before it -- matches
+# history_seasons()'s own lookback), NOT against next-game weekly
+# accuracy like MED_DECAY/CEIL_DECAY above. See backtest_stat_group_decay.R
+# and calibrate_stat_group_quantiles.R, and README.md's "Stat-group season
+# calibration" section for the full sweep and methodology.
+#
+# The season sim already resamples with only ONE weight vector for the
+# whole simulated distribution (wm, never wc -- see the points/szn
+# resampling below), so unlike Redraft/Best Ball there's no separate
+# median-decay/ceiling-decay split here: one decay drives the bootstrap
+# per stat-group, floor/median/ceiling are just different quantiles of
+# that same simulated distribution.
+#
+# Touchdown/interception counts (lumpy -- most games are 0 even for a
+# real scoring threat) backtested toward LESS aggressive recency
+# weighting (decay closer to 1.0) than the single blended decay above --
+# a single recent game is a noisy signal of a player's true TD rate, so
+# a good estimate needs more history averaged in, not less. This is the
+# opposite of the naive assumption that a "lumpy" stat needs MORE
+# reactivity to recent form, and it's the direct fix for a real
+# observed case: Derrick Henry's rushing-TD ceiling was being pulled up
+# disproportionately by one real 4-TD game (Week 17, 2025) under the
+# single shared decay, because that decay was already overweighting
+# recent games specifically for touchdowns.
+STAT_GROUP_DECAY <- list(
+  td_int  = c(QB = 0.97, RB = 0.94, WR = 0.94, TE = 0.97),
+  yardage = c(QB = 0.82, RB = 0.85, WR = 0.82, TE = 0.94)
+)
+
+# Same calibration concept as FLOOR_Q/CEIL_Q above (query the simulated
+# distribution at an internal quantile other than the literal 0.10/0.90
+# so the REAL exceed rate actually comes out near 10%/90%), just split by
+# stat-group and fit directly against the season-sim's own bootstrap
+# distribution rather than a weighted quantile of raw weekly history.
+#
+# Touchdown/interception calibration is clean -- these landed on genuine
+# interior optima, not pinned to a grid edge.
+#
+# Yardage/volume calibration does NOT fully close even at these values.
+# Pushed to the edge of a sane grid (0.0005 / 0.99+), it still lands
+# around 11-15% below-floor and ~9-10% above-ceiling instead of a true
+# 10%/10% -- a real, structural gap, not a tuning failure: yardage
+# totals are driven by role (snaps/targets/scheme), which can shift
+# completely between seasons, and a same-player bootstrap has no way to
+# represent an outcome outside that specific player's own game log. This
+# is the same "role-stability" limitation already documented as deferred
+# elsewhere in this file/README -- quantile tuning alone shrinks it
+# (was ~40%/~17% miscalibrated before this) but can't close it.
+STAT_GROUP_FLOOR_Q <- list(
+  td_int  = c(QB = 0.016,  RB = 0.19,   WR = 0.12,   TE = 0.17),
+  yardage = c(QB = 0.0005, RB = 0.0005, WR = 0.0005, TE = 0.0005)
+)
+STAT_GROUP_CEIL_Q <- list(
+  td_int  = c(QB = 0.96,   RB = 0.87,  WR = 0.93,   TE = 0.82),
+  yardage = c(QB = 0.9965, RB = 0.994, WR = 0.9965, TE = 0.99)
+)
+
+# Which group each granular stat column belongs to, for the split above.
+STAT_GROUP_BY_STAT <- c(
+  passing_tds = "td_int", passing_interceptions = "td_int",
+  rushing_tds = "td_int", receiving_tds = "td_int",
+  passing_yards = "yardage", rushing_yards = "yardage",
+  receiving_yards = "yardage", receptions = "yardage"
+)
+
 MAX_GAMES_PER_SEASON <- 16   # 17 weeks minus 1 bye (weeks 1-17; week 18 excluded — see below)
 AVAILABILITY_YEAR_DECAY <- 0.6  # not backtested — a judgment call weighting recent seasons'
                                  # availability more heavily than older ones
@@ -604,32 +675,20 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
     wc <- recency_weights(n, CEIL_DECAY[pos])
     avail <- player_availability(d, target_season, completed_weeks)
 
-    # Season sim now samples GAME INDICES (not points values directly) so
-    # the same simulated set of games produces both the points total and
-    # each granular stat's total together -- a big rushing-yards game
-    # stays a big fantasy-points game within the same draw, instead of
-    # each stat being resampled independently and losing that
-    # correlation. Granular stats are NOT shrink-blended, matching the
-    # existing season_floor/median/ceiling precedent (season totals rely
-    # on the availability dampening above, not the low-sample blend that
-    # only applies to weekly figures).
     idx <- seq_len(n)
     relevant_stats <- STAT_COLS_BY_POSITION[[pos]]
-    sim_result <- replicate(n_sims, {
+
+    # Season fantasy-points total: unchanged mechanism from before --
+    # samples GAME INDICES (not points values directly), resampled with
+    # the single position-level MED_DECAY (wm), matching Redraft/Best
+    # Ball's own recency weighting. Powers season_floor/median/ceiling
+    # and the boom/bust profile only; NOT part of the stat-group split
+    # below (that backtest targeted the granular per-stat columns, not
+    # the blended points total).
+    szn <- replicate(n_sims, {
       g <- sum(runif(MAX_GAMES_PER_SEASON) < avail)
-      if (g == 0) {
-        c(points = 0, if (!is.null(relevant_stats)) setNames(rep(0, length(relevant_stats)), relevant_stats))
-      } else {
-        sampled <- sample(idx, g, replace = TRUE, prob = wm)
-        pts <- sum(x[sampled])
-        if (!is.null(relevant_stats)) {
-          c(points = pts, sapply(relevant_stats, function(col) sum(d[[col]][sampled])))
-        } else {
-          c(points = pts)
-        }
-      }
+      if (g == 0) 0 else sum(x[sample(idx, g, replace = TRUE, prob = wm)])
     })
-    szn <- sim_result["points", ]
 
     # Boom/bust profile: share of simulated seasons landing 20%+ below vs.
     # above THIS PLAYER'S OWN median (not a fixed league-wide point
@@ -643,21 +702,59 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
     boom_pct <- round(100 * mean(szn > 1.2 * szn_med))
     normal_pct <- 100 - bust_pct - boom_pct
 
-    # Percentiles are purely statistical (10th/50th/90th), same as every
-    # other floor/median/ceiling in this engine -- for interceptions,
-    # that means "ceiling" is the 90th percentile of INTs thrown, i.e.
-    # the worst case, not "best." Left as-is rather than special-cased;
-    # the frontend shows it as a plain range, not a good/bad framing.
-    stat_ranges <- if (!is.null(relevant_stats)) {
-      setNames(lapply(relevant_stats, function(col) {
-        v <- sim_result[col, ]
-        list(floor = round(as.numeric(quantile(v, 0.10)), 0),
-             median = round(as.numeric(quantile(v, 0.50)), 0),
-             ceiling = round(as.numeric(quantile(v, 0.90)), 0))
-      }), relevant_stats)
-    } else {
-      list()
+    # Granular per-stat season projections: each stat-group (touchdown/
+    # interception vs. yardage/volume, STAT_GROUP_BY_STAT) gets its own
+    # resampling pass with its own backtested decay and calibrated
+    # floor/ceiling quantile (STAT_GROUP_DECAY/FLOOR_Q/CEIL_Q above) --
+    # correlation is preserved WITHIN a group (a big rushing-yards game
+    # and a big receiving-yards game still come from the same simulated
+    # draw, both in "yardage") but NOT across groups (that same game's
+    # rushing-TD total is now drawn separately, under "td_int"'s own
+    # weighting) -- an unavoidable consequence of the two stat types
+    # needing genuinely different recency weighting; see
+    # backtest_stat_group_decay.R. Not shrink-blended, matching the
+    # existing season_floor/median/ceiling precedent (season totals rely
+    # on the availability dampening above, not the low-sample blend that
+    # only applies to weekly figures). For interceptions, "ceiling" is
+    # the 90th-ish percentile of INTs thrown, i.e. the worst case, not
+    # "best" -- left as a plain range, not a good/bad framing, same as
+    # before.
+    stat_ranges <- list()
+    if (!is.null(relevant_stats)) {
+      stat_groups_present <- split(relevant_stats, STAT_GROUP_BY_STAT[relevant_stats])
+      for (group_name in names(stat_groups_present)) {
+        cols <- stat_groups_present[[group_name]]
+        w_group <- recency_weights(n, STAT_GROUP_DECAY[[group_name]][pos])
+        floor_q <- STAT_GROUP_FLOOR_Q[[group_name]][pos]
+        ceil_q  <- STAT_GROUP_CEIL_Q[[group_name]][pos]
+
+        group_sim <- replicate(n_sims, {
+          g <- sum(runif(MAX_GAMES_PER_SEASON) < avail)
+          if (g == 0) setNames(rep(0, length(cols)), cols)
+          else {
+            sampled <- sample(idx, g, replace = TRUE, prob = w_group)
+            sapply(cols, function(col) sum(d[[col]][sampled]))
+          }
+        })
+        # replicate() drops the row dimension when length(cols) == 1
+        # (a WR/TE's td_int group is just receiving_tds) -- normalize
+        # back to a 1-row matrix so `group_sim[col, ]` always works.
+        if (is.null(dim(group_sim))) {
+          group_sim <- matrix(group_sim, nrow = 1, dimnames = list(cols, NULL))
+        }
+
+        for (col in cols) {
+          v <- group_sim[col, ]
+          stat_ranges[[col]] <- list(
+            floor = round(as.numeric(quantile(v, floor_q)), 0),
+            median = round(as.numeric(quantile(v, 0.50)), 0),
+            ceiling = round(as.numeric(quantile(v, ceil_q)), 0)
+          )
+        }
+      }
+      stat_ranges <- stat_ranges[relevant_stats]  # restore STAT_COLS_BY_POSITION's column order
     }
+
     playoff <- replicate(n_sims, sum(sample(x, 3, replace = TRUE, prob = wc)))
 
     shrink_this_player <- p %in% shrink_players && !is.null(baseline_pools[[pos]])

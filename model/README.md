@@ -83,6 +83,85 @@ literally his single best recent game (33.5) rather than a stable
 statistical property. Interpolating between the two straddling values fixed
 it (27.2).
 
+## Stat-group season calibration (touchdown/interception vs. yardage/volume)
+
+The granular per-stat season projections (`stat_ranges` — Player Season
+Simulations' per-stat floor/median/ceiling, e.g. rushing_tds, receiving_yards)
+originally reused the single per-position `MED_DECAY` above for every stat
+column that position carries, with a flat `quantile(0.10)`/`quantile(0.90)`
+on the simulated distribution (no internal-quantile correction like
+weekly figures get). Found to be wrong via a concrete case: Derrick
+Henry's rushing-TD ceiling (27) and Jahmyr Gibbs' (17) both read as a flat
+100th percentile against a comparison pool, traced back to the season sim
+weighting recent games so heavily that one real 4-TD game (Week 17, 2025)
+was contributing nearly half of Henry's entire projected season median by
+itself.
+
+**Backtested separately from MED_DECAY/CEIL_DECAY above, and against a
+different target.** MED_DECAY/CEIL_DECAY are walk-forward validated
+against *next-game weekly accuracy* (Redraft/Best Ball's actual use
+case). This calibration is walk-forward validated against **real SEASON
+TOTALS** instead — for each of 4 test seasons (2022-2025), simulate a
+season using only the 3 seasons before it (same lookback
+`history_seasons()` itself uses), score the resulting floor/median/
+ceiling against what that player actually did that season. See
+`backtest_stat_group_decay.R` (decay sweep, pinball loss) and
+`calibrate_stat_group_quantiles.R` (internal-quantile sweep on the
+winning decay, same concept as Floor/Ceiling internal q above, reusing
+the already-simulated draws rather than resimulating per candidate).
+
+**The stat split matters more than expected, and in the opposite
+direction from the naive guess.** Touchdown/interception counts are
+"lumpy" — most games are 0 even for a real scorer — so the instinct is
+that a lumpy stat needs *more* reactivity to recent form. The backtest
+says the reverse: TD/INT stats want **less** aggressive recency
+weighting (decay closer to 1.0) than yardage does, because a single
+recent game is a very noisy signal of a player's true scoring rate —
+a stable estimate needs more history averaged in, not less. Yardage
+accrues smoothly every game, so recent role/usage shifts there carry
+real signal worth weighting up. Concretely, for every position the
+backtested TD/INT decay is *higher* than the single blended decay
+previously used — i.e. the old shared decay was already overweighting
+recent games specifically for touchdowns, which is the exact mechanism
+that inflated Henry's ceiling.
+
+| Position | TD/INT decay | Yardage decay | TD/INT floor q | TD/INT ceil q | Yardage floor q | Yardage ceil q |
+|---|---|---|---|---|---|---|
+| QB | 0.97 | 0.82 | 0.016 | 0.96 | 0.0005 | 0.9965 |
+| RB | 0.94 | 0.85 | 0.19 | 0.87 | 0.0005 | 0.994 |
+| WR | 0.94 | 0.82 | 0.12 | 0.93 | 0.0005 | 0.9965 |
+| TE | 0.97 | 0.94 | 0.17 | 0.82 | 0.0005 | 0.99 |
+
+**TD/INT calibration is clean** — every value above is a genuine interior
+optimum from the sweep, not pinned to a grid edge.
+
+**Yardage/volume calibration does NOT fully close, and this is a real
+finding, not a tuning miss.** Even after widening the internal-quantile
+grid down to 0.0005 and up to 0.9995, no position reaches a true
+10%/90% real-world exceed rate for yardage stats — best achieved is
+~11-15% below-floor (target 10%) and ~9-10% above-ceiling. That ceiling
+on how well this can be calibrated is structural: yardage totals are
+driven by role (snap share, target share, offensive scheme), which can
+shift completely between seasons in a way a same-player bootstrap has
+no way to represent — it can only resample from games that player
+actually had, never an outcome outside their own history (a promotion
+to starter, a scheme change, a season-ending injury with no prior
+precedent in their log). This is the same "role-stability" limitation
+documented under Deferred below — this backtest just puts a number on
+its cost (~40%/~17% miscalibrated before this fix, ~12%/~10% after,
+still short of the 10%/10% target).
+
+**Implementation detail worth knowing:** each stat-group now gets its
+own resampling pass (its own weight vector), so correlation between
+stats is preserved *within* a group (a big rushing-yards game and a big
+receiving-yards game still land in the same simulated draw, both
+"yardage") but not *across* groups (that same game's rushing-TD total
+is now drawn separately under "td_int"'s own weighting). This is an
+unavoidable tradeoff of the two stat types needing genuinely different
+recency weighting — the previous single-pass design could preserve full
+cross-stat correlation, but only by giving every stat the same
+(measurably wrong) decay.
+
 ## Week 18 exclusion
 
 Week 18 (the actual final week of the 18-week NFL regular season — not week
