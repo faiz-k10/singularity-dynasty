@@ -27,3 +27,12 @@ export function radarLayoutFor(entries, position) {
   const leftover = entries.filter(([key]) => !order.includes(key));
   return { entries: [...ordered, ...leftover], startDeg: RADAR_START_DEG[position] ?? -90 };
 }
+
+// Same WR/TE point-down flip as radarLayoutFor, without RADAR_ORDER's
+// per-position vertex reordering -- Compare Players keeps every radar in
+// one fixed stat order (STAT_LABELS' own order) instead, so the same
+// stat lands in the same spot across three players who might not share
+// a position, rather than each player's own "nicest layout" order.
+export function radarStartDegFor(position) {
+  return RADAR_START_DEG[position] ?? -90;
+}

@@ -6,7 +6,7 @@ import STAT_LABELS from "../statLabels";
 import ComparePlayerPickers from "../ComparePlayerPickers";
 import CompareStatsTable from "../CompareStatsTable";
 import ComparePlayerRadars from "../ComparePlayerRadars";
-import { radarLayoutFor } from "../radarLayout";
+import { radarStartDegFor } from "../radarLayout";
 
 export const metadata = {
   title: "Compare Players — Season Simulations — Singularity Dynasty",
@@ -125,14 +125,20 @@ export default async function ComparePlayerSimsPage({ searchParams }) {
         medianValue: row.stat_ranges[key]?.median,
         ceilingValue: row.stat_ranges[key]?.ceiling,
       }));
-      const radarEntriesRaw = entries.map(([key, label]) => [
+      // Fixed STAT_LABELS order, not radarLayoutFor's per-position vertex
+      // reordering -- with three players who might not share a position,
+      // "nicest layout for this one player" would put a different stat
+      // on the same vertex for each of them, defeating the point of
+      // comparing shapes side by side. Only the WR/TE point-down flip
+      // carries over.
+      const radarEntries = entries.map(([key, label]) => [
         key,
         label,
         statPercentiles[key],
         statFloorPercentiles[key],
         statCeilingPercentiles[key],
       ]);
-      const { entries: radarEntries, startDeg: radarStartDeg } = radarLayoutFor(radarEntriesRaw, row.position);
+      const radarStartDeg = radarStartDegFor(row.position);
       return {
         name: row.player_name,
         position: row.position,

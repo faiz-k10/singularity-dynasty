@@ -64,7 +64,13 @@ export default function ComparePlayerRadars({ players }) {
               <span className="compare-radar-card-pos mono">{p.positionLabel || p.position}</span>
             </div>
             <StatRadar entries={p.radarEntries} startDeg={p.radarStartDeg} selection={selection} onSelectKey={selectRow} />
-            <PercentileCard stats={p.percentileStats} position={p.position} selection={selection} onSelectCell={selectCell} />
+            <PercentileCard
+              stats={p.percentileStats}
+              position={p.position}
+              selection={selection}
+              onSelectCell={selectCell}
+              rankColumnByPercentile={false}
+            />
           </div>
         ))}
       </div>
