@@ -352,6 +352,7 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                 <SortableTh label="Median" sortKey="median" {...sortProps} />
                 <SortableTh label="Ceiling" sortKey="ceiling" {...sortProps} />
                 <th>Range</th>
+                <SortableTh label="POR" sortKey="por" title="Points over Replacement — composite floor/median/ceiling score vs. the replacement-level baseline at this position" {...sortProps} />
               </tr>
             </thead>
             <tbody>
@@ -376,7 +377,7 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                 <Fragment key={row.player_name}>
                 {showTierBanner && (
                   <tr className="tier-banner-row" aria-hidden="true">
-                    <td colSpan={8}>
+                    <td colSpan={9}>
                       <span className="tier-banner-label">
                         {row.position} · Tier {tier}
                       </span>
@@ -442,11 +443,15 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                       ></div>
                     </div>
                   </td>
+                  <td className={`mono por-cell ${row.por >= 0 ? "por-positive" : "por-negative"}`}>
+                    {row.por >= 0 ? "+" : ""}
+                    {row.por.toFixed(1)}
+                  </td>
                 </tr>
                 {isExpanded && (
                   <StatDetailRow
                     row={row}
-                    colSpan={8}
+                    colSpan={9}
                     shapePeers={shapePeers}
                   />
                 )}

@@ -3,6 +3,7 @@ import { getUserTier } from "@/lib/tier";
 import { resolveSort, sortRows } from "@/lib/sortLink";
 import { buildStatPoolByPos, computeStatPercentiles } from "@/lib/statPercentiles";
 import { computeTierMaps } from "@/lib/tiers";
+import { computeReplacementValues } from "@/lib/replacementValue";
 import SiteHeader from "../../SiteHeader";
 import ExportCsvButton from "../ExportCsvButton";
 import PlayerSimSearch from "../PlayerSimSearch";
@@ -23,6 +24,7 @@ const COLUMN_TYPES = {
   floor: "number",
   median: "number",
   ceiling: "number",
+  por: "number",
 };
 
 function sortPositions(positions) {
@@ -91,14 +93,13 @@ export default async function PlayerSimulationsPage({ searchParams }) {
 
   const isTeaser = !hasFullAccess && totalCount > sims.length;
   const { sortKey, sortDir } = resolveSort(params, "median", "desc");
-  const sortedSims = sortRows(sims, sortKey, sortDir, COLUMN_TYPES);
   const canExport = tier === "singularity" && sims.length > 0;
   const positions = sortPositions([...new Set(sims.map((r) => r.position))]);
 
   // Heat-tint, the Range-bar scale, and per-stat percentiles all read as
   // "the population" and have to mean the WHOLE league regardless of who's
-  // looking, not just whatever sortedSims happens to hold. For a free/
-  // signed-out viewer sortedSims is capped to TEASER_LIMIT (200) rows --
+  // looking, not just whatever sims happens to hold. For a free/
+  // signed-out viewer sims is capped to TEASER_LIMIT (200) rows --
   // that used to double as the heat-tint min/max pool and the Range bar's
   // maxCeiling too, not just the percentile pool, so a teaser-truncated
   // fetch could silently drop whichever player anchors one end of a
@@ -112,7 +113,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
   // genuinely far-below-everyone floor like Shedeur Sanders'. One
   // always-untruncated fetch now feeds heat-tint, maxCeiling, AND
   // percentiles instead of just the last of the three.
-  let poolRows = sortedSims;
+  let poolRows = sims;
   if (!hasFullAccess && latest) {
     const { data: fullData } = await supabase
       .from("player_simulations")
@@ -144,7 +145,15 @@ export default async function PlayerSimulationsPage({ searchParams }) {
   // reasoning as heatFor/maxCeiling above -- a teaser-truncated pool would
   // both miscount tiers and drop whichever player anchors a tier boundary.
   const tierByName = computeTierMaps(poolRows);
-  const simsWithHeat = sortedSims.map((row) => {
+  // Same reasoning as tierByName/heatFor above -- the replacement-level
+  // baseline has to be drawn from the whole population, not whatever a
+  // teaser-truncated fetch happens to include.
+  const porByName = computeReplacementValues(poolRows);
+  // por is computed off the pool, not a raw column from Supabase, so it
+  // has to be attached before sorting -- sorting sims first (like the
+  // other columns used to) would leave por absent from every row at sort
+  // time and silently no-op a "sort by POR" click.
+  const simsWithComputed = sims.map((row) => {
     const heat = heatFor("median", row);
     const floorHeat = heatFor("floor", row);
     const ceilingHeat = heatFor("ceiling", row);
@@ -153,6 +162,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
       heat,
       floorHeat,
       ceilingHeat,
+      por: porByName[row.player_name],
       tiers: {
         floor: tierByName.floor[row.player_name],
         median: tierByName.median[row.player_name],
@@ -161,6 +171,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
       ...computeStatPercentiles(row, statPoolByPos),
     };
   });
+  const simsWithHeat = sortRows(simsWithComputed, sortKey, sortDir, COLUMN_TYPES);
   // Peer pool for SimilarShapeFinder, grouped by the exact set of stat
   // keys a player carries rather than by position -- QBs only match QBs
   // (unique passing keys), but WRs and TEs share one pool since they
@@ -183,7 +194,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
   // ExportCsvButton's comment), not reactive to PlayerSimSearch's client
   // state, so it needs its own converted copy independent of what the
   // table happens to be displaying.
-  const csvRows = sortedSims.map((row) => ({
+  const csvRows = simsWithHeat.map((row) => ({
     ...row,
     floor: Math.round((row.floor / GAMES_PER_SEASON) * 10) / 10,
     median: Math.round((row.median / GAMES_PER_SEASON) * 10) / 10,

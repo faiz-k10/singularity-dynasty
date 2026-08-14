@@ -725,6 +725,9 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .row-num-th{width:1%; padding-left:16px; padding-right:8px;}
 .row-num-cell{width:1%; padding-left:16px; padding-right:8px; color:var(--star-dim);}
 .tool-notes{white-space:normal !important; min-width:180px; text-align:left;}
+.por-cell{font-weight:600;}
+.por-cell.por-positive{color:var(--up);}
+.por-cell.por-negative{color:var(--down);}
 .rankings-table tr:last-child td{border-bottom:none;}
 .rankings-table tr:hover td{background:rgba(var(--neon-blue-rgb),0.05);}
 .tool-notes{color:var(--star-dim); font-size:13px;}
