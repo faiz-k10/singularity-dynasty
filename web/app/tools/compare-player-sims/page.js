@@ -14,7 +14,6 @@ export const metadata = {
 
 const SLOTS = ["p1", "p2", "p3"];
 const TEASER_LIMIT = 10;
-const GAMES_PER_SEASON = 17;
 // Singularity-only, same as Player Season Simulations itself -- this is a
 // view over that same dataset, so the tier gate has to match exactly or
 // a free/Explorer user could use this tool to see players past the
@@ -186,7 +185,6 @@ export default async function ComparePlayerSimsPage({ searchParams }) {
                   selected={selectedWithHeat}
                   compareStats={compareStats}
                   maxCeiling={maxCeiling}
-                  gamesPerSeason={GAMES_PER_SEASON}
                 />
                 <ComparePlayerRadars players={comparePlayers} />
               </>

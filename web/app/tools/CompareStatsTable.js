@@ -1,48 +1,19 @@
 "use client";
 
-import { useState } from "react";
 import TrendTag from "./TrendTag";
 import ConfidenceBadge from "./ConfidenceBadge";
 import TeamBadge from "./TeamBadge";
 
-// Floor/median/ceiling arrive as season totals -- same convention and same
-// helper as PlayerSimSearch.js's Per Game / Season toggle.
-function formatStat(value, unit, gamesPerSeason) {
-  if (unit === "season") return String(Math.round(value));
-  return (value / gamesPerSeason).toFixed(1);
+function formatStat(value) {
+  return String(Math.round(value));
 }
 
 // Mirrors Player Season Simulations' own table: trend tag + confidence
-// badge per player, the Per Game / Season toggle, position-relative
-// heat-tint on Median, and the floor-median-ceiling Range bar. Per-stat
-// breakdown rows and Notes stay season totals and untoggled, matching
-// that table's dropdown exactly (never converted there either).
-export default function CompareStatsTable({ selected, compareStats, maxCeiling, gamesPerSeason }) {
-  const [unit, setUnit] = useState("pergame");
-
+// badge per player, position-relative heat-tint on Median, and the
+// floor-median-ceiling Range bar, all in season totals.
+export default function CompareStatsTable({ selected, compareStats, maxCeiling }) {
   return (
     <>
-      <div className="unit-toggle-row">
-        <div className="unit-toggle" role="group" aria-label="Display unit">
-          <button
-            type="button"
-            className={unit === "pergame" ? "active" : ""}
-            onClick={() => setUnit("pergame")}
-            aria-pressed={unit === "pergame"}
-          >
-            Per Game
-          </button>
-          <button
-            type="button"
-            className={unit === "season" ? "active" : ""}
-            onClick={() => setUnit("season")}
-            aria-pressed={unit === "season"}
-          >
-            Season
-          </button>
-        </div>
-      </div>
-
       <div className="compare-table-wrap">
         <table className="compare-table">
           <thead>
@@ -76,7 +47,7 @@ export default function CompareStatsTable({ selected, compareStats, maxCeiling, 
               <th>Floor</th>
               {selected.map((r) => (
                 <td className="mono" key={r.player_name}>
-                  {formatStat(r.floor, unit, gamesPerSeason)}
+                  {formatStat(r.floor)}
                 </td>
               ))}
             </tr>
@@ -84,7 +55,7 @@ export default function CompareStatsTable({ selected, compareStats, maxCeiling, 
               <th>Median</th>
               {selected.map((r) => (
                 <td className="mono heat-cell" style={{ "--heat": r.heat || 0 }} key={r.player_name}>
-                  <strong>{formatStat(r.median, unit, gamesPerSeason)}</strong>
+                  <strong>{formatStat(r.median)}</strong>
                 </td>
               ))}
             </tr>
@@ -92,7 +63,7 @@ export default function CompareStatsTable({ selected, compareStats, maxCeiling, 
               <th>Ceiling</th>
               {selected.map((r) => (
                 <td className="mono" key={r.player_name}>
-                  {formatStat(r.ceiling, unit, gamesPerSeason)}
+                  {formatStat(r.ceiling)}
                 </td>
               ))}
             </tr>
