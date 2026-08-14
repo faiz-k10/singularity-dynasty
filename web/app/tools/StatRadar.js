@@ -137,19 +137,37 @@ export default function StatRadar({ entries, selection = null, startDeg = -90, c
         {floorOutline && (
           <path
             d={floorOutline}
-            className={columnLayer === "floor" ? "radar-band-outline radar-band-outline-active" : "radar-band-outline"}
+            className={
+              columnLayer === "floor"
+                ? "radar-band-outline radar-band-outline-active"
+                : columnLayer
+                ? "radar-band-outline radar-band-outline-dim"
+                : "radar-band-outline"
+            }
           />
         )}
         {ceilingOutline && (
           <path
             d={ceilingOutline}
-            className={columnLayer === "ceiling" ? "radar-band-outline radar-band-outline-active" : "radar-band-outline"}
+            className={
+              columnLayer === "ceiling"
+                ? "radar-band-outline radar-band-outline-active"
+                : columnLayer
+                ? "radar-band-outline radar-band-outline-dim"
+                : "radar-band-outline"
+            }
           />
         )}
         {comparePath && <path d={comparePath} className="radar-shape-compare" />}
         <path
           d={shapePath}
-          className={columnLayer === "median" ? "radar-shape radar-shape-active" : "radar-shape"}
+          className={
+            columnLayer === "median"
+              ? "radar-shape radar-shape-active"
+              : columnLayer
+              ? "radar-shape radar-shape-dim"
+              : "radar-shape"
+          }
         />
         {entries.map(([key, label], i) => {
           const point = shapePoints[i];

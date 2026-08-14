@@ -1087,8 +1087,16 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .stat-radar-svg{width:100%; display:block; overflow:visible;}
 .radar-ring{fill:none; stroke:var(--line); stroke-width:1;}
 .radar-spoke{stroke:var(--line); stroke-width:1;}
-.radar-shape{fill:rgba(var(--neon-blue-rgb),0.18); stroke:var(--horizon-gold); stroke-width:1.25; stroke-linejoin:round; transition:stroke-width .15s ease;}
+.radar-shape{fill:rgba(var(--neon-blue-rgb),0.18); stroke:var(--horizon-gold); stroke-width:1.25; stroke-linejoin:round; transition:stroke-width .15s ease, opacity .15s ease;}
 .radar-shape-active{stroke-width:3.5;}
+/* column mode ("Median" header clicked) picks one layer to emphasize --
+   without this, the median line and the floor/ceiling band outlines are
+   all the same gold/width except for the selected one's extra stroke
+   weight, which is easy to miss when a player's floor and ceiling swing
+   far apart per-stat (a rushing back with weak receiving numbers, say):
+   the unselected outlines then read as equally-prominent shapes instead
+   of background context. */
+.radar-shape-dim{opacity:0.3;}
 .radar-point{fill:var(--horizon-gold);}
 .radar-point-active{fill:var(--star); stroke:var(--horizon-gold); stroke-width:2;}
 .radar-axis-label{font-family:var(--font-ibm-plex-mono), monospace; font-size:9.5px; fill:var(--star-dim);}
@@ -1106,8 +1114,9 @@ tr.stat-row-selected td{background:var(--void-panel);}
    .radar-shape (this player's own numbers) so it doesn't read as a second
    comp the way the neon-blue .radar-shape-compare overlay does. */
 .radar-band{fill:rgba(var(--horizon-gold-rgb),0.12); stroke:none;}
-.radar-band-outline{fill:none; stroke:var(--horizon-gold); stroke-width:1.25; stroke-linejoin:round; transition:stroke-width .15s ease;}
+.radar-band-outline{fill:none; stroke:var(--horizon-gold); stroke-width:1.25; stroke-linejoin:round; transition:stroke-width .15s ease, opacity .15s ease;}
 .radar-band-outline-active{stroke-width:3.5;}
+.radar-band-outline-dim{opacity:0.3;}
 /* Floor/ceiling markers -- invisible (r:0) until that exact number is
    the active selectedLayer, so clicking a Floor or Ceiling cell in the
    table points at precisely that value on the radar instead of only
