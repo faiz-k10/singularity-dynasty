@@ -42,6 +42,11 @@ export default async function PlayerSimulationsPage({ searchParams }) {
   const params = await searchParams;
   const { supabase, tier } = await getUserTier();
   const hasFullAccess = PAID_TIERS.includes(tier);
+  // POR's replacement-level baseline depends on league settings the viewer
+  // picks via the League Size / QB Format toggles -- unknown values fall
+  // back to the standard 12-team, single-QB assumption.
+  const leagueTeams = params?.teams === "10" ? 10 : 12;
+  const superflex = params?.qb === "sf";
 
   const { data: latest } = await supabase
     .from("player_simulations")
@@ -148,7 +153,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
   // Same reasoning as tierByName/heatFor above -- the replacement-level
   // baseline has to be drawn from the whole population, not whatever a
   // teaser-truncated fetch happens to include.
-  const porByName = computeReplacementValues(poolRows);
+  const porByName = computeReplacementValues(poolRows, { teams: leagueTeams, superflex });
   // por is computed off the pool, not a raw column from Supabase, so it
   // has to be attached before sorting -- sorting sims first (like the
   // other columns used to) would leave por absent from every row at sort
@@ -252,6 +257,8 @@ export default async function PlayerSimulationsPage({ searchParams }) {
               positions={positions}
               maxCeiling={maxCeiling}
               shapePeers={shapePeers}
+              leagueTeams={leagueTeams}
+              superflex={superflex}
             />
 
             {isTeaser && (

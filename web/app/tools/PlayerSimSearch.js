@@ -225,10 +225,22 @@ const TIER_METRICS = [
 // column-header clicks (SortableTh) are unaffected.
 const TIER_COLUMN_TYPES = { floor: "number", median: "number", ceiling: "number" };
 
+// League Size / QB Format toggles change POR's replacement-level baseline
+// (lib/replacementValue.js), which needs the full player pool -- including
+// the extra rows a free/signed-out viewer's teaser response never
+// contains -- to compute correctly. So unlike "Tier by" above, these stay
+// real navigation (a Link to a new URL) rather than a client-side
+// override: the server recomputes POR against the full pool every time.
+function leagueHref(currentParams, key, value) {
+  const params = new URLSearchParams(currentParams || {});
+  params.set(key, value);
+  return `?${params.toString()}`;
+}
+
 // Same pattern as RankingsSearch (Redraft) / BestBallSearch: position-pill
 // filter + player name search, both client-side. Sorting stays
 // server-driven via the existing URL-param mechanism.
-export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams, positions, maxCeiling, shapePeers }) {
+export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams, positions, maxCeiling, shapePeers, leagueTeams, superflex }) {
   const showPositionFilter = Array.isArray(positions) && positions.length > 0;
   const [selected, setSelected] = useState(positions || []);
   const [query, setQuery] = useState("");
@@ -319,6 +331,46 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
         </div>
       </div>
 
+      <div className="tier-toggle-row">
+        <span className="tier-toggle-label" title="Changes POR's replacement-level baseline">League Size</span>
+        <div className="tier-toggle">
+          <Link
+            href={leagueHref(currentParams, "teams", "10")}
+            className={leagueTeams === 10 ? "active" : ""}
+            aria-pressed={leagueTeams === 10}
+          >
+            10-Team
+          </Link>
+          <Link
+            href={leagueHref(currentParams, "teams", "12")}
+            className={leagueTeams === 12 ? "active" : ""}
+            aria-pressed={leagueTeams === 12}
+          >
+            12-Team
+          </Link>
+        </div>
+      </div>
+
+      <div className="tier-toggle-row">
+        <span className="tier-toggle-label" title="Changes POR's replacement-level baseline">QB Format</span>
+        <div className="tier-toggle">
+          <Link
+            href={leagueHref(currentParams, "qb", "1qb")}
+            className={!superflex ? "active" : ""}
+            aria-pressed={!superflex}
+          >
+            1QB
+          </Link>
+          <Link
+            href={leagueHref(currentParams, "qb", "sf")}
+            className={superflex ? "active" : ""}
+            aria-pressed={superflex}
+          >
+            Superflex
+          </Link>
+        </div>
+      </div>
+
       <div className="player-search-row">
         <input
           type="search"
@@ -352,7 +404,12 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                 <SortableTh label="Median" sortKey="median" {...sortProps} />
                 <SortableTh label="Ceiling" sortKey="ceiling" {...sortProps} />
                 <th>Range</th>
-                <SortableTh label="POR" sortKey="por" title="Points over Replacement — composite floor/median/ceiling score vs. the replacement-level baseline at this position" {...sortProps} />
+                <SortableTh
+                  label="POR"
+                  sortKey="por"
+                  title={`Points over Replacement — composite floor/median/ceiling score vs. the replacement-level baseline at this position (${leagueTeams}-team, ${superflex ? "Superflex" : "1QB"})`}
+                  {...sortProps}
+                />
               </tr>
             </thead>
             <tbody>
