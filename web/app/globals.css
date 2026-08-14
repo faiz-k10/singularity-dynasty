@@ -805,12 +805,12 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .tier-toggle-row{display:flex; align-items:center; gap:10px; margin-bottom:20px; flex-wrap:wrap;}
 .tier-toggle-label{font-size:13px; color:var(--star-dim); font-weight:600;}
 .tier-toggle{display:inline-flex; gap:4px; background:var(--void-panel-2); border:1px solid var(--line); border-radius:30px; padding:4px;}
-.tier-toggle button{
+.tier-toggle a{
   all:unset; cursor:pointer; padding:7px 16px; border-radius:24px; font-size:12.5px; color:var(--star-dim);
   transition:background .15s ease, color .15s ease;
 }
-.tier-toggle button:hover{color:var(--star);}
-.tier-toggle button.active{background:var(--horizon-gold); color:#1A0D05;}
+.tier-toggle a:hover{color:var(--star);}
+.tier-toggle a.active{background:var(--horizon-gold); color:#1A0D05;}
 .tier-banner-row td{
   padding:4px 16px; background:rgba(var(--horizon-gold-rgb), 0.08);
   border-top:1px solid rgba(var(--horizon-gold-rgb), 0.3);

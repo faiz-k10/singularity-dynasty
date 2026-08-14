@@ -210,6 +210,20 @@ const TIER_METRICS = [
   { key: "ceiling", label: "Ceiling" },
 ];
 
+// Tiers only read as contiguous blocks when the table is actually sorted
+// by the same metric they're grouped by -- sorted by Median with tiers
+// grouped by Ceiling produces exactly the "Tier 2 above Tier 1" nonsense
+// a viewer would (rightly) flag as broken. So "Tier by" doesn't hold its
+// own state -- it drives the real column sort (always descending, best
+// first, regardless of whatever direction that column was last sorted)
+// and the active metric is read back off sortKey, one source of truth.
+function tierHref(currentParams, key) {
+  const params = new URLSearchParams(currentParams || {});
+  params.set("sort", key);
+  params.set("dir", "desc");
+  return `?${params.toString()}`;
+}
+
 // Same pattern as RankingsSearch (Redraft) / BestBallSearch: position-pill
 // filter + player name search, both client-side. Sorting stays
 // server-driven via the existing URL-param mechanism.
@@ -218,7 +232,7 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
   const [selected, setSelected] = useState(positions || []);
   const [query, setQuery] = useState("");
   const [expanded, setExpanded] = useState(() => new Set()); // player_names currently unfolded
-  const [tierMetric, setTierMetric] = useState("median");
+  const tierMetric = TIER_METRICS.some((m) => m.key === sortKey) ? sortKey : "median";
   const sortProps = { activeSort: sortKey, activeDir: sortDir, currentParams };
 
   function toggle(pos) {
@@ -276,15 +290,14 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
         <span className="tier-toggle-label">Tier by</span>
         <div className="tier-toggle">
           {TIER_METRICS.map(({ key, label }) => (
-            <button
+            <Link
               key={key}
-              type="button"
+              href={tierHref(currentParams, key)}
               className={tierMetric === key ? "active" : ""}
-              onClick={() => setTierMetric(key)}
               aria-pressed={tierMetric === key}
             >
               {label}
-            </button>
+            </Link>
           ))}
         </div>
       </div>
