@@ -8,7 +8,7 @@
 // - mean gap + 1.5 stdev, for the small per-position pools (~30-85
 //   players) computeTierMaps uses. Validated across several rounds of
 //   real tuning on those pool sizes.
-// - median gap + 5 * MAD (median absolute deviation), for the large
+// - median gap + 9 * MAD (median absolute deviation), for the large
 //   global POR pool (425 players) computeGlobalTierMap uses. Mean/stdev
 //   is an outlier magnet at that size: a handful of huge gaps between
 //   elite players at the very top inflate the stdev so much the
@@ -19,14 +19,17 @@
 //   real drop-offs. Median/MAD is the standard robust fix: half the
 //   gaps are literally unaffected by how extreme the other half get, so
 //   outlier gaps at the top can't silently raise the bar for everyone
-//   below them. The 5x multiplier (checked against the real pool: 3x
-//   gave 31 tiers with a lot of 1-3 player tiers in the mid-pack, 5x
-//   trims that to 18 while leaving the sharply-separated top tiers
-//   untouched) was loosened once already after the first pass read as
-//   too granular. Tried median/MAD on the smaller per-position pools
-//   too, but it ran the other way there -- too loose, collapsing e.g.
-//   31 QBs from ~5 real tiers down to 3. So it's scoped to the
-//   large-pool case only, not a universal replacement for mean+stdev.
+//   below them. The multiplier went 3x -> 5x -> 9x across two rounds of
+//   "still too strict" feedback against the real pool -- 3x gave 31
+//   tiers (a lot of 1-3 player tiers mid-pack), 5x trimmed to 18 but
+//   still split e.g. McCaffrey/Chase/Brown/McBride/Cook/Achane (a
+//   163.2-to-147.4 POR run with no gap over 4.8) across three separate
+//   tiers, 9x is the smallest multiplier that keeps that whole run
+//   together (8 tiers total) without disturbing the sharply-separated
+//   top tiers. Tried median/MAD on the smaller per-position pools too,
+//   but it ran the other way there -- too loose, collapsing e.g. 31 QBs
+//   from ~5 real tiers down to 3. So it's scoped to the large-pool case
+//   only, not a universal replacement for mean+stdev.
 const METRICS = ["floor", "median", "ceiling"];
 
 function median(nums) {
@@ -44,7 +47,7 @@ function meanStdevThreshold(gaps) {
 function medianMadThreshold(gaps) {
   const medianGap = median(gaps);
   const mad = median(gaps.map((g) => Math.abs(g - medianGap)));
-  return medianGap + 5 * mad * 1.4826;
+  return medianGap + 9 * mad * 1.4826;
 }
 
 function groupByGaps(arr, metric, thresholdFn) {
