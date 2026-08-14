@@ -204,6 +204,20 @@ function formatStat(value) {
   return String(Math.round(value));
 }
 
+const TIER_METRICS = [
+  { key: "floor", label: "Floor" },
+  { key: "median", label: "Median" },
+  { key: "ceiling", label: "Ceiling" },
+];
+
+// Fades with tier number rather than needing each position's tier count --
+// a T1 stays fully saturated gold regardless of position, a T6 is faint,
+// same visual language every position uses instead of a per-position scale.
+function tierBadgeStyle(tier) {
+  const alpha = Math.max(0.15, 1 - (tier - 1) * 0.15);
+  return { "--tier-alpha": alpha };
+}
+
 // Same pattern as RankingsSearch (Redraft) / BestBallSearch: position-pill
 // filter + player name search, both client-side. Sorting stays
 // server-driven via the existing URL-param mechanism.
@@ -212,6 +226,7 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
   const [selected, setSelected] = useState(positions || []);
   const [query, setQuery] = useState("");
   const [expanded, setExpanded] = useState(() => new Set()); // player_names currently unfolded
+  const [tierMetric, setTierMetric] = useState("median");
   const sortProps = { activeSort: sortKey, activeDir: sortDir, currentParams };
 
   function toggle(pos) {
@@ -265,6 +280,23 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
         </div>
       )}
 
+      <div className="tier-toggle-row">
+        <span className="tier-toggle-label">Tier by</span>
+        <div className="tier-toggle">
+          {TIER_METRICS.map(({ key, label }) => (
+            <button
+              key={key}
+              type="button"
+              className={tierMetric === key ? "active" : ""}
+              onClick={() => setTierMetric(key)}
+              aria-pressed={tierMetric === key}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="player-search-row">
         <input
           type="search"
@@ -294,6 +326,7 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                 <SortableTh label="Player" sortKey="player_name" {...sortProps} />
                 <SortableTh label="Pos" sortKey="position" {...sortProps} />
                 <SortableTh label="Team" sortKey="team" {...sortProps} />
+                <th>Tier</th>
                 <SortableTh label="Floor" sortKey="floor" {...sortProps} />
                 <SortableTh label="Median" sortKey="median" {...sortProps} />
                 <SortableTh label="Ceiling" sortKey="ceiling" {...sortProps} />
@@ -338,6 +371,13 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                   <td className="mono align-left">
                     <TeamBadge team={row.team} />
                   </td>
+                  <td className="mono align-left">
+                    {row.tiers?.[tierMetric] != null && (
+                      <span className="tier-badge" style={tierBadgeStyle(row.tiers[tierMetric])}>
+                        T{row.tiers[tierMetric]}
+                      </span>
+                    )}
+                  </td>
                   <td className="mono heat-cell-alt" style={{ "--heat": row.floorHeat || 0 }}>
                     {formatStat(row.floor)}
                   </td>
@@ -369,7 +409,7 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                 {isExpanded && (
                   <StatDetailRow
                     row={row}
-                    colSpan={8}
+                    colSpan={9}
                     shapePeers={shapePeers}
                   />
                 )}

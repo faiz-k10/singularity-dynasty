@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getUserTier } from "@/lib/tier";
 import { resolveSort, sortRows } from "@/lib/sortLink";
 import { buildStatPoolByPos, computeStatPercentiles } from "@/lib/statPercentiles";
+import { computeTierMaps } from "@/lib/tiers";
 import SiteHeader from "../../SiteHeader";
 import ExportCsvButton from "../ExportCsvButton";
 import PlayerSimSearch from "../PlayerSimSearch";
@@ -115,7 +116,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
   if (!hasFullAccess && latest) {
     const { data: fullData } = await supabase
       .from("player_simulations")
-      .select("position, stat_ranges, floor, median, ceiling")
+      .select("player_name, position, stat_ranges, floor, median, ceiling")
       .eq("season", latest.season)
       .eq("week", latest.week);
     poolRows = fullData || [];
@@ -139,6 +140,10 @@ export default async function PlayerSimulationsPage({ searchParams }) {
     return r && r.max > r.min ? (row[col] - r.min) / (r.max - r.min) : 0;
   }
   const statPoolByPos = buildStatPoolByPos(poolRows);
+  // Always derived from poolRows (the full, untruncated population), same
+  // reasoning as heatFor/maxCeiling above -- a teaser-truncated pool would
+  // both miscount tiers and drop whichever player anchors a tier boundary.
+  const tierByName = computeTierMaps(poolRows);
   const simsWithHeat = sortedSims.map((row) => {
     const heat = heatFor("median", row);
     const floorHeat = heatFor("floor", row);
@@ -148,6 +153,11 @@ export default async function PlayerSimulationsPage({ searchParams }) {
       heat,
       floorHeat,
       ceilingHeat,
+      tiers: {
+        floor: tierByName.floor[row.player_name],
+        median: tierByName.median[row.player_name],
+        ceiling: tierByName.ceiling[row.player_name],
+      },
       ...computeStatPercentiles(row, statPoolByPos),
     };
   });
