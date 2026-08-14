@@ -210,6 +210,22 @@ const TIER_METRICS = [
   { key: "ceiling", label: "Ceiling" },
 ];
 
+// Tiers are a per-position concept -- even with the table correctly
+// sorted by the tiered metric, positions still interleave (a QB and an
+// RB can land next to each other by raw value), which put non-QB rows
+// visually inside a "QB · Tier N" banner's span. Fixed by additionally
+// grouping rows into contiguous QB/RB/WR/TE blocks whenever tier banners
+// are showing -- Array.sort is stable, so this only reorders *which*
+// position comes first, not the already-correct ordering within each
+// position. Only applied when sorted by one of the three tier metrics;
+// sorting by Player/Pos/Team has no defined tier order to group by, so
+// banners are hidden there instead of showing something misleading.
+const POSITION_ORDER = ["QB", "RB", "WR", "TE"];
+function positionRank(pos) {
+  const i = POSITION_ORDER.indexOf(pos);
+  return i === -1 ? POSITION_ORDER.length : i;
+}
+
 // Tiers only read as contiguous blocks when the table is actually sorted
 // by the same metric they're grouped by -- sorted by Median with tiers
 // grouped by Ceiling produces exactly the "Tier 2 above Tier 1" nonsense
@@ -232,7 +248,8 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
   const [selected, setSelected] = useState(positions || []);
   const [query, setQuery] = useState("");
   const [expanded, setExpanded] = useState(() => new Set()); // player_names currently unfolded
-  const tierMetric = TIER_METRICS.some((m) => m.key === sortKey) ? sortKey : "median";
+  const bannersEnabled = TIER_METRICS.some((m) => m.key === sortKey);
+  const tierMetric = bannersEnabled ? sortKey : "median";
   const sortProps = { activeSort: sortKey, activeDir: sortDir, currentParams };
 
   function toggle(pos) {
@@ -261,6 +278,11 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
     }
     return out;
   }, [rows, selected, query, showPositionFilter]);
+
+  const displayRows = useMemo(() => {
+    if (!bannersEnabled) return filteredRows;
+    return [...filteredRows].sort((a, b) => positionRank(a.position) - positionRank(b.position));
+  }, [filteredRows, bannersEnabled]);
 
   return (
     <>
@@ -342,15 +364,16 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                 // Banner spans the full table width and drops in right
                 // above the first row of each new tier, tracked
                 // per-position -- tiers are computed per position (lib/
-                // tiers.js), and positions interleave in this table's
-                // normal (non-grouped) sort order, so "tier changed" has
-                // to mean "changed for that row's own position," not
-                // just "differs from the row directly above."
+                // tiers.js). displayRows groups rows into contiguous
+                // position blocks whenever banners are enabled (see
+                // POSITION_ORDER above), so "tier changed" scanning in
+                // display order lines up with each position's own run of
+                // rows instead of jumping across an interleaved list.
                 const lastTierByPos = {};
-                return filteredRows.map((row, index) => {
+                return displayRows.map((row, index) => {
                   const hasStats = row.stat_ranges && Object.keys(row.stat_ranges).length > 0;
                   const isExpanded = hasStats && expanded.has(row.player_name);
-                  const tier = row.tiers?.[tierMetric];
+                  const tier = bannersEnabled ? row.tiers?.[tierMetric] : null;
                   const showTierBanner = tier != null && lastTierByPos[row.position] !== tier;
                   if (tier != null) lastTierByPos[row.position] = tier;
                   return (
