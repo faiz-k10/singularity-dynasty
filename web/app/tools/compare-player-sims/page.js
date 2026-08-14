@@ -62,16 +62,6 @@ export default async function ComparePlayerSimsPage({ searchParams }) {
   const byName = new Map(sims.map((r) => [r.player_name, r]));
   const selected = SLOTS.map((slot) => byName.get(params?.[slot])).filter(Boolean);
 
-  // Union of stat keys across the selected players, in the shared fixed
-  // order -- comparing a QB against a WR means each row only makes sense
-  // for some of the players, so a player missing a given stat just shows
-  // "—" in that column rather than the row being dropped entirely.
-  const statKeysPresent = new Set();
-  for (const r of selected) {
-    if (r.stat_ranges) Object.keys(r.stat_ranges).forEach((k) => statKeysPresent.add(k));
-  }
-  const compareStats = STAT_LABELS.filter(([key]) => statKeysPresent.has(key));
-
   // Same position-relative heat-tint and Range-bar scale as Player Season
   // Simulations' own table, computed across the full fetched pool (not
   // just the 2-3 selected) so a compared player's heat and bar length
@@ -197,7 +187,6 @@ export default async function ComparePlayerSimsPage({ searchParams }) {
               <>
                 <CompareStatsTable
                   selected={selectedWithHeat}
-                  compareStats={compareStats}
                   maxCeiling={maxCeiling}
                 />
                 <ComparePlayerRadars players={comparePlayers} />

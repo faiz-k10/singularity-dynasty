@@ -12,7 +12,9 @@ function formatStat(value) {
 // badge per player, position-relative heat-tint (blue on Median, gold on
 // Floor/Ceiling -- same .heat-cell / .heat-cell-alt split as the main
 // table), and the floor-median-ceiling Range bar, all in season totals.
-export default function CompareStatsTable({ selected, compareStats, maxCeiling }) {
+// Per-stat breakdown lives in ComparePlayerRadars' radar + percentile
+// card instead of a wall of "floor–median–ceiling" strings here.
+export default function CompareStatsTable({ selected, maxCeiling }) {
   return (
     <>
       <div className="compare-table-wrap">
@@ -91,19 +93,6 @@ export default function CompareStatsTable({ selected, compareStats, maxCeiling }
                 </td>
               ))}
             </tr>
-            {compareStats.map(([key, label]) => (
-              <tr key={key}>
-                <th>{label}</th>
-                {selected.map((r) => {
-                  const v = r.stat_ranges && r.stat_ranges[key];
-                  return (
-                    <td className="mono" key={r.player_name}>
-                      {v ? `${v.floor}–${v.median}–${v.ceiling}` : "—"}
-                    </td>
-                  );
-                })}
-              </tr>
-            ))}
             <tr>
               <th>Notes</th>
               {selected.map((r) => (
