@@ -205,26 +205,18 @@ function formatStat(value) {
   return String(Math.round(value));
 }
 
-const TIER_METRICS = [
-  { key: "floor", label: "Floor" },
-  { key: "median", label: "Median" },
-  { key: "ceiling", label: "Ceiling" },
-  { key: "por", label: "POR" },
-];
-
-// Tiers only read as contiguous blocks when the table is actually sorted
-// by the same metric they're grouped by -- sorted by Median with tiers
-// grouped by Ceiling produces exactly the "Tier 2 above Tier 1" nonsense
-// a viewer would (rightly) flag as broken. "Tier by" used to drive this
-// through the real column sort (a Link to a new ?sort= URL), but that
-// meant every click round-tripped through the server component -- re-
-// querying Supabase and recomputing tiers/percentiles for the whole page
-// -- just to reorder rows the client already has all the data for. It's
-// now a client-side override (clientSort below): flipping it re-sorts
-// the already-loaded rows in the browser, instant, and falls back to the
-// server-provided sortKey/sortDir whenever no override is set, so real
-// column-header clicks (SortableTh) are unaffected.
-const TIER_COLUMN_TYPES = { floor: "number", median: "number", ceiling: "number", por: "number" };
+// POR is the only tierable metric -- floor/median/ceiling tiering was
+// removed by request. Tiers only read as a contiguous block when the
+// table is actually sorted by the same metric they're grouped by, so
+// "Tier by" drives the real sort too. It used to do that through a Link
+// to a new ?sort= URL, round-tripping through the server component to
+// re-query Supabase and recompute everything just to reorder rows the
+// client already has; it's now a client-side override (clientSort
+// below) that re-sorts the already-loaded rows in the browser, instant,
+// and falls back to the server-provided sortKey/sortDir whenever no
+// override is set, so real column-header clicks (SortableTh) are
+// unaffected.
+const TIER_COLUMN_TYPES = { por: "number" };
 
 // League Size / QB Format toggles change POR's replacement-level baseline
 // (lib/replacementValue.js), which needs the full player pool -- including
@@ -251,12 +243,11 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
   const [clientSort, setClientSort] = useState(null);
   const effectiveSortKey = clientSort?.key ?? sortKey;
   const effectiveSortDir = clientSort?.dir ?? sortDir;
-  const bannersEnabled = TIER_METRICS.some((m) => m.key === effectiveSortKey);
-  const tierMetric = bannersEnabled ? effectiveSortKey : "median";
+  const bannersEnabled = effectiveSortKey === "por";
   const sortProps = { activeSort: effectiveSortKey, activeDir: effectiveSortDir, currentParams };
 
-  function selectTier(key) {
-    setClientSort({ key, dir: "desc" });
+  function selectPorTiers() {
+    setClientSort({ key: "por", dir: "desc" });
   }
 
   function toggle(pos) {
@@ -316,19 +307,11 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
       )}
 
       <div className="tier-toggle-row">
-        <span className="tier-toggle-label">Tier by</span>
+        <span className="tier-toggle-label">Tiers</span>
         <div className="tier-toggle">
-          {TIER_METRICS.map(({ key, label }) => (
-            <button
-              key={key}
-              type="button"
-              onClick={() => selectTier(key)}
-              className={tierMetric === key ? "active" : ""}
-              aria-pressed={tierMetric === key}
-            >
-              {label}
-            </button>
-          ))}
+          <button type="button" onClick={selectPorTiers} className={bannersEnabled ? "active" : ""} aria-pressed={bannersEnabled}>
+            POR
+          </button>
         </div>
       </div>
 
@@ -416,39 +399,25 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
             <tbody>
               {(() => {
                 // Banner spans the full table width and drops in right
-                // above the first row of each new tier. Floor/Median/
-                // Ceiling tiers are computed per position (lib/tiers.js),
-                // so lastTierByPos is keyed per position -- displayRows
-                // stays in true points-descending order (positions
-                // interleave -- a RB can outscore a QB), and this only
-                // fires a new banner when THIS row's own position's tier
-                // changes, regardless of what other positions' rows sit
-                // in between. POR tiers are computed globally instead
-                // (POR is already position-adjusted, meant to be compared
-                // ACROSS positions), so they use one running lastGlobalTier
-                // instead and the banner drops the position prefix -- a
-                // POR tier can and should span multiple positions.
-                const lastTierByPos = {};
-                let lastGlobalTier = null;
-                const isGlobalTiering = tierMetric === "por";
+                // above the first row of each new tier. POR tiers are
+                // computed globally (POR is already position-adjusted,
+                // meant to be compared ACROSS positions -- lib/tiers.js),
+                // so a single running lastTier is enough and the banner
+                // has no position prefix -- a POR tier can and should
+                // span multiple positions.
+                let lastTier = null;
                 return displayRows.map((row, index) => {
                   const hasStats = row.stat_ranges && Object.keys(row.stat_ranges).length > 0;
                   const isExpanded = hasStats && expanded.has(row.player_name);
-                  const tier = bannersEnabled ? row.tiers?.[tierMetric] : null;
-                  const showTierBanner =
-                    tier != null && (isGlobalTiering ? lastGlobalTier !== tier : lastTierByPos[row.position] !== tier);
-                  if (tier != null) {
-                    if (isGlobalTiering) lastGlobalTier = tier;
-                    else lastTierByPos[row.position] = tier;
-                  }
+                  const tier = bannersEnabled ? row.tier : null;
+                  const showTierBanner = tier != null && lastTier !== tier;
+                  if (tier != null) lastTier = tier;
                   return (
                 <Fragment key={row.player_name}>
                 {showTierBanner && (
                   <tr className="tier-banner-row" aria-hidden="true">
                     <td colSpan={9}>
-                      <span className="tier-banner-label">
-                        {isGlobalTiering ? `Tier ${tier}` : `${row.position} · Tier ${tier}`}
-                      </span>
+                      <span className="tier-banner-label">Tier {tier}</span>
                     </td>
                   </tr>
                 )}

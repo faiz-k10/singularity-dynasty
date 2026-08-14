@@ -1,47 +1,30 @@
-// Gap-based tiering: sort players by the chosen metric and start a new
-// tier wherever the drop to the next player is unusually large relative
-// to the other gaps in that same list, rather than a fixed player-count
-// per tier.
+// Gap-based tiering for POR (the only tierable metric -- floor/median/
+// ceiling tiering was removed by request): sort players by POR and start
+// a new tier wherever the drop to the next player is unusually large
+// relative to the other gaps in that same list, rather than a fixed
+// player-count per tier.
 //
-// Two threshold strategies, picked by pool size:
-//
-// - mean gap + 1.5 stdev, for the small per-position pools (~30-85
-//   players) computeTierMaps uses. Validated across several rounds of
-//   real tuning on those pool sizes.
-// - median gap + 9 * MAD (median absolute deviation), for the large
-//   global POR pool (425 players) computeGlobalTierMap uses. Mean/stdev
-//   is an outlier magnet at that size: a handful of huge gaps between
-//   elite players at the very top inflate the stdev so much the
-//   threshold stops triggering for the rest of the list entirely --
-//   verified on the real POR pool, where mean+stdev produced a real
-//   break every ~5 players in the top 24, then dumped the remaining 402
-//   into one "Tier 6" spanning POR +75 down to -150, well past several
-//   real drop-offs. Median/MAD is the standard robust fix: half the
-//   gaps are literally unaffected by how extreme the other half get, so
-//   outlier gaps at the top can't silently raise the bar for everyone
-//   below them. The multiplier went 3x -> 5x -> 9x across two rounds of
-//   "still too strict" feedback against the real pool -- 3x gave 31
-//   tiers (a lot of 1-3 player tiers mid-pack), 5x trimmed to 18 but
-//   still split e.g. McCaffrey/Chase/Brown/McBride/Cook/Achane (a
-//   163.2-to-147.4 POR run with no gap over 4.8) across three separate
-//   tiers, 9x is the smallest multiplier that keeps that whole run
-//   together (8 tiers total) without disturbing the sharply-separated
-//   top tiers. Tried median/MAD on the smaller per-position pools too,
-//   but it ran the other way there -- too loose, collapsing e.g. 31 QBs
-//   from ~5 real tiers down to 3. So it's scoped to the large-pool case
-//   only, not a universal replacement for mean+stdev.
-const METRICS = ["floor", "median", "ceiling"];
-
+// The threshold is median gap + 9 * MAD (median absolute deviation), not
+// mean + stdev. Mean/stdev is an outlier magnet on a 425-player pool: a
+// handful of huge gaps between elite players at the very top inflate the
+// stdev so much the threshold stops triggering for the rest of the list
+// entirely -- verified on the real POR pool, where mean+stdev produced a
+// real break every ~5 players in the top 24, then dumped the remaining
+// 402 into one "Tier 6" spanning POR +75 down to -150, well past several
+// real drop-offs. Median/MAD is the standard robust fix: half the gaps
+// are literally unaffected by how extreme the other half get, so outlier
+// gaps at the top can't silently raise the bar for everyone below them.
+// The multiplier went 3x -> 5x -> 9x across two rounds of "still too
+// strict" feedback against the real pool -- 3x gave 31 tiers (a lot of
+// 1-3 player tiers mid-pack), 5x trimmed to 18 but still split e.g.
+// McCaffrey/Chase/Brown/McBride/Cook/Achane (a 163.2-to-147.4 POR run
+// with no gap over 4.8) across three separate tiers, 9x is the smallest
+// multiplier that keeps that whole run together (8 tiers total) without
+// disturbing the sharply-separated top tiers.
 function median(nums) {
   const sorted = [...nums].sort((a, b) => a - b);
   const mid = Math.floor(sorted.length / 2);
   return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
-}
-
-function meanStdevThreshold(gaps) {
-  const meanGap = gaps.reduce((s, g) => s + g, 0) / (gaps.length || 1);
-  const variance = gaps.reduce((s, g) => s + (g - meanGap) ** 2, 0) / (gaps.length || 1);
-  return meanGap + 1.5 * Math.sqrt(variance);
 }
 
 function medianMadThreshold(gaps) {
@@ -59,9 +42,7 @@ function medianMadThreshold(gaps) {
 // gap threshold still spanned 33 points top to bottom, and a later 144-
 // player run spanned 186 points. maxSpan forces a break once a tier's
 // running width (current player vs. the tier's first player) exceeds it,
-// regardless of how small the step that crossed the line was. Optional --
-// per-position tiering (computeTierMaps) doesn't pass one, since its
-// pools are small enough that this hasn't come up.
+// regardless of how small the step that crossed the line was.
 function groupByGaps(arr, metric, thresholdFn, maxSpan) {
   const gaps = [];
   for (let i = 1; i < arr.length; i++) {
@@ -73,8 +54,8 @@ function groupByGaps(arr, metric, thresholdFn, maxSpan) {
   for (let i = 1; i < arr.length; i++) {
     const gap = arr[i - 1][metric] - arr[i][metric];
     const currentGroup = groups[groups.length - 1];
-    const span = maxSpan != null ? currentGroup[0][metric] - arr[i][metric] : 0;
-    if ((gap > threshold && gap > 0) || (maxSpan != null && span > maxSpan)) {
+    const span = currentGroup[0][metric] - arr[i][metric];
+    if ((gap > threshold && gap > 0) || span > maxSpan) {
       groups.push([arr[i]]);
     } else {
       currentGroup.push(arr[i]);
@@ -104,10 +85,10 @@ function mergeSingletons(groups, metric, maxSpan) {
     const nextGap = i < groups.length - 1 ? value - groups[i + 1][0][metric] : Infinity;
 
     const hasNext = i < groups.length - 1;
-    const prevSpan = maxSpan != null ? groups[i - 1][0][metric] - value : 0;
-    const nextSpan = maxSpan != null && hasNext ? value - groups[i + 1][groups[i + 1].length - 1][metric] : 0;
-    const prevOk = maxSpan == null || prevSpan <= maxSpan;
-    const nextOk = hasNext && (maxSpan == null || nextSpan <= maxSpan);
+    const prevSpan = groups[i - 1][0][metric] - value;
+    const nextSpan = hasNext ? value - groups[i + 1][groups[i + 1].length - 1][metric] : 0;
+    const prevOk = prevSpan <= maxSpan;
+    const nextOk = hasNext && nextSpan <= maxSpan;
 
     if (!prevOk && !nextOk) {
       i++;
@@ -126,43 +107,15 @@ function mergeSingletons(groups, metric, maxSpan) {
   return groups;
 }
 
-// floor/median/ceiling are raw stat totals -- a QB's median is on a wholly
-// different scale than a TE's, so tiering has to happen separately within
-// each position or the whole thing just reflects position, not tier.
-export function computeTierMaps(poolRows) {
-  const byPos = {};
-  for (const row of poolRows) {
-    (byPos[row.position] ??= []).push(row);
-  }
-
-  const tierByName = { floor: {}, median: {}, ceiling: {} };
-
-  for (const metric of METRICS) {
-    for (const pos in byPos) {
-      const arr = [...byPos[pos]].sort((a, b) => b[metric] - a[metric]);
-      if (arr.length === 0) continue;
-
-      const groups = mergeSingletons(groupByGaps(arr, metric, meanStdevThreshold), metric);
-      groups.forEach((group, tierIndex) => {
-        for (const player of group) {
-          tierByName[metric][player.player_name] = tierIndex + 1;
-        }
-      });
-    }
-  }
-
-  return tierByName;
-}
-
 // POR is already position-adjusted -- each player's score is measured
 // against his OWN position's replacement level, which is exactly what
 // makes it comparable ACROSS positions (that's the whole point of the
-// stat). Tiering it per-position like the raw stats above would silently
-// re-introduce a position axis into a number specifically built to not
-// have one, and produces exactly the nonsense a viewer would (rightly)
-// flag: two players 2 points apart landing in different tiers because
-// they happen to play different positions. So POR tiers are computed
-// once, across the whole pool, with no position grouping at all.
+// stat). Tiering it per-position would silently re-introduce a position
+// axis into a number specifically built to not have one, and produces
+// exactly the nonsense a viewer would (rightly) flag: two players 2
+// points apart landing in different tiers because they happen to play
+// different positions. So tiers are computed once, across the whole
+// pool, with no position grouping at all.
 // Matches the span of the already-good tiers the gap threshold alone
 // produces near the top of the pool (14.8-15.8 points) -- keeps the cap
 // from feeling arbitrary relative to what "one tier" already looks like
