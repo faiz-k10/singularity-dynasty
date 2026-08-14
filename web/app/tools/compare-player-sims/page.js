@@ -61,17 +61,34 @@ export default async function ComparePlayerSimsPage({ searchParams }) {
 
   const byName = new Map(sims.map((r) => [r.player_name, r]));
   const selected = SLOTS.map((slot) => byName.get(params?.[slot])).filter(Boolean);
+  const playerOptions = sims.map((r) => ({ player_name: r.player_name, position: r.position }));
 
-  // Same position-relative heat-tint and Range-bar scale as Player Season
-  // Simulations' own table, computed across the full fetched pool (not
-  // just the 2-3 selected) so a compared player's heat and bar length
-  // read against the same population the main table uses. Floor/Ceiling
-  // get their own min/max pool each, same as the main table's Floor/
-  // Ceiling columns, rather than reusing Median's -- a player's floor and
-  // ceiling don't rank the same way relative to the position as their
-  // median does.
+  // Everything below that reads as "the population" -- heat-tint,
+  // Range-bar scale, and percentiles -- has to mean the WHOLE position/
+  // league regardless of which viewer is looking, not just whatever
+  // `sims` happens to hold. For a free/signed-out viewer `sims` is capped
+  // to TEASER_LIMIT (10) rows, which used to double as the heat-tint and
+  // Range-bar pool too -- min/max computed from 10 players instead of the
+  // whole league distorted both instead of just reading wrong for
+  // players outside that slice, since a compared player is always inside
+  // it. One always-untruncated fetch feeds all three now, matching the
+  // fix already applied to percentiles.
+  let poolRows = sims;
+  if (!hasFullAccess && latest) {
+    const { data: fullData } = await supabase
+      .from("player_simulations")
+      .select("position, stat_ranges, floor, median, ceiling")
+      .eq("season", latest.season)
+      .eq("week", latest.week);
+    poolRows = fullData || [];
+  }
+
+  // Floor/Ceiling get their own min/max pool each, same as the main
+  // table's Floor/Ceiling columns, rather than reusing Median's -- a
+  // player's floor and ceiling don't rank the same way relative to the
+  // position as their median does.
   const rangeByPos = { floor: {}, median: {}, ceiling: {} };
-  for (const row of sims) {
+  for (const row of poolRows) {
     for (const col of ["floor", "median", "ceiling"]) {
       const r = rangeByPos[col][row.position] || { min: Infinity, max: -Infinity };
       r.min = Math.min(r.min, row[col]);
@@ -83,31 +100,16 @@ export default async function ComparePlayerSimsPage({ searchParams }) {
     const r = rangeByPos[col][row.position];
     return r && r.max > r.min ? (row[col] - r.min) / (r.max - r.min) : 0;
   }
-  const maxCeiling = sims.reduce((m, s) => Math.max(m, s.ceiling), 1);
+  const maxCeiling = poolRows.reduce((m, s) => Math.max(m, s.ceiling), 1);
   const selectedWithHeat = selected.map((row) => ({
     ...row,
     heat: heatFor("median", row),
     floorHeat: heatFor("floor", row),
     ceilingHeat: heatFor("ceiling", row),
   }));
-  const playerOptions = sims.map((r) => ({ player_name: r.player_name, position: r.position }));
 
-  // Percentile pool built from a separate, always-untruncated query --
-  // NOT from `sims`, which is capped to TEASER_LIMIT rows for a free/
-  // signed-out viewer (same fix as Player Season Simulations' own page;
-  // see lib/statPercentiles.js). Only needed when someone's actually
-  // selected, so this skips the extra query on a bare picker-only load.
   let comparePlayers = [];
   if (selectedWithHeat.length > 0 && latest) {
-    let poolRows = sims;
-    if (!hasFullAccess) {
-      const { data: fullData } = await supabase
-        .from("player_simulations")
-        .select("position, stat_ranges")
-        .eq("season", latest.season)
-        .eq("week", latest.week);
-      poolRows = fullData || [];
-    }
     const statPoolByPos = buildStatPoolByPos(poolRows);
     comparePlayers = selectedWithHeat.map((row) => {
       const { statPercentiles, statFloorPercentiles, statCeilingPercentiles } = computeStatPercentiles(

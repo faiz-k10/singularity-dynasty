@@ -91,16 +91,42 @@ export default async function PlayerSimulationsPage({ searchParams }) {
   const isTeaser = !hasFullAccess && totalCount > sims.length;
   const { sortKey, sortDir } = resolveSort(params, "median", "desc");
   const sortedSims = sortRows(sims, sortKey, sortDir, COLUMN_TYPES);
-  const maxCeiling = sims.reduce((m, s) => Math.max(m, s.ceiling), 1);
   const canExport = tier === "singularity" && sims.length > 0;
   const positions = sortPositions([...new Set(sims.map((r) => r.position))]);
 
-  // Heat-tint (Floor/Median/Ceiling columns) is position-relative -- QBs
-  // score far higher raw totals than TEs, so a global min/max would make
-  // every QB look "hot" and every TE look "cold" regardless of how they
-  // actually rank among their own position.
+  // Heat-tint, the Range-bar scale, and per-stat percentiles all read as
+  // "the population" and have to mean the WHOLE league regardless of who's
+  // looking, not just whatever sortedSims happens to hold. For a free/
+  // signed-out viewer sortedSims is capped to TEASER_LIMIT (200) rows --
+  // that used to double as the heat-tint min/max pool and the Range bar's
+  // maxCeiling too, not just the percentile pool, so a teaser-truncated
+  // fetch could silently drop whichever player anchors one end of a
+  // position's stat range (or the single highest season ceiling site-
+  // wide) and distort the heat color / bar width for every visible row
+  // near that end, on top of the percentile-specific bug this same
+  // untruncated fetch was already added to fix -- verified live: with the
+  // full 32-QB pool Kyler Murray's passing-yards floor was clearly 3rd
+  // percentile, but the free-tier's 31-QB teaser pool (missing one low
+  // outlier) pushed it down to a misleading 0th, indistinguishable from a
+  // genuinely far-below-everyone floor like Shedeur Sanders'. One
+  // always-untruncated fetch now feeds heat-tint, maxCeiling, AND
+  // percentiles instead of just the last of the three.
+  let poolRows = sortedSims;
+  if (!hasFullAccess && latest) {
+    const { data: fullData } = await supabase
+      .from("player_simulations")
+      .select("position, stat_ranges, floor, median, ceiling")
+      .eq("season", latest.season)
+      .eq("week", latest.week);
+    poolRows = fullData || [];
+  }
+  const maxCeiling = poolRows.reduce((m, s) => Math.max(m, s.ceiling), 1);
+
+  // Position-relative -- QBs score far higher raw totals than TEs, so a
+  // global min/max would make every QB look "hot" and every TE look
+  // "cold" regardless of how they actually rank among their own position.
   const rangeByPos = { floor: {}, median: {}, ceiling: {} };
-  for (const row of sortedSims) {
+  for (const row of poolRows) {
     for (const col of ["floor", "median", "ceiling"]) {
       const r = rangeByPos[col][row.position] || { min: Infinity, max: -Infinity };
       r.min = Math.min(r.min, row[col]);
@@ -111,33 +137,6 @@ export default async function PlayerSimulationsPage({ searchParams }) {
   function heatFor(col, row) {
     const r = rangeByPos[col][row.position];
     return r && r.max > r.min ? (row[col] - r.min) / (r.max - r.min) : 0;
-  }
-  // Same idea, per individual stat (rushing yards, receptions, etc.) for
-  // the radar chart in the expanded row -- one median pool per
-  // position+stat key. Floor and ceiling are ranked against this same
-  // pool too (see below), so there's only ever one array to build here.
-  //
-  // Built from a separate, always-untruncated query (poolRows below) --
-  // NOT from sortedSims, which is capped to TEASER_LIMIT rows for a
-  // free/signed-out viewer. Percentile math comparing one player against
-  // "the position" has to mean the whole position regardless of who's
-  // looking; a teaser-truncated pool (capped across all positions by
-  // overall fantasy median, before splitting by position) can silently
-  // drop whichever player anchors one end of a position's stat range,
-  // which then reads as a wrong/confusing percentile for anyone still
-  // in the visible pool near that end -- verified live: with the full
-  // 32-QB pool Kyler Murray's passing-yards floor was clearly 3rd
-  // percentile, but the free-tier's 31-QB teaser pool (missing one low
-  // outlier) pushed it down to a misleading 0th, indistinguishable from
-  // a genuinely far-below-everyone floor like Shedeur Sanders'.
-  let poolRows = sortedSims;
-  if (!hasFullAccess && latest) {
-    const { data: fullData } = await supabase
-      .from("player_simulations")
-      .select("position, stat_ranges")
-      .eq("season", latest.season)
-      .eq("week", latest.week);
-    poolRows = fullData || [];
   }
   const statPoolByPos = buildStatPoolByPos(poolRows);
   const simsWithHeat = sortedSims.map((row) => {
