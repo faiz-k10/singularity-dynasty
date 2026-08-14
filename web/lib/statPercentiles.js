@@ -41,37 +41,44 @@ export function percentileRank(value, pool, invert = false) {
   return Math.round((rank / (n - 1)) * 100);
 }
 
-// One median pool per position+stat key, built from whatever rows are
-// passed in -- callers MUST pass an always-untruncated row set (not a
-// teaser-limited one), since percentile math comparing one player
-// against "the position" has to mean the whole position regardless of
-// which viewer is looking. A teaser-truncated pool can silently drop
-// whichever player anchors one end of a position's stat range, which
-// then reads as a wrong/confusing percentile for anyone still in the
-// visible pool near that end.
+// One pool per position+stat key, built from whatever rows are passed in
+// -- callers MUST pass an always-untruncated row set (not a teaser-
+// limited one), since percentile math comparing one player against "the
+// position" has to mean the whole position regardless of which viewer is
+// looking. A teaser-truncated pool can silently drop whichever player
+// anchors one end of a position's stat range, which then reads as a
+// wrong/confusing percentile for anyone still in the visible pool near
+// that end. Floor, median, and ceiling each get their own pool (every
+// player's floor, every player's median, every player's ceiling) rather
+// than sharing one -- see computeStatPercentiles below for why.
 export function buildStatPoolByPos(rows) {
   const statPoolByPos = {};
   for (const row of rows) {
     if (!row.stat_ranges) continue;
     const pool = (statPoolByPos[row.position] ??= {});
     for (const [key, range] of Object.entries(row.stat_ranges)) {
-      (pool[key] ??= []).push(range.median);
+      const layers = (pool[key] ??= { floor: [], median: [], ceiling: [] });
+      layers.floor.push(range.floor);
+      layers.median.push(range.median);
+      layers.ceiling.push(range.ceiling);
     }
   }
   return statPoolByPos;
 }
 
 // Per-stat {statPercentiles, statFloorPercentiles, statCeilingPercentiles}
-// for one row, ranked against statPoolByPos. Floor and ceiling rank
-// against the MEDIAN pool, not their own floor/ceiling pools -- floor/
-// median/ceiling for one player are all draws from that same player's
-// own distribution, so a better player tends to have a higher floor AND
-// median AND ceiling together. Ranking each independently against its
-// own similarly-shifted pool preserves that correlation and makes all
-// three percentiles land nearly on top of each other for most players.
-// Putting floor/ceiling on the median pool's scale instead measures "how
-// does my floor/ceiling compare to peers' typical production," which
-// spreads the band out to actually reflect this player's own variance.
+// for one row, ranked against statPoolByPos. Each layer ranks against its
+// own layer's pool -- a ceiling of 27 has to beat other players'
+// ceilings to read as elite, not other players' medians. Ranking against
+// the shared median pool (the previous approach) broke down past the
+// pool's own max: percentileRank's top-end extrapolation clamps to rank
+// n-1 for any value beyond the last pool member, so two players with
+// very different ceilings (e.g. 17 and 27 rushing TDs) could both land
+// at a flat 100th percentile once both exceeded every player's median --
+// intuitively wrong, since 27 is unambiguously better than 17. A
+// same-layer pool doesn't have that gap: the actual ceiling values
+// populate the top of the ceiling pool, so 27 outranks 17 there instead
+// of both maxing out against a pool of smaller numbers.
 export function computeStatPercentiles(row, statPoolByPos) {
   const statPercentiles = {};
   const statFloorPercentiles = {};
@@ -79,11 +86,11 @@ export function computeStatPercentiles(row, statPoolByPos) {
   if (row.stat_ranges) {
     const statPool = statPoolByPos[row.position];
     for (const [key, range] of Object.entries(row.stat_ranges)) {
-      const pool = statPool?.[key];
+      const layers = statPool?.[key];
       const invert = INVERTED_STATS.has(key);
-      statPercentiles[key] = percentileRank(range.median, pool, invert);
-      statFloorPercentiles[key] = percentileRank(range.floor, pool, invert);
-      statCeilingPercentiles[key] = percentileRank(range.ceiling, pool, invert);
+      statPercentiles[key] = percentileRank(range.median, layers?.median, invert);
+      statFloorPercentiles[key] = percentileRank(range.floor, layers?.floor, invert);
+      statCeilingPercentiles[key] = percentileRank(range.ceiling, layers?.ceiling, invert);
     }
   }
   return { statPercentiles, statFloorPercentiles, statCeilingPercentiles };
