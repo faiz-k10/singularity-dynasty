@@ -2,6 +2,7 @@
 
 import { Fragment, useMemo, useState } from "react";
 import Link from "next/link";
+import { sortRows } from "@/lib/sortLink";
 import SortableTh from "./SortableTh";
 import TrendTag from "./TrendTag";
 import ConfidenceBadge from "./ConfidenceBadge";
@@ -229,16 +230,16 @@ function positionRank(pos) {
 // Tiers only read as contiguous blocks when the table is actually sorted
 // by the same metric they're grouped by -- sorted by Median with tiers
 // grouped by Ceiling produces exactly the "Tier 2 above Tier 1" nonsense
-// a viewer would (rightly) flag as broken. So "Tier by" doesn't hold its
-// own state -- it drives the real column sort (always descending, best
-// first, regardless of whatever direction that column was last sorted)
-// and the active metric is read back off sortKey, one source of truth.
-function tierHref(currentParams, key) {
-  const params = new URLSearchParams(currentParams || {});
-  params.set("sort", key);
-  params.set("dir", "desc");
-  return `?${params.toString()}`;
-}
+// a viewer would (rightly) flag as broken. "Tier by" used to drive this
+// through the real column sort (a Link to a new ?sort= URL), but that
+// meant every click round-tripped through the server component -- re-
+// querying Supabase and recomputing tiers/percentiles for the whole page
+// -- just to reorder rows the client already has all the data for. It's
+// now a client-side override (clientSort below): flipping it re-sorts
+// the already-loaded rows in the browser, instant, and falls back to the
+// server-provided sortKey/sortDir whenever no override is set, so real
+// column-header clicks (SortableTh) are unaffected.
+const TIER_COLUMN_TYPES = { floor: "number", median: "number", ceiling: "number" };
 
 // Same pattern as RankingsSearch (Redraft) / BestBallSearch: position-pill
 // filter + player name search, both client-side. Sorting stays
@@ -248,9 +249,18 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
   const [selected, setSelected] = useState(positions || []);
   const [query, setQuery] = useState("");
   const [expanded, setExpanded] = useState(() => new Set()); // player_names currently unfolded
-  const bannersEnabled = TIER_METRICS.some((m) => m.key === sortKey);
-  const tierMetric = bannersEnabled ? sortKey : "median";
-  const sortProps = { activeSort: sortKey, activeDir: sortDir, currentParams };
+  // null = defer to the server-provided sortKey/sortDir (URL-driven column
+  // sort); set once a "Tier by" button is clicked, instant client-side.
+  const [clientSort, setClientSort] = useState(null);
+  const effectiveSortKey = clientSort?.key ?? sortKey;
+  const effectiveSortDir = clientSort?.dir ?? sortDir;
+  const bannersEnabled = TIER_METRICS.some((m) => m.key === effectiveSortKey);
+  const tierMetric = bannersEnabled ? effectiveSortKey : "median";
+  const sortProps = { activeSort: effectiveSortKey, activeDir: effectiveSortDir, currentParams };
+
+  function selectTier(key) {
+    setClientSort({ key, dir: "desc" });
+  }
 
   function toggle(pos) {
     setSelected((prev) =>
@@ -279,10 +289,15 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
     return out;
   }, [rows, selected, query, showPositionFilter]);
 
+  const sortedRows = useMemo(() => {
+    if (!clientSort) return filteredRows;
+    return sortRows(filteredRows, clientSort.key, clientSort.dir, TIER_COLUMN_TYPES);
+  }, [filteredRows, clientSort]);
+
   const displayRows = useMemo(() => {
-    if (!bannersEnabled) return filteredRows;
-    return [...filteredRows].sort((a, b) => positionRank(a.position) - positionRank(b.position));
-  }, [filteredRows, bannersEnabled]);
+    if (!bannersEnabled) return sortedRows;
+    return [...sortedRows].sort((a, b) => positionRank(a.position) - positionRank(b.position));
+  }, [sortedRows, bannersEnabled]);
 
   return (
     <>
@@ -312,14 +327,15 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
         <span className="tier-toggle-label">Tier by</span>
         <div className="tier-toggle">
           {TIER_METRICS.map(({ key, label }) => (
-            <Link
+            <button
               key={key}
-              href={tierHref(currentParams, key)}
+              type="button"
+              onClick={() => selectTier(key)}
               className={tierMetric === key ? "active" : ""}
               aria-pressed={tierMetric === key}
             >
               {label}
-            </Link>
+            </button>
           ))}
         </div>
       </div>
