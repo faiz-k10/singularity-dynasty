@@ -139,3 +139,48 @@ export function computeGlobalTierMap(poolRows, metric) {
   });
   return tierByName;
 }
+
+// WOPR/EPA are NOT position-adjusted the way POR is -- a TE's WOPR is
+// structurally lower than a WR's (fewer high-air-yards targets), and QB
+// EPA lives on a totally different scale than RB/WR/TE EPA (accumulated
+// over far more plays). Tiering those globally would mostly just sort by
+// position rather than surfacing real within-position separation, which
+// is exactly the "reintroducing a position axis" failure mode
+// computeGlobalTierMap's own comment above warns POR away from -- just
+// the mirror-image mistake, applied to a metric that actually needs the
+// position axis. So this tiers within each position independently
+// (tier numbers reset to 1 per position, same gap/MAD/maxSpan mechanics
+// otherwise) rather than reusing computeGlobalTierMap.
+// MAX_POR_TIER_SPAN is a fixed point value calibrated to POR's own scale
+// (roughly -150 to +250) -- reusing it as-is for WOPR (0-0.85) or EPA
+// would make the span cap a permanent no-op (every gap is under 16), so
+// per-position maxSpan is instead a fraction of that position's own
+// observed range for the metric. 15% is a judgment call, not backtested
+// the way the decay values are -- matches roughly the same proportion
+// MAX_POR_TIER_SPAN represents of POR's own full pool range (16 / ~400).
+const RELATIVE_MAX_TIER_SPAN_FRACTION = 0.15;
+
+export function computeTierMapByPosition(poolRows, metric) {
+  const byPosition = {};
+  for (const row of poolRows) {
+    if (row[metric] == null) continue; // e.g. QB has no wopr
+    (byPosition[row.position] ??= []).push(row);
+  }
+  const tierByName = {};
+  for (const rows of Object.values(byPosition)) {
+    const arr = [...rows].sort((a, b) => b[metric] - a[metric]);
+    const range = arr[0][metric] - arr[arr.length - 1][metric];
+    const maxSpan = range * RELATIVE_MAX_TIER_SPAN_FRACTION || Infinity;
+    const groups = mergeSingletons(
+      groupByGaps(arr, metric, medianMadThreshold, maxSpan),
+      metric,
+      maxSpan
+    );
+    groups.forEach((group, tierIndex) => {
+      for (const player of group) {
+        tierByName[player.player_name] = tierIndex + 1;
+      }
+    });
+  }
+  return tierByName;
+}

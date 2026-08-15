@@ -161,13 +161,29 @@ STAT_COLS_BY_POSITION <- list(
   TE = c("receptions", "receiving_yards", "receiving_tds")
 )
 
-# Usage/efficiency columns for Player Season Simulations' WOPR/EPA fields
-# (display-only -- not simulation inputs, so no decay/quantile to
-# backtest here, just the existing MED_DECAY recency weights reused
-# as-is). WOPR is receiving usage only (left NA for QB); EPA is
-# position-relevant -- see the wopr/epa computation in project_all()'s
-# per-player loop below.
+# Usage/efficiency columns for Player Season Simulations' WOPR/EPA fields.
+# WOPR is receiving usage only (left NA for QB); EPA is position-relevant
+# (passing for QB, rushing+receiving for RB, receiving for WR/TE) -- see
+# the wopr/epa computation in project_all()'s per-player loop below.
 USAGE_METRIC_COLS <- c("wopr", "passing_epa", "rushing_epa", "receiving_epa")
+
+# Own decay per metric, per position -- backtested separately
+# (backtest_usage_metric_decay.R, walk-forward MAE of predicted vs. real
+# season-ahead average) rather than reusing MED_DECAY, same rationale as
+# STAT_GROUP_DECAY above: a decay tuned for the blended fantasy-points
+# total isn't necessarily right for a different target metric. Confirmed
+# it wasn't: EPA wants MUCH less aggressive decay than MED_DECAY at every
+# position (0.94-0.97 vs 0.87-0.92) -- it's noisy game-to-game, same
+# "lumpy stat needs more history averaged in" pattern as touchdowns/
+# interceptions above, not the naive "recent form reacts faster"
+# assumption. WOPR is closer to MED_DECAY but still meaningfully higher
+# for RB (0.94 vs 0.87) and TE (0.94 vs 0.92). EPA's backtest picked the
+# grid edge (0.97) at every position -- true optimum may be even less
+# aggressive, but 0.97 (near-uniform) is close enough that a wider grid
+# wasn't worth the extra runtime; revisit if EPA prediction error becomes
+# a concern.
+WOPR_DECAY <- c(RB = 0.94, WR = 0.88, TE = 0.94)  # no QB -- not applicable
+EPA_DECAY  <- c(QB = 0.94, RB = 0.97, WR = 0.97, TE = 0.97)
 
 # The season we're publishing rankings/projections FOR. Fixed -- does NOT
 # shift automatically when the calendar rolls over; bump it by hand once
@@ -850,29 +866,32 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
     weekly_scoring_stats_json <- jsonlite::toJSON(weekly_scoring_stats, auto_unbox = TRUE)
 
     # WOPR/EPA: projected forward the same way every other rate stat on
-    # this page is -- recency-weighted mean (wm), shrunk toward a
-    # positional baseline pool for the same shrink-eligible players
-    # (thin sample / long absence / team change) as weekly_scoring_stats
-    # above. This is a projection of the player's usage/efficiency going
-    # into the target season, not a raw historical average -- matches
-    # the site's existing definition of "projection" for rate stats
-    # (see weighted_mean()'s comment on weekly_scoring_stats).
+    # this page is -- own backtested recency weights (WOPR_DECAY/
+    # EPA_DECAY, not wm/MED_DECAY -- see the comment by their definition),
+    # shrunk toward a positional baseline pool for the same shrink-eligible
+    # players (thin sample / long absence / team change) as
+    # weekly_scoring_stats above. This is a projection of the player's
+    # usage/efficiency going into the target season, not a raw historical
+    # average -- matches the site's existing definition of "projection"
+    # for rate stats (see weighted_mean()'s comment on weekly_scoring_stats).
     epa_component <- d$epa_component
+    w_epa <- recency_weights(n, EPA_DECAY[pos])
     if (pos != "QB") {
+      w_wopr <- recency_weights(n, WOPR_DECAY[pos])
       wopr_val <- if (shrink_this_player && !is.null(stat_pools[[pos]][["wopr"]])) {
         base <- stat_pools[[pos]][["wopr"]]
-        round(shrunk_mean(d$wopr, wm, base$pool, base$weights), 3)
+        round(shrunk_mean(d$wopr, w_wopr, base$pool, base$weights), 3)
       } else {
-        round(weighted_mean(d$wopr, wm), 3)
+        round(weighted_mean(d$wopr, w_wopr), 3)
       }
     } else {
       wopr_val <- NA_real_
     }
     epa_val <- if (shrink_this_player && !is.null(stat_pools[[pos]][["epa_component"]])) {
       base <- stat_pools[[pos]][["epa_component"]]
-      round(shrunk_mean(epa_component, wm, base$pool, base$weights), 2)
+      round(shrunk_mean(epa_component, w_epa, base$pool, base$weights), 2)
     } else {
-      round(weighted_mean(epa_component, wm), 2)
+      round(weighted_mean(epa_component, w_epa), 2)
     }
 
     rows[[p]] <- data.frame(
