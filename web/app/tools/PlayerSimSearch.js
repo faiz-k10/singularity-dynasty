@@ -394,6 +394,18 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                   title={`Points over Replacement — composite floor/median/ceiling score vs. the replacement-level baseline at this position (${leagueTeams}-team, ${superflex ? "Superflex" : "1QB"})`}
                   {...sortProps}
                 />
+                <SortableTh
+                  label="WOPR"
+                  sortKey="wopr"
+                  title="Weighted Opportunity Rating — 1.5×target share + 0.7×air yards share. Receiving usage only; not applicable to QB."
+                  {...sortProps}
+                />
+                <SortableTh
+                  label="EPA"
+                  sortKey="epa"
+                  title="Expected Points Added per game — passing EPA (QB), rushing+receiving EPA (RB), receiving EPA (WR/TE)."
+                  {...sortProps}
+                />
               </tr>
             </thead>
             <tbody>
@@ -416,7 +428,7 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                 <Fragment key={row.player_name}>
                 {showTierBanner && (
                   <tr className="tier-banner-row" aria-hidden="true">
-                    <td colSpan={9}>
+                    <td colSpan={11}>
                       <span className="tier-banner-label">Tier {tier}</span>
                     </td>
                   </tr>
@@ -484,11 +496,17 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                     {row.por >= 0 ? "+" : ""}
                     {row.por.toFixed(1)}
                   </td>
+                  <td className="mono align-left">
+                    {row.wopr != null ? row.wopr.toFixed(3) : "—"}
+                  </td>
+                  <td className={`mono align-left ${row.epa != null ? (row.epa >= 0 ? "por-positive" : "por-negative") : ""}`}>
+                    {row.epa != null ? `${row.epa >= 0 ? "+" : ""}${row.epa.toFixed(2)}` : "—"}
+                  </td>
                 </tr>
                 {isExpanded && (
                   <StatDetailRow
                     row={row}
-                    colSpan={9}
+                    colSpan={11}
                     shapePeers={shapePeers}
                   />
                 )}

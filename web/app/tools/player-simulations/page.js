@@ -28,6 +28,8 @@ const COLUMN_TYPES = {
   median: "number",
   ceiling: "number",
   por: "number",
+  wopr: "number",
+  epa: "number",
 };
 
 // The full published week's data (all 425-ish rows) is identical for
@@ -56,7 +58,7 @@ const getCachedWeekData = unstable_cache(
     const { data, count } = await publicSupabase
       .from("player_simulations")
       .select(
-        "player_name, position, team, floor, median, ceiling, stat_ranges, trend, sample_confidence, notes",
+        "player_name, position, team, floor, median, ceiling, stat_ranges, trend, sample_confidence, notes, wopr, epa",
         { count: "exact" }
       )
       .eq("season", latest.season)

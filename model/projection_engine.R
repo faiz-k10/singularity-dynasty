@@ -161,6 +161,14 @@ STAT_COLS_BY_POSITION <- list(
   TE = c("receptions", "receiving_yards", "receiving_tds")
 )
 
+# Usage/efficiency columns for Player Season Simulations' WOPR/EPA fields
+# (display-only -- not simulation inputs, so no decay/quantile to
+# backtest here, just the existing MED_DECAY recency weights reused
+# as-is). WOPR is receiving usage only (left NA for QB); EPA is
+# position-relevant -- see the wopr/epa computation in project_all()'s
+# per-player loop below.
+USAGE_METRIC_COLS <- c("wopr", "passing_epa", "rushing_epa", "receiving_epa")
+
 # The season we're publishing rankings/projections FOR. Fixed -- does NOT
 # shift automatically when the calendar rolls over; bump it by hand once
 # the 2027 season actually starts being the one to project.
@@ -203,12 +211,13 @@ load_history <- function(seasons = history_seasons()) {
   reg <- stats[stats$season_type == "REG",
                c("player_id", "player_display_name", "position", "season", "week",
                  "fantasy_points_ppr", "carries", "targets", "attempts", "team",
-                 STAT_COLS)]
+                 STAT_COLS, USAGE_METRIC_COLS)]
   reg <- reg[reg$position %in% c("QB", "RB", "WR", "TE"), ]
   reg <- reg[!is.na(reg$fantasy_points_ppr), ]
   reg <- reg[!(reg$week %in% EXCLUDE_WEEKS), ]
   reg$carries[is.na(reg$carries)] <- 0
   reg$targets[is.na(reg$targets)] <- 0
+  for (col in USAGE_METRIC_COLS) reg[[col]][is.na(reg[[col]])] <- 0
   reg$attempts[is.na(reg$attempts)] <- 0
   for (col in STAT_COLS) reg[[col]][is.na(reg[[col]])] <- 0
   reg$touches <- reg$carries + reg$targets
@@ -824,6 +833,19 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
     }
     weekly_scoring_stats_json <- jsonlite::toJSON(weekly_scoring_stats, auto_unbox = TRUE)
 
+    # WOPR/EPA: same wm recency weights as everything else above, not
+    # shrinkage-blended (shrink_this_player only applies to the
+    # fantasy-scoring stat pools) -- these are context metrics, not
+    # inputs the simulation needs corrected for small samples.
+    wopr_val <- if (pos != "QB") round(weighted_mean(d$wopr, wm), 3) else NA_real_
+    epa_component <- switch(pos,
+      QB = d$passing_epa,
+      RB = d$rushing_epa + d$receiving_epa,
+      WR = d$receiving_epa,
+      TE = d$receiving_epa
+    )
+    epa_val <- round(weighted_mean(epa_component, wm), 2)
+
     rows[[p]] <- data.frame(
       player_name = p, position = pos, team = team, opponent = opp, games = n,
       touches_per_game = round(mean(d$touches), 1),
@@ -846,6 +868,8 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
       bust_pct = bust_pct,
       normal_pct = normal_pct,
       boom_pct = boom_pct,
+      wopr = wopr_val,
+      epa = epa_val,
       playoff_ceiling = round(quantile(playoff, CEIL_Q[pos]), 1),
       # Granular per-stat floor/median/ceiling (passing/rushing/receiving
       # yards & TDs, INTs, receptions -- position-dependent, see
@@ -934,8 +958,9 @@ export_for_supabase <- function(df, target_season = TARGET_SEASON, week = NULL) 
     sample_confidence = confidence,
     stat_ranges = df$stat_ranges_json,
     bust_pct = df$bust_pct, normal_pct = df$normal_pct, boom_pct = df$boom_pct,
+    wopr = df$wopr, epa = df$epa,
     notes = ""
-  ), "upload_player_simulations.csv", row.names = FALSE)
+  ), "upload_player_simulations.csv", row.names = FALSE, na = "")
 
   cat("Wrote upload_redraft_rankings.csv, upload_best_ball_rankings.csv,",
       "upload_player_simulations.csv (season =", season, ", week =", week, ")\n")
