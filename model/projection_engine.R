@@ -513,6 +513,16 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
                          apply_shrinkage = TRUE, target_season = TARGET_SEASON) {
   set.seed(seed)
   reg <- load_history(seasons)
+  # Position-relevant EPA as a single column, computed up front so it can
+  # go through the same build_common_pool()/shrunk_mean() shrinkage path
+  # as every other per-stat column below -- WOPR/EPA get the identical
+  # recency-weighted + shrinkage-blended treatment as the rest of the
+  # model's projections, not a plain historical average, so they're a
+  # genuine season-ahead projection like everything else on this page
+  # rather than a stat anyone could reproduce straight off nflreadr.
+  reg$epa_component <- ifelse(reg$position == "QB", reg$passing_epa,
+                        ifelse(reg$position == "RB", reg$rushing_epa + reg$receiving_epa,
+                               reg$receiving_epa))
   counts <- table(reg$player_display_name)
   eligible <- names(counts[counts >= MIN_GAMES])
 
@@ -638,6 +648,12 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
         for (col in STAT_COLS_BY_POSITION[[pos]]) {
           stat_pools[[pos]][[col]] <- build_common_pool(reg, eligible, pos, stat_col = col)
         }
+        # Same shrinkage pools for WOPR/EPA -- wopr skipped for QB (not a
+        # receiving-usage position).
+        if (pos != "QB") {
+          stat_pools[[pos]][["wopr"]] <- build_common_pool(reg, eligible, pos, stat_col = "wopr")
+        }
+        stat_pools[[pos]][["epa_component"]] <- build_common_pool(reg, eligible, pos, stat_col = "epa_component")
       }
     }
     cat("Shrink-eligible players this run:", length(shrink_players),
@@ -833,18 +849,31 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
     }
     weekly_scoring_stats_json <- jsonlite::toJSON(weekly_scoring_stats, auto_unbox = TRUE)
 
-    # WOPR/EPA: same wm recency weights as everything else above, not
-    # shrinkage-blended (shrink_this_player only applies to the
-    # fantasy-scoring stat pools) -- these are context metrics, not
-    # inputs the simulation needs corrected for small samples.
-    wopr_val <- if (pos != "QB") round(weighted_mean(d$wopr, wm), 3) else NA_real_
-    epa_component <- switch(pos,
-      QB = d$passing_epa,
-      RB = d$rushing_epa + d$receiving_epa,
-      WR = d$receiving_epa,
-      TE = d$receiving_epa
-    )
-    epa_val <- round(weighted_mean(epa_component, wm), 2)
+    # WOPR/EPA: projected forward the same way every other rate stat on
+    # this page is -- recency-weighted mean (wm), shrunk toward a
+    # positional baseline pool for the same shrink-eligible players
+    # (thin sample / long absence / team change) as weekly_scoring_stats
+    # above. This is a projection of the player's usage/efficiency going
+    # into the target season, not a raw historical average -- matches
+    # the site's existing definition of "projection" for rate stats
+    # (see weighted_mean()'s comment on weekly_scoring_stats).
+    epa_component <- d$epa_component
+    if (pos != "QB") {
+      wopr_val <- if (shrink_this_player && !is.null(stat_pools[[pos]][["wopr"]])) {
+        base <- stat_pools[[pos]][["wopr"]]
+        round(shrunk_mean(d$wopr, wm, base$pool, base$weights), 3)
+      } else {
+        round(weighted_mean(d$wopr, wm), 3)
+      }
+    } else {
+      wopr_val <- NA_real_
+    }
+    epa_val <- if (shrink_this_player && !is.null(stat_pools[[pos]][["epa_component"]])) {
+      base <- stat_pools[[pos]][["epa_component"]]
+      round(shrunk_mean(epa_component, wm, base$pool, base$weights), 2)
+    } else {
+      round(weighted_mean(epa_component, wm), 2)
+    }
 
     rows[[p]] <- data.frame(
       player_name = p, position = pos, team = team, opponent = opp, games = n,
