@@ -183,7 +183,7 @@ USAGE_METRIC_COLS <- c("wopr", "passing_epa", "rushing_epa", "receiving_epa")
 # wasn't worth the extra runtime; revisit if EPA prediction error becomes
 # a concern.
 WOPR_DECAY <- c(RB = 0.94, WR = 0.88, TE = 0.94)  # no QB -- not applicable
-EPA_DECAY  <- c(QB = 0.94, RB = 0.97, WR = 0.97, TE = 0.97)
+EPA_DECAY  <- c(QB = 0.97, RB = 0.97, WR = 0.97, TE = 0.97)
 
 # The season we're publishing rankings/projections FOR. Fixed -- does NOT
 # shift automatically when the calendar rolls over; bump it by hand once
@@ -536,7 +536,7 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
   # model's projections, not a plain historical average, so they're a
   # genuine season-ahead projection like everything else on this page
   # rather than a stat anyone could reproduce straight off nflreadr.
-  reg$epa_component <- ifelse(reg$position == "QB", reg$passing_epa,
+  reg$epa_component <- ifelse(reg$position == "QB", reg$passing_epa + reg$rushing_epa,
                         ifelse(reg$position == "RB", reg$rushing_epa + reg$receiving_epa,
                                reg$receiving_epa))
   counts <- table(reg$player_display_name)

@@ -33,7 +33,7 @@ for (col in c("wopr", "passing_epa", "rushing_epa", "receiving_epa")) {
   reg_all[[col]][is.na(reg_all[[col]])] <- 0
 }
 # Same position-relevant combination projection_engine.R uses for `epa`.
-reg_all$epa_component <- ifelse(reg_all$position == "QB", reg_all$passing_epa,
+reg_all$epa_component <- ifelse(reg_all$position == "QB", reg_all$passing_epa + reg_all$rushing_epa,
                           ifelse(reg_all$position == "RB", reg_all$rushing_epa + reg_all$receiving_epa,
                                  reg_all$receiving_epa))
 cat("Loaded", nrow(reg_all), "player-game rows.\n\n")
