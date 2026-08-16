@@ -419,7 +419,7 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
         </div>
       ) : (
         <div className="rankings-table-wrap">
-          <table className="rankings-table">
+          <table className="rankings-table player-sims-table">
             <thead>
               <tr>
                 <th className="row-num-th">#</th>

@@ -735,6 +735,58 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .row-num-th{width:1%; padding-left:16px; padding-right:8px;}
 .row-num-cell{width:1%; padding-left:16px; padding-right:8px; color:var(--star-dim);}
 .tool-notes{white-space:normal !important; min-width:180px; text-align:left;}
+
+/* Frozen-pane columns (#, Player, Pos) on Player Season Simulations only
+   -- scoped to .player-sims-table specifically, not the shared
+   .rankings-table class every other tool table also uses, since those
+   have different column layouts (draft board's Round/Pick, prospect
+   rankings' Rank/School, ...) that this 3-column freeze doesn't apply to.
+   Fixed pixel widths on columns 1-2 are required (not just cosmetic) --
+   position:sticky's left offset has to be a known value, and CSS can't
+   express "left: width of the previous column" without it, so column 2
+   (Player) gets an explicit width + ellipsis overflow as a safety net
+   for a name wider than that budget. Excludes .tier-banner-row and
+   .stat-detail-row -- both render a single full-width colSpan cell at
+   nth-child(1), which this would otherwise incorrectly pin and clip to
+   48px. */
+.player-sims-table thead th:nth-child(1),
+.player-sims-table tbody tr:not(.tier-banner-row):not(.stat-detail-row) td:nth-child(1){
+  position:sticky; left:0; z-index:2; background:var(--void-panel-2);
+  width:48px; min-width:48px; max-width:48px;
+}
+.player-sims-table tbody tr:not(.tier-banner-row):not(.stat-detail-row) td:nth-child(1){
+  background:var(--void-panel); z-index:1;
+}
+.player-sims-table thead th:nth-child(2),
+.player-sims-table tbody tr:not(.tier-banner-row):not(.stat-detail-row) td:nth-child(2){
+  position:sticky; left:48px; z-index:2; background:var(--void-panel-2);
+  width:220px; min-width:220px; max-width:220px; overflow:hidden; text-overflow:ellipsis;
+}
+.player-sims-table tbody tr:not(.tier-banner-row):not(.stat-detail-row) td:nth-child(2){
+  background:var(--void-panel); z-index:1;
+}
+.player-sims-table thead th:nth-child(3),
+.player-sims-table tbody tr:not(.tier-banner-row):not(.stat-detail-row) td:nth-child(3){
+  position:sticky; left:268px; z-index:2; background:var(--void-panel-2);
+  box-shadow:6px 0 12px -6px rgba(var(--shadow-rgb),0.5);
+}
+.player-sims-table tbody tr:not(.tier-banner-row):not(.stat-detail-row) td:nth-child(3){
+  background:var(--void-panel); z-index:1;
+}
+/* Frozen cells' own background (above) is higher-specificity than the
+   row-hover rule (.rankings-table tr.row-expandable:hover td), which
+   would otherwise silently stop the frozen columns from highlighting on
+   hover while the rest of the row does. box-shadow (layers on top of
+   background rather than replacing it) keeps the opaque base -- needed
+   so scrolled-under columns don't show through -- while still tinting
+   on hover like every other cell. */
+.player-sims-table tbody tr.row-expandable:hover td:nth-child(1),
+.player-sims-table tbody tr.row-expandable:hover td:nth-child(2){
+  box-shadow:inset 0 0 0 999px rgba(var(--neon-blue-rgb),0.08);
+}
+.player-sims-table tbody tr.row-expandable:hover td:nth-child(3){
+  box-shadow:6px 0 12px -6px rgba(var(--shadow-rgb),0.5), inset 0 0 0 999px rgba(var(--neon-blue-rgb),0.08);
+}
 .por-cell{font-weight:600;}
 .por-cell.por-positive{color:var(--up);}
 .por-cell.por-negative{color:var(--down);}
