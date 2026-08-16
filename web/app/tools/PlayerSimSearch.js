@@ -267,6 +267,15 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
   const [selected, setSelected] = useState(positions || []);
   const [query, setQuery] = useState("");
   const [expanded, setExpanded] = useState(() => new Set()); // player_names currently unfolded
+  // Position filter / Tiers / League Size / QB Format all live inside one
+  // collapsed-by-default panel -- collapsed is the common case (most
+  // visits don't need them), so hiding them by default keeps the page
+  // from opening with four rows of buttons before a single player is
+  // visible. Starts collapsed regardless of whether a non-default value
+  // is already active (via URL params) -- the active-dot on the toggle
+  // itself is what surfaces that, rather than auto-expanding and
+  // re-introducing the clutter this is meant to avoid.
+  const [filtersOpen, setFiltersOpen] = useState(false);
   // null = defer to the server-provided sortKey/sortDir (URL-driven column
   // sort); set once a "Tier by" button is clicked, instant client-side.
   const [clientSort, setClientSort] = useState(null);
@@ -275,6 +284,13 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
   const tierField = TIER_FIELD_BY_KEY[effectiveSortKey];
   const bannersEnabled = tierField != null;
   const sortProps = { activeSort: effectiveSortKey, activeDir: effectiveSortDir, currentParams };
+  // Surfaced as a dot on the collapsed toggle so a non-default setting
+  // stays visible without having to open the panel to check.
+  const hasActiveCustomization =
+    (showPositionFilter && selected.length < positions.length) ||
+    clientSort != null ||
+    leagueTeams !== 12 ||
+    superflex;
 
   function selectTierBy(key) {
     setClientSort({ key, dir: "desc" });
@@ -320,82 +336,102 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
         </Link>
       </div>
 
-      {showPositionFilter && (
-        <div className="position-filter-row">
-          {positions.map((pos) => (
-            <button
-              key={pos}
-              type="button"
-              className={`position-pill ${selected.includes(pos) ? "active" : ""}`}
-              onClick={() => toggle(pos)}
-              aria-pressed={selected.includes(pos)}
-            >
-              {pos}
-            </button>
-          ))}
+      <button
+        type="button"
+        className="filters-toggle-btn"
+        onClick={() => setFiltersOpen((o) => !o)}
+        aria-expanded={filtersOpen}
+      >
+        <span className={`filters-toggle-chevron${filtersOpen ? " filters-toggle-chevron-open" : ""}`}>▸</span>
+        Filters &amp; Tiers
+        {hasActiveCustomization && <span className="filters-active-dot" aria-hidden="true" />}
+      </button>
+
+      {filtersOpen && (
+        <div className="filters-panel">
+          {showPositionFilter && (
+            <div className="filters-panel-group">
+              <span className="tier-toggle-label">Position</span>
+              <div className="position-filter-row">
+                {positions.map((pos) => (
+                  <button
+                    key={pos}
+                    type="button"
+                    className={`position-pill ${selected.includes(pos) ? "active" : ""}`}
+                    onClick={() => toggle(pos)}
+                    aria-pressed={selected.includes(pos)}
+                  >
+                    {pos}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="tier-toggle-row">
+            <span className="tier-toggle-label">Tiers</span>
+            <div className="tier-toggle">
+              <button type="button" onClick={() => selectTierBy("por")} className={effectiveSortKey === "por" ? "active" : ""} aria-pressed={effectiveSortKey === "por"}>
+                POR
+              </button>
+              <button type="button" onClick={() => selectTierBy("wopr")} className={effectiveSortKey === "wopr" ? "active" : ""} aria-pressed={effectiveSortKey === "wopr"}>
+                WOPR
+              </button>
+              <button type="button" onClick={() => selectTierBy("epa")} className={effectiveSortKey === "epa" ? "active" : ""} aria-pressed={effectiveSortKey === "epa"}>
+                EPA
+              </button>
+              <button type="button" onClick={() => selectTierBy("regressionScore")} className={effectiveSortKey === "regressionScore" ? "active" : ""} aria-pressed={effectiveSortKey === "regressionScore"}>
+                Regr
+              </button>
+              <button type="button" onClick={() => selectTierBy("outcomePercentile")} className={effectiveSortKey === "outcomePercentile" ? "active" : ""} aria-pressed={effectiveSortKey === "outcomePercentile"}>
+                Pace %ile
+              </button>
+            </div>
+          </div>
+
+          <div className="filters-panel-divider" role="separator" />
+
+          <div className="tier-toggle-row">
+            <span className="tier-toggle-label" title="Changes POR's replacement-level baseline">League Size</span>
+            <div className="tier-toggle">
+              <Link
+                href={leagueHref(currentParams, "teams", "10")}
+                className={leagueTeams === 10 ? "active" : ""}
+                aria-pressed={leagueTeams === 10}
+              >
+                10-Team
+              </Link>
+              <Link
+                href={leagueHref(currentParams, "teams", "12")}
+                className={leagueTeams === 12 ? "active" : ""}
+                aria-pressed={leagueTeams === 12}
+              >
+                12-Team
+              </Link>
+            </div>
+          </div>
+
+          <div className="tier-toggle-row">
+            <span className="tier-toggle-label" title="Changes POR's replacement-level baseline">QB Format</span>
+            <div className="tier-toggle">
+              <Link
+                href={leagueHref(currentParams, "qb", "1qb")}
+                className={!superflex ? "active" : ""}
+                aria-pressed={!superflex}
+              >
+                1QB
+              </Link>
+              <Link
+                href={leagueHref(currentParams, "qb", "sf")}
+                className={superflex ? "active" : ""}
+                aria-pressed={superflex}
+              >
+                Superflex
+              </Link>
+            </div>
+          </div>
         </div>
       )}
-
-      <div className="tier-toggle-row">
-        <span className="tier-toggle-label">Tiers</span>
-        <div className="tier-toggle">
-          <button type="button" onClick={() => selectTierBy("por")} className={effectiveSortKey === "por" ? "active" : ""} aria-pressed={effectiveSortKey === "por"}>
-            POR
-          </button>
-          <button type="button" onClick={() => selectTierBy("wopr")} className={effectiveSortKey === "wopr" ? "active" : ""} aria-pressed={effectiveSortKey === "wopr"}>
-            WOPR
-          </button>
-          <button type="button" onClick={() => selectTierBy("epa")} className={effectiveSortKey === "epa" ? "active" : ""} aria-pressed={effectiveSortKey === "epa"}>
-            EPA
-          </button>
-          <button type="button" onClick={() => selectTierBy("regressionScore")} className={effectiveSortKey === "regressionScore" ? "active" : ""} aria-pressed={effectiveSortKey === "regressionScore"}>
-            Regr
-          </button>
-          <button type="button" onClick={() => selectTierBy("outcomePercentile")} className={effectiveSortKey === "outcomePercentile" ? "active" : ""} aria-pressed={effectiveSortKey === "outcomePercentile"}>
-            Pace %ile
-          </button>
-        </div>
-      </div>
-
-      <div className="tier-toggle-row">
-        <span className="tier-toggle-label" title="Changes POR's replacement-level baseline">League Size</span>
-        <div className="tier-toggle">
-          <Link
-            href={leagueHref(currentParams, "teams", "10")}
-            className={leagueTeams === 10 ? "active" : ""}
-            aria-pressed={leagueTeams === 10}
-          >
-            10-Team
-          </Link>
-          <Link
-            href={leagueHref(currentParams, "teams", "12")}
-            className={leagueTeams === 12 ? "active" : ""}
-            aria-pressed={leagueTeams === 12}
-          >
-            12-Team
-          </Link>
-        </div>
-      </div>
-
-      <div className="tier-toggle-row">
-        <span className="tier-toggle-label" title="Changes POR's replacement-level baseline">QB Format</span>
-        <div className="tier-toggle">
-          <Link
-            href={leagueHref(currentParams, "qb", "1qb")}
-            className={!superflex ? "active" : ""}
-            aria-pressed={!superflex}
-          >
-            1QB
-          </Link>
-          <Link
-            href={leagueHref(currentParams, "qb", "sf")}
-            className={superflex ? "active" : ""}
-            aria-pressed={superflex}
-          >
-            Superflex
-          </Link>
-        </div>
-      </div>
 
       <div className="player-search-row">
         <input
