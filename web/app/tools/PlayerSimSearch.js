@@ -228,12 +228,24 @@ function ordinal(n) {
 // and falls back to the server-provided sortKey/sortDir whenever no
 // override is set, so real column-header clicks (SortableTh) are
 // unaffected.
-const TIER_COLUMN_TYPES = { por: "number", wopr: "number", epa: "number" };
+const TIER_COLUMN_TYPES = {
+  por: "number",
+  wopr: "number",
+  epa: "number",
+  regressionScore: "number",
+  outcomePercentile: "number",
+};
 // POR's tier field is just `tier` (legacy name); WOPR/EPA are `woprTier`/
 // `epaTier` (computed globally, same as POR -- see lib/tiers.js) -- this
 // maps a tier-by sort key to the row field that actually holds its tier
 // number.
-const TIER_FIELD_BY_KEY = { por: "tier", wopr: "woprTier", epa: "epaTier" };
+const TIER_FIELD_BY_KEY = {
+  por: "tier",
+  wopr: "woprTier",
+  epa: "epaTier",
+  regressionScore: "regressionTier",
+  outcomePercentile: "outcomePercentileTier",
+};
 
 // League Size / QB Format toggles change POR's replacement-level baseline
 // (lib/replacementValue.js), which needs the full player pool -- including
@@ -335,6 +347,12 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
           </button>
           <button type="button" onClick={() => selectTierBy("epa")} className={effectiveSortKey === "epa" ? "active" : ""} aria-pressed={effectiveSortKey === "epa"}>
             EPA
+          </button>
+          <button type="button" onClick={() => selectTierBy("regressionScore")} className={effectiveSortKey === "regressionScore" ? "active" : ""} aria-pressed={effectiveSortKey === "regressionScore"}>
+            Regr
+          </button>
+          <button type="button" onClick={() => selectTierBy("outcomePercentile")} className={effectiveSortKey === "outcomePercentile" ? "active" : ""} aria-pressed={effectiveSortKey === "outcomePercentile"}>
+            Pace %ile
           </button>
         </div>
       </div>

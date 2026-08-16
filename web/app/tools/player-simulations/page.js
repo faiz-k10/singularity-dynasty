@@ -200,29 +200,51 @@ export default async function PlayerSimulationsPage({ searchParams }) {
   // pool, no position grouping (see computeGlobalTierMap in lib/tiers.js).
   const woprTierByName = computeGlobalTierMap(poolRows, "wopr");
   const epaTierByName = computeGlobalTierMap(poolRows, "epa");
-  const simsWithComputed = sims.map((row) => {
-    const heat = heatFor("median", row);
-    const floorHeat = heatFor("floor", row);
-    const ceilingHeat = heatFor("ceiling", row);
+  // Regr/Pace %ile are computed once per player here (over the WHOLE
+  // pool, not the teaser-capped `sims`) so their tiers -- like every
+  // other tier on this page -- are drawn from the full population, not
+  // whatever a free/signed-out visitor's truncated fetch happens to
+  // include.
+  const regressionByName = {};
+  const outcomeByName = {};
+  for (const row of poolRows) {
     // Approximation, not the literal backtested formula -- see
     // lib/regressionScore.js's comment. season_median/GAMES_PER_SEASON
     // is a bootstrapped season-total median divided by games, not the
     // plain recency-weighted mean per-game rate the backtest validated
     // against. Close enough to be useful; not guaranteed to reproduce
     // the exact backtest correlation.
-    const regression = computeRegressionScore(
+    regressionByName[row.player_name] = computeRegressionScore(
       actualProductionByName[row.player_name],
       row.median / GAMES_PER_SEASON
     );
     // Where the player's current pace, extrapolated across a full
     // season, would land on their own floor-to-ceiling outcome curve --
     // see lib/outcomePercentile.js.
-    const outcome = computeOutcomePercentile(actualProductionByName[row.player_name], {
+    outcomeByName[row.player_name] = computeOutcomePercentile(actualProductionByName[row.player_name], {
       floor: row.floor,
       median: row.median,
       ceiling: row.ceiling,
       gamesPerSeason: GAMES_PER_SEASON,
     });
+  }
+  const poolRowsWithRegression = poolRows.map((row) => ({
+    ...row,
+    regressionScore: regressionByName[row.player_name]?.regressionScore ?? null,
+    outcomePercentile: outcomeByName[row.player_name]?.percentile ?? null,
+  }));
+  // Same treatment as WOPR/EPA -- global tiers, and computeGlobalTierMap
+  // already filters out null rows (the ~420 players with no real games
+  // on record yet), so they simply don't get a tier/banner rather than
+  // corrupting the gap calculation.
+  const regressionTierByName = computeGlobalTierMap(poolRowsWithRegression, "regressionScore");
+  const outcomePercentileTierByName = computeGlobalTierMap(poolRowsWithRegression, "outcomePercentile");
+  const simsWithComputed = sims.map((row) => {
+    const heat = heatFor("median", row);
+    const floorHeat = heatFor("floor", row);
+    const ceilingHeat = heatFor("ceiling", row);
+    const regression = regressionByName[row.player_name];
+    const outcome = outcomeByName[row.player_name];
     return {
       ...row,
       heat,
@@ -235,7 +257,9 @@ export default async function PlayerSimulationsPage({ searchParams }) {
       regressionScore: regression?.regressionScore ?? null,
       currentPPG: regression?.currentPPG ?? null,
       gamesPlayed: regression?.gamesPlayed ?? 0,
+      regressionTier: regressionTierByName[row.player_name],
       outcomePercentile: outcome?.percentile ?? null,
+      outcomePercentileTier: outcomePercentileTierByName[row.player_name],
       ...computeStatPercentiles(row, statPoolByPos),
     };
   });
