@@ -260,6 +260,10 @@ export default async function PlayerSimulationsPage({ searchParams }) {
       regressionTier: regressionTierByName[row.player_name],
       outcomePercentile: outcome?.percentile ?? null,
       outcomePercentileTier: outcomePercentileTierByName[row.player_name],
+      // Same units as floor/median/ceiling (season-total scale), so it
+      // can be positioned on the Range bar with the exact same maxCeiling
+      // denominator the bar's own floor/median/ceiling segments use.
+      paceSeasonTotal: outcome?.paceSeasonTotal ?? null,
       ...computeStatPercentiles(row, statPoolByPos),
     };
   });

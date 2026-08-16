@@ -543,6 +543,13 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                           width: `${((row.ceiling - row.median) / maxCeiling) * 100}%`,
                         }}
                       ></div>
+                      {row.paceSeasonTotal != null && (
+                        <div
+                          className={`pace-marker ${row.outcomePercentile >= 50 ? "pace-marker-hot" : "pace-marker-cold"}`}
+                          style={{ left: `${Math.min(100, (row.paceSeasonTotal / maxCeiling) * 100)}%` }}
+                          title={`Current pace: ${ordinal(row.outcomePercentile)} percentile on this player's outcome curve`}
+                        ></div>
+                      )}
                     </div>
                   </td>
                   <td className={`mono por-cell ${row.por >= 0 ? "por-positive" : "por-negative"}`}>

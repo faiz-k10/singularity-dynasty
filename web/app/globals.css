@@ -857,6 +857,19 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .sim-bar-track{position:relative; width:140px; height:8px; background:var(--void-panel-2); border-radius:4px;}
 .sim-bar-typical{position:absolute; top:0; bottom:0; background:var(--neon-blue-dim); border-radius:4px 0 0 4px; min-width:3px;}
 .sim-bar-upside{position:absolute; top:0; bottom:0; background:var(--horizon-gold); opacity:0.45; border-radius:0 4px 4px 0; min-width:2px;}
+/* Pace marker -- where a dummy/real in-season player's current pace
+   (paceSeasonTotal) sits on the same floor/median/ceiling scale the
+   typical/upside segments already use. A pin shape (stem + dot),
+   deliberately not blue or gold (the two colors the bar itself already
+   uses) so it reads as a distinct, separate signal layered on top --
+   green/red reuses the same up/down semantic already used for POR and
+   TrendTag elsewhere on this page, so hot/cold is legible at a glance
+   without reading the tooltip. Extends a few px above/below the track
+   so it doesn't get visually lost inside the bar segments. */
+.pace-marker{position:absolute; top:-5px; bottom:-5px; width:2px; transform:translateX(-1px); z-index:2; border-radius:1px;}
+.pace-marker::after{content:""; position:absolute; top:-3px; left:50%; transform:translateX(-50%); width:6px; height:6px; border-radius:50%; background:inherit; box-shadow:0 0 4px currentColor;}
+.pace-marker-hot{background:var(--up); color:var(--up);}
+.pace-marker-cold{background:var(--down); color:var(--down);}
 @media (max-width:640px){.sim-bar-track{width:80px;}}
 
 /* Tier banner (Player Season Simulations) -- gap-based tiers computed
