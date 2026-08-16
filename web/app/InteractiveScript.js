@@ -544,6 +544,53 @@ export default function InteractiveScript({ tickerPlayers } = {}) {
       });
     }
 
+    /* ---- click-and-drag horizontal scroll for wide data tables ---- */
+    // The scroll-affordance problem isn't that these tables can't scroll
+    // (overflow-x:auto already works) -- it's that nothing signals a
+    // desktop mouse user they should try. Trackpad/touch users already
+    // discover it naturally via a horizontal swipe; this adds the same
+    // grab-and-drag interaction the hero ring above already uses, so a
+    // plain mouse can pull the table sideways too, plus a visible custom
+    // scrollbar (globals.css) as the passive cue.
+    document.querySelectorAll(".rankings-table-wrap").forEach((wrap) => {
+      let dragging = false;
+      let startX = 0;
+      let startScrollLeft = 0;
+      wrap.addEventListener(
+        "pointerdown",
+        (e) => {
+          if (e.pointerType === "touch") return; // native touch scroll is already fine
+          dragging = true;
+          wrap.setPointerCapture(e.pointerId);
+          startX = e.clientX;
+          startScrollLeft = wrap.scrollLeft;
+          wrap.classList.add("rankings-table-wrap-grabbing");
+        },
+        { signal }
+      );
+      // Never calls preventDefault -- a plain click (e.g. a sortable
+      // column header's link) still fires normally on pointerup even
+      // though this changed scrollLeft along the way.
+      wrap.addEventListener(
+        "pointermove",
+        (e) => {
+          if (!dragging) return;
+          wrap.scrollLeft = startScrollLeft - (e.clientX - startX);
+        },
+        { signal }
+      );
+      ["pointerup", "pointercancel"].forEach((evt) => {
+        wrap.addEventListener(
+          evt,
+          () => {
+            dragging = false;
+            wrap.classList.remove("rankings-table-wrap-grabbing");
+          },
+          { signal }
+        );
+      });
+    });
+
     /* ---- gravity playground ---- */
     const canvas = document.getElementById("gravityCanvas");
     if (canvas) {

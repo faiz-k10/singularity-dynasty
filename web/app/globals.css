@@ -699,7 +699,17 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 /* overflow-x (not hidden) so wide tables scroll within their own card on
    narrow screens instead of silently clipping columns — this is what was
    cutting off Ceiling/Range on Player Simulations on mobile. */
-.rankings-table-wrap{background:var(--void-panel); border:1px solid var(--line); border-radius:16px; overflow-x:auto; box-shadow:0 30px 70px rgba(var(--shadow-rgb),0.4);}
+.rankings-table-wrap{background:var(--void-panel); border:1px solid var(--line); border-radius:16px; overflow-x:auto; box-shadow:0 30px 70px rgba(var(--shadow-rgb),0.4); cursor:grab;}
+.rankings-table-wrap-grabbing{cursor:grabbing; user-select:none;}
+/* Visible scrollbar as a passive cue that these tables scroll sideways
+   (the click-and-drag handler in InteractiveScript.js is the active
+   one) -- default OS scrollbars are thin-to-invisible until actively
+   scrolling, which is exactly what was hiding the affordance. */
+.rankings-table-wrap{scrollbar-width:auto; scrollbar-color:rgba(var(--neon-blue-rgb),0.5) transparent;}
+.rankings-table-wrap::-webkit-scrollbar{height:10px;}
+.rankings-table-wrap::-webkit-scrollbar-track{background:transparent;}
+.rankings-table-wrap::-webkit-scrollbar-thumb{background:rgba(var(--neon-blue-rgb),0.5); border-radius:6px;}
+.rankings-table-wrap::-webkit-scrollbar-thumb:hover{background:rgba(var(--neon-blue-rgb),0.75);}
 .rankings-table{width:100%; border-collapse:collapse; font-size:14px;}
 .rankings-table th{
   text-align:left; font-family:var(--font-ibm-plex-mono), monospace; font-size:11px; letter-spacing:0.08em;
