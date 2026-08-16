@@ -218,14 +218,10 @@ function formatStat(value) {
 // unaffected.
 const TIER_COLUMN_TYPES = { por: "number", wopr: "number", epa: "number" };
 // POR's tier field is just `tier` (legacy name); WOPR/EPA are `woprTier`/
-// `epaTier` (computed per-position, see lib/tiers.js) -- this maps a
-// tier-by sort key to the row field that actually holds its tier number.
+// `epaTier` (computed globally, same as POR -- see lib/tiers.js) -- this
+// maps a tier-by sort key to the row field that actually holds its tier
+// number.
 const TIER_FIELD_BY_KEY = { por: "tier", wopr: "woprTier", epa: "epaTier" };
-// WOPR/EPA tiers are computed per-position, so sorting purely by raw
-// value (like POR's global sort does) would interleave positions and
-// make the tier banners flicker every couple of rows instead of reading
-// as clean blocks -- position first, metric descending within it.
-const POSITION_ORDER = ["QB", "RB", "WR", "TE"];
 
 // League Size / QB Format toggles change POR's replacement-level baseline
 // (lib/replacementValue.js), which needs the full player pool -- including
@@ -254,11 +250,6 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
   const effectiveSortDir = clientSort?.dir ?? sortDir;
   const tierField = TIER_FIELD_BY_KEY[effectiveSortKey];
   const bannersEnabled = tierField != null;
-  // WOPR/EPA tiers are computed per-position (unlike POR's global tiers),
-  // so the banner needs a position prefix ("WR · Tier 2") to read
-  // correctly, and a tier-number match alone isn't enough to tell two
-  // groups apart -- a WR Tier 2 and an RB Tier 2 are unrelated.
-  const bannersArePositionScoped = effectiveSortKey === "wopr" || effectiveSortKey === "epa";
   const sortProps = { activeSort: effectiveSortKey, activeDir: effectiveSortDir, currentParams };
 
   function selectTierBy(key) {
@@ -294,22 +285,6 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
 
   const displayRows = useMemo(() => {
     if (!clientSort) return filteredRows;
-    if (clientSort.key === "wopr" || clientSort.key === "epa") {
-      const byPosition = {};
-      for (const row of filteredRows) {
-        (byPosition[row.position] ??= []).push(row);
-      }
-      return Object.keys(byPosition)
-        .sort((a, b) => {
-          const ai = POSITION_ORDER.indexOf(a);
-          const bi = POSITION_ORDER.indexOf(b);
-          if (ai === -1 && bi === -1) return a.localeCompare(b);
-          if (ai === -1) return 1;
-          if (bi === -1) return -1;
-          return ai - bi;
-        })
-        .flatMap((pos) => sortRows(byPosition[pos], clientSort.key, clientSort.dir, TIER_COLUMN_TYPES));
-    }
     return sortRows(filteredRows, clientSort.key, clientSort.dir, TIER_COLUMN_TYPES);
   }, [filteredRows, clientSort]);
 
@@ -343,10 +318,10 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
           <button type="button" onClick={() => selectTierBy("por")} className={effectiveSortKey === "por" ? "active" : ""} aria-pressed={effectiveSortKey === "por"}>
             POR
           </button>
-          <button type="button" onClick={() => selectTierBy("wopr")} className={effectiveSortKey === "wopr" ? "active" : ""} aria-pressed={effectiveSortKey === "wopr"} title="Tiered per-position, not across the whole pool like POR">
+          <button type="button" onClick={() => selectTierBy("wopr")} className={effectiveSortKey === "wopr" ? "active" : ""} aria-pressed={effectiveSortKey === "wopr"}>
             WOPR
           </button>
-          <button type="button" onClick={() => selectTierBy("epa")} className={effectiveSortKey === "epa" ? "active" : ""} aria-pressed={effectiveSortKey === "epa"} title="Tiered per-position, not across the whole pool like POR">
+          <button type="button" onClick={() => selectTierBy("epa")} className={effectiveSortKey === "epa" ? "active" : ""} aria-pressed={effectiveSortKey === "epa"}>
             EPA
           </button>
         </div>
@@ -448,32 +423,24 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
             <tbody>
               {(() => {
                 // Banner spans the full table width and drops in right
-                // above the first row of each new tier. POR tiers are
-                // computed globally (POR is already position-adjusted,
-                // meant to be compared ACROSS positions -- lib/tiers.js),
-                // so a single running lastTierKey is enough and the banner
-                // has no position prefix -- a POR tier can and should
-                // span multiple positions. WOPR/EPA tiers are computed
-                // PER-POSITION instead (see computeTierMapByPosition), so
-                // the running key includes position -- a WR Tier 2 and an
-                // RB Tier 2 are unrelated and must each get their own
-                // banner even if the plain tier NUMBER repeats.
-                let lastTierKey = null;
+                // above the first row of each new tier. POR/WOPR/EPA
+                // tiers are all computed globally (lib/tiers.js), so a
+                // single running lastTier is enough and the banner has
+                // no position prefix -- a tier can and should span
+                // multiple positions.
+                let lastTier = null;
                 return displayRows.map((row, index) => {
                   const hasStats = row.stat_ranges && Object.keys(row.stat_ranges).length > 0;
                   const isExpanded = hasStats && expanded.has(row.player_name);
                   const tier = bannersEnabled ? row[tierField] : null;
-                  const tierKey = tier != null ? (bannersArePositionScoped ? `${row.position}-${tier}` : tier) : null;
-                  const showTierBanner = tierKey != null && lastTierKey !== tierKey;
-                  if (tierKey != null) lastTierKey = tierKey;
+                  const showTierBanner = tier != null && lastTier !== tier;
+                  if (tier != null) lastTier = tier;
                   return (
                 <Fragment key={row.player_name}>
                 {showTierBanner && (
                   <tr className="tier-banner-row" aria-hidden="true">
                     <td colSpan={11}>
-                      <span className="tier-banner-label">
-                        {bannersArePositionScoped ? `${row.position} · Tier ${tier}` : `Tier ${tier}`}
-                      </span>
+                      <span className="tier-banner-label">Tier {tier}</span>
                     </td>
                   </tr>
                 )}

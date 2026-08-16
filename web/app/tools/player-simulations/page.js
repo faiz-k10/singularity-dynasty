@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createPublicClient } from "@/lib/supabase/public";
 import { resolveSort, sortRows } from "@/lib/sortLink";
 import { buildStatPoolByPos, computeStatPercentiles } from "@/lib/statPercentiles";
-import { computeGlobalTierMap, computeTierMapByPosition } from "@/lib/tiers";
+import { computeGlobalTierMap } from "@/lib/tiers";
 import { computeReplacementValues } from "@/lib/replacementValue";
 import SiteHeader from "../../SiteHeader";
 import ExportCsvButton from "../ExportCsvButton";
@@ -176,11 +176,10 @@ export default async function PlayerSimulationsPage({ searchParams }) {
   // positions, not re-siloed by one.
   const poolRowsWithPor = poolRows.map((row) => ({ ...row, por: porByName[row.player_name] }));
   const porTierByName = computeGlobalTierMap(poolRowsWithPor, "por");
-  // WOPR/EPA aren't position-adjusted like POR, so they tier per-position
-  // instead of across the whole pool -- see computeTierMapByPosition's
-  // comment in lib/tiers.js.
-  const woprTierByName = computeTierMapByPosition(poolRows, "wopr");
-  const epaTierByName = computeTierMapByPosition(poolRows, "epa");
+  // WOPR/EPA tier the same way POR does -- globally across the whole
+  // pool, no position grouping (see computeGlobalTierMap in lib/tiers.js).
+  const woprTierByName = computeGlobalTierMap(poolRows, "wopr");
+  const epaTierByName = computeGlobalTierMap(poolRows, "epa");
   const simsWithComputed = sims.map((row) => {
     const heat = heatFor("median", row);
     const floorHeat = heatFor("floor", row);
