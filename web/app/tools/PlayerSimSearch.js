@@ -205,6 +205,18 @@ function formatStat(value) {
   return String(Math.round(value));
 }
 
+function ordinal(n) {
+  const rounded = Math.round(n);
+  const mod100 = rounded % 100;
+  if (mod100 >= 11 && mod100 <= 13) return `${rounded}th`;
+  switch (rounded % 10) {
+    case 1: return `${rounded}st`;
+    case 2: return `${rounded}nd`;
+    case 3: return `${rounded}rd`;
+    default: return `${rounded}th`;
+  }
+}
+
 // POR/WOPR/EPA are the tierable metrics -- floor/median/ceiling tiering
 // was removed by request. Tiers only read as a contiguous block when the
 // table is actually sorted by the same metric they're grouped by, so
@@ -421,7 +433,13 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                 <SortableTh
                   label="Regr"
                   sortKey="regressionScore"
-                  title="In-season regression score — current PPG minus projected PPG. Positive: outperforming projection, expect cooldown. Negative: underperforming, expect warm-up. Blank until real games are played."
+                  title="In-season regression score — real points scored so far minus the projected pace for that many games. Positive: ahead of pace, expect cooldown. Negative: behind pace, expect warm-up. Blank until real games are played."
+                  {...sortProps}
+                />
+                <SortableTh
+                  label="Pace %ile"
+                  sortKey="outcomePercentile"
+                  title="If the player kept up their current pace for a full season, where that lands on their own floor(10th)–median(50th)–ceiling(90th) outcome curve. Blank until real games are played."
                   {...sortProps}
                 />
               </tr>
@@ -445,7 +463,7 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                 <Fragment key={row.player_name}>
                 {showTierBanner && (
                   <tr className="tier-banner-row" aria-hidden="true">
-                    <td colSpan={12}>
+                    <td colSpan={13}>
                       <span className="tier-banner-label">Tier {tier}</span>
                     </td>
                   </tr>
@@ -531,11 +549,21 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                       ? `${row.regressionScore >= 0 ? "+" : ""}${row.regressionScore.toFixed(1)}`
                       : "—"}
                   </td>
+                  <td
+                    className="mono align-left"
+                    title={
+                      row.outcomePercentile != null
+                        ? `Current pace of ${row.currentPPG.toFixed(1)} PPG, extrapolated over a full season, is ${ordinal(row.outcomePercentile)} percentile on this player's own outcome curve`
+                        : "No games played yet this season"
+                    }
+                  >
+                    {row.outcomePercentile != null ? ordinal(row.outcomePercentile) : "—"}
+                  </td>
                 </tr>
                 {isExpanded && (
                   <StatDetailRow
                     row={row}
-                    colSpan={12}
+                    colSpan={13}
                     shapePeers={shapePeers}
                   />
                 )}

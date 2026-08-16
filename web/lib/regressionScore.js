@@ -1,23 +1,27 @@
-// Regression score: how many fantasy points per game a player is
-// currently outperforming (positive) or underperforming (negative) their
-// preseason projected rate, in-season. A large positive score flags a
-// "hot start" candidate likely to cool off toward their projection over
-// the rest of the season; a large negative score flags a "cold start"
-// candidate likely to warm back up.
+// Regression score: how many total fantasy points a player is currently
+// ahead of (positive) or behind (negative) the pace their preseason
+// projection implied for the games they've actually played so far --
+// i.e. real cumulative points minus (projectedPPG * gamesPlayed). A
+// large positive score flags a "hot start" candidate likely to cool off
+// toward their projection over the rest of the season; a large negative
+// score flags a "cold start" candidate likely to warm back up.
 //
-// Formula is deliberately the simple version -- currentPPG minus
-// projectedPPG, no simulation involved -- not the more sophisticated
-// "percentile rank within a simulated N-game distribution" version that
-// was backtested alongside it. The simple version won head-to-head on
-// real 2022-2025 season data (model/backtest_regression_metric.R):
-// correlation with actual rest-of-season reversion was r=0.56 overall
-// (0.52 QB / 0.52 RB / 0.61 WR / 0.62 TE) vs. r=0.50 for the simulated-
-// percentile version, at every position, with no extra computation cost
-// (no Monte Carlo run needed to score a player each week). The decile
-// breakdown in that backtest was cleanly monotonic -- coldest-decile
-// starts rebounded by 2.6 PPG on average over the rest of the season,
-// hottest-decile starts cooled off by 3.9 PPG -- confirming this is a
-// real, well-behaved signal, not noise.
+// This is a POINTS-TOTAL rescaling of the underlying per-game signal
+// (regressionScore == (currentPPG - projectedPPG) * gamesPlayed), by
+// request -- displays as a bigger, more visceral number than the PPG
+// gap. Two things worth knowing about that rescaling:
+//   - It's a straight per-player linear transform of the exact formula
+//     backtested in model/backtest_regression_metric.R (r=0.56 overall
+//     vs real rest-of-season reversion, cleanly monotonic by decile --
+//     see that script/lib/regressionScore.js's prior version for the
+//     validation detail), so the underlying predictive signal is
+//     unchanged.
+//   - It is NOT comparable across players with different games-played
+//     counts the way the PPG version was -- a player 2 games in and a
+//     player 8 games in can show similar total-point gaps while being
+//     hot/cold to very different degrees on a per-game basis. Read this
+//     as "how many points ahead/behind pace," not as a normalized
+//     ranking signal across the whole player pool.
 //
 // IMPORTANT: projectedPPG must be the player's recency-weighted MEAN
 // per-game rate (same weighting used everywhere else in this codebase,
@@ -40,15 +44,17 @@ export function computeRegressionScore(actualPoints, projectedPPG) {
   if (typeof projectedPPG !== "number" || !Number.isFinite(projectedPPG)) return null;
 
   const gamesPlayed = actualPoints.length;
-  const currentPPG = actualPoints.reduce((sum, p) => sum + p, 0) / gamesPlayed;
-  const regressionScore = currentPPG - projectedPPG;
+  const actualTotal = actualPoints.reduce((sum, p) => sum + p, 0);
+  const currentPPG = actualTotal / gamesPlayed;
+  const regressionScore = actualTotal - projectedPPG * gamesPlayed;
 
   return {
     gamesPlayed,
     currentPPG,
     projectedPPG,
-    // Positive = outperforming projection (hot -- expect to cool off).
-    // Negative = underperforming projection (cold -- expect to warm up).
+    // Positive = ahead of pace (hot -- expect to cool off).
+    // Negative = behind pace (cold -- expect to warm up).
+    // In total points scored so far vs. pace, not points per game.
     regressionScore,
   };
 }

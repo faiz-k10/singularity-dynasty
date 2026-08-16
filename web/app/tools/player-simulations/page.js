@@ -8,6 +8,7 @@ import { buildStatPoolByPos, computeStatPercentiles } from "@/lib/statPercentile
 import { computeGlobalTierMap } from "@/lib/tiers";
 import { computeReplacementValues } from "@/lib/replacementValue";
 import { computeRegressionScore } from "@/lib/regressionScore";
+import { computeOutcomePercentile } from "@/lib/outcomePercentile";
 import SiteHeader from "../../SiteHeader";
 import ExportCsvButton from "../ExportCsvButton";
 import PlayerSimSearch from "../PlayerSimSearch";
@@ -32,6 +33,7 @@ const COLUMN_TYPES = {
   wopr: "number",
   epa: "number",
   regressionScore: "number",
+  outcomePercentile: "number",
 };
 
 // The full published week's data (all 425-ish rows) is identical for
@@ -212,6 +214,15 @@ export default async function PlayerSimulationsPage({ searchParams }) {
       actualProductionByName[row.player_name],
       row.median / GAMES_PER_SEASON
     );
+    // Where the player's current pace, extrapolated across a full
+    // season, would land on their own floor-to-ceiling outcome curve --
+    // see lib/outcomePercentile.js.
+    const outcome = computeOutcomePercentile(actualProductionByName[row.player_name], {
+      floor: row.floor,
+      median: row.median,
+      ceiling: row.ceiling,
+      gamesPerSeason: GAMES_PER_SEASON,
+    });
     return {
       ...row,
       heat,
@@ -224,6 +235,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
       regressionScore: regression?.regressionScore ?? null,
       currentPPG: regression?.currentPPG ?? null,
       gamesPlayed: regression?.gamesPlayed ?? 0,
+      outcomePercentile: outcome?.percentile ?? null,
       ...computeStatPercentiles(row, statPoolByPos),
     };
   });
