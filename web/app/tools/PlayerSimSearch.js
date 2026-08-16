@@ -246,6 +246,13 @@ const TIER_FIELD_BY_KEY = {
   regressionScore: "regressionTier",
   outcomePercentile: "outcomePercentileTier",
 };
+const TIER_LABEL_BY_KEY = {
+  por: "POR",
+  wopr: "WOPR",
+  epa: "EPA",
+  regressionScore: "Regr",
+  outcomePercentile: "Pace %ile",
+};
 
 // League Size / QB Format toggles change POR's replacement-level baseline
 // (lib/replacementValue.js), which needs the full player pool -- including
@@ -267,15 +274,16 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
   const [selected, setSelected] = useState(positions || []);
   const [query, setQuery] = useState("");
   const [expanded, setExpanded] = useState(() => new Set()); // player_names currently unfolded
-  // Position filter / Tiers / League Size / QB Format all live inside one
-  // collapsed-by-default panel -- collapsed is the common case (most
-  // visits don't need them), so hiding them by default keeps the page
-  // from opening with four rows of buttons before a single player is
-  // visible. Starts collapsed regardless of whether a non-default value
-  // is already active (via URL params) -- the active-dot on the toggle
-  // itself is what surfaces that, rather than auto-expanding and
-  // re-introducing the clutter this is meant to avoid.
-  const [filtersOpen, setFiltersOpen] = useState(false);
+  // Each filter row's LABEL always shows (plus its current value, so
+  // it's legible at a glance) -- only the actual toggle buttons underneath
+  // collapse, independently per row, accordion-style. Starts fully
+  // collapsed regardless of whether a non-default value is already active
+  // (via URL params); the always-visible current-value text is what
+  // surfaces that without needing to open anything.
+  const [openGroups, setOpenGroups] = useState({ position: false, tiers: false, league: false, qb: false });
+  function toggleGroup(key) {
+    setOpenGroups((g) => ({ ...g, [key]: !g[key] }));
+  }
   // null = defer to the server-provided sortKey/sortDir (URL-driven column
   // sort); set once a "Tier by" button is clicked, instant client-side.
   const [clientSort, setClientSort] = useState(null);
@@ -284,13 +292,11 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
   const tierField = TIER_FIELD_BY_KEY[effectiveSortKey];
   const bannersEnabled = tierField != null;
   const sortProps = { activeSort: effectiveSortKey, activeDir: effectiveSortDir, currentParams };
-  // Surfaced as a dot on the collapsed toggle so a non-default setting
-  // stays visible without having to open the panel to check.
-  const hasActiveCustomization =
-    (showPositionFilter && selected.length < positions.length) ||
-    clientSort != null ||
-    leagueTeams !== 12 ||
-    superflex;
+  // Current-value text shown next to each always-visible row label, so a
+  // non-default setting stays legible even while its buttons are
+  // collapsed -- e.g. "Tiers — WOPR" rather than a bare dot that would
+  // say something changed without saying what.
+  const tierValueLabel = TIER_LABEL_BY_KEY[effectiveSortKey] ?? "—";
 
   function selectTierBy(key) {
     setClientSort({ key, dir: "desc" });
@@ -336,22 +342,22 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
         </Link>
       </div>
 
-      <button
-        type="button"
-        className="filters-toggle-btn"
-        onClick={() => setFiltersOpen((o) => !o)}
-        aria-expanded={filtersOpen}
-      >
-        <span className={`filters-toggle-chevron${filtersOpen ? " filters-toggle-chevron-open" : ""}`}>▸</span>
-        Filters &amp; Tiers
-        {hasActiveCustomization && <span className="filters-active-dot" aria-hidden="true" />}
-      </button>
-
-      {filtersOpen && (
-        <div className="filters-panel">
-          {showPositionFilter && (
-            <div className="filters-panel-group">
+      <div className="filter-accordion">
+        {showPositionFilter && (
+          <div className="filter-row">
+            <button
+              type="button"
+              className="filter-row-header"
+              onClick={() => toggleGroup("position")}
+              aria-expanded={openGroups.position}
+            >
+              <span className={`filter-row-chevron${openGroups.position ? " filter-row-chevron-open" : ""}`}>▸</span>
               <span className="tier-toggle-label">Position</span>
+              <span className={`filter-row-value${selected.length < positions.length ? " filter-row-value-active" : ""}`}>
+                {selected.length === positions.length ? "All" : selected.length === 0 ? "None" : selected.join(", ")}
+              </span>
+            </button>
+            {openGroups.position && (
               <div className="position-filter-row">
                 {positions.map((pos) => (
                   <button
@@ -365,11 +371,22 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                   </button>
                 ))}
               </div>
-            </div>
-          )}
+            )}
+          </div>
+        )}
 
-          <div className="tier-toggle-row">
+        <div className="filter-row">
+          <button
+            type="button"
+            className="filter-row-header"
+            onClick={() => toggleGroup("tiers")}
+            aria-expanded={openGroups.tiers}
+          >
+            <span className={`filter-row-chevron${openGroups.tiers ? " filter-row-chevron-open" : ""}`}>▸</span>
             <span className="tier-toggle-label">Tiers</span>
+            <span className={`filter-row-value${effectiveSortKey in TIER_FIELD_BY_KEY ? " filter-row-value-active" : ""}`}>{tierValueLabel}</span>
+          </button>
+          {openGroups.tiers && (
             <div className="tier-toggle">
               <button type="button" onClick={() => selectTierBy("por")} className={effectiveSortKey === "por" ? "active" : ""} aria-pressed={effectiveSortKey === "por"}>
                 POR
@@ -387,12 +404,22 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                 Pace %ile
               </button>
             </div>
-          </div>
+          )}
+        </div>
 
-          <div className="filters-panel-divider" role="separator" />
-
-          <div className="tier-toggle-row">
-            <span className="tier-toggle-label" title="Changes POR's replacement-level baseline">League Size</span>
+        <div className="filter-row">
+          <button
+            type="button"
+            className="filter-row-header"
+            onClick={() => toggleGroup("league")}
+            aria-expanded={openGroups.league}
+            title="Changes POR's replacement-level baseline"
+          >
+            <span className={`filter-row-chevron${openGroups.league ? " filter-row-chevron-open" : ""}`}>▸</span>
+            <span className="tier-toggle-label">League Size</span>
+            <span className={`filter-row-value${leagueTeams !== 12 ? " filter-row-value-active" : ""}`}>{leagueTeams}-Team</span>
+          </button>
+          {openGroups.league && (
             <div className="tier-toggle">
               <Link
                 href={leagueHref(currentParams, "teams", "10")}
@@ -409,10 +436,22 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                 12-Team
               </Link>
             </div>
-          </div>
+          )}
+        </div>
 
-          <div className="tier-toggle-row">
-            <span className="tier-toggle-label" title="Changes POR's replacement-level baseline">QB Format</span>
+        <div className="filter-row">
+          <button
+            type="button"
+            className="filter-row-header"
+            onClick={() => toggleGroup("qb")}
+            aria-expanded={openGroups.qb}
+            title="Changes POR's replacement-level baseline"
+          >
+            <span className={`filter-row-chevron${openGroups.qb ? " filter-row-chevron-open" : ""}`}>▸</span>
+            <span className="tier-toggle-label">QB Format</span>
+            <span className={`filter-row-value${superflex ? " filter-row-value-active" : ""}`}>{superflex ? "Superflex" : "1QB"}</span>
+          </button>
+          {openGroups.qb && (
             <div className="tier-toggle">
               <Link
                 href={leagueHref(currentParams, "qb", "1qb")}
@@ -429,9 +468,9 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                 Superflex
               </Link>
             </div>
-          </div>
+          )}
         </div>
-      )}
+      </div>
 
       <div className="player-search-row">
         <input

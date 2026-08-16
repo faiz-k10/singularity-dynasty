@@ -890,31 +890,32 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .tier-toggle a:hover, .tier-toggle button:hover{color:var(--star);}
 .tier-toggle a.active, .tier-toggle button.active{background:var(--horizon-gold); color:#1A0D05;}
 
-/* Collapsed-by-default panel for Position/Tiers/League Size/QB Format --
-   four rows of buttons opening with the page by default was more control
-   surface than most visits need before seeing a single player, so they're
-   tucked behind one disclosure toggle instead. The active-dot is what
-   keeps a non-default setting from going invisible once collapsed --
-   without it, changing League Size and then collapsing the panel would
-   leave no on-page trace that anything but the default is in effect. */
-.filters-toggle-btn{
-  all:unset; cursor:pointer; display:inline-flex; align-items:center; gap:8px;
-  background:var(--void-panel-2); border:1px solid var(--line); border-radius:30px;
-  padding:9px 18px; margin-bottom:16px; font-size:13px; color:var(--star-dim); font-weight:600;
-  transition:border-color .15s ease, color .15s ease;
-}
-.filters-toggle-btn:hover{border-color:var(--neon-blue); color:var(--star);}
-.filters-toggle-chevron{display:inline-block; font-size:11px; transition:transform .2s ease; color:var(--star-dim);}
-.filters-toggle-chevron-open{transform:rotate(90deg);}
-.filters-active-dot{width:7px; height:7px; border-radius:50%; background:var(--horizon-gold); box-shadow:0 0 6px rgba(var(--horizon-gold-rgb),0.7);}
-.filters-panel{
+/* Accordion for Position/Tiers/League Size/QB Format -- each row's LABEL
+   (and current value) stays visible at all times; only the actual toggle
+   buttons underneath collapse, independently per row, so a viewer always
+   sees what's available and what's currently set without needing to open
+   anything, and only expands the one control they actually want to
+   change. filter-row-value-active reuses the same gold the toggle
+   buttons themselves highlight with (.tier-toggle .active) so a
+   non-default setting is legible even collapsed, in its own words
+   ("Tiers — WOPR") rather than a bare "something changed" dot. */
+.filter-accordion{
   background:var(--void-panel); border:1px solid var(--line); border-radius:16px;
-  padding:20px 22px 4px; margin-bottom:20px;
+  margin-bottom:20px; overflow:hidden;
 }
-.filters-panel .tier-toggle-row{margin-bottom:20px;}
-.filters-panel-group{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:20px;}
-.filters-panel-group .position-filter-row{margin-bottom:0;}
-.filters-panel-divider{border:none; border-top:1px dashed var(--line); margin:0 0 20px;}
+.filter-row{border-bottom:1px solid var(--line);}
+.filter-row:last-child{border-bottom:none;}
+.filter-row-header{
+  all:unset; cursor:pointer; display:flex; align-items:center; gap:10px; width:100%;
+  box-sizing:border-box; padding:14px 20px; transition:background .15s ease;
+}
+.filter-row-header:hover{background:var(--void-panel-2);}
+.filter-row-chevron{display:inline-block; font-size:11px; color:var(--star-dim); transition:transform .2s ease;}
+.filter-row-chevron-open{transform:rotate(90deg);}
+.filter-row-value{margin-left:auto; font-size:13px; color:var(--star-dim); font-family:var(--font-ibm-plex-mono), monospace;}
+.filter-row-value-active{color:var(--horizon-gold); font-weight:600;}
+.filter-row .position-filter-row, .filter-row .tier-toggle{margin:0 20px 16px;}
+.filter-row .tier-toggle{display:flex;}
 .tier-banner-row td{
   padding:0 16px; background:rgba(var(--horizon-gold-rgb), 0.08);
   border-top:1px solid rgba(var(--horizon-gold-rgb), 0.3);
