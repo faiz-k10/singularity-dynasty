@@ -418,6 +418,12 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                   title="Expected Points Added per game — passing EPA (QB), rushing+receiving EPA (RB), receiving EPA (WR/TE)."
                   {...sortProps}
                 />
+                <SortableTh
+                  label="Regr"
+                  sortKey="regressionScore"
+                  title="In-season regression score — current PPG minus projected PPG. Positive: outperforming projection, expect cooldown. Negative: underperforming, expect warm-up. Blank until real games are played."
+                  {...sortProps}
+                />
               </tr>
             </thead>
             <tbody>
@@ -439,7 +445,7 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                 <Fragment key={row.player_name}>
                 {showTierBanner && (
                   <tr className="tier-banner-row" aria-hidden="true">
-                    <td colSpan={11}>
+                    <td colSpan={12}>
                       <span className="tier-banner-label">Tier {tier}</span>
                     </td>
                   </tr>
@@ -513,11 +519,23 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                   <td className={`mono align-left ${row.epa != null ? (row.epa >= 0 ? "por-positive" : "por-negative") : ""}`}>
                     {row.epa != null ? `${row.epa >= 0 ? "+" : ""}${row.epa.toFixed(2)}` : "—"}
                   </td>
+                  <td
+                    className={`mono align-left ${row.regressionScore != null ? (row.regressionScore >= 0 ? "por-positive" : "por-negative") : ""}`}
+                    title={
+                      row.regressionScore != null
+                        ? `${row.gamesPlayed} game${row.gamesPlayed === 1 ? "" : "s"} played, ${row.currentPPG.toFixed(1)} PPG so far`
+                        : "No games played yet this season"
+                    }
+                  >
+                    {row.regressionScore != null
+                      ? `${row.regressionScore >= 0 ? "+" : ""}${row.regressionScore.toFixed(1)}`
+                      : "—"}
+                  </td>
                 </tr>
                 {isExpanded && (
                   <StatDetailRow
                     row={row}
-                    colSpan={11}
+                    colSpan={12}
                     shapePeers={shapePeers}
                   />
                 )}

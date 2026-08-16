@@ -7,6 +7,7 @@ import { resolveSort, sortRows } from "@/lib/sortLink";
 import { buildStatPoolByPos, computeStatPercentiles } from "@/lib/statPercentiles";
 import { computeGlobalTierMap } from "@/lib/tiers";
 import { computeReplacementValues } from "@/lib/replacementValue";
+import { computeRegressionScore } from "@/lib/regressionScore";
 import SiteHeader from "../../SiteHeader";
 import ExportCsvButton from "../ExportCsvButton";
 import PlayerSimSearch from "../PlayerSimSearch";
@@ -30,6 +31,7 @@ const COLUMN_TYPES = {
   por: "number",
   wopr: "number",
   epa: "number",
+  regressionScore: "number",
 };
 
 // The full published week's data (all 425-ish rows) is identical for
@@ -53,19 +55,35 @@ const getCachedWeekData = unstable_cache(
       .limit(1)
       .maybeSingle();
 
-    if (!latest) return { latest: null, rows: [], totalCount: 0 };
+    if (!latest) return { latest: null, rows: [], totalCount: 0, actualProductionByName: {} };
 
-    const { data, count } = await publicSupabase
-      .from("player_simulations")
-      .select(
-        "player_name, position, team, floor, median, ceiling, stat_ranges, trend, sample_confidence, notes, wopr, epa",
-        { count: "exact" }
-      )
-      .eq("season", latest.season)
-      .eq("week", latest.week)
-      .order("median", { ascending: false });
+    const [{ data, count }, { data: actualRows }] = await Promise.all([
+      publicSupabase
+        .from("player_simulations")
+        .select(
+          "player_name, position, team, floor, median, ceiling, stat_ranges, trend, sample_confidence, notes, wopr, epa",
+          { count: "exact" }
+        )
+        .eq("season", latest.season)
+        .eq("week", latest.week)
+        .order("median", { ascending: false }),
+      // Real (or dummy/test, before the season has real data) weekly
+      // actual production -- powers the regression-to-projection score
+      // below. Scoped to latest.season, not latest.week: this is the
+      // whole season's games-played-so-far, not just one week's batch.
+      publicSupabase
+        .from("player_actual_production")
+        .select("player_name, week, actual_points")
+        .eq("season", latest.season)
+        .order("week", { ascending: true }),
+    ]);
 
-    return { latest, rows: data || [], totalCount: count || 0 };
+    const actualProductionByName = {};
+    for (const row of actualRows || []) {
+      (actualProductionByName[row.player_name] ??= []).push(row.actual_points);
+    }
+
+    return { latest, rows: data || [], totalCount: count || 0, actualProductionByName };
   },
   ["player-simulations-latest-week"],
   { revalidate: 60 }
@@ -95,7 +113,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
   // cached, but it doesn't depend on the week's data, so it runs
   // concurrently with that (cached) fetch instead of one blocking the
   // other.
-  const [{ tier }, { latest, rows, totalCount: fetchedCount }] = await Promise.all([
+  const [{ tier }, { latest, rows, totalCount: fetchedCount, actualProductionByName }] = await Promise.all([
     resolveTier(supabase),
     getCachedWeekData(),
   ]);
@@ -184,6 +202,16 @@ export default async function PlayerSimulationsPage({ searchParams }) {
     const heat = heatFor("median", row);
     const floorHeat = heatFor("floor", row);
     const ceilingHeat = heatFor("ceiling", row);
+    // Approximation, not the literal backtested formula -- see
+    // lib/regressionScore.js's comment. season_median/GAMES_PER_SEASON
+    // is a bootstrapped season-total median divided by games, not the
+    // plain recency-weighted mean per-game rate the backtest validated
+    // against. Close enough to be useful; not guaranteed to reproduce
+    // the exact backtest correlation.
+    const regression = computeRegressionScore(
+      actualProductionByName[row.player_name],
+      row.median / GAMES_PER_SEASON
+    );
     return {
       ...row,
       heat,
@@ -193,6 +221,9 @@ export default async function PlayerSimulationsPage({ searchParams }) {
       tier: porTierByName[row.player_name],
       woprTier: woprTierByName[row.player_name],
       epaTier: epaTierByName[row.player_name],
+      regressionScore: regression?.regressionScore ?? null,
+      currentPPG: regression?.currentPPG ?? null,
+      gamesPlayed: regression?.gamesPlayed ?? 0,
       ...computeStatPercentiles(row, statPoolByPos),
     };
   });
