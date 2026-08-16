@@ -546,7 +546,7 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                     }
                   >
                     {row.regressionScore != null
-                      ? `${row.regressionScore >= 0 ? "+" : ""}${row.regressionScore.toFixed(1)}`
+                      ? `${row.regressionScore >= 0 ? "+" : ""}${row.regressionScore.toFixed(2)}`
                       : "—"}
                   </td>
                   <td
