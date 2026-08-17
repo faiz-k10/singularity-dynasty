@@ -16,6 +16,7 @@ export default function SortableTh({
       <Link
         href={sortHref(currentParams, sortKey, activeSort, activeDir, sortParam, dirParam)}
         className={sortKey === activeSort ? "sort-active" : ""}
+        scroll={false}
       >
         {label}
         {sortArrow(sortKey, activeSort, activeDir)}
