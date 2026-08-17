@@ -591,6 +591,22 @@ export default function InteractiveScript({ tickerPlayers } = {}) {
       });
     });
 
+    /* ---- frozen table header offset (Player Season Simulations) ----
+       Measures the real fixed ticker+nav stack instead of hardcoding its
+       height, so the sticky table header/top-scrollbar (globals.css)
+       stay correctly positioned even if that stack's height ever
+       changes (a longer/shorter nav, a new ticker row, mobile layout
+       switching to the hamburger fallback, etc). No-ops harmlessly on
+       any page without .site-header. */
+    function measureFixedHeaderHeight() {
+      const header = document.querySelector(".site-header");
+      if (!header) return;
+      const height = header.getBoundingClientRect().bottom;
+      document.documentElement.style.setProperty("--fixed-header-height", `${height}px`);
+    }
+    measureFixedHeaderHeight();
+    window.addEventListener("resize", measureFixedHeaderHeight, { signal });
+
     /* ---- gravity playground ---- */
     const canvas = document.getElementById("gravityCanvas");
     if (canvas) {

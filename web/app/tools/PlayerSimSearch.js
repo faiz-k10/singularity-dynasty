@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { sortRows } from "@/lib/sortLink";
 import SortableTh from "./SortableTh";
@@ -334,6 +334,35 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
     return sortRows(filteredRows, clientSort.key, clientSort.dir, TIER_COLUMN_TYPES);
   }, [filteredRows, clientSort]);
 
+  // Top scrollbar (synced with the real one on .rankings-table-wrap, not
+  // a second independent scroll container) -- an empty spacer div sized
+  // to the table's actual scrollWidth gives the top bar the same
+  // scrollable range, and each side's onScroll just mirrors its own
+  // scrollLeft onto the other. Re-measures on resize and whenever the
+  // row/column set changes (filtering by position changes table content
+  // but not width; still cheap to recheck).
+  const tableWrapRef = useRef(null);
+  const topScrollRef = useRef(null);
+  const [tableScrollWidth, setTableScrollWidth] = useState(0);
+  useEffect(() => {
+    function measure() {
+      if (tableWrapRef.current) setTableScrollWidth(tableWrapRef.current.scrollWidth);
+    }
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, [displayRows]);
+  function syncWrapFromTopBar() {
+    if (tableWrapRef.current && topScrollRef.current) {
+      tableWrapRef.current.scrollLeft = topScrollRef.current.scrollLeft;
+    }
+  }
+  function syncTopBarFromWrap() {
+    if (tableWrapRef.current && topScrollRef.current) {
+      topScrollRef.current.scrollLeft = tableWrapRef.current.scrollLeft;
+    }
+  }
+
   return (
     <>
       <div className="compare-link-row">
@@ -493,7 +522,15 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
           <p>Pick at least one position above.</p>
         </div>
       ) : (
-        <div className="rankings-table-wrap">
+        <>
+          <div
+            className="table-top-scrollbar"
+            ref={topScrollRef}
+            onScroll={syncWrapFromTopBar}
+          >
+            <div style={{ width: tableScrollWidth, height: 1 }} />
+          </div>
+          <div className="rankings-table-wrap player-sims-table-wrap" ref={tableWrapRef} onScroll={syncTopBarFromWrap}>
           <table className="rankings-table player-sims-table">
             <thead>
               <tr>
@@ -673,7 +710,8 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
               })()}
             </tbody>
           </table>
-        </div>
+          </div>
+        </>
       )}
     </>
   );

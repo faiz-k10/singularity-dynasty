@@ -751,7 +751,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    48px. */
 .player-sims-table thead th:nth-child(1),
 .player-sims-table tbody tr:not(.tier-banner-row):not(.stat-detail-row) td:nth-child(1){
-  position:sticky; left:0; z-index:2; background:var(--void-panel-2);
+  position:sticky; left:0; z-index:4; background:var(--void-panel-2);
   width:48px; min-width:48px; max-width:48px;
 }
 .player-sims-table tbody tr:not(.tier-banner-row):not(.stat-detail-row) td:nth-child(1){
@@ -759,7 +759,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 }
 .player-sims-table thead th:nth-child(2),
 .player-sims-table tbody tr:not(.tier-banner-row):not(.stat-detail-row) td:nth-child(2){
-  position:sticky; left:48px; z-index:2; background:var(--void-panel-2);
+  position:sticky; left:48px; z-index:4; background:var(--void-panel-2);
   width:220px; min-width:220px; max-width:220px; overflow:hidden; text-overflow:ellipsis;
 }
 .player-sims-table tbody tr:not(.tier-banner-row):not(.stat-detail-row) td:nth-child(2){
@@ -767,12 +767,56 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 }
 .player-sims-table thead th:nth-child(3),
 .player-sims-table tbody tr:not(.tier-banner-row):not(.stat-detail-row) td:nth-child(3){
-  position:sticky; left:268px; z-index:2; background:var(--void-panel-2);
+  position:sticky; left:268px; z-index:4; background:var(--void-panel-2);
   box-shadow:6px 0 12px -6px rgba(var(--shadow-rgb),0.5);
 }
 .player-sims-table tbody tr:not(.tier-banner-row):not(.stat-detail-row) td:nth-child(3){
   background:var(--void-panel); z-index:1;
 }
+
+/* Header row frozen to the top of the viewport (below the site's own
+   fixed ticker+nav stack) as the page scrolls, same "freeze" concept as
+   the left-hand column freeze above, just the other axis -- so the
+   column names stay visible no matter how far down the table you've
+   scrolled. --fixed-header-height is set from JS (InteractiveScript.js,
+   measured off the real .site-header/.ticker-bar so it stays correct if
+   that stack's height ever changes) with a fallback here for the instant
+   before that measurement runs. Every th needs its own position:sticky
+   (not just the thead) -- sticky on a table-row-group doesn't reliably
+   work cross-browser under border-collapse. The 3 frozen-left corner
+   cells (above) get top+left sticky simultaneously and a higher z-index
+   so they stay correctly on top of the columns sliding underneath them
+   in BOTH directions at once. */
+.player-sims-table thead th{
+  position:sticky; top:var(--fixed-header-height, 108px); z-index:3;
+}
+.player-sims-table thead th:nth-child(1),
+.player-sims-table thead th:nth-child(2),
+.player-sims-table thead th:nth-child(3){
+  z-index:5;
+}
+
+/* Synced top scrollbar, replacing the bottom one for this table only --
+   an empty spacer sized to the table's real scrollWidth (set in
+   PlayerSimSearch.js) gives this bar the same scrollable range; scrolling
+   either this or the table mirrors onto the other. Sticky right above the
+   frozen header so both stay pinned together while the page scrolls. */
+.table-top-scrollbar{
+  position:sticky; top:calc(var(--fixed-header-height, 108px) - 12px); z-index:6;
+  overflow-x:auto; overflow-y:hidden; height:12px;
+  background:var(--void-panel-2); border:1px solid var(--line); border-bottom:none;
+  border-radius:16px 16px 0 0;
+  scrollbar-width:auto; scrollbar-color:rgba(var(--neon-blue-rgb),0.5) transparent;
+}
+.table-top-scrollbar::-webkit-scrollbar{height:10px;}
+.table-top-scrollbar::-webkit-scrollbar-track{background:transparent;}
+.table-top-scrollbar::-webkit-scrollbar-thumb{background:rgba(var(--neon-blue-rgb),0.5); border-radius:6px;}
+.table-top-scrollbar::-webkit-scrollbar-thumb:hover{background:rgba(var(--neon-blue-rgb),0.75);}
+/* Bottom scrollbar removed for this table specifically -- the top bar
+   above replaces it, so the native one would just be a redundant second
+   scrollbar for the same content. */
+.player-sims-table-wrap{scrollbar-width:none;}
+.player-sims-table-wrap::-webkit-scrollbar{display:none;}
 /* Frozen cells' own background (above) is higher-specificity than the
    row-hover rule (.rankings-table tr.row-expandable:hover td), which
    would otherwise silently stop the frozen columns from highlighting on
