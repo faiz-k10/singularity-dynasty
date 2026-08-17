@@ -2,7 +2,6 @@
 
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { sortRows } from "@/lib/sortLink";
 import SortableTh from "./SortableTh";
 import TrendTag from "./TrendTag";
 import ConfidenceBadge from "./ConfidenceBadge";
@@ -217,43 +216,6 @@ function ordinal(n) {
   }
 }
 
-// POR/WOPR/EPA are the tierable metrics -- floor/median/ceiling tiering
-// was removed by request. Tiers only read as a contiguous block when the
-// table is actually sorted by the same metric they're grouped by, so
-// "Tier by" drives the real sort too. It used to do that through a Link
-// to a new ?sort= URL, round-tripping through the server component to
-// re-query Supabase and recompute everything just to reorder rows the
-// client already has; it's now a client-side override (clientSort
-// below) that re-sorts the already-loaded rows in the browser, instant,
-// and falls back to the server-provided sortKey/sortDir whenever no
-// override is set, so real column-header clicks (SortableTh) are
-// unaffected.
-const TIER_COLUMN_TYPES = {
-  por: "number",
-  wopr: "number",
-  epa: "number",
-  regressionScore: "number",
-  outcomePercentile: "number",
-};
-// POR's tier field is just `tier` (legacy name); WOPR/EPA are `woprTier`/
-// `epaTier` (computed globally, same as POR -- see lib/tiers.js) -- this
-// maps a tier-by sort key to the row field that actually holds its tier
-// number.
-const TIER_FIELD_BY_KEY = {
-  por: "tier",
-  wopr: "woprTier",
-  epa: "epaTier",
-  regressionScore: "regressionTier",
-  outcomePercentile: "outcomePercentileTier",
-};
-const TIER_LABEL_BY_KEY = {
-  por: "POR",
-  wopr: "WOPR",
-  epa: "EPA",
-  regressionScore: "Regr",
-  outcomePercentile: "Pace %ile",
-};
-
 // League Size / QB Format toggles change POR's replacement-level baseline
 // (lib/replacementValue.js), which needs the full player pool -- including
 // the extra rows a free/signed-out viewer's teaser response never
@@ -280,27 +242,11 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
   // collapsed regardless of whether a non-default value is already active
   // (via URL params); the always-visible current-value text is what
   // surfaces that without needing to open anything.
-  const [openGroups, setOpenGroups] = useState({ position: false, tiers: false, league: false, qb: false });
+  const [openGroups, setOpenGroups] = useState({ position: false, league: false, qb: false });
   function toggleGroup(key) {
     setOpenGroups((g) => ({ ...g, [key]: !g[key] }));
   }
-  // null = defer to the server-provided sortKey/sortDir (URL-driven column
-  // sort); set once a "Tier by" button is clicked, instant client-side.
-  const [clientSort, setClientSort] = useState(null);
-  const effectiveSortKey = clientSort?.key ?? sortKey;
-  const effectiveSortDir = clientSort?.dir ?? sortDir;
-  const tierField = TIER_FIELD_BY_KEY[effectiveSortKey];
-  const bannersEnabled = tierField != null;
-  const sortProps = { activeSort: effectiveSortKey, activeDir: effectiveSortDir, currentParams };
-  // Current-value text shown next to each always-visible row label, so a
-  // non-default setting stays legible even while its buttons are
-  // collapsed -- e.g. "Tiers — WOPR" rather than a bare dot that would
-  // say something changed without saying what.
-  const tierValueLabel = TIER_LABEL_BY_KEY[effectiveSortKey] ?? "—";
-
-  function selectTierBy(key) {
-    setClientSort({ key, dir: "desc" });
-  }
+  const sortProps = { activeSort: sortKey, activeDir: sortDir, currentParams };
 
   function toggle(pos) {
     setSelected((prev) =>
@@ -329,10 +275,7 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
     return out;
   }, [rows, selected, query, showPositionFilter]);
 
-  const displayRows = useMemo(() => {
-    if (!clientSort) return filteredRows;
-    return sortRows(filteredRows, clientSort.key, clientSort.dir, TIER_COLUMN_TYPES);
-  }, [filteredRows, clientSort]);
+  const displayRows = filteredRows;
 
   // Top scrollbar (synced with the real one on .rankings-table-wrap, not
   // a second independent scroll container) -- an empty spacer div sized
@@ -403,38 +346,6 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
             )}
           </div>
         )}
-
-        <div className="filter-row">
-          <button
-            type="button"
-            className="filter-row-header"
-            onClick={() => toggleGroup("tiers")}
-            aria-expanded={openGroups.tiers}
-          >
-            <span className={`filter-row-chevron${openGroups.tiers ? " filter-row-chevron-open" : ""}`}>▸</span>
-            <span className="tier-toggle-label">Tiers</span>
-            <span className={`filter-row-value${effectiveSortKey in TIER_FIELD_BY_KEY ? " filter-row-value-active" : ""}`}>{tierValueLabel}</span>
-          </button>
-          {openGroups.tiers && (
-            <div className="tier-toggle">
-              <button type="button" onClick={() => selectTierBy("por")} className={effectiveSortKey === "por" ? "active" : ""} aria-pressed={effectiveSortKey === "por"}>
-                POR
-              </button>
-              <button type="button" onClick={() => selectTierBy("wopr")} className={effectiveSortKey === "wopr" ? "active" : ""} aria-pressed={effectiveSortKey === "wopr"}>
-                WOPR
-              </button>
-              <button type="button" onClick={() => selectTierBy("epa")} className={effectiveSortKey === "epa" ? "active" : ""} aria-pressed={effectiveSortKey === "epa"}>
-                EPA
-              </button>
-              <button type="button" onClick={() => selectTierBy("regressionScore")} className={effectiveSortKey === "regressionScore" ? "active" : ""} aria-pressed={effectiveSortKey === "regressionScore"}>
-                Regr
-              </button>
-              <button type="button" onClick={() => selectTierBy("outcomePercentile")} className={effectiveSortKey === "outcomePercentile" ? "active" : ""} aria-pressed={effectiveSortKey === "outcomePercentile"}>
-                Pace %ile
-              </button>
-            </div>
-          )}
-        </div>
 
         <div className="filter-row">
           <button
@@ -576,28 +487,11 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
             </thead>
             <tbody>
               {(() => {
-                // Banner spans the full table width and drops in right
-                // above the first row of each new tier. POR/WOPR/EPA
-                // tiers are all computed globally (lib/tiers.js), so a
-                // single running lastTier is enough and the banner has
-                // no position prefix -- a tier can and should span
-                // multiple positions.
-                let lastTier = null;
                 return displayRows.map((row, index) => {
                   const hasStats = row.stat_ranges && Object.keys(row.stat_ranges).length > 0;
                   const isExpanded = hasStats && expanded.has(row.player_name);
-                  const tier = bannersEnabled ? row[tierField] : null;
-                  const showTierBanner = tier != null && lastTier !== tier;
-                  if (tier != null) lastTier = tier;
                   return (
                 <Fragment key={row.player_name}>
-                {showTierBanner && (
-                  <tr className="tier-banner-row" aria-hidden="true">
-                    <td colSpan={13}>
-                      <span className="tier-banner-label">Tier {tier}</span>
-                    </td>
-                  </tr>
-                )}
                 <tr
                   data-pos={row.position}
                   className={hasStats ? "row-expandable" : undefined}

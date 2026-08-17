@@ -755,32 +755,31 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    position:sticky's left offset has to be a known value, and CSS can't
    express "left: width of the previous column" without it, so column 2
    (Player) gets an explicit width + ellipsis overflow as a safety net
-   for a name wider than that budget. Excludes .tier-banner-row and
-   .stat-detail-row -- both render a single full-width colSpan cell at
-   nth-child(1), which this would otherwise incorrectly pin and clip to
-   48px. */
+   for a name wider than that budget. Excludes .stat-detail-row -- it
+   renders a single full-width colSpan cell at nth-child(1), which this
+   would otherwise incorrectly pin and clip to 48px. */
 .player-sims-table thead th:nth-child(1),
-.player-sims-table tbody tr:not(.tier-banner-row):not(.stat-detail-row) td:nth-child(1){
+.player-sims-table tbody tr:not(.stat-detail-row) td:nth-child(1){
   position:sticky; left:0; z-index:4; background:var(--void-panel-2);
   width:48px; min-width:48px; max-width:48px;
 }
-.player-sims-table tbody tr:not(.tier-banner-row):not(.stat-detail-row) td:nth-child(1){
+.player-sims-table tbody tr:not(.stat-detail-row) td:nth-child(1){
   background:var(--void-panel); z-index:1;
 }
 .player-sims-table thead th:nth-child(2),
-.player-sims-table tbody tr:not(.tier-banner-row):not(.stat-detail-row) td:nth-child(2){
+.player-sims-table tbody tr:not(.stat-detail-row) td:nth-child(2){
   position:sticky; left:48px; z-index:4; background:var(--void-panel-2);
   width:220px; min-width:220px; max-width:220px; overflow:hidden; text-overflow:ellipsis;
 }
-.player-sims-table tbody tr:not(.tier-banner-row):not(.stat-detail-row) td:nth-child(2){
+.player-sims-table tbody tr:not(.stat-detail-row) td:nth-child(2){
   background:var(--void-panel); z-index:1;
 }
 .player-sims-table thead th:nth-child(3),
-.player-sims-table tbody tr:not(.tier-banner-row):not(.stat-detail-row) td:nth-child(3){
+.player-sims-table tbody tr:not(.stat-detail-row) td:nth-child(3){
   position:sticky; left:268px; z-index:4; background:var(--void-panel-2);
   box-shadow:6px 0 12px -6px rgba(var(--shadow-rgb),0.5);
 }
-.player-sims-table tbody tr:not(.tier-banner-row):not(.stat-detail-row) td:nth-child(3){
+.player-sims-table tbody tr:not(.stat-detail-row) td:nth-child(3){
   background:var(--void-panel); z-index:1;
 }
 
@@ -947,14 +946,11 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .pace-marker-cold{background:var(--down); color:var(--down);}
 @media (max-width:640px){.sim-bar-track{width:80px;}}
 
-/* Tier banner (Player Season Simulations) -- gap-based tiers computed
-   server-side (lib/tiers.js) per position, one set per Floor/Median/
-   Ceiling metric. Toggle mirrors .compare-radar-layer-toggle's pill
-   pattern. The banner is a full-width row dropped in above the first
-   player of each new tier (tracked per position, since positions
-   interleave in this table's normal sort order) rather than a per-row
-   column, so it reads as a section break instead of one more number to
-   scan per row. */
+/* .tier-toggle/.tier-toggle-label: shared pill-button styling for the
+   League Size / QB Format toggles below (mirrors
+   .compare-radar-layer-toggle's pill pattern) -- name is a holdover from
+   when Player Season Simulations also had a Tiers group using the same
+   class (removed by request; see git history if it needs to come back). */
 .tier-toggle-row{display:flex; align-items:center; gap:10px; margin-bottom:20px; flex-wrap:wrap;}
 .tier-toggle-label{font-size:13px; color:var(--star-dim); font-weight:600;}
 .tier-toggle{display:inline-flex; gap:4px; background:var(--void-panel-2); border:1px solid var(--line); border-radius:30px; padding:4px;}
@@ -965,15 +961,15 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .tier-toggle a:hover, .tier-toggle button:hover{color:var(--star);}
 .tier-toggle a.active, .tier-toggle button.active{background:var(--horizon-gold); color:#1A0D05;}
 
-/* Accordion for Position/Tiers/League Size/QB Format -- each row's LABEL
+/* Accordion for Position/League Size/QB Format -- each row's LABEL
    (and current value) stays visible at all times; only the actual toggle
    buttons underneath collapse, independently per row, so a viewer always
    sees what's available and what's currently set without needing to open
    anything, and only expands the one control they actually want to
    change. filter-row-value-active reuses the same gold the toggle
    buttons themselves highlight with (.tier-toggle .active) so a
-   non-default setting is legible even collapsed, in its own words
-   ("Tiers — WOPR") rather than a bare "something changed" dot. */
+   non-default setting is legible even collapsed (e.g. "League Size —
+   10-Team") rather than a bare "something changed" dot. */
 .filter-accordion{
   background:var(--void-panel); border:1px solid var(--line); border-radius:16px;
   margin-bottom:20px; overflow:hidden;
@@ -992,17 +988,6 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .filter-row-value-active{color:var(--horizon-gold); font-weight:600;}
 .filter-row .position-filter-row, .filter-row .tier-toggle{margin:0 20px 16px;}
 .filter-row .tier-toggle{display:flex;}
-.tier-banner-row td{
-  padding:0 16px; background:rgba(var(--horizon-gold-rgb), 0.08);
-  border-top:1px solid rgba(var(--horizon-gold-rgb), 0.3);
-  border-bottom:1px solid rgba(var(--horizon-gold-rgb), 0.3);
-}
-.tier-banner-label{
-  display:flex; align-items:center; justify-content:center; gap:10px; font-size:9.5px; font-weight:700;
-  letter-spacing:0.06em; text-transform:uppercase; color:var(--horizon-gold); white-space:nowrap;
-}
-.tier-banner-label::before, .tier-banner-label::after{content:""; flex:1; height:1px; background:rgba(var(--horizon-gold-rgb), 0.25);}
-
 /* Position-colored left accent on every rankings row (Redraft, Best Ball,
    Player Simulations alike) -- QB/RB/WR/TE, so the eye can group by
    position even when the table isn't grouped/sorted that way. */

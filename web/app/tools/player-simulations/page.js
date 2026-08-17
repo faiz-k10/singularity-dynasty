@@ -5,7 +5,6 @@ import { createClient } from "@/lib/supabase/server";
 import { createPublicClient } from "@/lib/supabase/public";
 import { resolveSort, sortRows } from "@/lib/sortLink";
 import { buildStatPoolByPos, computeStatPercentiles } from "@/lib/statPercentiles";
-import { computeGlobalTierMap } from "@/lib/tiers";
 import { computeReplacementValues } from "@/lib/replacementValue";
 import { computeRegressionScore } from "@/lib/regressionScore";
 import { computeOutcomePercentile } from "@/lib/outcomePercentile";
@@ -189,22 +188,10 @@ export default async function PlayerSimulationsPage({ searchParams }) {
   // baseline has to be drawn from the whole population, not whatever a
   // teaser-truncated fetch happens to include.
   const porByName = computeReplacementValues(poolRows, { teams: leagueTeams, superflex });
-  // POR is the only tierable metric (floor/median/ceiling tiering was
-  // removed by request), computed once across the WHOLE pool rather than
-  // per-position -- POR is already measured against each player's own
-  // position's replacement level, so it's meant to be compared across
-  // positions, not re-siloed by one.
-  const poolRowsWithPor = poolRows.map((row) => ({ ...row, por: porByName[row.player_name] }));
-  const porTierByName = computeGlobalTierMap(poolRowsWithPor, "por");
-  // WOPR/EPA tier the same way POR does -- globally across the whole
-  // pool, no position grouping (see computeGlobalTierMap in lib/tiers.js).
-  const woprTierByName = computeGlobalTierMap(poolRows, "wopr");
-  const epaTierByName = computeGlobalTierMap(poolRows, "epa");
   // Regr/Pace %ile are computed once per player here (over the WHOLE
-  // pool, not the teaser-capped `sims`) so their tiers -- like every
-  // other tier on this page -- are drawn from the full population, not
-  // whatever a free/signed-out visitor's truncated fetch happens to
-  // include.
+  // pool, not the teaser-capped `sims`) so a free/signed-out visitor's
+  // truncated fetch doesn't change the numbers for the players who ARE
+  // visible.
   const regressionByName = {};
   const outcomeByName = {};
   for (const row of poolRows) {
@@ -228,17 +215,6 @@ export default async function PlayerSimulationsPage({ searchParams }) {
       gamesPerSeason: GAMES_PER_SEASON,
     });
   }
-  const poolRowsWithRegression = poolRows.map((row) => ({
-    ...row,
-    regressionScore: regressionByName[row.player_name]?.regressionScore ?? null,
-    outcomePercentile: outcomeByName[row.player_name]?.percentile ?? null,
-  }));
-  // Same treatment as WOPR/EPA -- global tiers, and computeGlobalTierMap
-  // already filters out null rows (the ~420 players with no real games
-  // on record yet), so they simply don't get a tier/banner rather than
-  // corrupting the gap calculation.
-  const regressionTierByName = computeGlobalTierMap(poolRowsWithRegression, "regressionScore");
-  const outcomePercentileTierByName = computeGlobalTierMap(poolRowsWithRegression, "outcomePercentile");
   const simsWithComputed = sims.map((row) => {
     const heat = heatFor("median", row);
     const floorHeat = heatFor("floor", row);
@@ -251,15 +227,10 @@ export default async function PlayerSimulationsPage({ searchParams }) {
       floorHeat,
       ceilingHeat,
       por: porByName[row.player_name],
-      tier: porTierByName[row.player_name],
-      woprTier: woprTierByName[row.player_name],
-      epaTier: epaTierByName[row.player_name],
       regressionScore: regression?.regressionScore ?? null,
       currentPPG: regression?.currentPPG ?? null,
       gamesPlayed: regression?.gamesPlayed ?? 0,
-      regressionTier: regressionTierByName[row.player_name],
       outcomePercentile: outcome?.percentile ?? null,
-      outcomePercentileTier: outcomePercentileTierByName[row.player_name],
       // Same units as floor/median/ceiling (season-total scale), so it
       // can be positioned on the Range bar with the exact same maxCeiling
       // denominator the bar's own floor/median/ceiling segments use.
