@@ -784,21 +784,19 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
   background:var(--void-panel); z-index:1;
 }
 
-/* Header row frozen to the top of the viewport (below the site's own
-   fixed ticker+nav stack) as the page scrolls, same "freeze" concept as
-   the left-hand column freeze above, just the other axis -- so the
-   column names stay visible no matter how far down the table you've
-   scrolled. --fixed-header-height is set from JS (InteractiveScript.js,
-   measured off the real .site-header/.ticker-bar so it stays correct if
-   that stack's height ever changes) with a fallback here for the instant
-   before that measurement runs. Every th needs its own position:sticky
-   (not just the thead) -- sticky on a table-row-group doesn't reliably
-   work cross-browser under border-collapse. The 3 frozen-left corner
-   cells (above) get top+left sticky simultaneously and a higher z-index
-   so they stay correctly on top of the columns sliding underneath them
-   in BOTH directions at once. */
+/* Header row frozen to the top of .player-sims-table-wrap's own scrollable
+   panel (see that class further down for why it has to be relative to
+   the wrap, not the page) as you scroll through the rows -- same
+   "freeze" concept as the left-hand column freeze above, just the other
+   axis, so the column names stay visible no matter how far down the
+   panel you've scrolled. Every th needs its own position:sticky (not
+   just the thead) -- sticky on a table-row-group doesn't reliably work
+   cross-browser under border-collapse. The 3 frozen-left corner cells
+   (above) get top+left sticky simultaneously and a higher z-index so
+   they stay correctly on top of the columns sliding underneath them in
+   BOTH directions at once. */
 .player-sims-table thead th{
-  position:sticky; top:var(--fixed-header-height, 108px); z-index:3;
+  position:sticky; top:12px; z-index:3;
 }
 .player-sims-table thead th:nth-child(1),
 .player-sims-table thead th:nth-child(2),
@@ -809,10 +807,15 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 /* Synced top scrollbar, replacing the bottom one for this table only --
    an empty spacer sized to the table's real scrollWidth (set in
    PlayerSimSearch.js) gives this bar the same scrollable range; scrolling
-   either this or the table mirrors onto the other. Sticky right above the
-   frozen header so both stay pinned together while the page scrolls. */
+   either this or the table mirrors onto the other. Lives INSIDE
+   .player-sims-table-wrap (same scroll container the header above and the
+   frozen columns are relative to -- see that class's comment for why it
+   has to be one consistent container) as its first child, sticky on top+
+   left+right so it stays docked at the top of the visible panel through
+   both scroll axes -- top:12px on the header above is this bar's own
+   height, so the two sit flush with no gap. */
 .table-top-scrollbar{
-  position:sticky; top:calc(var(--fixed-header-height, 108px) - 12px); z-index:6;
+  position:sticky; top:0; left:0; right:0; z-index:6;
   overflow-x:auto; overflow-y:hidden; height:12px;
   background:var(--void-panel-2); border:1px solid var(--line); border-bottom:none;
   border-radius:16px 16px 0 0;
@@ -827,6 +830,24 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    scrollbar for the same content. */
 .player-sims-table-wrap{scrollbar-width:none;}
 .player-sims-table-wrap::-webkit-scrollbar{display:none;}
+/* This wrap already has to be the scroll container the horizontal
+   column-freeze is computed relative to (that part works correctly --
+   the header freeze didn't). The reason: overflow-x:auto on its own
+   forces the computed overflow-y to 'auto' too (CSS Overflow spec --
+   the two longhands can't end up visible/non-visible mismatched), which
+   silently makes THIS wrap -- not the page -- the nearest scrolling
+   ancestor for any sticky descendant, INCLUDING the header cells above,
+   even though they were written expecting to stick to the page. That
+   mismatch is what broke the header (it rendered offset by exactly the
+   page-relative top value instead of freezing). Giving the wrap a real
+   bounded height here makes that already-true "wrap is the scroll
+   container" fact consistent instead of accidental -- the header cells'
+   top:0 (above) now correctly means "top of THIS panel," matching where
+   the browser was already anchoring them. */
+.player-sims-table-wrap{
+  max-height:calc(100vh - var(--fixed-header-height, 108px) - 24px);
+  overflow-y:auto;
+}
 /* Frozen cells' own background (above) is higher-specificity than the
    row-hover rule (.rankings-table tr.row-expandable:hover td), which
    would otherwise silently stop the frozen columns from highlighting on

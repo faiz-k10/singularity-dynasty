@@ -523,6 +523,7 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
         </div>
       ) : (
         <>
+          <div className="rankings-table-wrap player-sims-table-wrap" ref={tableWrapRef} onScroll={syncTopBarFromWrap}>
           <div
             className="table-top-scrollbar"
             ref={topScrollRef}
@@ -530,7 +531,6 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
           >
             <div style={{ width: tableScrollWidth, height: 1 }} />
           </div>
-          <div className="rankings-table-wrap player-sims-table-wrap" ref={tableWrapRef} onScroll={syncTopBarFromWrap}>
           <table className="rankings-table player-sims-table">
             <thead>
               <tr>
