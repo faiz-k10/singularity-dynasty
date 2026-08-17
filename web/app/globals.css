@@ -736,6 +736,16 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .row-num-cell{width:1%; padding-left:16px; padding-right:8px; color:var(--star-dim);}
 .tool-notes{white-space:normal !important; min-width:180px; text-align:left;}
 
+/* position:sticky on table cells is unreliable in Safari/WebKit
+   specifically when the table uses border-collapse:collapse (the base
+   .rankings-table default) -- known cross-browser limitation, can render
+   the sticky header as invisible or non-functional there even though it
+   works fine in Chrome/Firefox. border-collapse:separate + spacing:0 is
+   the standard fix. Only every cell here uses border-bottom (no
+   border-top/left/right anywhere in .rankings-table's rules), so
+   switching away from collapse doesn't introduce doubled border lines. */
+.player-sims-table{border-collapse:separate; border-spacing:0;}
+
 /* Frozen-pane columns (#, Player, Pos) on Player Season Simulations only
    -- scoped to .player-sims-table specifically, not the shared
    .rankings-table class every other tool table also uses, since those
