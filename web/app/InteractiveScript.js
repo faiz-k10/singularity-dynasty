@@ -560,6 +560,14 @@ export default function InteractiveScript({ tickerPlayers } = {}) {
         "pointerdown",
         (e) => {
           if (e.pointerType === "touch") return; // native touch scroll is already fine
+          // setPointerCapture redirects ALL subsequent pointer events
+          // (including the ones the browser uses to synthesize a click)
+          // to `wrap`, which silently ate clicks on anything interactive
+          // inside it -- sortable column header links stopped navigating
+          // entirely, not just after an actual drag. Skip drag-init when
+          // the press started on a link/button so those still work
+          // normally; only real empty-space presses start a drag.
+          if (e.target.closest("a, button")) return;
           dragging = true;
           wrap.setPointerCapture(e.pointerId);
           startX = e.clientX;
