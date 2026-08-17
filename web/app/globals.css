@@ -902,6 +902,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .filter-accordion{
   background:var(--void-panel); border:1px solid var(--line); border-radius:16px;
   margin-bottom:20px; overflow:hidden;
+  width:fit-content; max-width:100%;
 }
 .filter-row{border-bottom:1px solid var(--line);}
 .filter-row:last-child{border-bottom:none;}
