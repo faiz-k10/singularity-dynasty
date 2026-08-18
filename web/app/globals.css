@@ -275,7 +275,7 @@ body::before{
   opacity:1; visibility:visible; pointer-events:auto; transform:translateX(-50%) translateY(0);
 }
 .nav-dropdown-menu a{
-  font-size:13.5px; font-weight:600; padding:10px 14px; border-radius:8px;
+  font-size:13.5px; font-weight:600; padding:7px 9px; border-radius:8px;
   color:var(--star-dim); white-space:nowrap; text-align:center;
 }
 /* content:none, not just a lower-specificity override -- the underline
