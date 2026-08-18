@@ -765,28 +765,28 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    for a name wider than that budget. Excludes .stat-detail-row -- it
    renders a single full-width colSpan cell at nth-child(1), which this
    would otherwise incorrectly pin and clip to 48px. */
-.player-sims-table thead th:nth-child(1),
-.player-sims-table tbody tr:not(.stat-detail-row) td:nth-child(1){
+.player-sims-table > thead > tr > th:nth-child(1),
+.player-sims-table > tbody > tr:not(.stat-detail-row) td:nth-child(1){
   position:sticky; left:0; z-index:4; background:var(--void-panel-2);
   width:48px; min-width:48px; max-width:48px;
 }
-.player-sims-table tbody tr:not(.stat-detail-row) td:nth-child(1){
+.player-sims-table > tbody > tr:not(.stat-detail-row) td:nth-child(1){
   background:var(--void-panel); z-index:1;
 }
-.player-sims-table thead th:nth-child(2),
-.player-sims-table tbody tr:not(.stat-detail-row) td:nth-child(2){
+.player-sims-table > thead > tr > th:nth-child(2),
+.player-sims-table > tbody > tr:not(.stat-detail-row) td:nth-child(2){
   position:sticky; left:48px; z-index:4; background:var(--void-panel-2);
   width:220px; min-width:220px; max-width:220px; overflow:hidden; text-overflow:ellipsis;
 }
-.player-sims-table tbody tr:not(.stat-detail-row) td:nth-child(2){
+.player-sims-table > tbody > tr:not(.stat-detail-row) td:nth-child(2){
   background:var(--void-panel); z-index:1;
 }
-.player-sims-table thead th:nth-child(3),
-.player-sims-table tbody tr:not(.stat-detail-row) td:nth-child(3){
+.player-sims-table > thead > tr > th:nth-child(3),
+.player-sims-table > tbody > tr:not(.stat-detail-row) td:nth-child(3){
   position:sticky; left:268px; z-index:4; background:var(--void-panel-2);
   box-shadow:6px 0 12px -6px rgba(var(--shadow-rgb),0.5);
 }
-.player-sims-table tbody tr:not(.stat-detail-row) td:nth-child(3){
+.player-sims-table > tbody > tr:not(.stat-detail-row) td:nth-child(3){
   background:var(--void-panel); z-index:1;
 }
 
@@ -801,12 +801,12 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    (above) get top+left sticky simultaneously and a higher z-index so
    they stay correctly on top of the columns sliding underneath them in
    BOTH directions at once. */
-.player-sims-table thead th{
+.player-sims-table > thead > tr > th{
   position:sticky; top:12px; z-index:3;
 }
-.player-sims-table thead th:nth-child(1),
-.player-sims-table thead th:nth-child(2),
-.player-sims-table thead th:nth-child(3){
+.player-sims-table > thead > tr > th:nth-child(1),
+.player-sims-table > thead > tr > th:nth-child(2),
+.player-sims-table > thead > tr > th:nth-child(3){
   z-index:5;
 }
 
@@ -861,11 +861,11 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    background rather than replacing it) keeps the opaque base -- needed
    so scrolled-under columns don't show through -- while still tinting
    on hover like every other cell. */
-.player-sims-table tbody tr.row-expandable:hover td:nth-child(1),
-.player-sims-table tbody tr.row-expandable:hover td:nth-child(2){
+.player-sims-table > tbody > tr.row-expandable:hover td:nth-child(1),
+.player-sims-table > tbody > tr.row-expandable:hover td:nth-child(2){
   box-shadow:inset 0 0 0 999px rgba(var(--neon-blue-rgb),0.08);
 }
-.player-sims-table tbody tr.row-expandable:hover td:nth-child(3){
+.player-sims-table > tbody > tr.row-expandable:hover td:nth-child(3){
   box-shadow:6px 0 12px -6px rgba(var(--shadow-rgb),0.5), inset 0 0 0 999px rgba(var(--neon-blue-rgb),0.08);
 }
 .por-cell{font-weight:600;}
@@ -1183,15 +1183,26 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .rankings-table tr.row-expandable:hover td{background:rgba(var(--neon-blue-rgb),0.08);}
 .stat-detail-row td{background:var(--void-panel-2); padding:14px 18px;}
 
-/* Explicit text-align throughout -- this table is nested inside a
-   .rankings-table cell, so it's still a CSS descendant of .rankings-table
-   and would otherwise inherit that table's td{text-align:center} rule. */
-.stat-detail-table{width:100%; min-width:0; border-collapse:collapse; font-size:13px;}
+/* Explicit text-align (and white-space below) throughout -- this table is
+   nested inside a .rankings-table cell, so it's still a CSS descendant of
+   .rankings-table and would otherwise pick up that table's
+   td{text-align:center; white-space:nowrap} rule -- CSS selectors don't
+   respect table nesting boundaries, ".rankings-table td" matches ANY td
+   structurally inside it, including this nested table's own cells. The
+   nowrap was the real bug: combined with the Stat column only getting
+   ~48px under table-layout:auto (it has the least competing content of
+   the 4 columns), labels like "Receptions"/"Rush Yards" overflowed their
+   cell and got visually painted over by the next column -- looked like
+   the text was just cut off mid-word, no ellipsis, because it wasn't
+   actually clipped, just covered. */
+.stat-detail-table{width:100%; min-width:0; border-collapse:collapse; font-size:13px; table-layout:fixed;}
 .stat-detail-table th{
   text-align:left; font-family:var(--font-ibm-plex-mono), monospace; font-size:10px; letter-spacing:0.06em;
   text-transform:uppercase; color:var(--star-dim); padding:6px 10px; border-bottom:1px solid var(--line);
 }
 .stat-detail-table th:not(:first-child){text-align:center; padding:0;}
+.stat-detail-table th:first-child{width:38%; white-space:normal;}
+.stat-detail-table td:first-child{white-space:normal;}
 /* Floor/Median/Ceiling column headers -- clicking one switches which
    layer is highlighted on the radar for whichever stat row is currently
    selected, same fill-the-cell pattern as .stat-row-trigger below so the
