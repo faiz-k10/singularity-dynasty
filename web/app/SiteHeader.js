@@ -67,7 +67,6 @@ export default async function SiteHeader() {
           <Link href="/#pricing" className="tn-cta">
             Get Started
           </Link>
-          <Link href="/#hero">Signal</Link>
           <div className="nav-dropdown">
             <Link href="/#tools">Tools</Link>
             <div className="nav-dropdown-menu">
@@ -77,7 +76,14 @@ export default async function SiteHeader() {
               <Link href="/tools/prospect-rankings">WR/QB Prospect Rankings &amp; Comparisons</Link>
             </div>
           </div>
-          <Link href="/#pricing">Pricing</Link>
+          <div className="nav-dropdown">
+            <Link href="/#pricing">Pricing</Link>
+            <div className="nav-dropdown-menu">
+              <Link href="/#pricing">Stargazer</Link>
+              <Link href="/#pricing">Explorer</Link>
+              <Link href="/#pricing">Singularity</Link>
+            </div>
+          </div>
           <Link href="/#feed">Feed</Link>
           <Link href="/#playground">Play</Link>
           <Link href={user ? "/account" : "/login"} className="tn-account">
@@ -89,7 +95,6 @@ export default async function SiteHeader() {
 
       <div className="radial-menu" id="radialMenu">
         <nav>
-          <Link href="/#hero">Signal</Link>
           <Link href="/#tools">Tools</Link>
           <Link href="/#pricing">Pricing</Link>
           <Link href="/#feed">Feed</Link>
