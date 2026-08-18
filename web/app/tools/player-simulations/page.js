@@ -272,7 +272,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
     <div className="tool-page">
       <SiteHeader />
 
-      <main className="wrap tool-wrap">
+      <main className="wrap tool-wrap player-sims-wrap">
         <div className="eyebrow">
           {latest ? `${latest.season} Season · Updated Week ${latest.week}` : "Simulations"}
         </div>
