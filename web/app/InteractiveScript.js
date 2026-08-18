@@ -563,11 +563,14 @@ export default function InteractiveScript({ tickerPlayers } = {}) {
           // setPointerCapture redirects ALL subsequent pointer events
           // (including the ones the browser uses to synthesize a click)
           // to `wrap`, which silently ate clicks on anything interactive
-          // inside it -- sortable column header links stopped navigating
-          // entirely, not just after an actual drag. Skip drag-init when
-          // the press started on a link/button so those still work
-          // normally; only real empty-space presses start a drag.
-          if (e.target.closest("a, button")) return;
+          // inside it -- sortable column header links stopped navigating,
+          // and (same bug, different element) clicking a player row to
+          // expand its stat detail panel stopped working too, since that
+          // row is a <tr role="button"> with an onClick, not an <a>/
+          // <button>. Skip drag-init on any of these so real clicks work
+          // normally; only a press starting on genuinely inert cell
+          // content begins a drag.
+          if (e.target.closest('a, button, [role="button"]')) return;
           dragging = true;
           wrap.setPointerCapture(e.pointerId);
           startX = e.clientX;
