@@ -68,7 +68,15 @@ export default async function SiteHeader() {
             Get Started
           </Link>
           <Link href="/#hero">Signal</Link>
-          <Link href="/#tools">Tools</Link>
+          <div className="nav-dropdown">
+            <Link href="/#tools">Tools</Link>
+            <div className="nav-dropdown-menu">
+              <Link href="/tools/player-simulations">Player Season Simulations</Link>
+              <Link href="/tools/draft-board">Dynasty Draft Board</Link>
+              <Link href="/tools/redraft-rankings">Redraft Weekly Rankings</Link>
+              <Link href="/tools/prospect-rankings">WR/QB Prospect Rankings &amp; Comparisons</Link>
+            </div>
+          </div>
           <Link href="/#pricing">Pricing</Link>
           <Link href="/#feed">Feed</Link>
           <Link href="/#playground">Play</Link>

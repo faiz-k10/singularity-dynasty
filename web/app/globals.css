@@ -250,6 +250,36 @@ body::before{
   color:#1A0D05; padding:9px 22px; border-radius:20px; font-weight:700;
 }
 .top-nav-bar a.tn-cta:hover{box-shadow:0 6px 18px rgba(255,122,69,0.35); color:#1A0D05;}
+/* "Tools" dropdown -- CSS-only (:hover/:focus-within, no JS state needed)
+   since this only has to work in .top-nav-bar, which is itself hidden
+   below 1180px in favor of the hamburger/radial-menu fallback (touch
+   devices, where hover doesn't apply, are already on that fallback by
+   then). Excludes Best Ball Rankings (sunset) and Team Analysis (not
+   built yet, no page to link to) -- matches the homepage's own tools
+   section, which already omits both for the same reasons. */
+.nav-dropdown{position:relative;}
+.nav-dropdown-menu{
+  position:absolute; top:100%; left:50%; transform:translateX(-50%) translateY(4px);
+  margin-top:14px; min-width:260px; padding:8px;
+  background:var(--void-panel); border:1px solid var(--line); border-radius:14px;
+  box-shadow:0 20px 45px rgba(var(--shadow-rgb),0.45);
+  display:flex; flex-direction:column; gap:2px;
+  opacity:0; visibility:hidden; pointer-events:none;
+  transition:opacity .18s ease, transform .18s ease, visibility .18s;
+}
+/* Invisible bridge so moving the cursor from "Tools" down into the panel
+   doesn't cross a gap and lose :hover along the way. */
+.nav-dropdown-menu::before{content:''; position:absolute; top:-14px; left:0; right:0; height:14px;}
+.nav-dropdown:hover .nav-dropdown-menu,
+.nav-dropdown:focus-within .nav-dropdown-menu{
+  opacity:1; visibility:visible; pointer-events:auto; transform:translateX(-50%) translateY(0);
+}
+.nav-dropdown-menu a{
+  font-size:13.5px; font-weight:600; padding:10px 14px; border-radius:8px;
+  color:var(--star-dim); white-space:nowrap;
+}
+.nav-dropdown-menu a::after{content:none;} /* no underline-grow indicator inside the dropdown */
+.nav-dropdown-menu a:hover{color:var(--star); background:var(--void-panel-2);}
 @media (max-width:1179px){
   .top-nav-bar, .site-header-spacer{display:none;}
 }
