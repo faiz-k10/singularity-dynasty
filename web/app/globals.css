@@ -278,15 +278,7 @@ body::before{
   font-size:13.5px; font-weight:600; padding:7px 9px; border-radius:8px;
   color:var(--star-dim); white-space:nowrap; text-align:center;
 }
-/* content:none, not just a lower-specificity override -- the underline
-   rule above is .top-nav-bar a:not(.tn-cta):not(.tn-account)::after (3
-   class-level selectors), so a plain .nav-dropdown-menu a::after (1)
-   loses the specificity fight and the underline was still showing full-
-   width despite this rule existing. Repeating the same :not() pair here
-   matches that specificity exactly (source order then decides the tie
-   in this rule's favor, since it's declared later in the file). */
-.nav-dropdown-menu a:not(.tn-cta):not(.tn-account)::after{content:none;}
-.nav-dropdown-menu a:hover{color:var(--star); background:var(--void-panel-2);}
+.nav-dropdown-menu a:hover{color:var(--horizon-gold); background:var(--void-panel-2);}
 @media (max-width:1179px){
   .top-nav-bar, .site-header-spacer{display:none;}
 }
