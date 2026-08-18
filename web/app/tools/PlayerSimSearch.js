@@ -474,13 +474,11 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                 <SortableTh
                   label="Regr"
                   sortKey="regressionScore"
-                  title="In-season regression score — real points scored so far minus the projected pace for that many games. Positive: ahead of pace, expect cooldown. Negative: behind pace, expect warm-up. Blank until real games are played."
                   {...sortProps}
                 />
                 <SortableTh
                   label="Pace %ile"
                   sortKey="outcomePercentile"
-                  title="If the player kept up their current pace for a full season, where that lands on their own floor(10th)–median(50th)–ceiling(90th) outcome curve. Blank until real games are played."
                   {...sortProps}
                 />
               </tr>
@@ -570,24 +568,12 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                   </td>
                   <td
                     className={`mono align-left ${row.regressionScore != null ? (row.regressionScore >= 0 ? "por-positive" : "por-negative") : ""}`}
-                    title={
-                      row.regressionScore != null
-                        ? `${row.gamesPlayed} game${row.gamesPlayed === 1 ? "" : "s"} played, ${row.currentPPG.toFixed(1)} PPG so far`
-                        : "No games played yet this season"
-                    }
                   >
                     {row.regressionScore != null
                       ? `${row.regressionScore >= 0 ? "+" : ""}${row.regressionScore.toFixed(2)}`
                       : "—"}
                   </td>
-                  <td
-                    className="mono align-left"
-                    title={
-                      row.outcomePercentile != null
-                        ? `Current pace of ${row.currentPPG.toFixed(1)} PPG, extrapolated over a full season, is ${ordinal(row.outcomePercentile)} percentile on this player's own outcome curve`
-                        : "No games played yet this season"
-                    }
-                  >
+                  <td className="mono align-left">
                     {row.outcomePercentile != null ? ordinal(row.outcomePercentile) : "—"}
                   </td>
                 </tr>
