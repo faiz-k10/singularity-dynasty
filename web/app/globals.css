@@ -900,6 +900,22 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .por-cell{font-weight:600;}
 .por-cell.por-positive{color:var(--up);}
 .por-cell.por-negative{color:var(--down);}
+/* Center every header + data column (the shared .rankings-table default
+   left-aligns th, and several td here opted into .align-left/.player-cell
+   for the old ragged-number layout) and trim the shared 18px cell padding
+   down to what these short numeric/label columns actually need -- 18px
+   was sized for the widest tool table on the site, not this one. Scoped
+   to .player-sims-table only so the other four tool tables (which still
+   want their own alignment) are untouched. */
+.player-sims-table > thead > tr > th,
+.player-sims-table > tbody > tr:not(.stat-detail-row) td{
+  padding-left:12px; padding-right:12px; text-align:center;
+}
+.player-sims-table > tbody > tr:not(.stat-detail-row) td.player-cell,
+.player-sims-table > tbody > tr:not(.stat-detail-row) td.align-left{
+  text-align:center;
+}
+.player-sims-table .sim-bar-track{margin:0 auto;}
 .rankings-table tr:last-child td{border-bottom:none;}
 .rankings-table tr:hover td{background:rgba(var(--neon-blue-rgb),0.05);}
 .tool-notes{color:var(--star-dim); font-size:13px;}
