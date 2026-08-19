@@ -26,8 +26,12 @@ function tier(pctile) {
   return { label: "Weak", cls: "weak" };
 }
 
+// Whole-number stats (yards, TDs, receptions) still round to an integer;
+// decimal stats (avg_separation, yac_above_exp) keep up to 2 places
+// instead of getting rounded away to a meaningless whole number.
 function formatValue(value) {
-  return value == null ? "—" : String(Math.round(value));
+  if (value == null) return "—";
+  return Number.isInteger(value) ? String(value) : String(Math.round(value * 100) / 100);
 }
 
 // 50th-percentile reference tick + label -- fixed dead center regardless

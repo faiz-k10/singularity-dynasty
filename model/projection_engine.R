@@ -700,6 +700,30 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
     NULL
   })
 
+  # Avg Separation / YAC Above Expectation (WR/TE stat_ranges, added below)
+  # -- real Next Gen Stats season aggregate from the last completed season,
+  # keyed by gsis_id (week == 0 is NGS's own season-total row, not a
+  # per-week one). Unlike WOPR/EPA these are NOT recency-weighted/shrunk
+  # projections -- just last season's actual charted number, same as
+  # Regr/Pace %ile elsewhere on the site read as "what actually happened,"
+  # not a forecast. Fails safe: if NGS is unavailable, both lookups stay
+  # NULL and the per-player loop below leaves the two stats out entirely
+  # rather than erroring.
+  ngs_receiving <- tryCatch({
+    ngs <- as.data.frame(load_nextgen_stats(stat_type = "receiving", seasons = last_completed_season))
+    ngs[ngs$week == 0 & ngs$season_type == "REG", ]
+  }, error = function(e) {
+    cat("NGS receiving data unavailable this run -- skipping avg separation/YAC above expectation:",
+        conditionMessage(e), "\n")
+    NULL
+  })
+  avg_separation_by_id <- if (!is.null(ngs_receiving)) {
+    setNames(ngs_receiving$avg_separation, ngs_receiving$player_gsis_id)
+  } else NULL
+  yac_above_exp_by_id <- if (!is.null(ngs_receiving)) {
+    setNames(ngs_receiving$avg_yac_above_expectation, ngs_receiving$player_gsis_id)
+  } else NULL
+
   rows <- vector("list", length(eligible))
   names(rows) <- eligible
 
@@ -794,6 +818,29 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
         }
       }
       stat_ranges <- stat_ranges[relevant_stats]  # restore STAT_COLS_BY_POSITION's column order
+    }
+
+    # Avg Separation / YAC Above Expectation (WR/TE only, see the NGS
+    # lookups built above project_all()'s per-player loop) -- appended
+    # AFTER the relevant_stats reindex above so they aren't dropped by it,
+    # since neither key is one of STAT_COLS_BY_POSITION's stat-group
+    # columns. floor/median/ceiling all collapse to the same real value on
+    # purpose: this is one already-observed season number, not a projected
+    # distribution, so there's no genuine spread to simulate -- setting
+    # all three equal just reuses the existing stat_ranges/radar/
+    # percentile-card machinery for free instead of needing new UI.
+    if (pos %in% c("WR", "TE")) {
+      pid <- d$player_id[1]
+      sep_val <- if (!is.null(avg_separation_by_id)) unname(avg_separation_by_id[pid]) else NA_real_
+      yac_val <- if (!is.null(yac_above_exp_by_id)) unname(yac_above_exp_by_id[pid]) else NA_real_
+      if (length(sep_val) == 1 && !is.na(sep_val)) {
+        sep_val <- round(sep_val, 1)
+        stat_ranges[["avg_separation"]] <- list(floor = sep_val, median = sep_val, ceiling = sep_val)
+      }
+      if (length(yac_val) == 1 && !is.na(yac_val)) {
+        yac_val <- round(yac_val, 2)
+        stat_ranges[["yac_above_exp"]] <- list(floor = yac_val, median = yac_val, ceiling = yac_val)
+      }
     }
 
     playoff <- replicate(n_sims, sum(sample(x, 3, replace = TRUE, prob = wc)))

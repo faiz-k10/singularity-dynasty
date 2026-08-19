@@ -12,6 +12,11 @@ const STAT_LABELS = [
   ["receptions", "Receptions"],
   ["receiving_yards", "Rec Yards"],
   ["receiving_tds", "Rec TDs"],
+  // WR/TE only, real Next Gen Stats season aggregate (not a projected
+  // floor/median/ceiling spread -- see projection_engine.R's per-player
+  // loop for why these two collapse to the same value across all three).
+  ["avg_separation", "Avg Separation"],
+  ["yac_above_exp", "YAC Above Exp"],
 ];
 
 export default STAT_LABELS;
