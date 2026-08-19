@@ -112,9 +112,29 @@ function CompareBars({ selection, stats, peer }) {
 // so the comp can be held up against any one of your own three views, not
 // just its median -- selectedLayer is which one is currently showing for
 // whichever peer is active.
+// Similarity % = 100 minus the RMS percentile-point gap across shared
+// stats (sqrt(dist / key count) -- dist is a SUM of squared per-key gaps,
+// so dividing back out by key count before rooting keeps this comparable
+// across players who share different numbers of stats). 100% means an
+// identical percentile shape; since each stat lives on a 0-100 percentile
+// scale, an RMS gap can't exceed 100, so this can't go negative.
+function similarityPct(a, b, keys) {
+  if (!a || !b) return null;
+  const dist = shapeDistance(a, b, keys);
+  return Math.round(100 - Math.sqrt(dist / keys.length));
+}
+
+const TABLE_BY_LAYER = {
+  floor: "statFloorPercentiles",
+  median: "statPercentiles",
+  ceiling: "statCeilingPercentiles",
+};
+
 export default function SimilarShapeFinder({
   ownName,
   statPercentiles,
+  statFloorPercentiles,
+  statCeilingPercentiles,
   stats,
   keys,
   peers,
@@ -125,13 +145,15 @@ export default function SimilarShapeFinder({
 }) {
   if (!peers || peers.length === 0 || !keys || keys.length === 0) return null;
 
-  // Similarity % = 100 minus the RMS percentile-point gap across shared
-  // stats (sqrt(dist / key count) -- dist is a SUM of squared per-key
-  // gaps, so dividing back out by key count before rooting keeps this
-  // comparable across players who share different numbers of stats).
-  // 100% means an identical percentile shape; since each stat lives on
-  // a 0-100 percentile scale, an RMS gap can't exceed 100, so this can't
-  // go negative.
+  const ownTables = {
+    statPercentiles,
+    statFloorPercentiles,
+    statCeilingPercentiles,
+  };
+
+  // Ranking itself always goes by median shape (which 3 players get
+  // listed at all doesn't change when you switch F/M/C -- only the shown
+  // percentage for whichever one is currently active does, below).
   const ranked = peers
     .filter((p) => p.name !== ownName)
     .map((p) => {
@@ -150,6 +172,18 @@ export default function SimilarShapeFinder({
       <div className="shape-finder-list">
         {ranked.map((p) => {
           const isActive = selectedName === p.name;
+          // While this peer is the active comp, the shown percentage
+          // tracks whichever Floor/Median/Ceiling view is selected --
+          // floor-vs-floor, ceiling-vs-ceiling -- instead of always
+          // reporting the median-shape ranking number. Falls back to that
+          // ranking number when this peer isn't the active one, or if
+          // either side is missing that layer's percentile table.
+          const layer = isActive ? selectedLayer : "median";
+          const layerSimilarity =
+            isActive && layer !== "median"
+              ? similarityPct(ownTables[TABLE_BY_LAYER[layer]], p[TABLE_BY_LAYER[layer]], keys)
+              : null;
+          const displaySimilarity = layerSimilarity ?? p.similarity;
           return (
             <div key={p.name} className="shape-finder-entry">
               <div className={`shape-finder-item ${isActive ? "active" : ""}`}>
@@ -161,7 +195,7 @@ export default function SimilarShapeFinder({
                 >
                   <span>{p.name}</span>
                   <span className="shape-finder-pos mono">{p.position}</span>
-                  <span className="shape-finder-similarity mono">{p.similarity}% match</span>
+                  <span className="shape-finder-similarity mono">{displaySimilarity}% match</span>
                 </button>
                 <div className="shape-finder-layers mono" role="group" aria-label={`${p.name} comparison view`}>
                   {LAYERS.map((layer) => {
