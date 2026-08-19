@@ -185,6 +185,29 @@ USAGE_METRIC_COLS <- c("wopr", "passing_epa", "rushing_epa", "receiving_epa")
 WOPR_DECAY <- c(RB = 0.94, WR = 0.88, TE = 0.94)  # no QB -- not applicable
 EPA_DECAY  <- c(QB = 0.97, RB = 0.97, WR = 0.97, TE = 0.97)
 
+# Avg Separation / YAC Above Expectation (WR/TE only, part of stat_ranges
+# below) -- backtested via backtest_ngs_receiving_decay.R +
+# calibrate_ngs_receiving_quantiles.R, same walk-forward methodology as
+# STAT_GROUP_DECAY/FLOOR_Q/CEIL_Q but scored on a season-AVERAGE bootstrap
+# (mean of resampled games) instead of a season-total one, since both are
+# rate stats, not counting stats. floor_q/ceil_q here are the INTERNAL
+# quantile to query the bootstrap distribution at, calibrated so the real
+# value falls outside ~10% of the time out-of-sample -- NOT literally
+# 0.10/0.90 (same "calibrated quantile" concept as FLOOR_Q/CEIL_Q above).
+NGS_DECAY <- list(
+  WR = c(avg_separation = 0.94, yac_above_exp = 0.97),
+  TE = c(avg_separation = 0.97, yac_above_exp = 0.97)
+)
+NGS_FLOOR_Q <- list(
+  WR = c(avg_separation = 0.008, yac_above_exp = 0.03),
+  TE = c(avg_separation = 0.11,  yac_above_exp = 0.05)
+)
+NGS_CEIL_Q <- list(
+  WR = c(avg_separation = 0.97, yac_above_exp = 0.98),
+  TE = c(avg_separation = 0.98, yac_above_exp = 0.88)
+)
+NGS_MIN_GAMES <- 8  # matches the backtest's own eligibility floor
+
 # The season we're publishing rankings/projections FOR. Fixed -- does NOT
 # shift automatically when the calendar rolls over; bump it by hand once
 # the 2027 season actually starts being the one to project.
@@ -701,28 +724,24 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
   })
 
   # Avg Separation / YAC Above Expectation (WR/TE stat_ranges, added below)
-  # -- real Next Gen Stats season aggregate from the last completed season,
-  # keyed by gsis_id (week == 0 is NGS's own season-total row, not a
-  # per-week one). Unlike WOPR/EPA these are NOT recency-weighted/shrunk
-  # projections -- just last season's actual charted number, same as
-  # Regr/Pace %ile elsewhere on the site read as "what actually happened,"
-  # not a forecast. Fails safe: if NGS is unavailable, both lookups stay
-  # NULL and the per-player loop below leaves the two stats out entirely
-  # rather than erroring.
-  ngs_receiving <- tryCatch({
-    ngs <- as.data.frame(load_nextgen_stats(stat_type = "receiving", seasons = last_completed_season))
-    ngs[ngs$week == 0 & ngs$season_type == "REG", ]
+  # -- real Next Gen Stats PER-GAME history (week != 0; week == 0 is NGS's
+  # own season-aggregate row, not usable as a resampling pool), same
+  # `seasons` lookback window as `reg` above. Bootstrap-resampled per
+  # player in the loop below using NGS_DECAY/NGS_FLOOR_Q/NGS_CEIL_Q (see
+  # their definitions up top) for a genuine floor/median/ceiling, not a
+  # flat point value -- backtested via backtest_ngs_receiving_decay.R +
+  # calibrate_ngs_receiving_quantiles.R. Fails safe: if NGS is
+  # unavailable, stays NULL and the per-player loop leaves both stats out
+  # entirely rather than erroring.
+  ngs_receiving_hist <- tryCatch({
+    ngs <- as.data.frame(load_nextgen_stats(stat_type = "receiving", seasons = seasons))
+    ngs[ngs$week != 0 & ngs$season_type == "REG", c("player_gsis_id", "season", "week",
+                                                      "avg_separation", "avg_yac_above_expectation")]
   }, error = function(e) {
     cat("NGS receiving data unavailable this run -- skipping avg separation/YAC above expectation:",
         conditionMessage(e), "\n")
     NULL
   })
-  avg_separation_by_id <- if (!is.null(ngs_receiving)) {
-    setNames(ngs_receiving$avg_separation, ngs_receiving$player_gsis_id)
-  } else NULL
-  yac_above_exp_by_id <- if (!is.null(ngs_receiving)) {
-    setNames(ngs_receiving$avg_yac_above_expectation, ngs_receiving$player_gsis_id)
-  } else NULL
 
   rows <- vector("list", length(eligible))
   names(rows) <- eligible
@@ -820,26 +839,42 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
       stat_ranges <- stat_ranges[relevant_stats]  # restore STAT_COLS_BY_POSITION's column order
     }
 
-    # Avg Separation / YAC Above Expectation (WR/TE only, see the NGS
-    # lookups built above project_all()'s per-player loop) -- appended
-    # AFTER the relevant_stats reindex above so they aren't dropped by it,
-    # since neither key is one of STAT_COLS_BY_POSITION's stat-group
-    # columns. floor/median/ceiling all collapse to the same real value on
-    # purpose: this is one already-observed season number, not a projected
-    # distribution, so there's no genuine spread to simulate -- setting
-    # all three equal just reuses the existing stat_ranges/radar/
-    # percentile-card machinery for free instead of needing new UI.
-    if (pos %in% c("WR", "TE")) {
+    # Avg Separation / YAC Above Expectation (WR/TE only) -- appended AFTER
+    # the relevant_stats reindex above so they aren't dropped by it, since
+    # neither key is one of STAT_COLS_BY_POSITION's stat-group columns.
+    # Bootstrap-resamples the player's own NGS per-game history (recency-
+    # weighted, same `avail`-driven games-played model as every other
+    # season sim on this page) and takes the MEAN of each simulated
+    # season's games -- these are rate stats, not counting stats, so a
+    # season "total" wouldn't mean anything the way it does for yards/TDs.
+    # NGS_DECAY/FLOOR_Q/CEIL_Q are backtested per (position, metric) --
+    # see their definitions up top. Genuinely different floor/median/
+    # ceiling now, not the same value three times.
+    if (pos %in% c("WR", "TE") && !is.null(ngs_receiving_hist)) {
       pid <- d$player_id[1]
-      sep_val <- if (!is.null(avg_separation_by_id)) unname(avg_separation_by_id[pid]) else NA_real_
-      yac_val <- if (!is.null(yac_above_exp_by_id)) unname(yac_above_exp_by_id[pid]) else NA_real_
-      if (length(sep_val) == 1 && !is.na(sep_val)) {
-        sep_val <- round(sep_val, 1)
-        stat_ranges[["avg_separation"]] <- list(floor = sep_val, median = sep_val, ceiling = sep_val)
-      }
-      if (length(yac_val) == 1 && !is.na(yac_val)) {
-        yac_val <- round(yac_val, 2)
-        stat_ranges[["yac_above_exp"]] <- list(floor = yac_val, median = yac_val, ceiling = yac_val)
+      player_ngs <- ngs_receiving_hist[ngs_receiving_hist$player_gsis_id == pid, ]
+      player_ngs <- player_ngs[order(player_ngs$season, player_ngs$week), ]
+      n_ngs <- nrow(player_ngs)
+      if (n_ngs >= NGS_MIN_GAMES) {
+        ngs_idx <- seq_len(n_ngs)
+        for (metric in c("avg_separation", "yac_above_exp")) {
+          src_col <- if (metric == "avg_separation") "avg_separation" else "avg_yac_above_expectation"
+          vals <- player_ngs[[src_col]]
+          if (all(is.na(vals))) next
+          w_ngs <- recency_weights(n_ngs, NGS_DECAY[[pos]][[metric]])
+          sim <- replicate(n_sims, {
+            g <- sum(runif(MAX_GAMES_PER_SEASON) < avail)
+            if (g == 0) NA_real_ else mean(sample(vals, g, replace = TRUE, prob = w_ngs))
+          })
+          sim <- sim[!is.na(sim)]
+          if (length(sim) < 100) next  # too few valid draws (very low availability) to trust the quantiles
+          decimals <- if (metric == "avg_separation") 1 else 2
+          stat_ranges[[metric]] <- list(
+            floor = round(as.numeric(quantile(sim, NGS_FLOOR_Q[[pos]][[metric]])), decimals),
+            median = round(as.numeric(quantile(sim, 0.50)), decimals),
+            ceiling = round(as.numeric(quantile(sim, NGS_CEIL_Q[[pos]][[metric]])), decimals)
+          )
+        }
       }
     }
 
