@@ -1415,12 +1415,14 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .shape-finder-item:hover, .shape-finder-item.active{border-color:var(--neon-blue);}
 .shape-finder-item.active{background:rgba(var(--neon-blue-rgb),0.08);}
 .shape-finder-name{
-  all:unset; cursor:pointer; display:flex; align-items:baseline; gap:6px; min-width:0;
+  all:unset; cursor:pointer; display:flex; align-items:baseline; gap:6px; min-width:0; flex:1;
   color:var(--star); font-size:12.5px; transition:color .15s ease;
 }
 .shape-finder-name span:first-child{overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
 .shape-finder-item.active .shape-finder-name{color:var(--neon-blue);}
 .shape-finder-pos{color:var(--star-dim); font-size:10.5px; flex-shrink:0;}
+.shape-finder-similarity{color:var(--neon-blue-dim); font-size:10.5px; flex-shrink:0; margin-left:auto; padding-left:8px;}
+.shape-finder-item.active .shape-finder-similarity{color:var(--neon-blue);}
 /* F/M/C picker -- same three-way pattern as the main table's Floor/
    Median/Ceiling headers, shrunk to a compact pill group so it reads as
    part of the row rather than a second control bolted on. */

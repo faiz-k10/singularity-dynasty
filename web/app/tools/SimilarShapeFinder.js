@@ -125,9 +125,20 @@ export default function SimilarShapeFinder({
 }) {
   if (!peers || peers.length === 0 || !keys || keys.length === 0) return null;
 
+  // Similarity % = 100 minus the RMS percentile-point gap across shared
+  // stats (sqrt(dist / key count) -- dist is a SUM of squared per-key
+  // gaps, so dividing back out by key count before rooting keeps this
+  // comparable across players who share different numbers of stats).
+  // 100% means an identical percentile shape; since each stat lives on
+  // a 0-100 percentile scale, an RMS gap can't exceed 100, so this can't
+  // go negative.
   const ranked = peers
     .filter((p) => p.name !== ownName)
-    .map((p) => ({ ...p, dist: shapeDistance(statPercentiles, p.statPercentiles, keys) }))
+    .map((p) => {
+      const dist = shapeDistance(statPercentiles, p.statPercentiles, keys);
+      const rms = Math.sqrt(dist / keys.length);
+      return { ...p, dist, similarity: Math.round(100 - rms) };
+    })
     .sort((a, b) => a.dist - b.dist)
     .slice(0, 3);
 
@@ -150,6 +161,7 @@ export default function SimilarShapeFinder({
                 >
                   <span>{p.name}</span>
                   <span className="shape-finder-pos mono">{p.position}</span>
+                  <span className="shape-finder-similarity mono">{p.similarity}% match</span>
                 </button>
                 <div className="shape-finder-layers mono" role="group" aria-label={`${p.name} comparison view`}>
                   {LAYERS.map((layer) => {
