@@ -454,15 +454,13 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                 <SortableTh label="Ceiling" sortKey="ceiling" {...sortProps} />
                 <th>Range</th>
                 <SortableTh
-                  label="POR"
-                  sortKey="por"
-                  title={`Points over Replacement — composite floor/median/ceiling score vs. the replacement-level baseline at this position (${leagueTeams}-team, ${superflex ? "Superflex" : "1QB"})`}
+                  label="Pace %ile"
+                  sortKey="outcomePercentile"
                   {...sortProps}
                 />
                 <SortableTh
-                  label="WOPR"
-                  sortKey="wopr"
-                  title="Weighted Opportunity Rating — 1.5×target share + 0.7×air yards share. Receiving usage only; not applicable to QB."
+                  label="Regr"
+                  sortKey="regressionScore"
                   {...sortProps}
                 />
                 <SortableTh
@@ -472,13 +470,15 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                   {...sortProps}
                 />
                 <SortableTh
-                  label="Regr"
-                  sortKey="regressionScore"
+                  label="WOPR"
+                  sortKey="wopr"
+                  title="Weighted Opportunity Rating — 1.5×target share + 0.7×air yards share. Receiving usage only; not applicable to QB."
                   {...sortProps}
                 />
                 <SortableTh
-                  label="Pace %ile"
-                  sortKey="outcomePercentile"
+                  label="POR"
+                  sortKey="por"
+                  title={`Points over Replacement — composite floor/median/ceiling score vs. the replacement-level baseline at this position (${leagueTeams}-team, ${superflex ? "Superflex" : "1QB"})`}
                   {...sortProps}
                 />
               </tr>
@@ -556,15 +556,8 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                       )}
                     </div>
                   </td>
-                  <td className={`mono por-cell ${row.por >= 0 ? "por-positive" : "por-negative"}`}>
-                    {row.por >= 0 ? "+" : ""}
-                    {row.por.toFixed(1)}
-                  </td>
                   <td className="mono align-left">
-                    {row.wopr != null ? row.wopr.toFixed(3) : "—"}
-                  </td>
-                  <td className={`mono align-left ${row.epa != null ? (row.epa >= 0 ? "por-positive" : "por-negative") : ""}`}>
-                    {row.epa != null ? `${row.epa >= 0 ? "+" : ""}${row.epa.toFixed(2)}` : "—"}
+                    {row.outcomePercentile != null ? ordinal(row.outcomePercentile) : "—"}
                   </td>
                   <td
                     className={`mono align-left ${row.regressionScore != null ? (row.regressionScore >= 0 ? "por-positive" : "por-negative") : ""}`}
@@ -573,8 +566,15 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                       ? `${row.regressionScore >= 0 ? "+" : ""}${row.regressionScore.toFixed(2)}`
                       : "—"}
                   </td>
+                  <td className={`mono align-left ${row.epa != null ? (row.epa >= 0 ? "por-positive" : "por-negative") : ""}`}>
+                    {row.epa != null ? `${row.epa >= 0 ? "+" : ""}${row.epa.toFixed(2)}` : "—"}
+                  </td>
                   <td className="mono align-left">
-                    {row.outcomePercentile != null ? ordinal(row.outcomePercentile) : "—"}
+                    {row.wopr != null ? row.wopr.toFixed(3) : "—"}
+                  </td>
+                  <td className={`mono por-cell ${row.por >= 0 ? "por-positive" : "por-negative"}`}>
+                    {row.por >= 0 ? "+" : ""}
+                    {row.por.toFixed(1)}
                   </td>
                 </tr>
                 {isExpanded && (
