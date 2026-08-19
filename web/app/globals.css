@@ -916,6 +916,18 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
   text-align:center;
 }
 .player-sims-table .sim-bar-track{margin:0 auto;}
+/* Floor/Median/Ceiling (columns 5-7) hold 2-3 digit numbers but were
+   sized by their own header labels ("Median ▼", "Ceiling"), which are
+   wider than the data -- tighten just these three so the column isn't
+   mostly empty padding around a 3-character value. */
+.player-sims-table > thead > tr > th:nth-child(5),
+.player-sims-table > thead > tr > th:nth-child(6),
+.player-sims-table > thead > tr > th:nth-child(7),
+.player-sims-table > tbody > tr:not(.stat-detail-row) td:nth-child(5),
+.player-sims-table > tbody > tr:not(.stat-detail-row) td:nth-child(6),
+.player-sims-table > tbody > tr:not(.stat-detail-row) td:nth-child(7){
+  padding-left:6px; padding-right:6px;
+}
 .rankings-table tr:last-child td{border-bottom:none;}
 .rankings-table tr:hover td{background:rgba(var(--neon-blue-rgb),0.05);}
 .tool-notes{color:var(--star-dim); font-size:13px;}
