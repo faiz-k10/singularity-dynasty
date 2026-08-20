@@ -1600,7 +1600,15 @@ tr.stat-row-selected td{background:var(--void-panel);}
 }
 .pctile-vbar:hover{background:rgba(var(--neon-blue-rgb),0.08);}
 .pctile-vbar-active{background:rgba(var(--horizon-gold-rgb),0.1);}
-.pctile-vbar-label{font-size:11px; color:var(--star-dim); white-space:normal; text-align:center; line-height:1.2;}
+/* min-height reserves 2 lines' worth of space even for a label that
+   only wraps to 1 ("INTs" vs. "Rush TDs") -- .pctile-rows aligns each
+   bar BUTTON by its bottom edge (flex-end), and the label sits at the
+   bottom of that button's own flex-column stack, so a shorter label
+   otherwise let its button (and everything above the label, including
+   the track) sit that much lower than a 2-line label's button -- the
+   bars themselves ended up at different baselines despite the track's
+   own height being fixed. */
+.pctile-vbar-label{font-size:11px; color:var(--star-dim); white-space:normal; text-align:center; line-height:1.2; min-height:2.4em;}
 .pctile-vbar-active .pctile-vbar-label{color:var(--star);}
 /* Raw value stacked over its percentile -- the number the table itself
    would show, on top, with the ordinal as a dimmer subscript underneath
