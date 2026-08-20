@@ -1324,7 +1324,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    same line just reads as a stray rule floating at the top of an
    otherwise plain card. */
 .stat-panel-percentile .pctile-card{margin-top:0; padding-top:0; border-top:none;}
-.stat-detail-grid .pctile-row{padding:3px 6px;}
+.stat-detail-grid .pctile-vbar-track{width:20px; height:100px;}
 .stat-detail-grid .pctile-bar{height:5px; margin-bottom:6px;}
 .stat-detail-grid .pctile-bar-lg{height:7px; margin-top:6px;}
 .stat-detail-grid .pctile-hero-value{font-size:24px;}
@@ -1566,23 +1566,27 @@ tr.stat-row-selected td{background:var(--void-panel);}
   font-family:var(--font-ibm-plex-mono), monospace; font-size:10px; letter-spacing:0.06em;
   text-transform:uppercase; color:var(--star-dim); white-space:nowrap;
 }
-.pctile-rows{display:flex; flex-direction:column; gap:2px;}
-/* Each row is its own button (fills the row, mirrors .stat-row-trigger)
-   so clicking a Floor/Median/Ceiling breakdown or a stat in the ranked
-   column list drives the exact same selection as clicking the table
-   cell it describes -- one more surface synced to the same state. */
-.pctile-row{
-  all:unset; cursor:pointer; display:grid; grid-template-columns:64px 1fr 46px; align-items:center;
-  gap:10px; padding:5px 6px; border-radius:6px; box-sizing:border-box; width:100%;
+/* Horizontal row of vertical bars -- a real bar chart instead of the
+   old stacked horizontal-bar rows. overflow-x:auto so column mode (one
+   bar per stat, can be 5+ for WR/TE) scrolls instead of squeezing bars
+   unreadably thin when there isn't room for all of them at once. */
+.pctile-rows{display:flex; flex-direction:row; align-items:flex-end; gap:14px; overflow-x:auto; padding:4px 2px 2px;}
+/* Each bar is its own button (mirrors .stat-row-trigger) so clicking a
+   Floor/Median/Ceiling breakdown or a stat in the ranked column list
+   drives the exact same selection as clicking the table cell it
+   describes -- one more surface synced to the same state. */
+.pctile-vbar{
+  all:unset; cursor:pointer; display:flex; flex-direction:column; align-items:center;
+  gap:6px; flex-shrink:0; min-width:52px; padding:4px; border-radius:8px; box-sizing:border-box;
 }
-.pctile-row:hover{background:rgba(var(--neon-blue-rgb),0.08);}
-.pctile-row-active{background:rgba(var(--horizon-gold-rgb),0.1);}
-.pctile-row-label{font-size:12px; color:var(--star-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-.pctile-row-active .pctile-row-label{color:var(--star);}
+.pctile-vbar:hover{background:rgba(var(--neon-blue-rgb),0.08);}
+.pctile-vbar-active{background:rgba(var(--horizon-gold-rgb),0.1);}
+.pctile-vbar-label{font-size:12px; color:var(--star-dim); white-space:nowrap;}
+.pctile-vbar-active .pctile-vbar-label{color:var(--star);}
 /* Raw value stacked over its percentile -- the number the table itself
    would show, on top, with the ordinal as a dimmer subscript underneath
    so the shape/percentile view still carries the actual stat. */
-.pctile-row-value{display:flex; flex-direction:column; align-items:flex-end; line-height:1.25;}
+.pctile-vbar-value{display:flex; flex-direction:column; align-items:center; line-height:1.25;}
 .pctile-row-raw{
   font-family:var(--font-ibm-plex-mono), monospace; font-size:12px; color:var(--star);
   font-variant-numeric:tabular-nums;
@@ -1590,6 +1594,17 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .pctile-row-ordinal{
   font-family:var(--font-ibm-plex-mono), monospace; font-size:10px; color:var(--star-dim);
   font-variant-numeric:tabular-nums;
+}
+/* The bar itself -- a fixed-height track with the fill growing up from
+   the bottom (height:N%, not width), same 50th-percentile reference
+   line concept as the old horizontal bar's midtick, just running
+   across the track instead of down it. */
+.pctile-vbar-track{position:relative; width:26px; height:130px; background:var(--void-panel-2); border-radius:6px 6px 3px 3px; overflow:hidden;}
+.pctile-vbar-fill{position:absolute; left:0; right:0; bottom:0; border-radius:inherit; transition:height .2s ease;}
+.pctile-vbar-midline{position:absolute; left:0; right:0; top:50%; height:1px; background:rgba(var(--star-dim-rgb),0.45); z-index:1;}
+.pctile-vbar-midline-label{
+  position:absolute; left:100%; top:50%; transform:translate(3px, -50%);
+  font-family:var(--font-ibm-plex-mono), monospace; font-size:9px; color:var(--star-dim);
 }
 /* overflow was hidden here for the fill's rounded corners, but that also
    clipped a below-the-bar "50" label -- the fill already carries its own

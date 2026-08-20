@@ -50,21 +50,29 @@ function PercentileBar({ pctile, size }) {
   );
 }
 
-// One row per Floor/Median/Ceiling (row mode) or per stat (column mode) --
-// same shape either way, just a different label + click target, so the
-// two modes share this row markup instead of diverging visually. Shows
-// the raw stat value (what the table itself would show) stacked over the
-// percentile, so the shape/percentile view doesn't require flipping back
-// to the table to see the actual number behind it.
-function PercentileRow({ label, value, pctile, isActive, onClick }) {
+// One vertical bar per Floor/Median/Ceiling (row mode) or per stat
+// (column mode) -- same shape either way, just a different label + click
+// target, so the two modes share this markup instead of diverging
+// visually. Value + ordinal sit above the bar (what the table itself
+// would show), the 50th-percentile reference line runs across the track
+// at its fixed midpoint regardless of the fill's own height, and the
+// stat/layer label sits below -- same information as the old horizontal
+// row, just read top-to-bottom/bar-height instead of left-to-right/bar-
+// width, closer to how a real bar chart reads.
+function PercentileVBar({ label, value, pctile, isActive, onClick }) {
+  const t = tier(pctile);
   return (
-    <button type="button" className={`pctile-row${isActive ? " pctile-row-active" : ""}`} onClick={onClick}>
-      <span className="pctile-row-label">{label}</span>
-      <PercentileBar pctile={pctile} />
-      <span className="pctile-row-value">
+    <button type="button" className={`pctile-vbar${isActive ? " pctile-vbar-active" : ""}`} onClick={onClick}>
+      <span className="pctile-vbar-value">
         <span className="pctile-row-raw">{formatValue(value)}</span>
         <span className="pctile-row-ordinal">{ordinal(pctile)}</span>
       </span>
+      <div className="pctile-vbar-track">
+        <div className="pctile-vbar-midline" />
+        <span className="pctile-vbar-midline-label">50</span>
+        <div className={`pctile-vbar-fill pctile-bar-${t.cls}`} style={{ height: `${Math.max(pctile, 2)}%` }} />
+      </div>
+      <span className="pctile-vbar-label">{label}</span>
     </button>
   );
 }
@@ -121,7 +129,7 @@ export default function PercentileCard({ stats, position, selection, onSelectCel
         </div>
         <div className="pctile-rows">
           {["floor", "median", "ceiling"].map((layer) => (
-            <PercentileRow
+            <PercentileVBar
               key={layer}
               label={LAYER_LABEL[layer]}
               value={stat[`${layer}Value`]}
@@ -173,7 +181,7 @@ export default function PercentileCard({ stats, position, selection, onSelectCel
       </div>
       <div className="pctile-rows">
         {ranked.map((stat) => (
-          <PercentileRow
+          <PercentileVBar
             key={stat.key}
             label={stat.label}
             value={stat[`${layer}Value`]}
