@@ -1588,10 +1588,15 @@ tr.stat-row-selected td{background:var(--void-panel);}
 /* Each bar is its own button (mirrors .stat-row-trigger) so clicking a
    Floor/Median/Ceiling breakdown or a stat in the ranked column list
    drives the exact same selection as clicking the table cell it
-   describes -- one more surface synced to the same state. */
+   describes -- one more surface synced to the same state. Fixed width
+   (not a min/max range) -- a short one-line label like "INTs" would
+   otherwise get a narrower box than a wrapped two-line one like "Rush
+   Yards", and since the bar track centers within its own button, that
+   made the bars themselves land at uneven spacing even though the row's
+   own gap was constant. */
 .pctile-vbar{
   all:unset; cursor:pointer; display:flex; flex-direction:column; align-items:center;
-  gap:6px; flex-shrink:0; min-width:44px; max-width:56px; padding:4px; border-radius:8px; box-sizing:border-box;
+  gap:6px; flex-shrink:0; width:52px; padding:4px; border-radius:8px; box-sizing:border-box;
 }
 .pctile-vbar:hover{background:rgba(var(--neon-blue-rgb),0.08);}
 .pctile-vbar-active{background:rgba(var(--horizon-gold-rgb),0.1);}
