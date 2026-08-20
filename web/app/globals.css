@@ -1577,21 +1577,25 @@ tr.stat-row-selected td{background:var(--void-panel);}
   text-transform:uppercase; color:var(--star-dim); white-space:nowrap;
 }
 /* Horizontal row of vertical bars -- a real bar chart instead of the
-   old stacked horizontal-bar rows. overflow-x:auto so column mode (one
-   bar per stat, can be 5+ for WR/TE) scrolls instead of squeezing bars
-   unreadably thin when there isn't room for all of them at once. */
-.pctile-rows{display:flex; flex-direction:row; align-items:flex-end; justify-content:center; gap:14px; overflow-x:auto; padding:4px 2px 2px;}
+   old stacked horizontal-bar rows. overflow-x:auto stays as a safety
+   net for a stat count wide enough to overflow even this, but the real
+   fix for the common 5-stat WR/TE case is letting labels WRAP (like
+   StatRadar's own vertex labels) instead of forcing every column wide
+   enough for "YAC Above Exp" or "Avg Separation" on one line -- that
+   single unwrapped label was the actual width driver forcing a scroll
+   that a plain narrower bar/gap tweak wouldn't have fixed. */
+.pctile-rows{display:flex; flex-direction:row; align-items:flex-end; justify-content:center; gap:8px; overflow-x:auto; padding:4px 2px 2px;}
 /* Each bar is its own button (mirrors .stat-row-trigger) so clicking a
    Floor/Median/Ceiling breakdown or a stat in the ranked column list
    drives the exact same selection as clicking the table cell it
    describes -- one more surface synced to the same state. */
 .pctile-vbar{
   all:unset; cursor:pointer; display:flex; flex-direction:column; align-items:center;
-  gap:6px; flex-shrink:0; min-width:52px; padding:4px; border-radius:8px; box-sizing:border-box;
+  gap:6px; flex-shrink:0; min-width:44px; max-width:56px; padding:4px; border-radius:8px; box-sizing:border-box;
 }
 .pctile-vbar:hover{background:rgba(var(--neon-blue-rgb),0.08);}
 .pctile-vbar-active{background:rgba(var(--horizon-gold-rgb),0.1);}
-.pctile-vbar-label{font-size:12px; color:var(--star-dim); white-space:nowrap;}
+.pctile-vbar-label{font-size:11px; color:var(--star-dim); white-space:normal; text-align:center; line-height:1.2;}
 .pctile-vbar-active .pctile-vbar-label{color:var(--star);}
 /* Raw value stacked over its percentile -- the number the table itself
    would show, on top, with the ordinal as a dimmer subscript underneath
