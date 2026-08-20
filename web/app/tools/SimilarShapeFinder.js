@@ -290,7 +290,7 @@ export default function SimilarShapeFinder({
                         aria-pressed={layerActive}
                         aria-label={`Compare ${p.name}'s ${layer.name}`}
                       >
-                        {layer.label}
+                        {LAYER_LABEL[layer.key]}
                       </button>
                     );
                   })}

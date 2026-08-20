@@ -1473,13 +1473,15 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .shape-finder-pos{color:var(--star-dim); font-size:10.5px; flex-shrink:0;}
 .shape-finder-similarity{color:var(--neon-blue-dim); font-size:10.5px; flex-shrink:0; margin-left:auto; padding-left:8px;}
 .shape-finder-item.active .shape-finder-similarity{color:var(--neon-blue);}
-/* F/M/C picker -- same three-way pattern as the main table's Floor/
-   Median/Ceiling headers, shrunk to a compact pill group so it reads as
-   part of the row rather than a second control bolted on. */
+/* Floor/Median/Ceiling picker -- same three-way pattern as the main
+   table's own column headers, spelled out in full now rather than
+   abbreviated to F/M/C (which read as too small a target and unclear
+   at a glance) -- auto-width pill per label instead of a fixed square,
+   sized by its own padding so "Median" isn't clipped. */
 .shape-finder-layers{display:flex; gap:4px; flex-shrink:0;}
 .shape-finder-layer-btn{
-  all:unset; cursor:pointer; width:32px; height:32px; display:flex; align-items:center;
-  justify-content:center; border-radius:7px; font-size:11px; color:var(--star-dim);
+  all:unset; cursor:pointer; padding:7px 10px; display:flex; align-items:center;
+  justify-content:center; border-radius:7px; font-size:11px; color:var(--star-dim); white-space:nowrap;
   transition:background .15s ease, color .15s ease;
 }
 .shape-finder-layer-btn:hover{color:var(--star);}
