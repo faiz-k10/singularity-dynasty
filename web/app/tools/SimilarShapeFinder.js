@@ -103,14 +103,16 @@ function CompareBars({ selection, stats, peer }) {
   );
 }
 
-// Compact echo of StatDetailRow's own stat-detail-table -- same three-mode
-// row/column/cell click logic, driving the SAME shared `selection` state
-// (via the onSelectRow/onSelectColumn/onSelectCell setters passed straight
-// through from StatDetailRow), so clicking a cell in a comp's mini table
-// highlights that stat/layer everywhere else on the page exactly like
-// clicking the main table would -- there's no separate "this peer's
-// selection," it's the one selection the whole detail row already shares.
-function MiniStatTable({ peer, keys, labelByKey, selection, onSelectRow, onSelectColumn, onSelectCell }) {
+// Compact echo of StatDetailRow's own stat-detail-table, but clicking
+// inside it does NOT touch the shared `selection` state the main table
+// drives -- that state also turns on CompareBars below (the "X vs.
+// player" diverging bars), which should only appear from an actual main-
+// table selection, not from poking at a comp's own numbers. Instead,
+// every click here (row, column, or cell) just calls onSelectLayer(layer)
+// -- the exact same "put this comp's shape on the radar" toggle the F/M/C
+// picker above already does -- so browsing a comp's own table only ever
+// shows where THEY sit on the radar, never the player-vs-comp bars.
+function MiniStatTable({ peer, keys, labelByKey, isActive, selectedLayer, onSelectLayer }) {
   const ranges = peer.stat_ranges;
   if (!ranges) return null;
   const rows = keys.filter((key) => ranges[key]);
@@ -121,44 +123,42 @@ function MiniStatTable({ peer, keys, labelByKey, selection, onSelectRow, onSelec
       <thead>
         <tr>
           <th></th>
-          {["floor", "median", "ceiling"].map((layer) => (
-            <th key={layer}>
-              <button
-                type="button"
-                className={`stat-header-trigger${selection?.mode === "column" && selection.layer === layer ? " stat-header-trigger-active" : ""}`}
-                onClick={() => onSelectColumn(layer)}
-                aria-pressed={selection?.mode === "column" && selection.layer === layer}
-              >
-                {layer === "floor" ? "Floor" : layer === "median" ? "Med" : "Ceil"}
-              </button>
-            </th>
-          ))}
+          {["floor", "median", "ceiling"].map((layer) => {
+            const layerActive = isActive && selectedLayer === layer;
+            return (
+              <th key={layer}>
+                <button
+                  type="button"
+                  className={`stat-header-trigger${layerActive ? " stat-header-trigger-active" : ""}`}
+                  onClick={() => onSelectLayer(layer)}
+                  aria-pressed={layerActive}
+                >
+                  {layer === "floor" ? "Floor" : layer === "median" ? "Med" : "Ceil"}
+                </button>
+              </th>
+            );
+          })}
         </tr>
       </thead>
       <tbody>
         {rows.map((key) => {
           const { floor, median, ceiling } = ranges[key];
-          const isRowMode = selection?.mode === "row" && selection.key === key;
           function cellProps(layer) {
-            const isCellActive = selection?.mode === "cell" && selection.key === key && selection.layer === layer;
-            const isColumnDim = selection?.mode === "column" && selection.layer === layer;
-            const isRowDim = isRowMode;
+            const layerActive = isActive && selectedLayer === layer;
             return {
-              className: `stat-row-trigger${
-                isCellActive ? " stat-row-trigger-active" : isColumnDim || isRowDim ? " stat-row-trigger-column" : ""
-              }`,
-              onClick: () => onSelectCell(key, layer),
-              "aria-pressed": isCellActive,
+              className: `stat-row-trigger${layerActive ? " stat-row-trigger-column" : ""}`,
+              onClick: () => onSelectLayer(layer),
+              "aria-pressed": layerActive,
             };
           }
           return (
-            <tr key={key} className={isRowMode ? "stat-row-selected" : ""}>
+            <tr key={key}>
               <td>
                 <button
                   type="button"
-                  className={`stat-row-trigger${isRowMode ? " stat-row-trigger-active" : ""}`}
-                  onClick={() => onSelectRow(key)}
-                  aria-pressed={isRowMode}
+                  className="stat-row-trigger"
+                  onClick={() => onSelectLayer("median")}
+                  aria-pressed={isActive && selectedLayer === "median"}
                 >
                   {labelByKey[key] || key}
                 </button>
@@ -219,9 +219,6 @@ export default function SimilarShapeFinder({
   selectedLayer,
   onSelect,
   selection,
-  onSelectRow,
-  onSelectColumn,
-  onSelectCell,
 }) {
   if (!peers || peers.length === 0 || !keys || keys.length === 0) return null;
 
@@ -303,10 +300,9 @@ export default function SimilarShapeFinder({
                 peer={p}
                 keys={keys}
                 labelByKey={labelByKey}
-                selection={selection}
-                onSelectRow={onSelectRow}
-                onSelectColumn={onSelectColumn}
-                onSelectCell={onSelectCell}
+                isActive={isActive}
+                selectedLayer={selectedLayer}
+                onSelectLayer={(clickedLayer) => onSelect(p.name, clickedLayer)}
               />
               {stats && <CompareBars selection={selection} stats={stats} peer={p} />}
             </div>
