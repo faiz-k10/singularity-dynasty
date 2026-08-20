@@ -1476,10 +1476,10 @@ tr.stat-row-selected td{background:var(--void-panel);}
 /* F/M/C picker -- same three-way pattern as the main table's Floor/
    Median/Ceiling headers, shrunk to a compact pill group so it reads as
    part of the row rather than a second control bolted on. */
-.shape-finder-layers{display:flex; gap:2px; flex-shrink:0;}
+.shape-finder-layers{display:flex; gap:4px; flex-shrink:0;}
 .shape-finder-layer-btn{
-  all:unset; cursor:pointer; width:20px; height:20px; display:flex; align-items:center;
-  justify-content:center; border-radius:5px; font-size:10px; color:var(--star-dim);
+  all:unset; cursor:pointer; width:32px; height:32px; display:flex; align-items:center;
+  justify-content:center; border-radius:7px; font-size:11px; color:var(--star-dim);
   transition:background .15s ease, color .15s ease;
 }
 .shape-finder-layer-btn:hover{color:var(--star);}
