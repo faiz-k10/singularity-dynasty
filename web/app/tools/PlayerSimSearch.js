@@ -172,6 +172,8 @@ function StatDetailRow({ row, colSpan, shapePeers }) {
                 })}
               </tbody>
             </table>
+          </div>
+          <div className="stat-panel stat-panel-percentile">
             <PercentileCard stats={percentileStats} position={row.position} selection={selection} onSelectCell={selectCell} />
           </div>
           <div className="stat-panel stat-panel-radar">

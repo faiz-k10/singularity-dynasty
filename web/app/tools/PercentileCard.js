@@ -88,7 +88,7 @@ export default function PercentileCard({ stats, position, selection, onSelectCel
   if (!selection) {
     return (
       <div className="pctile-card pctile-card-empty">
-        <p>Select a stat, a Floor/Median/Ceiling column, or a single number above to see its percentile vs. the {position} pool.</p>
+        <p>Select a stat, a Floor/Median/Ceiling column, or a single number to see its percentile vs. the {position} pool.</p>
       </div>
     );
   }

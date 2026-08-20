@@ -1274,27 +1274,31 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .stat-detail-table td:first-child{text-align:left;}
 .stat-detail-table tr:last-child td{border-bottom:none;}
 
-/* Table + radar side by side on top (one player's own view, naturally
-   similar heights to each other), Similar Shape spanning the full width
-   below. Used to be three equal-stretched columns, but Finder now holds
-   a full mini stat table per comp (not just a short 3-name list) --
-   squeezed into a narrow third column that content wrapped awkwardly,
-   AND align-items:stretch matched table/radar to Finder's now much
-   taller height, leaving big dead space under the shorter two. Splitting
-   Finder onto its own row decouples its height from table/radar's
-   entirely (align-items:stretch only has to reconcile table vs. radar in
-   the row above, which are naturally close in height already) and gives
-   its per-comp tables real column width to lay out in instead of a
-   cramped 0.9fr slice. */
+/* Table, its own Floor/Median/Ceiling percentile bar chart, and radar
+   side by side on top (one player's own view throughout, naturally
+   similar heights), Similar Shape spanning the full width below --
+   pulled out of the table panel into its own column so its bars read as
+   their own chart rather than an addendum stacked under the table.
+   Finder stays on its own full-width row (see the reasoning that
+   already applied when this was a table+radar 2-up: its per-comp tables
+   need real column width, and align-items:stretch here should only ever
+   have to reconcile table/percentile/radar's heights with each other,
+   not Finder's much taller one). */
 .stat-detail-grid{
-  display:grid; grid-template-columns:1.1fr 1fr;
-  grid-template-areas:"table radar" "finder finder";
+  display:grid; grid-template-columns:1.1fr 0.9fr 1fr;
+  grid-template-areas:"table percentile radar" "finder finder finder";
   column-gap:20px; row-gap:20px; align-items:stretch;
+}
+@media (max-width:1100px){
+  .stat-detail-grid{
+    grid-template-columns:1fr 1fr;
+    grid-template-areas:"table radar" "percentile percentile" "finder finder";
+  }
 }
 @media (max-width:640px){
   .stat-detail-grid{
     grid-template-columns:1fr;
-    grid-template-areas:"table" "radar" "finder";
+    grid-template-areas:"table" "percentile" "radar" "finder";
   }
 }
 /* Compact sizing for the single-player expand's own 3 panels, so table +
@@ -1313,6 +1317,13 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    separate font-size overrides needed inside StatRadar.js itself. */
 .stat-detail-grid .stat-panel-radar{max-width:270px;}
 .stat-detail-grid .pctile-card{margin-top:8px; padding-top:8px;}
+/* PercentileCard now lives in its own top-level panel (.stat-panel-
+   percentile) instead of stacked under the stat table -- the divider
+   line above it made sense as a "new section under the table" marker,
+   but as its own standalone box (already bordered by .stat-panel) that
+   same line just reads as a stray rule floating at the top of an
+   otherwise plain card. */
+.stat-panel-percentile .pctile-card{margin-top:0; padding-top:0; border-top:none;}
 .stat-detail-grid .pctile-row{padding:3px 6px;}
 .stat-detail-grid .pctile-bar{height:5px; margin-bottom:6px;}
 .stat-detail-grid .pctile-bar-lg{height:7px; margin-top:6px;}
@@ -1327,6 +1338,15 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
   background:var(--void-panel); border:1px solid var(--line); border-radius:12px;
   padding:14px 16px; min-width:0;
 }
+/* Explicit grid-area for each -- the 1100px breakpoint reorders these
+   into a layout DOM order alone can't satisfy (percentile moves to its
+   own full-width row between table+radar's row and finder's), so
+   relying on auto-placement's row-major DOM-order fill would misplace
+   them there even though it happens to match at the default 3-column
+   width. */
+.stat-panel-table{grid-area:table;}
+.stat-panel-percentile{grid-area:percentile;}
+.stat-panel-radar{grid-area:radar;}
 /* 440 (not the old 340) so the panel actually uses close to its natural
    grid-column width instead of capping well under it -- StatRadar's own
    point-to-label gap is a fraction of the rendered size, so a wider box
