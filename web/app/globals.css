@@ -1278,17 +1278,20 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    side by side on top (one player's own view throughout), Similar Shape
    spanning the full width below -- pulled out of the table panel into
    its own column so its bars read as their own chart rather than an
-   addendum stacked under the table. align-items:start (not stretch) --
-   these three naturally have quite different content heights (a 5-row
-   table vs. a handful of short bars vs. a square chart), and stretching
-   them to match the tallest one just left dead space at the bottom of
-   the shorter two instead of each panel hugging its own content. Finder
-   stays on its own full-width row so its per-comp tables get real
-   column width. */
+   addendum stacked under the table. align-items:stretch -- these three
+   have quite different natural content heights (a 5-row table vs. a
+   handful of short bars vs. the radar's own square chart, grown larger
+   per a later request), so equal-height stretching is back, but this
+   time table/percentile CENTER their own content vertically within the
+   stretched box (see .stat-panel-table/.stat-panel-percentile below)
+   instead of sitting top-anchored with dead space left below -- splits
+   the leftover height evenly instead of dumping all of it at the
+   bottom. Finder stays on its own full-width row so its per-comp
+   tables get real column width. */
 .stat-detail-grid{
   display:grid; grid-template-columns:1.1fr 0.9fr 1fr;
   grid-template-areas:"table percentile radar" "finder finder finder";
-  column-gap:20px; row-gap:20px; align-items:start;
+  column-gap:20px; row-gap:20px; align-items:stretch;
 }
 @media (max-width:1100px){
   .stat-detail-grid{
@@ -1346,8 +1349,8 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    relying on auto-placement's row-major DOM-order fill would misplace
    them there even though it happens to match at the default 3-column
    width. */
-.stat-panel-table{grid-area:table;}
-.stat-panel-percentile{grid-area:percentile;}
+.stat-panel-table{grid-area:table; display:flex; flex-direction:column; justify-content:center;}
+.stat-panel-percentile{grid-area:percentile; display:flex; flex-direction:column; justify-content:center;}
 .stat-panel-radar{grid-area:radar;}
 /* 440 (not the old 340) so the panel actually uses close to its natural
    grid-column width instead of capping well under it -- StatRadar's own
