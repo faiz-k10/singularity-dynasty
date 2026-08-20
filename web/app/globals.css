@@ -1297,6 +1297,28 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
     grid-template-areas:"table" "radar" "finder";
   }
 }
+/* Compact sizing for the single-player expand's own 3 panels, so table +
+   radar + Similar Shape can all fit in one screen without scrolling.
+   Scoped to .stat-detail-grid specifically (not the shared base classes
+   themselves) so the Compare Players page's own copies of these same
+   components (PercentileCard, StatRadar, via .compare-radar-card) stay
+   full-size -- that page isn't trying to fit 3 panels in one viewport,
+   shrinking it too would just make it harder to read for no reason. */
+.stat-detail-grid .stat-panel{padding:10px 12px;}
+.stat-detail-grid .stat-detail-table{font-size:11.5px;}
+.stat-detail-grid .stat-header-trigger,
+.stat-detail-grid .stat-row-trigger{padding:4px 8px;}
+/* Radar is an SVG with a fixed viewBox -- shrinking its rendered CSS
+   width scales the whole chart (paths AND text) down together, no
+   separate font-size overrides needed inside StatRadar.js itself. */
+.stat-detail-grid .stat-panel-radar{max-width:270px;}
+.stat-detail-grid .pctile-card{margin-top:8px; padding-top:8px;}
+.stat-detail-grid .pctile-row{padding:3px 6px;}
+.stat-detail-grid .pctile-bar{height:5px; margin-bottom:6px;}
+.stat-detail-grid .pctile-bar-lg{height:7px; margin-top:6px;}
+.stat-detail-grid .pctile-hero-value{font-size:24px;}
+.stat-detail-grid .shape-finder-item{padding:4px 6px 4px 8px;}
+.stat-detail-grid .shape-finder-table{font-size:10px; margin-top:5px;}
 /* Shared card chrome for the three panels above -- a shade lighter than
    the void-panel-2 background behind the whole expanded row, with its
    own border, so each reads as a distinct organized section instead of
