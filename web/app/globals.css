@@ -1275,19 +1275,20 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .stat-detail-table tr:last-child td{border-bottom:none;}
 
 /* Table, its own Floor/Median/Ceiling percentile bar chart, and radar
-   side by side on top (one player's own view throughout, naturally
-   similar heights), Similar Shape spanning the full width below --
-   pulled out of the table panel into its own column so its bars read as
-   their own chart rather than an addendum stacked under the table.
-   Finder stays on its own full-width row (see the reasoning that
-   already applied when this was a table+radar 2-up: its per-comp tables
-   need real column width, and align-items:stretch here should only ever
-   have to reconcile table/percentile/radar's heights with each other,
-   not Finder's much taller one). */
+   side by side on top (one player's own view throughout), Similar Shape
+   spanning the full width below -- pulled out of the table panel into
+   its own column so its bars read as their own chart rather than an
+   addendum stacked under the table. align-items:start (not stretch) --
+   these three naturally have quite different content heights (a 5-row
+   table vs. a handful of short bars vs. a square chart), and stretching
+   them to match the tallest one just left dead space at the bottom of
+   the shorter two instead of each panel hugging its own content. Finder
+   stays on its own full-width row so its per-comp tables get real
+   column width. */
 .stat-detail-grid{
   display:grid; grid-template-columns:1.1fr 0.9fr 1fr;
   grid-template-areas:"table percentile radar" "finder finder finder";
-  column-gap:20px; row-gap:20px; align-items:stretch;
+  column-gap:20px; row-gap:20px; align-items:start;
 }
 @media (max-width:1100px){
   .stat-detail-grid{
@@ -1315,7 +1316,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 /* Radar is an SVG with a fixed viewBox -- shrinking its rendered CSS
    width scales the whole chart (paths AND text) down together, no
    separate font-size overrides needed inside StatRadar.js itself. */
-.stat-detail-grid .stat-panel-radar{max-width:270px;}
+.stat-detail-grid .stat-panel-radar{max-width:340px;}
 .stat-detail-grid .pctile-card{margin-top:8px; padding-top:8px;}
 /* PercentileCard now lives in its own top-level panel (.stat-panel-
    percentile) instead of stacked under the stat table -- the divider
@@ -1570,7 +1571,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
    old stacked horizontal-bar rows. overflow-x:auto so column mode (one
    bar per stat, can be 5+ for WR/TE) scrolls instead of squeezing bars
    unreadably thin when there isn't room for all of them at once. */
-.pctile-rows{display:flex; flex-direction:row; align-items:flex-end; gap:14px; overflow-x:auto; padding:4px 2px 2px;}
+.pctile-rows{display:flex; flex-direction:row; align-items:flex-end; justify-content:center; gap:14px; overflow-x:auto; padding:4px 2px 2px;}
 /* Each bar is its own button (mirrors .stat-row-trigger) so clicking a
    Floor/Median/Ceiling breakdown or a stat in the ranked column list
    drives the exact same selection as clicking the table cell it
