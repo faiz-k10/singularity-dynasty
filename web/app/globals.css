@@ -1718,8 +1718,15 @@ tr.stat-row-selected td{background:var(--void-panel);}
 /* auto-fit rather than a fixed 2/3-column split -- 2 selected players get
    two wide cards, 3 get three narrower ones, and it reflows to one column
    on narrow screens without a separate media-query breakpoint. */
+/* align-items:start (not the grid default of stretch) -- comparing
+   players with different stat-key counts (a QB's 5 passing/rushing
+   stats vs. a WR/TE's 3 receiving ones) gives their cards genuinely
+   different natural heights; stretching the shorter one to match just
+   leaves dead space below its own percentile-card content instead of
+   letting it hug what it actually has. Same fix already applied to
+   .stat-detail-grid for the single-player page's own 3 panels. */
 .compare-radar-grid{
-  display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:20px;
+  display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:20px; align-items:start;
 }
 .compare-radar-card{
   background:var(--void-panel); border:1px solid var(--line); border-radius:16px; padding:20px;
