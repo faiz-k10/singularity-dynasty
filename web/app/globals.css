@@ -1310,7 +1310,8 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    full-size -- that page isn't trying to fit 3 panels in one viewport,
    shrinking it too would just make it harder to read for no reason. */
 .stat-detail-grid .stat-panel{padding:10px 12px;}
-.stat-detail-grid .stat-detail-table{font-size:11.5px;}
+.stat-detail-grid .stat-detail-table,
+.stat-detail-grid .shape-finder-table{font-size:11.5px;}
 .stat-detail-grid .stat-header-trigger,
 .stat-detail-grid .stat-row-trigger{padding:4px 8px;}
 /* Radar is an SVG with a fixed viewBox -- shrinking its rendered CSS
@@ -1330,7 +1331,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .stat-detail-grid .pctile-bar-lg{height:7px; margin-top:6px;}
 .stat-detail-grid .pctile-hero-value{font-size:24px;}
 .stat-detail-grid .shape-finder-item{padding:4px 6px 4px 8px;}
-.stat-detail-grid .shape-finder-table{font-size:10px; margin-top:5px;}
+.stat-detail-grid .shape-finder-table{margin-top:5px;}
 /* Shared card chrome for the three panels above -- a shade lighter than
    the void-panel-2 background behind the whole expanded row, with its
    own border, so each reads as a distinct organized section instead of
@@ -1481,21 +1482,24 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .shape-finder-layer-btn:hover{color:var(--star);}
 .shape-finder-layer-btn.active{background:var(--neon-blue); color:var(--void);}
 .shape-finder-entry{display:flex; flex-direction:column;}
-/* Compact echo of .stat-detail-table (see MiniStatTable's own comment) --
-   same click mechanics and highlight classes, just smaller since a
-   Similar Shape card is far narrower than the main stat table's own
-   grid column. */
-.shape-finder-table{width:100%; min-width:0; border-collapse:collapse; font-size:11px; table-layout:fixed; margin-top:8px;}
+/* Same font sizing and .stat-header-trigger/.stat-row-trigger padding as
+   .stat-detail-table (no table-specific override here -- both fall back
+   to those shared base rules, and the compact .stat-detail-grid scope
+   below sizes them identically) so a comp's own numbers read at the
+   same size as the main player's, not as a visibly smaller "mini"
+   table. Only the first column's width ratio differs (46% vs. 38%),
+   since a Similar Shape card is narrower than the main table's own grid
+   column and needs relatively more room for the stat label. */
+.shape-finder-table{width:100%; min-width:0; border-collapse:collapse; font-size:13px; table-layout:fixed; margin-top:8px;}
 .shape-finder-table th{
-  text-align:left; font-family:var(--font-ibm-plex-mono), monospace; font-size:9px; letter-spacing:0.05em;
-  text-transform:uppercase; color:var(--star-dim); padding:4px 6px; border-bottom:1px solid var(--line);
+  text-align:left; font-family:var(--font-ibm-plex-mono), monospace; font-size:10px; letter-spacing:0.06em;
+  text-transform:uppercase; color:var(--star-dim); padding:6px 10px; border-bottom:1px solid var(--line);
 }
 .shape-finder-table th:not(:first-child){text-align:center; padding:0;}
 .shape-finder-table th:first-child{width:46%; white-space:normal;}
 .shape-finder-table td{padding:0; border-bottom:1px dashed var(--line); color:var(--star); text-align:center;}
 .shape-finder-table td:first-child{text-align:left; white-space:normal;}
 .shape-finder-table tr:last-child td{border-bottom:none;}
-.shape-finder-table .stat-header-trigger, .shape-finder-table .stat-row-trigger{padding:4px 6px; font-size:inherit;}
 
 /* Diverging comparison bars under each comp -- see CompareBar/CompareBars
    in SimilarShapeFinder.js. Two ticks (player gold, comp neon-blue, same
