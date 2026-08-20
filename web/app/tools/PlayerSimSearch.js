@@ -195,6 +195,9 @@ function StatDetailRow({ row, colSpan, shapePeers }) {
             selectedLayer={compareLayer}
             onSelect={selectCompare}
             selection={selection}
+            onSelectRow={selectRow}
+            onSelectColumn={selectColumn}
+            onSelectCell={selectCell}
           />
         </div>
       </td>

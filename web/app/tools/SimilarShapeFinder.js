@@ -103,6 +103,83 @@ function CompareBars({ selection, stats, peer }) {
   );
 }
 
+// Compact echo of StatDetailRow's own stat-detail-table -- same three-mode
+// row/column/cell click logic, driving the SAME shared `selection` state
+// (via the onSelectRow/onSelectColumn/onSelectCell setters passed straight
+// through from StatDetailRow), so clicking a cell in a comp's mini table
+// highlights that stat/layer everywhere else on the page exactly like
+// clicking the main table would -- there's no separate "this peer's
+// selection," it's the one selection the whole detail row already shares.
+function MiniStatTable({ peer, keys, labelByKey, selection, onSelectRow, onSelectColumn, onSelectCell }) {
+  const ranges = peer.stat_ranges;
+  if (!ranges) return null;
+  const rows = keys.filter((key) => ranges[key]);
+  if (rows.length === 0) return null;
+
+  return (
+    <table className="shape-finder-table">
+      <thead>
+        <tr>
+          <th></th>
+          {["floor", "median", "ceiling"].map((layer) => (
+            <th key={layer}>
+              <button
+                type="button"
+                className={`stat-header-trigger${selection?.mode === "column" && selection.layer === layer ? " stat-header-trigger-active" : ""}`}
+                onClick={() => onSelectColumn(layer)}
+                aria-pressed={selection?.mode === "column" && selection.layer === layer}
+              >
+                {layer === "floor" ? "Floor" : layer === "median" ? "Med" : "Ceil"}
+              </button>
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((key) => {
+          const { floor, median, ceiling } = ranges[key];
+          const isRowMode = selection?.mode === "row" && selection.key === key;
+          function cellProps(layer) {
+            const isCellActive = selection?.mode === "cell" && selection.key === key && selection.layer === layer;
+            const isColumnDim = selection?.mode === "column" && selection.layer === layer;
+            const isRowDim = isRowMode;
+            return {
+              className: `stat-row-trigger${
+                isCellActive ? " stat-row-trigger-active" : isColumnDim || isRowDim ? " stat-row-trigger-column" : ""
+              }`,
+              onClick: () => onSelectCell(key, layer),
+              "aria-pressed": isCellActive,
+            };
+          }
+          return (
+            <tr key={key} className={isRowMode ? "stat-row-selected" : ""}>
+              <td>
+                <button
+                  type="button"
+                  className={`stat-row-trigger${isRowMode ? " stat-row-trigger-active" : ""}`}
+                  onClick={() => onSelectRow(key)}
+                  aria-pressed={isRowMode}
+                >
+                  {labelByKey[key] || key}
+                </button>
+              </td>
+              <td className="mono">
+                <button type="button" {...cellProps("floor")}>{floor}</button>
+              </td>
+              <td className="mono">
+                <button type="button" {...cellProps("median")}><strong>{median}</strong></button>
+              </td>
+              <td className="mono">
+                <button type="button" {...cellProps("ceiling")}>{ceiling}</button>
+              </td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  );
+}
+
 // Ranks every peer that shares the same stat-key signature as the current
 // player (built in page.js -- QBs pool with QBs, but WRs and TEs pool
 // together since they carry the exact same 3 receiving keys) by how close
@@ -142,6 +219,9 @@ export default function SimilarShapeFinder({
   selectedLayer,
   onSelect,
   selection,
+  onSelectRow,
+  onSelectColumn,
+  onSelectCell,
 }) {
   if (!peers || peers.length === 0 || !keys || keys.length === 0) return null;
 
@@ -150,6 +230,10 @@ export default function SimilarShapeFinder({
     statFloorPercentiles,
     statCeilingPercentiles,
   };
+  // stats already carries {key, label} in table order (built once in
+  // PlayerSimSearch.js) -- reused here purely for its labels, which are
+  // the same for every peer sharing this stat signature.
+  const labelByKey = Object.fromEntries((stats || []).map((s) => [s.key, s.label]));
 
   // Ranking itself always goes by median shape (which 3 players get
   // listed at all doesn't change when you switch F/M/C -- only the shown
@@ -215,6 +299,15 @@ export default function SimilarShapeFinder({
                   })}
                 </div>
               </div>
+              <MiniStatTable
+                peer={p}
+                keys={keys}
+                labelByKey={labelByKey}
+                selection={selection}
+                onSelectRow={onSelectRow}
+                onSelectColumn={onSelectColumn}
+                onSelectCell={onSelectCell}
+              />
               {stats && <CompareBars selection={selection} stats={stats} peer={p} />}
             </div>
           );

@@ -1454,6 +1454,21 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .shape-finder-layer-btn:hover{color:var(--star);}
 .shape-finder-layer-btn.active{background:var(--neon-blue); color:var(--void);}
 .shape-finder-entry{display:flex; flex-direction:column;}
+/* Compact echo of .stat-detail-table (see MiniStatTable's own comment) --
+   same click mechanics and highlight classes, just smaller since a
+   Similar Shape card is far narrower than the main stat table's own
+   grid column. */
+.shape-finder-table{width:100%; min-width:0; border-collapse:collapse; font-size:11px; table-layout:fixed; margin-top:8px;}
+.shape-finder-table th{
+  text-align:left; font-family:var(--font-ibm-plex-mono), monospace; font-size:9px; letter-spacing:0.05em;
+  text-transform:uppercase; color:var(--star-dim); padding:4px 6px; border-bottom:1px solid var(--line);
+}
+.shape-finder-table th:not(:first-child){text-align:center; padding:0;}
+.shape-finder-table th:first-child{width:46%; white-space:normal;}
+.shape-finder-table td{padding:0; border-bottom:1px dashed var(--line); color:var(--star); text-align:center;}
+.shape-finder-table td:first-child{text-align:left; white-space:normal;}
+.shape-finder-table tr:last-child td{border-bottom:none;}
+.shape-finder-table .stat-header-trigger, .shape-finder-table .stat-row-trigger{padding:4px 6px; font-size:inherit;}
 
 /* Diverging comparison bars under each comp -- see CompareBar/CompareBars
    in SimilarShapeFinder.js. Two ticks (player gold, comp neon-blue, same

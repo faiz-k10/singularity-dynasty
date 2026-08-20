@@ -254,6 +254,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
       statPercentiles: row.statPercentiles,
       statFloorPercentiles: row.statFloorPercentiles,
       statCeilingPercentiles: row.statCeilingPercentiles,
+      stat_ranges: row.stat_ranges,
     });
   }
   // CSV export stays in points-per-game terms regardless of the on-page
