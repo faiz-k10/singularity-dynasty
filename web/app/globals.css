@@ -1401,12 +1401,31 @@ tr.stat-row-selected td{background:var(--void-panel);}
    F/M/C pill) since it matches .radar-shape-compare's own dashed-blue
    overlay -- gold stays reserved for "this is your own player" so the
    two never get visually confused on the chart. */
-.shape-finder{grid-area:finder;}
+/* .stat-detail-grid's align-items:stretch (see its own comment) makes
+   this panel match its taller table/radar siblings' height -- without
+   flex, that extra height just sat below the 3 cards as dead space.
+   display:flex + shape-finder-list's own flex:1 lets that stretched
+   height actually get used: spread the cards out to fill it while
+   nothing's selected (roomier, intentional-looking), then collapse back
+   to a tight top-aligned stack once a table/radar selection makes each
+   card taller with its own CompareBars content -- at that point letting
+   flex distribute the already-substantial content height would just
+   push the cards apart even further, which looks wrong once they're
+   not three short ~40px rows anymore. */
+.shape-finder{grid-area:finder; display:flex; flex-direction:column;}
 .shape-finder-label{
   font-family:var(--font-ibm-plex-mono), monospace; font-size:10px; letter-spacing:0.08em;
   text-transform:uppercase; color:var(--star-dim); margin-bottom:6px;
 }
-.shape-finder-list{display:flex; flex-direction:column; gap:6px;}
+.shape-finder-list{display:flex; flex-direction:column; gap:6px; flex:1;}
+/* Nothing selected in the table/radar yet -- spread the (short) cards
+   out to actually fill the stretched panel height instead of leaving it
+   as dead space below them. */
+.shape-finder-list-expanded{justify-content:space-between;}
+/* A selection is active -- each card's own CompareBars content now
+   supplies real height, so collapse back to a plain top-aligned stack
+   rather than also force-spreading the already-tall cards apart. */
+.shape-finder-list-collapsed{justify-content:flex-start;}
 .shape-finder-item{
   display:flex; justify-content:space-between; align-items:center; gap:8px;
   padding:6px 8px 6px 10px; border-radius:8px; border:1px solid var(--line);
