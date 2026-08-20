@@ -1274,26 +1274,22 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .stat-detail-table td:first-child{text-align:left;}
 .stat-detail-table tr:last-child td{border-bottom:none;}
 
-/* Three organized panels -- stat table, radar shape, and the similar-
-   shape comp list -- side by side as equal-height cards instead of the
-   old two-column layout that stacked the comp list under the radar
-   (and left a tall gap of empty space under the shorter table beside
-   it, since the two columns' content heights rarely matched). Radar
-   gets a bit more room since the chart itself needs it; finder gets a
-   bit less since it's just a short list. Collapses to two columns with
-   the comp list spanning full-width below once there's not enough room
-   for three real columns, then to a single stacked column on narrow
-   screens. */
+/* Table + radar side by side on top (one player's own view, naturally
+   similar heights to each other), Similar Shape spanning the full width
+   below. Used to be three equal-stretched columns, but Finder now holds
+   a full mini stat table per comp (not just a short 3-name list) --
+   squeezed into a narrow third column that content wrapped awkwardly,
+   AND align-items:stretch matched table/radar to Finder's now much
+   taller height, leaving big dead space under the shorter two. Splitting
+   Finder onto its own row decouples its height from table/radar's
+   entirely (align-items:stretch only has to reconcile table vs. radar in
+   the row above, which are naturally close in height already) and gives
+   its per-comp tables real column width to lay out in instead of a
+   cramped 0.9fr slice. */
 .stat-detail-grid{
-  display:grid; grid-template-columns:1.1fr 1fr 0.9fr;
-  grid-template-areas: "table radar finder";
+  display:grid; grid-template-columns:1.1fr 1fr;
+  grid-template-areas:"table radar" "finder finder";
   column-gap:20px; row-gap:20px; align-items:stretch;
-}
-@media (max-width:1100px){
-  .stat-detail-grid{
-    grid-template-columns:1fr 1fr;
-    grid-template-areas:"table radar" "finder finder";
-  }
 }
 @media (max-width:640px){
   .stat-detail-grid{
@@ -1401,31 +1397,19 @@ tr.stat-row-selected td{background:var(--void-panel);}
    F/M/C pill) since it matches .radar-shape-compare's own dashed-blue
    overlay -- gold stays reserved for "this is your own player" so the
    two never get visually confused on the chart. */
-/* .stat-detail-grid's align-items:stretch (see its own comment) makes
-   this panel match its taller table/radar siblings' height -- without
-   flex, that extra height just sat below the 3 cards as dead space.
-   display:flex + shape-finder-list's own flex:1 lets that stretched
-   height actually get used: spread the cards out to fill it while
-   nothing's selected (roomier, intentional-looking), then collapse back
-   to a tight top-aligned stack once a table/radar selection makes each
-   card taller with its own CompareBars content -- at that point letting
-   flex distribute the already-substantial content height would just
-   push the cards apart even further, which looks wrong once they're
-   not three short ~40px rows anymore. */
-.shape-finder{grid-area:finder; display:flex; flex-direction:column;}
+/* Finder now spans the grid's full width on its own row (see
+   .stat-detail-grid's comment), so its 3 comp cards lay out side by side
+   instead of stacked -- uses the real width it has instead of leaving it
+   as a narrow vertical list with dead space to the right of each card. */
+.shape-finder{grid-area:finder;}
 .shape-finder-label{
   font-family:var(--font-ibm-plex-mono), monospace; font-size:10px; letter-spacing:0.08em;
   text-transform:uppercase; color:var(--star-dim); margin-bottom:6px;
 }
-.shape-finder-list{display:flex; flex-direction:column; gap:6px; flex:1;}
-/* Nothing selected in the table/radar yet -- spread the (short) cards
-   out to actually fill the stretched panel height instead of leaving it
-   as dead space below them. */
-.shape-finder-list-expanded{justify-content:space-between;}
-/* A selection is active -- each card's own CompareBars content now
-   supplies real height, so collapse back to a plain top-aligned stack
-   rather than also force-spreading the already-tall cards apart. */
-.shape-finder-list-collapsed{justify-content:flex-start;}
+.shape-finder-list{display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; align-items:start;}
+@media (max-width:900px){
+  .shape-finder-list{grid-template-columns:1fr;}
+}
 .shape-finder-item{
   display:flex; justify-content:space-between; align-items:center; gap:8px;
   padding:6px 8px 6px 10px; border-radius:8px; border:1px solid var(--line);
