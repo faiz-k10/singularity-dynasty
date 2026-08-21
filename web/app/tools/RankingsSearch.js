@@ -19,6 +19,12 @@ export default function RankingsSearch({
   const showPositionFilter = Array.isArray(positions) && positions.length > 0;
   const [selected, setSelected] = useState(positions || []);
   const [query, setQuery] = useState("");
+  // Row label + current value always show; only the toggle buttons
+  // underneath collapse, matching Player Season Simulations' own filter
+  // accordion. Starts collapsed regardless of whether a non-default
+  // selection is already active -- the always-visible value text is
+  // what surfaces that without needing to open anything.
+  const [positionOpen, setPositionOpen] = useState(false);
 
   function toggle(pos) {
     setSelected((prev) =>
@@ -41,18 +47,36 @@ export default function RankingsSearch({
   return (
     <>
       {showPositionFilter && (
-        <div className="position-filter-row">
-          {positions.map((pos) => (
+        <div className="filter-accordion">
+          <div className="filter-row">
             <button
-              key={pos}
               type="button"
-              className={`position-pill ${selected.includes(pos) ? "active" : ""}`}
-              onClick={() => toggle(pos)}
-              aria-pressed={selected.includes(pos)}
+              className="filter-row-header"
+              onClick={() => setPositionOpen((v) => !v)}
+              aria-expanded={positionOpen}
             >
-              {pos}
+              <span className={`filter-row-chevron${positionOpen ? " filter-row-chevron-open" : ""}`}>▸</span>
+              <span className="tier-toggle-label">Position</span>
+              <span className={`filter-row-value${selected.length < positions.length ? " filter-row-value-active" : ""}`}>
+                {selected.length === positions.length ? "All" : selected.length === 0 ? "None" : selected.join(", ")}
+              </span>
             </button>
-          ))}
+            {positionOpen && (
+              <div className="position-filter-row">
+                {positions.map((pos) => (
+                  <button
+                    key={pos}
+                    type="button"
+                    className={`position-pill ${selected.includes(pos) ? "active" : ""}`}
+                    onClick={() => toggle(pos)}
+                    aria-pressed={selected.includes(pos)}
+                  >
+                    {pos}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       )}
 
