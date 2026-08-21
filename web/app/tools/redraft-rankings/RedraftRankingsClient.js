@@ -26,6 +26,19 @@ const COLUMN_TYPES = {
 // nobody who ignores the panel sees any different number than before.
 export default function RedraftRankingsClient({ rawRows, sortKey, sortDir, currentParams, positions }) {
   const [settings, setSettings] = useState(DEFAULT_SCORING_SETTINGS);
+  const showPositionFilter = Array.isArray(positions) && positions.length > 0;
+  const [selectedPositions, setSelectedPositions] = useState(positions || []);
+  // Collapsed by default regardless of whether a non-default selection is
+  // already active -- the always-visible value text next to the chevron
+  // is what surfaces that without needing to open anything, same as
+  // every other row in this accordion.
+  const [positionOpen, setPositionOpen] = useState(false);
+
+  function togglePosition(pos) {
+    setSelectedPositions((prev) =>
+      prev.includes(pos) ? prev.filter((p) => p !== pos) : [...prev, pos]
+    );
+  }
 
   useEffect(() => {
     try {
@@ -94,13 +107,46 @@ export default function RedraftRankingsClient({ rawRows, sortKey, sortDir, curre
         onChange={updateSettings}
         isDefault={usingDefault}
         onReset={() => updateSettings(DEFAULT_SCORING_SETTINGS)}
-      />
+      >
+        {showPositionFilter && (
+          <div className="filter-row">
+            <button
+              type="button"
+              className="filter-row-header"
+              onClick={() => setPositionOpen((v) => !v)}
+              aria-expanded={positionOpen}
+            >
+              <span className={`filter-row-chevron${positionOpen ? " filter-row-chevron-open" : ""}`}>▸</span>
+              <span className="tier-toggle-label">Position</span>
+              <span className={`filter-row-value${selectedPositions.length < positions.length ? " filter-row-value-active" : ""}`}>
+                {selectedPositions.length === positions.length ? "All" : selectedPositions.length === 0 ? "None" : selectedPositions.join(", ")}
+              </span>
+            </button>
+            {positionOpen && (
+              <div className="position-filter-row">
+                {positions.map((pos) => (
+                  <button
+                    key={pos}
+                    type="button"
+                    className={`position-pill ${selectedPositions.includes(pos) ? "active" : ""}`}
+                    onClick={() => togglePosition(pos)}
+                    aria-pressed={selectedPositions.includes(pos)}
+                  >
+                    {pos}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </ScoringSettingsPanel>
       <RankingsSearch
         rows={rows}
         sortKey={sortKey}
         sortDir={sortDir}
         currentParams={currentParams}
         positions={positions}
+        selected={selectedPositions}
       />
     </>
   );

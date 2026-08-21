@@ -1120,13 +1120,13 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .position-pill:hover{border-color:var(--neon-blue); color:var(--star);}
 .position-pill.active{background:var(--horizon-gold); border-color:var(--horizon-gold); color:#1A0D05;}
 
-/* Redraft Rankings — custom scoring settings panel. Same card language as
-   .compare-form (void-panel + line border + 16px radius). */
-.scoring-panel{
-  background:var(--void-panel); border:1px solid var(--line); border-radius:16px; padding:22px;
-  margin-bottom:28px; box-shadow:0 30px 70px rgba(var(--shadow-rgb),0.4);
-}
-.scoring-panel-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:18px;}
+/* Redraft Rankings — custom scoring settings, now collapsible filter-rows
+   inside .filter-accordion (see ScoringSettingsPanel.js) instead of an
+   always-open grid, matching Player Season Simulations' Position/League
+   Size/QB Format rows. Just the small heading + reset button above the
+   accordion, and the settings-changed note below it, are left as their
+   own standalone rules. */
+.scoring-panel-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;}
 .scoring-panel-title{
   font-family:var(--font-ibm-plex-mono), monospace; font-size:12px; font-weight:700; letter-spacing:0.06em;
   text-transform:uppercase; color:var(--star-dim);
@@ -1136,26 +1136,10 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
   background:none; border:none; cursor:pointer; padding:2px 0; text-decoration:underline; text-underline-offset:2px;
 }
 .scoring-reset-btn:hover{color:var(--horizon-gold);}
-.scoring-panel-grid{
-  display:grid; grid-template-columns:repeat(4, 1fr); gap:22px 20px; align-items:start;
-}
-@media (max-width:880px){.scoring-panel-grid{grid-template-columns:repeat(2, 1fr);}}
-@media (max-width:480px){.scoring-panel-grid{grid-template-columns:1fr;}}
-.scoring-field{display:flex; flex-direction:column; gap:9px;}
-.scoring-field-label{
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:11px; font-weight:600; letter-spacing:0.04em;
-  text-transform:uppercase; color:var(--star-dim);
-}
-.scoring-field-value{color:var(--horizon-gold); text-transform:none; letter-spacing:0; margin-left:4px;}
-.scoring-pill-group{display:flex; gap:6px;}
-.scoring-pill{
-  flex:1; font-family:var(--font-ibm-plex-mono), monospace; font-size:12px; font-weight:600;
-  padding:8px 10px; border-radius:8px; background:var(--void-panel-2); border:1px solid var(--line);
-  color:var(--star-dim); cursor:pointer; transition:border-color .2s ease, background .2s ease, color .2s ease;
-  white-space:nowrap;
-}
-.scoring-pill:hover{border-color:var(--neon-blue); color:var(--star);}
-.scoring-pill.active{background:var(--horizon-gold); border-color:var(--horizon-gold); color:#1A0D05;}
+/* TE Premium's slider isn't a discrete option set like the others, so it
+   can't reuse .tier-toggle's pill-group markup -- same row body margin
+   as .filter-row .tier-toggle for consistent left/right/bottom spacing. */
+.filter-row .scoring-slider-body{margin:0 20px 16px;}
 .scoring-slider{
   width:100%; accent-color:var(--horizon-gold); cursor:pointer; margin:6px 0 0;
 }
@@ -1164,7 +1148,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
   font-size:10.5px; color:var(--star-dim);
 }
 .scoring-panel-note{
-  font-size:12.5px; color:var(--star-dim); margin:18px 0 0; padding-top:14px; border-top:1px dashed var(--line);
+  font-size:12.5px; color:var(--star-dim); margin:12px 0 0; padding-top:14px; border-top:1px dashed var(--line);
 }
 
 /* Player name hover/focus popover — Team/Proj/Notes squeezed out of the

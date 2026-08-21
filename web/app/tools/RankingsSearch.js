@@ -5,32 +5,23 @@ import RankingsTable from "./RankingsTable";
 
 // Shared by both Redraft Rankings toggle views. Overall: just the search
 // box, every position combined into one table. By Position: the same
-// single combined table, plus multi-select position pills (any
-// combination of QB/RB/WR/TE) filtering which rows show. Sorting stays
-// server-driven via the existing URL-param mechanism in both cases; only
-// which positions are selected and the search text are client state.
+// single combined table, filtered by whichever positions the caller has
+// selected (any combination of QB/RB/WR/TE). Sorting stays server-driven
+// via the existing URL-param mechanism in both cases; the search text is
+// the only client state owned here -- which positions are selected, and
+// the filter-row UI for picking them, are owned by the parent
+// (RedraftRankingsClient) so that row can live inside the scoring-
+// settings accordion instead of a second separate box.
 export default function RankingsSearch({
   rows,
   sortKey,
   sortDir,
   currentParams,
-  positions, // omit (or pass []) to hide the position-pill row entirely
+  positions, // omit (or pass []) to skip position filtering entirely
+  selected, // currently-selected positions, owned by the parent
 }) {
   const showPositionFilter = Array.isArray(positions) && positions.length > 0;
-  const [selected, setSelected] = useState(positions || []);
   const [query, setQuery] = useState("");
-  // Row label + current value always show; only the toggle buttons
-  // underneath collapse, matching Player Season Simulations' own filter
-  // accordion. Starts collapsed regardless of whether a non-default
-  // selection is already active -- the always-visible value text is
-  // what surfaces that without needing to open anything.
-  const [positionOpen, setPositionOpen] = useState(false);
-
-  function toggle(pos) {
-    setSelected((prev) =>
-      prev.includes(pos) ? prev.filter((p) => p !== pos) : [...prev, pos]
-    );
-  }
 
   const filteredRows = useMemo(() => {
     let out = rows;
@@ -46,40 +37,6 @@ export default function RankingsSearch({
 
   return (
     <>
-      {showPositionFilter && (
-        <div className="filter-accordion">
-          <div className="filter-row">
-            <button
-              type="button"
-              className="filter-row-header"
-              onClick={() => setPositionOpen((v) => !v)}
-              aria-expanded={positionOpen}
-            >
-              <span className={`filter-row-chevron${positionOpen ? " filter-row-chevron-open" : ""}`}>▸</span>
-              <span className="tier-toggle-label">Position</span>
-              <span className={`filter-row-value${selected.length < positions.length ? " filter-row-value-active" : ""}`}>
-                {selected.length === positions.length ? "All" : selected.length === 0 ? "None" : selected.join(", ")}
-              </span>
-            </button>
-            {positionOpen && (
-              <div className="position-filter-row">
-                {positions.map((pos) => (
-                  <button
-                    key={pos}
-                    type="button"
-                    className={`position-pill ${selected.includes(pos) ? "active" : ""}`}
-                    onClick={() => toggle(pos)}
-                    aria-pressed={selected.includes(pos)}
-                  >
-                    {pos}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
       <div className="player-search-row">
         <input
           type="search"
