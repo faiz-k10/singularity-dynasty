@@ -6,8 +6,8 @@ import { DEFAULT_SCORING_SETTINGS } from "@/lib/scoring";
 const TE_PREMIUM_STEPS = [0, 0.5, 1];
 const PPR_OPTIONS = [
   { value: "standard", label: "Standard" },
-  { value: "half", label: "Half PPR" },
-  { value: "full", label: "Full PPR" },
+  { value: "half", label: "0.5 PPR" },
+  { value: "full", label: "PPR" },
 ];
 const PPR_LABEL = { standard: "Standard", half: "Half PPR", full: "Full PPR" };
 

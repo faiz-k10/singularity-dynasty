@@ -1110,7 +1110,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    narrow to hold it, rather than always reserving a second line. */
 .scoring-accordion-h{display:flex; flex-wrap:wrap; width:100%; max-width:100%;}
 .scoring-accordion-h .filter-row{
-  flex:1 1 150px; min-width:150px; border-bottom:none; border-right:1px solid var(--line);
+  flex:0 1 auto; border-bottom:none; border-right:1px solid var(--line);
 }
 .scoring-accordion-h .filter-row:last-child{border-right:none;}
 .scoring-accordion-h .filter-row-header{flex-wrap:wrap; padding:10px 16px;}
@@ -1123,7 +1123,14 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .scoring-accordion-h .filter-row .position-filter-row,
 .scoring-accordion-h .filter-row .tier-toggle,
 .scoring-accordion-h .filter-row .scoring-slider-body{margin:0 16px 10px;}
-.scoring-accordion-h .filter-row .tier-toggle{padding:3px; gap:3px;}
+/* .filter-row .tier-toggle sets display:flex (a block-level flex
+   container, so it stretches to the column's full width) for its other
+   callers, which is fine when there's a 3-4-way toggle to fill that
+   width -- but Passing TD and Interception only ever have 2 options, so
+   the same full-width toggle left a large empty gap after the second
+   pill. inline-flex here shrinks it back to just the width its pills
+   actually need. */
+.scoring-accordion-h .filter-row .tier-toggle{display:inline-flex; padding:3px; gap:3px;}
 .scoring-accordion-h .filter-row .tier-toggle a,
 .scoring-accordion-h .filter-row .tier-toggle button{padding:5px 11px; font-size:11px;}
 .scoring-accordion-h .filter-row .position-filter-row{gap:6px;}
