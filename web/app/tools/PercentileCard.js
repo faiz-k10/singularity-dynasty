@@ -27,7 +27,7 @@ function tier(pctile) {
 }
 
 // Whole-number stats (yards, TDs, receptions) still round to an integer;
-// decimal stats (avg_separation, yac_above_exp) keep up to 2 places
+// decimal stats (yac_above_exp, target_share) keep up to 2 places
 // instead of getting rounded away to a meaningless whole number.
 function formatValue(value) {
   if (value == null) return "—";

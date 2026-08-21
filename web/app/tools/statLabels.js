@@ -12,11 +12,13 @@ const STAT_LABELS = [
   ["receptions", "Receptions"],
   ["receiving_yards", "Rec Yards"],
   ["receiving_tds", "Rec TDs"],
-  // WR/TE only, real Next Gen Stats season aggregate (not a projected
-  // floor/median/ceiling spread -- see projection_engine.R's per-player
-  // loop for why these two collapse to the same value across all three).
-  ["avg_separation", "Avg Separation"],
+  // WR/TE only -- real bootstrap floor/median/ceiling (backtested decay +
+  // calibrated quantiles), not a flat point value. YAC Above Exp is real
+  // Next Gen Stats; Target Share is load_player_stats()' own column,
+  // stored as percentage points (31.4, not 0.314) -- see
+  // projection_engine.R's per-player loop.
   ["yac_above_exp", "YAC Above Exp"],
+  ["target_share", "Target Share"],
 ];
 
 export default STAT_LABELS;
