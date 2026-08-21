@@ -30,8 +30,6 @@ export default function ScoringSettingsPanel({ settings, onChange, isDefault, on
   const [openFields, setOpenFields] = useState({
     ppr: false,
     tePremium: false,
-    passingTd: false,
-    int: false,
   });
 
   function toggleField(key) {
@@ -113,66 +111,6 @@ export default function ScoringSettingsPanel({ settings, onChange, isDefault, on
                 <span>+0.5</span>
                 <span>+1.0</span>
               </div>
-            </div>
-          )}
-        </div>
-
-        <div className="filter-row">
-          <button
-            type="button"
-            className="filter-row-header"
-            onClick={() => toggleField("passingTd")}
-            aria-expanded={openFields.passingTd}
-          >
-            <span className={`filter-row-chevron${openFields.passingTd ? " filter-row-chevron-open" : ""}`}>▸</span>
-            <span className="tier-toggle-label">Passing TD</span>
-            <span className={`filter-row-value${settings.passingTdPoints !== DEFAULT_SCORING_SETTINGS.passingTdPoints ? " filter-row-value-active" : ""}`}>
-              {settings.passingTdPoints} pts
-            </span>
-          </button>
-          {openFields.passingTd && (
-            <div className="tier-toggle" role="group" aria-label="Passing touchdown points">
-              {[4, 6].map((v) => (
-                <button
-                  key={v}
-                  type="button"
-                  className={settings.passingTdPoints === v ? "active" : ""}
-                  aria-pressed={settings.passingTdPoints === v}
-                  onClick={() => set("passingTdPoints", v)}
-                >
-                  {v} pts
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div className="filter-row">
-          <button
-            type="button"
-            className="filter-row-header"
-            onClick={() => toggleField("int")}
-            aria-expanded={openFields.int}
-          >
-            <span className={`filter-row-chevron${openFields.int ? " filter-row-chevron-open" : ""}`}>▸</span>
-            <span className="tier-toggle-label">Interception</span>
-            <span className={`filter-row-value${settings.intPoints !== DEFAULT_SCORING_SETTINGS.intPoints ? " filter-row-value-active" : ""}`}>
-              {settings.intPoints} pts
-            </span>
-          </button>
-          {openFields.int && (
-            <div className="tier-toggle" role="group" aria-label="Interception points">
-              {[-1, -2].map((v) => (
-                <button
-                  key={v}
-                  type="button"
-                  className={settings.intPoints === v ? "active" : ""}
-                  aria-pressed={settings.intPoints === v}
-                  onClick={() => set("intPoints", v)}
-                >
-                  {v} pts
-                </button>
-              ))}
             </div>
           )}
         </div>
