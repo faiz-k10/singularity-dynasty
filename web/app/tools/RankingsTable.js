@@ -63,11 +63,12 @@ export default function RankingsTable({
   currentParams,
   sortParam = "sort",
   dirParam = "dir",
+  tableClassName = "",
 }) {
   const sortProps = { activeSort: sortKey, activeDir: sortDir, currentParams, sortParam, dirParam };
   return (
-    <div className="rankings-table-wrap">
-      <table className="rankings-table">
+    <div className={`rankings-table-wrap${tableClassName ? ` ${tableClassName}-wrap` : ""}`}>
+      <table className={`rankings-table${tableClassName ? ` ${tableClassName}` : ""}`}>
         <thead>
           <tr>
             <SortableTh label="Rank" sortKey="rank" {...sortProps} />

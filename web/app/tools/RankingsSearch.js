@@ -19,6 +19,7 @@ export default function RankingsSearch({
   currentParams,
   positions, // omit (or pass []) to skip position filtering entirely
   selected, // currently-selected positions, owned by the parent
+  tableClassName = "",
 }) {
   const showPositionFilter = Array.isArray(positions) && positions.length > 0;
   const [query, setQuery] = useState("");
@@ -66,6 +67,7 @@ export default function RankingsSearch({
           sortKey={sortKey}
           sortDir={sortDir}
           currentParams={currentParams}
+          tableClassName={tableClassName}
         />
       )}
     </>

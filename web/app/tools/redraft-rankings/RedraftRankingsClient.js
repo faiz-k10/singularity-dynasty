@@ -147,6 +147,7 @@ export default function RedraftRankingsClient({ rawRows, sortKey, sortDir, curre
         currentParams={currentParams}
         positions={positions}
         selected={selectedPositions}
+        tableClassName="redraft-table"
       />
     </>
   );
