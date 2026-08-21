@@ -20,6 +20,17 @@ suppressMessages(library(jsonlite))
 # tested out-of-sample against the 2023-2025 projection window. See README.md
 # for the backtest methodology and sample sizes per position.
 
+# Player Season Simulations' own pool is capped to the top N players by
+# season median (overall, not per-position) -- explicit product decision,
+# not backtested. Every per-stat percentile on that page (radar, percentile
+# card, heat-tint, Similar Shape) is computed against whatever's actually
+# published, so trimming the long replacement-level tail out of the pool
+# makes those percentiles reflect a real startable-caliber universe
+# instead of being padded by waiver-wire players nobody would ever roster.
+# Does NOT affect redraft_rankings or best_ball_rankings, which stay
+# uncapped -- this is specific to the simulation pool.
+PLAYER_SIMULATIONS_POOL_SIZE <- 300
+
 MIN_GAMES <- 6    # eligibility floor. Every player below LOW_SAMPLE_SHRINK_THRESHOLD
                   # (20) gets the 80/20 blend automatically, so low-sample players
                   # are covered but not fully trusted on their own history alone.
@@ -1113,15 +1124,19 @@ export_for_supabase <- function(df, target_season = TARGET_SEASON, week = NULL) 
     notes = ifelse(bb$player_name %in% out_players, "OUT", "")
   ), "upload_best_ball_rankings.csv", row.names = FALSE)
 
+  # Top PLAYER_SIMULATIONS_POOL_SIZE by season median, overall -- see that
+  # constant's own comment up top for why this pool is capped at all.
+  sims <- df[order(-df$season_median), ]
+  sims <- sims[seq_len(min(PLAYER_SIMULATIONS_POOL_SIZE, nrow(sims))), ]
   write.csv(data.frame(
-    season = season, week = week, player_name = df$player_name, position = df$position,
-    team = df$team, floor = df$season_floor, median = df$season_median,
-    ceiling = df$season_ceiling,
-    trend = df$trend,
-    sample_confidence = confidence,
-    stat_ranges = df$stat_ranges_json,
-    bust_pct = df$bust_pct, normal_pct = df$normal_pct, boom_pct = df$boom_pct,
-    wopr = df$wopr, epa = df$epa,
+    season = season, week = week, player_name = sims$player_name, position = sims$position,
+    team = sims$team, floor = sims$season_floor, median = sims$season_median,
+    ceiling = sims$season_ceiling,
+    trend = sims$trend,
+    sample_confidence = ifelse(sims$shrunk, "building", "established"),
+    stat_ranges = sims$stat_ranges_json,
+    bust_pct = sims$bust_pct, normal_pct = sims$normal_pct, boom_pct = sims$boom_pct,
+    wopr = sims$wopr, epa = sims$epa,
     notes = ""
   ), "upload_player_simulations.csv", row.names = FALSE, na = "")
 
