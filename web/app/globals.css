@@ -1114,9 +1114,21 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 }
 .scoring-accordion-h .filter-row:last-child{border-right:none;}
 .scoring-accordion-h .filter-row-header{flex-wrap:wrap; padding:10px 16px;}
+/* The expanded pill/slider bodies reuse .tier-toggle/.position-pill,
+   sized for their own full-width single-column context elsewhere on the
+   site (Player Sims' League Size/QB Format, Redraft's old vertical
+   layout) -- too large for these narrower columns, where they read as
+   oversized buttons rather than a compact inline control. Scoped
+   smaller pills + tighter row margins here only. */
 .scoring-accordion-h .filter-row .position-filter-row,
 .scoring-accordion-h .filter-row .tier-toggle,
-.scoring-accordion-h .filter-row .scoring-slider-body{margin:0 16px 12px;}
+.scoring-accordion-h .filter-row .scoring-slider-body{margin:0 16px 10px;}
+.scoring-accordion-h .filter-row .tier-toggle{padding:3px; gap:3px;}
+.scoring-accordion-h .filter-row .tier-toggle a,
+.scoring-accordion-h .filter-row .tier-toggle button{padding:5px 11px; font-size:11px;}
+.scoring-accordion-h .filter-row .position-filter-row{gap:6px;}
+.scoring-accordion-h .filter-row .position-pill{padding:5px 12px; font-size:11px;}
+.scoring-accordion-h .filter-row .scoring-slider-ticks{font-size:9.5px;}
 /* Position-colored left accent on every rankings row (Redraft, Best Ball,
    Player Simulations alike) -- QB/RB/WR/TE, so the eye can group by
    position even when the table isn't grouped/sorted that way. */
