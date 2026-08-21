@@ -52,7 +52,7 @@ export default function ScoringSettingsPanel({ settings, onChange, isDefault, on
         )}
       </div>
 
-      <div className="filter-accordion">
+      <div className="filter-accordion scoring-accordion-h">
         <div className="filter-row">
           <button
             type="button"
