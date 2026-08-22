@@ -1206,7 +1206,13 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 /* TE Premium's slider isn't a discrete option set like the others, so it
    can't reuse .tier-toggle's pill-group markup -- same row body margin
    as .filter-row .tier-toggle for consistent left/right/bottom spacing. */
-.filter-row .scoring-slider-body{margin:0 20px 16px;}
+/* Extra horizontal padding (on top of the row's own margin) insets the
+   track from the row's edges by half the thumb's width -- without it,
+   the thumb at the min/max steps sits flush against the tick label
+   beneath it (a native range thumb's travel spans the full track width,
+   so at value=max its center -- not just its edge -- lands at the very
+   right edge, crowding the "+1.0" tick directly below). */
+.filter-row .scoring-slider-body{margin:0 20px 16px; padding:0 8px;}
 /* accent-color colors both the thumb AND the filled track the same hue
    -- can't give the thumb ("button") and the track/fill different
    colors that way, so this drops accent-color for a fully custom-styled
