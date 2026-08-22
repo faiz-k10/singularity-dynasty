@@ -1093,49 +1093,6 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .filter-row-value-active{color:var(--horizon-gold); font-weight:600;}
 .filter-row .position-filter-row, .filter-row .tier-toggle{margin:0 20px 16px;}
 .filter-row .tier-toggle{display:flex;}
-
-/* Redraft Rankings' scoring accordion laid out as columns instead of
-   stacked rows -- scoped to .scoring-accordion-h (only ScoringSettings-
-   Panel opts in) so Player Season Simulations' Position/League Size/
-   QB Format accordion, which still wants the stacked look, is untouched
-   even though both share .filter-accordion/.filter-row for their base
-   chrome. Each field becomes its own flex column with a vertical
-   divider (border-right) instead of the stacked border-bottom. Two
-   earlier passes stacked chevron/label/value onto 2-3 separate lines
-   each, which made the box far taller than it needs to be -- these
-   columns are wide enough (5 fit across one row already) that chevron,
-   label, and value all fit on a single line same as the original
-   single-column design did; flex-wrap on the header is just a safety
-   net so a value only drops to its own line if a column ever gets too
-   narrow to hold it, rather than always reserving a second line. */
-.scoring-accordion-h{display:flex; flex-wrap:wrap; width:100%; max-width:100%;}
-.scoring-accordion-h .filter-row{
-  flex:0 1 auto; border-bottom:none; border-right:1px solid var(--line);
-}
-.scoring-accordion-h .filter-row:last-child{border-right:none;}
-.scoring-accordion-h .filter-row-header{flex-wrap:wrap; padding:10px 16px;}
-/* The expanded pill/slider bodies reuse .tier-toggle/.position-pill,
-   sized for their own full-width single-column context elsewhere on the
-   site (Player Sims' League Size/QB Format, Redraft's old vertical
-   layout) -- too large for these narrower columns, where they read as
-   oversized buttons rather than a compact inline control. Scoped
-   smaller pills + tighter row margins here only. */
-.scoring-accordion-h .filter-row .position-filter-row,
-.scoring-accordion-h .filter-row .tier-toggle,
-.scoring-accordion-h .filter-row .scoring-slider-body{margin:0 16px 10px;}
-/* .filter-row .tier-toggle sets display:flex (a block-level flex
-   container, so it stretches to the column's full width) for its other
-   callers, which is fine when there's a 3-4-way toggle to fill that
-   width -- but Passing TD and Interception only ever have 2 options, so
-   the same full-width toggle left a large empty gap after the second
-   pill. inline-flex here shrinks it back to just the width its pills
-   actually need. */
-.scoring-accordion-h .filter-row .tier-toggle{display:inline-flex; padding:3px; gap:3px;}
-.scoring-accordion-h .filter-row .tier-toggle a,
-.scoring-accordion-h .filter-row .tier-toggle button{padding:5px 11px; font-size:11px;}
-.scoring-accordion-h .filter-row .position-filter-row{gap:6px;}
-.scoring-accordion-h .filter-row .position-pill{padding:5px 12px; font-size:11px;}
-.scoring-accordion-h .filter-row .scoring-slider-ticks{font-size:9.5px;}
 /* Position-colored left accent on every rankings row (Redraft, Best Ball,
    Player Simulations alike) -- QB/RB/WR/TE, so the eye can group by
    position even when the table isn't grouped/sorted that way. */
