@@ -106,12 +106,17 @@ export default function ScoringSettingsPanel({ settings, onChange, isDefault, on
                 value={TE_PREMIUM_STEPS.indexOf(settings.tePremium)}
                 onChange={(e) => set("tePremium", TE_PREMIUM_STEPS[Number(e.target.value)])}
                 aria-label="Tight end premium"
+                style={{ "--fill-pct": `${(TE_PREMIUM_STEPS.indexOf(settings.tePremium) / (TE_PREMIUM_STEPS.length - 1)) * 100}%` }}
               />
-              <div
-                className="scoring-slider-value"
-                style={{ left: `${(TE_PREMIUM_STEPS.indexOf(settings.tePremium) / (TE_PREMIUM_STEPS.length - 1)) * 100}%` }}
-              >
-                {TE_PREMIUM_TICK_LABELS[TE_PREMIUM_STEPS.indexOf(settings.tePremium)]}
+              <div className="scoring-slider-ticks">
+                {TE_PREMIUM_TICK_LABELS.map((label, i) => (
+                  <span
+                    key={label}
+                    className={i === TE_PREMIUM_STEPS.indexOf(settings.tePremium) ? "scoring-slider-tick-active" : ""}
+                  >
+                    {label}
+                  </span>
+                ))}
               </div>
             </div>
           )}
