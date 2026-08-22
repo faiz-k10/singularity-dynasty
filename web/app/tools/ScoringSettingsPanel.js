@@ -4,6 +4,7 @@ import { useState } from "react";
 import { DEFAULT_SCORING_SETTINGS } from "@/lib/scoring";
 
 const TE_PREMIUM_STEPS = [0, 0.5, 1];
+const TE_PREMIUM_TICK_LABELS = ["0", "+0.5", "+1.0"];
 const PPR_OPTIONS = [
   { value: "standard", label: "Standard" },
   { value: "half", label: "0.5 PPR" },
@@ -106,10 +107,11 @@ export default function ScoringSettingsPanel({ settings, onChange, isDefault, on
                 onChange={(e) => set("tePremium", TE_PREMIUM_STEPS[Number(e.target.value)])}
                 aria-label="Tight end premium"
               />
-              <div className="scoring-slider-ticks">
-                <span>0</span>
-                <span>+0.5</span>
-                <span>+1.0</span>
+              <div
+                className="scoring-slider-value"
+                style={{ left: `${(TE_PREMIUM_STEPS.indexOf(settings.tePremium) / (TE_PREMIUM_STEPS.length - 1)) * 100}%` }}
+              >
+                {TE_PREMIUM_TICK_LABELS[TE_PREMIUM_STEPS.indexOf(settings.tePremium)]}
               </div>
             </div>
           )}

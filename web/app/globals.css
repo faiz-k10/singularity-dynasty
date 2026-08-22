@@ -1206,13 +1206,20 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 /* TE Premium's slider isn't a discrete option set like the others, so it
    can't reuse .tier-toggle's pill-group markup -- same row body margin
    as .filter-row .tier-toggle for consistent left/right/bottom spacing. */
-.filter-row .scoring-slider-body{margin:0 20px 16px;}
+.filter-row .scoring-slider-body{margin:0 20px 16px; position:relative;}
 .scoring-slider{
-  width:100%; accent-color:var(--horizon-gold); cursor:pointer; margin:6px 0 0;
+  width:100%; accent-color:var(--neon-blue); cursor:pointer; margin:6px 0 0; display:block;
 }
-.scoring-slider-ticks{
-  display:flex; justify-content:space-between; font-family:var(--font-ibm-plex-mono), monospace;
-  font-size:10.5px; color:var(--star-dim);
+/* Tracks the thumb instead of the old fixed 0/+0.5/+1.0 tick row --
+   only the current value shows, its `left` set inline (see
+   ScoringSettingsPanel.js) to the same 0%/50%/100% the thumb sits at,
+   centered under that point via translateX(-50%). Absolutely
+   positioned against .scoring-slider-body, which the slider's own
+   height defines (translateX'd elements don't add to flow height). */
+.scoring-slider-value{
+  position:absolute; top:100%; margin-top:8px; transform:translateX(-50%);
+  font-family:var(--font-ibm-plex-mono), monospace; font-size:10.5px; color:var(--star-dim);
+  white-space:nowrap;
 }
 .scoring-panel-note{
   font-size:12.5px; color:var(--star-dim); margin:12px 0 0; padding-top:14px; border-top:1px dashed var(--line);
