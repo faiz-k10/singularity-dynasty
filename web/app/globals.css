@@ -729,6 +729,12 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    so the other tool pages (narrower tables, or prose-heavy legal pages
    sharing the same base class) are untouched. */
 .player-sims-wrap{max-width:calc(100vw - 48px); padding-left:24px; padding-right:24px;}
+/* Redraft Rankings' table gained the same frozen Rank/Player/Pos
+   columns as Player Sims (see .redraft-table above) but was left on
+   the standard 1140px .tool-wrap width -- widen it the same way so it
+   actually benefits from that extra room instead of still being capped
+   to the narrower column. */
+.redraft-wrap{max-width:calc(100vw - 48px); padding-left:24px; padding-right:24px;}
 .tool-wrap h1{font-size:clamp(30px,4vw,42px); margin-bottom:14px;}
 .tool-sub{color:var(--star-dim); font-size:15px; max-width:560px; margin-bottom:36px;}
 .tool-empty{background:var(--void-panel); border:1px solid var(--line); border-radius:16px; padding:32px; color:var(--star-dim); font-size:14px;}

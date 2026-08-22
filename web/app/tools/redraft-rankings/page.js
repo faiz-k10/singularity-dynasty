@@ -97,7 +97,7 @@ export default async function RedraftRankingsPage({ searchParams }) {
     <div className="tool-page">
       <SiteHeader />
 
-      <main className="wrap tool-wrap">
+      <main className="wrap tool-wrap redraft-wrap">
         <div className="eyebrow">
           {latest ? `Week ${latest.week} · ${latest.season}` : "Redraft"}
         </div>
