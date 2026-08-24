@@ -10,6 +10,16 @@ export const metadata = {
 };
 
 const POSITION_ORDER = ["QB", "RB", "WR", "TE"];
+// Flattened onto each row (see the scoring_stats spread below) so
+// SortableTh/sortRows can reach them the same way as every other
+// column -- sortRows compares row[sortKey] directly, no nested-path
+// support, so these have to live at the top level, not buried in
+// row.scoring_stats.
+const STAT_COLUMN_KEYS = [
+  "passing_yards", "passing_tds", "passing_interceptions",
+  "rushing_yards", "rushing_tds",
+  "receptions", "receiving_yards", "receiving_tds",
+];
 const OVERALL_COLUMN_TYPES = {
   rank: "number",
   player_name: "string",
@@ -17,6 +27,8 @@ const OVERALL_COLUMN_TYPES = {
   team: "string",
   opponent: "string",
   projection: "number",
+  notes: "string",
+  ...Object.fromEntries(STAT_COLUMN_KEYS.map((k) => [k, "number"])),
 };
 
 function sortPositions(positions) {
@@ -62,7 +74,7 @@ export default async function RedraftRankingsPage({ searchParams }) {
     const positionCounters = {};
     rankings = (data || []).map((r) => {
       positionCounters[r.position] = (positionCounters[r.position] || 0) + 1;
-      return { ...r, positionLabel: `${r.position}${positionCounters[r.position]}` };
+      return { ...r, ...r.scoring_stats, positionLabel: `${r.position}${positionCounters[r.position]}` };
     });
 
     // Projection heat-tint is position-relative -- QBs score far higher

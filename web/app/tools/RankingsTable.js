@@ -102,8 +102,9 @@ export default function RankingsTable({
             {showProjection && (
               <SortableTh label="Proj" sortKey="projection" {...sortProps} />
             )}
-            {showStatColumns && STAT_COLUMNS.map((c) => <th key={c.key}>{c.label}</th>)}
-            {showNotes && <th>Notes</th>}
+            {showStatColumns &&
+              STAT_COLUMNS.map((c) => <SortableTh key={c.key} label={c.label} sortKey={c.key} {...sortProps} />)}
+            {showNotes && <SortableTh label="Notes" sortKey="notes" {...sortProps} />}
           </tr>
         </thead>
         <tbody>
@@ -137,7 +138,7 @@ export default function RankingsTable({
               {showStatColumns &&
                 STAT_COLUMNS.map((c) => (
                   <td key={c.key} className="mono">
-                    {formatStat(row.scoring_stats?.[c.key], c.decimals)}
+                    {formatStat(row[c.key], c.decimals)}
                   </td>
                 ))}
               {showNotes && <td className="tool-notes">{row.notes || ""}</td>}

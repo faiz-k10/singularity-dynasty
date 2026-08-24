@@ -8,6 +8,11 @@ import { DEFAULT_SCORING_SETTINGS, computeCustomProjection, isDefaultScoring } f
 
 const STORAGE_KEY = "sd-redraft-scoring-settings";
 
+const STAT_COLUMN_KEYS = [
+  "passing_yards", "passing_tds", "passing_interceptions",
+  "rushing_yards", "rushing_tds",
+  "receptions", "receiving_yards", "receiving_tds",
+];
 const COLUMN_TYPES = {
   rank: "number",
   player_name: "string",
@@ -15,6 +20,8 @@ const COLUMN_TYPES = {
   team: "string",
   opponent: "string",
   projection: "number",
+  notes: "string",
+  ...Object.fromEntries(STAT_COLUMN_KEYS.map((k) => [k, "number"])),
 };
 
 // Wraps RankingsSearch with a custom scoring settings panel. `rawRows`
