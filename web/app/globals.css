@@ -917,33 +917,28 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    unfrozen layout) are untouched. */
 .redraft-table{border-collapse:separate; border-spacing:0;}
 
-/* :not(.stat-detail-row) on every nth-child rule below -- same reason as
-   .player-sims-table's own guard: the stat breakdown row (see
-   RankingsTable.js's renderDetail) is a single colSpan cell at
-   nth-child(1), which these frozen-column rules would otherwise pin to
-   48px and clip. */
 .redraft-table > thead > tr > th:nth-child(1),
-.redraft-table > tbody > tr:not(.stat-detail-row) td:nth-child(1){
+.redraft-table > tbody > tr td:nth-child(1){
   position:sticky; left:0; z-index:4; background:var(--void-panel-2);
-  width:64px; min-width:64px; max-width:64px;
+  width:48px; min-width:48px; max-width:48px;
 }
-.redraft-table > tbody > tr:not(.stat-detail-row) td:nth-child(1){
+.redraft-table > tbody > tr td:nth-child(1){
   background:var(--void-panel); z-index:1;
 }
 .redraft-table > thead > tr > th:nth-child(2),
-.redraft-table > tbody > tr:not(.stat-detail-row) td:nth-child(2){
-  position:sticky; left:64px; z-index:4; background:var(--void-panel-2);
+.redraft-table > tbody > tr td:nth-child(2){
+  position:sticky; left:48px; z-index:4; background:var(--void-panel-2);
   width:220px; min-width:220px; max-width:220px; overflow:hidden; text-overflow:ellipsis;
 }
-.redraft-table > tbody > tr:not(.stat-detail-row) td:nth-child(2){
+.redraft-table > tbody > tr td:nth-child(2){
   background:var(--void-panel); z-index:1;
 }
 .redraft-table > thead > tr > th:nth-child(3),
-.redraft-table > tbody > tr:not(.stat-detail-row) td:nth-child(3){
-  position:sticky; left:284px; z-index:4; background:var(--void-panel-2);
+.redraft-table > tbody > tr td:nth-child(3){
+  position:sticky; left:268px; z-index:4; background:var(--void-panel-2);
   box-shadow:6px 0 12px -6px rgba(var(--shadow-rgb),0.5);
 }
-.redraft-table > tbody > tr:not(.stat-detail-row) td:nth-child(3){
+.redraft-table > tbody > tr td:nth-child(3){
   background:var(--void-panel); z-index:1;
 }
 
@@ -960,43 +955,36 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
   max-height:calc(100vh - var(--fixed-header-height, 108px) - 24px);
   overflow-y:auto;
 }
-.redraft-table > tbody > tr.row-expandable:hover td:nth-child(1),
-.redraft-table > tbody > tr.row-expandable:hover td:nth-child(2){
-  box-shadow:inset 0 0 0 999px rgba(var(--neon-blue-rgb),0.08);
-}
-.redraft-table > tbody > tr.row-expandable:hover td:nth-child(3){
-  box-shadow:6px 0 12px -6px rgba(var(--shadow-rgb),0.5), inset 0 0 0 999px rgba(var(--neon-blue-rgb),0.08);
-}
-.redraft-table > tbody > tr:not(.row-expandable):hover td:nth-child(1),
-.redraft-table > tbody > tr:not(.row-expandable):hover td:nth-child(2){
+.redraft-table > tbody > tr:hover td:nth-child(1),
+.redraft-table > tbody > tr:hover td:nth-child(2){
   box-shadow:inset 0 0 0 999px rgba(var(--neon-blue-rgb),0.05);
 }
-.redraft-table > tbody > tr:not(.row-expandable):hover td:nth-child(3){
+.redraft-table > tbody > tr:hover td:nth-child(3){
   box-shadow:6px 0 12px -6px rgba(var(--shadow-rgb),0.5), inset 0 0 0 999px rgba(var(--neon-blue-rgb),0.05);
 }
-/* Discoverability for the stat-breakdown expand -- without it, a row's
-   only "this is clickable" cue was cursor:pointer + a hover tint, which
-   turned out to be invisible enough that the feature went unnoticed
-   entirely. A small chevron next to the rank number, matching the same
-   ▸ glyph/rotate-on-open pattern already used by the filter-row
-   accordions elsewhere on the site, gives it a permanent visual cue. */
-.row-expand-chevron{
-  display:inline-block; font-size:11px; font-weight:700; color:var(--star-dim); margin-right:1px;
-  transition:transform .2s ease, color .2s ease;
-}
-.row-expand-chevron-open{transform:rotate(90deg); color:var(--neon-blue);}
-.redraft-table > tbody > tr:hover .row-expand-chevron{color:var(--neon-blue);}
 
 .redraft-table > thead > tr > th,
-.redraft-table > tbody > tr:not(.stat-detail-row) td{
+.redraft-table > tbody > tr td{
   padding-left:12px; padding-right:12px; text-align:center;
 }
-.redraft-table > tbody > tr:not(.stat-detail-row) td.player-cell,
-.redraft-table > tbody > tr:not(.stat-detail-row) td.align-left{
+.redraft-table > tbody > tr td.player-cell,
+.redraft-table > tbody > tr td.align-left{
   text-align:center;
 }
-.redraft-table > tbody > tr:not(.stat-detail-row) td.tool-notes{
+.redraft-table > tbody > tr td.tool-notes{
   text-align:left;
+}
+/* The 8 raw component-stat columns (Pass Yds/TD, INT, Rush Yds/TD, Rec,
+   Rec Yds/TD -- STAT_COLUMNS in RankingsTable.js) hold short numbers
+   (2-3 digit yardage, 1-2 decimal TD/rec rates) but were sized by their
+   own header labels, same over-padded issue Player Sims' Floor/Median/
+   Ceiling columns had -- narrower padding so they're not mostly empty
+   space around a short value. nth-child(7) through (14): Rank/Player/Pos
+   (1-3) + Team/Opp/Proj (4-6, always on for this table) land the 8 stat
+   columns at 7-14, Notes at 15. */
+.redraft-table > thead > tr > th:nth-child(n+7):nth-child(-n+14),
+.redraft-table > tbody > tr td:nth-child(n+7):nth-child(-n+14){
+  padding-left:8px; padding-right:8px;
 }
 
 .rankings-table tr:last-child td{border-bottom:none;}

@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import RankingsSearch from "../RankingsSearch";
 import ScoringSettingsPanel from "../ScoringSettingsPanel";
-import RedraftStatBreakdown from "../RedraftStatBreakdown";
 import { sortRows } from "@/lib/sortLink";
 import { DEFAULT_SCORING_SETTINGS, computeCustomProjection, isDefaultScoring } from "@/lib/scoring";
 
@@ -149,7 +148,7 @@ export default function RedraftRankingsClient({ rawRows, sortKey, sortDir, curre
         positions={positions}
         selected={selectedPositions}
         tableClassName="redraft-table"
-        renderDetail={(row) => <RedraftStatBreakdown row={row} settings={settings} />}
+        showStatColumns
       />
     </>
   );
