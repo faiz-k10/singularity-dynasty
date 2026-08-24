@@ -925,14 +925,14 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .redraft-table > thead > tr > th:nth-child(1),
 .redraft-table > tbody > tr:not(.stat-detail-row) td:nth-child(1){
   position:sticky; left:0; z-index:4; background:var(--void-panel-2);
-  width:48px; min-width:48px; max-width:48px;
+  width:64px; min-width:64px; max-width:64px;
 }
 .redraft-table > tbody > tr:not(.stat-detail-row) td:nth-child(1){
   background:var(--void-panel); z-index:1;
 }
 .redraft-table > thead > tr > th:nth-child(2),
 .redraft-table > tbody > tr:not(.stat-detail-row) td:nth-child(2){
-  position:sticky; left:48px; z-index:4; background:var(--void-panel-2);
+  position:sticky; left:64px; z-index:4; background:var(--void-panel-2);
   width:220px; min-width:220px; max-width:220px; overflow:hidden; text-overflow:ellipsis;
 }
 .redraft-table > tbody > tr:not(.stat-detail-row) td:nth-child(2){
@@ -940,7 +940,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 }
 .redraft-table > thead > tr > th:nth-child(3),
 .redraft-table > tbody > tr:not(.stat-detail-row) td:nth-child(3){
-  position:sticky; left:268px; z-index:4; background:var(--void-panel-2);
+  position:sticky; left:284px; z-index:4; background:var(--void-panel-2);
   box-shadow:6px 0 12px -6px rgba(var(--shadow-rgb),0.5);
 }
 .redraft-table > tbody > tr:not(.stat-detail-row) td:nth-child(3){
@@ -974,6 +974,18 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .redraft-table > tbody > tr:not(.row-expandable):hover td:nth-child(3){
   box-shadow:6px 0 12px -6px rgba(var(--shadow-rgb),0.5), inset 0 0 0 999px rgba(var(--neon-blue-rgb),0.05);
 }
+/* Discoverability for the stat-breakdown expand -- without it, a row's
+   only "this is clickable" cue was cursor:pointer + a hover tint, which
+   turned out to be invisible enough that the feature went unnoticed
+   entirely. A small chevron next to the rank number, matching the same
+   ▸ glyph/rotate-on-open pattern already used by the filter-row
+   accordions elsewhere on the site, gives it a permanent visual cue. */
+.row-expand-chevron{
+  display:inline-block; font-size:11px; font-weight:700; color:var(--star-dim); margin-right:1px;
+  transition:transform .2s ease, color .2s ease;
+}
+.row-expand-chevron-open{transform:rotate(90deg); color:var(--neon-blue);}
+.redraft-table > tbody > tr:hover .row-expand-chevron{color:var(--neon-blue);}
 
 .redraft-table > thead > tr > th,
 .redraft-table > tbody > tr:not(.stat-detail-row) td{

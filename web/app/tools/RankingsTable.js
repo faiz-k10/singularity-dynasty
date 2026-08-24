@@ -110,7 +110,12 @@ export default function RankingsTable({
                   className={renderDetail ? "row-expandable" : ""}
                   onClick={renderDetail ? () => toggleRow(rowKey) : undefined}
                 >
-                  <td className="mono">{row.displayRank}</td>
+                  <td className="mono">
+                    {renderDetail && (
+                      <span className={`row-expand-chevron${isExpanded ? " row-expand-chevron-open" : ""}`}>▸</span>
+                    )}
+                    {row.displayRank}
+                  </td>
                   <PlayerCell row={row} withPopover={popoverOnName} />
                   {showPosition && <td className="mono align-left">{row.positionLabel || row.position}</td>}
                   {showTeam && (
