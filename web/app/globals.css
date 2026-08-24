@@ -917,28 +917,33 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    unfrozen layout) are untouched. */
 .redraft-table{border-collapse:separate; border-spacing:0;}
 
+/* :not(.stat-detail-row) on every nth-child rule below -- same reason as
+   .player-sims-table's own guard: the stat breakdown row (see
+   RankingsTable.js's renderDetail) is a single colSpan cell at
+   nth-child(1), which these frozen-column rules would otherwise pin to
+   48px and clip. */
 .redraft-table > thead > tr > th:nth-child(1),
-.redraft-table > tbody > tr td:nth-child(1){
+.redraft-table > tbody > tr:not(.stat-detail-row) td:nth-child(1){
   position:sticky; left:0; z-index:4; background:var(--void-panel-2);
   width:48px; min-width:48px; max-width:48px;
 }
-.redraft-table > tbody > tr td:nth-child(1){
+.redraft-table > tbody > tr:not(.stat-detail-row) td:nth-child(1){
   background:var(--void-panel); z-index:1;
 }
 .redraft-table > thead > tr > th:nth-child(2),
-.redraft-table > tbody > tr td:nth-child(2){
+.redraft-table > tbody > tr:not(.stat-detail-row) td:nth-child(2){
   position:sticky; left:48px; z-index:4; background:var(--void-panel-2);
   width:220px; min-width:220px; max-width:220px; overflow:hidden; text-overflow:ellipsis;
 }
-.redraft-table > tbody > tr td:nth-child(2){
+.redraft-table > tbody > tr:not(.stat-detail-row) td:nth-child(2){
   background:var(--void-panel); z-index:1;
 }
 .redraft-table > thead > tr > th:nth-child(3),
-.redraft-table > tbody > tr td:nth-child(3){
+.redraft-table > tbody > tr:not(.stat-detail-row) td:nth-child(3){
   position:sticky; left:268px; z-index:4; background:var(--void-panel-2);
   box-shadow:6px 0 12px -6px rgba(var(--shadow-rgb),0.5);
 }
-.redraft-table > tbody > tr td:nth-child(3){
+.redraft-table > tbody > tr:not(.stat-detail-row) td:nth-child(3){
   background:var(--void-panel); z-index:1;
 }
 
@@ -955,23 +960,30 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
   max-height:calc(100vh - var(--fixed-header-height, 108px) - 24px);
   overflow-y:auto;
 }
-.redraft-table > tbody > tr:hover td:nth-child(1),
-.redraft-table > tbody > tr:hover td:nth-child(2){
+.redraft-table > tbody > tr.row-expandable:hover td:nth-child(1),
+.redraft-table > tbody > tr.row-expandable:hover td:nth-child(2){
   box-shadow:inset 0 0 0 999px rgba(var(--neon-blue-rgb),0.08);
 }
-.redraft-table > tbody > tr:hover td:nth-child(3){
+.redraft-table > tbody > tr.row-expandable:hover td:nth-child(3){
   box-shadow:6px 0 12px -6px rgba(var(--shadow-rgb),0.5), inset 0 0 0 999px rgba(var(--neon-blue-rgb),0.08);
+}
+.redraft-table > tbody > tr:not(.row-expandable):hover td:nth-child(1),
+.redraft-table > tbody > tr:not(.row-expandable):hover td:nth-child(2){
+  box-shadow:inset 0 0 0 999px rgba(var(--neon-blue-rgb),0.05);
+}
+.redraft-table > tbody > tr:not(.row-expandable):hover td:nth-child(3){
+  box-shadow:6px 0 12px -6px rgba(var(--shadow-rgb),0.5), inset 0 0 0 999px rgba(var(--neon-blue-rgb),0.05);
 }
 
 .redraft-table > thead > tr > th,
-.redraft-table > tbody > tr td{
+.redraft-table > tbody > tr:not(.stat-detail-row) td{
   padding-left:12px; padding-right:12px; text-align:center;
 }
-.redraft-table > tbody > tr td.player-cell,
-.redraft-table > tbody > tr td.align-left{
+.redraft-table > tbody > tr:not(.stat-detail-row) td.player-cell,
+.redraft-table > tbody > tr:not(.stat-detail-row) td.align-left{
   text-align:center;
 }
-.redraft-table > tbody > tr td.tool-notes{
+.redraft-table > tbody > tr:not(.stat-detail-row) td.tool-notes{
   text-align:left;
 }
 
@@ -1338,6 +1350,22 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .stat-detail-table td{padding:0; border-bottom:1px dashed var(--line); color:var(--star); text-align:center;}
 .stat-detail-table td:first-child{text-align:left;}
 .stat-detail-table tr:last-child td{border-bottom:none;}
+
+/* Redraft's per-player stat breakdown (RedraftStatBreakdown.js) -- reuses
+   .stat-detail-table's chrome but its cells are plain text, not buttons
+   like Player Sims' Floor/Median/Ceiling triggers (those get their own
+   padding from .stat-row-trigger/.stat-header-trigger; this table needs
+   its own since it has no such wrapper). Narrower max-width than the
+   full row so it doesn't stretch edge-to-edge under a wide table. */
+.stat-breakdown{max-width:480px;}
+.stat-breakdown-table th{padding:6px 10px;}
+.stat-breakdown-table th:not(:first-child){text-align:center;}
+.stat-breakdown-table td{padding:7px 10px;}
+.stat-breakdown-subtotal td{color:var(--star); font-weight:600; border-top:1px solid var(--line);}
+.stat-breakdown-note{
+  font-size:12px; color:var(--star-dim); margin:10px 0 0; line-height:1.5;
+}
+.stat-breakdown-empty{font-size:13px; color:var(--star-dim);}
 
 /* Table, its own Floor/Median/Ceiling percentile bar chart, and radar
    side by side on top (one player's own view throughout), Similar Shape

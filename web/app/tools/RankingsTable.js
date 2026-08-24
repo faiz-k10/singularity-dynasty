@@ -1,3 +1,6 @@
+"use client";
+
+import { Fragment, useState } from "react";
 import Link from "next/link";
 import SortableTh from "./SortableTh";
 import TrendTag from "./TrendTag";
@@ -64,8 +67,22 @@ export default function RankingsTable({
   sortParam = "sort",
   dirParam = "dir",
   tableClassName = "",
+  renderDetail, // optional (row) => ReactNode -- when set, rows expand on click
 }) {
   const sortProps = { activeSort: sortKey, activeDir: sortDir, currentParams, sortParam, dirParam };
+  const [expanded, setExpanded] = useState(() => new Set());
+  const columnCount =
+    2 + [showPosition, showTeam, showOpponent, showProjection, showNotes].filter(Boolean).length;
+
+  function toggleRow(key) {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }
+
   return (
     <div className={`rankings-table-wrap${tableClassName ? ` ${tableClassName}-wrap` : ""}`}>
       <table className={`rankings-table${tableClassName ? ` ${tableClassName}` : ""}`}>
@@ -83,36 +100,51 @@ export default function RankingsTable({
           </tr>
         </thead>
         <tbody>
-          {rows.map((row) => (
-            <tr key={`${row.position}-${row.rank}`} data-pos={row.position}>
-              <td className="mono">{row.displayRank}</td>
-              <PlayerCell row={row} withPopover={popoverOnName} />
-              {showPosition && <td className="mono align-left">{row.positionLabel || row.position}</td>}
-              {showTeam && (
-                <td className="mono align-left">
-                  <TeamBadge team={row.team} />
-                </td>
-              )}
-              {showOpponent && (() => {
-                const tint = matchupTint(row.matchup_mult);
-                return (
-                  <td
-                    className={`mono${tint ? ` matchup-cell ${tint.cls}` : ""}`}
-                    style={tint ? { "--heat": tint.heat } : undefined}
-                    title={tint ? tint.label : undefined}
-                  >
-                    {row.opponent || "—"}
-                  </td>
-                );
-              })()}
-              {showProjection && (
-                <td className="mono heat-cell" style={{ "--heat": row.heat || 0 }}>
-                  {formatProjection(row.projection)}
-                </td>
-              )}
-              {showNotes && <td className="tool-notes">{row.notes || ""}</td>}
-            </tr>
-          ))}
+          {rows.map((row) => {
+            const rowKey = `${row.position}-${row.rank}`;
+            const isExpanded = renderDetail && expanded.has(rowKey);
+            return (
+              <Fragment key={rowKey}>
+                <tr
+                  data-pos={row.position}
+                  className={renderDetail ? "row-expandable" : ""}
+                  onClick={renderDetail ? () => toggleRow(rowKey) : undefined}
+                >
+                  <td className="mono">{row.displayRank}</td>
+                  <PlayerCell row={row} withPopover={popoverOnName} />
+                  {showPosition && <td className="mono align-left">{row.positionLabel || row.position}</td>}
+                  {showTeam && (
+                    <td className="mono align-left">
+                      <TeamBadge team={row.team} />
+                    </td>
+                  )}
+                  {showOpponent && (() => {
+                    const tint = matchupTint(row.matchup_mult);
+                    return (
+                      <td
+                        className={`mono${tint ? ` matchup-cell ${tint.cls}` : ""}`}
+                        style={tint ? { "--heat": tint.heat } : undefined}
+                        title={tint ? tint.label : undefined}
+                      >
+                        {row.opponent || "—"}
+                      </td>
+                    );
+                  })()}
+                  {showProjection && (
+                    <td className="mono heat-cell" style={{ "--heat": row.heat || 0 }}>
+                      {formatProjection(row.projection)}
+                    </td>
+                  )}
+                  {showNotes && <td className="tool-notes">{row.notes || ""}</td>}
+                </tr>
+                {isExpanded && (
+                  <tr className="stat-detail-row">
+                    <td colSpan={columnCount}>{renderDetail(row)}</td>
+                  </tr>
+                )}
+              </Fragment>
+            );
+          })}
         </tbody>
       </table>
     </div>

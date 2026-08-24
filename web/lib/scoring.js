@@ -31,17 +31,61 @@ const INTERCEPTION_POINTS = -2;
 const RUSH_RECEIVE_YARD_RATE = 0.1; // 1pt / 10 yards
 const RUSH_RECEIVE_TD_POINTS = 6;
 
+// Per-component point contributions -- computeCustomProjection sums these
+// (see below); computeProjectionBreakdown (Redraft's "how was this built"
+// row) exposes the same array directly so the displayed subtotal is
+// mechanically the sum of the rows shown above it, not two independently-
+// maintained calculations that could drift apart.
+const STAT_LABELS = {
+  passing_yards: "Passing yards",
+  passing_tds: "Passing TDs",
+  passing_interceptions: "Interceptions",
+  rushing_yards: "Rushing yards",
+  rushing_tds: "Rushing TDs",
+  receiving_yards: "Receiving yards",
+  receiving_tds: "Receiving TDs",
+  receptions: "Receptions",
+};
+
+function breakdownEntries(stats, position, settings) {
+  if (!stats) return [];
+  const receptionRate = PPR_RATE[settings.ppr] + (position === "TE" ? settings.tePremium : 0);
+  const rateByStat = {
+    passing_yards: PASSING_YARD_RATE,
+    passing_tds: PASSING_TD_POINTS,
+    passing_interceptions: INTERCEPTION_POINTS,
+    rushing_yards: RUSH_RECEIVE_YARD_RATE,
+    rushing_tds: RUSH_RECEIVE_TD_POINTS,
+    receiving_yards: RUSH_RECEIVE_YARD_RATE,
+    receiving_tds: RUSH_RECEIVE_TD_POINTS,
+    receptions: receptionRate,
+  };
+  const entries = [];
+  for (const [key, rate] of Object.entries(rateByStat)) {
+    const rawValue = stats[key];
+    if (rawValue == null) continue;
+    entries.push({ key, label: STAT_LABELS[key], rawValue, rate, points: rate * rawValue });
+  }
+  return entries;
+}
+
 export function computeCustomProjection(stats, position, settings) {
   if (!stats) return null;
-  const receptionRate = PPR_RATE[settings.ppr] + (position === "TE" ? settings.tePremium : 0);
-  let points = 0;
-  if (stats.passing_yards != null) points += PASSING_YARD_RATE * stats.passing_yards;
-  if (stats.passing_tds != null) points += PASSING_TD_POINTS * stats.passing_tds;
-  if (stats.passing_interceptions != null) points += INTERCEPTION_POINTS * stats.passing_interceptions;
-  if (stats.rushing_yards != null) points += RUSH_RECEIVE_YARD_RATE * stats.rushing_yards;
-  if (stats.rushing_tds != null) points += RUSH_RECEIVE_TD_POINTS * stats.rushing_tds;
-  if (stats.receiving_yards != null) points += RUSH_RECEIVE_YARD_RATE * stats.receiving_yards;
-  if (stats.receiving_tds != null) points += RUSH_RECEIVE_TD_POINTS * stats.receiving_tds;
-  if (stats.receptions != null) points += receptionRate * stats.receptions;
+  const points = breakdownEntries(stats, position, settings).reduce((sum, e) => sum + e.points, 0);
   return Math.round(points * 10) / 10;
+}
+
+// Redraft's per-player stat breakdown ("what's this projection built
+// from"). `subtotal` is the sum of `entries`' own points, rounded the
+// same way computeCustomProjection rounds its total -- deliberately NOT
+// forced to equal the row's displayed `projection`, which comes from
+// projection_engine.R's weighted MEDIAN of real weekly point totals, not
+// a sum of these weighted-MEAN per-stat components. Median-of-a-sum and
+// sum-of-means are different statistics and don't converge in general;
+// the gap is real and structural, not a rounding bug -- surfaced to the
+// user, not hidden by fudging one number to match the other.
+export function computeProjectionBreakdown(stats, position, settings) {
+  const entries = breakdownEntries(stats, position, settings);
+  const subtotal = Math.round(entries.reduce((sum, e) => sum + e.points, 0) * 10) / 10;
+  return { entries, subtotal };
 }

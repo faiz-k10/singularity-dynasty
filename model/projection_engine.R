@@ -966,23 +966,35 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
     }
 
     # Weekly per-stat MEANS (raw components -- receptions, yards, TDs,
-    # INTs), same weighting/shrinkage/matchup-mult treatment as `med`
-    # above, just one column at a time instead of the blended
-    # fantasy_points_ppr total -- and mean rather than median, see
-    # weighted_mean()'s comment for why median silently loses touchdown
-    # value here. Powers Redraft's custom scoring settings: the frontend
-    # recomputes a fantasy-point total from these raw components under
-    # the user's own PPR/TE-premium/passing-TD/INT choices, rather than
-    # being stuck with the single fixed-scoring `median` baked in here.
+    # INTs), shrinkage/matchup-mult treatment as `med` above, just one
+    # column at a time instead of the blended fantasy_points_ppr total --
+    # and mean rather than median, see weighted_mean()'s comment for why
+    # median silently loses touchdown value here. Powers Redraft's custom
+    # scoring settings: the frontend recomputes a fantasy-point total from
+    # these raw components under the user's own PPR/TE-premium choices,
+    # rather than being stuck with the single fixed-scoring `median` baked
+    # in here.
+    #
+    # Recency weighting: each column uses ITS OWN stat-group's already-
+    # backtested decay (STAT_GROUP_DECAY/STAT_GROUP_BY_STAT above -- same
+    # td_int-vs-yardage split validated for the season-total stat_ranges
+    # right above this block) instead of reusing `wm` (MED_DECAY, tuned to
+    # predict the next fantasy_points_ppr week, not any individual raw
+    # column). Doesn't make sum(weekly_scoring_stats-derived points) equal
+    # `med` -- that gap is structural (median-of-a-sum vs sum-of-means, see
+    # weighted_mean()'s comment) and no choice of decay closes it -- but it
+    # does mean each component is now projected with the decay that best
+    # predicts THAT column specifically, same rationale as WOPR/EPA above.
     relevant_weekly_stats <- STAT_COLS_BY_POSITION[[pos]]
     weekly_scoring_stats <- if (!is.null(relevant_weekly_stats)) {
       setNames(lapply(relevant_weekly_stats, function(col) {
         col_x <- d[[col]]
+        w_col <- recency_weights(n, STAT_GROUP_DECAY[[STAT_GROUP_BY_STAT[[col]]]][pos])
         stat_val <- if (shrink_this_player && !is.null(stat_pools[[pos]][[col]])) {
           base <- stat_pools[[pos]][[col]]
-          shrunk_mean(col_x, wm, base$pool, base$weights)
+          shrunk_mean(col_x, w_col, base$pool, base$weights)
         } else {
-          weighted_mean(col_x, wm)
+          weighted_mean(col_x, w_col)
         }
         round(stat_val * mult, 2)
       }), relevant_weekly_stats)
