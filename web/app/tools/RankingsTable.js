@@ -17,18 +17,18 @@ function formatProjection(value) {
 // whatever's in scoring_stats and renders "—" for a column a given
 // player's position doesn't publish.
 const STAT_COLUMNS = [
-  { key: "passing_yards", label: "Pass Yds", decimals: 1 },
-  { key: "passing_tds", label: "Pass TD", decimals: 2 },
-  { key: "passing_interceptions", label: "INT", decimals: 2 },
-  { key: "rushing_yards", label: "Rush Yds", decimals: 1 },
-  { key: "rushing_tds", label: "Rush TD", decimals: 2 },
-  { key: "receptions", label: "Rec", decimals: 1 },
-  { key: "receiving_yards", label: "Rec Yds", decimals: 1 },
-  { key: "receiving_tds", label: "Rec TD", decimals: 2 },
+  { key: "passing_yards", label: "Pass Yds" },
+  { key: "passing_tds", label: "Pass TD" },
+  { key: "passing_interceptions", label: "INT" },
+  { key: "rushing_yards", label: "Rush Yds" },
+  { key: "rushing_tds", label: "Rush TD" },
+  { key: "receptions", label: "Rec" },
+  { key: "receiving_yards", label: "Rec Yds" },
+  { key: "receiving_tds", label: "Rec TD" },
 ];
 
-function formatStat(value, decimals) {
-  return value === null || value === undefined ? "—" : Number(value).toFixed(decimals);
+function formatStat(value) {
+  return value === null || value === undefined ? "—" : Number(value).toFixed(1);
 }
 
 function PlayerCell({ row, withPopover }) {
@@ -138,7 +138,7 @@ export default function RankingsTable({
               {showStatColumns &&
                 STAT_COLUMNS.map((c) => (
                   <td key={c.key} className="mono">
-                    {formatStat(row[c.key], c.decimals)}
+                    {formatStat(row[c.key])}
                   </td>
                 ))}
               {showNotes && <td className="tool-notes">{row.notes || ""}</td>}
