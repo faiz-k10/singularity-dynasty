@@ -274,28 +274,34 @@ body::before{
 /* Star dots as their own layer (not the panel's background-image
    directly) so they can carry their own twinkle animation independent
    of the panel's opacity/transform transition above, and so the links
-   below can sit above them via z-index. Same theme-aware --star-dot-rgb
-   the page-wide .starfield (body::before) uses -- reused rather than
-   fresh hardcoded colors, so these stay correctly visible against both
-   the dark and light panel background with no separate light-mode
-   override (the exact bug that broke the feature-list bullets once
-   already, see this file's header comment). Bigger/brighter than the
-   page-wide starfield's dots (1.5-2px at up to 0.9 opacity vs. that
-   one's 1-1.5px/0.5) since this sits on an opaque, much smaller panel
-   where the same faint page-background treatment read as barely-there
-   dots instead of a deliberate texture. Opacity-pulses as one layer
-   (all 5 dots together, not staggered) via nav-star-twinkle -- simpler
-   and more robust than trying to stagger sub-parts of one background-
-   image, which would need extra pseudo-elements sized/positioned to
-   exactly match the menu panel from an unrelated ancestor. */
+   below can sit above them via z-index. Colored with the site's own two
+   accents (--neon-blue-rgb / --horizon-gold-rgb -- already theme-aware
+   light/dark variants, same variables the rest of the site uses, not
+   fresh hardcoded colors) instead of the neutral --star-dot-rgb the
+   page-wide .starfield uses, plus a few neutral ones so it still reads
+   as a starfield rather than a flat two-color pattern. Bigger/brighter
+   than the page-wide starfield's dots (1.5-2px at up to 0.9 opacity vs.
+   that one's 1-1.5px/0.5) since this sits on an opaque, much smaller
+   panel where the same faint page-background treatment read as
+   barely-there dots instead of a deliberate texture. Opacity-pulses as
+   one layer (all dots together, not staggered) via nav-star-twinkle --
+   simpler and more robust than trying to stagger sub-parts of one
+   background-image, which would need extra pseudo-elements sized/
+   positioned to exactly match the menu panel from an unrelated
+   ancestor. */
 .nav-dropdown-menu::after{
   content:''; position:absolute; inset:0; border-radius:inherit; pointer-events:none; z-index:0;
   background-image:
-    radial-gradient(2px 2px at 15% 20%, rgba(var(--star-dot-rgb),0.9), transparent),
-    radial-gradient(1.5px 1.5px at 85% 18%, rgba(var(--star-dot-rgb),0.7), transparent),
-    radial-gradient(2px 2px at 90% 58%, rgba(var(--star-dot-rgb),0.85), transparent),
-    radial-gradient(1.5px 1.5px at 10% 62%, rgba(var(--star-dot-rgb),0.65), transparent),
-    radial-gradient(1.5px 1.5px at 50% 88%, rgba(var(--star-dot-rgb),0.75), transparent);
+    radial-gradient(2px 2px at 15% 20%, rgba(var(--neon-blue-rgb),0.9), transparent),
+    radial-gradient(1.5px 1.5px at 85% 18%, rgba(var(--horizon-gold-rgb),0.75), transparent),
+    radial-gradient(2px 2px at 90% 58%, rgba(var(--neon-blue-rgb),0.8), transparent),
+    radial-gradient(1.5px 1.5px at 10% 62%, rgba(var(--horizon-gold-rgb),0.7), transparent),
+    radial-gradient(1.5px 1.5px at 50% 88%, rgba(var(--neon-blue-rgb),0.75), transparent),
+    radial-gradient(1px 1px at 35% 38%, rgba(var(--star-dot-rgb),0.55), transparent),
+    radial-gradient(1.5px 1.5px at 68% 92%, rgba(var(--horizon-gold-rgb),0.65), transparent),
+    radial-gradient(1px 1px at 25% 78%, rgba(var(--star-dot-rgb),0.5), transparent),
+    radial-gradient(1.5px 1.5px at 95% 30%, rgba(var(--horizon-gold-rgb),0.6), transparent),
+    radial-gradient(1px 1px at 60% 12%, rgba(var(--neon-blue-rgb),0.6), transparent);
   animation:nav-star-twinkle 2.8s ease-in-out infinite;
 }
 .nav-dropdown-menu > *{position:relative; z-index:1;}
