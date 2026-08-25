@@ -788,10 +788,6 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .rankings-table td{padding:12px 18px; border-bottom:1px dashed var(--line); color:var(--star); white-space:nowrap; text-align:center;}
 .rankings-table td.player-cell, .rankings-table td.align-left{text-align:left;}
 .pos-rank{color:var(--star-dim); font-size:11px; margin-left:2px;}
-/* Static row-count column -- plain text, not a sort link, so it needs its
-   own narrower padding instead of inheriting SortableTh's link styling. */
-.row-num-th{width:1%; padding-left:16px; padding-right:8px;}
-.row-num-cell{width:1%; padding-left:16px; padding-right:8px; color:var(--star-dim);}
 .tool-notes{white-space:normal !important; min-width:180px; text-align:left;}
 
 /* position:sticky on table cells is unreliable in Safari/WebKit

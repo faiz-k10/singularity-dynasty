@@ -22,6 +22,7 @@ const GAMES_PER_SEASON = 17;
 const PAID_TIERS = ["singularity"];
 const POSITION_ORDER = ["QB", "RB", "WR", "TE"];
 const COLUMN_TYPES = {
+  rank: "number",
   player_name: "string",
   position: "string",
   team: "string",
@@ -140,9 +141,9 @@ export default async function PlayerSimulationsPage({ searchParams }) {
     // slice), so it stays a stable "positional ranking" independent of
     // whatever column the viewer sorts the table by below.
     const posRankCounters = {};
-    poolRows = rows.map((row) => {
+    poolRows = rows.map((row, i) => {
       posRankCounters[row.position] = (posRankCounters[row.position] || 0) + 1;
-      return { ...row, positionRank: posRankCounters[row.position] };
+      return { ...row, rank: i + 1, positionRank: posRankCounters[row.position] };
     });
     sims = hasFullAccess ? poolRows : poolRows.slice(0, TEASER_LIMIT);
     totalCount = fetchedCount;
