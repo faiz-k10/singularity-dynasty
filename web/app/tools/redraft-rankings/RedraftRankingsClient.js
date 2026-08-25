@@ -68,8 +68,22 @@ export default function RedraftRankingsClient({ rawRows, sortKey, sortDir, curre
   const usingDefault = isDefaultScoring(settings);
 
   const rows = useMemo(() => {
+    // Recompute a player's projection only when a setting that actually
+    // affects THEM changed -- PPR changes every position's reception
+    // rate, but TE Premium only ever touches TEs (see lib/scoring.js).
+    // Recomputing everyone the instant ANY setting differs from default
+    // silently swapped every non-affected player's real median-based
+    // `projection` for the cruder sum-of-mean-components approximation
+    // (see computeCustomProjection's own comment on why those two
+    // numbers structurally differ) -- e.g. toggling TE Premium alone
+    // would reshuffle RBs/WRs against each other for no reason tied to
+    // what was actually changed, since one side kept its accurate
+    // number and the other didn't.
     const withProjection = rawRows.map((r) => {
-      if (usingDefault) return r;
+      const affectsThisPlayer =
+        settings.ppr !== DEFAULT_SCORING_SETTINGS.ppr ||
+        (r.position === "TE" && settings.tePremium !== DEFAULT_SCORING_SETTINGS.tePremium);
+      if (!affectsThisPlayer) return r;
       const custom = computeCustomProjection(r.scoring_stats, r.position, settings);
       return { ...r, projection: custom == null ? r.projection : custom };
     });
