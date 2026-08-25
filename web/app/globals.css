@@ -1259,10 +1259,29 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 }
 .scoring-slider::-moz-range-track{height:4px; border-radius:2px; background:var(--void-panel-2);}
 .scoring-slider::-moz-range-progress{height:4px; border-radius:2px; background:var(--horizon-gold);}
+/* justify-content:space-between (the previous approach) distributes the
+   GAPS between items evenly, not their centers -- with "0" (1 char) and
+   "+1.0" (4 chars) as the outer flanks, that pulls the middle "+0.5"
+   label off to one side instead of sitting under the thumb's actual
+   50% position, and gets worse the more the two flanking labels differ
+   in width. Positioning each tick by percentage instead (same 0%/50%/
+   100% math as the thumb's own position) and centering it there with
+   translateX(-50%) is exact regardless of label width. */
 .scoring-slider-ticks{
-  display:flex; justify-content:space-between; font-family:var(--font-ibm-plex-mono), monospace;
+  /* margin-top clears the thumb's own visual overflow below the track --
+     ::-webkit-slider-thumb's margin-top:-6px (needed to vertically center
+     a 16px thumb on a 4px track) makes the rendered circle extend ~6px
+     below the track's own box, which a 0-gap ticks row sat directly
+     inside of. Without this, a tick centered on the same x position as
+     the thumb (see the percentage-positioning comment above) visibly
+     collides with it every time, not just at the endpoints. */
+  position:relative; height:14px; margin-top:10px; font-family:var(--font-ibm-plex-mono), monospace;
   font-size:10.5px; color:var(--star-dim);
 }
+.scoring-slider-ticks span{position:absolute; top:0; transform:translateX(-50%); white-space:nowrap;}
+.scoring-slider-ticks span:nth-child(1){left:0%;}
+.scoring-slider-ticks span:nth-child(2){left:50%;}
+.scoring-slider-ticks span:nth-child(3){left:100%;}
 .scoring-slider-tick-active{color:var(--horizon-gold); font-weight:600;}
 .scoring-panel-note{
   font-size:12.5px; color:var(--star-dim); margin:12px 0 0; padding-top:14px; border-top:1px dashed var(--line);
