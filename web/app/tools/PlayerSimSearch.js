@@ -235,7 +235,7 @@ function leagueHref(currentParams, key, value) {
 // Same pattern as RankingsSearch (Redraft) / BestBallSearch: position-pill
 // filter + player name search, both client-side. Sorting stays
 // server-driven via the existing URL-param mechanism.
-export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams, positions, maxCeiling, shapePeers, leagueTeams, superflex }) {
+export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams, positions, maxCeiling, shapePeers, leagueTeams, superflex, header }) {
   const showPositionFilter = Array.isArray(positions) && positions.length > 0;
   const [selected, setSelected] = useState(positions || []);
   const [query, setQuery] = useState("");
@@ -285,12 +285,16 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
 
   return (
     <>
-      <div className="compare-link-row">
-        <Link href="/tools/compare-player-sims" className="hub-panel-link">
-          Player Comparison →
-        </Link>
+      <div className="tool-header-split">
+      <div className="tool-header-left">
+        {header}
+        <div className="compare-link-row">
+          <Link href="/tools/compare-player-sims" className="hub-panel-link">
+            Player Comparison →
+          </Link>
+        </div>
       </div>
-
+      <div className="tool-header-right">
       <div className="filter-accordion">
         {showPositionFilter && (
           <div className="filter-row">
@@ -403,6 +407,8 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
             {filteredRows.length} of {rows.length}
           </span>
         )}
+      </div>
+      </div>
       </div>
 
       {showPositionFilter && selected.length === 0 ? (

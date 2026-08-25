@@ -483,6 +483,22 @@ section{padding:96px 0 20px; position:relative;}
 .compare-link-row{padding:8px 0;}
 .compare-link-row .hub-panel-link{margin:0;}
 
+/* Player Season Simulations: title/description on the left, the
+   Position/League Size/QB Format accordion + search box on the right,
+   level with each other instead of the filters stacking below the full
+   width of the title block. Scoped to PlayerSimSearch.js's own wrapper
+   (not a change to how any other tool page lays out its header) since
+   this is the only page whose header content was restructured to
+   support it (see the `header` prop threaded from page.js). */
+.tool-header-split{display:flex; justify-content:space-between; align-items:flex-start; gap:32px; flex-wrap:wrap;}
+.tool-header-left{flex:1 1 420px; min-width:0;}
+.tool-header-right{flex:0 0 auto; width:320px; padding-top:2px;}
+.tool-header-right .filter-accordion{width:100%; max-width:100%;}
+.tool-header-right .player-search-row{margin-top:16px;}
+@media (max-width:900px){
+  .tool-header-right{width:100%;}
+}
+
 .orbital-nodes{position:static; display:flex; gap:10px; overflow-x:auto; padding:22px 2px 10px; margin:0; scroll-snap-type:x mandatory; list-style:none;}
 .node{
   position:static; flex:0 0 168px; scroll-snap-align:start;

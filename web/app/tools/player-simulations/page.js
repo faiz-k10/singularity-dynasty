@@ -274,20 +274,21 @@ export default async function PlayerSimulationsPage({ searchParams }) {
       <SiteHeader />
 
       <main className="wrap tool-wrap player-sims-wrap">
-        <div className="eyebrow">
-          {latest ? `${latest.season} Season · Updated Week ${latest.week}` : "Simulations"}
-        </div>
-        <h1>Player Season Simulations</h1>
-        <p className="tool-sub">
-          Full-season Monte Carlo simulations run 10,000 times per player,
-          distilled to a 10th / 50th / 90th percentile floor, median, and
-          ceiling.
-        </p>
-
         {sims.length === 0 ? (
-          <div className="tool-empty">
-            <p>Simulations publish weekly during the season — check back soon.</p>
-          </div>
+          <>
+            <div className="eyebrow">
+              {latest ? `${latest.season} Season · Updated Week ${latest.week}` : "Simulations"}
+            </div>
+            <h1>Player Season Simulations</h1>
+            <p className="tool-sub">
+              Full-season Monte Carlo simulations run 10,000 times per player,
+              distilled to a 10th / 50th / 90th percentile floor, median, and
+              ceiling.
+            </p>
+            <div className="tool-empty">
+              <p>Simulations publish weekly during the season — check back soon.</p>
+            </div>
+          </>
         ) : (
           <>
             {canExport && (
@@ -322,6 +323,19 @@ export default async function PlayerSimulationsPage({ searchParams }) {
               shapePeers={shapePeers}
               leagueTeams={leagueTeams}
               superflex={superflex}
+              header={
+                <>
+                  <div className="eyebrow">
+                    {latest ? `${latest.season} Season · Updated Week ${latest.week}` : "Simulations"}
+                  </div>
+                  <h1>Player Season Simulations</h1>
+                  <p className="tool-sub">
+                    Full-season Monte Carlo simulations run 10,000 times per player,
+                    distilled to a 10th / 50th / 90th percentile floor, median, and
+                    ceiling.
+                  </p>
+                </>
+              }
             />
 
             {isTeaser && (
