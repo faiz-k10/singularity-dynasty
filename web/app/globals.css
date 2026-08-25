@@ -283,30 +283,43 @@ body::before{
    than the page-wide starfield's dots (1.5-2px at up to 0.9 opacity vs.
    that one's 1-1.5px/0.5) since this sits on an opaque, much smaller
    panel where the same faint page-background treatment read as
-   barely-there dots instead of a deliberate texture. Opacity-pulses as
-   one layer (all dots together, not staggered) via nav-star-twinkle --
-   simpler and more robust than trying to stagger sub-parts of one
-   background-image, which would need extra pseudo-elements sized/
-   positioned to exactly match the menu panel from an unrelated
-   ancestor. */
+   barely-there dots instead of a deliberate texture. 20px glow orbs
+   were tried and rejected (too heavy/blurry for this small a panel,
+   didn't read as "stars" anymore) -- back to small hard dots, just more
+   of them (20, up from 10) for "more stars" instead of "bigger stars".
+   Opacity-pulses as one layer (all dots together, not staggered) via
+   nav-star-twinkle -- simpler and more robust than trying to stagger
+   sub-parts of one background-image, which would need extra pseudo-
+   elements sized/positioned to exactly match the menu panel from an
+   unrelated ancestor. */
 .nav-dropdown-menu::after{
   content:''; position:absolute; inset:0; border-radius:inherit; pointer-events:none; z-index:0;
   background-image:
-    radial-gradient(20px 20px at 15% 20%, rgba(var(--neon-blue-rgb),0.9) 0%, rgba(var(--neon-blue-rgb),0.25) 25%, transparent 70%),
-    radial-gradient(20px 20px at 85% 18%, rgba(var(--horizon-gold-rgb),0.75) 0%, rgba(var(--horizon-gold-rgb),0.2) 25%, transparent 70%),
-    radial-gradient(20px 20px at 90% 58%, rgba(var(--neon-blue-rgb),0.8) 0%, rgba(var(--neon-blue-rgb),0.2) 25%, transparent 70%),
-    radial-gradient(20px 20px at 10% 62%, rgba(var(--horizon-gold-rgb),0.7) 0%, rgba(var(--horizon-gold-rgb),0.18) 25%, transparent 70%),
-    radial-gradient(20px 20px at 50% 88%, rgba(var(--neon-blue-rgb),0.75) 0%, rgba(var(--neon-blue-rgb),0.18) 25%, transparent 70%),
-    radial-gradient(20px 20px at 35% 38%, rgba(var(--star-dot-rgb),0.55) 0%, rgba(var(--star-dot-rgb),0.14) 25%, transparent 70%),
-    radial-gradient(20px 20px at 68% 92%, rgba(var(--horizon-gold-rgb),0.65) 0%, rgba(var(--horizon-gold-rgb),0.16) 25%, transparent 70%),
-    radial-gradient(20px 20px at 25% 78%, rgba(var(--star-dot-rgb),0.5) 0%, rgba(var(--star-dot-rgb),0.12) 25%, transparent 70%),
-    radial-gradient(20px 20px at 95% 30%, rgba(var(--horizon-gold-rgb),0.6) 0%, rgba(var(--horizon-gold-rgb),0.15) 25%, transparent 70%),
-    radial-gradient(20px 20px at 60% 12%, rgba(var(--neon-blue-rgb),0.6) 0%, rgba(var(--neon-blue-rgb),0.15) 25%, transparent 70%);
+    radial-gradient(2px 2px at 15% 20%, rgba(var(--neon-blue-rgb),0.9), transparent),
+    radial-gradient(1.5px 1.5px at 85% 18%, rgba(var(--horizon-gold-rgb),0.75), transparent),
+    radial-gradient(2px 2px at 90% 58%, rgba(var(--neon-blue-rgb),0.8), transparent),
+    radial-gradient(1.5px 1.5px at 10% 62%, rgba(var(--horizon-gold-rgb),0.7), transparent),
+    radial-gradient(1.5px 1.5px at 50% 88%, rgba(var(--neon-blue-rgb),0.75), transparent),
+    radial-gradient(1px 1px at 35% 38%, rgba(var(--star-dot-rgb),0.55), transparent),
+    radial-gradient(1.5px 1.5px at 68% 92%, rgba(var(--horizon-gold-rgb),0.65), transparent),
+    radial-gradient(1px 1px at 25% 78%, rgba(var(--star-dot-rgb),0.5), transparent),
+    radial-gradient(1.5px 1.5px at 95% 30%, rgba(var(--horizon-gold-rgb),0.6), transparent),
+    radial-gradient(1px 1px at 60% 12%, rgba(var(--neon-blue-rgb),0.6), transparent),
+    radial-gradient(1.5px 1.5px at 40% 10%, rgba(var(--horizon-gold-rgb),0.55), transparent),
+    radial-gradient(1px 1px at 5% 35%, rgba(var(--neon-blue-rgb),0.5), transparent),
+    radial-gradient(1.5px 1.5px at 75% 40%, rgba(var(--star-dot-rgb),0.45), transparent),
+    radial-gradient(1px 1px at 55% 60%, rgba(var(--horizon-gold-rgb),0.55), transparent),
+    radial-gradient(1.5px 1.5px at 30% 95%, rgba(var(--neon-blue-rgb),0.6), transparent),
+    radial-gradient(1px 1px at 98% 80%, rgba(var(--horizon-gold-rgb),0.5), transparent),
+    radial-gradient(1.5px 1.5px at 20% 50%, rgba(var(--neon-blue-rgb),0.55), transparent),
+    radial-gradient(1px 1px at 80% 75%, rgba(var(--star-dot-rgb),0.4), transparent),
+    radial-gradient(1.5px 1.5px at 62% 30%, rgba(var(--horizon-gold-rgb),0.5), transparent),
+    radial-gradient(1px 1px at 45% 70%, rgba(var(--neon-blue-rgb),0.5), transparent);
   animation:nav-star-twinkle 2.8s ease-in-out infinite;
 }
 .nav-dropdown-menu > *{position:relative; z-index:1;}
 @keyframes nav-star-twinkle{
-  0%, 100%{opacity:0.35;}
+  0%, 100%{opacity:0.5;}
   50%{opacity:1;}
 }
 .nav-dropdown:hover .nav-dropdown-menu,
