@@ -110,58 +110,69 @@ export default async function RedraftRankingsPage({ searchParams }) {
       <SiteHeader />
 
       <main className="wrap tool-wrap redraft-wrap">
-        <div className="eyebrow">
-          {latest ? `Week ${latest.week} · ${latest.season}` : "Redraft"}
-        </div>
-        <h1>Redraft Weekly Rankings</h1>
-        <p className="tool-sub">
-          Standard redraft rankings, refreshed every week of the season and
-          adjusted for opponent-strength and matchup efficiency data. Free
-          for every Stargazer.
-        </p>
-
         {rankings.length === 0 ? (
-          <div className="tool-empty">
-            <p>
-              Rankings publish weekly during the season — check back soon.
-            </p>
-          </div>
-        ) : (
           <>
-            <div className="toggle-row-flex">
-              <div className="toggle-row-actions">
-                <Link href="/tools/compare-players" className="hub-panel-link">
-                  Compare Players →
-                </Link>
-                {canExport && (
-                  <ExportCsvButton
-                    id="csv-redraft-rankings"
-                    filename={`redraft-rankings-week${latest.week}-${latest.season}.csv`}
-                    columns={[
-                      { key: "rank", label: "Rank" },
-                      { key: "player_name", label: "Player" },
-                      { key: "position", label: "Position" },
-                      { key: "team", label: "Team" },
-                      { key: "opponent", label: "Opponent" },
-                      { key: "projection", label: "Projection" },
-                      { key: "trend", label: "Trend" },
-                      { key: "sample_confidence", label: "Confidence" },
-                      { key: "notes", label: "Notes" },
-                    ]}
-                    rows={overallRows}
-                  />
-                )}
-              </div>
+            <div className="eyebrow">
+              {latest ? `Week ${latest.week} · ${latest.season}` : "Redraft"}
             </div>
-
-            <RedraftRankingsClient
-              rawRows={overallRows}
-              sortKey={sortKey}
-              sortDir={sortDir}
-              currentParams={params}
-              positions={positions}
-            />
+            <h1>Redraft Weekly Rankings</h1>
+            <p className="tool-sub">
+              Standard redraft rankings, refreshed every week of the season and
+              adjusted for opponent-strength and matchup efficiency data. Free
+              for every Stargazer.
+            </p>
+            <div className="tool-empty">
+              <p>
+                Rankings publish weekly during the season — check back soon.
+              </p>
+            </div>
           </>
+        ) : (
+          <RedraftRankingsClient
+            rawRows={overallRows}
+            sortKey={sortKey}
+            sortDir={sortDir}
+            currentParams={params}
+            positions={positions}
+            header={
+              <>
+                <div className="eyebrow">
+                  {latest ? `Week ${latest.week} · ${latest.season}` : "Redraft"}
+                </div>
+                <h1>Redraft Weekly Rankings</h1>
+                <p className="tool-sub">
+                  Standard redraft rankings, refreshed every week of the season and
+                  adjusted for opponent-strength and matchup efficiency data. Free
+                  for every Stargazer.
+                </p>
+                <div className="toggle-row-flex">
+                  <div className="toggle-row-actions">
+                    <Link href="/tools/compare-players" className="hub-panel-link">
+                      Compare Players →
+                    </Link>
+                    {canExport && (
+                      <ExportCsvButton
+                        id="csv-redraft-rankings"
+                        filename={`redraft-rankings-week${latest.week}-${latest.season}.csv`}
+                        columns={[
+                          { key: "rank", label: "Rank" },
+                          { key: "player_name", label: "Player" },
+                          { key: "position", label: "Position" },
+                          { key: "team", label: "Team" },
+                          { key: "opponent", label: "Opponent" },
+                          { key: "projection", label: "Projection" },
+                          { key: "trend", label: "Trend" },
+                          { key: "sample_confidence", label: "Confidence" },
+                          { key: "notes", label: "Notes" },
+                        ]}
+                        rows={overallRows}
+                      />
+                    )}
+                  </div>
+                </div>
+              </>
+            }
+          />
         )}
       </main>
     </div>

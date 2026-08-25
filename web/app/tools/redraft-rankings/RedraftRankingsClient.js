@@ -31,7 +31,7 @@ const COLUMN_TYPES = {
 // byte-for-byte what the server computed -- rank/positionLabel/heat are
 // only ever recalculated once a visitor actually changes a setting, so
 // nobody who ignores the panel sees any different number than before.
-export default function RedraftRankingsClient({ rawRows, sortKey, sortDir, currentParams, positions }) {
+export default function RedraftRankingsClient({ rawRows, sortKey, sortDir, currentParams, positions, header }) {
   const [settings, setSettings] = useState(DEFAULT_SCORING_SETTINGS);
   const showPositionFilter = Array.isArray(positions) && positions.length > 0;
   const [selectedPositions, setSelectedPositions] = useState(positions || []);
@@ -108,55 +108,56 @@ export default function RedraftRankingsClient({ rawRows, sortKey, sortDir, curre
   }, [rawRows, settings, usingDefault, sortKey, sortDir]);
 
   return (
-    <>
-      <ScoringSettingsPanel
-        settings={settings}
-        onChange={updateSettings}
-        isDefault={usingDefault}
-        onReset={() => updateSettings(DEFAULT_SCORING_SETTINGS)}
-      >
-        {showPositionFilter && (
-          <div className="filter-row">
-            <button
-              type="button"
-              className="filter-row-header"
-              onClick={() => setPositionOpen((v) => !v)}
-              aria-expanded={positionOpen}
-            >
-              <span className={`filter-row-chevron${positionOpen ? " filter-row-chevron-open" : ""}`}>▸</span>
-              <span className="tier-toggle-label">Position</span>
-              <span className={`filter-row-value${selectedPositions.length < positions.length ? " filter-row-value-active" : ""}`}>
-                {selectedPositions.length === positions.length ? "All" : selectedPositions.length === 0 ? "None" : selectedPositions.join(", ")}
-              </span>
-            </button>
-            {positionOpen && (
-              <div className="position-filter-row">
-                {positions.map((pos) => (
-                  <button
-                    key={pos}
-                    type="button"
-                    className={`position-pill ${selectedPositions.includes(pos) ? "active" : ""}`}
-                    onClick={() => togglePosition(pos)}
-                    aria-pressed={selectedPositions.includes(pos)}
-                  >
-                    {pos}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-      </ScoringSettingsPanel>
-      <RankingsSearch
-        rows={rows}
-        sortKey={sortKey}
-        sortDir={sortDir}
-        currentParams={currentParams}
-        positions={positions}
-        selected={selectedPositions}
-        tableClassName="redraft-table"
-        showStatColumns
-      />
-    </>
+    <RankingsSearch
+      rows={rows}
+      sortKey={sortKey}
+      sortDir={sortDir}
+      currentParams={currentParams}
+      positions={positions}
+      selected={selectedPositions}
+      tableClassName="redraft-table"
+      showStatColumns
+      header={header}
+      rightExtra={
+        <ScoringSettingsPanel
+          settings={settings}
+          onChange={updateSettings}
+          isDefault={usingDefault}
+          onReset={() => updateSettings(DEFAULT_SCORING_SETTINGS)}
+        >
+          {showPositionFilter && (
+            <div className="filter-row">
+              <button
+                type="button"
+                className="filter-row-header"
+                onClick={() => setPositionOpen((v) => !v)}
+                aria-expanded={positionOpen}
+              >
+                <span className={`filter-row-chevron${positionOpen ? " filter-row-chevron-open" : ""}`}>▸</span>
+                <span className="tier-toggle-label">Position</span>
+                <span className={`filter-row-value${selectedPositions.length < positions.length ? " filter-row-value-active" : ""}`}>
+                  {selectedPositions.length === positions.length ? "All" : selectedPositions.length === 0 ? "None" : selectedPositions.join(", ")}
+                </span>
+              </button>
+              {positionOpen && (
+                <div className="position-filter-row">
+                  {positions.map((pos) => (
+                    <button
+                      key={pos}
+                      type="button"
+                      className={`position-pill ${selectedPositions.includes(pos) ? "active" : ""}`}
+                      onClick={() => togglePosition(pos)}
+                      aria-pressed={selectedPositions.includes(pos)}
+                    >
+                      {pos}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </ScoringSettingsPanel>
+      }
+    />
   );
 }

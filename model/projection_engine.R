@@ -124,6 +124,12 @@ AVAILABILITY_YEAR_DECAY <- 0.6  # not backtested — a judgment call weighting r
 SHRINK_OWN_SHARE <- 0.80  # 80/20 blend for context-flagged players (team/OC/HC change,
                            # manual player_flags.csv, and low-sample below).
                            # NOT backtested — locked by product judgment, revisit later.
+APPLY_TEAM_CHANGE_SHRINK <- FALSE  # toggle for trigger 3 below (team-change shrink) --
+                                    # set back to TRUE to restore it. Turned off to see
+                                    # projections without the team-change discount, e.g.
+                                    # for a player like Jaylen Waddle whose new team hasn't
+                                    # played a game yet, so the trigger can't tell a real
+                                    # role change from a still-unproven one.
 LOW_SAMPLE_SHRINK_THRESHOLD <- 20  # players with MIN_GAMES <= n < this get the 80/20
                                     # blend automatically -- everyone below 20 games
                                     # is covered but not fully trusted on their own
@@ -672,7 +678,7 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
     # data is unavailable (rosters_this_season is NULL), this trigger
     # simply contributes nothing rather than erroring.
     team_change_players <- character(0)
-    if (!is.null(rosters_this_season)) {
+    if (APPLY_TEAM_CHANGE_SHRINK && !is.null(rosters_this_season)) {
       # Matched by gsis_id, same reasoning and same bug (Kenny/Kenneth
       # Gainwell) as the no-current-team filter above -- name+position
       # matching would both miss real team changes for players whose

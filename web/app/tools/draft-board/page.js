@@ -78,45 +78,50 @@ export default async function DraftBoardPage({ searchParams }) {
       <SiteHeader />
 
       <main className="wrap tool-wrap">
-        <div className="eyebrow">{latest ? `${latest.season} Board` : "Draft Board"}</div>
-        <h1>Dynasty Draft Board</h1>
-        <p className="tool-sub">
-          A full startup and rookie draft board, laid out round by round,
-          with correlated stacks auto-flagged via roster-construction
-          analysis.
-        </p>
-
-        <div className="toggle-row-flex">
-          <div className="board-toggle">
-            <Link
-              href="?type=startup"
-              className={boardType === "startup" ? "active" : ""}
-            >
-              Startup
-            </Link>
-            <Link
-              href="?type=rookie"
-              className={boardType === "rookie" ? "active" : ""}
-            >
-              Rookie
-            </Link>
+        <div className="tool-header-split">
+          <div className="tool-header-left">
+            <div className="eyebrow">{latest ? `${latest.season} Board` : "Draft Board"}</div>
+            <h1>Dynasty Draft Board</h1>
+            <p className="tool-sub">
+              A full startup and rookie draft board, laid out round by round,
+              with correlated stacks auto-flagged via roster-construction
+              analysis.
+            </p>
           </div>
-          {canExport && (
-            <ExportCsvButton
-              id="csv-draft-board"
-              filename={`draft-board-${boardType}-${latest.season}.csv`}
-              columns={[
-                { key: "round", label: "Round" },
-                { key: "pick", label: "Pick" },
-                { key: "player_name", label: "Player" },
-                { key: "position", label: "Position" },
-                { key: "team", label: "Team" },
-                { key: "is_stack", label: "Stack" },
-                { key: "stack_note", label: "Stack Note" },
-              ]}
-              rows={picks}
-            />
-          )}
+          <div className="tool-header-right">
+            <div className="toggle-row-flex">
+              <div className="board-toggle">
+                <Link
+                  href="?type=startup"
+                  className={boardType === "startup" ? "active" : ""}
+                >
+                  Startup
+                </Link>
+                <Link
+                  href="?type=rookie"
+                  className={boardType === "rookie" ? "active" : ""}
+                >
+                  Rookie
+                </Link>
+              </div>
+              {canExport && (
+                <ExportCsvButton
+                  id="csv-draft-board"
+                  filename={`draft-board-${boardType}-${latest.season}.csv`}
+                  columns={[
+                    { key: "round", label: "Round" },
+                    { key: "pick", label: "Pick" },
+                    { key: "player_name", label: "Player" },
+                    { key: "position", label: "Position" },
+                    { key: "team", label: "Team" },
+                    { key: "is_stack", label: "Stack" },
+                    { key: "stack_note", label: "Stack Note" },
+                  ]}
+                  rows={picks}
+                />
+              )}
+            </div>
+          </div>
         </div>
 
         {picks.length === 0 ? (

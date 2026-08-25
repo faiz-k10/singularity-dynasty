@@ -291,28 +291,6 @@ export default async function PlayerSimulationsPage({ searchParams }) {
           </>
         ) : (
           <>
-            {canExport && (
-              <div className="toggle-row-flex">
-                <div className="toggle-row-actions">
-                  <ExportCsvButton
-                    id="csv-player-simulations"
-                    filename={`player-simulations-week${latest.week}-${latest.season}.csv`}
-                    columns={[
-                      { key: "player_name", label: "Player" },
-                      { key: "position", label: "Position" },
-                      { key: "team", label: "Team" },
-                      { key: "floor", label: "Floor (PPG)" },
-                      { key: "median", label: "Median (PPG)" },
-                      { key: "ceiling", label: "Ceiling (PPG)" },
-                      { key: "trend", label: "Trend" },
-                      { key: "sample_confidence", label: "Confidence" },
-                    ]}
-                    rows={csvRows}
-                  />
-                </div>
-              </div>
-            )}
-
             <PlayerSimSearch
               rows={simsWithHeat}
               sortKey={sortKey}
@@ -334,6 +312,27 @@ export default async function PlayerSimulationsPage({ searchParams }) {
                     distilled to a 10th / 50th / 90th percentile floor, median, and
                     ceiling.
                   </p>
+                  {canExport && (
+                    <div className="toggle-row-flex">
+                      <div className="toggle-row-actions">
+                        <ExportCsvButton
+                          id="csv-player-simulations"
+                          filename={`player-simulations-week${latest.week}-${latest.season}.csv`}
+                          columns={[
+                            { key: "player_name", label: "Player" },
+                            { key: "position", label: "Position" },
+                            { key: "team", label: "Team" },
+                            { key: "floor", label: "Floor (PPG)" },
+                            { key: "median", label: "Median (PPG)" },
+                            { key: "ceiling", label: "Ceiling (PPG)" },
+                            { key: "trend", label: "Trend" },
+                            { key: "sample_confidence", label: "Confidence" },
+                          ]}
+                          rows={csvRows}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </>
               }
             />

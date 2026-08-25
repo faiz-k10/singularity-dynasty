@@ -21,6 +21,8 @@ export default function RankingsSearch({
   selected, // currently-selected positions, owned by the parent
   tableClassName = "",
   showStatColumns = false,
+  header, // optional -- when set, wraps header (left) + rightExtra/search (right) in the same
+  rightExtra, // top-right split layout Player Sims uses, rendered above the search box
 }) {
   const showPositionFilter = Array.isArray(positions) && positions.length > 0;
   const [query, setQuery] = useState("");
@@ -37,23 +39,37 @@ export default function RankingsSearch({
     return out;
   }, [rows, selected, query, showPositionFilter]);
 
+  const searchRow = (
+    <div className="player-search-row">
+      <input
+        type="search"
+        className="player-search-input"
+        placeholder="Search a player's name…"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        aria-label="Search players"
+      />
+      {(query || (showPositionFilter && selected.length < positions.length)) && (
+        <span className="player-search-count">
+          {filteredRows.length} of {rows.length}
+        </span>
+      )}
+    </div>
+  );
+
   return (
     <>
-      <div className="player-search-row">
-        <input
-          type="search"
-          className="player-search-input"
-          placeholder="Search a player's name…"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          aria-label="Search players"
-        />
-        {(query || (showPositionFilter && selected.length < positions.length)) && (
-          <span className="player-search-count">
-            {filteredRows.length} of {rows.length}
-          </span>
-        )}
-      </div>
+      {header ? (
+        <div className="tool-header-split">
+          <div className="tool-header-left">{header}</div>
+          <div className="tool-header-right">
+            {rightExtra}
+            {searchRow}
+          </div>
+        </div>
+      ) : (
+        searchRow
+      )}
 
       {showPositionFilter && selected.length === 0 ? (
         <div className="tool-empty">
