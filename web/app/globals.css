@@ -268,9 +268,25 @@ body::before{
   opacity:0; visibility:hidden; pointer-events:none;
   transition:opacity .18s ease, transform .18s ease, visibility .18s;
 }
-/* Invisible bridge so moving the cursor from "Tools" down into the panel
-   doesn't cross a gap and lose :hover along the way. */
-.nav-dropdown-menu::before{content:''; position:absolute; top:-14px; left:0; right:0; height:14px;}
+/* Invisible bridge so moving the cursor from "Tools"/"Pricing" down into
+   the panel doesn't cross a gap and lose :hover along the way. Lives on
+   .nav-dropdown itself (NOT .nav-dropdown-menu, where it used to be, as
+   ::before) -- .nav-dropdown-menu has pointer-events:none while not
+   actively hovered (see below), and a pseudo-element inherits its own
+   generating element's pointer-events. That made the old bridge
+   non-hit-testable by spec any time it would have actually been needed
+   (the browser hit-tests THROUGH a pointer-events:none element to
+   whatever's behind it -- here, the page content behind the header --
+   so :hover on .nav-dropdown was lost the instant the cursor left the
+   small link, before ever reaching the bridge). .nav-dropdown's own
+   pointer-events is never toggled, so its ::after is always hoverable.
+   260px width matches the menu's min-width; 22px height covers the
+   measured ~18px real gap between link and panel with a couple pixels
+   to spare. */
+.nav-dropdown::after{
+  content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%);
+  width:260px; height:22px;
+}
 /* Star dots for the Pricing dropdown ONLY (see NavStars.js -- rendered
    as real <span>s inside .nav-dropdown-menu-stars, not the shared
    .nav-dropdown-menu every dropdown uses, so the Tools dropdown doesn't
@@ -283,13 +299,20 @@ body::before{
    -- already theme-aware light/dark variants, same variables the rest
    of the site uses) plus a few neutral --star-dot-rgb ones so it still
    reads as a starfield rather than a flat two-color pattern. */
-/* overflow only -- NOT position:relative, which would override the
-   base .nav-dropdown-menu's required position:absolute (same
-   specificity, this rule comes later in the sheet and would win),
-   knocking the whole dropdown out of its absolute positioning and into
-   normal document flow. .nav-star's own position:absolute already
-   resolves against .nav-dropdown-menu's existing positioned box. */
-.nav-dropdown-menu-stars{overflow:hidden;}
+/* No overflow/position rules here on purpose. overflow:hidden was tried
+   to keep stars inside the rounded panel, but it also clips
+   .nav-dropdown-menu's own ::before (the invisible hover bridge above
+   the panel, positioned via a negative top offset to keep :hover alive
+   while the cursor crosses the gap from the "Pricing" link down to the
+   menu) -- pseudo-elements get clipped by their own element's
+   overflow:hidden even when positioned outside its normal box. That
+   silently broke hovering into the dropdown (it closed before the
+   cursor reached it). Not needed anyway: stars are generated within
+   2-98% of the panel (see NavStars.js), so they never actually reach
+   the rounded corners. position:relative is ALSO deliberately absent --
+   see the git history if this class ever needs a property added, that
+   one specifically must not be reintroduced here (see the position:
+   absolute/relative bug this class caused previously). */
 .nav-star{
   position:absolute; border-radius:50%; pointer-events:none; z-index:0;
   animation-name:nav-star-twinkle; animation-timing-function:ease-in-out; animation-iteration-count:infinite;
