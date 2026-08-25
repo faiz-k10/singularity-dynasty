@@ -40,7 +40,7 @@ const CONSTELLATIONS = {
 };
 
 const FILLER_COLORS = ["--neon-blue-rgb", "--horizon-gold-rgb", "--star-dot-rgb"];
-const FILLER_COUNT = 25;
+const FILLER_COUNT = 35;
 
 function mulberry32(seed) {
   return function () {
