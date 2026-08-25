@@ -1225,19 +1225,17 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    can't reuse .tier-toggle's pill-group markup -- same row body margin
    as .filter-row .tier-toggle for consistent left/right/bottom spacing. */
 /* Extra horizontal padding (on top of the row's own margin) insets the
-   track from the row's edges by half the thumb's width -- without it,
-   the thumb at the min/max steps sits flush against the tick label
-   beneath it (a native range thumb's travel spans the full track width,
-   so at value=max its center -- not just its edge -- lands at the very
-   right edge, crowding the "+1.0" tick directly below). */
-.filter-row .scoring-slider-body{margin:0 20px 16px; padding:0 8px;}
+   track from the row's edges by more than half the thumb's width --
+   8px (exactly half of the 16px thumb) still let the thumb visually
+   crowd/overlap the "+1.0" tick label beneath it, so this is padded
+   past the minimum to give it real breathing room. */
+.filter-row .scoring-slider-body{margin:0 20px 16px; padding:0 12px;}
 /* accent-color colors both the thumb AND the filled track the same hue
    -- can't give the thumb ("button") and the track/fill different
    colors that way, so this drops accent-color for a fully custom-styled
-   track + thumb instead. Track stays --horizon-gold (matches every
-   other "selected/active" affordance on the site); only the thumb
-   itself goes --neon-blue, per request -- keep it that way, don't
-   collapse them back to one accent-color. */
+   track + thumb instead. Both now use --horizon-gold (thumb was
+   --neon-blue for one revision -- reverted back to match the track,
+   per request, so the whole control reads as one color). */
 .scoring-slider{
   -webkit-appearance:none; appearance:none; width:100%; height:4px;
   background:transparent; cursor:pointer; margin:10px 0 0; display:block;
@@ -1254,10 +1252,10 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 }
 .scoring-slider::-webkit-slider-thumb{
   -webkit-appearance:none; appearance:none; width:16px; height:16px; border-radius:50%;
-  background:var(--neon-blue); cursor:pointer; margin-top:-6px;
+  background:var(--horizon-gold); cursor:pointer; margin-top:-6px;
 }
 .scoring-slider::-moz-range-thumb{
-  width:16px; height:16px; border-radius:50%; background:var(--neon-blue); border:none; cursor:pointer;
+  width:16px; height:16px; border-radius:50%; background:var(--horizon-gold); border:none; cursor:pointer;
 }
 .scoring-slider::-moz-range-track{height:4px; border-radius:2px; background:var(--void-panel-2);}
 .scoring-slider::-moz-range-progress{height:4px; border-radius:2px; background:var(--horizon-gold);}
@@ -1265,7 +1263,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
   display:flex; justify-content:space-between; font-family:var(--font-ibm-plex-mono), monospace;
   font-size:10.5px; color:var(--star-dim);
 }
-.scoring-slider-tick-active{color:var(--neon-blue); font-weight:600;}
+.scoring-slider-tick-active{color:var(--horizon-gold); font-weight:600;}
 .scoring-panel-note{
   font-size:12.5px; color:var(--star-dim); margin:12px 0 0; padding-top:14px; border-top:1px dashed var(--line);
 }
