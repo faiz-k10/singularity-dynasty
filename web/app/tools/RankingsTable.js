@@ -112,7 +112,14 @@ export default function RankingsTable({
             <tr key={`${row.position}-${row.rank}`} data-pos={row.position}>
               <td className="mono">{row.displayRank}</td>
               <PlayerCell row={row} withPopover={popoverOnName} />
-              {showPosition && <td className="mono align-left">{row.positionLabel || row.position}</td>}
+              {showPosition && (
+                <td className="mono align-left">
+                  {row.position}
+                  {row.positionLabel && row.positionLabel !== row.position && (
+                    <span className="pos-rank">{row.positionLabel.slice(row.position.length)}</span>
+                  )}
+                </td>
+              )}
               {showTeam && (
                 <td className="mono align-left">
                   <TeamBadge team={row.team} />
