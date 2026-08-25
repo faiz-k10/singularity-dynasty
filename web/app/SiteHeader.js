@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import ThemeToggle from "./ThemeToggle";
 import InteractiveScript from "./InteractiveScript";
+import NavStars from "./NavStars";
 
 // Shared by every page: the fixed telemetry ticker + full-width site banner
 // (brand, section nav, Get Started/Account, hamburger + radial-menu mobile
@@ -78,7 +79,8 @@ export default async function SiteHeader() {
           </div>
           <div className="nav-dropdown">
             <Link href="/#pricing">Pricing</Link>
-            <div className="nav-dropdown-menu">
+            <div className="nav-dropdown-menu nav-dropdown-menu-stars">
+              <NavStars />
               <Link href="/#pricing">Stargazer</Link>
               <Link href="/#pricing">Explorer</Link>
               <Link href="/#pricing">Singularity</Link>
