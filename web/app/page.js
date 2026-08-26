@@ -242,16 +242,6 @@ export default async function Home() {
                 </ul>
               </div>
 
-              <div className="hub-panel" data-panel="4">
-                <span className="hub-tag">AGE-CURVE REGRESSION</span>
-                <h3>Team Analysis</h3>
-                <p>
-                  A full regression breakdown of your roster&apos;s age
-                  curve, positional depth, and contention window, generated
-                  automatically from your team.
-                </p>
-              </div>
-
               <div className="hub-panel" data-panel="5">
                 <span className="hub-tag">PERCENTILE COMPS</span>
                 <h3>WR/QB Prospect Rankings &amp; Comparisons</h3>
@@ -279,23 +269,16 @@ export default async function Home() {
                 <button
                   className="node"
                   data-panel="2"
-                  style={{ "--nx": "-241px", "--ny": "17px" }}
+                  style={{ "--nx": "-161px", "--ny": "7px" }}
                 >
                   <span className="node-label">Dynasty Draft Board</span>
                 </button>
                 <button
                   className="node"
                   data-panel="3"
-                  style={{ "--nx": "0px", "--ny": "0px" }}
+                  style={{ "--nx": "161px", "--ny": "7px" }}
                 >
                   <span className="node-label">Redraft Weekly Rankings</span>
-                </button>
-                <button
-                  className="node"
-                  data-panel="4"
-                  style={{ "--nx": "241px", "--ny": "17px" }}
-                >
-                  <span className="node-label">Team Analysis</span>
                 </button>
                 <button
                   className="node"
@@ -339,10 +322,10 @@ export default async function Home() {
               <div className="round-price">$0</div>
               <div className="round-desc">Enough to get a real read on your team.</div>
               <ul className="round-features">
-                <li>Weekly dynasty rankings (top 200)</li>
-                <li>Redraft weekly rankings</li>
-                <li>Basic waiver wire watchlist</li>
-                <li>1 saved team</li>
+                <li>Full redraft rankings</li>
+                <li>Full weekly projection rankings</li>
+                <li>Access to the newsletter</li>
+                <li>Access to Discord</li>
               </ul>
               <a href="#" className="round-btn outline" data-plan="stargazer">
                 Become a Stargazer
@@ -364,9 +347,10 @@ export default async function Home() {
               </div>
               <ul className="round-features">
                 <li>Everything in Stargazer</li>
-                <li>Full dynasty rankings &amp; tiers (500+ players)</li>
-                <li>Dynasty draft board</li>
-                <li>5 saved teams</li>
+                <li>Full dynasty rankings</li>
+                <li>Full player simulation rankings</li>
+                <li>Past prospect rankings</li>
+                <li>Special Discord role</li>
               </ul>
               <a href="#" className="round-btn primary" data-plan="explorer">
                 Become an Explorer
@@ -378,21 +362,20 @@ export default async function Home() {
               <h3>Singularity</h3>
               <div className="round-price">
                 <sup>$</sup>
-                <span className="price-amt" data-monthly="24" data-annual="19">
-                  24
+                <span className="price-amt" data-monthly="25" data-annual="20">
+                  25
                 </span>
                 <sub>/mo</sub>
               </div>
               <div className="round-desc">The endpoint. Everything converges here.</div>
               <ul className="round-features">
                 <li>Everything in Explorer</li>
-                <li>Team analysis</li>
-                <li>Player season simulations</li>
-                <li>QB/WR prospect rankings &amp; comparisons</li>
-                <li>Unlimited saved teams</li>
-                <li>CSV data export</li>
-                <li>Early access to new tools</li>
-                <li>Priority Discord access</li>
+                <li>Full QB/WR prospect rankings &amp; comparisons</li>
+                <li>Personal team analysis</li>
+                <li>Shoutout in the newsletter</li>
+                <li>Priority Discord channel &amp; role</li>
+                <li>Early beta access to new tools</li>
+                <li>Data export</li>
               </ul>
               <a href="#" className="round-btn outline" data-plan="singularity">
                 Reach Singularity

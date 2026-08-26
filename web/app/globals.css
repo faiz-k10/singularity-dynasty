@@ -567,16 +567,17 @@ section{padding:96px 0 20px; position:relative;}
    the section's total height way down versus a full circle, which needed
    clearance above/below/beside the hub simultaneously.
 
-   The five --nx/--ny node offsets and .orbit-track's dimensions are all
+   The four --nx/--ny node offsets and .orbit-track's dimensions are all
    derived from the same circle: radius 1730px, centered 1730px directly
    below the arc's shallow (top) point, parametrized as
      x = R*sin(t), y = R*(1 - cos(t))
-   for t stepped evenly from -16deg to 16deg across the 5 nodes (a bigger
+   for t stepped evenly from -16deg to 16deg across the 4 nodes (a bigger
    radius over a narrower angle than the first pass, for a flatter,
    more horizon-like curve at roughly the same 950px horizontal footprint).
    Was 6 evenly-spaced nodes before Best Ball Rankings was pulled off the
-   landing page for its sunset; the endpoints (-477/67, 477/67) are
-   unchanged, only the interior spacing was recomputed for 5.
+   landing page for its sunset, then 5 before Team Analysis followed (still
+   unbuilt, see CLAUDE.md); the endpoints (-477/67, 477/67) are unchanged
+   across all three passes, only the interior spacing was recomputed for 4.
    Change the radius/angle span and every one of those numbers moves
    together — don't hand-tune only one node's offset without redoing
    the rest. */

@@ -21,8 +21,8 @@ const PLANS = [
   {
     name: "Singularity",
     description: "The endpoint. Everything converges here.",
-    monthly: 2400, // $24.00
-    annual: 22800, // $19/mo billed annually ($228/yr)
+    monthly: 2500, // $25.00
+    annual: 24000, // $20/mo billed annually ($240/yr)
   },
 ];
 
