@@ -322,8 +322,7 @@ export default async function Home() {
               <div className="round-price">$0</div>
               <div className="round-desc">Enough to get a real read on your team.</div>
               <ul className="round-features">
-                <li>Full redraft rankings</li>
-                <li>Full weekly projection rankings</li>
+                <li>Weekly Projection Rankings (Top 100)</li>
                 <li>Access to the newsletter</li>
                 <li>Access to Discord</li>
               </ul>
@@ -348,7 +347,6 @@ export default async function Home() {
               <ul className="round-features">
                 <li>Everything in Stargazer</li>
                 <li>Full dynasty rankings</li>
-                <li>Full player simulation rankings</li>
                 <li>Past year prospect rankings</li>
                 <li>Special Discord role</li>
               </ul>
@@ -370,6 +368,7 @@ export default async function Home() {
               <div className="round-desc">The endpoint. Everything converges here.</div>
               <ul className="round-features">
                 <li>Everything in Explorer</li>
+                <li>Full player simulation rankings</li>
                 <li>Full QB/WR prospect rankings &amp; comparisons</li>
                 <li>Personal team analysis</li>
                 <li>Shoutout in the newsletter</li>

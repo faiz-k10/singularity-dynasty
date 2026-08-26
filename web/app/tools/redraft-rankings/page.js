@@ -9,6 +9,7 @@ export const metadata = {
   title: "Redraft Weekly Rankings — Singularity Dynasty",
 };
 
+const PAID_TIERS = ["explorer", "singularity"];
 const POSITION_ORDER = ["QB", "RB", "WR", "TE"];
 // Flattened onto each row (see the scoring_stats spread below) so
 // SortableTh/sortRows can reach them the same way as every other
@@ -42,11 +43,14 @@ function sortPositions(positions) {
   });
 }
 
-// Free for everyone (Stargazer) per the pricing copy — no tier gating here.
+// Stargazer sees the top 100 only; Explorer/Singularity see the full
+// list — matches the pricing copy's "Weekly Projection Rankings (Top
+// 100)" Stargazer bullet.
 export default async function RedraftRankingsPage({ searchParams }) {
   const params = await searchParams;
 
   const { supabase, tier } = await getUserTier();
+  const hasFullAccess = PAID_TIERS.includes(tier);
 
   const { data: latest } = await supabase
     .from("redraft_rankings")
@@ -57,9 +61,17 @@ export default async function RedraftRankingsPage({ searchParams }) {
     .maybeSingle();
 
   let rankings = [];
+  let totalCount = 0;
 
   if (latest) {
-    const { data } = await supabase
+    const { count } = await supabase
+      .from("redraft_rankings")
+      .select("*", { count: "exact", head: true })
+      .eq("season", latest.season)
+      .eq("week", latest.week);
+    totalCount = count || 0;
+
+    let query = supabase
       .from("redraft_rankings")
       .select(
         "rank, player_name, position, team, opponent, projection, matchup_mult, trend, sample_confidence, scoring_stats, notes"
@@ -67,6 +79,12 @@ export default async function RedraftRankingsPage({ searchParams }) {
       .eq("season", latest.season)
       .eq("week", latest.week)
       .order("rank", { ascending: true });
+
+    if (!hasFullAccess) {
+      query = query.limit(100);
+    }
+
+    const { data } = await query;
 
     // Position-relative rank (RB1, WR23, ...) computed once from the
     // natural rank order -- stays fixed on each row even if the table is
@@ -104,6 +122,7 @@ export default async function RedraftRankingsPage({ searchParams }) {
     OVERALL_COLUMN_TYPES
   );
   const canExport = tier === "singularity" && rankings.length > 0;
+  const isTeaser = !hasFullAccess && totalCount > 100;
 
   return (
     <div className="tool-page">
@@ -118,8 +137,8 @@ export default async function RedraftRankingsPage({ searchParams }) {
             <h1>Redraft Weekly Rankings</h1>
             <p className="tool-sub">
               Standard redraft rankings, refreshed every week of the season and
-              adjusted for opponent-strength and matchup efficiency data. Free
-              for every Stargazer.
+              adjusted for opponent-strength and matchup efficiency data.
+              Weekly projection rankings — top 100 free for every Stargazer.
             </p>
             <div className="tool-empty">
               <p>
@@ -128,51 +147,65 @@ export default async function RedraftRankingsPage({ searchParams }) {
             </div>
           </>
         ) : (
-          <RedraftRankingsClient
-            rawRows={overallRows}
-            sortKey={sortKey}
-            sortDir={sortDir}
-            currentParams={params}
-            positions={positions}
-            header={
-              <>
-                <div className="eyebrow">
-                  {latest ? `Week ${latest.week} · ${latest.season}` : "Redraft"}
-                </div>
-                <h1>Redraft Weekly Rankings</h1>
-                <p className="tool-sub">
-                  Standard redraft rankings, refreshed every week of the season and
-                  adjusted for opponent-strength and matchup efficiency data. Free
-                  for every Stargazer.
-                </p>
-                <div className="toggle-row-flex">
-                  <div className="toggle-row-actions">
-                    <Link href="/tools/compare-players" className="hub-panel-link">
-                      Compare Players →
-                    </Link>
-                    {canExport && (
-                      <ExportCsvButton
-                        id="csv-redraft-rankings"
-                        filename={`redraft-rankings-week${latest.week}-${latest.season}.csv`}
-                        columns={[
-                          { key: "rank", label: "Rank" },
-                          { key: "player_name", label: "Player" },
-                          { key: "position", label: "Position" },
-                          { key: "team", label: "Team" },
-                          { key: "opponent", label: "Opponent" },
-                          { key: "projection", label: "Projection" },
-                          { key: "trend", label: "Trend" },
-                          { key: "sample_confidence", label: "Confidence" },
-                          { key: "notes", label: "Notes" },
-                        ]}
-                        rows={overallRows}
-                      />
-                    )}
+          <>
+            <RedraftRankingsClient
+              rawRows={overallRows}
+              sortKey={sortKey}
+              sortDir={sortDir}
+              currentParams={params}
+              positions={positions}
+              header={
+                <>
+                  <div className="eyebrow">
+                    {latest ? `Week ${latest.week} · ${latest.season}` : "Redraft"}
                   </div>
-                </div>
-              </>
-            }
-          />
+                  <h1>Redraft Weekly Rankings</h1>
+                  <p className="tool-sub">
+                    Standard redraft rankings, refreshed every week of the season and
+                    adjusted for opponent-strength and matchup efficiency data.
+                    Weekly projection rankings — top 100 free for every Stargazer.
+                  </p>
+                  <div className="toggle-row-flex">
+                    <div className="toggle-row-actions">
+                      <Link href="/tools/compare-players" className="hub-panel-link">
+                        Compare Players →
+                      </Link>
+                      {canExport && (
+                        <ExportCsvButton
+                          id="csv-redraft-rankings"
+                          filename={`redraft-rankings-week${latest.week}-${latest.season}.csv`}
+                          columns={[
+                            { key: "rank", label: "Rank" },
+                            { key: "player_name", label: "Player" },
+                            { key: "position", label: "Position" },
+                            { key: "team", label: "Team" },
+                            { key: "opponent", label: "Opponent" },
+                            { key: "projection", label: "Projection" },
+                            { key: "trend", label: "Trend" },
+                            { key: "sample_confidence", label: "Confidence" },
+                            { key: "notes", label: "Notes" },
+                          ]}
+                          rows={overallRows}
+                        />
+                      )}
+                    </div>
+                  </div>
+                </>
+              }
+            />
+
+            {isTeaser && (
+              <div className="tool-paywall reveal in">
+                <p>
+                  You&apos;re seeing the top 100 of {totalCount} players. Unlock
+                  the full list with Explorer or Singularity.
+                </p>
+                <Link href="/#pricing" className="btn-primary">
+                  See Pricing
+                </Link>
+              </div>
+            )}
+          </>
         )}
       </main>
     </div>
