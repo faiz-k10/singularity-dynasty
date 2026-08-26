@@ -359,7 +359,7 @@ export default async function Home() {
               <ul className="round-features">
                 <li>Everything in Stargazer</li>
                 <li>Full Dynasty Rankings</li>
-                <li>Full Projection Rankings</li>
+                <li>Full Weekly Projection Rankings</li>
                 <li>2025 Prospect Rankings</li>
                 <li>Special Discord Role</li>
               </ul>
