@@ -387,7 +387,7 @@ export default async function Home() {
                 <li>Shoutout in the Newsletter</li>
                 <li>Priority Discord Channel &amp; Role</li>
                 <li>Early Beta Access to New Tools</li>
-                <li>Data Export</li>
+                <li>Free Data Export</li>
               </ul>
               <a href="#" className="round-btn outline" data-plan="singularity">
                 Reach Singularity
