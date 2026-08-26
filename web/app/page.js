@@ -8,6 +8,27 @@ function formatPostDate(iso) {
     .toUpperCase();
 }
 
+// Fisher-Yates -- safe to do server-side here since Home() is a Server
+// Component (no client hydration re-run to mismatch against), unlike
+// NavStars.js's constellation pick which has to happen in a client
+// useEffect for that exact reason.
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+const CHIP_SLOTS = [
+  { ang: "-90deg", r: "150px" },
+  { ang: "-18deg", r: "150px" },
+  { ang: "54deg", r: "150px" },
+  { ang: "126deg", r: "150px" },
+  { ang: "198deg", r: "150px" },
+];
+
 export default async function Home() {
   const supabase = await createClient();
   const { data: posts } = await supabase
@@ -25,6 +46,8 @@ export default async function Home() {
     .maybeSingle();
 
   let topRedraft = [];
+  const heroCandidates = [];
+
   if (latestWeek) {
     const { data } = await supabase
       .from("redraft_rankings")
@@ -34,7 +57,56 @@ export default async function Home() {
       .order("rank", { ascending: true })
       .limit(3);
     topRedraft = data || [];
+
+    // Same RISING/FALLING trend field the ticker uses (SiteHeader.js) --
+    // real week-over-week movement, not a fabricated stat.
+    const { data: trendRows } = await supabase
+      .from("redraft_rankings")
+      .select("player_name, trend, projection")
+      .eq("season", latestWeek.season)
+      .eq("week", latestWeek.week)
+      .in("trend", ["RISING", "FALLING"])
+      .limit(30);
+
+    for (const r of trendRows || []) {
+      heroCandidates.push({
+        name: r.player_name,
+        value: `${r.projection.toFixed(1)} ${r.trend === "RISING" ? "▲" : "▼"}`,
+        dir: r.trend === "RISING" ? "up" : "down",
+      });
+    }
   }
+
+  const { data: simSeasonRow } = await supabase
+    .from("player_simulations")
+    .select("season")
+    .order("season", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (simSeasonRow) {
+    const { data: simRows } = await supabase
+      .from("player_simulations")
+      .select("player_name, floor, median, ceiling")
+      .eq("season", simSeasonRow.season)
+      .limit(30);
+
+    // Boom/bust lean from the simulation's own shape -- more ceiling
+    // upside than floor downside reads "up", the reverse reads "down".
+    // Real derived signal, not an invented number.
+    for (const r of simRows || []) {
+      const upside = r.ceiling - r.median;
+      const downside = r.median - r.floor;
+      const isUp = upside >= downside;
+      heroCandidates.push({
+        name: r.player_name,
+        value: `${Math.round(isUp ? r.ceiling : r.floor)} ${isUp ? "▲" : "▼"}`,
+        dir: isUp ? "up" : "down",
+      });
+    }
+  }
+
+  const heroChips = shuffle(heroCandidates).slice(0, CHIP_SLOTS.length);
 
   return (
     <>
@@ -114,38 +186,24 @@ export default async function Home() {
             <div className="os-ring r2"></div>
             <div className="os-core">
               <span>
-                WK 09
+                {latestWeek ? `WK ${latestWeek.week}` : "LIVE"}
                 <br />
                 LIVE
               </span>
             </div>
 
             <div className="os-chips-layer" id="osChipsLayer">
-              <div className="os-chip" style={{ "--ang": "-90deg", "--r": "150px" }}>
-                <div className="chip-inner">
-                  CeeDee Lamb <span className="up">98.4 ▲</span>
+              {heroChips.map((chip, i) => (
+                <div
+                  className="os-chip"
+                  key={chip.name}
+                  style={{ "--ang": CHIP_SLOTS[i].ang, "--r": CHIP_SLOTS[i].r }}
+                >
+                  <div className="chip-inner">
+                    {chip.name} <span className={chip.dir}>{chip.value}</span>
+                  </div>
                 </div>
-              </div>
-              <div className="os-chip" style={{ "--ang": "-18deg", "--r": "150px" }}>
-                <div className="chip-inner">
-                  Bijan Robinson <span className="up">95.1 ▲</span>
-                </div>
-              </div>
-              <div className="os-chip" style={{ "--ang": "54deg", "--r": "150px" }}>
-                <div className="chip-inner">
-                  Justin Fields <span className="down">41.0 ▼</span>
-                </div>
-              </div>
-              <div className="os-chip" style={{ "--ang": "126deg", "--r": "150px" }}>
-                <div className="chip-inner">
-                  Marvin Harrison Jr. <span className="up">88.7 ▲</span>
-                </div>
-              </div>
-              <div className="os-chip" style={{ "--ang": "198deg", "--r": "150px" }}>
-                <div className="chip-inner">
-                  Best Ball ADP <span className="up">+12 picks ▲</span>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         </div>
