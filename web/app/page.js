@@ -16,6 +16,26 @@ export default async function Home() {
     .order("published_at", { ascending: false })
     .limit(3);
 
+  const { data: latestWeek } = await supabase
+    .from("redraft_rankings")
+    .select("season, week")
+    .order("season", { ascending: false })
+    .order("week", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  let topRedraft = [];
+  if (latestWeek) {
+    const { data } = await supabase
+      .from("redraft_rankings")
+      .select("rank, player_name, position, projection")
+      .eq("season", latestWeek.season)
+      .eq("week", latestWeek.week)
+      .order("rank", { ascending: true })
+      .limit(3);
+    topRedraft = data || [];
+  }
+
   return (
     <>
       <SiteHeader />
@@ -212,29 +232,21 @@ export default async function Home() {
                 <div className="mock-panel" style={{ marginTop: "18px" }}>
                   <div className="mock-head">
                     <h4>Redraft Weekly Rankings</h4>
-                    <span className="mono">WEEK 09</span>
-                  </div>
-                  <div className="board-row">
-                    <span className="board-rank">1</span>
-                    <span className="board-name">
-                      Christian McCaffrey <span className="board-pos">RB</span>
+                    <span className="mono">
+                      {latestWeek ? `WEEK ${latestWeek.week}` : "LIVE"}
                     </span>
-                    <span className="board-tier tier-s">S</span>
                   </div>
-                  <div className="board-row">
-                    <span className="board-rank">2</span>
-                    <span className="board-name">
-                      Justin Jefferson <span className="board-pos">WR</span>
-                    </span>
-                    <span className="board-tier tier-s">S</span>
-                  </div>
-                  <div className="board-row">
-                    <span className="board-rank">3</span>
-                    <span className="board-name">
-                      Josh Allen <span className="board-pos">QB</span>
-                    </span>
-                    <span className="board-tier tier-a">A</span>
-                  </div>
+                  {topRedraft.map((row, i) => (
+                    <div className="board-row" key={row.rank}>
+                      <span className="board-rank">{row.rank}</span>
+                      <span className="board-name">
+                        {row.player_name} <span className="board-pos">{row.position}</span>
+                      </span>
+                      <span className={`board-tier ${i === 0 ? "tier-s" : "tier-a"}`}>
+                        {Math.round(row.projection)}
+                      </span>
+                    </div>
+                  ))}
                 </div>
                 <ul className="feature-list gold">
                   <li>Refreshed every week, not just at the start of the season</li>
