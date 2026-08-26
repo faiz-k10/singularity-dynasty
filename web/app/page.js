@@ -285,7 +285,7 @@ export default async function Home() {
                   data-panel="5"
                   style={{ "--nx": "477px", "--ny": "67px" }}
                 >
-                  <span className="node-label">WR/QB Prospect Rankings &amp; Comparisons</span>
+                  <span className="node-label">Prospect Rankings</span>
                 </button>
               </div>
             </div>
@@ -349,7 +349,7 @@ export default async function Home() {
                 <li>Everything in Stargazer</li>
                 <li>Full dynasty rankings</li>
                 <li>Full player simulation rankings</li>
-                <li>Past prospect rankings</li>
+                <li>Past year prospect rankings</li>
                 <li>Special Discord role</li>
               </ul>
               <a href="#" className="round-btn primary" data-plan="explorer">
