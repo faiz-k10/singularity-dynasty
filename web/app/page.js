@@ -323,7 +323,7 @@ export default async function Home() {
               <div className="round-desc">Enough to get a real read on your team.</div>
               <ul className="round-features">
                 <li>Weekly Projection Rankings (Top 100)</li>
-                <li>Access to the newsletter</li>
+                <li>Access to the Newsletter</li>
                 <li>Access to Discord</li>
               </ul>
               <a href="#" className="round-btn outline" data-plan="stargazer">
@@ -346,9 +346,10 @@ export default async function Home() {
               </div>
               <ul className="round-features">
                 <li>Everything in Stargazer</li>
-                <li>Full dynasty rankings</li>
-                <li>Past year prospect rankings</li>
-                <li>Special Discord role</li>
+                <li>Full Dynasty Rankings</li>
+                <li>Full Projection Rankings</li>
+                <li>2025 Prospect Rankings</li>
+                <li>Special Discord Role</li>
               </ul>
               <a href="#" className="round-btn primary" data-plan="explorer">
                 Become an Explorer
@@ -368,13 +369,13 @@ export default async function Home() {
               <div className="round-desc">The endpoint. Everything converges here.</div>
               <ul className="round-features">
                 <li>Everything in Explorer</li>
-                <li>Full player simulation rankings</li>
-                <li>Full QB/WR prospect rankings &amp; comparisons</li>
-                <li>Personal team analysis</li>
-                <li>Shoutout in the newsletter</li>
-                <li>Priority Discord channel &amp; role</li>
-                <li>Early beta access to new tools</li>
-                <li>Data export</li>
+                <li>Full Player Simulation Rankings</li>
+                <li>Full QB/WR Prospect Rankings &amp; Comparisons</li>
+                <li>Personal Team Analysis</li>
+                <li>Shoutout in the Newsletter</li>
+                <li>Priority Discord Channel &amp; Role</li>
+                <li>Early Beta Access to New Tools</li>
+                <li>Data Export</li>
               </ul>
               <a href="#" className="round-btn outline" data-plan="singularity">
                 Reach Singularity
