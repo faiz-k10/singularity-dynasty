@@ -49,6 +49,16 @@ export default function InteractiveScript({ tickerPlayers } = {}) {
       performance.getEntriesByType?.("navigation")?.[0]?.type === "reload";
     if (isReload) {
       window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+      // Belt-and-suspenders alongside the layout.js scrollRestoration =
+      // "manual" script: if a browser's native scroll-position restore
+      // ever lands AFTER this synchronous call instead of before it (the
+      // exact timing isn't spec-guaranteed the same way across engines),
+      // a second scrollTo a couple frames later still wins.
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+        });
+      });
     } else if (window.location.hash) {
       const hashTarget = document.querySelector(window.location.hash);
       if (hashTarget) {

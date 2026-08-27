@@ -62,6 +62,20 @@ export default function RootLayout({ children }) {
             } catch (e) {}
           `}
         </Script>
+        {/* Browsers auto-restore the previous scroll position on reload by
+            default (history.scrollRestoration === "auto") -- a SEPARATE
+            mechanism from the site's own hash-based scroll-to-section
+            logic (InteractiveScript.js), and independent of any #hash in
+            the URL at all: scrolling down and hitting refresh restores
+            that position on its own, natively, before any of our own
+            script runs. That's what was still landing a refresh on
+            Tools/Pricing even after the hash-reload fix. Setting this to
+            "manual" as early as possible (before hydration) hands scroll
+            position entirely to our own logic instead, which already
+            explicitly scrolls to 0,0 on a real reload. */}
+        <Script id="scroll-restoration-manual" strategy="beforeInteractive">
+          {`try { if ('scrollRestoration' in history) { history.scrollRestoration = 'manual'; } } catch (e) {}`}
+        </Script>
       </head>
       <body>
         {children}
