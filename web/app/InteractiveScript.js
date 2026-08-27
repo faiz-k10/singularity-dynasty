@@ -14,7 +14,6 @@ export default function InteractiveScript({ tickerPlayers } = {}) {
     ).matches;
 
     const observers = [];
-    let rafCancelled = false;
 
     /* ---- scroll to hash on initial load ----
        html{scroll-behavior:smooth} (globals.css) silently breaks the
@@ -151,7 +150,7 @@ export default function InteractiveScript({ tickerPlayers } = {}) {
         { signal }
       );
     });
-    const spySections = ["hero", "tools", "feed", "pricing", "playground"]
+    const spySections = ["hero", "tools", "feed", "pricing"]
       .map((id) => document.getElementById(id))
       .filter(Boolean);
     if ("IntersectionObserver" in window && spySections.length) {
@@ -650,141 +649,7 @@ export default function InteractiveScript({ tickerPlayers } = {}) {
     measureFixedHeaderHeight();
     window.addEventListener("resize", measureFixedHeaderHeight, { signal });
 
-    /* ---- gravity playground ---- */
-    const canvas = document.getElementById("gravityCanvas");
-    if (canvas) {
-      const frame = canvas.parentElement;
-      const ctx = canvas.getContext("2d");
-      const counterEl = document.getElementById("collapseCount");
-      let count = 0;
-      let particles = [];
-      const MAX_PARTICLES = 140;
-      let W = 0,
-        H = 0,
-        cx = 0,
-        cy = 0;
-      const palette = ["#FFC773", "#FF7A45", "#3DDCFF"];
-      let pulse = 0;
-
-      const systemLight = window.matchMedia("(prefers-color-scheme: light)");
-      function trailColor() {
-        const explicit = document.documentElement.getAttribute("data-theme");
-        const isLight = explicit ? explicit === "light" : systemLight.matches;
-        return isLight ? "rgba(250,248,243,0.28)" : "rgba(16,16,24,0.28)";
-      }
-
-      function resize() {
-        const rect = frame.getBoundingClientRect();
-        const dpr = Math.min(window.devicePixelRatio || 1, 2);
-        W = rect.width;
-        H = rect.height;
-        canvas.width = W * dpr;
-        canvas.height = H * dpr;
-        canvas.style.width = W + "px";
-        canvas.style.height = H + "px";
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        cx = W / 2;
-        cy = H / 2;
-      }
-      resize();
-      window.addEventListener("resize", resize, { signal });
-
-      function spawn(x, y) {
-        if (particles.length >= MAX_PARTICLES) particles.shift();
-        const dx = x - cx,
-          dy = y - cy;
-        const radius = Math.max(Math.sqrt(dx * dx + dy * dy), 15);
-        particles.push({
-          radius,
-          angle: Math.atan2(dy, dx),
-          color: palette[Math.floor(Math.random() * palette.length)],
-          r: 2 + Math.random() * 1.5,
-        });
-      }
-
-      function collapse() {
-        count++;
-        counterEl.textContent = count;
-        counterEl.parentElement.classList.add("pop");
-        setTimeout(() => counterEl.parentElement.classList.remove("pop"), 180);
-        pulse = 1;
-      }
-
-      function drawCore(t) {
-        const wobble = Math.sin(t / 900) * 1.5;
-        const radius = 16 + wobble + pulse * 10;
-        const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius * 2.2);
-        grad.addColorStop(0, "#FFC773");
-        grad.addColorStop(0.5, "#FF7A45");
-        grad.addColorStop(1, "rgba(61,220,255,0)");
-        ctx.save();
-        ctx.shadowColor = "rgba(255,122,69,0.6)";
-        ctx.shadowBlur = 24 + pulse * 30;
-        ctx.fillStyle = grad;
-        ctx.beginPath();
-        ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-        pulse *= 0.92;
-      }
-
-      function tick(t) {
-        if (rafCancelled) return;
-        ctx.fillStyle = trailColor();
-        ctx.fillRect(0, 0, W, H);
-
-        for (let i = particles.length - 1; i >= 0; i--) {
-          const p = particles[i];
-          if (p.radius < 15) {
-            particles.splice(i, 1);
-            collapse();
-            continue;
-          }
-          p.radius *= 0.965;
-          p.angle += 0.11 + 6 / (p.radius + 30);
-          const x = cx + p.radius * Math.cos(p.angle);
-          const y = cy + p.radius * Math.sin(p.angle);
-
-          ctx.save();
-          ctx.shadowColor = p.color;
-          ctx.shadowBlur = 8;
-          ctx.fillStyle = p.color;
-          ctx.beginPath();
-          ctx.arc(x, y, p.r, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.restore();
-        }
-
-        drawCore(t);
-        requestAnimationFrame(tick);
-      }
-
-      function pointerToCanvas(e) {
-        const rect = canvas.getBoundingClientRect();
-        return { x: e.clientX - rect.left, y: e.clientY - rect.top };
-      }
-      frame.addEventListener(
-        "pointerdown",
-        (e) => {
-          const pos = pointerToCanvas(e);
-          spawn(pos.x, pos.y);
-          clickBurst(e.clientX, e.clientY);
-        },
-        { signal }
-      );
-
-      if (reducedMotion) {
-        ctx.fillStyle = trailColor();
-        ctx.fillRect(0, 0, W, H);
-        drawCore(0);
-        frame.addEventListener("pointerdown", () => collapse(), { signal });
-      } else {
-        requestAnimationFrame(tick);
-      }
-    }
-
     return () => {
-      rafCancelled = true;
       controller.abort();
       observers.forEach((o) => o.disconnect());
     };

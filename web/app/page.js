@@ -156,12 +156,6 @@ export default async function Home() {
           data-label="Feed"
           aria-label="Feed section"
         ></a>
-        <a
-          href="#playground"
-          className="orbit-dot"
-          data-label="Play"
-          aria-label="Playground section"
-        ></a>
       </nav>
 
       <div className="eh-meter">
@@ -554,27 +548,6 @@ export default async function Home() {
           </div>
         </section>
       </main>
-
-      <section id="playground">
-        <div className="wrap">
-          <div className="section-head reveal">
-            <div className="eyebrow blue">Try It</div>
-            <h2>Click anywhere. Watch it collapse.</h2>
-            <p>
-              Every stat starts scattered. Click inside the field below and
-              watch it get pulled toward the number that matters — exactly
-              how our models treat your data.
-            </p>
-          </div>
-          <div className="playground-frame reveal">
-            <canvas id="gravityCanvas" className="gravity-canvas"></canvas>
-            <div className="playground-hint mono">CLICK TO DROP A DATA POINT</div>
-            <div className="playground-counter mono">
-              <span id="collapseCount">0</span> COLLAPSED
-            </div>
-          </div>
-        </div>
-      </section>
 
       <footer>
         <div className="wrap">

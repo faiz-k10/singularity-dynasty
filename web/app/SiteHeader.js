@@ -87,7 +87,7 @@ export default async function SiteHeader() {
             </div>
           </div>
           <Link href="/#feed">Feed</Link>
-          <Link href="/#playground">Play</Link>
+          <Link href="/my-team">My Team</Link>
           <Link href={user ? "/account" : "/login"} className="tn-account">
             {user ? "Account" : "Sign In"}
           </Link>
@@ -100,7 +100,7 @@ export default async function SiteHeader() {
           <Link href="/#tools">Tools</Link>
           <Link href="/#pricing">Pricing</Link>
           <Link href="/#feed">Feed</Link>
-          <Link href="/#playground">Play</Link>
+          <Link href="/my-team">My Team</Link>
           <Link href={user ? "/account" : "/login"}>
             {user ? "Account" : "Sign In"}
           </Link>
