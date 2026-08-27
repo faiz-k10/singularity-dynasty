@@ -68,7 +68,7 @@ export default async function SiteHeader() {
           <Link href="/#pricing" className="tn-cta">
             Get Started
           </Link>
-          <div className="nav-dropdown">
+          <div className="nav-dropdown nav-dropdown-align-right">
             <Link href="/#tools">Tools</Link>
             <div className="nav-dropdown-menu">
               <Link href="/tools/player-simulations">Player Season Simulations</Link>
