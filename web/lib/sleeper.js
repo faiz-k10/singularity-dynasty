@@ -3,8 +3,6 @@
 // This is what makes Sleeper the easy first platform to support (Yahoo
 // needs real OAuth, ESPN has no official API at all -- see the /my-team
 // roadmap in CLAUDE.md).
-import { unstable_cache } from "next/cache";
-
 const SLEEPER_BASE = "https://api.sleeper.app/v1";
 
 async function sleeperGet(path) {
@@ -33,16 +31,38 @@ export async function fetchSleeperLeagueUsers(leagueId) {
   return data || [];
 }
 
-// The full NFL player dictionary (~5,000 players, several MB) -- Sleeper's
-// own docs ask integrators not to hit this more than once a day since it
-// barely changes, so it's cached here for 24h rather than fetched fresh
-// per request (same unstable_cache pattern player-simulations/page.js
-// already uses for its own once-a-week data).
-export const getSleeperPlayers = unstable_cache(
-  async () => {
-    const data = await sleeperGet(`/players/nfl`);
-    return data || {};
-  },
-  ["sleeper-players-dictionary"],
-  { revalidate: 86400 }
-);
+// The full NFL player dictionary is ~16MB of raw JSON (thousands of
+// players, every field Sleeper tracks per player) -- Sleeper's own docs
+// ask integrators not to hit this more than once a day since it barely
+// changes, so it's cached rather than fetched fresh per request. Can't
+// use unstable_cache for this one like the rest of the codebase does
+// (e.g. player-simulations/page.js) -- Next's data cache hard-rejects
+// any single entry over 2MB, which this blows past by 8x even before
+// trimming. A plain module-level cache has no such ceiling, at the cost
+// of being per-server-instance rather than shared/persistent -- a cold
+// serverless instance just re-fetches once, which is still far better
+// than the request failing outright. Only the 4 fields actually used
+// (name parts, position, team) are kept, cutting the in-memory size
+// substantially versus holding every raw Sleeper field for every player.
+let cachedPlayers = null;
+let cachedAt = 0;
+const PLAYERS_CACHE_MS = 24 * 60 * 60 * 1000;
+
+export async function getSleeperPlayers() {
+  if (cachedPlayers && Date.now() - cachedAt < PLAYERS_CACHE_MS) {
+    return cachedPlayers;
+  }
+  const data = await sleeperGet(`/players/nfl`);
+  const trimmed = {};
+  for (const [id, p] of Object.entries(data || {})) {
+    trimmed[id] = {
+      first_name: p.first_name,
+      last_name: p.last_name,
+      position: p.position,
+      team: p.team,
+    };
+  }
+  cachedPlayers = trimmed;
+  cachedAt = Date.now();
+  return cachedPlayers;
+}
