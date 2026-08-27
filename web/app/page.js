@@ -423,7 +423,10 @@ export default async function Home() {
 
             <div className="round-card featured reveal d1">
               <div className="round-label">Standard Access</div>
-              <h3>Explorer</h3>
+              <div className="round-title-row">
+                <h3>Explorer</h3>
+                <span className="round-badge round-badge-gold">MOST POPULAR</span>
+              </div>
               <div className="round-price">
                 <sup>$</sup>
                 <span className="price-amt" data-monthly="9" data-annual="7">
@@ -447,13 +450,15 @@ export default async function Home() {
             </div>
 
             <div className="round-card reveal d2">
-              <div className="round-ribbon">
-                {singularityRemaining > 0
-                  ? `${singularityRemaining} FOUNDING SPOTS LEFT`
-                  : "FOUNDING SPOTS FULL"}
-              </div>
               <div className="round-label">Full Access</div>
-              <h3>Singularity</h3>
+              <div className="round-title-row">
+                <h3>Singularity</h3>
+                <span className="round-badge round-badge-blue">
+                  {singularityRemaining > 0
+                    ? `${singularityRemaining} FOUNDING SPOTS LEFT`
+                    : "FOUNDING SPOTS FULL"}
+                </span>
+              </div>
               <div className="round-price">
                 <sup>$</sup>
                 <span className="price-amt" data-monthly="25" data-annual="20">

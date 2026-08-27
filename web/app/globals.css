@@ -656,26 +656,26 @@ section{padding:96px 0 20px; position:relative;}
   border-color:rgba(255,122,69,0.4);
   box-shadow:0 24px 60px rgba(255,122,69,0.12);
 }
-.round-card.featured::before{
-  content:'MOST POPULAR'; position:absolute; top:-14px; left:24px;
-  background:linear-gradient(135deg, var(--horizon-gold), var(--horizon)); color:#1A0D05;
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:12px; font-weight:700; letter-spacing:0.07em;
-  padding:6px 14px; border-radius:20px;
-  box-shadow:0 4px 16px rgba(255,122,69,0.45);
-}
-/* Real element (not ::before) since its text is a live subscriber count
-   from Supabase, not a fixed string CSS content can hold. Blue accent to
-   stay visually distinct from Explorer's gold "MOST POPULAR" ribbon. */
-.round-ribbon{
-  position:absolute; top:-14px; left:24px;
-  background:linear-gradient(135deg, var(--neon-blue), var(--neon-blue-dim)); color:#07131A;
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:12px; font-weight:700; letter-spacing:0.07em;
-  padding:6px 14px; border-radius:20px;
-  box-shadow:0 4px 16px rgba(var(--neon-blue-rgb),0.45);
-}
 .round-label{font-family:var(--font-ibm-plex-mono), monospace; font-size:11px; letter-spacing:0.08em; color:var(--star-dim); text-transform:uppercase; margin-bottom:6px;}
 .round-card.featured .round-label{color:var(--horizon-gold);}
+/* Badge sits inline next to the tier name itself (not a floating ribbon
+   pinned to the card's top edge) -- reads as part of the title at a
+   glance instead of a separate element competing for attention above it. */
+.round-title-row{display:flex; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:4px;}
+.round-title-row h3{margin-bottom:0;}
 .round-card h3{font-size:22px; margin-bottom:4px;}
+.round-badge{
+  font-family:var(--font-ibm-plex-mono), monospace; font-size:11px; font-weight:700; letter-spacing:0.06em;
+  padding:4px 12px; border-radius:20px; white-space:nowrap; line-height:1.4;
+}
+.round-badge-gold{
+  background:linear-gradient(135deg, var(--horizon-gold), var(--horizon)); color:#1A0D05;
+  box-shadow:0 4px 14px rgba(255,122,69,0.4);
+}
+.round-badge-blue{
+  background:linear-gradient(135deg, var(--neon-blue), var(--neon-blue-dim)); color:#07131A;
+  box-shadow:0 4px 14px rgba(var(--neon-blue-rgb),0.4);
+}
 .round-price{font-family:var(--font-space-grotesk), sans-serif; font-size:38px; font-weight:700; margin:14px 0 2px;}
 .round-price sup{font-size:16px; font-weight:500; margin-right:2px;}
 .round-price sub{font-family:var(--font-inter), sans-serif; font-size:13px; font-weight:400; color:var(--star-dim);}
