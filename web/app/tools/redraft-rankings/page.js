@@ -6,9 +6,9 @@ import ExportCsvButton from "../ExportCsvButton";
 import RedraftRankingsClient from "./RedraftRankingsClient";
 
 export const metadata = {
-  title: "Weekly Fantasy Football Rankings (PPR) — Singularity Dynasty",
+  title: "Weekly Projection Rankings (PPR) — Singularity Dynasty",
   description:
-    "Standard redraft fantasy football rankings for every position, refreshed weekly and adjusted for matchup and opponent-strength data. Free top-50 access for every Stargazer.",
+    "Standard weekly projection rankings for every position, refreshed weekly and adjusted for matchup and opponent-strength data. Free top-50 access for every Stargazer.",
 };
 
 const PAID_TIERS = ["explorer", "singularity"];
@@ -47,7 +47,7 @@ function sortPositions(positions) {
 
 // Stargazer sees the top 50 only; Explorer/Singularity see the full
 // list — matches the pricing copy's "Weekly Projection Rankings (Top
-// 100)" Stargazer bullet.
+// 50)" Stargazer bullet.
 export default async function RedraftRankingsPage({ searchParams }) {
   const params = await searchParams;
 
@@ -134,13 +134,13 @@ export default async function RedraftRankingsPage({ searchParams }) {
         {rankings.length === 0 ? (
           <>
             <div className="eyebrow">
-              {latest ? `Week ${latest.week} · ${latest.season}` : "Redraft"}
+              {latest ? `Week ${latest.week} · ${latest.season}` : "Projections"}
             </div>
-            <h1>Redraft Weekly Rankings</h1>
+            <h1>Weekly Projection Rankings</h1>
             <p className="tool-sub">
-              Standard redraft rankings, refreshed every week of the season and
+              Standard weekly projection rankings, refreshed every week of the season and
               adjusted for opponent-strength and matchup efficiency data.
-              Weekly projection rankings — top 50 free for every Stargazer.
+              Top 50 free for every Stargazer.
             </p>
             <div className="tool-empty">
               <p>
@@ -159,13 +159,13 @@ export default async function RedraftRankingsPage({ searchParams }) {
               header={
                 <>
                   <div className="eyebrow">
-                    {latest ? `Week ${latest.week} · ${latest.season}` : "Redraft"}
+                    {latest ? `Week ${latest.week} · ${latest.season}` : "Projections"}
                   </div>
-                  <h1>Redraft Weekly Rankings</h1>
+                  <h1>Weekly Projection Rankings</h1>
                   <p className="tool-sub">
-                    Standard redraft rankings, refreshed every week of the season and
+                    Standard weekly projection rankings, refreshed every week of the season and
                     adjusted for opponent-strength and matchup efficiency data.
-                    Weekly projection rankings — top 50 free for every Stargazer.
+                    Top 50 free for every Stargazer.
                   </p>
                   <div className="toggle-row-flex">
                     <div className="toggle-row-actions">

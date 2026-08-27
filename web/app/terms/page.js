@@ -25,7 +25,7 @@ export default function TermsPage() {
           <h2>2. Description of Service</h2>
           <p>
             Singularity Dynasty provides fantasy football analytics,
-            including dynasty and redraft rankings, player season
+            including dynasty and weekly projection rankings, player season
             simulations, best ball rankings, draft board tools, team
             analysis, and prospect rankings, delivered through a
             subscription-based website. The Service is provided for

@@ -5,7 +5,7 @@ import TeamBadge from "../TeamBadge";
 export const metadata = {
   title: "Compare Fantasy Football Players — Weekly Rankings — Singularity Dynasty",
   description:
-    "Compare two fantasy football players side-by-side across weekly redraft rankings, matchup data, and raw scoring components.",
+    "Compare two fantasy football players side-by-side across weekly projection rankings, matchup data, and raw scoring components.",
 };
 
 const SLOTS = ["p1", "p2", "p3"];
@@ -14,8 +14,8 @@ function formatProjection(value) {
   return value === null || value === undefined ? "—" : Number(value).toFixed(1);
 }
 
-// Free for everyone, same as Redraft Weekly Rankings — this is a view over
-// that same dataset, not a separate tier-gated feature.
+// Free for everyone, same as Weekly Projection Rankings — this is a view
+// over that same dataset, not a separate tier-gated feature.
 export default async function ComparePlayersPage({ searchParams }) {
   const params = await searchParams;
   const { supabase } = await getUserTier();
@@ -60,8 +60,8 @@ export default async function ComparePlayersPage({ searchParams }) {
         </div>
         <h1>Compare Players</h1>
         <p className="tool-sub">
-          Pick two or three players from this week&apos;s redraft rankings to
-          see them side by side.
+          Pick two or three players from this week&apos;s weekly projection
+          rankings to see them side by side.
         </p>
 
         {rankings.length === 0 ? (

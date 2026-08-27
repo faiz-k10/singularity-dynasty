@@ -297,18 +297,18 @@ export default async function Home() {
 
               <div className="hub-panel" data-panel="3">
                 <span className="hub-tag">MATCHUP-ADJUSTED</span>
-                <h3>Redraft Weekly Rankings</h3>
+                <h3>Weekly Projection Rankings</h3>
                 <Link href="/tools/redraft-rankings" className="hub-panel-link">
                   View Live Rankings →
                 </Link>
                 <p>
-                  Standard redraft rankings refreshed every week of the
-                  season, adjusted for opponent-strength and matchup
+                  Standard weekly projection rankings refreshed every week of
+                  the season, adjusted for opponent-strength and matchup
                   efficiency data.
                 </p>
                 <div className="mock-panel" style={{ marginTop: "18px" }}>
                   <div className="mock-head">
-                    <h4>Redraft Weekly Rankings</h4>
+                    <h4>Weekly Projection Rankings</h4>
                     <span className="mono">
                       {latestWeek ? `WEEK ${latestWeek.week}` : "LIVE"}
                     </span>
@@ -367,7 +367,7 @@ export default async function Home() {
                   data-panel="3"
                   style={{ "--nx": "161px", "--ny": "7px" }}
                 >
-                  <span className="node-label">Redraft Weekly Rankings</span>
+                  <span className="node-label">Weekly Projection Rankings</span>
                 </button>
                 <button
                   className="node"

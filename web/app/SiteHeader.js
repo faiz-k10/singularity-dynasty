@@ -73,7 +73,7 @@ export default async function SiteHeader() {
             <div className="nav-dropdown-menu">
               <Link href="/tools/player-simulations">Player Season Simulations</Link>
               <Link href="/tools/draft-board">Dynasty Draft Board</Link>
-              <Link href="/tools/redraft-rankings">Redraft Weekly Rankings</Link>
+              <Link href="/tools/redraft-rankings">Weekly Projection Rankings</Link>
               <Link href="/tools/prospect-rankings">WR/QB Prospect Rankings &amp; Comparisons</Link>
             </div>
           </div>
