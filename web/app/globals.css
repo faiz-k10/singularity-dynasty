@@ -657,19 +657,21 @@ section{padding:96px 0 20px; position:relative;}
   box-shadow:0 24px 60px rgba(255,122,69,0.12);
 }
 .round-card.featured::before{
-  content:'MOST POPULAR'; position:absolute; top:-11px; left:24px;
+  content:'MOST POPULAR'; position:absolute; top:-14px; left:24px;
   background:linear-gradient(135deg, var(--horizon-gold), var(--horizon)); color:#1A0D05;
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:10px; font-weight:700; letter-spacing:0.06em;
-  padding:4px 10px; border-radius:20px;
+  font-family:var(--font-ibm-plex-mono), monospace; font-size:12px; font-weight:700; letter-spacing:0.07em;
+  padding:6px 14px; border-radius:20px;
+  box-shadow:0 4px 16px rgba(255,122,69,0.45);
 }
 /* Real element (not ::before) since its text is a live subscriber count
    from Supabase, not a fixed string CSS content can hold. Blue accent to
    stay visually distinct from Explorer's gold "MOST POPULAR" ribbon. */
 .round-ribbon{
-  position:absolute; top:-11px; left:24px;
+  position:absolute; top:-14px; left:24px;
   background:linear-gradient(135deg, var(--neon-blue), var(--neon-blue-dim)); color:#07131A;
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:10px; font-weight:700; letter-spacing:0.06em;
-  padding:4px 10px; border-radius:20px;
+  font-family:var(--font-ibm-plex-mono), monospace; font-size:12px; font-weight:700; letter-spacing:0.07em;
+  padding:6px 14px; border-radius:20px;
+  box-shadow:0 4px 16px rgba(var(--neon-blue-rgb),0.45);
 }
 .round-label{font-family:var(--font-ibm-plex-mono), monospace; font-size:11px; letter-spacing:0.08em; color:var(--star-dim); text-transform:uppercase; margin-bottom:6px;}
 .round-card.featured .round-label{color:var(--horizon-gold);}
