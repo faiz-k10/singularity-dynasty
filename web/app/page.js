@@ -78,7 +78,7 @@ export default async function Home() {
     for (const r of trendRows || []) {
       heroCandidates.push({
         name: r.player_name,
-        value: `${r.projection.toFixed(1)} ${r.trend === "RISING" ? "▲" : "▼"}`,
+        value: `${r.projection.toFixed(1)} PROJ ${r.trend === "RISING" ? "▲" : "▼"}`,
         dir: r.trend === "RISING" ? "up" : "down",
       });
     }
@@ -107,7 +107,7 @@ export default async function Home() {
       const isUp = upside >= downside;
       heroCandidates.push({
         name: r.player_name,
-        value: `${Math.round(isUp ? r.ceiling : r.floor)} ${isUp ? "▲" : "▼"}`,
+        value: `${Math.round(isUp ? r.ceiling : r.floor)} SEASON ${isUp ? "CEIL ▲" : "FLR ▼"}`,
         dir: isUp ? "up" : "down",
       });
     }
