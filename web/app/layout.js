@@ -24,7 +24,7 @@ const ibmPlexMono = IBM_Plex_Mono({
 const SITE_URL = "https://web-kohl-ten-94.vercel.app";
 const TITLE = "Singularity Dynasty — Where the Data Reaches Its Endpoint";
 const DESCRIPTION =
-  "Dynasty and best ball fantasy football rankings, prospect grades, and season simulations — where the data reaches its endpoint.";
+  "Weekly redraft rankings, dynasty rankings, rookie prospect grades, and Monte Carlo season simulations for fantasy football — built on regression models, not gut feel.";
 
 export const metadata = {
   metadataBase: new URL(SITE_URL),

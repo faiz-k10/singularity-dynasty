@@ -6,7 +6,9 @@ import ExportCsvButton from "../ExportCsvButton";
 import RedraftRankingsClient from "./RedraftRankingsClient";
 
 export const metadata = {
-  title: "Redraft Weekly Rankings — Singularity Dynasty",
+  title: "Weekly Fantasy Football Rankings (PPR) — Singularity Dynasty",
+  description:
+    "Standard redraft fantasy football rankings for every position, refreshed weekly and adjusted for matchup and opponent-strength data. Free top-50 access for every Stargazer.",
 };
 
 const PAID_TIERS = ["explorer", "singularity"];

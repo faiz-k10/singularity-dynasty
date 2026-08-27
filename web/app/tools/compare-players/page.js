@@ -3,7 +3,9 @@ import SiteHeader from "../../SiteHeader";
 import TeamBadge from "../TeamBadge";
 
 export const metadata = {
-  title: "Compare Players — Singularity Dynasty",
+  title: "Compare Fantasy Football Players — Weekly Rankings — Singularity Dynasty",
+  description:
+    "Compare two fantasy football players side-by-side across weekly redraft rankings, matchup data, and raw scoring components.",
 };
 
 const SLOTS = ["p1", "p2", "p3"];

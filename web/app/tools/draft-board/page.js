@@ -6,7 +6,9 @@ import SortableTh from "../SortableTh";
 import ExportCsvButton from "../ExportCsvButton";
 
 export const metadata = {
-  title: "Dynasty Draft Board — Singularity Dynasty",
+  title: "Dynasty Startup & Rookie Draft Board — Singularity Dynasty",
+  description:
+    "Round-by-round dynasty startup and rookie draft rankings with correlated stacks auto-flagged via roster-construction analysis. Full board with Explorer or Singularity.",
 };
 
 const PAID_TIERS = ["explorer", "singularity"];

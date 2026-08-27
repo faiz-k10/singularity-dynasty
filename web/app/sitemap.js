@@ -16,6 +16,7 @@ export default function sitemap() {
     "player-simulations",
     "prospect-rankings",
     "compare-players",
+    "compare-player-sims",
   ].map((slug) => ({
     url: `/tools/${slug}`,
     changeFrequency: "weekly",

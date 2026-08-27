@@ -9,7 +9,9 @@ import ComparePlayerRadars from "../ComparePlayerRadars";
 import { radarStartDegFor } from "../radarLayout";
 
 export const metadata = {
-  title: "Compare Players — Season Simulations — Singularity Dynasty",
+  title: "Compare Player Season Simulations — Floor/Median/Ceiling — Singularity Dynasty",
+  description:
+    "Compare two players' full-season Monte Carlo simulation outcomes side-by-side — floor, median, and ceiling projections, stat percentiles, and similar-shape comps.",
 };
 
 const SLOTS = ["p1", "p2", "p3"];

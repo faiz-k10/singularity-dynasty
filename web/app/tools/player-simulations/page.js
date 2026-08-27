@@ -13,7 +13,9 @@ import ExportCsvButton from "../ExportCsvButton";
 import PlayerSimSearch from "../PlayerSimSearch";
 
 export const metadata = {
-  title: "Player Season Simulations — Singularity Dynasty",
+  title: "Player Season Simulations — Floor/Median/Ceiling Projections — Singularity Dynasty",
+  description:
+    "10,000-run Monte Carlo season simulations for every fantasy football player, distilled to floor, median, and ceiling point totals. Free top-10 preview for every Stargazer.",
 };
 
 const TEASER_LIMIT = 10;
