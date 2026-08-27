@@ -258,26 +258,23 @@ body::before{
    built yet, no page to link to) -- matches the homepage's own tools
    section, which already omits both for the same reasons. */
 .nav-dropdown{position:relative;}
-/* Shifted just enough off-center to clear the NEIGHBORING dropdown, not
-   fully edge-anchored to one side. Tools and Pricing's triggers sit only
-   ~90px apart, but each panel is 260px wide -- centering both on their
-   own trigger (the original bug) overlapped them by ~170px, and
-   whichever sibling comes later in the DOM (Pricing) won that
-   overlapping region for :hover, so moving into what looked like Tools'
-   own dropdown would silently activate Pricing's instead. A first fix
-   fully edge-anchored each panel (a full 130px off center) to guarantee
-   zero overlap, but that's more shift than needed and reads as
-   "not under its own label" -- especially bad for a single short word
-   like "Pricing". --dd-shift is the MINIMUM offset that still clears the
-   neighbor (half the overlap, 91px, plus a small ~12px buffer), split
-   evenly so both panels move apart by the same amount instead of one
-   moving the full distance. left:calc(50% ± Npx) sets the anchor POINT;
-   transform:translateX(-50%) (constant across both variants and both
-   open/closed states) is what actually centers the box ON that point --
-   keeping the horizontal offset out of transform means the open/close
-   translateY animation below doesn't have to duplicate it per variant. */
+/* --dd-left/--dd-width are set at runtime by positionNavDropdowns() in
+   InteractiveScript.js, which measures each panel's REAL rendered width
+   (Tools' grows past its own 260px min-width since "WR/QB Prospect
+   Rankings & Comparisons" uses white-space:nowrap) and the actual
+   trigger spacing (which varies by viewport), then computes the
+   minimum shift needed so the Tools/Pricing panels never overlap --
+   without that, whichever dropdown comes later in the DOM (Pricing)
+   wins any overlapping region for :hover, so moving the cursor from
+   "Tools" into its own panel silently activates Pricing's instead.
+   Two static CSS-only guesses were tried before this (a full
+   edge-anchor, then a fixed offset) and both broke again once real
+   content/viewport width didn't match what was assumed -- a hardcoded
+   number can't know a value that only exists at render time. The
+   fallback here (centered, un-shifted) only ever shows before that
+   script runs on mount, which is well before anything is visible. */
 .nav-dropdown-menu{
-  position:absolute; top:100%; left:calc(50% + 91px); transform:translateX(-50%) translateY(4px);
+  position:absolute; top:100%; left:var(--dd-left, 50%); transform:translateY(4px);
   margin-top:14px; min-width:260px; padding:8px;
   background-color:var(--void-panel);
   border:1px solid var(--line); border-radius:14px;
@@ -286,7 +283,6 @@ body::before{
   opacity:0; visibility:hidden; pointer-events:none;
   transition:opacity .18s ease, transform .18s ease, visibility .18s;
 }
-.nav-dropdown-align-right .nav-dropdown-menu{left:calc(50% - 91px);}
 /* Invisible bridge so moving the cursor from "Tools"/"Pricing" down into
    the panel doesn't cross a gap and lose :hover along the way. Lives on
    .nav-dropdown itself (NOT .nav-dropdown-menu, where it used to be, as
@@ -299,15 +295,15 @@ body::before{
    so :hover on .nav-dropdown was lost the instant the cursor left the
    small link, before ever reaching the bridge). .nav-dropdown's own
    pointer-events is never toggled, so its ::after is always hoverable.
-   Same shifted anchor as .nav-dropdown-menu above, for the same overlap
-   reason -- 260px width matches the menu's min-width; 22px height covers
-   the measured ~18px real gap between link and panel with a couple
-   pixels to spare. */
+   Same --dd-left/--dd-width as .nav-dropdown-menu above (inherited from
+   the same wrapper custom properties) so the bridge always matches
+   wherever the actual panel landed, at whatever width it rendered at --
+   22px height covers the measured ~18px real gap between link and panel
+   with a couple pixels to spare. */
 .nav-dropdown::after{
-  content:''; position:absolute; top:100%; left:calc(50% + 91px); transform:translateX(-50%);
-  width:260px; height:22px;
+  content:''; position:absolute; top:100%; left:var(--dd-left, 50%);
+  width:var(--dd-width, 260px); height:22px;
 }
-.nav-dropdown-align-right::after{left:calc(50% - 91px);}
 /* Star dots for the Pricing dropdown ONLY (see NavStars.js -- rendered
    as real <span>s inside .nav-dropdown-menu-stars, not the shared
    .nav-dropdown-menu every dropdown uses, so the Tools dropdown doesn't
@@ -345,7 +341,7 @@ body::before{
 }
 .nav-dropdown:hover .nav-dropdown-menu,
 .nav-dropdown:focus-within .nav-dropdown-menu{
-  opacity:1; visibility:visible; pointer-events:auto; transform:translateX(-50%) translateY(0);
+  opacity:1; visibility:visible; pointer-events:auto; transform:translateY(0);
 }
 .nav-dropdown-menu a{
   font-size:13.5px; font-weight:600; padding:7px 9px; border-radius:8px;

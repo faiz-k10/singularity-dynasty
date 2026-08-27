@@ -618,6 +618,87 @@ export default function InteractiveScript({ tickerPlayers } = {}) {
     measureFixedHeaderHeight();
     window.addEventListener("resize", measureFixedHeaderHeight, { signal });
 
+    /* ---- nav dropdown horizontal positioning (Tools/Pricing) ----
+       .nav-dropdown-menu panels are wide (260px+ -- wider still for
+       Tools, since "WR/QB Prospect Rankings & Comparisons" uses
+       white-space:nowrap and grows the panel past its own min-width) but
+       the Tools/Pricing triggers sit only ~75-90px apart depending on
+       viewport width -- a plain centered anchor overlaps them by more
+       than either panel's own trigger is wide. Whichever dropdown comes
+       later in the DOM (Pricing) would win that overlapping region for
+       :hover, so moving the cursor from "Tools" into its own panel
+       silently activated Pricing's instead.
+       Two static CSS-only fixes were tried before this (a full
+       edge-anchor, then a fixed guessed offset) -- both broke again
+       because the panel's real width varies by content and viewport in
+       ways a hardcoded number can't account for. Measuring the ACTUAL
+       rendered width here and computing the minimum shift needed is the
+       only version of this that stays correct regardless of content
+       length or viewport width, instead of another guess to invalidate
+       next time either one changes.
+       --dd-left / --dd-width are consumed by .nav-dropdown-menu and
+       .nav-dropdown::after (globals.css) via CSS custom property
+       inheritance -- set once here on the wrapper, both the panel and
+       its invisible hover-bridge read the same computed values without
+       needing separate JS writes to each. */
+    function positionNavDropdowns() {
+      const wrappers = [...document.querySelectorAll(".top-nav-bar .nav-dropdown")];
+      if (wrappers.length === 0) return;
+
+      // Clear any previous run's adjustment before re-measuring, so a
+      // resize doesn't compound shifts from the prior layout.
+      wrappers.forEach((w) => {
+        w.style.removeProperty("--dd-left");
+        w.style.removeProperty("--dd-width");
+      });
+
+      const BUFFER = 12;
+      const infos = wrappers.map((w) => {
+        const menu = w.querySelector(".nav-dropdown-menu");
+        const trigger = w.querySelector("a").getBoundingClientRect();
+        const wrapperLeft = w.getBoundingClientRect().left;
+        const width = menu ? menu.getBoundingClientRect().width : 0;
+        const center = trigger.left + trigger.width / 2;
+        return { w, menu, width, wrapperLeft, center, left: center - width / 2, right: center + width / 2 };
+      });
+
+      // Single left-to-right pass: push any overlapping adjacent pair
+      // apart by half the overlap each -- the minimum shift that clears
+      // them while staying as close to centered as geometrically
+      // possible. Only two dropdowns exist today (Tools, Pricing), so
+      // one pass is exact; a third adjacent dropdown later would still
+      // get a reasonable (if not perfectly optimal) result from this.
+      for (let i = 0; i < infos.length - 1; i++) {
+        const a = infos[i];
+        const b = infos[i + 1];
+        const overlap = a.right + BUFFER - b.left;
+        if (overlap > 0) {
+          const shift = overlap / 2;
+          a.left -= shift;
+          a.right -= shift;
+          b.left += shift;
+          b.right += shift;
+        }
+      }
+
+      infos.forEach(({ w, menu, left, width, wrapperLeft }) => {
+        if (!menu) return;
+        w.style.setProperty("--dd-left", `${left - wrapperLeft}px`);
+        w.style.setProperty("--dd-width", `${width}px`);
+      });
+    }
+    positionNavDropdowns();
+    window.addEventListener("resize", positionNavDropdowns, { signal });
+    // Google Fonts can shift text width slightly after first paint even
+    // with next/font's optimizations -- re-measure once fonts actually
+    // settle so a late metric swap can't leave a stale, slightly-wrong
+    // shift in place.
+    if (document.fonts?.ready) {
+      document.fonts.ready.then(() => {
+        if (!signal.aborted) positionNavDropdowns();
+      });
+    }
+
     /* ---- gravity playground ---- */
     const canvas = document.getElementById("gravityCanvas");
     if (canvas) {
