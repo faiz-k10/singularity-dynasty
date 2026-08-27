@@ -1,16 +1,34 @@
 import SiteHeader from "../SiteHeader";
+import { createClient } from "@/lib/supabase/server";
+import MyTeamClient from "./MyTeamClient";
 
 export const metadata = {
   title: "My Team — Singularity Dynasty",
   description:
-    "Build your team, connect your league, and get personalized roster analysis. Coming soon.",
+    "Import your team from Sleeper, save it, and get ready for personalized roster analysis.",
 };
 
-// Placeholder for the team & profile builder (import a roster from
-// Sleeper/Yahoo/ESPN, save it, and power Team Analysis from it) — not
-// built yet. Replace this with the real page once that's ready; no
-// Supabase queries here in the meantime, so it costs nothing to serve.
-export default function MyTeamPage() {
+// Step one of the team & profile builder (see CLAUDE.md's roadmap):
+// import a real roster from Sleeper (Yahoo/ESPN later), save it, and this
+// becomes the data Team Analysis reads from once that's built. Sleeper's
+// API is public/unauthenticated, so the lookup itself works signed out --
+// only saving a team needs an account (lib/sleeper.js + actions.js).
+export default async function MyTeamPage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  let savedTeams = [];
+  if (user) {
+    const { data } = await supabase
+      .from("saved_teams")
+      .select("id, league_name, team_name, players, platform_league_id")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: true });
+    savedTeams = data || [];
+  }
+
   return (
     <div className="tool-page">
       <SiteHeader />
@@ -19,13 +37,12 @@ export default function MyTeamPage() {
         <div className="eyebrow">My Team</div>
         <h1>My Team</h1>
         <p className="tool-sub">
-          Build your team and profile, connect your Sleeper, Yahoo, or ESPN
-          league, and get personalized roster analysis powered by the same
-          models behind every other tool.
+          Import your team from Sleeper to save it here. Yahoo and ESPN
+          import are coming later, and this is the data that will power
+          personalized Team Analysis.
         </p>
-        <div className="tool-empty">
-          <p>This is coming soon — check back later.</p>
-        </div>
+
+        <MyTeamClient isSignedIn={!!user} savedTeams={savedTeams} />
       </main>
     </div>
   );
