@@ -25,9 +25,31 @@ export default function InteractiveScript({ tickerPlayers } = {}) {
        so this needs to be handled explicitly instead of relying on the
        browser's default. "instant" (not "auto") to actually bypass the
        CSS smooth-scroll and match normal anchor-navigation semantics --
-       scrollIntoView's "auto" just inherits the CSS scroll-behavior. */
+       scrollIntoView's "auto" just inherits the CSS scroll-behavior.
+       Actively overridden (not just skipped) on an actual page RELOAD,
+       not just any load with a hash present -- scrolling past a section
+       doesn't push its #hash into the URL (no history.pushState
+       anywhere in this file), but a visitor who clicked into
+       Tools/Pricing at some point still has that #hash sitting in the
+       address bar afterward, and hitting refresh re-runs this same
+       mount logic. Merely skipping our OWN scrollIntoView call on
+       reload isn't enough: the BROWSER's own native anchor-jump (a
+       separate mechanism from anything in this file) still fires on
+       reload purely because the URL's hash matches an element id, and
+       that's what was actually landing a refresh on Tools instead of
+       the top -- our scrollIntoView was never the only thing doing it.
+       Explicitly scrolling to 0,0 on reload runs after mount (i.e.
+       after that native jump already happened) and overrides it. The
+       Navigation Timing API is what tells a real reload apart from a
+       fresh navigation/link click here -- a hash landing from an
+       actual link click should still jump to that section, only a
+       plain refresh should not. */
     let landedViaHash = false;
-    if (window.location.hash) {
+    const isReload =
+      performance.getEntriesByType?.("navigation")?.[0]?.type === "reload";
+    if (isReload) {
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    } else if (window.location.hash) {
       const hashTarget = document.querySelector(window.location.hash);
       if (hashTarget) {
         hashTarget.scrollIntoView({ behavior: "instant", block: "start" });
