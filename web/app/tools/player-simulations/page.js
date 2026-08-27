@@ -16,9 +16,10 @@ export const metadata = {
   title: "Player Season Simulations — Singularity Dynasty",
 };
 
-const TEASER_LIMIT = 200;
+const TEASER_LIMIT = 10;
 const GAMES_PER_SEASON = 17;
-// Singularity-only per the pricing copy — Explorer does not include this.
+// Singularity-only per the pricing copy — Explorer does not include this,
+// so both Stargazer and Explorer see the same top-10 teaser.
 const PAID_TIERS = ["singularity"];
 const POSITION_ORDER = ["QB", "RB", "WR", "TE"];
 const COLUMN_TYPES = {
@@ -284,7 +285,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
             <p className="tool-sub">
               Full-season Monte Carlo simulations run 10,000 times per player,
               distilled to a 10th / 50th / 90th percentile floor, median, and
-              ceiling.
+              ceiling. Top 10 free for every Stargazer.
             </p>
             <div className="tool-empty">
               <p>Simulations publish weekly during the season — check back soon.</p>
@@ -311,7 +312,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
                   <p className="tool-sub">
                     Full-season Monte Carlo simulations run 10,000 times per player,
                     distilled to a 10th / 50th / 90th percentile floor, median, and
-                    ceiling.
+                    ceiling. Top 10 free for every Stargazer.
                   </p>
                   {canExport && (
                     <div className="toggle-row-flex">

@@ -392,7 +392,8 @@ export default async function Home() {
               <div className="round-price">$0</div>
               <div className="round-desc">Enough to get a real read on your team.</div>
               <ul className="round-features">
-                <li>Weekly Projection Rankings (Top 100)</li>
+                <li>Weekly Projection Rankings (Top 50)</li>
+                <li>Top 10 Player Simulation Rankings</li>
                 <li>Access to the Newsletter</li>
                 <li>Access to Discord</li>
               </ul>

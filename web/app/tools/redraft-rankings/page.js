@@ -43,7 +43,7 @@ function sortPositions(positions) {
   });
 }
 
-// Stargazer sees the top 100 only; Explorer/Singularity see the full
+// Stargazer sees the top 50 only; Explorer/Singularity see the full
 // list — matches the pricing copy's "Weekly Projection Rankings (Top
 // 100)" Stargazer bullet.
 export default async function RedraftRankingsPage({ searchParams }) {
@@ -81,7 +81,7 @@ export default async function RedraftRankingsPage({ searchParams }) {
       .order("rank", { ascending: true });
 
     if (!hasFullAccess) {
-      query = query.limit(100);
+      query = query.limit(50);
     }
 
     const { data } = await query;
@@ -122,7 +122,7 @@ export default async function RedraftRankingsPage({ searchParams }) {
     OVERALL_COLUMN_TYPES
   );
   const canExport = tier === "singularity" && rankings.length > 0;
-  const isTeaser = !hasFullAccess && totalCount > 100;
+  const isTeaser = !hasFullAccess && totalCount > 50;
 
   return (
     <div className="tool-page">
@@ -138,7 +138,7 @@ export default async function RedraftRankingsPage({ searchParams }) {
             <p className="tool-sub">
               Standard redraft rankings, refreshed every week of the season and
               adjusted for opponent-strength and matchup efficiency data.
-              Weekly projection rankings — top 100 free for every Stargazer.
+              Weekly projection rankings — top 50 free for every Stargazer.
             </p>
             <div className="tool-empty">
               <p>
@@ -163,7 +163,7 @@ export default async function RedraftRankingsPage({ searchParams }) {
                   <p className="tool-sub">
                     Standard redraft rankings, refreshed every week of the season and
                     adjusted for opponent-strength and matchup efficiency data.
-                    Weekly projection rankings — top 100 free for every Stargazer.
+                    Weekly projection rankings — top 50 free for every Stargazer.
                   </p>
                   <div className="toggle-row-flex">
                     <div className="toggle-row-actions">
@@ -197,7 +197,7 @@ export default async function RedraftRankingsPage({ searchParams }) {
             {isTeaser && (
               <div className="tool-paywall reveal in">
                 <p>
-                  You&apos;re seeing the top 100 of {totalCount} players. Unlock
+                  You&apos;re seeing the top 50 of {totalCount} players. Unlock
                   the full list with Explorer or Singularity.
                 </p>
                 <Link href="/#pricing" className="btn-primary">
