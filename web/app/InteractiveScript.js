@@ -628,64 +628,76 @@ export default function InteractiveScript({ tickerPlayers } = {}) {
        later in the DOM (Pricing) would win that overlapping region for
        :hover, so moving the cursor from "Tools" into its own panel
        silently activated Pricing's instead.
-       Two static CSS-only fixes were tried before this (a full
-       edge-anchor, then a fixed guessed offset) -- both broke again
-       because the panel's real width varies by content and viewport in
-       ways a hardcoded number can't account for. Measuring the ACTUAL
-       rendered width here and computing the minimum shift needed is the
-       only version of this that stays correct regardless of content
-       length or viewport width, instead of another guess to invalidate
-       next time either one changes.
-       --dd-left / --dd-width are consumed by .nav-dropdown-menu and
-       .nav-dropdown::after (globals.css) via CSS custom property
-       inheritance -- set once here on the wrapper, both the panel and
-       its invisible hover-bridge read the same computed values without
-       needing separate JS writes to each. */
+       --dd-shift is a DELTA off the panel's normal centered position
+       (globals.css: transform:translateX(calc(-50% + var(--dd-shift,
+       0px)))), not an absolute position -- defaults to 0px, so if this
+       never runs (blocked script, some browser quirk, anything) the
+       panel just falls back to plain centered on its trigger, same as
+       every dropdown before this bug existed. A previous version
+       computed an absolute --dd-left instead; its fallback (var(...,
+       50%) with no centering transform at all) put an un-shifted panel
+       at a nonsensical position if JS didn't run for any reason, which
+       is a materially worse failure mode than "might rarely overlap."
+       Wrapped in try/catch and given its own try/catch specifically so
+       nothing earlier or later in this large shared effect can prevent
+       it from running or take the whole effect down with it if a
+       measurement ever throws on some unusual browser. */
     function positionNavDropdowns() {
-      const wrappers = [...document.querySelectorAll(".top-nav-bar .nav-dropdown")];
-      if (wrappers.length === 0) return;
+      try {
+        const wrappers = [...document.querySelectorAll(".top-nav-bar .nav-dropdown")];
+        if (wrappers.length === 0) return;
 
-      // Clear any previous run's adjustment before re-measuring, so a
-      // resize doesn't compound shifts from the prior layout.
-      wrappers.forEach((w) => {
-        w.style.removeProperty("--dd-left");
-        w.style.removeProperty("--dd-width");
-      });
+        wrappers.forEach((w) => {
+          w.style.removeProperty("--dd-shift");
+          w.style.removeProperty("--dd-width");
+        });
 
-      const BUFFER = 12;
-      const infos = wrappers.map((w) => {
-        const menu = w.querySelector(".nav-dropdown-menu");
-        const trigger = w.querySelector("a").getBoundingClientRect();
-        const wrapperLeft = w.getBoundingClientRect().left;
-        const width = menu ? menu.getBoundingClientRect().width : 0;
-        const center = trigger.left + trigger.width / 2;
-        return { w, menu, width, wrapperLeft, center, left: center - width / 2, right: center + width / 2 };
-      });
+        const BUFFER = 12;
+        const infos = wrappers
+          .map((w) => {
+            const menu = w.querySelector(".nav-dropdown-menu");
+            const trigger = w.querySelector("a");
+            if (!menu || !trigger) return null;
+            const triggerRect = trigger.getBoundingClientRect();
+            const width = menu.getBoundingClientRect().width;
+            const center = triggerRect.left + triggerRect.width / 2;
+            return { w, width, shift: 0, left: center - width / 2, right: center + width / 2 };
+          })
+          .filter(Boolean);
 
-      // Single left-to-right pass: push any overlapping adjacent pair
-      // apart by half the overlap each -- the minimum shift that clears
-      // them while staying as close to centered as geometrically
-      // possible. Only two dropdowns exist today (Tools, Pricing), so
-      // one pass is exact; a third adjacent dropdown later would still
-      // get a reasonable (if not perfectly optimal) result from this.
-      for (let i = 0; i < infos.length - 1; i++) {
-        const a = infos[i];
-        const b = infos[i + 1];
-        const overlap = a.right + BUFFER - b.left;
-        if (overlap > 0) {
-          const shift = overlap / 2;
-          a.left -= shift;
-          a.right -= shift;
-          b.left += shift;
-          b.right += shift;
+        // Single left-to-right pass: push any overlapping adjacent pair
+        // apart by half the overlap each -- the minimum shift that
+        // clears them while staying as close to centered as
+        // geometrically possible. Only two dropdowns exist today
+        // (Tools, Pricing), so one pass is exact; a third adjacent
+        // dropdown later would still get a reasonable (if not perfectly
+        // optimal) result from this.
+        for (let i = 0; i < infos.length - 1; i++) {
+          const a = infos[i];
+          const b = infos[i + 1];
+          const overlap = a.right + BUFFER - b.left;
+          if (overlap > 0) {
+            const s = overlap / 2;
+            a.shift -= s;
+            a.left -= s;
+            a.right -= s;
+            b.shift += s;
+            b.left += s;
+            b.right += s;
+          }
         }
-      }
 
-      infos.forEach(({ w, menu, left, width, wrapperLeft }) => {
-        if (!menu) return;
-        w.style.setProperty("--dd-left", `${left - wrapperLeft}px`);
-        w.style.setProperty("--dd-width", `${width}px`);
-      });
+        infos.forEach(({ w, width, shift }) => {
+          w.style.setProperty("--dd-shift", `${shift}px`);
+          w.style.setProperty("--dd-width", `${width}px`);
+        });
+      } catch (err) {
+        // Never let a measurement quirk break the rest of this shared
+        // effect -- worst case the CSS fallback (plain centered,
+        // --dd-shift defaults to 0) applies instead of an exact
+        // anti-overlap correction.
+        console.error("positionNavDropdowns failed:", err);
+      }
     }
     positionNavDropdowns();
     window.addEventListener("resize", positionNavDropdowns, { signal });

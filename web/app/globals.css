@@ -258,23 +258,27 @@ body::before{
    built yet, no page to link to) -- matches the homepage's own tools
    section, which already omits both for the same reasons. */
 .nav-dropdown{position:relative;}
-/* --dd-left/--dd-width are set at runtime by positionNavDropdowns() in
-   InteractiveScript.js, which measures each panel's REAL rendered width
-   (Tools' grows past its own 260px min-width since "WR/QB Prospect
-   Rankings & Comparisons" uses white-space:nowrap) and the actual
-   trigger spacing (which varies by viewport), then computes the
-   minimum shift needed so the Tools/Pricing panels never overlap --
-   without that, whichever dropdown comes later in the DOM (Pricing)
-   wins any overlapping region for :hover, so moving the cursor from
-   "Tools" into its own panel silently activates Pricing's instead.
-   Two static CSS-only guesses were tried before this (a full
-   edge-anchor, then a fixed offset) and both broke again once real
-   content/viewport width didn't match what was assumed -- a hardcoded
-   number can't know a value that only exists at render time. The
-   fallback here (centered, un-shifted) only ever shows before that
-   script runs on mount, which is well before anything is visible. */
+/* --dd-shift is a DELTA off center (not an absolute position), set at
+   runtime by positionNavDropdowns() in InteractiveScript.js -- it
+   measures each panel's REAL rendered width (Tools' grows past its own
+   260px min-width since "WR/QB Prospect Rankings & Comparisons" uses
+   white-space:nowrap) and the actual trigger spacing (which varies by
+   viewport), then computes the minimum shift needed so the Tools/
+   Pricing panels never overlap. Without that, whichever dropdown comes
+   later in the DOM (Pricing) wins any overlapping region for :hover, so
+   moving the cursor from "Tools" into its own panel silently activates
+   Pricing's instead.
+   Defaulting to 0px here matters: if that script never runs for any
+   reason (blocked, a JS error elsewhere on the page, some browser
+   quirk), the panel just falls back to plain centered on its own
+   trigger -- the same behavior every dropdown had before this bug
+   existed -- instead of a nonsensical position. Two earlier versions
+   of this fix computed an absolute left/width instead of a delta; their
+   fallback had no centering transform to fall back TO, so if JS didn't
+   run the panel rendered off in the wrong place entirely rather than
+   just centered. */
 .nav-dropdown-menu{
-  position:absolute; top:100%; left:var(--dd-left, 50%); transform:translateY(4px);
+  position:absolute; top:100%; left:50%; transform:translateX(calc(-50% + var(--dd-shift, 0px))) translateY(4px);
   margin-top:14px; min-width:260px; padding:8px;
   background-color:var(--void-panel);
   border:1px solid var(--line); border-radius:14px;
@@ -295,13 +299,13 @@ body::before{
    so :hover on .nav-dropdown was lost the instant the cursor left the
    small link, before ever reaching the bridge). .nav-dropdown's own
    pointer-events is never toggled, so its ::after is always hoverable.
-   Same --dd-left/--dd-width as .nav-dropdown-menu above (inherited from
-   the same wrapper custom properties) so the bridge always matches
-   wherever the actual panel landed, at whatever width it rendered at --
-   22px height covers the measured ~18px real gap between link and panel
-   with a couple pixels to spare. */
+   Same --dd-shift as .nav-dropdown-menu above (inherited from the same
+   wrapper custom property) so the bridge always matches wherever the
+   actual panel landed; --dd-width matches whatever the panel actually
+   rendered at (see above) -- 22px height covers the measured ~18px real
+   gap between link and panel with a couple pixels to spare. */
 .nav-dropdown::after{
-  content:''; position:absolute; top:100%; left:var(--dd-left, 50%);
+  content:''; position:absolute; top:100%; left:calc(50% + var(--dd-shift, 0px)); transform:translateX(-50%);
   width:var(--dd-width, 260px); height:22px;
 }
 /* Star dots for the Pricing dropdown ONLY (see NavStars.js -- rendered
@@ -341,7 +345,8 @@ body::before{
 }
 .nav-dropdown:hover .nav-dropdown-menu,
 .nav-dropdown:focus-within .nav-dropdown-menu{
-  opacity:1; visibility:visible; pointer-events:auto; transform:translateY(0);
+  opacity:1; visibility:visible; pointer-events:auto;
+  transform:translateX(calc(-50% + var(--dd-shift, 0px))) translateY(0);
 }
 .nav-dropdown-menu a{
   font-size:13.5px; font-weight:600; padding:7px 9px; border-radius:8px;
