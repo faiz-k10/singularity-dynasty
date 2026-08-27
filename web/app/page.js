@@ -1,6 +1,7 @@
 import Link from "next/link";
 import SiteHeader from "./SiteHeader";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 function formatPostDate(iso) {
   return new Date(iso)
@@ -28,6 +29,12 @@ const CHIP_SLOTS = [
   { ang: "126deg", r: "150px" },
   { ang: "198deg", r: "150px" },
 ];
+
+// Founding-cohort scarcity for Singularity -- first 50 real subscribers
+// only. Counted live off profiles.tier so this can never drift stale the
+// way a hardcoded "50 remaining" would the moment anyone actually signs
+// up; clamped at 0 rather than going negative once the cohort fills.
+const SINGULARITY_FOUNDING_CAP = 50;
 
 export default async function Home() {
   const supabase = await createClient();
@@ -107,6 +114,18 @@ export default async function Home() {
   }
 
   const heroChips = shuffle(heroCandidates).slice(0, CHIP_SLOTS.length);
+
+  // profiles' RLS only lets a visitor read their OWN row (see
+  // 0001_profiles.sql), so a real cross-user count needs the
+  // service-role admin client, not the session-scoped one above --
+  // otherwise every signed-out visitor's count query would just return
+  // 0 and this would silently show a static, wrong "50 remaining"
+  // forever regardless of real signups.
+  const { count: singularityCount } = await createAdminClient()
+    .from("profiles")
+    .select("*", { count: "exact", head: true })
+    .eq("tier", "singularity");
+  const singularityRemaining = Math.max(0, SINGULARITY_FOUNDING_CAP - (singularityCount || 0));
 
   return (
     <>
@@ -428,6 +447,11 @@ export default async function Home() {
             </div>
 
             <div className="round-card reveal d2">
+              <div className="round-ribbon">
+                {singularityRemaining > 0
+                  ? `${singularityRemaining} FOUNDING SPOTS LEFT`
+                  : "FOUNDING SPOTS FULL"}
+              </div>
               <div className="round-label">Full Access</div>
               <h3>Singularity</h3>
               <div className="round-price">
@@ -437,7 +461,10 @@ export default async function Home() {
                 </span>
                 <sub>/mo</sub>
               </div>
-              <div className="round-desc">The endpoint. Everything converges here.</div>
+              <div className="round-desc">
+                The endpoint. Everything converges here. Only {SINGULARITY_FOUNDING_CAP} founding
+                spots — {singularityRemaining} remaining.
+              </div>
               <ul className="round-features">
                 <li>Everything in Explorer</li>
                 <li>Full Player Simulation Rankings</li>

@@ -662,6 +662,15 @@ section{padding:96px 0 20px; position:relative;}
   font-family:var(--font-ibm-plex-mono), monospace; font-size:10px; font-weight:700; letter-spacing:0.06em;
   padding:4px 10px; border-radius:20px;
 }
+/* Real element (not ::before) since its text is a live subscriber count
+   from Supabase, not a fixed string CSS content can hold. Blue accent to
+   stay visually distinct from Explorer's gold "MOST POPULAR" ribbon. */
+.round-ribbon{
+  position:absolute; top:-11px; left:24px;
+  background:linear-gradient(135deg, var(--neon-blue), var(--neon-blue-dim)); color:#07131A;
+  font-family:var(--font-ibm-plex-mono), monospace; font-size:10px; font-weight:700; letter-spacing:0.06em;
+  padding:4px 10px; border-radius:20px;
+}
 .round-label{font-family:var(--font-ibm-plex-mono), monospace; font-size:11px; letter-spacing:0.08em; color:var(--star-dim); text-transform:uppercase; margin-bottom:6px;}
 .round-card.featured .round-label{color:var(--horizon-gold);}
 .round-card h3{font-size:22px; margin-bottom:4px;}
