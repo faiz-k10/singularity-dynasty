@@ -258,20 +258,26 @@ body::before{
    built yet, no page to link to) -- matches the homepage's own tools
    section, which already omits both for the same reasons. */
 .nav-dropdown{position:relative;}
-/* Anchored to the trigger's OWN left edge, growing rightward -- NOT
-   centered on the trigger. Tools and Pricing sit only ~90px apart in the
-   nav bar, but each panel is 260px wide; centering both on their own
-   trigger (the old behavior) made them overlap by ~170px, and whichever
-   sibling comes later in the DOM (Pricing) won that overlapping region
-   for :hover -- hovering into what looked like Tools' own dropdown would
-   silently activate Pricing's instead, closing Tools and opening Pricing
-   underneath the cursor. Anchoring left-aligned here and right-aligned
-   via .nav-dropdown-align-right (below, used for Tools since it sits to
-   Pricing's left) makes both panels grow AWAY from each other instead of
-   both converging on the same middle zone -- they can't collide as long
-   as the triggers themselves don't overlap, regardless of viewport width. */
+/* Shifted just enough off-center to clear the NEIGHBORING dropdown, not
+   fully edge-anchored to one side. Tools and Pricing's triggers sit only
+   ~90px apart, but each panel is 260px wide -- centering both on their
+   own trigger (the original bug) overlapped them by ~170px, and
+   whichever sibling comes later in the DOM (Pricing) won that
+   overlapping region for :hover, so moving into what looked like Tools'
+   own dropdown would silently activate Pricing's instead. A first fix
+   fully edge-anchored each panel (a full 130px off center) to guarantee
+   zero overlap, but that's more shift than needed and reads as
+   "not under its own label" -- especially bad for a single short word
+   like "Pricing". --dd-shift is the MINIMUM offset that still clears the
+   neighbor (half the overlap, 91px, plus a small ~12px buffer), split
+   evenly so both panels move apart by the same amount instead of one
+   moving the full distance. left:calc(50% ± Npx) sets the anchor POINT;
+   transform:translateX(-50%) (constant across both variants and both
+   open/closed states) is what actually centers the box ON that point --
+   keeping the horizontal offset out of transform means the open/close
+   translateY animation below doesn't have to duplicate it per variant. */
 .nav-dropdown-menu{
-  position:absolute; top:100%; left:0; transform:translateY(4px);
+  position:absolute; top:100%; left:calc(50% + 91px); transform:translateX(-50%) translateY(4px);
   margin-top:14px; min-width:260px; padding:8px;
   background-color:var(--void-panel);
   border:1px solid var(--line); border-radius:14px;
@@ -280,7 +286,7 @@ body::before{
   opacity:0; visibility:hidden; pointer-events:none;
   transition:opacity .18s ease, transform .18s ease, visibility .18s;
 }
-.nav-dropdown-align-right .nav-dropdown-menu{left:auto; right:0;}
+.nav-dropdown-align-right .nav-dropdown-menu{left:calc(50% - 91px);}
 /* Invisible bridge so moving the cursor from "Tools"/"Pricing" down into
    the panel doesn't cross a gap and lose :hover along the way. Lives on
    .nav-dropdown itself (NOT .nav-dropdown-menu, where it used to be, as
@@ -293,15 +299,15 @@ body::before{
    so :hover on .nav-dropdown was lost the instant the cursor left the
    small link, before ever reaching the bridge). .nav-dropdown's own
    pointer-events is never toggled, so its ::after is always hoverable.
-   Anchored the same left/right way as .nav-dropdown-menu above, for the
-   same overlap reason -- 260px width matches the menu's min-width; 22px
-   height covers the measured ~18px real gap between link and panel with
-   a couple pixels to spare. */
+   Same shifted anchor as .nav-dropdown-menu above, for the same overlap
+   reason -- 260px width matches the menu's min-width; 22px height covers
+   the measured ~18px real gap between link and panel with a couple
+   pixels to spare. */
 .nav-dropdown::after{
-  content:''; position:absolute; top:100%; left:0;
+  content:''; position:absolute; top:100%; left:calc(50% + 91px); transform:translateX(-50%);
   width:260px; height:22px;
 }
-.nav-dropdown-align-right::after{left:auto; right:0;}
+.nav-dropdown-align-right::after{left:calc(50% - 91px);}
 /* Star dots for the Pricing dropdown ONLY (see NavStars.js -- rendered
    as real <span>s inside .nav-dropdown-menu-stars, not the shared
    .nav-dropdown-menu every dropdown uses, so the Tools dropdown doesn't
@@ -339,7 +345,7 @@ body::before{
 }
 .nav-dropdown:hover .nav-dropdown-menu,
 .nav-dropdown:focus-within .nav-dropdown-menu{
-  opacity:1; visibility:visible; pointer-events:auto; transform:translateY(0);
+  opacity:1; visibility:visible; pointer-events:auto; transform:translateX(-50%) translateY(0);
 }
 .nav-dropdown-menu a{
   font-size:13.5px; font-weight:600; padding:7px 9px; border-radius:8px;
