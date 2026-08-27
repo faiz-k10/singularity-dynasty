@@ -107,7 +107,7 @@ export default async function Home() {
       const isUp = upside >= downside;
       heroCandidates.push({
         name: r.player_name,
-        value: `${Math.round(isUp ? r.ceiling : r.floor)} SEASON ${isUp ? "CEIL ▲" : "FLR ▼"}`,
+        value: `${Math.round(isUp ? r.ceiling : r.floor)} ${isUp ? "CEIL ▲" : "FLOOR ▼"}`,
         dir: isUp ? "up" : "down",
       });
     }
