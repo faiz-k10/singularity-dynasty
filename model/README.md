@@ -642,6 +642,66 @@ silently flagging every Arizona player as a false team change. Caught via
 Trey McBride showing `shrunk = TRUE` despite 47 games and no real move.
 Worth remembering if team-change detection is ever reintroduced.
 
+## Age + draft-capital groundwork (data reconnaissance done, not wired in yet)
+
+`player_meta.R` (`player_meta(seasons)`) and `age_curve_analysis.R` are
+the setup pass for an age / draft-capital signal. Nothing in
+`projection_engine.R` uses them yet — this is the "what does the age
+cliff actually look like in the data" step before the feature is
+designed.
+
+**Data / join keys (nflreadr `load_rosters()` + `load_draft_picks()`):**
+- `gsis_id` is the universal key — identical to
+  `load_player_stats()$player_id`, so the model side needs **no name
+  matching**. `sleeper_id` rides along for the website's `/my-team` join.
+- Coverage for fantasy-relevant players (≥8-game seasons, 2010–2025):
+  `birth_date` 100%, `sleeper_id` ~99%, `draft_round`/`pick` present for
+  drafted players (`is_udfa` flags real undrafted vs. not-yet-known
+  rookies). `age` is measured as of Sept 1 of the season.
+
+**Age curves — longitudinal (same player, year N-1 → N, ≥8 g both
+years; this controls for the survivorship that makes a naive
+PPG-by-age plot slope *up* at old ages because only stars keep a job):**
+
+| reaches age | RB Δ PPG/yr | WR Δ PPG/yr | TE Δ PPG/yr | QB Δ PPG/yr |
+|---|---|---|---|---|
+| 22–23 | **+0.8 to +1.5** | **+1.0 to +1.8** | +1.2 to +1.6 | ~+0.8 |
+| 24–25 | −0.1 / −0.6 | +0.1 / +0.4 | +0.8 / +0.5 | ~flat |
+| 26–27 | −0.4 / −0.8 | −0.4 / −0.3 | −0.1 / −0.6 | ~flat |
+| 28 | −0.8 | −0.9 | −0.2 | ~flat |
+| 29 | **−1.3** | −1.0 | −0.3 | ~flat |
+| 30 | −1.0 | **−1.6** | −0.9 | ~flat |
+| 31 | −1.7 | −0.6 | −0.8 | ~flat |
+| 32 | **−2.8** | **−2.6** | −0.7 | small dip |
+
+Takeaways: **RB declines from age 25, with a real acceleration at
+29–30. WR is flat through 25, declines from 26, steepens past 30. TE
+is the slow-aging position — growth through 25, gentle decline only
+past 30. QB does not meaningfully age inside the fantasy window** (the
+apparent "peak age 35" cross-sectional is pure survivorship) — an age
+term should almost certainly be **QB-exempt**, same as the mean/median
+split.
+
+**Draft capital — early career only (`years_exp ≤ 1`, median PPG):**
+
+| overall pick | RB | WR | TE |
+|---|---|---|---|
+| top 15 | 16.0 | 11.9 | 10.4 |
+| 16–40 | 12.1 | 9.9 | 8.5 |
+| 41–75 | 9.7 | 7.8 | 5.8 |
+| 76–150 | 6.1 | 5.6 | 4.4 |
+| 151+ / UDFA | ~4.4 | ~4.0 | ~2.0 |
+
+A ~4× spread on draft position alone, for exactly the thin-sample
+players `shrunk_quantile()` currently blends toward a *single*
+positional baseline regardless of pedigree. The obvious use is to make
+the shrink target pick-aware (a top-15 rookie RB shouldn't regress to
+the same place as a UDFA), not to touch established players.
+
+**Not started (waits on the use cases):** any change to
+`projection_engine.R`, and the website-side `player_metadata` Supabase
+table — its schema depends on what Team Analysis actually computes.
+
 ## Deferred — explicitly out of scope for now
 
 - **Redraft matchup-adjustment** (pace of play, offensive/defensive
