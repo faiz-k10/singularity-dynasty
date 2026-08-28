@@ -6,14 +6,18 @@ import TeamBadge from "../tools/TeamBadge";
 
 const POSITION_ORDER = ["QB", "RB", "WR", "TE", "K", "DEF"];
 
-// League format at a glance -- teams / QB format / scoring / TE premium,
-// straight from Sleeper's own league object (see actions.js). TE premium
-// only renders when the league actually has one; not every league does.
+// League format at a glance -- teams / roster spots / QB format / scoring
+// / TE premium, straight from Sleeper's own league object (see
+// actions.js). TE premium only renders when the league actually has one;
+// not every league does.
 function LeagueBadges({ settings }) {
   if (!settings || !settings.teams) return null;
   return (
     <div className="my-team-settings">
       <span className="my-team-setting-pill pill-teams">{settings.teams} Teams</span>
+      {settings.rosterSpots && (
+        <span className="my-team-setting-pill">{settings.rosterSpots} Roster Spots</span>
+      )}
       <span className="my-team-setting-pill pill-qb">{settings.qbFormat}</span>
       <span className="my-team-setting-pill pill-scoring">{settings.scoring}</span>
       {settings.tePremium && (

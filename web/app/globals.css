@@ -2032,6 +2032,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
    colors: QB format = blue (matches Explorer's usual secondary-accent
    use), scoring = gold (primary accent), TE premium = green (reads as
    a bonus, same as .up elsewhere on the site). */
+.pill-teams{background:rgba(var(--down-rgb),0.15); border-color:rgba(var(--down-rgb),0.35); color:var(--down);}
 .pill-qb{background:rgba(var(--neon-blue-rgb),0.15); border-color:rgba(var(--neon-blue-rgb),0.35); color:var(--neon-blue);}
 .pill-scoring{background:rgba(var(--horizon-gold-rgb),0.15); border-color:rgba(var(--horizon-gold-rgb),0.35); color:var(--horizon-gold);}
 .pill-te{background:rgba(var(--up-rgb),0.15); border-color:rgba(var(--up-rgb),0.35); color:var(--up);}

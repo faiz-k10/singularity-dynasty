@@ -55,8 +55,21 @@ export async function lookupSleeperTeams(username) {
       // no separate settings call needed, this is already fetched above.
       const recPts = league.scoring_settings?.rec || 0;
       const tePremium = league.scoring_settings?.bonus_rec_te || 0;
+      // Active roster_positions alone undercounts total capacity -- taxi
+      // squad and IR/reserve slots hold real rostered players (they're
+      // part of myRoster.players) but aren't in roster_positions at all,
+      // which made "filled" exceed "total" in every league here that
+      // actually uses a taxi squad (dynasty leagues almost always do).
+      const totalRosterSpots =
+        (league.roster_positions || []).length +
+          (league.settings?.taxi_slots || 0) +
+          (league.settings?.reserve_slots || 0) || null;
+      const filledRosterSpots = (myRoster.players || []).length;
       const settings = {
         teams: league.total_rosters || null,
+        rosterSpots: totalRosterSpots
+          ? `${filledRosterSpots}/${totalRosterSpots}`
+          : null,
         qbFormat: (league.roster_positions || []).includes("SUPER_FLEX")
           ? "Superflex"
           : "1QB",
