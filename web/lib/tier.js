@@ -10,8 +10,11 @@ export const SAVED_TEAM_LIMITS = {
   singularity: null,
 };
 
+// Returns the cap for a tier, or null for unlimited. Must use an `in`
+// check, not `?? stargazer` -- `null` is a real value in the map
+// (unlimited) and `??` would wrongly replace it with the stargazer cap.
 export function savedTeamLimit(tier) {
-  return SAVED_TEAM_LIMITS[tier] ?? SAVED_TEAM_LIMITS.stargazer;
+  return tier in SAVED_TEAM_LIMITS ? SAVED_TEAM_LIMITS[tier] : SAVED_TEAM_LIMITS.stargazer;
 }
 
 // Split out from getUserTier() below so a page that wants to run tier
