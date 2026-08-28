@@ -13,11 +13,11 @@ function LeagueBadges({ settings }) {
   if (!settings || !settings.teams) return null;
   return (
     <div className="my-team-settings">
-      <span className="my-team-setting-pill">{settings.teams} Teams</span>
-      <span className="my-team-setting-pill">{settings.qbFormat}</span>
-      <span className="my-team-setting-pill">{settings.scoring}</span>
+      <span className="my-team-setting-pill pill-teams">{settings.teams} Teams</span>
+      <span className="my-team-setting-pill pill-qb">{settings.qbFormat}</span>
+      <span className="my-team-setting-pill pill-scoring">{settings.scoring}</span>
       {settings.tePremium && (
-        <span className="my-team-setting-pill">{settings.tePremium}</span>
+        <span className="my-team-setting-pill pill-te">{settings.tePremium}</span>
       )}
     </div>
   );

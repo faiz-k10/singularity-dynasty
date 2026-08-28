@@ -2026,6 +2026,15 @@ tr.stat-row-selected td{background:var(--void-panel);}
   font-family:var(--font-ibm-plex-mono), monospace; font-size:10.5px; font-weight:600; letter-spacing:0.03em;
   padding:3px 10px; border-radius:20px; background:var(--void-panel-2); border:1px solid var(--line); color:var(--star-dim);
 }
+/* One color per category so the 4 pills read apart at a glance instead
+   of blending into one gray row -- teams (neutral count) stays the
+   default gray, the rest borrow the site's existing accent/status
+   colors: QB format = blue (matches Explorer's usual secondary-accent
+   use), scoring = gold (primary accent), TE premium = green (reads as
+   a bonus, same as .up elsewhere on the site). */
+.pill-qb{background:rgba(var(--neon-blue-rgb),0.15); border-color:rgba(var(--neon-blue-rgb),0.35); color:var(--neon-blue);}
+.pill-scoring{background:rgba(var(--horizon-gold-rgb),0.15); border-color:rgba(var(--horizon-gold-rgb),0.35); color:var(--horizon-gold);}
+.pill-te{background:rgba(var(--up-rgb),0.15); border-color:rgba(var(--up-rgb),0.35); color:var(--up);}
 .my-team-chevron{
   display:inline-block; font-size:11px; color:var(--star-dim); margin-right:10px;
   transition:transform .2s ease;
