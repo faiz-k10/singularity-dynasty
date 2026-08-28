@@ -2,8 +2,26 @@
 
 import { useState, useTransition } from "react";
 import { lookupSleeperTeams, saveTeam, deleteTeam } from "./actions";
+import TeamBadge from "../tools/TeamBadge";
 
 const POSITION_ORDER = ["QB", "RB", "WR", "TE", "K", "DEF"];
+
+// League format at a glance -- teams / QB format / scoring / TE premium,
+// straight from Sleeper's own league object (see actions.js). TE premium
+// only renders when the league actually has one; not every league does.
+function LeagueBadges({ settings }) {
+  if (!settings || !settings.teams) return null;
+  return (
+    <div className="my-team-settings">
+      <span className="my-team-setting-pill">{settings.teams} Teams</span>
+      <span className="my-team-setting-pill">{settings.qbFormat}</span>
+      <span className="my-team-setting-pill">{settings.scoring}</span>
+      {settings.tePremium && (
+        <span className="my-team-setting-pill">{settings.tePremium}</span>
+      )}
+    </div>
+  );
+}
 
 function sortPlayers(players) {
   return [...players].sort((a, b) => {
@@ -33,7 +51,7 @@ function RosterTable({ players }) {
             <tr key={p.player_id} data-pos={p.position || undefined}>
               <td className="player-cell align-left">{p.name}</td>
               <td className="mono">{p.position || "—"}</td>
-              <td className="mono">{p.team || "FA"}</td>
+              <td><TeamBadge team={p.team} /></td>
             </tr>
           ))}
         </tbody>
@@ -81,6 +99,7 @@ export default function MyTeamClient({ isSignedIn, savedTeams }) {
         leagueName: team.league_name,
         teamName: team.team_name,
         rosterId: team.roster_id,
+        settings: team.settings,
         players: team.players,
       });
       setSavingKey(null);
@@ -109,8 +128,13 @@ export default function MyTeamClient({ isSignedIn, savedTeams }) {
             <details key={t.id} className="my-team-saved-card">
               <summary>
                 <span className="my-team-chevron">▸</span>
-                <span className="my-team-saved-name">{t.team_name || "Untitled Team"}</span>
-                <span className="my-team-saved-league">{t.league_name}</span>
+                <div className="my-team-saved-title">
+                  <div>
+                    <span className="my-team-saved-name">{t.team_name || "Untitled Team"}</span>
+                    <span className="my-team-saved-league">{t.league_name}</span>
+                  </div>
+                  <LeagueBadges settings={t.settings} />
+                </div>
                 <button
                   type="button"
                   className="my-team-remove"
@@ -165,6 +189,7 @@ export default function MyTeamClient({ isSignedIn, savedTeams }) {
                     <div>
                       <h3>{team.team_name}</h3>
                       <span className="my-team-result-league">{team.league_name}</span>
+                      <LeagueBadges settings={team.settings} />
                     </div>
                   </div>
                   {isSignedIn ? (

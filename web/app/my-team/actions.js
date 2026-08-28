@@ -51,6 +51,20 @@ export async function lookupSleeperTeams(username) {
         leagueUsers.find((u) => u.user_id === sleeperUser.user_id)?.metadata
           ?.team_name || sleeperUser.display_name;
 
+      // League format labels, straight from Sleeper's own league object --
+      // no separate settings call needed, this is already fetched above.
+      const recPts = league.scoring_settings?.rec || 0;
+      const tePremium = league.scoring_settings?.bonus_rec_te || 0;
+      const settings = {
+        teams: league.total_rosters || null,
+        qbFormat: (league.roster_positions || []).includes("SUPER_FLEX")
+          ? "Superflex"
+          : "1QB",
+        scoring:
+          recPts >= 1 ? "Full PPR" : recPts > 0 ? "Half PPR" : "Standard",
+        tePremium: tePremium > 0 ? `+${tePremium} TE Premium` : null,
+      };
+
       const rosterPlayers = (myRoster.players || []).map((playerId) => {
         const p = players[playerId];
         return p
@@ -68,6 +82,7 @@ export async function lookupSleeperTeams(username) {
         league_name: league.name,
         roster_id: myRoster.roster_id,
         team_name: teamName,
+        settings,
         players: rosterPlayers,
       };
     })
@@ -83,7 +98,7 @@ export async function lookupSleeperTeams(username) {
 // lookup and saving again is how a stale roster gets refreshed (upsert on
 // user_id+platform+platform_league_id, see the migration's unique
 // constraint), not a live re-sync on every page view.
-export async function saveTeam({ sleeperUsername, leagueId, leagueName, teamName, rosterId, players }) {
+export async function saveTeam({ sleeperUsername, leagueId, leagueName, teamName, rosterId, settings, players }) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -102,6 +117,7 @@ export async function saveTeam({ sleeperUsername, leagueId, leagueName, teamName
       platform_roster_id: rosterId ? String(rosterId) : null,
       league_name: leagueName,
       team_name: teamName,
+      settings: settings || {},
       players,
     },
     { onConflict: "user_id,platform,platform_league_id" }

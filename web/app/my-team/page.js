@@ -23,7 +23,7 @@ export default async function MyTeamPage() {
   if (user) {
     const { data } = await supabase
       .from("saved_teams")
-      .select("id, league_name, team_name, players, platform_league_id")
+      .select("id, league_name, team_name, players, platform_league_id, settings")
       .eq("user_id", user.id)
       .order("created_at", { ascending: true });
     savedTeams = data || [];
