@@ -2,10 +2,11 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { lookupSleeperTeams, saveTeam, deleteTeam } from "./actions";
+import { lookupSleeperTeams, saveTeam, deleteTeam, setBuyIn } from "./actions";
 import TeamBadge from "../tools/TeamBadge";
 import PositionBadge from "../tools/PositionBadge";
 import { sortRows, sortArrow } from "@/lib/sortLink";
+import { buildPortfolio, PORTFOLIO_COLUMN_TYPES } from "@/lib/portfolio";
 
 // Display-only relabel -- Sleeper's own roster_positions/starters value is
 // the literal string "SUPER_FLEX"; sorting/matching still uses that raw
@@ -290,6 +291,140 @@ function RosterTable({ players }) {
   );
 }
 
+function Portfolio({ savedTeams, buyIns }) {
+  const [sortKey, setSortKey] = useState(null);
+  const [sortDir, setSortDir] = useState("desc");
+  const { rows, totalBuyIn, teamsWithBuyIn, teamCount } = buildPortfolio(savedTeams, buyIns);
+  const anyBuyIn = teamsWithBuyIn > 0;
+
+  const defaultSorted = [...rows].sort(
+    (a, b) =>
+      b.exposurePct - a.exposurePct ||
+      b.invested - a.invested ||
+      a.name.localeCompare(b.name)
+  );
+  const display = sortKey
+    ? sortRows(rows, sortKey, sortDir, PORTFOLIO_COLUMN_TYPES)
+    : defaultSorted;
+
+  function handleSort(key) {
+    if (sortKey === key) {
+      setSortDir((d) => (d === "desc" ? "asc" : "desc"));
+    } else {
+      setSortKey(key);
+      setSortDir("desc");
+    }
+  }
+  const thProps = { sortKey, sortDir, onSort: handleSort };
+
+  return (
+    <div className="my-team-portfolio">
+      <div className="my-team-saved-head">
+        <h2>Portfolio</h2>
+        <span className="my-team-saved-count">
+          {rows.length} players across {teamCount} teams
+          {anyBuyIn && (
+            <>
+              {" · "}
+              <span className="my-team-matchup-opp">
+                ${totalBuyIn.toLocaleString()}
+              </span>{" "}
+              staked
+              {teamsWithBuyIn < teamCount &&
+                ` (${teamsWithBuyIn}/${teamCount} teams)`}
+            </>
+          )}
+        </span>
+      </div>
+      <div className="rankings-table-wrap">
+        <table className="rankings-table">
+          <thead>
+            <tr>
+              <Th label="Player" sortKeyName="name" className="align-left" {...thProps} />
+              <Th label="Pos" sortKeyName="position" {...thProps} />
+              <Th label="Team" sortKeyName="team" {...thProps} />
+              <Th label="Exposure" sortKeyName="exposurePct" {...thProps} />
+              <Th label="Starts" sortKeyName="starterCount" {...thProps} />
+              {anyBuyIn && <Th label="Invested" sortKeyName="invested" {...thProps} />}
+              {anyBuyIn && <Th label="Bankroll %" sortKeyName="weightPct" {...thProps} />}
+            </tr>
+          </thead>
+          <tbody>
+            {display.map((p) => (
+              <tr key={p.player_id} data-pos={p.position || undefined}>
+                <td className="player-cell align-left">{p.name}</td>
+                <td><PositionBadge position={p.position} /></td>
+                <td><TeamBadge team={p.team} /></td>
+                <td className="mono">
+                  <span className="portfolio-exposure">
+                    <span
+                      className="portfolio-exposure-bar"
+                      style={{ "--pct": `${p.exposurePct}%` }}
+                    />
+                    <span className="portfolio-exposure-label">
+                      {p.teams}/{teamCount} · {Math.round(p.exposurePct)}%
+                    </span>
+                  </span>
+                </td>
+                <td className="mono">{p.starterCount}</td>
+                {anyBuyIn && (
+                  <td className="mono">
+                    {p.hasInvested ? `$${p.invested.toLocaleString()}` : "—"}
+                  </td>
+                )}
+                {anyBuyIn && (
+                  <td className="mono">
+                    {p.weightPct == null ? "—" : `${p.weightPct.toFixed(1)}%`}
+                  </td>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {!anyBuyIn && (
+        <p className="my-team-hint">
+          Set a buy-in on each saved team (below) to see dollars staked per player.
+        </p>
+      )}
+    </div>
+  );
+}
+
+// Inline buy-in editor on a saved-team card. Lives inside the <summary>,
+// so its clicks are stopped from toggling the <details>. Commits on blur
+// / Enter, only when the value actually changed.
+function BuyInField({ teamId, value, disabled, onSave }) {
+  const asString = value == null ? "" : String(value);
+  const [v, setV] = useState(asString);
+
+  return (
+    <span
+      className="my-team-buyin"
+      onClick={(e) => e.stopPropagation()}
+    >
+      $
+      <input
+        type="number"
+        min="0"
+        step="1"
+        inputMode="decimal"
+        className="my-team-buyin-input"
+        placeholder="buy-in"
+        value={v}
+        disabled={disabled}
+        onChange={(e) => setV(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") e.currentTarget.blur();
+        }}
+        onBlur={() => {
+          if (v !== asString) onSave(teamId, v);
+        }}
+      />
+    </span>
+  );
+}
+
 // isSignedIn gates the Save button only -- the lookup itself works
 // signed out too (it's a read-only call against Sleeper's public API, no
 // Supabase involved), so a visitor can preview their team before ever
@@ -307,6 +442,25 @@ export default function MyTeamClient({ isSignedIn, tier, savedTeamLimit, savedTe
   const [pending, startTransition] = useTransition();
   const [savingKey, setSavingKey] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
+  // buy-in per saved team id, seeded from the DB and updated in place so
+  // the Portfolio table re-totals without a page reload.
+  const [buyIns, setBuyIns] = useState(() =>
+    Object.fromEntries(savedTeams.map((t) => [t.id, t.buy_in ?? null]))
+  );
+  const [buyInSavingId, setBuyInSavingId] = useState(null);
+
+  function handleSetBuyIn(teamId, raw) {
+    setBuyInSavingId(teamId);
+    startTransition(async () => {
+      const res = await setBuyIn(teamId, raw);
+      setBuyInSavingId(null);
+      if (res.error) {
+        setError(res.error);
+      } else {
+        setBuyIns((prev) => ({ ...prev, [teamId]: res.buyIn }));
+      }
+    });
+  }
 
   function handleLookup(e) {
     e.preventDefault();
@@ -384,6 +538,12 @@ export default function MyTeamClient({ isSignedIn, tier, savedTeamLimit, savedTe
                       <span className="my-team-record">{t.settings.record}</span>
                     )}
                     <span className="my-team-saved-league">{t.league_name}</span>
+                    <BuyInField
+                      teamId={t.id}
+                      value={buyIns[t.id] ?? t.buy_in ?? null}
+                      disabled={pending && buyInSavingId === t.id}
+                      onSave={handleSetBuyIn}
+                    />
                     <MatchupLine settings={t.settings} />
                   </div>
                   <LeagueBadges settings={t.settings} />
@@ -404,6 +564,10 @@ export default function MyTeamClient({ isSignedIn, tier, savedTeamLimit, savedTe
             </details>
           ))}
         </div>
+      )}
+
+      {savedTeams.length >= 2 && (
+        <Portfolio savedTeams={savedTeams} buyIns={buyIns} />
       )}
 
       <form className="my-team-lookup" onSubmit={handleLookup}>

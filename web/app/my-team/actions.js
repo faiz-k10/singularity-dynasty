@@ -364,6 +364,39 @@ export async function saveTeam({ sleeperUsername, leagueId, leagueName, teamName
   return { success: true };
 }
 
+// Sets (or clears, with null/"") the optional per-team buy-in used by
+// the portfolio view. Its own action rather than part of saveTeam()
+// since it's user-entered and independent of the Sleeper snapshot.
+export async function setBuyIn(teamId, buyIn) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "Sign in to manage saved teams." };
+  }
+
+  const n =
+    buyIn === "" || buyIn === null || buyIn === undefined ? null : Number(buyIn);
+  if (n !== null && (!Number.isFinite(n) || n < 0)) {
+    return { error: "Enter a valid buy-in amount." };
+  }
+
+  const { error } = await supabase
+    .from("saved_teams")
+    .update({ buy_in: n })
+    .eq("id", teamId)
+    .eq("user_id", user.id);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  revalidatePath("/my-team");
+  return { success: true, buyIn: n };
+}
+
 export async function deleteTeam(id) {
   const supabase = await createClient();
   const {

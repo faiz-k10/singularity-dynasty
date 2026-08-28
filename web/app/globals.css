@@ -2067,6 +2067,32 @@ tr.stat-row-selected td{background:var(--void-panel);}
 }
 .my-team-saved-count a{color:var(--horizon-gold); text-decoration:none;}
 .my-team-saved-count a:hover{text-decoration:underline;}
+
+/* Inline buy-in editor on a saved-team card summary. Mono, sits inline
+   with the team name / league like the record badge does. */
+.my-team-buyin{
+  display:inline-flex; align-items:center; gap:2px; margin-left:8px;
+  font-family:var(--font-ibm-plex-mono), monospace; font-size:12px; color:var(--star-dim);
+}
+.my-team-buyin-input{
+  width:64px; padding:2px 6px; font:inherit; color:var(--star);
+  background:var(--void-panel-2); border:1px solid var(--line); border-radius:6px;
+  -moz-appearance:textfield;
+}
+.my-team-buyin-input::-webkit-outer-spin-button,
+.my-team-buyin-input::-webkit-inner-spin-button{-webkit-appearance:none; margin:0;}
+.my-team-buyin-input:focus{outline:none; border-color:var(--horizon-gold);}
+
+/* Portfolio (exposure across all saved teams) -- same outer spacing as
+   the saved-teams block, reuses .rankings-table. */
+.my-team-portfolio{margin-top:36px;}
+.my-team-portfolio .my-team-saved-head{margin-bottom:14px;}
+/* Exposure cell: "3/5 · 60%" label with a share-bar under it. */
+.portfolio-exposure{display:inline-flex; flex-direction:column; gap:4px; min-width:96px;}
+.portfolio-exposure-bar{
+  height:5px; width:var(--pct, 0%); min-width:2px; border-radius:3px;
+  background:linear-gradient(90deg, var(--neon-blue-dim), var(--neon-blue));
+}
 .my-team-remove{
   background:transparent; border:1px solid var(--line); color:var(--star-dim);
   border-radius:20px; padding:5px 14px; font-size:12px; cursor:pointer; transition:border-color .2s ease, color .2s ease;

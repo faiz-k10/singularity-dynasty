@@ -20,9 +20,12 @@ export default async function MyTeamPage() {
 
   let savedTeams = [];
   if (user) {
+    // select("*") rather than an explicit column list so the page keeps
+    // working if a column-adding migration (e.g. 0025 buy_in) hasn't been
+    // applied yet -- rows are RLS-scoped to this user regardless.
     const { data } = await supabase
       .from("saved_teams")
-      .select("id, league_name, team_name, players, platform_league_id, settings")
+      .select("*")
       .eq("user_id", user.id)
       .order("created_at", { ascending: true });
     savedTeams = data || [];
