@@ -2091,10 +2091,25 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .my-team-buyin-input::-webkit-inner-spin-button{-webkit-appearance:none; margin:0;}
 .my-team-buyin-input:focus{outline:none; border-color:var(--horizon-gold);}
 
-/* Portfolio (exposure across all saved teams) -- same outer spacing as
-   the saved-teams block, reuses .rankings-table. */
+/* Portfolio ("My Guys" -- exposure across all saved teams, plus the
+   My Analysis tab) -- same outer spacing as the saved-teams block,
+   reuses .rankings-table. */
 .my-team-portfolio{margin-top:36px;}
 .my-team-portfolio .my-team-saved-head{margin-bottom:14px;}
+/* My Analysis tab -- placeholder until Team Analysis ships. */
+.my-analysis-panel{
+  background:var(--void-panel); border:1px solid var(--line); border-radius:16px;
+  padding:24px 26px; box-shadow:0 20px 45px rgba(var(--shadow-rgb),0.35);
+}
+.my-analysis-panel p{color:var(--star); margin-bottom:14px;}
+.my-analysis-panel ul{list-style:none; display:flex; flex-direction:column; gap:9px;}
+.my-analysis-panel li{
+  color:var(--star-dim); font-size:13.5px; padding-left:18px; position:relative;
+}
+.my-analysis-panel li::before{
+  content:''; position:absolute; left:0; top:8px; width:6px; height:6px; border-radius:50%;
+  background:var(--horizon-gold);
+}
 /* Exposure cell: "3/5 · 60%" label with a share-bar under it. */
 .portfolio-exposure{display:inline-flex; flex-direction:column; gap:4px; min-width:96px;}
 .portfolio-exposure-bar{

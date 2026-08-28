@@ -291,7 +291,29 @@ function RosterTable({ players }) {
   );
 }
 
+// Personalized analysis of the user's saved teams -- roster age,
+// contention window, positional strength vs. league. Not built yet
+// (needs the player_metadata table + the analysis layer, see
+// model/age_curve_analysis.R and CLAUDE.md), so this tab lays out what's
+// coming rather than shipping half of it.
+function MyAnalysisPanel() {
+  return (
+    <div className="my-analysis-panel">
+      <p>
+        A personalized read on the teams you&apos;ve saved — in the works.
+      </p>
+      <ul>
+        <li>Roster age profile by position, vs. the rest of your league</li>
+        <li>Contention window — contend now, retool, or rebuild</li>
+        <li>Positional strength ranked against every other team you play</li>
+        <li>Aging-risk flags on the players actually carrying your lineups</li>
+      </ul>
+    </div>
+  );
+}
+
 function Portfolio({ savedTeams, buyIns }) {
+  const [tab, setTab] = useState("exposure");
   const [sortKey, setSortKey] = useState(null);
   const [sortDir, setSortDir] = useState("desc");
   const { rows, totalBuyIn, teamsWithBuyIn, teamCount } = buildPortfolio(savedTeams, buyIns);
@@ -320,72 +342,98 @@ function Portfolio({ savedTeams, buyIns }) {
   return (
     <div className="my-team-portfolio">
       <div className="my-team-saved-head">
-        <h2>Portfolio</h2>
-        <span className="my-team-saved-count">
-          {rows.length} players across {teamCount} teams
-          {anyBuyIn && (
-            <>
-              {" · "}
-              <span className="my-team-matchup-opp">
-                ${totalBuyIn.toLocaleString()}
-              </span>{" "}
-              staked
-              {teamsWithBuyIn < teamCount &&
-                ` (${teamsWithBuyIn}/${teamCount} teams)`}
-            </>
+        <h2>My Guys</h2>
+        {tab === "exposure" && (
+          <span className="my-team-saved-count">
+            {rows.length} players across {teamCount} teams
+            {anyBuyIn && (
+              <>
+                {" · "}
+                <span className="my-team-matchup-opp">
+                  ${totalBuyIn.toLocaleString()}
+                </span>{" "}
+                staked
+                {teamsWithBuyIn < teamCount &&
+                  ` (${teamsWithBuyIn}/${teamCount} teams)`}
+              </>
+            )}
+          </span>
+        )}
+      </div>
+
+      <div className="board-toggle my-team-view-toggle">
+        <button
+          type="button"
+          className={tab === "exposure" ? "active" : ""}
+          onClick={() => setTab("exposure")}
+        >
+          Exposure
+        </button>
+        <button
+          type="button"
+          className={tab === "analysis" ? "active" : ""}
+          onClick={() => setTab("analysis")}
+        >
+          My Analysis
+        </button>
+      </div>
+
+      {tab === "analysis" ? (
+        <MyAnalysisPanel />
+      ) : (
+        <>
+          <div className="rankings-table-wrap">
+            <table className="rankings-table">
+              <thead>
+                <tr>
+                  <Th label="Player" sortKeyName="name" className="align-left" {...thProps} />
+                  <Th label="Pos" sortKeyName="position" {...thProps} />
+                  <Th label="Team" sortKeyName="team" {...thProps} />
+                  <Th label="Exposure" sortKeyName="exposurePct" {...thProps} />
+                  <Th label="Starts" sortKeyName="starterCount" {...thProps} />
+                  {anyBuyIn && <Th label="Invested" sortKeyName="invested" {...thProps} />}
+                  {anyBuyIn && <Th label="Bankroll %" sortKeyName="weightPct" {...thProps} />}
+                </tr>
+              </thead>
+              <tbody>
+                {display.map((p) => (
+                  <tr key={p.player_id} data-pos={p.position || undefined}>
+                    <td className="player-cell align-left">{p.name}</td>
+                    <td><PositionBadge position={p.position} /></td>
+                    <td><TeamBadge team={p.team} /></td>
+                    <td className="mono">
+                      <span className="portfolio-exposure">
+                        <span
+                          className="portfolio-exposure-bar"
+                          style={{ "--pct": `${p.exposurePct}%` }}
+                        />
+                        <span className="portfolio-exposure-label">
+                          {p.teams}/{teamCount} · {Math.round(p.exposurePct)}%
+                        </span>
+                      </span>
+                    </td>
+                    <td className="mono">{p.starterCount}</td>
+                    {anyBuyIn && (
+                      <td className="mono">
+                        {p.hasInvested ? `$${p.invested.toLocaleString()}` : "—"}
+                      </td>
+                    )}
+                    {anyBuyIn && (
+                      <td className="mono">
+                        {p.weightPct == null ? "—" : `${p.weightPct.toFixed(1)}%`}
+                      </td>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {!anyBuyIn && (
+            <p className="my-team-hint">
+              Set a buy-in on each saved team (below) to see dollars staked per player.
+            </p>
           )}
-        </span>
-      </div>
-      <div className="rankings-table-wrap">
-        <table className="rankings-table">
-          <thead>
-            <tr>
-              <Th label="Player" sortKeyName="name" className="align-left" {...thProps} />
-              <Th label="Pos" sortKeyName="position" {...thProps} />
-              <Th label="Team" sortKeyName="team" {...thProps} />
-              <Th label="Exposure" sortKeyName="exposurePct" {...thProps} />
-              <Th label="Starts" sortKeyName="starterCount" {...thProps} />
-              {anyBuyIn && <Th label="Invested" sortKeyName="invested" {...thProps} />}
-              {anyBuyIn && <Th label="Bankroll %" sortKeyName="weightPct" {...thProps} />}
-            </tr>
-          </thead>
-          <tbody>
-            {display.map((p) => (
-              <tr key={p.player_id} data-pos={p.position || undefined}>
-                <td className="player-cell align-left">{p.name}</td>
-                <td><PositionBadge position={p.position} /></td>
-                <td><TeamBadge team={p.team} /></td>
-                <td className="mono">
-                  <span className="portfolio-exposure">
-                    <span
-                      className="portfolio-exposure-bar"
-                      style={{ "--pct": `${p.exposurePct}%` }}
-                    />
-                    <span className="portfolio-exposure-label">
-                      {p.teams}/{teamCount} · {Math.round(p.exposurePct)}%
-                    </span>
-                  </span>
-                </td>
-                <td className="mono">{p.starterCount}</td>
-                {anyBuyIn && (
-                  <td className="mono">
-                    {p.hasInvested ? `$${p.invested.toLocaleString()}` : "—"}
-                  </td>
-                )}
-                {anyBuyIn && (
-                  <td className="mono">
-                    {p.weightPct == null ? "—" : `${p.weightPct.toFixed(1)}%`}
-                  </td>
-                )}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      {!anyBuyIn && (
-        <p className="my-team-hint">
-          Set a buy-in on each saved team (below) to see dollars staked per player.
-        </p>
+        </>
       )}
     </div>
   );
