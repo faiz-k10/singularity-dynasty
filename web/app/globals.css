@@ -2119,6 +2119,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
 }
 
 .my-team-results{display:flex; flex-direction:column; gap:20px;}
+.my-team-all-saved{margin-top:20px; text-align:center;}
 .my-team-result-card{
   background:var(--void-panel); border:1px solid var(--line); border-radius:16px;
   padding:22px; box-shadow:0 20px 45px rgba(var(--shadow-rgb),0.35);

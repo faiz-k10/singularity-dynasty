@@ -594,56 +594,62 @@ export default function MyTeamClient({ isSignedIn, tier, savedTeamLimit, savedTe
 
       {error && <div className="my-team-error">{error}</div>}
 
-      {result && (
-        <div className="my-team-results">
-          {result.teams.map((team) => {
-            const isSaved = savedKeys.has(team.league_id);
+      {result &&
+        (() => {
+          // Teams already in the saved section above are hidden here so
+          // the lookup results only show what's new to add.
+          const unsaved = result.teams.filter((t) => !savedKeys.has(t.league_id));
+          if (unsaved.length === 0) {
             return (
-              <details key={team.league_id} className="my-team-result-card reveal in">
-                <summary className="my-team-result-head">
-                  <div className="my-team-result-title">
-                    <span className="my-team-chevron">▸</span>
-                    <div>
-                      <h3>
-                        {team.team_name}
-                        {team.settings?.record && (
-                          <span className="my-team-record">{team.settings.record}</span>
-                        )}
-                      </h3>
-                      <span className="my-team-result-league">{team.league_name}</span>
-                      <MatchupLine settings={team.settings} />
-                      <LeagueBadges settings={team.settings} />
-                    </div>
-                  </div>
-                  {!isSignedIn ? (
-                    <a href="/login" className="round-btn outline my-team-save-btn">
-                      Sign In To Save
-                    </a>
-                  ) : !isSaved && atLimit ? (
-                    <Link href="/#pricing" className="round-btn outline my-team-save-btn">
-                      Upgrade To Save
-                    </Link>
-                  ) : (
-                    <button
-                      type="button"
-                      className="round-btn primary my-team-save-btn"
-                      disabled={pending || isSaved}
-                      onClick={(e) => handleSave(e, team, result.sleeperUsername)}
-                    >
-                      {isSaved
-                        ? "Saved ✓"
-                        : pending && savingKey === team.league_id
-                        ? "Saving…"
-                        : "Save Team"}
-                    </button>
-                  )}
-                </summary>
-                <RosterTable players={team.players} />
-              </details>
+              <p className="my-team-hint my-team-all-saved">
+                Every team for {result.sleeperUsername} is already saved above.
+              </p>
             );
-          })}
-        </div>
-      )}
+          }
+          return (
+            <div className="my-team-results">
+              {unsaved.map((team) => (
+                <details key={team.league_id} className="my-team-result-card reveal in">
+                  <summary className="my-team-result-head">
+                    <div className="my-team-result-title">
+                      <span className="my-team-chevron">▸</span>
+                      <div>
+                        <h3>
+                          {team.team_name}
+                          {team.settings?.record && (
+                            <span className="my-team-record">{team.settings.record}</span>
+                          )}
+                        </h3>
+                        <span className="my-team-result-league">{team.league_name}</span>
+                        <MatchupLine settings={team.settings} />
+                        <LeagueBadges settings={team.settings} />
+                      </div>
+                    </div>
+                    {!isSignedIn ? (
+                      <a href="/login" className="round-btn outline my-team-save-btn">
+                        Sign In To Save
+                      </a>
+                    ) : atLimit ? (
+                      <Link href="/#pricing" className="round-btn outline my-team-save-btn">
+                        Upgrade To Save
+                      </Link>
+                    ) : (
+                      <button
+                        type="button"
+                        className="round-btn primary my-team-save-btn"
+                        disabled={pending}
+                        onClick={(e) => handleSave(e, team, result.sleeperUsername)}
+                      >
+                        {pending && savingKey === team.league_id ? "Saving…" : "Save Team"}
+                      </button>
+                    )}
+                  </summary>
+                  <RosterTable players={team.players} />
+                </details>
+              ))}
+            </div>
+          );
+        })()}
     </div>
   );
 }
