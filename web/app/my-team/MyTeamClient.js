@@ -318,6 +318,9 @@ export default function MyTeamClient({ isSignedIn, savedTeams }) {
                 <div className="my-team-saved-title">
                   <div>
                     <span className="my-team-saved-name">{t.team_name || "Untitled Team"}</span>
+                    {t.settings?.record && (
+                      <span className="my-team-record">{t.settings.record}</span>
+                    )}
                     <span className="my-team-saved-league">{t.league_name}</span>
                   </div>
                   <LeagueBadges settings={t.settings} />
@@ -374,7 +377,12 @@ export default function MyTeamClient({ isSignedIn, savedTeams }) {
                   <div className="my-team-result-title">
                     <span className="my-team-chevron">▸</span>
                     <div>
-                      <h3>{team.team_name}</h3>
+                      <h3>
+                        {team.team_name}
+                        {team.settings?.record && (
+                          <span className="my-team-record">{team.settings.record}</span>
+                        )}
+                      </h3>
                       <span className="my-team-result-league">{team.league_name}</span>
                       <LeagueBadges settings={team.settings} />
                     </div>

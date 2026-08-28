@@ -114,7 +114,13 @@ export async function lookupSleeperTeams(username) {
         (league.roster_positions || []).length +
           (league.settings?.taxi_slots || 0) || null;
       const filledRosterSpots = (myRoster.players || []).length;
+      // W-L, or W-L-T once any team in the league has an actual tie
+      // (rare, so the third number stays hidden until it's ever
+      // non-zero rather than always showing "-0").
+      const { wins = 0, losses = 0, ties = 0 } = myRoster.settings || {};
+      const record = ties > 0 ? `${wins}-${losses}-${ties}` : `${wins}-${losses}`;
       const settings = {
+        record,
         teams: league.total_rosters || null,
         rosterSpots: totalRosterSpots
           ? `${filledRosterSpots}/${totalRosterSpots}`
