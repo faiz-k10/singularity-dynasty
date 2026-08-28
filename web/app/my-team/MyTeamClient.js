@@ -88,7 +88,8 @@ const ROSTER_COLUMN_TYPES = {
   name: "string",
   position: "string",
   team: "string",
-  projPts: "number",
+  sleeperProjPts: "number",
+  myProjPts: "number",
   startPct: "number",
 };
 
@@ -181,7 +182,8 @@ function RosterTable({ players }) {
               <Th label="Player" sortKeyName="name" className="align-left" {...thProps} />
               <Th label="Pos" sortKeyName="position" {...thProps} />
               <Th label="Team" sortKeyName="team" {...thProps} />
-              <Th label="Wk1 Proj" sortKeyName="projPts" {...thProps} />
+              <Th label="Sleeper Wk1 Proj" sortKeyName="sleeperProjPts" {...thProps} />
+              <Th label="My Wk1 Proj" sortKeyName="myProjPts" {...thProps} />
               <Th label="Start %" sortKeyName="startPct" {...thProps} />
             </tr>
           </thead>
@@ -199,7 +201,8 @@ function RosterTable({ players }) {
                 <td className="player-cell align-left">{p.name}</td>
                 <td><PositionBadge position={p.position} /></td>
                 <td><TeamBadge team={p.team} /></td>
-                <td className="mono">{formatPts(p.projPts)}</td>
+                <td className="mono">{formatPts(p.sleeperProjPts)}</td>
+                <td className="mono">{formatPts(p.myProjPts)}</td>
                 <td className="mono">{formatPct(p.startPct)}</td>
               </tr>
             ))}

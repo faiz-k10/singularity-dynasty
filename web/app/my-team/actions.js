@@ -2,6 +2,20 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+
+// Sleeper's own player dictionary drops name suffixes ("Luther Burden"
+// instead of "Luther Burden III"), but our hand-published
+// redraft_rankings keeps them ("Brian Thomas Jr.") -- normalizing both
+// sides the same way (lowercase, no periods, no trailing suffix) is what
+// actually matches them up. Checked by hand against the live dataset:
+// no two different players collide once normalized this way.
+function normalizeName(name) {
+  return (name || "")
+    .toLowerCase()
+    .replace(/\./g, "")
+    .replace(/\s+(jr|sr|ii|iii|iv|v)$/i, "")
+    .trim();
+}
 import {
   fetchSleeperUser,
   fetchSleeperLeagues,
@@ -16,10 +30,10 @@ import {
 // Looks up every league a Sleeper username plays in for the current NFL
 // season and returns just THEIR roster from each one, with player ids
 // already resolved to real names/positions/teams via Sleeper's own
-// player dictionary. Doesn't touch Supabase at all -- this is read-only
-// lookup against Sleeper, separate from saveTeam() below, so a
-// signed-out visitor can still preview their team before deciding to
-// sign in and save it.
+// player dictionary. The only Supabase read is the public, no-auth-
+// required redraft_rankings projection lookup below -- this still works
+// for a signed-out visitor previewing their team before deciding to
+// sign in and save it, same as the pure-Sleeper data.
 export async function lookupSleeperTeams(username) {
   const trimmed = (username || "").trim();
   if (!trimmed) {
@@ -53,6 +67,23 @@ export async function lookupSleeperTeams(username) {
   // research above) -- this column is meant as a fixed season-opener
   // projection, not a rolling one.
   const projections = await fetchSleeperProjections(season, 1);
+
+  // Our own model's week 1 projection, alongside Sleeper's -- same
+  // redraft_rankings table /tools/redraft-rankings reads from (public
+  // read, no tier gate on the projection column itself), matched by
+  // normalized player name since Sleeper IDs don't exist in that table.
+  const supabase = await createClient();
+  const { data: myProjRows } = await supabase
+    .from("redraft_rankings")
+    .select("player_name, projection")
+    .eq("season", Number(season))
+    .eq("week", 1);
+  const myProjByName = {};
+  (myProjRows || []).forEach((row) => {
+    if (row.player_name && typeof row.projection === "number") {
+      myProjByName[normalizeName(row.player_name)] = row.projection;
+    }
+  });
 
   const teams = await Promise.all(
     leagues.map(async (league) => {
@@ -122,9 +153,10 @@ export async function lookupSleeperTeams(username) {
         const p = players[playerId];
         const r = research[playerId];
         const proj = projections[playerId];
+        const name = p ? `${p.first_name || ""} ${p.last_name || ""}`.trim() || playerId : playerId;
         return {
           player_id: playerId,
-          name: p ? `${p.first_name || ""} ${p.last_name || ""}`.trim() || playerId : playerId,
+          name,
           position: p?.position || null,
           team: p?.team || null,
           slot: slotByPlayerId[playerId] || null,
@@ -134,7 +166,8 @@ export async function lookupSleeperTeams(username) {
           // defines) -- what lets the default view show starters in
           // Sleeper's actual lineup order instead of an arbitrary one.
           slotIndex: slotIndexByPlayerId[playerId] ?? 999,
-          projPts: proj ? proj[projField] : null,
+          sleeperProjPts: proj ? proj[projField] : null,
+          myProjPts: myProjByName[normalizeName(name)] ?? null,
           startPct: typeof r?.started === "number" ? r.started : null,
         };
       });
