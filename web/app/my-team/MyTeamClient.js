@@ -79,12 +79,16 @@ function formatPct(v) {
   return v === null || v === undefined ? "—" : `${v.toFixed(1)}%`;
 }
 
+function formatPts(v) {
+  return v === null || v === undefined ? "—" : v.toFixed(1);
+}
+
 const ROSTER_COLUMN_TYPES = {
   slot: "string",
   name: "string",
   position: "string",
   team: "string",
-  rosterPct: "number",
+  projPts: "number",
   startPct: "number",
 };
 
@@ -177,18 +181,25 @@ function RosterTable({ players }) {
               <Th label="Player" sortKeyName="name" className="align-left" {...thProps} />
               <Th label="Pos" sortKeyName="position" {...thProps} />
               <Th label="Team" sortKeyName="team" {...thProps} />
-              <Th label="Roster %" sortKeyName="rosterPct" {...thProps} />
+              <Th label="Wk1 Proj" sortKeyName="projPts" {...thProps} />
               <Th label="Start %" sortKeyName="startPct" {...thProps} />
             </tr>
           </thead>
           <tbody>
             {rows.map((p) => (
-              <tr key={p.player_id} data-pos={p.position || undefined}>
+              <tr
+                key={p.player_id}
+                // The position-color stripe duplicates SlotBadge's own
+                // outline color once Slot is the leading column in the
+                // starting lineup view, so it's only drawn in Full
+                // Roster (where there's no Slot badge doing that job).
+                data-pos={view === "starters" ? undefined : p.position || undefined}
+              >
                 {view === "starters" && <td><SlotBadge slot={p.slot} /></td>}
                 <td className="player-cell align-left">{p.name}</td>
                 <td><PositionBadge position={p.position} /></td>
                 <td><TeamBadge team={p.team} /></td>
-                <td className="mono">{formatPct(p.rosterPct)}</td>
+                <td className="mono">{formatPts(p.projPts)}</td>
                 <td className="mono">{formatPct(p.startPct)}</td>
               </tr>
             ))}

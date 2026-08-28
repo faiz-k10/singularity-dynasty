@@ -52,6 +52,37 @@ export async function fetchSleeperResearch(season, week) {
   return data || {};
 }
 
+// Week 1 fantasy-point projections (rotowire-sourced, same as Sleeper's
+// own app), filtered to the offense/kicker/DEF positions that actually
+// carry a projection. Keyed by player_id so actions.js can look each
+// roster player's own row up directly. All three scoring flavors are
+// kept per player -- the right one (PPR/half/standard) depends on each
+// league's own scoring settings, picked in actions.js, not here.
+// ~2MB uncompressed, fetched fresh per lookup like fetchSleeperResearch
+// (no unstable_cache -- see getSleeperPlayers's note on its 2MB
+// per-entry ceiling), since this is a one-shot server-side fetch rather
+// than something cached raw.
+const PROJECTION_POSITIONS = ["QB", "RB", "WR", "TE", "K", "DEF"];
+
+export async function fetchSleeperProjections(season, week) {
+  const params = PROJECTION_POSITIONS.map((p) => `position[]=${p}`).join("&");
+  const data = await sleeperGet(
+    `/projections/nfl/${season}/${week}?season_type=regular&${params}`,
+    SLEEPER_ROOT
+  );
+  const byPlayerId = {};
+  for (const entry of data || []) {
+    if (entry?.player_id && entry.stats) {
+      byPlayerId[entry.player_id] = {
+        ppr: typeof entry.stats.pts_ppr === "number" ? entry.stats.pts_ppr : null,
+        half: typeof entry.stats.pts_half_ppr === "number" ? entry.stats.pts_half_ppr : null,
+        std: typeof entry.stats.pts_std === "number" ? entry.stats.pts_std : null,
+      };
+    }
+  }
+  return byPlayerId;
+}
+
 // The full NFL player dictionary is ~16MB of raw JSON (thousands of
 // players, every field Sleeper tracks per player) -- Sleeper's own docs
 // ask integrators not to hit this more than once a day since it barely

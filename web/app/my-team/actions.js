@@ -9,6 +9,7 @@ import {
   fetchSleeperLeagueUsers,
   fetchSleeperState,
   fetchSleeperResearch,
+  fetchSleeperProjections,
   getSleeperPlayers,
 } from "@/lib/sleeper";
 
@@ -48,6 +49,10 @@ export async function lookupSleeperTeams(username) {
   const state = await fetchSleeperState();
   const researchWeek = state.season_type === "regular" ? state.week : 1;
   const research = await fetchSleeperResearch(season, researchWeek);
+  // Always week 1 specifically (not "whatever week it currently is" like
+  // research above) -- this column is meant as a fixed season-opener
+  // projection, not a rolling one.
+  const projections = await fetchSleeperProjections(season, 1);
 
   const teams = await Promise.all(
     leagues.map(async (league) => {
@@ -107,9 +112,16 @@ export async function lookupSleeperTeams(username) {
         }
       });
 
+      // Same recPts already computed above for the Scoring badge decides
+      // which of the three projection flavors actually matches this
+      // league's format -- a half-PPR league's players should show their
+      // half-PPR week 1 number, not the PPR or standard one.
+      const projField = recPts >= 1 ? "ppr" : recPts > 0 ? "half" : "std";
+
       const rosterPlayers = (myRoster.players || []).map((playerId) => {
         const p = players[playerId];
         const r = research[playerId];
+        const proj = projections[playerId];
         return {
           player_id: playerId,
           name: p ? `${p.first_name || ""} ${p.last_name || ""}`.trim() || playerId : playerId,
@@ -122,7 +134,7 @@ export async function lookupSleeperTeams(username) {
           // defines) -- what lets the default view show starters in
           // Sleeper's actual lineup order instead of an arbitrary one.
           slotIndex: slotIndexByPlayerId[playerId] ?? 999,
-          rosterPct: typeof r?.owned === "number" ? r.owned : null,
+          projPts: proj ? proj[projField] : null,
           startPct: typeof r?.started === "number" ? r.started : null,
         };
       });
