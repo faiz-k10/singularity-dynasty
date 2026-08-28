@@ -16,7 +16,7 @@ function LeagueBadges({ settings }) {
     <div className="my-team-settings">
       <span className="my-team-setting-pill pill-teams">{settings.teams} Teams</span>
       {settings.rosterSpots && (
-        <span className="my-team-setting-pill">{settings.rosterSpots} Roster Spots</span>
+        <span className="my-team-setting-pill pill-roster">{settings.rosterSpots} Roster Spots</span>
       )}
       <span className="my-team-setting-pill pill-qb">{settings.qbFormat}</span>
       <span className="my-team-setting-pill pill-scoring">{settings.scoring}</span>

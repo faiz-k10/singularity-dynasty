@@ -56,14 +56,16 @@ export async function lookupSleeperTeams(username) {
       const recPts = league.scoring_settings?.rec || 0;
       const tePremium = league.scoring_settings?.bonus_rec_te || 0;
       // Active roster_positions alone undercounts total capacity -- taxi
-      // squad and IR/reserve slots hold real rostered players (they're
-      // part of myRoster.players) but aren't in roster_positions at all,
-      // which made "filled" exceed "total" in every league here that
-      // actually uses a taxi squad (dynasty leagues almost always do).
+      // squad slots hold real rostered players (they're part of
+      // myRoster.players) but aren't in roster_positions at all. IR/
+      // reserve_slots deliberately excluded from the denominator per
+      // request -- filled (below) still includes anyone actually
+      // stashed on IR, so a league that's using its IR slots can show
+      // filled slightly over total; that's accepted as the tradeoff for
+      // not counting IR capacity as "real" roster space.
       const totalRosterSpots =
         (league.roster_positions || []).length +
-          (league.settings?.taxi_slots || 0) +
-          (league.settings?.reserve_slots || 0) || null;
+          (league.settings?.taxi_slots || 0) || null;
       const filledRosterSpots = (myRoster.players || []).length;
       const settings = {
         teams: league.total_rosters || null,

@@ -12,6 +12,7 @@
   --neon-blue-glow:rgba(61,220,255,0.28);
   --up:#6FE3A8;
   --down:#FF6B6B;
+  --purple:#B18AFF;
   --matchup-neutral:#F0C43D;  /* deliberately distinct from --horizon-gold --
                                   that's already "established" confidence;
                                   reusing it here would conflate the two
@@ -38,6 +39,7 @@
   --horizon-gold-rgb:255,199,115;
   --up-rgb:111,227,168;
   --down-rgb:255,107,107;
+  --purple-rgb:177,138,255;
   --matchup-neutral-rgb:240,196,61;
   --star-dim-rgb:153,151,168;
   --orbit-alpha:0.3;
@@ -59,6 +61,7 @@
     --neon-blue:#0A7F99;
     --neon-blue-dim:#0B6B85;
     --up:#1C8F52;
+    --purple:#7C3AED;
     --down:#D63F39;
     --matchup-neutral:#A87B00;
     --pos-qb:#D6005E;
@@ -71,6 +74,7 @@
     --neon-blue-rgb:10,127,153;
     --horizon-gold-rgb:184,114,14;
     --up-rgb:28,143,82;
+    --purple-rgb:124,58,237;
     --down-rgb:214,63,57;
     --matchup-neutral-rgb:168,123,0;
     --star-dim-rgb:104,99,111;
@@ -88,6 +92,7 @@
   --neon-blue:#0A7F99;
   --neon-blue-dim:#0B6B85;
   --up:#1C8F52;
+  --purple:#7C3AED;
   --down:#D63F39;
   --matchup-neutral:#A87B00;
   --pos-qb:#D6005E;
@@ -100,6 +105,7 @@
   --neon-blue-rgb:10,127,153;
   --horizon-gold-rgb:184,114,14;
   --up-rgb:28,143,82;
+  --purple-rgb:124,58,237;
   --down-rgb:214,63,57;
   --matchup-neutral-rgb:168,123,0;
   --orbit-alpha:0.8;
@@ -2033,6 +2039,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
    use), scoring = gold (primary accent), TE premium = green (reads as
    a bonus, same as .up elsewhere on the site). */
 .pill-teams{background:rgba(var(--down-rgb),0.15); border-color:rgba(var(--down-rgb),0.35); color:var(--down);}
+.pill-roster{background:rgba(var(--purple-rgb),0.15); border-color:rgba(var(--purple-rgb),0.35); color:var(--purple);}
 .pill-qb{background:rgba(var(--neon-blue-rgb),0.15); border-color:rgba(var(--neon-blue-rgb),0.35); color:var(--neon-blue);}
 .pill-scoring{background:rgba(var(--horizon-gold-rgb),0.15); border-color:rgba(var(--horizon-gold-rgb),0.35); color:var(--horizon-gold);}
 .pill-te{background:rgba(var(--up-rgb),0.15); border-color:rgba(var(--up-rgb),0.35); color:var(--up);}
