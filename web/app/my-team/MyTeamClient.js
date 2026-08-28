@@ -291,23 +291,170 @@ function RosterTable({ players }) {
   );
 }
 
-// Personalized analysis of the user's saved teams -- roster age,
-// contention window, positional strength vs. league. Not built yet
-// (needs the player_metadata table + the analysis layer, see
-// model/age_curve_analysis.R and CLAUDE.md), so this tab lays out what's
-// coming rather than shipping half of it.
-function MyAnalysisPanel() {
+// The metric pool the My Analysis scatter + table draw from. This is
+// the extension point: once the player_metadata join lands (age, draft
+// capital, our projection, contention inputs -- see
+// model/age_curve_analysis.R / CLAUDE.md) they get added here and show
+// up in both axes and the table automatically.
+const ANALYSIS_METRICS = [
+  { key: "exposurePct", label: "Exposure %", fmt: (v) => `${Math.round(v)}%` },
+  { key: "teams", label: "Teams", fmt: (v) => String(v) },
+  { key: "starterCount", label: "Starts", fmt: (v) => String(v) },
+  { key: "invested", label: "Invested", fmt: (v) => (v ? `$${v.toLocaleString()}` : "$0") },
+  { key: "weightPct", label: "Bankroll %", fmt: (v) => `${v.toFixed(1)}%` },
+];
+
+const ANALYSIS_POS_COLOR = {
+  QB: "--pos-qb",
+  RB: "--pos-rb",
+  WR: "--pos-wr",
+  TE: "--pos-te",
+};
+
+// Scaffold for Team Analysis: pick any metric for the X and Y axis,
+// every player across the saved teams plots as a point (colored by
+// position), with the same data as a table underneath. Real analytical
+// metrics slot into ANALYSIS_METRICS as they're built.
+function MyAnalysisPanel({ rows }) {
+  const [xKey, setXKey] = useState("exposurePct");
+  const [yKey, setYKey] = useState("starterCount");
+  const xM = ANALYSIS_METRICS.find((m) => m.key === xKey) || ANALYSIS_METRICS[0];
+  const yM = ANALYSIS_METRICS.find((m) => m.key === yKey) || ANALYSIS_METRICS[1];
+
+  const pts = rows.filter((r) => r[xKey] != null && r[yKey] != null);
+  const W = 680;
+  const H = 420;
+  const padL = 64;
+  const padR = 20;
+  const padT = 18;
+  const padB = 46;
+  const xVals = pts.map((p) => p[xKey]);
+  const yVals = pts.map((p) => p[yKey]);
+  const xMin = Math.min(0, ...xVals);
+  const xMax = Math.max(1, ...xVals);
+  const yMin = Math.min(0, ...yVals);
+  const yMax = Math.max(1, ...yVals);
+  const sx = (v) => padL + ((v - xMin) / (xMax - xMin || 1)) * (W - padL - padR);
+  const sy = (v) => H - padB - ((v - yMin) / (yMax - yMin || 1)) * (H - padT - padB);
+
+  const tableRows = [...rows].sort(
+    (a, b) => (b[yKey] ?? -Infinity) - (a[yKey] ?? -Infinity) || a.name.localeCompare(b.name)
+  );
+
   return (
     <div className="my-analysis-panel">
-      <p>
-        A personalized read on the teams you&apos;ve saved — in the works.
+      <p className="my-analysis-note">
+        Template — plot your guys on any two metrics. More metrics arrive with
+        Team Analysis (age, draft capital, our projection, contention window).
       </p>
-      <ul>
-        <li>Roster age profile by position, vs. the rest of your league</li>
-        <li>Contention window — contend now, retool, or rebuild</li>
-        <li>Positional strength ranked against every other team you play</li>
-        <li>Aging-risk flags on the players actually carrying your lineups</li>
-      </ul>
+
+      <div className="my-analysis-axes">
+        <label>
+          X axis
+          <select
+            className="compare-select"
+            value={xKey}
+            onChange={(e) => setXKey(e.target.value)}
+          >
+            {ANALYSIS_METRICS.map((m) => (
+              <option key={m.key} value={m.key}>
+                {m.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Y axis
+          <select
+            className="compare-select"
+            value={yKey}
+            onChange={(e) => setYKey(e.target.value)}
+          >
+            {ANALYSIS_METRICS.map((m) => (
+              <option key={m.key} value={m.key}>
+                {m.label}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+
+      <div className="my-analysis-chart-wrap">
+        <svg
+          className="my-analysis-chart"
+          viewBox={`0 0 ${W} ${H}`}
+          role="img"
+          aria-label={`${yM.label} versus ${xM.label}`}
+        >
+          <line className="mac-axis" x1={padL} y1={padT} x2={padL} y2={H - padB} />
+          <line className="mac-axis" x1={padL} y1={H - padB} x2={W - padR} y2={H - padB} />
+          <text className="mac-axis-label" x={(padL + W - padR) / 2} y={H - 10} textAnchor="middle">
+            {xM.label}
+          </text>
+          <text
+            className="mac-axis-label"
+            x={16}
+            y={(padT + H - padB) / 2}
+            textAnchor="middle"
+            transform={`rotate(-90 16 ${(padT + H - padB) / 2})`}
+          >
+            {yM.label}
+          </text>
+          <text className="mac-tick" x={padL} y={H - padB + 16} textAnchor="start">
+            {xM.fmt(xMin)}
+          </text>
+          <text className="mac-tick" x={W - padR} y={H - padB + 16} textAnchor="end">
+            {xM.fmt(xMax)}
+          </text>
+          <text className="mac-tick" x={padL - 8} y={H - padB} textAnchor="end">
+            {yM.fmt(yMin)}
+          </text>
+          <text className="mac-tick" x={padL - 8} y={padT + 8} textAnchor="end">
+            {yM.fmt(yMax)}
+          </text>
+          {pts.map((p) => (
+            <circle
+              key={p.player_id}
+              className="mac-dot"
+              cx={sx(p[xKey])}
+              cy={sy(p[yKey])}
+              r="5"
+              style={{ fill: `var(${ANALYSIS_POS_COLOR[p.position] || "--neon-blue"})` }}
+            >
+              <title>{`${p.name} — ${xM.label}: ${xM.fmt(p[xKey])}, ${yM.label}: ${yM.fmt(p[yKey])}`}</title>
+            </circle>
+          ))}
+        </svg>
+      </div>
+
+      <div className="rankings-table-wrap">
+        <table className="rankings-table">
+          <thead>
+            <tr>
+              <th>Player</th>
+              <th>Pos</th>
+              <th>Team</th>
+              {ANALYSIS_METRICS.map((m) => (
+                <th key={m.key}>{m.label}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {tableRows.map((p) => (
+              <tr key={p.player_id} data-pos={p.position || undefined}>
+                <td className="player-cell align-left">{p.name}</td>
+                <td><PositionBadge position={p.position} /></td>
+                <td><TeamBadge team={p.team} /></td>
+                {ANALYSIS_METRICS.map((m) => (
+                  <td key={m.key} className="mono">
+                    {p[m.key] == null ? "—" : m.fmt(p[m.key])}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
@@ -379,7 +526,7 @@ function Portfolio({ savedTeams, buyIns }) {
       </div>
 
       {tab === "analysis" ? (
-        <MyAnalysisPanel />
+        <MyAnalysisPanel rows={rows} />
       ) : (
         <>
           <div className="rankings-table-wrap">
