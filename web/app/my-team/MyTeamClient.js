@@ -67,6 +67,29 @@ function LeagueBadges({ settings }) {
   );
 }
 
+// This week's game -- "Week N" always (once the season/week is known),
+// plus the opponent (with their record) or a BYE tag when the matchups
+// feed has one. Rendered on its own line under the league name; stays
+// hidden entirely before Sleeper posts a week/matchups (offseason
+// lookups just won't carry settings.week).
+function MatchupLine({ settings }) {
+  if (!settings || settings.week == null) return null;
+  return (
+    <span className="my-team-matchup">
+      Week {settings.week}
+      {settings.isBye ? (
+        <> · BYE</>
+      ) : settings.opponent ? (
+        <>
+          {" · vs "}
+          <span className="my-team-matchup-opp">{settings.opponent}</span>
+          {settings.opponentRecord ? ` (${settings.opponentRecord})` : ""}
+        </>
+      ) : null}
+    </span>
+  );
+}
+
 function sortByPosition(players) {
   return [...players].sort((a, b) => {
     const ai = POSITION_ORDER.indexOf(a.position);
@@ -322,6 +345,7 @@ export default function MyTeamClient({ isSignedIn, savedTeams }) {
                       <span className="my-team-record">{t.settings.record}</span>
                     )}
                     <span className="my-team-saved-league">{t.league_name}</span>
+                    <MatchupLine settings={t.settings} />
                   </div>
                   <LeagueBadges settings={t.settings} />
                 </div>
@@ -384,6 +408,7 @@ export default function MyTeamClient({ isSignedIn, savedTeams }) {
                         )}
                       </h3>
                       <span className="my-team-result-league">{team.league_name}</span>
+                      <MatchupLine settings={team.settings} />
                       <LeagueBadges settings={team.settings} />
                     </div>
                   </div>

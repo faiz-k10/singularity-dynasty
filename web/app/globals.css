@@ -2036,6 +2036,18 @@ tr.stat-row-selected td{background:var(--void-panel);}
   font-family:var(--font-ibm-plex-mono), monospace; font-size:12.5px; font-weight:600;
   color:var(--star-dim); margin-left:8px;
 }
+/* This week's matchup ("Week 1 · vs Opponent (0-0)") -- its own line
+   under the league name. flex-basis:100% forces the line break inside
+   .my-team-saved-title's wrapping flex row; harmless in the result
+   card's plain block flow. Muted mono like the league label, with the
+   opponent's name pulled up to full --star so the eye lands on who
+   you're playing, not the boilerplate around it. */
+.my-team-matchup{
+  display:block; flex-basis:100%; margin-top:4px;
+  font-family:var(--font-ibm-plex-mono), monospace; font-size:12px;
+  color:var(--star-dim); letter-spacing:0.02em;
+}
+.my-team-matchup-opp{color:var(--star); font-weight:600;}
 .my-team-remove{
   background:transparent; border:1px solid var(--line); color:var(--star-dim);
   border-radius:20px; padding:5px 14px; font-size:12px; cursor:pointer; transition:border-color .2s ease, color .2s ease;

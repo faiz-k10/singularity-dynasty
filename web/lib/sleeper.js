@@ -34,6 +34,18 @@ export async function fetchSleeperLeagueUsers(leagueId) {
   return data || [];
 }
 
+// One week's head-to-head matchups for a league. Each entry is
+// {roster_id, matchup_id, points, players, starters, ...} -- the two
+// rosters sharing a matchup_id are playing each other that week (a roster
+// on a bye is the only one with its matchup_id). Returns null, not an
+// error, for a week Sleeper hasn't scheduled yet: during the
+// offseason/preseason the upcoming season's matchups aren't posted, so
+// callers must handle a null (no opponent to show yet).
+export async function fetchSleeperMatchups(leagueId, week) {
+  const data = await sleeperGet(`/league/${leagueId}/matchups/${week}`);
+  return Array.isArray(data) && data.length ? data : null;
+}
+
 // Current NFL week/season-type, used to pick which week's ownership
 // research data actually has real numbers in it (see below -- during
 // preseason, only week 1's regular-season research is populated yet).

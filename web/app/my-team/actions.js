@@ -7,6 +7,7 @@ import {
   fetchSleeperLeagues,
   fetchSleeperRosters,
   fetchSleeperLeagueUsers,
+  fetchSleeperMatchups,
   fetchSleeperState,
   fetchSleeperResearch,
   fetchSleeperProjections,
@@ -62,6 +63,13 @@ export async function lookupSleeperTeams(username) {
   // data yet (later weeks 404/return null) -- see fetchSleeperResearch.
   const state = await fetchSleeperState();
   const researchWeek = state.season_type === "regular" ? state.week : 1;
+  // Which week's head-to-head matchup to surface -- in-season, Sleeper's
+  // own display_week (the week its app is showing, which rolls to the
+  // next matchup once the current week's games finish), falling back to
+  // the raw week; else week 1 (the upcoming opener), same preseason
+  // fallback as researchWeek above.
+  const matchupWeek =
+    state.season_type === "regular" ? state.display_week || state.week || 1 : 1;
   const research = await fetchSleeperResearch(season, researchWeek);
   // Always week 1 specifically (not "whatever week it currently is" like
   // research above) -- this column is meant as a fixed season-opener
@@ -87,12 +95,43 @@ export async function lookupSleeperTeams(username) {
 
   const teams = await Promise.all(
     leagues.map(async (league) => {
-      const [rosters, leagueUsers] = await Promise.all([
+      const [rosters, leagueUsers, matchups] = await Promise.all([
         fetchSleeperRosters(league.league_id),
         fetchSleeperLeagueUsers(league.league_id),
+        fetchSleeperMatchups(league.league_id, matchupWeek),
       ]);
       const myRoster = rosters.find((r) => r.owner_id === sleeperUser.user_id);
       if (!myRoster) return null;
+
+      // This week's opponent, resolved from the matchups feed: find my
+      // roster's matchup_id, then the other roster sharing it -> its
+      // owner's team name + record. null when matchups aren't posted yet
+      // (offseason), or when I'm the only roster on that matchup_id (bye).
+      let weekOpponent = null;
+      let weekOpponentRecord = null;
+      let weekIsBye = false;
+      if (matchups) {
+        const mine = matchups.find((m) => m.roster_id === myRoster.roster_id);
+        if (mine && mine.matchup_id != null) {
+          const oppEntry = matchups.find(
+            (m) => m.matchup_id === mine.matchup_id && m.roster_id !== myRoster.roster_id
+          );
+          if (oppEntry) {
+            const oppRoster = rosters.find((r) => r.roster_id === oppEntry.roster_id);
+            const oppUser = oppRoster
+              ? leagueUsers.find((u) => u.user_id === oppRoster.owner_id)
+              : null;
+            weekOpponent =
+              oppUser?.metadata?.team_name ||
+              oppUser?.display_name ||
+              `Roster ${oppEntry.roster_id}`;
+            const { wins: ow = 0, losses: ol = 0, ties: ot = 0 } = oppRoster?.settings || {};
+            weekOpponentRecord = ot > 0 ? `${ow}-${ol}-${ot}` : `${ow}-${ol}`;
+          } else {
+            weekIsBye = true;
+          }
+        }
+      }
 
       const teamName =
         leagueUsers.find((u) => u.user_id === sleeperUser.user_id)?.metadata
@@ -121,6 +160,10 @@ export async function lookupSleeperTeams(username) {
       const record = ties > 0 ? `${wins}-${losses}-${ties}` : `${wins}-${losses}`;
       const settings = {
         record,
+        week: matchupWeek,
+        opponent: weekOpponent,
+        opponentRecord: weekOpponentRecord,
+        isBye: weekIsBye,
         teams: league.total_rosters || null,
         rosterSpots: totalRosterSpots
           ? `${filledRosterSpots}/${totalRosterSpots}`
