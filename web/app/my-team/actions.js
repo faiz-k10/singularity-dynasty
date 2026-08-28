@@ -7,6 +7,8 @@ import {
   fetchSleeperLeagues,
   fetchSleeperRosters,
   fetchSleeperLeagueUsers,
+  fetchSleeperState,
+  fetchSleeperResearch,
   getSleeperPlayers,
 } from "@/lib/sleeper";
 
@@ -37,6 +39,15 @@ export async function lookupSleeperTeams(username) {
   }
 
   const players = await getSleeperPlayers();
+
+  // Platform-wide roster%/start% is the same for a given player
+  // regardless of which of the user's leagues we're looking at, so this
+  // is fetched once up front, not per-league. During preseason the
+  // upcoming regular season's week 1 is the only week with real research
+  // data yet (later weeks 404/return null) -- see fetchSleeperResearch.
+  const state = await fetchSleeperState();
+  const researchWeek = state.season_type === "regular" ? state.week : 1;
+  const research = await fetchSleeperResearch(season, researchWeek);
 
   const teams = await Promise.all(
     leagues.map(async (league) => {
@@ -80,16 +91,40 @@ export async function lookupSleeperTeams(username) {
         tePremium: tePremium > 0 ? `+${tePremium} TE Premium` : null,
       };
 
+      // myRoster.starters is ordered to match roster_positions with BN
+      // slots filtered out 1:1 (confirmed against real data: a 9-player
+      // starters array lines up exactly with 9 non-BN roster_positions
+      // entries in order) -- zipping them together is what actually
+      // recovers which SLOT ("QB", "FLEX", "SUPER_FLEX", ...) each
+      // starter fills, not just who happens to be a starter.
+      const nonBenchSlots = (league.roster_positions || []).filter((p) => p !== "BN");
+      const slotByPlayerId = {};
+      const slotIndexByPlayerId = {};
+      (myRoster.starters || []).forEach((playerId, i) => {
+        if (playerId && playerId !== "0") {
+          slotByPlayerId[playerId] = nonBenchSlots[i] || null;
+          slotIndexByPlayerId[playerId] = i;
+        }
+      });
+
       const rosterPlayers = (myRoster.players || []).map((playerId) => {
         const p = players[playerId];
-        return p
-          ? {
-              player_id: playerId,
-              name: `${p.first_name || ""} ${p.last_name || ""}`.trim() || playerId,
-              position: p.position || null,
-              team: p.team || null,
-            }
-          : { player_id: playerId, name: playerId, position: null, team: null };
+        const r = research[playerId];
+        return {
+          player_id: playerId,
+          name: p ? `${p.first_name || ""} ${p.last_name || ""}`.trim() || playerId : playerId,
+          position: p?.position || null,
+          team: p?.team || null,
+          slot: slotByPlayerId[playerId] || null,
+          isStarter: Boolean(slotByPlayerId[playerId]),
+          // Index into the starting lineup's own slot order (QB, RB, RB,
+          // WR, ... in whatever order this league's roster_positions
+          // defines) -- what lets the default view show starters in
+          // Sleeper's actual lineup order instead of an arbitrary one.
+          slotIndex: slotIndexByPlayerId[playerId] ?? 999,
+          rosterPct: typeof r?.owned === "number" ? r.owned : null,
+          startPct: typeof r?.started === "number" ? r.started : null,
+        };
       });
 
       return {

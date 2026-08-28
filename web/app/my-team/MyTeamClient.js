@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { lookupSleeperTeams, saveTeam, deleteTeam } from "./actions";
 import TeamBadge from "../tools/TeamBadge";
+import { sortRows, sortArrow } from "@/lib/sortLink";
 
 const POSITION_ORDER = ["QB", "RB", "WR", "TE", "K", "DEF"];
 
@@ -27,7 +28,7 @@ function LeagueBadges({ settings }) {
   );
 }
 
-function sortPlayers(players) {
+function sortByPosition(players) {
   return [...players].sort((a, b) => {
     const ai = POSITION_ORDER.indexOf(a.position);
     const bi = POSITION_ORDER.indexOf(b.position);
@@ -38,28 +39,121 @@ function sortPlayers(players) {
   });
 }
 
-function RosterTable({ players }) {
-  const sorted = sortPlayers(players);
+function formatPct(v) {
+  return v === null || v === undefined ? "—" : `${v.toFixed(1)}%`;
+}
+
+const ROSTER_COLUMN_TYPES = {
+  slot: "string",
+  name: "string",
+  position: "string",
+  team: "string",
+  rosterPct: "number",
+  startPct: "number",
+};
+
+// Reuses lib/sortLink's own comparator/arrow so this matches every other
+// table's sort behavior exactly (first click = descending, then toggles)
+// -- just driven by local React state instead of the URL, since this
+// roster preview isn't its own page/searchParams the way /tools/* are.
+function Th({ label, sortKeyName, sortKey, sortDir, onSort, className }) {
   return (
-    <div className="rankings-table-wrap">
-      <table className="rankings-table">
-        <thead>
-          <tr>
-            <th className="align-left">Player</th>
-            <th>Pos</th>
-            <th>Team</th>
-          </tr>
-        </thead>
-        <tbody>
-          {sorted.map((p) => (
-            <tr key={p.player_id} data-pos={p.position || undefined}>
-              <td className="player-cell align-left">{p.name}</td>
-              <td className="mono">{p.position || "—"}</td>
-              <td><TeamBadge team={p.team} /></td>
+    <th className={className}>
+      <button
+        type="button"
+        className={`th-sort-btn${sortKey === sortKeyName ? " sort-active" : ""}`}
+        onClick={() => onSort(sortKeyName)}
+      >
+        {label}
+        {sortArrow(sortKeyName, sortKey, sortDir)}
+      </button>
+    </th>
+  );
+}
+
+// Defaults to the CURRENT STARTING LINEUP, in Sleeper's own slot order
+// (QB, RB, RB, WR, WR, TE, FLEX, FLEX, SUPER_FLEX, ... -- whatever this
+// league's roster_positions actually defines, see actions.js's
+// slotIndex), not just players grouped by position. "Full Roster" toggle
+// reveals the bench. Every column is sortable via local state; sorting
+// overrides the default slot/position order until Starters/Full Roster
+// is switched again with no active sort.
+function RosterTable({ players }) {
+  const hasStarters = players.some((p) => p.isStarter);
+  const [view, setView] = useState(hasStarters ? "starters" : "full");
+  const [sortKey, setSortKey] = useState(null);
+  const [sortDir, setSortDir] = useState("desc");
+
+  const base = view === "starters" ? players.filter((p) => p.isStarter) : players;
+
+  let rows;
+  if (sortKey) {
+    rows = sortRows(base, sortKey, sortDir, ROSTER_COLUMN_TYPES);
+  } else if (view === "starters") {
+    rows = [...base].sort((a, b) => a.slotIndex - b.slotIndex);
+  } else {
+    rows = sortByPosition(base);
+  }
+
+  function handleSort(key) {
+    if (sortKey === key) {
+      setSortDir((d) => (d === "desc" ? "asc" : "desc"));
+    } else {
+      setSortKey(key);
+      setSortDir("desc");
+    }
+  }
+
+  const thProps = { sortKey, sortDir, onSort: handleSort };
+
+  return (
+    <div>
+      {hasStarters && (
+        <div className="board-toggle my-team-view-toggle">
+          <button
+            type="button"
+            className={view === "starters" ? "active" : ""}
+            onClick={() => setView("starters")}
+          >
+            Starting Lineup
+          </button>
+          <button
+            type="button"
+            className={view === "full" ? "active" : ""}
+            onClick={() => setView("full")}
+          >
+            Full Roster
+          </button>
+        </div>
+      )}
+      <div className="rankings-table-wrap">
+        <table className="rankings-table">
+          <thead>
+            <tr>
+              {view === "starters" && (
+                <Th label="Slot" sortKeyName="slot" className="mono" {...thProps} />
+              )}
+              <Th label="Player" sortKeyName="name" className="align-left" {...thProps} />
+              <Th label="Pos" sortKeyName="position" {...thProps} />
+              <Th label="Team" sortKeyName="team" {...thProps} />
+              <Th label="Roster %" sortKeyName="rosterPct" {...thProps} />
+              <Th label="Start %" sortKeyName="startPct" {...thProps} />
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {rows.map((p) => (
+              <tr key={p.player_id} data-pos={p.position || undefined}>
+                {view === "starters" && <td className="mono">{p.slot || "BN"}</td>}
+                <td className="player-cell align-left">{p.name}</td>
+                <td className="mono">{p.position || "—"}</td>
+                <td><TeamBadge team={p.team} /></td>
+                <td className="mono">{formatPct(p.rosterPct)}</td>
+                <td className="mono">{formatPct(p.startPct)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

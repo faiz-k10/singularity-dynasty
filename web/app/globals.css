@@ -856,6 +856,15 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .rankings-table th a{color:inherit; text-decoration:none; cursor:pointer;}
 .rankings-table th a:hover{color:var(--neon-blue);}
 .rankings-table th a.sort-active{color:var(--horizon-gold);}
+/* Client-state sortable headers (My Team's roster table -- no URL/page
+   reload involved, just local React state) reuse the exact same look as
+   the URL-driven <a> version above via a reset <button> instead. */
+.rankings-table th button.th-sort-btn{
+  all:unset; color:inherit; font:inherit; letter-spacing:inherit; text-transform:inherit;
+  cursor:pointer; display:inline-flex; align-items:center;
+}
+.rankings-table th button.th-sort-btn:hover{color:var(--neon-blue);}
+.rankings-table th button.th-sort-btn.sort-active{color:var(--horizon-gold);}
 .tool-export-row{display:flex; justify-content:flex-end; margin-bottom:20px;}
 .export-csv-btn{
   background:transparent; color:var(--neon-blue); border:1px solid rgba(var(--neon-blue-rgb),0.4); border-radius:20px;
@@ -1252,6 +1261,14 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
   transition:background .2s ease, color .2s ease;
 }
 .board-toggle a.active{background:var(--horizon-gold); color:#1A0D05;}
+/* Button variant for a purely client-state toggle (My Team's Starting
+   Lineup/Full Roster) -- same look as the URL-driven <a> above, no
+   navigation involved so a real page-jump link would be wrong here. */
+.board-toggle button{
+  all:unset; padding:8px 20px; border-radius:24px; font-size:13px; font-weight:600; color:var(--star-dim);
+  cursor:pointer; transition:background .2s ease, color .2s ease;
+}
+.board-toggle button.active{background:var(--horizon-gold); color:#1A0D05;}
 .draft-round{margin-bottom:32px;}
 .draft-round-title{
   font-family:var(--font-ibm-plex-mono), monospace; font-size:12px; letter-spacing:0.08em; text-transform:uppercase;
@@ -1990,6 +2007,8 @@ tr.stat-row-selected td{background:var(--void-panel);}
 }
 .my-team-remove:hover{border-color:var(--down); color:var(--down);}
 .my-team-saved-card .rankings-table-wrap{margin:0 16px 16px; border-radius:12px;}
+.my-team-saved-card .my-team-view-toggle{margin:0 16px 14px;}
+.my-team-view-toggle{margin-bottom:14px;}
 
 .my-team-lookup{
   background:var(--void-panel); border:1px solid var(--line); border-radius:16px;

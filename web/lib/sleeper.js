@@ -4,9 +4,12 @@
 // needs real OAuth, ESPN has no official API at all -- see the /my-team
 // roadmap in CLAUDE.md).
 const SLEEPER_BASE = "https://api.sleeper.app/v1";
+// The ownership-research endpoint below lives outside /v1 for whatever
+// reason on Sleeper's end -- confirmed by hand, not just assumed.
+const SLEEPER_ROOT = "https://api.sleeper.app";
 
-async function sleeperGet(path) {
-  const res = await fetch(`${SLEEPER_BASE}${path}`, { cache: "no-store" });
+async function sleeperGet(path, root = SLEEPER_BASE) {
+  const res = await fetch(`${root}${path}`, { cache: "no-store" });
   if (!res.ok) return null;
   return res.json();
 }
@@ -29,6 +32,24 @@ export async function fetchSleeperRosters(leagueId) {
 export async function fetchSleeperLeagueUsers(leagueId) {
   const data = await sleeperGet(`/league/${leagueId}/users`);
   return data || [];
+}
+
+// Current NFL week/season-type, used to pick which week's ownership
+// research data actually has real numbers in it (see below -- during
+// preseason, only week 1's regular-season research is populated yet).
+export async function fetchSleeperState() {
+  return (await sleeperGet(`/state/nfl`)) || {};
+}
+
+// Platform-wide roster%/start% for every player, for one week -- real
+// Sleeper research data (confirmed live: {"11533":{"owned":99.1,
+// "started":98.0}, ...}), not something this codebase computes. Small
+// (~30KB) unlike the player dictionary, so fetched fresh each lookup
+// rather than cached. A week with no data yet (e.g. asking for regular
+// season week 3 while still in preseason) returns null, not an error.
+export async function fetchSleeperResearch(season, week) {
+  const data = await sleeperGet(`/players/nfl/research/regular/${season}/${week}`, SLEEPER_ROOT);
+  return data || {};
 }
 
 // The full NFL player dictionary is ~16MB of raw JSON (thousands of
