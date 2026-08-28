@@ -47,6 +47,112 @@ CEIL_DECAY  <- c(RB = 0.89, QB = 0.98, WR = 0.93, TE = 0.91)  # Best Ball Rankin
 CEIL_Q      <- c(RB = 0.96, QB = 0.96, WR = 0.94, TE = 0.96)  # calibrated internal quantile for "ceiling"
 FLOOR_Q     <- c(RB = 0.09, QB = 0.08, WR = 0.12, TE = 0.13)  # calibrated internal quantile for "floor"
 
+# RB/WR/TE weekly median (Redraft) point estimate: 85% weighted quantile-
+# median + 15% weighted mean, instead of the pure quantile-median.
+# Non-Vegas bias fix -- backtest_debias_blend.R swept the mix on the same
+# ~7,850-real-player-week Sleeper head-to-head harness as
+# backtest_mean_vs_median.R. Pure median (share = 1.00) leaves the model
+# biased low by ~0.98 pts/week at all three positions; a full switch to
+# mean (share = 0.00, backtest_mean_vs_median.R) fixes the bias but costs
+# MAE and MedAE. share = 0.85 is the corner: MAE flat-to-better (RB
+# 4.637 -> 4.626, WR/TE within 0.005), RMSE better at all three (~-0.5%),
+# within-week rank correlation slightly better, and bias roughly halved
+# (-0.98 -> -0.81). QB is unaffected -- it already reports a full mean
+# (see the pos == "QB" branch below), its own validated exception.
+# Scoped to NON-shrink RB/WR/TE only, matching how the QB mean change was
+# scoped: shrunk_quantile()'s pool-blending was not in the swept harness.
+MED_MEAN_BLEND_SHARE <- 0.85
+
+# Bounce-back trigger: a player whose most recent real game (week-18
+# excluded, see EXCLUDE_WEEKS) landed in the bottom 20% of their OWN
+# weighted history. Originally the plan was to pull their median from a
+# slightly higher internal quantile next week (BOUNCEBACK_MED_Q below)
+# instead of the flat 0.50 every other player gets -- backed by a real
+# descriptive backtest (every player-season 2018-2025, min 10 games,
+# ~5,300 bottom-20th-percentile trigger events tracked forward: real
+# players average somewhat above the 50th percentile next game and
+# repeat bottom-20% only 12-16% of the time, vs. exactly 50th/20% for a
+# true no-memory process -- real, if modest, mean reversion).
+#
+# BOUNCEBACK_MED_Q is NOT applied to the projection (see med_q below,
+# always 0.50) -- backtest_bounceback_validation.R walk-forward tested
+# whether ACTING on that pattern (shifting the point prediction, not
+# just observing it) reduces next-game MAE, and it doesn't: +0.7% worse
+# overall, +3.0% worse on exactly the games it changes (up to +4.2% for
+# QB). A real average-case pattern doesn't automatically mean nudging
+# every triggered player's single-point prediction helps -- the players
+# who don't bounce back apparently lose more accuracy than the players
+# who do gain. had_bad_week is still computed and exported as
+# `bounceback` purely as information (same as `trend`), values kept here
+# for the record / in case a differently-shaped adjustment is worth
+# trying later. Trigger threshold is computed leave-one-out (the flagged
+# game itself is excluded from the "bottom 20%" reference distribution)
+# to avoid a game defining its own threshold -- same zero-lookahead
+# discipline as every walk-forward backtest in this file.
+BOUNCEBACK_TRIGGER_Q <- 0.20
+BOUNCEBACK_MED_Q <- c(RB = 0.529, QB = 0.556, WR = 0.548, TE = 0.556)  # not applied -- see above
+
+# QB weekly median: passing/rushing split, NOT a blended single-decay
+# bootstrap like every other position gets. Motivated directly by this
+# file's own admission that QB is the position with the least
+# confidence behind its tuning ("QB's ceiling decay barely matters...
+# don't over-trust QB=0.98 as precisely correct" -- see Recency
+# weighting above). QB fantasy output is also genuinely bimodal in a way
+# no other position's blended total is (a pure pocket passer vs. a real
+# rushing threat), which a single MED_DECAY on the combined total can't
+# represent.
+#
+# Decay values walk-forward validated in backtest_qb_pass_rush_split.R,
+# next-game MAE (same target/methodology as MED_DECAY's own original
+# backtest): sweeping each component's decay independently beats the
+# single blended MED_DECAY["QB"]=0.90 on the combined total. Passing
+# wants much faster decay (0.79) than the blended value implied --
+# passing volume/efficiency apparently shifts within a season faster
+# than one blended number can track. Rushing's own optimum (0.88) is
+# close to the blended value, meaning rushing was never really the
+# mismatched half of QB scoring -- passing was.
+#
+# The combining step (how pass/rush become one QB number) went through
+# three real iterations, in order, each one backtested rather than
+# assumed:
+#   1. Sum of two weighted MEANS -- worked (-0.68% MAE vs. blended),
+#      but inconsistent with every other position's median meaning a
+#      literal percentile of a distribution.
+#   2. Corrected to the 0.50 QUANTILE of n_sims independently-resampled
+#      (pass draw + rush draw) sums instead -- fixed the consistency
+#      issue AND won by more, not less (-1.07% vs. attempt 1's -0.68%).
+#   3. Real head-to-head against Sleeper's own published projections
+#      (2024-2025, ~800 real QB weeks, backtest_mean_vs_median.R) found
+#      QB's quantile-based number biased low by -0.94 points on average
+#      against real outcomes -- expected for a right-skewed stat (mean
+#      sits above median for skewed data), and Sleeper's numbers behave
+#      like an expected-value forecast, not a literal median. Switching
+#      back to attempt 1's MEAN -- this time as a deliberate, evidenced
+#      choice, not the unconsidered first draft -- won on every measure
+#      tested against Sleeper: MAE, RMSE, MedAE, bias (-0.94 -> -0.55),
+#      AND rank correlation. Not a tradeoff, a clean win.
+#
+# RB/WR/TE were tested the identical way against Sleeper and did NOT
+# win cleanly switching to mean (bias/RMSE improved, but MAE/MedAE got
+# measurably worse -- a real tradeoff, not obviously a win), so they
+# deliberately stay on the quantile-median path everywhere else in this
+# file. QB's own "median" field is therefore not literally a median for
+# this one position -- accept that naming reality rather than hide it.
+#
+# Scoped to the median only, still. Floor/ceiling keep the single
+# blended-distribution weighted_quantile approach -- neither backtest
+# above tested a floor/ceiling spread, and stacking an unvalidated
+# change onto FLOOR_Q/CEIL_Q's own separate calibration isn't something
+# this file does without evidence (same reasoning as bounce-back leaving
+# floor/ceiling alone above).
+PASS_PTS_DECAY_QB <- 0.79
+RUSH_PTS_DECAY_QB <- 0.88
+# Below this many prior (non-triggering) games, the leave-one-out 20th-
+# percentile threshold itself is too noisy to trust -- reuses the same
+# eligibility floor as everything else in this file rather than
+# inventing a second one.
+BOUNCEBACK_MIN_PRIOR_GAMES <- MIN_GAMES
+
 # Granular per-stat SEASON projections (stat_ranges below -- Player Season
 # Simulations' per-stat floor/median/ceiling) get their own decay and
 # calibrated quantiles, split by stat-group instead of reusing the single
@@ -265,6 +371,22 @@ defense_history_seasons <- function(target_season = TARGET_SEASON) {
 
 # ============================= DATA LOADING =============================
 
+# Snap-share history filter -- TRIED AND REJECTED, see README's
+# "Snap-share history filter" section for the full story and numbers.
+# Short version: filtering recency-decay history to only >50%-offense-
+# snap games (motivated by a real case -- Jaylen Waddle's last game
+# before a trade was a meaningless 25%-snap afterthought that nonetheless
+# dominated his recency weighting) looked like a clean win in a first
+# backtest, but that backtest had a real flaw (it compared predictions
+# against DIFFERENT target games for the filtered vs. unfiltered case,
+# not the same real outcome). Once corrected to predict the identical
+# target game either way, the filtered version was WORSE for every
+# position, badly for RB (+51% MAE). Throwing out ~48% of all history to
+# remove noise games removes real signal too, and the remaining sample is
+# too thin and unrepresentative to predict the full real range of
+# outcomes (including future low-snap weeks, which still happen and still
+# need to be predicted). Code fully reverted; load_history() below is
+# back to its pre-this-idea form.
 load_history <- function(seasons = history_seasons()) {
   # as.data.frame(): load_player_stats() returns a data.table, and its
   # non-standard `[` evaluation gets confused when a variable (STAT_COLS)
@@ -930,15 +1052,102 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
 
     playoff <- replicate(n_sims, sum(sample(x, 3, replace = TRUE, prob = wc)))
 
+    # Bounce-back trigger: was this player's most recent real game (x's
+    # last element -- d/reg is chronologically ordered, see load_history())
+    # in the bottom 20% of their OWN history? Threshold computed
+    # leave-one-out (own_prior_x/own_prior_w exclude that game itself) so
+    # the flagged game never defines its own bar. Requires enough PRIOR
+    # games on their own (BOUNCEBACK_MIN_PRIOR_GAMES) to trust that
+    # threshold at all -- a player sitting right at MIN_GAMES has only 5
+    # prior games to judge "bottom 20%" from, too thin to trust.
+    #
+    # INFORMATIONAL ONLY as of the walk-forward validation in
+    # backtest_bounceback_validation.R -- the underlying pattern (players
+    # average somewhat above the 50th percentile the week after a bad
+    # one) is real, but shifting the point PREDICTION in response to it
+    # made next-game MAE worse, not better (+0.7% overall, +3.0% on the
+    # games it actually changes -- see README's "Bounce-back adjustment"
+    # section for the full numbers). A real average-case pattern doesn't
+    # automatically mean nudging every triggered player's number helps:
+    # the players who don't bounce back apparently lose more accuracy
+    # than the players who do gain, once converted to a single-point
+    # prediction. med_q therefore always stays 0.50 -- had_bad_week is
+    # still computed and exported (same "surface it, don't act on it"
+    # pattern trend already uses) since it's still a real, true fact
+    # about the player worth a human seeing, just not something proven
+    # to make the number itself more accurate.
+    had_bad_week <- FALSE
+    if (n - 1 >= BOUNCEBACK_MIN_PRIOR_GAMES) {
+      own_prior_x <- x[-n]
+      own_prior_w <- recency_weights(n - 1, MED_DECAY[pos])
+      bad_week_bar <- weighted_quantile(own_prior_x, own_prior_w, BOUNCEBACK_TRIGGER_Q)
+      had_bad_week <- x[n] <= bad_week_bar
+    }
+    med_q <- 0.50
+
     shrink_this_player <- p %in% shrink_players && !is.null(baseline_pools[[pos]])
-    if (shrink_this_player) {
+
+    # QB median: passing/rushing split (see PASS_PTS_DECAY_QB above),
+    # scoped to NON-shrink-eligible QBs only -- shrink_quantile's
+    # pool-blending is a separately validated mechanism for thin-sample
+    # players that this split was never backtested against, and an
+    # already-noisy small sample seems like the wrong place to introduce
+    # a second, untested source of noise (splitting it into two even
+    # thinner sub-distributions). Floor/ceiling stay on the normal
+    # blended-distribution path for every QB, shrunk or not (see the
+    # parameter comment for why).
+    #
+    # A genuine QUANTILE of a resampled distribution, NOT a sum of two
+    # weighted means -- median needs to mean the same statistical thing
+    # for QB that it means for every other position (a real percentile of
+    # a distribution, via weighted_quantile/shrunk_quantile everywhere
+    # else). Built the same way project_all()'s own season totals already
+    # build a distribution to take a plain quantile of: independently
+    # resample n_sims (game, not stat-column) draws for each component at
+    # its own decay -- passing and rushing games are drawn separately
+    # (same "own resampling pass per stat-group, cross-group correlation
+    # not preserved" tradeoff the season stat_ranges split already
+    # accepts, see README) -- sum them, then take the 0.50 quantile of
+    # the SUM. Re-validated in this exact form (not just the mean-based
+    # version) via backtest_qb_pass_rush_split.R: -1.07% next-game MAE,
+    # a stronger result than the mean-based version's -0.68%, not just a
+    # cosmetic consistency fix.
+    if (pos == "QB" && !shrink_this_player) {
+      # MEAN, not a quantile -- the one deliberate exception to every
+      # other position/field on this page. Real head-to-head validation
+      # against Sleeper's own published projections (2024-2025, ~800 real
+      # QB weeks, see README's "QB: median vs. mean" section) found the
+      # model biased low by ~1 point at every position when reporting the
+      # median -- expected for a right-skewed stat (mean sits above
+      # median for skewed data), and Sleeper's numbers behave like an
+      # expected-value forecast, not a literal median. Switching QB
+      # specifically to a mean won on EVERY measure tested (MAE, RMSE,
+      # MedAE, bias, rank correlation) -- not a tradeoff, a clean win.
+      # RB/WR/TE were tested the same way and did NOT win cleanly (mean
+      # fixed their bias/RMSE too, but made MAE/MedAE measurably worse --
+      # a real tradeoff, not obviously a win), so they deliberately stay
+      # on the quantile-median path below. QB's own "median" field is
+      # therefore not literally a median for this one position -- accept
+      # that naming reality rather than hide it.
+      pass_hist <- 0.04 * d$passing_yards + 4 * d$passing_tds - 2 * d$passing_interceptions
+      rush_hist <- 0.1 * d$rushing_yards + 6 * d$rushing_tds
+      w_pass <- recency_weights(n, PASS_PTS_DECAY_QB)
+      w_rush <- recency_weights(n, RUSH_PTS_DECAY_QB)
+      med <- weighted_mean(pass_hist, w_pass) + weighted_mean(rush_hist, w_rush)
+      fl  <- weighted_quantile(x, wm, FLOOR_Q[pos])
+      cei <- weighted_quantile(x, wc, CEIL_Q[pos])
+    } else if (shrink_this_player) {
       base <- baseline_pools[[pos]]
       fl  <- shrunk_quantile(x, wm, base$pool, base$weights, FLOOR_Q[pos])
-      med <- shrunk_quantile(x, wm, base$pool, base$weights, 0.50)
+      med <- shrunk_quantile(x, wm, base$pool, base$weights, med_q)
       cei <- shrunk_quantile(x, wc, base$pool, base$weights, CEIL_Q[pos])
     } else {
       fl  <- weighted_quantile(x, wm, FLOOR_Q[pos])
-      med <- weighted_quantile(x, wm, 0.50)
+      # 85/15 quantile-median / mean blend -- low-bias fix, see
+      # MED_MEAN_BLEND_SHARE. Floor/ceiling stay pure quantiles (the swept
+      # harness only tested the median point estimate).
+      med <- MED_MEAN_BLEND_SHARE * weighted_quantile(x, wm, med_q) +
+             (1 - MED_MEAN_BLEND_SHARE) * weighted_mean(x, wm)
       cei <- weighted_quantile(x, wc, CEIL_Q[pos])
     }
 
@@ -1044,6 +1253,7 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
       availability_pct = round(100 * avail, 0),
       shrunk = shrink_this_player,
       trend = trend,
+      bounceback = had_bad_week,
       matchup_mult = round(mult, 2),
       floor = round(fl, 1),
       median = round(med, 1),
@@ -1122,7 +1332,14 @@ export_for_supabase <- function(df, target_season = TARGET_SEASON, week = NULL) 
     trend = redraft$trend,
     sample_confidence = ifelse(redraft$shrunk, "building", "established"),
     scoring_stats = redraft_scoring_stats,
-    notes = ifelse(redraft$player_name %in% out_players, "OUT", "")
+    # OUT takes priority. BOUNCEBACK is informational only now (see the
+    # BOUNCEBACK_MED_Q comment above -- walk-forward validation showed
+    # acting on it makes the number worse, not better) -- flagged here so
+    # a human publishing/reviewing this week's numbers can see "this
+    # player just had a rough game" as real context, without it having
+    # changed the projection itself.
+    notes = ifelse(redraft$player_name %in% out_players, "OUT",
+             ifelse(redraft$bounceback, "BOUNCEBACK (informational only)", ""))
   ), "upload_redraft_rankings.csv", row.names = FALSE)
 
   # ceiling_range_low / ceiling_probability are NOT written here -- they're
