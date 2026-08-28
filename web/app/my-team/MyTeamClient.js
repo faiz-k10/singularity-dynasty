@@ -173,8 +173,8 @@ function RosterTable({ players }) {
         <table className="rankings-table">
           <thead>
             <tr>
-              <Th label="Player" sortKeyName="name" className="align-left" {...thProps} />
               {view === "starters" && <Th label="Slot" sortKeyName="slot" {...thProps} />}
+              <Th label="Player" sortKeyName="name" className="align-left" {...thProps} />
               <Th label="Pos" sortKeyName="position" {...thProps} />
               <Th label="Team" sortKeyName="team" {...thProps} />
               <Th label="Roster %" sortKeyName="rosterPct" {...thProps} />
@@ -184,8 +184,8 @@ function RosterTable({ players }) {
           <tbody>
             {rows.map((p) => (
               <tr key={p.player_id} data-pos={p.position || undefined}>
-                <td className="player-cell align-left">{p.name}</td>
                 {view === "starters" && <td><SlotBadge slot={p.slot} /></td>}
+                <td className="player-cell align-left">{p.name}</td>
                 <td><PositionBadge position={p.position} /></td>
                 <td><TeamBadge team={p.team} /></td>
                 <td className="mono">{formatPct(p.rosterPct)}</td>
