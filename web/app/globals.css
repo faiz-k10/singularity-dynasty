@@ -2004,10 +2004,27 @@ tr.stat-row-selected td{background:var(--void-panel);}
   background:var(--void-panel); border:1px solid var(--line); border-radius:16px;
   padding:22px; box-shadow:0 20px 45px rgba(var(--shadow-rgb),0.35);
 }
-.my-team-result-head{display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:16px; flex-wrap:wrap;}
+/* .my-team-result-head doubles as the <details> summary -- roster table
+   only shows once expanded, so the team name/league/Save button (and now
+   the chevron) are what's visible by default. list-style/marker removal
+   swaps the browser's default disclosure triangle for the rotating
+   .my-team-chevron below, matching .my-team-saved-card's own summary. */
+.my-team-result-head{
+  display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap;
+  cursor:pointer; list-style:none;
+}
+.my-team-result-head::-webkit-details-marker{display:none;}
+.my-team-result-card[open] .my-team-result-head{margin-bottom:16px;}
+.my-team-result-title{display:flex; align-items:center; gap:10px;}
 .my-team-result-head h3{font-size:18px; margin-bottom:2px;}
 .my-team-result-league{font-size:12.5px; color:var(--star-dim); font-family:var(--font-ibm-plex-mono), monospace;}
 .my-team-save-btn{white-space:nowrap; padding:9px 20px; width:auto;}
+.my-team-chevron{
+  display:inline-block; font-size:11px; color:var(--star-dim); margin-right:10px;
+  transition:transform .2s ease;
+}
+.my-team-result-card[open] .my-team-chevron,
+.my-team-saved-card[open] .my-team-chevron{transform:rotate(90deg);}
 @media (max-width:640px){
   .my-team-lookup-row{flex-direction:column;}
 }

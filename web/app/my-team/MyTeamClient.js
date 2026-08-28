@@ -71,7 +71,8 @@ export default function MyTeamClient({ isSignedIn, savedTeams }) {
     });
   }
 
-  function handleSave(team, sleeperUsername) {
+  function handleSave(e, team, sleeperUsername) {
+    e.preventDefault();
     setSavingKey(team.league_id);
     startTransition(async () => {
       const res = await saveTeam({
@@ -107,6 +108,7 @@ export default function MyTeamClient({ isSignedIn, savedTeams }) {
           {savedTeams.map((t) => (
             <details key={t.id} className="my-team-saved-card">
               <summary>
+                <span className="my-team-chevron">▸</span>
                 <span className="my-team-saved-name">{t.team_name || "Untitled Team"}</span>
                 <span className="my-team-saved-league">{t.league_name}</span>
                 <button
@@ -156,18 +158,21 @@ export default function MyTeamClient({ isSignedIn, savedTeams }) {
           {result.teams.map((team) => {
             const isSaved = savedKeys.has(team.league_id);
             return (
-              <div key={team.league_id} className="my-team-result-card reveal in">
-                <div className="my-team-result-head">
-                  <div>
-                    <h3>{team.team_name}</h3>
-                    <span className="my-team-result-league">{team.league_name}</span>
+              <details key={team.league_id} className="my-team-result-card reveal in">
+                <summary className="my-team-result-head">
+                  <div className="my-team-result-title">
+                    <span className="my-team-chevron">▸</span>
+                    <div>
+                      <h3>{team.team_name}</h3>
+                      <span className="my-team-result-league">{team.league_name}</span>
+                    </div>
                   </div>
                   {isSignedIn ? (
                     <button
                       type="button"
                       className="round-btn primary my-team-save-btn"
                       disabled={pending || isSaved}
-                      onClick={() => handleSave(team, result.sleeperUsername)}
+                      onClick={(e) => handleSave(e, team, result.sleeperUsername)}
                     >
                       {isSaved
                         ? "Saved ✓"
@@ -180,9 +185,9 @@ export default function MyTeamClient({ isSignedIn, savedTeams }) {
                       Sign In To Save
                     </a>
                   )}
-                </div>
+                </summary>
                 <RosterTable players={team.players} />
-              </div>
+              </details>
             );
           })}
         </div>
