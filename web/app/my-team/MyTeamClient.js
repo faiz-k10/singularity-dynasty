@@ -14,6 +14,33 @@ function formatSlot(slot) {
   return slot === "SUPER_FLEX" ? "SUPERFLEX" : slot;
 }
 
+// Deliberately an OUTLINE pill (transparent fill, colored border+text via
+// currentColor) rather than PositionBadge's solid fill -- Slot and
+// Position are genuinely different facts (a FLEX slot says nothing about
+// which position fills it) that happened to look like duplicated color
+// coding when Slot was a plain-text first column sitting right next to
+// the position-stripe every .rankings-table already draws on its own
+// first cell. Single-position slots borrow that position's color; FLEX/
+// SUPERFLEX (not tied to one position) get their own accent instead.
+const SLOT_COLOR_VAR = {
+  QB: "--pos-qb",
+  RB: "--pos-rb",
+  WR: "--pos-wr",
+  TE: "--pos-te",
+  FLEX: "--neon-blue",
+  SUPER_FLEX: "--horizon-gold",
+};
+
+function SlotBadge({ slot }) {
+  if (!slot) return <span className="mono">BN</span>;
+  const colorVar = SLOT_COLOR_VAR[slot];
+  return (
+    <span className="slot-badge" style={colorVar ? { color: `var(${colorVar})` } : undefined}>
+      {formatSlot(slot)}
+    </span>
+  );
+}
+
 const POSITION_ORDER = ["QB", "RB", "WR", "TE", "K", "DEF"];
 
 // League format at a glance -- teams / roster spots / QB format / scoring
@@ -146,10 +173,8 @@ function RosterTable({ players }) {
         <table className="rankings-table">
           <thead>
             <tr>
-              {view === "starters" && (
-                <Th label="Slot" sortKeyName="slot" className="mono" {...thProps} />
-              )}
               <Th label="Player" sortKeyName="name" className="align-left" {...thProps} />
+              {view === "starters" && <Th label="Slot" sortKeyName="slot" {...thProps} />}
               <Th label="Pos" sortKeyName="position" {...thProps} />
               <Th label="Team" sortKeyName="team" {...thProps} />
               <Th label="Roster %" sortKeyName="rosterPct" {...thProps} />
@@ -159,8 +184,8 @@ function RosterTable({ players }) {
           <tbody>
             {rows.map((p) => (
               <tr key={p.player_id} data-pos={p.position || undefined}>
-                {view === "starters" && <td className="mono">{formatSlot(p.slot)}</td>}
                 <td className="player-cell align-left">{p.name}</td>
+                {view === "starters" && <td><SlotBadge slot={p.slot} /></td>}
                 <td><PositionBadge position={p.position} /></td>
                 <td><TeamBadge team={p.team} /></td>
                 <td className="mono">{formatPct(p.rosterPct)}</td>
