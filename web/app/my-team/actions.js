@@ -2,6 +2,16 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import {
+  fetchSleeperUser,
+  fetchSleeperLeagues,
+  fetchSleeperRosters,
+  fetchSleeperLeagueUsers,
+  fetchSleeperState,
+  fetchSleeperResearch,
+  fetchSleeperProjections,
+  getSleeperPlayers,
+} from "@/lib/sleeper";
 
 // Sleeper's own player dictionary drops name suffixes ("Luther Burden"
 // instead of "Luther Burden III"), but our hand-published
@@ -16,16 +26,6 @@ function normalizeName(name) {
     .replace(/\s+(jr|sr|ii|iii|iv|v)$/i, "")
     .trim();
 }
-import {
-  fetchSleeperUser,
-  fetchSleeperLeagues,
-  fetchSleeperRosters,
-  fetchSleeperLeagueUsers,
-  fetchSleeperState,
-  fetchSleeperResearch,
-  fetchSleeperProjections,
-  getSleeperPlayers,
-} from "@/lib/sleeper";
 
 // Looks up every league a Sleeper username plays in for the current NFL
 // season and returns just THEIR roster from each one, with player ids
@@ -142,6 +142,10 @@ export async function lookupSleeperTeams(username) {
           slotIndexByPlayerId[playerId] = i;
         }
       });
+      // How many starting slots this league actually has (9 in a
+      // standard QB/RB/RB/WR/WR/TE/FLEX/FLEX/SUPER_FLEX league, etc) --
+      // its own badge alongside Teams/Roster Spots/QB Format/Scoring.
+      settings.starters = nonBenchSlots.length;
 
       // Same recPts already computed above for the Scoring badge decides
       // which of the three projection flavors actually matches this
@@ -154,6 +158,8 @@ export async function lookupSleeperTeams(username) {
         const r = research[playerId];
         const proj = projections[playerId];
         const name = p ? `${p.first_name || ""} ${p.last_name || ""}`.trim() || playerId : playerId;
+        const sleeperProjPts = proj ? proj[projField] : null;
+        const myProjPts = myProjByName[normalizeName(name)] ?? null;
         return {
           player_id: playerId,
           name,
@@ -166,8 +172,17 @@ export async function lookupSleeperTeams(username) {
           // defines) -- what lets the default view show starters in
           // Sleeper's actual lineup order instead of an arbitrary one.
           slotIndex: slotIndexByPlayerId[playerId] ?? 999,
-          sleeperProjPts: proj ? proj[projField] : null,
-          myProjPts: myProjByName[normalizeName(name)] ?? null,
+          sleeperProjPts,
+          myProjPts,
+          // Computed once here (not in the client) so the sortable Diff
+          // column has a real numeric field to sort on, same as every
+          // other column -- null whenever either side is missing rather
+          // than treating a missing projection as a 0-point player.
+          diffProj:
+            myProjPts !== null && sleeperProjPts !== null
+              ? myProjPts - sleeperProjPts
+              : null,
+          rosterPct: typeof r?.owned === "number" ? r.owned : null,
           startPct: typeof r?.started === "number" ? r.started : null,
         };
       });

@@ -2089,6 +2089,13 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .pill-qb{background:rgba(var(--neon-blue-rgb),0.15); border-color:rgba(var(--neon-blue-rgb),0.35); color:var(--neon-blue);}
 .pill-scoring{background:rgba(var(--horizon-gold-rgb),0.15); border-color:rgba(var(--horizon-gold-rgb),0.35); color:var(--horizon-gold);}
 .pill-te{background:rgba(var(--up-rgb),0.15); border-color:rgba(var(--up-rgb),0.35); color:var(--up);}
+/* Starting lineup size ("Start 9") -- deliberately colorless/white
+   rather than another accent, since it's a lineup-shape fact rather
+   than a category the other pills' colors are grouping. --star-dot-rgb
+   is the existing near-white(dark)/near-black(light) token (already
+   used for the starfield dots), so this flips the same way every other
+   theme-aware color on the site does instead of hardcoding one hex. */
+.pill-white{background:rgba(var(--star-dot-rgb),0.15); border-color:rgba(var(--star-dot-rgb),0.35); color:var(--star);}
 .my-team-chevron{
   display:inline-block; font-size:11px; color:var(--star-dim); margin-right:10px;
   transition:transform .2s ease;

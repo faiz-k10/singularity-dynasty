@@ -55,6 +55,9 @@ function LeagueBadges({ settings }) {
       {settings.rosterSpots && (
         <span className="my-team-setting-pill pill-roster">{settings.rosterSpots} Roster Spots</span>
       )}
+      {settings.starters != null && (
+        <span className="my-team-setting-pill pill-white">Start {settings.starters}</span>
+      )}
       <span className="my-team-setting-pill pill-qb">{settings.qbFormat}</span>
       <span className="my-team-setting-pill pill-scoring">{settings.scoring}</span>
       {settings.tePremium && (
@@ -83,14 +86,33 @@ function formatPts(v) {
   return v === null || v === undefined ? "—" : v.toFixed(1);
 }
 
+function formatDiff(v) {
+  if (v === null || v === undefined) return "—";
+  return `${v > 0 ? "+" : ""}${v.toFixed(1)}`;
+}
+
+// Same good/bad/heat shape as MatchupBadge's matchupTint, reusing the
+// site's existing .matchup-cell heat-tint classes -- green the more our
+// model is above Sleeper's, red the more it's below, capped at a 5-point
+// spread (roughly a full tier of fantasy scoring) so one huge outlier
+// doesn't wash out every other row's tint.
+function diffTint(diff) {
+  if (diff === null || diff === undefined) return null;
+  const heat = Math.min(Math.abs(diff) / 5, 1);
+  const cls = diff > 0 ? "good" : diff < 0 ? "bad" : "neutral";
+  return { cls, heat };
+}
+
 const ROSTER_COLUMN_TYPES = {
   slot: "string",
   name: "string",
   position: "string",
   team: "string",
-  sleeperProjPts: "number",
   myProjPts: "number",
+  sleeperProjPts: "number",
+  diffProj: "number",
   startPct: "number",
+  rosterPct: "number",
 };
 
 // Reuses lib/sortLink's own comparator/arrow so this matches every other
@@ -182,30 +204,42 @@ function RosterTable({ players }) {
               <Th label="Player" sortKeyName="name" className="align-left" {...thProps} />
               <Th label="Pos" sortKeyName="position" {...thProps} />
               <Th label="Team" sortKeyName="team" {...thProps} />
-              <Th label="Sleeper Wk1 Proj" sortKeyName="sleeperProjPts" {...thProps} />
-              <Th label="My Wk1 Proj" sortKeyName="myProjPts" {...thProps} />
-              <Th label="Start %" sortKeyName="startPct" {...thProps} />
+              <Th label="Singularity Proj" sortKeyName="myProjPts" {...thProps} />
+              <Th label="Sleeper Proj" sortKeyName="sleeperProjPts" {...thProps} />
+              <Th label="Diff" sortKeyName="diffProj" {...thProps} />
+              {view === "full" && <Th label="Start %" sortKeyName="startPct" {...thProps} />}
+              {view === "full" && <Th label="Roster %" sortKeyName="rosterPct" {...thProps} />}
             </tr>
           </thead>
           <tbody>
-            {rows.map((p) => (
-              <tr
-                key={p.player_id}
-                // The position-color stripe duplicates SlotBadge's own
-                // outline color once Slot is the leading column in the
-                // starting lineup view, so it's only drawn in Full
-                // Roster (where there's no Slot badge doing that job).
-                data-pos={view === "starters" ? undefined : p.position || undefined}
-              >
-                {view === "starters" && <td><SlotBadge slot={p.slot} /></td>}
-                <td className="player-cell align-left">{p.name}</td>
-                <td><PositionBadge position={p.position} /></td>
-                <td><TeamBadge team={p.team} /></td>
-                <td className="mono">{formatPts(p.sleeperProjPts)}</td>
-                <td className="mono">{formatPts(p.myProjPts)}</td>
-                <td className="mono">{formatPct(p.startPct)}</td>
-              </tr>
-            ))}
+            {rows.map((p) => {
+              const tint = diffTint(p.diffProj);
+              return (
+                <tr
+                  key={p.player_id}
+                  // The position-color stripe duplicates SlotBadge's own
+                  // outline color once Slot is the leading column in the
+                  // starting lineup view, so it's only drawn in Full
+                  // Roster (where there's no Slot badge doing that job).
+                  data-pos={view === "starters" ? undefined : p.position || undefined}
+                >
+                  {view === "starters" && <td><SlotBadge slot={p.slot} /></td>}
+                  <td className="player-cell align-left">{p.name}</td>
+                  <td><PositionBadge position={p.position} /></td>
+                  <td><TeamBadge team={p.team} /></td>
+                  <td className="mono">{formatPts(p.myProjPts)}</td>
+                  <td className="mono">{formatPts(p.sleeperProjPts)}</td>
+                  <td
+                    className={`mono${tint ? ` matchup-cell ${tint.cls}` : ""}`}
+                    style={tint ? { "--heat": tint.heat } : undefined}
+                  >
+                    {formatDiff(p.diffProj)}
+                  </td>
+                  {view === "full" && <td className="mono">{formatPct(p.startPct)}</td>}
+                  {view === "full" && <td className="mono">{formatPct(p.rosterPct)}</td>}
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
