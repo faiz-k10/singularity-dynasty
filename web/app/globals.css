@@ -849,10 +849,14 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .rankings-table-wrap::-webkit-scrollbar-thumb:hover{background:rgba(var(--neon-blue-rgb),0.75);}
 .rankings-table{width:100%; border-collapse:collapse; font-size:14px;}
 .rankings-table th{
-  text-align:left; font-family:var(--font-ibm-plex-mono), monospace; font-size:11px; letter-spacing:0.08em;
+  text-align:center; font-family:var(--font-ibm-plex-mono), monospace; font-size:11px; letter-spacing:0.08em;
   text-transform:uppercase; color:var(--star-dim); padding:14px 18px; border-bottom:1px solid var(--line);
   background:var(--void-panel-2); white-space:nowrap;
 }
+/* Column headers are centered site-wide, even where the column's data is
+   left-aligned (e.g. the Player name column) -- deliberate, keeps every
+   table's header row reading the same way. The inline <a>/<button> sort
+   controls inside a th inherit the centering from text-align above. */
 .rankings-table th a{color:inherit; text-decoration:none; cursor:pointer;}
 .rankings-table th a:hover{color:var(--neon-blue);}
 .rankings-table th a.sort-active{color:var(--horizon-gold);}
@@ -1964,13 +1968,17 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .compare-table thead th{
   font-family:var(--font-space-grotesk), sans-serif; font-size:15px; font-weight:700; color:var(--star);
   background:var(--void-panel-2); border-bottom:1px solid var(--line); white-space:nowrap;
+  text-align:center;
 }
+/* tbody th are per-stat ROW labels (Position, Team, Floor...), so they
+   stay left; the value cells under the centered player-name headers get
+   centered to match. */
 .compare-table tbody th{
   font-family:var(--font-ibm-plex-mono), monospace; font-size:11px; letter-spacing:0.06em; text-transform:uppercase;
   color:var(--star-dim); font-weight:500; background:var(--void-panel-2);
 }
-.compare-table tbody td{color:var(--star);}
-.compare-table tbody td.tool-notes{white-space:normal; min-width:220px;}
+.compare-table tbody td{color:var(--star); text-align:center;}
+.compare-table tbody td.tool-notes{white-space:normal; min-width:220px; text-align:left;}
 
 /* Percentile Shapes -- one radar + percentile card per compared player
    (ComparePlayerRadars.js), below the plain-numbers table above. Reuses
