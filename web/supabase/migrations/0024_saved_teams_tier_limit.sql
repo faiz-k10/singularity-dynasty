@@ -24,8 +24,8 @@ begin
 
   -- null limit = unlimited, skip the check entirely
   v_limit := case coalesce(v_tier, 'stargazer')
-    when 'explorer' then null
-    when 'singularity' then null
+    when 'explorer' then null::int
+    when 'singularity' then null::int
     else 1
   end;
 
