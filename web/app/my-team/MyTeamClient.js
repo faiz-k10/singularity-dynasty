@@ -3,7 +3,16 @@
 import { useState, useTransition } from "react";
 import { lookupSleeperTeams, saveTeam, deleteTeam } from "./actions";
 import TeamBadge from "../tools/TeamBadge";
+import PositionBadge from "../tools/PositionBadge";
 import { sortRows, sortArrow } from "@/lib/sortLink";
+
+// Display-only relabel -- Sleeper's own roster_positions/starters value is
+// the literal string "SUPER_FLEX"; sorting/matching still uses that raw
+// value everywhere, this just renders it without the underscore.
+function formatSlot(slot) {
+  if (!slot) return "BN";
+  return slot === "SUPER_FLEX" ? "SUPERFLEX" : slot;
+}
 
 const POSITION_ORDER = ["QB", "RB", "WR", "TE", "K", "DEF"];
 
@@ -75,9 +84,10 @@ function Th({ label, sortKeyName, sortKey, sortDir, onSort, className }) {
 // (QB, RB, RB, WR, WR, TE, FLEX, FLEX, SUPER_FLEX, ... -- whatever this
 // league's roster_positions actually defines, see actions.js's
 // slotIndex), not just players grouped by position. "Full Roster" toggle
-// reveals the bench. Every column is sortable via local state; sorting
-// overrides the default slot/position order until Starters/Full Roster
-// is switched again with no active sort.
+// reveals the bench. Every column is sortable via local state; switching
+// the Starters/Full Roster toggle resets any active sort back to that
+// view's own default order, rather than carrying a sort across into a
+// view it wasn't set on.
 function RosterTable({ players }) {
   const hasStarters = players.some((p) => p.isStarter);
   const [view, setView] = useState(hasStarters ? "starters" : "full");
@@ -104,6 +114,12 @@ function RosterTable({ players }) {
     }
   }
 
+  function handleViewChange(nextView) {
+    setView(nextView);
+    setSortKey(null);
+    setSortDir("desc");
+  }
+
   const thProps = { sortKey, sortDir, onSort: handleSort };
 
   return (
@@ -113,14 +129,14 @@ function RosterTable({ players }) {
           <button
             type="button"
             className={view === "starters" ? "active" : ""}
-            onClick={() => setView("starters")}
+            onClick={() => handleViewChange("starters")}
           >
             Starting Lineup
           </button>
           <button
             type="button"
             className={view === "full" ? "active" : ""}
-            onClick={() => setView("full")}
+            onClick={() => handleViewChange("full")}
           >
             Full Roster
           </button>
@@ -143,9 +159,9 @@ function RosterTable({ players }) {
           <tbody>
             {rows.map((p) => (
               <tr key={p.player_id} data-pos={p.position || undefined}>
-                {view === "starters" && <td className="mono">{p.slot || "BN"}</td>}
+                {view === "starters" && <td className="mono">{formatSlot(p.slot)}</td>}
                 <td className="player-cell align-left">{p.name}</td>
-                <td className="mono">{p.position || "—"}</td>
+                <td><PositionBadge position={p.position} /></td>
                 <td><TeamBadge team={p.team} /></td>
                 <td className="mono">{formatPct(p.rosterPct)}</td>
                 <td className="mono">{formatPct(p.startPct)}</td>
