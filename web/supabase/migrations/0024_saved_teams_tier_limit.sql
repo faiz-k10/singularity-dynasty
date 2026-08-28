@@ -50,7 +50,9 @@ begin
 end;
 $$;
 
-drop trigger if exists enforce_saved_team_limit on public.saved_teams;
-create trigger enforce_saved_team_limit
+-- create OR REPLACE (Postgres 14+) rather than drop+create, so re-running
+-- this migration doesn't trip the SQL editor's "destructive operation"
+-- guard on a DROP.
+create or replace trigger enforce_saved_team_limit
   before insert on public.saved_teams
   for each row execute function public.check_saved_team_limit();
