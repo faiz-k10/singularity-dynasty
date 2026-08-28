@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { resolveTier, savedTeamLimit } from "@/lib/tier";
 import {
   fetchSleeperUser,
   fetchSleeperLeagues,
@@ -103,13 +104,18 @@ export async function lookupSleeperTeams(username) {
       const myRoster = rosters.find((r) => r.owner_id === sleeperUser.user_id);
       if (!myRoster) return null;
 
-      // This week's opponent, resolved from the matchups feed: find my
-      // roster's matchup_id, then the other roster sharing it -> its
-      // owner's team name + record. null when matchups aren't posted yet
-      // (offseason), or when I'm the only roster on that matchup_id (bye).
+      // This week's opponent + projected score, from the matchups feed:
+      // find my roster's matchup_id, then the other roster sharing it ->
+      // its owner's team name + record, and our Singularity redraft
+      // projection summed over each side's starting lineup (both sides
+      // read from the feed's own `starters` arrays, so they're measured
+      // the same way). weekOpponent stays null when matchups aren't
+      // posted yet (offseason) or on a bye; matchupProj stays null
+      // unless we projected at least 3 starters on each side.
       let weekOpponent = null;
       let weekOpponentRecord = null;
       let weekIsBye = false;
+      let matchupProj = null;
       if (matchups) {
         const mine = matchups.find((m) => m.roster_id === myRoster.roster_id);
         if (mine && mine.matchup_id != null) {
@@ -127,11 +133,39 @@ export async function lookupSleeperTeams(username) {
               `Roster ${oppEntry.roster_id}`;
             const { wins: ow = 0, losses: ol = 0, ties: ot = 0 } = oppRoster?.settings || {};
             weekOpponentRecord = ot > 0 ? `${ow}-${ol}-${ot}` : `${ow}-${ol}`;
+
+            const sumProj = (starterIds) => {
+              let sum = 0;
+              let n = 0;
+              for (const pid of starterIds || []) {
+                if (!pid || pid === "0") continue;
+                const pl = players[pid];
+                if (!pl) continue;
+                const nm = `${pl.first_name || ""} ${pl.last_name || ""}`.trim();
+                const v = myProjByName[normalizeName(nm)];
+                if (typeof v === "number") {
+                  sum += v;
+                  n += 1;
+                }
+              }
+              return { sum: Math.round(sum * 10) / 10, n };
+            };
+            const a = sumProj(mine.starters);
+            const b = sumProj(oppEntry.starters);
+            if (a.n >= 3 && b.n >= 3) {
+              matchupProj = { mine: a.sum, opp: b.sum };
+            }
           } else {
             weekIsBye = true;
           }
         }
       }
+
+      // Only surface a week/matchup line when there's something to say:
+      // the schedule is posted (matchups feed non-null) or we're in the
+      // regular season. A pre-draft league looked up in the offseason
+      // has no schedule yet -- show nothing rather than a bare "Week 1".
+      const scheduleKnown = !!matchups || state.season_type === "regular";
 
       const teamName =
         leagueUsers.find((u) => u.user_id === sleeperUser.user_id)?.metadata
@@ -160,10 +194,11 @@ export async function lookupSleeperTeams(username) {
       const record = ties > 0 ? `${wins}-${losses}-${ties}` : `${wins}-${losses}`;
       const settings = {
         record,
-        week: matchupWeek,
+        week: scheduleKnown ? matchupWeek : null,
         opponent: weekOpponent,
         opponentRecord: weekOpponentRecord,
         isBye: weekIsBye,
+        matchupProj,
         teams: league.total_rosters || null,
         rosterSpots: totalRosterSpots
           ? `${filledRosterSpots}/${totalRosterSpots}`
@@ -267,6 +302,38 @@ export async function saveTeam({ sleeperUsername, leagueId, leagueName, teamName
     return { error: "Sign in to save a team." };
   }
 
+  // Only a NEW save counts against the tier cap -- re-saving an existing
+  // team to refresh its roster is always allowed. The DB trigger
+  // (0024_saved_teams_tier_limit.sql) enforces the same rule; this
+  // pre-check just produces a friendlier message than the raw pg error.
+  const { data: existing } = await supabase
+    .from("saved_teams")
+    .select("id")
+    .eq("user_id", user.id)
+    .eq("platform", "sleeper")
+    .eq("platform_league_id", leagueId)
+    .maybeSingle();
+
+  if (!existing) {
+    const { tier } = await resolveTier(supabase);
+    const limit = savedTeamLimit(tier);
+    if (limit != null) {
+      const { count } = await supabase
+        .from("saved_teams")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id);
+      if ((count || 0) >= limit) {
+        return {
+          error:
+            limit === 1
+              ? "Stargazer saves 1 team. Upgrade to Explorer for unlimited saved teams."
+              : `Your plan saves up to ${limit} teams.`,
+          limitReached: true,
+        };
+      }
+    }
+  }
+
   const { error } = await supabase.from("saved_teams").upsert(
     {
       user_id: user.id,
@@ -283,6 +350,13 @@ export async function saveTeam({ sleeperUsername, leagueId, leagueName, teamName
   );
 
   if (error) {
+    // Trigger fallback, in case a concurrent save slipped past the check.
+    if (error.code === "23514" || /Saved-team limit/.test(error.message || "")) {
+      return {
+        error: "Saved-team limit reached. Upgrade for unlimited saved teams.",
+        limitReached: true,
+      };
+    }
     return { error: error.message };
   }
 

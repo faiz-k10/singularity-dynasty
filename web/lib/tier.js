@@ -1,5 +1,19 @@
 import { createClient } from "@/lib/supabase/server";
 
+// How many teams each tier can save in /my-team. null = unlimited.
+// Mirrored by the DB trigger in 0024_saved_teams_tier_limit.sql -- keep
+// the two in sync. Stargazer 1, Explorer/Singularity unlimited, matching
+// the pricing copy ("no ceiling on teams" for Explorer).
+export const SAVED_TEAM_LIMITS = {
+  stargazer: 1,
+  explorer: null,
+  singularity: null,
+};
+
+export function savedTeamLimit(tier) {
+  return SAVED_TEAM_LIMITS[tier] ?? SAVED_TEAM_LIMITS.stargazer;
+}
+
 // Split out from getUserTier() below so a page that wants to run tier
 // resolution concurrently with its own data queries (instead of blocking
 // on it first) can call this directly against a client it already has,

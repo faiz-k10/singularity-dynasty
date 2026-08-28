@@ -2048,6 +2048,25 @@ tr.stat-row-selected td{background:var(--void-panel);}
   color:var(--star-dim); letter-spacing:0.02em;
 }
 .my-team-matchup-opp{color:var(--star); font-weight:600;}
+/* Projected matchup score (our proj over each side's starters). Neutral
+   by default; green when our side is projected ahead, red behind --
+   same up/down status colors the rest of the site uses. */
+.my-team-matchup-proj{font-weight:600; color:var(--star);}
+.my-team-matchup-proj.up{color:var(--up);}
+.my-team-matchup-proj.down{color:var(--down);}
+
+/* Saved-teams header row: the "N of M saved · upgrade" counter sits
+   opposite the section heading. */
+.my-team-saved-head{
+  display:flex; align-items:baseline; justify-content:space-between;
+  gap:12px; flex-wrap:wrap; margin-bottom:14px;
+}
+.my-team-saved-head h2{margin-bottom:0;}
+.my-team-saved-count{
+  font-family:var(--font-ibm-plex-mono), monospace; font-size:12px; color:var(--star-dim);
+}
+.my-team-saved-count a{color:var(--horizon-gold); text-decoration:none;}
+.my-team-saved-count a:hover{text-decoration:underline;}
 .my-team-remove{
   background:transparent; border:1px solid var(--line); color:var(--star-dim);
   border-radius:20px; padding:5px 14px; font-size:12px; cursor:pointer; transition:border-color .2s ease, color .2s ease;

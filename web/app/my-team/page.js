@@ -1,5 +1,6 @@
 import SiteHeader from "../SiteHeader";
 import { createClient } from "@/lib/supabase/server";
+import { resolveTier, savedTeamLimit } from "@/lib/tier";
 import MyTeamClient from "./MyTeamClient";
 
 export const metadata = {
@@ -15,9 +16,7 @@ export const metadata = {
 // only saving a team needs an account (lib/sleeper.js + actions.js).
 export default async function MyTeamPage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { user, tier } = await resolveTier(supabase);
 
   let savedTeams = [];
   if (user) {
@@ -42,7 +41,12 @@ export default async function MyTeamPage() {
           personalized Team Analysis.
         </p>
 
-        <MyTeamClient isSignedIn={!!user} savedTeams={savedTeams} />
+        <MyTeamClient
+          isSignedIn={!!user}
+          tier={tier}
+          savedTeamLimit={savedTeamLimit(tier)}
+          savedTeams={savedTeams}
+        />
       </main>
     </div>
   );

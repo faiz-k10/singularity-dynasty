@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import { lookupSleeperTeams, saveTeam, deleteTeam } from "./actions";
 import TeamBadge from "../tools/TeamBadge";
 import PositionBadge from "../tools/PositionBadge";
@@ -68,12 +69,15 @@ function LeagueBadges({ settings }) {
 }
 
 // This week's game -- "Week N" always (once the season/week is known),
-// plus the opponent (with their record) or a BYE tag when the matchups
-// feed has one. Rendered on its own line under the league name; stays
-// hidden entirely before Sleeper posts a week/matchups (offseason
-// lookups just won't carry settings.week).
+// the opponent (with record) or a BYE tag, and the projected score
+// (our Singularity projection over each side's starters) when we have
+// one. Rendered on its own line under the league name; stays hidden
+// entirely before Sleeper posts a week/matchups (offseason lookups
+// just won't carry settings.week).
 function MatchupLine({ settings }) {
   if (!settings || settings.week == null) return null;
+  const proj = settings.matchupProj;
+  const favored = proj ? proj.mine - proj.opp : 0;
   return (
     <span className="my-team-matchup">
       Week {settings.week}
@@ -84,6 +88,22 @@ function MatchupLine({ settings }) {
           {" · vs "}
           <span className="my-team-matchup-opp">{settings.opponent}</span>
           {settings.opponentRecord ? ` (${settings.opponentRecord})` : ""}
+          {proj && (
+            <>
+              {" · proj "}
+              <span
+                className={
+                  favored > 0
+                    ? "my-team-matchup-proj up"
+                    : favored < 0
+                    ? "my-team-matchup-proj down"
+                    : "my-team-matchup-proj"
+                }
+              >
+                {proj.mine.toFixed(1)}&ndash;{proj.opp.toFixed(1)}
+              </span>
+            </>
+          )}
         </>
       ) : null}
     </span>
@@ -273,8 +293,11 @@ function RosterTable({ players }) {
 // isSignedIn gates the Save button only -- the lookup itself works
 // signed out too (it's a read-only call against Sleeper's public API, no
 // Supabase involved), so a visitor can preview their team before ever
-// creating an account.
-export default function MyTeamClient({ isSignedIn, savedTeams }) {
+// creating an account. tier + savedTeamLimit (null = unlimited) drive
+// the "N of M saved" indicator and the swap to an upgrade prompt once a
+// free user is at their cap (the server action + DB trigger enforce it
+// for real).
+export default function MyTeamClient({ isSignedIn, tier, savedTeamLimit, savedTeams }) {
   const [username, setUsername] = useState("");
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
@@ -329,11 +352,27 @@ export default function MyTeamClient({ isSignedIn, savedTeams }) {
     });
   }
 
+  const savedCount = savedKeys.size;
+  const atLimit = savedTeamLimit != null && savedCount >= savedTeamLimit;
+
   return (
     <div className="my-team-wrap">
       {savedTeams.length > 0 && (
         <div className="my-team-saved">
-          <h2>Your Saved Teams</h2>
+          <div className="my-team-saved-head">
+            <h2>Your Saved Teams</h2>
+            {isSignedIn && savedTeamLimit != null && (
+              <span className="my-team-saved-count">
+                {savedCount} of {savedTeamLimit} saved
+                {atLimit && (
+                  <>
+                    {" · "}
+                    <Link href="/#pricing">upgrade for more</Link>
+                  </>
+                )}
+              </span>
+            )}
+          </div>
           {savedTeams.map((t) => (
             <details key={t.id} className="my-team-saved-card">
               <summary>
@@ -412,7 +451,15 @@ export default function MyTeamClient({ isSignedIn, savedTeams }) {
                       <LeagueBadges settings={team.settings} />
                     </div>
                   </div>
-                  {isSignedIn ? (
+                  {!isSignedIn ? (
+                    <a href="/login" className="round-btn outline my-team-save-btn">
+                      Sign In To Save
+                    </a>
+                  ) : !isSaved && atLimit ? (
+                    <Link href="/#pricing" className="round-btn outline my-team-save-btn">
+                      Upgrade To Save
+                    </Link>
+                  ) : (
                     <button
                       type="button"
                       className="round-btn primary my-team-save-btn"
@@ -425,10 +472,6 @@ export default function MyTeamClient({ isSignedIn, savedTeams }) {
                         ? "Saving…"
                         : "Save Team"}
                     </button>
-                  ) : (
-                    <a href="/login" className="round-btn outline my-team-save-btn">
-                      Sign In To Save
-                    </a>
                   )}
                 </summary>
                 <RosterTable players={team.players} />
