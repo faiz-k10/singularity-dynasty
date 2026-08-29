@@ -60,19 +60,27 @@ export default async function MyTeamPage() {
     }
   }
 
-  // Home/away & win/loss & last-4 fantasy-point splits (trailing two
-  // seasons) for the extra My Analysis axis metrics -- public read, keyed
-  // by normalized name. model/player_splits.R -> player_splits table.
-  let playerSplits = {};
+  // Per-player-week game log (trailing two seasons) for the My Analysis
+  // filter builder -- public read, scoped to just the saved-team players
+  // (by normalized name) so the payload stays a few thousand rows.
+  // model/player_game_log.R -> player_game_log table.
+  let playerGameLogs = {};
   if (savedTeams.length >= 2) {
-    const pub = createPublicClient();
-    const { data: splits } = await pub
-      .from("player_splits")
-      .select(
-        "player_name, games, ppg, ppg_home, ppg_away, ppg_wins, ppg_losses, ppg_last4"
-      );
-    for (const s of splits || []) {
-      if (s.player_name) playerSplits[normalizePlayerName(s.player_name)] = s;
+    const names = new Set();
+    for (const t of savedTeams) {
+      for (const p of t.players || []) {
+        if (p.name) names.add(normalizePlayerName(p.name));
+      }
+    }
+    if (names.size) {
+      const pub = createPublicClient();
+      const { data: log } = await pub
+        .from("player_game_log")
+        .select("normalized_name, season, week, is_home, won, fantasy_points_ppr")
+        .in("normalized_name", [...names]);
+      for (const g of log || []) {
+        (playerGameLogs[g.normalized_name] ??= []).push(g);
+      }
     }
   }
 
@@ -111,7 +119,7 @@ export default async function MyTeamPage() {
           savedTeamLimit={savedTeamLimit(tier)}
           savedTeams={savedTeams}
           playerSims={playerSims}
-          playerSplits={playerSplits}
+          playerGameLogs={playerGameLogs}
           playerBios={playerBios}
         />
       </main>

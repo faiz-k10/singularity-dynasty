@@ -2096,15 +2096,35 @@ tr.stat-row-selected td{background:var(--void-panel);}
    reuses .rankings-table. */
 .my-team-portfolio{margin-top:36px;}
 .my-team-portfolio .my-team-saved-head{margin-bottom:14px;}
-/* My Analysis tab -- scatter template: axis pickers, an SVG plot, and
-   the same rows as a table underneath. */
+/* My Analysis tab -- game-window filter bar, axis pickers, an SVG plot +
+   player card, and the same rows as a table underneath. */
 .my-analysis-note{font-size:12.5px; color:var(--star-dim); margin-bottom:16px;}
-.my-analysis-axes{display:flex; gap:16px; flex-wrap:wrap; margin-bottom:16px;}
+.my-analysis-filters,
+.my-analysis-axes{display:flex; gap:16px; flex-wrap:wrap; margin-bottom:14px;}
+.my-analysis-filters{
+  padding:14px 16px; background:var(--void-panel-2); border:1px solid var(--line); border-radius:14px;
+}
+.my-analysis-filters label,
 .my-analysis-axes label{
   display:flex; flex-direction:column; gap:6px;
   font-family:var(--font-ibm-plex-mono), monospace; font-size:11px; letter-spacing:0.08em;
   text-transform:uppercase; color:var(--star-dim);
 }
+.my-analysis-week-range{display:inline-flex; align-items:center; gap:8px; color:var(--star-dim);}
+.my-analysis-week-input{
+  width:52px; padding:11px 8px; text-align:center;
+  background:var(--void-panel-2); border:1px solid var(--line); border-radius:10px;
+  color:var(--star); font-family:var(--font-inter), sans-serif; font-size:13.5px; outline:none;
+  -moz-appearance:textfield;
+}
+.my-analysis-week-input::-webkit-outer-spin-button,
+.my-analysis-week-input::-webkit-inner-spin-button{-webkit-appearance:none; margin:0;}
+.my-analysis-week-input:focus{border-color:var(--neon-blue);}
+.my-analysis-window-line{
+  font-family:var(--font-ibm-plex-mono), monospace; font-size:11.5px; color:var(--star-dim);
+  margin-bottom:14px;
+}
+.my-team-bestball-note{margin:0 16px 14px;}
 /* chart on the left, tapped-player profile card on the right; stack on
    narrow screens. */
 .my-analysis-main{

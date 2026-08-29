@@ -6,7 +6,7 @@ import { lookupSleeperTeams, saveTeam, deleteTeam, setBuyIn } from "./actions";
 import TeamBadge from "../tools/TeamBadge";
 import PositionBadge from "../tools/PositionBadge";
 import { sortRows, sortArrow } from "@/lib/sortLink";
-import { buildPortfolio, PORTFOLIO_COLUMN_TYPES } from "@/lib/portfolio";
+import { buildPortfolio, aggregateGames, PORTFOLIO_COLUMN_TYPES } from "@/lib/portfolio";
 
 // Display-only relabel -- Sleeper's own roster_positions/starters value is
 // the literal string "SUPER_FLEX"; sorting/matching still uses that raw
@@ -186,8 +186,8 @@ function Th({ label, sortKeyName, sortKey, sortDir, onSort, className }) {
 // the Starters/Full Roster toggle resets any active sort back to that
 // view's own default order, rather than carrying a sort across into a
 // view it wasn't set on.
-function RosterTable({ players }) {
-  const hasStarters = players.some((p) => p.isStarter);
+function RosterTable({ players, bestBall = false }) {
+  const hasStarters = !bestBall && players.some((p) => p.isStarter);
   const [view, setView] = useState(hasStarters ? "starters" : "full");
   const [sortKey, setSortKey] = useState(null);
   const [sortDir, setSortDir] = useState("desc");
@@ -222,6 +222,12 @@ function RosterTable({ players }) {
 
   return (
     <div>
+      {bestBall && (
+        <p className="my-team-hint my-team-bestball-note">
+          Best ball — the platform starts your top scorers each week, so there&apos;s
+          no set lineup. Showing your full roster.
+        </p>
+      )}
       {hasStarters && (
         <div className="board-toggle my-team-view-toggle">
           <button
@@ -291,17 +297,19 @@ function RosterTable({ players }) {
   );
 }
 
-// Player metrics the My Analysis scatter + table plot -- our redraft
-// projection and Sleeper's (from the saved snapshot), platform
-// start/roster %, and season floor/median/ceiling + WOPR/EPA from
-// player_simulations (joined by name in buildPortfolio). Extension
-// point: age / draft capital / contention metrics slot in here once
-// the player_metadata join lands (model/age_curve_analysis.R).
+// Metrics the My Analysis scatter + table plot. Two kinds:
+//  - static per-player: projections (snapshot), sim floor/median/ceiling
+//    + WOPR/EPA (player_simulations), platform start/roster %, exposure.
+//  - game-log ("gl" prefix): recomputed over whatever game window the
+//    filter bar has set (player_game_log, aggregated by aggregateGames).
 const n1 = (v) => v.toFixed(1);
 const n0 = (v) => Math.round(v).toString();
 const signed = (v) => `${v > 0 ? "+" : ""}${v.toFixed(1)}`;
 const pct0 = (v) => `${Math.round(v)}%`;
 const ANALYSIS_METRICS = [
+  { key: "glPPG", label: "PPG (window)", fmt: n1, gameLog: true },
+  { key: "glTotal", label: "Total Pts (window)", fmt: n0, gameLog: true },
+  { key: "glGames", label: "Games (window)", fmt: n0, gameLog: true },
   { key: "myProjPts", label: "Singularity Proj", fmt: n1 },
   { key: "sleeperProjPts", label: "Sleeper Proj", fmt: n1 },
   { key: "diffProj", label: "Proj Diff", fmt: signed },
@@ -312,13 +320,7 @@ const ANALYSIS_METRICS = [
   { key: "epa", label: "EPA", fmt: signed },
   { key: "startPct", label: "Start %", fmt: pct0 },
   { key: "rosterPct", label: "Roster %", fmt: pct0 },
-  // trailing-2-season splits (player_splits table)
-  { key: "ppgLast4", label: "PPG Last 4", fmt: n1 },
-  { key: "ppgHome", label: "PPG Home", fmt: n1 },
-  { key: "ppgAway", label: "PPG Away", fmt: n1 },
-  { key: "ppgWins", label: "PPG in Wins", fmt: n1 },
-  { key: "ppgLosses", label: "PPG in Losses", fmt: n1 },
-  { key: "splitGames", label: "Games (2yr)", fmt: n0 },
+  { key: "exposurePct", label: "Exposure %", fmt: pct0 },
 ];
 
 const ANALYSIS_POS_COLOR = {
@@ -423,19 +425,43 @@ function PlayerProfileCard({ row, bio, xMetric, yMetric }) {
   );
 }
 
-// Scaffold for Team Analysis: pick any metric for the X and Y axis,
-// every player across the saved teams plots as a point (colored by
-// position), with the same data as a table underneath. Clicking a point
-// or row fills the profile card on the right. Real analytical metrics
-// slot into ANALYSIS_METRICS as they're built.
+const SEASON_OPTS = [String(new Date().getFullYear() - 1), String(new Date().getFullYear() - 2)];
+const DEFAULT_FILTERS = { season: "all", weekFrom: 1, weekTo: 18, venue: "all", result: "all" };
+
+function filterSummary(f) {
+  const parts = [];
+  parts.push(f.season === "all" ? "both seasons" : f.season);
+  if (f.weekFrom > 1 || f.weekTo < 18) parts.push(`weeks ${f.weekFrom}–${f.weekTo}`);
+  else parts.push("all weeks");
+  if (f.venue !== "all") parts.push(f.venue);
+  if (f.result !== "all") parts.push(f.result === "wins" ? "in wins" : "in losses");
+  return parts.join(" · ");
+}
+
+// The My Analysis tab: a filter bar defines a game window (season, week
+// range, home/away, wins/losses); the "window" metrics (PPG / totals /
+// game count) recompute over it while the static metrics (projections,
+// sims, exposure) don't. Pick any two for the X/Y axes; click a point or
+// row for the player card.
 function MyAnalysisPanel({ rows, playerBios = {} }) {
   const [selectedId, setSelectedId] = useState(null);
-  const [xKey, setXKey] = useState("myProjPts");
-  const [yKey, setYKey] = useState("simCeiling");
+  const [xKey, setXKey] = useState("glPPG");
+  const [yKey, setYKey] = useState("myProjPts");
+  const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const xM = ANALYSIS_METRICS.find((m) => m.key === xKey) || ANALYSIS_METRICS[0];
   const yM = ANALYSIS_METRICS.find((m) => m.key === yKey) || ANALYSIS_METRICS[1];
+  const usesGameLog = xM.gameLog || yM.gameLog;
 
-  const pts = rows.filter((r) => r[xKey] != null && r[yKey] != null);
+  const setF = (patch) => setFilters((prev) => ({ ...prev, ...patch }));
+
+  // recompute the window metrics per player for the current filters
+  const derived = rows.map((r) => ({ ...r, ...aggregateGames(r._games, filters) }));
+  const withWindow = derived.filter((r) => r.glGames > 0);
+  const avgWindowGames = withWindow.length
+    ? withWindow.reduce((s, r) => s + r.glGames, 0) / withWindow.length
+    : 0;
+
+  const pts = derived.filter((r) => r[xKey] != null && r[yKey] != null);
   const W = 640;
   const H = 420;
   const padL = 60;
@@ -451,18 +477,67 @@ function MyAnalysisPanel({ rows, playerBios = {} }) {
   const sx = (v) => padL + ((v - xMin) / (xMax - xMin || 1)) * (W - padL - padR);
   const sy = (v) => H - padB - ((v - yMin) / (yMax - yMin || 1)) * (H - padT - padB);
 
-  const tableRows = [...rows].sort(
+  const tableRows = [...derived].sort(
     (a, b) => (b[yKey] ?? -Infinity) - (a[yKey] ?? -Infinity) || a.name.localeCompare(b.name)
   );
-  const selectedRow = rows.find((r) => r.player_id === selectedId) || null;
+  const selectedRow = derived.find((r) => r.player_id === selectedId) || null;
 
   return (
     <div className="my-analysis-panel">
       <p className="my-analysis-note">
-        Plot your guys on any two metrics — projections, season sim numbers,
-        and home/away &amp; win/loss &amp; last-4 splits now; age / draft
-        capital / contention window as Team Analysis lands.
+        Set a game window with the filters, then plot any two metrics — the
+        &ldquo;(window)&rdquo; metrics recompute over the selected games; the
+        rest are season-long. Age / draft capital / contention window land
+        with Team Analysis.
       </p>
+
+      <div className="my-analysis-filters">
+        <label>
+          Season
+          <select className="compare-select" value={filters.season}
+            onChange={(e) => setF({ season: e.target.value })}>
+            <option value="all">Both</option>
+            {SEASON_OPTS.map((s) => <option key={s} value={s}>{s}</option>)}
+          </select>
+        </label>
+        <label>
+          Weeks
+          <span className="my-analysis-week-range">
+            <input type="number" min="1" max="18" className="my-analysis-week-input"
+              value={filters.weekFrom}
+              onChange={(e) => setF({ weekFrom: Math.max(1, Math.min(18, +e.target.value || 1)) })} />
+            <span>–</span>
+            <input type="number" min="1" max="18" className="my-analysis-week-input"
+              value={filters.weekTo}
+              onChange={(e) => setF({ weekTo: Math.max(1, Math.min(18, +e.target.value || 18)) })} />
+          </span>
+        </label>
+        <label>
+          Venue
+          <select className="compare-select" value={filters.venue}
+            onChange={(e) => setF({ venue: e.target.value })}>
+            <option value="all">All</option>
+            <option value="home">Home</option>
+            <option value="away">Away</option>
+          </select>
+        </label>
+        <label>
+          Result
+          <select className="compare-select" value={filters.result}
+            onChange={(e) => setF({ result: e.target.value })}>
+            <option value="all">All</option>
+            <option value="wins">Wins</option>
+            <option value="losses">Losses</option>
+          </select>
+        </label>
+      </div>
+      {usesGameLog && (
+        <p className="my-analysis-window-line">
+          Window: {filterSummary(filters)} —{" "}
+          {withWindow.length} of {rows.length} players have games here
+          {withWindow.length ? `, avg ${avgWindowGames.toFixed(1)}/player` : ""}.
+        </p>
+      )}
 
       <div className="my-analysis-axes">
         <label>
@@ -616,7 +691,7 @@ function MyAnalysisPanel({ rows, playerBios = {} }) {
   );
 }
 
-function Portfolio({ savedTeams, buyIns, playerSims, playerSplits, playerBios }) {
+function Portfolio({ savedTeams, buyIns, playerSims, playerGameLogs, playerBios }) {
   const [tab, setTab] = useState("exposure");
   const [sortKey, setSortKey] = useState(null);
   const [sortDir, setSortDir] = useState("desc");
@@ -624,7 +699,7 @@ function Portfolio({ savedTeams, buyIns, playerSims, playerSplits, playerBios })
     savedTeams,
     buyIns,
     playerSims,
-    playerSplits
+    playerGameLogs
   );
   const anyBuyIn = teamsWithBuyIn > 0;
 
@@ -795,7 +870,7 @@ export default function MyTeamClient({
   savedTeamLimit,
   savedTeams,
   playerSims = {},
-  playerSplits = {},
+  playerGameLogs = {},
   playerBios = {},
 }) {
   const [username, setUsername] = useState("");
@@ -925,7 +1000,7 @@ export default function MyTeamClient({
                   {pending && deletingId === t.id ? "Removing…" : "Remove"}
                 </button>
               </summary>
-              <RosterTable players={t.players || []} />
+              <RosterTable players={t.players || []} bestBall={t.settings?.bestBall} />
             </details>
           ))}
         </div>
@@ -936,7 +1011,7 @@ export default function MyTeamClient({
           savedTeams={savedTeams}
           buyIns={buyIns}
           playerSims={playerSims}
-          playerSplits={playerSplits}
+          playerGameLogs={playerGameLogs}
           playerBios={playerBios}
         />
       )}
@@ -1015,7 +1090,7 @@ export default function MyTeamClient({
                       </button>
                     )}
                   </summary>
-                  <RosterTable players={team.players} />
+                  <RosterTable players={team.players} bestBall={team.settings?.bestBall} />
                 </details>
               ))}
             </div>

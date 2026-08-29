@@ -1,5 +1,5 @@
 // Run: node test/portfolio.test.mjs
-import { buildPortfolio, normalizePlayerName } from "../lib/portfolio.js";
+import { buildPortfolio, aggregateGames, normalizePlayerName } from "../lib/portfolio.js";
 
 let failed = 0;
 const eq = (label, got, want) => {
@@ -74,15 +74,25 @@ const noSim = buildPortfolio([team("A", [projP("9", "Nobody Special", "WR", {})]
 eq("no sim entry -> simCeiling null", noSim.simCeiling, null);
 eq("no snapshot proj -> myProjPts null", noSim.myProjPts, null);
 
-// splits merge (4th arg)
-const splits = {
-  "josh allen": { games: 32, ppg_home: 26.9, ppg_away: 19.6, ppg_wins: 24.3, ppg_losses: 19.9, ppg_last4: 23.1 },
+// game-log attach (4th arg) + aggregateGames
+const g = (season, week, is_home, won, fp) => ({ season, week, is_home, won, fantasy_points_ppr: fp });
+const logs = {
+  "josh allen": [
+    g(2024, 1, true, true, 30), g(2024, 2, false, true, 20), g(2024, 3, true, false, 10),
+    g(2025, 1, true, false, 40), g(2025, 5, false, true, 12), g(2025, 9, true, true, 24),
+  ],
 };
-const withSplits = buildPortfolio(withProj, {}, sims, splits).rows[0];
-eq("split merge: ppgHome", withSplits.ppgHome, 26.9);
-eq("split merge: ppgWins", withSplits.ppgWins, 24.3);
-eq("split merge: splitGames", withSplits.splitGames, 32);
-eq("no split entry -> ppgHome null", noSim.ppgHome ?? null, null);
+const withLog = buildPortfolio(withProj, {}, sims, logs).rows[0];
+eq("game log attached as _games", withLog._games.length, 6);
+eq("no log -> empty _games", noSim._games.length, 0);
+
+eq("agg: all games PPG", aggregateGames(withLog._games, { season: "all", weekFrom: 1, weekTo: 18, venue: "all", result: "all" }).glPPG, 22.7);
+eq("agg: home only", aggregateGames(withLog._games, { venue: "home" }).glGames, 4);
+eq("agg: home wins", aggregateGames(withLog._games, { venue: "home", result: "wins" }).glGames, 2);
+eq("agg: home wins PPG (30 + 24)/2", aggregateGames(withLog._games, { venue: "home", result: "wins" }).glPPG, 27);
+eq("agg: 2025 weeks 1-6", aggregateGames(withLog._games, { season: "2025", weekFrom: 1, weekTo: 6 }).glGames, 2);
+eq("agg: 2025 wk1-6 total (40 + 12)", aggregateGames(withLog._games, { season: "2025", weekFrom: 1, weekTo: 6 }).glTotal, 52);
+eq("agg: empty window -> nulls", aggregateGames(withLog._games, { season: "2025", weekFrom: 14, weekTo: 18 }).glPPG, null);
 
 console.log(failed ? `\n${failed} FAILED` : "\nall passed");
 process.exit(failed ? 1 : 0);

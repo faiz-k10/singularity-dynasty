@@ -23,16 +23,19 @@ const SNAPSHOT_PLAYER_FIELDS = [
 // Rolls every player across every saved team up into one row per player:
 // exposure (how many of your teams roster them + %), starts, buy-in
 // dollars staked, plus the player's own projection / usage numbers from
-// the snapshot. Both keyed by normalizePlayerName:
-//   sims   -> season floor/median/ceiling/wopr/epa (player_simulations)
-//   splits -> home/away, win/loss, last-4 PPG (player_splits)
+// the snapshot.
+//   sims     -> season floor/median/ceiling/wopr/epa (player_simulations),
+//               keyed by normalizePlayerName
+//   gameLogs -> array of that player's game rows (player_game_log), keyed
+//               by normalizePlayerName -- attached raw as `_games` for the
+//               My Analysis filter builder to aggregate however it likes.
 //
 // Aggregated by Sleeper player_id (global across leagues). Pure function,
 // unit-tested in test/portfolio.test.mjs.
 //
 // buyIns: { [savedTeamId]: number | null } overrides the row's own
 // buy_in, so the UI can re-total live as the user edits.
-export function buildPortfolio(savedTeams, buyIns = {}, sims = {}, splits = {}) {
+export function buildPortfolio(savedTeams, buyIns = {}, sims = {}, gameLogs = {}) {
   const byPlayer = new Map();
   let totalBuyIn = 0;
   let teamsWithBuyIn = 0;
@@ -81,7 +84,6 @@ export function buildPortfolio(savedTeams, buyIns = {}, sims = {}, splits = {}) 
   const rows = [...byPlayer.values()].map((e) => {
     const key = normalizePlayerName(e.name);
     const s = sims[key] || {};
-    const sp = splits[key] || {};
     return {
       ...e,
       exposurePct: n ? (e.teams / n) * 100 : 0,
@@ -92,16 +94,36 @@ export function buildPortfolio(savedTeams, buyIns = {}, sims = {}, splits = {}) 
       simCeiling: num(s.ceiling),
       wopr: num(s.wopr),
       epa: num(s.epa),
-      splitGames: num(sp.games),
-      ppgHome: num(sp.ppg_home),
-      ppgAway: num(sp.ppg_away),
-      ppgWins: num(sp.ppg_wins),
-      ppgLosses: num(sp.ppg_losses),
-      ppgLast4: num(sp.ppg_last4),
+      _games: Array.isArray(gameLogs[key]) ? gameLogs[key] : [],
     };
   });
 
   return { rows, totalBuyIn, teamsWithBuyIn, teamCount: n };
+}
+
+// Aggregate a player's game rows (row._games) over a filter window. Used
+// by My Analysis for the "game-log" metrics. filters:
+//   { season: "all"|number, weekFrom, weekTo, venue: "all"|"home"|"away",
+//     result: "all"|"wins"|"losses" }
+export function aggregateGames(games, filters) {
+  const f = filters || {};
+  const wFrom = f.weekFrom ?? 1;
+  const wTo = f.weekTo ?? 99;
+  const sel = (games || []).filter(
+    (g) =>
+      (f.season == null || f.season === "all" || Number(g.season) === Number(f.season)) &&
+      g.week >= wFrom &&
+      g.week <= wTo &&
+      (!f.venue || f.venue === "all" || (f.venue === "home") === !!g.is_home) &&
+      (!f.result || f.result === "all" || (f.result === "wins") === !!g.won)
+  );
+  if (sel.length === 0) return { glGames: 0, glPPG: null, glTotal: null };
+  const total = sel.reduce((s, g) => s + (Number(g.fantasy_points_ppr) || 0), 0);
+  return {
+    glGames: sel.length,
+    glTotal: Math.round(total * 10) / 10,
+    glPPG: Math.round((total / sel.length) * 10) / 10,
+  };
 }
 
 export const PORTFOLIO_COLUMN_TYPES = {
@@ -123,10 +145,7 @@ export const PORTFOLIO_COLUMN_TYPES = {
   simCeiling: "number",
   wopr: "number",
   epa: "number",
-  splitGames: "number",
-  ppgHome: "number",
-  ppgAway: "number",
-  ppgWins: "number",
-  ppgLosses: "number",
-  ppgLast4: "number",
+  glPPG: "number",
+  glTotal: "number",
+  glGames: "number",
 };

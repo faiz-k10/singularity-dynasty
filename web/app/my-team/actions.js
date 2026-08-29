@@ -199,6 +199,10 @@ export async function lookupSleeperTeams(username) {
         opponentRecord: weekOpponentRecord,
         isBye: weekIsBye,
         matchupProj,
+        // Best ball leagues have no set lineup -- the platform auto-starts
+        // your top scorers -- so Sleeper's `starters` array is mostly "0"
+        // placeholders and the Starting Lineup view is meaningless.
+        bestBall: league.settings?.best_ball === 1,
         teams: league.total_rosters || null,
         rosterSpots: totalRosterSpots
           ? `${filledRosterSpots}/${totalRosterSpots}`
