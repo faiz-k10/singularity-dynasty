@@ -2208,10 +2208,10 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .mac-empty{fill:var(--star-dim); font-family:var(--font-ibm-plex-mono), monospace; font-size:11px;}
 /* brand signature bottom-right of the plot -- shows up when the chart is
    screenshot. Circle = the site brandmark's event-horizon gradient. */
-.mac-watermark{opacity:0.55;}
+.mac-watermark{opacity:0.75;}
 .mac-watermark-text{
-  fill:var(--star-dim); font-family:var(--font-space-grotesk), sans-serif;
-  font-size:10px; font-weight:700; letter-spacing:0.22em;
+  fill:var(--star); font-family:var(--font-space-grotesk), sans-serif;
+  font-size:12.5px; font-weight:700; letter-spacing:0.2em;
 }
 .mac-logo-s0{stop-color:var(--horizon-gold);}
 .mac-logo-s1{stop-color:var(--horizon);}

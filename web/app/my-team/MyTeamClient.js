@@ -626,7 +626,7 @@ function MyAnalysisPanel({ rows, playerBios = {} }) {
       <div className="my-analysis-chart-wrap">
         <svg
           className="my-analysis-chart"
-          viewBox={`0 0 ${W} ${H + 24}`}
+          viewBox={`0 0 ${W} ${H + 28}`}
           role="img"
           aria-label={`${yM.label} versus ${xM.label}`}
         >
@@ -730,9 +730,9 @@ function MyAnalysisPanel({ rows, playerBios = {} }) {
               </g>
             );
           })}
-          <g className="mac-watermark" transform={`translate(${W - padR - 158} ${H + 13})`}>
-            <circle cx="6" cy="-3" r="6" fill="url(#macLogoGrad)" />
-            <text className="mac-watermark-text" x="19" y="1">
+          <g className="mac-watermark" transform={`translate(${W - padR - 194} ${H + 15})`}>
+            <circle cx="7" cy="-4" r="7" fill="url(#macLogoGrad)" />
+            <text className="mac-watermark-text" x="22" y="1">
               SINGULARITY DYNASTY
             </text>
           </g>

@@ -74,12 +74,24 @@ export default async function MyTeamPage() {
     }
     if (names.size) {
       const pub = createPublicClient();
-      const { data: log } = await pub
-        .from("player_game_log")
-        .select("normalized_name, season, week, is_home, won, fantasy_points_ppr")
-        .in("normalized_name", [...names]);
-      for (const g of log || []) {
-        (playerGameLogs[g.normalized_name] ??= []).push(g);
+      const list = [...names];
+      // ~24 games/player over two seasons blows past PostgREST's 1000-row
+      // default cap for a portfolio of any size, so page through it.
+      const PAGE = 1000;
+      for (let from = 0; ; from += PAGE) {
+        const { data: chunk } = await pub
+          .from("player_game_log")
+          .select("normalized_name, season, week, is_home, won, fantasy_points_ppr")
+          .in("normalized_name", list)
+          .order("normalized_name", { ascending: true })
+          .order("season", { ascending: true })
+          .order("week", { ascending: true })
+          .range(from, from + PAGE - 1);
+        if (!chunk || chunk.length === 0) break;
+        for (const g of chunk) {
+          (playerGameLogs[g.normalized_name] ??= []).push(g);
+        }
+        if (chunk.length < PAGE) break;
       }
     }
   }
