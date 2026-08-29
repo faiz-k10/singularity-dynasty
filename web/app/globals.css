@@ -2147,38 +2147,38 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .my-analysis-chart{display:block; width:100%; max-width:700px; height:auto;}
 
 .my-analysis-profile{
-  flex:1 1 280px; max-width:360px;
+  flex:1 1 300px; max-width:380px;
   background:var(--void-panel); border:1px solid var(--line); border-radius:16px;
-  padding:24px 28px; box-shadow:0 20px 45px rgba(var(--shadow-rgb),0.35);
+  padding:28px 30px; box-shadow:0 20px 45px rgba(var(--shadow-rgb),0.35);
 }
-.my-analysis-profile-empty{font-size:13px; color:var(--star-dim); line-height:1.5;}
+.my-analysis-profile-empty{font-size:14.5px; color:var(--star-dim); line-height:1.55;}
 .my-analysis-profile-head{
-  display:flex; align-items:center; gap:14px; padding-bottom:16px;
-  border-bottom:1px solid var(--line); margin-bottom:16px;
+  display:flex; align-items:center; gap:16px; padding-bottom:18px;
+  border-bottom:1px solid var(--line); margin-bottom:18px;
 }
 .my-analysis-profile-photo{
-  width:58px; height:58px; border-radius:50%; object-fit:cover; flex-shrink:0;
+  width:66px; height:66px; border-radius:50%; object-fit:cover; flex-shrink:0;
   background:var(--void-panel-2); border:1px solid var(--line);
 }
-.my-analysis-profile-headtext{display:flex; flex-direction:column; gap:8px; min-width:0;}
+.my-analysis-profile-headtext{display:flex; flex-direction:column; gap:9px; min-width:0;}
 .my-analysis-profile-name{
-  font-family:var(--font-space-grotesk), sans-serif; font-size:19px; font-weight:700; color:var(--star);
+  font-family:var(--font-space-grotesk), sans-serif; font-size:23px; font-weight:700; color:var(--star);
 }
 .my-analysis-profile-badges{display:flex; gap:6px; flex-wrap:wrap;}
-.my-analysis-profile-grid{display:flex; flex-direction:column; gap:12px;}
+.my-analysis-profile-grid{display:flex; flex-direction:column; gap:15px;}
 .my-analysis-profile-grid > div{display:flex; justify-content:space-between; gap:12px; align-items:baseline;}
 .my-analysis-profile-grid dt{
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:11px; letter-spacing:0.06em;
+  font-family:var(--font-ibm-plex-mono), monospace; font-size:12.5px; letter-spacing:0.06em;
   text-transform:uppercase; color:var(--star-dim);
 }
 .my-analysis-profile-grid dd{
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:14px; color:var(--star); text-align:right;
+  font-family:var(--font-ibm-plex-mono), monospace; font-size:16.5px; color:var(--star); text-align:right;
 }
 /* the two chart-axis metrics for this player -- set off from the bio
    rows and tinted with the primary accent since they're the reason the
    point sits where it does. */
 .my-analysis-profile-axes{
-  margin-top:16px; padding-top:16px; border-top:1px solid var(--line);
+  margin-top:18px; padding-top:18px; border-top:1px solid var(--line);
 }
 .my-analysis-profile-axes dd{color:var(--horizon-gold);}
 @media (max-width:600px){ .my-analysis-profile{max-width:none;} }
@@ -2206,11 +2206,16 @@ tr.stat-row-selected td{background:var(--void-panel);}
 }
 .mac-point:hover .mac-label{opacity:1;}
 .mac-empty{fill:var(--star-dim); font-family:var(--font-ibm-plex-mono), monospace; font-size:11px;}
-/* brand watermark under the plot -- shows up when the chart is screenshot */
-.mac-watermark{
+/* brand signature bottom-right of the plot -- shows up when the chart is
+   screenshot. Circle = the site brandmark's event-horizon gradient. */
+.mac-watermark{opacity:0.55;}
+.mac-watermark-text{
   fill:var(--star-dim); font-family:var(--font-space-grotesk), sans-serif;
-  font-size:10px; font-weight:700; letter-spacing:0.28em; opacity:0.4;
+  font-size:10px; font-weight:700; letter-spacing:0.22em;
 }
+.mac-logo-s0{stop-color:var(--horizon-gold);}
+.mac-logo-s1{stop-color:var(--horizon);}
+.mac-logo-s2{stop-color:var(--neon-blue-dim);}
 .my-analysis-row{cursor:pointer;}
 .my-analysis-row.selected td{background:rgba(var(--neon-blue-rgb),0.12) !important;}
 /* Exposure cell: "3/5 · 60%" label with a share-bar under it. */

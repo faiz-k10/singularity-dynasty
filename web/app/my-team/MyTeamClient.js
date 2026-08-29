@@ -626,10 +626,17 @@ function MyAnalysisPanel({ rows, playerBios = {} }) {
       <div className="my-analysis-chart-wrap">
         <svg
           className="my-analysis-chart"
-          viewBox={`0 0 ${W} ${H + 22}`}
+          viewBox={`0 0 ${W} ${H + 24}`}
           role="img"
           aria-label={`${yM.label} versus ${xM.label}`}
         >
+          <defs>
+            <radialGradient id="macLogoGrad" cx="35%" cy="35%" r="75%">
+              <stop className="mac-logo-s0" offset="0%" />
+              <stop className="mac-logo-s1" offset="45%" />
+              <stop className="mac-logo-s2" offset="80%" />
+            </radialGradient>
+          </defs>
           <line className="mac-axis" x1={padL} y1={padT} x2={padL} y2={H - padB} />
           <line className="mac-axis" x1={padL} y1={H - padB} x2={W - padR} y2={H - padB} />
           {pts.length > 1 && xMean != null && (
@@ -723,9 +730,12 @@ function MyAnalysisPanel({ rows, playerBios = {} }) {
               </g>
             );
           })}
-          <text className="mac-watermark" x={W / 2} y={H + 15} textAnchor="middle">
-            SINGULARITY DYNASTY
-          </text>
+          <g className="mac-watermark" transform={`translate(${W - padR - 158} ${H + 13})`}>
+            <circle cx="6" cy="-3" r="6" fill="url(#macLogoGrad)" />
+            <text className="mac-watermark-text" x="19" y="1">
+              SINGULARITY DYNASTY
+            </text>
+          </g>
         </svg>
       </div>
 
