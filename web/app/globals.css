@@ -2111,7 +2111,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
   display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap; margin-bottom:20px;
 }
 .my-analysis-chart-wrap{
-  flex:1 1 320px;
+  flex:1 1 320px; max-width:560px;
   background:var(--void-panel); border:1px solid var(--line); border-radius:16px;
   padding:14px;
   box-shadow:0 20px 45px rgba(var(--shadow-rgb),0.35);
@@ -2119,28 +2119,35 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .my-analysis-chart{display:block; width:100%; max-width:520px; height:auto;}
 
 .my-analysis-profile{
-  flex:1 1 190px; max-width:260px;
+  flex:1 1 280px; max-width:360px;
   background:var(--void-panel); border:1px solid var(--line); border-radius:16px;
-  padding:18px 20px; box-shadow:0 20px 45px rgba(var(--shadow-rgb),0.35);
+  padding:24px 28px; box-shadow:0 20px 45px rgba(var(--shadow-rgb),0.35);
 }
-.my-analysis-profile-empty{font-size:12.5px; color:var(--star-dim); line-height:1.5;}
+.my-analysis-profile-empty{font-size:13px; color:var(--star-dim); line-height:1.5;}
 .my-analysis-profile-head{
-  display:flex; flex-direction:column; gap:8px; padding-bottom:12px;
-  border-bottom:1px solid var(--line); margin-bottom:12px;
+  display:flex; flex-direction:column; gap:10px; padding-bottom:16px;
+  border-bottom:1px solid var(--line); margin-bottom:16px;
 }
 .my-analysis-profile-name{
-  font-family:var(--font-space-grotesk), sans-serif; font-size:16px; font-weight:700; color:var(--star);
+  font-family:var(--font-space-grotesk), sans-serif; font-size:20px; font-weight:700; color:var(--star);
 }
 .my-analysis-profile-badges{display:flex; gap:6px; flex-wrap:wrap;}
-.my-analysis-profile-grid{display:flex; flex-direction:column; gap:9px;}
-.my-analysis-profile-grid > div{display:flex; justify-content:space-between; gap:10px;}
+.my-analysis-profile-grid{display:flex; flex-direction:column; gap:12px;}
+.my-analysis-profile-grid > div{display:flex; justify-content:space-between; gap:12px; align-items:baseline;}
 .my-analysis-profile-grid dt{
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:10.5px; letter-spacing:0.06em;
+  font-family:var(--font-ibm-plex-mono), monospace; font-size:11px; letter-spacing:0.06em;
   text-transform:uppercase; color:var(--star-dim);
 }
 .my-analysis-profile-grid dd{
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:12.5px; color:var(--star); text-align:right;
+  font-family:var(--font-ibm-plex-mono), monospace; font-size:14px; color:var(--star); text-align:right;
 }
+/* the two chart-axis metrics for this player -- set off from the bio
+   rows and tinted with the primary accent since they're the reason the
+   point sits where it does. */
+.my-analysis-profile-axes{
+  margin-top:16px; padding-top:16px; border-top:1px solid var(--line);
+}
+.my-analysis-profile-axes dd{color:var(--horizon-gold);}
 @media (max-width:600px){ .my-analysis-profile{max-width:none;} }
 
 .mac-axis{stroke:var(--line); stroke-width:1;}

@@ -357,10 +357,11 @@ function ageFromBirthDate(birth) {
   return a;
 }
 
-// The right-hand card in My Analysis: basic demographics for whichever
-// point / row the user clicked. bio comes from Sleeper's player dict
-// (page.js -> playerBios), row from the portfolio aggregation.
-function PlayerProfileCard({ row, bio }) {
+// The right-hand card in My Analysis: for whichever point / row the user
+// clicked -- demographics from Sleeper's player dict (page.js ->
+// playerBios) plus that player's values on the two metrics currently on
+// the chart axes.
+function PlayerProfileCard({ row, bio, xMetric, yMetric }) {
   if (!row) {
     return (
       <div className="my-analysis-profile my-analysis-profile-empty">
@@ -371,16 +372,18 @@ function PlayerProfileCard({ row, bio }) {
   const b = bio || {};
   const age = typeof b.age === "number" ? b.age : ageFromBirthDate(b.birth_date);
   const ht = formatHeight(b.height);
-  const fields = [
+  const bioFields = [
     ["Jersey", b.number != null ? `#${b.number}` : null],
     ["Height", ht],
     ["Weight", b.weight ? `${b.weight} lbs` : null],
     ["Age", age != null ? String(age) : null],
-    ["Born", b.birth_date || null],
     ["Experience", experienceLabel(b.years_exp)],
-    ["College", b.college || null],
-    ["Status", b.status || null],
   ].filter(([, v]) => v != null);
+
+  const axisFields = [xMetric, yMetric].map((m) => [
+    m.label,
+    row[m.key] == null ? "—" : m.fmt(row[m.key]),
+  ]);
 
   return (
     <div className="my-analysis-profile">
@@ -391,18 +394,24 @@ function PlayerProfileCard({ row, bio }) {
           <TeamBadge team={row.team} />
         </div>
       </div>
-      {fields.length > 0 ? (
+      {bioFields.length > 0 && (
         <dl className="my-analysis-profile-grid">
-          {fields.map(([k, v]) => (
+          {bioFields.map(([k, v]) => (
             <div key={k}>
               <dt>{k}</dt>
               <dd>{v}</dd>
             </div>
           ))}
         </dl>
-      ) : (
-        <p className="my-analysis-profile-empty">No demographics on file for this player.</p>
       )}
+      <dl className="my-analysis-profile-grid my-analysis-profile-axes">
+        {axisFields.map(([k, v]) => (
+          <div key={k}>
+            <dt>{k}</dt>
+            <dd>{v}</dd>
+          </div>
+        ))}
+      </dl>
     </div>
   );
 }
@@ -554,7 +563,12 @@ function MyAnalysisPanel({ rows, playerBios = {} }) {
         </svg>
       </div>
 
-        <PlayerProfileCard row={selectedRow} bio={playerBios[selectedId]} />
+        <PlayerProfileCard
+          row={selectedRow}
+          bio={playerBios[selectedId]}
+          xMetric={xM}
+          yMetric={yM}
+        />
       </div>
 
       <div className="rankings-table-wrap">
