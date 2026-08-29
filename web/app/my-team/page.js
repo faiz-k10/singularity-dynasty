@@ -1,6 +1,8 @@
 import SiteHeader from "../SiteHeader";
 import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import { resolveTier, savedTeamLimit } from "@/lib/tier";
+import { normalizePlayerName } from "@/lib/portfolio";
 import MyTeamClient from "./MyTeamClient";
 
 export const metadata = {
@@ -31,6 +33,32 @@ export default async function MyTeamPage() {
     savedTeams = data || [];
   }
 
+  // Season sim numbers for the My Guys > My Analysis scatter -- public
+  // read, no tier gate on these columns (same as the tool pages). Keyed
+  // by normalized name so the client can join Sleeper roster players to
+  // it. Only fetched when there's actually a portfolio to plot.
+  let playerSims = {};
+  if (savedTeams.length >= 2) {
+    const pub = createPublicClient();
+    const { data: latest } = await pub
+      .from("player_simulations")
+      .select("season, week")
+      .order("season", { ascending: false })
+      .order("week", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (latest) {
+      const { data: sims } = await pub
+        .from("player_simulations")
+        .select("player_name, floor, median, ceiling, wopr, epa")
+        .eq("season", latest.season)
+        .eq("week", latest.week);
+      for (const s of sims || []) {
+        if (s.player_name) playerSims[normalizePlayerName(s.player_name)] = s;
+      }
+    }
+  }
+
   return (
     <div className="tool-page">
       <SiteHeader />
@@ -49,6 +77,7 @@ export default async function MyTeamPage() {
           tier={tier}
           savedTeamLimit={savedTeamLimit(tier)}
           savedTeams={savedTeams}
+          playerSims={playerSims}
         />
       </main>
     </div>

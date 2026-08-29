@@ -2128,6 +2128,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
   paint-order:stroke; stroke:var(--void); stroke-width:3px; stroke-linejoin:round;
 }
 .mac-point:hover .mac-label{opacity:1;}
+.mac-empty{fill:var(--star-dim); font-family:var(--font-ibm-plex-mono), monospace; font-size:11px;}
 /* Exposure cell: "3/5 · 60%" label with a share-bar under it. */
 .portfolio-exposure{display:inline-flex; flex-direction:column; gap:4px; min-width:96px;}
 .portfolio-exposure-bar{

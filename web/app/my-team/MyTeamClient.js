@@ -291,17 +291,27 @@ function RosterTable({ players }) {
   );
 }
 
-// The metric pool the My Analysis scatter + table draw from. This is
-// the extension point: once the player_metadata join lands (age, draft
-// capital, our projection, contention inputs -- see
-// model/age_curve_analysis.R / CLAUDE.md) they get added here and show
-// up in both axes and the table automatically.
+// Player metrics the My Analysis scatter + table plot -- our redraft
+// projection and Sleeper's (from the saved snapshot), platform
+// start/roster %, and season floor/median/ceiling + WOPR/EPA from
+// player_simulations (joined by name in buildPortfolio). Extension
+// point: age / draft capital / contention metrics slot in here once
+// the player_metadata join lands (model/age_curve_analysis.R).
+const n1 = (v) => v.toFixed(1);
+const n0 = (v) => Math.round(v).toString();
+const signed = (v) => `${v > 0 ? "+" : ""}${v.toFixed(1)}`;
+const pct0 = (v) => `${Math.round(v)}%`;
 const ANALYSIS_METRICS = [
-  { key: "exposurePct", label: "Exposure %", fmt: (v) => `${Math.round(v)}%` },
-  { key: "teams", label: "Teams", fmt: (v) => String(v) },
-  { key: "starterCount", label: "Starts", fmt: (v) => String(v) },
-  { key: "invested", label: "Invested", fmt: (v) => (v ? `$${v.toLocaleString()}` : "$0") },
-  { key: "weightPct", label: "Bankroll %", fmt: (v) => `${v.toFixed(1)}%` },
+  { key: "myProjPts", label: "Singularity Proj", fmt: n1 },
+  { key: "sleeperProjPts", label: "Sleeper Proj", fmt: n1 },
+  { key: "diffProj", label: "Proj Diff", fmt: signed },
+  { key: "simMedian", label: "Sim Median", fmt: n0 },
+  { key: "simCeiling", label: "Sim Ceiling", fmt: n0 },
+  { key: "simFloor", label: "Sim Floor", fmt: n0 },
+  { key: "wopr", label: "WOPR", fmt: (v) => v.toFixed(2) },
+  { key: "epa", label: "EPA", fmt: signed },
+  { key: "startPct", label: "Start %", fmt: pct0 },
+  { key: "rosterPct", label: "Roster %", fmt: pct0 },
 ];
 
 const ANALYSIS_POS_COLOR = {
@@ -316,8 +326,8 @@ const ANALYSIS_POS_COLOR = {
 // position), with the same data as a table underneath. Real analytical
 // metrics slot into ANALYSIS_METRICS as they're built.
 function MyAnalysisPanel({ rows }) {
-  const [xKey, setXKey] = useState("exposurePct");
-  const [yKey, setYKey] = useState("starterCount");
+  const [xKey, setXKey] = useState("myProjPts");
+  const [yKey, setYKey] = useState("simCeiling");
   const xM = ANALYSIS_METRICS.find((m) => m.key === xKey) || ANALYSIS_METRICS[0];
   const yM = ANALYSIS_METRICS.find((m) => m.key === yKey) || ANALYSIS_METRICS[1];
 
@@ -344,8 +354,8 @@ function MyAnalysisPanel({ rows }) {
   return (
     <div className="my-analysis-panel">
       <p className="my-analysis-note">
-        Template — plot your guys on any two metrics. More metrics arrive with
-        Team Analysis (age, draft capital, our projection, contention window).
+        Plot your guys on any two metrics — projections and season sim numbers
+        now, age / draft capital / contention window as Team Analysis lands.
       </p>
 
       <div className="my-analysis-axes">
@@ -412,6 +422,16 @@ function MyAnalysisPanel({ rows }) {
           <text className="mac-tick" x={padL - 8} y={padT + 8} textAnchor="end">
             {yM.fmt(yMax)}
           </text>
+          {pts.length === 0 && (
+            <text
+              className="mac-empty"
+              x={(padL + W - padR) / 2}
+              y={(padT + H - padB) / 2}
+              textAnchor="middle"
+            >
+              No {xM.label} / {yM.label} data for your guys yet
+            </text>
+          )}
           {pts.map((p) => {
             const cx = sx(p[xKey]);
             const cy = sy(p[yKey]);
@@ -472,11 +492,15 @@ function MyAnalysisPanel({ rows }) {
   );
 }
 
-function Portfolio({ savedTeams, buyIns }) {
+function Portfolio({ savedTeams, buyIns, playerSims }) {
   const [tab, setTab] = useState("exposure");
   const [sortKey, setSortKey] = useState(null);
   const [sortDir, setSortDir] = useState("desc");
-  const { rows, totalBuyIn, teamsWithBuyIn, teamCount } = buildPortfolio(savedTeams, buyIns);
+  const { rows, totalBuyIn, teamsWithBuyIn, teamCount } = buildPortfolio(
+    savedTeams,
+    buyIns,
+    playerSims
+  );
   const anyBuyIn = teamsWithBuyIn > 0;
 
   const defaultSorted = [...rows].sort(
@@ -640,7 +664,13 @@ function BuyInField({ teamId, value, disabled, onSave }) {
 // the "N of M saved" indicator and the swap to an upgrade prompt once a
 // free user is at their cap (the server action + DB trigger enforce it
 // for real).
-export default function MyTeamClient({ isSignedIn, tier, savedTeamLimit, savedTeams }) {
+export default function MyTeamClient({
+  isSignedIn,
+  tier,
+  savedTeamLimit,
+  savedTeams,
+  playerSims = {},
+}) {
   const [username, setUsername] = useState("");
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
@@ -775,7 +805,7 @@ export default function MyTeamClient({ isSignedIn, tier, savedTeamLimit, savedTe
       )}
 
       {savedTeams.length >= 2 && (
-        <Portfolio savedTeams={savedTeams} buyIns={buyIns} />
+        <Portfolio savedTeams={savedTeams} buyIns={buyIns} playerSims={playerSims} />
       )}
 
       <form className="my-team-lookup" onSubmit={handleLookup}>

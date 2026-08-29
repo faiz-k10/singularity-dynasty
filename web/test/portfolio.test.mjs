@@ -1,5 +1,5 @@
 // Run: node test/portfolio.test.mjs
-import { buildPortfolio } from "../lib/portfolio.js";
+import { buildPortfolio, normalizePlayerName } from "../lib/portfolio.js";
 
 let failed = 0;
 const eq = (label, got, want) => {
@@ -49,6 +49,30 @@ eq("no buy-ins -> all weightPct null", noBuy.rows.every((r) => r.weightPct === n
 const override = buildPortfolio(teams, { C: 25 });
 eq("override adds C's 25", override.totalBuyIn, 175);
 eq("override: Deep Guy now invested 25", override.rows.find((r) => r.player_id === "5").invested, 25);
+
+// name normalization
+eq("normalize strips suffix + case + period", normalizePlayerName("Brian Thomas Jr."), "brian thomas");
+eq("normalize A.J. Brown", normalizePlayerName("A.J. Brown"), "aj brown");
+
+// snapshot projection fields + sim merge
+const projP = (id, name, pos, extra) => ({
+  player_id: id, name, position: pos, team: "X", isStarter: true, ...extra,
+});
+const withProj = [
+  team("A", [projP("1", "Josh Allen", "QB", { myProjPts: 22.5, sleeperProjPts: 21, diffProj: 1.5, startPct: 99, rosterPct: 100 })], 100),
+  team("B", [projP("1", "Josh Allen", "QB", { myProjPts: 22.5 })], 100),
+];
+const sims = { "josh allen": { floor: 260, median: 340, ceiling: 420, wopr: 0, epa: 8.4 } };
+const enriched = buildPortfolio(withProj, {}, sims).rows[0];
+eq("snapshot: first non-null myProjPts wins", enriched.myProjPts, 22.5);
+eq("snapshot: startPct carried from team A", enriched.startPct, 99);
+eq("sim merge: ceiling", enriched.simCeiling, 420);
+eq("sim merge: epa", enriched.epa, 8.4);
+
+// player with no sim entry -> sim fields null
+const noSim = buildPortfolio([team("A", [projP("9", "Nobody Special", "WR", {})])], {}, sims).rows[0];
+eq("no sim entry -> simCeiling null", noSim.simCeiling, null);
+eq("no snapshot proj -> myProjPts null", noSim.myProjPts, null);
 
 console.log(failed ? `\n${failed} FAILED` : "\nall passed");
 process.exit(failed ? 1 : 0);
