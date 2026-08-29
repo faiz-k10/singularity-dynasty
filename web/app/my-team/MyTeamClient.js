@@ -600,7 +600,7 @@ function MyAnalysisPanel({ rows, playerBios = {} }) {
       <div className="my-analysis-chart-wrap">
         <svg
           className="my-analysis-chart"
-          viewBox={`0 0 ${W} ${H}`}
+          viewBox={`0 0 ${W} ${H + 22}`}
           role="img"
           aria-label={`${yM.label} versus ${xM.label}`}
         >
@@ -697,6 +697,9 @@ function MyAnalysisPanel({ rows, playerBios = {} }) {
               </g>
             );
           })}
+          <text className="mac-watermark" x={W / 2} y={H + 15} textAnchor="middle">
+            SINGULARITY DYNASTY
+          </text>
         </svg>
       </div>
 
@@ -746,7 +749,7 @@ function MyAnalysisPanel({ rows, playerBios = {} }) {
 }
 
 function Portfolio({ savedTeams, buyIns, playerSims, playerGameLogs, playerBios }) {
-  const [tab, setTab] = useState("exposure");
+  const [tab, setTab] = useState("analysis");
   const [sortKey, setSortKey] = useState(null);
   const [sortDir, setSortDir] = useState("desc");
   const { rows, totalBuyIn, teamsWithBuyIn, teamCount } = buildPortfolio(
@@ -802,17 +805,17 @@ function Portfolio({ savedTeams, buyIns, playerSims, playerGameLogs, playerBios 
       <div className="board-toggle my-team-view-toggle">
         <button
           type="button"
-          className={tab === "exposure" ? "active" : ""}
-          onClick={() => setTab("exposure")}
-        >
-          Exposure
-        </button>
-        <button
-          type="button"
           className={tab === "analysis" ? "active" : ""}
           onClick={() => setTab("analysis")}
         >
           My Analysis
+        </button>
+        <button
+          type="button"
+          className={tab === "exposure" ? "active" : ""}
+          onClick={() => setTab("exposure")}
+        >
+          Exposure
         </button>
       </div>
 
