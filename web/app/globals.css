@@ -2121,14 +2121,14 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .my-analysis-week-input::-webkit-inner-spin-button{-webkit-appearance:none; margin:0;}
 .my-analysis-week-input:focus{border-color:var(--neon-blue);}
 .my-analysis-window-line{
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:11.5px; color:var(--star-dim);
+  font-family:var(--font-ibm-plex-mono), monospace; font-size:11.5px; color:var(--horizon-gold);
   margin-bottom:14px;
 }
 .my-team-bestball-note{margin:0 16px 14px;}
-/* chart on the left, tapped-player profile card on the right; stack on
-   narrow screens. */
+/* chart on the left, tapped-player profile card on the right; stretch so
+   the two cards line up. stack on narrow screens. */
 .my-analysis-main{
-  display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap; margin-bottom:20px;
+  display:flex; gap:16px; align-items:stretch; flex-wrap:wrap; margin-bottom:20px;
 }
 .my-analysis-chart-wrap{
   flex:3 1 420px; max-width:760px;
@@ -2171,6 +2171,9 @@ tr.stat-row-selected td{background:var(--void-panel);}
 @media (max-width:600px){ .my-analysis-profile{max-width:none;} }
 
 .mac-axis{stroke:var(--line); stroke-width:1;}
+/* dashed mean crosshair for the two axes */
+.mac-mean{stroke:var(--star-dim); stroke-width:1; stroke-dasharray:4 4; opacity:0.55;}
+.mac-mean-label{fill:var(--star-dim); font-family:var(--font-ibm-plex-mono), monospace; font-size:9px; opacity:0.8;}
 .mac-axis-label{
   fill:var(--star-dim); font-family:var(--font-ibm-plex-mono), monospace;
   font-size:11px; letter-spacing:0.06em; text-transform:uppercase;

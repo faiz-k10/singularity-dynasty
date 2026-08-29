@@ -300,16 +300,16 @@ function RosterTable({ players, bestBall = false }) {
 // Metrics the My Analysis scatter + table plot. Two kinds:
 //  - static per-player: projections (snapshot), sim floor/median/ceiling
 //    + WOPR/EPA (player_simulations), platform start/roster %, exposure.
-//  - game-log ("gl" prefix): recomputed over whatever game window the
-//    filter bar has set (player_game_log, aggregated by aggregateGames).
+//  - game-log ("gl" prefix, labelled "(filtered)"): recomputed over only
+//    the games matching the filter bar (player_game_log via aggregateGames).
 const n1 = (v) => v.toFixed(1);
 const n0 = (v) => Math.round(v).toString();
 const signed = (v) => `${v > 0 ? "+" : ""}${v.toFixed(1)}`;
 const pct0 = (v) => `${Math.round(v)}%`;
 const ANALYSIS_METRICS = [
-  { key: "glPPG", label: "PPG (window)", fmt: n1, gameLog: true },
-  { key: "glTotal", label: "Total Pts (window)", fmt: n0, gameLog: true },
-  { key: "glGames", label: "Games (window)", fmt: n0, gameLog: true },
+  { key: "glPPG", label: "PPG (filtered)", fmt: n1, gameLog: true },
+  { key: "glTotal", label: "Total Pts (filtered)", fmt: n0, gameLog: true },
+  { key: "glGames", label: "Games (filtered)", fmt: n0, gameLog: true },
   { key: "myProjPts", label: "Singularity Proj", fmt: n1 },
   { key: "sleeperProjPts", label: "Sleeper Proj", fmt: n1 },
   { key: "diffProj", label: "Proj Diff", fmt: signed },
@@ -426,8 +426,18 @@ function PlayerProfileCard({ row, bio, xMetric, yMetric }) {
 }
 
 const SEASON_OPTS = [String(new Date().getFullYear() - 1), String(new Date().getFullYear() - 2)];
-const DEFAULT_FILTERS = { season: "all", weekFrom: 1, weekTo: 18, venue: "all", result: "all" };
+const ANALYSIS_POSITIONS = ["QB", "RB", "WR", "TE"];
+const DEFAULT_FILTERS = {
+  season: "all",
+  weekFrom: 1,
+  weekTo: 18,
+  venue: "all",
+  result: "all",
+  position: "all",
+};
 
+// Human-readable summary of the game window (season/weeks/venue/result --
+// NOT position, which filters players not games).
 function filterSummary(f) {
   const parts = [];
   parts.push(f.season === "all" ? "both seasons" : f.season);
@@ -439,10 +449,10 @@ function filterSummary(f) {
 }
 
 // The My Analysis tab: a filter bar defines a game window (season, week
-// range, home/away, wins/losses); the "window" metrics (PPG / totals /
-// game count) recompute over it while the static metrics (projections,
-// sims, exposure) don't. Pick any two for the X/Y axes; click a point or
-// row for the player card.
+// range, home/away, wins/losses) plus an optional position filter; the
+// "(filtered)" metrics (PPG / total / game count) recompute over that
+// window while the static metrics (projections, sims, exposure) don't.
+// Pick any two for the X/Y axes; click a point or row for the player card.
 function MyAnalysisPanel({ rows, playerBios = {} }) {
   const [selectedId, setSelectedId] = useState(null);
   const [xKey, setXKey] = useState("glPPG");
@@ -454,12 +464,17 @@ function MyAnalysisPanel({ rows, playerBios = {} }) {
 
   const setF = (patch) => setFilters((prev) => ({ ...prev, ...patch }));
 
-  // recompute the window metrics per player for the current filters
-  const derived = rows.map((r) => ({ ...r, ...aggregateGames(r._games, filters) }));
+  // recompute the filtered metrics per player, then narrow to the chosen
+  // position (position filters players, not games).
+  const derived = rows
+    .map((r) => ({ ...r, ...aggregateGames(r._games, filters) }))
+    .filter((r) => filters.position === "all" || r.position === filters.position);
   const withWindow = derived.filter((r) => r.glGames > 0);
   const avgWindowGames = withWindow.length
     ? withWindow.reduce((s, r) => s + r.glGames, 0) / withWindow.length
     : 0;
+  const poolLabel =
+    filters.position === "all" ? "players" : `${filters.position}s`;
 
   const pts = derived.filter((r) => r[xKey] != null && r[yKey] != null);
   const W = 640;
@@ -474,6 +489,9 @@ function MyAnalysisPanel({ rows, playerBios = {} }) {
   const xMax = Math.max(1, ...xVals);
   const yMin = Math.min(0, ...yVals);
   const yMax = Math.max(1, ...yVals);
+  const mean = (a) => (a.length ? a.reduce((s, v) => s + v, 0) / a.length : null);
+  const xMean = mean(xVals);
+  const yMean = mean(yVals);
   const sx = (v) => padL + ((v - xMin) / (xMax - xMin || 1)) * (W - padL - padR);
   const sy = (v) => H - padB - ((v - yMin) / (yMax - yMin || 1)) * (H - padT - padB);
 
@@ -485,10 +503,10 @@ function MyAnalysisPanel({ rows, playerBios = {} }) {
   return (
     <div className="my-analysis-panel">
       <p className="my-analysis-note">
-        Set a game window with the filters, then plot any two metrics — the
-        &ldquo;(window)&rdquo; metrics recompute over the selected games; the
-        rest are season-long. Age / draft capital / contention window land
-        with Team Analysis.
+        Set a game window with the filters, then plot any two metrics. The
+        &ldquo;(filtered)&rdquo; metrics recompute over just the games that
+        match the window — season, week range, home/away, wins/losses. The
+        rest (projections, sims, exposure) are season-long.
       </p>
 
       <div className="my-analysis-filters">
@@ -498,6 +516,14 @@ function MyAnalysisPanel({ rows, playerBios = {} }) {
             onChange={(e) => setF({ season: e.target.value })}>
             <option value="all">Both</option>
             {SEASON_OPTS.map((s) => <option key={s} value={s}>{s}</option>)}
+          </select>
+        </label>
+        <label>
+          Position
+          <select className="compare-select" value={filters.position}
+            onChange={(e) => setF({ position: e.target.value })}>
+            <option value="all">All</option>
+            {ANALYSIS_POSITIONS.map((p) => <option key={p} value={p}>{p}</option>)}
           </select>
         </label>
         <label>
@@ -533,9 +559,9 @@ function MyAnalysisPanel({ rows, playerBios = {} }) {
       </div>
       {usesGameLog && (
         <p className="my-analysis-window-line">
-          Window: {filterSummary(filters)} —{" "}
-          {withWindow.length} of {rows.length} players have games here
-          {withWindow.length ? `, avg ${avgWindowGames.toFixed(1)}/player` : ""}.
+          Filtered games: {filterSummary(filters)} —{" "}
+          {withWindow.length} of {derived.length} {poolLabel} have games here
+          {withWindow.length ? `, avg ${avgWindowGames.toFixed(1)} each` : ""}.
         </p>
       )}
 
@@ -580,6 +606,34 @@ function MyAnalysisPanel({ rows, playerBios = {} }) {
         >
           <line className="mac-axis" x1={padL} y1={padT} x2={padL} y2={H - padB} />
           <line className="mac-axis" x1={padL} y1={H - padB} x2={W - padR} y2={H - padB} />
+          {pts.length > 1 && xMean != null && (
+            <>
+              <line
+                className="mac-mean"
+                x1={sx(xMean)}
+                y1={padT}
+                x2={sx(xMean)}
+                y2={H - padB}
+              />
+              <text className="mac-mean-label" x={sx(xMean) + 4} y={padT + 9} textAnchor="start">
+                mean {xM.fmt(xMean)}
+              </text>
+            </>
+          )}
+          {pts.length > 1 && yMean != null && (
+            <>
+              <line
+                className="mac-mean"
+                x1={padL}
+                y1={sy(yMean)}
+                x2={W - padR}
+                y2={sy(yMean)}
+              />
+              <text className="mac-mean-label" x={W - padR - 4} y={sy(yMean) - 4} textAnchor="end">
+                mean {yM.fmt(yMean)}
+              </text>
+            </>
+          )}
           <text className="mac-axis-label" x={(padL + W - padR) / 2} y={H - 10} textAnchor="middle">
             {xM.label}
           </text>
