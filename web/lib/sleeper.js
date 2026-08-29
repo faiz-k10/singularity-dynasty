@@ -105,9 +105,11 @@ export async function fetchSleeperProjections(season, week) {
 // trimming. A plain module-level cache has no such ceiling, at the cost
 // of being per-server-instance rather than shared/persistent -- a cold
 // serverless instance just re-fetches once, which is still far better
-// than the request failing outright. Only the 4 fields actually used
-// (name parts, position, team) are kept, cutting the in-memory size
-// substantially versus holding every raw Sleeper field for every player.
+// than the request failing outright. Only the fields actually used are
+// kept -- name parts / position / team for the roster view, plus the
+// basic demographics (jersey, height, weight, age, birth date,
+// experience, college, status) the My Analysis player card shows --
+// still a tiny fraction of every raw Sleeper field for every player.
 let cachedPlayers = null;
 let cachedAt = 0;
 const PLAYERS_CACHE_MS = 24 * 60 * 60 * 1000;
@@ -124,6 +126,14 @@ export async function getSleeperPlayers() {
       last_name: p.last_name,
       position: p.position,
       team: p.team,
+      number: p.number ?? null,
+      height: p.height ?? null,
+      weight: p.weight ?? null,
+      age: typeof p.age === "number" ? p.age : null,
+      birth_date: p.birth_date ?? null,
+      years_exp: typeof p.years_exp === "number" ? p.years_exp : null,
+      college: p.college ?? null,
+      status: p.status ?? null,
     };
   }
   cachedPlayers = trimmed;

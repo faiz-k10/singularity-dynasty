@@ -321,11 +321,99 @@ const ANALYSIS_POS_COLOR = {
   TE: "--pos-te",
 };
 
+// Sleeper stores height as inches ("71"); some older entries are already
+// "6-1" / "6'1\"".
+function formatHeight(h) {
+  if (h == null || h === "") return null;
+  const str = String(h);
+  if (str.includes("'")) return str;
+  if (str.includes("-")) {
+    const [ft, inch] = str.split("-");
+    return `${ft}'${inch || 0}"`;
+  }
+  const n = parseInt(str, 10);
+  if (!Number.isFinite(n) || n <= 0) return null;
+  return `${Math.floor(n / 12)}'${n % 12}"`;
+}
+
+function ordinal(x) {
+  const s = ["th", "st", "nd", "rd"];
+  const v = x % 100;
+  return x + (s[(v - 20) % 10] || s[v] || s[0]);
+}
+
+function experienceLabel(n) {
+  if (n == null) return null;
+  return n === 0 ? "Rookie" : `${ordinal(n + 1)} season`;
+}
+
+function ageFromBirthDate(birth) {
+  if (!birth) return null;
+  const d = new Date(birth);
+  if (Number.isNaN(d.getTime())) return null;
+  const now = new Date();
+  let a = now.getFullYear() - d.getFullYear();
+  if (now.getMonth() < d.getMonth() || (now.getMonth() === d.getMonth() && now.getDate() < d.getDate())) a -= 1;
+  return a;
+}
+
+// The right-hand card in My Analysis: basic demographics for whichever
+// point / row the user clicked. bio comes from Sleeper's player dict
+// (page.js -> playerBios), row from the portfolio aggregation.
+function PlayerProfileCard({ row, bio }) {
+  if (!row) {
+    return (
+      <div className="my-analysis-profile my-analysis-profile-empty">
+        Click a point or a table row to see the player.
+      </div>
+    );
+  }
+  const b = bio || {};
+  const age = typeof b.age === "number" ? b.age : ageFromBirthDate(b.birth_date);
+  const ht = formatHeight(b.height);
+  const fields = [
+    ["Jersey", b.number != null ? `#${b.number}` : null],
+    ["Height", ht],
+    ["Weight", b.weight ? `${b.weight} lbs` : null],
+    ["Age", age != null ? String(age) : null],
+    ["Born", b.birth_date || null],
+    ["Experience", experienceLabel(b.years_exp)],
+    ["College", b.college || null],
+    ["Status", b.status || null],
+  ].filter(([, v]) => v != null);
+
+  return (
+    <div className="my-analysis-profile">
+      <div className="my-analysis-profile-head">
+        <span className="my-analysis-profile-name">{row.name}</span>
+        <div className="my-analysis-profile-badges">
+          <PositionBadge position={row.position} />
+          <TeamBadge team={row.team} />
+        </div>
+      </div>
+      {fields.length > 0 ? (
+        <dl className="my-analysis-profile-grid">
+          {fields.map(([k, v]) => (
+            <div key={k}>
+              <dt>{k}</dt>
+              <dd>{v}</dd>
+            </div>
+          ))}
+        </dl>
+      ) : (
+        <p className="my-analysis-profile-empty">No demographics on file for this player.</p>
+      )}
+    </div>
+  );
+}
+
 // Scaffold for Team Analysis: pick any metric for the X and Y axis,
 // every player across the saved teams plots as a point (colored by
-// position), with the same data as a table underneath. Real analytical
-// metrics slot into ANALYSIS_METRICS as they're built.
-function MyAnalysisPanel({ rows }) {
+// position), with the same data as a table underneath. Clicking a point
+// or row fills the profile card on the right. Real analytical metrics
+// slot into ANALYSIS_METRICS as they're built.
+function MyAnalysisPanel({ rows, playerBios = {} }) {
+  const [selectedId, setSelectedId] = useState(null);
   const [xKey, setXKey] = useState("myProjPts");
   const [yKey, setYKey] = useState("simCeiling");
   const xM = ANALYSIS_METRICS.find((m) => m.key === xKey) || ANALYSIS_METRICS[0];
@@ -350,6 +438,7 @@ function MyAnalysisPanel({ rows }) {
   const tableRows = [...rows].sort(
     (a, b) => (b[yKey] ?? -Infinity) - (a[yKey] ?? -Infinity) || a.name.localeCompare(b.name)
   );
+  const selectedRow = rows.find((r) => r.player_id === selectedId) || null;
 
   return (
     <div className="my-analysis-panel">
@@ -389,6 +478,7 @@ function MyAnalysisPanel({ rows }) {
         </label>
       </div>
 
+      <div className="my-analysis-main">
       <div className="my-analysis-chart-wrap">
         <svg
           className="my-analysis-chart"
@@ -437,7 +527,11 @@ function MyAnalysisPanel({ rows }) {
             const cy = sy(p[yKey]);
             const nearRight = cx > W - padR - 90;
             return (
-              <g key={p.player_id} className="mac-point">
+              <g
+                key={p.player_id}
+                className={`mac-point${p.player_id === selectedId ? " selected" : ""}`}
+                onClick={() => setSelectedId(p.player_id)}
+              >
                 <circle
                   className="mac-dot"
                   cx={cx}
@@ -460,6 +554,9 @@ function MyAnalysisPanel({ rows }) {
         </svg>
       </div>
 
+        <PlayerProfileCard row={selectedRow} bio={playerBios[selectedId]} />
+      </div>
+
       <div className="rankings-table-wrap">
         <table className="rankings-table">
           <thead>
@@ -474,7 +571,12 @@ function MyAnalysisPanel({ rows }) {
           </thead>
           <tbody>
             {tableRows.map((p) => (
-              <tr key={p.player_id} data-pos={p.position || undefined}>
+              <tr
+                key={p.player_id}
+                data-pos={p.position || undefined}
+                className={`my-analysis-row${p.player_id === selectedId ? " selected" : ""}`}
+                onClick={() => setSelectedId(p.player_id)}
+              >
                 <td className="player-cell align-left">{p.name}</td>
                 <td><PositionBadge position={p.position} /></td>
                 <td><TeamBadge team={p.team} /></td>
@@ -492,7 +594,7 @@ function MyAnalysisPanel({ rows }) {
   );
 }
 
-function Portfolio({ savedTeams, buyIns, playerSims }) {
+function Portfolio({ savedTeams, buyIns, playerSims, playerBios }) {
   const [tab, setTab] = useState("exposure");
   const [sortKey, setSortKey] = useState(null);
   const [sortDir, setSortDir] = useState("desc");
@@ -563,7 +665,7 @@ function Portfolio({ savedTeams, buyIns, playerSims }) {
       </div>
 
       {tab === "analysis" ? (
-        <MyAnalysisPanel rows={rows} />
+        <MyAnalysisPanel rows={rows} playerBios={playerBios} />
       ) : (
         <>
           <div className="rankings-table-wrap">
@@ -670,6 +772,7 @@ export default function MyTeamClient({
   savedTeamLimit,
   savedTeams,
   playerSims = {},
+  playerBios = {},
 }) {
   const [username, setUsername] = useState("");
   const [result, setResult] = useState(null);
@@ -805,7 +908,12 @@ export default function MyTeamClient({
       )}
 
       {savedTeams.length >= 2 && (
-        <Portfolio savedTeams={savedTeams} buyIns={buyIns} playerSims={playerSims} />
+        <Portfolio
+          savedTeams={savedTeams}
+          buyIns={buyIns}
+          playerSims={playerSims}
+          playerBios={playerBios}
+        />
       )}
 
       <form className="my-team-lookup" onSubmit={handleLookup}>

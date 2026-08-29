@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createPublicClient } from "@/lib/supabase/public";
 import { resolveTier, savedTeamLimit } from "@/lib/tier";
 import { normalizePlayerName } from "@/lib/portfolio";
+import { getSleeperPlayers } from "@/lib/sleeper";
 import MyTeamClient from "./MyTeamClient";
 
 export const metadata = {
@@ -59,6 +60,22 @@ export default async function MyTeamPage() {
     }
   }
 
+  // Basic demographics (jersey, HT/WT, age, experience, college, status)
+  // for the My Analysis player card -- from Sleeper's own player
+  // dictionary (module-cached, see lib/sleeper.js). Scoped to just the
+  // players on the saved teams so the prop stays small.
+  let playerBios = {};
+  if (savedTeams.length >= 2) {
+    const ids = new Set();
+    for (const t of savedTeams) {
+      for (const p of t.players || []) if (p.player_id) ids.add(p.player_id);
+    }
+    const dict = await getSleeperPlayers().catch(() => ({}));
+    for (const id of ids) {
+      if (dict[id]) playerBios[id] = dict[id];
+    }
+  }
+
   return (
     <div className="tool-page">
       <SiteHeader />
@@ -78,6 +95,7 @@ export default async function MyTeamPage() {
           savedTeamLimit={savedTeamLimit(tier)}
           savedTeams={savedTeams}
           playerSims={playerSims}
+          playerBios={playerBios}
         />
       </main>
     </div>
