@@ -2099,6 +2099,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
 /* My Analysis tab -- game-window filter bar, axis pickers, an SVG plot +
    player card, and the same rows as a table underneath. */
 .my-analysis-note{font-size:12.5px; color:var(--star-dim); margin-bottom:16px;}
+.my-analysis-note em{font-style:normal; color:var(--horizon-gold);}
 .my-analysis-filters,
 .my-analysis-axes{display:flex; gap:16px; flex-wrap:wrap; margin-bottom:14px;}
 .my-analysis-filters{
@@ -2152,11 +2153,16 @@ tr.stat-row-selected td{background:var(--void-panel);}
 }
 .my-analysis-profile-empty{font-size:13px; color:var(--star-dim); line-height:1.5;}
 .my-analysis-profile-head{
-  display:flex; flex-direction:column; gap:10px; padding-bottom:16px;
+  display:flex; align-items:center; gap:14px; padding-bottom:16px;
   border-bottom:1px solid var(--line); margin-bottom:16px;
 }
+.my-analysis-profile-photo{
+  width:58px; height:58px; border-radius:50%; object-fit:cover; flex-shrink:0;
+  background:var(--void-panel-2); border:1px solid var(--line);
+}
+.my-analysis-profile-headtext{display:flex; flex-direction:column; gap:8px; min-width:0;}
 .my-analysis-profile-name{
-  font-family:var(--font-space-grotesk), sans-serif; font-size:20px; font-weight:700; color:var(--star);
+  font-family:var(--font-space-grotesk), sans-serif; font-size:19px; font-weight:700; color:var(--star);
 }
 .my-analysis-profile-badges{display:flex; gap:6px; flex-wrap:wrap;}
 .my-analysis-profile-grid{display:flex; flex-direction:column; gap:12px;}

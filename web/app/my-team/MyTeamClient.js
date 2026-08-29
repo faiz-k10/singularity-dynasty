@@ -297,19 +297,21 @@ function RosterTable({ players, bestBall = false }) {
   );
 }
 
-// Metrics the My Analysis scatter + table plot. Two kinds:
+// Metrics the My Analysis scatter + table plot. Two kinds (split into
+// optgroups in the axis pickers):
+//  - game-log ("gl" prefix, gameLog: true): PPG / total / game count
+//    recomputed over only the games matching the filter bar
+//    (player_game_log via aggregateGames).
 //  - static per-player: projections (snapshot), sim floor/median/ceiling
 //    + WOPR/EPA (player_simulations), platform start/roster %, exposure.
-//  - game-log ("gl" prefix, labelled "(filtered)"): recomputed over only
-//    the games matching the filter bar (player_game_log via aggregateGames).
 const n1 = (v) => v.toFixed(1);
 const n0 = (v) => Math.round(v).toString();
 const signed = (v) => `${v > 0 ? "+" : ""}${v.toFixed(1)}`;
 const pct0 = (v) => `${Math.round(v)}%`;
 const ANALYSIS_METRICS = [
-  { key: "glPPG", label: "PPG (filtered)", fmt: n1, gameLog: true },
-  { key: "glTotal", label: "Total Pts (filtered)", fmt: n0, gameLog: true },
-  { key: "glGames", label: "Games (filtered)", fmt: n0, gameLog: true },
+  { key: "glPPG", label: "PPG", fmt: n1, gameLog: true },
+  { key: "glTotal", label: "Total Pts", fmt: n0, gameLog: true },
+  { key: "glGames", label: "Games", fmt: n0, gameLog: true },
   { key: "myProjPts", label: "Singularity Proj", fmt: n1 },
   { key: "sleeperProjPts", label: "Sleeper Proj", fmt: n1 },
   { key: "diffProj", label: "Proj Diff", fmt: signed },
@@ -397,10 +399,24 @@ function PlayerProfileCard({ row, bio, xMetric, yMetric }) {
   return (
     <div className="my-analysis-profile">
       <div className="my-analysis-profile-head">
-        <span className="my-analysis-profile-name">{row.name}</span>
-        <div className="my-analysis-profile-badges">
-          <PositionBadge position={row.position} />
-          <TeamBadge team={row.team} />
+        {/* Sleeper's own headshot CDN, keyed by the Sleeper player id.
+            Hidden on 404 (not every player has one). */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          key={row.player_id}
+          className="my-analysis-profile-photo"
+          src={`https://sleepercdn.com/content/nfl/players/thumb/${row.player_id}.jpg`}
+          alt=""
+          onError={(e) => {
+            e.currentTarget.style.display = "none";
+          }}
+        />
+        <div className="my-analysis-profile-headtext">
+          <span className="my-analysis-profile-name">{row.name}</span>
+          <div className="my-analysis-profile-badges">
+            <PositionBadge position={row.position} />
+            <TeamBadge team={row.team} />
+          </div>
         </div>
       </div>
       {bioFields.length > 0 && (
@@ -504,9 +520,9 @@ function MyAnalysisPanel({ rows, playerBios = {} }) {
     <div className="my-analysis-panel">
       <p className="my-analysis-note">
         Set a game window with the filters, then plot any two metrics. The
-        &ldquo;(filtered)&rdquo; metrics recompute over just the games that
-        match the window — season, week range, home/away, wins/losses. The
-        rest (projections, sims, exposure) are season-long.
+        <em> filtered-games</em> metrics (PPG / total / count) recompute over
+        just the games that match the window — season, week range, home/away,
+        wins/losses. Projections, sims and exposure are season-long.
       </p>
 
       <div className="my-analysis-filters">
@@ -527,18 +543,6 @@ function MyAnalysisPanel({ rows, playerBios = {} }) {
           </select>
         </label>
         <label>
-          Weeks
-          <span className="my-analysis-week-range">
-            <input type="number" min="1" max="18" className="my-analysis-week-input"
-              value={filters.weekFrom}
-              onChange={(e) => setF({ weekFrom: Math.max(1, Math.min(18, +e.target.value || 1)) })} />
-            <span>–</span>
-            <input type="number" min="1" max="18" className="my-analysis-week-input"
-              value={filters.weekTo}
-              onChange={(e) => setF({ weekTo: Math.max(1, Math.min(18, +e.target.value || 18)) })} />
-          </span>
-        </label>
-        <label>
           Venue
           <select className="compare-select" value={filters.venue}
             onChange={(e) => setF({ venue: e.target.value })}>
@@ -555,6 +559,18 @@ function MyAnalysisPanel({ rows, playerBios = {} }) {
             <option value="wins">Wins</option>
             <option value="losses">Losses</option>
           </select>
+        </label>
+        <label>
+          Weeks
+          <span className="my-analysis-week-range">
+            <input type="number" min="1" max="18" className="my-analysis-week-input"
+              value={filters.weekFrom}
+              onChange={(e) => setF({ weekFrom: Math.max(1, Math.min(18, +e.target.value || 1)) })} />
+            <span>–</span>
+            <input type="number" min="1" max="18" className="my-analysis-week-input"
+              value={filters.weekTo}
+              onChange={(e) => setF({ weekTo: Math.max(1, Math.min(18, +e.target.value || 18)) })} />
+          </span>
         </label>
       </div>
       {usesGameLog && (
@@ -573,11 +589,16 @@ function MyAnalysisPanel({ rows, playerBios = {} }) {
             value={xKey}
             onChange={(e) => setXKey(e.target.value)}
           >
-            {ANALYSIS_METRICS.map((m) => (
-              <option key={m.key} value={m.key}>
-                {m.label}
-              </option>
-            ))}
+            <optgroup label="Filtered games">
+              {ANALYSIS_METRICS.filter((m) => m.gameLog).map((m) => (
+                <option key={m.key} value={m.key}>{m.label}</option>
+              ))}
+            </optgroup>
+            <optgroup label="Season-long">
+              {ANALYSIS_METRICS.filter((m) => !m.gameLog).map((m) => (
+                <option key={m.key} value={m.key}>{m.label}</option>
+              ))}
+            </optgroup>
           </select>
         </label>
         <label>
@@ -587,11 +608,16 @@ function MyAnalysisPanel({ rows, playerBios = {} }) {
             value={yKey}
             onChange={(e) => setYKey(e.target.value)}
           >
-            {ANALYSIS_METRICS.map((m) => (
-              <option key={m.key} value={m.key}>
-                {m.label}
-              </option>
-            ))}
+            <optgroup label="Filtered games">
+              {ANALYSIS_METRICS.filter((m) => m.gameLog).map((m) => (
+                <option key={m.key} value={m.key}>{m.label}</option>
+              ))}
+            </optgroup>
+            <optgroup label="Season-long">
+              {ANALYSIS_METRICS.filter((m) => !m.gameLog).map((m) => (
+                <option key={m.key} value={m.key}>{m.label}</option>
+              ))}
+            </optgroup>
           </select>
         </label>
       </div>
