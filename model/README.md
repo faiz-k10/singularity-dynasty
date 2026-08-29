@@ -702,6 +702,29 @@ the same place as a UDFA), not to touch established players.
 `projection_engine.R`, and the website-side `player_metadata` Supabase
 table — its schema depends on what Team Analysis actually computes.
 
+## Player splits — `player_splits.R` (site feature, not a model change)
+
+Feeds the `/my-team` "My Analysis" scatter, not the projection engine.
+`player_splits.R` reads nflreadr's weekly player game log
+(`load_player_stats`) joined to `load_schedules` (for `result` = home
+margin) over the **trailing two regular seasons**
+(`most_recent_season()` and the one before), and writes one row per
+player to `upload_player_splits.csv`:
+
+| column | meaning |
+|---|---|
+| `games`, `ppg` | total games / points-per-game over the window |
+| `ppg_home` / `ppg_away` | split by venue |
+| `ppg_wins` / `ppg_losses` | split by the player's team's result (ties → neither) |
+| `ppg_last4` | last 4 games chronologically |
+| `games_*` | the bucket sizes behind each split |
+
+A split PPG is `NA` below 2 games in the bucket; players with <4 total
+games are dropped. Publish with
+`web/scripts/publish-player-splits.mjs` (upsert on `player_name` into
+`player_splits`, migration `0026`, full refresh each run). Re-run
+whenever the weekly game log updates.
+
 ## Deferred — explicitly out of scope for now
 
 - **Redraft matchup-adjustment** (pace of play, offensive/defensive

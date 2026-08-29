@@ -23,15 +23,16 @@ const SNAPSHOT_PLAYER_FIELDS = [
 // Rolls every player across every saved team up into one row per player:
 // exposure (how many of your teams roster them + %), starts, buy-in
 // dollars staked, plus the player's own projection / usage numbers from
-// the snapshot. `sims` (optional, keyed by normalizePlayerName) merges in
-// season floor/median/ceiling/wopr/epa from player_simulations.
+// the snapshot. Both keyed by normalizePlayerName:
+//   sims   -> season floor/median/ceiling/wopr/epa (player_simulations)
+//   splits -> home/away, win/loss, last-4 PPG (player_splits)
 //
 // Aggregated by Sleeper player_id (global across leagues). Pure function,
 // unit-tested in test/portfolio.test.mjs.
 //
 // buyIns: { [savedTeamId]: number | null } overrides the row's own
 // buy_in, so the UI can re-total live as the user edits.
-export function buildPortfolio(savedTeams, buyIns = {}, sims = {}) {
+export function buildPortfolio(savedTeams, buyIns = {}, sims = {}, splits = {}) {
   const byPlayer = new Map();
   let totalBuyIn = 0;
   let teamsWithBuyIn = 0;
@@ -76,18 +77,27 @@ export function buildPortfolio(savedTeams, buyIns = {}, sims = {}) {
   }
 
   const n = savedTeams.length;
+  const num = (v) => (typeof v === "number" && Number.isFinite(v) ? v : null);
   const rows = [...byPlayer.values()].map((e) => {
-    const s = sims[normalizePlayerName(e.name)] || {};
+    const key = normalizePlayerName(e.name);
+    const s = sims[key] || {};
+    const sp = splits[key] || {};
     return {
       ...e,
       exposurePct: n ? (e.teams / n) * 100 : 0,
       weightPct:
         totalBuyIn > 0 && e.hasInvested ? (e.invested / totalBuyIn) * 100 : null,
-      simFloor: typeof s.floor === "number" ? s.floor : null,
-      simMedian: typeof s.median === "number" ? s.median : null,
-      simCeiling: typeof s.ceiling === "number" ? s.ceiling : null,
-      wopr: typeof s.wopr === "number" ? s.wopr : null,
-      epa: typeof s.epa === "number" ? s.epa : null,
+      simFloor: num(s.floor),
+      simMedian: num(s.median),
+      simCeiling: num(s.ceiling),
+      wopr: num(s.wopr),
+      epa: num(s.epa),
+      splitGames: num(sp.games),
+      ppgHome: num(sp.ppg_home),
+      ppgAway: num(sp.ppg_away),
+      ppgWins: num(sp.ppg_wins),
+      ppgLosses: num(sp.ppg_losses),
+      ppgLast4: num(sp.ppg_last4),
     };
   });
 
@@ -113,4 +123,10 @@ export const PORTFOLIO_COLUMN_TYPES = {
   simCeiling: "number",
   wopr: "number",
   epa: "number",
+  splitGames: "number",
+  ppgHome: "number",
+  ppgAway: "number",
+  ppgWins: "number",
+  ppgLosses: "number",
+  ppgLast4: "number",
 };

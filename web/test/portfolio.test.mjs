@@ -74,5 +74,15 @@ const noSim = buildPortfolio([team("A", [projP("9", "Nobody Special", "WR", {})]
 eq("no sim entry -> simCeiling null", noSim.simCeiling, null);
 eq("no snapshot proj -> myProjPts null", noSim.myProjPts, null);
 
+// splits merge (4th arg)
+const splits = {
+  "josh allen": { games: 32, ppg_home: 26.9, ppg_away: 19.6, ppg_wins: 24.3, ppg_losses: 19.9, ppg_last4: 23.1 },
+};
+const withSplits = buildPortfolio(withProj, {}, sims, splits).rows[0];
+eq("split merge: ppgHome", withSplits.ppgHome, 26.9);
+eq("split merge: ppgWins", withSplits.ppgWins, 24.3);
+eq("split merge: splitGames", withSplits.splitGames, 32);
+eq("no split entry -> ppgHome null", noSim.ppgHome ?? null, null);
+
 console.log(failed ? `\n${failed} FAILED` : "\nall passed");
 process.exit(failed ? 1 : 0);

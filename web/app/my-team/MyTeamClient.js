@@ -312,6 +312,13 @@ const ANALYSIS_METRICS = [
   { key: "epa", label: "EPA", fmt: signed },
   { key: "startPct", label: "Start %", fmt: pct0 },
   { key: "rosterPct", label: "Roster %", fmt: pct0 },
+  // trailing-2-season splits (player_splits table)
+  { key: "ppgLast4", label: "PPG Last 4", fmt: n1 },
+  { key: "ppgHome", label: "PPG Home", fmt: n1 },
+  { key: "ppgAway", label: "PPG Away", fmt: n1 },
+  { key: "ppgWins", label: "PPG in Wins", fmt: n1 },
+  { key: "ppgLosses", label: "PPG in Losses", fmt: n1 },
+  { key: "splitGames", label: "Games (2yr)", fmt: n0 },
 ];
 
 const ANALYSIS_POS_COLOR = {
@@ -452,8 +459,9 @@ function MyAnalysisPanel({ rows, playerBios = {} }) {
   return (
     <div className="my-analysis-panel">
       <p className="my-analysis-note">
-        Plot your guys on any two metrics — projections and season sim numbers
-        now, age / draft capital / contention window as Team Analysis lands.
+        Plot your guys on any two metrics — projections, season sim numbers,
+        and home/away &amp; win/loss &amp; last-4 splits now; age / draft
+        capital / contention window as Team Analysis lands.
       </p>
 
       <div className="my-analysis-axes">
@@ -608,14 +616,15 @@ function MyAnalysisPanel({ rows, playerBios = {} }) {
   );
 }
 
-function Portfolio({ savedTeams, buyIns, playerSims, playerBios }) {
+function Portfolio({ savedTeams, buyIns, playerSims, playerSplits, playerBios }) {
   const [tab, setTab] = useState("exposure");
   const [sortKey, setSortKey] = useState(null);
   const [sortDir, setSortDir] = useState("desc");
   const { rows, totalBuyIn, teamsWithBuyIn, teamCount } = buildPortfolio(
     savedTeams,
     buyIns,
-    playerSims
+    playerSims,
+    playerSplits
   );
   const anyBuyIn = teamsWithBuyIn > 0;
 
@@ -786,6 +795,7 @@ export default function MyTeamClient({
   savedTeamLimit,
   savedTeams,
   playerSims = {},
+  playerSplits = {},
   playerBios = {},
 }) {
   const [username, setUsername] = useState("");
@@ -926,6 +936,7 @@ export default function MyTeamClient({
           savedTeams={savedTeams}
           buyIns={buyIns}
           playerSims={playerSims}
+          playerSplits={playerSplits}
           playerBios={playerBios}
         />
       )}

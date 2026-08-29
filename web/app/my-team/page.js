@@ -60,6 +60,22 @@ export default async function MyTeamPage() {
     }
   }
 
+  // Home/away & win/loss & last-4 fantasy-point splits (trailing two
+  // seasons) for the extra My Analysis axis metrics -- public read, keyed
+  // by normalized name. model/player_splits.R -> player_splits table.
+  let playerSplits = {};
+  if (savedTeams.length >= 2) {
+    const pub = createPublicClient();
+    const { data: splits } = await pub
+      .from("player_splits")
+      .select(
+        "player_name, games, ppg, ppg_home, ppg_away, ppg_wins, ppg_losses, ppg_last4"
+      );
+    for (const s of splits || []) {
+      if (s.player_name) playerSplits[normalizePlayerName(s.player_name)] = s;
+    }
+  }
+
   // Basic demographics (jersey, HT/WT, age, experience, college, status)
   // for the My Analysis player card -- from Sleeper's own player
   // dictionary (module-cached, see lib/sleeper.js). Scoped to just the
@@ -95,6 +111,7 @@ export default async function MyTeamPage() {
           savedTeamLimit={savedTeamLimit(tier)}
           savedTeams={savedTeams}
           playerSims={playerSims}
+          playerSplits={playerSplits}
           playerBios={playerBios}
         />
       </main>
