@@ -322,12 +322,12 @@ function MyAnalysisPanel({ rows }) {
   const yM = ANALYSIS_METRICS.find((m) => m.key === yKey) || ANALYSIS_METRICS[1];
 
   const pts = rows.filter((r) => r[xKey] != null && r[yKey] != null);
-  const W = 680;
-  const H = 420;
-  const padL = 64;
-  const padR = 20;
-  const padT = 18;
-  const padB = 46;
+  const W = 520;
+  const H = 300;
+  const padL = 56;
+  const padR = 16;
+  const padT = 16;
+  const padB = 42;
   const xVals = pts.map((p) => p[xKey]);
   const yVals = pts.map((p) => p[yKey]);
   const xMin = Math.min(0, ...xVals);
@@ -412,18 +412,31 @@ function MyAnalysisPanel({ rows }) {
           <text className="mac-tick" x={padL - 8} y={padT + 8} textAnchor="end">
             {yM.fmt(yMax)}
           </text>
-          {pts.map((p) => (
-            <circle
-              key={p.player_id}
-              className="mac-dot"
-              cx={sx(p[xKey])}
-              cy={sy(p[yKey])}
-              r="5"
-              style={{ fill: `var(${ANALYSIS_POS_COLOR[p.position] || "--neon-blue"})` }}
-            >
-              <title>{`${p.name} — ${xM.label}: ${xM.fmt(p[xKey])}, ${yM.label}: ${yM.fmt(p[yKey])}`}</title>
-            </circle>
-          ))}
+          {pts.map((p) => {
+            const cx = sx(p[xKey]);
+            const cy = sy(p[yKey]);
+            const nearRight = cx > W - padR - 90;
+            return (
+              <g key={p.player_id} className="mac-point">
+                <circle
+                  className="mac-dot"
+                  cx={cx}
+                  cy={cy}
+                  r="5"
+                  style={{ fill: `var(${ANALYSIS_POS_COLOR[p.position] || "--neon-blue"})` }}
+                />
+                <text
+                  className="mac-label"
+                  x={cx + (nearRight ? -9 : 9)}
+                  y={cy + 3.5}
+                  textAnchor={nearRight ? "end" : "start"}
+                >
+                  {p.name}
+                </text>
+                <title>{`${p.name} — ${xM.label}: ${xM.fmt(p[xKey])}, ${yM.label}: ${yM.fmt(p[yKey])}`}</title>
+              </g>
+            );
+          })}
         </svg>
       </div>
 

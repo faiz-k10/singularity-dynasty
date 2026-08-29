@@ -2107,20 +2107,27 @@ tr.stat-row-selected td{background:var(--void-panel);}
 }
 .my-analysis-chart-wrap{
   background:var(--void-panel); border:1px solid var(--line); border-radius:16px;
-  padding:16px; margin-bottom:20px; overflow-x:auto;
+  padding:14px; margin-bottom:20px;
   box-shadow:0 20px 45px rgba(var(--shadow-rgb),0.35);
 }
-.my-analysis-chart{display:block; width:100%; min-width:480px; height:auto;}
+.my-analysis-chart{display:block; width:100%; max-width:520px; height:auto;}
 .mac-axis{stroke:var(--line); stroke-width:1;}
 .mac-axis-label{
   fill:var(--star-dim); font-family:var(--font-ibm-plex-mono), monospace;
-  font-size:11px; letter-spacing:0.06em; text-transform:uppercase;
+  font-size:10px; letter-spacing:0.06em; text-transform:uppercase;
 }
 .mac-tick{
-  fill:var(--star-dim); font-family:var(--font-ibm-plex-mono), monospace; font-size:10px;
+  fill:var(--star-dim); font-family:var(--font-ibm-plex-mono), monospace; font-size:9px;
 }
-.mac-dot{stroke:var(--void); stroke-width:1.5; transition:r .12s ease;}
-.mac-dot:hover{r:7;}
+.mac-dot{stroke:var(--void); stroke-width:1.5; transition:r .12s ease; cursor:pointer;}
+.mac-point:hover .mac-dot{r:7;}
+/* player name -- hidden until the point is hovered */
+.mac-label{
+  fill:var(--star); font-family:var(--font-ibm-plex-mono), monospace; font-size:10px;
+  opacity:0; pointer-events:none; transition:opacity .1s ease;
+  paint-order:stroke; stroke:var(--void); stroke-width:3px; stroke-linejoin:round;
+}
+.mac-point:hover .mac-label{opacity:1;}
 /* Exposure cell: "3/5 · 60%" label with a share-bar under it. */
 .portfolio-exposure{display:inline-flex; flex-direction:column; gap:4px; min-width:96px;}
 .portfolio-exposure-bar{
