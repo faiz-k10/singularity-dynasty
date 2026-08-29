@@ -429,12 +429,12 @@ function MyAnalysisPanel({ rows, playerBios = {} }) {
   const yM = ANALYSIS_METRICS.find((m) => m.key === yKey) || ANALYSIS_METRICS[1];
 
   const pts = rows.filter((r) => r[xKey] != null && r[yKey] != null);
-  const W = 520;
-  const H = 300;
-  const padL = 56;
-  const padR = 16;
-  const padT = 16;
-  const padB = 42;
+  const W = 640;
+  const H = 420;
+  const padL = 60;
+  const padR = 18;
+  const padT = 18;
+  const padB = 46;
   const xVals = pts.map((p) => p[xKey]);
   const yVals = pts.map((p) => p[yKey]);
   const xMin = Math.min(0, ...xVals);
