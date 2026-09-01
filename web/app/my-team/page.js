@@ -81,7 +81,7 @@ export default async function MyTeamPage() {
       for (let from = 0; ; from += PAGE) {
         const { data: chunk } = await pub
           .from("player_game_log")
-          .select("normalized_name, season, week, is_home, won, fantasy_points_ppr")
+          .select("normalized_name, season, week, is_home, won, fantasy_points_ppr, exp_points_ppr")
           .in("normalized_name", list)
           .order("normalized_name", { ascending: true })
           .order("season", { ascending: true })

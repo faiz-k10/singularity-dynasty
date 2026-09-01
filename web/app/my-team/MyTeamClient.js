@@ -299,9 +299,10 @@ function RosterTable({ players, bestBall = false }) {
 
 // Metrics the My Analysis scatter + table plot. Two kinds (split into
 // optgroups in the axis pickers):
-//  - game-log ("gl" prefix, gameLog: true): PPG / total / game count
-//    recomputed over only the games matching the filter bar
-//    (player_game_log via aggregateGames).
+//  - game-log ("gl" prefix, gameLog: true): PPG / total / game count,
+//    plus ffopportunity expected points (xFP/G, xFP total) and points
+//    over expected (FP−xFP/G) -- all recomputed over only the games
+//    matching the filter bar (player_game_log via aggregateGames).
 //  - static per-player: projections (snapshot), sim floor/median/ceiling
 //    + WOPR/EPA (player_simulations), platform start/roster %, exposure.
 const n1 = (v) => v.toFixed(1);
@@ -311,6 +312,9 @@ const pct0 = (v) => `${Math.round(v)}%`;
 const ANALYSIS_METRICS = [
   { key: "glPPG", label: "PPG", fmt: n1, gameLog: true },
   { key: "glTotal", label: "Total Pts", fmt: n0, gameLog: true },
+  { key: "glExpPPG", label: "xFP / G", fmt: n1, gameLog: true },
+  { key: "glExpTotal", label: "xFP Total", fmt: n0, gameLog: true },
+  { key: "glPOE", label: "FP − xFP / G", fmt: signed, gameLog: true },
   { key: "glGames", label: "Games", fmt: n0, gameLog: true },
   { key: "myProjPts", label: "Singularity Proj", fmt: n1 },
   { key: "sleeperProjPts", label: "Sleeper Proj", fmt: n1 },
@@ -520,8 +524,8 @@ function MyAnalysisPanel({ rows, playerBios = {} }) {
     <div className="my-analysis-panel">
       <p className="my-analysis-note">
         Set a game window with the filters, then plot any two metrics. The
-        <em> filtered-games</em> metrics (PPG / total / count) recompute over
-        just the games that match the window — season, week range, home/away,
+        <em> filtered-games</em> metrics (PPG, totals, expected points and
+        points over expected) recompute over just the games that match the window — season, week range, home/away,
         wins/losses. Projections, sims and exposure are season-long.
       </p>
 

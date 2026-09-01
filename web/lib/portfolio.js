@@ -105,10 +105,17 @@ export function buildPortfolio(savedTeams, buyIns = {}, sims = {}, gameLogs = {}
 // by My Analysis for the "game-log" metrics. filters:
 //   { season: "all"|number, weekFrom, weekTo, venue: "all"|"home"|"away",
 //     result: "all"|"wins"|"losses" }
+//
+// Expected-points metrics (glExpPPG / glExpTotal / glPOE) are computed
+// over only the games in the window that carry an xFP value
+// (exp_points_ppr, from ffopportunity -- ~12% of games have none), and
+// glPOE is actual-minus-expected measured over that same subset so the
+// two sides line up.
 export function aggregateGames(games, filters) {
   const f = filters || {};
   const wFrom = f.weekFrom ?? 1;
   const wTo = f.weekTo ?? 99;
+  const r1 = (v) => Math.round(v * 10) / 10;
   const sel = (games || []).filter(
     (g) =>
       (f.season == null || f.season === "all" || Number(g.season) === Number(f.season)) &&
@@ -117,12 +124,30 @@ export function aggregateGames(games, filters) {
       (!f.venue || f.venue === "all" || (f.venue === "home") === !!g.is_home) &&
       (!f.result || f.result === "all" || (f.result === "wins") === !!g.won)
   );
-  if (sel.length === 0) return { glGames: 0, glPPG: null, glTotal: null };
+  if (sel.length === 0) {
+    return {
+      glGames: 0, glPPG: null, glTotal: null,
+      glExpGames: 0, glExpPPG: null, glExpTotal: null, glPOE: null,
+    };
+  }
   const total = sel.reduce((s, g) => s + (Number(g.fantasy_points_ppr) || 0), 0);
+  const withExp = sel.filter((g) => g.exp_points_ppr != null && g.exp_points_ppr !== "");
+  let glExpPPG = null, glExpTotal = null, glPOE = null;
+  if (withExp.length > 0) {
+    const expTotal = withExp.reduce((s, g) => s + (Number(g.exp_points_ppr) || 0), 0);
+    const actTotal = withExp.reduce((s, g) => s + (Number(g.fantasy_points_ppr) || 0), 0);
+    glExpTotal = r1(expTotal);
+    glExpPPG = r1(expTotal / withExp.length);
+    glPOE = r1((actTotal - expTotal) / withExp.length);
+  }
   return {
     glGames: sel.length,
-    glTotal: Math.round(total * 10) / 10,
-    glPPG: Math.round((total / sel.length) * 10) / 10,
+    glTotal: r1(total),
+    glPPG: r1(total / sel.length),
+    glExpGames: withExp.length,
+    glExpPPG,
+    glExpTotal,
+    glPOE,
   };
 }
 
@@ -148,4 +173,7 @@ export const PORTFOLIO_COLUMN_TYPES = {
   glPPG: "number",
   glTotal: "number",
   glGames: "number",
+  glExpPPG: "number",
+  glExpTotal: "number",
+  glPOE: "number",
 };

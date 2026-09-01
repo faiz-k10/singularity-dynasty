@@ -1,13 +1,23 @@
 # Per-player-week fantasy game log for the /my-team "My Analysis" filter
 # builder -- one row per (player, season, week) with fantasy points, the
-# raw stat components, and home/away + win/loss flags (from
-# load_schedules' `result` = home margin). Trailing two regular seasons
-# (nflreadr::most_recent_season and the one before).
+# raw stat components, home/away + win/loss flags (from load_schedules'
+# `result` = home margin), and ffopportunity's expected PPR fantasy points
+# (xFP) for that game so My Analysis can plot points-over-expected.
+# Trailing two regular seasons (nflreadr::most_recent_season and the one
+# before).
+#
+# xFP source: nflreadr::load_ff_opportunity(stat_type = "weekly") ->
+# total_fantasy_points_exp. It's PPR-scored (rec/rush fantasy points at
+# 1 PPR, pass at 0.04/yd + 4/TD - 2/INT), so it lines up directly with
+# fantasy_points_ppr. Keyed on GSIS player_id == load_player_stats$player_id,
+# so the join is exact (no name matching). The model is ffopportunity
+# v1.0.0 (never retrained) and the automated data release can lag mid-season
+# -- weeks with no xFP row just get NA and drop out of the expected metrics.
 #
 # Writes upload_player_game_log.csv -- publish with
 # web/scripts/publish-player-game-log.mjs (full refresh into the
-# public.player_game_log table, migration 0027). Re-run whenever the
-# weekly game log updates.
+# public.player_game_log table, migrations 0027 + 0028). Re-run whenever
+# the weekly game log updates.
 #
 # Run: Rscript player_game_log.R
 
@@ -27,7 +37,7 @@ normalize_name <- function(x) {
 
 cat("Loading weekly player stats + schedules,", paste(SEASONS, collapse = "-"), "...\n")
 ps <- as.data.frame(load_player_stats(seasons = SEASONS))
-keep <- c("player_display_name", "position", "team", "opponent_team",
+keep <- c("player_id", "player_display_name", "position", "team", "opponent_team",
           "season", "week", "fantasy_points_ppr",
           "receptions", "targets", "receiving_yards", "receiving_tds",
           "rushing_yards", "carries", "rushing_tds",
@@ -36,6 +46,15 @@ keep <- intersect(keep, names(ps))
 ps <- ps[ps$season_type == "REG" &
            ps$position %in% POSITIONS &
            !is.na(ps$fantasy_points_ppr), keep]
+
+# ffopportunity expected PPR points (xFP), joined on GSIS player_id +
+# season + week. all.x -- a game with no xFP row keeps NA.
+cat("Loading ffopportunity expected fantasy points (weekly xFP)...\n")
+xfp <- as.data.frame(load_ff_opportunity(seasons = SEASONS, stat_type = "weekly"))
+xfp <- xfp[, c("player_id", "season", "week", "total_fantasy_points_exp")]
+names(xfp)[names(xfp) == "total_fantasy_points_exp"] <- "exp_points_ppr"
+ps <- merge(ps, xfp, by = c("player_id", "season", "week"), all.x = TRUE)
+cat("  xFP matched", sum(!is.na(ps$exp_points_ppr)), "of", nrow(ps), "player-weeks\n")
 
 sched <- as.data.frame(load_schedules(seasons = SEASONS))
 sched <- sched[sched$game_type == "REG",
@@ -61,6 +80,7 @@ out <- data.frame(
   is_home            = d$is_home,
   won                = d$won,
   fantasy_points_ppr = round(d$fantasy_points_ppr, 1),
+  exp_points_ppr     = round(d$exp_points_ppr, 1),
   receptions         = num0(d$receptions),
   targets            = num0(d$targets),
   rec_yards          = num0(d$receiving_yards),

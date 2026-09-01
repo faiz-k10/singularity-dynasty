@@ -710,14 +710,27 @@ engine. `player_game_log.R` reads nflreadr's weekly player game log
 margin) over the **trailing two regular seasons** (`most_recent_season()`
 and the one before) and writes **one row per player-week** to
 `upload_player_game_log.csv`: season, week, opponent, `is_home`, `won`
-(ties → FALSE), `fantasy_points_ppr`, plus raw component stats
-(receptions / targets / rec_yards / rush_yards / rush_att / pass_yards /
-tds) for future per-game metrics. `normalized_name` matches
-`web/lib/portfolio.js` `normalizePlayerName`.
+(ties → FALSE), `fantasy_points_ppr`, `exp_points_ppr`, plus raw
+component stats (receptions / targets / rec_yards / rush_yards / rush_att
+/ pass_yards / tds) for future per-game metrics. `normalized_name`
+matches `web/lib/portfolio.js` `normalizePlayerName`.
+
+`exp_points_ppr` is **expected PPR fantasy points (xFP)** for that game
+from `nflreadr::load_ff_opportunity(stat_type = "weekly")`
+(`total_fantasy_points_exp`) — an opportunity model (targets, air yards,
+carries, game situation) for what an average player would score in that
+spot. Joined on GSIS `player_id` (== `load_player_stats$player_id`), so
+the join is exact. Same 1-PPR basis as `fantasy_points_ppr`, so the
+website plots `xFP/G`, `xFP Total` and points-over-expected
+(`fantasy_points_ppr − exp_points_ppr`) per filter window. It's
+ffopportunity **v1.0.0** (never retrained) and its automated data release
+can lag mid-season; ~12% of player-weeks have no xFP row (cameos with no
+modeled opportunity) and get NA — those drop out of the expected metrics
+only.
 
 Publish with `web/scripts/publish-player-game-log.mjs` (full
-delete+reinsert into `player_game_log`, migration `0027`). The website
-aggregates any window (home wins weeks 1–7, etc.) client-side via
+delete+reinsert into `player_game_log`, migrations `0027` + `0028`). The
+website aggregates any window (home wins weeks 1–7, etc.) client-side via
 `aggregateGames()`. Re-run whenever the weekly game log updates.
 (Superseded the pre-aggregated `player_splits` approach — `0027` drops
 that table.)

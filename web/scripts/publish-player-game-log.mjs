@@ -76,6 +76,7 @@ const payload = rows.map((r) => ({
   is_home: bool(r.is_home),
   won: bool(r.won),
   fantasy_points_ppr: num(r.fantasy_points_ppr),
+  exp_points_ppr: num(r.exp_points_ppr),
   receptions: num(r.receptions),
   targets: num(r.targets),
   rec_yards: num(r.rec_yards),
