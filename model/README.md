@@ -12,6 +12,25 @@ Publishing into `player_simulations` / `best_ball_rankings` /
 `redraft_rankings` is still the manual Table Editor step described in the
 root `CLAUDE.md`, same as the other five tools.
 
+## Scripts in this directory
+
+**Pipeline** (produce the `upload_*.csv` files that `web/scripts/publish-*.mjs`
+push to Supabase):
+
+| Script | Produces | Cadence |
+|---|---|---|
+| `projection_engine.R` | the core Monte Carlo projections (sims + redraft) | prototype — not yet the live source |
+| `ceiling_range.R` | `upload_ceiling_range.csv` | with each sims refresh |
+| `player_game_log.R` | `upload_player_game_log.csv` (+ ffopportunity xFP) | weekly, in season |
+
+**Groundwork** (built, not wired into `projection_engine.R` yet — for Team Analysis):
+`player_meta.R`, `age_curve_analysis.R`.
+
+**Backtests & calibration** (`backtest_*.R`, `calibrate_*.R`) — run only when
+validating a model change. Each is the evidence behind one decision recorded
+below; the `*_results.rds` files next to them are cached run output. Not part
+of the weekly pipeline.
+
 ## Data source
 
 [`nflreadr`](https://nflreadr.nflverse.com/) — free, real NFL weekly stats
