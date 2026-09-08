@@ -48,8 +48,12 @@ export default function RedraftRankingsClient({ rawRows, sortKey, sortDir, curre
   }
 
   useEffect(() => {
+    // localStorage isn't available during SSR, so persisted scoring
+    // settings can only be hydrated after mount -- a one-shot catch-up,
+    // not a render loop.
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       if (saved) setSettings({ ...DEFAULT_SCORING_SETTINGS, ...JSON.parse(saved) });
     } catch {
       // ignore malformed/blocked storage, just keep defaults

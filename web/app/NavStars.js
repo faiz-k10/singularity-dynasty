@@ -115,6 +115,10 @@ export default function NavStars() {
   const [layout, setLayout] = useState(null);
 
   useEffect(() => {
+    // generateLayout() is Math.random()-based, so it must run client-side
+    // only -- rendering it during SSR/first paint would hydration-mismatch.
+    // The useState(null) + `return null` until this fires is that pattern.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLayout(generateLayout());
   }, []);
 

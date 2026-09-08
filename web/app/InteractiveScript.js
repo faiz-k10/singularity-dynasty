@@ -656,6 +656,10 @@ export default function InteractiveScript({ tickerPlayers } = {}) {
       controller.abort();
       observers.forEach((o) => o.disconnect());
     };
+    // Mount-once: tickerPlayers is server-fetched data that's stable for
+    // the life of the page, and this effect wires every listener exactly
+    // once. Re-running on a prop change would double-bind everything.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return null;
