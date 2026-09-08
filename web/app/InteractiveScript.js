@@ -598,10 +598,13 @@ export default function InteractiveScript({ tickerPlayers } = {}) {
           // and (same bug, different element) clicking a player row to
           // expand its stat detail panel stopped working too, since that
           // row is a <tr role="button"> with an onClick, not an <a>/
-          // <button>. Skip drag-init on any of these so real clicks work
-          // normally; only a press starting on genuinely inert cell
-          // content begins a drag.
-          if (e.target.closest('a, button, [role="button"]')) return;
+          // <button>. `summary` is here for the same reason -- the
+          // /my-team Exposure groups nest a table wrap inside a
+          // <details>, and capturing the pointer on a summary press ate
+          // the toggle click. Skip drag-init on any of these so real
+          // clicks work normally; only a press starting on genuinely
+          // inert cell content begins a drag.
+          if (e.target.closest('a, button, [role="button"], summary')) return;
           dragging = true;
           wrap.setPointerCapture(e.pointerId);
           startX = e.clientX;

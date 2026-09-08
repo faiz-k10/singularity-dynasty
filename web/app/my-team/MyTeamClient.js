@@ -897,6 +897,7 @@ function ExposureTable({ rows, teamCount, anyBuyIn, thProps }) {
 function Portfolio({ savedTeams, buyIns, playerSims, playerGameLogs, playerBios }) {
   const [tab, setTab] = useState("exposure");
   const [groupBy, setGroupBy] = useState("none");
+  const [openGroups, setOpenGroups] = useState({}); // { [groupKey]: bool } override of the default-open rule
   const [sortKey, setSortKey] = useState(null);
   const [sortDir, setSortDir] = useState("desc");
   const { rows, totalBuyIn, teamsWithBuyIn, teamCount } = buildPortfolio(
@@ -976,7 +977,10 @@ function Portfolio({ savedTeams, buyIns, playerSims, playerGameLogs, playerBios 
                 key={g.key}
                 type="button"
                 className={groupBy === g.key ? "active" : ""}
-                onClick={() => setGroupBy(g.key)}
+                onClick={() => {
+                  setGroupBy(g.key);
+                  setOpenGroups({}); // new dimension -> back to defaults
+                }}
               >
                 {g.label}
               </button>
@@ -990,17 +994,29 @@ function Portfolio({ savedTeams, buyIns, playerSims, playerGameLogs, playerBios 
       ) : (
         <>
           {groups ? (
-            <div className="portfolio-groups">
+            // key distinct from the flat branch's div: without it React
+            // reuses the same <div> node and just swaps className, which
+            // keeps InteractiveScript's drag-scroll pointerdown handler
+            // bound to it -- that handler calls setPointerCapture on a
+            // press anywhere inside, swallowing the click that would
+            // toggle a group's <summary>.
+            <div className="portfolio-groups" key="grouped">
               {groups.map((g) => {
                 const gInvested = g.rows.reduce(
                   (s, p) => s + (p.hasInvested ? p.invested : 0),
                   0
                 );
+                const isOpen = openGroups[g.key] ?? groups.length <= 10;
                 return (
                   <details
                     key={g.key}
                     className="portfolio-group"
-                    open={groups.length <= 10}
+                    open={isOpen}
+                    onToggle={(e) => {
+                      const next = e.currentTarget.open;
+                      if (next === isOpen) return;
+                      setOpenGroups((s) => ({ ...s, [g.key]: next }));
+                    }}
                   >
                     <summary className="portfolio-group-head">
                       <span className="my-team-chevron">▶</span>
@@ -1024,7 +1040,7 @@ function Portfolio({ savedTeams, buyIns, playerSims, playerGameLogs, playerBios 
               })}
             </div>
           ) : (
-            <div className="rankings-table-wrap">
+            <div className="rankings-table-wrap" key="flat">
               <ExposureTable
                 rows={display}
                 teamCount={teamCount}
