@@ -1005,7 +1005,12 @@ function Portfolio({ savedTeams, buyIns, playerSims, playerGameLogs, playerBios 
                   (s, p) => s + (p.hasInvested ? p.invested : 0),
                   0
                 );
-                const isOpen = openGroups[g.key] ?? groups.length <= 10;
+                // Exposure-count groups start collapsed (the "On 1 of N
+                // teams" bucket is usually a huge table); position/team
+                // groups still auto-open when there are few enough.
+                const isOpen =
+                  openGroups[g.key] ??
+                  (groupBy === "count" ? false : groups.length <= 10);
                 return (
                   <details
                     key={g.key}
