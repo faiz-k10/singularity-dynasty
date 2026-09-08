@@ -2233,14 +2233,27 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .my-team-saved-card .my-team-view-toggle{margin:0 16px 14px;}
 .my-team-view-toggle{margin-bottom:14px;}
 
-/* Exposure-tab "Group by" control -- a smaller secondary toggle sitting
-   below the Exposure/Analytics tab row. */
-.portfolio-groupby{display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:26px;}
-.portfolio-groupby-label{
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:11px; letter-spacing:0.08em;
-  text-transform:uppercase; color:var(--star-dim);
+/* Exposure/Analytics tab row + the Exposure-tab "group by" row, stacked
+   inside one pill so they read as a single control (no "Group by" label).
+   The inner .board-toggle rows drop their own pill chrome; the wrapper
+   carries the border/background and a hairline splits the two rows. */
+.portfolio-toggles{
+  display:inline-flex; flex-direction:column; align-items:stretch; gap:4px;
+  background:var(--void-panel-2); border:1px solid var(--line);
+  border-radius:22px; padding:4px; margin-bottom:26px; max-width:100%;
 }
-.portfolio-groupby .board-toggle{margin-bottom:0;}
+.portfolio-toggles .board-toggle{
+  margin:0; padding:0; border:0; background:none; border-radius:0; display:flex;
+}
+.portfolio-toggles .board-toggle button{
+  flex:1 1 auto; text-align:center; border-radius:18px; white-space:nowrap;
+}
+/* the 2-item Exposure/Analytics row splits evenly to span the wider
+   group-by row beneath it */
+.portfolio-toggles .my-team-view-toggle button{flex-basis:0;}
+.portfolio-toggles .board-toggle + .board-toggle{
+  border-top:1px solid var(--line); padding-top:4px;
+}
 
 /* Grouped Exposure view -- one collapsible <details> per position / team /
    exposure count, each wrapping its own copy of the ExposureTable. Mirrors

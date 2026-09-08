@@ -951,26 +951,25 @@ function Portfolio({ savedTeams, buyIns, playerSims, playerGameLogs, playerBios 
         )}
       </div>
 
-      <div className="board-toggle my-team-view-toggle">
-        <button
-          type="button"
-          className={tab === "exposure" ? "active" : ""}
-          onClick={() => setTab("exposure")}
-        >
-          Exposure
-        </button>
-        <button
-          type="button"
-          className={tab === "analysis" ? "active" : ""}
-          onClick={() => setTab("analysis")}
-        >
-          Analytics
-        </button>
-      </div>
+      <div className="portfolio-toggles">
+        <div className="board-toggle my-team-view-toggle">
+          <button
+            type="button"
+            className={tab === "exposure" ? "active" : ""}
+            onClick={() => setTab("exposure")}
+          >
+            Exposure
+          </button>
+          <button
+            type="button"
+            className={tab === "analysis" ? "active" : ""}
+            onClick={() => setTab("analysis")}
+          >
+            Analytics
+          </button>
+        </div>
 
-      {tab === "exposure" && (
-        <div className="portfolio-groupby">
-          <span className="portfolio-groupby-label">Group by</span>
+        {tab === "exposure" && (
           <div className="board-toggle">
             {EXPOSURE_GROUP_TABS.map((g) => (
               <button
@@ -986,8 +985,8 @@ function Portfolio({ savedTeams, buyIns, playerSims, playerGameLogs, playerBios 
               </button>
             ))}
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {tab === "analysis" ? (
         <MyAnalysisPanel rows={rows} playerBios={playerBios} />
