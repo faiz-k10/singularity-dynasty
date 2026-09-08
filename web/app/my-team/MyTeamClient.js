@@ -1005,12 +1005,10 @@ function Portfolio({ savedTeams, buyIns, playerSims, playerGameLogs, playerBios 
                   (s, p) => s + (p.hasInvested ? p.invested : 0),
                   0
                 );
-                // Exposure-count groups start collapsed (the "On 1 of N
-                // teams" bucket is usually a huge table); position/team
-                // groups still auto-open when there are few enough.
-                const isOpen =
-                  openGroups[g.key] ??
-                  (groupBy === "count" ? false : groups.length <= 10);
+                // Every grouping starts fully collapsed -- the point of
+                // the grouped view is to drill into one bucket at a time.
+                // Manual expand/collapse persists via openGroups.
+                const isOpen = openGroups[g.key] ?? false;
                 return (
                   <details
                     key={g.key}
