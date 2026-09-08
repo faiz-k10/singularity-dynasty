@@ -5,6 +5,12 @@ on:
     branches: [main]
   pull_request:
 
+# `next build` imports the Stripe API route modules, which construct a
+# Stripe client from this at module load (no network call). The real key
+# lives in Vercel; this placeholder just has to be a non-empty string.
+env:
+  STRIPE_SECRET_KEY: sk_test_ci_build_placeholder
+
 defaults:
   run:
     working-directory: web
