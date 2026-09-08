@@ -297,7 +297,7 @@ function RosterTable({ players, bestBall = false }) {
   );
 }
 
-// Metrics the My Analysis scatter + table plot. Two kinds (split into
+// Metrics the Analytics scatter + table plot. Two kinds (split into
 // optgroups in the axis pickers):
 //  - game-log ("gl" prefix, gameLog: true): PPG / total / game count,
 //    plus ffopportunity expected points (xFP/G, xFP total) and points
@@ -372,7 +372,7 @@ function ageFromBirthDate(birth) {
   return a;
 }
 
-// The right-hand card in My Analysis: for whichever point / row the user
+// The right-hand card in Analytics: for whichever point / row the user
 // clicked -- demographics from Sleeper's player dict (page.js ->
 // playerBios) plus that player's values on the two metrics currently on
 // the chart axes.
@@ -468,7 +468,7 @@ function filterSummary(f) {
   return parts.join(" · ");
 }
 
-// The My Analysis tab: a filter bar defines a game window (season, week
+// The Analytics tab: a filter bar defines a game window (season, week
 // range, home/away, wins/losses) plus an optional position filter; the
 // "(filtered)" metrics (PPG / total / game count) recompute over that
 // window while the static metrics (projections, sims, exposure) don't.
@@ -788,8 +788,115 @@ function MyAnalysisPanel({ rows, playerBios = {} }) {
   );
 }
 
+// The Exposure table can be shown flat or split into collapsible groups.
+// "count" = number of saved teams that roster the player (the raw
+// exposure count behind the % column).
+const EXPOSURE_GROUP_TABS = [
+  { key: "none", label: "List" },
+  { key: "position", label: "Position" },
+  { key: "team", label: "Team" },
+  { key: "count", label: "Exposure count" },
+];
+
+// Split already-sorted portfolio rows into groups (order within a group
+// keeps the active column sort). Returns null for "none" -- caller renders
+// the flat table. Each group carries a JSX `label` for its <summary>.
+function groupExposureRows(rows, groupBy, teamCount) {
+  if (groupBy === "none") return null;
+  const map = new Map();
+  for (const p of rows) {
+    const key =
+      groupBy === "position" ? p.position || "—"
+      : groupBy === "team" ? p.team || "—"
+      : String(p.teams);
+    let g = map.get(key);
+    if (!g) {
+      g = { key, rows: [] };
+      map.set(key, g);
+    }
+    g.rows.push(p);
+  }
+  const groups = [...map.values()];
+  if (groupBy === "position") {
+    const order = { QB: 0, RB: 1, WR: 2, TE: 3 };
+    groups.sort(
+      (a, b) => (order[a.key] ?? 9) - (order[b.key] ?? 9) || a.key.localeCompare(b.key)
+    );
+    for (const g of groups) {
+      g.label = <PositionBadge position={g.key === "—" ? null : g.key} />;
+    }
+  } else if (groupBy === "team") {
+    groups.sort((a, b) => b.rows.length - a.rows.length || a.key.localeCompare(b.key));
+    for (const g of groups) {
+      g.label = <TeamBadge team={g.key === "—" ? null : g.key} />;
+    }
+  } else {
+    groups.sort((a, b) => Number(b.key) - Number(a.key));
+    for (const g of groups) {
+      g.label = (
+        <span className="portfolio-group-count">
+          On {Number(g.key)} of {teamCount} teams
+        </span>
+      );
+    }
+  }
+  return groups;
+}
+
+// The Exposure table itself -- pulled out so the flat view and each
+// grouped <details> render the exact same columns/sort headers.
+function ExposureTable({ rows, teamCount, anyBuyIn, thProps }) {
+  return (
+    <table className="rankings-table">
+      <thead>
+        <tr>
+          <Th label="Player" sortKeyName="name" className="align-left" {...thProps} />
+          <Th label="Pos" sortKeyName="position" {...thProps} />
+          <Th label="Team" sortKeyName="team" {...thProps} />
+          <Th label="Exposure" sortKeyName="exposurePct" {...thProps} />
+          <Th label="Starts" sortKeyName="starterCount" {...thProps} />
+          {anyBuyIn && <Th label="Invested" sortKeyName="invested" {...thProps} />}
+          {anyBuyIn && <Th label="Bankroll %" sortKeyName="weightPct" {...thProps} />}
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((p) => (
+          <tr key={p.player_id} data-pos={p.position || undefined}>
+            <td className="player-cell align-left">{p.name}</td>
+            <td><PositionBadge position={p.position} /></td>
+            <td><TeamBadge team={p.team} /></td>
+            <td className="mono">
+              <span className="portfolio-exposure">
+                <span
+                  className="portfolio-exposure-bar"
+                  style={{ "--pct": `${p.exposurePct}%` }}
+                />
+                <span className="portfolio-exposure-label">
+                  {p.teams}/{teamCount} · {Math.round(p.exposurePct)}%
+                </span>
+              </span>
+            </td>
+            <td className="mono">{p.starterCount}</td>
+            {anyBuyIn && (
+              <td className="mono">
+                {p.hasInvested ? `$${p.invested.toLocaleString()}` : "—"}
+              </td>
+            )}
+            {anyBuyIn && (
+              <td className="mono">
+                {p.weightPct == null ? "—" : `${p.weightPct.toFixed(1)}%`}
+              </td>
+            )}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
 function Portfolio({ savedTeams, buyIns, playerSims, playerGameLogs, playerBios }) {
-  const [tab, setTab] = useState("analysis");
+  const [tab, setTab] = useState("exposure");
+  const [groupBy, setGroupBy] = useState("none");
   const [sortKey, setSortKey] = useState(null);
   const [sortDir, setSortDir] = useState("desc");
   const { rows, totalBuyIn, teamsWithBuyIn, teamCount } = buildPortfolio(
@@ -809,6 +916,7 @@ function Portfolio({ savedTeams, buyIns, playerSims, playerGameLogs, playerBios 
   const display = sortKey
     ? sortRows(rows, sortKey, sortDir, PORTFOLIO_COLUMN_TYPES)
     : defaultSorted;
+  const groups = groupExposureRows(display, groupBy, teamCount);
 
   function handleSort(key) {
     if (sortKey === key) {
@@ -845,70 +953,86 @@ function Portfolio({ savedTeams, buyIns, playerSims, playerGameLogs, playerBios 
       <div className="board-toggle my-team-view-toggle">
         <button
           type="button"
-          className={tab === "analysis" ? "active" : ""}
-          onClick={() => setTab("analysis")}
-        >
-          My Analysis
-        </button>
-        <button
-          type="button"
           className={tab === "exposure" ? "active" : ""}
           onClick={() => setTab("exposure")}
         >
           Exposure
         </button>
+        <button
+          type="button"
+          className={tab === "analysis" ? "active" : ""}
+          onClick={() => setTab("analysis")}
+        >
+          Analytics
+        </button>
       </div>
+
+      {tab === "exposure" && (
+        <div className="portfolio-groupby">
+          <span className="portfolio-groupby-label">Group by</span>
+          <div className="board-toggle">
+            {EXPOSURE_GROUP_TABS.map((g) => (
+              <button
+                key={g.key}
+                type="button"
+                className={groupBy === g.key ? "active" : ""}
+                onClick={() => setGroupBy(g.key)}
+              >
+                {g.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {tab === "analysis" ? (
         <MyAnalysisPanel rows={rows} playerBios={playerBios} />
       ) : (
         <>
-          <div className="rankings-table-wrap">
-            <table className="rankings-table">
-              <thead>
-                <tr>
-                  <Th label="Player" sortKeyName="name" className="align-left" {...thProps} />
-                  <Th label="Pos" sortKeyName="position" {...thProps} />
-                  <Th label="Team" sortKeyName="team" {...thProps} />
-                  <Th label="Exposure" sortKeyName="exposurePct" {...thProps} />
-                  <Th label="Starts" sortKeyName="starterCount" {...thProps} />
-                  {anyBuyIn && <Th label="Invested" sortKeyName="invested" {...thProps} />}
-                  {anyBuyIn && <Th label="Bankroll %" sortKeyName="weightPct" {...thProps} />}
-                </tr>
-              </thead>
-              <tbody>
-                {display.map((p) => (
-                  <tr key={p.player_id} data-pos={p.position || undefined}>
-                    <td className="player-cell align-left">{p.name}</td>
-                    <td><PositionBadge position={p.position} /></td>
-                    <td><TeamBadge team={p.team} /></td>
-                    <td className="mono">
-                      <span className="portfolio-exposure">
-                        <span
-                          className="portfolio-exposure-bar"
-                          style={{ "--pct": `${p.exposurePct}%` }}
-                        />
-                        <span className="portfolio-exposure-label">
-                          {p.teams}/{teamCount} · {Math.round(p.exposurePct)}%
-                        </span>
+          {groups ? (
+            <div className="portfolio-groups">
+              {groups.map((g) => {
+                const gInvested = g.rows.reduce(
+                  (s, p) => s + (p.hasInvested ? p.invested : 0),
+                  0
+                );
+                return (
+                  <details
+                    key={g.key}
+                    className="portfolio-group"
+                    open={groups.length <= 10}
+                  >
+                    <summary className="portfolio-group-head">
+                      <span className="my-team-chevron">▶</span>
+                      <span className="portfolio-group-name">{g.label}</span>
+                      <span className="portfolio-group-meta">
+                        {g.rows.length} {g.rows.length === 1 ? "player" : "players"}
+                        {anyBuyIn && gInvested > 0 &&
+                          ` · $${gInvested.toLocaleString()}`}
                       </span>
-                    </td>
-                    <td className="mono">{p.starterCount}</td>
-                    {anyBuyIn && (
-                      <td className="mono">
-                        {p.hasInvested ? `$${p.invested.toLocaleString()}` : "—"}
-                      </td>
-                    )}
-                    {anyBuyIn && (
-                      <td className="mono">
-                        {p.weightPct == null ? "—" : `${p.weightPct.toFixed(1)}%`}
-                      </td>
-                    )}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                    </summary>
+                    <div className="rankings-table-wrap">
+                      <ExposureTable
+                        rows={g.rows}
+                        teamCount={teamCount}
+                        anyBuyIn={anyBuyIn}
+                        thProps={thProps}
+                      />
+                    </div>
+                  </details>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="rankings-table-wrap">
+              <ExposureTable
+                rows={display}
+                teamCount={teamCount}
+                anyBuyIn={anyBuyIn}
+                thProps={thProps}
+              />
+            </div>
+          )}
           {!anyBuyIn && (
             <p className="my-team-hint">
               Set a buy-in on each saved team (below) to see dollars staked per player.
