@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+defaults:
+  run:
+    working-directory: web
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+
+  # Renders every route against real Supabase data to catch breaks that
+  # build/lint/tests can't see (a query hitting a dropped column, a Server
+  # Component throwing). Skips itself cleanly if the repo has no Supabase
+  # secrets configured.
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - id: guard
+        run: echo "have_secrets=${{ secrets.NEXT_PUBLIC_SUPABASE_URL != '' }}" >> "$GITHUB_OUTPUT"
+      - if: steps.guard.outputs.have_secrets == 'true'
+        run: npm ci
+      - if: steps.guard.outputs.have_secrets == 'true'
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      - if: steps.guard.outputs.have_secrets == 'true'
+        run: |
+          npm start &
+          for i in $(seq 1 60); do curl -sf -o /dev/null http://localhost:3000/ && break; sleep 1; done
+          npm run smoke
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      - if: steps.guard.outputs.have_secrets != 'true'
+        run: echo "No NEXT_PUBLIC_SUPABASE_URL secret set — skipping the route smoke test. Add it in repo Settings › Secrets to enable."
