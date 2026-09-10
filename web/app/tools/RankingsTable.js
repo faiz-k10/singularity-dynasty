@@ -2,8 +2,14 @@ import Link from "next/link";
 import SortableTh from "./SortableTh";
 import TrendTag from "./TrendTag";
 import ConfidenceBadge from "./ConfidenceBadge";
+import BounceBadge from "./BounceBadge";
 import TeamBadge from "./TeamBadge";
 import { matchupTint } from "./MatchupBadge";
+
+// `notes` carries at most one flag: "OUT" (hard status, stays in the
+// Notes column) or "BOUNCEBACK ..." (soft/informational, rendered as the
+// trampoline BounceBadge next to the name instead). Empty otherwise.
+const isBounceNote = (n) => typeof n === "string" && n.startsWith("BOUNCEBACK");
 
 function formatProjection(value) {
   return value === null || value === undefined ? "—" : Number(value).toFixed(1);
@@ -37,13 +43,15 @@ function PlayerCell({ row, withPopover }) {
       <td className="player-cell">
         <TrendTag trend={row.trend} /> {row.player_name}{" "}
         <ConfidenceBadge confidence={row.sample_confidence} />
+        <BounceBadge note={row.notes} />
       </td>
     );
   }
   return (
     <td className="player-cell">
       <span className="player-hover" tabIndex={0}>
-        <ConfidenceBadge confidence={row.sample_confidence} /> {row.player_name}
+        <ConfidenceBadge confidence={row.sample_confidence} /> {row.player_name}{" "}
+        <BounceBadge note={row.notes} />
         <div className="player-popover">
           <div className="player-popover-card">
             <div className="player-popover-row">
@@ -58,7 +66,9 @@ function PlayerCell({ row, withPopover }) {
               <span>Trend</span>
               <span><TrendTag trend={row.trend} /></span>
             </div>
-            {row.notes && <div className="player-popover-notes">{row.notes}</div>}
+            {row.notes && !isBounceNote(row.notes) && (
+              <div className="player-popover-notes">{row.notes}</div>
+            )}
             <Link
               href={`/tools/compare-players?p1=${encodeURIComponent(row.player_name)}`}
               className="player-popover-compare"
@@ -148,7 +158,11 @@ export default function RankingsTable({
                     {formatStat(row[c.key])}
                   </td>
                 ))}
-              {showNotes && <td className="tool-notes">{row.notes || ""}</td>}
+              {showNotes && (
+                <td className="tool-notes">
+                  {isBounceNote(row.notes) ? "" : row.notes || ""}
+                </td>
+              )}
             </tr>
           ))}
         </tbody>

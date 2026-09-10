@@ -1,0 +1,33 @@
+// The model flags a player whose most recent game landed in the bottom
+// 20% of their own weighted history -- redraft_rankings.notes comes
+// through as "BOUNCEBACK (informational only)". It does NOT move the
+// projection (backtest_bounceback_validation.R walk-forward killed the
+// point adjustment -- the pattern is real but acting on it lost
+// accuracy), so it renders like TrendTag: a small glyph with a tooltip,
+// sitting next to the player name, not a number in the table. Trampoline
+// = due for a bounce.
+export default function BounceBadge({ note }) {
+  if (typeof note !== "string" || !note.startsWith("BOUNCEBACK")) return null;
+  return (
+    <span
+      className="bounce-badge"
+      title="Bounce-back watch — last game landed in the bottom 20% of this player's own history. Informational only; the projection is not adjusted for it."
+    >
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <circle cx="12" cy="4" r="2" fill="currentColor" stroke="none" />
+        <path d="M6 9.5Q12 2.5 18 9.5" />
+        <ellipse cx="12" cy="13.5" rx="8" ry="2.3" />
+        <path d="M6 15 4 20" />
+        <path d="M18 15 20 20" />
+      </svg>
+    </span>
+  );
+}
