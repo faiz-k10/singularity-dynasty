@@ -115,6 +115,19 @@ baseline." Was a flat 0.20 (bottom-20th-percentile) for every position
 before; see the tighter-trigger check two paragraphs down for why moving
 to FLOOR_Q isn't a step into the completely unvalidated.
 
+Compared against the EXACT `floor` this row publishes (post shrinkage/QB-
+split, post matchup-multiplier) -- not a separately-recomputed threshold.
+The first version of this switch compared against a leave-one-out
+quantile built from prior games only instead (principled -- keeps the
+flagged game from defining its own bar), and that silently differed from
+the published floor enough that it could flag a player whose actual game
+beat the number shown as his floor, which is the one thing this badge
+must never do (explicit product requirement). Comparing directly against
+the published number is a hair less statistically pure (that one game is
+part of the sample its own bar is drawn from) but it's what the badge
+visibly means to someone reading the table, and it's informational only
+regardless.
+
 **The underlying pattern is real.** Checked every player-season 2018-2025
 (min 10 games that season) for bottom-20th-percentile weeks (within that
 player's own season), then tracked where they actually landed 1/2/3 games

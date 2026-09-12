@@ -166,10 +166,9 @@ BOUNCEBACK_MED_Q <- c(RB = 0.529, QB = 0.556, WR = 0.548, TE = 0.556)  # not app
 # floor/ceiling alone above).
 PASS_PTS_DECAY_QB <- 0.79
 RUSH_PTS_DECAY_QB <- 0.88
-# Below this many prior (non-triggering) games, the leave-one-out 20th-
-# percentile threshold itself is too noisy to trust -- reuses the same
-# eligibility floor as everything else in this file rather than
-# inventing a second one.
+# Below this many games, a player's own floor is too noisy/thin a number
+# to trust as a bounce-back bar -- reuses the same eligibility floor as
+# everything else in this file rather than inventing a second one.
 BOUNCEBACK_MIN_PRIOR_GAMES <- MIN_GAMES
 
 # Granular per-stat SEASON projections (stat_ranges below -- Player Season
@@ -1071,38 +1070,16 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
 
     playoff <- replicate(n_sims, sum(sample(x, 3, replace = TRUE, prob = wc)))
 
-    # Bounce-back trigger: was this player's most recent real game (x's
-    # last element -- d/reg is chronologically ordered, see load_history())
-    # AT OR BELOW their own floor (FLOOR_Q[pos], same quantile `fl` below
-    # is built from)? Threshold computed leave-one-out (own_prior_x/
-    # own_prior_w exclude that game itself) so the flagged game never
-    # defines its own bar. Requires enough PRIOR games on their own
-    # (BOUNCEBACK_MIN_PRIOR_GAMES) to trust that threshold at all -- a
-    # player sitting right at MIN_GAMES has only 5 prior games to judge a
-    # floor from, too thin to trust.
-    #
-    # INFORMATIONAL ONLY as of the walk-forward validation in
-    # backtest_bounceback_validation.R -- the underlying pattern (players
-    # average somewhat above the 50th percentile the week after a bad
-    # one) is real, but shifting the point PREDICTION in response to it
-    # made next-game MAE worse, not better (+0.7% overall, +3.0% on the
-    # games it actually changes -- see README's "Bounce-back adjustment"
-    # section for the full numbers). A real average-case pattern doesn't
-    # automatically mean nudging every triggered player's number helps:
-    # the players who don't bounce back apparently lose more accuracy
-    # than the players who do gain, once converted to a single-point
-    # prediction. med_q therefore always stays 0.50 -- had_bad_week is
-    # still computed and exported (same "surface it, don't act on it"
-    # pattern trend already uses) since it's still a real, true fact
-    # about the player worth a human seeing, just not something proven
-    # to make the number itself more accurate.
-    had_bad_week <- FALSE
-    if (n - 1 >= BOUNCEBACK_MIN_PRIOR_GAMES) {
-      own_prior_x <- x[-n]
-      own_prior_w <- recency_weights(n - 1, MED_DECAY[pos])
-      bad_week_bar <- weighted_quantile(own_prior_x, own_prior_w, FLOOR_Q[pos])
-      had_bad_week <- x[n] <= bad_week_bar
-    }
+    # Bounce-back trigger: had_bad_week itself is computed further down
+    # (after fl/med/cei exist and the matchup multiplier has been
+    # applied), by directly comparing this player's most recent real game
+    # against the exact `floor` value this row publishes -- see that
+    # block for why, and BOUNCEBACK_MED_Q's comment up top for why it's
+    # informational only (backtest_bounceback_validation.R walk-forward
+    # tested shifting the point PREDICTION in response to the pattern,
+    # and that made next-game MAE worse, not better: +0.7% overall,
+    # +3.0% on the games it actually changes). med_q therefore always
+    # stays 0.50 below.
     med_q <- 0.50
 
     shrink_this_player <- p %in% shrink_players && !is.null(baseline_pools[[pos]])
@@ -1199,6 +1176,28 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
         cei <- cei * mult
       }
     }
+
+    # Bounce-back trigger: was this player's most recent real game (x's
+    # last element -- d/reg is chronologically ordered, see
+    # load_history()) at or below `fl`, the EXACT floor value this row
+    # publishes -- post shrinkage/QB-split and post matchup-multiplier,
+    # the same number that ends up in the Floor column? Compared directly
+    # against the number a person can actually see on the page, not a
+    # separately-recomputed one. An earlier version of this compared
+    # against a leave-one-out quantile built from prior games only (to
+    # keep the flagged game from defining its own bar) -- principled, but
+    # it silently differed from the published floor two ways at once
+    # (leave-one-out, and computed before the matchup multiplier), which
+    # could flag a player whose actual game beat the number shown as his
+    # floor. That's the one thing this badge must never do -- explicit
+    # product requirement -- so it's gone in favor of the literal
+    # comparison. Requires enough games to trust a floor exists at all
+    # (BOUNCEBACK_MIN_PRIOR_GAMES, same eligibility floor as elsewhere in
+    # this file).
+    #
+    # INFORMATIONAL ONLY either way -- see med_q's comment above for why
+    # the point prediction itself never reacts to this.
+    had_bad_week <- n >= BOUNCEBACK_MIN_PRIOR_GAMES && x[n] <= fl
 
     # Weekly per-stat MEANS (raw components -- receptions, yards, TDs,
     # INTs), shrinkage/matchup-mult treatment as `med` above, just one
