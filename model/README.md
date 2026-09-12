@@ -105,8 +105,15 @@ it (27.2).
 ## Bounce-back trigger (informational only — tried as a real adjustment, backtest said no)
 
 A player whose most recent real game (week 18 excluded, see below) landed
-in the bottom 20% of their own weighted history gets flagged
-(`bounceback` column, `BOUNCEBACK` note on the published Redraft row).
+at or below their own floor (`FLOOR_Q[pos]`, the same calibrated quantile
+`floor` is published from) gets flagged (`bounceback` column, `BOUNCEBACK`
+note on the published Redraft row, rendered as the trampoline badge on
+the site). Explicit product choice: an exceptionally bad game — at or
+below the number already published as this player's floor, not merely a
+below-average one — is what's worth flagging as "due for a bounce back to
+baseline." Was a flat 0.20 (bottom-20th-percentile) for every position
+before; see the tighter-trigger check two paragraphs down for why moving
+to FLOOR_Q isn't a step into the completely unvalidated.
 
 **The underlying pattern is real.** Checked every player-season 2018-2025
 (min 10 games that season) for bottom-20th-percentile weeks (within that

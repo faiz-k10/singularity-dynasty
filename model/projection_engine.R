@@ -64,32 +64,51 @@ FLOOR_Q     <- c(RB = 0.09, QB = 0.08, WR = 0.12, TE = 0.13)  # calibrated inter
 MED_MEAN_BLEND_SHARE <- 0.85
 
 # Bounce-back trigger: a player whose most recent real game (week-18
-# excluded, see EXCLUDE_WEEKS) landed in the bottom 20% of their OWN
-# weighted history. Originally the plan was to pull their median from a
-# slightly higher internal quantile next week (BOUNCEBACK_MED_Q below)
-# instead of the flat 0.50 every other player gets -- backed by a real
-# descriptive backtest (every player-season 2018-2025, min 10 games,
-# ~5,300 bottom-20th-percentile trigger events tracked forward: real
-# players average somewhat above the 50th percentile next game and
-# repeat bottom-20% only 12-16% of the time, vs. exactly 50th/20% for a
-# true no-memory process -- real, if modest, mean reversion).
+# excluded, see EXCLUDE_WEEKS) landed AT OR BELOW their own published
+# FLOOR_Q -- the same calibrated per-position quantile `fl` (this week's
+# floor) is built from, not a separate constant -- so the badge means
+# exactly what it says: "this game was at or below the number we call
+# his floor." Explicit product choice: an exceptionally bad game (below
+# floor, not merely a below-average one) is the trigger worth flagging as
+# "due for a bounce back to baseline," and tying it to the same published
+# number keeps the two internally consistent.
 #
-# BOUNCEBACK_MED_Q is NOT applied to the projection (see med_q below,
-# always 0.50) -- backtest_bounceback_validation.R walk-forward tested
-# whether ACTING on that pattern (shifting the point prediction, not
-# just observing it) reduces next-game MAE, and it doesn't: +0.7% worse
-# overall, +3.0% worse on exactly the games it changes (up to +4.2% for
-# QB). A real average-case pattern doesn't automatically mean nudging
-# every triggered player's single-point prediction helps -- the players
-# who don't bounce back apparently lose more accuracy than the players
-# who do gain. had_bad_week is still computed and exported as
-# `bounceback` purely as information (same as `trend`), values kept here
-# for the record / in case a differently-shaped adjustment is worth
-# trying later. Trigger threshold is computed leave-one-out (the flagged
-# game itself is excluded from the "bottom 20%" reference distribution)
-# to avoid a game defining its own threshold -- same zero-lookahead
-# discipline as every walk-forward backtest in this file.
-BOUNCEBACK_TRIGGER_Q <- 0.20
+# Was previously a flat 0.20 (bottom-20th-percentile) for every position,
+# picked from a real descriptive backtest (every player-season 2018-2025,
+# min 10 games, ~5,300 bottom-20th-percentile trigger events tracked
+# forward: real players average somewhat above the 50th percentile next
+# game and repeat bottom-20% only 12-16% of the time, vs. exactly
+# 50th/20% for a true no-memory process -- real, if modest, mean
+# reversion). That same backtest also checked a tighter bottom-10th-
+# percentile trigger -- close to FLOOR_Q's ~8-13% range -- and found
+# almost identical aggregate reversion (a more extreme bad week does NOT
+# predict a bigger bounce, in aggregate), so switching to FLOOR_Q isn't
+# stepping into the completely untested: see README's "Bounce-back
+# trigger" section for the full per-position breakdown at that tighter
+# threshold, including its one real divergence -- QB's reversion fades/
+# inverts at the tighter cutoff (n=212, smaller sample) where it holds up
+# fine for RB/WR/TE. Still, FLOOR_Q as the literal trigger wasn't the
+# exact quantile re-run, and it's informational only either way (see
+# next paragraph) -- the stakes of that gap are "which games get the
+# badge," not model accuracy.
+#
+# Originally the plan was ALSO to pull the player's median from a
+# slightly higher internal quantile next week (BOUNCEBACK_MED_Q below)
+# instead of the flat 0.50 every other player gets -- backtest_
+# bounceback_validation.R walk-forward tested whether ACTING on the
+# reversion pattern (shifting the point prediction, not just observing
+# it) reduces next-game MAE, and it doesn't: +0.7% worse overall, +3.0%
+# worse on exactly the games it changes (up to +4.2% for QB). A real
+# average-case pattern doesn't automatically mean nudging every triggered
+# player's single-point prediction helps -- the players who don't bounce
+# back apparently lose more accuracy than the players who do gain.
+# BOUNCEBACK_MED_Q is therefore NOT applied to the projection (med_q
+# below stays 0.50 always) -- had_bad_week is still computed and exported
+# as `bounceback` purely as information (same "surface it, don't act on
+# it" pattern `trend` already uses). Trigger threshold is computed
+# leave-one-out (the flagged game itself is excluded from its own
+# reference distribution) to avoid a game defining its own bar -- same
+# zero-lookahead discipline as every walk-forward backtest in this file.
 BOUNCEBACK_MED_Q <- c(RB = 0.529, QB = 0.556, WR = 0.548, TE = 0.556)  # not applied -- see above
 
 # QB weekly median: passing/rushing split, NOT a blended single-decay
@@ -1054,12 +1073,13 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
 
     # Bounce-back trigger: was this player's most recent real game (x's
     # last element -- d/reg is chronologically ordered, see load_history())
-    # in the bottom 20% of their OWN history? Threshold computed
-    # leave-one-out (own_prior_x/own_prior_w exclude that game itself) so
-    # the flagged game never defines its own bar. Requires enough PRIOR
-    # games on their own (BOUNCEBACK_MIN_PRIOR_GAMES) to trust that
-    # threshold at all -- a player sitting right at MIN_GAMES has only 5
-    # prior games to judge "bottom 20%" from, too thin to trust.
+    # AT OR BELOW their own floor (FLOOR_Q[pos], same quantile `fl` below
+    # is built from)? Threshold computed leave-one-out (own_prior_x/
+    # own_prior_w exclude that game itself) so the flagged game never
+    # defines its own bar. Requires enough PRIOR games on their own
+    # (BOUNCEBACK_MIN_PRIOR_GAMES) to trust that threshold at all -- a
+    # player sitting right at MIN_GAMES has only 5 prior games to judge a
+    # floor from, too thin to trust.
     #
     # INFORMATIONAL ONLY as of the walk-forward validation in
     # backtest_bounceback_validation.R -- the underlying pattern (players
@@ -1080,7 +1100,7 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
     if (n - 1 >= BOUNCEBACK_MIN_PRIOR_GAMES) {
       own_prior_x <- x[-n]
       own_prior_w <- recency_weights(n - 1, MED_DECAY[pos])
-      bad_week_bar <- weighted_quantile(own_prior_x, own_prior_w, BOUNCEBACK_TRIGGER_Q)
+      bad_week_bar <- weighted_quantile(own_prior_x, own_prior_w, FLOOR_Q[pos])
       had_bad_week <- x[n] <= bad_week_bar
     }
     med_q <- 0.50

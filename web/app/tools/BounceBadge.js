@@ -1,5 +1,6 @@
-// The model flags a player whose most recent game landed in the bottom
-// 20% of their own weighted history -- redraft_rankings.notes comes
+// The model flags a player whose most recent real game landed at or
+// below their own published floor (FLOOR_Q, the same calibrated quantile
+// that produces the Floor column) -- redraft_rankings.notes comes
 // through as "BOUNCEBACK (informational only)". It does NOT move the
 // projection (backtest_bounceback_validation.R walk-forward killed the
 // point adjustment -- the pattern is real but acting on it lost
@@ -11,7 +12,7 @@ export default function BounceBadge({ note }) {
   return (
     <span
       className="bounce-badge"
-      title="Bounce-back watch — last game landed in the bottom 20% of this player's own history. Informational only; the projection is not adjusted for it."
+      title="Bounce-back watch — last real game was at or below this player's own floor. Informational only; the projection is not adjusted for it."
     >
       <svg
         viewBox="0 0 24 24"
