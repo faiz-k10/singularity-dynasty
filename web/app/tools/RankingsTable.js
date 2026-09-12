@@ -11,17 +11,18 @@ import { matchupTint } from "./MatchupBadge";
 // trampoline BounceBadge next to the name instead). Empty otherwise.
 const isBounceNote = (n) => typeof n === "string" && n.startsWith("BOUNCEBACK");
 
-function formatProjection(value) {
+// Weekly floor/ceiling formatting -- null for rows published before
+// migration 0029 added these columns, until the next model re-run.
+function formatRange(value) {
   return value === null || value === undefined ? "—" : Number(value).toFixed(1);
 }
 
-// The raw weekly-average component stats that feed a player's custom-
-// scoring projection (see lib/scoring.js) -- shown as their own columns
-// (Redraft only, via showStatColumns) rather than tucked behind a click,
-// so they're visible right in the table. Not every column applies to
-// every position (a WR has no passing_yards) -- STAT_COLUMNS just reads
-// whatever's in scoring_stats and renders "—" for a column a given
-// player's position doesn't publish.
+// The raw weekly-average component stats (Redraft only, via
+// showStatColumns) -- shown as their own columns rather than tucked
+// behind a click, so they're visible right in the table. Not every
+// column applies to every position (a WR has no passing_yards) --
+// STAT_COLUMNS just reads whatever's in scoring_stats and renders "—"
+// for a column a given player's position doesn't publish.
 const STAT_COLUMNS = [
   { key: "passing_yards", label: "Pass Yds" },
   { key: "passing_tds", label: "Pass TD" },
@@ -59,8 +60,12 @@ function PlayerCell({ row, withPopover }) {
               <span>{row.team || "—"}</span>
             </div>
             <div className="player-popover-row">
-              <span>Proj</span>
-              <span>{formatProjection(row.projection)}</span>
+              <span>Floor</span>
+              <span>{formatRange(row.floor)}</span>
+            </div>
+            <div className="player-popover-row">
+              <span>Ceiling</span>
+              <span>{formatRange(row.ceiling)}</span>
             </div>
             <div className="player-popover-row">
               <span>Trend</span>
@@ -87,7 +92,7 @@ export default function RankingsTable({
   showPosition,
   showTeam = true,
   showOpponent = false,
-  showProjection = false,
+  showRange = false,
   showNotes = true,
   showStatColumns = false,
   popoverOnName = false,
@@ -109,8 +114,11 @@ export default function RankingsTable({
             {showPosition && <SortableTh label="Pos" sortKey="position" {...sortProps} />}
             {showTeam && <SortableTh label="Team" sortKey="team" {...sortProps} />}
             {showOpponent && <SortableTh label="Opp" sortKey="opponent" {...sortProps} />}
-            {showProjection && (
-              <SortableTh label="Proj" sortKey="projection" {...sortProps} />
+            {showRange && (
+              <>
+                <SortableTh label="Floor" sortKey="floor" {...sortProps} />
+                <SortableTh label="Ceiling" sortKey="ceiling" {...sortProps} />
+              </>
             )}
             {showStatColumns &&
               STAT_COLUMNS.map((c) => <SortableTh key={c.key} label={c.label} sortKey={c.key} {...sortProps} />)}
@@ -147,10 +155,15 @@ export default function RankingsTable({
                   </td>
                 );
               })()}
-              {showProjection && (
-                <td className="mono heat-cell" style={{ "--heat": row.heat || 0 }}>
-                  {formatProjection(row.projection)}
-                </td>
+              {showRange && (
+                <>
+                  <td className="mono heat-cell" style={{ "--heat": row.floorHeat || 0 }}>
+                    {formatRange(row.floor)}
+                  </td>
+                  <td className="mono heat-cell" style={{ "--heat": row.ceilingHeat || 0 }}>
+                    {formatRange(row.ceiling)}
+                  </td>
+                </>
               )}
               {showStatColumns &&
                 STAT_COLUMNS.map((c) => (

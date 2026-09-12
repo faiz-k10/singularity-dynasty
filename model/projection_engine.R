@@ -1315,6 +1315,7 @@ export_for_supabase <- function(df, target_season = TARGET_SEASON, week = NULL) 
     cat("OUT this week (projection/ceiling set to 0):", sum(is_out), "player(s) -",
         paste(df$player_name[is_out], collapse = ", "), "\n")
   }
+  df$floor <- ifelse(is_out, 0, df$floor)
   df$median <- ifelse(is_out, 0, df$median)
   df$ceiling <- ifelse(is_out, 0, df$ceiling)
 
@@ -1328,6 +1329,15 @@ export_for_supabase <- function(df, target_season = TARGET_SEASON, week = NULL) 
     season = season, week = week, rank = seq_len(nrow(redraft)),
     player_name = redraft$player_name, position = redraft$position,
     team = redraft$team, opponent = redraft$opponent, projection = redraft$median,
+    # Weekly floor/ceiling -- same calibrated FLOOR_Q/CEIL_Q + matchup
+    # adjustment as `projection`, already computed above per row; this is
+    # the first thing that actually exports them (redraft_rankings.floor/
+    # ceiling, migration 0029). Distinct from player_simulations' season-
+    # total floor/ceiling below. The Redraft Rankings PAGE displays these
+    # instead of projection now -- `projection`/`rank` stay in the table
+    # and this CSV purely as the internal ranking/ordering basis and for
+    # My Team's myProjPts, which still reads the `projection` column.
+    floor = redraft$floor, ceiling = redraft$ceiling,
     matchup_mult = redraft$matchup_mult,
     trend = redraft$trend,
     sample_confidence = ifelse(redraft$shrunk, "building", "established"),

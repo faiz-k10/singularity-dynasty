@@ -77,6 +77,11 @@ const tables = [
       team: r.team || null,
       opponent: r.opponent || null,
       projection: Number(r.projection),
+      // Weekly floor/ceiling (migration 0029) -- what the Redraft
+      // Rankings page actually displays now; `projection` stays as the
+      // rank/sort basis and what My Team's myProjPts reads.
+      floor: r.floor === "" || r.floor == null ? null : Number(r.floor),
+      ceiling: r.ceiling === "" || r.ceiling == null ? null : Number(r.ceiling),
       matchup_mult: r.matchup_mult === "" ? null : Number(r.matchup_mult),
       trend: r.trend,
       sample_confidence: r.sample_confidence,

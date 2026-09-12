@@ -3,15 +3,12 @@
 import { useMemo, useState } from "react";
 import RankingsTable from "./RankingsTable";
 
-// Shared by both Redraft Rankings toggle views. Overall: just the search
-// box, every position combined into one table. By Position: the same
-// single combined table, filtered by whichever positions the caller has
-// selected (any combination of QB/RB/WR/TE). Sorting stays server-driven
-// via the existing URL-param mechanism in both cases; the search text is
-// the only client state owned here -- which positions are selected, and
-// the filter-row UI for picking them, are owned by the parent
-// (RedraftRankingsClient) so that row can live inside the scoring-
-// settings accordion instead of a second separate box.
+// Search box + combined table, optionally filtered to a subset of
+// positions (any combination of QB/RB/WR/TE). Sorting stays server-driven
+// via the existing URL-param mechanism; the search text is the only
+// client state owned here -- which positions are selected, and the
+// filter-row UI for picking them, are owned by the parent
+// (RedraftRankingsClient) and passed in as `rightExtra`.
 export default function RankingsSearch({
   rows,
   sortKey,
@@ -80,7 +77,7 @@ export default function RankingsSearch({
           rows={filteredRows}
           showPosition
           showOpponent
-          showProjection
+          showRange
           sortKey={sortKey}
           sortDir={sortDir}
           currentParams={currentParams}

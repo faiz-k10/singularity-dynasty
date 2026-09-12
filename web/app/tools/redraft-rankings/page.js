@@ -29,10 +29,33 @@ const OVERALL_COLUMN_TYPES = {
   position: "string",
   team: "string",
   opponent: "string",
-  projection: "number",
+  floor: "number",
+  ceiling: "number",
   notes: "string",
   ...Object.fromEntries(STAT_COLUMN_KEYS.map((k) => [k, "number"])),
 };
+
+// Position-relative heat-tint for a numeric column -- QBs score far
+// higher raw totals than TEs, so a global min/max would make every QB
+// look "hot" regardless of how they actually rank among their own
+// position. Null-safe: rows published before migration 0029 (floor/
+// ceiling didn't exist yet) carry null and are excluded from the range
+// and rendered at heat 0 (formatProjection shows them as "--").
+function heatByPosition(rows, col) {
+  const rangeByPos = {};
+  for (const r of rows) {
+    if (r[col] == null) continue;
+    const range = rangeByPos[r.position] || { min: Infinity, max: -Infinity };
+    range.min = Math.min(range.min, r[col]);
+    range.max = Math.max(range.max, r[col]);
+    rangeByPos[r.position] = range;
+  }
+  return (r) => {
+    if (r[col] == null) return 0;
+    const range = rangeByPos[r.position];
+    return range && range.max > range.min ? (r[col] - range.min) / (range.max - range.min) : 0;
+  };
+}
 
 function sortPositions(positions) {
   return [...positions].sort((a, b) => {
@@ -76,7 +99,7 @@ export default async function RedraftRankingsPage({ searchParams }) {
     let query = supabase
       .from("redraft_rankings")
       .select(
-        "rank, player_name, position, team, opponent, projection, matchup_mult, trend, sample_confidence, scoring_stats, notes"
+        "rank, player_name, position, team, opponent, floor, ceiling, matchup_mult, trend, sample_confidence, scoring_stats, notes"
       )
       .eq("season", latest.season)
       .eq("week", latest.week)
@@ -97,21 +120,13 @@ export default async function RedraftRankingsPage({ searchParams }) {
       return { ...r, ...r.scoring_stats, positionLabel: `${r.position}${positionCounters[r.position]}` };
     });
 
-    // Projection heat-tint is position-relative -- QBs score far higher
-    // raw totals than TEs, so a global min/max would make every QB look
-    // "hot" regardless of how they actually rank among their own position.
-    const projRangeByPos = {};
-    for (const r of rankings) {
-      const range = projRangeByPos[r.position] || { min: Infinity, max: -Infinity };
-      range.min = Math.min(range.min, r.projection);
-      range.max = Math.max(range.max, r.projection);
-      projRangeByPos[r.position] = range;
-    }
-    rankings = rankings.map((r) => {
-      const range = projRangeByPos[r.position];
-      const heat = range && range.max > range.min ? (r.projection - range.min) / (range.max - range.min) : 0;
-      return { ...r, heat };
-    });
+    const floorHeatFor = heatByPosition(rankings, "floor");
+    const ceilingHeatFor = heatByPosition(rankings, "ceiling");
+    rankings = rankings.map((r) => ({
+      ...r,
+      floorHeat: floorHeatFor(r),
+      ceilingHeat: ceilingHeatFor(r),
+    }));
   }
 
   const positions = sortPositions([...new Set(rankings.map((r) => r.position))]);
@@ -182,7 +197,8 @@ export default async function RedraftRankingsPage({ searchParams }) {
                             { key: "position", label: "Position" },
                             { key: "team", label: "Team" },
                             { key: "opponent", label: "Opponent" },
-                            { key: "projection", label: "Projection" },
+                            { key: "floor", label: "Floor" },
+                            { key: "ceiling", label: "Ceiling" },
                             { key: "trend", label: "Trend" },
                             { key: "sample_confidence", label: "Confidence" },
                             { key: "notes", label: "Notes" },
