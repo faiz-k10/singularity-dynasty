@@ -1,9 +1,16 @@
-// Publisher for model/upload_redraft_rankings.csv and
-// upload_best_ball_rankings.csv -- UPDATES existing rows matched by
-// (player_name, season, week), same reasoning as
+// Publisher for model/upload_redraft_rankings.csv -- UPDATES existing
+// rows matched by (player_name, season, week), same reasoning as
 // publish-player-simulations.mjs: this republish is the same season/week
 // that's already live, just refreshed values (team-change shrinkage
 // applied, plus the no-current-team players already removed by hand).
+//
+// best_ball_rankings is intentionally NOT published here -- Best Ball
+// Rankings is sunset "for now" per CLAUDE.md, so there's no live page
+// reading that table and nothing to refresh. model/projection_engine.R
+// still writes upload_best_ball_rankings.csv every run (untouched, ready
+// to go); when Best Ball comes back, restore the second `tables` entry
+// from git history (this file, before this comment) rather than
+// reinventing it.
 // Run: node --env-file=.env.local scripts/publish-rankings.mjs
 import { createClient } from "@supabase/supabase-js";
 import { readFileSync } from "fs";
@@ -86,21 +93,6 @@ const tables = [
       trend: r.trend,
       sample_confidence: r.sample_confidence,
       scoring_stats: r.scoring_stats ? JSON.parse(r.scoring_stats) : null,
-      notes: r.notes || null,
-    }),
-  },
-  {
-    table: "best_ball_rankings",
-    csv: "../../model/upload_best_ball_rankings.csv",
-    toPayload: (r) => ({
-      rank: Number(r.rank),
-      team: r.team || null,
-      opponent: r.opponent || null,
-      ceiling_score: Number(r.ceiling_score),
-      matchup_mult: r.matchup_mult === "" ? null : Number(r.matchup_mult),
-      playoff_ceiling_score: r.playoff_ceiling_score === "" ? null : Number(r.playoff_ceiling_score),
-      trend: r.trend,
-      sample_confidence: r.sample_confidence,
       notes: r.notes || null,
     }),
   },
