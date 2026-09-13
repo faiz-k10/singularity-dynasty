@@ -435,8 +435,9 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                   {...sortProps}
                 />
                 <SortableTh
-                  label="Regr"
+                  label="vs Pace"
                   sortKey="regressionScore"
+                  title="Total fantasy points scored so far this season vs. the pace their projection implied (actual − projected PPG × games played). Positive = running hot, expect to cool off toward projection; negative = running cold, expect to warm back up."
                   {...sortProps}
                 />
                 <SortableTh
