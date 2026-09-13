@@ -518,15 +518,38 @@ build_common_pool <- function(reg, eligible_players, position, stat_col = "fanta
 # availability is a season-total concept, not a single-week one.
 #
 # `completed_weeks` (weeks of `target_season` that have fully finished,
-# per current_nfl_week() -- 0 before the season starts) matters because
-# TARGET_SEASON's own games are now folded into history (see
-# history_seasons()). A completed PAST season correctly divides by the
-# full 16-game season. But dividing TARGET_SEASON's games-so-far by that
-# same 16 right after Week 1 would read a healthy player who's played
-# every game as ~6% available -- an in-progress season isn't a bad past
-# season, it just hasn't happened yet. Divide TARGET_SEASON by how much
-# of it has actually elapsed instead, so "played every game so far" reads
-# as ~100% available, not "barely available."
+# per current_nfl_week() -- 0 before the season starts, and ALSO still 0
+# for the entire real week during which it's being played, since
+# current_nfl_week() doesn't roll over until every one of that week's
+# games is done) matters because TARGET_SEASON's own games are now folded
+# into history (see history_seasons()). A completed PAST season correctly
+# divides by the full 16-game season. But dividing TARGET_SEASON's
+# games-so-far by that same 16 right after Week 1 would read a healthy
+# player who's played every game as ~6% available -- an in-progress
+# season isn't a bad past season, it just hasn't happened yet. Divide
+# TARGET_SEASON by how much of it has actually elapsed instead, so
+# "played every game so far" reads as ~100% available, not "barely
+# available."
+#
+# REAL BUG, caught and fixed here: the ~6% case above wasn't just a
+# hypothetical this comment was warning against -- it was actually
+# happening, undetected until Week 1 2026 first put a player from an
+# early-window game (Wednesday/Thursday) into `player_games_df` while
+# `completed_weeks` was still 0 (every other Week 1 game hadn't been
+# played yet). The `completed_weeks > 0` guard on the denominator meant
+# for THIS specific transitional window -- some real target-season games
+# already exist, but no week has fully finished -- the code fell through
+# to the full-season MAX_GAMES_PER_SEASON denominator anyway, exactly
+# reproducing the ~6% failure mode the comment describes. Verified against
+# Jaxon Smith-Njigba's real data: a perfect-attendance player reading
+# 56.9% available overall (season simulation median crushed from ~327 to
+# 192, ranking a true WR1 around WR14) instead of the correct ~100%. Fix:
+# for target_season specifically, the denominator is the LARGER of
+# completed_weeks and the latest week number actually present in this
+# player's own target_season rows (so "I have a real Week 1 game" reads
+# as "at least 1 week has elapsed for me", regardless of whether the
+# league-wide week has fully closed out yet), floored at 1 to avoid a
+# division by zero.
 player_availability <- function(player_games_df, target_season = TARGET_SEASON,
                                  completed_weeks = 0) {
   yrs <- sort(unique(player_games_df$season))
@@ -539,7 +562,16 @@ player_availability <- function(player_games_df, target_season = TARGET_SEASON,
     yrs <- sort(c(yrs, target_season))
   }
   a_by_yr <- sapply(yrs, function(s) {
-    denom <- if (s == target_season && completed_weeks > 0) completed_weeks else MAX_GAMES_PER_SEASON
+    if (s == target_season) {
+      own_latest_week <- if (any(player_games_df$season == s)) {
+        max(player_games_df$week[player_games_df$season == s])
+      } else {
+        0
+      }
+      denom <- max(completed_weeks, own_latest_week, 1)
+    } else {
+      denom <- MAX_GAMES_PER_SEASON
+    }
     min(sum(player_games_df$season == s) / denom, 1)
   })
   yw <- AVAILABILITY_YEAR_DECAY ^ ((length(yrs) - 1):0)
