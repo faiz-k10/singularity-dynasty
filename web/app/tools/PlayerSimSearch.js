@@ -6,6 +6,7 @@ import SortableTh from "./SortableTh";
 import TrendTag from "./TrendTag";
 import ConfidenceBadge from "./ConfidenceBadge";
 import TeamBadge from "./TeamBadge";
+import OutcomeShape from "./OutcomeShape";
 import STAT_LABELS from "./statLabels";
 import StatRadar from "./StatRadar";
 import SimilarShapeFinder from "./SimilarShapeFinder";
@@ -429,15 +430,18 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                 <SortableTh label="Median" sortKey="median" {...sortProps} />
                 <SortableTh label="Ceiling" sortKey="ceiling" {...sortProps} />
                 <th>Range</th>
-                <SortableTh
-                  label="Pace %ile"
-                  sortKey="outcomePercentile"
-                  {...sortProps}
-                />
+                <th title="Outcome shape — how this player's 10,000 simulated seasons actually spread out below and above his own median. A tall narrow peak is a safe/consistent profile; a wide flat shoulder on either side means real mass out there (bust to the left, boom to the right).">
+                  Shape
+                </th>
                 <SortableTh
                   label="vs Pace"
                   sortKey="regressionScore"
                   title="Total fantasy points scored so far this season vs. the pace their projection implied (actual − projected PPG × games played). Positive = running hot, expect to cool off toward projection; negative = running cold, expect to warm back up."
+                  {...sortProps}
+                />
+                <SortableTh
+                  label="Pace %ile"
+                  sortKey="outcomePercentile"
                   {...sortProps}
                 />
                 <SortableTh
@@ -521,8 +525,15 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                       )}
                     </div>
                   </td>
-                  <td className="mono align-left">
-                    {row.outcomePercentile != null ? ordinal(row.outcomePercentile) : "—"}
+                  <td>
+                    <OutcomeShape
+                      floor={row.floor}
+                      median={row.median}
+                      ceiling={row.ceiling}
+                      bustPct={row.bust_pct}
+                      normalPct={row.normal_pct}
+                      boomPct={row.boom_pct}
+                    />
                   </td>
                   <td
                     className={`mono align-left ${row.regressionScore != null ? (row.regressionScore >= 0 ? "por-positive" : "por-negative") : ""}`}
@@ -530,6 +541,9 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                     {row.regressionScore != null
                       ? `${row.regressionScore >= 0 ? "+" : ""}${row.regressionScore.toFixed(2)}`
                       : "—"}
+                  </td>
+                  <td className="mono align-left">
+                    {row.outcomePercentile != null ? ordinal(row.outcomePercentile) : "—"}
                   </td>
                   <td className={`mono por-cell ${row.por >= 0 ? "por-positive" : "por-negative"}`}>
                     {row.por >= 0 ? "+" : ""}
@@ -539,7 +553,7 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                 {isExpanded && (
                   <StatDetailRow
                     row={row}
-                    colSpan={13}
+                    colSpan={12}
                     shapePeers={shapePeers}
                   />
                 )}

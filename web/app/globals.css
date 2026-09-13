@@ -1184,6 +1184,19 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .pace-marker-cold{background:var(--down); color:var(--down);}
 @media (max-width:640px){.sim-bar-track{width:80px;}}
 
+/* Outcome-shape curve (OutcomeShape.js) -- an illustrative distribution
+   silhouette next to the flat Range bar, same blue/gold split
+   (.sim-bar-typical/-upside) so the two "shape of the outcome" columns
+   read as one family: blue = downside/bust half, gold = upside/boom
+   half, a thin peak line at the median. Semi-transparent fill (not a
+   solid one) since two overlapping-at-the-peak areas would otherwise
+   show a visible seam at full opacity. */
+.outcome-shape{width:130px; height:34px; display:block;}
+.outcome-shape-bust{fill:var(--neon-blue-dim); opacity:0.55; stroke:none;}
+.outcome-shape-boom{fill:var(--horizon-gold); opacity:0.45; stroke:none;}
+.outcome-shape-peak{stroke:var(--star-dim); stroke-width:1; opacity:0.6;}
+@media (max-width:640px){.outcome-shape{width:80px;}}
+
 /* .tier-toggle/.tier-toggle-label: shared pill-button styling for the
    League Size / QB Format toggles below (mirrors
    .compare-radar-layer-toggle's pill pattern) -- name is a holdover from
