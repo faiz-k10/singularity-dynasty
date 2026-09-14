@@ -79,8 +79,12 @@ fetch_sleeper_week <- function(season, week) {
   setNames(sapply(out, `[[`, "pts_ppr"), normalize_join_name(sapply(out, `[[`, "name")))
 }
 
+BLEND_WEIGHTS <- seq(0, 1, by = 0.1)  # 0 = pure Sleeper, 1 = pure our model
+
 sleeper_err <- list(QB=c(), RB=c(), WR=c(), TE=c())
 model_err <- list(QB=c(), RB=c(), WR=c(), TE=c())
+blend_err <- setNames(lapply(BLEND_WEIGHTS, function(w) list(QB=c(), RB=c(), WR=c(), TE=c())),
+                       as.character(BLEND_WEIGHTS))
 both_n <- 0
 
 for (season in TEST_SEASONS) {
@@ -119,14 +123,28 @@ for (season in TEST_SEASONS) {
 
       sleeper_err[[pos]] <- c(sleeper_err[[pos]], abs(actual - sleeper_pred))
       model_err[[pos]] <- c(model_err[[pos]], abs(actual - model_pred))
+      for (w in BLEND_WEIGHTS) {
+        blended <- w * model_pred + (1 - w) * sleeper_pred
+        wk <- as.character(w)
+        blend_err[[wk]][[pos]] <- c(blend_err[[wk]][[pos]], abs(actual - blended))
+      }
       both_n <- both_n + 1
     }
     cat("Done", season, "week", week, "-- running total n =", both_n, "\n")
+    flush(stdout())
   }
+  # Checkpoint after each season -- a run that gets cut off (this
+  # environment killed the first attempt partway through, silently, no R
+  # error, right at the 2024->2025 boundary) still leaves usable partial
+  # results on disk instead of losing the whole run's work.
+  saveRDS(list(sleeper_err = sleeper_err, model_err = model_err, blend_err = blend_err, both_n = both_n),
+          sprintf("backtest_checkpoint_%d.rds", season))
+  cat("Checkpoint saved: backtest_checkpoint_", season, ".rds (n=", both_n, ")\n", sep = "")
+  flush(stdout())
 }
 
 cat("\n=== FINAL: your model's core methodology vs. Sleeper's real projections ===\n")
-overall_s <- c(); overall_m <- c(); overall_win <- c()
+overall_s <- c(); overall_m <- c()
 for (pos in c("QB", "RB", "WR", "TE")) {
   s <- sleeper_err[[pos]]; m <- model_err[[pos]]
   win_rate <- mean(m < s) * 100
@@ -136,3 +154,26 @@ for (pos in c("QB", "RB", "WR", "TE")) {
 }
 cat(sprintf("\nOVERALL  n=%d  Sleeper MAE=%.3f  Yours MAE=%.3f  you win %.1f%% of individual predictions\n",
             length(overall_s), mean(overall_s), mean(overall_m), mean(overall_m < overall_s) * 100))
+
+cat("\n=== BLEND SWEEP: blended = w*yours + (1-w)*sleeper, scored by MAE ===\n")
+cat("(w=0.0 is pure Sleeper == the row above; w=1.0 is pure yours == the row above)\n\n")
+cat(sprintf("%-5s %8s %8s %8s %8s %8s\n", "w", "QB", "RB", "WR", "TE", "OVERALL"))
+best_w <- NA; best_mae <- Inf
+for (w in BLEND_WEIGHTS) {
+  wk <- as.character(w)
+  pos_mae <- sapply(c("QB","RB","WR","TE"), function(pos) mean(blend_err[[wk]][[pos]]))
+  overall_mae <- mean(unlist(blend_err[[wk]]))
+  cat(sprintf("%-5.1f %8.3f %8.3f %8.3f %8.3f %8.3f\n",
+              w, pos_mae["QB"], pos_mae["RB"], pos_mae["WR"], pos_mae["TE"], overall_mae))
+  if (overall_mae < best_mae) { best_mae <- overall_mae; best_w <- w }
+}
+cat(sprintf("\nBest overall blend weight: w=%.1f (yours) / %.1f (sleeper), MAE=%.3f\n",
+            best_w, 1 - best_w, best_mae))
+
+cat("\n=== BEST BLEND WEIGHT PER POSITION ===\n")
+for (pos in c("QB", "RB", "WR", "TE")) {
+  pos_maes <- sapply(BLEND_WEIGHTS, function(w) mean(blend_err[[as.character(w)]][[pos]]))
+  best_pos_w <- BLEND_WEIGHTS[which.min(pos_maes)]
+  cat(sprintf("%s: best w=%.1f, MAE=%.3f (vs. pure yours w=1.0 MAE=%.3f, pure sleeper w=0.0 MAE=%.3f)\n",
+              pos, best_pos_w, min(pos_maes), pos_maes[length(pos_maes)], pos_maes[1]))
+}

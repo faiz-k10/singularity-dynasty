@@ -31,9 +31,12 @@ suppressMessages(library(jsonlite))
 # uncapped -- this is specific to the simulation pool.
 PLAYER_SIMULATIONS_POOL_SIZE <- 300
 
-MIN_GAMES <- 6    # eligibility floor. Every player below LOW_SAMPLE_SHRINK_THRESHOLD
-                  # (20) gets the 80/20 blend automatically, so low-sample players
-                  # are covered but not fully trusted on their own history alone.
+MIN_GAMES <- 6    # eligibility floor -- below this, a player isn't projected at
+                  # all. Below LOW_SAMPLE_SHRINK_THRESHOLD (20) but above this,
+                  # a player is still projected purely off their own history, just
+                  # labeled "building" confidence (sample_confidence) rather than
+                  # "established" -- see LOW_SAMPLE_SHRINK_THRESHOLD's own comment
+                  # for why the pool-blend that name used to imply is gone.
                   # NOTE: the walk-forward backtest above validated 8, not 6 --
                   # lowered by direct product decision to let a promising rookie
                   # (Shedeur Sanders, 7 games) clear the floor instead of getting
@@ -47,6 +50,79 @@ CEIL_DECAY  <- c(RB = 0.89, QB = 0.98, WR = 0.93, TE = 0.91)  # Best Ball Rankin
 CEIL_Q      <- c(RB = 0.96, QB = 0.96, WR = 0.94, TE = 0.96)  # calibrated internal quantile for "ceiling"
 FLOOR_Q     <- c(RB = 0.09, QB = 0.08, WR = 0.12, TE = 0.13)  # calibrated internal quantile for "floor"
 
+# Sleeper-blend weekly median: blends OUR weighted-quantile median with
+# Sleeper's own published weekly projection, per position. Validated via
+# backtest_vs_sleeper.R -- real head-to-head, 7,853 player-weeks across
+# 2024-2025 (both completed seasons, weeks 3-17), scored by MAE against
+# real outcomes:
+#
+#   w (ours)   QB MAE   RB MAE   WR MAE   TE MAE   OVERALL
+#   0.0 (pure Sleeper)  6.655    4.406    4.530    3.664    4.530
+#   best per position   6.378    4.385    4.482    3.632      --
+#   1.0 (pure ours)     6.666    4.659    4.628    3.765    4.661
+#
+# Blending wins outright -- every weight from 0.1 to 0.7 beat pure
+# Sleeper on overall MAE, and pure Sleeper alone already beat pure "ours"
+# at every position. Best weight differs meaningfully by position (RB
+# wants very little of our own signal, QB nearly even), so this is
+# applied per position, not one flat constant.
+#
+# CAVEAT worth keeping honest: the backtest's "yours" is the pure
+# weighted-quantile median, NOT the actual currently-published median
+# (which already includes the 85/15 debias blend two paragraphs down).
+# The two corrections may partially overlap -- both exist to fix the
+# same right-skew low-bias problem, one by blending toward the mean, the
+# other by blending toward Sleeper's own (more expected-value-like)
+# numbers. This wasn't re-validated as a combined stack; it's the best
+# available real evidence, applied honestly, not a claim the exact
+# combined weight is itself optimal.
+SLEEPER_BLEND_WEIGHT <- c(QB = 0.5, RB = 0.2, WR = 0.4, TE = 0.4)  # weight on OUR OWN number
+APPLY_SLEEPER_BLEND <- TRUE  # unlike APPLY_MATCHUP_MULTIPLIER, this IS
+                              # walk-forward validated across two full
+                              # real seasons -- on by default.
+
+# Sleeper's join-name normalization -- their player dictionary drops name
+# suffixes ("Luther Burden" instead of "Luther Burden III"); this model's
+# own names (from nflreadr) keep them, same mismatch web/app/my-team/
+# actions.js's normalizeName() and backtest_vs_sleeper.R's
+# normalize_join_name() already handle on their own sides.
+normalize_sleeper_name <- function(name) {
+  tolower(gsub("\\s+(jr|sr|ii|iii|iv|v)$", "", gsub("\\.", "", name), ignore.case = TRUE))
+}
+
+# Fetches Sleeper's own published weekly PPR projection for every
+# QB/RB/WR/TE, keyed by "normalized name|position" so it joins the same
+# way every other cross-source lookup in this file does. jsonlite::
+# fromJSON() fetches directly from the URL -- no httr dependency needed,
+# same approach backtest_vs_sleeper.R validated this data source with.
+# Sleeper's projections payload embeds each entry's player name directly
+# (no separate 16MB player-dictionary fetch required). Returns NULL (not
+# an error) on any failure -- fails safe to "no blend this run" exactly
+# like compute_matchup_multipliers() does.
+fetch_sleeper_median_projections <- function(season, week) {
+  positions <- c("QB", "RB", "WR", "TE")
+  params <- paste(sapply(positions, function(p) paste0("position[]=", p)), collapse = "&")
+  url <- sprintf("https://api.sleeper.app/projections/nfl/%d/%d?season_type=regular&%s", season, week, params)
+  data <- tryCatch(jsonlite::fromJSON(url, simplifyDataFrame = FALSE), error = function(e) NULL)
+  if (is.null(data) || length(data) == 0) return(NULL)
+  out <- lapply(data, function(e) {
+    # The entry's own top-level `position` field is blank on these
+    # payloads (confirmed by hand against live data) -- the real
+    # position lives under `player$position`. Caught by testing this
+    # function against live Week 2 2026 data before trusting it: the
+    # top-level field silently produced zero matches even though the
+    # payload had real projections for every player.
+    pos <- e$player$position
+    if (is.null(e$player) || is.null(pos) || is.null(e$stats) || is.null(e$stats$pts_ppr)) return(NULL)
+    if (!(pos %in% positions)) return(NULL)
+    name <- paste(e$player$first_name, e$player$last_name)
+    list(key = paste0(normalize_sleeper_name(name), "|", pos), pts_ppr = e$stats$pts_ppr)
+  })
+  out <- out[!sapply(out, is.null)]
+  if (length(out) == 0) return(NULL)
+  setNames(sapply(out, `[[`, "pts_ppr"), sapply(out, `[[`, "key"))
+}
+
 # RB/WR/TE weekly median (Redraft) point estimate: 85% weighted quantile-
 # median + 15% weighted mean, instead of the pure quantile-median.
 # Non-Vegas bias fix -- backtest_debias_blend.R swept the mix on the same
@@ -59,8 +135,6 @@ FLOOR_Q     <- c(RB = 0.09, QB = 0.08, WR = 0.12, TE = 0.13)  # calibrated inter
 # within-week rank correlation slightly better, and bias roughly halved
 # (-0.98 -> -0.81). QB is unaffected -- it already reports a full mean
 # (see the pos == "QB" branch below), its own validated exception.
-# Scoped to NON-shrink RB/WR/TE only, matching how the QB mean change was
-# scoped: shrunk_quantile()'s pool-blending was not in the swept harness.
 MED_MEAN_BLEND_SHARE <- 0.85
 
 # Bounce-back trigger: a player whose most recent real game (week-18
@@ -245,25 +319,18 @@ MAX_GAMES_PER_SEASON <- 16   # 17 weeks minus 1 bye (weeks 1-17; week 18 exclude
 AVAILABILITY_YEAR_DECAY <- 0.6  # not backtested — a judgment call weighting recent seasons'
                                  # availability more heavily than older ones
 
-SHRINK_OWN_SHARE <- 0.80  # 80/20 blend for context-flagged players (team/OC/HC change,
-                           # manual player_flags.csv, and low-sample below).
-                           # NOT backtested — locked by product judgment, revisit later.
-APPLY_TEAM_CHANGE_SHRINK <- FALSE  # toggle for trigger 3 below (team-change shrink) --
-                                    # set back to TRUE to restore it. Turned off to see
-                                    # projections without the team-change discount, e.g.
-                                    # for a player like Jaylen Waddle whose new team hasn't
-                                    # played a game yet, so the trigger can't tell a real
-                                    # role change from a still-unproven one.
-LOW_SAMPLE_SHRINK_THRESHOLD <- 20  # players with MIN_GAMES <= n < this get the 80/20
-                                    # blend automatically -- everyone below 20 games
-                                    # is covered but not fully trusted on their own
-                                    # history alone. Currently only takes effect at RB
-                                    # (see below) -- no tiered baseline pool exists yet
-                                    # for QB/WR/TE, so low-sample players there are
-                                    # flagged but not actually shrunk.
-HIGH_USAGE_CUTOFF_PCTILE <- 0.85  # workload percentile (per position) above which a
-                                   # player is excluded from the "common tier"
-                                   # shrinkage baseline -- applies to all 4 positions
+LOW_SAMPLE_SHRINK_THRESHOLD <- 20  # REMOVED (see "Shrinkage removed" in README): this
+                                    # used to trigger an 80/20 blend toward a positional
+                                    # baseline pool for players below this game count.
+                                    # That blending mechanism is gone -- too many
+                                    # unbacktested judgment calls stacked on top of each
+                                    # other (which players qualified, the 80/20 split
+                                    # itself, a manual tail-absence week cutoff, a
+                                    # team-change flag). The name stays because the
+                                    # THRESHOLD itself is kept, repurposed as a plain,
+                                    # objective sample_confidence label ("building" below
+                                    # this many games, "established" at or above it) --
+                                    # no blending, just an honest confidence flag.
 
 MATCHUP_FULL_SAMPLE_GAMES <- 8  # games at which a defense's own fantasy-points-
                                  # allowed-by-position number is fully trusted
@@ -279,8 +346,7 @@ MATCHUP_MULT_CEIL  <- 1.10  # small defensive sample or one fluke game from
                              # the cap (not the raw signal) was the dominant
                              # lever. Product judgment,
                              # not backtested.
-APPLY_MATCHUP_MULTIPLIER <- FALSE  # toggle, same pattern as
-                                    # APPLY_TEAM_CHANGE_SHRINK above -- mult is
+APPLY_MATCHUP_MULTIPLIER <- FALSE  # toggle -- mult is
                                     # still computed and published as-is (the
                                     # matchup_mult column, powers the Opp
                                     # column's heat tint) regardless of this
@@ -446,9 +512,6 @@ load_history <- function(seasons = history_seasons()) {
   reg$attempts[is.na(reg$attempts)] <- 0
   for (col in STAT_COLS) reg[[col]][is.na(reg[[col]])] <- 0
   reg$touches <- reg$carries + reg$targets
-  # Usage metric per position, for tiered shrinkage baseline pools: RB uses
-  # touches (carries+targets), WR/TE use targets, QB uses pass attempts.
-  reg$usage <- ifelse(reg$position == "QB", reg$attempts, reg$touches)
   reg[order(reg$player_display_name, reg$season, reg$week), ]
 }
 
@@ -474,20 +537,6 @@ weighted_quantile <- function(x, w, q) {
   x[k - 1] + ((q - cw[k - 1]) / (cw[k] - cw[k - 1])) * (x[k] - x[k - 1])
 }
 
-# Shrinkage for context-flagged players (team change, or team-level OC/HC
-# change from a manually maintained table — not built yet, see README).
-# IMPORTANT: blend the QUANTILES of the two pools, not the pools themselves.
-# Mixing distributions and then taking a quantile of the mixture does NOT
-# reliably land between the two components' quantiles when one pool is
-# sparse and lumpy — verified this breaks with Kenny Gainwell's game log
-# (see README "Shrinkage bug" section). Blending pre-computed quantiles is
-# the correct, safe way to do this.
-shrunk_quantile <- function(own_x, own_w, baseline_x, baseline_w, q, own_share = SHRINK_OWN_SHARE) {
-  own_q <- weighted_quantile(own_x, own_w, q)
-  base_q <- weighted_quantile(baseline_x, baseline_w, q)
-  own_share * own_q + (1 - own_share) * base_q
-}
-
 # Weighted MEAN (not quantile) -- used only for the raw per-stat weekly
 # values that power Redraft's custom scoring settings. Deliberately mean,
 # not median: a fantasy score is a LINEAR combination of its raw
@@ -498,37 +547,8 @@ shrunk_quantile <- function(own_x, own_w, baseline_x, baseline_w, q, own_share =
 # ~40% for a player like Jahmyr Gibbs, because touchdowns are "lumpy"
 # (most individual games are 0 TDs even for a player who scores in
 # most weeks on average), so a per-game median silently rounds a real
-# scoring threat down to zero. Mean has no such blind spot. Shrinkage
-# blending is also linear (own_share*A + (1-own_share)*B), so it
-# commutes with the scoring formula too -- the reconstructed total
-# stays mathematically exact even for shrink-eligible players.
+# scoring threat down to zero. Mean has no such blind spot.
 weighted_mean <- function(x, w) sum(x * w) / sum(w)
-
-shrunk_mean <- function(own_x, own_w, baseline_x, baseline_w, own_share = SHRINK_OWN_SHARE) {
-  own_m <- weighted_mean(own_x, own_w)
-  base_m <- weighted_mean(baseline_x, baseline_w)
-  own_share * own_m + (1 - own_share) * base_m
-}
-
-# Objective workload tiering, generalized across all four positions:
-# excludes the rare top-usage players (top ~15% by the position's usage
-# metric — touches/game for RB/WR/TE, pass attempts/game for QB) from the
-# baseline pool that other players at that position shrink toward, so a
-# limited-role player doesn't get pulled toward a workhorse-level baseline.
-# Preserves the pool's own right tail (a common-tier player can still
-# simulate a big game) — only the center moves down. Originally built and
-# validated for RB only (see README "RB tiering" section); the RB-specific
-# validation doesn't automatically carry over to QB/WR/TE, which use the
-# same mechanism but haven't been individually stress-tested the way RB was.
-build_common_pool <- function(reg, eligible_players, position, stat_col = "fantasy_points_ppr") {
-  pos_players <- eligible_players[sapply(eligible_players, function(p)
-    reg$position[reg$player_display_name == p][1] == position)]
-  upg <- sapply(pos_players, function(p) mean(reg$usage[reg$player_display_name == p]))
-  cutoff <- as.numeric(quantile(upg, HIGH_USAGE_CUTOFF_PCTILE))
-  common_players <- pos_players[upg < cutoff]
-  pool <- reg[[stat_col]][reg$position == position & reg$player_display_name %in% common_players]
-  list(pool = pool, weights = rep(1 / length(pool), length(pool)), cutoff = cutoff)
-}
 
 # Recency-weighted availability: fraction of a max-16-game season a player
 # has actually played, weighted so recent seasons count more. Used ONLY for
@@ -598,49 +618,26 @@ player_availability <- function(player_games_df, target_season = TARGET_SEASON,
   min(sum(a_by_yr * yw), 1)
 }
 
-# ============================= SHRINKAGE TRIGGERS =============================
+# ============================= SHRINKAGE (REMOVED) =============================
 #
-# Trigger 1: LOW SAMPLE SIZE, fully automatic. Any eligible player with
-# fewer than LOW_SAMPLE_SHRINK_THRESHOLD games gets the SHRINK_OWN_SHARE
-# blend applied, regardless of why their sample is small.
+# Used to blend a "flagged" player's own history 80/20 toward a positional
+# baseline pool, triggered by any of: low sample size, not finishing the
+# last completed season (TAIL_ABSENCE_CUTOFF_WEEK), or a team change
+# (APPLY_TEAM_CHANGE_SHRINK). Removed by direct product decision -- too
+# many stacked, individually-unbacktested judgment calls (which players
+# qualified for which trigger, the flat 80/20 split itself, a manually
+# chosen week-10 cutoff) for a mechanism touching the published numbers.
+# See README's "Shrinkage removed" section for the full writeup and what
+# replaces it.
 #
-# Trigger 2: DIDN'T FINISH THE LAST COMPLETED SEASON. Weekly figures
-# (Redraft/Best Ball) are built purely from a player's own game log with
-# recency weighting -- they have no concept of "has this player's season
-# ended," unlike Player Season Simulations' availability calc (which
-# already discounts a player who went down and never came back, via
-# per-year games-played fractions). Found via James Conner: played weeks
-# 1-3 of 2025, then nothing -- still "established" on 31 total games, so
-# weekly projections ranked him like a healthy every-week starter with no
-# penalty at all. If a player's last game in the last completed season
-# was at or before TAIL_ABSENCE_CUTOFF_WEEK, they get the same 80/20
-# blend toward the positional baseline as low-sample players -- an
-# automatic, data-driven rule (not a per-player list), matching the
-# season-ended shape without needing to know *why* (injury, benching,
-# etc.).
-TAIL_ABSENCE_CUTOFF_WEEK <- 10  # last game in the prior season at or before
-                                 # this week => didn't finish that season
-
-# Trigger 3: TEAM CHANGE, fully automatic. Compares each eligible player's
-# last known team in their own game log against their current-season
-# roster team from load_rosters(target_season). A new team means a new
-# offense/role/QB that last season's box scores can't speak to -- see the
-# implementation in project_all() for the AZ/ARI normalization and
-# fail-safe details. This was removed once already (commit 3b27ec0,
-# "Simplify to a single shrinkage trigger") and re-added on direct
-# instruction; it now reuses load_rosters(), the same season-scoped
-# source as the no-current-team eligibility filter, rather than the old
-# load_players()$latest_team rolling snapshot.
-#
-# A manual per-team OC/HC-change flag (context_flags.csv) also existed
-# alongside the original team-change trigger and was removed in the same
-# commit; it has NOT been re-added.
-#
-# Real consequence worth knowing: an established player (25+ games) who
-# switches teams — the original motivating case for shrinkage, before RJ
-# Harvey — no longer gets any shrink adjustment under this design unless
-# they also happen to trigger low-sample or tail-absence. Team-change
-# alone is still not a signal this engine acts on.
+# One real, known consequence worth keeping on record rather than quietly
+# losing: a player who didn't finish their last completed season (the
+# James Conner case -- played weeks 1-3 of 2025, then nothing, but still
+# reads as a normal 31-game "established" history) is no longer
+# discounted for that at the weekly (Redraft/Best Ball) level. Player
+# Season Simulations is unaffected -- its own availability calc
+# (player_availability(), untouched by this removal) already handles
+# this at the season-total level via per-year games-played fractions.
 
 # The real NFL week to publish for, by date -- not a manually bumped
 # counter. A week counts as "current" until every one of its games has
@@ -767,16 +764,15 @@ select_team_qbs <- function(season, eligible_players) {
 # Season Simulations), and a weeks-15-17 playoff ceiling (for Best Ball's
 # second column).
 project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
-                         apply_shrinkage = TRUE, target_season = TARGET_SEASON) {
+                         target_season = TARGET_SEASON) {
   set.seed(seed)
   reg <- load_history(seasons)
-  # Position-relevant EPA as a single column, computed up front so it can
-  # go through the same build_common_pool()/shrunk_mean() shrinkage path
-  # as every other per-stat column below -- WOPR/EPA get the identical
-  # recency-weighted + shrinkage-blended treatment as the rest of the
-  # model's projections, not a plain historical average, so they're a
-  # genuine season-ahead projection like everything else on this page
-  # rather than a stat anyone could reproduce straight off nflreadr.
+  # Position-relevant EPA as a single column, computed up front so every
+  # per-stat column below (WOPR/EPA included) gets the identical
+  # recency-weighted treatment as the rest of the model's projections,
+  # not a plain historical average -- a genuine season-ahead projection
+  # like everything else on this page rather than a stat anyone could
+  # reproduce straight off nflreadr.
   reg$epa_component <- ifelse(reg$position == "QB", reg$passing_epa + reg$rushing_epa,
                         ifelse(reg$position == "RB", reg$rushing_epa + reg$receiving_epa,
                                reg$receiving_epa))
@@ -847,80 +843,7 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
     id_by_name <- id_by_name[!has_no_team]
   }
 
-  shrink_players <- character(0)
-  baseline_pools <- list()
-  stat_pools <- list()
-  if (apply_shrinkage) {
-    low_sample_players <- names(counts[counts >= MIN_GAMES & counts < LOW_SAMPLE_SHRINK_THRESHOLD])
-
-    last_season_reg <- reg[reg$season == last_completed_season, ]
-    last_week_last_season <- tapply(last_season_reg$week, last_season_reg$player_display_name, max)
-    tail_absence_players <- names(last_week_last_season[last_week_last_season <= TAIL_ABSENCE_CUTOFF_WEEK])
-
-    # Trigger 3: TEAM CHANGE, fully automatic -- compares each eligible
-    # player's last known team in their own game log against their
-    # CURRENT (this-season) roster team from load_rosters(target_season),
-    # the same source used for the no-current-team filter above (more
-    # reliable than the old load_players()$latest_team, which is a single
-    # rolling snapshot rather than season-scoped). A new team means a new
-    # offense/role/QB that last season's box scores can't speak to, same
-    # reasoning as low-sample and tail-absence. Re-added after being
-    # removed in 3b27ec0 -- re-requested directly. Fails safe: if roster
-    # data is unavailable (rosters_this_season is NULL), this trigger
-    # simply contributes nothing rather than erroring.
-    team_change_players <- character(0)
-    if (APPLY_TEAM_CHANGE_SHRINK && !is.null(rosters_this_season)) {
-      # Matched by gsis_id, same reasoning and same bug (Kenny/Kenneth
-      # Gainwell) as the no-current-team filter above -- name+position
-      # matching would both miss real team changes for players whose
-      # game-log name differs from their roster name, AND could
-      # false-positive "changed teams" for a player who never actually
-      # moved, purely from the name mismatch alone.
-      normalize_team <- function(team) ifelse(team == "AZ", "ARI", team)
-      reg_ord <- reg[order(reg$player_display_name, reg$season, reg$week), ]
-      last_rows <- reg_ord[!duplicated(reg_ord$player_display_name, fromLast = TRUE), ]
-      last_team_by_id <- setNames(normalize_team(last_rows$team), last_rows$player_id)
-      current_roster <- rosters_this_season[!duplicated(rosters_this_season$gsis_id), ]
-      current_team_by_id <- setNames(normalize_team(current_roster$team), current_roster$gsis_id)
-
-      pid <- id_by_name[eligible]
-      last_team <- unname(last_team_by_id[pid])
-      cur_team <- unname(current_team_by_id[pid])
-      changed <- !is.na(pid) & !is.na(last_team) & !is.na(cur_team) & last_team != cur_team
-      team_change_players <- eligible[changed]
-    }
-
-    shrink_players <- union(union(low_sample_players, tail_absence_players), team_change_players)
-    if (length(shrink_players) > 0) {
-      shrink_positions <- unique(sapply(shrink_players, function(p)
-        reg$position[reg$player_display_name == p][1]))
-      for (pos in shrink_positions) {
-        baseline_pools[[pos]] <- build_common_pool(reg, eligible, pos)
-        # Same 80/20 blend, but per raw stat column instead of the blended
-        # fantasy_points_ppr total -- powers Redraft's custom scoring
-        # settings (PPR/TE premium/passing-TD/INT toggles), which need to
-        # recompute a player's points from their own component stats
-        # rather than a single fixed-scoring number.
-        stat_pools[[pos]] <- list()
-        for (col in STAT_COLS_BY_POSITION[[pos]]) {
-          stat_pools[[pos]][[col]] <- build_common_pool(reg, eligible, pos, stat_col = col)
-        }
-        # Same shrinkage pools for WOPR/EPA -- wopr skipped for QB (not a
-        # receiving-usage position).
-        if (pos != "QB") {
-          stat_pools[[pos]][["wopr"]] <- build_common_pool(reg, eligible, pos, stat_col = "wopr")
-        }
-        stat_pools[[pos]][["epa_component"]] <- build_common_pool(reg, eligible, pos, stat_col = "epa_component")
-      }
-    }
-    cat("Shrink-eligible players this run:", length(shrink_players),
-        "(", length(low_sample_players), "low-sample,", length(tail_absence_players), "tail-absence,",
-        length(team_change_players), "team-change )\n")
-    if (length(shrink_players) > 0) cat(" -", paste(shrink_players, collapse = ", "), "\n")
-  }
-
-  # Current team for DISPLAY only (not a shrinkage signal — that trigger was
-  # removed). Falls back to the most recent team in the game log if a
+  # Current team for DISPLAY only. Falls back to the most recent team in the game log if a
   # player isn't found in load_players() (rare -- retired/inactive edge
   # cases). Same "AZ" -> "ARI" mismatch as before applies here too.
   current_team <- as.data.frame(load_players())[, c("display_name", "position", "latest_team")]
@@ -940,6 +863,24 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
         conditionMessage(e), "\n")
     NULL
   })
+
+  # Sleeper's own weekly median projection for this exact (target_season,
+  # publish_week) -- fetched once per run, same as matchup_mult above.
+  # See SLEEPER_BLEND_WEIGHT's comment for the validation. Fails safe: a
+  # NULL here just means every player's `sleeper_med` lookup below comes
+  # back NA, which the per-player loop already treats as "no blend this
+  # player" (falls back to our own number alone).
+  sleeper_med <- if (APPLY_SLEEPER_BLEND) {
+    tryCatch(fetch_sleeper_median_projections(target_season, publish_week), error = function(e) {
+      cat("Sleeper projections unavailable this run -- skipping the blend:", conditionMessage(e), "\n")
+      NULL
+    })
+  } else {
+    NULL
+  }
+  if (APPLY_SLEEPER_BLEND) {
+    cat("Sleeper projections matched:", if (is.null(sleeper_med)) 0 else length(sleeper_med), "\n")
+  }
 
   # YAC Above Expectation (WR/TE stat_ranges, added below) -- real Next Gen
   # Stats PER-GAME history (week != 0; week == 0 is NGS's own season-
@@ -1014,10 +955,8 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
     # rushing-TD total is now drawn separately, under "td_int"'s own
     # weighting) -- an unavoidable consequence of the two stat types
     # needing genuinely different recency weighting; see
-    # backtest_stat_group_decay.R. Not shrink-blended, matching the
-    # existing season_floor/median/ceiling precedent (season totals rely
-    # on the availability dampening above, not the low-sample blend that
-    # only applies to weekly figures). For interceptions, "ceiling" is
+    # backtest_stat_group_decay.R. Season totals rely on the availability
+    # dampening above, not any per-stat blending. For interceptions, "ceiling" is
     # the 90th-ish percentile of INTs thrown, i.e. the worst case, not
     # "best" -- left as a plain range, not a good/bad framing, same as
     # before.
@@ -1133,34 +1072,23 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
     # stays 0.50 below.
     med_q <- 0.50
 
-    shrink_this_player <- p %in% shrink_players && !is.null(baseline_pools[[pos]])
-
-    # QB median: passing/rushing split (see PASS_PTS_DECAY_QB above),
-    # scoped to NON-shrink-eligible QBs only -- shrink_quantile's
-    # pool-blending is a separately validated mechanism for thin-sample
-    # players that this split was never backtested against, and an
-    # already-noisy small sample seems like the wrong place to introduce
-    # a second, untested source of noise (splitting it into two even
-    # thinner sub-distributions). Floor/ceiling stay on the normal
-    # blended-distribution path for every QB, shrunk or not (see the
-    # parameter comment for why).
-    #
-    # A genuine QUANTILE of a resampled distribution, NOT a sum of two
+    # QB median: passing/rushing split (see PASS_PTS_DECAY_QB above). A
+    # genuine QUANTILE of a resampled distribution, NOT a sum of two
     # weighted means -- median needs to mean the same statistical thing
     # for QB that it means for every other position (a real percentile of
-    # a distribution, via weighted_quantile/shrunk_quantile everywhere
-    # else). Built the same way project_all()'s own season totals already
-    # build a distribution to take a plain quantile of: independently
-    # resample n_sims (game, not stat-column) draws for each component at
-    # its own decay -- passing and rushing games are drawn separately
-    # (same "own resampling pass per stat-group, cross-group correlation
-    # not preserved" tradeoff the season stat_ranges split already
-    # accepts, see README) -- sum them, then take the 0.50 quantile of
-    # the SUM. Re-validated in this exact form (not just the mean-based
-    # version) via backtest_qb_pass_rush_split.R: -1.07% next-game MAE,
-    # a stronger result than the mean-based version's -0.68%, not just a
-    # cosmetic consistency fix.
-    if (pos == "QB" && !shrink_this_player) {
+    # a distribution, via weighted_quantile everywhere else). Built the
+    # same way project_all()'s own season totals already build a
+    # distribution to take a plain quantile of: independently resample
+    # n_sims (game, not stat-column) draws for each component at its own
+    # decay -- passing and rushing games are drawn separately (same "own
+    # resampling pass per stat-group, cross-group correlation not
+    # preserved" tradeoff the season stat_ranges split already accepts,
+    # see README) -- sum them, then take the 0.50 quantile of the SUM.
+    # Re-validated in this exact form (not just the mean-based version)
+    # via backtest_qb_pass_rush_split.R: -1.07% next-game MAE, a stronger
+    # result than the mean-based version's -0.68%, not just a cosmetic
+    # consistency fix.
+    if (pos == "QB") {
       # MEAN, not a quantile -- the one deliberate exception to every
       # other position/field on this page. Real head-to-head validation
       # against Sleeper's own published projections (2024-2025, ~800 real
@@ -1184,11 +1112,6 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
       med <- weighted_mean(pass_hist, w_pass) + weighted_mean(rush_hist, w_rush)
       fl  <- weighted_quantile(x, wm, FLOOR_Q[pos])
       cei <- weighted_quantile(x, wc, CEIL_Q[pos])
-    } else if (shrink_this_player) {
-      base <- baseline_pools[[pos]]
-      fl  <- shrunk_quantile(x, wm, base$pool, base$weights, FLOOR_Q[pos])
-      med <- shrunk_quantile(x, wm, base$pool, base$weights, med_q)
-      cei <- shrunk_quantile(x, wc, base$pool, base$weights, CEIL_Q[pos])
     } else {
       fl  <- weighted_quantile(x, wm, FLOOR_Q[pos])
       # 85/15 quantile-median / mean blend -- low-bias fix, see
@@ -1198,6 +1121,30 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
              (1 - MED_MEAN_BLEND_SHARE) * weighted_mean(x, wm)
       cei <- weighted_quantile(x, wc, CEIL_Q[pos])
     }
+
+    # Sleeper blend -- median (point estimate) ONLY, same "the swept
+    # harness only tested the median" discipline as MED_MEAN_BLEND_SHARE
+    # two blocks up. Floor/ceiling are calibrated internal quantiles of
+    # OUR OWN distribution (FLOOR_Q/CEIL_Q) -- Sleeper doesn't publish a
+    # range to blend those against, and blending only the single point
+    # estimate is exactly what backtest_vs_sleeper.R validated. Silently
+    # falls back to 100% our own number (blend weight effectively 1) for
+    # any player Sleeper doesn't have a projection for -- a real gap
+    # (deep bench, practice-squad-adjacent players), not an error.
+    if (!is.null(sleeper_med)) {
+      skey <- paste0(normalize_sleeper_name(p), "|", pos)
+      if (skey %in% names(sleeper_med)) {
+        w_own <- SLEEPER_BLEND_WEIGHT[[pos]]
+        med <- w_own * med + (1 - w_own) * sleeper_med[[skey]]
+      }
+    }
+
+    # Objective, unblended sample-confidence flag -- purely a game-count
+    # threshold, no baseline-pool blending (see "Shrinkage (removed)"
+    # above). Computed here since it needs `n`, and used only for the
+    # sample_confidence label downstream, not for anything that changes
+    # a published number.
+    low_sample <- n < LOW_SAMPLE_SHRINK_THRESHOLD
 
     # Trend: last-4-games simple average vs. the weighted median baseline
     # above, +/-10% band. Same comparison that caught Aaron Jones/Kamara's
@@ -1236,7 +1183,7 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
     # Bounce-back trigger: was this player's most recent real game (x's
     # last element -- d/reg is chronologically ordered, see
     # load_history()) at or below `fl`, the EXACT floor value this row
-    # publishes -- post shrinkage/QB-split and post matchup-multiplier,
+    # publishes -- post QB-split and post matchup-multiplier,
     # the same number that ends up in the Floor column? Compared directly
     # against the number a person can actually see on the page, not a
     # separately-recomputed one. An earlier version of this compared
@@ -1275,7 +1222,7 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
       length(this_season_x) >= 1 && tail(this_season_x, 1) <= fl
 
     # Weekly per-stat MEANS (raw components -- receptions, yards, TDs,
-    # INTs), shrinkage/matchup-mult treatment as `med` above, just one
+    # INTs), same matchup-mult treatment as `med` above, just one
     # column at a time instead of the blended fantasy_points_ppr total --
     # and mean rather than median, see weighted_mean()'s comment for why
     # median silently loses touchdown value here. Powers Redraft's custom
@@ -1299,13 +1246,7 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
       setNames(lapply(relevant_weekly_stats, function(col) {
         col_x <- d[[col]]
         w_col <- recency_weights(n, STAT_GROUP_DECAY[[STAT_GROUP_BY_STAT[[col]]]][pos])
-        stat_val <- if (shrink_this_player && !is.null(stat_pools[[pos]][[col]])) {
-          base <- stat_pools[[pos]][[col]]
-          shrunk_mean(col_x, w_col, base$pool, base$weights)
-        } else {
-          weighted_mean(col_x, w_col)
-        }
-        round(stat_val * applied_mult, 2)
+        round(weighted_mean(col_x, w_col) * applied_mult, 2)
       }), relevant_weekly_stats)
     } else {
       list()
@@ -1314,38 +1255,26 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
 
     # WOPR/EPA: projected forward the same way every other rate stat on
     # this page is -- own backtested recency weights (WOPR_DECAY/
-    # EPA_DECAY, not wm/MED_DECAY -- see the comment by their definition),
-    # shrunk toward a positional baseline pool for the same shrink-eligible
-    # players (thin sample / long absence / team change) as
-    # weekly_scoring_stats above. This is a projection of the player's
-    # usage/efficiency going into the target season, not a raw historical
-    # average -- matches the site's existing definition of "projection"
-    # for rate stats (see weighted_mean()'s comment on weekly_scoring_stats).
+    # EPA_DECAY, not wm/MED_DECAY -- see the comment by their definition).
+    # This is a projection of the player's usage/efficiency going into the
+    # target season, not a raw historical average -- matches the site's
+    # existing definition of "projection" for rate stats (see
+    # weighted_mean()'s comment on weekly_scoring_stats).
     epa_component <- d$epa_component
     w_epa <- recency_weights(n, EPA_DECAY[pos])
     if (pos != "QB") {
       w_wopr <- recency_weights(n, WOPR_DECAY[pos])
-      wopr_val <- if (shrink_this_player && !is.null(stat_pools[[pos]][["wopr"]])) {
-        base <- stat_pools[[pos]][["wopr"]]
-        round(shrunk_mean(d$wopr, w_wopr, base$pool, base$weights), 3)
-      } else {
-        round(weighted_mean(d$wopr, w_wopr), 3)
-      }
+      wopr_val <- round(weighted_mean(d$wopr, w_wopr), 3)
     } else {
       wopr_val <- NA_real_
     }
-    epa_val <- if (shrink_this_player && !is.null(stat_pools[[pos]][["epa_component"]])) {
-      base <- stat_pools[[pos]][["epa_component"]]
-      round(shrunk_mean(epa_component, w_epa, base$pool, base$weights), 2)
-    } else {
-      round(weighted_mean(epa_component, w_epa), 2)
-    }
+    epa_val <- round(weighted_mean(epa_component, w_epa), 2)
 
     rows[[p]] <- data.frame(
       player_name = p, position = pos, team = team, opponent = opp, games = n,
       touches_per_game = round(mean(d$touches), 1),
       availability_pct = round(100 * avail, 0),
-      shrunk = shrink_this_player,
+      shrunk = low_sample,
       trend = trend,
       bounceback = had_bad_week,
       matchup_mult = round(mult, 2),

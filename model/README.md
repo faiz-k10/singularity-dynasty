@@ -115,8 +115,8 @@ baseline." Was a flat 0.20 (bottom-20th-percentile) for every position
 before; see the tighter-trigger check two paragraphs down for why moving
 to FLOOR_Q isn't a step into the completely unvalidated.
 
-Compared against the EXACT `floor` this row publishes (post shrinkage/QB-
-split, post matchup-multiplier) -- not a separately-recomputed threshold.
+Compared against the EXACT `floor` this row publishes (post QB-split,
+post matchup-multiplier) -- not a separately-recomputed threshold.
 The first version of this switch compared against a leave-one-out
 quantile built from prior games only instead (principled -- keeps the
 flagged game from defining its own bar), and that silently differed from
@@ -172,10 +172,10 @@ doesn't automatically mean nudging every triggered player's single-point
 prediction helps** — the players who don't bounce back apparently lose
 more accuracy than the players who do gain, once you convert "the
 average percentile is somewhat above 50th" into "move this one number
-up." This is exactly the kind of gap the shrinkage mechanism's own
-history already warned about (see "Shrinkage mechanism — a real bug
-found and fixed" below): a real, correctly-measured pattern can still be
-the wrong thing to act on point-by-point.
+up." This is exactly the kind of gap the (now-removed) shrinkage
+mechanism's own history already warned about (see "Shrinkage — removed
+entirely" below): a real, correctly-measured pattern can still be the
+wrong thing to act on point-by-point.
 
 **So `med_q` stays 0.50 always** — the trigger detection and leave-one-out
 threshold logic are unchanged and still exported as `bounceback` (and a
@@ -259,6 +259,80 @@ into `floor`/`median`/`ceiling`/the per-stat breakdown. Revisit once
 walk-forward check against real in-season defensive data instead of
 last season's — expected around Week 4, not a fixed date.
 
+## Sleeper-blend weekly median (real, validated, shipped on)
+
+Direct instruction: given the matchup-adjustment result above only
+barely earns its keep, and shrinkage was just removed for being too
+subjective (see below), the better lever for a low-confidence week's
+median is blending toward Sleeper's own published projection rather
+than another home-grown adjustment.
+
+`backtest_vs_sleeper.R` (extended with a blend-weight sweep for this)
+gives the real answer, not a guess: 7,853 real player-weeks, both
+completed seasons (2024 + 2025, weeks 3–17), `blended = w * ours + (1-w)
+* Sleeper`, scored by MAE against real outcomes:
+
+| w (ours) | QB | RB | WR | TE | OVERALL |
+|---|---|---|---|---|---|
+| 0.0 (pure Sleeper) | 6.655 | 4.406 | 4.530 | 3.664 | 4.530 |
+| 0.3 | 6.419 | 4.386 | 4.484 | 3.632 | 4.474 |
+| 0.4 | 6.388 | 4.395 | 4.482 | 3.632 | **4.473** |
+| 0.5 | 6.378 | 4.415 | 4.487 | 3.638 | 4.480 |
+| 1.0 (pure ours) | 6.666 | 4.659 | 4.628 | 3.765 | 4.661 |
+
+Sleeper's own MAE beats "ours" outright at every position on this core
+methodology (no matchup, no shrinkage — see the backtest's own header
+comment). Blending isn't a marginal nudge here the way matchup-
+adjustment was — every weight from 0.1 to 0.7 beats pure Sleeper on
+overall MAE, and the best blend beats pure Sleeper by ~1.3% and pure
+"ours" by ~4%. Best weight differs meaningfully by position, so
+`SLEEPER_BLEND_WEIGHT` is per-position, not one flat constant:
+
+| Position | Best w (ours) | 
+|---|---|
+| QB | 0.5 |
+| RB | 0.2 (wants very little of our own signal) |
+| WR | 0.4 |
+| TE | 0.4 |
+
+**Applies to the median only**, same scoping discipline as
+`MED_MEAN_BLEND_SHARE` — the swept harness only tested the point
+estimate, floor/ceiling stay pure `weighted_quantile()` of our own
+distribution (Sleeper doesn't publish a range to blend those against
+anyway). Fetched once per run (`fetch_sleeper_median_projections()`,
+same place `compute_matchup_multipliers()` is), matched by
+`normalized_name|position` the same way every other cross-source join in
+this file works. Fails safe on both sides: a player Sleeper doesn't have
+a projection for falls back to 100% our own number (not an error, not
+excluded), and a total fetch failure falls back to `sleeper_med = NULL`
+→ every player unblended, same as `APPLY_MATCHUP_MULTIPLIER`'s fail-safe
+pattern.
+
+**Real bug caught before shipping, worth a note on process:** the first
+implementation checked the projection entry's top-level `position` field,
+which is blank on Sleeper's real payloads — the actual position lives
+under `player$position`. Silently produced zero matches (not an error,
+just an empty result) until tested against live 2026 Week 2 data by
+hand, which is exactly why this file's own discipline is "verify against
+real data before trusting a fetch function," not just a clean parse.
+
+**Honest caveat, not swept under the rug:** the backtest's "ours" is the
+pure `weighted_quantile()` median, not the actual currently-published
+median (which already includes the 85/15 `MED_MEAN_BLEND_SHARE` debias
+blend just below). The two corrections likely overlap somewhat — both
+exist to fix the same right-skew low-bias problem, one by blending
+toward the mean, the other by blending toward Sleeper's own
+expected-value-shaped numbers. This is real evidence honestly applied,
+not a claim that `w=0.4` is exactly optimal against the full combined
+stack; re-sweeping against the actual production median (post-debias)
+would be the more precise version of this validation if it's ever
+revisited.
+
+**Unlike matchup-adjustment, this ships on by default**
+(`APPLY_SLEEPER_BLEND <- TRUE`) — it's validated across two full real
+seasons, not a partial-season situation the validation never actually
+tested.
+
 ## QB weekly median: passing/rushing split
 
 Every other position's weekly median is one `weighted_quantile()` call on
@@ -337,12 +411,12 @@ real iterations, each backtested rather than assumed:**
   floor/ceiling spread — extending an unvalidated change onto
   FLOOR_Q/CEIL_Q's own separate calibration isn't something this file
   does without evidence.
-- **Non-shrink-eligible QBs only.** A shrink-eligible (thin-sample) QB
-  keeps the existing `shrunk_quantile()` pool-blending path untouched —
-  that mechanism is separately validated for exactly the thin-sample case
-  this split was never tested against, and splitting an already-noisy
-  small sample into two even-noisier sub-distributions seemed like the
-  wrong place to introduce a second untested source of noise.
+- **Every QB, thin-sample included.** Originally scoped to non-shrink-
+  eligible QBs only, to avoid stacking this split on top of shrinkage's
+  own separately-validated pool-blending for thin-sample players. Now
+  applies universally — shrinkage itself is gone (see "Shrinkage —
+  removed entirely" below), so there's nothing left to avoid stacking
+  with.
 
 ## RB/WR/TE low-bias fix: 85/15 median/mean blend (shipped)
 
@@ -376,11 +450,9 @@ noise. Every alpha below 0.85 trades more MAE for more bias reduction;
 
 **Shipped** as `MED_MEAN_BLEND_SHARE = 0.85` in `projection_engine.R`,
 in the weekly-median point estimate only:
-- **RB/WR/TE, non-shrink only** — same scoping as the QB mean change.
-  `shrunk_quantile()`'s pool-blending was not in the swept harness, and
-  splitting an already-thin sample's point estimate across two
-  statistics is the same "second untested source of noise" concern that
-  kept the QB split off shrink-eligible players.
+- **RB/WR/TE, every player** — originally scoped to non-shrink players
+  only for the same reason the QB split was; now universal, same as
+  above (shrinkage is gone).
 - **Median only.** Floor/ceiling stay pure `weighted_quantile()` at
   `FLOOR_Q`/`CEIL_Q` — the sweep never scored a floor/ceiling spread.
 - **QB unaffected** — it already reports a full mean (share = 0.00 for
@@ -624,86 +696,57 @@ independent (real injuries cluster into multi-week absences, so this
 somewhat understates season-total variance). Fine for the durable/injured
 split among clear starters; noisier further down the depth chart.
 
-## Workload tiering for shrinkage (all 4 positions)
+## Shrinkage — removed entirely (was: workload tiering + shrinkage mechanism)
 
-The pool a shrunk player's projection blends toward excludes the top ~15%
-by usage at their position — touches/game (carries+targets) for RB/WR/TE,
-pass attempts/game for QB — so a limited-role player doesn't regress toward
-a workhorse-level baseline. `build_common_pool()` is position-generic; the
-underlying mechanism was originally built and validated for RB only (a
-common-tier RB pool's median came out meaningfully lower than the full
-pool's — 6.8 vs 8.5 PPG — while its right tail barely moved, 51.3 vs 55.4,
-which is exactly the intended shape: a common-tier player can still
-simulate a big game, they just don't regress toward workhorse-typical
-production by default). Extended to QB/WR/TE afterward using the same
-mechanism and cutoff percentile — that extension has **not** been
-individually stress-tested against real players the way RB was.
+**Removed by direct product instruction: "too subjective."** The
+mechanism blended a "context-flagged" player's own weighted history with
+a positional baseline pool (`SHRINK_OWN_SHARE = 0.80`) whenever any of
+several triggers fired (low sample size, not finishing the last
+completed season, a team change). Each individual piece was defensible
+on its own, but stacked together they added up to a lot of unbacktested,
+by-hand judgment calls sitting on top of one another: which triggers
+existed, the flat 80/20 split (hand-compared against 70/30/75/25/90/10,
+picked by feel, never data-optimized), a manually chosen week-10
+tail-absence cutoff, workload-tiering's 85th-percentile usage cutoff —
+none of it individually backtested the way nearly everything else in
+this file is. `projection_engine.R` no longer has any of it: no
+`shrunk_quantile()`/`shrunk_mean()`/`build_common_pool()`, no trigger
+logic, no baseline pools. Every player now goes through the exact same
+unblended path (their own recency-weighted history only), including
+QBs, who previously lost the validated pass/rush median split entirely
+whenever they were shrink-eligible — QBs now always get that split
+(nothing else about it changed; see "QB weekly median" below).
 
-## Shrinkage mechanism — a real bug found and fixed
+**What's kept:** the `LOW_SAMPLE_SHRINK_THRESHOLD = 20` game-count itself
+survives as a purely objective `sample_confidence` label ("building"
+below 20 games, "established" at or above) — no blending, just an honest
+flag that a player's own history is thin. And `player_availability()`
+(Player Season Simulations' season-total dampening for missed time) is
+completely separate machinery, untouched by any of this.
 
-Shrinkage blends a context-flagged player's own weighted history with the
-positional baseline pool, `SHRINK_OWN_SHARE = 0.80` (not backtested — 70/30,
-75/25, 80/20, and 90/10 were all hand-compared; 80/20 was the final pick,
-explicitly the user's discretion, not a data-driven optimum).
+**What's genuinely lost, worth knowing:** a player who didn't finish
+their last completed season (James Conner: 3 games played in 2025, then
+done for the year, but still reads as a normal healthy history) is no
+longer discounted for that at the weekly level. And an established
+player who switches teams gets no adjustment for the new context — same
+as before this removal, actually (the team-change trigger was already
+disabled going into this, `APPLY_TEAM_CHANGE_SHRINK <- FALSE`, over the
+exact Jaylen-Waddle-style "can't tell a real role change from a
+still-unproven one" concern).
 
-**The first implementation was wrong and it's worth understanding why.**
-Mixing the two raw distributions together and *then* taking a quantile of
-the combined pool does not reliably land between the two components'
-individual quantiles — verified this breaks concretely on Kenny Gainwell:
-his own ceiling was 26.0, the baseline pool's ceiling was 23.1, but the
-naive mixed-then-quantile approach produced **29.4** — higher than either
-input. Root cause: Gainwell's own distribution had a wide empty gap that
-interpolation smoothed over when he was alone; adding thousands of dense
-pool games filled that gap, which *removed* the smoothing and let one of
-his own high-value games dominate the tail instead. Fixed by computing each
-side's quantile **separately** and blending the two numbers
-(`shrunk_quantile()` in the engine) — guaranteed to land between the two
-inputs, no exceptions.
-
-**One trigger, applying to every position: low sample size.** Any player
-with fewer than `LOW_SAMPLE_SHRINK_THRESHOLD = 20` games gets the
-`SHRINK_OWN_SHARE = 0.80` blend applied, regardless of why their sample is
-small. This is what actually resolved the RJ Harvey case (his 2025 volume
-was driven by J.K. Dobbins' injury; Dobbins is healthy for 2026) —
-games-played turned out to be a cheap, general-purpose proxy for exactly
-the kind of role uncertainty a manual flag would otherwise be needed for.
-
-**Two other triggers existed earlier this session and were both removed,
-by the user's direct instruction:**
-
-- **Team change** (automatic — comparing each player's most recent team
-  against their current offseason team via `load_players()`).
-- **Player-level manual flag** (`player_flags.csv`, one row per
-  player/season/reason, for cases the low-sample trigger doesn't catch).
-- Before either was removed, a third trigger — a manually maintained
-  per-team OC/HC-change flag (`context_flags.csv`) — had *already* been
-  removed for the same reason: every case it was meant to catch ended up
-  covered by the low-sample trigger anyway.
-
-**Real, current consequence of only having one trigger:** an established
-player (25+ games) who switches teams — Kenny Gainwell's team change was
-the original motivating case for building shrinkage in the first place,
-before RJ Harvey — no longer gets any adjustment unless they also happen to
-be under the low-sample threshold. Verified directly: Gainwell (47 games,
-PIT→TB) now shows `shrunk = FALSE`. Team change alone is no longer a
-signal this engine acts on.
-
-**Severity was uniform across triggers when there were multiple** — the
-user's call: the real distinguishing factor was "does this player have an
-established personal track record at all," not the specific reason for a
-flag, so every trigger used the same `SHRINK_OWN_SHARE = 0.80` rather than
-different blend strengths. Now moot with only one trigger, but the
-`shrunk_quantile()` mechanism itself is unaffected by any of this — same
-math, just one caller left.
-
-**A real bug found while extending this to all positions (still fixed,
-though the code that used it — `detect_team_changes()` — was later
-removed):** `load_player_stats()$team` and `load_players()$latest_team`
-disagreed on exactly one team code — Arizona was `"ARI"` in one and `"AZ"`
-in the other (confirmed the only mismatch across all 32 teams), which was
-silently flagging every Arizona player as a false team change. Caught via
-Trey McBride showing `shrunk = TRUE` despite 47 games and no real move.
-Worth remembering if team-change detection is ever reintroduced.
+**One real methodological lesson worth keeping on record even though the
+code that taught it is gone:** the first shrinkage implementation
+blended two RAW distributions together and then took a quantile of the
+mixture — that does NOT reliably land between the two inputs' own
+quantiles when one pool is sparse and lumpy. Verified concretely on Kenny
+Gainwell: his own ceiling was 26.0, the baseline pool's ceiling was 23.1,
+naive mixed-then-quantile produced **29.4** — higher than either input.
+Correct fix was computing each side's quantile separately, then blending
+the two numbers. **This directly matters for any future blending work**
+(the Sleeper-projection blend discussed next) — the same failure mode
+can recur any time two different sources get combined before deriving a
+statistic from them, rather than deriving first and blending the
+results.
 
 ## Age + draft-capital groundwork (data reconnaissance done, not wired in yet)
 
@@ -756,10 +799,13 @@ split.
 | 151+ / UDFA | ~4.4 | ~4.0 | ~2.0 |
 
 A ~4× spread on draft position alone, for exactly the thin-sample
-players `shrunk_quantile()` currently blends toward a *single*
-positional baseline regardless of pedigree. The obvious use is to make
-the shrink target pick-aware (a top-15 rookie RB shouldn't regress to
-the same place as a UDFA), not to touch established players.
+players who used to get blended toward a single positional baseline
+regardless of pedigree, back when shrinkage existed (see "Shrinkage —
+removed entirely" below — that mechanism, and the "make the baseline
+pick-aware" idea this data reconnaissance was originally meant to
+support, are both gone now). Left on record since the underlying data
+still exists and could inform whatever eventually replaces shrinkage's
+role for thin-sample players, e.g. the Sleeper-projection blend.
 
 **Not started (waits on the use cases):** any change to
 `projection_engine.R`, and the website-side `player_metadata` Supabase
@@ -800,22 +846,22 @@ that table.)
 
 ## Deferred — explicitly out of scope for now
 
-- **Redraft matchup-adjustment** (pace of play, offensive/defensive
-  rankings). The live `/tools/redraft-rankings` page copy says
-  "matchup-adjusted" — nothing in this engine does that yet. Real gap
-  between current copy and current capability until this is built.
-- **Role-stability / touch-volume signal — partially, not fully,
-  mitigated, and less so now than earlier this session.** The model still
-  has no direct concept of "does this player currently hold the role that
-  produced their historical games." The under-20-games shrink trigger
-  catches this indirectly for genuinely low-sample players (which is why
-  it resolved the RJ Harvey case), but it's a proxy, not a fix — and with
-  team-change detection and the manual per-player flag both removed, an
-  established player (25+ games) whose role changes for *any* reason,
-  including a straightforward team switch, gets no adjustment at all
-  anymore. A real touches/game or snap-share signal feeding directly into
-  the ranking is still the more correct long-term fix; right now there's
-  no manual escape hatch for this case either, by design.
+- **Redraft matchup-adjustment** — built (`compute_matchup_multipliers()`,
+  see "Matchup-adjustment validation" above) but currently disabled in
+  the published numbers (`APPLY_MATCHUP_MULTIPLIER <- FALSE`) until
+  there's enough of `TARGET_SEASON`'s own elapsed weeks to validate it
+  against real same-season defensive data rather than leaning on last
+  season's. Not the "nothing built yet" gap this bullet used to describe.
+- **Role-stability / touch-volume signal — not mitigated at all,
+  now that shrinkage is fully removed.** The model has no direct concept
+  of "does this player currently hold the role that produced their
+  historical games." Shrinkage's low-sample trigger used to catch this
+  indirectly for genuinely thin-sample players (which is why it resolved
+  the RJ Harvey case); with shrinkage gone entirely, there's no proxy for
+  it left at all, for any player, at any sample size. A real touches/game
+  or snap-share signal feeding directly into the ranking is still the
+  more correct long-term fix — right now there's no adjustment and no
+  manual escape hatch for this case, by design.
 
 ## Output → schema mapping
 
