@@ -1,10 +1,14 @@
 // Background-tint info for the Opponent cell: red/yellow/green for
-// tough/neutral/favorable this-week matchup. `mult` is the same
-// opponent-strength multiplier baked into the row's projection (1.0 =
-// neutral, capped to [0.80, 1.20]) -- see compute_matchup_multipliers()
-// in projection_engine.R. `heat` (0-1) scales tint intensity by how far
-// from neutral the multiplier is, same idea as the existing heat-cell
-// pattern used on Median/Proj columns.
+// tough/neutral/favorable this-week matchup. `mult` is the opponent-
+// strength multiplier from compute_matchup_multipliers() in
+// projection_engine.R (1.0 = neutral, capped to [0.90, 1.10]) -- always
+// computed and published regardless of whether it's currently baked
+// into the row's floor/median/ceiling (APPLY_MATCHUP_MULTIPLIER, off as
+// of Week 1 2026 -- see that constant's comment in the R file). This
+// badge is display-only either way, so it's unaffected by that toggle.
+// `heat` (0-1) scales tint intensity by how far from neutral the
+// multiplier is, same idea as the existing heat-cell pattern used on
+// Median/Proj columns.
 export function matchupTint(mult) {
   if (mult === null || mult === undefined) return null;
   const m = Number(mult);

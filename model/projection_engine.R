@@ -279,6 +279,25 @@ MATCHUP_MULT_CEIL  <- 1.10  # small defensive sample or one fluke game from
                              # the cap (not the raw signal) was the dominant
                              # lever. Product judgment,
                              # not backtested.
+APPLY_MATCHUP_MULTIPLIER <- FALSE  # toggle, same pattern as
+                                    # APPLY_TEAM_CHANGE_SHRINK above -- mult is
+                                    # still computed and published as-is (the
+                                    # matchup_mult column, powers the Opp
+                                    # column's heat tint) regardless of this
+                                    # flag, so the backend/UI keep working;
+                                    # this only controls whether it's actually
+                                    # baked into floor/median/ceiling and the
+                                    # per-stat breakdown. Turned off because
+                                    # defense_history_seasons() currently
+                                    # leans on last season's defensive
+                                    # numbers this early in TARGET_SEASON --
+                                    # not yet validated as predictive against
+                                    # real same-season outperformance data.
+                                    # Revisit ~Week 4, once there's enough of
+                                    # this season's own results to run that
+                                    # check (same walk-forward discipline
+                                    # bounceback got in backtest_bounceback_
+                                    # validation.R) before re-enabling.
 
 # Week 18 is deliberately excluded from all history: it shows the same ~8%
 # scoring depression as week 1 (rested starters / backups), which was
@@ -1203,11 +1222,16 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
       mult_key <- paste(opp, pos)
       if (mult_key %in% names(matchup_mult)) {
         mult <- matchup_mult[[mult_key]]
-        fl  <- fl * mult
-        med <- med * mult
-        cei <- cei * mult
       }
     }
+    # `mult` itself is published unconditionally below (matchup_mult
+    # column, powers the Opp column's heat tint) -- applied_mult is what
+    # actually scales the numbers, gated by APPLY_MATCHUP_MULTIPLIER (see
+    # that constant's comment for why it's off right now).
+    applied_mult <- if (APPLY_MATCHUP_MULTIPLIER) mult else 1
+    fl  <- fl * applied_mult
+    med <- med * applied_mult
+    cei <- cei * applied_mult
 
     # Bounce-back trigger: was this player's most recent real game (x's
     # last element -- d/reg is chronologically ordered, see
@@ -1227,9 +1251,28 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
     # (BOUNCEBACK_MIN_PRIOR_GAMES, same eligibility floor as elsewhere in
     # this file).
     #
+    # The "most recent real game" must also be from target_season
+    # specifically -- x[n]/d's last row can otherwise be the player's
+    # final game of LAST season (true for every player until their own
+    # target_season Week 1 has actually been played), and a bad game from
+    # a season that's already over isn't "you just had a bad week," it's
+    # just stale history. Flagging off it would badge a player purely
+    # because the new season hasn't produced enough of its own data yet
+    # -- explicit product requirement to stop doing that. Needs its own
+    # season-scoped slice rather than reusing x[n]/n (which intentionally
+    # span the full multi-season lookback the floor/ceiling distribution
+    # itself is built from) -- d is chronologically ordered within that
+    # window (see load_history()), so filtering to target_season and
+    # taking the last element is still "this player's most recent game,"
+    # just scoped to games that can plausibly mean something for this
+    # badge. A player with zero target_season games yet simply isn't
+    # eligible -- no fallback to last season's data.
+    #
     # INFORMATIONAL ONLY either way -- see med_q's comment above for why
     # the point prediction itself never reacts to this.
-    had_bad_week <- n >= BOUNCEBACK_MIN_PRIOR_GAMES && x[n] <= fl
+    this_season_x <- x[d$season == target_season]
+    had_bad_week <- n >= BOUNCEBACK_MIN_PRIOR_GAMES &&
+      length(this_season_x) >= 1 && tail(this_season_x, 1) <= fl
 
     # Weekly per-stat MEANS (raw components -- receptions, yards, TDs,
     # INTs), shrinkage/matchup-mult treatment as `med` above, just one
@@ -1262,7 +1305,7 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
         } else {
           weighted_mean(col_x, w_col)
         }
-        round(stat_val * mult, 2)
+        round(stat_val * applied_mult, 2)
       }), relevant_weekly_stats)
     } else {
       list()

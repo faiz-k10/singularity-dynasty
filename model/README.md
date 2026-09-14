@@ -187,17 +187,28 @@ something conditioned on more than just "was the last game bad") is
 worth trying later — the parameter values and the negative result are
 both on the record.
 
-One more thing worth knowing if that's ever revisited: the trigger
-compares against a player's **full recency-weighted history** (multiple
-seasons, same `wm`/`MED_DECAY` basis as everything else here), not the
-backtest's season-scoped definition — a deliberate consistency choice
-("a player's own distribution" means the same thing everywhere in this
-file), but it means a player with a genuinely rough career baseline needs
-a more extreme recent game to trigger than the season-scoped backtest
-implies. Confirmed directly on Sam Darnold (41 games, recent 6.1-point
-game): his career includes real single-digit games from an earlier rough
-stretch, so 6.1 doesn't clear his own leave-one-out 20th-percentile bar
-and `bounceback` stays `FALSE` for him.
+One more thing worth knowing if that's ever revisited: the FLOOR_Q
+threshold itself (`fl`, what the recent game is compared against) is
+still drawn from a player's **full recency-weighted history** (multiple
+seasons, same `wm`/`MED_DECAY` basis as everything else here) — a
+deliberate consistency choice ("a player's own distribution" means the
+same thing everywhere in this file). Confirmed directly on Sam Darnold
+(41 games, recent 6.1-point game): his career includes real single-digit
+games from an earlier rough stretch, so 6.1 doesn't clear his own
+leave-one-out 20th-percentile bar and `bounceback` stays `FALSE` for him.
+
+**The game being checked, however, must be from `target_season`
+specifically** (added once the 2026 season actually started) — the
+"most recent real game" used to mean literally `x`'s last element, which
+for every player is last season's final game until their own
+`target_season` Week 1 has actually been played. That meant Week 1 2026
+flagged 27 players as BOUNCEBACK purely off a bad game from 2025 — stale
+history, not "you just had a bad week" in any sense a person looking at
+the badge would mean. `had_bad_week` now filters to `target_season` rows
+before taking the last one; a player with zero `target_season` games yet
+is simply not eligible, no falling back to last season's number. The
+`fl` threshold itself is untouched (still the full multi-season
+distribution above) — only which game gets compared against it changed.
 
 ## Matchup-adjustment validation (real, but marginal and mixed by position)
 
@@ -229,11 +240,24 @@ opponent multiplier applied, scored by MAE against the real result:
 
 Not the clear win the file's other backtested parameters are, but not
 the clear loss bounce-back turned out to be either — genuinely mixed,
-small effects in both directions. Left live as-is for now (net neutral
-to slightly positive, and it helps the two positions — QB/RB — where
-matchup-driven game-script variance is the most real story); worth a
-tighter cap or separate treatment for WR/TE specifically if this gets
-revisited, since that's where the (small) negative signal concentrates.
+small effects in both directions.
+
+**Currently disabled in the published numbers (`APPLY_MATCHUP_MULTIPLIER
+<- FALSE`), through roughly Week 4 of `TARGET_SEASON`.** The backtest
+above is real, but it's scored against 2022-2025 with a full season of
+defensive history behind every week being tested. `compute_matchup_
+multipliers()` in live production doesn't have that luxury this early —
+`defense_history_seasons()` is leaning on last season's defensive
+numbers for a new season's early weeks, which the backtest never
+actually measured (it always had in-season data to fall back on by week
+2). Rather than assume the backtested result transfers to that
+different, untested situation, `mult` is still computed and published
+as-is (the `matchup_mult` column — powers the Opp column's heat tint on
+the site, and is what a re-enable flips back on) but no longer multiplied
+into `floor`/`median`/`ceiling`/the per-stat breakdown. Revisit once
+`TARGET_SEASON` has enough of its own elapsed weeks to run this same
+walk-forward check against real in-season defensive data instead of
+last season's — expected around Week 4, not a fixed date.
 
 ## QB weekly median: passing/rushing split
 
