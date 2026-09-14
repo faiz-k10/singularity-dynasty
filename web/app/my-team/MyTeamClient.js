@@ -75,15 +75,14 @@ function LeagueBadges({ settings }) {
 }
 
 // This week's game -- "Week N" always (once the season/week is known),
-// the opponent (with record) or a BYE tag, and the projected score
-// (our Singularity projection over each side's starters) when we have
-// one. Rendered on its own line under the league name; stays hidden
-// entirely before Sleeper posts a week/matchups (offseason lookups
-// just won't carry settings.week).
+// the opponent (with record) or a BYE tag. Rendered on its own line
+// under the league name; stays hidden entirely before Sleeper posts a
+// week/matchups (offseason lookups just won't carry settings.week). The
+// actual proj/live numbers used to render inline here -- they're their
+// own figure now, MatchupScoreTable below, on the right of the card's
+// summary bar.
 function MatchupLine({ settings }) {
   if (!settings || settings.week == null) return null;
-  const proj = settings.matchupProj;
-  const favored = proj ? proj.mine - proj.opp : 0;
   return (
     <span className="my-team-matchup">
       Week {settings.week}
@@ -94,25 +93,51 @@ function MatchupLine({ settings }) {
           {" · vs "}
           <span className="my-team-matchup-opp">{settings.opponent}</span>
           {settings.opponentRecord ? ` (${settings.opponentRecord})` : ""}
-          {proj && (
-            <>
-              {" · proj "}
-              <span
-                className={
-                  favored > 0
-                    ? "my-team-matchup-proj up"
-                    : favored < 0
-                    ? "my-team-matchup-proj down"
-                    : "my-team-matchup-proj"
-                }
-              >
-                {proj.mine.toFixed(1)}&ndash;{proj.opp.toFixed(1)}
-              </span>
-            </>
-          )}
         </>
       ) : null}
     </span>
+  );
+}
+
+// Proj vs. Live, You vs. Opp -- a compact 2x2 figure on the right of the
+// saved-team card's summary bar (where MatchupLine used to inline the
+// same numbers as plain text). matchupProj is our own pre-game
+// projection (actions.js, summed over each side's starters);
+// matchupActual is Sleeper's own `points` field on the matchup entry --
+// 0 before kickoff (actions.js already filters that out), a real
+// live-updating score once games start, final once they end. Either row
+// renders independently -- a mid-week view shows both, a pre-kickoff
+// view shows Proj only.
+function MatchupScoreTable({ settings }) {
+  const proj = settings?.matchupProj;
+  const actual = settings?.matchupActual;
+  if (!proj && !actual) return null;
+  const projFavored = proj ? proj.mine - proj.opp : 0;
+  const actualFavored = actual ? actual.mine - actual.opp : 0;
+  return (
+    <div className="matchup-score-table">
+      <div className="matchup-score-row matchup-score-header">
+        <span />
+        <span>You</span>
+        <span>Opp</span>
+      </div>
+      {proj && (
+        <div className="matchup-score-row">
+          <span className="matchup-score-label">Proj</span>
+          <span className={projFavored >= 0 ? "up" : "down"}>{proj.mine.toFixed(1)}</span>
+          <span className={projFavored <= 0 ? "up" : "down"}>{proj.opp.toFixed(1)}</span>
+        </div>
+      )}
+      {actual && (
+        <div className="matchup-score-row matchup-score-live">
+          <span className="matchup-score-label">
+            Live<span className="matchup-score-live-dot" />
+          </span>
+          <span className={actualFavored >= 0 ? "up" : "down"}>{actual.mine.toFixed(1)}</span>
+          <span className={actualFavored <= 0 ? "up" : "down"}>{actual.opp.toFixed(1)}</span>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -1232,6 +1257,7 @@ export default function MyTeamClient({
                   </div>
                   <LeagueBadges settings={t.settings} />
                 </div>
+                <MatchupScoreTable settings={t.settings} />
                 <button
                   type="button"
                   className="my-team-remove"

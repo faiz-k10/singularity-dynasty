@@ -2256,6 +2256,39 @@ tr.stat-row-selected td{background:var(--void-panel);}
   border-radius:20px; padding:5px 14px; font-size:12px; cursor:pointer; transition:border-color .2s ease, color .2s ease;
 }
 .my-team-remove:hover{border-color:var(--down); color:var(--down);}
+/* Proj/Live x You/Opp figure on the right of a saved team's summary bar
+   -- replaces the plain "· proj 146.6-96.7" text MatchupLine used to
+   inline. Small, dense, mono like the rest of the card's stat language;
+   sits between the badges and the Remove button in the same flex row. */
+.matchup-score-table{
+  font-family:var(--font-ibm-plex-mono), monospace; font-size:11.5px;
+  border:1px solid var(--line); border-radius:10px; padding:6px 10px;
+  background:var(--void-panel-2); flex-shrink:0; margin-left:auto;
+}
+.matchup-score-row{display:grid; grid-template-columns:34px 44px 44px; gap:4px; align-items:center;}
+.matchup-score-row + .matchup-score-row{margin-top:2px;}
+.matchup-score-header{color:var(--star-dim); font-size:10.5px; text-transform:uppercase; letter-spacing:0.04em;}
+.matchup-score-header span:not(:first-child){text-align:right;}
+.matchup-score-row:not(.matchup-score-header) span:not(.matchup-score-label){text-align:right; font-weight:600;}
+.matchup-score-label{color:var(--star-dim); display:flex; align-items:center; gap:4px;}
+.matchup-score-row .up{color:var(--up);}
+.matchup-score-row .down{color:var(--down);}
+.matchup-score-live-dot{
+  width:6px; height:6px; border-radius:50%; background:var(--down);
+  display:inline-block; animation:live-pulse 1.6s ease-in-out infinite;
+}
+@keyframes live-pulse{0%,100%{opacity:1;} 50%{opacity:0.35;}}
+@media (max-width:640px){
+  .matchup-score-table{margin-left:0;}
+  /* summary defaults to nowrap (see .my-team-saved-card summary above) --
+     fine at desktop widths, but the matchup table + Remove button push
+     past the viewport edge on a phone. Let the whole row wrap so the
+     table/button flow onto their own line under the title block instead
+     of clipping off-screen. */
+  .my-team-saved-card summary{flex-wrap:wrap;}
+  .matchup-score-table{order:1;}
+  .my-team-remove{order:2; margin-left:auto;}
+}
 .my-team-saved-card .rankings-table-wrap{margin:0 16px 16px; border-radius:12px;}
 .my-team-saved-card .my-team-view-toggle{margin:0 16px 14px;}
 .my-team-view-toggle{margin-bottom:14px;}
@@ -2371,15 +2404,72 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .pill-record-silver{background:rgba(var(--star-dot-rgb),0.18); border-color:rgba(var(--star-dot-rgb),0.4); color:var(--star);}
 .pill-record-bronze{background:rgba(var(--down-rgb),0.18); border-color:rgba(var(--down-rgb),0.4); color:var(--down);}
 
-/* GM Archetype teaser card (My Team page) + quiz page ---------------- */
-.archetype-card{
-  display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;
-  padding:16px 20px; margin:20px 0; border-radius:14px;
+/* My Team page header row -- title block on the left, the quiz entry
+   point pinned to the top right of the same row (not a full-width card
+   below the intro text anymore). Wraps under the title on narrow
+   viewports rather than the title, since the quiz card is the smaller
+   of the two. */
+.my-team-header-row{
+  display:flex; align-items:flex-start; justify-content:space-between; gap:20px; flex-wrap:wrap;
+}
+.my-team-header-row > div:first-child{flex:1; min-width:260px;}
+
+/* Quiz entry point, shaped like a small clip-art quiz-paper card -- the
+   QuizIcon glyph plus a two-line label, in the site's existing card
+   language (void-panel-2 + line border) rather than a plain text link.
+   Gold border/icon accent on hover to read as inviting, not just another
+   nav link. */
+.quiz-corner-card{
+  display:flex; align-items:center; gap:12px; flex-shrink:0;
+  padding:12px 18px 12px 14px; border-radius:14px;
+  background:var(--void-panel-2); border:1px solid var(--line);
+  transition:border-color .15s ease, transform .15s ease;
+}
+.quiz-corner-card:hover{border-color:var(--horizon-gold); transform:translateY(-1px);}
+.quiz-corner-icon{
+  width:34px; height:34px; flex-shrink:0; color:var(--horizon-gold);
+  display:flex; align-items:center; justify-content:center;
+}
+.quiz-corner-icon svg{width:100%; height:100%;}
+.quiz-corner-text{display:flex; flex-direction:column; gap:1px;}
+.quiz-corner-label{font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--star-dim);}
+.quiz-corner-value{font-family:var(--font-space-grotesk); font-size:15px; color:var(--star); font-weight:600;}
+
+/* Portfolio Pulse -- deliberately bigger/louder than the old single-line
+   card: a label, a 3-segment stacked bar (Floor-Safe / Balanced /
+   Ceiling Chaser, weighted by roster slots), and a legend with exact
+   percentages, all of it recomputed fresh from real sim data on every
+   save. */
+.portfolio-pulse-card{
+  padding:22px 24px; margin:20px 0; border-radius:16px;
   background:var(--void-panel-2); border:1px solid var(--line);
 }
-.archetype-card-label{font-size:12px; letter-spacing:0.08em; text-transform:uppercase; color:var(--star-dim);}
-.archetype-card-title{font-family:var(--font-space-grotesk); font-size:19px; margin-top:2px;}
-.archetype-card-blurb{font-size:13.5px; color:var(--star-dim); margin-top:4px; max-width:52ch;}
+.portfolio-pulse-head{margin-bottom:14px;}
+.portfolio-pulse-label{
+  font-family:var(--font-space-grotesk); font-size:20px; font-weight:700; color:var(--star);
+}
+.portfolio-pulse-sub{font-size:13px; color:var(--star-dim); margin-top:4px;}
+.portfolio-pulse-bar{
+  display:flex; width:100%; height:16px; border-radius:8px; overflow:hidden;
+  background:var(--void-panel); border:1px solid var(--line);
+}
+.portfolio-pulse-seg{height:100%; min-width:2px; transition:width .3s ease;}
+.portfolio-pulse-seg.portfolio-pulse-seg-floorSafe{background:var(--neon-blue);}
+.portfolio-pulse-seg.portfolio-pulse-seg-balanced{background:var(--horizon-gold);}
+.portfolio-pulse-seg.portfolio-pulse-seg-ceilingChaser{background:var(--down);}
+.portfolio-pulse-legend{display:flex; gap:20px; flex-wrap:wrap; margin-top:12px;}
+.portfolio-pulse-legend-item{
+  display:flex; align-items:center; gap:7px; font-size:13px; color:var(--star-dim);
+}
+.portfolio-pulse-legend-item strong{color:var(--star); font-weight:700;}
+.portfolio-pulse-swatch{width:10px; height:10px; border-radius:3px; display:inline-block;}
+.portfolio-pulse-legend-item.portfolio-pulse-seg-floorSafe .portfolio-pulse-swatch{background:var(--neon-blue);}
+.portfolio-pulse-legend-item.portfolio-pulse-seg-balanced .portfolio-pulse-swatch{background:var(--horizon-gold);}
+.portfolio-pulse-legend-item.portfolio-pulse-seg-ceilingChaser .portfolio-pulse-swatch{background:var(--down);}
+.portfolio-pulse-note{font-size:12px; color:var(--star-dim); margin-top:14px; max-width:64ch; line-height:1.5;}
+@media (max-width:640px){
+  .quiz-corner-card{width:100%;}
+}
 
 .quiz-wrap{max-width:680px;}
 .quiz-form{display:flex; flex-direction:column; gap:28px; margin-top:24px;}
@@ -2415,5 +2505,6 @@ tr.stat-row-selected td{background:var(--void-panel);}
   .os-ring{animation:none;}
   .os-core{animation:none;}
   .ticker-track{animation:none; overflow-x:auto;}
+  .matchup-score-live-dot{animation:none;}
   body::before{transition:none;}
 }

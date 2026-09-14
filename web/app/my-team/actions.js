@@ -117,6 +117,12 @@ export async function lookupSleeperTeams(username) {
       let weekOpponentRecord = null;
       let weekIsBye = false;
       let matchupProj = null;
+      // Sleeper's own `points` field on each matchup entry -- 0 before
+      // kickoff, then a real live-updating score once games start, final
+      // once they end. Surfaced separately from matchupProj (our own
+      // pre-game projection) rather than replacing it -- the site shows
+      // both side by side once there's a real score to show.
+      let matchupActual = null;
       if (matchups) {
         const mine = matchups.find((m) => m.roster_id === myRoster.roster_id);
         if (mine && mine.matchup_id != null) {
@@ -155,6 +161,12 @@ export async function lookupSleeperTeams(username) {
             const b = sumProj(oppEntry.starters);
             if (a.n >= 3 && b.n >= 3) {
               matchupProj = { mine: a.sum, opp: b.sum };
+            }
+
+            const myPts = typeof mine.points === "number" ? mine.points : 0;
+            const oppPts = typeof oppEntry.points === "number" ? oppEntry.points : 0;
+            if (myPts > 0 || oppPts > 0) {
+              matchupActual = { mine: myPts, opp: oppPts };
             }
           } else {
             weekIsBye = true;
@@ -200,6 +212,7 @@ export async function lookupSleeperTeams(username) {
         opponentRecord: weekOpponentRecord,
         isBye: weekIsBye,
         matchupProj,
+        matchupActual,
         // Best ball leagues have no set lineup -- the platform auto-starts
         // your top scorers -- so Sleeper's `starters` array is mostly "0"
         // placeholders and the Starting Lineup view is meaningless.

@@ -6,6 +6,7 @@ import { resolveTier, savedTeamLimit } from "@/lib/tier";
 import { normalizePlayerName, buildPortfolio } from "@/lib/portfolio";
 import { getSleeperPlayers } from "@/lib/sleeper";
 import { loadInsight, loadTeamInsightForAll, computeAndSaveInsight } from "@/lib/insights";
+import QuizIcon from "../tools/QuizIcon";
 import MyTeamClient from "./MyTeamClient";
 
 export const metadata = {
@@ -164,50 +165,74 @@ export default async function MyTeamPage() {
       <SiteHeader />
 
       <main className="wrap tool-wrap">
-        <div className="eyebrow">My Team</div>
-        <h1>My Team</h1>
-        <p className="tool-sub">
-          Import your team from Sleeper to save it here. Yahoo and ESPN
-          import are coming later, and this is the data that will power
-          personalized Team Analysis.
-        </p>
-
-        {user && (
-          <div className="archetype-card reveal in">
-            <div>
-              <div className="archetype-card-label">GM Archetype</div>
-              {archetypeResult ? (
-                <>
-                  <div className="archetype-card-title">{archetypeResult.label}</div>
-                  <p className="archetype-card-blurb">{archetypeResult.blurb}</p>
-                </>
-              ) : (
-                <p className="archetype-card-blurb">
-                  Take the 60-second quiz to find out what kind of dynasty GM you are.
-                </p>
-              )}
-            </div>
-            <Link href="/my-team/quiz" className="btn-ghost">
-              {archetypeResult ? "Retake Quiz" : "Take the Quiz"}
-            </Link>
+        <div className="my-team-header-row">
+          <div>
+            <div className="eyebrow">My Team</div>
+            <h1>My Team</h1>
+            <p className="tool-sub">
+              Import your team from Sleeper to save it here. Yahoo and ESPN
+              import are coming later, and this is the data that will power
+              personalized Team Analysis.
+            </p>
           </div>
-        )}
+
+          {user && (
+            <Link href="/my-team/quiz" className="quiz-corner-card reveal in">
+              <span className="quiz-corner-icon">
+                <QuizIcon />
+              </span>
+              <span className="quiz-corner-text">
+                <span className="quiz-corner-label">GM Archetype</span>
+                <span className="quiz-corner-value">
+                  {archetypeResult ? archetypeResult.label : "Take the Quiz"}
+                </span>
+              </span>
+            </Link>
+          )}
+        </div>
 
         {portfolioSummary && (
-          <div className="archetype-card reveal in">
-            <div>
-              <div className="archetype-card-label">Portfolio Pulse</div>
-              <div className="archetype-card-title">
-                {portfolioSummary.spikyPct != null
-                  ? `${portfolioSummary.spikyPct}% Boom/Bust-Leaning`
-                  : `${portfolioSummary.totalPlayers} Players Rostered`}
-              </div>
-              <p className="archetype-card-blurb">
+          <div className="portfolio-pulse-card reveal in">
+            <div className="portfolio-pulse-head">
+              <div className="portfolio-pulse-label">Portfolio Pulse</div>
+              <p className="portfolio-pulse-sub">
                 {portfolioSummary.totalSlots} roster slots across your saved teams
                 {portfolioSummary.topExposure &&
                   ` · top exposure: ${portfolioSummary.topExposure.name} (${Math.round(portfolioSummary.topExposure.exposurePct)}%)`}
               </p>
             </div>
+            {portfolioSummary.profile ? (
+              <>
+                <div className="portfolio-pulse-bar">
+                  {portfolioSummary.profile.map((b) => (
+                    <div
+                      key={b.key}
+                      className={`portfolio-pulse-seg portfolio-pulse-seg-${b.key}`}
+                      style={{ width: `${b.pct}%` }}
+                      title={`${b.label}: ${b.pct}%`}
+                    />
+                  ))}
+                </div>
+                <div className="portfolio-pulse-legend">
+                  {portfolioSummary.profile.map((b) => (
+                    <span key={b.key} className={`portfolio-pulse-legend-item portfolio-pulse-seg-${b.key}`}>
+                      <span className="portfolio-pulse-swatch" />
+                      {b.label} <strong>{b.pct}%</strong>
+                    </span>
+                  ))}
+                </div>
+                <p className="portfolio-pulse-note">
+                  Recomputed from real floor/ceiling data every time you save a
+                  team — trade for a different mix of players and this shifts
+                  automatically. An age-based (young roster vs. rebuild) view
+                  is coming once Team Analysis publishes real player age data.
+                </p>
+              </>
+            ) : (
+              <p className="portfolio-pulse-sub">
+                Not enough simulation data yet to build a risk profile.
+              </p>
+            )}
           </div>
         )}
 
