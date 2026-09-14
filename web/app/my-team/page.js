@@ -197,41 +197,47 @@ export default async function MyTeamPage() {
               <div className="portfolio-pulse-label">Portfolio Pulse</div>
               <p className="portfolio-pulse-sub">
                 {portfolioSummary.totalSlots} roster slots across your saved teams
-                {portfolioSummary.topExposure &&
-                  ` · top exposure: ${portfolioSummary.topExposure.name} (${Math.round(portfolioSummary.topExposure.exposurePct)}%)`}
               </p>
             </div>
             {portfolioSummary.profile ? (
-              <>
-                <div className="portfolio-pulse-bar">
-                  {portfolioSummary.profile.map((b) => (
-                    <div
-                      key={b.key}
-                      className={`portfolio-pulse-seg portfolio-pulse-seg-${b.key}`}
-                      style={{ width: `${b.pct}%` }}
-                      title={`${b.label}: ${b.pct}%`}
-                    />
-                  ))}
-                </div>
-                <div className="portfolio-pulse-legend">
-                  {portfolioSummary.profile.map((b) => (
-                    <span key={b.key} className={`portfolio-pulse-legend-item portfolio-pulse-seg-${b.key}`}>
-                      <span className="portfolio-pulse-swatch" />
-                      {b.label} <strong>{b.pct}%</strong>
-                    </span>
-                  ))}
-                </div>
-                <p className="portfolio-pulse-note">
-                  Recomputed from real floor/ceiling data every time you save a
-                  team — trade for a different mix of players and this shifts
-                  automatically. An age-based (young roster vs. rebuild) view
-                  is coming once Team Analysis publishes real player age data.
-                </p>
-              </>
+              <div className="portfolio-pulse-bar">
+                {portfolioSummary.profile.map((b) => (
+                  <div
+                    key={b.key}
+                    className={`portfolio-pulse-seg portfolio-pulse-seg-${b.key}`}
+                    style={{ width: `${b.pct}%` }}
+                    title={`${b.label}: ${b.pct}%`}
+                  />
+                ))}
+              </div>
             ) : (
               <p className="portfolio-pulse-sub">
                 Not enough simulation data yet to build a risk profile.
               </p>
+            )}
+            {portfolioSummary.profile && (
+              <div className="portfolio-pulse-legend">
+                {portfolioSummary.profile.map((b) => (
+                  <span key={b.key} className={`portfolio-pulse-legend-item portfolio-pulse-seg-${b.key}`}>
+                    <span className="portfolio-pulse-swatch" />
+                    {b.label} <strong>{b.pct}%</strong>
+                  </span>
+                ))}
+              </div>
+            )}
+            {portfolioSummary.topExposure?.length > 0 && (
+              <div className="portfolio-pulse-exposure">
+                <div className="portfolio-pulse-exposure-label">Top Exposure</div>
+                <div className="portfolio-pulse-exposure-list">
+                  {portfolioSummary.topExposure.map((p, i) => (
+                    <span key={p.name} className="portfolio-pulse-exposure-chip">
+                      <span className="portfolio-pulse-exposure-rank">{i + 1}</span>
+                      {p.name}
+                      <span className="portfolio-pulse-exposure-pct">{Math.round(p.exposurePct)}%</span>
+                    </span>
+                  ))}
+                </div>
+              </div>
             )}
           </div>
         )}

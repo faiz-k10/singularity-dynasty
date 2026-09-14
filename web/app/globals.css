@@ -2454,19 +2454,49 @@ tr.stat-row-selected td{background:var(--void-panel);}
   background:var(--void-panel); border:1px solid var(--line);
 }
 .portfolio-pulse-seg{height:100%; min-width:2px; transition:width .3s ease;}
-.portfolio-pulse-seg.portfolio-pulse-seg-floorSafe{background:var(--neon-blue);}
+/* Safe-to-spicy progression across the 5 buckets, reusing the site's
+   existing accent tokens rather than inventing new colors -- blue/green
+   (calm) through gold (neutral) to purple/red (volatile). */
+.portfolio-pulse-seg.portfolio-pulse-seg-bedrock{background:var(--neon-blue);}
+.portfolio-pulse-seg.portfolio-pulse-seg-floorSafe{background:var(--up);}
 .portfolio-pulse-seg.portfolio-pulse-seg-balanced{background:var(--horizon-gold);}
-.portfolio-pulse-seg.portfolio-pulse-seg-ceilingChaser{background:var(--down);}
-.portfolio-pulse-legend{display:flex; gap:20px; flex-wrap:wrap; margin-top:12px;}
+.portfolio-pulse-seg.portfolio-pulse-seg-ceilingChaser{background:var(--purple);}
+.portfolio-pulse-seg.portfolio-pulse-seg-boomBust{background:var(--down);}
+.portfolio-pulse-legend{display:flex; gap:16px; flex-wrap:wrap; margin-top:12px;}
 .portfolio-pulse-legend-item{
-  display:flex; align-items:center; gap:7px; font-size:13px; color:var(--star-dim);
+  display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--star-dim);
 }
 .portfolio-pulse-legend-item strong{color:var(--star); font-weight:700;}
-.portfolio-pulse-swatch{width:10px; height:10px; border-radius:3px; display:inline-block;}
-.portfolio-pulse-legend-item.portfolio-pulse-seg-floorSafe .portfolio-pulse-swatch{background:var(--neon-blue);}
+.portfolio-pulse-swatch{width:9px; height:9px; border-radius:3px; display:inline-block;}
+.portfolio-pulse-legend-item.portfolio-pulse-seg-bedrock .portfolio-pulse-swatch{background:var(--neon-blue);}
+.portfolio-pulse-legend-item.portfolio-pulse-seg-floorSafe .portfolio-pulse-swatch{background:var(--up);}
 .portfolio-pulse-legend-item.portfolio-pulse-seg-balanced .portfolio-pulse-swatch{background:var(--horizon-gold);}
-.portfolio-pulse-legend-item.portfolio-pulse-seg-ceilingChaser .portfolio-pulse-swatch{background:var(--down);}
-.portfolio-pulse-note{font-size:12px; color:var(--star-dim); margin-top:14px; max-width:64ch; line-height:1.5;}
+.portfolio-pulse-legend-item.portfolio-pulse-seg-ceilingChaser .portfolio-pulse-swatch{background:var(--purple);}
+.portfolio-pulse-legend-item.portfolio-pulse-seg-boomBust .portfolio-pulse-swatch{background:var(--down);}
+
+/* Top Exposure -- replaces the old single-line "top exposure: X (75%)"
+   mention and the static explainer paragraph with a real ranked list,
+   same chip language as the position/team pills elsewhere on the site. */
+.portfolio-pulse-exposure{margin-top:18px; padding-top:16px; border-top:1px solid var(--line);}
+.portfolio-pulse-exposure-label{
+  font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--star-dim); margin-bottom:9px;
+}
+.portfolio-pulse-exposure-list{display:flex; gap:8px; flex-wrap:wrap;}
+.portfolio-pulse-exposure-chip{
+  display:flex; align-items:center; gap:7px;
+  padding:6px 12px 6px 8px; border-radius:20px;
+  background:var(--void-panel); border:1px solid var(--line);
+  font-size:13px; color:var(--star);
+}
+.portfolio-pulse-exposure-rank{
+  display:flex; align-items:center; justify-content:center;
+  width:18px; height:18px; border-radius:50%;
+  background:rgba(var(--horizon-gold-rgb),0.18); color:var(--horizon-gold);
+  font-family:var(--font-ibm-plex-mono), monospace; font-size:10.5px; font-weight:700;
+}
+.portfolio-pulse-exposure-pct{
+  font-family:var(--font-ibm-plex-mono), monospace; font-size:12px; color:var(--star-dim);
+}
 @media (max-width:640px){
   .quiz-corner-card{width:100%;}
 }

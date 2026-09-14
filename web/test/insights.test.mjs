@@ -36,36 +36,65 @@ test("computeSeasonRecordBadge: missing settings default to 0-0, not a crash", a
   assert.equal(result.tier, null);
 });
 
-test("computePortfolioSummary: top exposure is the player rostered on the most teams", async () => {
+test("computePortfolioSummary: topExposure is the top 5 by team count, descending", async () => {
   const rows = [
     { name: "A", teams: 3, exposurePct: 75, simFloor: 5, simCeiling: 20 },
     { name: "B", teams: 1, exposurePct: 25, simFloor: 10, simCeiling: 12 },
+    { name: "C", teams: 2, exposurePct: 50, simFloor: 10, simCeiling: 12 },
   ];
   const result = await computePortfolioSummary(rows);
-  assert.equal(result.totalPlayers, 2);
-  assert.equal(result.totalSlots, 4);
-  assert.equal(result.topExposure.name, "A");
+  assert.equal(result.totalPlayers, 3);
+  assert.equal(result.totalSlots, 6);
+  assert.deepEqual(result.topExposure.map((r) => r.name), ["A", "C", "B"]);
+});
+
+test("computePortfolioSummary: topExposure caps at 5 even with a bigger portfolio", async () => {
+  const rows = Array.from({ length: 8 }, (_, i) => ({
+    name: `P${i}`, teams: 8 - i, exposurePct: (8 - i) * 10,
+  }));
+  const result = await computePortfolioSummary(rows);
+  assert.equal(result.topExposure.length, 5);
+  assert.equal(result.topExposure[0].name, "P0");
 });
 
 test("computePortfolioSummary: profile buckets weight by roster slots, not distinct players", async () => {
   const rows = [
-    { name: "Chaser", teams: 3, simFloor: 4, simCeiling: 20 }, // 5x -> ceilingChaser
-    { name: "Safe", teams: 1, simFloor: 10, simCeiling: 12 }, // 1.2x -> floorSafe
+    { name: "Gambler", teams: 3, simFloor: 4, simCeiling: 20 }, // 5x -> boomBust
+    { name: "Safe", teams: 1, simFloor: 10, simCeiling: 11 }, // 1.1x -> bedrock
   ];
   const result = await computePortfolioSummary(rows);
   const byKey = Object.fromEntries(result.profile.map((b) => [b.key, b.pct]));
-  // 3 ceilingChaser slots + 1 floorSafe slot out of 4 rated slots
-  assert.equal(byKey.ceilingChaser, 75);
-  assert.equal(byKey.floorSafe, 25);
+  // 3 boomBust slots + 1 bedrock slot out of 4 rated slots
+  assert.equal(byKey.boomBust, 75);
+  assert.equal(byKey.bedrock, 25);
   assert.equal(byKey.balanced, 0);
 });
 
-test("computePortfolioSummary: profile percentages always sum to exactly 100", async () => {
-  // Ratios chosen so independent rounding of all three would NOT sum to 100.
+test("computePortfolioSummary: five buckets are covered end to end by ratio", async () => {
   const rows = [
-    { name: "A", teams: 1, simFloor: 10, simCeiling: 12.5 }, // 1.25x -> floorSafe
-    { name: "B", teams: 1, simFloor: 10, simCeiling: 13 },   // 1.3x -> balanced
-    { name: "C", teams: 1, simFloor: 10, simCeiling: 25 },   // 2.5x -> ceilingChaser
+    { name: "A", teams: 1, simFloor: 10, simCeiling: 11 },   // 1.1x -> bedrock
+    { name: "B", teams: 1, simFloor: 10, simCeiling: 13 },   // 1.3x -> floorSafe
+    { name: "C", teams: 1, simFloor: 10, simCeiling: 17 },   // 1.7x -> balanced
+    { name: "D", teams: 1, simFloor: 10, simCeiling: 24 },   // 2.4x -> ceilingChaser
+    { name: "E", teams: 1, simFloor: 10, simCeiling: 30 },   // 3.0x -> boomBust
+  ];
+  const result = await computePortfolioSummary(rows);
+  const byKey = Object.fromEntries(result.profile.map((b) => [b.key, b.pct]));
+  assert.equal(byKey.bedrock, 20);
+  assert.equal(byKey.floorSafe, 20);
+  assert.equal(byKey.balanced, 20);
+  assert.equal(byKey.ceilingChaser, 20);
+  assert.equal(byKey.boomBust, 20);
+});
+
+test("computePortfolioSummary: profile percentages always sum to exactly 100", async () => {
+  // Ratios chosen so independent rounding of all five would NOT sum to 100.
+  const rows = [
+    { name: "A", teams: 1, simFloor: 10, simCeiling: 11 },
+    { name: "B", teams: 1, simFloor: 10, simCeiling: 13 },
+    { name: "C", teams: 1, simFloor: 10, simCeiling: 17 },
+    { name: "D", teams: 3, simFloor: 10, simCeiling: 24 },
+    { name: "E", teams: 5, simFloor: 10, simCeiling: 30 },
   ];
   const result = await computePortfolioSummary(rows);
   const sum = result.profile.reduce((s, b) => s + b.pct, 0);
@@ -80,10 +109,10 @@ test("computePortfolioSummary: players with no sim data are excluded from the pr
 
 test("computePortfolioSummary: empty/missing rows -> zeros, not a crash", async () => {
   assert.deepEqual(await computePortfolioSummary([]), {
-    totalPlayers: 0, totalSlots: 0, topExposure: null, profile: null,
+    totalPlayers: 0, totalSlots: 0, topExposure: [], profile: null,
   });
   assert.deepEqual(await computePortfolioSummary(undefined), {
-    totalPlayers: 0, totalSlots: 0, topExposure: null, profile: null,
+    totalPlayers: 0, totalSlots: 0, topExposure: [], profile: null,
   });
 });
 
