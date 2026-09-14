@@ -1,9 +1,11 @@
+import Link from "next/link";
 import SiteHeader from "../SiteHeader";
 import { createClient } from "@/lib/supabase/server";
 import { createPublicClient } from "@/lib/supabase/public";
 import { resolveTier, savedTeamLimit } from "@/lib/tier";
 import { normalizePlayerName } from "@/lib/portfolio";
 import { getSleeperPlayers } from "@/lib/sleeper";
+import { loadInsight, loadTeamInsightForAll } from "@/lib/insights";
 import MyTeamClient from "./MyTeamClient";
 
 export const metadata = {
@@ -32,6 +34,28 @@ export default async function MyTeamPage() {
       .eq("user_id", user.id)
       .order("created_at", { ascending: true });
     savedTeams = data || [];
+  }
+
+  // GM Archetype (user-scoped) + per-team season-record badges
+  // (team-scoped) -- see lib/insights/. Merging the record tier straight
+  // into each team's settings object is what lets MyTeamClient's
+  // existing LeagueBadges render it as one more pill alongside Teams/
+  // Roster Spots/Scoring, without threading a separate prop through.
+  let archetypeResult = null;
+  if (user) {
+    const row = await loadInsight(supabase, { key: "gm_archetype_quiz", userId: user.id });
+    archetypeResult = row?.value || null;
+  }
+  if (user && savedTeams.length) {
+    const recordInsights = await loadTeamInsightForAll(supabase, {
+      key: "season_record_badge",
+      userId: user.id,
+      savedTeamIds: savedTeams.map((t) => t.id),
+    });
+    savedTeams = savedTeams.map((t) => {
+      const tier = recordInsights.get(t.id)?.value?.tier;
+      return tier ? { ...t, settings: { ...(t.settings || {}), recordTier: tier } } : t;
+    });
   }
 
   // Season sim numbers for the My Guys > My Analysis scatter -- public
@@ -124,6 +148,27 @@ export default async function MyTeamPage() {
           import are coming later, and this is the data that will power
           personalized Team Analysis.
         </p>
+
+        {user && (
+          <div className="archetype-card reveal in">
+            <div>
+              <div className="archetype-card-label">GM Archetype</div>
+              {archetypeResult ? (
+                <>
+                  <div className="archetype-card-title">{archetypeResult.label}</div>
+                  <p className="archetype-card-blurb">{archetypeResult.blurb}</p>
+                </>
+              ) : (
+                <p className="archetype-card-blurb">
+                  Take the 60-second quiz to find out what kind of dynasty GM you are.
+                </p>
+              )}
+            </div>
+            <Link href="/my-team/quiz" className="btn-ghost">
+              {archetypeResult ? "Retake Quiz" : "Take the Quiz"}
+            </Link>
+          </div>
+        )}
 
         <MyTeamClient
           isSignedIn={!!user}

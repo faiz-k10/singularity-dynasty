@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { resolveTier, savedTeamLimit } from "@/lib/tier";
+import { computeAndSaveInsight } from "@/lib/insights";
 import {
   fetchSleeperUser,
   fetchSleeperLeagues,
@@ -338,20 +339,24 @@ export async function saveTeam({ sleeperUsername, leagueId, leagueName, teamName
     }
   }
 
-  const { error } = await supabase.from("saved_teams").upsert(
-    {
-      user_id: user.id,
-      platform: "sleeper",
-      platform_username: sleeperUsername,
-      platform_league_id: leagueId,
-      platform_roster_id: rosterId ? String(rosterId) : null,
-      league_name: leagueName,
-      team_name: teamName,
-      settings: settings || {},
-      players,
-    },
-    { onConflict: "user_id,platform,platform_league_id" }
-  );
+  const { data: savedRow, error } = await supabase
+    .from("saved_teams")
+    .upsert(
+      {
+        user_id: user.id,
+        platform: "sleeper",
+        platform_username: sleeperUsername,
+        platform_league_id: leagueId,
+        platform_roster_id: rosterId ? String(rosterId) : null,
+        league_name: leagueName,
+        team_name: teamName,
+        settings: settings || {},
+        players,
+      },
+      { onConflict: "user_id,platform,platform_league_id" }
+    )
+    .select()
+    .single();
 
   if (error) {
     // Trigger fallback, in case a concurrent save slipped past the check.
@@ -364,8 +369,58 @@ export async function saveTeam({ sleeperUsername, leagueId, leagueName, teamName
     return { error: error.message };
   }
 
+  // Append-only history row (see 0031_team_snapshot_history.sql) plus a
+  // refreshed season-record insight -- both best-effort: a failure here
+  // shouldn't block the save itself from succeeding, since the roster is
+  // already safely persisted in saved_teams above.
+  if (savedRow) {
+    await supabase.from("team_snapshot_history").insert({
+      saved_team_id: savedRow.id,
+      user_id: user.id,
+      players,
+      settings: settings || {},
+    });
+    await computeAndSaveInsight(supabase, {
+      key: "season_record_badge",
+      userId: user.id,
+      savedTeamId: savedRow.id,
+      input: { settings: settings || {} },
+    }).catch((e) => console.error("[saveTeam] season_record_badge insight failed:", e.message));
+  }
+
   revalidatePath("/my-team");
   return { success: true };
+}
+
+// Scores the GM Archetype quiz (see lib/insights/gmArchetype.js) and
+// persists it as a user-scoped insight -- no saved team required, so
+// this works the moment someone signs in, before they've imported a
+// roster at all.
+export async function submitGmArchetypeQuiz(answers) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "Sign in to take the quiz." };
+  }
+
+  let value;
+  try {
+    value = await computeAndSaveInsight(supabase, {
+      key: "gm_archetype_quiz",
+      userId: user.id,
+      input: answers,
+    });
+  } catch (e) {
+    console.error("[submitGmArchetypeQuiz] insight save failed:", e.message);
+    return { error: "Couldn't save your result — try again in a moment." };
+  }
+
+  revalidatePath("/my-team");
+  revalidatePath("/my-team/quiz");
+  return { success: true, value };
 }
 
 // Sets (or clears, with null/"") the optional per-team buy-in used by

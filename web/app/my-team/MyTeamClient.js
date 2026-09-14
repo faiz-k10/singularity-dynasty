@@ -65,6 +65,11 @@ function LeagueBadges({ settings }) {
       {settings.tePremium && (
         <span className="my-team-setting-pill pill-te">{settings.tePremium}</span>
       )}
+      {settings.recordTier && (
+        <span className={`my-team-setting-pill pill-record-${settings.recordTier}`}>
+          {settings.record} Record
+        </span>
+      )}
     </div>
   );
 }
