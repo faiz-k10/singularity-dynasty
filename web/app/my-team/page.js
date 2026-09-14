@@ -3,9 +3,9 @@ import SiteHeader from "../SiteHeader";
 import { createClient } from "@/lib/supabase/server";
 import { createPublicClient } from "@/lib/supabase/public";
 import { resolveTier, savedTeamLimit } from "@/lib/tier";
-import { normalizePlayerName } from "@/lib/portfolio";
+import { normalizePlayerName, buildPortfolio } from "@/lib/portfolio";
 import { getSleeperPlayers } from "@/lib/sleeper";
-import { loadInsight, loadTeamInsightForAll } from "@/lib/insights";
+import { loadInsight, loadTeamInsightForAll, computeAndSaveInsight } from "@/lib/insights";
 import MyTeamClient from "./MyTeamClient";
 
 export const metadata = {
@@ -82,6 +82,29 @@ export default async function MyTeamPage() {
         if (s.player_name) playerSims[normalizePlayerName(s.player_name)] = s;
       }
     }
+  }
+
+  // Portfolio Pulse (user-scoped insight) -- a distilled, cacheable
+  // summary of the SAME rows the My Guys panel already builds client-
+  // side (lib/portfolio.js's buildPortfolio, unchanged). This is the
+  // "apply the insights pattern to what's already built" half: the live,
+  // refilterable exposure table stays exactly as it was -- persisting
+  // THAT on every filter click would be the wrong shape -- but a few
+  // stable facts about it (top exposure, how boom/bust-leaning the
+  // portfolio is) are exactly what this layer is for, computed once per
+  // page load and cheap to read elsewhere later (a badge, a share card)
+  // without re-deriving them.
+  let portfolioSummary = null;
+  if (user && savedTeams.length >= 2) {
+    const { rows } = buildPortfolio(savedTeams, {}, playerSims, {});
+    portfolioSummary = await computeAndSaveInsight(supabase, {
+      key: "portfolio_summary",
+      userId: user.id,
+      input: rows,
+    }).catch((e) => {
+      console.error("[my-team] portfolio_summary insight failed:", e.message);
+      return null;
+    });
   }
 
   // Per-player-week game log (trailing two seasons) for the My Analysis
@@ -167,6 +190,24 @@ export default async function MyTeamPage() {
             <Link href="/my-team/quiz" className="btn-ghost">
               {archetypeResult ? "Retake Quiz" : "Take the Quiz"}
             </Link>
+          </div>
+        )}
+
+        {portfolioSummary && (
+          <div className="archetype-card reveal in">
+            <div>
+              <div className="archetype-card-label">Portfolio Pulse</div>
+              <div className="archetype-card-title">
+                {portfolioSummary.spikyPct != null
+                  ? `${portfolioSummary.spikyPct}% Boom/Bust-Leaning`
+                  : `${portfolioSummary.totalPlayers} Players Rostered`}
+              </div>
+              <p className="archetype-card-blurb">
+                {portfolioSummary.totalSlots} roster slots across your saved teams
+                {portfolioSummary.topExposure &&
+                  ` · top exposure: ${portfolioSummary.topExposure.name} (${Math.round(portfolioSummary.topExposure.exposurePct)}%)`}
+              </p>
+            </div>
           </div>
         )}
 

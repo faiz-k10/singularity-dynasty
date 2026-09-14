@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { scoreGmArchetype } from "../lib/insights/gmArchetype.js";
 import { computeSeasonRecordBadge } from "../lib/insights/seasonRecord.js";
+import { computePortfolioSummary } from "../lib/insights/portfolioSummary.js";
 import { registerInsight, getInsight } from "../lib/insights/registry.js";
 
 test("scoreGmArchetype: all-aggressive answers land on the top archetype", () => {
@@ -33,6 +34,42 @@ test("computeSeasonRecordBadge: missing settings default to 0-0, not a crash", a
   const result = await computeSeasonRecordBadge();
   assert.equal(result.record, "0-0");
   assert.equal(result.tier, null);
+});
+
+test("computePortfolioSummary: top exposure is the player rostered on the most teams", async () => {
+  const rows = [
+    { name: "A", teams: 3, exposurePct: 75, simFloor: 5, simCeiling: 20 },
+    { name: "B", teams: 1, exposurePct: 25, simFloor: 10, simCeiling: 12 },
+  ];
+  const result = await computePortfolioSummary(rows);
+  assert.equal(result.totalPlayers, 2);
+  assert.equal(result.totalSlots, 4);
+  assert.equal(result.topExposure.name, "A");
+});
+
+test("computePortfolioSummary: spikyPct counts roster slots, not distinct players", async () => {
+  const rows = [
+    { name: "Spiky", teams: 3, simFloor: 4, simCeiling: 20 }, // 5x -> spiky
+    { name: "Safe", teams: 1, simFloor: 10, simCeiling: 12 }, // 1.2x -> not spiky
+  ];
+  const result = await computePortfolioSummary(rows);
+  // 3 spiky slots out of 4 rated slots = 75%
+  assert.equal(result.spikyPct, 75);
+});
+
+test("computePortfolioSummary: players with no sim data are excluded from spikyPct, not treated as safe", async () => {
+  const rows = [{ name: "No Sim Data", teams: 5, simFloor: null, simCeiling: null }];
+  const result = await computePortfolioSummary(rows);
+  assert.equal(result.spikyPct, null);
+});
+
+test("computePortfolioSummary: empty/missing rows -> zeros, not a crash", async () => {
+  assert.deepEqual(await computePortfolioSummary([]), {
+    totalPlayers: 0, totalSlots: 0, topExposure: null, spikyPct: null,
+  });
+  assert.deepEqual(await computePortfolioSummary(undefined), {
+    totalPlayers: 0, totalSlots: 0, topExposure: null, spikyPct: null,
+  });
 });
 
 test("registerInsight: rejects an invalid scope so a typo fails loudly, not silently", () => {

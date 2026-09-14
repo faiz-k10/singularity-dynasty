@@ -10,9 +10,11 @@
 import { registerInsight } from "./registry";
 import { computeGmArchetype } from "./gmArchetype";
 import { computeSeasonRecordBadge } from "./seasonRecord";
+import { computePortfolioSummary } from "./portfolioSummary";
 
 registerInsight({ key: "gm_archetype_quiz", scope: "user", compute: computeGmArchetype });
 registerInsight({ key: "season_record_badge", scope: "team", compute: computeSeasonRecordBadge });
+registerInsight({ key: "portfolio_summary", scope: "user", compute: computePortfolioSummary });
 
 export * from "./registry";
 export * from "./persist";
