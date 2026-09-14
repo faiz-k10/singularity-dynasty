@@ -6,7 +6,6 @@ import SortableTh from "./SortableTh";
 import TrendTag from "./TrendTag";
 import ConfidenceBadge from "./ConfidenceBadge";
 import TeamBadge from "./TeamBadge";
-import OutcomeShape from "./OutcomeShape";
 import STAT_LABELS from "./statLabels";
 import StatRadar from "./StatRadar";
 import SimilarShapeFinder from "./SimilarShapeFinder";
@@ -430,9 +429,6 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                 <SortableTh label="Median" sortKey="median" {...sortProps} />
                 <SortableTh label="Ceiling" sortKey="ceiling" {...sortProps} />
                 <th>Range</th>
-                <th title="Outcome shape — how this player's 10,000 simulated seasons actually spread out below and above his own median. A tall narrow peak is a safe/consistent profile; a wide flat shoulder on either side means real mass out there (bust to the left, boom to the right).">
-                  Shape
-                </th>
                 <SortableTh
                   label="vs Pace"
                   sortKey="regressionScore"
@@ -525,16 +521,6 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                       )}
                     </div>
                   </td>
-                  <td>
-                    <OutcomeShape
-                      floor={row.floor}
-                      median={row.median}
-                      ceiling={row.ceiling}
-                      bustPct={row.bust_pct}
-                      normalPct={row.normal_pct}
-                      boomPct={row.boom_pct}
-                    />
-                  </td>
                   <td
                     className={`mono align-left ${row.regressionScore != null ? (row.regressionScore >= 0 ? "por-positive" : "por-negative") : ""}`}
                   >
@@ -553,7 +539,7 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                 {isExpanded && (
                   <StatDetailRow
                     row={row}
-                    colSpan={12}
+                    colSpan={11}
                     shapePeers={shapePeers}
                   />
                 )}

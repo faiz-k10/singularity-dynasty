@@ -64,7 +64,7 @@ const getCachedWeekData = unstable_cache(
       publicSupabase
         .from("player_simulations")
         .select(
-          "player_name, position, team, floor, median, ceiling, stat_ranges, trend, sample_confidence, notes, bust_pct, normal_pct, boom_pct",
+          "player_name, position, team, floor, median, ceiling, stat_ranges, trend, sample_confidence, notes",
           { count: "exact" }
         )
         .eq("season", latest.season)

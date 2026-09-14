@@ -18,6 +18,8 @@ export default function RankingsSearch({
   selected, // currently-selected positions, owned by the parent
   tableClassName = "",
   showStatColumns = false,
+  showCurve = false,
+  maxSpread,
   header, // optional -- when set, wraps header (left) + rightExtra/search (right) in the same
   rightExtra, // top-right split layout Player Sims uses, rendered above the search box
 }) {
@@ -78,6 +80,8 @@ export default function RankingsSearch({
           showPosition
           showOpponent
           showRange
+          showCurve={showCurve}
+          maxSpread={maxSpread}
           sortKey={sortKey}
           sortDir={sortDir}
           currentParams={currentParams}

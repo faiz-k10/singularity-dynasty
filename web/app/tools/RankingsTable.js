@@ -4,6 +4,7 @@ import TrendTag from "./TrendTag";
 import ConfidenceBadge from "./ConfidenceBadge";
 import BounceBadge from "./BounceBadge";
 import TeamBadge from "./TeamBadge";
+import OutcomeCurve from "./OutcomeCurve";
 import { matchupTint } from "./MatchupBadge";
 
 // `notes` carries at most one flag: "OUT" (hard status, stays in the
@@ -93,6 +94,8 @@ export default function RankingsTable({
   showTeam = true,
   showOpponent = false,
   showRange = false,
+  showCurve = false,
+  maxSpread,
   showNotes = true,
   showStatColumns = false,
   popoverOnName = false,
@@ -119,6 +122,11 @@ export default function RankingsTable({
                 <SortableTh label="Floor" sortKey="floor" {...sortProps} />
                 <SortableTh label="Ceiling" sortKey="ceiling" {...sortProps} />
               </>
+            )}
+            {showCurve && (
+              <th title="Outcome curve — this week's floor-to-ceiling range, colored apart from the tails beyond it. The range's width is drawn relative to the widest range in this week's pool, so a locked-in projection and a volatile one are easy to tell apart at a glance.">
+                Curve
+              </th>
             )}
             {showStatColumns &&
               STAT_COLUMNS.map((c) => <SortableTh key={c.key} label={c.label} sortKey={c.key} {...sortProps} />)}
@@ -164,6 +172,16 @@ export default function RankingsTable({
                     {formatRange(row.ceiling)}
                   </td>
                 </>
+              )}
+              {showCurve && (
+                <td>
+                  <OutcomeCurve
+                    floor={row.floor}
+                    median={row.projection}
+                    ceiling={row.ceiling}
+                    maxSpread={maxSpread}
+                  />
+                </td>
               )}
               {showStatColumns &&
                 STAT_COLUMNS.map((c) => (

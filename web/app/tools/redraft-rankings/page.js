@@ -99,7 +99,7 @@ export default async function RedraftRankingsPage({ searchParams }) {
     let query = supabase
       .from("redraft_rankings")
       .select(
-        "rank, player_name, position, team, opponent, floor, ceiling, matchup_mult, trend, sample_confidence, scoring_stats, notes"
+        "rank, player_name, position, team, opponent, projection, floor, ceiling, matchup_mult, trend, sample_confidence, scoring_stats, notes"
       )
       .eq("season", latest.season)
       .eq("week", latest.week)
@@ -128,6 +128,14 @@ export default async function RedraftRankingsPage({ searchParams }) {
       ceilingHeat: ceilingHeatFor(r),
     }));
   }
+
+  // Widest floor-to-ceiling range this week -- the Outcome Curve column
+  // scales each row's middle zone against this, so range width is
+  // comparable across rows instead of just two separate digits.
+  const maxSpread = rankings.reduce((m, r) => {
+    const span = r.floor != null && r.ceiling != null ? r.ceiling - r.floor : 0;
+    return Math.max(m, span);
+  }, 1);
 
   const positions = sortPositions([...new Set(rankings.map((r) => r.position))]);
 
@@ -171,6 +179,7 @@ export default async function RedraftRankingsPage({ searchParams }) {
               sortDir={sortDir}
               currentParams={params}
               positions={positions}
+              maxSpread={maxSpread}
               header={
                 <>
                   <div className="eyebrow">
