@@ -2478,9 +2478,18 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .rankings-table-wrap,
 .compare-table-wrap{
   position:relative;
-  background:rgba(var(--scrim-rgb),0.82);
-  border:1px solid rgba(var(--star-dot-rgb),0.09);
-  box-shadow:0 12px 40px rgba(var(--shadow-rgb),0.28), inset 0 1px 0 rgba(var(--star-dot-rgb),0.06);
+  /* A diagonal sheen layered OVER the solid fill (first background layer
+     paints on top) is what actually reads as "glass" regardless of what's
+     behind the panel -- blur alone does nothing visible against a flat
+     background with nothing complex to blur, which is exactly why the
+     first version of this looked like a plain card on most pages. The
+     sheen is warm (a touch of horizon-gold) rather than plain white, so
+     it reads as this site's glass, not a generic UI-kit effect. */
+  background:
+    linear-gradient(135deg, rgba(var(--horizon-gold-rgb),0.16), rgba(255,255,255,0.07) 32%, rgba(255,255,255,0) 62%),
+    rgba(var(--scrim-rgb),0.78);
+  border:1px solid rgba(var(--star-dot-rgb),0.22);
+  box-shadow:0 16px 48px rgba(var(--shadow-rgb),0.32), 0 0 60px rgba(var(--horizon-gold-rgb),0.05), inset 0 1px 0 rgba(255,255,255,0.22);
 }
 @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)){
   .glass-panel,
@@ -2495,9 +2504,11 @@ tr.stat-row-selected td{background:var(--void-panel);}
   .tool-paywall,
   .rankings-table-wrap,
   .compare-table-wrap{
-    background:rgba(var(--scrim-rgb),0.55);
-    backdrop-filter:blur(20px) saturate(150%);
-    -webkit-backdrop-filter:blur(20px) saturate(150%);
+    background:
+      linear-gradient(135deg, rgba(var(--horizon-gold-rgb),0.16), rgba(255,255,255,0.07) 32%, rgba(255,255,255,0) 62%),
+      rgba(var(--scrim-rgb),0.42);
+    backdrop-filter:blur(24px) saturate(170%) brightness(1.06);
+    -webkit-backdrop-filter:blur(24px) saturate(170%) brightness(1.06);
   }
 }
 
