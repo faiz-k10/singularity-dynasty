@@ -88,6 +88,17 @@ function PctRow({ label, value, pctile, format = formatValue }) {
 // tail of last season instead of coming up empty). No tier/percentile
 // here -- unlike everything else in this row, this is just the raw
 // record, not a rate stat to rank against a pool.
+//
+// The leading dot reads as "beat expectation" (green) / "missed it"
+// (red), not win/loss -- redraft_rankings only ever holds the CURRENT
+// week's projections (it's a live snapshot, not a historical archive),
+// so there's no stored median projection to compare a PAST week's
+// result against. exp_points_ppr (ffopportunity's xFP, already fetched
+// per game for the Usage panel's "xFP/G (season)" row and the same
+// "expected production" baseline My Analysis' points-over-expected
+// metric uses) is the closest real substitute this data actually
+// supports. Dim/neutral, not red, for the ~12% of games with no xFP row
+// (see CLAUDE.md) -- a missing comparison isn't the same as underperforming.
 function GameLogPanel({ games }) {
   if (!games || games.length === 0) return null;
   return (
@@ -98,10 +109,16 @@ function GameLogPanel({ games }) {
       <div className="weekly-gamelog-rows">
         {games.map((g) => {
           const sep = g.is_home === true ? "vs" : g.is_home === false ? "@" : "·";
+          const hasXfp = g.exp_points_ppr != null && g.fantasy_points_ppr != null;
+          const beatXfp = hasXfp && g.fantasy_points_ppr >= g.exp_points_ppr;
+          const dotCls = !hasXfp ? "neutral" : beatXfp ? "above" : "below";
+          const dotTitle = hasXfp
+            ? `${g.fantasy_points_ppr.toFixed(1)} actual vs. ${g.exp_points_ppr.toFixed(1)} expected (xFP) this game`
+            : "No xFP data for this game";
           return (
             <div key={`${g.season}-${g.week}`} className="weekly-gamelog-row">
               <span className="weekly-gamelog-week mono">
-                <span className={`weekly-gamelog-dot ${g.won ? "won" : "lost"}`} aria-hidden="true" />
+                <span className={`weekly-gamelog-dot ${dotCls}`} title={dotTitle} />
                 {g.season} W{g.week}
               </span>
               <span className="weekly-gamelog-sep mono">{sep}</span>
@@ -219,7 +236,7 @@ function PlayerHeaderPanel({ row }) {
       </div>
       <div className="weekly-player-stats">
         <div className="weekly-player-stat">
-          <span className="weekly-player-stat-label">This Week</span>
+          <span className="weekly-player-stat-label">This Week (Projected)</span>
           <span className="weekly-player-stat-value">{row.positionLabel || "—"}</span>
         </div>
         <div className="weekly-player-stat">
@@ -227,7 +244,7 @@ function PlayerHeaderPanel({ row }) {
           <span className="weekly-player-stat-value">{row.projection != null ? row.projection.toFixed(1) : "—"}</span>
         </div>
         <div className="weekly-player-stat">
-          <span className="weekly-player-stat-label">Last Week</span>
+          <span className="weekly-player-stat-label">Last Week (Finish)</span>
           <span className="weekly-player-stat-value">{lastWeek ? `${row.position}${lastWeek.rank}` : "—"}</span>
         </div>
         <div className="weekly-player-stat">
@@ -270,41 +287,43 @@ export default function WeeklyDetailRow({ row, colSpan, maxSpread }) {
   return (
     <tr className="stat-detail-row weekly-detail-row">
       <td colSpan={colSpan}>
-        <PlayerHeaderPanel row={row} />
-        <div className="weekly-detail-grid">
-          <div className="stat-panel weekly-detail-curve-panel">
-            <div className="weekly-pct-head">
-              <span className="weekly-panel-title">Outcome Curve</span>
+        <div className="weekly-detail-wrap">
+          <PlayerHeaderPanel row={row} />
+          <div className="weekly-detail-grid">
+            <div className="stat-panel weekly-detail-curve-panel">
+              <div className="weekly-pct-head">
+                <span className="weekly-panel-title">Outcome Curve</span>
+              </div>
+              <div className="weekly-panel-body">
+                <OutcomeCurveDetail
+                  floor={row.floor}
+                  median={row.projection}
+                  ceiling={row.ceiling}
+                  maxSpread={maxSpread}
+                  floorPct={pct.floor}
+                  medianPct={pct.projection}
+                  ceilingPct={pct.ceiling}
+                />
+              </div>
             </div>
-            <div className="weekly-panel-body">
-              <OutcomeCurveDetail
-                floor={row.floor}
-                median={row.projection}
-                ceiling={row.ceiling}
-                maxSpread={maxSpread}
-                floorPct={pct.floor}
-                medianPct={pct.projection}
-                ceilingPct={pct.ceiling}
-              />
+            <div className="stat-panel weekly-detail-pct-panel">
+              <div className="weekly-pct-head">
+                <span className="weekly-panel-title">Usage vs. the {row.position} pool</span>
+              </div>
+              <div className="weekly-panel-body">
+                {advancedEntries.length > 0 ? (
+                  advancedEntries.map((m) => (
+                    <PctRow key={m.key} label={m.label} value={row[m.key]} pctile={pct[m.key]} format={m.format} />
+                  ))
+                ) : (
+                  <p className="weekly-opp-caption">No usage metrics published for this player yet.</p>
+                )}
+              </div>
             </div>
-          </div>
-          <div className="stat-panel weekly-detail-pct-panel">
-            <div className="weekly-pct-head">
-              <span className="weekly-panel-title">Usage vs. the {row.position} pool</span>
+            <div className="weekly-detail-side-col">
+              <OpponentPanel row={row} />
+              <GameLogPanel games={row.recentGames} />
             </div>
-            <div className="weekly-panel-body">
-              {advancedEntries.length > 0 ? (
-                advancedEntries.map((m) => (
-                  <PctRow key={m.key} label={m.label} value={row[m.key]} pctile={pct[m.key]} format={m.format} />
-                ))
-              ) : (
-                <p className="weekly-opp-caption">No usage metrics published for this player yet.</p>
-              )}
-            </div>
-          </div>
-          <div className="weekly-detail-side-col">
-            <OpponentPanel row={row} />
-            <GameLogPanel games={row.recentGames} />
           </div>
         </div>
       </td>

@@ -183,7 +183,7 @@ async function fetchSimsMetrics(supabase) {
 async function fetchGameLogData(supabase, season) {
   const { data } = await supabase
     .from("player_game_log")
-    .select("player_name, position, season, week, opponent, is_home, won, fantasy_points_ppr, exp_points_ppr")
+    .select("player_name, position, season, week, opponent, is_home, fantasy_points_ppr, exp_points_ppr")
     .order("season", { ascending: false })
     .order("week", { ascending: false });
 
