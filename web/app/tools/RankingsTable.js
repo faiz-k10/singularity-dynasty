@@ -36,11 +36,7 @@ function formatStat(value) {
 
 function PlayerCell({ row, withPopover }) {
   if (!withPopover) {
-    return (
-      <td className="player-cell">
-        <TrendTag trend={row.trend} /> {row.player_name}
-      </td>
-    );
+    return <td className="player-cell">{row.player_name}</td>;
   }
   return (
     <td className="player-cell">
