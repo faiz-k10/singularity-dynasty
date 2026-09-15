@@ -15,13 +15,19 @@ import PositionBadge from "./PositionBadge";
 // play_action_rate in migration 0033). wopr/ryoe are null for anyone but
 // RB/QB or RB (respectively -- see each's own model-side comment);
 // targetShare/yacAboveExp are WR/TE only; scrambleRate/playActionRate
-// are QB only; avgXfp is null until at least one game of this season
-// has a published game log row.
+// are QB only; avgXfp is null until at least one game of THIS season
+// has a published game log row -- it's already scoped to the current
+// season only (page.js's fetchGameLogData filters on g.season ===
+// season before averaging), so at week 2 it's just week 1's own xFP,
+// never blended with last season's games even though player_game_log
+// itself holds two trailing seasons. Label says "this season", not the
+// more ambiguous "(season)" that used to read as if it might mean that
+// full two-season table.
 const ADVANCED_METRICS = [
   { key: "wopr", label: "WOPR", format: (v) => v.toFixed(2) },
   { key: "targetShare", label: "Target Share", format: (v) => `${v.toFixed(1)}%` },
   { key: "yacAboveExp", label: "YAC Above Exp", format: (v) => v.toFixed(2) },
-  { key: "avgXfp", label: "xFP/G (season)", format: (v) => v.toFixed(1) },
+  { key: "avgXfp", label: "xFP/G (this season)", format: (v) => v.toFixed(1) },
   { key: "ryoe", label: "RYOE/Att", format: (v) => `${v >= 0 ? "+" : ""}${v.toFixed(2)}` },
   { key: "scrambleRate", label: "Scramble Rate", format: (v) => `${v.toFixed(1)}%` },
   { key: "playActionRate", label: "Play-Action Rate", format: (v) => `${v.toFixed(1)}%` },
@@ -90,15 +96,19 @@ function PctRow({ label, value, pctile, format = formatValue }) {
 // record, not a rate stat to rank against a pool.
 //
 // The leading dot reads as "beat expectation" (green) / "missed it"
-// (red), not win/loss -- redraft_rankings only ever holds the CURRENT
-// week's projections (it's a live snapshot, not a historical archive),
-// so there's no stored median projection to compare a PAST week's
-// result against. exp_points_ppr (ffopportunity's xFP, already fetched
-// per game for the Usage panel's "xFP/G (season)" row and the same
-// "expected production" baseline My Analysis' points-over-expected
-// metric uses) is the closest real substitute this data actually
-// supports. Dim/neutral, not red, for the ~12% of games with no xFP row
-// (see CLAUDE.md) -- a missing comparison isn't the same as underperforming.
+// (red) / "exact tie" (yellow), not win/loss -- redraft_rankings only
+// ever holds the CURRENT week's projections (it's a live snapshot, not
+// a historical archive), so there's no stored median projection to
+// compare a PAST week's result against. exp_points_ppr (ffopportunity's
+// xFP, already fetched per game for the Usage panel's "xFP/G (this
+// season)" row and the same "expected production" baseline My
+// Analysis' points-over-expected metric uses) is the closest real
+// substitute this data actually supports. A tie gets its own color
+// rather than silently counting as a "beat" -- confirmed live (Javonte
+// Williams, 2025 Wk17: 11.4 actual vs. 11.4 xFP exactly) that an
+// actual-vs-expected match is a real, not-hypothetical case. Dim/
+// neutral, not red, for the ~12% of games with no xFP row (see
+// CLAUDE.md) -- a missing comparison isn't the same as underperforming.
 function GameLogPanel({ games }) {
   if (!games || games.length === 0) return null;
   return (
@@ -110,8 +120,9 @@ function GameLogPanel({ games }) {
         {games.map((g) => {
           const sep = g.is_home === true ? "vs" : g.is_home === false ? "@" : "·";
           const hasXfp = g.exp_points_ppr != null && g.fantasy_points_ppr != null;
-          const beatXfp = hasXfp && g.fantasy_points_ppr >= g.exp_points_ppr;
-          const dotCls = !hasXfp ? "neutral" : beatXfp ? "above" : "below";
+          const isTie = hasXfp && g.fantasy_points_ppr === g.exp_points_ppr;
+          const beatXfp = hasXfp && g.fantasy_points_ppr > g.exp_points_ppr;
+          const dotCls = !hasXfp ? "neutral" : isTie ? "tie" : beatXfp ? "above" : "below";
           const dotTitle = hasXfp
             ? `${g.fantasy_points_ppr.toFixed(1)} actual vs. ${g.exp_points_ppr.toFixed(1)} expected (xFP) this game`
             : "No xFP data for this game";

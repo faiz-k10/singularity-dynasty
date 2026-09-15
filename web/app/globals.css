@@ -1891,6 +1891,11 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
   background:var(--down); box-shadow:0 0 4px currentColor; color:var(--down);
 }
 .weekly-gamelog-dot.above{background:var(--up); color:var(--up);}
+/* No dedicated "warning/amber" token exists elsewhere in the theme
+   system to reuse, and an exact actual-vs-xFP tie is rare/small enough
+   that a fixed (non theme-swapped) amber reads fine against both the
+   dark void and light backgrounds without needing one. */
+.weekly-gamelog-dot.tie{background:#E3B341; color:#E3B341;}
 .weekly-gamelog-dot.neutral{background:var(--star-dim); color:var(--star-dim); box-shadow:none;}
 .weekly-gamelog-sep{color:var(--star-dim); font-size:11px; text-align:right;}
 .weekly-gamelog-pts{
