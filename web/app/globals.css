@@ -6,6 +6,7 @@
   --star:#F5F3EE;
   --star-dim:#9997A8;
   --horizon:#FF7A45;
+  --horizon-rgb:255,122,69; /* --horizon itself is theme-invariant (never redefined in the light overrides below), so one rgb pair here covers both themes */
   --horizon-gold:#FFC773;
   --neon-blue:#3DDCFF;
   --neon-blue-dim:#1F8FB0;
@@ -1918,6 +1919,27 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .weekly-achievement-badge.up .weekly-achievement-label{color:var(--up);}
 .weekly-achievement-badge.down .weekly-achievement-label{color:var(--down);}
 .weekly-achievement-badge.steady .weekly-achievement-label{color:var(--neon-blue);}
+.weekly-achievement-badge.heat .weekly-achievement-label{color:var(--horizon);}
+.weekly-achievement-badge.ice .weekly-achievement-label{color:var(--neon-blue);}
+.weekly-achievement-badge.icarus .weekly-achievement-label{color:var(--purple);}
+.weekly-achievement-badge.eddy .weekly-achievement-label{color:#A0AAB9;}
+
+/* Heating Up / On Ice / Risky Icarus / Steady Eddy -- same 24px flat-fill
+   medallion as the other three achievement badges, just an emoji glyph
+   instead of a text char or SVG (none of the four have an existing icon
+   component to reuse, and an emoji reads as more of a game medal at this
+   size than a stroked line icon would). --purple is the same "ceiling
+   chaser" color My Team's Analytics tab already uses for boom-or-bust
+   upside, reused here for the same idea; Steady Eddy reuses Confidence's
+   own "silver" gray rather than inventing a fifth accent color. */
+.weekly-glyph-badge{
+  display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px;
+  border-radius:50%; font-size:13px; line-height:1; flex-shrink:0; cursor:pointer; vertical-align:middle;
+}
+.weekly-glyph-badge.heat{background:var(--horizon); box-shadow:0 0 8px rgba(var(--horizon-rgb),0.55);}
+.weekly-glyph-badge.ice{background:var(--neon-blue); box-shadow:0 0 8px rgba(var(--neon-blue-rgb),0.55);}
+.weekly-glyph-badge.icarus{background:var(--purple); box-shadow:0 0 8px rgba(var(--purple-rgb),0.55);}
+.weekly-glyph-badge.eddy{background:#A0AAB9; box-shadow:0 0 6px rgba(160,170,185,0.4);}
 /* Four stats, each its own little label-over-value stack -- same
    eyebrow-adjacent mono-uppercase label language as .weekly-panel-title
    elsewhere in this row, just without the gold dash (these are plain

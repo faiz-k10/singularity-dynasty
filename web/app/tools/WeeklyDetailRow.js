@@ -239,6 +239,51 @@ function ExpandableBadge({ variant, label, children }) {
   );
 }
 
+// Plain colored medallion + an emoji glyph -- unlike the other three
+// achievement badges (Confidence/Bounce/Trend), these four have no
+// existing icon component of their own, and an emoji reads as more of a
+// game-medal than a stroked SVG would at this size.
+function GlyphBadge({ variant, glyph, title }) {
+  return (
+    <span className={`weekly-glyph-badge ${variant}`} title={title}>
+      {glyph}
+    </span>
+  );
+}
+
+// "Heating Up" / "On Ice" -- the last 3 logged games (recentGames is
+// already ordered most-recent-first by page.js's fetchGameLogData) all
+// beating, or all missing, their own game's xFP. Same beat/below
+// comparison GameLogPanel's dot already makes per game, just requiring
+// all 3 to agree before calling it a real streak rather than reading one
+// good or bad week as a trend. Any of the 3 missing an xFP row (~12% of
+// games, see CLAUDE.md) voids the streak rather than skipping past it --
+// a 2-game streak isn't the 3-game one this badge promises.
+function xfpStreak(games) {
+  if (!games || games.length < 3) return null;
+  const last3 = games.slice(0, 3);
+  if (last3.some((g) => g.exp_points_ppr == null || g.fantasy_points_ppr == null)) return null;
+  if (last3.every((g) => g.fantasy_points_ppr > g.exp_points_ppr)) return "heating";
+  if (last3.every((g) => g.fantasy_points_ppr < g.exp_points_ppr)) return "cold";
+  return null;
+}
+
+// "Risky Icarus" / "Steady Eddy" -- this week's own floor-ceiling spread
+// relative to maxSpread, the same widest-range-in-the-pool value the
+// Curve cell/panel is already drawn against, so "wide"/"tight" means
+// relative to this week's real pool rather than an arbitrary point
+// count. Thresholds are round numbers, not fit to any backtest -- there
+// was no existing "volatile" label anywhere in the model to match.
+const VOLATILE_SPREAD_RATIO = 0.75;
+const LOCKED_SPREAD_RATIO = 0.35;
+function spreadFlag(floor, ceiling, maxSpread) {
+  if (floor == null || ceiling == null || !maxSpread) return null;
+  const ratio = (ceiling - floor) / maxSpread;
+  if (ratio >= VOLATILE_SPREAD_RATIO) return "volatile";
+  if (ratio <= LOCKED_SPREAD_RATIO) return "locked";
+  return null;
+}
+
 // Full-width identity strip along the top of the expanded row -- name,
 // headshot, and physical size on the left (bio is Sleeper's public player
 // dictionary, joined server-side in page.js's fetchPlayerBios() by
@@ -250,7 +295,7 @@ function ExpandableBadge({ variant, label, children }) {
 // game log exists). RISING/FALLING/STEADY moved into the badge row next
 // to the name (see weekly-player-achievements below) instead of sitting
 // here as a fourth stat.
-function PlayerHeaderPanel({ row }) {
+function PlayerHeaderPanel({ row, maxSpread }) {
   const bio = row.bio || {};
   const ht = formatHeight(bio.height);
   const sizeText = [ht, bio.weight ? `${bio.weight} lbs` : null].filter(Boolean).join(" · ");
@@ -260,6 +305,8 @@ function PlayerHeaderPanel({ row }) {
   const isEstablished = row.sample_confidence === "established";
   const isBuilding = row.sample_confidence === "building";
   const hasBounceNote = typeof row.notes === "string" && row.notes.startsWith("BOUNCEBACK");
+  const streak = xfpStreak(row.recentGames);
+  const spread = spreadFlag(row.floor, row.ceiling, maxSpread);
 
   const achievements = [
     (isEstablished || isBuilding) && {
@@ -282,6 +329,42 @@ function PlayerHeaderPanel({ row }) {
         <span className={`weekly-trend-badge ${trend.cls}`} title={`Trend: ${row.trend}`}>
           {trend.arrow}
         </span>
+      ),
+    },
+    streak === "heating" && {
+      key: "heating",
+      variant: "heat",
+      label: "Heating Up",
+      node: <GlyphBadge variant="heat" glyph="🔥" title="Beat xFP in each of the last 3 games" />,
+    },
+    streak === "cold" && {
+      key: "cold",
+      variant: "ice",
+      label: "On Ice",
+      node: <GlyphBadge variant="ice" glyph="🧊" title="Missed xFP in each of the last 3 games" />,
+    },
+    spread === "volatile" && {
+      key: "volatile",
+      variant: "icarus",
+      label: "Risky Icarus",
+      node: (
+        <GlyphBadge
+          variant="icarus"
+          glyph="🎲"
+          title="Wide floor-to-ceiling range this week -- boom-or-bust"
+        />
+      ),
+    },
+    spread === "locked" && {
+      key: "locked",
+      variant: "eddy",
+      label: "Steady Eddy",
+      node: (
+        <GlyphBadge
+          variant="eddy"
+          glyph="🔒"
+          title="Tight floor-to-ceiling range this week -- a safe, predictable floor"
+        />
       ),
     },
   ].filter(Boolean);
@@ -367,7 +450,7 @@ export default function WeeklyDetailRow({ row, colSpan, maxSpread }) {
     <tr className="stat-detail-row weekly-detail-row">
       <td colSpan={colSpan}>
         <div className="weekly-detail-wrap">
-          <PlayerHeaderPanel row={row} />
+          <PlayerHeaderPanel row={row} maxSpread={maxSpread} />
           <div className="weekly-detail-grid">
             <div className="stat-panel weekly-detail-curve-panel">
               <div className="weekly-pct-head">
