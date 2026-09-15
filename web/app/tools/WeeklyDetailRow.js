@@ -20,14 +20,17 @@ import PositionBadge from "./PositionBadge";
 // season only (page.js's fetchGameLogData filters on g.season ===
 // season before averaging), so at week 2 it's just week 1's own xFP,
 // never blended with last season's games even though player_game_log
-// itself holds two trailing seasons. Label says "this season", not the
-// more ambiguous "(season)" that used to read as if it might mean that
-// full two-season table.
+// itself holds two trailing seasons. Label is just "xFP" -- it's really
+// a per-game average (this season's games so far, currently 1 early in
+// the year), not literally "per game" in the box-score sense the other
+// raw stat columns are, so spelling that out ("xFP/G (this season)")
+// read as more machinery than the row needed; the exact scope is in
+// this comment for whoever touches the number next, not the UI.
 const ADVANCED_METRICS = [
   { key: "wopr", label: "WOPR", format: (v) => v.toFixed(2) },
   { key: "targetShare", label: "Target Share", format: (v) => `${v.toFixed(1)}%` },
   { key: "yacAboveExp", label: "YAC Above Exp", format: (v) => v.toFixed(2) },
-  { key: "avgXfp", label: "xFP/G (this season)", format: (v) => v.toFixed(1) },
+  { key: "avgXfp", label: "xFP", format: (v) => v.toFixed(1) },
   { key: "ryoe", label: "RYOE/Att", format: (v) => `${v >= 0 ? "+" : ""}${v.toFixed(2)}` },
   { key: "scrambleRate", label: "Scramble Rate", format: (v) => `${v.toFixed(1)}%` },
   { key: "playActionRate", label: "Play-Action Rate", format: (v) => `${v.toFixed(1)}%` },
@@ -100,10 +103,10 @@ function PctRow({ label, value, pctile, format = formatValue }) {
 // ever holds the CURRENT week's projections (it's a live snapshot, not
 // a historical archive), so there's no stored median projection to
 // compare a PAST week's result against. exp_points_ppr (ffopportunity's
-// xFP, already fetched per game for the Usage panel's "xFP/G (this
-// season)" row and the same "expected production" baseline My
-// Analysis' points-over-expected metric uses) is the closest real
-// substitute this data actually supports. A tie gets its own color
+// xFP, already fetched per game for the Usage panel's own "xFP" row and
+// the same "expected production" baseline My Analysis' points-over-
+// expected metric uses) is the closest real substitute this data
+// actually supports. A tie gets its own color
 // rather than silently counting as a "beat" -- confirmed live (Javonte
 // Williams, 2025 Wk17: 11.4 actual vs. 11.4 xFP exactly) that an
 // actual-vs-expected match is a real, not-hypothetical case. Dim/
