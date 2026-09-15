@@ -19,19 +19,28 @@
 // redundant panel real estate entirely (WeeklyDetailRow.js no longer
 // renders those three rows) rather than showing the same three numbers
 // twice in two different panels.
+// Panel height is now dictated by the row's tallest column (Opponent
+// Defense + Recent Games stacked, align-items:stretch), so this SVG's
+// wrapper has real extra vertical room around it a fixed-size chart
+// can't use on its own. Grown again (170 -> 210) with the hump's own
+// height kept identical (BASE_Y - PEAK_Y stays 70) -- the point of the
+// growth is bigger, more legible label text, not a taller hump -- so
+// the extra room is spent shifting the whole hump down (PEAK_Y 34 -> 46)
+// to free up headroom for the now-larger two-line median label above
+// it, plus a wider bottom margin for the larger end labels below.
 const WIDTH = 440;
-const HEIGHT = 170;
+const HEIGHT = 210;
 const MARGIN_X = 14;
 const TAIL_PX = 60;
 const TAIL_HEIGHT_FRAC = 0.32;
-const PEAK_Y = 34;
-const BASE_Y = 104;
+const PEAK_Y = 46;
+const BASE_Y = 116;
 const SAMPLES = 24;
 const MIN_MIDDLE_PX = 40;
-const MEDIAN_LABEL_Y = 16; // above the peak dot
-const MEDIAN_PCT_Y = 29; // between the label and the peak dot
+const MEDIAN_LABEL_Y = 14; // above the peak dot
+const MEDIAN_PCT_Y = 28; // between the label and the peak dot
 const END_LABEL_Y = BASE_Y + 22; // below the baseline, under each tail
-const END_PCT_Y = END_LABEL_Y + 16; // percentile ordinal, one line further down
+const END_PCT_Y = END_LABEL_Y + 18; // percentile ordinal, one line further down
 
 function medianFraction(floor, median, ceiling) {
   const span = ceiling - floor;
@@ -95,11 +104,19 @@ export default function OutcomeCurveDetail({ floor, median, ceiling, maxSpread, 
   const leftTailPath = `M${fmt(xFloor, BASE_Y)} L${fmt(xFloor, tailY)} L${fmt(MARGIN_X, BASE_Y)} Z`;
   const rightTailPath = `M${fmt(xCeiling, BASE_Y)} L${fmt(xCeiling, tailY)} L${fmt(WIDTH - MARGIN_X, BASE_Y)} Z`;
 
-  // Median label x is clamped independently of xPeak so it never clips
-  // past the svg's edge even when the peak sits close to a tail.
-  const xMedianLabel = Math.min(WIDTH - MARGIN_X - 30, Math.max(MARGIN_X + 30, xPeak));
-  const xFloorLabel = (MARGIN_X + xFloor) / 2;
-  const xCeilingLabel = (xCeiling + (WIDTH - MARGIN_X)) / 2;
+  // Every label's x is clamped so its widest line ("100th percentile" at
+  // the bigger pct-label font) never clips past the svg's edge -- 65 is
+  // roughly that line's half-width at the current font sizes. Floor/
+  // ceiling previously had NO clamp at all (only median did): harmless
+  // at the smaller font this started at, but the bigger text from
+  // growing the canvas overflowed the edge by a few px on a wide-spread
+  // player (xFloor sits close to MARGIN_X at max spread, same idea on
+  // the ceiling side) -- confirmed live on a wide-floor-ceiling row
+  // before adding this.
+  const LABEL_HALF_W = 65;
+  const xMedianLabel = Math.min(WIDTH - MARGIN_X - LABEL_HALF_W, Math.max(MARGIN_X + LABEL_HALF_W, xPeak));
+  const xFloorLabel = Math.max(MARGIN_X + LABEL_HALF_W, (MARGIN_X + xFloor) / 2);
+  const xCeilingLabel = Math.min(WIDTH - MARGIN_X - LABEL_HALF_W, (xCeiling + (WIDTH - MARGIN_X)) / 2);
 
   const title =
     `Floor ${floor.toFixed(1)} to ceiling ${ceiling.toFixed(1)} this week, median ${median.toFixed(1)} -- ` +
