@@ -24,25 +24,13 @@
 // Simulations' boom/bust shares, there's no per-player tail-mass number
 // at the weekly grain to draw them from, so they're kept deliberately
 // generic rather than implying a precision that isn't there.
-//
-// IMPORTANT: medianFraction (below) is (median-floor)/(ceiling-floor) --
-// a fraction of THIS ROW'S OWN range, not a shared numeric x-axis. Two
-// rows' peaks are not positionally comparable: a player with a low
-// floor/ceiling whose median sits high *within that low range* can peak
-// further right than a player with a much higher absolute median whose
-// value happens to sit nearer the middle of their own (higher) range.
-// That's why every peak carries its own printed median value (see the
-// dot + label below) -- the only way to actually compare two curves'
-// central tendency is by that number, never by eyeballing peak position
-// against each other.
 const WIDTH = 130;
-const HEIGHT = 44;
+const HEIGHT = 34;
 const MARGIN_X = 4;
 const TAIL_PX = 18; // fixed width for each "beyond the projected range" wedge
 const TAIL_HEIGHT_FRAC = 0.32; // tail wedge height, as a fraction of the peak's height
-const LABEL_Y = 9; // baseline for the peak-value label, above the hump
-const PEAK_Y = 15;
-const BASE_Y = 40;
+const PEAK_Y = 5;
+const BASE_Y = 30;
 const SAMPLES = 14;
 const MIN_MIDDLE_PX = 14; // floor for the middle zone so it never fully vanishes
 
@@ -98,16 +86,7 @@ export default function OutcomeCurve({ floor, median, ceiling, maxSpread }) {
   const leftTailPath = `M${fmt(xFloor, BASE_Y)} L${fmt(xFloor, tailY)} L${fmt(MARGIN_X, BASE_Y)} Z`;
   const rightTailPath = `M${fmt(xCeiling, BASE_Y)} L${fmt(xCeiling, tailY)} L${fmt(WIDTH - MARGIN_X, BASE_Y)} Z`;
 
-  // Label x is clamped independently of xPeak so the printed number
-  // never clips past the svg's edge, even when the peak itself sits
-  // near xFloor/xCeiling (medianFraction is clamped to [0.15, 0.85],
-  // but that's still close enough to the tails at narrow spans).
-  const xLabel = Math.min(WIDTH - MARGIN_X - 14, Math.max(MARGIN_X + 14, xPeak));
-
-  const title =
-    `Floor ${floor.toFixed(1)} to ceiling ${ceiling.toFixed(1)} this week, median ${median.toFixed(1)} ` +
-    `(marked by the dot) — width shown relative to the widest range in this week's pool. Peak position is ` +
-    `relative to this row's own range, not a shared axis, so it isn't comparable to another row's peak position.`;
+  const title = `Floor ${floor.toFixed(1)} to ceiling ${ceiling.toFixed(1)} this week — width shown relative to the widest range in this week's pool.`;
 
   return (
     <svg className="outcome-curve" viewBox={`0 0 ${WIDTH} ${HEIGHT}`} role="img" aria-label={title}>
@@ -115,10 +94,6 @@ export default function OutcomeCurve({ floor, median, ceiling, maxSpread }) {
       <path className="outcome-curve-tail-floor" d={leftTailPath} />
       <path className="outcome-curve-tail-ceiling" d={rightTailPath} />
       <path className="outcome-curve-middle" d={middlePath} />
-      <circle className="outcome-curve-peak-dot" cx={xPeak} cy={PEAK_Y} r={1.8} />
-      <text className="outcome-curve-peak-label" x={xLabel} y={LABEL_Y} textAnchor="middle">
-        {median.toFixed(1)}
-      </text>
     </svg>
   );
 }

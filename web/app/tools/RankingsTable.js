@@ -122,7 +122,7 @@ export default function RankingsTable({
             )}
             {showRange && <SortableTh label="Floor" sortKey="floor" {...sortProps} />}
             {showCurve && (
-              <th title="Outcome curve — this week's floor-to-ceiling range, colored apart from the tails beyond it. The range's width is drawn relative to the widest range in this week's pool, so a locked-in projection and a volatile one are easy to tell apart at a glance. The dot + number marks the median projection; its horizontal position is relative to that row's own range only, so peak position is not comparable across rows — read the printed number instead.">
+              <th title="Outcome curve — this week's floor-to-ceiling range, colored apart from the tails beyond it. The range's width is drawn relative to the widest range in this week's pool, so a locked-in projection and a volatile one are easy to tell apart at a glance.">
                 Curve
               </th>
             )}
