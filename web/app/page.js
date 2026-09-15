@@ -113,7 +113,22 @@ export default async function Home() {
     }
   }
 
-  const heroChips = shuffle(heroCandidates).slice(0, CHIP_SLOTS.length);
+  // heroCandidates is built from two independent queries above (trend
+  // rows + sim rows) -- the same player can easily land in both (e.g. a
+  // RISING trend row AND a player_simulations row), and without deduping
+  // first, shuffle+slice could pick that player twice into the same
+  // panel: a visible duplicate name in the chips, and two React children
+  // sharing key={chip.name} ("Encountered two children with the same
+  // key"). Keeping just the first candidate per name (order is still
+  // pre-shuffle at this point, so "first" isn't favoring either query)
+  // fixes both.
+  const seenNames = new Set();
+  const uniqueCandidates = heroCandidates.filter((c) => {
+    if (seenNames.has(c.name)) return false;
+    seenNames.add(c.name);
+    return true;
+  });
+  const heroChips = shuffle(uniqueCandidates).slice(0, CHIP_SLOTS.length);
 
   // profiles' RLS only lets a visitor read their OWN row (see
   // 0001_profiles.sql), so a real cross-user count needs the
@@ -209,7 +224,7 @@ export default async function Home() {
               {heroChips.map((chip, i) => (
                 <div
                   className="os-chip"
-                  key={chip.name}
+                  key={`${chip.name}-${i}`}
                   style={{ "--ang": CHIP_SLOTS[i].ang, "--r": CHIP_SLOTS[i].r }}
                 >
                   <div className="chip-inner">
