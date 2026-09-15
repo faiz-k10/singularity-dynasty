@@ -43,11 +43,20 @@ function formatStat(value) {
 // green trend arrow waiting inside reads as gold+green dots here too,
 // without spelling either one out. Native `title` carries the plain-
 // English list for anyone who hovers; the row's own click already opens
-// the row, so the dots don't need their own click target.
-function AchievementDots({ achievements }) {
+// the row, so the dots don't need their own click target. Lives in the
+// Rank cell (stacked vertically, between the rank number and the
+// position color bar on the cell's left edge) rather than next to the
+// name -- sitting right on the same signal as the color bar (both are
+// "at-a-glance metadata about this row") reads more intentional than
+// crowding the name column, and a name of any length can't push it
+// around.
+function AchievementDots({ achievements, vertical }) {
   if (!achievements.length) return null;
   return (
-    <span className="player-achv-dots" title={achievements.map((a) => a.label).join(" · ")}>
+    <span
+      className={`player-achv-dots${vertical ? " vertical" : ""}`}
+      title={achievements.map((a) => a.label).join(" · ")}
+    >
       {achievements.map((a) => (
         <span key={a.key} className={`player-achv-dot ${a.variant}`} />
       ))}
@@ -55,21 +64,14 @@ function AchievementDots({ achievements }) {
   );
 }
 
-function PlayerCell({ row, withPopover, hasDetail }) {
-  const achievements = hasDetail ? getAchievements(row) : [];
+function PlayerCell({ row, withPopover }) {
   if (!withPopover) {
-    return (
-      <td className="player-cell">
-        {row.player_name}
-        <AchievementDots achievements={achievements} />
-      </td>
-    );
+    return <td className="player-cell">{row.player_name}</td>;
   }
   return (
     <td className="player-cell">
       <span className="player-hover" tabIndex={0}>
         {row.player_name}
-        <AchievementDots achievements={achievements} />
         <div className="player-popover">
           <div className="player-popover-card">
             <div className="player-popover-row">
@@ -226,6 +228,7 @@ export default function RankingsTable({
             const rowKey = `${row.position}-${row.rank}`;
             const hasDetail = showCurve && row.floor != null && row.ceiling != null;
             const isExpanded = hasDetail && expanded.has(rowKey);
+            const achievements = hasDetail ? getAchievements(row) : [];
             return (
               <Fragment key={rowKey}>
                 <tr
@@ -246,8 +249,11 @@ export default function RankingsTable({
                       : undefined
                   }
                 >
-                  <td className="mono">{row.displayRank}</td>
-                  <PlayerCell row={row} withPopover={popoverOnName} hasDetail={hasDetail} />
+                  <td className="mono rank-cell">
+                    <AchievementDots achievements={achievements} vertical />
+                    <span>{row.displayRank}</span>
+                  </td>
+                  <PlayerCell row={row} withPopover={popoverOnName} />
                   {showPosition && (
                     <td className="mono align-left">
                       {row.position}
