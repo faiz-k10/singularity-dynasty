@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import Link from "next/link";
 import SortableTh from "./SortableTh";
 import TrendTag from "./TrendTag";
@@ -103,16 +103,47 @@ export default function RankingsTable({
   tableClassName = "",
 }) {
   const sortProps = { activeSort: sortKey, activeDir: sortDir, currentParams, sortParam, dirParam };
-  // Same click-to-expand/collapse mechanic as Player Season Simulations'
-  // PlayerSimSearch (one row open at a time, keyed by the same string the
-  // row itself is keyed by) -- only meaningful here when a row actually
-  // has a floor/ceiling curve to expand into (WeeklyDetailRow's reason
-  // for existing), so rows published before migration 0029 with no
-  // floor/ceiling yet just aren't clickable.
-  const [expanded, setExpanded] = useState(null);
+  // Click-to-expand/collapse, keyed by the same string the row itself is
+  // keyed by -- a Set rather than one active key, so multiple rows can be
+  // open at once (comparing several players' curves side by side without
+  // losing the earlier one every time a new row is clicked). Only
+  // meaningful here when a row actually has a floor/ceiling curve to
+  // expand into (WeeklyDetailRow's reason for existing), so rows
+  // published before migration 0029 with no floor/ceiling yet just
+  // aren't clickable.
+  const [expanded, setExpanded] = useState(() => new Set());
   function toggleExpanded(key) {
-    setExpanded((prev) => (prev === key ? null : key));
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
   }
+
+  // Theater mode: the table wrap goes position:fixed edge-to-edge over
+  // the whole viewport (globals.css .rankings-table-wrap.theater) instead
+  // of sitting in its normal spot in the page flow -- a wide table with
+  // many stat columns is exactly the case a fixed side panel (Position
+  // filter) and page margins cost the most real width, and this is a
+  // cheaper way to reclaim it than a separate route/modal component.
+  // Body scroll is locked while active so the page behind the overlay
+  // doesn't scroll along with it; Escape closes it the same as the
+  // visible button does.
+  const [theater, setTheater] = useState(false);
+  useEffect(() => {
+    if (!theater) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") setTheater(false);
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [theater]);
 
   const colCount =
     2 + // Rank, Player
@@ -124,7 +155,28 @@ export default function RankingsTable({
     (showNotes ? 1 : 0);
 
   return (
-    <div className={`rankings-table-wrap${tableClassName ? ` ${tableClassName}-wrap` : ""}`}>
+    <>
+      {theater && <div className="rankings-theater-backdrop" onClick={() => setTheater(false)} />}
+      <div
+        className={`rankings-table-wrap${tableClassName ? ` ${tableClassName}-wrap` : ""}${theater ? " theater" : ""}`}
+      >
+        <button
+          type="button"
+          className="rankings-theater-btn"
+          onClick={() => setTheater((v) => !v)}
+          aria-label={theater ? "Exit full-screen view" : "Expand to full-screen view"}
+          title={theater ? "Exit full-screen view" : "Expand to full-screen view"}
+        >
+          {theater ? (
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 4v3a2 2 0 0 1-2 2H4M20 9h-3a2 2 0 0 1-2-2V4M4 15h3a2 2 0 0 1 2 2v3M15 20v-3a2 2 0 0 1 2-2h3" />
+            </svg>
+          ) : (
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 4H6a2 2 0 0 0-2 2v3M20 9V6a2 2 0 0 0-2-2h-3M4 15v3a2 2 0 0 0 2 2h3M15 20h3a2 2 0 0 0 2-2v-3" />
+            </svg>
+          )}
+        </button>
       <table className={`rankings-table${tableClassName ? ` ${tableClassName}` : ""}`}>
         <thead>
           <tr>
@@ -152,7 +204,7 @@ export default function RankingsTable({
           {rows.map((row) => {
             const rowKey = `${row.position}-${row.rank}`;
             const hasDetail = showCurve && row.floor != null && row.ceiling != null;
-            const isExpanded = hasDetail && expanded === rowKey;
+            const isExpanded = hasDetail && expanded.has(rowKey);
             return (
               <Fragment key={rowKey}>
                 <tr
@@ -249,6 +301,7 @@ export default function RankingsTable({
           })}
         </tbody>
       </table>
-    </div>
+      </div>
+    </>
   );
 }

@@ -850,8 +850,62 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 /* overflow-x (not hidden) so wide tables scroll within their own card on
    narrow screens instead of silently clipping columns — this is what was
    cutting off Ceiling/Range on Player Simulations on mobile. */
-.rankings-table-wrap{background:var(--void-panel); border:1px solid var(--line); border-radius:16px; overflow-x:auto; box-shadow:0 30px 70px rgba(var(--shadow-rgb),0.4); cursor:grab;}
+.rankings-table-wrap{position:relative; background:var(--void-panel); border:1px solid var(--line); border-radius:16px; overflow-x:auto; box-shadow:0 30px 70px rgba(var(--shadow-rgb),0.4); cursor:grab;}
 .rankings-table-wrap-grabbing{cursor:grabbing; user-select:none;}
+/* Theater/full-screen mode -- the wrap leaves its normal spot in the page
+   flow and becomes a fixed, edge-inset panel over the whole viewport
+   (z-index above .site-header's 78, so the fixed ticker+nav are covered
+   rather than fighting the panel for the same visible space -- the
+   point of this mode is reclaiming the width/height a wide table with
+   many stat columns loses to page margins and a fixed side panel).
+   overflow:auto (both axes, not just overflow-x like the normal state)
+   since the panel now needs real vertical scrolling of its own with a
+   bounded height. The header row gets position:sticky only in this
+   state -- .rankings-table-wrap becomes the nearest scrolling ancestor
+   once it has a bounded height + overflow:auto, so top:0 here correctly
+   means "top of this panel" the same way .player-sims-table-wrap's own
+   frozen header already works, without needing that page's separate
+   --fixed-header-height offset (there's no visible page chrome above
+   this panel to offset for -- it's covered, not stacked below). */
+.rankings-table-wrap.theater{
+  position:fixed; inset:16px; z-index:200; overflow:auto; margin:0;
+}
+.rankings-table-wrap.theater .rankings-table th{
+  position:sticky; top:0; z-index:3;
+}
+/* .redraft-table's own left-frozen Rank/Player/Pos columns (further
+   below in this file) already carry position:sticky+left+z-index:4 --
+   adding top:0 above via the generic th rule gives them real top+left
+   sticky together (same combined-freeze pattern .player-sims-table-wrap
+   already uses for its own corner cells), but the generic rule's own
+   z-index:3 would otherwise win the cascade (3 classes beats
+   .redraft-table's 1 class + :nth-child, regardless of z-index number)
+   and downgrade these corner cells below the z-index:4 that keeps them
+   layered above the plain top-sticky-only columns sliding underneath
+   in both directions at once. Restated here at higher specificity. */
+.rankings-table-wrap.theater .redraft-table > thead > tr > th:nth-child(1),
+.rankings-table-wrap.theater .redraft-table > thead > tr > th:nth-child(2),
+.rankings-table-wrap.theater .redraft-table > thead > tr > th:nth-child(3){
+  z-index:5;
+}
+.rankings-theater-backdrop{
+  position:fixed; inset:0; z-index:199; background:rgba(0,0,0,0.6); backdrop-filter:blur(2px);
+}
+/* Small icon button pinned to the panel's own top-right corner --
+   consistent with .theme-toggle/.player-popover-compare's plain-icon,
+   bordered-square language elsewhere on the site rather than a new
+   style. A real <button> (not a clickable div) so InteractiveScript.js's
+   drag-to-scroll pointerdown handler already skips it (it explicitly
+   excludes `button`), no extra wiring needed there. */
+.rankings-theater-btn{
+  position:absolute; top:12px; right:12px; z-index:6;
+  width:34px; height:34px; display:flex; align-items:center; justify-content:center;
+  background:var(--void-panel-2); border:1px solid var(--line); border-radius:8px;
+  color:var(--star-dim); cursor:pointer;
+  transition:color .15s ease, border-color .15s ease, background .15s ease;
+}
+.rankings-theater-btn:hover{color:var(--star); border-color:var(--neon-blue); background:rgba(var(--neon-blue-rgb),0.08);}
+.rankings-theater-btn svg{width:16px; height:16px;}
 /* Visible scrollbar as a passive cue that these tables scroll sideways
    (the click-and-drag handler in InteractiveScript.js is the active
    one) -- default OS scrollbars are thin-to-invisible until actively
