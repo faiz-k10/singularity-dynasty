@@ -249,17 +249,66 @@ function GlyphBadge({ variant, glyph, title }) {
 // Risky Icarus's own icon -- a dice glyph read as generic "randomness"
 // clip art, out of step with every other icon on the site (all either a
 // flat glyph/team-color pill or something drawn from the site's own
-// starfield/void motif). A crescent moon + a few stars is the same
+// starfield/void motif). A crescent moon littered with stars is the same
 // "night sky" language as the homepage's starfield background and dual
 // glows, and reads just as clearly as "boom-or-bust" -- wide-open sky,
-// nothing locked down -- as a dice ever did.
+// nothing locked down -- as a dice ever did. More stars than a first
+// pass had, scattered at different sizes rather than a tidy row, so it
+// actually reads as a starFIELD next to the moon instead of two or three
+// stray dots.
 function NightSkyIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
       <path d="M15.8 4.3a8 8 0 1 0 3.9 9.4A6.5 6.5 0 0 1 15.8 4.3z" />
       <circle cx="18.6" cy="6.2" r="0.9" />
-      <circle cx="20.7" cy="10.6" r="0.6" />
-      <circle cx="16.5" cy="9.6" r="0.45" />
+      <circle cx="21.2" cy="9.7" r="0.55" />
+      <circle cx="16.2" cy="8.6" r="0.5" />
+      <circle cx="19.7" cy="13.3" r="0.6" />
+      <circle cx="14.3" cy="12.6" r="0.45" />
+      <circle cx="17.4" cy="16.6" r="0.5" />
+      <circle cx="12.4" cy="16.1" r="0.4" />
+      <circle cx="20.6" cy="17" r="0.4" />
+    </svg>
+  );
+}
+
+// Heating Up's own icon -- Heroicons' solid "fire" glyph, in the same
+// flat-fill-plus-currentColor language as every other icon on this row
+// instead of a colorful platform emoji (which ignores the badge's own
+// color entirely and looks pasted-on next to the flat pills).
+function FlameIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M12.963 2.286a.75.75 0 00-1.071-.136 9.742 9.742 0 00-3.539 6.176 7.547 7.547 0 01-1.705-1.715.75.75 0 00-1.152-.082A9 9 0 1015.68 4.534a7.46 7.46 0 01-2.717-2.248zM15.75 14.25a3.75 3.75 0 11-7.313-1.172c.628.465 1.35.81 2.133.998a5.27 5.27 0 01-.32-1.83c0-1.014.377-1.94 1-2.647a3.752 3.752 0 014.5 4.65z"
+      />
+    </svg>
+  );
+}
+
+// On Ice's own icon -- a plain line-drawn snowflake, same treatment as
+// FlameIcon above (a stroked glyph instead of the platform's own colored
+// ice-cube emoji).
+function SnowflakeIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
+      <path d="M12 3v18M4.8 7.5l14.4 9M4.8 16.5l14.4-9" />
+      <path d="M12 5.2l-1.8 1.5M12 5.2l1.8 1.5M12 18.8l-1.8-1.5M12 18.8l1.8-1.5" />
+      <path d="M6 8.6l-.3 2.1-2 .6M18 15.4l.3-2.1 2-.6" />
+    </svg>
+  );
+}
+
+// Steady Eddy's own icon -- still a lock (the shape already reads
+// clearly at this size and the concept fits), just redrawn as a plain
+// filled SVG instead of the platform's own emoji, for the same reason as
+// FlameIcon/SnowflakeIcon/NightSkyIcon above.
+function LockIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5zm-3 8V7a3 3 0 0 1 6 0v3H9zm3 4a1.6 1.6 0 0 1 1 2.85V18a1 1 0 1 1-2 0v-1.15A1.6 1.6 0 0 1 12 14z" />
     </svg>
   );
 }
@@ -280,9 +329,9 @@ function achievementNode({ key }, row, trend) {
         </span>
       );
     case "heating":
-      return <GlyphBadge variant="heat" glyph="🔥" title="Beat xFP in each of the last 3 games" />;
+      return <GlyphBadge variant="heat" glyph={<FlameIcon />} title="Beat xFP in each of the last 3 games" />;
     case "cold":
-      return <GlyphBadge variant="ice" glyph="🧊" title="Missed xFP in each of the last 3 games" />;
+      return <GlyphBadge variant="ice" glyph={<SnowflakeIcon />} title="Missed xFP in each of the last 3 games" />;
     case "volatile":
       return (
         <GlyphBadge
@@ -295,7 +344,7 @@ function achievementNode({ key }, row, trend) {
       return (
         <GlyphBadge
           variant="eddy"
-          glyph="🔒"
+          glyph={<LockIcon />}
           title="Tight floor-to-ceiling range this week -- a safe, predictable floor"
         />
       );
@@ -315,7 +364,7 @@ function achievementNode({ key }, row, trend) {
 // game log exists). RISING/FALLING/STEADY moved into the badge row next
 // to the name (see weekly-player-achievements below) instead of sitting
 // here as a fourth stat.
-function PlayerHeaderPanel({ row, maxSpread }) {
+function PlayerHeaderPanel({ row }) {
   const bio = row.bio || {};
   const ht = formatHeight(bio.height);
   const sizeText = [ht, bio.weight ? `${bio.weight} lbs` : null].filter(Boolean).join(" · ");
@@ -327,7 +376,7 @@ function PlayerHeaderPanel({ row, maxSpread }) {
   // preview calls the exact same function. This just attaches the full
   // icon component each flag renders as here, which the dot preview has
   // no use for.
-  const achievements = getAchievements(row, maxSpread).map((a) => ({ ...a, node: achievementNode(a, row, trend) }));
+  const achievements = getAchievements(row).map((a) => ({ ...a, node: achievementNode(a, row, trend) }));
 
   return (
     <div className="stat-panel weekly-player-header">
@@ -410,7 +459,7 @@ export default function WeeklyDetailRow({ row, colSpan, maxSpread }) {
     <tr className="stat-detail-row weekly-detail-row">
       <td colSpan={colSpan}>
         <div className="weekly-detail-wrap">
-          <PlayerHeaderPanel row={row} maxSpread={maxSpread} />
+          <PlayerHeaderPanel row={row} />
           <div className="weekly-detail-grid">
             <div className="stat-panel weekly-detail-curve-panel">
               <div className="weekly-pct-head">

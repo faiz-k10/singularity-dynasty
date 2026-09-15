@@ -1947,27 +1947,25 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .weekly-achievement-badge.icarus .weekly-achievement-label{color:var(--purple);}
 .weekly-achievement-badge.eddy .weekly-achievement-label{color:#A0AAB9;}
 
-/* Heating Up / On Ice / Risky Icarus / Steady Eddy -- same 24px flat-fill
-   medallion as the other three achievement badges. Heating Up/On Ice/
-   Steady Eddy use an emoji glyph (none of the four had an existing icon
-   component to reuse, and an emoji reads as more of a game medal at this
-   size than a stroked line icon would); Risky Icarus uses NightSkyIcon
-   (WeeklyDetailRow.js) instead of an emoji -- a dice read as generic
-   "randomness" clip art, out of step with the rest of the site, where a
-   crescent-moon-and-stars pulls from the same starfield/void motif as
-   the homepage background. --purple is the same "ceiling chaser" color
-   My Team's Analytics tab already uses for boom-or-bust upside, reused
-   here for the same idea; Steady Eddy reuses Confidence's own "silver"
-   gray rather than inventing a fifth accent color. */
+/* Heating Up (FlameIcon) / On Ice (SnowflakeIcon) / Risky Icarus
+   (NightSkyIcon) / Steady Eddy (LockIcon) -- same 24px flat-fill
+   medallion as the other three achievement badges, all four now small
+   inline SVGs (WeeklyDetailRow.js) instead of platform emoji -- an emoji
+   ignores the badge's own flat-fill color entirely and reads as pasted-
+   on clip art next to the rest of the site's flat glyph/team-color/
+   starfield-motif icon language. --purple is the same "ceiling chaser"
+   color My Team's Analytics tab already uses for boom-or-bust upside,
+   reused here for the same idea; Steady Eddy reuses Confidence's own
+   "silver" gray rather than inventing a fifth accent color. */
 .weekly-glyph-badge{
   display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px;
   border-radius:50%; font-size:13px; line-height:1; flex-shrink:0; cursor:pointer; vertical-align:middle;
 }
 .weekly-glyph-badge svg{width:13px; height:13px; display:block;}
-.weekly-glyph-badge.heat{background:var(--horizon); box-shadow:0 0 8px rgba(var(--horizon-rgb),0.55);}
-.weekly-glyph-badge.ice{background:var(--neon-blue); box-shadow:0 0 8px rgba(var(--neon-blue-rgb),0.55);}
+.weekly-glyph-badge.heat{background:var(--horizon); color:#fff; box-shadow:0 0 8px rgba(var(--horizon-rgb),0.55);}
+.weekly-glyph-badge.ice{background:var(--neon-blue); color:#fff; box-shadow:0 0 8px rgba(var(--neon-blue-rgb),0.55);}
 .weekly-glyph-badge.icarus{background:var(--purple); color:#fff; box-shadow:0 0 8px rgba(var(--purple-rgb),0.55);}
-.weekly-glyph-badge.eddy{background:#A0AAB9; box-shadow:0 0 6px rgba(160,170,185,0.4);}
+.weekly-glyph-badge.eddy{background:#A0AAB9; color:var(--void); box-shadow:0 0 6px rgba(160,170,185,0.4);}
 /* Four stats, each its own little label-over-value stack -- same
    eyebrow-adjacent mono-uppercase label language as .weekly-panel-title
    elsewhere in this row, just without the gold dash (these are plain

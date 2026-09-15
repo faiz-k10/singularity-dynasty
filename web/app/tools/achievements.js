@@ -32,18 +32,30 @@ export function xfpStreak(games) {
 }
 
 // "Risky Icarus" / "Steady Eddy" -- this week's own floor-ceiling spread
-// relative to maxSpread, the same widest-range-in-the-pool value the
-// Curve cell/panel is already drawn against, so "wide"/"tight" means
-// relative to this week's real pool rather than an arbitrary point
-// count. Thresholds are round numbers, not fit to any backtest -- there
-// was no existing "volatile" label anywhere in the model to match.
-export const VOLATILE_SPREAD_RATIO = 0.75;
-export const LOCKED_SPREAD_RATIO = 0.35;
-export function spreadFlag(floor, ceiling, maxSpread) {
-  if (floor == null || ceiling == null || !maxSpread) return null;
-  const ratio = (ceiling - floor) / maxSpread;
-  if (ratio >= VOLATILE_SPREAD_RATIO) return "volatile";
-  if (ratio <= LOCKED_SPREAD_RATIO) return "locked";
+// relative to the PLAYER'S OWN projection (a coefficient-of-variation
+// style ratio), not the pool's widest range. An earlier version compared
+// against maxSpread (the same widest-range value the Curve panel uses),
+// but that quietly rewarded near-irrelevant bench players with "Steady
+// Eddy" -- a 0-to-3-point range is trivially "tight" next to a stud's
+// 30-point range, even though projected for 1.5 points isn't what "safe,
+// predictable floor" is supposed to mean. A live audit of one real week
+// found 190 of 429 rows (44%) qualifying as "locked" under that math,
+// almost entirely replacement-level bench -- the badge was firing
+// constantly, just never on anyone worth seeing it on. Comparing against
+// the player's own projection instead holds a top-of-the-board stud and
+// a low-end flex to the same bar, and PROJECTION_FLOOR keeps waiver-wire
+// chaff (near-zero floor AND ceiling, so a trivially "tight" ratio) out
+// of contention for either badge. Thresholds were picked off that same
+// audit to land each flag around the top ~10% of eligible players --
+// rare enough to mean something, not so rare it never fires.
+export const PROJECTION_FLOOR = 8;
+export const LOCKED_RATIO = 1.2;
+export const VOLATILE_RATIO = 2.2;
+export function spreadFlag(floor, ceiling, projection) {
+  if (floor == null || ceiling == null || projection == null || projection < PROJECTION_FLOOR) return null;
+  const ratio = (ceiling - floor) / Math.max(projection, 1);
+  if (ratio >= VOLATILE_RATIO) return "volatile";
+  if (ratio <= LOCKED_RATIO) return "locked";
   return null;
 }
 
@@ -51,13 +63,13 @@ export function spreadFlag(floor, ceiling, maxSpread) {
 // plain {key, variant, label} metadata -- no JSX/icons here, since the
 // two consumers render the same flag very differently (a full badge vs.
 // a bare dot).
-export function getAchievements(row, maxSpread) {
+export function getAchievements(row) {
   const trend = TREND_COPY[row.trend];
   const isEstablished = row.sample_confidence === "established";
   const isBuilding = row.sample_confidence === "building";
   const hasBounceNote = typeof row.notes === "string" && row.notes.startsWith("BOUNCEBACK");
   const streak = xfpStreak(row.recentGames);
-  const spread = spreadFlag(row.floor, row.ceiling, maxSpread);
+  const spread = spreadFlag(row.floor, row.ceiling, row.projection);
 
   return [
     (isEstablished || isBuilding) && {

@@ -55,8 +55,8 @@ function AchievementDots({ achievements }) {
   );
 }
 
-function PlayerCell({ row, withPopover, maxSpread, hasDetail }) {
-  const achievements = hasDetail ? getAchievements(row, maxSpread) : [];
+function PlayerCell({ row, withPopover, hasDetail }) {
+  const achievements = hasDetail ? getAchievements(row) : [];
   if (!withPopover) {
     return (
       <td className="player-cell">
@@ -247,7 +247,7 @@ export default function RankingsTable({
                   }
                 >
                   <td className="mono">{row.displayRank}</td>
-                  <PlayerCell row={row} withPopover={popoverOnName} maxSpread={maxSpread} hasDetail={hasDetail} />
+                  <PlayerCell row={row} withPopover={popoverOnName} hasDetail={hasDetail} />
                   {showPosition && (
                     <td className="mono align-left">
                       {row.position}
