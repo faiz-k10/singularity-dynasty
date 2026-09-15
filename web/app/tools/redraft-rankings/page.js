@@ -2,6 +2,8 @@ import Link from "next/link";
 import { getUserTier } from "@/lib/tier";
 import { resolveSort, sortRows } from "@/lib/sortLink";
 import { percentileRank, INVERTED_STATS } from "@/lib/statPercentiles";
+import { getSleeperPlayers } from "@/lib/sleeper";
+import { normalizePlayerName } from "@/lib/portfolio";
 import SiteHeader from "../../SiteHeader";
 import ExportCsvButton from "../ExportCsvButton";
 import RedraftRankingsClient from "./RedraftRankingsClient";
@@ -172,10 +174,16 @@ async function fetchSimsMetrics(supabase) {
 //     boundary (so early in a new season, before 5 games exist yet, this
 //     naturally tails off into the end of last season instead of coming
 //     up empty) -- feeds the expanded row's game-log panel.
+//   - lastWeekRankByName: this player's finish among their own position
+//     in the most recent ACTUAL week on record -- "most recent" here
+//     just means the newest (season, week) with any logged games at all
+//     (the query already arrives season/week descending), since real
+//     results for the CURRENT projection week can't exist yet by
+//     definition. Powers the expanded row's player-header panel.
 async function fetchGameLogData(supabase, season) {
   const { data } = await supabase
     .from("player_game_log")
-    .select("player_name, season, week, opponent, is_home, won, fantasy_points_ppr, exp_points_ppr")
+    .select("player_name, position, season, week, opponent, is_home, won, fantasy_points_ppr, exp_points_ppr")
     .order("season", { ascending: false })
     .order("week", { ascending: false });
 
@@ -194,7 +202,42 @@ async function fetchGameLogData(supabase, season) {
     // Rows already arrive season/week descending from the query above.
     recentGamesByName[name] = games.slice(0, 5);
   }
-  return { avgXfpByName, recentGamesByName };
+
+  const lastWeekRankByName = {};
+  if (data && data.length > 0) {
+    const { season: lwSeason, week: lwWeek } = data[0];
+    const byPos = {};
+    for (const r of data) {
+      if (r.season === lwSeason && r.week === lwWeek && r.fantasy_points_ppr != null) {
+        (byPos[r.position] ??= []).push(r);
+      }
+    }
+    for (const rows of Object.values(byPos)) {
+      rows.sort((a, b) => b.fantasy_points_ppr - a.fantasy_points_ppr);
+      rows.forEach((r, i) => {
+        lastWeekRankByName[r.player_name] = { rank: i + 1, points: r.fantasy_points_ppr, season: lwSeason, week: lwWeek };
+      });
+    }
+  }
+
+  return { avgXfpByName, recentGamesByName, lastWeekRankByName };
+}
+
+// Height/weight + Sleeper's own headshot id for the expanded row's
+// player-header panel -- Sleeper's public player dictionary (module-
+// cached, see lib/sleeper.js), same source /my-team's PlayerProfileCard
+// already uses. Keyed by normalized name (not Sleeper's own player_id --
+// this table has no such id) since Sleeper's own name spelling drops
+// suffixes ours keeps (see normalizePlayerName's own comment).
+async function fetchPlayerBios() {
+  const dict = await getSleeperPlayers().catch(() => ({}));
+  const byName = {};
+  for (const [id, p] of Object.entries(dict)) {
+    const name = normalizePlayerName(`${p.first_name || ""} ${p.last_name || ""}`);
+    if (!name) continue;
+    byName[name] = { sleeperId: id, height: p.height ?? null, weight: p.weight ?? null };
+  }
+  return byName;
 }
 
 function sortPositions(positions) {
@@ -260,9 +303,10 @@ export default async function RedraftRankingsPage({ searchParams }) {
       return { ...r, ...r.scoring_stats, positionLabel: `${r.position}${positionCounters[r.position]}` };
     });
 
-    const [simsByName, { avgXfpByName, recentGamesByName }] = await Promise.all([
+    const [simsByName, { avgXfpByName, recentGamesByName, lastWeekRankByName }, bioByName] = await Promise.all([
       fetchSimsMetrics(supabase),
       fetchGameLogData(supabase, latest.season),
+      fetchPlayerBios(),
     ]);
     rankings = rankings.map((r) => {
       const sims = simsByName[r.player_name] || {};
@@ -276,6 +320,8 @@ export default async function RedraftRankingsPage({ searchParams }) {
         scrambleRate: sims.scrambleRate ?? null,
         playActionRate: sims.playActionRate ?? null,
         recentGames: recentGamesByName[r.player_name] || [],
+        lastWeekRank: lastWeekRankByName[r.player_name] || null,
+        bio: bioByName[normalizePlayerName(r.player_name)] || null,
       };
     });
 

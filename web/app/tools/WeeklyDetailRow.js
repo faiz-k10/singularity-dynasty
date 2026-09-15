@@ -1,5 +1,6 @@
 import OutcomeCurveDetail from "./OutcomeCurveDetail";
 import TeamBadge from "./TeamBadge";
+import PositionBadge from "./PositionBadge";
 
 // Season-level usage/efficiency metrics, not weekly stats -- attached
 // server-side in page.js's fetchSimsMetrics()/fetchSeasonXfp() (joined
@@ -158,21 +159,110 @@ function OpponentPanel({ row }) {
   );
 }
 
+// Sleeper stores height as inches ("71"); duplicated from MyTeamClient.js's
+// own copy since that page's bio card and this one otherwise share no
+// code -- five lines isn't worth threading a shared import for.
+function formatHeight(h) {
+  if (h == null || h === "") return null;
+  const str = String(h);
+  if (str.includes("'")) return str;
+  const n = parseInt(str, 10);
+  if (!Number.isFinite(n) || n <= 0) return null;
+  return `${Math.floor(n / 12)}'${n % 12}"`;
+}
+
+const TREND_COPY = {
+  RISING: { cls: "up", arrow: "▲" },
+  FALLING: { cls: "down", arrow: "▼" },
+  STEADY: { cls: "steady", arrow: "—" },
+};
+
+// Full-width identity strip along the top of the expanded row -- name,
+// headshot, and physical size on the left (bio is Sleeper's public player
+// dictionary, joined server-side in page.js's fetchPlayerBios() by
+// normalized name; null for anyone not in Sleeper's dict, which the
+// layout just renders around rather than erroring on), then four quick-
+// read stats on the right: this week's positional rank, this week's own
+// median projection, last week's actual positional finish (lastWeekRank,
+// from fetchGameLogData -- null before the season's first game log
+// exists), and the same RISING/FALLING/STEADY trend already shown
+// elsewhere on this page, spelled out here instead of the dense table
+// cell's bare triangle since there's room for the word.
+function PlayerHeaderPanel({ row }) {
+  const bio = row.bio || {};
+  const ht = formatHeight(bio.height);
+  const sizeText = [ht, bio.weight ? `${bio.weight} lbs` : null].filter(Boolean).join(" · ");
+  const trend = TREND_COPY[row.trend];
+  const lastWeek = row.lastWeekRank;
+
+  return (
+    <div className="stat-panel weekly-player-header">
+      <div className="weekly-player-id">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          key={bio.sleeperId || row.player_name}
+          className="weekly-player-photo"
+          src={bio.sleeperId ? `https://sleepercdn.com/content/nfl/players/thumb/${bio.sleeperId}.jpg` : ""}
+          alt=""
+          onError={(e) => {
+            e.currentTarget.style.display = "none";
+          }}
+        />
+        <div className="weekly-player-idtext">
+          <span className="weekly-player-name">{row.player_name}</span>
+          <div className="weekly-player-badges">
+            <PositionBadge position={row.position} />
+            <TeamBadge team={row.team} />
+            {sizeText && <span className="weekly-player-size mono">{sizeText}</span>}
+          </div>
+        </div>
+      </div>
+      <div className="weekly-player-stats">
+        <div className="weekly-player-stat">
+          <span className="weekly-player-stat-label">This Week</span>
+          <span className="weekly-player-stat-value">{row.positionLabel || "—"}</span>
+        </div>
+        <div className="weekly-player-stat">
+          <span className="weekly-player-stat-label">Median Proj</span>
+          <span className="weekly-player-stat-value">{row.projection != null ? row.projection.toFixed(1) : "—"}</span>
+        </div>
+        <div className="weekly-player-stat">
+          <span className="weekly-player-stat-label">Last Week</span>
+          <span className="weekly-player-stat-value">{lastWeek ? `${row.position}${lastWeek.rank}` : "—"}</span>
+        </div>
+        <div className="weekly-player-stat">
+          <span className="weekly-player-stat-label">Trend</span>
+          {trend ? (
+            <span className={`weekly-player-stat-value weekly-player-trend ${trend.cls}`}>
+              {row.trend} {trend.arrow}
+            </span>
+          ) : (
+            <span className="weekly-player-stat-value">—</span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // Row unfolded below a player on Weekly Projection Rankings -- same
 // click-to-expand/collapse mechanic as Player Season Simulations'
 // StatDetailRow (RankingsTable.js owns the open/close state and single-
 // row-open-at-a-time behavior), but built for this page's own data shape:
 // single-point weekly stats + one overall floor/median/ceiling, not a
-// full per-stat floor/median/ceiling distribution. Four panels across
-// three columns: (1) a bigger, fully-labeled version of the Curve cell
-// -- each of its own three labels (Floor/Median/Ceiling) carries its
-// percentile-vs-pool ordinal directly, so that number only has to be
-// shown once, (2) the season-level usage metrics (ADVANCED_METRICS
-// above) ranked against the same-position pool, and (3+4) Opponent
-// Defense stacked directly above Recent Games in one narrow shared
-// column (.weekly-detail-side-col) -- both are compact/badge-driven, so
-// pairing them vertically instead of giving each its own full-width slot
-// keeps the row from running wider than it needs to.
+// full per-stat floor/median/ceiling distribution. A full-width
+// PlayerHeaderPanel identity strip sits on top (name/photo/size on the
+// left, this-week rank / median projection / last-week finish / trend
+// on the right), then four panels across three columns below it: (1) a
+// bigger, fully-labeled version of the Curve cell -- each of its own
+// three labels (Floor/Median/Ceiling) carries its percentile-vs-pool
+// ordinal directly, so that number only has to be shown once, (2) the
+// season-level usage metrics (ADVANCED_METRICS above) ranked against the
+// same-position pool, and (3+4) Opponent Defense stacked directly above
+// Recent Games in one narrow shared column (.weekly-detail-side-col) --
+// both are compact/badge-driven, so pairing them vertically instead of
+// giving each its own full-width slot keeps the row from running wider
+// than it needs to.
 export default function WeeklyDetailRow({ row, colSpan, maxSpread }) {
   const pct = row.statPct || {};
   const advancedEntries = ADVANCED_METRICS.filter((m) => row[m.key] != null && pct[m.key] != null);
@@ -180,6 +270,7 @@ export default function WeeklyDetailRow({ row, colSpan, maxSpread }) {
   return (
     <tr className="stat-detail-row weekly-detail-row">
       <td colSpan={colSpan}>
+        <PlayerHeaderPanel row={row} />
         <div className="weekly-detail-grid">
           <div className="stat-panel weekly-detail-curve-panel">
             <div className="weekly-pct-head">

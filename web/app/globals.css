@@ -1720,6 +1720,57 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    -- same .stat-detail-row/.stat-panel/.row-expandable chrome as Player
    Season Simulations above, two panels instead of three since this page
    has no radar/similar-shape data to show. */
+/* Identity strip above the 3-column grid -- name/photo/badges on the
+   left, four quick-read stats on the right. justify-content:space-
+   between stretches to fill its CONTAINING block's width, which is a
+   real trap here: this row sits inside a colSpan'd <td> that spans
+   every column of the main rankings table (Pass Yds, Rush TD, ...),
+   which is itself wider than the viewport and already needs its own
+   horizontal scroll -- so an unconstrained space-between pushed the
+   stats block off past the visible edge, matching the WIDE table's
+   full extent rather than the narrower content width the grid below
+   actually uses. max-width caps it to roughly the same total width
+   .weekly-detail-grid's own columns add up to (400+320+230+2*12 gap),
+   so the two rows read as one consistent width instead of the header
+   silently running edge-to-edge of a table three times wider. */
+.weekly-player-header{
+  display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap;
+  gap:20px; margin-bottom:12px; padding:14px 20px; max-width:974px;
+}
+.weekly-player-id{display:flex; align-items:center; gap:14px; min-width:0;}
+.weekly-player-photo{
+  width:52px; height:52px; border-radius:50%; object-fit:cover; flex-shrink:0;
+  background:var(--void-panel-2); border:1px solid var(--line);
+}
+.weekly-player-idtext{display:flex; flex-direction:column; gap:6px; min-width:0;}
+.weekly-player-name{
+  font-family:var(--font-space-grotesk), sans-serif; font-size:18px; font-weight:700; color:var(--star);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.weekly-player-badges{display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
+.weekly-player-size{font-size:12px; color:var(--star-dim);}
+/* Four stats, each its own little label-over-value stack -- same
+   eyebrow-adjacent mono-uppercase label language as .weekly-panel-title
+   elsewhere in this row, just without the gold dash (these are plain
+   data labels, not section headers). */
+.weekly-player-stats{display:flex; align-items:center; gap:26px; flex-wrap:wrap;}
+.weekly-player-stat{display:flex; flex-direction:column; align-items:flex-end; gap:4px;}
+.weekly-player-stat-label{
+  font-family:var(--font-ibm-plex-mono), monospace; font-size:10px; letter-spacing:0.08em;
+  text-transform:uppercase; color:var(--star-dim); white-space:nowrap;
+}
+.weekly-player-stat-value{
+  font-family:var(--font-ibm-plex-mono), monospace; font-size:16px; font-weight:700; color:var(--star);
+}
+.weekly-player-trend{display:flex; align-items:center; gap:5px;}
+.weekly-player-trend.up{color:var(--up);}
+.weekly-player-trend.down{color:var(--down);}
+.weekly-player-trend.steady{color:var(--neon-blue);}
+@media (max-width:700px){
+  .weekly-player-header{justify-content:flex-start;}
+  .weekly-player-stats{gap:20px;}
+  .weekly-player-stat{align-items:flex-start;}
+}
 /* 4 panels across 3 columns: Curve, Usage percentiles, and a stacked
    Opponent Defense + Recent Games column. flex-wrap so columns drop to a
    new line once the row runs out of width, rather than snapping between
