@@ -226,18 +226,22 @@ async function fetchGameLogData(supabase, season) {
 // Height/weight + Sleeper's own headshot id for the expanded row's
 // player-header panel -- Sleeper's public player dictionary (module-
 // cached, see lib/sleeper.js), same source /my-team's PlayerProfileCard
-// already uses. Keyed by normalized name (not Sleeper's own player_id --
-// this table has no such id) since Sleeper's own name spelling drops
-// suffixes ours keeps (see normalizePlayerName's own comment).
+// already uses. Keyed by normalized name + POSITION, not name alone --
+// name collisions are real (confirmed live: Lamar Jackson the Ravens QB
+// and Lamar Jackson a DB are both in Sleeper's dict), and a name-only
+// key just has the second one processed silently overwrite the first.
+// Position isn't a perfect disambiguator either (a name shared by two
+// players at the same position would still collide), but it's the cheap
+// fix for the actual collision found, without needing a real id crosswalk.
 async function fetchPlayerBios() {
   const dict = await getSleeperPlayers().catch(() => ({}));
-  const byName = {};
+  const byNamePos = {};
   for (const [id, p] of Object.entries(dict)) {
     const name = normalizePlayerName(`${p.first_name || ""} ${p.last_name || ""}`);
-    if (!name) continue;
-    byName[name] = { sleeperId: id, height: p.height ?? null, weight: p.weight ?? null };
+    if (!name || !p.position) continue;
+    byNamePos[`${name}|${p.position}`] = { sleeperId: id, height: p.height ?? null, weight: p.weight ?? null };
   }
-  return byName;
+  return byNamePos;
 }
 
 function sortPositions(positions) {
@@ -303,7 +307,7 @@ export default async function RedraftRankingsPage({ searchParams }) {
       return { ...r, ...r.scoring_stats, positionLabel: `${r.position}${positionCounters[r.position]}` };
     });
 
-    const [simsByName, { avgXfpByName, recentGamesByName, lastWeekRankByName }, bioByName] = await Promise.all([
+    const [simsByName, { avgXfpByName, recentGamesByName, lastWeekRankByName }, bioByNamePos] = await Promise.all([
       fetchSimsMetrics(supabase),
       fetchGameLogData(supabase, latest.season),
       fetchPlayerBios(),
@@ -321,7 +325,7 @@ export default async function RedraftRankingsPage({ searchParams }) {
         playActionRate: sims.playActionRate ?? null,
         recentGames: recentGamesByName[r.player_name] || [],
         lastWeekRank: lastWeekRankByName[r.player_name] || null,
-        bio: bioByName[normalizePlayerName(r.player_name)] || null,
+        bio: bioByNamePos[`${normalizePlayerName(r.player_name)}|${r.position}`] || null,
       };
     });
 
