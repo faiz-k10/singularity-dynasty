@@ -99,11 +99,12 @@ function GameLogPanel({ games }) {
           const sep = g.is_home === true ? "vs" : g.is_home === false ? "@" : "·";
           return (
             <div key={`${g.season}-${g.week}`} className="weekly-gamelog-row">
-              <span className="weekly-gamelog-week mono">{g.season} Wk{g.week}</span>
-              <span className="weekly-gamelog-opp">
-                <span className="weekly-gamelog-sep mono">{sep}</span>
-                <TeamBadge team={g.opponent} />
+              <span className="weekly-gamelog-week mono">
+                <span className={`weekly-gamelog-dot ${g.won ? "won" : "lost"}`} aria-hidden="true" />
+                {g.season} Wk{g.week}
               </span>
+              <span className="weekly-gamelog-sep mono">{sep}</span>
+              <TeamBadge team={g.opponent} />
               <span className="weekly-gamelog-pts mono">
                 {g.fantasy_points_ppr != null ? g.fantasy_points_ppr.toFixed(1) : "—"}
               </span>

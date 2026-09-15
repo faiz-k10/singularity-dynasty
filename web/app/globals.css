@@ -1750,18 +1750,36 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    (up to 5 rows) and used to visibly float in a lot of dead vertical
    space once the grid stopped force-stretching every panel to the same
    height; hugging the top and shrinking row padding reads as a dense,
-   deliberate list instead of a mostly-empty card. Opponent is a real
-   TeamBadge chip (same component/look as the Opponent Defense panel
-   below) instead of plain team-code text, both for visual consistency
-   with that panel and because a colored chip reads faster than initials
-   alone. */
+   deliberate list instead of a mostly-empty card.
+   4 fixed grid tracks (not a flex cluster packed against the badge) so
+   every row's separator and badge line up in their own column -- a flex
+   group anchored to the right edge left "vs" and "@" starting at
+   different x positions row to row since those two words aren't the
+   same width, which read as sloppy/ungridded. A leading win/loss dot
+   (var(--up)/var(--down), same glow treatment as .pace-marker) gives the
+   row real information a plain list didn't have, echoing how the rest of
+   this product treats result color-coding. Opponent is a real TeamBadge
+   chip (same component/look as the Opponent Defense panel below) instead
+   of plain team-code text. Points render as their own small pill instead
+   of bare bold text, so the one number that matters in each row reads as
+   a distinct stat chip rather than blending into the row's other text. */
 .weekly-gamelog-panel{flex:0.9 1 220px; display:flex; flex-direction:column; justify-content:flex-start;}
-.weekly-gamelog-row{display:grid; grid-template-columns:1fr auto auto; align-items:center; gap:8px; padding:3px 0; border-bottom:1px dashed var(--line); font-size:12px;}
+.weekly-gamelog-row{
+  display:grid; grid-template-columns:1fr 20px auto 46px; align-items:center; gap:8px;
+  padding:5px 0; border-bottom:1px solid rgba(var(--shadow-rgb),0.5); font-size:12px;
+}
 .weekly-gamelog-row:last-child{border-bottom:none;}
-.weekly-gamelog-week{color:var(--star-dim);}
-.weekly-gamelog-opp{display:flex; align-items:center; justify-content:flex-end; gap:5px;}
-.weekly-gamelog-sep{color:var(--star-dim); font-size:11px;}
-.weekly-gamelog-pts{color:var(--star); font-weight:600; text-align:right; min-width:32px;}
+.weekly-gamelog-week{display:flex; align-items:center; gap:7px; color:var(--star-dim);}
+.weekly-gamelog-dot{
+  width:6px; height:6px; border-radius:50%; flex-shrink:0;
+  background:var(--down); box-shadow:0 0 4px currentColor; color:var(--down);
+}
+.weekly-gamelog-dot.won{background:var(--up); color:var(--up);}
+.weekly-gamelog-sep{color:var(--star-dim); font-size:11px; text-align:right;}
+.weekly-gamelog-pts{
+  color:var(--star); font-weight:700; text-align:center; background:var(--void-panel-2);
+  border:1px solid var(--line); border-radius:7px; padding:2px 0;
+}
 
 /* Opponent Defense -- +/-% colored by whether it's good (soft, more
    points allowed) or bad (tough, fewer points allowed) for THIS
