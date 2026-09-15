@@ -4,6 +4,7 @@ import TeamBadge from "./TeamBadge";
 import PositionBadge from "./PositionBadge";
 import ConfidenceBadge from "./ConfidenceBadge";
 import BounceBadge from "./BounceBadge";
+import { TREND_COPY, getAchievements } from "./achievements";
 
 // Season-level usage/efficiency metrics, not weekly stats -- attached
 // server-side in page.js's fetchSimsMetrics()/fetchSeasonXfp() (joined
@@ -205,12 +206,6 @@ function formatHeight(h) {
   return `${Math.floor(n / 12)}'${n % 12}"`;
 }
 
-const TREND_COPY = {
-  RISING: { cls: "up", arrow: "▲", label: "Rising" },
-  FALLING: { cls: "down", arrow: "▼", label: "Falling" },
-  STEADY: { cls: "steady", arrow: "—", label: "Steady" },
-};
-
 // Tap-to-reveal, not hover-only -- the badges themselves are already
 // self-explanatory via a `title` tooltip on desktop, but that's invisible
 // on a touch device with no hover state. Click/tap slides a plain 1-2
@@ -239,10 +234,10 @@ function ExpandableBadge({ variant, label, children }) {
   );
 }
 
-// Plain colored medallion + an emoji glyph -- unlike the other three
+// Plain colored medallion + a glyph (an emoji, or for Risky Icarus a
+// small inline SVG -- see NightSkyIcon below) -- unlike the other three
 // achievement badges (Confidence/Bounce/Trend), these four have no
-// existing icon component of their own, and an emoji reads as more of a
-// game-medal than a stroked SVG would at this size.
+// existing icon component of their own.
 function GlyphBadge({ variant, glyph, title }) {
   return (
     <span className={`weekly-glyph-badge ${variant}`} title={title}>
@@ -251,37 +246,62 @@ function GlyphBadge({ variant, glyph, title }) {
   );
 }
 
-// "Heating Up" / "On Ice" -- the last 3 logged games (recentGames is
-// already ordered most-recent-first by page.js's fetchGameLogData) all
-// beating, or all missing, their own game's xFP. Same beat/below
-// comparison GameLogPanel's dot already makes per game, just requiring
-// all 3 to agree before calling it a real streak rather than reading one
-// good or bad week as a trend. Any of the 3 missing an xFP row (~12% of
-// games, see CLAUDE.md) voids the streak rather than skipping past it --
-// a 2-game streak isn't the 3-game one this badge promises.
-function xfpStreak(games) {
-  if (!games || games.length < 3) return null;
-  const last3 = games.slice(0, 3);
-  if (last3.some((g) => g.exp_points_ppr == null || g.fantasy_points_ppr == null)) return null;
-  if (last3.every((g) => g.fantasy_points_ppr > g.exp_points_ppr)) return "heating";
-  if (last3.every((g) => g.fantasy_points_ppr < g.exp_points_ppr)) return "cold";
-  return null;
+// Risky Icarus's own icon -- a dice glyph read as generic "randomness"
+// clip art, out of step with every other icon on the site (all either a
+// flat glyph/team-color pill or something drawn from the site's own
+// starfield/void motif). A crescent moon + a few stars is the same
+// "night sky" language as the homepage's starfield background and dual
+// glows, and reads just as clearly as "boom-or-bust" -- wide-open sky,
+// nothing locked down -- as a dice ever did.
+function NightSkyIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M15.8 4.3a8 8 0 1 0 3.9 9.4A6.5 6.5 0 0 1 15.8 4.3z" />
+      <circle cx="18.6" cy="6.2" r="0.9" />
+      <circle cx="20.7" cy="10.6" r="0.6" />
+      <circle cx="16.5" cy="9.6" r="0.45" />
+    </svg>
+  );
 }
 
-// "Risky Icarus" / "Steady Eddy" -- this week's own floor-ceiling spread
-// relative to maxSpread, the same widest-range-in-the-pool value the
-// Curve cell/panel is already drawn against, so "wide"/"tight" means
-// relative to this week's real pool rather than an arbitrary point
-// count. Thresholds are round numbers, not fit to any backtest -- there
-// was no existing "volatile" label anywhere in the model to match.
-const VOLATILE_SPREAD_RATIO = 0.75;
-const LOCKED_SPREAD_RATIO = 0.35;
-function spreadFlag(floor, ceiling, maxSpread) {
-  if (floor == null || ceiling == null || !maxSpread) return null;
-  const ratio = (ceiling - floor) / maxSpread;
-  if (ratio >= VOLATILE_SPREAD_RATIO) return "volatile";
-  if (ratio <= LOCKED_SPREAD_RATIO) return "locked";
-  return null;
+// The icon each achievement key renders as in the full banner badge --
+// keyed by achievements.js's own `key` field so this can't fall out of
+// sync with which flags actually exist.
+function achievementNode({ key }, row, trend) {
+  switch (key) {
+    case "confidence":
+      return <ConfidenceBadge confidence={row.sample_confidence} />;
+    case "bounce":
+      return <BounceBadge note={row.notes} />;
+    case "trend":
+      return (
+        <span className={`weekly-trend-badge ${trend.cls}`} title={`Trend: ${row.trend}`}>
+          {trend.arrow}
+        </span>
+      );
+    case "heating":
+      return <GlyphBadge variant="heat" glyph="🔥" title="Beat xFP in each of the last 3 games" />;
+    case "cold":
+      return <GlyphBadge variant="ice" glyph="🧊" title="Missed xFP in each of the last 3 games" />;
+    case "volatile":
+      return (
+        <GlyphBadge
+          variant="icarus"
+          glyph={<NightSkyIcon />}
+          title="Wide floor-to-ceiling range this week -- boom-or-bust"
+        />
+      );
+    case "locked":
+      return (
+        <GlyphBadge
+          variant="eddy"
+          glyph="🔒"
+          title="Tight floor-to-ceiling range this week -- a safe, predictable floor"
+        />
+      );
+    default:
+      return null;
+  }
 }
 
 // Full-width identity strip along the top of the expanded row -- name,
@@ -302,72 +322,12 @@ function PlayerHeaderPanel({ row, maxSpread }) {
   const trend = TREND_COPY[row.trend];
   const lastWeek = row.lastWeekRank;
 
-  const isEstablished = row.sample_confidence === "established";
-  const isBuilding = row.sample_confidence === "building";
-  const hasBounceNote = typeof row.notes === "string" && row.notes.startsWith("BOUNCEBACK");
-  const streak = xfpStreak(row.recentGames);
-  const spread = spreadFlag(row.floor, row.ceiling, maxSpread);
-
-  const achievements = [
-    (isEstablished || isBuilding) && {
-      key: "confidence",
-      variant: isEstablished ? "gold" : "silver",
-      label: isEstablished ? "Established" : "Building",
-      node: <ConfidenceBadge confidence={row.sample_confidence} />,
-    },
-    hasBounceNote && {
-      key: "bounce",
-      variant: "blue",
-      label: "Bounce-back",
-      node: <BounceBadge note={row.notes} />,
-    },
-    trend && {
-      key: "trend",
-      variant: trend.cls,
-      label: trend.label,
-      node: (
-        <span className={`weekly-trend-badge ${trend.cls}`} title={`Trend: ${row.trend}`}>
-          {trend.arrow}
-        </span>
-      ),
-    },
-    streak === "heating" && {
-      key: "heating",
-      variant: "heat",
-      label: "Heating Up",
-      node: <GlyphBadge variant="heat" glyph="🔥" title="Beat xFP in each of the last 3 games" />,
-    },
-    streak === "cold" && {
-      key: "cold",
-      variant: "ice",
-      label: "On Ice",
-      node: <GlyphBadge variant="ice" glyph="🧊" title="Missed xFP in each of the last 3 games" />,
-    },
-    spread === "volatile" && {
-      key: "volatile",
-      variant: "icarus",
-      label: "Risky Icarus",
-      node: (
-        <GlyphBadge
-          variant="icarus"
-          glyph="🎲"
-          title="Wide floor-to-ceiling range this week -- boom-or-bust"
-        />
-      ),
-    },
-    spread === "locked" && {
-      key: "locked",
-      variant: "eddy",
-      label: "Steady Eddy",
-      node: (
-        <GlyphBadge
-          variant="eddy"
-          glyph="🔒"
-          title="Tight floor-to-ceiling range this week -- a safe, predictable floor"
-        />
-      ),
-    },
-  ].filter(Boolean);
+  // getAchievements (achievements.js) is the one source of truth for
+  // which of the six flags apply -- RankingsTable's collapsed-row dot
+  // preview calls the exact same function. This just attaches the full
+  // icon component each flag renders as here, which the dot preview has
+  // no use for.
+  const achievements = getAchievements(row, maxSpread).map((a) => ({ ...a, node: achievementNode(a, row, trend) }));
 
   return (
     <div className="stat-panel weekly-player-header">

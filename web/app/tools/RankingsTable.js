@@ -9,6 +9,7 @@ import OutcomeCurve from "./OutcomeCurve";
 import WeeklyDetailRow from "./WeeklyDetailRow";
 import { matchupTint } from "./MatchupBadge";
 import { STAT_COLUMNS } from "./statColumns";
+import { getAchievements } from "./achievements";
 
 // `notes` carries at most one flag: "OUT" (hard status, stays in the
 // Notes column) or "BOUNCEBACK ..." (soft/informational, suppressed from
@@ -34,14 +35,41 @@ function formatStat(value) {
   return value === null || value === undefined ? "—" : Number(value).toFixed(1);
 }
 
-function PlayerCell({ row, withPopover }) {
+// A tiny constellation of dots, not a repeat of the full badge row --
+// the collapsed table is dense and the expanded banner already owns the
+// real click-to-expand badges (WeeklyDetailRow.js), so this is just a
+// glance-able "this player has flags, expand to see which" hint. Colored
+// per achievements.js's own `variant`, so a row with a gold star and a
+// green trend arrow waiting inside reads as gold+green dots here too,
+// without spelling either one out. Native `title` carries the plain-
+// English list for anyone who hovers; the row's own click already opens
+// the row, so the dots don't need their own click target.
+function AchievementDots({ achievements }) {
+  if (!achievements.length) return null;
+  return (
+    <span className="player-achv-dots" title={achievements.map((a) => a.label).join(" · ")}>
+      {achievements.map((a) => (
+        <span key={a.key} className={`player-achv-dot ${a.variant}`} />
+      ))}
+    </span>
+  );
+}
+
+function PlayerCell({ row, withPopover, maxSpread, hasDetail }) {
+  const achievements = hasDetail ? getAchievements(row, maxSpread) : [];
   if (!withPopover) {
-    return <td className="player-cell">{row.player_name}</td>;
+    return (
+      <td className="player-cell">
+        {row.player_name}
+        <AchievementDots achievements={achievements} />
+      </td>
+    );
   }
   return (
     <td className="player-cell">
       <span className="player-hover" tabIndex={0}>
         {row.player_name}
+        <AchievementDots achievements={achievements} />
         <div className="player-popover">
           <div className="player-popover-card">
             <div className="player-popover-row">
@@ -219,7 +247,7 @@ export default function RankingsTable({
                   }
                 >
                   <td className="mono">{row.displayRank}</td>
-                  <PlayerCell row={row} withPopover={popoverOnName} />
+                  <PlayerCell row={row} withPopover={popoverOnName} maxSpread={maxSpread} hasDetail={hasDetail} />
                   {showPosition && (
                     <td className="mono align-left">
                       {row.position}

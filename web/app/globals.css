@@ -1680,6 +1680,29 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .rankings-table tr.row-expandable:hover td{background:rgba(var(--neon-blue-rgb),0.08);}
 .stat-detail-row td{background:var(--void-panel-2); padding:14px 18px;}
 
+/* Collapsed-row achievement preview -- a small constellation of dots
+   after the player's name, one per flag getAchievements() (achievements.js)
+   finds for that row, colored the same as that flag's real badge in the
+   expanded banner below. Deliberately NOT a repeat of the full badges
+   themselves (that's what made the row feel cluttered before) -- just
+   enough of a glance-able hint that something's there to unfold, with
+   the actual plain-English answer in the native `title` tooltip. Sits
+   only on rows that can actually expand (hasDetail in RankingsTable.js),
+   so it never promises a click that goes nowhere. */
+.player-achv-dots{display:inline-flex; align-items:center; gap:4px; margin-left:9px; vertical-align:middle;}
+.player-achv-dot{width:5px; height:5px; border-radius:50%; flex-shrink:0; transition:transform .15s var(--ease);}
+.rankings-table tr.row-expandable:hover .player-achv-dot{transform:scale(1.35);}
+.player-achv-dot.gold{background:var(--horizon-gold); box-shadow:0 0 4px rgba(var(--horizon-gold-rgb),0.7);}
+.player-achv-dot.silver{background:#A0AAB9; box-shadow:0 0 3px rgba(160,170,185,0.6);}
+.player-achv-dot.blue{background:var(--neon-blue); box-shadow:0 0 4px rgba(var(--neon-blue-rgb),0.7);}
+.player-achv-dot.up{background:var(--up); box-shadow:0 0 4px rgba(var(--up-rgb),0.7);}
+.player-achv-dot.down{background:var(--down); box-shadow:0 0 4px rgba(var(--down-rgb),0.7);}
+.player-achv-dot.steady{background:var(--neon-blue); box-shadow:0 0 4px rgba(var(--neon-blue-rgb),0.7);}
+.player-achv-dot.heat{background:var(--horizon); box-shadow:0 0 4px rgba(var(--horizon-rgb),0.7);}
+.player-achv-dot.ice{background:var(--neon-blue); box-shadow:0 0 4px rgba(var(--neon-blue-rgb),0.7);}
+.player-achv-dot.icarus{background:var(--purple); box-shadow:0 0 4px rgba(var(--purple-rgb),0.7);}
+.player-achv-dot.eddy{background:#A0AAB9; box-shadow:0 0 3px rgba(160,170,185,0.6);}
+
 /* Explicit text-align (and white-space below) throughout -- this table is
    nested inside a .rankings-table cell, so it's still a CSS descendant of
    .rankings-table and would otherwise pick up that table's
@@ -1925,20 +1948,25 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .weekly-achievement-badge.eddy .weekly-achievement-label{color:#A0AAB9;}
 
 /* Heating Up / On Ice / Risky Icarus / Steady Eddy -- same 24px flat-fill
-   medallion as the other three achievement badges, just an emoji glyph
-   instead of a text char or SVG (none of the four have an existing icon
+   medallion as the other three achievement badges. Heating Up/On Ice/
+   Steady Eddy use an emoji glyph (none of the four had an existing icon
    component to reuse, and an emoji reads as more of a game medal at this
-   size than a stroked line icon would). --purple is the same "ceiling
-   chaser" color My Team's Analytics tab already uses for boom-or-bust
-   upside, reused here for the same idea; Steady Eddy reuses Confidence's
-   own "silver" gray rather than inventing a fifth accent color. */
+   size than a stroked line icon would); Risky Icarus uses NightSkyIcon
+   (WeeklyDetailRow.js) instead of an emoji -- a dice read as generic
+   "randomness" clip art, out of step with the rest of the site, where a
+   crescent-moon-and-stars pulls from the same starfield/void motif as
+   the homepage background. --purple is the same "ceiling chaser" color
+   My Team's Analytics tab already uses for boom-or-bust upside, reused
+   here for the same idea; Steady Eddy reuses Confidence's own "silver"
+   gray rather than inventing a fifth accent color. */
 .weekly-glyph-badge{
   display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px;
   border-radius:50%; font-size:13px; line-height:1; flex-shrink:0; cursor:pointer; vertical-align:middle;
 }
+.weekly-glyph-badge svg{width:13px; height:13px; display:block;}
 .weekly-glyph-badge.heat{background:var(--horizon); box-shadow:0 0 8px rgba(var(--horizon-rgb),0.55);}
 .weekly-glyph-badge.ice{background:var(--neon-blue); box-shadow:0 0 8px rgba(var(--neon-blue-rgb),0.55);}
-.weekly-glyph-badge.icarus{background:var(--purple); box-shadow:0 0 8px rgba(var(--purple-rgb),0.55);}
+.weekly-glyph-badge.icarus{background:var(--purple); color:#fff; box-shadow:0 0 8px rgba(var(--purple-rgb),0.55);}
 .weekly-glyph-badge.eddy{background:#A0AAB9; box-shadow:0 0 6px rgba(160,170,185,0.4);}
 /* Four stats, each its own little label-over-value stack -- same
    eyebrow-adjacent mono-uppercase label language as .weekly-panel-title
