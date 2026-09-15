@@ -65,7 +65,12 @@ export default function OutcomeCurve({ floor, median, ceiling, maxSpread }) {
 
   const midWidthMax = WIDTH - 2 * MARGIN_X - 2 * TAIL_PX;
   const midWidth = Math.max(MIN_MIDDLE_PX, midWidthMax * Math.min(1, span / maxSpread));
-  const xFloor = MARGIN_X + TAIL_PX;
+  // A narrower middle zone than midWidthMax frees up leftover width --
+  // split it evenly onto both tails (instead of dumping it all onto the
+  // right tail) so the two tails stay equal-length and the whole curve
+  // stays centered, only the tail thickness growing as span shrinks.
+  const extraPerSide = (midWidthMax - midWidth) / 2;
+  const xFloor = MARGIN_X + TAIL_PX + extraPerSide;
   const xCeiling = xFloor + midWidth;
   const xPeak = xFloor + medianFraction(floor, median, ceiling) * midWidth;
 
