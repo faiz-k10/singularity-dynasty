@@ -853,11 +853,14 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .rankings-table-wrap{position:relative; background:var(--void-panel); border:1px solid var(--line); border-radius:16px; overflow-x:auto; box-shadow:0 30px 70px rgba(var(--shadow-rgb),0.4); cursor:grab;}
 .rankings-table-wrap-grabbing{cursor:grabbing; user-select:none;}
 /* Theater/full-screen mode -- the wrap leaves its normal spot in the page
-   flow and becomes a fixed, edge-inset panel over the whole viewport
-   (z-index above .site-header's 78, so the fixed ticker+nav are covered
-   rather than fighting the panel for the same visible space -- the
-   point of this mode is reclaiming the width/height a wide table with
-   many stat columns loses to page margins and a fixed side panel).
+   flow and becomes a fixed panel covering the ENTIRE viewport, edge to
+   edge (z-index above .site-header's 78, so the fixed ticker+nav are
+   covered rather than fighting the panel for the same visible space --
+   the point of this mode is reclaiming every pixel a wide table with
+   many stat columns loses to page margins and a fixed side panel, not
+   leaving its own margin around a smaller panel). --theater-bar-height
+   is the one shared number both the bar and the wrap below it size
+   around, so they can't drift out of sync with each other.
    overflow:auto (both axes, not just overflow-x like the normal state)
    since the panel now needs real vertical scrolling of its own with a
    bounded height. The header row gets position:sticky only in this
@@ -866,9 +869,23 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    means "top of this panel" the same way .player-sims-table-wrap's own
    frozen header already works, without needing that page's separate
    --fixed-header-height offset (there's no visible page chrome above
-   this panel to offset for -- it's covered, not stacked below). */
+   this panel to offset for -- it's covered, not stacked below).
+   background/backdrop-filter reset to a flat opaque fill here, overriding
+   the sitewide glassmorphism pass further down this file (.rankings-
+   table-wrap is one of its listed selectors, giving it a translucent
+   ~50% background + blur normally) -- that effect assumes there's
+   nothing detailed directly behind the card, true for its normal spot
+   in the page flow, but false the moment this panel goes fixed and
+   full-screen: the real page (title, paywall, ticker text) is now
+   directly behind it and was visibly showing through, blurred, right
+   under the table rows. Wins the cascade over that later block on
+   specificity alone (.rankings-table-wrap.theater's 2 classes beat its
+   plain .rankings-table-wrap selector) -- no !important needed. */
+:root{--theater-bar-height:52px;}
 .rankings-table-wrap.theater{
-  position:fixed; inset:16px; z-index:200; overflow:auto; margin:0;
+  position:fixed; top:var(--theater-bar-height); left:0; right:0; bottom:0;
+  z-index:200; overflow:auto; margin:0; border-radius:0; border-width:1px 0 0 0; box-shadow:none;
+  background:var(--void-panel); backdrop-filter:none; -webkit-backdrop-filter:none;
 }
 .rankings-table-wrap.theater .rankings-table th{
   position:sticky; top:0; z-index:3;
@@ -888,18 +905,27 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .rankings-table-wrap.theater .redraft-table > thead > tr > th:nth-child(3){
   z-index:5;
 }
-.rankings-theater-backdrop{
-  position:fixed; inset:0; z-index:199; background:rgba(0,0,0,0.6); backdrop-filter:blur(2px);
+/* A real toolbar row above the table (not an absolutely-positioned
+   button floating over the table's own header cells, which is what this
+   used to be -- it visibly overlapped the Notes/last stat column's
+   header text). Normally just an inline flex row that adds its own
+   margin below it like any other control; in theater mode it becomes
+   the fixed strip the now edge-to-edge table sits below, so the toggle
+   (and an exit affordance) stays reachable without being part of the
+   scrollable table content itself. */
+.rankings-theater-bar{display:flex; justify-content:flex-end; margin-bottom:10px;}
+.rankings-theater-bar.theater{
+  position:fixed; top:0; left:0; right:0; height:var(--theater-bar-height); z-index:201;
+  align-items:center; padding:0 16px; margin-bottom:0;
+  background:var(--void-panel); border-bottom:1px solid var(--line);
 }
-/* Small icon button pinned to the panel's own top-right corner --
-   consistent with .theme-toggle/.player-popover-compare's plain-icon,
-   bordered-square language elsewhere on the site rather than a new
-   style. A real <button> (not a clickable div) so InteractiveScript.js's
-   drag-to-scroll pointerdown handler already skips it (it explicitly
-   excludes `button`), no extra wiring needed there. */
+/* Plain-icon, bordered-square language (.theme-toggle/.player-popover-
+   compare) rather than a new style. A real <button> (not a clickable
+   div) so InteractiveScript.js's drag-to-scroll pointerdown handler
+   already skips it (it explicitly excludes `button`), no extra wiring
+   needed there. */
 .rankings-theater-btn{
-  position:absolute; top:12px; right:12px; z-index:6;
-  width:34px; height:34px; display:flex; align-items:center; justify-content:center;
+  width:34px; height:34px; display:flex; align-items:center; justify-content:center; flex-shrink:0;
   background:var(--void-panel-2); border:1px solid var(--line); border-radius:8px;
   color:var(--star-dim); cursor:pointer;
   transition:color .15s ease, border-color .15s ease, background .15s ease;

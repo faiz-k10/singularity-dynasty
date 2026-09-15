@@ -156,10 +156,7 @@ export default function RankingsTable({
 
   return (
     <>
-      {theater && <div className="rankings-theater-backdrop" onClick={() => setTheater(false)} />}
-      <div
-        className={`rankings-table-wrap${tableClassName ? ` ${tableClassName}-wrap` : ""}${theater ? " theater" : ""}`}
-      >
+      <div className={`rankings-theater-bar${theater ? " theater" : ""}`}>
         <button
           type="button"
           className="rankings-theater-btn"
@@ -177,6 +174,10 @@ export default function RankingsTable({
             </svg>
           )}
         </button>
+      </div>
+      <div
+        className={`rankings-table-wrap${tableClassName ? ` ${tableClassName}-wrap` : ""}${theater ? " theater" : ""}`}
+      >
       <table className={`rankings-table${tableClassName ? ` ${tableClassName}` : ""}`}>
         <thead>
           <tr>
