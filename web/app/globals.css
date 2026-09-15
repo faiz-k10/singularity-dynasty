@@ -1716,28 +1716,29 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    -- same .stat-detail-row/.stat-panel/.row-expandable chrome as Player
    Season Simulations above, two panels instead of three since this page
    has no radar/similar-shape data to show. */
-/* 4 panels: Curve, weekly/usage percentiles, recent game log, opponent
-   defense -- condensed (smaller panel padding + tighter row spacing than
-   Player Sims' own 3-panel .stat-detail-grid) specifically to fit four
-   across instead of the two this started as. flex-wrap instead of a fixed
-   grid: each panel's natural content height varies a lot (Percentiles can
-   run to 10 rows with every advanced metric present, Opponent Defense is
-   always just a badge pair + one number), so a stretched equal-height grid
-   left the short panels centered in a lot of dead air. Flex lets every
-   panel size to its own content and wraps panels onto a new line on its
-   own once the row runs out of width, rather than snapping between fixed
-   column-count breakpoints.
-   flex:0 1 auto (no grow) on every panel below -- an earlier version had
-   nonzero flex-grow, which stretched each panel to help fill the row's
-   full width even past what its own content needed (most visible on
-   Opponent Defense, which was rendering wide with a lot of empty side
-   margin around a small badge pair). Zero grow means every panel's
-   width is exactly its content's natural width (capped by max-width so
-   Percentiles can't run unbounded), so the row's total width is the sum
-   of what the four panels actually need -- the whole point being to fit
-   on screen without a horizontal scroll to see it. */
+/* 4 panels across 3 columns: Curve, Usage percentiles, and a stacked
+   Opponent Defense + Recent Games column. flex-wrap so columns drop to a
+   new line once the row runs out of width, rather than snapping between
+   fixed breakpoints.
+   flex:0 1 auto (no grow) on every column below -- an earlier version had
+   nonzero flex-grow, which stretched each column to fill the row's full
+   width even past what its own content needed. Zero grow means each
+   column's width is exactly its content's natural width (capped by
+   max-width), so the row's total width is the sum of what the columns
+   actually need -- the whole point being to fit on screen without a
+   horizontal scroll to see it.
+   align-items:stretch (not :flex-start) -- Curve and Usage sitting side
+   by side at two different natural heights read as an unfinished layout
+   (one card trailing off into empty space next to a taller one); stretch
+   makes every column on the same flex line match the tallest one, and
+   each column's own justify-content:center then centers its content
+   inside that shared height instead of hugging the top. This is safe
+   now in a way it wasn't with the original 4-flat-panels layout: Opponent
+   Defense and Recent Games are one combined column with real content
+   filling most of its height, not a single mostly-empty card being
+   stretched on its own to match three much bigger siblings. */
 .weekly-detail-grid{
-  display:flex; flex-wrap:wrap; align-items:flex-start; gap:12px;
+  display:flex; flex-wrap:wrap; align-items:stretch; gap:12px;
 }
 /* Uniform 16px on all four sides, on every panel in this row -- a
    previous pass gave the Usage panel special extra bottom padding
@@ -1821,7 +1822,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    width without either needing its own max-width -- that's what "lines
    them up" edge-to-edge instead of two independently-sized boxes that
    happen to be near each other. */
-.weekly-detail-side-col{flex:0 1 auto; display:flex; flex-direction:column; gap:12px; max-width:230px;}
+.weekly-detail-side-col{flex:0 1 auto; display:flex; flex-direction:column; justify-content:center; gap:12px; max-width:230px;}
 /* Condensed: both the matchup-multiplier caveat AND the "fantasy pts
    allowed..." description line used to be permanent panel text; both
    are now the panel's single title tooltip (MATCHUP_TOOLTIP in
