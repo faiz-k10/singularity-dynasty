@@ -1,4 +1,5 @@
 import OutcomeCurveDetail from "./OutcomeCurveDetail";
+import TeamBadge from "./TeamBadge";
 
 // Season-level usage/efficiency metrics, not weekly stats -- attached
 // server-side in page.js's fetchSimsMetrics()/fetchSeasonXfp() (joined
@@ -80,17 +81,92 @@ function PctRow({ label, value, pctile, format = formatValue }) {
   );
 }
 
+// Last 5 logged games (player_game_log, via page.js's fetchGameLogData) --
+// rolls back past a season boundary on its own when the current season
+// hasn't logged 5 games yet (early in the year, this naturally shows the
+// tail of last season instead of coming up empty). No tier/percentile
+// here -- unlike everything else in this row, this is just the raw
+// record, not a rate stat to rank against a pool.
+function GameLogPanel({ games }) {
+  if (!games || games.length === 0) return null;
+  return (
+    <div className="stat-panel weekly-gamelog-panel">
+      <div className="weekly-pct-head">
+        <span className="pctile-card-title">Recent Games</span>
+      </div>
+      <div className="weekly-gamelog-rows">
+        {games.map((g) => {
+          const sep = g.is_home === true ? "vs" : g.is_home === false ? "@" : "·";
+          return (
+            <div key={`${g.season}-${g.week}`} className="weekly-gamelog-row">
+              <span className="weekly-gamelog-week mono">{g.season} Wk{g.week}</span>
+              <span className="weekly-gamelog-opp mono">
+                {sep} {g.opponent || "—"}
+              </span>
+              <span className="weekly-gamelog-pts mono">
+                {g.fantasy_points_ppr != null ? g.fantasy_points_ppr.toFixed(1) : "—"}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// Opponent-strength context for THIS week's matchup -- matchup_mult is
+// already computed and published on every redraft_rankings row
+// (compute_matchup_multipliers() in projection_engine.R): the ratio of
+// fantasy PPR points that defense allows to this exact position vs. the
+// league average at that position, shrunk toward 1.0 for a small
+// defensive sample and clamped to [0.90, 1.10]. Shown here as a plain
+// +/-% read (positive = softer matchup, allows more than average; green/
+// red follow that same "more is good for this offense" direction, not a
+// generic up/down). Explicitly NOT folded into the floor/projection/
+// ceiling numbers above yet -- APPLY_MATCHUP_MULTIPLIER is off in the
+// model while defenses build a real early-season sample, so this caption
+// exists to stop that from reading as a bug once someone compares this
+// panel's percentage to the numbers elsewhere in the row.
+function OpponentPanel({ row }) {
+  if (row.matchup_mult == null || !row.opponent) return null;
+  const pct = Math.round((row.matchup_mult - 1) * 100);
+  const sep = row.is_home === true ? "vs" : row.is_home === false ? "@" : "·";
+  return (
+    <div className="stat-panel weekly-opp-panel">
+      <div className="weekly-pct-head">
+        <span className="pctile-card-title">Opponent Defense</span>
+      </div>
+      <div className="weekly-opp-matchup">
+        <TeamBadge team={row.team} />
+        <span className="matchup-sep">{sep}</span>
+        <TeamBadge team={row.opponent} />
+      </div>
+      <div className="weekly-opp-stat">
+        <span className={`weekly-opp-pct ${pct >= 0 ? "weekly-opp-pct-soft" : "weekly-opp-pct-tough"}`}>
+          {pct >= 0 ? "+" : ""}
+          {pct}%
+        </span>
+        <span className="weekly-opp-desc">fantasy points allowed to {row.position} vs. league average</span>
+      </div>
+      <p className="weekly-opp-caption">
+        Not yet factored into the numbers above -- off while defenses build a real early-season sample.
+      </p>
+    </div>
+  );
+}
+
 // Row unfolded below a player on Weekly Projection Rankings -- same
 // click-to-expand/collapse mechanic as Player Season Simulations'
 // StatDetailRow (RankingsTable.js owns the open/close state and single-
 // row-open-at-a-time behavior), but built for this page's own data shape:
 // single-point weekly stats + one overall floor/median/ceiling, not a
-// full per-stat floor/median/ceiling distribution. Shows two things
-// beyond what's already an inline column: (1) a bigger, fully-labeled
-// version of the Curve cell, and (2) where this week's floor/projection/
-// ceiling AND the season-level usage metrics (ADVANCED_METRICS above)
-// actually rank against the same-position pool -- the inline heat-tints
-// only show relative color, never the real percentile number.
+// full per-stat floor/median/ceiling distribution. Four panels: (1) a
+// bigger, fully-labeled version of the Curve cell, (2) where this week's
+// floor/projection/ceiling AND the season-level usage metrics
+// (ADVANCED_METRICS above) actually rank against the same-position pool
+// -- the inline heat-tints only show relative color, never the real
+// percentile number, (3) the player's actual recent game log, and (4)
+// how tough this week's opponent is for this position specifically.
 export default function WeeklyDetailRow({ row, colSpan, maxSpread }) {
   const pct = row.statPct || {};
   const advancedEntries = ADVANCED_METRICS.filter((m) => row[m.key] != null && pct[m.key] != null);
@@ -106,11 +182,6 @@ export default function WeeklyDetailRow({ row, colSpan, maxSpread }) {
               ceiling={row.ceiling}
               maxSpread={maxSpread}
             />
-            <p className="weekly-detail-caption">
-              Peak position is relative to this player&apos;s own floor-ceiling range, not a shared
-              axis -- it isn&apos;t comparable to another row&apos;s peak position, only to the printed
-              median value above.
-            </p>
           </div>
           <div className="stat-panel weekly-detail-pct-panel">
             <div className="weekly-pct-head">
@@ -128,6 +199,8 @@ export default function WeeklyDetailRow({ row, colSpan, maxSpread }) {
               </>
             )}
           </div>
+          <GameLogPanel games={row.recentGames} />
+          <OpponentPanel row={row} />
         </div>
       </td>
     </tr>

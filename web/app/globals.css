@@ -1705,18 +1705,49 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    -- same .stat-detail-row/.stat-panel/.row-expandable chrome as Player
    Season Simulations above, two panels instead of three since this page
    has no radar/similar-shape data to show. */
-.weekly-detail-grid{display:grid; grid-template-columns:1.2fr 1fr; column-gap:20px; align-items:stretch;}
-@media (max-width:800px){.weekly-detail-grid{grid-template-columns:1fr;}}
-.weekly-detail-curve-panel{display:flex; flex-direction:column; justify-content:center; gap:10px;}
-.weekly-detail-caption{margin:0; font-size:12px; line-height:1.5; color:var(--star-dim); text-align:center;}
+/* 4 panels: Curve, weekly/usage percentiles, recent game log, opponent
+   defense -- condensed (smaller panel padding + tighter row spacing than
+   Player Sims' own 3-panel .stat-detail-grid) specifically to fit four
+   across instead of the two this started as. Single row at wide desktop
+   widths; 2x2 once four columns would get too narrow to read, 1-column
+   stack on mobile. */
+.weekly-detail-grid{
+  display:grid; grid-template-columns:1.15fr 0.95fr 0.95fr 0.95fr;
+  column-gap:12px; align-items:stretch;
+}
+@media (max-width:1400px){.weekly-detail-grid{grid-template-columns:1fr 1fr;}}
+@media (max-width:700px){.weekly-detail-grid{grid-template-columns:1fr;}}
+.weekly-detail-grid .stat-panel{padding:10px 12px;}
+.weekly-detail-curve-panel{display:flex; flex-direction:column; justify-content:center;}
 .weekly-detail-pct-panel{display:flex; flex-direction:column; justify-content:center;}
-.weekly-pct-head{margin-bottom:10px;}
-.weekly-pct-row{display:grid; grid-template-columns:88px 44px 1fr 40px; align-items:center; gap:10px; margin-bottom:9px;}
+.weekly-pct-head{margin-bottom:8px;}
+.weekly-pct-row{display:grid; grid-template-columns:70px 38px 1fr 34px; align-items:center; gap:6px; margin-bottom:6px;}
 .weekly-pct-row:last-child{margin-bottom:0;}
-.weekly-pct-label{font-size:12.5px; color:var(--star-dim);}
-.weekly-pct-value{font-family:var(--font-ibm-plex-mono), monospace; font-size:13px; color:var(--star); text-align:right;}
-.weekly-pct-ordinal{font-family:var(--font-ibm-plex-mono), monospace; font-size:12px; color:var(--star-dim); text-align:right;}
-.weekly-pct-divider{border-top:1px dashed var(--line); margin:4px 0 12px;}
+.weekly-pct-label{font-size:11.5px; color:var(--star-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.weekly-pct-value{font-family:var(--font-ibm-plex-mono), monospace; font-size:12px; color:var(--star); text-align:right;}
+.weekly-pct-ordinal{font-family:var(--font-ibm-plex-mono), monospace; font-size:11px; color:var(--star-dim); text-align:right;}
+.weekly-pct-divider{border-top:1px dashed var(--line); margin:2px 0 8px;}
+
+/* Recent Games -- plain record, no percentile bar (see GameLogPanel's
+   own comment in WeeklyDetailRow.js for why). */
+.weekly-gamelog-panel{display:flex; flex-direction:column; justify-content:center;}
+.weekly-gamelog-row{display:grid; grid-template-columns:1fr auto auto; align-items:center; gap:8px; padding:4px 0; border-bottom:1px dashed var(--line); font-size:12px;}
+.weekly-gamelog-row:last-child{border-bottom:none;}
+.weekly-gamelog-week{color:var(--star-dim);}
+.weekly-gamelog-opp{color:var(--star-dim); text-align:right;}
+.weekly-gamelog-pts{color:var(--star); font-weight:600; text-align:right; min-width:32px;}
+
+/* Opponent Defense -- +/-% colored by whether it's good (soft, more
+   points allowed) or bad (tough, fewer points allowed) for THIS
+   offense, not a generic trend-up/trend-down read. */
+.weekly-opp-panel{display:flex; flex-direction:column; justify-content:center; gap:8px;}
+.weekly-opp-matchup{display:flex; align-items:center; justify-content:center; gap:7px;}
+.weekly-opp-stat{text-align:center;}
+.weekly-opp-pct{display:block; font-family:var(--font-ibm-plex-mono), monospace; font-size:20px; font-weight:700;}
+.weekly-opp-pct-soft{color:var(--up);}
+.weekly-opp-pct-tough{color:var(--down);}
+.weekly-opp-desc{display:block; font-size:11px; color:var(--star-dim); margin-top:2px;}
+.weekly-opp-caption{margin:0; font-size:10.5px; line-height:1.4; color:var(--star-dim); text-align:center;}
 
 /* Fills the entire td (not just a tight box around the digits) so a
    click anywhere in a Floor/Median/Ceiling cell registers -- these

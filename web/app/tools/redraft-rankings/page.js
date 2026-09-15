@@ -158,31 +158,43 @@ async function fetchSimsMetrics(supabase) {
   return byName;
 }
 
-// xFP (ffopportunity's modeled fantasy points from that game's opportunity
-// -- targets, air yards, carries, situation) is retrospective, one row
-// per COMPLETED game (player_game_log, migration 0027/0028) -- there's no
-// pre-game xFP for the upcoming week these rankings project. "Current
-// xFP" here means this season's average xFP/game over whatever's already
-// been played, a real-usage read of how a player's role has actually
-// looked so far, not another projection of the week being ranked.
-async function fetchSeasonXfp(supabase, season) {
+// player_game_log already holds only the trailing two regular seasons
+// (see its own migration comment), so this pulls the whole table once --
+// no season filter needed at the query level -- and derives two different
+// things from that one fetch per player:
+//   - avgXfp: THIS season's average xFP/game so far. xFP (ffopportunity's
+//     modeled points from that game's real opportunity -- targets, air
+//     yards, carries, situation) is retrospective, one row per COMPLETED
+//     game, so there's no pre-game xFP for the upcoming week these
+//     rankings project -- "current" here means season-to-date usage, not
+//     another projection of this week.
+//   - recentGames: the player's last 5 logged games regardless of season
+//     boundary (so early in a new season, before 5 games exist yet, this
+//     naturally tails off into the end of last season instead of coming
+//     up empty) -- feeds the expanded row's game-log panel.
+async function fetchGameLogData(supabase, season) {
   const { data } = await supabase
     .from("player_game_log")
-    .select("player_name, exp_points_ppr")
-    .eq("season", season);
+    .select("player_name, season, week, opponent, is_home, fantasy_points_ppr, exp_points_ppr")
+    .order("season", { ascending: false })
+    .order("week", { ascending: false });
 
-  const sums = {};
+  const byPlayer = {};
   for (const r of data || []) {
-    if (r.exp_points_ppr == null) continue;
-    const s = (sums[r.player_name] ??= { total: 0, n: 0 });
-    s.total += r.exp_points_ppr;
-    s.n += 1;
+    (byPlayer[r.player_name] ??= []).push(r);
   }
-  const byName = {};
-  for (const [name, s] of Object.entries(sums)) {
-    byName[name] = s.total / s.n;
+
+  const avgXfpByName = {};
+  const recentGamesByName = {};
+  for (const [name, games] of Object.entries(byPlayer)) {
+    const thisSeasonXfp = games.filter((g) => g.season === season && g.exp_points_ppr != null);
+    if (thisSeasonXfp.length > 0) {
+      avgXfpByName[name] = thisSeasonXfp.reduce((sum, g) => sum + g.exp_points_ppr, 0) / thisSeasonXfp.length;
+    }
+    // Rows already arrive season/week descending from the query above.
+    recentGamesByName[name] = games.slice(0, 5);
   }
-  return byName;
+  return { avgXfpByName, recentGamesByName };
 }
 
 function sortPositions(positions) {
@@ -248,9 +260,9 @@ export default async function RedraftRankingsPage({ searchParams }) {
       return { ...r, ...r.scoring_stats, positionLabel: `${r.position}${positionCounters[r.position]}` };
     });
 
-    const [simsByName, xfpByName] = await Promise.all([
+    const [simsByName, { avgXfpByName, recentGamesByName }] = await Promise.all([
       fetchSimsMetrics(supabase),
-      fetchSeasonXfp(supabase, latest.season),
+      fetchGameLogData(supabase, latest.season),
     ]);
     rankings = rankings.map((r) => {
       const sims = simsByName[r.player_name] || {};
@@ -259,10 +271,11 @@ export default async function RedraftRankingsPage({ searchParams }) {
         wopr: sims.wopr ?? null,
         targetShare: sims.targetShare ?? null,
         yacAboveExp: sims.yacAboveExp ?? null,
-        avgXfp: xfpByName[r.player_name] ?? null,
+        avgXfp: avgXfpByName[r.player_name] ?? null,
         ryoe: sims.ryoe ?? null,
         scrambleRate: sims.scrambleRate ?? null,
         playActionRate: sims.playActionRate ?? null,
+        recentGames: recentGamesByName[r.player_name] || [],
       };
     });
 
