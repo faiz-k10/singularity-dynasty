@@ -90,6 +90,11 @@ function toPayload(r) {
     // usage only (R's write.csv renders QB's NA as "").
     wopr: r.wopr === "" || r.wopr == null ? null : Number(r.wopr),
     epa: r.epa === "" || r.epa == null ? null : Number(r.epa),
+    // Migration 0033 -- same "isolated display metric, doesn't feed the
+    // simulation" treatment as wopr/epa above.
+    ryoe: r.ryoe === "" || r.ryoe == null ? null : Number(r.ryoe),
+    scramble_rate: r.scramble_rate === "" || r.scramble_rate == null ? null : Number(r.scramble_rate),
+    play_action_rate: r.play_action_rate === "" || r.play_action_rate == null ? null : Number(r.play_action_rate),
     notes: r.notes || null,
   };
 }

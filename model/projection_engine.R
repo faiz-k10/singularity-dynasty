@@ -411,6 +411,22 @@ USAGE_METRIC_COLS <- c("wopr", "passing_epa", "rushing_epa", "receiving_epa")
 WOPR_DECAY <- c(RB = 0.94, WR = 0.88, TE = 0.94)  # no QB -- not applicable
 EPA_DECAY  <- c(QB = 0.97, RB = 0.97, WR = 0.97, TE = 0.97)
 
+# RYOE (Rush Yards Over Expected per attempt, RB/QB) and QB Scramble
+# Rate/Play-Action Rate -- added by explicit request as isolated display
+# context alongside WOPR/EPA, NOT projection inputs (same "doesn't feed
+# the Monte Carlo simulation" treatment). No backtested decay/quantile
+# calibration attempted for these three -- that effort is only justified
+# when a metric needs to predict something; these don't. EPA_DECAY's
+# 0.97 is reused directly (same "noisy game-to-game, wants a broad
+# recent window over an aggressive recent-form read" reasoning as EPA
+# itself). MIN_GAMES mirrors NGS_MIN_GAMES's existing 8-game precedent
+# for a separately-joined per-game dataset that might have fewer matched
+# games than a player's overall game log.
+RYOE_DECAY <- c(RB = 0.97, QB = 0.97)
+QB_CONTEXT_DECAY <- 0.97
+RUSHING_NGS_MIN_GAMES <- 8
+QB_CONTEXT_MIN_GAMES <- 8
+
 # YAC Above Expectation (WR/TE only, part of stat_ranges below) --
 # backtested via backtest_ngs_receiving_decay.R + calibrate_ngs_receiving_
 # quantiles.R, same walk-forward methodology as STAT_GROUP_DECAY/FLOOR_Q/
@@ -916,6 +932,47 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
     NULL
   })
 
+  # RYOE (RB/QB, display-only -- see RYOE_DECAY's own comment above) --
+  # real Next Gen Stats rushing, same per-game/gsis_id join pattern as
+  # ngs_receiving_hist above.
+  rushing_ngs_hist <- tryCatch({
+    ngs <- as.data.frame(load_nextgen_stats(stat_type = "rushing", seasons = seasons))
+    ngs[ngs$week != 0 & ngs$season_type == "REG", c("player_gsis_id", "season", "week",
+                                                      "rush_yards_over_expected_per_att")]
+  }, error = function(e) {
+    cat("NGS rushing data unavailable this run -- skipping RYOE:",
+        conditionMessage(e), "\n")
+    NULL
+  })
+
+  # QB Scramble Rate / Play-Action Rate -- neither has a per-player
+  # summary table anywhere in nflreadr, so this is the one metric pair on
+  # this page sourced from raw play-by-play (load_pbp()) instead of a
+  # pre-aggregated table -- meaningfully heavier to load than everything
+  # else here; expect this to add real time to the run. Display-only,
+  # same as RYOE/WOPR/EPA above. qb_dropback==1 catches both real pass
+  # attempts and scrambles (a scramble IS a dropback that didn't end in a
+  # throw), so "rate" here means share of dropbacks -- the standard
+  # framing for both stats.
+  qb_context_hist <- tryCatch({
+    pbp <- as.data.frame(load_pbp(seasons = seasons))
+    pbp <- pbp[pbp$season_type == "REG" & !is.na(pbp$qb_dropback) & pbp$qb_dropback == 1 &
+                 !is.na(pbp$passer_player_id), ]
+    agg <- aggregate(
+      cbind(scrambles = qb_scramble, play_actions = play_action, dropbacks = qb_dropback) ~
+        passer_player_id + season + week,
+      data = pbp, FUN = sum
+    )
+    agg$scramble_rate <- 100 * agg$scrambles / agg$dropbacks
+    agg$play_action_rate <- 100 * agg$play_actions / agg$dropbacks
+    names(agg)[names(agg) == "passer_player_id"] <- "player_gsis_id"
+    agg[, c("player_gsis_id", "season", "week", "scramble_rate", "play_action_rate")]
+  }, error = function(e) {
+    cat("Play-by-play data unavailable this run -- skipping scramble/play-action rate:",
+        conditionMessage(e), "\n")
+    NULL
+  })
+
   rows <- vector("list", length(eligible))
   names(rows) <- eligible
 
@@ -1286,6 +1343,38 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
     }
     epa_val <- round(weighted_mean(epa_component, w_epa), 2)
 
+    # RYOE (RB/QB) -- weighted mean over the player's own matched NGS
+    # rushing games, same treatment as WOPR/EPA. NA if NGS data wasn't
+    # loadable this run, or this player has too few matched games to
+    # trust a weighted mean from (RUSHING_NGS_MIN_GAMES).
+    ryoe_val <- NA_real_
+    if (pos %in% c("RB", "QB") && !is.null(rushing_ngs_hist)) {
+      pid <- d$player_id[1]
+      player_rush_ngs <- rushing_ngs_hist[rushing_ngs_hist$player_gsis_id == pid, ]
+      rush_vals <- player_rush_ngs$rush_yards_over_expected_per_att
+      rush_vals <- rush_vals[!is.na(rush_vals)]
+      if (length(rush_vals) >= RUSHING_NGS_MIN_GAMES) {
+        w_rush <- recency_weights(length(rush_vals), RYOE_DECAY[pos])
+        ryoe_val <- round(weighted_mean(rush_vals, w_rush), 2)
+      }
+    }
+
+    # Scramble Rate / Play-Action Rate (QB only) -- same weighted-mean
+    # treatment, matched games from qb_context_hist (load_pbp(), see its
+    # own comment above for why it's PBP-sourced instead of a
+    # pre-aggregated table like everything else here).
+    scramble_rate_val <- NA_real_
+    play_action_rate_val <- NA_real_
+    if (pos == "QB" && !is.null(qb_context_hist)) {
+      pid <- d$player_id[1]
+      player_qb_ctx <- qb_context_hist[qb_context_hist$player_gsis_id == pid, ]
+      if (nrow(player_qb_ctx) >= QB_CONTEXT_MIN_GAMES) {
+        w_qb <- recency_weights(nrow(player_qb_ctx), QB_CONTEXT_DECAY)
+        scramble_rate_val <- round(weighted_mean(player_qb_ctx$scramble_rate, w_qb), 1)
+        play_action_rate_val <- round(weighted_mean(player_qb_ctx$play_action_rate, w_qb), 1)
+      }
+    }
+
     rows[[p]] <- data.frame(
       player_name = p, position = pos, team = team, opponent = opp, is_home = is_home, games = n,
       touches_per_game = round(mean(d$touches), 1),
@@ -1311,6 +1400,9 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
       boom_pct = boom_pct,
       wopr = wopr_val,
       epa = epa_val,
+      ryoe = ryoe_val,
+      scramble_rate = scramble_rate_val,
+      play_action_rate = play_action_rate_val,
       playoff_ceiling = round(quantile(playoff, CEIL_Q[pos]), 1),
       # Granular per-stat floor/median/ceiling (passing/rushing/receiving
       # yards & TDs, INTs, receptions -- position-dependent, see
@@ -1421,6 +1513,7 @@ export_for_supabase <- function(df, target_season = TARGET_SEASON, week = NULL) 
     stat_ranges = sims$stat_ranges_json,
     bust_pct = sims$bust_pct, normal_pct = sims$normal_pct, boom_pct = sims$boom_pct,
     wopr = sims$wopr, epa = sims$epa,
+    ryoe = sims$ryoe, scramble_rate = sims$scramble_rate, play_action_rate = sims$play_action_rate,
     notes = ""
   ), "upload_player_simulations.csv", row.names = FALSE, na = "")
 

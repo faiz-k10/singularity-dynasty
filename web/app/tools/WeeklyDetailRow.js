@@ -6,15 +6,23 @@ import OutcomeCurveDetail from "./OutcomeCurveDetail";
 // tables from this page's own redraft_rankings). Replaced the raw
 // per-game stat columns (Rush Yds, Rec, ...) that used to sit here by
 // request -- those are already visible as their own inline table
-// columns; these four say more about WHY a player is projected where
-// they are. wopr is null for QB (receiving usage only); targetShare/
-// yacAboveExp are null for anyone but WR/TE; avgXfp is null until at
-// least one game of this season has a published game log row.
+// columns; these say more about WHY a player is projected where they
+// are, purely as isolated context -- none of them feed the projection
+// itself (matches player_simulations.wopr/epa's own "display-only"
+// treatment, migration 0020, extended by ryoe/scramble_rate/
+// play_action_rate in migration 0033). wopr/ryoe are null for anyone but
+// RB/QB or RB (respectively -- see each's own model-side comment);
+// targetShare/yacAboveExp are WR/TE only; scrambleRate/playActionRate
+// are QB only; avgXfp is null until at least one game of this season
+// has a published game log row.
 const ADVANCED_METRICS = [
   { key: "wopr", label: "WOPR", format: (v) => v.toFixed(2) },
   { key: "targetShare", label: "Target Share", format: (v) => `${v.toFixed(1)}%` },
   { key: "yacAboveExp", label: "YAC Above Exp", format: (v) => v.toFixed(2) },
   { key: "avgXfp", label: "xFP/G (season)", format: (v) => v.toFixed(1) },
+  { key: "ryoe", label: "RYOE/Att", format: (v) => `${v >= 0 ? "+" : ""}${v.toFixed(2)}` },
+  { key: "scrambleRate", label: "Scramble Rate", format: (v) => `${v.toFixed(1)}%` },
+  { key: "playActionRate", label: "Play-Action Rate", format: (v) => `${v.toFixed(1)}%` },
 ];
 
 function ordinal(n) {
@@ -80,7 +88,7 @@ function PctRow({ label, value, pctile, format = formatValue }) {
 // full per-stat floor/median/ceiling distribution. Shows two things
 // beyond what's already an inline column: (1) a bigger, fully-labeled
 // version of the Curve cell, and (2) where this week's floor/projection/
-// ceiling AND four season-level usage metrics (ADVANCED_METRICS above)
+// ceiling AND the season-level usage metrics (ADVANCED_METRICS above)
 // actually rank against the same-position pool -- the inline heat-tints
 // only show relative color, never the real percentile number.
 export default function WeeklyDetailRow({ row, colSpan, maxSpread }) {

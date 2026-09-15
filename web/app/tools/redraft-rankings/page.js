@@ -59,18 +59,23 @@ function heatByPosition(rows, col) {
 }
 
 // Real percentile rank (not the linear min/max heat above) for each row's
-// Floor/Projection/Ceiling plus the 4 advanced usage metrics attached by
-// attachAdvancedMetrics() below -- feeds WeeklyDetailRow's expanded-row
-// percentile panel, where a real number ("62nd percentile") is worth
-// showing alongside the plain relative heat-tint the inline columns use.
-// Same percentileRank() Player Season Simulations uses
+// Floor/Projection/Ceiling plus the advanced usage metrics attached
+// below (WOPR/Target Share/YAC Above Exp/xFP, then RYOE/Scramble Rate/
+// Play-Action Rate) -- feeds WeeklyDetailRow's expanded-row percentile
+// panel, where a real number ("62nd percentile") is worth showing
+// alongside the plain relative heat-tint the inline columns use. Same
+// percentileRank() Player Season Simulations uses
 // (lib/statPercentiles.js), just against a one-value-per-player pool here
 // instead of a floor/median/ceiling triple per player. The 8 raw
 // scoring_stats columns (Pass Yds, Rush Yds, ...) used to be in this list
-// too -- replaced by request with WOPR/Target Share/YAC Above Exp/xFP,
-// which say more about WHY a player is projected where they are than the
-// raw weekly stat averages (already visible as their own inline columns).
-const PERCENTILE_KEYS = ["floor", "projection", "ceiling", "wopr", "targetShare", "yacAboveExp", "avgXfp"];
+// too -- replaced by request with these usage/efficiency metrics, which
+// say more about WHY a player is projected where they are than the raw
+// weekly stat averages (already visible as their own inline columns).
+const PERCENTILE_KEYS = [
+  "floor", "projection", "ceiling",
+  "wopr", "targetShare", "yacAboveExp", "avgXfp",
+  "ryoe", "scrambleRate", "playActionRate",
+];
 function buildPoolsByPosition(rows, keys) {
   const pools = {};
   for (const r of rows) {
@@ -97,11 +102,12 @@ function attachStatPercentiles(rows) {
   });
 }
 
-// WOPR (receiving usage) and Target Share/YAC Above Exp (WR/TE only,
-// median of their season floor/median/ceiling range) come from Player
-// Season Simulations' own latest published batch -- a separate table/
-// pipeline from redraft_rankings, joined here by player_name only (no
-// week alignment assumed; player_simulations republishes on its own
+// WOPR (receiving usage), RYOE (RB/QB rushing efficiency), Scramble Rate/
+// Play-Action Rate (QB only), and Target Share/YAC Above Exp (WR/TE
+// only, median of their season floor/median/ceiling range) all come from
+// Player Season Simulations' own latest published batch -- a separate
+// table/pipeline from redraft_rankings, joined here by player_name only
+// (no week alignment assumed; player_simulations republishes on its own
 // weekly cadence, same season). Null for any player not yet in that
 // table (a brand-new call-up, or before the season's first Player Sims
 // publish) -- WeeklyDetailRow already renders "no data" as simply
@@ -116,11 +122,27 @@ async function fetchSimsMetrics(supabase) {
     .maybeSingle();
   if (!latest) return {};
 
-  const { data } = await supabase
+  // ryoe/scramble_rate/play_action_rate (migration 0033) may not exist
+  // yet in a given Supabase project until that migration's been run by
+  // hand (this repo has no direct DDL access, see CLAUDE.md) -- selecting
+  // a column that doesn't exist fails the WHOLE query, not just those
+  // fields, so this falls back to the pre-0033 column set rather than
+  // losing wopr/target_share/yac_above_exp too while the migration is
+  // still pending.
+  let { data, error } = await supabase
     .from("player_simulations")
-    .select("player_name, wopr, stat_ranges")
+    .select("player_name, wopr, ryoe, scramble_rate, play_action_rate, stat_ranges")
     .eq("season", latest.season)
     .eq("week", latest.week);
+
+  if (error) {
+    console.error("player_simulations: migration 0033 columns unavailable, falling back:", error.message);
+    ({ data } = await supabase
+      .from("player_simulations")
+      .select("player_name, wopr, stat_ranges")
+      .eq("season", latest.season)
+      .eq("week", latest.week));
+  }
 
   const byName = {};
   for (const r of data || []) {
@@ -128,6 +150,9 @@ async function fetchSimsMetrics(supabase) {
       wopr: r.wopr,
       targetShare: r.stat_ranges?.target_share?.median ?? null,
       yacAboveExp: r.stat_ranges?.yac_above_exp?.median ?? null,
+      ryoe: r.ryoe ?? null,
+      scrambleRate: r.scramble_rate ?? null,
+      playActionRate: r.play_action_rate ?? null,
     };
   }
   return byName;
@@ -235,6 +260,9 @@ export default async function RedraftRankingsPage({ searchParams }) {
         targetShare: sims.targetShare ?? null,
         yacAboveExp: sims.yacAboveExp ?? null,
         avgXfp: xfpByName[r.player_name] ?? null,
+        ryoe: sims.ryoe ?? null,
+        scrambleRate: sims.scrambleRate ?? null,
+        playActionRate: sims.playActionRate ?? null,
       };
     });
 
