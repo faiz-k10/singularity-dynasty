@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getUserTier } from "@/lib/tier";
 import { resolveSort, sortRows } from "@/lib/sortLink";
+import { percentileRank, INVERTED_STATS } from "@/lib/statPercentiles";
 import SiteHeader from "../../SiteHeader";
 import ExportCsvButton from "../ExportCsvButton";
 import RedraftRankingsClient from "./RedraftRankingsClient";
@@ -55,6 +56,42 @@ function heatByPosition(rows, col) {
     const range = rangeByPos[r.position];
     return range && range.max > range.min ? (r[col] - range.min) / (range.max - range.min) : 0;
   };
+}
+
+// Real percentile rank (not the linear min/max heat above) for each row's
+// Floor/Projection/Ceiling plus the 8 raw stat columns, vs. the same-
+// position pool -- feeds WeeklyDetailRow's expanded-row percentile
+// panel, where a real number ("62nd percentile") is worth showing
+// alongside the plain relative heat-tint the inline columns use. Same
+// percentileRank() Player Season Simulations uses (lib/statPercentiles.js),
+// just against a one-value-per-player pool here instead of a floor/
+// median/ceiling triple per player -- this page has no per-stat
+// distribution, only this week's single point estimate per stat.
+const PERCENTILE_KEYS = [...STAT_COLUMN_KEYS, "floor", "projection", "ceiling"];
+function buildPoolsByPosition(rows, keys) {
+  const pools = {};
+  for (const r of rows) {
+    const pool = (pools[r.position] ??= {});
+    for (const k of keys) {
+      const v = r[k];
+      if (v == null) continue;
+      (pool[k] ??= []).push(v);
+    }
+  }
+  return pools;
+}
+function attachStatPercentiles(rows) {
+  const pools = buildPoolsByPosition(rows, PERCENTILE_KEYS);
+  return rows.map((r) => {
+    const pool = pools[r.position] || {};
+    const statPct = {};
+    for (const k of PERCENTILE_KEYS) {
+      const v = r[k];
+      if (v == null) continue;
+      statPct[k] = percentileRank(v, pool[k], INVERTED_STATS.has(k));
+    }
+    return { ...r, statPct };
+  });
 }
 
 function sortPositions(positions) {
@@ -127,6 +164,7 @@ export default async function RedraftRankingsPage({ searchParams }) {
       floorHeat: floorHeatFor(r),
       ceilingHeat: ceilingHeatFor(r),
     }));
+    rankings = attachStatPercentiles(rankings);
   }
 
   // Widest floor-to-ceiling range this week -- the Outcome Curve column

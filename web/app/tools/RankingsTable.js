@@ -1,3 +1,6 @@
+"use client";
+
+import { Fragment, useState } from "react";
 import Link from "next/link";
 import SortableTh from "./SortableTh";
 import TrendTag from "./TrendTag";
@@ -5,7 +8,9 @@ import ConfidenceBadge from "./ConfidenceBadge";
 import BounceBadge from "./BounceBadge";
 import TeamBadge from "./TeamBadge";
 import OutcomeCurve from "./OutcomeCurve";
+import WeeklyDetailRow from "./WeeklyDetailRow";
 import { matchupTint } from "./MatchupBadge";
+import { STAT_COLUMNS } from "./statColumns";
 
 // `notes` carries at most one flag: "OUT" (hard status, stays in the
 // Notes column) or "BOUNCEBACK ..." (soft/informational, rendered as the
@@ -22,19 +27,10 @@ function formatRange(value) {
 // showStatColumns) -- shown as their own columns rather than tucked
 // behind a click, so they're visible right in the table. Not every
 // column applies to every position (a WR has no passing_yards) --
-// STAT_COLUMNS just reads whatever's in scoring_stats and renders "—"
-// for a column a given player's position doesn't publish.
-const STAT_COLUMNS = [
-  { key: "passing_yards", label: "Pass Yds" },
-  { key: "passing_tds", label: "Pass TD" },
-  { key: "passing_interceptions", label: "INT" },
-  { key: "rushing_yards", label: "Rush Yds" },
-  { key: "rushing_tds", label: "Rush TD" },
-  { key: "receptions", label: "Rec" },
-  { key: "receiving_yards", label: "Rec Yds" },
-  { key: "receiving_tds", label: "Rec TD" },
-];
-
+// STAT_COLUMNS (statColumns.js) just reads whatever's in scoring_stats
+// and renders "—" for a column a given player's position doesn't
+// publish. WeeklyDetailRow.js reuses the same list for its percentile
+// rows, from that shared module rather than from each other.
 function formatStat(value) {
   return value === null || value === undefined ? "—" : Number(value).toFixed(1);
 }
@@ -107,6 +103,26 @@ export default function RankingsTable({
   tableClassName = "",
 }) {
   const sortProps = { activeSort: sortKey, activeDir: sortDir, currentParams, sortParam, dirParam };
+  // Same click-to-expand/collapse mechanic as Player Season Simulations'
+  // PlayerSimSearch (one row open at a time, keyed by the same string the
+  // row itself is keyed by) -- only meaningful here when a row actually
+  // has a floor/ceiling curve to expand into (WeeklyDetailRow's reason
+  // for existing), so rows published before migration 0029 with no
+  // floor/ceiling yet just aren't clickable.
+  const [expanded, setExpanded] = useState(null);
+  function toggleExpanded(key) {
+    setExpanded((prev) => (prev === key ? null : key));
+  }
+
+  const colCount =
+    2 + // Rank, Player
+    (showPosition ? 1 : 0) +
+    (showTeam ? 1 : 0) + // Matchup (merged) or Team -- always exactly one column
+    (showRange ? 2 : 0) + // Floor, Ceiling
+    (showCurve ? 1 : 0) +
+    (showStatColumns ? STAT_COLUMNS.length : 0) +
+    (showNotes ? 1 : 0);
+
   return (
     <div className={`rankings-table-wrap${tableClassName ? ` ${tableClassName}-wrap` : ""}`}>
       <table className={`rankings-table${tableClassName ? ` ${tableClassName}` : ""}`}>
@@ -122,7 +138,7 @@ export default function RankingsTable({
             )}
             {showRange && <SortableTh label="Floor" sortKey="floor" {...sortProps} />}
             {showCurve && (
-              <th title="Outcome curve — this week's floor-to-ceiling range, colored apart from the tails beyond it. The range's width is drawn relative to the widest range in this week's pool, so a locked-in projection and a volatile one are easy to tell apart at a glance.">
+              <th title="Outcome curve — this week's floor-to-ceiling range, colored apart from the tails beyond it. The range's width is drawn relative to the widest range in this week's pool, so a locked-in projection and a volatile one are easy to tell apart at a glance. Click a row to see a larger, fully-labeled version plus percentile context.">
                 Curve
               </th>
             )}
@@ -133,79 +149,104 @@ export default function RankingsTable({
           </tr>
         </thead>
         <tbody>
-          {rows.map((row) => (
-            <tr key={`${row.position}-${row.rank}`} data-pos={row.position}>
-              <td className="mono">{row.displayRank}</td>
-              <PlayerCell row={row} withPopover={popoverOnName} />
-              {showPosition && (
-                <td className="mono align-left">
-                  {row.position}
-                  {row.positionLabel && row.positionLabel !== row.position && (
-                    <span className="pos-rank">{row.positionLabel.slice(row.position.length)}</span>
-                  )}
-                </td>
-              )}
-              {showTeam && showOpponent ? (
-                (() => {
-                  const tint = matchupTint(row.matchup_mult);
-                  // is_home is null for rows published before migration
-                  // 0032 (or when the schedule lookup failed) -- a
-                  // neutral "·" rather than guessing vs/@ in that case.
-                  const sep = row.is_home === true ? "vs" : row.is_home === false ? "@" : "·";
-                  return (
-                    <td
-                      className={`mono${tint ? ` matchup-cell ${tint.cls}` : ""}`}
-                      style={tint ? { "--heat": tint.heat } : undefined}
-                      title={tint ? tint.label : undefined}
-                    >
-                      <span className="matchup-combined-cell">
-                        <TeamBadge team={row.team} />
-                        <span className="matchup-sep">{sep}</span>
-                        <TeamBadge team={row.opponent} />
-                      </span>
+          {rows.map((row) => {
+            const rowKey = `${row.position}-${row.rank}`;
+            const hasDetail = showCurve && row.floor != null && row.ceiling != null;
+            const isExpanded = hasDetail && expanded === rowKey;
+            return (
+              <Fragment key={rowKey}>
+                <tr
+                  data-pos={row.position}
+                  className={hasDetail ? "row-expandable" : undefined}
+                  onClick={hasDetail ? () => toggleExpanded(rowKey) : undefined}
+                  role={hasDetail ? "button" : undefined}
+                  tabIndex={hasDetail ? 0 : undefined}
+                  aria-expanded={hasDetail ? isExpanded : undefined}
+                  onKeyDown={
+                    hasDetail
+                      ? (e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            toggleExpanded(rowKey);
+                          }
+                        }
+                      : undefined
+                  }
+                >
+                  <td className="mono">{row.displayRank}</td>
+                  <PlayerCell row={row} withPopover={popoverOnName} />
+                  {showPosition && (
+                    <td className="mono align-left">
+                      {row.position}
+                      {row.positionLabel && row.positionLabel !== row.position && (
+                        <span className="pos-rank">{row.positionLabel.slice(row.position.length)}</span>
+                      )}
                     </td>
-                  );
-                })()
-              ) : (
-                showTeam && (
-                  <td className="mono align-left">
-                    <TeamBadge team={row.team} />
-                  </td>
-                )
-              )}
-              {showRange && (
-                <td className="mono heat-cell-floor" style={{ "--heat": row.floorHeat || 0 }}>
-                  {formatRange(row.floor)}
-                </td>
-              )}
-              {showCurve && (
-                <td>
-                  <OutcomeCurve
-                    floor={row.floor}
-                    median={row.projection}
-                    ceiling={row.ceiling}
-                    maxSpread={maxSpread}
-                  />
-                </td>
-              )}
-              {showRange && (
-                <td className="mono heat-cell" style={{ "--heat": row.ceilingHeat || 0 }}>
-                  {formatRange(row.ceiling)}
-                </td>
-              )}
-              {showStatColumns &&
-                STAT_COLUMNS.map((c) => (
-                  <td key={c.key} className="mono">
-                    {formatStat(row[c.key])}
-                  </td>
-                ))}
-              {showNotes && (
-                <td className="tool-notes">
-                  {isBounceNote(row.notes) ? "" : row.notes || ""}
-                </td>
-              )}
-            </tr>
-          ))}
+                  )}
+                  {showTeam && showOpponent ? (
+                    (() => {
+                      const tint = matchupTint(row.matchup_mult);
+                      // is_home is null for rows published before migration
+                      // 0032 (or when the schedule lookup failed) -- a
+                      // neutral "·" rather than guessing vs/@ in that case.
+                      const sep = row.is_home === true ? "vs" : row.is_home === false ? "@" : "·";
+                      return (
+                        <td
+                          className={`mono${tint ? ` matchup-cell ${tint.cls}` : ""}`}
+                          style={tint ? { "--heat": tint.heat } : undefined}
+                          title={tint ? tint.label : undefined}
+                        >
+                          <span className="matchup-combined-cell">
+                            <TeamBadge team={row.team} />
+                            <span className="matchup-sep">{sep}</span>
+                            <TeamBadge team={row.opponent} />
+                          </span>
+                        </td>
+                      );
+                    })()
+                  ) : (
+                    showTeam && (
+                      <td className="mono align-left">
+                        <TeamBadge team={row.team} />
+                      </td>
+                    )
+                  )}
+                  {showRange && (
+                    <td className="mono heat-cell-floor" style={{ "--heat": row.floorHeat || 0 }}>
+                      {formatRange(row.floor)}
+                    </td>
+                  )}
+                  {showCurve && (
+                    <td>
+                      <OutcomeCurve
+                        floor={row.floor}
+                        median={row.projection}
+                        ceiling={row.ceiling}
+                        maxSpread={maxSpread}
+                      />
+                    </td>
+                  )}
+                  {showRange && (
+                    <td className="mono heat-cell" style={{ "--heat": row.ceilingHeat || 0 }}>
+                      {formatRange(row.ceiling)}
+                    </td>
+                  )}
+                  {showStatColumns &&
+                    STAT_COLUMNS.map((c) => (
+                      <td key={c.key} className="mono">
+                        {formatStat(row[c.key])}
+                      </td>
+                    ))}
+                  {showNotes && (
+                    <td className="tool-notes">
+                      {isBounceNote(row.notes) ? "" : row.notes || ""}
+                    </td>
+                  )}
+                </tr>
+                {isExpanded && <WeeklyDetailRow row={row} colSpan={colCount} maxSpread={maxSpread} />}
+              </Fragment>
+            );
+          })}
         </tbody>
       </table>
     </div>

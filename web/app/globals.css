@@ -1215,6 +1215,20 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .outcome-curve-tail-ceiling{fill:var(--neon-blue-dim); opacity:0.4; stroke:none;}
 @media (max-width:640px){.outcome-curve{width:80px;}}
 
+/* Larger fully-labeled curve (OutcomeCurveDetail.js) shown only inside a
+   clicked-open Weekly Projection Rankings row -- same three fill colors
+   as the small inline .outcome-curve above, plus a peak dot + three text
+   labels the dense inline version has no room for. */
+.outcome-curve-detail{width:100%; max-width:440px; height:130px; display:block; margin:0 auto;}
+.outcome-curve-peak-dot{fill:var(--horizon-gold);}
+.outcome-curve-median-label{
+  font-family:var(--font-ibm-plex-mono), monospace; font-size:13px; font-weight:600;
+  fill:var(--horizon-gold); text-transform:uppercase; letter-spacing:0.02em;
+}
+.outcome-curve-end-label{font-family:var(--font-ibm-plex-mono), monospace; font-size:11px;}
+.outcome-curve-end-label-floor{fill:var(--down);}
+.outcome-curve-end-label-ceiling{fill:var(--neon-blue);}
+
 /* .tier-toggle/.tier-toggle-label: shared pill-button styling for the
    League Size / QB Format toggles below (mirrors
    .compare-radar-layer-toggle's pill pattern) -- name is a holdover from
@@ -1679,6 +1693,23 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    gives the labels real physical breathing room on top of that, and
    offsets MAX_R having come down to fit the bigger gap. */
 .stat-panel-radar{max-width:440px; display:flex; flex-direction:column; align-items:center;}
+
+/* Weekly Projection Rankings' own click-to-expand row (WeeklyDetailRow.js)
+   -- same .stat-detail-row/.stat-panel/.row-expandable chrome as Player
+   Season Simulations above, two panels instead of three since this page
+   has no radar/similar-shape data to show. */
+.weekly-detail-grid{display:grid; grid-template-columns:1.2fr 1fr; column-gap:20px; align-items:stretch;}
+@media (max-width:800px){.weekly-detail-grid{grid-template-columns:1fr;}}
+.weekly-detail-curve-panel{display:flex; flex-direction:column; justify-content:center; gap:10px;}
+.weekly-detail-caption{margin:0; font-size:12px; line-height:1.5; color:var(--star-dim); text-align:center;}
+.weekly-detail-pct-panel{display:flex; flex-direction:column; justify-content:center;}
+.weekly-pct-head{margin-bottom:10px;}
+.weekly-pct-row{display:grid; grid-template-columns:88px 44px 1fr 40px; align-items:center; gap:10px; margin-bottom:9px;}
+.weekly-pct-row:last-child{margin-bottom:0;}
+.weekly-pct-label{font-size:12.5px; color:var(--star-dim);}
+.weekly-pct-value{font-family:var(--font-ibm-plex-mono), monospace; font-size:13px; color:var(--star); text-align:right;}
+.weekly-pct-ordinal{font-family:var(--font-ibm-plex-mono), monospace; font-size:12px; color:var(--star-dim); text-align:right;}
+.weekly-pct-divider{border-top:1px dashed var(--line); margin:4px 0 12px;}
 
 /* Fills the entire td (not just a tight box around the digits) so a
    click anywhere in a Floor/Median/Ceiling cell registers -- these
