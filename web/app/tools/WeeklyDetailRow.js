@@ -185,27 +185,31 @@ export default function WeeklyDetailRow({ row, colSpan, maxSpread }) {
             <div className="weekly-pct-head">
               <span className="weekly-panel-title">Outcome Curve</span>
             </div>
-            <OutcomeCurveDetail
-              floor={row.floor}
-              median={row.projection}
-              ceiling={row.ceiling}
-              maxSpread={maxSpread}
-              floorPct={pct.floor}
-              medianPct={pct.projection}
-              ceilingPct={pct.ceiling}
-            />
+            <div className="weekly-panel-body">
+              <OutcomeCurveDetail
+                floor={row.floor}
+                median={row.projection}
+                ceiling={row.ceiling}
+                maxSpread={maxSpread}
+                floorPct={pct.floor}
+                medianPct={pct.projection}
+                ceilingPct={pct.ceiling}
+              />
+            </div>
           </div>
           <div className="stat-panel weekly-detail-pct-panel">
             <div className="weekly-pct-head">
               <span className="weekly-panel-title">Usage vs. the {row.position} pool</span>
             </div>
-            {advancedEntries.length > 0 ? (
-              advancedEntries.map((m) => (
-                <PctRow key={m.key} label={m.label} value={row[m.key]} pctile={pct[m.key]} format={m.format} />
-              ))
-            ) : (
-              <p className="weekly-opp-caption">No usage metrics published for this player yet.</p>
-            )}
+            <div className="weekly-panel-body">
+              {advancedEntries.length > 0 ? (
+                advancedEntries.map((m) => (
+                  <PctRow key={m.key} label={m.label} value={row[m.key]} pctile={pct[m.key]} format={m.format} />
+                ))
+              ) : (
+                <p className="weekly-opp-caption">No usage metrics published for this player yet.</p>
+              )}
+            </div>
           </div>
           <div className="weekly-detail-side-col">
             <OpponentPanel row={row} />

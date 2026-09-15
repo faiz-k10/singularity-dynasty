@@ -1750,9 +1750,27 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    breathing room on every edge -- including the extra bottom clearance
    the Usage panel needed -- without a special case. */
 .weekly-detail-grid .stat-panel{padding:16px;}
-.weekly-detail-curve-panel{flex:0 1 auto; max-width:400px; display:flex; flex-direction:column; justify-content:center;}
-.weekly-detail-pct-panel{flex:0 1 auto; max-width:320px; display:flex; flex-direction:column; justify-content:center;}
-.weekly-pct-head{margin-bottom:7px;}
+.weekly-detail-curve-panel{flex:0 1 auto; max-width:400px; display:flex; flex-direction:column;}
+.weekly-detail-pct-panel{flex:0 1 auto; max-width:320px; display:flex; flex-direction:column;}
+.weekly-pct-head{margin-bottom:7px; flex-shrink:0;}
+/* justify-content:center used to live on the PANEL itself, centering the
+   title along with the curve/rows as one block -- fine for Curve (its
+   content is tall enough that the title barely moves), but Usage's
+   title visibly floated far below the top edge whenever a player had
+   few rows (a shorter block centered in the same tall, stretched panel
+   moves the title down much more than a taller block does). Title now
+   stays pinned at the top via flex-shrink:0 above; only this body
+   wrapper -- everything below the title -- centers within whatever
+   height is actually left over once the row's tallest column (usually
+   the stacked Opponent+Recent Games column) sets the shared height. */
+/* space-evenly, not center -- with Usage's 1-4 PctRow children this
+   spreads them across the whole available height (equal gaps between
+   AND around them) instead of clustering them as one tight block in
+   the middle, which is what "fill the top and bottom" actually needs
+   when there's real extra height to fill. Degrades to plain centering
+   for Curve's single SVG child (one child = identical to :center). */
+.weekly-panel-body{flex:1; display:flex; flex-direction:column; justify-content:space-evenly; min-height:0;}
+.weekly-panel-body .weekly-pct-row{margin-bottom:0;}
 /* Small gold-dash + tracked mono uppercase -- the same eyebrow motif as
    .eyebrow/.hub-tag/.round-label elsewhere on the site, scoped to this
    row's own panel titles rather than overriding the shared
