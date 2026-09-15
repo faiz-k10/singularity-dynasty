@@ -1725,7 +1725,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .weekly-detail-grid .stat-panel{padding:10px 12px;}
 .weekly-detail-curve-panel{flex:1.1 1 300px; display:flex; flex-direction:column; justify-content:center;}
 .weekly-detail-pct-panel{flex:1.3 1 300px; display:flex; flex-direction:column; justify-content:center;}
-.weekly-pct-head{margin-bottom:8px;}
+.weekly-pct-head{margin-bottom:7px;}
 /* Small gold-dash + tracked mono uppercase -- the same eyebrow motif as
    .eyebrow/.hub-tag/.round-label elsewhere on the site, scoped to this
    row's own panel titles rather than overriding the shared
@@ -1745,12 +1745,22 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .weekly-pct-divider{border-top:1px dashed var(--line); margin:2px 0 8px;}
 
 /* Recent Games -- plain record, no percentile bar (see GameLogPanel's
-   own comment in WeeklyDetailRow.js for why). */
-.weekly-gamelog-panel{flex:0.9 1 220px; display:flex; flex-direction:column; justify-content:center;}
-.weekly-gamelog-row{display:grid; grid-template-columns:1fr auto auto; align-items:center; gap:8px; padding:4px 0; border-bottom:1px dashed var(--line); font-size:12px;}
+   own comment in WeeklyDetailRow.js for why). justify-content:flex-start
+   (not :center) plus tight row padding -- this panel's content is short
+   (up to 5 rows) and used to visibly float in a lot of dead vertical
+   space once the grid stopped force-stretching every panel to the same
+   height; hugging the top and shrinking row padding reads as a dense,
+   deliberate list instead of a mostly-empty card. Opponent is a real
+   TeamBadge chip (same component/look as the Opponent Defense panel
+   below) instead of plain team-code text, both for visual consistency
+   with that panel and because a colored chip reads faster than initials
+   alone. */
+.weekly-gamelog-panel{flex:0.9 1 220px; display:flex; flex-direction:column; justify-content:flex-start;}
+.weekly-gamelog-row{display:grid; grid-template-columns:1fr auto auto; align-items:center; gap:8px; padding:3px 0; border-bottom:1px dashed var(--line); font-size:12px;}
 .weekly-gamelog-row:last-child{border-bottom:none;}
 .weekly-gamelog-week{color:var(--star-dim);}
-.weekly-gamelog-opp{color:var(--star-dim); text-align:right;}
+.weekly-gamelog-opp{display:flex; align-items:center; justify-content:flex-end; gap:5px;}
+.weekly-gamelog-sep{color:var(--star-dim); font-size:11px;}
 .weekly-gamelog-pts{color:var(--star); font-weight:600; text-align:right; min-width:32px;}
 
 /* Opponent Defense -- +/-% colored by whether it's good (soft, more

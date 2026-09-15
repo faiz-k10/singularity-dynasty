@@ -100,8 +100,9 @@ function GameLogPanel({ games }) {
           return (
             <div key={`${g.season}-${g.week}`} className="weekly-gamelog-row">
               <span className="weekly-gamelog-week mono">{g.season} Wk{g.week}</span>
-              <span className="weekly-gamelog-opp mono">
-                {sep} {g.opponent || "—"}
+              <span className="weekly-gamelog-opp">
+                <span className="weekly-gamelog-sep mono">{sep}</span>
+                <TeamBadge team={g.opponent} />
               </span>
               <span className="weekly-gamelog-pts mono">
                 {g.fantasy_points_ppr != null ? g.fantasy_points_ppr.toFixed(1) : "—"}
