@@ -115,8 +115,11 @@ export default function RankingsTable({
             <SortableTh label="Rank" sortKey="rank" {...sortProps} />
             <SortableTh label="Player" sortKey="player_name" {...sortProps} />
             {showPosition && <SortableTh label="Pos" sortKey="position" {...sortProps} />}
-            {showTeam && <SortableTh label="Team" sortKey="team" {...sortProps} />}
-            {showOpponent && <SortableTh label="Opp" sortKey="opponent" {...sortProps} />}
+            {showTeam && showOpponent ? (
+              <th>Matchup</th>
+            ) : (
+              showTeam && <SortableTh label="Team" sortKey="team" {...sortProps} />
+            )}
             {showRange && <SortableTh label="Floor" sortKey="floor" {...sortProps} />}
             {showCurve && (
               <th title="Outcome curve — this week's floor-to-ceiling range, colored apart from the tails beyond it. The range's width is drawn relative to the widest range in this week's pool, so a locked-in projection and a volatile one are easy to tell apart at a glance.">
@@ -142,23 +145,32 @@ export default function RankingsTable({
                   )}
                 </td>
               )}
-              {showTeam && (
-                <td className="mono align-left">
-                  <TeamBadge team={row.team} />
-                </td>
-              )}
-              {showOpponent && (() => {
-                const tint = matchupTint(row.matchup_mult);
-                return (
-                  <td
-                    className={`mono${tint ? ` matchup-cell ${tint.cls}` : ""}`}
-                    style={tint ? { "--heat": tint.heat } : undefined}
-                    title={tint ? tint.label : undefined}
-                  >
-                    {row.opponent || "—"}
+              {showTeam && showOpponent ? (
+                (() => {
+                  const tint = matchupTint(row.matchup_mult);
+                  // is_home is null for rows published before migration
+                  // 0032 (or when the schedule lookup failed) -- a
+                  // neutral "·" rather than guessing vs/@ in that case.
+                  const sep = row.is_home === true ? "vs" : row.is_home === false ? "@" : "·";
+                  return (
+                    <td
+                      className={`mono align-left matchup-combined-cell${tint ? ` matchup-cell ${tint.cls}` : ""}`}
+                      style={tint ? { "--heat": tint.heat } : undefined}
+                      title={tint ? tint.label : undefined}
+                    >
+                      <TeamBadge team={row.team} />
+                      <span className="matchup-sep">{sep}</span>
+                      <TeamBadge team={row.opponent} />
+                    </td>
+                  );
+                })()
+              ) : (
+                showTeam && (
+                  <td className="mono align-left">
+                    <TeamBadge team={row.team} />
                   </td>
-                );
-              })()}
+                )
+              )}
               {showRange && (
                 <td className="mono heat-cell" style={{ "--heat": row.floorHeat || 0 }}>
                   {formatRange(row.floor)}

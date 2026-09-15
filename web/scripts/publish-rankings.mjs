@@ -83,6 +83,10 @@ const tables = [
       rank: Number(r.rank),
       team: r.team || null,
       opponent: r.opponent || null,
+      // R's write.csv renders a logical column as literal "TRUE"/"FALSE"
+      // (unquoted) or an empty string for NA -- same "" / null check
+      // every other nullable numeric column here already uses.
+      is_home: r.is_home === "" || r.is_home == null ? null : r.is_home === "TRUE",
       projection: Number(r.projection),
       // Weekly floor/ceiling (migration 0029) -- what the Redraft
       // Rankings page actually displays now; `projection` stays as the

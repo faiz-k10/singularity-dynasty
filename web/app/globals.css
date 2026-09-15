@@ -1313,6 +1313,16 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .matchup-cell.bad{background:rgba(var(--down-rgb), calc(var(--heat, 0) * 0.35));}
 .matchup-cell.neutral{background:rgba(var(--matchup-neutral-rgb), calc(var(--heat, 0) * 0.35));}
 
+/* Team + Opponent merged into one cell (Weekly Projection Rankings) --
+   both sides now render as the same .team-badge pill instead of the
+   player's team getting a colored badge and the opponent staying plain
+   text, with "vs"/"@" between them denoting home/away (redraft_rankings.
+   is_home, migration 0032). Keeps the existing matchup-cell heat tint
+   as the cell's own background, same as when Opponent was its own
+   column. */
+.matchup-combined-cell{display:flex; align-items:center; gap:7px;}
+.matchup-sep{font-size:11px; color:var(--star-dim); text-transform:uppercase; letter-spacing:0.02em;}
+
 /* Heat-tint for a table's primary value column (Median / Projection /
    This Week), relative to other players at the same position --
    intensity set inline per-row via --heat (0-1). */

@@ -676,6 +676,19 @@ load_opponents <- function(season, week) {
   setNames(c(wk$home_team, wk$away_team), c(wk$away_team, wk$home_team))
 }
 
+# Companion to load_opponents() -- same data.table-NSE fix (see that
+# function's comment), just returning which side of the matchup a team
+# is on instead of who they're playing. Named logical vector keyed by
+# team, TRUE for the home team. Powers the "vs"/"@" distinction on the
+# Team+Opponent column -- load_opponents() itself discards this (it maps
+# each team straight to its opponent, home or away alike), so it needs
+# its own lookup rather than being bolted onto the existing one.
+load_home_flags <- function(season, week) {
+  sch <- as.data.frame(load_schedules(season))
+  wk <- sch[sch$week == week, c("away_team", "home_team")]
+  setNames(c(rep(TRUE, nrow(wk)), rep(FALSE, nrow(wk))), c(wk$home_team, wk$away_team))
+}
+
 # Opponent-strength multiplier per (defense, position): fantasy points
 # allowed relative to league average that position, shrunk toward 1.0
 # (neutral) by games played and capped to [MATCHUP_MULT_FLOOR,
@@ -850,6 +863,7 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
   current_team$latest_team <- ifelse(current_team$latest_team == "AZ", "ARI", current_team$latest_team)
   publish_week <- current_nfl_week(target_season)
   week_opponent <- load_opponents(target_season, publish_week)
+  week_is_home <- load_home_flags(target_season, publish_week)
   completed_weeks <- max(publish_week - 1, 0)
 
   # Opponent-strength adjustment for THIS week's matchup -- weekly
@@ -1163,6 +1177,8 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
 
     opp <- week_opponent[team]
     opp <- if (length(opp) == 1 && !is.na(opp)) unname(opp) else NA_character_
+    is_home <- week_is_home[team]
+    is_home <- if (length(is_home) == 1 && !is.na(is_home)) unname(is_home) else NA
 
     mult <- 1  # neutral by default; overwritten below when matchup data covers this opponent+position
     if (!is.null(matchup_mult) && !is.na(opp)) {
@@ -1271,7 +1287,7 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
     epa_val <- round(weighted_mean(epa_component, w_epa), 2)
 
     rows[[p]] <- data.frame(
-      player_name = p, position = pos, team = team, opponent = opp, games = n,
+      player_name = p, position = pos, team = team, opponent = opp, is_home = is_home, games = n,
       touches_per_game = round(mean(d$touches), 1),
       availability_pct = round(100 * avail, 0),
       shrunk = low_sample,
@@ -1351,7 +1367,7 @@ export_for_supabase <- function(df, target_season = TARGET_SEASON, week = NULL) 
   write.csv(data.frame(
     season = season, week = week, rank = seq_len(nrow(redraft)),
     player_name = redraft$player_name, position = redraft$position,
-    team = redraft$team, opponent = redraft$opponent, projection = redraft$median,
+    team = redraft$team, opponent = redraft$opponent, is_home = redraft$is_home, projection = redraft$median,
     # Weekly floor/ceiling -- same calibrated FLOOR_Q/CEIL_Q + matchup
     # adjustment as `projection`, already computed above per row; this is
     # the first thing that actually exports them (redraft_rankings.floor/
