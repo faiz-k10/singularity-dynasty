@@ -101,7 +101,7 @@ function GameLogPanel({ games }) {
             <div key={`${g.season}-${g.week}`} className="weekly-gamelog-row">
               <span className="weekly-gamelog-week mono">
                 <span className={`weekly-gamelog-dot ${g.won ? "won" : "lost"}`} aria-hidden="true" />
-                {g.season} Wk{g.week}
+                {g.season} W{g.week}
               </span>
               <span className="weekly-gamelog-sep mono">{sep}</span>
               <TeamBadge team={g.opponent} />
@@ -163,11 +163,11 @@ function OpponentPanel({ row }) {
 // row-open-at-a-time behavior), but built for this page's own data shape:
 // single-point weekly stats + one overall floor/median/ceiling, not a
 // full per-stat floor/median/ceiling distribution. Four panels: (1) a
-// bigger, fully-labeled version of the Curve cell, (2) where this week's
-// floor/projection/ceiling AND the season-level usage metrics
-// (ADVANCED_METRICS above) actually rank against the same-position pool
-// -- the inline heat-tints only show relative color, never the real
-// percentile number, (3) the player's actual recent game log, and (4)
+// bigger, fully-labeled version of the Curve cell -- each of its own
+// three labels (Floor/Median/Ceiling) carries its percentile-vs-pool
+// ordinal directly, so that number only has to be shown once, (2) the
+// season-level usage metrics (ADVANCED_METRICS above) ranked against the
+// same-position pool, (3) the player's actual recent game log, and (4)
 // how tough this week's opponent is for this position specifically.
 export default function WeeklyDetailRow({ row, colSpan, maxSpread }) {
   const pct = row.statPct || {};
@@ -186,22 +186,21 @@ export default function WeeklyDetailRow({ row, colSpan, maxSpread }) {
               median={row.projection}
               ceiling={row.ceiling}
               maxSpread={maxSpread}
+              floorPct={pct.floor}
+              medianPct={pct.projection}
+              ceilingPct={pct.ceiling}
             />
           </div>
           <div className="stat-panel weekly-detail-pct-panel">
             <div className="weekly-pct-head">
-              <span className="weekly-panel-title">This week vs. the {row.position} pool</span>
+              <span className="weekly-panel-title">Usage vs. the {row.position} pool</span>
             </div>
-            <PctRow label="Floor" value={row.floor} pctile={pct.floor} />
-            <PctRow label="Projection" value={row.projection} pctile={pct.projection} />
-            <PctRow label="Ceiling" value={row.ceiling} pctile={pct.ceiling} />
-            {advancedEntries.length > 0 && (
-              <>
-                <div className="weekly-pct-divider" />
-                {advancedEntries.map((m) => (
-                  <PctRow key={m.key} label={m.label} value={row[m.key]} pctile={pct[m.key]} format={m.format} />
-                ))}
-              </>
+            {advancedEntries.length > 0 ? (
+              advancedEntries.map((m) => (
+                <PctRow key={m.key} label={m.label} value={row[m.key]} pctile={pct[m.key]} format={m.format} />
+              ))
+            ) : (
+              <p className="weekly-opp-caption">No usage metrics published for this player yet.</p>
             )}
           </div>
           <GameLogPanel games={row.recentGames} />

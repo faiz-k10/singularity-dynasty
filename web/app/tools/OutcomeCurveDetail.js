@@ -11,8 +11,16 @@
 // small version deliberately omits: the median value at the peak, and
 // the floor/ceiling values at each tail's outer edge -- "all the labels"
 // the small curve's tooltip already describes in words.
+//
+// Each label also carries its own percentile-vs-pool ordinal (a small,
+// dimmer second line) -- this used to live only in the adjacent
+// Percentiles panel as three separate Floor/Projection/Ceiling rows.
+// Folding the number directly onto the point it describes removes that
+// redundant panel real estate entirely (WeeklyDetailRow.js no longer
+// renders those three rows) rather than showing the same three numbers
+// twice in two different panels.
 const WIDTH = 440;
-const HEIGHT = 130;
+const HEIGHT = 146;
 const MARGIN_X = 14;
 const TAIL_PX = 60;
 const TAIL_HEIGHT_FRAC = 0.32;
@@ -20,8 +28,10 @@ const PEAK_Y = 34;
 const BASE_Y = 104;
 const SAMPLES = 24;
 const MIN_MIDDLE_PX = 40;
-const MEDIAN_LABEL_Y = 18; // above the peak dot
+const MEDIAN_LABEL_Y = 14; // above the peak dot
+const MEDIAN_PCT_Y = 26; // between the label and the peak dot
 const END_LABEL_Y = BASE_Y + 22; // below the baseline, under each tail
+const END_PCT_Y = END_LABEL_Y + 13; // percentile ordinal, one line further down
 
 function medianFraction(floor, median, ceiling) {
   const span = ceiling - floor;
@@ -31,6 +41,22 @@ function medianFraction(floor, median, ceiling) {
 
 function fmt(x, y) {
   return `${x.toFixed(1)},${y.toFixed(1)}`;
+}
+
+// Same ordinal formatting as WeeklyDetailRow.js's own copy -- kept as its
+// own small duplicate rather than an import for the same reason that
+// file's tier() is a duplicate of PercentileCard's: five lines isn't
+// worth threading a shared dependency between two components for.
+function ordinal(n) {
+  const rounded = Math.round(n);
+  const mod100 = rounded % 100;
+  if (mod100 >= 11 && mod100 <= 13) return `${rounded}th`;
+  switch (rounded % 10) {
+    case 1: return `${rounded}st`;
+    case 2: return `${rounded}nd`;
+    case 3: return `${rounded}rd`;
+    default: return `${rounded}th`;
+  }
 }
 
 function humpHalf(xPeak, xEdge) {
@@ -43,7 +69,7 @@ function humpHalf(xPeak, xEdge) {
   return pts;
 }
 
-export default function OutcomeCurveDetail({ floor, median, ceiling, maxSpread }) {
+export default function OutcomeCurveDetail({ floor, median, ceiling, maxSpread, floorPct, medianPct, ceilingPct }) {
   if (![floor, median, ceiling].every((v) => typeof v === "number" && Number.isFinite(v))) {
     return null;
   }
@@ -89,12 +115,27 @@ export default function OutcomeCurveDetail({ floor, median, ceiling, maxSpread }
       <text className="outcome-curve-median-label" x={xMedianLabel} y={MEDIAN_LABEL_Y} textAnchor="middle">
         Median {median.toFixed(1)}
       </text>
+      {typeof medianPct === "number" && (
+        <text className="outcome-curve-pct-label" x={xMedianLabel} y={MEDIAN_PCT_Y} textAnchor="middle">
+          {ordinal(medianPct)} percentile
+        </text>
+      )}
       <text className="outcome-curve-end-label outcome-curve-end-label-floor" x={xFloorLabel} y={END_LABEL_Y} textAnchor="middle">
         Floor {floor.toFixed(1)}
       </text>
+      {typeof floorPct === "number" && (
+        <text className="outcome-curve-pct-label" x={xFloorLabel} y={END_PCT_Y} textAnchor="middle">
+          {ordinal(floorPct)} percentile
+        </text>
+      )}
       <text className="outcome-curve-end-label outcome-curve-end-label-ceiling" x={xCeilingLabel} y={END_LABEL_Y} textAnchor="middle">
         Ceiling {ceiling.toFixed(1)}
       </text>
+      {typeof ceilingPct === "number" && (
+        <text className="outcome-curve-pct-label" x={xCeilingLabel} y={END_PCT_Y} textAnchor="middle">
+          {ordinal(ceilingPct)} percentile
+        </text>
+      )}
     </svg>
   );
 }

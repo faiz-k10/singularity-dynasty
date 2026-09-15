@@ -1224,9 +1224,9 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 
 /* Larger fully-labeled curve (OutcomeCurveDetail.js) shown only inside a
    clicked-open Weekly Projection Rankings row -- same three fill colors
-   as the small inline .outcome-curve above, plus a peak dot + three text
+   as the small inline .outcome-curve above, plus a peak dot + text
    labels the dense inline version has no room for. */
-.outcome-curve-detail{width:100%; max-width:440px; height:130px; display:block; margin:0 auto;}
+.outcome-curve-detail{width:100%; max-width:440px; height:146px; display:block; margin:0 auto;}
 .outcome-curve-peak-dot{fill:var(--horizon-gold);}
 .outcome-curve-median-label{
   font-family:var(--font-ibm-plex-mono), monospace; font-size:13px; font-weight:600;
@@ -1235,6 +1235,15 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .outcome-curve-end-label{font-family:var(--font-ibm-plex-mono), monospace; font-size:11px;}
 .outcome-curve-end-label-floor{fill:var(--down);}
 .outcome-curve-end-label-ceiling{fill:var(--neon-blue);}
+/* Percentile-vs-pool ordinal folded directly onto each of the curve's own
+   three labels -- replaces the Floor/Projection/Ceiling rows the
+   Percentiles panel used to show separately (the exact same three
+   numbers, just in a second panel). Dim + small so it reads as a
+   footnote to the bold value above it, not a fourth label competing for
+   attention. */
+.outcome-curve-pct-label{
+  font-family:var(--font-ibm-plex-mono), monospace; font-size:9.5px; fill:var(--star-dim);
+}
 
 /* .tier-toggle/.tier-toggle-label: shared pill-button styling for the
    League Size / QB Format toggles below (mirrors
