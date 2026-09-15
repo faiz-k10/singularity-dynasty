@@ -1211,7 +1211,8 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    way would have implied a shared meaning that isn't there. */
 .outcome-curve{width:130px; height:34px; display:block;}
 .outcome-curve-middle{fill:var(--horizon-gold); opacity:0.55; stroke:none;}
-.outcome-curve-tail{fill:var(--neon-blue-dim); opacity:0.4; stroke:none;}
+.outcome-curve-tail-floor{fill:var(--down); opacity:0.45; stroke:none;}
+.outcome-curve-tail-ceiling{fill:var(--neon-blue-dim); opacity:0.4; stroke:none;}
 @media (max-width:640px){.outcome-curve{width:80px;}}
 
 /* .tier-toggle/.tier-toggle-label: shared pill-button styling for the
@@ -1323,13 +1324,18 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    player's team getting a colored badge and the opponent staying plain
    text, with "vs"/"@" between them denoting home/away (redraft_rankings.
    is_home, migration 0032). Keeps the existing matchup-cell heat tint
-   as the cell's own background, same as when Opponent was its own
-   column. justify-content:center matters here specifically -- this cell
-   is display:flex, and a flex container ignores the table's own
-   td{text-align:center} default (that only centers inline/block content,
-   not flex children), so without it the pills hug the left edge instead
-   of centering like every other column. */
-.matchup-combined-cell{display:flex; align-items:center; justify-content:center; gap:7px;}
+   as the parent <td>'s own background, same as when Opponent was its
+   own column.
+   This is a <span> INSIDE the <td>, deliberately not the <td> itself --
+   an earlier version set display:flex directly on the <td>, which broke
+   the table's row-height sync (a <td> overridden away from
+   display:table-cell stops participating in the browser's table layout
+   algorithm the normal way, so its row's dashed border-bottom drifted
+   out of alignment with every other column's, worse with each row down
+   the table). width:100% + justify-content:center centers the pills
+   within the full cell width the same way every other column's plain
+   text-align:center does. */
+.matchup-combined-cell{display:flex; width:100%; align-items:center; justify-content:center; gap:7px;}
 .matchup-sep{font-size:11px; color:var(--star-dim); text-transform:uppercase; letter-spacing:0.02em;}
 
 /* Heat-tint for a table's primary value column (Median / Projection /
@@ -1340,6 +1346,12 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    as a distinct signal from the Median column's heat-cell rather than
    implying the same "good/bad" scale. */
 .heat-cell-alt{background:rgba(var(--horizon-gold-rgb), calc(var(--heat, 0) * 0.35));}
+/* Red instead of blue -- Weekly Projection Rankings' Floor column
+   specifically (Ceiling on that same page stays on the plain blue
+   .heat-cell above; this doesn't touch it). Matches the Curve's own
+   floor tail (.outcome-curve-tail-floor), so "floor" reads as the same
+   color everywhere it shows up on this page. */
+.heat-cell-floor{background:rgba(var(--down-rgb), calc(var(--heat, 0) * 0.35));}
 
 /* Dynasty Draft Board — round grouping, stack flags, startup/rookie toggle */
 .board-toggle{display:inline-flex; gap:4px; background:var(--void-panel-2); border:1px solid var(--line); border-radius:30px; padding:4px; margin-bottom:32px;}

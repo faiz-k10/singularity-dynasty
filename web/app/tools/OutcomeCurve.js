@@ -1,10 +1,11 @@
 // Weekly Projection Rankings' outcome curve -- floor/ceiling (this
 // week's real 10th/96th percentile quantiles, migration 0029) anchor
 // three zones: below this week's floor, the floor-to-ceiling range
-// itself, and above this week's ceiling. Two colors, not three: the two
-// tail zones (below floor, above ceiling) share one color, since they're
-// the same idea in either direction -- "outside the range actually
-// projected" -- while the floor-to-ceiling range itself gets the other.
+// itself, and above this week's ceiling. The floor tail is red and the
+// ceiling tail stays the original blue -- matching the Floor column's
+// own red heat-tint (.heat-cell-floor) so "floor" reads as the same
+// color wherever it shows up on this page, not just two generic
+// "outside the range" wedges anymore.
 //
 // The middle zone's WIDTH is scaled against the widest floor-to-ceiling
 // range in this week's pool (maxSpread, computed once server-side) --
@@ -85,8 +86,8 @@ export default function OutcomeCurve({ floor, median, ceiling, maxSpread }) {
   return (
     <svg className="outcome-curve" viewBox={`0 0 ${WIDTH} ${HEIGHT}`} role="img" aria-label={title}>
       <title>{title}</title>
-      <path className="outcome-curve-tail" d={leftTailPath} />
-      <path className="outcome-curve-tail" d={rightTailPath} />
+      <path className="outcome-curve-tail-floor" d={leftTailPath} />
+      <path className="outcome-curve-tail-ceiling" d={rightTailPath} />
       <path className="outcome-curve-middle" d={middlePath} />
     </svg>
   );

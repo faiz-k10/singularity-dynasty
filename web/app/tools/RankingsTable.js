@@ -154,13 +154,15 @@ export default function RankingsTable({
                   const sep = row.is_home === true ? "vs" : row.is_home === false ? "@" : "·";
                   return (
                     <td
-                      className={`mono matchup-combined-cell${tint ? ` matchup-cell ${tint.cls}` : ""}`}
+                      className={`mono${tint ? ` matchup-cell ${tint.cls}` : ""}`}
                       style={tint ? { "--heat": tint.heat } : undefined}
                       title={tint ? tint.label : undefined}
                     >
-                      <TeamBadge team={row.team} />
-                      <span className="matchup-sep">{sep}</span>
-                      <TeamBadge team={row.opponent} />
+                      <span className="matchup-combined-cell">
+                        <TeamBadge team={row.team} />
+                        <span className="matchup-sep">{sep}</span>
+                        <TeamBadge team={row.opponent} />
+                      </span>
                     </td>
                   );
                 })()
@@ -172,7 +174,7 @@ export default function RankingsTable({
                 )
               )}
               {showRange && (
-                <td className="mono heat-cell" style={{ "--heat": row.floorHeat || 0 }}>
+                <td className="mono heat-cell-floor" style={{ "--heat": row.floorHeat || 0 }}>
                   {formatRange(row.floor)}
                 </td>
               )}
