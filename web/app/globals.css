@@ -164,10 +164,24 @@ body::before{
 }
 .ticker-track{display:inline-flex; gap:36px; padding:4px 0; animation:scroll-ticker 40s linear infinite;}
 .ticker-item{font-family:var(--font-ibm-plex-mono), monospace; font-size:12px; color:var(--star-dim); display:inline-flex; gap:8px; align-items:center;}
-.ticker-item .up{color:var(--up);}
-.ticker-item .down{color:var(--down);}
-.ticker-item .steady{color:var(--neon-blue);}
 @keyframes scroll-ticker{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
+
+/* Ticker badges -- a random assortment of the same Confidence/Bounce-
+   back/Risky Icarus/Steady Eddy medallions the player banner uses
+   (WeeklyDetailRow.js), built server-side in SiteHeader.js from the top
+   20 players' real flags and re-rolled on every page load. Same flat-
+   fill + glow language and same variant colors as everywhere else those
+   badges appear -- just scaled down to fit a one-line ticker strip. */
+.ticker-badge{
+  display:inline-flex; align-items:center; justify-content:center; width:16px; height:16px;
+  border-radius:50%; font-size:9px; line-height:1; flex-shrink:0;
+}
+.ticker-badge svg{width:9px; height:9px; display:block;}
+.ticker-badge.gold{background:var(--horizon-gold); color:var(--void); box-shadow:0 0 5px rgba(var(--horizon-gold-rgb),0.5);}
+.ticker-badge.silver{background:#A0AAB9; color:var(--void); box-shadow:0 0 4px rgba(160,170,185,0.4);}
+.ticker-badge.blue{background:var(--neon-blue); color:var(--void); box-shadow:0 0 5px rgba(var(--neon-blue-rgb),0.5);}
+.ticker-badge.icarus{background:var(--purple); color:#fff; box-shadow:0 0 5px rgba(var(--purple-rgb),0.5);}
+.ticker-badge.eddy{background:#A0AAB9; color:var(--void); box-shadow:0 0 4px rgba(160,170,185,0.4);}
 
 /* ---------- BRAND MARK ---------- */
 .brandmark{
@@ -1693,19 +1707,22 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    cell's left edge (.rankings-table tbody tr[data-pos] td:first-child's
    border-left) -- both are already "at-a-glance metadata about this
    row," so pairing them there reads more intentional than crowding the
-   Player column, and it can't get pushed around by a long name. */
-/* .rank-cell-inner, NOT display:flex on the <td> itself -- flexing the
-   cell directly took it out of the table's normal row-height stretching
-   (a <td> that's also a flex container sizes to its own content instead
-   of the tallest cell in the row), leaving a gap of bare page background
-   showing through beneath the shorter cells -- a stray "beige bar" under
-   every row in light mode. An inner inline-flex span keeps the <td>
-   itself a plain table-cell (full row height, default vertical-align:
-   middle centers it same as before) and only flexes the dots+number
-   group inside it. */
-.rank-cell-inner{display:inline-flex; align-items:center; gap:5px;}
+   Player column, and it can't get pushed around by a long name.
+   Positioned absolutely, NOT laid out inline next to the number -- an
+   inline layout meant the number's own centering shifted row-to-row
+   depending on whether that row had any dots at all (a 1-dot row's
+   number sat closer to center than a 4-dot row's), so numbers never
+   lined up in a clean column. Absolute positioning pins the dots to a
+   fixed spot near the color bar and leaves the number to center in the
+   cell's full width exactly like it did before dots existed -- centered
+   is centered on every row now, matching every other centered column in
+   this table. */
+.rankings-table td.rank-cell{position:relative;}
 .player-achv-dots{display:inline-flex; align-items:center; gap:4px; margin-left:9px; vertical-align:middle;}
-.player-achv-dots.vertical{flex-direction:column; margin-left:0; gap:2px;}
+.player-achv-dots.vertical{
+  position:absolute; left:9px; top:50%; transform:translateY(-50%);
+  flex-direction:column; margin-left:0; gap:2px;
+}
 .player-achv-dots.vertical .player-achv-dot{width:4px; height:4px;}
 .player-achv-dot{width:5px; height:5px; border-radius:50%; flex-shrink:0; transition:transform .15s var(--ease);}
 .rankings-table tr.row-expandable:hover .player-achv-dot{transform:scale(1.35);}

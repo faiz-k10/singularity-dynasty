@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import ThemeToggle from "./ThemeToggle";
 import InteractiveScript from "./InteractiveScript";
 import NavStars from "./NavStars";
+import { getAchievements } from "./tools/achievements";
 
 // Shared by every page: the fixed telemetry ticker + full-width site banner
 // (brand, section nav, Get Started/Account, hamburger + radial-menu mobile
@@ -27,21 +28,36 @@ export default async function SiteHeader() {
       .maybeSingle(),
   ]);
 
-  // Ticker: real RISING/FALLING/STEADY data from the latest published
-  // redraft_rankings week (free-for-everyone table, so this always has the
-  // broadest player pool available). Falls back to InteractiveScript's own
-  // randomized sample if nothing's published yet.
-  let tickerPlayers = [];
+  // Ticker: a random assortment of 50 achievement badges (the same
+  // Confidence/Bounce-back/Risky Icarus/Steady Eddy flags Weekly
+  // Projection Rankings' player banner shows -- see achievements.js)
+  // drawn from the top 20 players of the latest published redraft_rankings
+  // week. Re-rolled on every request since this is a Server Component --
+  // no caching layer sits in front of it, so "every site refresh" falls
+  // out for free. RISING/FALLING/STEADY trend badges used to be the
+  // entire ticker; getAchievements() still computes a trend flag per row,
+  // but it's filtered out below since the ticker isn't the place for it
+  // anymore. Heating Up/On Ice are skipped too -- those need each
+  // player's recent-game log, which would mean a second, heavier query
+  // (player_game_log) running on every single page of the site just for
+  // ticker flavor, not worth it for a component this size.
+  let tickerItems = [];
   if (latestRedraft) {
-    const { data: tickerRows } = await supabase
+    const { data: topRows } = await supabase
       .from("redraft_rankings")
-      .select("player_name, trend")
+      .select("player_name, floor, ceiling, projection, sample_confidence, notes")
       .eq("season", latestRedraft.season)
       .eq("week", latestRedraft.week)
-      .not("trend", "is", null)
       .order("rank", { ascending: true })
-      .limit(50);
-    tickerPlayers = (tickerRows || []).map((r) => ({ name: r.player_name, trend: r.trend }));
+      .limit(20);
+    const pool = (topRows || []).flatMap((r) =>
+      getAchievements(r)
+        .filter((a) => a.key !== "trend")
+        .map((a) => ({ name: r.player_name, key: a.key, variant: a.variant }))
+    );
+    if (pool.length > 0) {
+      tickerItems = Array.from({ length: 50 }, () => pool[Math.floor(Math.random() * pool.length)]);
+    }
   }
 
   return (
@@ -110,7 +126,7 @@ export default async function SiteHeader() {
         </nav>
       </div>
 
-      <InteractiveScript tickerPlayers={tickerPlayers} />
+      <InteractiveScript tickerItems={tickerItems} />
     </>
   );
 }

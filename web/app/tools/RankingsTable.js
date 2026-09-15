@@ -250,10 +250,8 @@ export default function RankingsTable({
                   }
                 >
                   <td className="mono rank-cell">
-                    <span className="rank-cell-inner">
-                      <AchievementDots achievements={achievements} vertical />
-                      <span>{row.displayRank}</span>
-                    </span>
+                    <AchievementDots achievements={achievements} vertical />
+                    {row.displayRank}
                   </td>
                   <PlayerCell row={row} withPopover={popoverOnName} />
                   {showPosition && (

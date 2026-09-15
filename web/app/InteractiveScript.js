@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 
-export default function InteractiveScript({ tickerPlayers } = {}) {
+export default function InteractiveScript({ tickerItems } = {}) {
   useEffect(() => {
     const controller = new AbortController();
     const { signal } = controller;
@@ -330,11 +330,27 @@ export default function InteractiveScript({ tickerPlayers } = {}) {
       );
     }
 
-    /* ---- ticker: RISING / FALLING / STEADY, from real model data ----
-       tickerPlayers (passed from the server-rendered homepage) is the
-       source of truth: real player names + real trend classifications
-       from redraft_rankings. Falls back to a small randomized sample only
-       if the prop wasn't provided (e.g. no rankings published yet). */
+    /* ---- ticker: a random assortment of achievement badges ----
+       tickerItems (passed from the server-rendered homepage,
+       SiteHeader.js) is the source of truth: 50 real {name, key, variant}
+       picks already randomly sampled server-side from the top 20 players'
+       Confidence/Bounce-back/Risky Icarus/Steady Eddy flags -- see
+       achievements.js. RISING/FALLING/STEADY used to be the whole ticker;
+       that's gone in favor of the same badge language the rest of the
+       site uses. Falls back to a small made-up sample only if the prop
+       wasn't provided (e.g. no rankings published yet). Markup mirrors
+       each badge's real icon (ConfidenceBadge/BounceBadge/NightSkyIcon/
+       LockIcon in WeeklyDetailRow.js) as plain strings, since this is
+       vanilla DOM/innerHTML, not React. */
+    const TICKER_ICONS = {
+      confidence: "★",
+      bounce:
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4" r="2" fill="currentColor" stroke="none"/><path d="M6 9.5Q12 2.5 18 9.5"/><ellipse cx="12" cy="13.5" rx="8" ry="2.3"/><path d="M6 15 4 20"/><path d="M18 15 20 20"/></svg>',
+      icarus:
+        '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z"/></svg>',
+      eddy:
+        '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5zm-3 8V7a3 3 0 0 1 6 0v3H9zm3 4a1.6 1.6 0 0 1 1 2.85V18a1 1 0 1 1-2 0v-1.15A1.6 1.6 0 0 1 12 14z"/></svg>',
+    };
     const fallbackNames = [
       "CeeDee Lamb",
       "Bijan Robinson",
@@ -345,9 +361,9 @@ export default function InteractiveScript({ tickerPlayers } = {}) {
       "Drake Maye",
       "Ja'Marr Chase",
     ];
-    const tickerCategories = ["RISING", "FALLING", "STEADY"];
+    const fallbackVariants = ["gold", "silver", "blue", "icarus", "eddy"];
     const track = document.getElementById("tickerTrack");
-    // Fisher-Yates -- shuffles display ORDER only, trend values stay real.
+    // Fisher-Yates -- shuffles display ORDER only.
     function shuffle(arr) {
       const a = arr.slice();
       for (let i = a.length - 1; i > 0; i--) {
@@ -358,31 +374,24 @@ export default function InteractiveScript({ tickerPlayers } = {}) {
     }
     function buildTicker() {
       const items = shuffle(
-        tickerPlayers && tickerPlayers.length > 0
-          ? tickerPlayers.map((p) => ({ name: p.name, cat: p.trend }))
+        tickerItems && tickerItems.length > 0
+          ? tickerItems
           : fallbackNames.map((name) => ({
               name,
-              cat: tickerCategories[
-                Math.floor(Math.random() * tickerCategories.length)
-              ],
+              key: "confidence",
+              variant: fallbackVariants[Math.floor(Math.random() * fallbackVariants.length)],
             }))
       );
       // Original pace was 40s for the 8-name fallback list -- scale the
-      // duration with item count so more players (e.g. top 50) doesn't
-      // just mean covering more ground in the same 40s (i.e. faster).
+      // duration with item count so more players (e.g. the real 50-item
+      // ticker) doesn't just mean covering more ground in the same 40s
+      // (i.e. faster).
       track.style.animationDuration = `${(40 * items.length) / 8}s`;
       let html = "";
       for (let rep = 0; rep < 2; rep++) {
         items.forEach((item) => {
-          const arrow =
-            item.cat === "RISING" ? "▲" : item.cat === "FALLING" ? "▼" : "—";
-          const cls =
-            item.cat === "RISING"
-              ? "up"
-              : item.cat === "FALLING"
-              ? "down"
-              : "steady";
-          html += `<span class="ticker-item">${item.name} <span class="${cls}">${item.cat} ${arrow}</span></span>`;
+          const icon = TICKER_ICONS[item.key] || TICKER_ICONS.confidence;
+          html += `<span class="ticker-item">${item.name} <span class="ticker-badge ${item.variant}">${icon}</span></span>`;
         });
       }
       track.innerHTML = html;
@@ -656,7 +665,7 @@ export default function InteractiveScript({ tickerPlayers } = {}) {
       controller.abort();
       observers.forEach((o) => o.disconnect());
     };
-    // Mount-once: tickerPlayers is server-fetched data that's stable for
+    // Mount-once: tickerItems is server-fetched data that's stable for
     // the life of the page, and this effect wires every listener exactly
     // once. Re-running on a prop change would double-bind everything.
     // eslint-disable-next-line react-hooks/exhaustive-deps
