@@ -1708,19 +1708,35 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 /* 4 panels: Curve, weekly/usage percentiles, recent game log, opponent
    defense -- condensed (smaller panel padding + tighter row spacing than
    Player Sims' own 3-panel .stat-detail-grid) specifically to fit four
-   across instead of the two this started as. Single row at wide desktop
-   widths; 2x2 once four columns would get too narrow to read, 1-column
-   stack on mobile. */
+   across instead of the two this started as. flex-wrap instead of a fixed
+   grid: each panel's natural content height varies a lot (Percentiles can
+   run to 10 rows with every advanced metric present, Opponent Defense is
+   always just a badge pair + one number), so a stretched equal-height grid
+   left the short panels centered in a lot of dead air. Flex lets every
+   panel size to its own content and wraps panels onto a new line on its
+   own once the row runs out of width, rather than snapping between fixed
+   column-count breakpoints. flex-basis below is a rough content-width
+   hint, not a hard size -- Percentiles gets the widest basis since its row
+   layout (label+value+bar+ordinal) needs the most horizontal room, Curve
+   next (fixed 440px svg), the two lighter panels narrowest. */
 .weekly-detail-grid{
-  display:grid; grid-template-columns:1.15fr 0.95fr 0.95fr 0.95fr;
-  column-gap:12px; align-items:stretch;
+  display:flex; flex-wrap:wrap; align-items:flex-start; gap:12px;
 }
-@media (max-width:1400px){.weekly-detail-grid{grid-template-columns:1fr 1fr;}}
-@media (max-width:700px){.weekly-detail-grid{grid-template-columns:1fr;}}
 .weekly-detail-grid .stat-panel{padding:10px 12px;}
-.weekly-detail-curve-panel{display:flex; flex-direction:column; justify-content:center;}
-.weekly-detail-pct-panel{display:flex; flex-direction:column; justify-content:center;}
+.weekly-detail-curve-panel{flex:1.1 1 300px; display:flex; flex-direction:column; justify-content:center;}
+.weekly-detail-pct-panel{flex:1.3 1 300px; display:flex; flex-direction:column; justify-content:center;}
 .weekly-pct-head{margin-bottom:8px;}
+/* Small gold-dash + tracked mono uppercase -- the same eyebrow motif as
+   .eyebrow/.hub-tag/.round-label elsewhere on the site, scoped to this
+   row's own panel titles rather than overriding the shared
+   .pctile-card-title (Player Season Simulations' PercentileCard still
+   uses that plain style and isn't part of this pass). */
+.weekly-panel-title{
+  display:flex; align-items:center; gap:8px;
+  font-family:var(--font-ibm-plex-mono), monospace; font-size:10.5px; letter-spacing:0.1em;
+  text-transform:uppercase; color:var(--star-dim);
+}
+.weekly-panel-title::before{content:''; width:14px; height:1px; background:var(--horizon-gold); flex-shrink:0;}
 .weekly-pct-row{display:grid; grid-template-columns:70px 38px 1fr 34px; align-items:center; gap:6px; margin-bottom:6px;}
 .weekly-pct-row:last-child{margin-bottom:0;}
 .weekly-pct-label{font-size:11.5px; color:var(--star-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
@@ -1730,7 +1746,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 
 /* Recent Games -- plain record, no percentile bar (see GameLogPanel's
    own comment in WeeklyDetailRow.js for why). */
-.weekly-gamelog-panel{display:flex; flex-direction:column; justify-content:center;}
+.weekly-gamelog-panel{flex:0.9 1 220px; display:flex; flex-direction:column; justify-content:center;}
 .weekly-gamelog-row{display:grid; grid-template-columns:1fr auto auto; align-items:center; gap:8px; padding:4px 0; border-bottom:1px dashed var(--line); font-size:12px;}
 .weekly-gamelog-row:last-child{border-bottom:none;}
 .weekly-gamelog-week{color:var(--star-dim);}
@@ -1740,10 +1756,16 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 /* Opponent Defense -- +/-% colored by whether it's good (soft, more
    points allowed) or bad (tough, fewer points allowed) for THIS
    offense, not a generic trend-up/trend-down read. */
-.weekly-opp-panel{display:flex; flex-direction:column; justify-content:center; gap:8px;}
+.weekly-opp-panel{flex:0.85 1 210px; display:flex; flex-direction:column; justify-content:center; gap:8px;}
 .weekly-opp-matchup{display:flex; align-items:center; justify-content:center; gap:7px;}
 .weekly-opp-stat{text-align:center;}
-.weekly-opp-pct{display:block; font-family:var(--font-ibm-plex-mono), monospace; font-size:20px; font-weight:700;}
+/* Soft text-shadow glow on the headline number -- echoes the site's
+   established glow language (hero's dual radial glow, .pace-marker's
+   currentColor dot) instead of sitting flat like plain colored text. */
+.weekly-opp-pct{
+  display:block; font-family:var(--font-ibm-plex-mono), monospace; font-size:20px; font-weight:700;
+  text-shadow:0 0 16px currentColor;
+}
 .weekly-opp-pct-soft{color:var(--up);}
 .weekly-opp-pct-tough{color:var(--down);}
 .weekly-opp-desc{display:block; font-size:11px; color:var(--star-dim); margin-top:2px;}

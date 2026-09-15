@@ -92,7 +92,7 @@ function GameLogPanel({ games }) {
   return (
     <div className="stat-panel weekly-gamelog-panel">
       <div className="weekly-pct-head">
-        <span className="pctile-card-title">Recent Games</span>
+        <span className="weekly-panel-title">Recent Games</span>
       </div>
       <div className="weekly-gamelog-rows">
         {games.map((g) => {
@@ -134,7 +134,7 @@ function OpponentPanel({ row }) {
   return (
     <div className="stat-panel weekly-opp-panel">
       <div className="weekly-pct-head">
-        <span className="pctile-card-title">Opponent Defense</span>
+        <span className="weekly-panel-title">Opponent Defense</span>
       </div>
       <div className="weekly-opp-matchup">
         <TeamBadge team={row.team} />
@@ -176,6 +176,9 @@ export default function WeeklyDetailRow({ row, colSpan, maxSpread }) {
       <td colSpan={colSpan}>
         <div className="weekly-detail-grid">
           <div className="stat-panel weekly-detail-curve-panel">
+            <div className="weekly-pct-head">
+              <span className="weekly-panel-title">Outcome Curve</span>
+            </div>
             <OutcomeCurveDetail
               floor={row.floor}
               median={row.projection}
@@ -185,7 +188,7 @@ export default function WeeklyDetailRow({ row, colSpan, maxSpread }) {
           </div>
           <div className="stat-panel weekly-detail-pct-panel">
             <div className="weekly-pct-head">
-              <span className="pctile-card-title">This week vs. the {row.position} pool</span>
+              <span className="weekly-panel-title">This week vs. the {row.position} pool</span>
             </div>
             <PctRow label="Floor" value={row.floor} pctile={pct.floor} />
             <PctRow label="Projection" value={row.projection} pctile={pct.projection} />
