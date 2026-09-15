@@ -1,6 +1,8 @@
 import OutcomeCurveDetail from "./OutcomeCurveDetail";
 import TeamBadge from "./TeamBadge";
 import PositionBadge from "./PositionBadge";
+import ConfidenceBadge from "./ConfidenceBadge";
+import BounceBadge from "./BounceBadge";
 
 // Season-level usage/efficiency metrics, not weekly stats -- attached
 // server-side in page.js's fetchSimsMetrics()/fetchSeasonXfp() (joined
@@ -245,6 +247,17 @@ function PlayerHeaderPanel({ row }) {
             <PositionBadge position={row.position} />
             <TeamBadge team={row.team} />
             {sizeText && <span className="weekly-player-size mono">{sizeText}</span>}
+            {/* Same two flags as the collapsed row's PlayerCell (plain
+                18px glyphs there, sized for a dense table cell), but
+                styled here as a small medal case -- metallic gradient,
+                glossy highlight, a matching glow, and a bit of hover
+                "pop" -- since this banner has the room to let an
+                earned, informational flag actually read as an
+                achievement instead of a cramped icon. */}
+            <span className="weekly-player-achievements">
+              <ConfidenceBadge confidence={row.sample_confidence} />
+              <BounceBadge note={row.notes} />
+            </span>
           </div>
         </div>
       </div>
