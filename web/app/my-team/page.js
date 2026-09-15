@@ -165,78 +165,78 @@ export default async function MyTeamPage() {
       <SiteHeader />
 
       <main className="wrap tool-wrap">
-        <div className="my-team-header-row">
-          <div>
-            <div className="eyebrow">My Team</div>
-            <h1>My Team</h1>
-            <p className="tool-sub">
-              Import your team from Sleeper to save it here. Yahoo and ESPN
-              import are coming later, and this is the data that will power
-              personalized Team Analysis.
-            </p>
-          </div>
+        <div className="eyebrow">My Team</div>
+        <h1>My Team</h1>
+        <p className="tool-sub">
+          Import your team from Sleeper to save it here. Yahoo and ESPN
+          import are coming later, and this is the data that will power
+          personalized Team Analysis.
+        </p>
 
-          {user && (
-            <Link href="/my-team/quiz" className="quiz-corner-card reveal in">
-              <span className="quiz-corner-icon">
-                <QuizIcon />
-              </span>
-              <span className="quiz-corner-text">
-                <span className="quiz-corner-label">GM Archetype</span>
-                <span className="quiz-corner-value">
-                  {archetypeResult ? archetypeResult.label : "Take the Quiz"}
+        {(user || portfolioSummary) && (
+          <div className="bento-grid">
+            {user && (
+              <Link href="/my-team/quiz" className="quiz-corner-card bento-cell bento-cell-narrow glass-panel reveal in">
+                <span className="quiz-corner-icon">
+                  <QuizIcon />
                 </span>
-              </span>
-            </Link>
-          )}
-        </div>
-
-        {portfolioSummary && (
-          <div className="portfolio-pulse-card reveal in">
-            <div className="portfolio-pulse-head">
-              <div className="portfolio-pulse-label">Portfolio Pulse</div>
-              <p className="portfolio-pulse-sub">
-                {portfolioSummary.totalSlots} roster slots across your saved teams
-              </p>
-            </div>
-            {portfolioSummary.profile ? (
-              <div className="portfolio-pulse-bar">
-                {portfolioSummary.profile.map((b) => (
-                  <div
-                    key={b.key}
-                    className={`portfolio-pulse-seg portfolio-pulse-seg-${b.key}`}
-                    style={{ width: `${b.pct}%` }}
-                    title={`${b.label}: ${b.pct}%`}
-                  />
-                ))}
-              </div>
-            ) : (
-              <p className="portfolio-pulse-sub">
-                Not enough simulation data yet to build a risk profile.
-              </p>
-            )}
-            {portfolioSummary.profile && (
-              <div className="portfolio-pulse-legend">
-                {portfolioSummary.profile.map((b) => (
-                  <span key={b.key} className={`portfolio-pulse-legend-item portfolio-pulse-seg-${b.key}`}>
-                    <span className="portfolio-pulse-swatch" />
-                    {b.label} <strong>{b.pct}%</strong>
+                <span className="quiz-corner-text">
+                  <span className="quiz-corner-label">GM Archetype</span>
+                  <span className="quiz-corner-value">
+                    {archetypeResult ? archetypeResult.label : "Take the Quiz"}
                   </span>
-                ))}
-              </div>
+                </span>
+              </Link>
             )}
-            {portfolioSummary.topExposure?.length > 0 && (
-              <div className="portfolio-pulse-exposure">
-                <div className="portfolio-pulse-exposure-label">Top Exposure</div>
-                <div className="portfolio-pulse-exposure-list">
-                  {portfolioSummary.topExposure.map((p, i) => (
-                    <span key={p.name} className="portfolio-pulse-exposure-chip">
-                      <span className="portfolio-pulse-exposure-rank">{i + 1}</span>
-                      {p.name}
-                      <span className="portfolio-pulse-exposure-pct">{Math.round(p.exposurePct)}%</span>
-                    </span>
-                  ))}
+
+            {portfolioSummary && (
+              <div className="portfolio-pulse-card bento-cell bento-cell-wide glass-panel reveal in">
+                <div className="portfolio-pulse-head">
+                  <div className="portfolio-pulse-label">Portfolio Pulse</div>
+                  <p className="portfolio-pulse-sub">
+                    {portfolioSummary.totalSlots} roster slots across your saved teams
+                  </p>
                 </div>
+                {portfolioSummary.profile ? (
+                  <div className="portfolio-pulse-bar">
+                    {portfolioSummary.profile.map((b) => (
+                      <div
+                        key={b.key}
+                        className={`portfolio-pulse-seg portfolio-pulse-seg-${b.key}`}
+                        style={{ width: `${b.pct}%` }}
+                        title={`${b.label}: ${b.pct}%`}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <p className="portfolio-pulse-sub">
+                    Not enough simulation data yet to build a risk profile.
+                  </p>
+                )}
+                {portfolioSummary.profile && (
+                  <div className="portfolio-pulse-legend">
+                    {portfolioSummary.profile.map((b) => (
+                      <span key={b.key} className={`portfolio-pulse-legend-item portfolio-pulse-seg-${b.key}`}>
+                        <span className="portfolio-pulse-swatch" />
+                        {b.label} <strong>{b.pct}%</strong>
+                      </span>
+                    ))}
+                  </div>
+                )}
+                {portfolioSummary.topExposure?.length > 0 && (
+                  <div className="portfolio-pulse-exposure">
+                    <div className="portfolio-pulse-exposure-label">Top Exposure</div>
+                    <div className="portfolio-pulse-exposure-list">
+                      {portfolioSummary.topExposure.map((p, i) => (
+                        <span key={p.name} className="portfolio-pulse-exposure-chip">
+                          <span className="portfolio-pulse-exposure-rank">{i + 1}</span>
+                          {p.name}
+                          <span className="portfolio-pulse-exposure-pct">{Math.round(p.exposurePct)}%</span>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>

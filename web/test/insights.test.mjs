@@ -101,6 +101,26 @@ test("computePortfolioSummary: profile percentages always sum to exactly 100", a
   assert.equal(sum, 100);
 });
 
+test("computePortfolioSummary: no bucket ever goes negative, even when the other four's independent rounding already exceeds 100", async () => {
+  // Real bug, caught live: a 4/23/45/14/14 split (weighted by roster
+  // slots) independently rounds to 0/28/56/17 for the first four
+  // buckets -- already 101 -- which the old "last bucket absorbs the
+  // remainder" approach turned into Boom/Bust: -1%.
+  const rows = [
+    { name: "Bedrock", teams: 4, simFloor: 10, simCeiling: 11 },      // 1.1x
+    { name: "FloorSafe", teams: 23, simFloor: 10, simCeiling: 13 },   // 1.3x
+    { name: "Balanced", teams: 45, simFloor: 10, simCeiling: 17 },    // 1.7x
+    { name: "Chaser", teams: 14, simFloor: 10, simCeiling: 24 },      // 2.4x
+    { name: "Gambler", teams: 14, simFloor: 10, simCeiling: 30 },     // 3.0x
+  ];
+  const result = await computePortfolioSummary(rows);
+  for (const b of result.profile) {
+    assert.ok(b.pct >= 0, `${b.key} went negative: ${b.pct}`);
+  }
+  const sum = result.profile.reduce((s, b) => s + b.pct, 0);
+  assert.equal(sum, 100);
+});
+
 test("computePortfolioSummary: players with no sim data are excluded from the profile, not treated as safe", async () => {
   const rows = [{ name: "No Sim Data", teams: 5, simFloor: null, simCeiling: null }];
   const result = await computePortfolioSummary(rows);

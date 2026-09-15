@@ -54,21 +54,27 @@ export async function computePortfolioSummary(rows) {
     bucketSlots[bucket.key] += r.teams || 0;
   }
 
-  // Round every bucket but the last normally, let the last absorb
-  // whatever's left -- guarantees the percentages sum to exactly 100 for
-  // the stacked-bar visual instead of drifting off by a point or two
-  // from independently rounding all five.
+  // Largest-remainder rounding (Hamilton's method): floor every bucket's
+  // exact share, then hand out the few leftover points (100 minus the
+  // sum of the floors, always a small non-negative number) to whichever
+  // buckets had the biggest fractional part rounded away. Guarantees
+  // every bucket is >= 0 and the five sum to exactly 100 -- the earlier
+  // "last bucket absorbs the remainder" approach could go NEGATIVE
+  // whenever the other four independently-rounded shares already summed
+  // past 100 (caught live: Bedrock 0 / Floor-Safe 28 / Balanced 56 /
+  // Ceiling Chaser 17 already summed to 101, so Boom/Bust rendered as
+  // -1%).
   let profile = null;
   if (ratedSlots > 0) {
-    let used = 0;
-    profile = PROFILE_BUCKETS.map((b, i) => {
-      const pct =
-        i === PROFILE_BUCKETS.length - 1
-          ? 100 - used
-          : Math.round((bucketSlots[b.key] / ratedSlots) * 100);
-      used += pct;
-      return { key: b.key, label: b.label, pct };
-    });
+    const exact = PROFILE_BUCKETS.map((b) => (bucketSlots[b.key] / ratedSlots) * 100);
+    const floors = exact.map(Math.floor);
+    let remainder = 100 - floors.reduce((s, v) => s + v, 0);
+    const order = floors
+      .map((_, i) => i)
+      .sort((a, c) => (exact[c] - floors[c]) - (exact[a] - floors[a]));
+    const pcts = [...floors];
+    for (let i = 0; i < remainder; i++) pcts[order[i]] += 1;
+    profile = PROFILE_BUCKETS.map((b, i) => ({ key: b.key, label: b.label, pct: pcts[i] }));
   }
 
   return {

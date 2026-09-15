@@ -2051,8 +2051,8 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .my-team-wrap{display:flex; flex-direction:column; gap:36px; margin-top:8px;}
 .my-team-saved h2{font-size:18px; margin-bottom:14px;}
 .my-team-saved-card{
-  background:var(--void-panel); border:1px solid var(--line); border-radius:14px;
-  padding:4px 0; margin-bottom:10px; overflow:hidden;
+  border-radius:16px;
+  padding:4px 0; margin-bottom:12px; overflow:hidden;
 }
 .my-team-saved-card summary{
   display:flex; align-items:center; gap:14px; padding:14px 20px; cursor:pointer;
@@ -2432,28 +2432,69 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .pill-record-silver{background:rgba(var(--star-dot-rgb),0.18); border-color:rgba(var(--star-dot-rgb),0.4); color:var(--star);}
 .pill-record-bronze{background:rgba(var(--down-rgb),0.18); border-color:rgba(var(--down-rgb),0.4); color:var(--down);}
 
-/* My Team page header row -- title block on the left, the quiz entry
-   point pinned to the top right of the same row (not a full-width card
-   below the intro text anymore). Wraps under the title on narrow
-   viewports rather than the title, since the quiz card is the smaller
-   of the two. */
-.my-team-header-row{
-  display:flex; align-items:flex-start; justify-content:space-between; gap:20px; flex-wrap:wrap;
+/* ============================= BENTO + GLASS SYSTEM =============================
+   Reusable design primitives -- My Team is the test bed, but neither
+   class is My-Team-specific. If this direction sticks, any card on any
+   page adopts it the same way: drop `.glass-panel` on the card for the
+   frosted surface, and wrap a row of cards in `.bento-grid` with
+   `.bento-cell` (+ a width modifier) for the modular grid layout. No new
+   colors -- same void/gold/blue tokens as everywhere else, this only
+   changes structure and surface treatment.
+
+   .glass-panel: translucent, blurred surface instead of a flat fill.
+   Reuses --scrim-rgb (already the site's "translucent panel" token --
+   the header ticker/menu already blur+scrim this exact way) rather than
+   inventing a new one, so it's automatically theme-correct in both
+   light and dark. The inset top highlight simulates light catching the
+   upper edge of actual glass; the outer shadow is what lifts it off the
+   starfield/glow background instead of reading as flat.
+   Fallback: browsers without backdrop-filter support just show the
+   solid rgba background at full alpha -- no glass effect, but never a
+   transparent/broken card (@supports below raises the alpha for that
+   case specifically). */
+.glass-panel{
+  position:relative;
+  background:rgba(var(--scrim-rgb),0.82);
+  border:1px solid rgba(var(--star-dot-rgb),0.09);
+  box-shadow:0 12px 40px rgba(var(--shadow-rgb),0.28), inset 0 1px 0 rgba(var(--star-dot-rgb),0.06);
 }
-.my-team-header-row > div:first-child{flex:1; min-width:260px;}
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)){
+  .glass-panel{
+    background:rgba(var(--scrim-rgb),0.55);
+    backdrop-filter:blur(20px) saturate(150%);
+    -webkit-backdrop-filter:blur(20px) saturate(150%);
+  }
+}
+
+/* .bento-grid: a 12-column responsive grid; .bento-cell defaults to a
+   full-width row on mobile and half-width on desktop -- add
+   .bento-cell-wide/-narrow/-full to weight specific cells (a hero
+   metric next to a couple of smaller stats, the classic bento shape). */
+.bento-grid{
+  display:grid; grid-template-columns:repeat(12, 1fr); gap:18px;
+  margin:20px 0;
+}
+.bento-cell{grid-column:span 12; border-radius:20px; transition:transform .18s ease, box-shadow .18s ease;}
+.bento-cell:hover{transform:translateY(-2px); box-shadow:0 16px 48px rgba(var(--shadow-rgb),0.32);}
+@media (min-width:900px){
+  .bento-cell{grid-column:span 6;}
+  .bento-cell-wide{grid-column:span 8;}
+  .bento-cell-narrow{grid-column:span 4;}
+  .bento-cell-full{grid-column:span 12;}
+}
 
 /* Quiz entry point, shaped like a small clip-art quiz-paper card -- the
    QuizIcon glyph plus a two-line label, in the site's existing card
-   language (void-panel-2 + line border) rather than a plain text link.
-   Gold border/icon accent on hover to read as inviting, not just another
-   nav link. */
+   language rather than a plain text link. Gold border/icon accent on
+   hover to read as inviting, not just another nav link. Now a
+   .bento-cell-narrow + .glass-panel rather than a header-corner badge --
+   see the bento grid it sits in on the My Team page. */
 .quiz-corner-card{
-  display:flex; align-items:center; gap:12px; flex-shrink:0;
-  padding:12px 18px 12px 14px; border-radius:14px;
-  background:var(--void-panel-2); border:1px solid var(--line);
-  transition:border-color .15s ease, transform .15s ease;
+  display:flex; align-items:center; gap:14px;
+  padding:20px 22px; height:100%;
+  transition:border-color .15s ease;
 }
-.quiz-corner-card:hover{border-color:var(--horizon-gold); transform:translateY(-1px);}
+.quiz-corner-card:hover{border-color:var(--horizon-gold);}
 .quiz-corner-icon{
   width:34px; height:34px; flex-shrink:0; color:var(--horizon-gold);
   display:flex; align-items:center; justify-content:center;
@@ -2468,10 +2509,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
    Ceiling Chaser, weighted by roster slots), and a legend with exact
    percentages, all of it recomputed fresh from real sim data on every
    save. */
-.portfolio-pulse-card{
-  padding:22px 24px; margin:20px 0; border-radius:16px;
-  background:var(--void-panel-2); border:1px solid var(--line);
-}
+.portfolio-pulse-card{padding:24px 26px; height:100%;}
 .portfolio-pulse-head{margin-bottom:14px;}
 .portfolio-pulse-label{
   font-family:var(--font-space-grotesk); font-size:20px; font-weight:700; color:var(--star);
@@ -2525,10 +2563,6 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .portfolio-pulse-exposure-pct{
   font-family:var(--font-ibm-plex-mono), monospace; font-size:12px; color:var(--star-dim);
 }
-@media (max-width:640px){
-  .quiz-corner-card{width:100%;}
-}
-
 .quiz-wrap{max-width:680px;}
 .quiz-form{display:flex; flex-direction:column; gap:28px; margin-top:24px;}
 .quiz-question{border:none; padding:0; margin:0;}
