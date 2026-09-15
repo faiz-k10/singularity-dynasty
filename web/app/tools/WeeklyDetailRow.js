@@ -249,25 +249,17 @@ function GlyphBadge({ variant, glyph, title }) {
 // Risky Icarus's own icon -- a dice glyph read as generic "randomness"
 // clip art, out of step with every other icon on the site (all either a
 // flat glyph/team-color pill or something drawn from the site's own
-// starfield/void motif). A crescent moon littered with stars is the same
-// "night sky" language as the homepage's starfield background and dual
-// glows, and reads just as clearly as "boom-or-bust" -- wide-open sky,
-// nothing locked down -- as a dice ever did. More stars than a first
-// pass had, scattered at different sizes rather than a tidy row, so it
-// actually reads as a starFIELD next to the moon instead of two or three
-// stray dots.
+// starfield/void motif). A first pass paired the stars with a crescent
+// moon, but the moon was the wrong image for what this badge means --
+// dropped it and kept just a scatter of sparkle-stars at different
+// sizes: "reaching for the stars" reads as boom-or-bust upside (Icarus
+// flying for the sun) far more directly than a night sky did, and it's
+// still the same starfield language as the homepage background.
+// Heroicons' "sparkles" glyph, three 4-point stars at different scales.
 function NightSkyIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M15.8 4.3a8 8 0 1 0 3.9 9.4A6.5 6.5 0 0 1 15.8 4.3z" />
-      <circle cx="18.6" cy="6.2" r="0.9" />
-      <circle cx="21.2" cy="9.7" r="0.55" />
-      <circle cx="16.2" cy="8.6" r="0.5" />
-      <circle cx="19.7" cy="13.3" r="0.6" />
-      <circle cx="14.3" cy="12.6" r="0.45" />
-      <circle cx="17.4" cy="16.6" r="0.5" />
-      <circle cx="12.4" cy="16.1" r="0.4" />
-      <circle cx="20.6" cy="17" r="0.4" />
+      <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
     </svg>
   );
 }

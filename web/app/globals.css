@@ -1694,7 +1694,16 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    border-left) -- both are already "at-a-glance metadata about this
    row," so pairing them there reads more intentional than crowding the
    Player column, and it can't get pushed around by a long name. */
-.rankings-table td.rank-cell{display:flex; align-items:center; justify-content:center; gap:5px;}
+/* .rank-cell-inner, NOT display:flex on the <td> itself -- flexing the
+   cell directly took it out of the table's normal row-height stretching
+   (a <td> that's also a flex container sizes to its own content instead
+   of the tallest cell in the row), leaving a gap of bare page background
+   showing through beneath the shorter cells -- a stray "beige bar" under
+   every row in light mode. An inner inline-flex span keeps the <td>
+   itself a plain table-cell (full row height, default vertical-align:
+   middle centers it same as before) and only flexes the dots+number
+   group inside it. */
+.rank-cell-inner{display:inline-flex; align-items:center; gap:5px;}
 .player-achv-dots{display:inline-flex; align-items:center; gap:4px; margin-left:9px; vertical-align:middle;}
 .player-achv-dots.vertical{flex-direction:column; margin-left:0; gap:2px;}
 .player-achv-dots.vertical .player-achv-dot{width:4px; height:4px;}
