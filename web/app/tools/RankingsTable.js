@@ -117,17 +117,13 @@ export default function RankingsTable({
             {showPosition && <SortableTh label="Pos" sortKey="position" {...sortProps} />}
             {showTeam && <SortableTh label="Team" sortKey="team" {...sortProps} />}
             {showOpponent && <SortableTh label="Opp" sortKey="opponent" {...sortProps} />}
-            {showRange && (
-              <>
-                <SortableTh label="Floor" sortKey="floor" {...sortProps} />
-                <SortableTh label="Ceiling" sortKey="ceiling" {...sortProps} />
-              </>
-            )}
+            {showRange && <SortableTh label="Floor" sortKey="floor" {...sortProps} />}
             {showCurve && (
               <th title="Outcome curve — this week's floor-to-ceiling range, colored apart from the tails beyond it. The range's width is drawn relative to the widest range in this week's pool, so a locked-in projection and a volatile one are easy to tell apart at a glance.">
                 Curve
               </th>
             )}
+            {showRange && <SortableTh label="Ceiling" sortKey="ceiling" {...sortProps} />}
             {showStatColumns &&
               STAT_COLUMNS.map((c) => <SortableTh key={c.key} label={c.label} sortKey={c.key} {...sortProps} />)}
             {showNotes && <SortableTh label="Notes" sortKey="notes" {...sortProps} />}
@@ -164,14 +160,9 @@ export default function RankingsTable({
                 );
               })()}
               {showRange && (
-                <>
-                  <td className="mono heat-cell" style={{ "--heat": row.floorHeat || 0 }}>
-                    {formatRange(row.floor)}
-                  </td>
-                  <td className="mono heat-cell" style={{ "--heat": row.ceilingHeat || 0 }}>
-                    {formatRange(row.ceiling)}
-                  </td>
-                </>
+                <td className="mono heat-cell" style={{ "--heat": row.floorHeat || 0 }}>
+                  {formatRange(row.floor)}
+                </td>
               )}
               {showCurve && (
                 <td>
@@ -181,6 +172,11 @@ export default function RankingsTable({
                     ceiling={row.ceiling}
                     maxSpread={maxSpread}
                   />
+                </td>
+              )}
+              {showRange && (
+                <td className="mono heat-cell" style={{ "--heat": row.ceilingHeat || 0 }}>
+                  {formatRange(row.ceiling)}
                 </td>
               )}
               {showStatColumns &&
