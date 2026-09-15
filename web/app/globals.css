@@ -1034,6 +1034,14 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    (which also use .rankings-table but keep their own left-aligned/
    unfrozen layout) are untouched. */
 .redraft-table{border-collapse:separate; border-spacing:0;}
+/* The Curve column's peak-value label (OutcomeCurve.js) grew the row
+   height beyond the shared .rankings-table default -- scoped here
+   (not the shared class) so this extra vertical room gets used with
+   slightly larger, easier-to-read text instead of sitting mostly
+   empty. Doesn't touch draft board/prospect rankings/other tables
+   still on the original row height. */
+.redraft-table{font-size:15px;}
+.redraft-table > thead > tr > th{font-size:11.5px;}
 
 .redraft-table > thead > tr > th:nth-child(1),
 .redraft-table > tbody > tr td:nth-child(1){
@@ -1104,6 +1112,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .redraft-table > tbody > tr td:nth-child(n+7):nth-child(-n+14){
   padding-left:8px; padding-right:8px;
 }
+.redraft-table > tbody > tr td.tool-notes{font-size:14px;}
 
 .rankings-table tr:last-child td{border-bottom:none;}
 .rankings-table tr:hover td{background:rgba(var(--neon-blue-rgb),0.05);}
@@ -1219,7 +1228,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    to that row's own floor-ceiling range, see OutcomeCurve.js). */
 .outcome-curve-peak-dot{fill:var(--horizon-gold); opacity:0.9;}
 .outcome-curve-peak-label{
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:8.5px;
+  font-family:var(--font-ibm-plex-mono), monospace; font-size:9.5px;
   fill:var(--horizon-gold); opacity:0.9;
 }
 @media (max-width:640px){.outcome-curve{width:80px;}}
