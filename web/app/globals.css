@@ -2452,14 +2452,49 @@ tr.stat-row-selected td{background:var(--void-panel);}
    solid rgba background at full alpha -- no glass effect, but never a
    transparent/broken card (@supports below raises the alpha for that
    case specifically). */
-.glass-panel{
+/* Site-wide rollout, added directly to these selectors' own rule (not
+   via a className change in every JSX file) so the glass surface
+   applies without touching component markup: landing page's tool
+   preview cards (.mock-panel) and pricing tiers (.round-card -- the
+   more specific .round-card.featured keeps its own event-horizon
+   gradient, since compound selectors always win over this regardless of
+   source order), the feed section, auth/account cards, legal pages, and
+   every tool page's empty-state/paywall/table-wrap containers. What's
+   deliberately NOT included: sticky table headers/cells (a blurred
+   background scrolling under other content reads as broken, and they
+   need to fully occlude, not translucently show, whatever scrolls
+   beneath), and small chrome (toggles, pills, badges) -- glass is for
+   elevated container surfaces, not tiny functional UI. */
+.glass-panel,
+.mock-panel,
+.round-card,
+.feed-posts,
+.feed-form,
+.auth-card,
+.legal-card,
+.account-tier,
+.tool-empty,
+.tool-paywall,
+.rankings-table-wrap,
+.compare-table-wrap{
   position:relative;
   background:rgba(var(--scrim-rgb),0.82);
   border:1px solid rgba(var(--star-dot-rgb),0.09);
   box-shadow:0 12px 40px rgba(var(--shadow-rgb),0.28), inset 0 1px 0 rgba(var(--star-dot-rgb),0.06);
 }
 @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)){
-  .glass-panel{
+  .glass-panel,
+  .mock-panel,
+  .round-card,
+  .feed-posts,
+  .feed-form,
+  .auth-card,
+  .legal-card,
+  .account-tier,
+  .tool-empty,
+  .tool-paywall,
+  .rankings-table-wrap,
+  .compare-table-wrap{
     background:rgba(var(--scrim-rgb),0.55);
     backdrop-filter:blur(20px) saturate(150%);
     -webkit-backdrop-filter:blur(20px) saturate(150%);
