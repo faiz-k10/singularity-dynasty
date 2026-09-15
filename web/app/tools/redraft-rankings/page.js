@@ -59,15 +59,18 @@ function heatByPosition(rows, col) {
 }
 
 // Real percentile rank (not the linear min/max heat above) for each row's
-// Floor/Projection/Ceiling plus the 8 raw stat columns, vs. the same-
-// position pool -- feeds WeeklyDetailRow's expanded-row percentile
-// panel, where a real number ("62nd percentile") is worth showing
-// alongside the plain relative heat-tint the inline columns use. Same
-// percentileRank() Player Season Simulations uses (lib/statPercentiles.js),
-// just against a one-value-per-player pool here instead of a floor/
-// median/ceiling triple per player -- this page has no per-stat
-// distribution, only this week's single point estimate per stat.
-const PERCENTILE_KEYS = [...STAT_COLUMN_KEYS, "floor", "projection", "ceiling"];
+// Floor/Projection/Ceiling plus the 4 advanced usage metrics attached by
+// attachAdvancedMetrics() below -- feeds WeeklyDetailRow's expanded-row
+// percentile panel, where a real number ("62nd percentile") is worth
+// showing alongside the plain relative heat-tint the inline columns use.
+// Same percentileRank() Player Season Simulations uses
+// (lib/statPercentiles.js), just against a one-value-per-player pool here
+// instead of a floor/median/ceiling triple per player. The 8 raw
+// scoring_stats columns (Pass Yds, Rush Yds, ...) used to be in this list
+// too -- replaced by request with WOPR/Target Share/YAC Above Exp/xFP,
+// which say more about WHY a player is projected where they are than the
+// raw weekly stat averages (already visible as their own inline columns).
+const PERCENTILE_KEYS = ["floor", "projection", "ceiling", "wopr", "targetShare", "yacAboveExp", "avgXfp"];
 function buildPoolsByPosition(rows, keys) {
   const pools = {};
   for (const r of rows) {
@@ -92,6 +95,69 @@ function attachStatPercentiles(rows) {
     }
     return { ...r, statPct };
   });
+}
+
+// WOPR (receiving usage) and Target Share/YAC Above Exp (WR/TE only,
+// median of their season floor/median/ceiling range) come from Player
+// Season Simulations' own latest published batch -- a separate table/
+// pipeline from redraft_rankings, joined here by player_name only (no
+// week alignment assumed; player_simulations republishes on its own
+// weekly cadence, same season). Null for any player not yet in that
+// table (a brand-new call-up, or before the season's first Player Sims
+// publish) -- WeeklyDetailRow already renders "no data" as simply
+// omitting that row, same as every other nullable metric here.
+async function fetchSimsMetrics(supabase) {
+  const { data: latest } = await supabase
+    .from("player_simulations")
+    .select("season, week")
+    .order("season", { ascending: false })
+    .order("week", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (!latest) return {};
+
+  const { data } = await supabase
+    .from("player_simulations")
+    .select("player_name, wopr, stat_ranges")
+    .eq("season", latest.season)
+    .eq("week", latest.week);
+
+  const byName = {};
+  for (const r of data || []) {
+    byName[r.player_name] = {
+      wopr: r.wopr,
+      targetShare: r.stat_ranges?.target_share?.median ?? null,
+      yacAboveExp: r.stat_ranges?.yac_above_exp?.median ?? null,
+    };
+  }
+  return byName;
+}
+
+// xFP (ffopportunity's modeled fantasy points from that game's opportunity
+// -- targets, air yards, carries, situation) is retrospective, one row
+// per COMPLETED game (player_game_log, migration 0027/0028) -- there's no
+// pre-game xFP for the upcoming week these rankings project. "Current
+// xFP" here means this season's average xFP/game over whatever's already
+// been played, a real-usage read of how a player's role has actually
+// looked so far, not another projection of the week being ranked.
+async function fetchSeasonXfp(supabase, season) {
+  const { data } = await supabase
+    .from("player_game_log")
+    .select("player_name, exp_points_ppr")
+    .eq("season", season);
+
+  const sums = {};
+  for (const r of data || []) {
+    if (r.exp_points_ppr == null) continue;
+    const s = (sums[r.player_name] ??= { total: 0, n: 0 });
+    s.total += r.exp_points_ppr;
+    s.n += 1;
+  }
+  const byName = {};
+  for (const [name, s] of Object.entries(sums)) {
+    byName[name] = s.total / s.n;
+  }
+  return byName;
 }
 
 function sortPositions(positions) {
@@ -155,6 +221,21 @@ export default async function RedraftRankingsPage({ searchParams }) {
     rankings = (data || []).map((r) => {
       positionCounters[r.position] = (positionCounters[r.position] || 0) + 1;
       return { ...r, ...r.scoring_stats, positionLabel: `${r.position}${positionCounters[r.position]}` };
+    });
+
+    const [simsByName, xfpByName] = await Promise.all([
+      fetchSimsMetrics(supabase),
+      fetchSeasonXfp(supabase, latest.season),
+    ]);
+    rankings = rankings.map((r) => {
+      const sims = simsByName[r.player_name] || {};
+      return {
+        ...r,
+        wopr: sims.wopr ?? null,
+        targetShare: sims.targetShare ?? null,
+        yacAboveExp: sims.yacAboveExp ?? null,
+        avgXfp: xfpByName[r.player_name] ?? null,
+      };
     });
 
     const floorHeatFor = heatByPosition(rankings, "floor");

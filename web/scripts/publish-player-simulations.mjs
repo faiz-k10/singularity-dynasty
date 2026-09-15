@@ -84,6 +84,12 @@ function toPayload(r) {
     bust_pct: r.bust_pct === "" ? null : Number(r.bust_pct),
     normal_pct: r.normal_pct === "" ? null : Number(r.normal_pct),
     boom_pct: r.boom_pct === "" ? null : Number(r.boom_pct),
+    // Present in upload_player_simulations.csv since migration 0020, but
+    // never actually read into the payload until now -- the columns
+    // existed in Supabase but stayed permanently null. wopr is receiving-
+    // usage only (R's write.csv renders QB's NA as "").
+    wopr: r.wopr === "" || r.wopr == null ? null : Number(r.wopr),
+    epa: r.epa === "" || r.epa == null ? null : Number(r.epa),
     notes: r.notes || null,
   };
 }

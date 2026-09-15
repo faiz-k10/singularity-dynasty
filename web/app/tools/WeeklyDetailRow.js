@@ -1,5 +1,21 @@
 import OutcomeCurveDetail from "./OutcomeCurveDetail";
-import { STAT_COLUMNS } from "./statColumns";
+
+// Season-level usage/efficiency metrics, not weekly stats -- attached
+// server-side in page.js's fetchSimsMetrics()/fetchSeasonXfp() (joined
+// in from Player Season Simulations and player_game_log, two separate
+// tables from this page's own redraft_rankings). Replaced the raw
+// per-game stat columns (Rush Yds, Rec, ...) that used to sit here by
+// request -- those are already visible as their own inline table
+// columns; these four say more about WHY a player is projected where
+// they are. wopr is null for QB (receiving usage only); targetShare/
+// yacAboveExp are null for anyone but WR/TE; avgXfp is null until at
+// least one game of this season has a published game log row.
+const ADVANCED_METRICS = [
+  { key: "wopr", label: "WOPR", format: (v) => v.toFixed(2) },
+  { key: "targetShare", label: "Target Share", format: (v) => `${v.toFixed(1)}%` },
+  { key: "yacAboveExp", label: "YAC Above Exp", format: (v) => v.toFixed(2) },
+  { key: "avgXfp", label: "xFP/G (season)", format: (v) => v.toFixed(1) },
+];
 
 function ordinal(n) {
   const rounded = Math.round(n);
@@ -35,14 +51,17 @@ function formatValue(value) {
 // One horizontal bar -- reuses the same .pctile-bar/.pctile-bar-fill/
 // .pctile-bar-midtick classes Player Season Simulations' PercentileCard
 // already styles globally, just with this page's own row shape (label +
-// raw value + one percentile, not three).
-function PctRow({ label, value, pctile }) {
+// raw value + one percentile, not three). `format` lets a caller override
+// the generic integer/2-decimal default -- ADVANCED_METRICS' four rows
+// each need their own real-world formatting (a percent sign on Target
+// Share, fixed decimal places on WOPR/xFP) rather than one shared rule.
+function PctRow({ label, value, pctile, format = formatValue }) {
   if (pctile == null) return null;
   const t = tier(pctile);
   return (
     <div className="weekly-pct-row">
       <span className="weekly-pct-label">{label}</span>
-      <span className="weekly-pct-value">{formatValue(value)}</span>
+      <span className="weekly-pct-value">{value == null ? "—" : format(value)}</span>
       <div className="pctile-bar">
         <div className={`pctile-bar-fill pctile-bar-${t.cls}`} style={{ width: `${Math.max(pctile, 2)}%` }} />
         <div className="pctile-bar-midtick" />
@@ -58,15 +77,15 @@ function PctRow({ label, value, pctile }) {
 // StatDetailRow (RankingsTable.js owns the open/close state and single-
 // row-open-at-a-time behavior), but built for this page's own data shape:
 // single-point weekly stats + one overall floor/median/ceiling, not a
-// full per-stat floor/median/ceiling distribution. Shows the two things
-// that data can actually say beyond what's already an inline column:
-// (1) a bigger, fully-labeled version of the Curve cell, and (2) where
-// this week's floor/projection/ceiling and each raw stat actually rank
-// against the same-position pool -- the inline heat-tints only show
-// relative color, never the real percentile number.
+// full per-stat floor/median/ceiling distribution. Shows two things
+// beyond what's already an inline column: (1) a bigger, fully-labeled
+// version of the Curve cell, and (2) where this week's floor/projection/
+// ceiling AND four season-level usage metrics (ADVANCED_METRICS above)
+// actually rank against the same-position pool -- the inline heat-tints
+// only show relative color, never the real percentile number.
 export default function WeeklyDetailRow({ row, colSpan, maxSpread }) {
   const pct = row.statPct || {};
-  const statEntries = STAT_COLUMNS.filter((c) => row[c.key] != null && pct[c.key] != null);
+  const advancedEntries = ADVANCED_METRICS.filter((m) => row[m.key] != null && pct[m.key] != null);
 
   return (
     <tr className="stat-detail-row weekly-detail-row">
@@ -92,11 +111,11 @@ export default function WeeklyDetailRow({ row, colSpan, maxSpread }) {
             <PctRow label="Floor" value={row.floor} pctile={pct.floor} />
             <PctRow label="Projection" value={row.projection} pctile={pct.projection} />
             <PctRow label="Ceiling" value={row.ceiling} pctile={pct.ceiling} />
-            {statEntries.length > 0 && (
+            {advancedEntries.length > 0 && (
               <>
                 <div className="weekly-pct-divider" />
-                {statEntries.map((c) => (
-                  <PctRow key={c.key} label={c.label} value={row[c.key]} pctile={pct[c.key]} />
+                {advancedEntries.map((m) => (
+                  <PctRow key={m.key} label={m.label} value={row[m.key]} pctile={pct[m.key]} format={m.format} />
                 ))}
               </>
             )}
