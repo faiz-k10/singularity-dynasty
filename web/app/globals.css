@@ -1766,6 +1766,14 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .weekly-pct-value{font-family:var(--font-ibm-plex-mono), monospace; font-size:12px; color:var(--star); text-align:right;}
 .weekly-pct-ordinal{font-family:var(--font-ibm-plex-mono), monospace; font-size:11px; color:var(--star-dim); text-align:right;}
 .weekly-pct-divider{border-top:1px dashed var(--line); margin:2px 0 8px;}
+/* Each row's .pctile-bar reserves 9px below itself for its own "50"
+   midtick label (see .pctile-bar's own comment) -- that's counted in
+   every row's natural height, so the panel's own bottom padding on top
+   of that was overflowing/clipping the LAST row's label against the
+   card's border. Extra bottom padding here is the fix: guaranteed clear
+   space under the very last bar+label, not just the row gap between
+   bars. */
+.weekly-detail-grid .weekly-detail-pct-panel{padding-bottom:20px;}
 
 /* Recent Games -- plain record, no percentile bar (see GameLogPanel's
    own comment in WeeklyDetailRow.js for why). justify-content:flex-start
@@ -1786,7 +1794,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    of plain team-code text. Points render as their own small pill instead
    of bare bold text, so the one number that matters in each row reads as
    a distinct stat chip rather than blending into the row's other text. */
-.weekly-gamelog-panel{flex:0 1 auto; max-width:220px; display:flex; flex-direction:column; justify-content:flex-start;}
+.weekly-gamelog-panel{display:flex; flex-direction:column; justify-content:flex-start;}
 .weekly-gamelog-row{
   display:grid; grid-template-columns:1fr 20px auto 46px; align-items:center; gap:8px;
   padding:5px 0; border-bottom:1px solid rgba(var(--shadow-rgb),0.5); font-size:12px;
@@ -1804,17 +1812,21 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
   border:1px solid var(--line); border-radius:7px; padding:2px 0;
 }
 
-/* Opponent Defense -- +/-% colored by whether it's good (soft, more
-   points allowed) or bad (tough, fewer points allowed) for THIS
-   offense, not a generic trend-up/trend-down read. Condensed: the
-   caption explaining the matchup multiplier isn't applied yet moved to
-   a title tooltip on the panel itself (see MATCHUP_CAVEAT in
-   WeeklyDetailRow.js) instead of its own permanent paragraph, and
-   content-sized (max-width, no grow) rather than stretched wide with a
-   lot of empty margin around a small badge pair + one number. */
-.weekly-opp-panel{flex:0 1 auto; max-width:170px; display:flex; flex-direction:column; justify-content:center; gap:7px; cursor:default;}
+/* Opponent Defense + Recent Games are both compact/badge-driven panels
+   that never needed a full-width slot of their own -- paired into one
+   narrow shared column (.weekly-detail-side-col) instead, Opponent
+   Defense stacked on top. align-items defaults to stretch on a column
+   flex container, so both panels below share exactly the container's
+   width without either needing its own max-width -- that's what "lines
+   them up" edge-to-edge instead of two independently-sized boxes that
+   happen to be near each other. */
+.weekly-detail-side-col{flex:0 1 auto; display:flex; flex-direction:column; gap:12px; max-width:210px;}
+/* Condensed: both the matchup-multiplier caveat AND the "fantasy pts
+   allowed..." description line used to be permanent panel text; both
+   are now the panel's single title tooltip (MATCHUP_TOOLTIP in
+   WeeklyDetailRow.js) instead, so the panel is just badges + number. */
+.weekly-opp-panel{display:flex; flex-direction:column; align-items:center; gap:7px; cursor:default;}
 .weekly-opp-matchup{display:flex; align-items:center; justify-content:center; gap:7px;}
-.weekly-opp-stat{text-align:center;}
 /* Soft text-shadow glow on the headline number -- echoes the site's
    established glow language (hero's dual radial glow, .pace-marker's
    currentColor dot) instead of sitting flat like plain colored text. */
@@ -1824,7 +1836,6 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 }
 .weekly-opp-pct-soft{color:var(--up);}
 .weekly-opp-pct-tough{color:var(--down);}
-.weekly-opp-desc{display:block; font-size:11px; color:var(--star-dim); margin-top:2px;}
 
 /* Fills the entire td (not just a tight box around the digits) so a
    click anywhere in a Floor/Median/Ceiling cell registers -- these

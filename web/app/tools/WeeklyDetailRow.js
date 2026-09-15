@@ -126,19 +126,22 @@ function GameLogPanel({ games }) {
 // red follow that same "more is good for this offense" direction, not a
 // generic up/down). Explicitly NOT folded into the floor/projection/
 // ceiling numbers above yet -- APPLY_MATCHUP_MULTIPLIER is off in the
-// model while defenses build a real early-season sample. That caveat
-// used to be its own caption paragraph; now it's a title tooltip on the
-// stat itself (hover/long-press) so it doesn't cost permanent panel
-// height, but the explanation isn't gone -- still there for anyone who
-// compares this percentage against the numbers elsewhere in the row.
-const MATCHUP_CAVEAT = "Not yet factored into the numbers above -- off while defenses build a real early-season sample.";
+// model while defenses build a real early-season sample. That caveat,
+// and the "fantasy pts allowed to X vs. league avg" description line,
+// both used to be permanent on-panel text; both are now on a single
+// title tooltip on the panel itself (hover/long-press) instead --
+// removed by request to keep the panel to just the badges + number, but
+// the explanation isn't gone, just off by default.
+const MATCHUP_TOOLTIP = (position) =>
+  `Fantasy points allowed to ${position} vs. league average. Not yet factored into the numbers above -- ` +
+  `off while defenses build a real early-season sample.`;
 
 function OpponentPanel({ row }) {
   if (row.matchup_mult == null || !row.opponent) return null;
   const pct = Math.round((row.matchup_mult - 1) * 100);
   const sep = row.is_home === true ? "vs" : row.is_home === false ? "@" : "·";
   return (
-    <div className="stat-panel weekly-opp-panel" title={MATCHUP_CAVEAT}>
+    <div className="stat-panel weekly-opp-panel" title={MATCHUP_TOOLTIP(row.position)}>
       <div className="weekly-pct-head">
         <span className="weekly-panel-title">Opponent Defense</span>
       </div>
@@ -147,13 +150,10 @@ function OpponentPanel({ row }) {
         <span className="matchup-sep">{sep}</span>
         <TeamBadge team={row.opponent} />
       </div>
-      <div className="weekly-opp-stat">
-        <span className={`weekly-opp-pct ${pct >= 0 ? "weekly-opp-pct-soft" : "weekly-opp-pct-tough"}`}>
-          {pct >= 0 ? "+" : ""}
-          {pct}%
-        </span>
-        <span className="weekly-opp-desc">fantasy pts allowed to {row.position} vs. league avg</span>
-      </div>
+      <span className={`weekly-opp-pct ${pct >= 0 ? "weekly-opp-pct-soft" : "weekly-opp-pct-tough"}`}>
+        {pct >= 0 ? "+" : ""}
+        {pct}%
+      </span>
     </div>
   );
 }
@@ -163,13 +163,16 @@ function OpponentPanel({ row }) {
 // StatDetailRow (RankingsTable.js owns the open/close state and single-
 // row-open-at-a-time behavior), but built for this page's own data shape:
 // single-point weekly stats + one overall floor/median/ceiling, not a
-// full per-stat floor/median/ceiling distribution. Four panels: (1) a
-// bigger, fully-labeled version of the Curve cell -- each of its own
-// three labels (Floor/Median/Ceiling) carries its percentile-vs-pool
-// ordinal directly, so that number only has to be shown once, (2) the
-// season-level usage metrics (ADVANCED_METRICS above) ranked against the
-// same-position pool, (3) the player's actual recent game log, and (4)
-// how tough this week's opponent is for this position specifically.
+// full per-stat floor/median/ceiling distribution. Four panels across
+// three columns: (1) a bigger, fully-labeled version of the Curve cell
+// -- each of its own three labels (Floor/Median/Ceiling) carries its
+// percentile-vs-pool ordinal directly, so that number only has to be
+// shown once, (2) the season-level usage metrics (ADVANCED_METRICS
+// above) ranked against the same-position pool, and (3+4) Opponent
+// Defense stacked directly above Recent Games in one narrow shared
+// column (.weekly-detail-side-col) -- both are compact/badge-driven, so
+// pairing them vertically instead of giving each its own full-width slot
+// keeps the row from running wider than it needs to.
 export default function WeeklyDetailRow({ row, colSpan, maxSpread }) {
   const pct = row.statPct || {};
   const advancedEntries = ADVANCED_METRICS.filter((m) => row[m.key] != null && pct[m.key] != null);
@@ -204,8 +207,10 @@ export default function WeeklyDetailRow({ row, colSpan, maxSpread }) {
               <p className="weekly-opp-caption">No usage metrics published for this player yet.</p>
             )}
           </div>
-          <GameLogPanel games={row.recentGames} />
-          <OpponentPanel row={row} />
+          <div className="weekly-detail-side-col">
+            <OpponentPanel row={row} />
+            <GameLogPanel games={row.recentGames} />
+          </div>
         </div>
       </td>
     </tr>
