@@ -1085,6 +1085,13 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .redraft-table > tbody > tr td{
   padding-left:12px; padding-right:12px; text-align:center;
 }
+/* Shorter rows than the shared .rankings-table default (12px top/bottom)
+   -- scoped here, not the shared class, so draft board/prospect
+   rankings/other tool tables keep their original row height. The Curve
+   column's svg (34px tall, OutcomeCurve.js) is what actually sets the
+   floor on how far this can shrink -- much less than 5px top/bottom and
+   the curve starts touching its own row's borders. */
+.redraft-table > tbody > tr td{padding-top:5px; padding-bottom:5px;}
 .redraft-table > tbody > tr td.player-cell,
 .redraft-table > tbody > tr td.align-left{
   text-align:center;
