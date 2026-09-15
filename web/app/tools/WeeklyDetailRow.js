@@ -214,13 +214,13 @@ const TREND_COPY = {
 // headshot, and physical size on the left (bio is Sleeper's public player
 // dictionary, joined server-side in page.js's fetchPlayerBios() by
 // normalized name; null for anyone not in Sleeper's dict, which the
-// layout just renders around rather than erroring on), then four quick-
+// layout just renders around rather than erroring on), then three quick-
 // read stats on the right: this week's positional rank, this week's own
-// median projection, last week's actual positional finish (lastWeekRank,
-// from fetchGameLogData -- null before the season's first game log
-// exists), and the same RISING/FALLING/STEADY trend already shown
-// elsewhere on this page, spelled out here instead of the dense table
-// cell's bare triangle since there's room for the word.
+// median projection, and last week's actual positional finish
+// (lastWeekRank, from fetchGameLogData -- null before the season's first
+// game log exists). RISING/FALLING/STEADY moved into the badge row next
+// to the name (see weekly-player-achievements below) instead of sitting
+// here as a fourth stat.
 function PlayerHeaderPanel({ row }) {
   const bio = row.bio || {};
   const ht = formatHeight(bio.height);
@@ -247,16 +247,20 @@ function PlayerHeaderPanel({ row }) {
             <PositionBadge position={row.position} />
             <TeamBadge team={row.team} />
             {sizeText && <span className="weekly-player-size mono">{sizeText}</span>}
-            {/* Same two flags as the collapsed row's PlayerCell (plain
-                18px glyphs there, sized for a dense table cell), but
-                styled here as a small medal case -- metallic gradient,
-                glossy highlight, a matching glow, and a bit of hover
-                "pop" -- since this banner has the room to let an
-                earned, informational flag actually read as an
-                achievement instead of a cramped icon. */}
+            {/* Confidence/bounce-back flags plus the RISING/FALLING/STEADY
+                trend, all as one row of flat-fill "achievement" pills --
+                these used to be plain glyphs next to the name in the
+                collapsed table row, but that duplicated the same info
+                twice (dense table cell AND this banner) for no reason;
+                this banner has the room to be the one place they live. */}
             <span className="weekly-player-achievements">
               <ConfidenceBadge confidence={row.sample_confidence} />
               <BounceBadge note={row.notes} />
+              {trend && (
+                <span className={`weekly-trend-badge ${trend.cls}`} title={`Trend: ${row.trend}`}>
+                  {trend.arrow}
+                </span>
+              )}
             </span>
           </div>
         </div>
@@ -273,16 +277,6 @@ function PlayerHeaderPanel({ row }) {
         <div className="weekly-player-stat">
           <span className="weekly-player-stat-label">Last Week (Finish)</span>
           <span className="weekly-player-stat-value">{lastWeek ? `${row.position}${lastWeek.rank}` : "—"}</span>
-        </div>
-        <div className="weekly-player-stat">
-          <span className="weekly-player-stat-label">Trend</span>
-          {trend ? (
-            <span className={`weekly-player-stat-value weekly-player-trend ${trend.cls}`}>
-              {row.trend} {trend.arrow}
-            </span>
-          ) : (
-            <span className="weekly-player-stat-value">—</span>
-          )}
         </div>
       </div>
     </div>

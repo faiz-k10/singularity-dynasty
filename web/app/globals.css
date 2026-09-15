@@ -1886,6 +1886,17 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
   box-shadow:0 0 8px rgba(var(--neon-blue-rgb),0.55);
 }
 .weekly-player-achievements .bounce-badge svg{width:14px; height:14px;}
+/* RISING/FALLING/STEADY, folded into this same badge row instead of its
+   own stat slot on the right (see weekly-player-stats below) -- same
+   flat-fill + glow language, just keyed off --up/--down/--neon-blue like
+   .trend-tag elsewhere on this page. */
+.weekly-trend-badge{
+  display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px;
+  border-radius:50%; font-size:12px; font-weight:700; flex-shrink:0; cursor:default; vertical-align:middle;
+}
+.weekly-trend-badge.up{background:var(--up); color:var(--void); box-shadow:0 0 8px rgba(var(--up-rgb),0.55);}
+.weekly-trend-badge.down{background:var(--down); color:var(--void); box-shadow:0 0 8px rgba(var(--down-rgb),0.55);}
+.weekly-trend-badge.steady{background:var(--neon-blue); color:var(--void); box-shadow:0 0 8px rgba(var(--neon-blue-rgb),0.55);}
 /* Four stats, each its own little label-over-value stack -- same
    eyebrow-adjacent mono-uppercase label language as .weekly-panel-title
    elsewhere in this row, just without the gold dash (these are plain
@@ -1899,10 +1910,6 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .weekly-player-stat-value{
   font-family:var(--font-ibm-plex-mono), monospace; font-size:16px; font-weight:700; color:var(--star);
 }
-.weekly-player-trend{display:flex; align-items:center; gap:5px;}
-.weekly-player-trend.up{color:var(--up);}
-.weekly-player-trend.down{color:var(--down);}
-.weekly-player-trend.steady{color:var(--neon-blue);}
 @media (max-width:700px){
   .weekly-player-id{justify-content:flex-start;}
   .weekly-player-stats{gap:20px;}

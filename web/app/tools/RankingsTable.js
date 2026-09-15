@@ -4,8 +4,6 @@ import { Fragment, useEffect, useState } from "react";
 import Link from "next/link";
 import SortableTh from "./SortableTh";
 import TrendTag from "./TrendTag";
-import ConfidenceBadge from "./ConfidenceBadge";
-import BounceBadge from "./BounceBadge";
 import TeamBadge from "./TeamBadge";
 import OutcomeCurve from "./OutcomeCurve";
 import WeeklyDetailRow from "./WeeklyDetailRow";
@@ -13,8 +11,9 @@ import { matchupTint } from "./MatchupBadge";
 import { STAT_COLUMNS } from "./statColumns";
 
 // `notes` carries at most one flag: "OUT" (hard status, stays in the
-// Notes column) or "BOUNCEBACK ..." (soft/informational, rendered as the
-// trampoline BounceBadge next to the name instead). Empty otherwise.
+// Notes column) or "BOUNCEBACK ..." (soft/informational, suppressed from
+// the Notes column below since it's just a BounceBadge in the expanded
+// row's player banner now, not table-row text). Empty otherwise.
 const isBounceNote = (n) => typeof n === "string" && n.startsWith("BOUNCEBACK");
 
 // Weekly floor/ceiling formatting -- null for rows published before
@@ -39,17 +38,14 @@ function PlayerCell({ row, withPopover }) {
   if (!withPopover) {
     return (
       <td className="player-cell">
-        <TrendTag trend={row.trend} /> {row.player_name}{" "}
-        <ConfidenceBadge confidence={row.sample_confidence} />
-        <BounceBadge note={row.notes} />
+        <TrendTag trend={row.trend} /> {row.player_name}
       </td>
     );
   }
   return (
     <td className="player-cell">
       <span className="player-hover" tabIndex={0}>
-        <ConfidenceBadge confidence={row.sample_confidence} /> {row.player_name}{" "}
-        <BounceBadge note={row.notes} />
+        {row.player_name}
         <div className="player-popover">
           <div className="player-popover-card">
             <div className="player-popover-row">
