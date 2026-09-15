@@ -1897,6 +1897,27 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .weekly-trend-badge.up{background:var(--up); color:var(--void); box-shadow:0 0 8px rgba(var(--up-rgb),0.55);}
 .weekly-trend-badge.down{background:var(--down); color:var(--void); box-shadow:0 0 8px rgba(var(--down-rgb),0.55);}
 .weekly-trend-badge.steady{background:var(--neon-blue); color:var(--void); box-shadow:0 0 8px rgba(var(--neon-blue-rgb),0.55);}
+
+/* Click/tap-to-reveal wrapper around each achievement badge -- the badge
+   itself (confidence/bounce/trend) renders unchanged, this just adds a
+   plain-text label that slides out to its right on click, closed the
+   same way. max-width (not width) is what animates, since these labels
+   have no fixed size to transition to/from. */
+.weekly-achievement-badge{
+  display:inline-flex; align-items:center; cursor:pointer; border-radius:20px;
+}
+.weekly-achievement-label{
+  display:inline-block; max-width:0; margin-left:0; overflow:hidden; opacity:0; white-space:nowrap;
+  font-family:var(--font-ibm-plex-mono), monospace; font-size:11px; font-weight:700; letter-spacing:0.02em;
+  transition:max-width .22s ease, margin-left .22s ease, opacity .16s ease;
+}
+.weekly-achievement-badge.open .weekly-achievement-label{max-width:110px; margin-left:6px; opacity:1;}
+.weekly-achievement-badge.gold .weekly-achievement-label{color:var(--horizon-gold);}
+.weekly-achievement-badge.silver .weekly-achievement-label{color:#A0AAB9;}
+.weekly-achievement-badge.blue .weekly-achievement-label{color:var(--neon-blue);}
+.weekly-achievement-badge.up .weekly-achievement-label{color:var(--up);}
+.weekly-achievement-badge.down .weekly-achievement-label{color:var(--down);}
+.weekly-achievement-badge.steady .weekly-achievement-label{color:var(--neon-blue);}
 /* Four stats, each its own little label-over-value stack -- same
    eyebrow-adjacent mono-uppercase label language as .weekly-panel-title
    elsewhere in this row, just without the gold dash (these are plain

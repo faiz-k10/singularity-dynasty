@@ -1,3 +1,4 @@
+import { useState } from "react";
 import OutcomeCurveDetail from "./OutcomeCurveDetail";
 import TeamBadge from "./TeamBadge";
 import PositionBadge from "./PositionBadge";
@@ -205,10 +206,38 @@ function formatHeight(h) {
 }
 
 const TREND_COPY = {
-  RISING: { cls: "up", arrow: "▲" },
-  FALLING: { cls: "down", arrow: "▼" },
-  STEADY: { cls: "steady", arrow: "—" },
+  RISING: { cls: "up", arrow: "▲", label: "Rising" },
+  FALLING: { cls: "down", arrow: "▼", label: "Falling" },
+  STEADY: { cls: "steady", arrow: "—", label: "Steady" },
 };
+
+// Tap-to-reveal, not hover-only -- the badges themselves are already
+// self-explanatory via a `title` tooltip on desktop, but that's invisible
+// on a touch device with no hover state. Click/tap slides a plain 1-2
+// word answer out to the right instead, closed by tapping the badge
+// again. One open flag per badge (not shared across the row) so opening
+// the trend badge doesn't collapse the confidence star, etc.
+function ExpandableBadge({ variant, label, children }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <span
+      className={`weekly-achievement-badge ${variant}${open ? " open" : ""}`}
+      onClick={() => setOpen((v) => !v)}
+      role="button"
+      tabIndex={0}
+      aria-expanded={open}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          setOpen((v) => !v);
+        }
+      }}
+    >
+      {children}
+      <span className="weekly-achievement-label">{label}</span>
+    </span>
+  );
+}
 
 // Full-width identity strip along the top of the expanded row -- name,
 // headshot, and physical size on the left (bio is Sleeper's public player
@@ -227,6 +256,35 @@ function PlayerHeaderPanel({ row }) {
   const sizeText = [ht, bio.weight ? `${bio.weight} lbs` : null].filter(Boolean).join(" · ");
   const trend = TREND_COPY[row.trend];
   const lastWeek = row.lastWeekRank;
+
+  const isEstablished = row.sample_confidence === "established";
+  const isBuilding = row.sample_confidence === "building";
+  const hasBounceNote = typeof row.notes === "string" && row.notes.startsWith("BOUNCEBACK");
+
+  const achievements = [
+    (isEstablished || isBuilding) && {
+      key: "confidence",
+      variant: isEstablished ? "gold" : "silver",
+      label: isEstablished ? "Established" : "Building",
+      node: <ConfidenceBadge confidence={row.sample_confidence} />,
+    },
+    hasBounceNote && {
+      key: "bounce",
+      variant: "blue",
+      label: "Bounce-back",
+      node: <BounceBadge note={row.notes} />,
+    },
+    trend && {
+      key: "trend",
+      variant: trend.cls,
+      label: trend.label,
+      node: (
+        <span className={`weekly-trend-badge ${trend.cls}`} title={`Trend: ${row.trend}`}>
+          {trend.arrow}
+        </span>
+      ),
+    },
+  ].filter(Boolean);
 
   return (
     <div className="stat-panel weekly-player-header">
@@ -252,15 +310,15 @@ function PlayerHeaderPanel({ row }) {
                 these used to be plain glyphs next to the name in the
                 collapsed table row, but that duplicated the same info
                 twice (dense table cell AND this banner) for no reason;
-                this banner has the room to be the one place they live. */}
+                this banner has the room to be the one place they live.
+                Each is click/tap-to-reveal its own 1-2 word label via
+                ExpandableBadge, not just a hover title. */}
             <span className="weekly-player-achievements">
-              <ConfidenceBadge confidence={row.sample_confidence} />
-              <BounceBadge note={row.notes} />
-              {trend && (
-                <span className={`weekly-trend-badge ${trend.cls}`} title={`Trend: ${row.trend}`}>
-                  {trend.arrow}
-                </span>
-              )}
+              {achievements.map((a) => (
+                <ExpandableBadge key={a.key} variant={a.variant} label={a.label}>
+                  {a.node}
+                </ExpandableBadge>
+              ))}
             </span>
           </div>
         </div>
