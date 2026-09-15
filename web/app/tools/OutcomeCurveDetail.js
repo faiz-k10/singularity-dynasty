@@ -20,7 +20,7 @@
 // renders those three rows) rather than showing the same three numbers
 // twice in two different panels.
 const WIDTH = 440;
-const HEIGHT = 146;
+const HEIGHT = 170;
 const MARGIN_X = 14;
 const TAIL_PX = 60;
 const TAIL_HEIGHT_FRAC = 0.32;
@@ -28,10 +28,10 @@ const PEAK_Y = 34;
 const BASE_Y = 104;
 const SAMPLES = 24;
 const MIN_MIDDLE_PX = 40;
-const MEDIAN_LABEL_Y = 14; // above the peak dot
-const MEDIAN_PCT_Y = 26; // between the label and the peak dot
+const MEDIAN_LABEL_Y = 16; // above the peak dot
+const MEDIAN_PCT_Y = 29; // between the label and the peak dot
 const END_LABEL_Y = BASE_Y + 22; // below the baseline, under each tail
-const END_PCT_Y = END_LABEL_Y + 13; // percentile ordinal, one line further down
+const END_PCT_Y = END_LABEL_Y + 16; // percentile ordinal, one line further down
 
 function medianFraction(floor, median, ceiling) {
   const span = ceiling - floor;

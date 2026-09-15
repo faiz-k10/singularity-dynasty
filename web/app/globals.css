@@ -1226,13 +1226,13 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    clicked-open Weekly Projection Rankings row -- same three fill colors
    as the small inline .outcome-curve above, plus a peak dot + text
    labels the dense inline version has no room for. */
-.outcome-curve-detail{width:100%; max-width:440px; height:146px; display:block; margin:0 auto;}
+.outcome-curve-detail{width:100%; max-width:440px; height:170px; display:block; margin:0 auto;}
 .outcome-curve-peak-dot{fill:var(--horizon-gold);}
 .outcome-curve-median-label{
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:13px; font-weight:600;
+  font-family:var(--font-ibm-plex-mono), monospace; font-size:14.5px; font-weight:600;
   fill:var(--horizon-gold); text-transform:uppercase; letter-spacing:0.02em;
 }
-.outcome-curve-end-label{font-family:var(--font-ibm-plex-mono), monospace; font-size:11px;}
+.outcome-curve-end-label{font-family:var(--font-ibm-plex-mono), monospace; font-size:12.5px;}
 .outcome-curve-end-label-floor{fill:var(--down);}
 .outcome-curve-end-label-ceiling{fill:var(--neon-blue);}
 /* Percentile-vs-pool ordinal folded directly onto each of the curve's own
@@ -1240,9 +1240,11 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    Percentiles panel used to show separately (the exact same three
    numbers, just in a second panel). Dim + small so it reads as a
    footnote to the bold value above it, not a fourth label competing for
-   attention. */
+   attention. Sized up (9.5 -> 11) along with the two labels above and
+   the taller 170px canvas that makes room for it -- the whole curve read
+   as too small to comfortably read its own numbers at the original size. */
 .outcome-curve-pct-label{
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:9.5px; fill:var(--star-dim);
+  font-family:var(--font-ibm-plex-mono), monospace; font-size:11px; fill:var(--star-dim);
 }
 
 /* .tier-toggle/.tier-toggle-label: shared pill-button styling for the
@@ -1724,16 +1726,22 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    left the short panels centered in a lot of dead air. Flex lets every
    panel size to its own content and wraps panels onto a new line on its
    own once the row runs out of width, rather than snapping between fixed
-   column-count breakpoints. flex-basis below is a rough content-width
-   hint, not a hard size -- Percentiles gets the widest basis since its row
-   layout (label+value+bar+ordinal) needs the most horizontal room, Curve
-   next (fixed 440px svg), the two lighter panels narrowest. */
+   column-count breakpoints.
+   flex:0 1 auto (no grow) on every panel below -- an earlier version had
+   nonzero flex-grow, which stretched each panel to help fill the row's
+   full width even past what its own content needed (most visible on
+   Opponent Defense, which was rendering wide with a lot of empty side
+   margin around a small badge pair). Zero grow means every panel's
+   width is exactly its content's natural width (capped by max-width so
+   Percentiles can't run unbounded), so the row's total width is the sum
+   of what the four panels actually need -- the whole point being to fit
+   on screen without a horizontal scroll to see it. */
 .weekly-detail-grid{
   display:flex; flex-wrap:wrap; align-items:flex-start; gap:12px;
 }
 .weekly-detail-grid .stat-panel{padding:10px 12px;}
-.weekly-detail-curve-panel{flex:1.1 1 300px; display:flex; flex-direction:column; justify-content:center;}
-.weekly-detail-pct-panel{flex:1.3 1 300px; display:flex; flex-direction:column; justify-content:center;}
+.weekly-detail-curve-panel{flex:0 1 auto; max-width:400px; display:flex; flex-direction:column; justify-content:center;}
+.weekly-detail-pct-panel{flex:0 1 auto; max-width:280px; display:flex; flex-direction:column; justify-content:center;}
 .weekly-pct-head{margin-bottom:7px;}
 /* Small gold-dash + tracked mono uppercase -- the same eyebrow motif as
    .eyebrow/.hub-tag/.round-label elsewhere on the site, scoped to this
@@ -1746,7 +1754,13 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
   text-transform:uppercase; color:var(--star-dim);
 }
 .weekly-panel-title::before{content:''; width:14px; height:1px; background:var(--horizon-gold); flex-shrink:0;}
-.weekly-pct-row{display:grid; grid-template-columns:70px 38px 1fr 34px; align-items:center; gap:6px; margin-bottom:6px;}
+/* label column widened (70 -> 100) and the bar column now a fixed 80px
+   instead of 1fr -- 1fr let the bar claim every pixel of spare row
+   width, which is exactly what squeezed the label column down to
+   ellipsis-truncating "YAC Above Exp"/"Play-Action Rate"/etc. A short
+   fixed-width bar is still plenty legible for a percentile read; the
+   label text is the part that actually needs the room. */
+.weekly-pct-row{display:grid; grid-template-columns:100px 40px 80px 32px; align-items:center; gap:6px; margin-bottom:6px;}
 .weekly-pct-row:last-child{margin-bottom:0;}
 .weekly-pct-label{font-size:11.5px; color:var(--star-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
 .weekly-pct-value{font-family:var(--font-ibm-plex-mono), monospace; font-size:12px; color:var(--star); text-align:right;}
@@ -1772,7 +1786,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    of plain team-code text. Points render as their own small pill instead
    of bare bold text, so the one number that matters in each row reads as
    a distinct stat chip rather than blending into the row's other text. */
-.weekly-gamelog-panel{flex:0.9 1 220px; display:flex; flex-direction:column; justify-content:flex-start;}
+.weekly-gamelog-panel{flex:0 1 auto; max-width:220px; display:flex; flex-direction:column; justify-content:flex-start;}
 .weekly-gamelog-row{
   display:grid; grid-template-columns:1fr 20px auto 46px; align-items:center; gap:8px;
   padding:5px 0; border-bottom:1px solid rgba(var(--shadow-rgb),0.5); font-size:12px;
@@ -1792,8 +1806,13 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 
 /* Opponent Defense -- +/-% colored by whether it's good (soft, more
    points allowed) or bad (tough, fewer points allowed) for THIS
-   offense, not a generic trend-up/trend-down read. */
-.weekly-opp-panel{flex:0.85 1 210px; display:flex; flex-direction:column; justify-content:center; gap:8px;}
+   offense, not a generic trend-up/trend-down read. Condensed: the
+   caption explaining the matchup multiplier isn't applied yet moved to
+   a title tooltip on the panel itself (see MATCHUP_CAVEAT in
+   WeeklyDetailRow.js) instead of its own permanent paragraph, and
+   content-sized (max-width, no grow) rather than stretched wide with a
+   lot of empty margin around a small badge pair + one number. */
+.weekly-opp-panel{flex:0 1 auto; max-width:170px; display:flex; flex-direction:column; justify-content:center; gap:7px; cursor:default;}
 .weekly-opp-matchup{display:flex; align-items:center; justify-content:center; gap:7px;}
 .weekly-opp-stat{text-align:center;}
 /* Soft text-shadow glow on the headline number -- echoes the site's
@@ -1806,7 +1825,6 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .weekly-opp-pct-soft{color:var(--up);}
 .weekly-opp-pct-tough{color:var(--down);}
 .weekly-opp-desc{display:block; font-size:11px; color:var(--star-dim); margin-top:2px;}
-.weekly-opp-caption{margin:0; font-size:10.5px; line-height:1.4; color:var(--star-dim); text-align:center;}
 
 /* Fills the entire td (not just a tight box around the digits) so a
    click anywhere in a Floor/Median/Ceiling cell registers -- these

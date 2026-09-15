@@ -126,15 +126,19 @@ function GameLogPanel({ games }) {
 // red follow that same "more is good for this offense" direction, not a
 // generic up/down). Explicitly NOT folded into the floor/projection/
 // ceiling numbers above yet -- APPLY_MATCHUP_MULTIPLIER is off in the
-// model while defenses build a real early-season sample, so this caption
-// exists to stop that from reading as a bug once someone compares this
-// panel's percentage to the numbers elsewhere in the row.
+// model while defenses build a real early-season sample. That caveat
+// used to be its own caption paragraph; now it's a title tooltip on the
+// stat itself (hover/long-press) so it doesn't cost permanent panel
+// height, but the explanation isn't gone -- still there for anyone who
+// compares this percentage against the numbers elsewhere in the row.
+const MATCHUP_CAVEAT = "Not yet factored into the numbers above -- off while defenses build a real early-season sample.";
+
 function OpponentPanel({ row }) {
   if (row.matchup_mult == null || !row.opponent) return null;
   const pct = Math.round((row.matchup_mult - 1) * 100);
   const sep = row.is_home === true ? "vs" : row.is_home === false ? "@" : "·";
   return (
-    <div className="stat-panel weekly-opp-panel">
+    <div className="stat-panel weekly-opp-panel" title={MATCHUP_CAVEAT}>
       <div className="weekly-pct-head">
         <span className="weekly-panel-title">Opponent Defense</span>
       </div>
@@ -148,11 +152,8 @@ function OpponentPanel({ row }) {
           {pct >= 0 ? "+" : ""}
           {pct}%
         </span>
-        <span className="weekly-opp-desc">fantasy points allowed to {row.position} vs. league average</span>
+        <span className="weekly-opp-desc">fantasy pts allowed to {row.position} vs. league avg</span>
       </div>
-      <p className="weekly-opp-caption">
-        Not yet factored into the numbers above -- off while defenses build a real early-season sample.
-      </p>
     </div>
   );
 }
