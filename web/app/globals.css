@@ -1209,10 +1209,19 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    different question (how wide is THIS WEEK's range, not shape of a
    season-long distribution), so reusing the same color roles the same
    way would have implied a shared meaning that isn't there. */
-.outcome-curve{width:130px; height:34px; display:block;}
+.outcome-curve{width:130px; height:44px; display:block;}
 .outcome-curve-middle{fill:var(--horizon-gold); opacity:0.55; stroke:none;}
 .outcome-curve-tail-floor{fill:var(--down); opacity:0.45; stroke:none;}
 .outcome-curve-tail-ceiling{fill:var(--neon-blue-dim); opacity:0.4; stroke:none;}
+/* Peak marker -- the median value, printed once per curve so a row's
+   central tendency is read from a real number, never from eyeballing
+   peak position against another row's curve (peak x is only relative
+   to that row's own floor-ceiling range, see OutcomeCurve.js). */
+.outcome-curve-peak-dot{fill:var(--horizon-gold); opacity:0.9;}
+.outcome-curve-peak-label{
+  font-family:var(--font-ibm-plex-mono), monospace; font-size:8.5px;
+  fill:var(--horizon-gold); opacity:0.9;
+}
 @media (max-width:640px){.outcome-curve{width:80px;}}
 
 /* .tier-toggle/.tier-toggle-label: shared pill-button styling for the
