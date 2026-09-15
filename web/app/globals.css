@@ -1308,9 +1308,14 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    favorable this-week matchup (fantasy points allowed by that defense to
    this position, vs. league average -- see compute_matchup_multipliers()),
    intensity set inline per-row via --heat (0-1, how far from neutral).
-   Exact percentage is in the title tooltip. */
-.matchup-cell.good{background:rgba(var(--up-rgb), calc(var(--heat, 0) * 0.35));}
-.matchup-cell.bad{background:rgba(var(--down-rgb), calc(var(--heat, 0) * 0.35));}
+   Exact percentage is in the title tooltip.
+   Good/bad tint removed "for now" by direct request -- the class and
+   the --heat/title plumbing stay exactly as they were (still computed,
+   still in the DOM, still hoverable for the exact percentage), just the
+   background color is disabled here so re-enabling later is a one-line
+   change, not a rebuild. */
+.matchup-cell.good{background:transparent;}
+.matchup-cell.bad{background:transparent;}
 .matchup-cell.neutral{background:rgba(var(--matchup-neutral-rgb), calc(var(--heat, 0) * 0.35));}
 
 /* Team + Opponent merged into one cell (Weekly Projection Rankings) --
@@ -1319,8 +1324,12 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    text, with "vs"/"@" between them denoting home/away (redraft_rankings.
    is_home, migration 0032). Keeps the existing matchup-cell heat tint
    as the cell's own background, same as when Opponent was its own
-   column. */
-.matchup-combined-cell{display:flex; align-items:center; gap:7px;}
+   column. justify-content:center matters here specifically -- this cell
+   is display:flex, and a flex container ignores the table's own
+   td{text-align:center} default (that only centers inline/block content,
+   not flex children), so without it the pills hug the left edge instead
+   of centering like every other column. */
+.matchup-combined-cell{display:flex; align-items:center; justify-content:center; gap:7px;}
 .matchup-sep{font-size:11px; color:var(--star-dim); text-transform:uppercase; letter-spacing:0.02em;}
 
 /* Heat-tint for a table's primary value column (Median / Projection /

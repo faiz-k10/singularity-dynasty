@@ -154,7 +154,7 @@ export default function RankingsTable({
                   const sep = row.is_home === true ? "vs" : row.is_home === false ? "@" : "·";
                   return (
                     <td
-                      className={`mono align-left matchup-combined-cell${tint ? ` matchup-cell ${tint.cls}` : ""}`}
+                      className={`mono matchup-combined-cell${tint ? ` matchup-cell ${tint.cls}` : ""}`}
                       style={tint ? { "--heat": tint.heat } : undefined}
                       title={tint ? tint.label : undefined}
                     >
