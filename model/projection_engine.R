@@ -1241,16 +1241,16 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
     # a published number.
     low_sample <- n < LOW_SAMPLE_SHRINK_THRESHOLD
 
-    # Trend: last-4-games simple average vs. the weighted median baseline
+    # Trend: last-3-games simple average vs. the weighted median baseline
     # above, +/-10% band. Same comparison that caught Aaron Jones/Kamara's
     # decline and RJ Harvey's Dobbins-driven spike earlier this session,
     # now surfaced as its own tag rather than something found by hand.
-    recent4 <- mean(tail(x, 4))
+    recent3 <- mean(tail(x, 3))
     trend <- if (med <= 0) {
       "STEADY"
-    } else if (recent4 > med * 1.10) {
+    } else if (recent3 > med * 1.10) {
       "RISING"
-    } else if (recent4 < med * 0.90) {
+    } else if (recent3 < med * 0.90) {
       "FALLING"
     } else {
       "STEADY"

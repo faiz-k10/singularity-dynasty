@@ -4,7 +4,7 @@ const TREND_MAP = {
   STEADY: { cls: "steady", label: "STEADY" },
 };
 
-// Same RISING/FALLING/STEADY colors as the homepage ticker -- last-4-games
+// Same RISING/FALLING/STEADY colors as the homepage ticker -- last-3-games
 // average vs. the weighted median baseline, +/-10% band. Up/down are pure
 // CSS-drawn triangles (::before in globals.css), not a Unicode glyph --
 // font-rendered ▲/▼ measured as centered in testing but still looked
