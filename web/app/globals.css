@@ -1317,7 +1317,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    change, not a rebuild. */
 .matchup-cell.good{background:transparent;}
 .matchup-cell.bad{background:transparent;}
-.matchup-cell.neutral{background:rgba(var(--matchup-neutral-rgb), calc(var(--heat, 0) * 0.35));}
+.matchup-cell.neutral{background:transparent;}
 
 /* Team + Opponent merged into one cell (Weekly Projection Rankings) --
    both sides now render as the same .team-badge pill instead of the
