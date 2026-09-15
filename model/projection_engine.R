@@ -956,16 +956,40 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
   # framing for both stats.
   qb_context_hist <- tryCatch({
     pbp <- as.data.frame(load_pbp(seasons = seasons))
-    pbp <- pbp[pbp$season_type == "REG" & !is.na(pbp$qb_dropback) & pbp$qb_dropback == 1 &
-                 !is.na(pbp$passer_player_id), ]
+    pbp <- pbp[pbp$season_type == "REG" & !is.na(pbp$qb_dropback) & pbp$qb_dropback == 1, ]
+    # On a scramble, nflfastR leaves passer_player_id NA and attributes
+    # the play to rusher_player_id instead (it's scored as a designed-
+    # pass-turned-run). Filtering/grouping on passer_player_id alone (an
+    # earlier version of this block did exactly that) silently drops
+    # every scramble from BOTH the numerator and the qb_dropback
+    # denominator -- confirmed as the exact reason scramble_rate came
+    # back a flat 0 for every QB the first time this ran. qb_id folds
+    # both id columns into one so a scramble still resolves to its QB.
+    pbp$qb_id <- ifelse(!is.na(pbp$passer_player_id), pbp$passer_player_id,
+                         ifelse(pbp$qb_scramble == 1, pbp$rusher_player_id, NA))
+    pbp <- pbp[!is.na(pbp$qb_id), ]
+    # play_action is NOT a plain pbp column (confirmed against nflreadr's
+    # own dictionary_pbp -- no such field). It only exists in the
+    # separate, manually-charted FTN dataset (is_play_action, 2022+),
+    # joined in here by game_id/play_id (FTN's nflverse_game_id/
+    # nflverse_play_id). A play with no FTN match (pre-2022 history, or a
+    # rare unmatched play) counts as not-play-action rather than being
+    # dropped from the rate's denominator.
+    ftn <- as.data.frame(load_ftn_charting(seasons = seasons[seasons >= 2022]))
+    pbp <- merge(
+      pbp, ftn[, c("nflverse_game_id", "nflverse_play_id", "is_play_action")],
+      by.x = c("game_id", "play_id"), by.y = c("nflverse_game_id", "nflverse_play_id"),
+      all.x = TRUE
+    )
+    pbp$is_play_action[is.na(pbp$is_play_action)] <- 0
     agg <- aggregate(
-      cbind(scrambles = qb_scramble, play_actions = play_action, dropbacks = qb_dropback) ~
-        passer_player_id + season + week,
+      cbind(scrambles = qb_scramble, play_actions = is_play_action, dropbacks = qb_dropback) ~
+        qb_id + season + week,
       data = pbp, FUN = sum
     )
     agg$scramble_rate <- 100 * agg$scrambles / agg$dropbacks
     agg$play_action_rate <- 100 * agg$play_actions / agg$dropbacks
-    names(agg)[names(agg) == "passer_player_id"] <- "player_gsis_id"
+    names(agg)[names(agg) == "qb_id"] <- "player_gsis_id"
     agg[, c("player_gsis_id", "season", "week", "scramble_rate", "play_action_rate")]
   }, error = function(e) {
     cat("Play-by-play data unavailable this run -- skipping scramble/play-action rate:",
