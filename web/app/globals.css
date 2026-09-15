@@ -2067,6 +2067,26 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .my-team-saved-card{
   border-radius:16px;
   padding:4px 0; margin-bottom:12px; overflow:hidden;
+  transition:border-color .2s ease, box-shadow .2s ease;
+}
+/* Same "give the important one real weight" idea as the pricing/
+   Portfolio Pulse hero tiles, applied to actual live data instead of a
+   fixed layout position: whichever saved team has a game live RIGHT NOW
+   (matchupActual present) gets a warm border + glow so it visually
+   jumps out of the list -- that's genuinely the most relevant card at
+   this exact moment, not an arbitrary "first card" or "most recent"
+   pick. Border-only, not a scale/transform, since these sit in a
+   vertical list rather than a side-by-side row -- scaling one row
+   taller than its siblings would shove the whole list around instead of
+   just drawing the eye. */
+/* Compound selector (not just .my-team-saved-card-live alone) is
+   deliberate -- .glass-panel's own border shorthand is defined later in
+   this file and would silently win at equal specificity, undoing the
+   color override. Two classes on one selector out-specifies a single
+   class regardless of source order, so this is safe either way. */
+.my-team-saved-card.my-team-saved-card-live{
+  border-color:rgba(var(--horizon-gold-rgb),0.45);
+  box-shadow:0 16px 48px rgba(var(--shadow-rgb),0.32), 0 0 0 1px rgba(var(--horizon-gold-rgb),0.12);
 }
 .my-team-saved-card summary{
   display:flex; align-items:center; gap:14px; padding:14px 20px; cursor:pointer;
@@ -2538,7 +2558,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
    metric next to a couple of smaller stats, the classic bento shape). */
 .bento-grid{
   display:grid; grid-template-columns:repeat(12, 1fr); gap:18px;
-  margin:20px 0;
+  margin:20px 0; align-items:end;
 }
 .bento-cell{grid-column:span 12; border-radius:20px; transition:transform .18s ease, box-shadow .18s ease;}
 .bento-cell:hover{transform:translateY(-2px); box-shadow:0 16px 48px rgba(var(--shadow-rgb),0.32);}
@@ -2557,7 +2577,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
    see the bento grid it sits in on the My Team page. */
 .quiz-corner-card{
   display:flex; align-items:center; gap:14px;
-  padding:20px 22px; height:100%;
+  padding:20px 22px;
   transition:border-color .15s ease;
 }
 .quiz-corner-card:hover{border-color:var(--horizon-gold);}
@@ -2575,7 +2595,20 @@ tr.stat-row-selected td{background:var(--void-panel);}
    Ceiling Chaser, weighted by roster slots), and a legend with exact
    percentages, all of it recomputed fresh from real sim data on every
    save. */
-.portfolio-pulse-card{padding:24px 26px; height:100%;}
+/* Hero tile of the row, same pattern as pricing's featured plan
+   (69e1495): more padding + a scale lift + z-index, not just a wider
+   grid column, so it reads as "the important one" rather than just
+   "the bigger box." Quiz sits shorter/smaller beside it on purpose --
+   it's a light, occasional detour, Portfolio Pulse is the thing you
+   actually came to check. */
+.portfolio-pulse-card{
+  padding:32px 30px;
+  transform:scale(1.03);
+  z-index:2;
+}
+@media (max-width:900px){
+  .portfolio-pulse-card{transform:none;}
+}
 .portfolio-pulse-head{margin-bottom:14px;}
 .portfolio-pulse-label{
   font-family:var(--font-space-grotesk); font-size:20px; font-weight:700; color:var(--star);

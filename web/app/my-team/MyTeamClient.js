@@ -1237,7 +1237,10 @@ export default function MyTeamClient({
             )}
           </div>
           {savedTeams.map((t) => (
-            <details key={t.id} className="my-team-saved-card glass-panel">
+            <details
+              key={t.id}
+              className={`my-team-saved-card glass-panel${t.settings?.matchupActual ? " my-team-saved-card-live" : ""}`}
+            >
               <summary>
                 <span className="my-team-chevron">▸</span>
                 <div className="my-team-saved-title">
