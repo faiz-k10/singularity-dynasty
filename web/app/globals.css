@@ -649,11 +649,19 @@ section{padding:96px 0 20px; position:relative;}
 .toggle-row span{font-size:14px; font-weight:600;}
 .save-tag{font-family:var(--font-ibm-plex-mono), monospace; font-size:11px; background:rgba(255,122,69,0.15); color:var(--horizon-gold); padding:3px 9px; border-radius:20px; font-weight:600; border:1px solid rgba(255,122,69,0.3);}
 
-.rounds{display:grid; grid-template-columns:repeat(3,1fr); gap:22px;}
+/* Bento hierarchy, not three identical boxes: the featured tier gets
+   genuine extra visual weight (a wider column, more padding, a scale
+   lift) instead of just a different border color -- the shape itself
+   says "this one matters more," which is what actually reads as a
+   deliberate layout choice rather than a coat of paint. align-items:end
+   so the shorter side cards sit flush with the featured card's bottom
+   edge despite being visually smaller, not floating misaligned above
+   it. */
+.rounds{display:grid; grid-template-columns:1fr 1.14fr 1fr; gap:22px; align-items:end;}
 .round-card{
-  background:var(--void-panel); border:1px solid var(--line); border-radius:12px; padding:28px 24px;
+  background:var(--void-panel); border:1px solid var(--line); border-radius:22px; padding:28px 24px;
   display:flex; flex-direction:column; position:relative;
-  transition:box-shadow .3s ease;
+  transition:box-shadow .3s ease, transform .3s ease;
 }
 .round-card::after{
   content:''; position:absolute; inset:0; border-radius:inherit; pointer-events:none; opacity:0; overflow:hidden;
@@ -670,6 +678,12 @@ section{padding:96px 0 20px; position:relative;}
   background:linear-gradient(180deg, rgba(255,122,69,0.08), var(--void-panel) 40%);
   border-color:rgba(255,122,69,0.4);
   box-shadow:0 24px 60px rgba(255,122,69,0.12);
+  padding:40px 28px;
+  transform:scale(1.05);
+  z-index:2;
+}
+@media (max-width:900px){
+  .round-card.featured{transform:none;}
 }
 .round-label{font-family:var(--font-ibm-plex-mono), monospace; font-size:11px; letter-spacing:0.08em; color:var(--star-dim); text-transform:uppercase; margin-bottom:6px;}
 .round-card.featured .round-label{color:var(--horizon-gold);}
@@ -2478,18 +2492,24 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .rankings-table-wrap,
 .compare-table-wrap{
   position:relative;
-  /* A diagonal sheen layered OVER the solid fill (first background layer
-     paints on top) is what actually reads as "glass" regardless of what's
-     behind the panel -- blur alone does nothing visible against a flat
-     background with nothing complex to blur, which is exactly why the
-     first version of this looked like a plain card on most pages. The
-     sheen is warm (a touch of horizon-gold) rather than plain white, so
-     it reads as this site's glass, not a generic UI-kit effect. */
+  /* Dialed back from an earlier, more aggressive pass: glassmorphism
+     genuinely needs a colorful/gradient backdrop to refract, and this
+     site's void background is deliberately near-monochrome black as
+     part of the brand -- no amount of sheen/border intensity on the
+     panel itself was going to make it "pop" the way glass does over a
+     vivid background, because there's nothing colorful behind most
+     pages to catch. Kept as a tasteful, secondary accent (a soft warm
+     sheen + a slightly lifted border) rather than forced into being the
+     primary visual signal -- that job now belongs to the bento grid
+     structure instead, which doesn't need a colorful backdrop to read
+     as modern. Pages that DO have a real glow behind them (login/
+     account's radial glow, the landing page's orbit glow) still get
+     the full benefit of the blur; this isn't fighting those. */
   background:
-    linear-gradient(135deg, rgba(var(--horizon-gold-rgb),0.16), rgba(255,255,255,0.07) 32%, rgba(255,255,255,0) 62%),
+    linear-gradient(135deg, rgba(var(--horizon-gold-rgb),0.08), rgba(255,255,255,0.04) 32%, rgba(255,255,255,0) 62%),
     rgba(var(--scrim-rgb),0.78);
-  border:1px solid rgba(var(--star-dot-rgb),0.22);
-  box-shadow:0 16px 48px rgba(var(--shadow-rgb),0.32), 0 0 60px rgba(var(--horizon-gold-rgb),0.05), inset 0 1px 0 rgba(255,255,255,0.22);
+  border:1px solid rgba(var(--star-dot-rgb),0.13);
+  box-shadow:0 16px 48px rgba(var(--shadow-rgb),0.32), inset 0 1px 0 rgba(255,255,255,0.12);
 }
 @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)){
   .glass-panel,
@@ -2505,10 +2525,10 @@ tr.stat-row-selected td{background:var(--void-panel);}
   .rankings-table-wrap,
   .compare-table-wrap{
     background:
-      linear-gradient(135deg, rgba(var(--horizon-gold-rgb),0.16), rgba(255,255,255,0.07) 32%, rgba(255,255,255,0) 62%),
-      rgba(var(--scrim-rgb),0.42);
-    backdrop-filter:blur(24px) saturate(170%) brightness(1.06);
-    -webkit-backdrop-filter:blur(24px) saturate(170%) brightness(1.06);
+      linear-gradient(135deg, rgba(var(--horizon-gold-rgb),0.08), rgba(255,255,255,0.04) 32%, rgba(255,255,255,0) 62%),
+      rgba(var(--scrim-rgb),0.5);
+    backdrop-filter:blur(22px) saturate(160%);
+    -webkit-backdrop-filter:blur(22px) saturate(160%);
   }
 }
 
