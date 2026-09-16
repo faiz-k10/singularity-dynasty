@@ -23,11 +23,16 @@ export default function BounceBadge({ note }) {
         strokeLinejoin="round"
         aria-hidden="true"
       >
-        <circle cx="12" cy="4" r="2" fill="currentColor" stroke="none" />
-        <path d="M6 9.5Q12 2.5 18 9.5" />
-        <ellipse cx="12" cy="13.5" rx="8" ry="2.3" />
-        <path d="M6 15 4 20" />
-        <path d="M18 15 20 20" />
+        {/* Bounding box sits a full unit above viewBox-center (the
+            trampoline's legs don't reach as far down as the head circle
+            reaches up) -- nudged down to actually center. */}
+        <g transform="translate(0,1)">
+          <circle cx="12" cy="4" r="2" fill="currentColor" stroke="none" />
+          <path d="M6 9.5Q12 2.5 18 9.5" />
+          <ellipse cx="12" cy="13.5" rx="8" ry="2.3" />
+          <path d="M6 15 4 20" />
+          <path d="M18 15 20 20" />
+        </g>
       </svg>
     </span>
   );

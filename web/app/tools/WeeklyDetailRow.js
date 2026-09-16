@@ -328,19 +328,24 @@ function HeroIcon({ tier }) {
   const folds = Math.max(1, Math.min(tier || 1, 5));
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M12 6.4c-4.2 1-7.3 4.1-7.3 9 0 2.9 2 4.9 2 4.9l5.3-4.2 5.3 4.2s2-2 2-4.9c0-4.9-3.1-8-7.3-9z" opacity="0.85" />
-      {Array.from({ length: folds }, (_, i) => (
-        <path
-          key={i}
-          d={`M6 ${9.2 + i * 2.1} Q12 ${11.1 + i * 2.1} 18 ${9.2 + i * 2.1}`}
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1"
-          strokeLinecap="round"
-          opacity={0.45 + i * 0.11}
-        />
-      ))}
-      <circle cx="12" cy="4.3" r="2.1" />
+      {/* Bounding box sits ~0.75 units above viewBox-center (the cape
+          hem reaches less far down than the head reaches up) -- nudged
+          down to actually center. */}
+      <g transform="translate(0,0.75)">
+        <path d="M12 6.4c-4.2 1-7.3 4.1-7.3 9 0 2.9 2 4.9 2 4.9l5.3-4.2 5.3 4.2s2-2 2-4.9c0-4.9-3.1-8-7.3-9z" opacity="0.85" />
+        {Array.from({ length: folds }, (_, i) => (
+          <path
+            key={i}
+            d={`M6 ${9.2 + i * 2.1} Q12 ${11.1 + i * 2.1} 18 ${9.2 + i * 2.1}`}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1"
+            strokeLinecap="round"
+            opacity={0.45 + i * 0.11}
+          />
+        ))}
+        <circle cx="12" cy="4.3" r="2.1" />
+      </g>
     </svg>
   );
 }
@@ -351,13 +356,20 @@ function HeroIcon({ tier }) {
 function GraduationCapIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M12 3.2 1.5 8l10.5 4.8L20 9.2v5.4h1.5V8L12 3.2z" />
-      <path
-        d="M5 10.4v4.3c0 1.7 3.1 3.4 7 3.4s7-1.7 7-3.4v-4.3l-7 3.2-7-3.2z"
-        opacity="0.85"
-      />
-      <path d="M18.5 10v6.6" stroke="currentColor" strokeWidth="1.2" fill="none" strokeLinecap="round" />
-      <circle cx="18.5" cy="17.6" r="1.1" />
+      {/* Its own bounding box sits half a unit left and a full unit high
+          of viewBox-center (measured via getBBox -- the tassel's own
+          weight pulls the box right/down without actually being IN the
+          box's true center), so this whole icon is wrapped one tick off
+          from every other one here -- translate re-centers it exactly. */}
+      <g transform="translate(0.5,1.05)">
+        <path d="M12 3.2 1.5 8l10.5 4.8L20 9.2v5.4h1.5V8L12 3.2z" />
+        <path
+          d="M5 10.4v4.3c0 1.7 3.1 3.4 7 3.4s7-1.7 7-3.4v-4.3l-7 3.2-7-3.2z"
+          opacity="0.85"
+        />
+        <path d="M18.5 10v6.6" stroke="currentColor" strokeWidth="1.2" fill="none" strokeLinecap="round" />
+        <circle cx="18.5" cy="17.6" r="1.1" />
+      </g>
     </svg>
   );
 }
