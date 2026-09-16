@@ -3,7 +3,6 @@ import OutcomeCurveDetail from "./OutcomeCurveDetail";
 import TeamBadge from "./TeamBadge";
 import PositionBadge from "./PositionBadge";
 import ConfidenceBadge from "./ConfidenceBadge";
-import BounceBadge from "./BounceBadge";
 import { getAchievements } from "./achievements";
 
 // Season-level usage/efficiency metrics, not weekly stats -- attached
@@ -234,10 +233,9 @@ function ExpandableBadge({ variant, label, children }) {
   );
 }
 
-// Plain colored medallion + a glyph (an emoji, or for Risky Icarus a
-// small inline SVG -- see NightSkyIcon below) -- unlike the other three
-// achievement badges (Confidence/Bounce/Trend), these four have no
-// existing icon component of their own.
+// Plain colored medallion + a glyph -- unlike Confidence (its own
+// ConfidenceBadge component), every other achievement flag renders
+// through this one shared shell instead of having its own component.
 function GlyphBadge({ variant, glyph, title }) {
   return (
     <span className={`weekly-glyph-badge ${variant}`} title={title}>
@@ -280,7 +278,7 @@ function FlameIcon() {
   );
 }
 
-// On Ice's own icon -- a plain line-drawn snowflake, same treatment as
+// On Thin Ice's own icon -- a plain line-drawn snowflake, same treatment as
 // FlameIcon above (a stroked glyph instead of the platform's own colored
 // ice-cube emoji).
 function SnowflakeIcon() {
@@ -424,8 +422,6 @@ function achievementNode(a, row) {
   switch (a.key) {
     case "confidence":
       return <ConfidenceBadge confidence={row.sample_confidence} />;
-    case "bounce":
-      return <BounceBadge note={row.notes} />;
     case "onFire":
       return (
         <GlyphBadge
@@ -521,7 +517,7 @@ function PlayerHeaderPanel({ row }) {
             <PositionBadge position={row.position} />
             <TeamBadge team={row.team} />
             {sizeText && <span className="weekly-player-size mono">{sizeText}</span>}
-            {/* Confidence/bounce-back/streak/spread flags, all as one row
+            {/* Confidence/streak/spread flags, all as one row
                 of flat-fill "achievement" pills -- these used to be plain
                 glyphs next to the name in the collapsed table row, but
                 that duplicated the same info twice (dense table cell AND

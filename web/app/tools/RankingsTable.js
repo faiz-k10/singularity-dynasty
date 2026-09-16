@@ -11,12 +11,6 @@ import { matchupTint } from "./MatchupBadge";
 import { STAT_COLUMNS } from "./statColumns";
 import { getAchievements } from "./achievements";
 
-// `notes` carries at most one flag: "OUT" (hard status, stays in the
-// Notes column) or "BOUNCEBACK ..." (soft/informational, suppressed from
-// the Notes column below since it's just a BounceBadge in the expanded
-// row's player banner now, not table-row text). Empty otherwise.
-const isBounceNote = (n) => typeof n === "string" && n.startsWith("BOUNCEBACK");
-
 // Weekly floor/ceiling formatting -- null for rows published before
 // migration 0029 added these columns, until the next model re-run.
 function formatRange(value) {
@@ -40,8 +34,8 @@ function formatStat(value) {
 // real click-to-expand badges (WeeklyDetailRow.js), so this is just a
 // glance-able "this player has flags, expand to see which" hint. Colored
 // per achievements.js's own `variant`, so a row with a gold star and a
-// blue bounce-back flag waiting inside reads as gold+blue dots here too,
-// without spelling either one out. Native `title` carries the plain-
+// green lock waiting inside reads as gold+green dots here too, without
+// spelling either one out. Native `title` carries the plain-
 // English list for anyone who hovers; the row's own click already opens
 // the row, so the dots don't need their own click target. Lives in the
 // Rank cell (stacked vertically, between the rank number and the
@@ -90,7 +84,7 @@ function PlayerCell({ row, withPopover }) {
               <span>Trend</span>
               <span><TrendTag trend={row.trend} /></span>
             </div>
-            {row.notes && !isBounceNote(row.notes) && (
+            {row.notes && (
               <div className="player-popover-notes">{row.notes}</div>
             )}
             <Link
@@ -316,11 +310,7 @@ export default function RankingsTable({
                         {formatStat(row[c.key])}
                       </td>
                     ))}
-                  {showNotes && (
-                    <td className="tool-notes">
-                      {isBounceNote(row.notes) ? "" : row.notes || ""}
-                    </td>
-                  )}
+                  {showNotes && <td className="tool-notes">{row.notes || ""}</td>}
                 </tr>
                 {isExpanded && <WeeklyDetailRow row={row} colSpan={colCount} maxSpread={maxSpread} />}
               </Fragment>

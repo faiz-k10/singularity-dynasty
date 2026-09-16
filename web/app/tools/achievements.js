@@ -1,14 +1,18 @@
-// Shared source of truth for the nine "achievement" flags a Weekly
+// Shared source of truth for the eight "achievement" flags a Weekly
 // Projection Rankings row can carry (Established/Building confidence,
-// Bounce-back, On Fire, On Ice, Risky Icarus, Steady Eddy, Weekly Hero,
-// Honorable, Con Artist) -- WeeklyDetailRow.js's expanded player banner
-// renders these as full click-to-expand badges, and RankingsTable.js's
-// collapsed row renders the same list as a tiny dot preview. Both read
-// off this one function so the two views can't quietly drift out of
-// sync with each other. A tenth flag (RISING/FALLING/STEADY trend) used
-// to live here too, but was removed by request -- the trend arrow
-// already has its own place (TrendTag, the name-hover popover), and
-// repeating it as an achievement medallion was one badge too many.
+// On Fire, On Thin Ice, Risky Icarus, Steady Eddy, Weekly Hero, Honorable,
+// Con Artist) -- WeeklyDetailRow.js's expanded player banner renders
+// these as full click-to-expand badges, and RankingsTable.js's collapsed
+// row renders the same list as a tiny dot preview. Both read off this
+// one function so the two views can't quietly drift out of sync with
+// each other. Two flags used to live here too, both removed by request:
+// RISING/FALLING/STEADY trend (the trend arrow already has its own place,
+// TrendTag/the name-hover popover -- repeating it as a medallion was one
+// badge too many) and Bounce-back (redraft_rankings.notes' "BOUNCEBACK"
+// flag, dropped for having no real predictive grounding -- see
+// BounceBadge.js's own git history if it needs to come back; the model
+// may still publish that notes prefix, it just renders as plain text
+// now instead of being intercepted into its own badge).
 
 // "On Fire" -- scored at or above THAT WEEK'S OWN projected ceiling in
 // the most recent logged game. `games` is page.js's recentGames, most-
@@ -24,7 +28,7 @@ export function ceilingHit(games) {
   return g.fantasy_points_ppr >= g.ceiling;
 }
 
-// "On Ice" -- missed THAT WEEK'S OWN projected floor in at least 2 of
+// "On Thin Ice" -- missed THAT WEEK'S OWN projected floor in at least 2 of
 // the last 3 logged games. Deliberately a count, not an all-3 requirement
 // like the old xFP-streak version this replaced: floor/ceiling coverage
 // depends on how far back redraft_rankings' own publish history reaches,
@@ -107,7 +111,6 @@ export const HERO_MAX_TIER = 5;
 export function getAchievements(row) {
   const isEstablished = row.sample_confidence === "established";
   const isBuilding = row.sample_confidence === "building";
-  const hasBounceNote = typeof row.notes === "string" && row.notes.startsWith("BOUNCEBACK");
   const onFire = ceilingHit(row.recentGames);
   const onIce = floorHitStreak(row.recentGames);
   const spread = spreadFlag(row.floor, row.ceiling, row.projection);
@@ -120,9 +123,8 @@ export function getAchievements(row) {
       variant: isEstablished ? "gold" : "silver",
       label: isEstablished ? "Established" : "Building",
     },
-    hasBounceNote && { key: "bounce", variant: "blue", label: "Bounce-back" },
     onFire && { key: "onFire", variant: "heat", label: "On Fire" },
-    onIce && { key: "onIce", variant: "ice", label: "On Ice" },
+    onIce && { key: "onIce", variant: "ice", label: "On Thin Ice" },
     spread === "volatile" && { key: "volatile", variant: "icarus", label: "Risky Icarus" },
     spread === "locked" && { key: "locked", variant: "eddy", label: "Steady Eddy" },
     heroWins > 0 && {

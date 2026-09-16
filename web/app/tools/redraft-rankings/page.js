@@ -174,7 +174,7 @@ async function fetchSimsMetrics(supabase) {
 //     boundary (so early in a new season, before 5 games exist yet, this
 //     naturally tails off into the end of last season instead of coming
 //     up empty) -- feeds the expanded row's game-log panel AND
-//     achievements.js's On Fire/On Ice flags (each game here carries its
+//     achievements.js's On Fire/On Thin Ice flags (each game here carries its
 //     own week's floor/ceiling, joined in from floorCeilingByGame -- see
 //     fetchHistoricalFloorCeiling below).
 //   - lastWeekRankByName: this player's finish among their own position
@@ -271,7 +271,7 @@ async function fetchGameLogData(supabase, season, floorCeilingByGame) {
 // reads the latest week out of it), so past weeks' projections are still
 // sitting in the table and can be matched up against player_game_log's
 // real result for that same week. That's what lets On Fire ("beat that
-// week's own ceiling") and On Ice ("missed that week's own floor") judge
+// week's own ceiling") and On Thin Ice ("missed that week's own floor") judge
 // a past game against the number that was actually projected for it,
 // instead of against this week's unrelated projection. Rows published
 // before migration 0029 predate floor/ceiling entirely and read null,

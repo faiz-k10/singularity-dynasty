@@ -1,6 +1,6 @@
 // Clipboard/quiz-paper glyph for the GM Archetype quiz entry point --
 // same hand-rolled inline-SVG, currentColor idiom as every other small
-// icon on the site (BounceBadge, TrendTag, ConfidenceBadge). A page
+// icon on the site (TrendTag, ConfidenceBadge). A page
 // outline with a clipboard clip at top, a few text lines, and a
 // checkmark in a circle standing in for "answered/graded" -- reads as
 // "quiz paper" at a glance without needing a label.

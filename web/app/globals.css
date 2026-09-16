@@ -203,7 +203,6 @@ body::before{
 .ticker-badge svg{width:13px; height:13px; display:block;}
 .ticker-badge.gold{background:var(--horizon-gold); color:var(--void); box-shadow:0 0 5px rgba(var(--horizon-gold-rgb),0.5);}
 .ticker-badge.silver{background:#A0AAB9; color:var(--void); box-shadow:0 0 4px rgba(160,170,185,0.4);}
-.ticker-badge.blue{background:var(--neon-blue); color:var(--void); box-shadow:0 0 5px rgba(var(--neon-blue-rgb),0.5);}
 .ticker-badge.icarus{background:var(--purple); color:#fff; box-shadow:0 0 5px rgba(var(--purple-rgb),0.5);}
 .ticker-badge.eddy{background:var(--up); color:var(--void); box-shadow:0 0 5px rgba(var(--up-rgb),0.5);}
 .ticker-badge-label{font-size:10px; letter-spacing:0.06em; text-transform:uppercase; color:var(--star-dim); opacity:0.75;}
@@ -1331,17 +1330,6 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .confidence-badge.gold{background:rgba(255,199,115,0.18); color:var(--horizon-gold); border:1px solid rgba(255,199,115,0.4);}
 .confidence-badge.silver{background:rgba(160,170,185,0.15); color:#A0AAB9; border:1px solid rgba(160,170,185,0.35);}
 
-/* Bounce-back watch -- trampoline glyph, same 18px footprint as the trend
-   and confidence badges it sits beside. Neon-blue = informational, not a
-   value judgement (the model doesn't move the projection for it). */
-.bounce-badge{
-  display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px;
-  border-radius:50%; flex-shrink:0; cursor:default; vertical-align:middle;
-  color:var(--neon-blue-dim);
-  background:rgba(var(--neon-blue-rgb),0.12); border:1px solid rgba(var(--neon-blue-rgb),0.32);
-}
-.bounce-badge svg{width:12px; height:12px; display:block;}
-
 /* Best Ball Rankings — This Week ceiling range + hit-probability badge */
 .ceiling-cell{white-space:nowrap;}
 .ceiling-pct{
@@ -1806,7 +1794,6 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .rankings-table tr.row-expandable:hover .player-achv-dot{transform:scale(1.35);}
 .player-achv-dot.gold{background:var(--horizon-gold); box-shadow:0 0 4px rgba(var(--horizon-gold-rgb),0.7);}
 .player-achv-dot.silver{background:#A0AAB9; box-shadow:0 0 3px rgba(160,170,185,0.6);}
-.player-achv-dot.blue{background:var(--neon-blue); box-shadow:0 0 4px rgba(var(--neon-blue-rgb),0.7);}
 .player-achv-dot.heat{background:var(--horizon); box-shadow:0 0 4px rgba(var(--horizon-rgb),0.7);}
 .player-achv-dot.ice{background:var(--frost); box-shadow:0 0 4px rgba(var(--frost-rgb),0.7);}
 .player-achv-dot.icarus{background:var(--purple); box-shadow:0 0 4px rgba(var(--purple-rgb),0.7);}
@@ -1992,21 +1979,19 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 }
 .weekly-player-badges{display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
 .weekly-player-size{font-size:12px; color:var(--star-dim);}
-/* Confidence/Bounce-back flags, sized up for this banner specifically --
-   .confidence-badge/.bounce-badge keep their plain small look everywhere
-   else (a dense table cell has no room for more). First pass here used
-   a radial-gradient "sphere" + glossy highlight + drop shadow -- a
-   skeuomorphic, 3D-lit treatment that clashed with every other badge on
-   the site (TeamBadge/PositionBadge are flat solid fills, no gradient,
-   no shine). Redone as the same flat-fill pill language, just with the
-   soft currentColor glow this product already uses for an "earned/
-   notable" flag (.trend-tag, the curve's peak dot) instead of fake
-   depth. display:contents on the empty wrapper so an unmatched badge
-   (confidence null or no bounce-back note) doesn't leave a stray gap in
-   the flex row. */
+/* Confidence, sized up for this banner specifically -- .confidence-badge
+   keeps its plain small look everywhere else (a dense table cell has no
+   room for more). First pass here used a radial-gradient "sphere" +
+   glossy highlight + drop shadow -- a skeuomorphic, 3D-lit treatment
+   that clashed with every other badge on the site (TeamBadge/
+   PositionBadge are flat solid fills, no gradient, no shine). Redone as
+   the same flat-fill pill language, just with the soft currentColor
+   glow this product already uses for an "earned/notable" flag
+   (.trend-tag, the curve's peak dot) instead of fake depth.
+   display:contents on the empty wrapper so an unmatched badge
+   (confidence null) doesn't leave a stray gap in the flex row. */
 .weekly-player-achievements{display:contents;}
-.weekly-player-achievements .confidence-badge,
-.weekly-player-achievements .bounce-badge{
+.weekly-player-achievements .confidence-badge{
   width:24px; height:24px; font-size:17px; border-width:0;
 }
 .weekly-player-achievements .confidence-badge.gold{
@@ -2017,11 +2002,6 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
   background:#A0AAB9; color:var(--void);
   box-shadow:0 0 6px rgba(160,170,185,0.4);
 }
-.weekly-player-achievements .bounce-badge{
-  background:var(--neon-blue); color:var(--void);
-  box-shadow:0 0 8px rgba(var(--neon-blue-rgb),0.55);
-}
-.weekly-player-achievements .bounce-badge svg{width:19px; height:19px;}
 
 /* Click/tap-to-reveal wrapper around each achievement badge -- the badge
    itself (confidence/bounce/heat/ice/icarus/eddy) renders unchanged,
@@ -2039,7 +2019,6 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .weekly-achievement-badge.open .weekly-achievement-label{max-width:130px; margin-left:6px; opacity:1;}
 .weekly-achievement-badge.gold .weekly-achievement-label{color:var(--horizon-gold);}
 .weekly-achievement-badge.silver .weekly-achievement-label{color:#A0AAB9;}
-.weekly-achievement-badge.blue .weekly-achievement-label{color:var(--neon-blue);}
 .weekly-achievement-badge.heat .weekly-achievement-label{color:var(--horizon);}
 .weekly-achievement-badge.ice .weekly-achievement-label{color:var(--frost);}
 .weekly-achievement-badge.icarus .weekly-achievement-label{color:var(--purple);}

@@ -29,20 +29,21 @@ export default async function SiteHeader() {
   ]);
 
   // Ticker: a random assortment of 50 achievement badges (the same
-  // Confidence/Bounce-back/Risky Icarus/Steady Eddy flags Weekly
-  // Projection Rankings' player banner shows -- see achievements.js)
-  // drawn from the top 20 players of the latest published redraft_rankings
-  // week. Re-rolled on every request since this is a Server Component --
-  // no caching layer sits in front of it, so "every site refresh" falls
-  // out for free. getAchievements() no longer emits a trend flag at all
-  // (removed entirely, see achievements.js). On Fire/On Ice/Weekly Hero/
-  // Honorable/Rug Pull are skipped here too, quietly rather than by an
-  // explicit filter -- they all key off row.recentGames/row.heroWins,
-  // which this query below never fetches (that's player_game_log plus
-  // redraft_rankings' full publish history, a much heavier pull than this
-  // component's one lightweight top-20 query), so getAchievements() just
-  // never has the inputs to raise them here. Only Confidence/Bounce-back/
-  // Risky Icarus/Steady Eddy depend on fields this query already selects.
+  // Confidence/Risky Icarus/Steady Eddy flags Weekly Projection
+  // Rankings' player banner shows -- see achievements.js) drawn from the
+  // top 20 players of the latest published redraft_rankings week.
+  // Re-rolled on every request since this is a Server Component -- no
+  // caching layer sits in front of it, so "every site refresh" falls out
+  // for free. getAchievements() no longer emits a trend flag at all
+  // (removed entirely, see achievements.js). On Fire/On Thin Ice/Weekly
+  // Hero/Honorable/Con Artist are skipped here too, quietly rather than
+  // by an explicit filter -- they all key off row.recentGames/
+  // row.heroWins, which this query below never fetches (that's
+  // player_game_log plus redraft_rankings' full publish history, a much
+  // heavier pull than this component's one lightweight top-20 query), so
+  // getAchievements() just never has the inputs to raise them here. Only
+  // Confidence/Risky Icarus/Steady Eddy depend on fields this query
+  // already selects.
   let tickerItems = [];
   if (latestRedraft) {
     const { data: topRows } = await supabase

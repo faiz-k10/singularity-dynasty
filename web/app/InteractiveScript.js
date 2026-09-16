@@ -334,26 +334,23 @@ export default function InteractiveScript({ tickerItems } = {}) {
        tickerItems (passed from the server-rendered homepage,
        SiteHeader.js) is the source of truth: 50 real {name, key, variant,
        label} picks already randomly sampled server-side from the top 20
-       players' Confidence/Bounce-back/Risky Icarus/Steady Eddy flags --
-       see achievements.js. RISING/FALLING/STEADY used to be the whole
+       players' Confidence/Risky Icarus/Steady Eddy flags -- see
+       achievements.js. RISING/FALLING/STEADY used to be the whole
        ticker; that's gone in favor of the same badge language the rest
        of the site uses. Falls back to a small made-up sample only if the
        prop wasn't provided (e.g. no rankings published yet). Markup
-       mirrors each badge's real icon (ConfidenceBadge/BounceBadge/
-       NightSkyIcon/LockIcon in WeeklyDetailRow.js) as plain strings,
-       since this is vanilla DOM/innerHTML, not React.
+       mirrors each badge's real icon (ConfidenceBadge/NightSkyIcon/
+       LockIcon in WeeklyDetailRow.js) as plain strings, since this is
+       vanilla DOM/innerHTML, not React.
        TICKER_ICONS is keyed by the achievement's `key` (confidence/
-       bounce/volatile/locked), NOT its `variant` (gold/blue/icarus/eddy)
-       -- those two are different fields on the same object (see
-       getAchievements() in achievements.js). Keying this by variant name
-       was the original bug: "locked" and "volatile" never matched
-       anything here, so Steady Eddy and Risky Icarus silently fell back
-       to the plain confidence star instead of their own lock/sparkles
-       icon. */
+       volatile/locked), NOT its `variant` (gold/icarus/eddy) -- those two
+       are different fields on the same object (see getAchievements() in
+       achievements.js). Keying this by variant name was the original
+       bug: "locked" and "volatile" never matched anything here, so
+       Steady Eddy and Risky Icarus silently fell back to the plain
+       confidence star instead of their own lock/sparkles icon. */
     const TICKER_ICONS = {
       confidence: "★",
-      bounce:
-        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><g transform="translate(0,1)"><circle cx="12" cy="4" r="2" fill="currentColor" stroke="none"/><path d="M6 9.5Q12 2.5 18 9.5"/><ellipse cx="12" cy="13.5" rx="8" ry="2.3"/><path d="M6 15 4 20"/><path d="M18 15 20 20"/></g></svg>',
       volatile:
         '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z"/></svg>',
       locked:
@@ -372,7 +369,6 @@ export default function InteractiveScript({ tickerItems } = {}) {
     const fallbackVariants = [
       { key: "confidence", variant: "gold", label: "Established" },
       { key: "confidence", variant: "silver", label: "Building" },
-      { key: "bounce", variant: "blue", label: "Bounce-back" },
       { key: "volatile", variant: "icarus", label: "Risky Icarus" },
       { key: "locked", variant: "eddy", label: "Steady Eddy" },
     ];
