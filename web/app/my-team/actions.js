@@ -4,6 +4,12 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { resolveTier, savedTeamLimit } from "@/lib/tier";
 import { computeAndSaveInsight } from "@/lib/insights";
+import { getAchievements } from "../tools/achievements";
+import {
+  fetchAchievementInputs,
+  fetchLatestRedraftFieldsByName,
+  buildAchievementRow,
+} from "../tools/achievementsData";
 import {
   fetchSleeperUser,
   fetchSleeperLeagues,
@@ -28,6 +34,19 @@ function normalizeName(name) {
     .replace(/\./g, "")
     .replace(/\s+(jr|sr|ii|iii|iv|v)$/i, "")
     .trim();
+}
+
+// Same normalized-name matching problem as myProjByName below, just for
+// achievementsData.js's maps (all raw-keyed by player_game_log/
+// redraft_rankings' own naming) -- re-keys each one by normalizeName()
+// once so a Sleeper roster player (whose name comes from Sleeper's own
+// dictionary, suffix-less) can still look itself up in it.
+function normalizedIndex(byName) {
+  const out = {};
+  for (const [name, value] of Object.entries(byName || {})) {
+    out[normalizeName(name)] = value;
+  }
+  return out;
 }
 
 // Looks up every league a Sleeper username plays in for the current NFL
@@ -94,6 +113,19 @@ export async function lookupSleeperTeams(username) {
       myProjByName[normalizeName(row.player_name)] = row.projection;
     }
   });
+
+  // Same achievement badges Weekly Projection Rankings shows (On Fire/On
+  // Thin Ice/Risky Icarus/Steady Eddy/Weekly Hero/Honorable/Con Artist),
+  // applied here as-is -- not retuned for a roster context. Uses the
+  // current season (the same one already resolved above for the
+  // projection lookup) for Weekly Hero's own season-scoping.
+  const [achievementInputs, redraftFieldsByName] = await Promise.all([
+    fetchAchievementInputs(supabase, Number(season)),
+    fetchLatestRedraftFieldsByName(supabase),
+  ]);
+  const recentGamesByNormName = normalizedIndex(achievementInputs.recentGamesByName);
+  const heroWinsByNormName = normalizedIndex(achievementInputs.heroWinsByName);
+  const redraftFieldsByNormName = normalizedIndex(redraftFieldsByName);
 
   const teams = await Promise.all(
     leagues.map(async (league) => {
@@ -261,10 +293,19 @@ export async function lookupSleeperTeams(username) {
         const proj = projections[playerId];
         const name = p ? `${p.first_name || ""} ${p.last_name || ""}`.trim() || playerId : playerId;
         const sleeperProjPts = proj ? proj[projField] : null;
-        const myProjPts = myProjByName[normalizeName(name)] ?? null;
+        const normName = normalizeName(name);
+        const myProjPts = myProjByName[normName] ?? null;
+        const achievements = getAchievements(
+          buildAchievementRow(normName, p?.position || null, {
+            recentGamesByName: recentGamesByNormName,
+            heroWinsByName: heroWinsByNormName,
+            redraftFieldsByName: redraftFieldsByNormName,
+          })
+        );
         return {
           player_id: playerId,
           name,
+          achievements,
           position: p?.position || null,
           team: p?.team || null,
           slot: slotByPlayerId[playerId] || null,

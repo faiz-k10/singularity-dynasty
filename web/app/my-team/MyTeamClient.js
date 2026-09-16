@@ -5,6 +5,7 @@ import Link from "next/link";
 import { lookupSleeperTeams, saveTeam, deleteTeam, setBuyIn } from "./actions";
 import TeamBadge from "../tools/TeamBadge";
 import PositionBadge from "../tools/PositionBadge";
+import AchievementDots from "../tools/AchievementDots";
 import { sortRows, sortArrow } from "@/lib/sortLink";
 import { buildPortfolio, aggregateGames, PORTFOLIO_COLUMN_TYPES } from "@/lib/portfolio";
 
@@ -304,7 +305,9 @@ function RosterTable({ players, bestBall = false }) {
                   data-pos={view === "starters" ? undefined : p.position || undefined}
                 >
                   {view === "starters" && <td><SlotBadge slot={p.slot} /></td>}
-                  <td className="player-cell align-left">{p.name}</td>
+                  <td className="player-cell align-left">
+                    {p.name} <AchievementDots achievements={p.achievements || []} />
+                  </td>
                   <td><PositionBadge position={p.position} /></td>
                   <td><TeamBadge team={p.team} /></td>
                   <td className="mono">{formatPts(p.myProjPts)}</td>

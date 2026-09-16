@@ -11,6 +11,8 @@ import { computeOutcomePercentile } from "@/lib/outcomePercentile";
 import SiteHeader from "../../SiteHeader";
 import ExportCsvButton from "../ExportCsvButton";
 import PlayerSimSearch from "../PlayerSimSearch";
+import { getAchievements } from "../achievements";
+import { fetchAchievementInputs, fetchLatestRedraftFieldsByName, buildAchievementRow } from "../achievementsData";
 
 export const metadata = {
   title: "Player Season Simulations — Floor/Median/Ceiling Projections — Singularity Dynasty",
@@ -121,6 +123,23 @@ export default async function PlayerSimulationsPage({ searchParams }) {
     getCachedWeekData(),
   ]);
   const hasFullAccess = PAID_TIERS.includes(tier);
+
+  // Same achievement badges Weekly Projection Rankings shows (On Fire/On
+  // Thin Ice/Risky Icarus/Steady Eddy/Weekly Hero/Honorable/Con Artist),
+  // applied here as-is -- not retuned for this page's season-scale
+  // floor/median/ceiling. buildAchievementRow always sources
+  // floor/ceiling/projection from the latest WEEKLY redraft_rankings
+  // publish, never from this page's own season-total floor/ceiling, so
+  // Risky Icarus/Steady Eddy's thresholds stay calibrated the same way
+  // they are everywhere else. This page's own `sample_confidence`
+  // (player_simulations' own field, already shown via ConfidenceBadge
+  // next to the name) is separate from achievements.js's Confidence flag
+  // and deliberately left alone -- PlayerSimSearch filters "confidence"
+  // out of the achievements list it passes to AchievementDots so the two
+  // don't show twice.
+  const [achievementInputs, redraftFieldsByName] = latest
+    ? await Promise.all([fetchAchievementInputs(supabase, latest.season), fetchLatestRedraftFieldsByName(supabase)])
+    : [{ recentGamesByName: {}, heroWinsByName: {} }, {}];
 
   let sims = [];
   let poolRows = [];
@@ -238,6 +257,9 @@ export default async function PlayerSimulationsPage({ searchParams }) {
       // denominator the bar's own floor/median/ceiling segments use.
       paceSeasonTotal: outcome?.paceSeasonTotal ?? null,
       ...computeStatPercentiles(row, statPoolByPos),
+      achievements: getAchievements(
+        buildAchievementRow(row.player_name, row.position, { ...achievementInputs, redraftFieldsByName })
+      ),
     };
   });
   const simsWithHeat = sortRows(simsWithComputed, sortKey, sortDir, COLUMN_TYPES);

@@ -1,6 +1,9 @@
 import { getUserTier } from "@/lib/tier";
 import SiteHeader from "../../SiteHeader";
 import TeamBadge from "../TeamBadge";
+import AchievementDots from "../AchievementDots";
+import { getAchievements } from "../achievements";
+import { fetchAchievementInputs, fetchLatestRedraftFieldsByName, buildAchievementRow } from "../achievementsData";
 
 export const metadata = {
   title: "Compare Fantasy Football Players — Weekly Rankings — Singularity Dynasty",
@@ -48,7 +51,24 @@ export default async function ComparePlayersPage({ searchParams }) {
   }
 
   const byName = new Map(rankings.map((r) => [r.player_name, r]));
-  const selected = SLOTS.map((slot) => byName.get(params?.[slot])).filter(Boolean);
+  let selected = SLOTS.map((slot) => byName.get(params?.[slot])).filter(Boolean);
+
+  // Same achievement badges Weekly Projection Rankings shows, applied
+  // as-is -- only fetched once at least one player is actually picked,
+  // since this page's whole point is a side-by-side of 2-3 specific
+  // players, not the full weekly pool.
+  if (selected.length > 0 && latest) {
+    const [achievementInputs, redraftFieldsByName] = await Promise.all([
+      fetchAchievementInputs(supabase, latest.season),
+      fetchLatestRedraftFieldsByName(supabase),
+    ]);
+    selected = selected.map((r) => ({
+      ...r,
+      achievements: getAchievements(
+        buildAchievementRow(r.player_name, r.position, { ...achievementInputs, redraftFieldsByName })
+      ),
+    }));
+  }
 
   return (
     <div className="tool-page">
@@ -113,6 +133,14 @@ export default async function ComparePlayersPage({ searchParams }) {
                       {selected.map((r) => (
                         <td className="mono" key={r.player_name}>
                           {r.rank}
+                        </td>
+                      ))}
+                    </tr>
+                    <tr>
+                      <th>Badges</th>
+                      {selected.map((r) => (
+                        <td className="mono" key={r.player_name}>
+                          <AchievementDots achievements={r.achievements || []} />
                         </td>
                       ))}
                     </tr>

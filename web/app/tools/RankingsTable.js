@@ -10,6 +10,7 @@ import WeeklyDetailRow from "./WeeklyDetailRow";
 import { matchupTint } from "./MatchupBadge";
 import { STAT_COLUMNS } from "./statColumns";
 import { getAchievements } from "./achievements";
+import AchievementDots from "./AchievementDots";
 
 // Weekly floor/ceiling formatting -- null for rows published before
 // migration 0029 added these columns, until the next model re-run.
@@ -34,29 +35,15 @@ function formatStat(value) {
 // real click-to-expand badges (WeeklyDetailRow.js), so this is just a
 // glance-able "this player has flags, expand to see which" hint. Colored
 // per achievements.js's own `variant`, so a row with a gold star and a
-// green lock waiting inside reads as gold+green dots here too, without
-// spelling either one out. Native `title` carries the plain-
-// English list for anyone who hovers; the row's own click already opens
-// the row, so the dots don't need their own click target. Lives in the
-// Rank cell (stacked vertically, between the rank number and the
-// position color bar on the cell's left edge) rather than next to the
-// name -- sitting right on the same signal as the color bar (both are
-// "at-a-glance metadata about this row") reads more intentional than
-// crowding the name column, and a name of any length can't push it
-// around.
-function AchievementDots({ achievements, vertical }) {
-  if (!achievements.length) return null;
-  return (
-    <span
-      className={`player-achv-dots${vertical ? " vertical" : ""}`}
-      title={achievements.map((a) => a.label).join(" · ")}
-    >
-      {achievements.map((a) => (
-        <span key={a.key} className={`player-achv-dot ${a.variant}`} />
-      ))}
-    </span>
-  );
-}
+// the row's own click already opens the row, so the dots don't need
+// their own click target. Lives in the Rank cell (stacked vertically,
+// between the rank number and the position color bar on the cell's left
+// edge) rather than next to the name -- sitting right on the same
+// signal as the color bar (both are "at-a-glance metadata about this
+// row") reads more intentional than crowding the name column, and a
+// name of any length can't push it around. The dot component itself is
+// shared (AchievementDots.js) -- every other tool page showing these
+// same badges reuses it too.
 
 function PlayerCell({ row, withPopover }) {
   if (!withPopover) {
