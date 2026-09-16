@@ -981,7 +981,19 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .rankings-table-wrap::-webkit-scrollbar-track{background:transparent;}
 .rankings-table-wrap::-webkit-scrollbar-thumb{background:rgba(var(--neon-blue-rgb),0.5); border-radius:6px;}
 .rankings-table-wrap::-webkit-scrollbar-thumb:hover{background:rgba(var(--neon-blue-rgb),0.75);}
-.rankings-table{width:100%; border-collapse:collapse; font-size:14px;}
+/* min-width:max-content is load-bearing, not decorative -- width:100%
+   alone tells auto table layout to fit the wrapper's width NO MATTER
+   WHAT, and on a container too narrow for every column's natural
+   content, Chrome shrinks columns below their own content's min-width
+   (even an explicit one, see td.rank-cell below) rather than letting
+   the wrap's already-built overflow-x:auto + click-drag scroll
+   (InteractiveScript.js) take over. Confirmed live: a 2-3 digit rank
+   number overflowed its squeezed rank-cell and got silently painted
+   over by the Player column next to it. min-width:max-content forces
+   the table to stay at its natural (sum-of-columns) width and scroll
+   horizontally instead of ever shrinking a column below what its
+   content needs. */
+.rankings-table{width:100%; min-width:max-content; border-collapse:collapse; font-size:14px;}
 .rankings-table th{
   text-align:center; font-family:var(--font-ibm-plex-mono), monospace; font-size:11px; letter-spacing:0.08em;
   text-transform:uppercase; color:var(--star-dim); padding:14px 18px; border-bottom:1px solid var(--line);
@@ -1155,17 +1167,34 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    unfrozen layout) are untouched. */
 .redraft-table{border-collapse:separate; border-spacing:0;}
 
+/* Rank's own width went 48px -> 70px (and Player/Pos's sticky `left`
+   offsets below shifted to match) to fit the achievement dots + a 2-3
+   digit rank number without overflow -- this rule's width/min-width/
+   max-width is the actual, sole authority on this column's rendered
+   width, confirmed live by brute-force: neither a `width` NOR a
+   `min-width` set on .rankings-table td.rank-cell (nor even on this
+   column's own <th>) moved it AT ALL while this rule still said 48px,
+   specificity math or not (nth-child(1) here out-specifies
+   .rankings-table's own td.rank-cell class selector on element count).
+   Before this, the achievement dots' padding-left:28px reservation
+   (further below, .rankings-table td.rank-cell) was fighting for room
+   inside a cell hard-pinned at 48px total -- 28px padding-left + 12px
+   padding-right (the generic .redraft-table td rule below) left just
+   8px for the number itself, so any 2-3 digit rank overflowed the
+   cell's right edge and got silently painted over by the Player
+   column's opaque sticky background. Confirmed live as "23"/"133"
+   reading like their last digit had been sliced off. */
 .redraft-table > thead > tr > th:nth-child(1),
 .redraft-table > tbody > tr td:nth-child(1){
   position:sticky; left:0; z-index:4; background:var(--void-panel-2);
-  width:48px; min-width:48px; max-width:48px;
+  width:70px; min-width:70px; max-width:70px;
 }
 .redraft-table > tbody > tr td:nth-child(1){
   background:var(--void-panel); z-index:1;
 }
 .redraft-table > thead > tr > th:nth-child(2),
 .redraft-table > tbody > tr td:nth-child(2){
-  position:sticky; left:48px; z-index:4; background:var(--void-panel-2);
+  position:sticky; left:70px; z-index:4; background:var(--void-panel-2);
   width:220px; min-width:220px; max-width:220px; overflow:hidden; text-overflow:ellipsis;
 }
 .redraft-table > tbody > tr td:nth-child(2){
@@ -1173,7 +1202,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 }
 .redraft-table > thead > tr > th:nth-child(3),
 .redraft-table > tbody > tr td:nth-child(3){
-  position:sticky; left:268px; z-index:4; background:var(--void-panel-2);
+  position:sticky; left:290px; z-index:4; background:var(--void-panel-2);
   box-shadow:6px 0 12px -6px rgba(var(--shadow-rgb),0.5);
 }
 .redraft-table > tbody > tr td:nth-child(3){
@@ -1749,7 +1778,23 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    padding-left here guarantees the number's box can't start before that
    edge on ANY row, dots or no dots, digit count or no digit count --
    the earlier version only offset the dots visually and still let a
-   wide number's centered box intrude into that space. */
+   wide number's centered box intrude into that space.
+   This column's actual rendered WIDTH isn't decided here at all, on this
+   page -- RankingsTable.js's dot preview only ever renders on Weekly
+   Projection Rankings, which also applies .redraft-table to this same
+   table, and that class hard-pins column 1 to a fixed px width (further
+   up this file) that wins over anything set here (nth-child(1) on 3
+   element types out-specifies .rank-cell's 2 classes). That pin used to
+   be 48px, sized before achievement dots existed -- 28px padding-left +
+   12px padding-right left only 8px for the number itself, so any 2-3
+   digit rank overflowed the cell's right edge and got silently painted
+   over by the Player column's opaque sticky background. Widened to 70px
+   there. If RankingsTable.js is ever reused somewhere WITHOUT
+   .redraft-table, this rule's padding-left is still what prevents dot
+   overlap, but that column's width would then come from ordinary
+   table-layout:auto instead -- give it a real `width` here too if that
+   ever happens, not just min-width (table-layout:auto has been
+   confirmed, live, to ignore min-width on a cell when sizing a column). */
 .rankings-table td.rank-cell{position:relative; padding-left:28px;}
 .player-achv-dots{display:inline-flex; align-items:center; gap:4px; margin-left:9px; vertical-align:middle;}
 .player-achv-dots.vertical{

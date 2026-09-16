@@ -228,6 +228,11 @@ async function fetchGameLogData(supabase, season, floorCeilingByGame) {
     }
   }
 
+  // Tracks the actual (season, week) of each win, not just a count -- a
+  // real week 17 WR1 finish reads as a bug at a glance if all the UI
+  // shows is "1x Weekly Hero" sitting right next to THIS week's own
+  // positional rank or last week's unrelated finish. Newest win first so
+  // the tooltip can lead with the most recent one.
   const heroWinsByName = {};
   const byWeekPos = {};
   for (const r of data || []) {
@@ -238,9 +243,14 @@ async function fetchGameLogData(supabase, season, floorCeilingByGame) {
     const topScore = Math.max(...rows.map((r) => r.fantasy_points_ppr));
     for (const r of rows) {
       if (r.fantasy_points_ppr === topScore) {
-        heroWinsByName[r.player_name] = (heroWinsByName[r.player_name] || 0) + 1;
+        const entry = (heroWinsByName[r.player_name] ??= { count: 0, weeks: [] });
+        entry.count += 1;
+        entry.weeks.push({ season: r.season, week: r.week });
       }
     }
+  }
+  for (const entry of Object.values(heroWinsByName)) {
+    entry.weeks.sort((a, b) => b.season - a.season || b.week - a.week);
   }
 
   return { avgXfpByName, recentGamesByName, lastWeekRankByName, heroWinsByName };
@@ -372,7 +382,8 @@ export default async function RedraftRankingsPage({ searchParams }) {
         playActionRate: sims.playActionRate ?? null,
         recentGames: recentGamesByName[r.player_name] || [],
         lastWeekRank: lastWeekRankByName[r.player_name] || null,
-        heroWins: heroWinsByName[r.player_name] || 0,
+        heroWins: heroWinsByName[r.player_name]?.count || 0,
+        heroWinWeeks: heroWinsByName[r.player_name]?.weeks || [],
         bio: bioByNamePos[`${normalizePlayerName(r.player_name)}|${r.position}`] || null,
       };
     });

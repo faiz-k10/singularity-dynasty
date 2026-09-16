@@ -126,6 +126,7 @@ export function getAchievements(row) {
       variant: "cape",
       label: `${heroWins}x Weekly Hero`,
       wins: heroWins,
+      weeks: row.heroWinWeeks || [],
       tier: Math.min(heroWins, HERO_MAX_TIER),
     },
     xfpFlag === "honorable" && { key: "honorable", variant: "honorable", label: "Honorable" },

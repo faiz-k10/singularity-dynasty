@@ -310,6 +310,20 @@ function LockIcon() {
 // cape-fold lines as a repeat winner racks up more weeks at the top.
 // The art stops getting busier past 5 folds; the badge's `label` text is
 // what keeps counting past that (see GlyphBadge's title below).
+// Names the actual week(s) a Weekly Hero win happened -- a bare "top
+// scorer in 1 week" title next to THIS week's own (unrelated, often much
+// lower) positional rank reads as a bug at a glance; naming the real
+// past week it happened is what makes an old, real WR1 finish legible
+// instead of looking made up. Lists up to 3 most-recent wins by name
+// before falling back to "and N more" for a genuinely repeat hero.
+function heroTitle(position, weeks) {
+  if (!weeks || weeks.length === 0) return `Top scorer at ${position} at least once on record`;
+  const shown = weeks.slice(0, 3).map((w) => `${w.season} Wk${w.week}`);
+  const rest = weeks.length - shown.length;
+  const list = shown.join(", ") + (rest > 0 ? `, +${rest} more` : "");
+  return `Top scorer at ${position} in ${list}`;
+}
+
 function HeroIcon({ tier }) {
   const folds = Math.max(1, Math.min(tier || 1, 5));
   return (
@@ -411,13 +425,7 @@ function achievementNode(a, row) {
         />
       );
     case "hero":
-      return (
-        <GlyphBadge
-          variant="cape"
-          glyph={<HeroIcon tier={a.tier} />}
-          title={`Top scorer at ${row.position} in ${a.wins} week${a.wins === 1 ? "" : "s"} on record`}
-        />
-      );
+      return <GlyphBadge variant="cape" glyph={<HeroIcon tier={a.tier} />} title={heroTitle(row.position, a.weeks)} />;
     case "honorable":
       return (
         <GlyphBadge
