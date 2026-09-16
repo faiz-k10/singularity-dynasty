@@ -1,17 +1,14 @@
 // Shared source of truth for the six "achievement" flags a Weekly
 // Projection Rankings row can carry (Established/Building confidence,
-// Bounce-back, Rising/Falling/Steady trend, Heating Up/On Ice, Risky
-// Icarus/Steady Eddy) -- WeeklyDetailRow.js's expanded player banner
-// renders these as full click-to-expand badges, and RankingsTable.js's
-// collapsed row renders the same list as a tiny dot preview. Both read
-// off this one function so the two views can't quietly drift out of
-// sync with each other.
-
-export const TREND_COPY = {
-  RISING: { cls: "up", arrow: "▲", label: "Rising" },
-  FALLING: { cls: "down", arrow: "▼", label: "Falling" },
-  STEADY: { cls: "steady", arrow: "—", label: "Steady" },
-};
+// Bounce-back, Heating Up/On Ice, Risky Icarus/Steady Eddy) --
+// WeeklyDetailRow.js's expanded player banner renders these as full
+// click-to-expand badges, and RankingsTable.js's collapsed row renders
+// the same list as a tiny dot preview. Both read off this one function
+// so the two views can't quietly drift out of sync with each other. A
+// seventh flag (RISING/FALLING/STEADY trend) used to live here too, but
+// was removed by request -- the trend arrow already has its own place
+// (TrendTag, the name-hover popover), and repeating it as an achievement
+// medallion was one badge too many.
 
 // "Heating Up" / "On Ice" -- the last 3 logged games (recentGames is
 // already ordered most-recent-first by page.js's fetchGameLogData) all
@@ -64,7 +61,6 @@ export function spreadFlag(floor, ceiling, projection) {
 // two consumers render the same flag very differently (a full badge vs.
 // a bare dot).
 export function getAchievements(row) {
-  const trend = TREND_COPY[row.trend];
   const isEstablished = row.sample_confidence === "established";
   const isBuilding = row.sample_confidence === "building";
   const hasBounceNote = typeof row.notes === "string" && row.notes.startsWith("BOUNCEBACK");
@@ -78,7 +74,6 @@ export function getAchievements(row) {
       label: isEstablished ? "Established" : "Building",
     },
     hasBounceNote && { key: "bounce", variant: "blue", label: "Bounce-back" },
-    trend && { key: "trend", variant: trend.cls, label: trend.label },
     streak === "heating" && { key: "heating", variant: "heat", label: "Heating Up" },
     streak === "cold" && { key: "cold", variant: "ice", label: "On Ice" },
     spread === "volatile" && { key: "volatile", variant: "icarus", label: "Risky Icarus" },

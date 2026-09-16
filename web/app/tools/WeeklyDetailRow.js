@@ -4,7 +4,7 @@ import TeamBadge from "./TeamBadge";
 import PositionBadge from "./PositionBadge";
 import ConfidenceBadge from "./ConfidenceBadge";
 import BounceBadge from "./BounceBadge";
-import { TREND_COPY, getAchievements } from "./achievements";
+import { getAchievements } from "./achievements";
 
 // Season-level usage/efficiency metrics, not weekly stats -- attached
 // server-side in page.js's fetchSimsMetrics()/fetchSeasonXfp() (joined
@@ -211,7 +211,7 @@ function formatHeight(h) {
 // on a touch device with no hover state. Click/tap slides a plain 1-2
 // word answer out to the right instead, closed by tapping the badge
 // again. One open flag per badge (not shared across the row) so opening
-// the trend badge doesn't collapse the confidence star, etc.
+// one badge doesn't collapse another, e.g. the confidence star.
 function ExpandableBadge({ variant, label, children }) {
   const [open, setOpen] = useState(false);
   return (
@@ -308,18 +308,12 @@ function LockIcon() {
 // The icon each achievement key renders as in the full banner badge --
 // keyed by achievements.js's own `key` field so this can't fall out of
 // sync with which flags actually exist.
-function achievementNode({ key }, row, trend) {
+function achievementNode({ key }, row) {
   switch (key) {
     case "confidence":
       return <ConfidenceBadge confidence={row.sample_confidence} />;
     case "bounce":
       return <BounceBadge note={row.notes} />;
-    case "trend":
-      return (
-        <span className={`weekly-trend-badge ${trend.cls}`} title={`Trend: ${row.trend}`}>
-          {trend.arrow}
-        </span>
-      );
     case "heating":
       return <GlyphBadge variant="heat" glyph={<FlameIcon />} title="Beat xFP in each of the last 3 games" />;
     case "cold":
@@ -353,22 +347,18 @@ function achievementNode({ key }, row, trend) {
 // read stats on the right: this week's positional rank, this week's own
 // median projection, and last week's actual positional finish
 // (lastWeekRank, from fetchGameLogData -- null before the season's first
-// game log exists). RISING/FALLING/STEADY moved into the badge row next
-// to the name (see weekly-player-achievements below) instead of sitting
-// here as a fourth stat.
+// game log exists).
 function PlayerHeaderPanel({ row }) {
   const bio = row.bio || {};
   const ht = formatHeight(bio.height);
   const sizeText = [ht, bio.weight ? `${bio.weight} lbs` : null].filter(Boolean).join(" · ");
-  const trend = TREND_COPY[row.trend];
   const lastWeek = row.lastWeekRank;
 
   // getAchievements (achievements.js) is the one source of truth for
-  // which of the six flags apply -- RankingsTable's collapsed-row dot
-  // preview calls the exact same function. This just attaches the full
-  // icon component each flag renders as here, which the dot preview has
-  // no use for.
-  const achievements = getAchievements(row).map((a) => ({ ...a, node: achievementNode(a, row, trend) }));
+  // which flags apply -- RankingsTable's collapsed-row dot preview calls
+  // the exact same function. This just attaches the full icon component
+  // each flag renders as here, which the dot preview has no use for.
+  const achievements = getAchievements(row).map((a) => ({ ...a, node: achievementNode(a, row) }));
 
   return (
     <div className="stat-panel weekly-player-header">
@@ -389,14 +379,14 @@ function PlayerHeaderPanel({ row }) {
             <PositionBadge position={row.position} />
             <TeamBadge team={row.team} />
             {sizeText && <span className="weekly-player-size mono">{sizeText}</span>}
-            {/* Confidence/bounce-back flags plus the RISING/FALLING/STEADY
-                trend, all as one row of flat-fill "achievement" pills --
-                these used to be plain glyphs next to the name in the
-                collapsed table row, but that duplicated the same info
-                twice (dense table cell AND this banner) for no reason;
-                this banner has the room to be the one place they live.
-                Each is click/tap-to-reveal its own 1-2 word label via
-                ExpandableBadge, not just a hover title. */}
+            {/* Confidence/bounce-back/streak/spread flags, all as one row
+                of flat-fill "achievement" pills -- these used to be plain
+                glyphs next to the name in the collapsed table row, but
+                that duplicated the same info twice (dense table cell AND
+                this banner) for no reason; this banner has the room to be
+                the one place they live. Each is click/tap-to-reveal its
+                own 1-2 word label via ExpandableBadge, not just a hover
+                title. */}
             <span className="weekly-player-achievements">
               {achievements.map((a) => (
                 <ExpandableBadge key={a.key} variant={a.variant} label={a.label}>
@@ -432,8 +422,8 @@ function PlayerHeaderPanel({ row }) {
 // single-point weekly stats + one overall floor/median/ceiling, not a
 // full per-stat floor/median/ceiling distribution. A full-width
 // PlayerHeaderPanel identity strip sits on top (name/photo/size on the
-// left, this-week rank / median projection / last-week finish / trend
-// on the right), then four panels across three columns below it: (1) a
+// left, this-week rank / median projection / last-week finish on the
+// right), then four panels across three columns below it: (1) a
 // bigger, fully-labeled version of the Curve cell -- each of its own
 // three labels (Floor/Median/Ceiling) carries its percentile-vs-pool
 // ordinal directly, so that number only has to be shown once, (2) the

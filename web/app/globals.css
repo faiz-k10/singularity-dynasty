@@ -14,6 +14,7 @@
   --up:#6FE3A8;
   --down:#FF6B6B;
   --purple:#B18AFF;
+  --frost:#6FB8E0; /* On Ice's own blue -- distinct from --neon-blue (Bounce-back already owns that hue) */
   --matchup-neutral:#F0C43D;  /* deliberately distinct from --horizon-gold --
                                   that's already "established" confidence;
                                   reusing it here would conflate the two
@@ -41,6 +42,7 @@
   --up-rgb:111,227,168;
   --down-rgb:255,107,107;
   --purple-rgb:177,138,255;
+  --frost-rgb:111,184,224;
   --matchup-neutral-rgb:240,196,61;
   --star-dim-rgb:153,151,168;
   --orbit-alpha:0.3;
@@ -64,6 +66,7 @@
     --up:#1C8F52;
     --purple:#7C3AED;
     --down:#D63F39;
+    --frost:#1D6FA5;
     --matchup-neutral:#A87B00;
     --pos-qb:#D6005E;
     --pos-rb:#007A50;
@@ -77,6 +80,7 @@
     --up-rgb:28,143,82;
     --purple-rgb:124,58,237;
     --down-rgb:214,63,57;
+    --frost-rgb:29,111,165;
     --matchup-neutral-rgb:168,123,0;
     --star-dim-rgb:104,99,111;
     --orbit-alpha:0.8;
@@ -95,6 +99,7 @@
   --up:#1C8F52;
   --purple:#7C3AED;
   --down:#D63F39;
+  --frost:#1D6FA5;
   --matchup-neutral:#A87B00;
   --pos-qb:#D6005E;
   --pos-rb:#007A50;
@@ -108,6 +113,7 @@
   --up-rgb:28,143,82;
   --purple-rgb:124,58,237;
   --down-rgb:214,63,57;
+  --frost-rgb:29,111,165;
   --matchup-neutral-rgb:168,123,0;
   --orbit-alpha:0.8;
 }
@@ -181,7 +187,7 @@ body::before{
 .ticker-badge.silver{background:#A0AAB9; color:var(--void); box-shadow:0 0 4px rgba(160,170,185,0.4);}
 .ticker-badge.blue{background:var(--neon-blue); color:var(--void); box-shadow:0 0 5px rgba(var(--neon-blue-rgb),0.5);}
 .ticker-badge.icarus{background:var(--purple); color:#fff; box-shadow:0 0 5px rgba(var(--purple-rgb),0.5);}
-.ticker-badge.eddy{background:#A0AAB9; color:var(--void); box-shadow:0 0 4px rgba(160,170,185,0.4);}
+.ticker-badge.eddy{background:var(--up); color:var(--void); box-shadow:0 0 5px rgba(var(--up-rgb),0.5);}
 
 /* ---------- BRAND MARK ---------- */
 .brandmark{
@@ -1717,10 +1723,18 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    cell's full width exactly like it did before dots existed -- centered
    is centered on every row now, matching every other centered column in
    this table. */
-.rankings-table td.rank-cell{position:relative;}
+/* padding-left (not just the dots' own `left` offset) is what actually
+   prevents overlap -- a 3-digit rank ("133") centers a noticeably wider
+   text box than a 1-digit one, and text-align:center's minimum possible
+   left edge is the padding edge itself, never left of it. Reserving real
+   padding-left here guarantees the number's box can't start before that
+   edge on ANY row, dots or no dots, digit count or no digit count --
+   the earlier version only offset the dots visually and still let a
+   wide number's centered box intrude into that space. */
+.rankings-table td.rank-cell{position:relative; padding-left:28px;}
 .player-achv-dots{display:inline-flex; align-items:center; gap:4px; margin-left:9px; vertical-align:middle;}
 .player-achv-dots.vertical{
-  position:absolute; left:9px; top:50%; transform:translateY(-50%);
+  position:absolute; left:10px; top:50%; transform:translateY(-50%);
   flex-direction:column; margin-left:0; gap:2px;
 }
 .player-achv-dots.vertical .player-achv-dot{width:4px; height:4px;}
@@ -1729,13 +1743,10 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .player-achv-dot.gold{background:var(--horizon-gold); box-shadow:0 0 4px rgba(var(--horizon-gold-rgb),0.7);}
 .player-achv-dot.silver{background:#A0AAB9; box-shadow:0 0 3px rgba(160,170,185,0.6);}
 .player-achv-dot.blue{background:var(--neon-blue); box-shadow:0 0 4px rgba(var(--neon-blue-rgb),0.7);}
-.player-achv-dot.up{background:var(--up); box-shadow:0 0 4px rgba(var(--up-rgb),0.7);}
-.player-achv-dot.down{background:var(--down); box-shadow:0 0 4px rgba(var(--down-rgb),0.7);}
-.player-achv-dot.steady{background:var(--neon-blue); box-shadow:0 0 4px rgba(var(--neon-blue-rgb),0.7);}
 .player-achv-dot.heat{background:var(--horizon); box-shadow:0 0 4px rgba(var(--horizon-rgb),0.7);}
-.player-achv-dot.ice{background:var(--neon-blue); box-shadow:0 0 4px rgba(var(--neon-blue-rgb),0.7);}
+.player-achv-dot.ice{background:var(--frost); box-shadow:0 0 4px rgba(var(--frost-rgb),0.7);}
 .player-achv-dot.icarus{background:var(--purple); box-shadow:0 0 4px rgba(var(--purple-rgb),0.7);}
-.player-achv-dot.eddy{background:#A0AAB9; box-shadow:0 0 3px rgba(160,170,185,0.6);}
+.player-achv-dot.eddy{background:var(--up); box-shadow:0 0 4px rgba(var(--up-rgb),0.7);}
 
 /* Explicit text-align (and white-space below) throughout -- this table is
    nested inside a .rankings-table cell, so it's still a CSS descendant of
@@ -1944,23 +1955,12 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
   box-shadow:0 0 8px rgba(var(--neon-blue-rgb),0.55);
 }
 .weekly-player-achievements .bounce-badge svg{width:14px; height:14px;}
-/* RISING/FALLING/STEADY, folded into this same badge row instead of its
-   own stat slot on the right (see weekly-player-stats below) -- same
-   flat-fill + glow language, just keyed off --up/--down/--neon-blue like
-   .trend-tag elsewhere on this page. */
-.weekly-trend-badge{
-  display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px;
-  border-radius:50%; font-size:12px; font-weight:700; flex-shrink:0; cursor:default; vertical-align:middle;
-}
-.weekly-trend-badge.up{background:var(--up); color:var(--void); box-shadow:0 0 8px rgba(var(--up-rgb),0.55);}
-.weekly-trend-badge.down{background:var(--down); color:var(--void); box-shadow:0 0 8px rgba(var(--down-rgb),0.55);}
-.weekly-trend-badge.steady{background:var(--neon-blue); color:var(--void); box-shadow:0 0 8px rgba(var(--neon-blue-rgb),0.55);}
 
 /* Click/tap-to-reveal wrapper around each achievement badge -- the badge
-   itself (confidence/bounce/trend) renders unchanged, this just adds a
-   plain-text label that slides out to its right on click, closed the
-   same way. max-width (not width) is what animates, since these labels
-   have no fixed size to transition to/from. */
+   itself (confidence/bounce/heat/ice/icarus/eddy) renders unchanged,
+   this just adds a plain-text label that slides out to its right on
+   click, closed the same way. max-width (not width) is what animates,
+   since these labels have no fixed size to transition to/from. */
 .weekly-achievement-badge{
   display:inline-flex; align-items:center; cursor:pointer; border-radius:20px;
 }
@@ -1973,33 +1973,34 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .weekly-achievement-badge.gold .weekly-achievement-label{color:var(--horizon-gold);}
 .weekly-achievement-badge.silver .weekly-achievement-label{color:#A0AAB9;}
 .weekly-achievement-badge.blue .weekly-achievement-label{color:var(--neon-blue);}
-.weekly-achievement-badge.up .weekly-achievement-label{color:var(--up);}
-.weekly-achievement-badge.down .weekly-achievement-label{color:var(--down);}
-.weekly-achievement-badge.steady .weekly-achievement-label{color:var(--neon-blue);}
 .weekly-achievement-badge.heat .weekly-achievement-label{color:var(--horizon);}
-.weekly-achievement-badge.ice .weekly-achievement-label{color:var(--neon-blue);}
+.weekly-achievement-badge.ice .weekly-achievement-label{color:var(--frost);}
 .weekly-achievement-badge.icarus .weekly-achievement-label{color:var(--purple);}
-.weekly-achievement-badge.eddy .weekly-achievement-label{color:#A0AAB9;}
+.weekly-achievement-badge.eddy .weekly-achievement-label{color:var(--up);}
 
 /* Heating Up (FlameIcon) / On Ice (SnowflakeIcon) / Risky Icarus
    (NightSkyIcon) / Steady Eddy (LockIcon) -- same 24px flat-fill
-   medallion as the other three achievement badges, all four now small
-   inline SVGs (WeeklyDetailRow.js) instead of platform emoji -- an emoji
-   ignores the badge's own flat-fill color entirely and reads as pasted-
-   on clip art next to the rest of the site's flat glyph/team-color/
-   starfield-motif icon language. --purple is the same "ceiling chaser"
-   color My Team's Analytics tab already uses for boom-or-bust upside,
-   reused here for the same idea; Steady Eddy reuses Confidence's own
-   "silver" gray rather than inventing a fifth accent color. */
+   medallion as the other two achievement badges (confidence/bounce),
+   all four small inline SVGs (WeeklyDetailRow.js) instead of platform
+   emoji -- an emoji ignores the badge's own flat-fill color entirely and
+   reads as pasted-on clip art next to the rest of the site's flat glyph/
+   team-color/starfield-motif icon language. Every badge gets its own
+   distinct hue now (--horizon-gold/--neon-blue/--horizon/--frost/
+   --purple/--up, plus confidence's own muted gray for "building") --
+   On Ice and Steady Eddy used to reuse Bounce-back's blue and
+   Confidence's silver respectively, which meant two DIFFERENT flags
+   could render as the same-colored dot in the Rank cell's preview.
+   --purple is the same "ceiling chaser" color My Team's Analytics tab
+   already uses for boom-or-bust upside, reused here for the same idea. */
 .weekly-glyph-badge{
   display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px;
   border-radius:50%; font-size:13px; line-height:1; flex-shrink:0; cursor:pointer; vertical-align:middle;
 }
 .weekly-glyph-badge svg{width:13px; height:13px; display:block;}
 .weekly-glyph-badge.heat{background:var(--horizon); color:#fff; box-shadow:0 0 8px rgba(var(--horizon-rgb),0.55);}
-.weekly-glyph-badge.ice{background:var(--neon-blue); color:#fff; box-shadow:0 0 8px rgba(var(--neon-blue-rgb),0.55);}
+.weekly-glyph-badge.ice{background:var(--frost); color:#fff; box-shadow:0 0 8px rgba(var(--frost-rgb),0.55);}
 .weekly-glyph-badge.icarus{background:var(--purple); color:#fff; box-shadow:0 0 8px rgba(var(--purple-rgb),0.55);}
-.weekly-glyph-badge.eddy{background:#A0AAB9; color:var(--void); box-shadow:0 0 6px rgba(160,170,185,0.4);}
+.weekly-glyph-badge.eddy{background:var(--up); color:var(--void); box-shadow:0 0 8px rgba(var(--up-rgb),0.55);}
 /* Four stats, each its own little label-over-value stack -- same
    eyebrow-adjacent mono-uppercase label language as .weekly-panel-title
    elsewhere in this row, just without the gold dash (these are plain

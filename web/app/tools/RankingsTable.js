@@ -40,7 +40,7 @@ function formatStat(value) {
 // real click-to-expand badges (WeeklyDetailRow.js), so this is just a
 // glance-able "this player has flags, expand to see which" hint. Colored
 // per achievements.js's own `variant`, so a row with a gold star and a
-// green trend arrow waiting inside reads as gold+green dots here too,
+// blue bounce-back flag waiting inside reads as gold+blue dots here too,
 // without spelling either one out. Native `title` carries the plain-
 // English list for anyone who hovers; the row's own click already opens
 // the row, so the dots don't need their own click target. Lives in the
