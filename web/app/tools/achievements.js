@@ -14,35 +14,55 @@
 // may still publish that notes prefix, it just renders as plain text
 // now instead of being intercepted into its own badge).
 
-// "On Fire" -- scored at or above THAT WEEK'S OWN projected ceiling in
-// the most recent logged game. `games` is page.js's recentGames, most-
-// recent-first, with `floor`/`ceiling` already joined in per-game from
-// that same week's redraft_rankings publish (fetchHistoricalFloorCeiling)
-// -- not this week's unrelated projection. Null/missing ceiling for that
-// game (a game logged before migration 0029, or a week that was never
-// published) just means no flag, not a false positive.
-export function ceilingHit(games) {
+// "On Fire" -- true if EITHER: (A) hit or beat THAT WEEK'S OWN projected
+// ceiling in at least one of the last 2 logged games, OR (B) exceeded
+// xFP in ALL of the last 3 logged games. `games` is page.js's
+// recentGames, most-recent-first, with `floor`/`ceiling` already joined
+// in per-game from that same week's redraft_rankings publish
+// (fetchHistoricalFloorCeiling) -- not this week's unrelated projection.
+// Deliberately spans the season boundary same as recentGames itself
+// (early in a season, "last 2/3 games" naturally tails into last
+// season) -- confirmed with the user this is fine, not just tolerated.
+// The two conditions are independent: (A) only needs ONE of its 2 games
+// to have ceiling data to possibly fire (a game with no published
+// ceiling just can't be the one that fires it, doesn't block the other);
+// (B) needs all 3 games to have xFP data or it can't fire at all, same
+// all-or-nothing rule Honorable/Con Artist already use below -- but (A)
+// can still fire on its own even when (B) can't be evaluated.
+export function ceilingHitLast2(games) {
   if (!games || games.length === 0) return false;
-  const g = games[0];
-  if (g.fantasy_points_ppr == null || g.ceiling == null) return false;
-  return g.fantasy_points_ppr >= g.ceiling;
+  return games
+    .slice(0, 2)
+    .some((g) => g.fantasy_points_ppr != null && g.ceiling != null && g.fantasy_points_ppr >= g.ceiling);
 }
-
-// "On Thin Ice" -- missed THAT WEEK'S OWN projected floor in at least 2 of
-// the last 3 logged games. Deliberately a count, not an all-3 requirement
-// like the old xFP-streak version this replaced: floor/ceiling coverage
-// depends on how far back redraft_rankings' own publish history reaches,
-// so requiring all 3 to have data would make this almost never fire this
-// early in the feature's life. A game missing floor or its own actual
-// score simply doesn't count as a hit either way, rather than voiding
-// the other two.
-export function floorHitStreak(games) {
+export function beatXfpAllLast3(games) {
   if (!games || games.length < 3) return false;
   const last3 = games.slice(0, 3);
-  const hits = last3.filter(
-    (g) => g.fantasy_points_ppr != null && g.floor != null && g.fantasy_points_ppr <= g.floor
-  ).length;
-  return hits >= 2;
+  if (last3.some((g) => g.exp_points_ppr == null || g.fantasy_points_ppr == null)) return false;
+  return last3.every((g) => g.fantasy_points_ppr > g.exp_points_ppr);
+}
+export function onFireFlag(games) {
+  return ceilingHitLast2(games) || beatXfpAllLast3(games);
+}
+
+// "On Thin Ice" -- the converse of On Fire: true if EITHER: (A) at or
+// below THAT WEEK'S OWN projected floor in at least one of the last 2
+// logged games, OR (B) missed xFP in ALL of the last 3 logged games.
+// Same independence/null-handling rules as On Fire above, mirrored.
+export function floorHitLast2(games) {
+  if (!games || games.length === 0) return false;
+  return games
+    .slice(0, 2)
+    .some((g) => g.fantasy_points_ppr != null && g.floor != null && g.fantasy_points_ppr <= g.floor);
+}
+export function missedXfpAllLast3(games) {
+  if (!games || games.length < 3) return false;
+  const last3 = games.slice(0, 3);
+  if (last3.some((g) => g.exp_points_ppr == null || g.fantasy_points_ppr == null)) return false;
+  return last3.every((g) => g.fantasy_points_ppr < g.exp_points_ppr);
+}
+export function onThinIceFlag(games) {
+  return floorHitLast2(games) || missedXfpAllLast3(games);
 }
 
 // "Honorable" / "Con Artist" -- scored at-or-above, or strictly below,
@@ -111,8 +131,8 @@ export const HERO_MAX_TIER = 5;
 export function getAchievements(row) {
   const isEstablished = row.sample_confidence === "established";
   const isBuilding = row.sample_confidence === "building";
-  const onFire = ceilingHit(row.recentGames);
-  const onIce = floorHitStreak(row.recentGames);
+  const onFire = onFireFlag(row.recentGames);
+  const onIce = onThinIceFlag(row.recentGames);
   const spread = spreadFlag(row.floor, row.ceiling, row.projection);
   const xfpFlag = xfpTrend2(row.recentGames);
   const heroWins = Math.max(0, row.heroWins || 0);

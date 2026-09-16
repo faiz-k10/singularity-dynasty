@@ -427,7 +427,7 @@ function achievementNode(a, row) {
         <GlyphBadge
           variant="heat"
           glyph={<FlameIcon />}
-          title="Scored at or above this week's own projected ceiling in the most recent game"
+          title="Hit that week's own ceiling in one of the last 2 games, or beat xFP in each of the last 3"
         />
       );
     case "onIce":
@@ -435,7 +435,7 @@ function achievementNode(a, row) {
         <GlyphBadge
           variant="ice"
           glyph={<SnowflakeIcon />}
-          title="Scored at or below that week's own projected floor in 2 of the last 3 games"
+          title="Hit that week's own floor in one of the last 2 games, or missed xFP in each of the last 3"
         />
       );
     case "volatile":
