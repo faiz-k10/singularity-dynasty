@@ -188,6 +188,7 @@ body::before{
 .ticker-badge.blue{background:var(--neon-blue); color:var(--void); box-shadow:0 0 5px rgba(var(--neon-blue-rgb),0.5);}
 .ticker-badge.icarus{background:var(--purple); color:#fff; box-shadow:0 0 5px rgba(var(--purple-rgb),0.5);}
 .ticker-badge.eddy{background:var(--up); color:var(--void); box-shadow:0 0 5px rgba(var(--up-rgb),0.5);}
+.ticker-badge-label{font-size:10px; letter-spacing:0.06em; text-transform:uppercase; color:var(--star-dim); opacity:0.75;}
 
 /* ---------- BRAND MARK ---------- */
 .brandmark{

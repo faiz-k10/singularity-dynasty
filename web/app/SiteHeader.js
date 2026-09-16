@@ -34,13 +34,12 @@ export default async function SiteHeader() {
   // drawn from the top 20 players of the latest published redraft_rankings
   // week. Re-rolled on every request since this is a Server Component --
   // no caching layer sits in front of it, so "every site refresh" falls
-  // out for free. RISING/FALLING/STEADY trend badges used to be the
-  // entire ticker; getAchievements() still computes a trend flag per row,
-  // but it's filtered out below since the ticker isn't the place for it
-  // anymore. Heating Up/On Ice are skipped too -- those need each
-  // player's recent-game log, which would mean a second, heavier query
-  // (player_game_log) running on every single page of the site just for
-  // ticker flavor, not worth it for a component this size.
+  // out for free. getAchievements() no longer emits a trend flag at all
+  // (removed entirely, see achievements.js), so every flag it returns is
+  // fair game for the ticker. Heating Up/On Ice are skipped anyway --
+  // those need each player's recent-game log, which would mean a second,
+  // heavier query (player_game_log) running on every single page of the
+  // site just for ticker flavor, not worth it for a component this size.
   let tickerItems = [];
   if (latestRedraft) {
     const { data: topRows } = await supabase
@@ -51,9 +50,12 @@ export default async function SiteHeader() {
       .order("rank", { ascending: true })
       .limit(20);
     const pool = (topRows || []).flatMap((r) =>
-      getAchievements(r)
-        .filter((a) => a.key !== "trend")
-        .map((a) => ({ name: r.player_name, key: a.key, variant: a.variant }))
+      getAchievements(r).map((a) => ({
+        name: r.player_name,
+        key: a.key,
+        variant: a.variant,
+        label: a.label,
+      }))
     );
     if (pool.length > 0) {
       tickerItems = Array.from({ length: 50 }, () => pool[Math.floor(Math.random() * pool.length)]);
