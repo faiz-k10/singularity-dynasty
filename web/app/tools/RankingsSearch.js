@@ -87,6 +87,8 @@ export default function RankingsSearch({
           currentParams={currentParams}
           tableClassName={tableClassName}
           showStatColumns={showStatColumns}
+          searchValue={query}
+          onSearchChange={setQuery}
         />
       )}
     </>

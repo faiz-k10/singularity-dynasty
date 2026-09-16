@@ -104,6 +104,8 @@ export default function RankingsTable({
   sortParam = "sort",
   dirParam = "dir",
   tableClassName = "",
+  searchValue,
+  onSearchChange,
 }) {
   const sortProps = { activeSort: sortKey, activeDir: sortDir, currentParams, sortParam, dirParam };
   // Click-to-expand/collapse, keyed by the same string the row itself is
@@ -132,7 +134,14 @@ export default function RankingsTable({
   // cheaper way to reclaim it than a separate route/modal component.
   // Body scroll is locked while active so the page behind the overlay
   // doesn't scroll along with it; Escape closes it the same as the
-  // visible button does.
+  // visible button does. The fixed overlay (z-index 200) sits ABOVE the
+  // page's own search box (RankingsSearch.js, rendered above this
+  // component in normal flow), making that box unreachable while
+  // theater mode is on -- searchValue/onSearchChange are optional
+  // controlled-input props so the theater bar itself can carry a second
+  // copy of the exact same search box, wired to the SAME query state
+  // the parent already owns, rather than this component inventing its
+  // own separate search/filter logic.
   const [theater, setTheater] = useState(false);
   useEffect(() => {
     if (!theater) return;
@@ -160,6 +169,16 @@ export default function RankingsTable({
   return (
     <>
       <div className={`rankings-theater-bar${theater ? " theater" : ""}`}>
+        {theater && onSearchChange && (
+          <input
+            type="search"
+            className="player-search-input"
+            placeholder="Search a player's name…"
+            value={searchValue || ""}
+            onChange={(e) => onSearchChange(e.target.value)}
+            aria-label="Search players"
+          />
+        )}
         <button
           type="button"
           className="rankings-theater-btn"

@@ -955,9 +955,17 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .rankings-theater-bar{display:flex; justify-content:flex-end; margin-bottom:10px;}
 .rankings-theater-bar.theater{
   position:fixed; top:0; left:0; right:0; height:var(--theater-bar-height); z-index:201;
-  align-items:center; padding:0 16px; margin-bottom:0;
+  align-items:center; justify-content:space-between; gap:16px; padding:0 16px; margin-bottom:0;
   background:var(--void-panel); border-bottom:1px solid var(--line);
 }
+/* Search only exists inside the bar while theater mode is actually
+   active -- the page's own search box (RankingsSearch.js) sits right
+   above the table in normal flow, but theater mode lifts the table into
+   a position:fixed overlay ABOVE that box (z-index 200, see
+   .rankings-table-wrap.theater), making it unreachable without one in
+   here too. Reuses .player-search-input's exact look, just dropped into
+   this bar's own flex layout instead of .player-search-row's. */
+.rankings-theater-bar .player-search-input{margin:0;}
 /* Plain-icon, bordered-square language (.theme-toggle/.player-popover-
    compare) rather than a new style. A real <button> (not a clickable
    div) so InteractiveScript.js's drag-to-scroll pointerdown handler
