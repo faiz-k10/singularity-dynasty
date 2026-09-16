@@ -317,11 +317,11 @@ function LockIcon() {
 // instead of looking made up. Lists up to 3 most-recent wins by name
 // before falling back to "and N more" for a genuinely repeat hero.
 function heroTitle(position, weeks) {
-  if (!weeks || weeks.length === 0) return `Top scorer at ${position} at least once on record`;
+  if (!weeks || weeks.length === 0) return `Top 3 at ${position} at least once this season`;
   const shown = weeks.slice(0, 3).map((w) => `${w.season} Wk${w.week}`);
   const rest = weeks.length - shown.length;
   const list = shown.join(", ") + (rest > 0 ? `, +${rest} more` : "");
-  return `Top scorer at ${position} in ${list}`;
+  return `Top 3 at ${position} in ${list}`;
 }
 
 function HeroIcon({ tier }) {
@@ -362,23 +362,42 @@ function GraduationCapIcon() {
   );
 }
 
-// Rug Pull's own icon -- a small ornate carpet (border, diamond motifs,
-// fringe top and bottom), for "the floor got pulled out from under this
-// projection two games running." The Aladdin's-rug read is deliberate,
-// not a generic "down" arrow -- same flat-fill-plus-glow language as
-// every other badge, just a shape that actually says "rug."
-function RugIcon() {
+// Con Artist's own icon -- the classic comedy/tragedy theater masks
+// (replaced an earlier rug motif that read as an envelope/dollar sign
+// at this size, not a carpet). One mask per game of the 2-game read
+// this badge is built on: a dim, sad mask behind (the number you were
+// promised) and a solid, grinning mask in front (the one that actually
+// showed up) -- "con artist" as in the act put on, not just "missed
+// expectations." Each mask is one compound path (fillRule="evenodd") so
+// its eyes/mouth punch clean holes straight through to the badge's own
+// circle-fill behind it, same flat-fill-plus-glow language as every
+// other badge here -- no separate cutout color to keep in sync.
+function ConArtistIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-      <rect x="3" y="6.5" width="18" height="11" rx="1" strokeWidth="1.3" fill="currentColor" fillOpacity="0.15" />
-      <rect x="5.4" y="8.7" width="13.2" height="6.6" rx="0.4" strokeWidth="0.9" />
-      <path d="M9.6 12 10.8 10.8 12 12 10.8 13.2Z" fill="currentColor" stroke="none" />
-      <path d="M12 12 13.2 10.8 14.4 12 13.2 13.2Z" fill="currentColor" stroke="none" />
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      {/* back mask (tragedy) -- dim, frowning, upper-left. Outline+eyes+
+          mouth share one evenodd path so the cutouts punch real holes;
+          the top knot is its own separate path so it stays solid instead
+          of getting eaten by that same evenodd rule where it touches the
+          outline's edge. */}
       <path
-        d="M3 6.5v-1M6 6.5v-1M9 6.5v-1M12 6.5v-1M15 6.5v-1M18 6.5v-1M21 6.5v-1M3 17.5v1M6 17.5v1M9 17.5v1M12 17.5v1M15 17.5v1M18 17.5v1M21 17.5v1"
-        strokeWidth="0.8"
-        strokeLinecap="round"
+        d="M2.6,8.3 A5.4,6.4 0 1,0 13.4,8.3 A5.4,6.4 0 1,0 2.6,8.3 Z
+           M5.05,7.2 A0.85,0.85 0 1,0 6.75,7.2 A0.85,0.85 0 1,0 5.05,7.2 Z
+           M9.25,7.2 A0.85,0.85 0 1,0 10.95,7.2 A0.85,0.85 0 1,0 9.25,7.2 Z
+           M5.3,11.3 Q8,10.2 10.7,11.3 Q8,7.8 5.3,11.3 Z"
+        opacity="0.55"
+        fillRule="evenodd"
       />
+      <path d="M7.2 2.4 8.8 2.4 8 0.6Z" opacity="0.55" />
+      {/* front mask (comedy) -- solid, grinning, lower-right, overlapping */}
+      <path
+        d="M8.9,13 A5.6,6.6 0 1,0 20.1,13 A5.6,6.6 0 1,0 8.9,13 Z
+           M11.3,11.8 A0.9,0.9 0 1,0 13.1,11.8 A0.9,0.9 0 1,0 11.3,11.8 Z
+           M15.9,11.8 A0.9,0.9 0 1,0 17.7,11.8 A0.9,0.9 0 1,0 15.9,11.8 Z
+           M11.6,16.2 Q14.5,17.4 17.4,16.2 Q14.5,21 11.6,16.2 Z"
+        fillRule="evenodd"
+      />
+      <path d="M13.7 6.8 15.3 6.8 14.5 5Z" />
     </svg>
   );
 }
@@ -434,11 +453,11 @@ function achievementNode(a, row) {
           title="Scored at or above xFP in each of the last 2 games"
         />
       );
-    case "rugpull":
+    case "conArtist":
       return (
         <GlyphBadge
-          variant="rugpull"
-          glyph={<RugIcon />}
+          variant="menace"
+          glyph={<ConArtistIcon />}
           title="Scored below xFP in each of the last 2 games"
         />
       );

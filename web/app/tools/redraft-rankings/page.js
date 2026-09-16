@@ -184,9 +184,8 @@ async function fetchSimsMetrics(supabase) {
 //     results for the CURRENT projection week can't exist yet by
 //     definition. Powers the expanded row's player-header panel.
 //   - heroWinsByName: how many (season, week, position) groups THIS
-//     SEASON this player was the outright top scorer at their own
-//     position -- "Weekly Hero" in achievements.js. A tie at the top
-//     score credits every tied player, not just one arbitrarily.
+//     SEASON this player finished in the top 3 scorers at their own
+//     position -- "Weekly Hero" in achievements.js.
 async function fetchGameLogData(supabase, season, floorCeilingByGame) {
   const { data } = await supabase
     .from("player_game_log")
@@ -238,6 +237,13 @@ async function fetchGameLogData(supabase, season, floorCeilingByGame) {
   // read as stale/confusing sitting next to this season's own numbers,
   // so this filters `data` down before grouping instead of reusing it
   // as-is like the rest of this function does.
+  // HERO_WIN_SLOTS (not just the outright #1) -- by request, the top 3
+  // scorers at each position each week all get a win, not only the
+  // single highest. Sorted descending and sliced to exactly 3 recipients
+  // (not "however many tie for 3rd") to keep the count predictable: 4
+  // positions x 1 played week = 12 badges handed out right now, not an
+  // unbounded number if the market has a tight 3-way tie at the top.
+  const HERO_WIN_SLOTS = 3;
   const heroWinsByName = {};
   const byWeekPos = {};
   for (const r of data || []) {
@@ -245,13 +251,11 @@ async function fetchGameLogData(supabase, season, floorCeilingByGame) {
     (byWeekPos[`${r.season}|${r.week}|${r.position}`] ??= []).push(r);
   }
   for (const rows of Object.values(byWeekPos)) {
-    const topScore = Math.max(...rows.map((r) => r.fantasy_points_ppr));
-    for (const r of rows) {
-      if (r.fantasy_points_ppr === topScore) {
-        const entry = (heroWinsByName[r.player_name] ??= { count: 0, weeks: [] });
-        entry.count += 1;
-        entry.weeks.push({ season: r.season, week: r.week });
-      }
+    const winners = rows.sort((a, b) => b.fantasy_points_ppr - a.fantasy_points_ppr).slice(0, HERO_WIN_SLOTS);
+    for (const r of winners) {
+      const entry = (heroWinsByName[r.player_name] ??= { count: 0, weeks: [] });
+      entry.count += 1;
+      entry.weeks.push({ season: r.season, week: r.week });
     }
   }
   for (const entry of Object.values(heroWinsByName)) {

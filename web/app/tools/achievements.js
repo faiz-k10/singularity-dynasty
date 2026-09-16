@@ -1,7 +1,7 @@
 // Shared source of truth for the nine "achievement" flags a Weekly
 // Projection Rankings row can carry (Established/Building confidence,
 // Bounce-back, On Fire, On Ice, Risky Icarus, Steady Eddy, Weekly Hero,
-// Honorable, Rug Pull) -- WeeklyDetailRow.js's expanded player banner
+// Honorable, Con Artist) -- WeeklyDetailRow.js's expanded player banner
 // renders these as full click-to-expand badges, and RankingsTable.js's
 // collapsed row renders the same list as a tiny dot preview. Both read
 // off this one function so the two views can't quietly drift out of
@@ -41,19 +41,23 @@ export function floorHitStreak(games) {
   return hits >= 2;
 }
 
-// "Honorable" / "Rug Pull" -- scored at-or-above, or strictly below,
+// "Honorable" / "Con Artist" -- scored at-or-above, or strictly below,
 // xFP in BOTH of the last 2 logged games. Same all-or-nothing shape as
 // the old 3-game xFP streak, just over 2 games and split into two
 // opposite badges instead of one heat/cold pair -- a mixed result (beat
 // it once, missed it once) earns neither. Missing xFP for either of the
 // 2 games (~12% of games, see CLAUDE.md) voids the read entirely rather
-// than judging off just one data point.
+// than judging off just one data point. ("Con Artist" was "Rug Pull"
+// until its icon got redrawn -- a small ornate carpet read as an
+// envelope/dollar sign at badge size, so the badge itself was renamed
+// to match the new comedy/tragedy-masks icon: putting on a good number,
+// then not delivering it, twice running.)
 export function xfpTrend2(games) {
   if (!games || games.length < 2) return null;
   const last2 = games.slice(0, 2);
   if (last2.some((g) => g.exp_points_ppr == null || g.fantasy_points_ppr == null)) return null;
   if (last2.every((g) => g.fantasy_points_ppr >= g.exp_points_ppr)) return "honorable";
-  if (last2.every((g) => g.fantasy_points_ppr < g.exp_points_ppr)) return "rugpull";
+  if (last2.every((g) => g.fantasy_points_ppr < g.exp_points_ppr)) return "conArtist";
   return null;
 }
 
@@ -130,6 +134,6 @@ export function getAchievements(row) {
       tier: Math.min(heroWins, HERO_MAX_TIER),
     },
     xfpFlag === "honorable" && { key: "honorable", variant: "honorable", label: "Honorable" },
-    xfpFlag === "rugpull" && { key: "rugpull", variant: "rugpull", label: "Rug Pull" },
+    xfpFlag === "conArtist" && { key: "conArtist", variant: "menace", label: "Con Artist" },
   ].filter(Boolean);
 }
