@@ -375,29 +375,32 @@ function GraduationCapIcon() {
 function ConArtistIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      {/* back mask (tragedy) -- dim, frowning, upper-left. Outline+eyes+
-          mouth share one evenodd path so the cutouts punch real holes;
-          the top knot is its own separate path so it stays solid instead
-          of getting eaten by that same evenodd rule where it touches the
-          outline's edge. */}
+      {/* back mask (tragedy) -- dim, frowning, upper-left. A real mask
+          silhouette now (arched brow, tapered chin point), not a plain
+          oval -- outline+eyes+mouth share one evenodd path so the
+          cutouts punch real holes; the top knot is its own separate
+          path so it stays solid instead of getting eaten by that same
+          evenodd rule where it touches the outline's edge. */}
       <path
-        d="M2.6,8.3 A5.4,6.4 0 1,0 13.4,8.3 A5.4,6.4 0 1,0 2.6,8.3 Z
-           M5.05,7.2 A0.85,0.85 0 1,0 6.75,7.2 A0.85,0.85 0 1,0 5.05,7.2 Z
-           M9.25,7.2 A0.85,0.85 0 1,0 10.95,7.2 A0.85,0.85 0 1,0 9.25,7.2 Z
-           M5.3,11.3 Q8,10.2 10.7,11.3 Q8,7.8 5.3,11.3 Z"
+        d="M2.245,3.02 C5.71,1.04 9.49,1.04 12.955,3.02 C14.215,9.95 10.3,15.3 7.6,16.29 C4.9,15.3 1.0,9.95 2.245,3.02 Z
+           M5.395,7.31 A0.95,0.95 0 1,0 7.295,7.31 A0.95,0.95 0 1,0 5.395,7.31 Z
+           M8.905,7.31 A0.95,0.95 0 1,0 10.805,7.31 A0.95,0.95 0 1,0 8.905,7.31 Z
+           M4.954,11.27 Q7.6,10.17 10.246,11.27 Q7.6,7.87 4.954,11.27 Z"
         opacity="0.55"
         fillRule="evenodd"
       />
-      <path d="M7.2 2.4 8.8 2.4 8 0.6Z" opacity="0.55" />
-      {/* front mask (comedy) -- solid, grinning, lower-right, overlapping */}
+      <path d="M6.8 2.9 8.4 2.9 7.6 0.9Z" opacity="0.55" />
+      {/* front mask (comedy) -- solid, grinning, lower-right, overlapping,
+          and drawn a size larger than the back mask so it reads as the
+          one "in front." */}
       <path
-        d="M8.9,13 A5.6,6.6 0 1,0 20.1,13 A5.6,6.6 0 1,0 8.9,13 Z
-           M11.3,11.8 A0.9,0.9 0 1,0 13.1,11.8 A0.9,0.9 0 1,0 11.3,11.8 Z
-           M15.9,11.8 A0.9,0.9 0 1,0 17.7,11.8 A0.9,0.9 0 1,0 15.9,11.8 Z
-           M11.6,16.2 Q14.5,17.4 17.4,16.2 Q14.5,21 11.6,16.2 Z"
+        d="M10.19,8.98 C13.82,6.91 17.78,6.91 21.41,8.98 C22.73,16.225 18.5,21.8 15.8,22.435 C13.1,21.8 8.87,16.225 10.19,8.98 Z
+           M13.49,13.465 A1,1 0 1,0 15.49,13.465 A1,1 0 1,0 13.49,13.465 Z
+           M17.11,13.465 A1,1 0 1,0 19.11,13.465 A1,1 0 1,0 17.11,13.465 Z
+           M13.028,17.605 Q15.8,18.705 18.572,17.605 Q15.8,21.205 13.028,17.605 Z"
         fillRule="evenodd"
       />
-      <path d="M13.7 6.8 15.3 6.8 14.5 5Z" />
+      <path d="M15 8.85 16.6 8.85 15.8 6.75Z" />
     </svg>
   );
 }
