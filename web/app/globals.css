@@ -15,6 +15,9 @@
   --down:#FF6B6B;
   --purple:#B18AFF;
   --frost:#6FB8E0; /* On Ice's own blue -- distinct from --neon-blue (Bounce-back already owns that hue) */
+  --cape:#FF5470; /* Weekly Hero's own crimson -- distinct from --down's coral-red and --pos-qb's pink */
+  --scholar:#2DD4BF; /* Honorable's own teal -- distinct from every other blue/green already in use */
+  --rug:#C24A5B; /* Rug Pull's own wine-red -- a Persian-carpet red, muted enough not to double as another "danger" red next to --down */
   --matchup-neutral:#F0C43D;  /* deliberately distinct from --horizon-gold --
                                   that's already "established" confidence;
                                   reusing it here would conflate the two
@@ -43,6 +46,9 @@
   --down-rgb:255,107,107;
   --purple-rgb:177,138,255;
   --frost-rgb:111,184,224;
+  --cape-rgb:255,84,112;
+  --scholar-rgb:45,212,191;
+  --rug-rgb:194,74,91;
   --matchup-neutral-rgb:240,196,61;
   --star-dim-rgb:153,151,168;
   --orbit-alpha:0.3;
@@ -67,6 +73,9 @@
     --purple:#7C3AED;
     --down:#D63F39;
     --frost:#1D6FA5;
+    --cape:#C81E4B;
+    --scholar:#0F766E;
+    --rug:#8A3341;
     --matchup-neutral:#A87B00;
     --pos-qb:#D6005E;
     --pos-rb:#007A50;
@@ -81,6 +90,9 @@
     --purple-rgb:124,58,237;
     --down-rgb:214,63,57;
     --frost-rgb:29,111,165;
+    --cape-rgb:200,30,75;
+    --scholar-rgb:15,118,110;
+    --rug-rgb:138,51,65;
     --matchup-neutral-rgb:168,123,0;
     --star-dim-rgb:104,99,111;
     --orbit-alpha:0.8;
@@ -100,6 +112,9 @@
   --purple:#7C3AED;
   --down:#D63F39;
   --frost:#1D6FA5;
+  --cape:#C81E4B;
+  --scholar:#0F766E;
+  --rug:#8A3341;
   --matchup-neutral:#A87B00;
   --pos-qb:#D6005E;
   --pos-rb:#007A50;
@@ -114,6 +129,9 @@
   --purple-rgb:124,58,237;
   --down-rgb:214,63,57;
   --frost-rgb:29,111,165;
+  --cape-rgb:200,30,75;
+  --scholar-rgb:15,118,110;
+  --rug-rgb:138,51,65;
   --matchup-neutral-rgb:168,123,0;
   --orbit-alpha:0.8;
 }
@@ -1748,6 +1766,9 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .player-achv-dot.ice{background:var(--frost); box-shadow:0 0 4px rgba(var(--frost-rgb),0.7);}
 .player-achv-dot.icarus{background:var(--purple); box-shadow:0 0 4px rgba(var(--purple-rgb),0.7);}
 .player-achv-dot.eddy{background:var(--up); box-shadow:0 0 4px rgba(var(--up-rgb),0.7);}
+.player-achv-dot.cape{background:var(--cape); box-shadow:0 0 4px rgba(var(--cape-rgb),0.7);}
+.player-achv-dot.honorable{background:var(--scholar); box-shadow:0 0 4px rgba(var(--scholar-rgb),0.7);}
+.player-achv-dot.rugpull{background:var(--rug); box-shadow:0 0 4px rgba(var(--rug-rgb),0.7);}
 
 /* Explicit text-align (and white-space below) throughout -- this table is
    nested inside a .rankings-table cell, so it's still a CSS descendant of
@@ -1970,7 +1991,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
   font-family:var(--font-ibm-plex-mono), monospace; font-size:11px; font-weight:700; letter-spacing:0.02em;
   transition:max-width .22s ease, margin-left .22s ease, opacity .16s ease;
 }
-.weekly-achievement-badge.open .weekly-achievement-label{max-width:110px; margin-left:6px; opacity:1;}
+.weekly-achievement-badge.open .weekly-achievement-label{max-width:130px; margin-left:6px; opacity:1;}
 .weekly-achievement-badge.gold .weekly-achievement-label{color:var(--horizon-gold);}
 .weekly-achievement-badge.silver .weekly-achievement-label{color:#A0AAB9;}
 .weekly-achievement-badge.blue .weekly-achievement-label{color:var(--neon-blue);}
@@ -1978,18 +1999,22 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .weekly-achievement-badge.ice .weekly-achievement-label{color:var(--frost);}
 .weekly-achievement-badge.icarus .weekly-achievement-label{color:var(--purple);}
 .weekly-achievement-badge.eddy .weekly-achievement-label{color:var(--up);}
+.weekly-achievement-badge.cape .weekly-achievement-label{color:var(--cape);}
+.weekly-achievement-badge.honorable .weekly-achievement-label{color:var(--scholar);}
+.weekly-achievement-badge.rugpull .weekly-achievement-label{color:var(--rug);}
 
-/* Heating Up (FlameIcon) / On Ice (SnowflakeIcon) / Risky Icarus
-   (NightSkyIcon) / Steady Eddy (LockIcon) -- same 24px flat-fill
-   medallion as the other two achievement badges (confidence/bounce),
-   all four small inline SVGs (WeeklyDetailRow.js) instead of platform
+/* On Fire (FlameIcon) / On Ice (SnowflakeIcon) / Risky Icarus
+   (NightSkyIcon) / Steady Eddy (LockIcon) / Weekly Hero (HeroIcon) /
+   Honorable (GraduationCapIcon) / Rug Pull (RugIcon) -- same 24px flat-
+   fill medallion as the other two achievement badges (confidence/bounce),
+   all seven small inline SVGs (WeeklyDetailRow.js) instead of platform
    emoji -- an emoji ignores the badge's own flat-fill color entirely and
    reads as pasted-on clip art next to the rest of the site's flat glyph/
    team-color/starfield-motif icon language. Every badge gets its own
-   distinct hue now (--horizon-gold/--neon-blue/--horizon/--frost/
-   --purple/--up, plus confidence's own muted gray for "building") --
-   On Ice and Steady Eddy used to reuse Bounce-back's blue and
-   Confidence's silver respectively, which meant two DIFFERENT flags
+   distinct hue (--horizon-gold/--neon-blue/--horizon/--frost/--purple/
+   --up/--cape/--scholar/--rug, plus confidence's own muted gray for
+   "building") -- On Ice and Steady Eddy used to reuse Bounce-back's blue
+   and Confidence's silver respectively, which meant two DIFFERENT flags
    could render as the same-colored dot in the Rank cell's preview.
    --purple is the same "ceiling chaser" color My Team's Analytics tab
    already uses for boom-or-bust upside, reused here for the same idea. */
@@ -2002,6 +2027,9 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .weekly-glyph-badge.ice{background:var(--frost); color:#fff; box-shadow:0 0 8px rgba(var(--frost-rgb),0.55);}
 .weekly-glyph-badge.icarus{background:var(--purple); color:#fff; box-shadow:0 0 8px rgba(var(--purple-rgb),0.55);}
 .weekly-glyph-badge.eddy{background:var(--up); color:var(--void); box-shadow:0 0 8px rgba(var(--up-rgb),0.55);}
+.weekly-glyph-badge.cape{background:var(--cape); color:#fff; box-shadow:0 0 8px rgba(var(--cape-rgb),0.55);}
+.weekly-glyph-badge.honorable{background:var(--scholar); color:var(--void); box-shadow:0 0 8px rgba(var(--scholar-rgb),0.55);}
+.weekly-glyph-badge.rugpull{background:var(--rug); color:#fff; box-shadow:0 0 8px rgba(var(--rug-rgb),0.55);}
 /* Four stats, each its own little label-over-value stack -- same
    eyebrow-adjacent mono-uppercase label language as .weekly-panel-title
    elsewhere in this row, just without the gold dash (these are plain

@@ -264,7 +264,7 @@ function NightSkyIcon() {
   );
 }
 
-// Heating Up's own icon -- Heroicons' solid "fire" glyph, in the same
+// On Fire's own icon -- Heroicons' solid "fire" glyph, in the same
 // flat-fill-plus-currentColor language as every other icon on this row
 // instead of a colorful platform emoji (which ignores the badge's own
 // color entirely and looks pasted-on next to the flat pills).
@@ -305,19 +305,95 @@ function LockIcon() {
   );
 }
 
+// Weekly Hero's own icon -- a caped figure (head + a flowing cape),
+// escalating through `tier` (1-5, see achievements.js's HERO_MAX_TIER)
+// cape-fold lines as a repeat winner racks up more weeks at the top.
+// The art stops getting busier past 5 folds; the badge's `label` text is
+// what keeps counting past that (see GlyphBadge's title below).
+function HeroIcon({ tier }) {
+  const folds = Math.max(1, Math.min(tier || 1, 5));
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M12 6.4c-4.2 1-7.3 4.1-7.3 9 0 2.9 2 4.9 2 4.9l5.3-4.2 5.3 4.2s2-2 2-4.9c0-4.9-3.1-8-7.3-9z" opacity="0.85" />
+      {Array.from({ length: folds }, (_, i) => (
+        <path
+          key={i}
+          d={`M6 ${9.2 + i * 2.1} Q12 ${11.1 + i * 2.1} 18 ${9.2 + i * 2.1}`}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1"
+          strokeLinecap="round"
+          opacity={0.45 + i * 0.11}
+        />
+      ))}
+      <circle cx="12" cy="4.3" r="2.1" />
+    </svg>
+  );
+}
+
+// Honorable's own icon -- a graduation cap (mortarboard) with its
+// tassel hanging off the back, for "kept pace with (or beat) expectation
+// two games running."
+function GraduationCapIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M12 3.2 1.5 8l10.5 4.8L20 9.2v5.4h1.5V8L12 3.2z" />
+      <path
+        d="M5 10.4v4.3c0 1.7 3.1 3.4 7 3.4s7-1.7 7-3.4v-4.3l-7 3.2-7-3.2z"
+        opacity="0.85"
+      />
+      <path d="M18.5 10v6.6" stroke="currentColor" strokeWidth="1.2" fill="none" strokeLinecap="round" />
+      <circle cx="18.5" cy="17.6" r="1.1" />
+    </svg>
+  );
+}
+
+// Rug Pull's own icon -- a small ornate carpet (border, diamond motifs,
+// fringe top and bottom), for "the floor got pulled out from under this
+// projection two games running." The Aladdin's-rug read is deliberate,
+// not a generic "down" arrow -- same flat-fill-plus-glow language as
+// every other badge, just a shape that actually says "rug."
+function RugIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+      <rect x="3" y="6.5" width="18" height="11" rx="1" strokeWidth="1.3" fill="currentColor" fillOpacity="0.15" />
+      <rect x="5.4" y="8.7" width="13.2" height="6.6" rx="0.4" strokeWidth="0.9" />
+      <path d="M9.6 12 10.8 10.8 12 12 10.8 13.2Z" fill="currentColor" stroke="none" />
+      <path d="M12 12 13.2 10.8 14.4 12 13.2 13.2Z" fill="currentColor" stroke="none" />
+      <path
+        d="M3 6.5v-1M6 6.5v-1M9 6.5v-1M12 6.5v-1M15 6.5v-1M18 6.5v-1M21 6.5v-1M3 17.5v1M6 17.5v1M9 17.5v1M12 17.5v1M15 17.5v1M18 17.5v1M21 17.5v1"
+        strokeWidth="0.8"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 // The icon each achievement key renders as in the full banner badge --
 // keyed by achievements.js's own `key` field so this can't fall out of
 // sync with which flags actually exist.
-function achievementNode({ key }, row) {
-  switch (key) {
+function achievementNode(a, row) {
+  switch (a.key) {
     case "confidence":
       return <ConfidenceBadge confidence={row.sample_confidence} />;
     case "bounce":
       return <BounceBadge note={row.notes} />;
-    case "heating":
-      return <GlyphBadge variant="heat" glyph={<FlameIcon />} title="Beat xFP in each of the last 3 games" />;
-    case "cold":
-      return <GlyphBadge variant="ice" glyph={<SnowflakeIcon />} title="Missed xFP in each of the last 3 games" />;
+    case "onFire":
+      return (
+        <GlyphBadge
+          variant="heat"
+          glyph={<FlameIcon />}
+          title="Scored at or above this week's own projected ceiling in the most recent game"
+        />
+      );
+    case "onIce":
+      return (
+        <GlyphBadge
+          variant="ice"
+          glyph={<SnowflakeIcon />}
+          title="Scored at or below that week's own projected floor in 2 of the last 3 games"
+        />
+      );
     case "volatile":
       return (
         <GlyphBadge
@@ -332,6 +408,30 @@ function achievementNode({ key }, row) {
           variant="eddy"
           glyph={<LockIcon />}
           title="Tight floor-to-ceiling range this week -- a safe, predictable floor"
+        />
+      );
+    case "hero":
+      return (
+        <GlyphBadge
+          variant="cape"
+          glyph={<HeroIcon tier={a.tier} />}
+          title={`Top scorer at ${row.position} in ${a.wins} week${a.wins === 1 ? "" : "s"} on record`}
+        />
+      );
+    case "honorable":
+      return (
+        <GlyphBadge
+          variant="honorable"
+          glyph={<GraduationCapIcon />}
+          title="Scored at or above xFP in each of the last 2 games"
+        />
+      );
+    case "rugpull":
+      return (
+        <GlyphBadge
+          variant="rugpull"
+          glyph={<RugIcon />}
+          title="Scored below xFP in each of the last 2 games"
         />
       );
     default:

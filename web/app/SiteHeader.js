@@ -35,11 +35,14 @@ export default async function SiteHeader() {
   // week. Re-rolled on every request since this is a Server Component --
   // no caching layer sits in front of it, so "every site refresh" falls
   // out for free. getAchievements() no longer emits a trend flag at all
-  // (removed entirely, see achievements.js), so every flag it returns is
-  // fair game for the ticker. Heating Up/On Ice are skipped anyway --
-  // those need each player's recent-game log, which would mean a second,
-  // heavier query (player_game_log) running on every single page of the
-  // site just for ticker flavor, not worth it for a component this size.
+  // (removed entirely, see achievements.js). On Fire/On Ice/Weekly Hero/
+  // Honorable/Rug Pull are skipped here too, quietly rather than by an
+  // explicit filter -- they all key off row.recentGames/row.heroWins,
+  // which this query below never fetches (that's player_game_log plus
+  // redraft_rankings' full publish history, a much heavier pull than this
+  // component's one lightweight top-20 query), so getAchievements() just
+  // never has the inputs to raise them here. Only Confidence/Bounce-back/
+  // Risky Icarus/Steady Eddy depend on fields this query already selects.
   let tickerItems = [];
   if (latestRedraft) {
     const { data: topRows } = await supabase

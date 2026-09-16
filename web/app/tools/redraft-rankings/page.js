@@ -162,8 +162,8 @@ async function fetchSimsMetrics(supabase) {
 
 // player_game_log already holds only the trailing two regular seasons
 // (see its own migration comment), so this pulls the whole table once --
-// no season filter needed at the query level -- and derives two different
-// things from that one fetch per player:
+// no season filter needed at the query level -- and derives four
+// different things from that one fetch per player:
 //   - avgXfp: THIS season's average xFP/game so far. xFP (ffopportunity's
 //     modeled points from that game's real opportunity -- targets, air
 //     yards, carries, situation) is retrospective, one row per COMPLETED
@@ -173,14 +173,21 @@ async function fetchSimsMetrics(supabase) {
 //   - recentGames: the player's last 5 logged games regardless of season
 //     boundary (so early in a new season, before 5 games exist yet, this
 //     naturally tails off into the end of last season instead of coming
-//     up empty) -- feeds the expanded row's game-log panel.
+//     up empty) -- feeds the expanded row's game-log panel AND
+//     achievements.js's On Fire/On Ice flags (each game here carries its
+//     own week's floor/ceiling, joined in from floorCeilingByGame -- see
+//     fetchHistoricalFloorCeiling below).
 //   - lastWeekRankByName: this player's finish among their own position
 //     in the most recent ACTUAL week on record -- "most recent" here
 //     just means the newest (season, week) with any logged games at all
 //     (the query already arrives season/week descending), since real
 //     results for the CURRENT projection week can't exist yet by
 //     definition. Powers the expanded row's player-header panel.
-async function fetchGameLogData(supabase, season) {
+//   - heroWinsByName: how many (season, week, position) groups in this
+//     ENTIRE log this player was the outright top scorer at their own
+//     position -- "Weekly Hero" in achievements.js. A tie at the top
+//     score credits every tied player, not just one arbitrarily.
+async function fetchGameLogData(supabase, season, floorCeilingByGame) {
   const { data } = await supabase
     .from("player_game_log")
     .select("player_name, position, season, week, opponent, is_home, fantasy_points_ppr, exp_points_ppr")
@@ -189,7 +196,8 @@ async function fetchGameLogData(supabase, season) {
 
   const byPlayer = {};
   for (const r of data || []) {
-    (byPlayer[r.player_name] ??= []).push(r);
+    const fc = floorCeilingByGame[`${r.player_name}|${r.season}|${r.week}`] || {};
+    (byPlayer[r.player_name] ??= []).push({ ...r, floor: fc.floor ?? null, ceiling: fc.ceiling ?? null });
   }
 
   const avgXfpByName = {};
@@ -220,7 +228,44 @@ async function fetchGameLogData(supabase, season) {
     }
   }
 
-  return { avgXfpByName, recentGamesByName, lastWeekRankByName };
+  const heroWinsByName = {};
+  const byWeekPos = {};
+  for (const r of data || []) {
+    if (r.fantasy_points_ppr == null) continue;
+    (byWeekPos[`${r.season}|${r.week}|${r.position}`] ??= []).push(r);
+  }
+  for (const rows of Object.values(byWeekPos)) {
+    const topScore = Math.max(...rows.map((r) => r.fantasy_points_ppr));
+    for (const r of rows) {
+      if (r.fantasy_points_ppr === topScore) {
+        heroWinsByName[r.player_name] = (heroWinsByName[r.player_name] || 0) + 1;
+      }
+    }
+  }
+
+  return { avgXfpByName, recentGamesByName, lastWeekRankByName, heroWinsByName };
+}
+
+// Historical Floor/Ceiling per (player, season, week) -- redraft_rankings
+// accumulates one row per player per PUBLISHED week rather than
+// overwriting the previous week's rows (the rest of this page only ever
+// reads the latest week out of it), so past weeks' projections are still
+// sitting in the table and can be matched up against player_game_log's
+// real result for that same week. That's what lets On Fire ("beat that
+// week's own ceiling") and On Ice ("missed that week's own floor") judge
+// a past game against the number that was actually projected for it,
+// instead of against this week's unrelated projection. Rows published
+// before migration 0029 predate floor/ceiling entirely and read null,
+// same as the live table already handles.
+async function fetchHistoricalFloorCeiling(supabase) {
+  const { data } = await supabase
+    .from("redraft_rankings")
+    .select("player_name, season, week, floor, ceiling");
+  const map = {};
+  for (const r of data || []) {
+    map[`${r.player_name}|${r.season}|${r.week}`] = { floor: r.floor, ceiling: r.ceiling };
+  }
+  return map;
 }
 
 // Height/weight + Sleeper's own headshot id for the expanded row's
@@ -307,11 +352,13 @@ export default async function RedraftRankingsPage({ searchParams }) {
       return { ...r, ...r.scoring_stats, positionLabel: `${r.position}${positionCounters[r.position]}` };
     });
 
-    const [simsByName, { avgXfpByName, recentGamesByName, lastWeekRankByName }, bioByNamePos] = await Promise.all([
-      fetchSimsMetrics(supabase),
-      fetchGameLogData(supabase, latest.season),
-      fetchPlayerBios(),
-    ]);
+    const floorCeilingByGame = await fetchHistoricalFloorCeiling(supabase);
+    const [simsByName, { avgXfpByName, recentGamesByName, lastWeekRankByName, heroWinsByName }, bioByNamePos] =
+      await Promise.all([
+        fetchSimsMetrics(supabase),
+        fetchGameLogData(supabase, latest.season, floorCeilingByGame),
+        fetchPlayerBios(),
+      ]);
     rankings = rankings.map((r) => {
       const sims = simsByName[r.player_name] || {};
       return {
@@ -325,6 +372,7 @@ export default async function RedraftRankingsPage({ searchParams }) {
         playActionRate: sims.playActionRate ?? null,
         recentGames: recentGamesByName[r.player_name] || [],
         lastWeekRank: lastWeekRankByName[r.player_name] || null,
+        heroWins: heroWinsByName[r.player_name] || 0,
         bio: bioByNamePos[`${normalizePlayerName(r.player_name)}|${r.position}`] || null,
       };
     });
