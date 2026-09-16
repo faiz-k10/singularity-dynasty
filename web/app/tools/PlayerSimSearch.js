@@ -6,7 +6,6 @@ import SortableTh from "./SortableTh";
 import TrendTag from "./TrendTag";
 import ConfidenceBadge from "./ConfidenceBadge";
 import TeamBadge from "./TeamBadge";
-import AchievementDots from "./AchievementDots";
 import STAT_LABELS from "./statLabels";
 import StatRadar from "./StatRadar";
 import SimilarShapeFinder from "./SimilarShapeFinder";
@@ -477,8 +476,7 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                   <td className="mono">{row.rank}</td>
                   <td className="player-cell">
                     <TrendTag trend={row.trend} /> {row.player_name}{" "}
-                    <ConfidenceBadge confidence={row.sample_confidence} />{" "}
-                    <AchievementDots achievements={(row.achievements || []).filter((a) => a.key !== "confidence")} />
+                    <ConfidenceBadge confidence={row.sample_confidence} />
                   </td>
                   <td className="mono align-left">
                     {row.position}
