@@ -198,9 +198,9 @@ body::before{
    badges appear -- just scaled down to fit a one-line ticker strip. */
 .ticker-badge{
   display:inline-flex; align-items:center; justify-content:center; width:16px; height:16px;
-  border-radius:50%; font-size:9px; line-height:1; flex-shrink:0;
+  border-radius:50%; font-size:12px; line-height:1; flex-shrink:0;
 }
-.ticker-badge svg{width:9px; height:9px; display:block;}
+.ticker-badge svg{width:13px; height:13px; display:block;}
 .ticker-badge.gold{background:var(--horizon-gold); color:var(--void); box-shadow:0 0 5px rgba(var(--horizon-gold-rgb),0.5);}
 .ticker-badge.silver{background:#A0AAB9; color:var(--void); box-shadow:0 0 4px rgba(160,170,185,0.4);}
 .ticker-badge.blue{background:var(--neon-blue); color:var(--void); box-shadow:0 0 5px rgba(var(--neon-blue-rgb),0.5);}
@@ -2007,7 +2007,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .weekly-player-achievements{display:contents;}
 .weekly-player-achievements .confidence-badge,
 .weekly-player-achievements .bounce-badge{
-  width:24px; height:24px; font-size:12px; border-width:0;
+  width:24px; height:24px; font-size:17px; border-width:0;
 }
 .weekly-player-achievements .confidence-badge.gold{
   background:var(--horizon-gold); color:var(--void);
@@ -2021,7 +2021,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
   background:var(--neon-blue); color:var(--void);
   box-shadow:0 0 8px rgba(var(--neon-blue-rgb),0.55);
 }
-.weekly-player-achievements .bounce-badge svg{width:14px; height:14px;}
+.weekly-player-achievements .bounce-badge svg{width:19px; height:19px;}
 
 /* Click/tap-to-reveal wrapper around each achievement badge -- the badge
    itself (confidence/bounce/heat/ice/icarus/eddy) renders unchanged,
@@ -2065,9 +2065,9 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    already uses for boom-or-bust upside, reused here for the same idea. */
 .weekly-glyph-badge{
   display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px;
-  border-radius:50%; font-size:13px; line-height:1; flex-shrink:0; cursor:pointer; vertical-align:middle;
+  border-radius:50%; font-size:17px; line-height:1; flex-shrink:0; cursor:pointer; vertical-align:middle;
 }
-.weekly-glyph-badge svg{width:13px; height:13px; display:block;}
+.weekly-glyph-badge svg{width:19px; height:19px; display:block;}
 .weekly-glyph-badge.heat{background:var(--horizon); color:#fff; box-shadow:0 0 8px rgba(var(--horizon-rgb),0.55);}
 .weekly-glyph-badge.ice{background:var(--frost); color:#fff; box-shadow:0 0 8px rgba(var(--frost-rgb),0.55);}
 .weekly-glyph-badge.icarus{background:var(--purple); color:#fff; box-shadow:0 0 8px rgba(var(--purple-rgb),0.55);}
