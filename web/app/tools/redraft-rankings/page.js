@@ -183,8 +183,8 @@ async function fetchSimsMetrics(supabase) {
 //     (the query already arrives season/week descending), since real
 //     results for the CURRENT projection week can't exist yet by
 //     definition. Powers the expanded row's player-header panel.
-//   - heroWinsByName: how many (season, week, position) groups in this
-//     ENTIRE log this player was the outright top scorer at their own
+//   - heroWinsByName: how many (season, week, position) groups THIS
+//     SEASON this player was the outright top scorer at their own
 //     position -- "Weekly Hero" in achievements.js. A tie at the top
 //     score credits every tied player, not just one arbitrarily.
 async function fetchGameLogData(supabase, season, floorCeilingByGame) {
@@ -232,11 +232,16 @@ async function fetchGameLogData(supabase, season, floorCeilingByGame) {
   // real week 17 WR1 finish reads as a bug at a glance if all the UI
   // shows is "1x Weekly Hero" sitting right next to THIS week's own
   // positional rank or last week's unrelated finish. Newest win first so
-  // the tooltip can lead with the most recent one.
+  // the tooltip can lead with the most recent one. Scoped to THIS season
+  // only (by request) -- player_game_log holds two trailing seasons for
+  // the game-log panel/avgXfp above, but a hero win from last season
+  // read as stale/confusing sitting next to this season's own numbers,
+  // so this filters `data` down before grouping instead of reusing it
+  // as-is like the rest of this function does.
   const heroWinsByName = {};
   const byWeekPos = {};
   for (const r of data || []) {
-    if (r.fantasy_points_ppr == null) continue;
+    if (r.fantasy_points_ppr == null || r.season !== season) continue;
     (byWeekPos[`${r.season}|${r.week}|${r.position}`] ??= []).push(r);
   }
   for (const rows of Object.values(byWeekPos)) {
