@@ -1,9 +1,50 @@
 import Link from "next/link";
+import { unstable_cache } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import ThemeToggle from "./ThemeToggle";
 import InteractiveScript from "./InteractiveScript";
 import NavStars from "./NavStars";
 import { getAchievements } from "./tools/achievements";
+import { fetchAchievementInputs, fetchLatestRedraftFieldsByName, buildAchievementRow } from "./tools/achievementsData";
+
+// The full badge set (achievementsData.js) needs a per-game floor/
+// ceiling join across ALL of redraft_rankings' publish history plus the
+// whole player_game_log table -- real weight for a component mounted on
+// EVERY page of the site. Cached for 60s (same window Player Season
+// Simulations already uses for its own weekly-data fetch) so that cost
+// is paid once per minute total, not once per page load -- the random
+// SAMPLING below still runs fresh on every request against whatever the
+// cache last returned, so "re-rolled on every site refresh" still holds
+// for the picks themselves, just not for the underlying data fetch.
+const getCachedTickerInputs = unstable_cache(
+  async () => {
+    const publicSupabase = createPublicClient();
+    const { data: latestRedraft } = await publicSupabase
+      .from("redraft_rankings")
+      .select("season, week")
+      .order("season", { ascending: false })
+      .order("week", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (!latestRedraft) return { topRows: [], achievementInputs: null, redraftFieldsByName: {} };
+
+    const [{ data: topRows }, achievementInputs, redraftFieldsByName] = await Promise.all([
+      publicSupabase
+        .from("redraft_rankings")
+        .select("player_name, position")
+        .eq("season", latestRedraft.season)
+        .eq("week", latestRedraft.week)
+        .order("rank", { ascending: true })
+        .limit(20),
+      fetchAchievementInputs(publicSupabase, latestRedraft.season),
+      fetchLatestRedraftFieldsByName(publicSupabase),
+    ]);
+    return { topRows: topRows || [], achievementInputs, redraftFieldsByName };
+  },
+  ["site-header-ticker-inputs"],
+  { revalidate: 60 }
+);
 
 // Shared by every page: the fixed telemetry ticker + full-width site banner
 // (brand, section nav, Get Started/Account, hamburger + radial-menu mobile
@@ -12,52 +53,27 @@ import { getAchievements } from "./tools/achievements";
 // tool/auth/legal page (full navigation back to the homepage section).
 export default async function SiteHeader() {
   const supabase = await createClient();
-  const [
-    {
-      data: { user },
-    },
-    { data: latestRedraft },
-  ] = await Promise.all([
-    supabase.auth.getUser(),
-    supabase
-      .from("redraft_rankings")
-      .select("season, week")
-      .order("season", { ascending: false })
-      .order("week", { ascending: false })
-      .limit(1)
-      .maybeSingle(),
-  ]);
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  // Ticker: a random assortment of 50 achievement badges (the same
-  // Risky Icarus/Steady Eddy flags Weekly Projection Rankings' player
-  // banner shows -- see achievements.js) drawn from the top 20 players
-  // of the latest published redraft_rankings week. Re-rolled on every
-  // request since this is a Server Component -- no caching layer sits in
-  // front of it, so "every site refresh" falls out for free.
-  // getAchievements() no longer emits a trend flag at all (removed
-  // entirely, see achievements.js). On Fire/On Thin Ice/Weekly Hero/
-  // Honorable/Con Artist are skipped here too, quietly rather than by an
-  // explicit filter -- they all key off row.recentGames/row.heroWins,
-  // which this query below never fetches (that's player_game_log plus
-  // redraft_rankings' full publish history, a much heavier pull than
-  // this component's one lightweight top-20 query), so getAchievements()
-  // just never has the inputs to raise them here. Confidence
-  // (Established/Building) DOES have what it needs from this query, but
-  // is explicitly filtered out by request -- it was dominating the
-  // ticker just by being the only flag nearly every top-20 player
-  // qualifies for, crowding out the rarer Risky Icarus/Steady Eddy
-  // picks.
+  // Ticker: a random assortment of 50 achievement badges -- the FULL set
+  // (On Fire/On Thin Ice/Risky Icarus/Steady Eddy/Weekly Hero/Honorable/
+  // Con Artist; Confidence excluded, see below) drawn from the top 20
+  // players of the latest published redraft_rankings week, same as every
+  // other badge surface on the site now uses (achievementsData.js).
+  // Confidence (Established/Building) is the one flag deliberately left
+  // out by request -- it's common enough among the top 20 that it was
+  // dominating the ticker and crowding out every rarer flag. The
+  // expensive per-player data (getCachedTickerInputs above) is cached
+  // 60s; the random SAMPLING here still runs fresh on every request
+  // against whatever that cache last returned, so "re-rolled on every
+  // site refresh" still holds for the actual picks shown.
   let tickerItems = [];
-  if (latestRedraft) {
-    const { data: topRows } = await supabase
-      .from("redraft_rankings")
-      .select("player_name, floor, ceiling, projection, sample_confidence, notes")
-      .eq("season", latestRedraft.season)
-      .eq("week", latestRedraft.week)
-      .order("rank", { ascending: true })
-      .limit(20);
+  const { topRows, achievementInputs, redraftFieldsByName } = await getCachedTickerInputs();
+  if (achievementInputs) {
     const pool = (topRows || []).flatMap((r) =>
-      getAchievements(r)
+      getAchievements(buildAchievementRow(r.player_name, r.position, { ...achievementInputs, redraftFieldsByName }))
         .filter((a) => a.key !== "confidence")
         .map((a) => ({
           name: r.player_name,
