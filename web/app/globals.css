@@ -200,7 +200,10 @@ body::before{
   display:inline-flex; align-items:center; justify-content:center; width:16px; height:16px;
   border-radius:50%; font-size:12px; line-height:1; flex-shrink:0;
 }
-.ticker-badge svg{width:13px; height:13px; display:block;}
+/* 14px in a 16px circle -- 1px margin each side, same clean-pixel-grid
+   reasoning as .confidence-badge svg above (an odd margin can't split
+   evenly and ends up looking a pixel off-center on one side). */
+.ticker-badge svg{width:14px; height:14px; display:block;}
 .ticker-badge.gold{background:var(--horizon-gold); color:var(--void); box-shadow:0 0 5px rgba(var(--horizon-gold-rgb),0.5);}
 .ticker-badge.silver{background:#A0AAB9; color:var(--void); box-shadow:0 0 4px rgba(160,170,185,0.4);}
 .ticker-badge.icarus{background:var(--purple); color:#fff; box-shadow:0 0 5px rgba(var(--purple-rgb),0.5);}
@@ -1333,8 +1336,18 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 
 .confidence-badge{
   display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px;
-  border-radius:50%; font-size:10px; flex-shrink:0; cursor:default; vertical-align:middle;
+  border-radius:50%; flex-shrink:0; cursor:default; vertical-align:middle;
 }
+/* Icon size picked so it divides evenly into the circle's own size on
+   both sides (18-14=4, 2px margin each side) -- an ODD margin (e.g. the
+   old 19px icon in a 24px circle, 2.5px each side) can't land on a clean
+   pixel grid, so the browser rounds one side up and the other down,
+   producing a small but real 1px left/right (or top/bottom) shift. That
+   was the actual, measurable cause of these ever reading as "not quite
+   centered" -- not just an optical illusion from the icon shapes
+   themselves, confirmed by checking getBoundingClientRect, not just
+   getBBox, before and after. */
+.confidence-badge svg{width:14px; height:14px; display:block;}
 .confidence-badge.gold{background:rgba(255,199,115,0.18); color:var(--horizon-gold); border:1px solid rgba(255,199,115,0.4);}
 .confidence-badge.silver{background:rgba(160,170,185,0.15); color:#A0AAB9; border:1px solid rgba(160,170,185,0.35);}
 
@@ -2000,8 +2013,13 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    (confidence null) doesn't leave a stray gap in the flex row. */
 .weekly-player-achievements{display:contents;}
 .weekly-player-achievements .confidence-badge{
-  width:24px; height:24px; font-size:17px; border-width:0;
+  width:24px; height:24px; border-width:0;
 }
+/* 20px icon in a 24px circle -- 2px margin each side, a clean pixel
+   grid (see .confidence-badge svg's own comment for why that matters).
+   Matches .weekly-glyph-badge svg's identical 20-in-24 ratio right
+   below, so every badge in this row sizes its own art the same way. */
+.weekly-player-achievements .confidence-badge svg{width:20px; height:20px;}
 .weekly-player-achievements .confidence-badge.gold{
   background:var(--horizon-gold); color:var(--void);
   box-shadow:0 0 8px rgba(var(--horizon-gold-rgb),0.55);
@@ -2054,7 +2072,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
   display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px;
   border-radius:50%; font-size:17px; line-height:1; flex-shrink:0; cursor:pointer; vertical-align:middle;
 }
-.weekly-glyph-badge svg{width:19px; height:19px; display:block;}
+.weekly-glyph-badge svg{width:20px; height:20px; display:block;}
 .weekly-glyph-badge.heat{background:var(--horizon); color:#fff; box-shadow:0 0 8px rgba(var(--horizon-rgb),0.55);}
 .weekly-glyph-badge.ice{background:var(--frost); color:#fff; box-shadow:0 0 8px rgba(var(--frost-rgb),0.55);}
 .weekly-glyph-badge.icarus{background:var(--purple); color:#fff; box-shadow:0 0 8px rgba(var(--purple-rgb),0.55);}
