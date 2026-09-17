@@ -334,8 +334,10 @@ export default function InteractiveScript({ tickerItems } = {}) {
        tickerItems (passed from the server-rendered homepage,
        SiteHeader.js) is the source of truth: 50 real {name, key, variant,
        label} picks already randomly sampled server-side from the top 20
-       players' Confidence/Risky Icarus/Steady Eddy flags -- see
-       achievements.js. RISING/FALLING/STEADY used to be the whole
+       players' Risky Icarus/Steady Eddy flags -- see achievements.js.
+       Confidence (Established/Building) is deliberately excluded there
+       by request -- it's common enough among the top 20 that it drowned
+       out the rarer flags. RISING/FALLING/STEADY used to be the whole
        ticker; that's gone in favor of the same badge language the rest
        of the site uses. Falls back to a small made-up sample only if the
        prop wasn't provided (e.g. no rankings published yet). Markup
@@ -368,8 +370,6 @@ export default function InteractiveScript({ tickerItems } = {}) {
       "Ja'Marr Chase",
     ];
     const fallbackVariants = [
-      { key: "confidence", variant: "gold", label: "Established" },
-      { key: "confidence", variant: "silver", label: "Building" },
       { key: "volatile", variant: "icarus", label: "Risky Icarus" },
       { key: "locked", variant: "eddy", label: "Steady Eddy" },
     ];

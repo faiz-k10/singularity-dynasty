@@ -29,21 +29,24 @@ export default async function SiteHeader() {
   ]);
 
   // Ticker: a random assortment of 50 achievement badges (the same
-  // Confidence/Risky Icarus/Steady Eddy flags Weekly Projection
-  // Rankings' player banner shows -- see achievements.js) drawn from the
-  // top 20 players of the latest published redraft_rankings week.
-  // Re-rolled on every request since this is a Server Component -- no
-  // caching layer sits in front of it, so "every site refresh" falls out
-  // for free. getAchievements() no longer emits a trend flag at all
-  // (removed entirely, see achievements.js). On Fire/On Thin Ice/Weekly
-  // Hero/Honorable/Con Artist are skipped here too, quietly rather than
-  // by an explicit filter -- they all key off row.recentGames/
-  // row.heroWins, which this query below never fetches (that's
-  // player_game_log plus redraft_rankings' full publish history, a much
-  // heavier pull than this component's one lightweight top-20 query), so
-  // getAchievements() just never has the inputs to raise them here. Only
-  // Confidence/Risky Icarus/Steady Eddy depend on fields this query
-  // already selects.
+  // Risky Icarus/Steady Eddy flags Weekly Projection Rankings' player
+  // banner shows -- see achievements.js) drawn from the top 20 players
+  // of the latest published redraft_rankings week. Re-rolled on every
+  // request since this is a Server Component -- no caching layer sits in
+  // front of it, so "every site refresh" falls out for free.
+  // getAchievements() no longer emits a trend flag at all (removed
+  // entirely, see achievements.js). On Fire/On Thin Ice/Weekly Hero/
+  // Honorable/Con Artist are skipped here too, quietly rather than by an
+  // explicit filter -- they all key off row.recentGames/row.heroWins,
+  // which this query below never fetches (that's player_game_log plus
+  // redraft_rankings' full publish history, a much heavier pull than
+  // this component's one lightweight top-20 query), so getAchievements()
+  // just never has the inputs to raise them here. Confidence
+  // (Established/Building) DOES have what it needs from this query, but
+  // is explicitly filtered out by request -- it was dominating the
+  // ticker just by being the only flag nearly every top-20 player
+  // qualifies for, crowding out the rarer Risky Icarus/Steady Eddy
+  // picks.
   let tickerItems = [];
   if (latestRedraft) {
     const { data: topRows } = await supabase
@@ -54,12 +57,14 @@ export default async function SiteHeader() {
       .order("rank", { ascending: true })
       .limit(20);
     const pool = (topRows || []).flatMap((r) =>
-      getAchievements(r).map((a) => ({
-        name: r.player_name,
-        key: a.key,
-        variant: a.variant,
-        label: a.label,
-      }))
+      getAchievements(r)
+        .filter((a) => a.key !== "confidence")
+        .map((a) => ({
+          name: r.player_name,
+          key: a.key,
+          variant: a.variant,
+          label: a.label,
+        }))
     );
     if (pool.length > 0) {
       tickerItems = Array.from({ length: 50 }, () => pool[Math.floor(Math.random() * pool.length)]);
