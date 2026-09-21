@@ -81,6 +81,21 @@ APPLY_SLEEPER_BLEND <- TRUE  # unlike APPLY_MATCHUP_MULTIPLIER, this IS
                               # walk-forward validated across two full
                               # real seasons -- on by default.
 
+# Sleeper omits its projection for any player it knows is out (inactive/
+# injured) -- checked against real 2026 data: of 45 players this model had
+# at >=5 pts that Sleeper had no projection for (Weeks 1-2), 44 recorded
+# zero snaps. The blend above silently fell back to 100% our own number for
+# them, which is how Nico Collins/Josh Jacobs/Kyler Murray etc. went out at
+# 13-17 pts in Week 2 while nflreadr's injury report (load_out_players)
+# missed them. This treats "Sleeper has no projection AND our own median is
+# >= SLEEPER_MISSING_OUT_MIN" as OUT too, same zero-projection/"OUT"-note
+# handling as an official designation. Guarded: needs a healthy Sleeper
+# payload (>= SLEEPER_MISSING_OUT_MIN_PAYLOAD entries) so a truncated fetch
+# can't zero out the whole slate. Set FALSE to disable.
+APPLY_SLEEPER_MISSING_OUT <- TRUE
+SLEEPER_MISSING_OUT_MIN <- 3
+SLEEPER_MISSING_OUT_MIN_PAYLOAD <- 150
+
 # Sleeper's join-name normalization -- their player dictionary drops name
 # suffixes ("Luther Burden" instead of "Luther Burden III"); this model's
 # own names (from nflreadr) keep them, same mismatch web/app/my-team/
@@ -1465,6 +1480,20 @@ export_for_supabase <- function(df, target_season = TARGET_SEASON, week = NULL) 
     cat("Injury report unavailable this run -- skipping OUT overrides:", conditionMessage(e), "\n")
     character(0)
   })
+  if (APPLY_SLEEPER_MISSING_OUT) {
+    sm <- tryCatch(fetch_sleeper_median_projections(season, week), error = function(e) NULL)
+    if (!is.null(sm) && length(sm) >= SLEEPER_MISSING_OUT_MIN_PAYLOAD) {
+      keys <- paste0(normalize_sleeper_name(df$player_name), "|", df$position)
+      ghost <- !(keys %in% names(sm)) & df$median >= SLEEPER_MISSING_OUT_MIN & !(df$player_name %in% out_players)
+      if (any(ghost)) {
+        cat("No Sleeper projection + our median >=", SLEEPER_MISSING_OUT_MIN, "-> treated as OUT:", sum(ghost), "player(s) -",
+            paste(sprintf("%s (%.1f)", df$player_name[ghost], df$median[ghost]), collapse = ", "), "\n")
+        out_players <- c(out_players, df$player_name[ghost])
+      }
+    } else {
+      cat("Sleeper payload unavailable/too small -- skipping the no-projection OUT check\n")
+    }
+  }
   is_out <- df$player_name %in% out_players
   if (length(out_players) > 0) {
     cat("OUT this week (projection/ceiling set to 0):", sum(is_out), "player(s) -",

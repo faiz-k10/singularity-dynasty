@@ -333,6 +333,19 @@ revisited.
 seasons, not a partial-season situation the validation never actually
 tested.
 
+### No-Sleeper-projection = OUT (added after 2026 Week 2)
+
+Sleeper leaves a player out of its projections when it knows he's out.
+The blend's "no Sleeper projection -> 100% our own number" fallback (fine
+for deep bench) therefore let real inactives through at full value in
+Week 2 (Collins 17.1, Jacobs 13.7, Murray 14.9 ...) while nflreadr's
+injury report missed them. Checked on real data: of 45 players we had at
+>=5 pts with no Sleeper projection (Weeks 1-2), 44 recorded zero snaps.
+`APPLY_SLEEPER_MISSING_OUT` now treats "no Sleeper projection AND our
+median >= 3" as OUT (zeroed, "OUT" note), guarded by a minimum Sleeper
+payload size. Scored on Week 2 with those players at 0: MAE 4.03 -> 2.98
+vs Sleeper's 3.09 (hindsight-fitted on 2 weeks -- watch it in Week 3).
+
 ## QB weekly median: passing/rushing split
 
 Every other position's weekly median is one `weighted_quantile()` call on
