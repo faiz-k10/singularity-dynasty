@@ -460,6 +460,21 @@ function SproutIcon() {
   );
 }
 
+// Sell High's own icon -- the literal inverse of SproutIcon, same paths
+// rotated 180deg around center. A wilting sprout for a badge that's the
+// literal inverse of Buy Low's logic.
+function WiltIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <g transform="rotate(180 12 12)">
+        <path d="M12 20V11" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" />
+        <path d="M12 14.2c-3.6 0-6.2-2.3-6.2-6.5C9.9 8 12 10.4 12 14.2z" />
+        <path d="M12 11.3c2.9 0 5.1-1.9 5.1-5.4C13.9 6 12 8.1 12 11.3z" opacity="0.85" />
+      </g>
+    </svg>
+  );
+}
+
 // The icon each achievement key renders as in the full banner badge --
 // keyed by achievements.js's own `key` field so this can't fall out of
 // sync with which flags actually exist.
@@ -507,6 +522,14 @@ function achievementNode(a, row) {
           variant="sprout"
           glyph={<SproutIcon />}
           title="High usage (WOPR) that hasn't shown up in points the last 2 games -- volume tends to catch up"
+        />
+      );
+    case "sellHigh":
+      return (
+        <GlyphBadge
+          variant="peak"
+          glyph={<WiltIcon />}
+          title="Low usage (WOPR) despite scoring above median the last 2 games -- results outrunning the opportunity"
         />
       );
     case "honorable":

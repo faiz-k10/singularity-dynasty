@@ -1,7 +1,7 @@
-// Shared source of truth for the nine "achievement" flags a Weekly
+// Shared source of truth for the ten "achievement" flags a Weekly
 // Projection Rankings row can carry (Established/Building confidence,
-// On Fire, On Thin Ice, Risky Icarus, Steady Eddy, Buy Low, Weekly Hero,
-// Honorable, Con Artist) -- WeeklyDetailRow.js's expanded player banner renders
+// On Fire, On Thin Ice, Risky Icarus, Steady Eddy, Buy Low, Sell High,
+// Weekly Hero, Honorable, Con Artist) -- WeeklyDetailRow.js's expanded player banner renders
 // these as full click-to-expand badges, and RankingsTable.js's collapsed
 // row renders the same list as a tiny dot preview. Both read off this
 // one function so the two views can't quietly drift out of sync with
@@ -143,6 +143,26 @@ export function buyLowFlag(wopr, games) {
   return underperformingMedianLast2(games);
 }
 
+// "Sell High" -- the literal inverse of Buy Low: LOW usage that's still
+// somehow scoring above its own median 2 games running. If the workload
+// isn't really there, the recent results are more likely luck (TD
+// variance, garbage time, a soft matchup) than a repeatable level --
+// exactly the opposite argument Buy Low makes for volume winning out.
+// USAGE_LOW_WOPR (0.20) was picked to land at roughly the same rarity as
+// USAGE_HIGH_WOPR (0.55) off the same live pool check (27 vs 26 players
+// among the meaningfully-projected pool), not just mirrored arithmetically.
+export const USAGE_LOW_WOPR = 0.2;
+export function overperformingMedianLast2(games) {
+  if (!games || games.length < 2) return false;
+  const last2 = games.slice(0, 2);
+  if (last2.some((g) => g.fantasy_points_ppr == null || g.median == null)) return false;
+  return last2.every((g) => g.fantasy_points_ppr > g.median);
+}
+export function sellHighFlag(wopr, games) {
+  if (wopr == null || wopr > USAGE_LOW_WOPR) return false;
+  return overperformingMedianLast2(games);
+}
+
 // "Weekly Hero" -- outright top scorer at their own position for a given
 // (season, week), counted across every week player_game_log holds (both
 // trailing seasons, not just the current one -- see page.js's
@@ -167,6 +187,7 @@ export function getAchievements(row) {
   const xfpFlag = xfpTrend2(row.recentGames);
   const heroWins = Math.max(0, row.heroWins || 0);
   const buyLow = buyLowFlag(row.wopr, row.recentGames);
+  const sellHigh = sellHighFlag(row.wopr, row.recentGames);
 
   return [
     (isEstablished || isBuilding) && {
@@ -179,6 +200,7 @@ export function getAchievements(row) {
     spread === "volatile" && { key: "volatile", variant: "icarus", label: "Risky Icarus" },
     spread === "locked" && { key: "locked", variant: "eddy", label: "Steady Eddy" },
     buyLow && { key: "buyLow", variant: "sprout", label: "Buy Low" },
+    sellHigh && { key: "sellHigh", variant: "peak", label: "Sell High" },
     heroWins > 0 && {
       key: "hero",
       variant: "cape",
