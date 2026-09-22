@@ -2018,7 +2018,18 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 /* Radar is an SVG with a fixed viewBox -- shrinking its rendered CSS
    width scales the whole chart (paths AND text) down together, no
    separate font-size overrides needed inside StatRadar.js itself. */
-.stat-detail-grid .stat-panel-radar{max-width:340px;}
+/* flex:0 0 340px, not just max-width:340px -- .stat-panel-radar is now a
+   flex child of .stat-panel-radar-row (not a direct grid item). A grid
+   item stretches to fill its track by default, so max-width alone used
+   to be the only thing capping it at 340px; a flex item has no such
+   default stretch, so with flex-basis left at auto it just hugged its
+   own content width instead (confirmed live: shrank to 326px, plus
+   shrink:0 alone didn't fix it -- shrink only stops shrinking BELOW a
+   basis, it doesn't grow the item TO one). flex-basis:340px is what
+   actually reproduces the old "always exactly 340 when there's room"
+   sizing; shrink:0 keeps that promise unconditional rather than
+   quietly softening it under the new pace panel's own min-width. */
+.stat-detail-grid .stat-panel-radar{max-width:340px; flex:0 0 340px;}
 .stat-detail-grid .pctile-card{margin-top:8px; padding-top:8px;}
 /* PercentileCard now lives in its own top-level panel (.stat-panel-
    percentile) instead of stacked under the stat table -- the divider
@@ -2049,13 +2060,33 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    width. */
 .stat-panel-table{grid-area:table; display:flex; flex-direction:column; justify-content:center;}
 .stat-panel-percentile{grid-area:percentile; display:flex; flex-direction:column; justify-content:center;}
-.stat-panel-radar{grid-area:radar;}
 /* 440 (not the old 340) so the panel actually uses close to its natural
    grid-column width instead of capping well under it -- StatRadar's own
    point-to-label gap is a fraction of the rendered size, so a wider box
    gives the labels real physical breathing room on top of that, and
    offsets MAX_R having come down to fit the bigger gap. */
 .stat-panel-radar{max-width:440px; display:flex; flex-direction:column; align-items:center;}
+/* Player Season Simulations' compact .stat-detail-grid caps the radar
+   back down to 340px (further below) -- routinely narrower than its own
+   1fr grid track on anything wider than a laptop, which used to just be
+   dead space (confirmed live: 266px of it at a 2000px viewport). Moved
+   grid-area:radar off .stat-panel-radar itself onto this new wrapper
+   (.stat-panel-radar is no longer a direct grid child, so its own
+   grid-area would be inert anyway) so the radar and the new actual-
+   points-vs-pace panel can lay out as flex siblings sharing that one
+   cell, without touching the grid's own column/area definitions or any
+   other panel. flex-wrap so a narrower viewport (where the radar's
+   340px alone exceeds the track width) drops the pace panel to its own
+   line below the radar instead of squeezing both, rather than needing
+   its own breakpoint. */
+.stat-panel-radar-row{grid-area:radar; display:flex; gap:14px; align-items:flex-start; flex-wrap:wrap;}
+.stat-panel-pace{flex:1; min-width:140px; display:flex; flex-direction:column; gap:6px; justify-content:center;}
+.stat-panel-pace-actual{font-family:var(--font-space-grotesk); font-size:22px; font-weight:700; color:var(--star); line-height:1.25;}
+.stat-panel-pace-games{display:block; font-family:var(--font-ibm-plex-mono), monospace; font-size:11px; font-weight:400; color:var(--star-dim); margin-top:2px;}
+.stat-panel-pace-delta{font-family:var(--font-ibm-plex-mono), monospace; font-size:14px; font-weight:600;}
+.stat-panel-pace-delta.pace-hot{color:var(--up);}
+.stat-panel-pace-delta.pace-cold{color:var(--down);}
+.stat-panel-pace-pctile{font-family:var(--font-ibm-plex-mono), monospace; font-size:11px; color:var(--star-dim);}
 
 /* Weekly Projection Rankings' own click-to-expand row (WeeklyDetailRow.js)
    -- same .stat-detail-row/.stat-panel/.row-expandable chrome as Player

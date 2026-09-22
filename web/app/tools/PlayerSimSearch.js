@@ -175,14 +175,53 @@ function StatDetailRow({ row, colSpan, shapePeers }) {
           <div className="stat-panel stat-panel-percentile">
             <PercentileCard stats={percentileStats} position={row.position} selection={selection} onSelectCell={selectCell} />
           </div>
-          <div className="stat-panel stat-panel-radar">
-            <StatRadar
-              entries={radarEntries}
-              selection={selection}
-              startDeg={radarStartDeg}
-              compareEntries={compareEntries}
-              onSelectKey={selectRow}
-            />
+          {/* Radar keeps its own exact size/position (grid-area:radar,
+              max-width:340px) unchanged -- this wrapper is what actually
+              claims that grid area now, with the radar and the new pace
+              panel laid out as flex siblings inside it. The radar's own
+              max-width (340px) is routinely narrower than its 1fr grid
+              track on a wide screen, which is real unused space in that
+              same cell rather than something borrowed from the table/
+              percentile columns -- confirmed live (266px of it at
+              2000px viewport width) before building this. */}
+          <div className="stat-panel-radar-row">
+            <div className="stat-panel stat-panel-radar">
+              <StatRadar
+                entries={radarEntries}
+                selection={selection}
+                startDeg={radarStartDeg}
+                compareEntries={compareEntries}
+                onSelectKey={selectRow}
+              />
+            </div>
+            {/* Actual points scored so far this season + vs Pace, spelled
+                out in the same units and color language (--up/--down) as
+                the Range bar's own pace-marker-hot/cold tick and the main
+                row's vs Pace/Pace %ile columns -- just with the raw
+                actual-points total those columns don't otherwise show.
+                Omitted entirely (not a placeholder) when there's no
+                player_actual_production data yet for this player, same
+                null-handling every other nullable metric on this page
+                already uses. */}
+            {row.gamesPlayed > 0 && row.currentPPG != null && row.regressionScore != null && (
+              <div className="stat-panel stat-panel-pace">
+                <div className="stat-radar-label">This season</div>
+                <div className="stat-panel-pace-actual">
+                  {(row.currentPPG * row.gamesPlayed).toFixed(1)}
+                  <span className="stat-panel-pace-games">
+                    {" "}
+                    pts · {row.gamesPlayed} {row.gamesPlayed === 1 ? "game" : "games"}
+                  </span>
+                </div>
+                <div className={`stat-panel-pace-delta ${row.regressionScore >= 0 ? "pace-hot" : "pace-cold"}`}>
+                  {row.regressionScore >= 0 ? "+" : ""}
+                  {row.regressionScore.toFixed(2)} vs. pace
+                </div>
+                {row.outcomePercentile != null && (
+                  <div className="stat-panel-pace-pctile">{ordinal(row.outcomePercentile)} percentile pace</div>
+                )}
+              </div>
+            )}
           </div>
           <SimilarShapeFinder
             ownName={row.player_name}
