@@ -1121,7 +1121,19 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    the standard fix. Only every cell here uses border-bottom (no
    border-top/left/right anywhere in .rankings-table's rules), so
    switching away from collapse doesn't introduce doubled border lines. */
-.player-sims-table{border-collapse:separate; border-spacing:0;}
+.player-sims-table{border-collapse:separate; border-spacing:0; table-layout:fixed;}
+/* table-layout:fixed (not the .rankings-table default of auto) --
+   without it, the expanded stat-detail-row's colSpan cell (PercentileCard
+   + SimilarShapeFinder's panels inside .stat-detail-grid) could report a
+   spuriously enormous intrinsic "preferred" width under auto layout,
+   which the browser's auto-layout algorithm then propagates back to
+   inflate every real column in the table to match -- confirmed live: the
+   table's own computed width hit ~1.5 MILLION px, silently pushing every
+   number in the expanded panel off-screen (looked like the whole detail
+   row was just blank). Fixed layout sizes columns from the header row
+   only and never lets a spanned cell's content push column widths
+   around, which is exactly what a table with frozen pixel-width columns
+   (rank-cell/player-cell above) already assumes anyway. */
 
 /* Frozen-pane columns (#, Player, Pos) on Player Season Simulations only
    -- scoped to .player-sims-table specifically, not the shared
