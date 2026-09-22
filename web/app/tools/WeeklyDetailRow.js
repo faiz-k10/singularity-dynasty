@@ -465,16 +465,31 @@ function SproutIcon() {
   );
 }
 
-// Sell High's own icon -- the literal inverse of SproutIcon, same paths
-// rotated 180deg around center. A wilting sprout for a badge that's the
-// literal inverse of Buy Low's logic.
-function WiltIcon() {
+// Sell High's own icon -- a cinched money bag with a $ punched through
+// it (the $ is filled with var(--peak), the badge's own background
+// color, so in both light and dark theme it reads as a genuine cutout
+// down to the badge behind the bag, not just a same-color line drawn on
+// top). Replaced an earlier "wilting sprout" (SproutIcon rotated 180deg,
+// the literal inverse of Buy Low's art) that tested as too abstract to
+// read at a glance -- a money bag says "cash out" far more directly.
+// Centered by the same pixel-mass-centroid method as the star/graduation
+// cap above (rasterized the bag-minus-$ silhouette, measured the average
+// position of every filled pixel, translated until that centroid landed
+// within 0.01 units of (12,12) -- the bag's neck being narrower than its
+// base means a naive bbox-center placement reads low-right otherwise).
+function MoneyBagIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <g transform="rotate(180 12 12)">
-        <path d="M12 20V11" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" />
-        <path d="M12 14.2c-3.6 0-6.2-2.3-6.2-6.5C9.9 8 12 10.4 12 14.2z" />
-        <path d="M12 11.3c2.9 0 5.1-1.9 5.1-5.4C13.9 6 12 8.1 12 11.3z" opacity="0.85" />
+      <g transform="translate(-1.085,-1.115)">
+        <path d="M10.3 4.2c-.5 0-1 .3-1.1.8l-.5 1.7c-2.8 1.1-4.7 3.8-4.7 7 0 4.3 3.9 7.8 9 7.8s9-3.5 9-7.8c0-3.2-1.9-5.9-4.7-7l-.5-1.7c-.1-.5-.6-.8-1.1-.8z" />
+        <path
+          d="M12 8.3v9.4M14.1 10c-.4-.4-1.2-.8-2-.8-1.1 0-2 .6-2 1.6 0 1 1 1.4 2 1.7 1.3.3 2.3.8 2.3 1.9 0 1-.9 1.7-2.1 1.7-.9 0-1.8-.4-2.3-.9"
+          stroke="var(--peak)"
+          strokeWidth="1.4"
+          fill="none"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
       </g>
     </svg>
   );
@@ -533,7 +548,7 @@ function achievementNode(a, row) {
       return (
         <GlyphBadge
           variant="peak"
-          glyph={<WiltIcon />}
+          glyph={<MoneyBagIcon />}
           title="Low usage (WOPR) despite scoring above median the last 2 games -- results outrunning the opportunity"
         />
       );
