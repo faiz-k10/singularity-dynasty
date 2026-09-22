@@ -9,22 +9,28 @@
 // original Weekly Projection Rankings version -- same thresholds, same
 // season-spanning recentGames, same all-or-nothing xFP rules.
 
-// Historical Floor/Ceiling per (player, season, week) -- redraft_rankings
-// accumulates one row per player per PUBLISHED week rather than
-// overwriting the previous week's rows, so past weeks' projections are
-// still sitting in the table and can be matched up against
-// player_game_log's real result for that same week. That's what lets On
-// Fire ("beat that week's own ceiling") and On Thin Ice ("missed that
-// week's own floor") judge a past game against the number that was
-// actually projected for it. Rows published before migration 0029
-// predate floor/ceiling entirely and read null.
+// Historical Floor/Ceiling/Median per (player, season, week) --
+// redraft_rankings accumulates one row per player per PUBLISHED week
+// rather than overwriting the previous week's rows, so past weeks'
+// projections are still sitting in the table and can be matched up
+// against player_game_log's real result for that same week. That's what
+// lets On Fire ("beat that week's own ceiling"/"beat that week's own
+// median") and On Thin Ice ("missed that week's own floor"/"missed that
+// week's own median") judge a past game against the numbers that were
+// actually projected for it. `projection` is that week's median (see
+// CLAUDE.md -- it stays in the DB as the internal sort basis even though
+// it's not its own visible column anymore), renamed to `median` here to
+// avoid confusion with a ROW's own current-week projection field
+// elsewhere in this file. Rows published before migration 0029 predate
+// floor/ceiling entirely and read null; median (`projection`) has always
+// existed.
 export async function fetchHistoricalFloorCeiling(supabase) {
   const { data } = await supabase
     .from("redraft_rankings")
-    .select("player_name, season, week, floor, ceiling");
+    .select("player_name, season, week, floor, ceiling, projection");
   const map = {};
   for (const r of data || []) {
-    map[`${r.player_name}|${r.season}|${r.week}`] = { floor: r.floor, ceiling: r.ceiling };
+    map[`${r.player_name}|${r.season}|${r.week}`] = { floor: r.floor, ceiling: r.ceiling, median: r.projection };
   }
   return map;
 }
@@ -46,7 +52,12 @@ export async function fetchAchievementInputs(supabase, season) {
   const byPlayer = {};
   for (const r of data || []) {
     const fc = floorCeilingByGame[`${r.player_name}|${r.season}|${r.week}`] || {};
-    (byPlayer[r.player_name] ??= []).push({ ...r, floor: fc.floor ?? null, ceiling: fc.ceiling ?? null });
+    (byPlayer[r.player_name] ??= []).push({
+      ...r,
+      floor: fc.floor ?? null,
+      ceiling: fc.ceiling ?? null,
+      median: fc.median ?? null,
+    });
   }
   const recentGamesByName = {};
   for (const [name, games] of Object.entries(byPlayer)) {

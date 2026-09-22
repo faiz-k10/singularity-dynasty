@@ -15,7 +15,7 @@
   --down:#FF6B6B;
   --purple:#B18AFF;
   --frost:#6FB8E0; /* On Ice's own blue -- distinct from --neon-blue (Bounce-back already owns that hue) */
-  --cape:#FF5470; /* Weekly Hero's own crimson -- distinct from --down's coral-red and --pos-qb's pink */
+  --cape:#B22234; /* Weekly Hero's own patriotic red (Old Glory Red), by request */
   --scholar:#2DD4BF; /* Honorable's own teal -- distinct from every other blue/green already in use */
   --menace:#6B0F2A; /* Con Artist's own color -- a near-black blood red, deliberately darker/more sinister than any other badge hue (incl. --down's coral-red) to read as a warning, not just another accent */
   --matchup-neutral:#F0C43D;  /* deliberately distinct from --horizon-gold --
@@ -46,7 +46,7 @@
   --down-rgb:255,107,107;
   --purple-rgb:177,138,255;
   --frost-rgb:111,184,224;
-  --cape-rgb:255,84,112;
+  --cape-rgb:178,34,52;
   --scholar-rgb:45,212,191;
   --menace-rgb:107,15,42;
   --matchup-neutral-rgb:240,196,61;
@@ -73,7 +73,7 @@
     --purple:#7C3AED;
     --down:#D63F39;
     --frost:#1D6FA5;
-    --cape:#C81E4B;
+    --cape:#B22234;
     --scholar:#0F766E;
     --menace:#4A0A1D;
     --matchup-neutral:#A87B00;
@@ -90,7 +90,7 @@
     --purple-rgb:124,58,237;
     --down-rgb:214,63,57;
     --frost-rgb:29,111,165;
-    --cape-rgb:200,30,75;
+    --cape-rgb:178,34,52;
     --scholar-rgb:15,118,110;
     --menace-rgb:74,10,29;
     --matchup-neutral-rgb:168,123,0;
@@ -112,7 +112,7 @@
   --purple:#7C3AED;
   --down:#D63F39;
   --frost:#1D6FA5;
-  --cape:#C81E4B;
+  --cape:#B22234;
   --scholar:#0F766E;
   --menace:#4A0A1D;
   --matchup-neutral:#A87B00;
@@ -129,7 +129,7 @@
   --purple-rgb:124,58,237;
   --down-rgb:214,63,57;
   --frost-rgb:29,111,165;
-  --cape-rgb:200,30,75;
+  --cape-rgb:178,34,52;
   --scholar-rgb:15,118,110;
   --menace-rgb:74,10,29;
   --matchup-neutral-rgb:168,123,0;

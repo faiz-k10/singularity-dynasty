@@ -15,54 +15,60 @@
 // now instead of being intercepted into its own badge).
 
 // "On Fire" -- true if EITHER: (A) hit or beat THAT WEEK'S OWN projected
-// ceiling in at least one of the last 2 logged games, OR (B) exceeded
-// xFP in ALL of the last 3 logged games. `games` is page.js's
-// recentGames, most-recent-first, with `floor`/`ceiling` already joined
-// in per-game from that same week's redraft_rankings publish
-// (fetchHistoricalFloorCeiling) -- not this week's unrelated projection.
-// Deliberately spans the season boundary same as recentGames itself
-// (early in a season, "last 2/3 games" naturally tails into last
-// season) -- confirmed with the user this is fine, not just tolerated.
-// The two conditions are independent: (A) only needs ONE of its 2 games
-// to have ceiling data to possibly fire (a game with no published
-// ceiling just can't be the one that fires it, doesn't block the other);
-// (B) needs all 3 games to have xFP data or it can't fire at all, same
-// all-or-nothing rule Honorable/Con Artist already use below -- but (A)
-// can still fire on its own even when (B) can't be evaluated.
-export function ceilingHitLast2(games) {
+// ceiling in the single MOST RECENT logged game, OR (B) matched/beat xFP
+// AND beat THAT WEEK'S OWN median in ALL of the last 3 logged games.
+// `games` is page.js's recentGames, most-recent-first, with
+// `floor`/`ceiling`/`median` already joined in per-game from that same
+// week's redraft_rankings publish (fetchHistoricalFloorCeiling) -- not
+// this week's unrelated projection. Deliberately spans the season
+// boundary same as recentGames itself (early in a season, "last game(s)"
+// naturally tails into last season) -- confirmed with the user this is
+// fine, not just tolerated. The two conditions are independent: (A)
+// only needs the most recent game to have ceiling data to possibly fire
+// (no published ceiling that game just means (A) can't fire, doesn't
+// block (B)); (B) needs all 3 games to have xFP AND median data or it
+// can't fire at all, same all-or-nothing rule Honorable/Con Artist
+// already use below -- but (A) can still fire on its own even when (B)
+// can't be evaluated.
+export function ceilingHitMostRecent(games) {
   if (!games || games.length === 0) return false;
-  return games
-    .slice(0, 2)
-    .some((g) => g.fantasy_points_ppr != null && g.ceiling != null && g.fantasy_points_ppr >= g.ceiling);
+  const g = games[0];
+  return g.fantasy_points_ppr != null && g.ceiling != null && g.fantasy_points_ppr >= g.ceiling;
 }
-export function beatXfpAllLast3(games) {
+export function beatXfpAndMedianAllLast3(games) {
   if (!games || games.length < 3) return false;
   const last3 = games.slice(0, 3);
-  if (last3.some((g) => g.exp_points_ppr == null || g.fantasy_points_ppr == null)) return false;
-  return last3.every((g) => g.fantasy_points_ppr > g.exp_points_ppr);
+  if (last3.some((g) => g.exp_points_ppr == null || g.fantasy_points_ppr == null || g.median == null)) return false;
+  return (
+    last3.every((g) => g.fantasy_points_ppr >= g.exp_points_ppr) &&
+    last3.every((g) => g.fantasy_points_ppr > g.median)
+  );
 }
 export function onFireFlag(games) {
-  return ceilingHitLast2(games) || beatXfpAllLast3(games);
+  return ceilingHitMostRecent(games) || beatXfpAndMedianAllLast3(games);
 }
 
 // "On Thin Ice" -- the converse of On Fire: true if EITHER: (A) at or
-// below THAT WEEK'S OWN projected floor in at least one of the last 2
-// logged games, OR (B) missed xFP in ALL of the last 3 logged games.
-// Same independence/null-handling rules as On Fire above, mirrored.
-export function floorHitLast2(games) {
+// below THAT WEEK'S OWN projected floor in the single MOST RECENT logged
+// game, OR (B) came in under xFP AND under THAT WEEK'S OWN median in ALL
+// of the last 3 logged games. Same independence/null-handling rules as
+// On Fire above, mirrored.
+export function floorHitMostRecent(games) {
   if (!games || games.length === 0) return false;
-  return games
-    .slice(0, 2)
-    .some((g) => g.fantasy_points_ppr != null && g.floor != null && g.fantasy_points_ppr <= g.floor);
+  const g = games[0];
+  return g.fantasy_points_ppr != null && g.floor != null && g.fantasy_points_ppr <= g.floor;
 }
-export function missedXfpAllLast3(games) {
+export function missedXfpAndMedianAllLast3(games) {
   if (!games || games.length < 3) return false;
   const last3 = games.slice(0, 3);
-  if (last3.some((g) => g.exp_points_ppr == null || g.fantasy_points_ppr == null)) return false;
-  return last3.every((g) => g.fantasy_points_ppr < g.exp_points_ppr);
+  if (last3.some((g) => g.exp_points_ppr == null || g.fantasy_points_ppr == null || g.median == null)) return false;
+  return (
+    last3.every((g) => g.fantasy_points_ppr < g.exp_points_ppr) &&
+    last3.every((g) => g.fantasy_points_ppr < g.median)
+  );
 }
 export function onThinIceFlag(games) {
-  return floorHitLast2(games) || missedXfpAllLast3(games);
+  return floorHitMostRecent(games) || missedXfpAndMedianAllLast3(games);
 }
 
 // "Honorable" / "Con Artist" -- scored at-or-above, or strictly below,

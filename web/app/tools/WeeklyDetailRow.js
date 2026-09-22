@@ -303,11 +303,15 @@ function LockIcon() {
   );
 }
 
-// Weekly Hero's own icon -- a caped figure (head + a flowing cape),
-// escalating through `tier` (1-5, see achievements.js's HERO_MAX_TIER)
-// cape-fold lines as a repeat winner racks up more weeks at the top.
-// The art stops getting busier past 5 folds; the badge's `label` text is
-// what keeps counting past that (see GlyphBadge's title below).
+// Weekly Hero's own icon -- was a caped figure with fold-line/dot
+// escalation, replaced with a flag (pole + field + canton) by request,
+// keeping the patriotic red/white/blue direction. `tier` (1-5, see
+// achievements.js's HERO_MAX_TIER) now shows as that many stars in the
+// canton -- the same "discrete dots beat parallel lines for at-a-glance
+// counting" lesson from the cape version, just inside a canton instead
+// of on a cape. The art stops getting busier past 5 stars; the badge's
+// `label` text is what keeps counting past that (see GlyphBadge's title
+// below).
 // Names the actual week(s) a Weekly Hero win happened -- a bare "top
 // scorer in 1 week" title next to THIS week's own (unrelated, often much
 // lower) positional rank reads as a bug at a glance; naming the real
@@ -322,28 +326,57 @@ function heroTitle(position, weeks) {
   return `Top 3 at ${position} in ${list}`;
 }
 
+// Canton star layout per tier, dice-pip style (1 centered, 2/3 diagonal,
+// 4 corners, 5 corners+center) -- the single most well-established
+// "recognize the count without counting" pattern there is (it's how dice
+// faces work), which is exactly what a single row of dots inside a
+// canton this small couldn't reliably do at 5.
+const LEFT_X = 7.2;
+const CENTER_X = 9.4;
+const RIGHT_X = 11.6;
+const TOP_Y = 5.8;
+const CENTER_Y = 7.3;
+const BOTTOM_Y = 8.8;
+const HERO_STAR_LAYOUTS = {
+  1: [[CENTER_X, CENTER_Y]],
+  2: [
+    [LEFT_X, TOP_Y],
+    [RIGHT_X, BOTTOM_Y],
+  ],
+  3: [
+    [LEFT_X, TOP_Y],
+    [CENTER_X, CENTER_Y],
+    [RIGHT_X, BOTTOM_Y],
+  ],
+  4: [
+    [LEFT_X, TOP_Y],
+    [RIGHT_X, TOP_Y],
+    [LEFT_X, BOTTOM_Y],
+    [RIGHT_X, BOTTOM_Y],
+  ],
+  5: [
+    [LEFT_X, TOP_Y],
+    [RIGHT_X, TOP_Y],
+    [CENTER_X, CENTER_Y],
+    [LEFT_X, BOTTOM_Y],
+    [RIGHT_X, BOTTOM_Y],
+  ],
+};
+
 function HeroIcon({ tier }) {
-  const folds = Math.max(1, Math.min(tier || 1, 5));
+  const count = Math.max(1, Math.min(tier || 1, 5));
+  const stars = HERO_STAR_LAYOUTS[count];
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      {/* Bounding box sits ~0.75 units above viewBox-center (the cape
-          hem reaches less far down than the head reaches up) -- nudged
-          down to actually center. */}
-      <g transform="translate(0,0.75)">
-        <path d="M12 6.4c-4.2 1-7.3 4.1-7.3 9 0 2.9 2 4.9 2 4.9l5.3-4.2 5.3 4.2s2-2 2-4.9c0-4.9-3.1-8-7.3-9z" opacity="0.85" />
-        {Array.from({ length: folds }, (_, i) => (
-          <path
-            key={i}
-            d={`M6 ${9.2 + i * 2.1} Q12 ${11.1 + i * 2.1} 18 ${9.2 + i * 2.1}`}
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1"
-            strokeLinecap="round"
-            opacity={0.45 + i * 0.11}
-          />
-        ))}
-        <circle cx="12" cy="4.3" r="2.1" />
-      </g>
+      <line x1="4.6" y1="3.5" x2="4.6" y2="21" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      <rect x="5.6" y="4.5" width="14.2" height="10" rx="0.6" />
+      {/* Canton is hardcoded Old Glory Blue rather than currentColor --
+          deliberately a different hue from the white field, patriotic
+          red/white/blue by request (badge background is the red). */}
+      <rect x="5.6" y="4.5" width="7.6" height="5.6" fill="#0A3161" />
+      {stars.map(([x, y], i) => (
+        <circle key={i} cx={x} cy={y} r="0.85" />
+      ))}
     </svg>
   );
 }

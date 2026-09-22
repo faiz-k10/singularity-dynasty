@@ -175,8 +175,8 @@ async function fetchSimsMetrics(supabase) {
 //     naturally tails off into the end of last season instead of coming
 //     up empty) -- feeds the expanded row's game-log panel AND
 //     achievements.js's On Fire/On Thin Ice flags (each game here carries its
-//     own week's floor/ceiling, joined in from floorCeilingByGame -- see
-//     fetchHistoricalFloorCeiling below).
+//     own week's floor/ceiling/median, joined in from floorCeilingByGame --
+//     see fetchHistoricalFloorCeiling below).
 //   - lastWeekRankByName: this player's finish among their own position
 //     in the most recent ACTUAL week on record -- "most recent" here
 //     just means the newest (season, week) with any logged games at all
@@ -196,7 +196,12 @@ async function fetchGameLogData(supabase, season, floorCeilingByGame) {
   const byPlayer = {};
   for (const r of data || []) {
     const fc = floorCeilingByGame[`${r.player_name}|${r.season}|${r.week}`] || {};
-    (byPlayer[r.player_name] ??= []).push({ ...r, floor: fc.floor ?? null, ceiling: fc.ceiling ?? null });
+    (byPlayer[r.player_name] ??= []).push({
+      ...r,
+      floor: fc.floor ?? null,
+      ceiling: fc.ceiling ?? null,
+      median: fc.median ?? null,
+    });
   }
 
   const avgXfpByName = {};
@@ -279,10 +284,10 @@ async function fetchGameLogData(supabase, season, floorCeilingByGame) {
 async function fetchHistoricalFloorCeiling(supabase) {
   const { data } = await supabase
     .from("redraft_rankings")
-    .select("player_name, season, week, floor, ceiling");
+    .select("player_name, season, week, floor, ceiling, projection");
   const map = {};
   for (const r of data || []) {
-    map[`${r.player_name}|${r.season}|${r.week}`] = { floor: r.floor, ceiling: r.ceiling };
+    map[`${r.player_name}|${r.season}|${r.week}`] = { floor: r.floor, ceiling: r.ceiling, median: r.projection };
   }
   return map;
 }
