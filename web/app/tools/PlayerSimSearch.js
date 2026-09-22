@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import SortableTh from "./SortableTh";
 import TrendTag from "./TrendTag";
@@ -283,6 +283,30 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
 
   const tableWrapRef = useRef(null);
 
+  // Theater mode -- same full-screen overlay treatment as Weekly
+  // Projection Rankings (RankingsTable.js): the table wrap goes
+  // position:fixed edge-to-edge over the whole viewport instead of
+  // sitting in its normal spot, reclaiming the width the filter
+  // accordion/page margins cost. Body scroll is locked while active;
+  // Escape closes it the same as the visible button does. The bar
+  // carries its own copy of the search input and Position pills, wired
+  // to the SAME query/selected state already owned above, since the
+  // fixed overlay sits above the page's own copies of both.
+  const [theater, setTheater] = useState(false);
+  useEffect(() => {
+    if (!theater) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") setTheater(false);
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [theater]);
+
   return (
     <>
       <div className="tool-header-split">
@@ -417,7 +441,56 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
         </div>
       ) : (
         <>
-          <div className="rankings-table-wrap player-sims-table-wrap" ref={tableWrapRef}>
+          <div className={`rankings-theater-bar${theater ? " theater" : ""}`}>
+            {theater && (
+              <div className="rankings-theater-controls">
+                <input
+                  type="search"
+                  className="player-search-input"
+                  placeholder="Search a player's name…"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  aria-label="Search players"
+                />
+                {showPositionFilter && (
+                  <div className="position-filter-row">
+                    {positions.map((pos) => (
+                      <button
+                        key={pos}
+                        type="button"
+                        className={`position-pill ${selected.includes(pos) ? "active" : ""}`}
+                        onClick={() => toggle(pos)}
+                        aria-pressed={selected.includes(pos)}
+                      >
+                        {pos}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+            <button
+              type="button"
+              className="rankings-theater-btn"
+              onClick={() => setTheater((v) => !v)}
+              aria-label={theater ? "Exit full-screen view" : "Expand to full-screen view"}
+              title={theater ? "Exit full-screen view" : "Expand to full-screen view"}
+            >
+              {theater ? (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9 4v3a2 2 0 0 1-2 2H4M20 9h-3a2 2 0 0 1-2-2V4M4 15h3a2 2 0 0 1 2 2v3M15 20v-3a2 2 0 0 1 2-2h3" />
+                </svg>
+              ) : (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9 4H6a2 2 0 0 0-2 2v3M20 9V6a2 2 0 0 0-2-2h-3M4 15v3a2 2 0 0 0 2 2h3M15 20h3a2 2 0 0 0 2-2v-3" />
+                </svg>
+              )}
+            </button>
+          </div>
+          <div
+            className={`rankings-table-wrap player-sims-table-wrap${theater ? " theater" : ""}`}
+            ref={tableWrapRef}
+          >
           <table className="rankings-table player-sims-table">
             <thead>
               <tr>

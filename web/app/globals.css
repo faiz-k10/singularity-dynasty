@@ -969,6 +969,14 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .rankings-table-wrap.theater .redraft-table > thead > tr > th:nth-child(3){
   z-index:5;
 }
+/* Same specificity fix, same reason, for Player Season Simulations'
+   own frozen #/Player/Pos columns (.player-sims-table's own z-index:5
+   rule further below loses the same way .redraft-table's did). */
+.rankings-table-wrap.theater .player-sims-table > thead > tr > th:nth-child(1),
+.rankings-table-wrap.theater .player-sims-table > thead > tr > th:nth-child(2),
+.rankings-table-wrap.theater .player-sims-table > thead > tr > th:nth-child(3){
+  z-index:5;
+}
 /* A real toolbar row above the table (not an absolutely-positioned
    button floating over the table's own header cells, which is what this
    used to be -- it visibly overlapped the Notes/last stat column's
@@ -1189,6 +1197,16 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .player-sims-table-wrap{
   max-height:calc(100vh - var(--fixed-header-height, 108px) - 24px);
   overflow-y:auto;
+}
+/* In theater mode the wrap's height already comes from position:fixed's
+   top+bottom offsets (.rankings-table-wrap.theater above), which is
+   taller than this max-height (computed against the page's OWN fixed
+   header, not the shorter theater bar) -- left as-is, max-height would
+   still win (it only shrinks, never grows, so top/bottom being generous
+   doesn't override it) and clamp the panel short, leaving a dead gap
+   below it down to the real viewport edge. */
+.rankings-table-wrap.theater.player-sims-table-wrap{
+  max-height:none;
 }
 /* Frozen cells' own background (above) is higher-specificity than the
    row-hover rule (.rankings-table tr.row-expandable:hover td), which
