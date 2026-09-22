@@ -1000,6 +1000,42 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .rankings-theater-bar .rankings-theater-controls{display:flex; align-items:center; gap:16px; flex:1; min-width:0;}
 .rankings-theater-bar .player-search-input{margin:0;}
 .rankings-theater-bar .position-filter-row{margin-bottom:0;}
+/* Badges filter -- a dropdown rather than always-visible pills (unlike
+   Position's 4 options, 11 badges won't fit inline next to search and
+   the position pills at any reasonable width). .theater-badge-filter is
+   position:relative purely as an anchor for the panel below it; the
+   panel itself needs no z-index beyond the bar's own (201, see
+   .rankings-theater-bar.theater above) since it's a DOM descendant of
+   that already-stacked-above-the-table bar. */
+.theater-badge-filter{position:relative; flex-shrink:0;}
+.theater-badge-filter-btn{
+  display:inline-flex; align-items:center; gap:6px; height:34px; padding:0 12px;
+  background:transparent; border:1px solid var(--line); border-radius:var(--radius);
+  color:var(--star-dim); font-family:var(--font-ibm-plex-mono), monospace; font-size:13px; cursor:pointer;
+  white-space:nowrap;
+}
+.theater-badge-filter-btn:hover{border-color:var(--neon-blue); color:var(--star);}
+.theater-badge-filter-chevron{font-size:10px; display:inline-block; transition:transform .2s ease;}
+.theater-badge-filter-chevron.open{transform:rotate(180deg);}
+.theater-badge-filter-panel{
+  position:absolute; top:calc(100% + 8px); left:0; z-index:5;
+  display:flex; flex-wrap:wrap; align-items:center; gap:6px; width:360px; max-width:min(80vw, 360px);
+  background:var(--void-panel); border:1px solid var(--line); border-radius:var(--radius);
+  padding:10px; box-shadow:0 8px 24px rgba(var(--shadow-rgb),0.4);
+}
+.theater-badge-pill{
+  display:inline-flex; align-items:center; gap:6px; padding:5px 10px;
+  background:transparent; border:1px solid var(--line); border-radius:999px;
+  color:var(--star-dim); font-family:var(--font-ibm-plex-mono), monospace; font-size:12px; cursor:pointer; white-space:nowrap;
+}
+.theater-badge-pill:hover{border-color:var(--neon-blue); color:var(--star);}
+.theater-badge-pill.active{background:var(--void-panel-2); border-color:var(--horizon-gold); color:var(--star);}
+.theater-badge-pill .player-achv-dot{width:6px; height:6px; flex-shrink:0;}
+.theater-badge-filter-clear{
+  background:none; border:none; color:var(--neon-blue); font-size:12px; cursor:pointer; text-decoration:underline;
+  padding:5px 4px;
+}
+.rankings-table-empty{text-align:center; padding:32px; color:var(--star-dim); font-size:14px;}
 /* Plain-icon, bordered-square language (.theme-toggle/.player-popover-
    compare) rather than a new style. A real <button> (not a clickable
    div) so InteractiveScript.js's drag-to-scroll pointerdown handler
