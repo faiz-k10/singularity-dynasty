@@ -1,10 +1,11 @@
--- Real weekly actual fantasy production, published by hand via the
--- Supabase Table Editor as the real season progresses (or with dummy/
--- test rows before it does, for trying out the regression score before
--- Week 1 real data exists) -- powers the regression-to-projection score
--- on Player Season Simulations (lib/regressionScore.js): a player's
--- currentPPG (mean of these rows for the season) compared against their
--- preseason projected PPG.
+-- Real weekly actual fantasy production -- powers the regression-to-
+-- projection score on Player Season Simulations (lib/regressionScore.js):
+-- a player's currentPPG (mean of these rows for the season) compared
+-- against their preseason projected PPG. Published by
+-- web/scripts/publish-actual-production.mjs, derived from
+-- player_game_log (already refreshed weekly from real nflreadr box
+-- scores) rather than hand-entered -- run as part of the normal weekly
+-- publish cycle right alongside the game log itself.
 --
 -- One row per player per week actually played -- NOT a running total.
 -- A bye week or missed game simply has no row for that week rather than

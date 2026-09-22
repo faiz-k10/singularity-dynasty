@@ -70,10 +70,13 @@ const getCachedWeekData = unstable_cache(
         .eq("season", latest.season)
         .eq("week", latest.week)
         .order("median", { ascending: false }),
-      // Real (or dummy/test, before the season has real data) weekly
-      // actual production -- powers the regression-to-projection score
-      // below. Scoped to latest.season, not latest.week: this is the
-      // whole season's games-played-so-far, not just one week's batch.
+      // Real weekly actual production -- powers the regression-to-
+      // projection score below. Scoped to latest.season, not latest.week:
+      // this is the whole season's games-played-so-far, not just one
+      // week's batch. Derived from player_game_log (already refreshed
+      // weekly from real nflreadr box scores), not hand-entered -- see
+      // scripts/publish-actual-production.mjs, run as part of the normal
+      // weekly publish cycle right alongside the game log itself.
       publicSupabase
         .from("player_actual_production")
         .select("player_name, week, actual_points")
