@@ -6,7 +6,12 @@ import ThemeToggle from "./ThemeToggle";
 import InteractiveScript from "./InteractiveScript";
 import NavStars from "./NavStars";
 import { getAchievements } from "./tools/achievements";
-import { fetchAchievementInputs, fetchLatestRedraftFieldsByName, buildAchievementRow } from "./tools/achievementsData";
+import {
+  fetchAchievementInputs,
+  fetchLatestRedraftFieldsByName,
+  fetchWoprByName,
+  buildAchievementRow,
+} from "./tools/achievementsData";
 
 // The full badge set (achievementsData.js) needs a per-game floor/
 // ceiling join across ALL of redraft_rankings' publish history plus the
@@ -27,9 +32,9 @@ const getCachedTickerInputs = unstable_cache(
       .order("week", { ascending: false })
       .limit(1)
       .maybeSingle();
-    if (!latestRedraft) return { topRows: [], achievementInputs: null, redraftFieldsByName: {} };
+    if (!latestRedraft) return { topRows: [], achievementInputs: null, redraftFieldsByName: {}, woprByName: {} };
 
-    const [{ data: topRows }, achievementInputs, redraftFieldsByName] = await Promise.all([
+    const [{ data: topRows }, achievementInputs, redraftFieldsByName, woprByName] = await Promise.all([
       publicSupabase
         .from("redraft_rankings")
         .select("player_name, position")
@@ -39,8 +44,9 @@ const getCachedTickerInputs = unstable_cache(
         .limit(20),
       fetchAchievementInputs(publicSupabase, latestRedraft.season),
       fetchLatestRedraftFieldsByName(publicSupabase),
+      fetchWoprByName(publicSupabase),
     ]);
-    return { topRows: topRows || [], achievementInputs, redraftFieldsByName };
+    return { topRows: topRows || [], achievementInputs, redraftFieldsByName, woprByName };
   },
   ["site-header-ticker-inputs"],
   { revalidate: 60 }
@@ -58,8 +64,8 @@ export default async function SiteHeader() {
   } = await supabase.auth.getUser();
 
   // Ticker: a random assortment of 50 achievement badges -- the FULL set
-  // (On Fire/On Thin Ice/Risky Icarus/Steady Eddy/Weekly Hero/Honorable/
-  // Con Artist; Confidence excluded, see below) drawn from the top 20
+  // (On Fire/On Thin Ice/Risky Icarus/Steady Eddy/Buy Low/Weekly Hero/
+  // Honorable/Con Artist; Confidence excluded, see below) drawn from the top 20
   // players of the latest published redraft_rankings week, same as every
   // other badge surface on the site now uses (achievementsData.js).
   // Confidence (Established/Building) is the one flag deliberately left
@@ -70,10 +76,12 @@ export default async function SiteHeader() {
   // against whatever that cache last returned, so "re-rolled on every
   // site refresh" still holds for the actual picks shown.
   let tickerItems = [];
-  const { topRows, achievementInputs, redraftFieldsByName } = await getCachedTickerInputs();
+  const { topRows, achievementInputs, redraftFieldsByName, woprByName } = await getCachedTickerInputs();
   if (achievementInputs) {
     const pool = (topRows || []).flatMap((r) =>
-      getAchievements(buildAchievementRow(r.player_name, r.position, { ...achievementInputs, redraftFieldsByName }))
+      getAchievements(
+        buildAchievementRow(r.player_name, r.position, { ...achievementInputs, redraftFieldsByName, woprByName })
+      )
         .filter((a) => a.key !== "confidence")
         .map((a) => ({
           name: r.player_name,

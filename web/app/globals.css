@@ -18,6 +18,7 @@
   --cape:#B22234; /* Weekly Hero's own patriotic red (Old Glory Red), by request */
   --scholar:#2DD4BF; /* Honorable's own teal -- distinct from every other blue/green already in use */
   --menace:#6B0F2A; /* Con Artist's own color -- a near-black blood red, deliberately darker/more sinister than any other badge hue (incl. --down's coral-red) to read as a warning, not just another accent */
+  --sprout:#84CC16; /* Buy Low's own lime -- distinct from --up's mint-teal (Steady Eddy already owns that hue), "growth coming" read fits real workload that hasn't scored yet */
   --matchup-neutral:#F0C43D;  /* deliberately distinct from --horizon-gold --
                                   that's already "established" confidence;
                                   reusing it here would conflate the two
@@ -49,6 +50,7 @@
   --cape-rgb:178,34,52;
   --scholar-rgb:45,212,191;
   --menace-rgb:107,15,42;
+  --sprout-rgb:132,204,22;
   --matchup-neutral-rgb:240,196,61;
   --star-dim-rgb:153,151,168;
   --orbit-alpha:0.3;
@@ -76,6 +78,7 @@
     --cape:#B22234;
     --scholar:#0F766E;
     --menace:#4A0A1D;
+    --sprout:#4D7C0F;
     --matchup-neutral:#A87B00;
     --pos-qb:#D6005E;
     --pos-rb:#007A50;
@@ -93,6 +96,7 @@
     --cape-rgb:178,34,52;
     --scholar-rgb:15,118,110;
     --menace-rgb:74,10,29;
+    --sprout-rgb:77,124,15;
     --matchup-neutral-rgb:168,123,0;
     --star-dim-rgb:104,99,111;
     --orbit-alpha:0.8;
@@ -115,6 +119,7 @@
   --cape:#B22234;
   --scholar:#0F766E;
   --menace:#4A0A1D;
+  --sprout:#4D7C0F;
   --matchup-neutral:#A87B00;
   --pos-qb:#D6005E;
   --pos-rb:#007A50;
@@ -132,6 +137,7 @@
   --cape-rgb:178,34,52;
   --scholar-rgb:15,118,110;
   --menace-rgb:74,10,29;
+  --sprout-rgb:77,124,15;
   --matchup-neutral-rgb:168,123,0;
   --orbit-alpha:0.8;
 }
@@ -214,6 +220,7 @@ body::before{
 .ticker-badge.heat{background:var(--horizon); color:#fff; box-shadow:0 0 5px rgba(var(--horizon-rgb),0.5);}
 .ticker-badge.ice{background:var(--frost); color:#fff; box-shadow:0 0 5px rgba(var(--frost-rgb),0.5);}
 .ticker-badge.cape{background:var(--cape); color:#fff; box-shadow:0 0 5px rgba(var(--cape-rgb),0.5);}
+.ticker-badge.sprout{background:var(--sprout); color:var(--void); box-shadow:0 0 5px rgba(var(--sprout-rgb),0.5);}
 .ticker-badge.honorable{background:var(--scholar); color:var(--void); box-shadow:0 0 5px rgba(var(--scholar-rgb),0.5);}
 .ticker-badge.menace{background:var(--menace); color:#fff; box-shadow:0 0 6px rgba(var(--menace-rgb),0.65);}
 .ticker-badge-label{font-size:10px; letter-spacing:0.06em; text-transform:uppercase; color:var(--star-dim); opacity:0.75;}
@@ -1828,6 +1835,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .player-achv-dot.icarus{background:var(--purple); box-shadow:0 0 4px rgba(var(--purple-rgb),0.7);}
 .player-achv-dot.eddy{background:var(--up); box-shadow:0 0 4px rgba(var(--up-rgb),0.7);}
 .player-achv-dot.cape{background:var(--cape); box-shadow:0 0 4px rgba(var(--cape-rgb),0.7);}
+.player-achv-dot.sprout{background:var(--sprout); box-shadow:0 0 4px rgba(var(--sprout-rgb),0.7);}
 .player-achv-dot.honorable{background:var(--scholar); box-shadow:0 0 4px rgba(var(--scholar-rgb),0.7);}
 .player-achv-dot.menace{background:var(--menace); box-shadow:0 0 4px rgba(var(--menace-rgb),0.85);}
 
@@ -2058,6 +2066,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .weekly-achievement-badge.icarus .weekly-achievement-label{color:var(--purple);}
 .weekly-achievement-badge.eddy .weekly-achievement-label{color:var(--up);}
 .weekly-achievement-badge.cape .weekly-achievement-label{color:var(--cape);}
+.weekly-achievement-badge.sprout .weekly-achievement-label{color:var(--sprout);}
 .weekly-achievement-badge.honorable .weekly-achievement-label{color:var(--scholar);}
 .weekly-achievement-badge.menace .weekly-achievement-label{color:var(--menace);}
 
@@ -2070,7 +2079,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    reads as pasted-on clip art next to the rest of the site's flat glyph/
    team-color/starfield-motif icon language. Every badge gets its own
    distinct hue (--horizon-gold/--neon-blue/--horizon/--frost/--purple/
-   --up/--cape/--scholar/--menace, plus confidence's own muted gray for
+   --up/--cape/--scholar/--menace/--sprout, plus confidence's own muted gray for
    "building") -- On Ice and Steady Eddy used to reuse Bounce-back's blue
    and Confidence's silver respectively, which meant two DIFFERENT flags
    could render as the same-colored dot in the Rank cell's preview.
@@ -2086,6 +2095,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .weekly-glyph-badge.icarus{background:var(--purple); color:#fff; box-shadow:0 0 8px rgba(var(--purple-rgb),0.55);}
 .weekly-glyph-badge.eddy{background:var(--up); color:var(--void); box-shadow:0 0 8px rgba(var(--up-rgb),0.55);}
 .weekly-glyph-badge.cape{background:var(--cape); color:#fff; box-shadow:0 0 8px rgba(var(--cape-rgb),0.55);}
+.weekly-glyph-badge.sprout{background:var(--sprout); color:var(--void); box-shadow:0 0 8px rgba(var(--sprout-rgb),0.55);}
 .weekly-glyph-badge.honorable{background:var(--scholar); color:var(--void); box-shadow:0 0 8px rgba(var(--scholar-rgb),0.55);}
 .weekly-glyph-badge.menace{background:var(--menace); color:#fff; box-shadow:0 0 10px rgba(var(--menace-rgb),0.75);}
 /* Four stats, each its own little label-over-value stack -- same

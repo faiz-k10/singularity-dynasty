@@ -448,6 +448,18 @@ function ConArtistIcon() {
   );
 }
 
+// Buy Low's own icon -- a sprout (stem + two leaves), for real usage
+// that hasn't grown into points yet.
+function SproutIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M12 20V11" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" />
+      <path d="M12 14.2c-3.6 0-6.2-2.3-6.2-6.5C9.9 8 12 10.4 12 14.2z" />
+      <path d="M12 11.3c2.9 0 5.1-1.9 5.1-5.4C13.9 6 12 8.1 12 11.3z" opacity="0.85" />
+    </svg>
+  );
+}
+
 // The icon each achievement key renders as in the full banner badge --
 // keyed by achievements.js's own `key` field so this can't fall out of
 // sync with which flags actually exist.
@@ -460,7 +472,7 @@ function achievementNode(a, row) {
         <GlyphBadge
           variant="heat"
           glyph={<FlameIcon />}
-          title="Hit that week's own ceiling in one of the last 2 games, or beat xFP in each of the last 3"
+          title="Hit that week's own ceiling most recently, or beat both xFP and median in each of the last 3 games"
         />
       );
     case "onIce":
@@ -468,7 +480,7 @@ function achievementNode(a, row) {
         <GlyphBadge
           variant="ice"
           glyph={<SnowflakeIcon />}
-          title="Hit that week's own floor in one of the last 2 games, or missed xFP in each of the last 3"
+          title="Hit that week's own floor most recently, or missed both xFP and median in each of the last 3 games"
         />
       );
     case "volatile":
@@ -489,6 +501,14 @@ function achievementNode(a, row) {
       );
     case "hero":
       return <GlyphBadge variant="cape" glyph={<HeroIcon tier={a.tier} />} title={heroTitle(row.position, a.weeks)} />;
+    case "buyLow":
+      return (
+        <GlyphBadge
+          variant="sprout"
+          glyph={<SproutIcon />}
+          title="High usage (WOPR) that hasn't shown up in points the last 2 games -- volume tends to catch up"
+        />
+      );
     case "honorable":
       return (
         <GlyphBadge

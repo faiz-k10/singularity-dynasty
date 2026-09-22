@@ -1,7 +1,7 @@
-// Shared source of truth for the eight "achievement" flags a Weekly
+// Shared source of truth for the nine "achievement" flags a Weekly
 // Projection Rankings row can carry (Established/Building confidence,
-// On Fire, On Thin Ice, Risky Icarus, Steady Eddy, Weekly Hero, Honorable,
-// Con Artist) -- WeeklyDetailRow.js's expanded player banner renders
+// On Fire, On Thin Ice, Risky Icarus, Steady Eddy, Buy Low, Weekly Hero,
+// Honorable, Con Artist) -- WeeklyDetailRow.js's expanded player banner renders
 // these as full click-to-expand badges, and RankingsTable.js's collapsed
 // row renders the same list as a tiny dot preview. Both read off this
 // one function so the two views can't quietly drift out of sync with
@@ -119,6 +119,30 @@ export function spreadFlag(floor, ceiling, projection) {
   return null;
 }
 
+// "Buy Low" -- real workload that hasn't shown up on the scoreboard the
+// last 2 games. A genuinely different dimension from every badge above:
+// those all key off floor/ceiling/median/xFP (a projection vs. an
+// outcome); this keys off WOPR (weighted opportunity rating -- target
+// share + air yards share, from Player Season Simulations' own latest
+// publish), a measure of how much the OFFENSE is feeding a player,
+// independent of whether it's scored yet. High usage without results is
+// the classic buy-low signal -- volume tends to win out over a longer
+// sample than 2 games. WOPR is season-long (one number per player, not
+// per-game like floor/ceiling/xFP), so unlike On Fire/On Thin Ice this
+// doesn't need a specific historical week's data, just the player's
+// current usage number plus their last 2 logged games.
+export const USAGE_HIGH_WOPR = 0.55; // ~top 15-20% among meaningfully-projected (>=8pt) players, off a live pool check
+export function underperformingMedianLast2(games) {
+  if (!games || games.length < 2) return false;
+  const last2 = games.slice(0, 2);
+  if (last2.some((g) => g.fantasy_points_ppr == null || g.median == null)) return false;
+  return last2.every((g) => g.fantasy_points_ppr < g.median);
+}
+export function buyLowFlag(wopr, games) {
+  if (wopr == null || wopr < USAGE_HIGH_WOPR) return false;
+  return underperformingMedianLast2(games);
+}
+
 // "Weekly Hero" -- outright top scorer at their own position for a given
 // (season, week), counted across every week player_game_log holds (both
 // trailing seasons, not just the current one -- see page.js's
@@ -142,6 +166,7 @@ export function getAchievements(row) {
   const spread = spreadFlag(row.floor, row.ceiling, row.projection);
   const xfpFlag = xfpTrend2(row.recentGames);
   const heroWins = Math.max(0, row.heroWins || 0);
+  const buyLow = buyLowFlag(row.wopr, row.recentGames);
 
   return [
     (isEstablished || isBuilding) && {
@@ -153,6 +178,7 @@ export function getAchievements(row) {
     onIce && { key: "onIce", variant: "ice", label: "On Thin Ice" },
     spread === "volatile" && { key: "volatile", variant: "icarus", label: "Risky Icarus" },
     spread === "locked" && { key: "locked", variant: "eddy", label: "Steady Eddy" },
+    buyLow && { key: "buyLow", variant: "sprout", label: "Buy Low" },
     heroWins > 0 && {
       key: "hero",
       variant: "cape",

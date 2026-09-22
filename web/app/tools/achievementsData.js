@@ -118,8 +118,35 @@ export async function fetchLatestRedraftFieldsByName(supabase) {
   return byName;
 }
 
+// WOPR (weighted opportunity rating -- receiving usage) per player, from
+// Player Season Simulations' own latest published batch -- a separate
+// table/pipeline from redraft_rankings, joined by player_name only (no
+// week alignment assumed; player_simulations republishes on its own
+// weekly cadence, same season). Powers Buy Low below -- real workload
+// that hasn't shown up on the scoreboard yet. Null for anyone not yet in
+// that table (a brand-new call-up, or before the season's first Player
+// Sims publish), same as every other nullable metric here.
+export async function fetchWoprByName(supabase) {
+  const { data: latest } = await supabase
+    .from("player_simulations")
+    .select("season, week")
+    .order("season", { ascending: false })
+    .order("week", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (!latest) return {};
+  const { data } = await supabase
+    .from("player_simulations")
+    .select("player_name, wopr")
+    .eq("season", latest.season)
+    .eq("week", latest.week);
+  const byName = {};
+  for (const r of data || []) byName[r.player_name] = r.wopr ?? null;
+  return byName;
+}
+
 // Builds the exact row shape getAchievements() expects for one player,
-// from the three input maps above -- entirely independent of whatever
+// from the four input maps above -- entirely independent of whatever
 // fields the calling page's own row already has (a Player Sims row's
 // own season floor/median/ceiling, a My Team roster slot, ...), so
 // wiring this into a new page can never collide with or overwrite that
@@ -138,5 +165,6 @@ export function buildAchievementRow(playerName, position, inputs) {
     floor: rf.floor ?? null,
     ceiling: rf.ceiling ?? null,
     projection: rf.projection ?? null,
+    wopr: inputs.woprByName?.[playerName] ?? null,
   };
 }

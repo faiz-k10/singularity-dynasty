@@ -335,8 +335,8 @@ export default function InteractiveScript({ tickerItems } = {}) {
        SiteHeader.js) is the source of truth: 50 real {name, key, variant,
        label} picks already randomly sampled server-side from the top 20
        players' FULL achievement set (On Fire/On Thin Ice/Risky Icarus/
-       Steady Eddy/Weekly Hero/Honorable/Con Artist -- see achievements.js
-       and achievementsData.js). Confidence (Established/Building) is
+       Steady Eddy/Buy Low/Weekly Hero/Honorable/Con Artist -- see
+       achievements.js and achievementsData.js). Confidence (Established/Building) is
        deliberately excluded there by request -- it's common enough among
        the top 20 that it drowned out every rarer flag. RISING/FALLING/
        STEADY used to be the whole ticker; that's gone in favor of the
@@ -366,7 +366,9 @@ export default function InteractiveScript({ tickerItems } = {}) {
       onIce:
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 3v18M4.8 7.5l14.4 9M4.8 16.5l14.4-9"/><path d="M12 5.2l-1.8 1.5M12 5.2l1.8 1.5M12 18.8l-1.8-1.5M12 18.8l1.8-1.5"/><path d="M6 8.6l-.3 2.1-2 .6M18 15.4l.3-2.1 2-.6"/></svg>',
       hero:
-        '<svg viewBox="0 0 24 24" fill="currentColor"><g transform="translate(0,0.75)"><path d="M12 6.4c-4.2 1-7.3 4.1-7.3 9 0 2.9 2 4.9 2 4.9l5.3-4.2 5.3 4.2s2-2 2-4.9c0-4.9-3.1-8-7.3-9z" opacity="0.85"/><path d="M6 9.2 Q12 11.1 18 9.2" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" opacity="0.45"/><circle cx="12" cy="4.3" r="2.1"/></g></svg>',
+        '<svg viewBox="0 0 24 24" fill="currentColor"><line x1="4.6" y1="3.5" x2="4.6" y2="21" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><rect x="5.6" y="4.5" width="14.2" height="10" rx="0.6"/><rect x="5.6" y="4.5" width="7.6" height="5.6" fill="#0A3161"/><circle cx="9.4" cy="7.3" r="0.85"/></svg>',
+      buyLow:
+        '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 20V11" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M12 14.2c-3.6 0-6.2-2.3-6.2-6.5C9.9 8 12 10.4 12 14.2z"/><path d="M12 11.3c2.9 0 5.1-1.9 5.1-5.4C13.9 6 12 8.1 12 11.3z" opacity="0.85"/></svg>',
       honorable:
         '<svg viewBox="0 0 24 24" fill="currentColor"><g transform="translate(0.5,1.05)"><path d="M12 3.2 1.5 8l10.5 4.8L20 9.2v5.4h1.5V8L12 3.2z"/><path d="M5 10.4v4.3c0 1.7 3.1 3.4 7 3.4s7-1.7 7-3.4v-4.3l-7 3.2-7-3.2z" opacity="0.85"/><path d="M18.5 10v6.6" stroke="currentColor" stroke-width="1.2" fill="none" stroke-linecap="round"/><circle cx="18.5" cy="17.6" r="1.1"/></g></svg>',
       conArtist:
@@ -387,6 +389,7 @@ export default function InteractiveScript({ tickerItems } = {}) {
       { key: "onIce", variant: "ice", label: "On Thin Ice" },
       { key: "volatile", variant: "icarus", label: "Risky Icarus" },
       { key: "locked", variant: "eddy", label: "Steady Eddy" },
+      { key: "buyLow", variant: "sprout", label: "Buy Low" },
       { key: "hero", variant: "cape", label: "1x Weekly Hero" },
       { key: "honorable", variant: "honorable", label: "Honorable" },
       { key: "conArtist", variant: "menace", label: "Con Artist" },
