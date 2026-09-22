@@ -387,12 +387,17 @@ function HeroIcon({ tier }) {
 function GraduationCapIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      {/* Its own bounding box sits half a unit left and a full unit high
-          of viewBox-center (measured via getBBox -- the tassel's own
-          weight pulls the box right/down without actually being IN the
-          box's true center), so this whole icon is wrapped one tick off
-          from every other one here -- translate re-centers it exactly. */}
-      <g transform="translate(0.5,1.05)">
+      {/* The old translate(0.5,1.05) here centered the shape's BOUNDING
+          BOX against viewBox-center, but a bbox-centered cap still read
+          as shifted right at real badge size -- the tassel is a thin
+          line/dot that barely affects the bbox (which only cares about
+          the outermost extent) but does drag the actual PIXEL-MASS
+          centroid right, since it's real filled area on that side. Fixed
+          the same way as StarIcon: rasterized the shape, measured every
+          filled pixel's average position, and re-picked this translate
+          until that pixel-mass centroid landed within 0.01 units of
+          (12,12) -- optical centering, not bbox centering. */}
+      <g transform="translate(-0.454,0.974)">
         <path d="M12 3.2 1.5 8l10.5 4.8L20 9.2v5.4h1.5V8L12 3.2z" />
         <path
           d="M5 10.4v4.3c0 1.7 3.1 3.4 7 3.4s7-1.7 7-3.4v-4.3l-7 3.2-7-3.2z"
