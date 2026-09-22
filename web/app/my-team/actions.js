@@ -8,7 +8,7 @@ import { getAchievements } from "../tools/achievements";
 import {
   fetchAchievementInputs,
   fetchLatestRedraftFieldsByName,
-  fetchWoprByName,
+  fetchWoprPercentileByName,
   buildAchievementRow,
 } from "../tools/achievementsData";
 import {
@@ -120,15 +120,15 @@ export async function lookupSleeperTeams(username) {
   // Honorable/Con Artist), applied here as-is -- not retuned for a roster context. Uses the
   // current season (the same one already resolved above for the
   // projection lookup) for Weekly Hero's own season-scoping.
-  const [achievementInputs, redraftFieldsByName, woprByName] = await Promise.all([
+  const [achievementInputs, redraftFieldsByName, woprPercentileByName] = await Promise.all([
     fetchAchievementInputs(supabase, Number(season)),
     fetchLatestRedraftFieldsByName(supabase),
-    fetchWoprByName(supabase),
+    fetchWoprPercentileByName(supabase),
   ]);
   const recentGamesByNormName = normalizedIndex(achievementInputs.recentGamesByName);
   const heroWinsByNormName = normalizedIndex(achievementInputs.heroWinsByName);
   const redraftFieldsByNormName = normalizedIndex(redraftFieldsByName);
-  const woprByNormName = normalizedIndex(woprByName);
+  const woprPercentileByNormName = normalizedIndex(woprPercentileByName);
 
   const teams = await Promise.all(
     leagues.map(async (league) => {
@@ -303,7 +303,7 @@ export async function lookupSleeperTeams(username) {
             recentGamesByName: recentGamesByNormName,
             heroWinsByName: heroWinsByNormName,
             redraftFieldsByName: redraftFieldsByNormName,
-            woprByName: woprByNormName,
+            woprPercentileByName: woprPercentileByNormName,
           })
         );
         return {

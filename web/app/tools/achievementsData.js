@@ -1,3 +1,5 @@
+import { percentileRank } from "@/lib/statPercentiles";
+
 // Server-side data plumbing for getAchievements() (achievements.js),
 // shared by every tool page that wants to show the same badges Weekly
 // Projection Rankings does. Ported out of redraft-rankings/page.js
@@ -118,15 +120,28 @@ export async function fetchLatestRedraftFieldsByName(supabase) {
   return byName;
 }
 
-// WOPR (weighted opportunity rating -- receiving usage) per player, from
-// Player Season Simulations' own latest published batch -- a separate
-// table/pipeline from redraft_rankings, joined by player_name only (no
-// week alignment assumed; player_simulations republishes on its own
-// weekly cadence, same season). Powers Buy Low below -- real workload
-// that hasn't shown up on the scoreboard yet. Null for anyone not yet in
-// that table (a brand-new call-up, or before the season's first Player
-// Sims publish), same as every other nullable metric here.
-export async function fetchWoprByName(supabase) {
+// WOPR (weighted opportunity rating -- receiving usage) ranked WITHIN
+// POSITION, from Player Season Simulations' own latest published batch --
+// a separate table/pipeline from redraft_rankings, joined by player_name
+// only (no week alignment assumed; player_simulations republishes on its
+// own weekly cadence, same season). Powers Buy Low/Sell High below --
+// real workload that hasn't (or, for Sell High, results that HAVE
+// without) shown up on the scoreboard yet.
+//
+// Ranked by position, not a flat cross-position cutoff on the raw
+// number -- WOPR only counts receiving usage (targets + air yards), so
+// RBs cluster far lower than WRs even as genuine workhorses on the
+// ground. A real-world check found a 0.154 raw WOPR reading as "low
+// usage" against a flat threshold when it was actually ~82nd percentile
+// among RBs specifically. Reuses the exact percentileRank() math Player
+// Season Simulations/redraft-rankings already use for their own stat
+// percentile panels, always against the FULL position pool (every
+// player in this week's Player Sims publish, not whichever subset the
+// calling page happens to be displaying), same reasoning as
+// buildStatPoolByPos's own comment on why a teaser-truncated pool would
+// be wrong. Null for anyone not yet in that table, or without a
+// pool-mate at their position to rank against.
+export async function fetchWoprPercentileByName(supabase) {
   const { data: latest } = await supabase
     .from("player_simulations")
     .select("season, week")
@@ -137,11 +152,20 @@ export async function fetchWoprByName(supabase) {
   if (!latest) return {};
   const { data } = await supabase
     .from("player_simulations")
-    .select("player_name, wopr")
+    .select("player_name, position, wopr")
     .eq("season", latest.season)
     .eq("week", latest.week);
+
+  const poolByPosition = {};
+  for (const r of data || []) {
+    if (r.wopr == null) continue;
+    (poolByPosition[r.position] ??= []).push(r.wopr);
+  }
   const byName = {};
-  for (const r of data || []) byName[r.player_name] = r.wopr ?? null;
+  for (const r of data || []) {
+    if (r.wopr == null) continue;
+    byName[r.player_name] = percentileRank(r.wopr, poolByPosition[r.position]);
+  }
   return byName;
 }
 
@@ -165,6 +189,6 @@ export function buildAchievementRow(playerName, position, inputs) {
     floor: rf.floor ?? null,
     ceiling: rf.ceiling ?? null,
     projection: rf.projection ?? null,
-    wopr: inputs.woprByName?.[playerName] ?? null,
+    woprPercentile: inputs.woprPercentileByName?.[playerName] ?? null,
   };
 }

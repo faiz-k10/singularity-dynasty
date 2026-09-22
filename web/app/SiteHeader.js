@@ -9,7 +9,7 @@ import { getAchievements } from "./tools/achievements";
 import {
   fetchAchievementInputs,
   fetchLatestRedraftFieldsByName,
-  fetchWoprByName,
+  fetchWoprPercentileByName,
   buildAchievementRow,
 } from "./tools/achievementsData";
 
@@ -32,9 +32,9 @@ const getCachedTickerInputs = unstable_cache(
       .order("week", { ascending: false })
       .limit(1)
       .maybeSingle();
-    if (!latestRedraft) return { topRows: [], achievementInputs: null, redraftFieldsByName: {}, woprByName: {} };
+    if (!latestRedraft) return { topRows: [], achievementInputs: null, redraftFieldsByName: {}, woprPercentileByName: {} };
 
-    const [{ data: topRows }, achievementInputs, redraftFieldsByName, woprByName] = await Promise.all([
+    const [{ data: topRows }, achievementInputs, redraftFieldsByName, woprPercentileByName] = await Promise.all([
       publicSupabase
         .from("redraft_rankings")
         .select("player_name, position")
@@ -44,9 +44,9 @@ const getCachedTickerInputs = unstable_cache(
         .limit(20),
       fetchAchievementInputs(publicSupabase, latestRedraft.season),
       fetchLatestRedraftFieldsByName(publicSupabase),
-      fetchWoprByName(publicSupabase),
+      fetchWoprPercentileByName(publicSupabase),
     ]);
-    return { topRows: topRows || [], achievementInputs, redraftFieldsByName, woprByName };
+    return { topRows: topRows || [], achievementInputs, redraftFieldsByName, woprPercentileByName };
   },
   ["site-header-ticker-inputs"],
   { revalidate: 60 }
@@ -76,11 +76,11 @@ export default async function SiteHeader() {
   // against whatever that cache last returned, so "re-rolled on every
   // site refresh" still holds for the actual picks shown.
   let tickerItems = [];
-  const { topRows, achievementInputs, redraftFieldsByName, woprByName } = await getCachedTickerInputs();
+  const { topRows, achievementInputs, redraftFieldsByName, woprPercentileByName } = await getCachedTickerInputs();
   if (achievementInputs) {
     const pool = (topRows || []).flatMap((r) =>
       getAchievements(
-        buildAchievementRow(r.player_name, r.position, { ...achievementInputs, redraftFieldsByName, woprByName })
+        buildAchievementRow(r.player_name, r.position, { ...achievementInputs, redraftFieldsByName, woprPercentileByName })
       )
         .filter((a) => a.key !== "confidence")
         .map((a) => ({

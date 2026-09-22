@@ -410,6 +410,14 @@ export default async function RedraftRankingsPage({ searchParams }) {
       ceilingHeat: ceilingHeatFor(r),
     }));
     rankings = attachStatPercentiles(rankings);
+    // Buy Low/Sell High (achievements.js) need WOPR ranked WITHIN
+    // position -- a raw WOPR cutoff shared across positions is wrong
+    // (WOPR is receiving usage only, so RBs cluster far lower than WRs
+    // even as true workhorses; a flat threshold either never fires for
+    // RBs or fires on every low-volume WR). attachStatPercentiles above
+    // already computes exactly that position-relative rank as
+    // statPct.wopr -- reuse it here instead of a second cutoff.
+    rankings = rankings.map((r) => ({ ...r, woprPercentile: r.statPct?.wopr ?? null }));
   }
 
   // Widest floor-to-ceiling range this week -- the Outcome Curve column

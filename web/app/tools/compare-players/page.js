@@ -3,7 +3,7 @@ import SiteHeader from "../../SiteHeader";
 import TeamBadge from "../TeamBadge";
 import AchievementDots from "../AchievementDots";
 import { getAchievements } from "../achievements";
-import { fetchAchievementInputs, fetchLatestRedraftFieldsByName, fetchWoprByName, buildAchievementRow } from "../achievementsData";
+import { fetchAchievementInputs, fetchLatestRedraftFieldsByName, fetchWoprPercentileByName, buildAchievementRow } from "../achievementsData";
 
 export const metadata = {
   title: "Compare Fantasy Football Players — Weekly Rankings — Singularity Dynasty",
@@ -58,15 +58,15 @@ export default async function ComparePlayersPage({ searchParams }) {
   // since this page's whole point is a side-by-side of 2-3 specific
   // players, not the full weekly pool.
   if (selected.length > 0 && latest) {
-    const [achievementInputs, redraftFieldsByName, woprByName] = await Promise.all([
+    const [achievementInputs, redraftFieldsByName, woprPercentileByName] = await Promise.all([
       fetchAchievementInputs(supabase, latest.season),
       fetchLatestRedraftFieldsByName(supabase),
-      fetchWoprByName(supabase),
+      fetchWoprPercentileByName(supabase),
     ]);
     selected = selected.map((r) => ({
       ...r,
       achievements: getAchievements(
-        buildAchievementRow(r.player_name, r.position, { ...achievementInputs, redraftFieldsByName, woprByName })
+        buildAchievementRow(r.player_name, r.position, { ...achievementInputs, redraftFieldsByName, woprPercentileByName })
       ),
     }));
   }

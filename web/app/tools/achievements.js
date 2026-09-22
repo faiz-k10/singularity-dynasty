@@ -127,39 +127,44 @@ export function spreadFlag(floor, ceiling, projection) {
 // publish), a measure of how much the OFFENSE is feeding a player,
 // independent of whether it's scored yet. High usage without results is
 // the classic buy-low signal -- volume tends to win out over a longer
-// sample than 2 games. WOPR is season-long (one number per player, not
-// per-game like floor/ceiling/xFP), so unlike On Fire/On Thin Ice this
-// doesn't need a specific historical week's data, just the player's
-// current usage number plus their last 2 logged games.
-export const USAGE_HIGH_WOPR = 0.55; // ~top 15-20% among meaningfully-projected (>=8pt) players, off a live pool check
+// sample than 2 games.
+//
+// `woprPercentile` is WOPR ranked WITHIN POSITION (0-100, see
+// redraft-rankings/page.js's attachStatPercentiles / achievementsData.js's
+// fetchWoprPercentileByName), NOT the raw WOPR number. A flat raw-WOPR
+// cutoff shared across positions was the first version of this badge and
+// it was wrong: WOPR only counts receiving usage (targets + air yards),
+// so RBs cluster far lower than WRs even as genuine workhorses on the
+// ground -- a real-world check found a 0.154 WOPR reading as "low usage"
+// by a cross-position cutoff when it was actually ~82nd percentile among
+// RBs specifically. Ranking within position first fixes that.
+export const USAGE_HIGH_PERCENTILE = 80; // top ~20% within the player's own position
 export function underperformingMedianLast2(games) {
   if (!games || games.length < 2) return false;
   const last2 = games.slice(0, 2);
   if (last2.some((g) => g.fantasy_points_ppr == null || g.median == null)) return false;
   return last2.every((g) => g.fantasy_points_ppr < g.median);
 }
-export function buyLowFlag(wopr, games) {
-  if (wopr == null || wopr < USAGE_HIGH_WOPR) return false;
+export function buyLowFlag(woprPercentile, games) {
+  if (woprPercentile == null || woprPercentile < USAGE_HIGH_PERCENTILE) return false;
   return underperformingMedianLast2(games);
 }
 
-// "Sell High" -- the literal inverse of Buy Low: LOW usage that's still
-// somehow scoring above its own median 2 games running. If the workload
-// isn't really there, the recent results are more likely luck (TD
-// variance, garbage time, a soft matchup) than a repeatable level --
-// exactly the opposite argument Buy Low makes for volume winning out.
-// USAGE_LOW_WOPR (0.20) was picked to land at roughly the same rarity as
-// USAGE_HIGH_WOPR (0.55) off the same live pool check (27 vs 26 players
-// among the meaningfully-projected pool), not just mirrored arithmetically.
-export const USAGE_LOW_WOPR = 0.2;
+// "Sell High" -- the literal inverse of Buy Low: LOW usage (within
+// position, same woprPercentile basis) that's still somehow scoring
+// above its own median 2 games running. If the workload isn't really
+// there, the recent results are more likely luck (TD variance, garbage
+// time, a soft matchup) than a repeatable level -- exactly the opposite
+// argument Buy Low makes for volume winning out.
+export const USAGE_LOW_PERCENTILE = 20; // bottom ~20% within the player's own position
 export function overperformingMedianLast2(games) {
   if (!games || games.length < 2) return false;
   const last2 = games.slice(0, 2);
   if (last2.some((g) => g.fantasy_points_ppr == null || g.median == null)) return false;
   return last2.every((g) => g.fantasy_points_ppr > g.median);
 }
-export function sellHighFlag(wopr, games) {
-  if (wopr == null || wopr > USAGE_LOW_WOPR) return false;
+export function sellHighFlag(woprPercentile, games) {
+  if (woprPercentile == null || woprPercentile > USAGE_LOW_PERCENTILE) return false;
   return overperformingMedianLast2(games);
 }
 
@@ -186,8 +191,8 @@ export function getAchievements(row) {
   const spread = spreadFlag(row.floor, row.ceiling, row.projection);
   const xfpFlag = xfpTrend2(row.recentGames);
   const heroWins = Math.max(0, row.heroWins || 0);
-  const buyLow = buyLowFlag(row.wopr, row.recentGames);
-  const sellHigh = sellHighFlag(row.wopr, row.recentGames);
+  const buyLow = buyLowFlag(row.woprPercentile, row.recentGames);
+  const sellHigh = sellHighFlag(row.woprPercentile, row.recentGames);
 
   return [
     (isEstablished || isBuilding) && {
