@@ -106,7 +106,11 @@ export default function RankingsTable({
   tableClassName = "",
   searchValue,
   onSearchChange,
+  positions,
+  selectedPositions,
+  onTogglePosition,
 }) {
+  const showTheaterPositionFilter = Array.isArray(positions) && positions.length > 0 && onTogglePosition;
   const sortProps = { activeSort: sortKey, activeDir: sortDir, currentParams, sortParam, dirParam };
   // Click-to-expand/collapse, keyed by the same string the row itself is
   // keyed by -- a Set rather than one active key, so multiple rows can be
@@ -134,14 +138,16 @@ export default function RankingsTable({
   // cheaper way to reclaim it than a separate route/modal component.
   // Body scroll is locked while active so the page behind the overlay
   // doesn't scroll along with it; Escape closes it the same as the
-  // visible button does. The fixed overlay (z-index 200) sits ABOVE the
-  // page's own search box (RankingsSearch.js, rendered above this
-  // component in normal flow), making that box unreachable while
-  // theater mode is on -- searchValue/onSearchChange are optional
-  // controlled-input props so the theater bar itself can carry a second
-  // copy of the exact same search box, wired to the SAME query state
-  // the parent already owns, rather than this component inventing its
-  // own separate search/filter logic.
+  // visible button does. The fixed overlay (z-index 200) sits ABOVE both
+  // the page's own search box AND the Position filter accordion
+  // (RankingsSearch.js/RedraftRankingsClient.js, both rendered above this
+  // component in normal flow), making them unreachable while theater
+  // mode is on -- searchValue/onSearchChange and positions/
+  // selectedPositions/onTogglePosition are all optional controlled props
+  // so the theater bar can carry a second copy of the exact same search
+  // box and position pills, wired to the SAME state the parent already
+  // owns, rather than this component inventing its own separate search/
+  // filter logic.
   const [theater, setTheater] = useState(false);
   useEffect(() => {
     if (!theater) return;
@@ -169,15 +175,34 @@ export default function RankingsTable({
   return (
     <>
       <div className={`rankings-theater-bar${theater ? " theater" : ""}`}>
-        {theater && onSearchChange && (
-          <input
-            type="search"
-            className="player-search-input"
-            placeholder="Search a player's name…"
-            value={searchValue || ""}
-            onChange={(e) => onSearchChange(e.target.value)}
-            aria-label="Search players"
-          />
+        {theater && (onSearchChange || showTheaterPositionFilter) && (
+          <div className="rankings-theater-controls">
+            {onSearchChange && (
+              <input
+                type="search"
+                className="player-search-input"
+                placeholder="Search a player's name…"
+                value={searchValue || ""}
+                onChange={(e) => onSearchChange(e.target.value)}
+                aria-label="Search players"
+              />
+            )}
+            {showTheaterPositionFilter && (
+              <div className="position-filter-row">
+                {positions.map((pos) => (
+                  <button
+                    key={pos}
+                    type="button"
+                    className={`position-pill ${selectedPositions.includes(pos) ? "active" : ""}`}
+                    onClick={() => onTogglePosition(pos)}
+                    aria-pressed={selectedPositions.includes(pos)}
+                  >
+                    {pos}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         )}
         <button
           type="button"

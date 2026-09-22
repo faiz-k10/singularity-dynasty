@@ -16,6 +16,7 @@ export default function RankingsSearch({
   currentParams,
   positions, // omit (or pass []) to skip position filtering entirely
   selected, // currently-selected positions, owned by the parent
+  onTogglePosition, // owned by the parent -- forwarded to RankingsTable so theater mode can carry its own copy of the position pills, same reasoning as searchValue/onSearchChange below
   tableClassName = "",
   showStatColumns = false,
   showCurve = false,
@@ -89,6 +90,9 @@ export default function RankingsSearch({
           showStatColumns={showStatColumns}
           searchValue={query}
           onSearchChange={setQuery}
+          positions={positions}
+          selectedPositions={selected}
+          onTogglePosition={onTogglePosition}
         />
       )}
     </>

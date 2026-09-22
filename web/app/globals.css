@@ -983,14 +983,23 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
   align-items:center; justify-content:space-between; gap:16px; padding:0 16px; margin-bottom:0;
   background:var(--void-panel); border-bottom:1px solid var(--line);
 }
-/* Search only exists inside the bar while theater mode is actually
-   active -- the page's own search box (RankingsSearch.js) sits right
-   above the table in normal flow, but theater mode lifts the table into
-   a position:fixed overlay ABOVE that box (z-index 200, see
-   .rankings-table-wrap.theater), making it unreachable without one in
-   here too. Reuses .player-search-input's exact look, just dropped into
-   this bar's own flex layout instead of .player-search-row's. */
+/* Search + Position pills only exist inside the bar while theater mode
+   is actually active -- the page's own search box AND Position filter
+   accordion (RankingsSearch.js/RedraftRankingsClient.js) sit right above
+   the table in normal flow, but theater mode lifts the table into a
+   position:fixed overlay ABOVE both of them (z-index 200, see
+   .rankings-table-wrap.theater), making them unreachable without a copy
+   in here too. Grouped in their own flex row (rather than as direct
+   children of the space-between bar) so the exit button stays pinned to
+   the right regardless of how many controls sit on the left. Reuses
+   .player-search-input/.position-filter-row/.position-pill's exact look
+   from the normal-flow versions, just dropped into this bar's own flex
+   layout and with the position pills' own bottom margin zeroed (that
+   margin exists to separate it from the table below it in normal flow --
+   nothing below it in the fixed bar). */
+.rankings-theater-bar .rankings-theater-controls{display:flex; align-items:center; gap:16px; flex:1; min-width:0;}
 .rankings-theater-bar .player-search-input{margin:0;}
+.rankings-theater-bar .position-filter-row{margin-bottom:0;}
 /* Plain-icon, bordered-square language (.theme-toggle/.player-popover-
    compare) rather than a new style. A real <button> (not a clickable
    div) so InteractiveScript.js's drag-to-scroll pointerdown handler
