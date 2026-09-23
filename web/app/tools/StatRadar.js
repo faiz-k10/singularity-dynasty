@@ -1,5 +1,23 @@
 const SIZE = 280;
 const CENTER = SIZE / 2;
+// The square 280x280 viewBox has real, measured-not-guessed blank space
+// on one side or the other depending on orientation -- a point-up
+// pentagon (startDeg -90, QB/RB) needs more clearance ABOVE center for
+// its single top vertex/label than below (two lower vertices sit at
+// only ~0.81*MAX_R from center, vs the top vertex's full MAX_R), so the
+// square canvas leaves extra blank space at the BOTTOM; a point-down
+// triangle (startDeg 90, WR/TE) is the mirror image and leaves extra
+// blank space at the TOP. Measured live: -90 had 46.5 units of blank
+// above its content vs 60.2 below (13.7 to spare at the bottom); 90 had
+// 53.0 above vs 43.8 below (9.2 to spare at the top). CROP_BOTTOM/
+// CROP_TOP below trim most of that spare margin off the viewBox itself
+// (not just the panel's CSS padding, which was already even) -- each a
+// couple of units short of the measured maximum so real font-rendering
+// variance across browsers can't clip a label. Width stays untouched
+// (280 the whole way) -- that dimension is sized for "Receptions"
+// clipping the horizontal vertex, unrelated to this top/bottom crop.
+const CROP_BOTTOM = 12;
+const CROP_TOP = 7;
 // Labels wrap one word per line (see labelWords/LABEL_LINE_EM below), so
 // the margin they need past the chart is roughly one word wide instead
 // of a full two-word name -- except "Receptions", which has no space to
@@ -114,12 +132,18 @@ export default function StatRadar({ entries, selection = null, startDeg = -90, c
   const comparePath = compareEntries
     ? polygonPath(compareEntries, n, null, startDeg, ([, , pctile]) => (pctile ?? 0) / 100)
     : null;
+  // startDeg 90 (WR/TE's point-down triangle) has its spare margin on
+  // top; every other orientation (the point-up pentagon QB/RB use, and
+  // the -90 default) has it on the bottom -- see CROP_TOP/CROP_BOTTOM's
+  // comment above.
+  const viewBox =
+    startDeg === 90 ? `0 ${CROP_TOP} ${SIZE} ${SIZE - CROP_TOP}` : `0 0 ${SIZE} ${SIZE - CROP_BOTTOM}`;
 
   return (
     <div className="stat-radar">
       <div className="stat-radar-label">Percentile shape</div>
       <svg
-        viewBox={`0 0 ${SIZE} ${SIZE}`}
+        viewBox={viewBox}
         className="stat-radar-svg"
         role="img"
         aria-label="Per-stat percentile shape versus position"
