@@ -1,23 +1,26 @@
 const SIZE = 280;
 const CENTER = SIZE / 2;
 // The square 280x280 viewBox has real, measured-not-guessed blank space
-// on one side or the other depending on orientation -- a point-up
-// pentagon (startDeg -90, QB/RB) needs more clearance ABOVE center for
-// its single top vertex/label than below (two lower vertices sit at
-// only ~0.81*MAX_R from center, vs the top vertex's full MAX_R), so the
-// square canvas leaves extra blank space at the BOTTOM; a point-down
-// triangle (startDeg 90, WR/TE) is the mirror image and leaves extra
-// blank space at the TOP. Measured live: -90 had 46.5 units of blank
-// above its content vs 60.2 below (13.7 to spare at the bottom); 90 had
-// 53.0 above vs 43.8 below (9.2 to spare at the top). CROP_BOTTOM/
-// CROP_TOP below trim most of that spare margin off the viewBox itself
-// (not just the panel's CSS padding, which was already even) -- each a
-// couple of units short of the measured maximum so real font-rendering
-// variance across browsers can't clip a label. Width stays untouched
-// (280 the whole way) -- that dimension is sized for "Receptions"
-// clipping the horizontal vertex, unrelated to this top/bottom crop.
-const CROP_BOTTOM = 12;
-const CROP_TOP = 7;
+// above and below its content, split unevenly between top/bottom
+// depending on orientation -- a point-up pentagon (startDeg -90, QB/RB)
+// needs more clearance ABOVE center for its single top vertex/label than
+// below (two lower vertices sit at only ~0.81*MAX_R from center, vs the
+// top vertex's full MAX_R); a point-down triangle (startDeg 90, WR/TE)
+// is the mirror image. Raw (uncropped) blank was measured at -90: 46.5
+// above / 60.2 below; at 90: 53.0 above / 43.8 below. The four CROP_*
+// constants below first equalize each orientation's top/bottom margin
+// (leaving a couple of units of the smaller side's own spare as a
+// safety buffer against font-rendering variance), then trim a further
+// ~25% off both sides evenly (explicit ask: "cut the bottom margin ...
+// by 25% and do the same for the top margin") -- e.g. -90's ~46.5/~48.2
+// post-equalize margins each shrink to ~35.5/~35.2. Width stays
+// untouched (280 the whole way) -- that dimension is sized for
+// "Receptions" clipping the horizontal vertex, unrelated to this
+// top/bottom crop.
+const CROP_TOP_UP = 11; // startDeg -90 (QB/RB): 46.5 -> ~35.5
+const CROP_BOTTOM_UP = 25; // startDeg -90 (QB/RB): 60.2 -> ~35.2
+const CROP_TOP_DOWN = 19; // startDeg 90 (WR/TE): 53.0 -> ~34.0
+const CROP_BOTTOM_DOWN = 10; // startDeg 90 (WR/TE): 43.8 -> ~33.8
 // Labels wrap one word per line (see labelWords/LABEL_LINE_EM below), so
 // the margin they need past the chart is roughly one word wide instead
 // of a full two-word name -- except "Receptions", which has no space to
@@ -132,12 +135,9 @@ export default function StatRadar({ entries, selection = null, startDeg = -90, c
   const comparePath = compareEntries
     ? polygonPath(compareEntries, n, null, startDeg, ([, , pctile]) => (pctile ?? 0) / 100)
     : null;
-  // startDeg 90 (WR/TE's point-down triangle) has its spare margin on
-  // top; every other orientation (the point-up pentagon QB/RB use, and
-  // the -90 default) has it on the bottom -- see CROP_TOP/CROP_BOTTOM's
-  // comment above.
-  const viewBox =
-    startDeg === 90 ? `0 ${CROP_TOP} ${SIZE} ${SIZE - CROP_TOP}` : `0 0 ${SIZE} ${SIZE - CROP_BOTTOM}`;
+  // See the CROP_* comment above for where these numbers come from.
+  const [cropTop, cropBottom] = startDeg === 90 ? [CROP_TOP_DOWN, CROP_BOTTOM_DOWN] : [CROP_TOP_UP, CROP_BOTTOM_UP];
+  const viewBox = `0 ${cropTop} ${SIZE} ${SIZE - cropTop - cropBottom}`;
 
   return (
     <div className="stat-radar">
