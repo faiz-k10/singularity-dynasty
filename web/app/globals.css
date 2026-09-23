@@ -2075,18 +2075,22 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    grid-area would be inert anyway) so the radar and the new actual-
    points-vs-pace panel can lay out as flex siblings sharing that one
    cell, without touching the grid's own column/area definitions or any
-   other panel. flex-wrap so a narrower viewport (where the radar's
-   340px alone exceeds the track width) drops the pace panel to its own
-   line below the radar instead of squeezing both, rather than needing
-   its own breakpoint. */
-.stat-panel-radar-row{grid-area:radar; display:flex; gap:14px; align-items:flex-start; flex-wrap:wrap;}
-.stat-panel-pace{flex:1; min-width:140px; display:flex; flex-direction:column; gap:6px; justify-content:center;}
-.stat-panel-pace-actual{font-family:var(--font-space-grotesk); font-size:22px; font-weight:700; color:var(--star); line-height:1.25;}
-.stat-panel-pace-games{display:block; font-family:var(--font-ibm-plex-mono), monospace; font-size:11px; font-weight:400; color:var(--star-dim); margin-top:2px;}
-.stat-panel-pace-delta{font-family:var(--font-ibm-plex-mono), monospace; font-size:14px; font-weight:600;}
+   other panel. nowrap by request -- stays a narrow portrait column
+   beside the radar at any width rather than dropping to its own
+   full-width row below (the first version wrapped, since min-width:140
+   didn't fit in the ~78px sometimes left over once the radar's fixed
+   340px and the gap are accounted for). .stat-panel-pace's own
+   min-width is small enough (56px) to actually live in that leftover
+   space instead of forcing an overflow; its text wraps internally
+   (line-height/gap already account for that) rather than truncating. */
+.stat-panel-radar-row{grid-area:radar; display:flex; gap:10px; align-items:stretch; flex-wrap:nowrap;}
+.stat-panel-pace{flex:1 1 56px; min-width:56px; display:flex; flex-direction:column; gap:6px; justify-content:center; padding:10px 10px;}
+.stat-panel-pace-actual{font-family:var(--font-space-grotesk); font-size:20px; font-weight:700; color:var(--star); line-height:1.2;}
+.stat-panel-pace-games{display:block; font-family:var(--font-ibm-plex-mono), monospace; font-size:10.5px; font-weight:400; color:var(--star-dim); margin-top:2px;}
+.stat-panel-pace-delta{font-family:var(--font-ibm-plex-mono), monospace; font-size:13px; font-weight:600; word-break:break-word;}
 .stat-panel-pace-delta.pace-hot{color:var(--up);}
 .stat-panel-pace-delta.pace-cold{color:var(--down);}
-.stat-panel-pace-pctile{font-family:var(--font-ibm-plex-mono), monospace; font-size:11px; color:var(--star-dim);}
+.stat-panel-pace-pctile{font-family:var(--font-ibm-plex-mono), monospace; font-size:10.5px; color:var(--star-dim);}
 
 /* Weekly Projection Rankings' own click-to-expand row (WeeklyDetailRow.js)
    -- same .stat-detail-row/.stat-panel/.row-expandable chrome as Player
