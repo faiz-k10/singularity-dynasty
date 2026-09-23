@@ -1983,20 +1983,20 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    side by side on top (one player's own view throughout), Similar Shape
    spanning the full width below -- pulled out of the table panel into
    its own column so its bars read as their own chart rather than an
-   addendum stacked under the table. align-items:stretch -- these three
-   have quite different natural content heights (a 5-row table vs. a
-   handful of short bars vs. the radar's own square chart, grown larger
-   per a later request), so equal-height stretching is back. Table/
-   percentile/pace all sit top-anchored (justify-content:flex-start, see
-   .stat-panel-table/.stat-panel-percentile/.stat-panel-pace below) to
-   match the radar, which was always top-anchored by nature of being one
-   tall square chart -- an earlier version centered table/percentile
-   instead (splitting the leftover height top+bottom rather than dumping
-   it all below), but once the row got taller from the table-panel-width
-   shrink and the pace panel both landing in the same row, that centering
-   read as wasted top padding instead of intentional balance. Finder
-   stays on its own full-width row so its per-comp tables get real
-   column width. */
+   addendum stacked under the table. These four have quite different
+   natural content heights (a 5-row table vs. a handful of short bars vs.
+   the radar's own square chart vs. a few stat lines), and every attempt
+   at forcing them to equal height just moved the resulting dead space
+   around -- stretch-and-center split it top+bottom, stretch-and-top-
+   align dumped it all at the bottom (confirmed live: the percentile
+   panel had an 11px gap above its hint text and a 326px gap below it).
+   align-items:start (below) is what actually removes it: each panel's
+   box sizes to its own content, so a short panel is just a short card
+   instead of a tall card with padding to disguise. The row is raggeder
+   at the bottom now (radar's real height vs. three shorter boxes) --
+   the tradeoff for not padding content out to a height it doesn't have.
+   Finder stays on its own full-width row so its per-comp tables get
+   real column width. */
 /* First track is minmax(0,380px), not a 1.1fr share -- the stat table
    only ever needs ~360px (108px stat-name column, measured off the
    longest real label, plus three ~76px Floor/Median/Ceiling columns and
@@ -2007,10 +2007,23 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    percentile/radar columns' fr shares divide up the space this reclaims
    instead of it turning into a dead gap between a now-narrower table
    panel and wherever the old 1.1fr boundary used to sit. */
+/* align-items:start, not stretch -- stretch forced table/percentile/
+   pace's own boxes to match the radar's full height (by far the tallest
+   of the four: a square chart vs. a 5-row table, a couple of hint lines,
+   or a few stat lines), and top-aligning their CONTENT within that
+   forced-tall box (.stat-panel-table/-percentile/-pace's own
+   justify-content:flex-start, below) only moved the wasted space from
+   above the content to below it -- confirmed live, e.g. the percentile
+   panel had an 11px gap above its hint text and a 326px gap below it.
+   start lets each panel's box size to its own content instead, so a
+   short panel is just a short card, not a tall card with dead air in
+   it. The row is raggeder at the bottom now (radar's real height vs.
+   three shorter boxes), which is the tradeoff for not padding content
+   out to a height it doesn't have. */
 .stat-detail-grid{
   display:grid; grid-template-columns:minmax(0,380px) 0.9fr 1fr;
   grid-template-areas:"table percentile radar" "finder finder finder";
-  column-gap:20px; row-gap:20px; align-items:stretch;
+  column-gap:20px; row-gap:20px; align-items:start;
 }
 @media (max-width:1100px){
   .stat-detail-grid{
@@ -2115,7 +2128,13 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    min-width is small enough (56px) to actually live in that leftover
    space instead of forcing an overflow; its text wraps internally
    (line-height/gap already account for that) rather than truncating. */
-.stat-panel-radar-row{grid-area:radar; display:flex; gap:10px; align-items:stretch; flex-wrap:nowrap;}
+/* align-items:flex-start, not stretch -- stretch was forcing the pace
+   panel to match the radar's own (much taller) height the same way the
+   outer grid's align-items:stretch used to force it on table/percentile
+   (see the comment above .stat-detail-grid); flex-start lets it stay as
+   short as its own content needs, same fix, same reason, just inside
+   this nested flex row instead of the grid. */
+.stat-panel-radar-row{grid-area:radar; display:flex; gap:10px; align-items:flex-start; flex-wrap:nowrap;}
 .stat-panel-pace{flex:1 1 56px; min-width:56px; display:flex; flex-direction:column; gap:6px; justify-content:flex-start; padding:10px 10px;}
 .stat-panel-pace-actual{font-family:var(--font-space-grotesk); font-size:20px; font-weight:700; color:var(--star); line-height:1.2;}
 .stat-panel-pace-games{display:block; font-family:var(--font-ibm-plex-mono), monospace; font-size:10.5px; font-weight:400; color:var(--star-dim); margin-top:2px;}
