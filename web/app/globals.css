@@ -1986,13 +1986,17 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    addendum stacked under the table. align-items:stretch -- these three
    have quite different natural content heights (a 5-row table vs. a
    handful of short bars vs. the radar's own square chart, grown larger
-   per a later request), so equal-height stretching is back, but this
-   time table/percentile CENTER their own content vertically within the
-   stretched box (see .stat-panel-table/.stat-panel-percentile below)
-   instead of sitting top-anchored with dead space left below -- splits
-   the leftover height evenly instead of dumping all of it at the
-   bottom. Finder stays on its own full-width row so its per-comp
-   tables get real column width. */
+   per a later request), so equal-height stretching is back. Table/
+   percentile/pace all sit top-anchored (justify-content:flex-start, see
+   .stat-panel-table/.stat-panel-percentile/.stat-panel-pace below) to
+   match the radar, which was always top-anchored by nature of being one
+   tall square chart -- an earlier version centered table/percentile
+   instead (splitting the leftover height top+bottom rather than dumping
+   it all below), but once the row got taller from the table-panel-width
+   shrink and the pace panel both landing in the same row, that centering
+   read as wasted top padding instead of intentional balance. Finder
+   stays on its own full-width row so its per-comp tables get real
+   column width. */
 /* First track is minmax(0,380px), not a 1.1fr share -- the stat table
    only ever needs ~360px (108px stat-name column, measured off the
    longest real label, plus three ~76px Floor/Median/Ceiling columns and
@@ -2086,8 +2090,8 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    items default to justify-self:stretch, so max-width alone is enough
    here (unlike the radar, this is still a direct grid child, not nested
    in a flex wrapper). */
-.stat-panel-table{grid-area:table; max-width:360px; display:flex; flex-direction:column; justify-content:center;}
-.stat-panel-percentile{grid-area:percentile; display:flex; flex-direction:column; justify-content:center;}
+.stat-panel-table{grid-area:table; max-width:360px; display:flex; flex-direction:column; justify-content:flex-start;}
+.stat-panel-percentile{grid-area:percentile; display:flex; flex-direction:column; justify-content:flex-start;}
 /* 440 (not the old 340) so the panel actually uses close to its natural
    grid-column width instead of capping well under it -- StatRadar's own
    point-to-label gap is a fraction of the rendered size, so a wider box
@@ -2112,7 +2116,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    space instead of forcing an overflow; its text wraps internally
    (line-height/gap already account for that) rather than truncating. */
 .stat-panel-radar-row{grid-area:radar; display:flex; gap:10px; align-items:stretch; flex-wrap:nowrap;}
-.stat-panel-pace{flex:1 1 56px; min-width:56px; display:flex; flex-direction:column; gap:6px; justify-content:center; padding:10px 10px;}
+.stat-panel-pace{flex:1 1 56px; min-width:56px; display:flex; flex-direction:column; gap:6px; justify-content:flex-start; padding:10px 10px;}
 .stat-panel-pace-actual{font-family:var(--font-space-grotesk); font-size:20px; font-weight:700; color:var(--star); line-height:1.2;}
 .stat-panel-pace-games{display:block; font-family:var(--font-ibm-plex-mono), monospace; font-size:10.5px; font-weight:400; color:var(--star-dim); margin-top:2px;}
 .stat-panel-pace-delta{font-family:var(--font-ibm-plex-mono), monospace; font-size:13px; font-weight:600; word-break:break-word;}
