@@ -1940,7 +1940,14 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
   text-transform:uppercase; color:var(--star-dim); padding:6px 10px; border-bottom:1px solid var(--line);
 }
 .stat-detail-table th:not(:first-child){text-align:center; padding:0;}
-.stat-detail-table th:first-child{width:38%; white-space:normal;}
+/* Fixed px, not the old 38% -- a percentage of the PANEL's own width
+   meant this column got proportionally wider (and more wasted) the wider
+   the viewport got, since table-layout:fixed locks column widths from
+   this header row regardless of how short the actual stat labels are.
+   108px = the longest label ("YAC Above Exp", 84px natural width) plus
+   its button's 8px-a-side padding, plus a few px of breathing room --
+   measured live, not guessed. */
+.stat-detail-table th:first-child{width:108px; white-space:normal;}
 .stat-detail-table td:first-child{white-space:normal;}
 /* Floor/Median/Ceiling column headers -- clicking one switches which
    layer is highlighted on the radar for whichever stat row is currently
@@ -1986,8 +1993,18 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    the leftover height evenly instead of dumping all of it at the
    bottom. Finder stays on its own full-width row so its per-comp
    tables get real column width. */
+/* First track is minmax(0,380px), not a 1.1fr share -- the stat table
+   only ever needs ~360px (108px stat-name column, measured off the
+   longest real label, plus three ~76px Floor/Median/Ceiling columns and
+   the panel's own padding; see .stat-panel-table/.stat-detail-table
+   th:first-child below), so a proportional fr share just grew that
+   wasted space wider the wider the viewport got. Capping the TRACK
+   itself here (not just .stat-panel-table's own max-width) means the
+   percentile/radar columns' fr shares divide up the space this reclaims
+   instead of it turning into a dead gap between a now-narrower table
+   panel and wherever the old 1.1fr boundary used to sit. */
 .stat-detail-grid{
-  display:grid; grid-template-columns:1.1fr 0.9fr 1fr;
+  display:grid; grid-template-columns:minmax(0,380px) 0.9fr 1fr;
   grid-template-areas:"table percentile radar" "finder finder finder";
   column-gap:20px; row-gap:20px; align-items:stretch;
 }
@@ -2058,7 +2075,18 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    relying on auto-placement's row-major DOM-order fill would misplace
    them there even though it happens to match at the default 3-column
    width. */
-.stat-panel-table{grid-area:table; display:flex; flex-direction:column; justify-content:center;}
+/* max-width:360px -- the table itself only needs ~336px (108px stat
+   column + three ~76px Floor/Median/Ceiling columns) plus the panel's
+   own padding, but its grid-area:table track (1.1fr) otherwise stretches
+   it to fill however much of the row the other two panels don't claim,
+   which grows without bound on a wide viewport -- same "capped panel,
+   real leftover space in its own grid track" situation .stat-panel-radar
+   already had (see .stat-panel-radar-row above) before that got filled;
+   this one's just left as plain space, not asked to hold anything. Grid
+   items default to justify-self:stretch, so max-width alone is enough
+   here (unlike the radar, this is still a direct grid child, not nested
+   in a flex wrapper). */
+.stat-panel-table{grid-area:table; max-width:360px; display:flex; flex-direction:column; justify-content:center;}
 .stat-panel-percentile{grid-area:percentile; display:flex; flex-direction:column; justify-content:center;}
 /* 440 (not the old 340) so the panel actually uses close to its natural
    grid-column width instead of capping well under it -- StatRadar's own
