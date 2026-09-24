@@ -247,54 +247,62 @@ export default function SimilarShapeFinder({
           const displaySimilarity = layerSimilarity ?? p.similarity;
           return (
             <div key={p.name} className="shape-finder-entry">
+              {/* Full card width, not sharing a row with the score
+                  callout below -- name/position get the entire width to
+                  themselves so a long name doesn't need to compete with
+                  the score box for room. */}
+              <div className={`shape-finder-item ${isActive ? "active" : ""}`}>
+                <button
+                  type="button"
+                  className="shape-finder-name"
+                  onClick={() => onSelect(p.name, "median")}
+                  aria-pressed={isActive}
+                >
+                  <span>{p.name}</span>
+                  <span className="shape-finder-pos mono">{p.position}</span>
+                </button>
+                <div className="shape-finder-layers mono" role="group" aria-label={`${p.name} comparison view`}>
+                  {LAYERS.map((layer) => {
+                    const layerActive = isActive && selectedLayer === layer.key;
+                    return (
+                      <button
+                        key={layer.key}
+                        type="button"
+                        className={`shape-finder-layer-btn ${layerActive ? "active" : ""}`}
+                        onClick={() => onSelect(p.name, layer.key)}
+                        aria-pressed={layerActive}
+                        aria-label={`Compare ${p.name}'s ${layer.name}`}
+                      >
+                        {LAYER_LABEL[layer.key]}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+              {/* Score callout starts level with the table's first data
+                  row, not the header above -- explicit ask, so the
+                  header stays full-width for the name. */}
               <div className="shape-finder-row">
-                {/* Mirrors .stat-panel-pace's own "big number in the
-                    empty space beside a taller panel" layout -- moving
-                    the match % out of the header row's text frees up
-                    the room the name/position was getting truncated
-                    for. */}
                 <div className="shape-finder-score stat-panel">
                   <div className="stat-radar-label">Match</div>
+                  {p.sleeperId && (
+                    <img
+                      className="shape-finder-portrait"
+                      src={`https://sleepercdn.com/content/nfl/players/thumb/${p.sleeperId}.jpg`}
+                      alt=""
+                      loading="lazy"
+                    />
+                  )}
                   <div className="shape-finder-score-value">{displaySimilarity}%</div>
                 </div>
-                <div className="shape-finder-body">
-                  <div className={`shape-finder-item ${isActive ? "active" : ""}`}>
-                    <button
-                      type="button"
-                      className="shape-finder-name"
-                      onClick={() => onSelect(p.name, "median")}
-                      aria-pressed={isActive}
-                    >
-                      <span>{p.name}</span>
-                      <span className="shape-finder-pos mono">{p.position}</span>
-                    </button>
-                    <div className="shape-finder-layers mono" role="group" aria-label={`${p.name} comparison view`}>
-                      {LAYERS.map((layer) => {
-                        const layerActive = isActive && selectedLayer === layer.key;
-                        return (
-                          <button
-                            key={layer.key}
-                            type="button"
-                            className={`shape-finder-layer-btn ${layerActive ? "active" : ""}`}
-                            onClick={() => onSelect(p.name, layer.key)}
-                            aria-pressed={layerActive}
-                            aria-label={`Compare ${p.name}'s ${layer.name}`}
-                          >
-                            {LAYER_LABEL[layer.key]}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                  <MiniStatTable
-                    peer={p}
-                    keys={keys}
-                    labelByKey={labelByKey}
-                    isActive={isActive}
-                    selectedLayer={selectedLayer}
-                    onSelectLayer={(clickedLayer) => onSelect(p.name, clickedLayer)}
-                  />
-                </div>
+                <MiniStatTable
+                  peer={p}
+                  keys={keys}
+                  labelByKey={labelByKey}
+                  isActive={isActive}
+                  selectedLayer={selectedLayer}
+                  onSelectLayer={(clickedLayer) => onSelect(p.name, clickedLayer)}
+                />
               </div>
               {stats && <CompareBars selection={selection} stats={stats} peer={p} />}
             </div>

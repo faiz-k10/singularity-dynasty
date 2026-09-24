@@ -2,7 +2,7 @@ import Link from "next/link";
 import { getUserTier } from "@/lib/tier";
 import { resolveSort, sortRows } from "@/lib/sortLink";
 import { percentileRank, INVERTED_STATS } from "@/lib/statPercentiles";
-import { getSleeperPlayers } from "@/lib/sleeper";
+import { getPlayerBiosByNamePos } from "@/lib/sleeper";
 import { normalizePlayerName } from "@/lib/portfolio";
 import SiteHeader from "../../SiteHeader";
 import ExportCsvButton from "../ExportCsvButton";
@@ -292,27 +292,6 @@ async function fetchHistoricalFloorCeiling(supabase) {
   return map;
 }
 
-// Height/weight + Sleeper's own headshot id for the expanded row's
-// player-header panel -- Sleeper's public player dictionary (module-
-// cached, see lib/sleeper.js), same source /my-team's PlayerProfileCard
-// already uses. Keyed by normalized name + POSITION, not name alone --
-// name collisions are real (confirmed live: Lamar Jackson the Ravens QB
-// and Lamar Jackson a DB are both in Sleeper's dict), and a name-only
-// key just has the second one processed silently overwrite the first.
-// Position isn't a perfect disambiguator either (a name shared by two
-// players at the same position would still collide), but it's the cheap
-// fix for the actual collision found, without needing a real id crosswalk.
-async function fetchPlayerBios() {
-  const dict = await getSleeperPlayers().catch(() => ({}));
-  const byNamePos = {};
-  for (const [id, p] of Object.entries(dict)) {
-    const name = normalizePlayerName(`${p.first_name || ""} ${p.last_name || ""}`);
-    if (!name || !p.position) continue;
-    byNamePos[`${name}|${p.position}`] = { sleeperId: id, height: p.height ?? null, weight: p.weight ?? null };
-  }
-  return byNamePos;
-}
-
 function sortPositions(positions) {
   return [...positions].sort((a, b) => {
     const ai = POSITION_ORDER.indexOf(a);
@@ -381,7 +360,7 @@ export default async function RedraftRankingsPage({ searchParams }) {
       await Promise.all([
         fetchSimsMetrics(supabase),
         fetchGameLogData(supabase, latest.season, floorCeilingByGame),
-        fetchPlayerBios(),
+        getPlayerBiosByNamePos(),
       ]);
     rankings = rankings.map((r) => {
       const sims = simsByName[r.player_name] || {};

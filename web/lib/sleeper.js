@@ -3,6 +3,8 @@
 // This is what makes Sleeper the easy first platform to support (Yahoo
 // needs real OAuth, ESPN has no official API at all -- see the /my-team
 // roadmap in CLAUDE.md).
+import { normalizePlayerName } from "./portfolio";
+
 const SLEEPER_BASE = "https://api.sleeper.app/v1";
 // The ownership-research endpoint below lives outside /v1 for whatever
 // reason on Sleeper's end -- confirmed by hand, not just assumed.
@@ -139,4 +141,25 @@ export async function getSleeperPlayers() {
   cachedPlayers = trimmed;
   cachedAt = Date.now();
   return cachedPlayers;
+}
+
+// Height/weight + Sleeper's own headshot id, keyed by normalized name +
+// POSITION rather than name alone -- name collisions are real (confirmed
+// live: Lamar Jackson the Ravens QB and Lamar Jackson a DB are both in
+// Sleeper's dict), and a name-only key just has the second one processed
+// silently overwrite the first. Position isn't a perfect disambiguator
+// either (a name shared by two players at the same position would still
+// collide), but it's the cheap fix for the actual collision found,
+// without needing a real id crosswalk. Shared by redraft-rankings' and
+// player-simulations' own expanded-row bio/headshot lookups so the
+// name+pos normalization only lives in one place.
+export async function getPlayerBiosByNamePos() {
+  const dict = await getSleeperPlayers().catch(() => ({}));
+  const byNamePos = {};
+  for (const [id, p] of Object.entries(dict)) {
+    const name = normalizePlayerName(`${p.first_name || ""} ${p.last_name || ""}`);
+    if (!name || !p.position) continue;
+    byNamePos[`${name}|${p.position}`] = { sleeperId: id, height: p.height ?? null, weight: p.weight ?? null };
+  }
+  return byNamePos;
 }

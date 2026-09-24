@@ -8,6 +8,8 @@ import { buildStatPoolByPos, computeStatPercentiles } from "@/lib/statPercentile
 import { computeReplacementValues } from "@/lib/replacementValue";
 import { computeRegressionScore } from "@/lib/regressionScore";
 import { computeOutcomePercentile } from "@/lib/outcomePercentile";
+import { getPlayerBiosByNamePos } from "@/lib/sleeper";
+import { normalizePlayerName } from "@/lib/portfolio";
 import SiteHeader from "../../SiteHeader";
 import ExportCsvButton from "../ExportCsvButton";
 import PlayerSimSearch from "../PlayerSimSearch";
@@ -118,11 +120,14 @@ export default async function PlayerSimulationsPage({ searchParams }) {
   // Tier resolution (auth + profile lookup) is per-visitor and can't be
   // cached, but it doesn't depend on the week's data, so it runs
   // concurrently with that (cached) fetch instead of one blocking the
-  // other.
-  const [{ tier }, { latest, rows, totalCount: fetchedCount, actualProductionByName }] = await Promise.all([
-    resolveTier(supabase),
-    getCachedWeekData(),
-  ]);
+  // other. Bio lookup (Sleeper headshot id, for Similar Shape's portrait)
+  // is its own fetch too, not folded into getCachedWeekData -- it's
+  // already memoized 24h at the module level (see lib/sleeper.js), so
+  // there's no real caching benefit to bundling it into the 60s payload,
+  // and keeping it separate mirrors how redraft-rankings' own expanded
+  // row already does this same lookup.
+  const [{ tier }, { latest, rows, totalCount: fetchedCount, actualProductionByName }, bioByNamePos] =
+    await Promise.all([resolveTier(supabase), getCachedWeekData(), getPlayerBiosByNamePos()]);
   const hasFullAccess = PAID_TIERS.includes(tier);
 
   let sims = [];
@@ -256,6 +261,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
     (shapePeers[signature] ??= []).push({
       name: row.player_name,
       position: row.position,
+      sleeperId: bioByNamePos[`${normalizePlayerName(row.player_name)}|${row.position}`]?.sleeperId || null,
       statPercentiles: row.statPercentiles,
       statFloorPercentiles: row.statFloorPercentiles,
       statCeilingPercentiles: row.statCeilingPercentiles,
