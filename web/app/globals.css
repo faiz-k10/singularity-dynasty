@@ -2021,10 +2021,27 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    beside the radar chart. 150px (not the original 110px) -- measured
    live, "99th percentile pace" needs ~126px at this column's font-size
    plus its panel's own horizontal padding. */
+/* Columns used to be minmax(0,380px)/0.9fr/1fr -- the two fr tracks
+   always claim 100% of whatever's left in the row, but the panels
+   sitting in them are capped narrower than that (.stat-panel-table's
+   own 360px, .stat-panel-radar's compact 340px below), so each track
+   had leftover space the panel never used: 20px trapped inside the
+   table's track (380 vs its 360 cap, inflating the gap that followed
+   it to 40px while every other gap measured the plain 20px column-gap)
+   and 313px trapped in the radar's -- since it's the last column, that
+   just sat as dead space past the radar panel's own right edge,
+   confirmed live. All four tracks are hard pixel caps now, matching
+   each panel's own max-width exactly (percentile's is new, see
+   .stat-panel-percentile below), so there's no space left unclaimed
+   inside any track and every gap is the same true 20px. justify-
+   content:center centers the whole (now content-width, not row-width)
+   set of panels in the leftover space instead of dumping it all after
+   the last column -- explicit ask, mirrors how .shape-finder-list
+   centers its own cards below. */
 .stat-detail-grid{
-  display:grid; grid-template-columns:minmax(0,150px) minmax(0,380px) 0.9fr 1fr;
+  display:grid; grid-template-columns:minmax(0,150px) minmax(0,360px) minmax(0,520px) minmax(0,340px);
   grid-template-areas:"season table percentile radar" "finder finder finder finder";
-  column-gap:20px; row-gap:20px; align-items:stretch;
+  column-gap:20px; row-gap:20px; align-items:stretch; justify-content:center;
 }
 @media (max-width:1100px){
   .stat-detail-grid{
@@ -2087,17 +2104,16 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    width. */
 /* max-width:360px -- the table itself only needs ~336px (108px stat
    column + three ~76px Floor/Median/Ceiling columns) plus the panel's
-   own padding, but its grid-area:table track (1.1fr) otherwise stretches
-   it to fill however much of the row the other two panels don't claim,
-   which grows without bound on a wide viewport -- same "capped panel,
-   real leftover space in its own grid track" situation .stat-panel-radar
-   has too (also max-width-capped, below); this one's just left as plain
-   space, not asked to hold anything. Grid
-   items default to justify-self:stretch, so max-width alone is enough
-   here (unlike the radar, this is still a direct grid child, not nested
-   in a flex wrapper). */
+   own padding. Matches the grid's own column-2 track cap exactly (see
+   .stat-detail-grid above) so there's no leftover space trapped inside
+   the track beyond what the panel itself uses. */
 .stat-panel-table{grid-area:table; max-width:360px; display:flex; flex-direction:column; justify-content:flex-start;}
-.stat-panel-percentile{grid-area:percentile; display:flex; flex-direction:column; justify-content:flex-start;}
+/* max-width:520px -- matches the grid's own column-3 track cap, for the
+   same reason .stat-panel-table's does: without it, this panel (no
+   natural max-width of its own) just stretches to fill the whole track,
+   which used to be sized as a bare "0.9fr" share of the row and grew
+   without bound on a wide viewport. */
+.stat-panel-percentile{grid-area:percentile; max-width:520px; display:flex; flex-direction:column; justify-content:flex-start;}
 /* 440 (not the old 340) so the panel actually uses close to its natural
    grid-column width instead of capping well under it -- StatRadar's own
    point-to-label gap is a fraction of the rendered size, so a wider box
