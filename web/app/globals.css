@@ -2595,7 +2595,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
    columns would overflow (confirmed live: 84px past the container)
    anywhere narrower than ~1550px. Cards wrap to as many columns as
    actually fit instead, same 1-column stack below 900px as before. */
-.shape-finder-list{display:grid; grid-template-columns:repeat(auto-fit, 498px); gap:12px; align-items:start;}
+.shape-finder-list{display:grid; grid-template-columns:repeat(auto-fit, 470px); gap:12px; align-items:start;}
 @media (max-width:900px){
   .shape-finder-list{grid-template-columns:1fr;}
 }
@@ -2625,13 +2625,18 @@ tr.stat-row-selected td{background:var(--void-panel);}
    now hard pixel widths instead: 108px matches the main stat table's
    own fixed name column (an existing site convention, and comfortably
    wider than any score box or -- with the name's own ellipsis fallback
-   -- any name), 360px matches the table's own established cap. Fixed
-   width (not max-width) on the grid itself, so the whole card is the
-   same 476px for every comp regardless of content. */
+   -- any name); the table column is 332px, 28px narrower than that same
+   table's own 360px cap -- shaved off its first (Stat name) column
+   specifically (108px down to 80px there, see -table below), not off
+   the Floor/Median/Ceiling columns, so 3 cards fit in one row instead
+   of wrapping to 2 at common desktop widths (explicit ask, confirmed
+   live: was wrapping around 1550px, now fits to ~1430px). Fixed width
+   (not max-width) on the grid itself, so the whole card is the same
+   448px for every comp regardless of content. */
 .shape-finder-grid{
-  display:grid; grid-template-columns:108px 360px;
+  display:grid; grid-template-columns:108px 332px;
   grid-template-areas:"name picker" "score table";
-  column-gap:8px; row-gap:8px; align-items:start; width:476px;
+  column-gap:8px; row-gap:8px; align-items:start; width:448px;
 }
 .shape-finder-name{
   grid-area:name; all:unset; cursor:pointer; display:flex; align-items:baseline; gap:6px; min-width:0;
@@ -2652,7 +2657,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
    explicitly placed into sub-columns 2-4 instead of relying on auto-
    placement, which would otherwise fill 1-3. */
 .shape-finder-layers{
-  grid-area:picker; display:grid; grid-template-columns:108px repeat(3, 1fr); gap:0;
+  grid-area:picker; display:grid; grid-template-columns:80px repeat(3, 1fr); gap:0;
   padding-bottom:8px; border-bottom:1px solid var(--line);
 }
 .shape-finder-layer-btn:nth-of-type(1){grid-column:2;}
@@ -2678,14 +2683,16 @@ tr.stat-row-selected td{background:var(--void-panel);}
    to those shared base rules, and the compact .stat-detail-grid scope
    below sizes them identically) so a comp's own numbers read at the
    same size as the main player's, not as a visibly smaller "mini"
-   table. First column is the same fixed 108px as .stat-detail-table's
-   own (not a independent percentage) so both tables' Stat-name column
-   has identical dimensions -- explicit ask, not a coincidence. */
+   table. First column used to match .stat-detail-table's own 108px, but
+   narrowed to 80px (explicit ask, to fit 3 cards per row) -- still
+   comfortably fits every stat label on one line except the rare longer
+   ones (e.g. "YAC Above Exp"), which fall back to wrapping via the
+   existing white-space:normal below rather than truncating. */
 .shape-finder-table{
   grid-area:table; min-width:0; width:100%; border-collapse:collapse; font-size:13px; table-layout:fixed;
 }
 .shape-finder-table td{padding:0; border-bottom:1px dashed var(--line); color:var(--star); text-align:center;}
-.shape-finder-table td:first-child{width:108px; text-align:left; white-space:normal;}
+.shape-finder-table td:first-child{width:80px; text-align:left; white-space:normal;}
 .shape-finder-table tr:last-child td{border-bottom:none;}
 
 /* Diverging comparison bars under each comp -- see CompareBar/CompareBars
