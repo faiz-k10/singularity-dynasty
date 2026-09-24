@@ -2169,12 +2169,17 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    below the blue/typical fill, ceiling right above the gold/upside fill,
    so they read as in-line with the bar itself, not a separate column of
    numbers beside it. */
-/* line-height:1 keeps the label's own box tight to the glyphs -- the
-   default inherited line-height was inflating the -100%/+100% self-
-   height translate below into a much bigger visual gap than the fixed
-   2px past it looked like it should produce. */
+/* line-height:1 keeps the label's own box tight to its glyphs, so the
+   px offsets below are measuring against the actual text height. */
 .stat-panel-pace-rangebar-label{position:absolute; left:50%; line-height:1; font-family:var(--font-ibm-plex-mono), monospace; font-size:9.5px; color:var(--star-dim); white-space:nowrap;}
-.stat-panel-pace-rangebar-label-ceiling{transform:translate(-50%, calc(-100% - 2px));}
+/* Both labels use `bottom:X%`, which already places their box flush
+   ABOVE the anchor line (the box's own height sits above it) -- floor
+   needs +100% to flip it back down past that height and clear the
+   segment below, but ceiling is already sitting above the segment with
+   zero gap, so it only needs the small nudge, not another -100%. That
+   mismatch (both using -100%/+100% symmetrically) was the actual cause
+   of ceiling's bigger-looking gap, not a line-height issue. */
+.stat-panel-pace-rangebar-label-ceiling{transform:translate(-50%, -2px);}
 .stat-panel-pace-rangebar-label-floor{transform:translate(-50%, calc(100% + 2px));}
 .stat-panel-pace-rangebar{position:relative; width:8px; flex:1; min-height:50px; background:var(--void-panel-2); border-radius:4px;}
 .stat-panel-pace-rangebar-typical{position:absolute; left:0; right:0; background:var(--neon-blue-dim); border-radius:0 0 4px 4px; min-height:3px;}
