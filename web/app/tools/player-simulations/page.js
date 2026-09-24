@@ -236,6 +236,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
       heat,
       floorHeat,
       ceilingHeat,
+      sleeperId: bioByNamePos[`${normalizePlayerName(row.player_name)}|${row.position}`]?.sleeperId || null,
       por: porByName[row.player_name],
       regressionScore: regression?.regressionScore ?? null,
       currentPPG: regression?.currentPPG ?? null,

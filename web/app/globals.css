@@ -2020,21 +2020,25 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    it. The row is raggeder at the bottom now (radar's real height vs.
    three shorter boxes), which is the tradeoff for not padding content
    out to a height it doesn't have. */
+/* "season" (the This Season/vs-pace callout) is its own narrow leading
+   column/area -- top-left of the dashboard, explicit ask -- separate
+   from the table/percentile/radar row it used to share space with
+   beside the radar chart. */
 .stat-detail-grid{
-  display:grid; grid-template-columns:minmax(0,380px) 0.9fr 1fr;
-  grid-template-areas:"table percentile radar" "finder finder finder";
+  display:grid; grid-template-columns:minmax(0,110px) minmax(0,380px) 0.9fr 1fr;
+  grid-template-areas:"season table percentile radar" "finder finder finder finder";
   column-gap:20px; row-gap:20px; align-items:start;
 }
 @media (max-width:1100px){
   .stat-detail-grid{
     grid-template-columns:1fr 1fr;
-    grid-template-areas:"table radar" "percentile percentile" "finder finder";
+    grid-template-areas:"season season" "table radar" "percentile percentile" "finder finder";
   }
 }
 @media (max-width:640px){
   .stat-detail-grid{
     grid-template-columns:1fr;
-    grid-template-areas:"table" "percentile" "radar" "finder";
+    grid-template-areas:"season" "table" "percentile" "radar" "finder";
   }
 }
 /* Compact sizing for the single-player expand's own 3 panels, so table +
@@ -2052,18 +2056,9 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 /* Radar is an SVG with a fixed viewBox -- shrinking its rendered CSS
    width scales the whole chart (paths AND text) down together, no
    separate font-size overrides needed inside StatRadar.js itself. */
-/* flex:0 0 340px, not just max-width:340px -- .stat-panel-radar is now a
-   flex child of .stat-panel-radar-row (not a direct grid item). A grid
-   item stretches to fill its track by default, so max-width alone used
-   to be the only thing capping it at 340px; a flex item has no such
-   default stretch, so with flex-basis left at auto it just hugged its
-   own content width instead (confirmed live: shrank to 326px, plus
-   shrink:0 alone didn't fix it -- shrink only stops shrinking BELOW a
-   basis, it doesn't grow the item TO one). flex-basis:340px is what
-   actually reproduces the old "always exactly 340 when there's room"
-   sizing; shrink:0 keeps that promise unconditional rather than
-   quietly softening it under the new pace panel's own min-width. */
-.stat-detail-grid .stat-panel-radar{max-width:340px; flex:0 0 340px;}
+.stat-detail-grid .stat-panel-radar{max-width:340px;}
+.stat-detail-grid .stat-panel-pace{padding:10px 8px;}
+.stat-detail-grid .stat-panel-pace-portrait{width:40px; height:40px;}
 .stat-detail-grid .pctile-card{margin-top:8px; padding-top:8px;}
 /* PercentileCard now lives in its own top-level panel (.stat-panel-
    percentile) instead of stacked under the stat table -- the divider
@@ -2098,8 +2093,8 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    it to fill however much of the row the other two panels don't claim,
    which grows without bound on a wide viewport -- same "capped panel,
    real leftover space in its own grid track" situation .stat-panel-radar
-   already had (see .stat-panel-radar-row above) before that got filled;
-   this one's just left as plain space, not asked to hold anything. Grid
+   has too (also max-width-capped, below); this one's just left as plain
+   space, not asked to hold anything. Grid
    items default to justify-self:stretch, so max-width alone is enough
    here (unlike the radar, this is still a direct grid child, not nested
    in a flex wrapper). */
@@ -2110,32 +2105,14 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    point-to-label gap is a fraction of the rendered size, so a wider box
    gives the labels real physical breathing room on top of that, and
    offsets MAX_R having come down to fit the bigger gap. */
-.stat-panel-radar{max-width:440px; display:flex; flex-direction:column; align-items:center;}
-/* Player Season Simulations' compact .stat-detail-grid caps the radar
-   back down to 340px (further below) -- routinely narrower than its own
-   1fr grid track on anything wider than a laptop, which used to just be
-   dead space (confirmed live: 266px of it at a 2000px viewport). Moved
-   grid-area:radar off .stat-panel-radar itself onto this new wrapper
-   (.stat-panel-radar is no longer a direct grid child, so its own
-   grid-area would be inert anyway) so the radar and the new actual-
-   points-vs-pace panel can lay out as flex siblings sharing that one
-   cell, without touching the grid's own column/area definitions or any
-   other panel. nowrap by request -- stays a narrow portrait column
-   beside the radar at any width rather than dropping to its own
-   full-width row below (the first version wrapped, since min-width:140
-   didn't fit in the ~78px sometimes left over once the radar's fixed
-   340px and the gap are accounted for). .stat-panel-pace's own
-   min-width is small enough (56px) to actually live in that leftover
-   space instead of forcing an overflow; its text wraps internally
-   (line-height/gap already account for that) rather than truncating. */
-/* align-items:flex-start, not stretch -- stretch was forcing the pace
-   panel to match the radar's own (much taller) height the same way the
-   outer grid's align-items:stretch used to force it on table/percentile
-   (see the comment above .stat-detail-grid); flex-start lets it stay as
-   short as its own content needs, same fix, same reason, just inside
-   this nested flex row instead of the grid. */
-.stat-panel-radar-row{grid-area:radar; display:flex; gap:10px; align-items:flex-start; flex-wrap:nowrap;}
-.stat-panel-pace{flex:1 1 56px; min-width:56px; display:flex; flex-direction:column; gap:6px; justify-content:flex-start; padding:10px 10px;}
+.stat-panel-radar{grid-area:radar; max-width:440px; display:flex; flex-direction:column; align-items:center;}
+/* Top-left of the dashboard, its own grid area (see .stat-detail-grid's
+   "season" column/area) -- used to live as a flex sibling squeezed into
+   the radar's own grid cell; explicit ask to pull it out to its own
+   spot instead, portrait stacked above the label. Portrait first in DOM
+   (not the label) so it's the top element in the stacked column. */
+.stat-panel-pace{grid-area:season; display:flex; flex-direction:column; align-items:center; text-align:center; gap:6px; padding:14px 10px;}
+.stat-panel-pace-portrait{width:48px; height:48px; border-radius:50%; object-fit:cover; background:var(--void-panel-2);}
 .stat-panel-pace-actual{font-family:var(--font-space-grotesk); font-size:20px; font-weight:700; color:var(--star); line-height:1.2;}
 .stat-panel-pace-games{display:block; font-family:var(--font-ibm-plex-mono), monospace; font-size:10.5px; font-weight:400; color:var(--star-dim); margin-top:2px;}
 .stat-panel-pace-delta{font-family:var(--font-ibm-plex-mono), monospace; font-size:13px; font-weight:600; word-break:break-word;}
@@ -2571,7 +2548,8 @@ tr.stat-row-selected td{background:var(--void-panel);}
    the card's full width for the name instead of sharing it with this
    box. align-items:flex-start (not stretch) so the box sizes to its own
    short content instead of being pulled down to the table's full
-   height, same lesson as .stat-panel-radar-row beside the radar chart. */
+   height, same align-items:start lesson as the outer .stat-detail-grid
+   itself (see its own comment above). */
 .shape-finder-row{display:flex; gap:10px; align-items:flex-start; margin-top:8px;}
 .shape-finder-score{
   flex:0 0 auto; min-width:60px; display:flex; flex-direction:column; align-items:center;
