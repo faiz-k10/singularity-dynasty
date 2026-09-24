@@ -211,7 +211,8 @@ function StatDetailRow({ row, colSpan, shapePeers, maxCeiling }) {
               {/* Games-played-of-17 progress bar, pinned to the bottom of
                   the whole panel (its own row below the info/rangebar
                   split above) -- a second read on schedule progress
-                  alongside the games count already in -pace-games. */}
+                  alongside the games count already in -pace-games. No
+                  text label of its own (that count already lives there). */}
               <div className="stat-panel-pace-progress">
                 <div className="stat-panel-pace-progress-track">
                   <div
@@ -219,7 +220,6 @@ function StatDetailRow({ row, colSpan, shapePeers, maxCeiling }) {
                     style={{ width: `${Math.min(100, (row.gamesPlayed / 17) * 100)}%` }}
                   />
                 </div>
-                <span className="stat-panel-pace-progress-label">{row.gamesPlayed}/17 games</span>
               </div>
             </div>
           )}

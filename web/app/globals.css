@@ -2154,17 +2154,21 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    positioned with bottom/height instead of left/width). Lives along the
    panel's right edge, its own column so it can stretch the full height
    independent of the text stack beside it. */
-/* Right side carries no reserved padding -- the pace-total number is
+/* No reserved padding on either side -- the pace-total number is
    allowed to overflow past the panel's own edge (explicit design call),
-   so the bar itself sits at the panel's right edge instead of leaving a
-   gap sized for a number that no longer needs the room. Left padding
-   stays, reserved for the floor/ceiling labels beside the track. */
-.stat-panel-pace-rangebar-wrap{flex:0 0 auto; display:flex; flex-direction:column; align-items:center; padding:0 0 0 34px; gap:4px;}
-/* Positioned at the same bottom% as the segment edge it labels (see the
-   JSX comment above), on the track's left side so it never collides
-   with the pace-total number mirrored on the right. translateY(50%)
-   centers the text vertically on that height, same trick -total uses. */
-.stat-panel-pace-rangebar-label{position:absolute; right:14px; transform:translateY(50%); font-family:var(--font-ibm-plex-mono), monospace; font-size:9.5px; color:var(--star-dim); white-space:nowrap;}
+   and the floor/ceiling labels now sit centered directly over the
+   track itself (see -rangebar-label below) instead of in their own
+   side column, so nothing reserves space around the bar and it sits
+   flush against the panel's right edge. */
+.stat-panel-pace-rangebar-wrap{flex:0 0 auto; display:flex; flex-direction:column; align-items:center; gap:4px;}
+/* Centered on the track's own axis (left:50%), pushed clear of the
+   segment edge they label instead of straddling it -- floor sits right
+   below the blue/typical fill, ceiling right above the gold/upside fill,
+   so they read as in-line with the bar itself, not a separate column of
+   numbers beside it. */
+.stat-panel-pace-rangebar-label{position:absolute; left:50%; font-family:var(--font-ibm-plex-mono), monospace; font-size:9.5px; color:var(--star-dim); white-space:nowrap;}
+.stat-panel-pace-rangebar-label-ceiling{transform:translate(-50%, calc(-100% - 3px));}
+.stat-panel-pace-rangebar-label-floor{transform:translate(-50%, calc(100% + 3px));}
 .stat-panel-pace-rangebar{position:relative; width:8px; flex:1; min-height:50px; background:var(--void-panel-2); border-radius:4px;}
 .stat-panel-pace-rangebar-typical{position:absolute; left:0; right:0; background:var(--neon-blue-dim); border-radius:0 0 4px 4px; min-height:3px;}
 .stat-panel-pace-rangebar-upside{position:absolute; left:0; right:0; background:var(--horizon-gold); opacity:0.45; border-radius:4px 4px 0 0; min-height:2px;}
@@ -2180,11 +2184,11 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .stat-panel-pace-rangebar-total.pace-cold{color:var(--down);}
 /* Games-played-of-17 loading bar, pinned to the bottom of the whole
    panel below the info/rangebar split -- a second, more scannable read
-   on schedule progress than the "· N games" text above. */
+   on schedule progress than the "· N games" text above. No text label
+   of its own (explicit ask -- the count already lives above). */
 .stat-panel-pace-progress{display:flex; align-items:center; gap:8px;}
 .stat-panel-pace-progress-track{position:relative; flex:1; height:6px; background:var(--void-panel-2); border-radius:3px; overflow:hidden;}
 .stat-panel-pace-progress-fill{position:absolute; left:0; top:0; bottom:0; background:var(--down); border-radius:3px;}
-.stat-panel-pace-progress-label{flex:0 0 auto; font-family:var(--font-ibm-plex-mono), monospace; font-size:9.5px; color:var(--star-dim);}
 
 /* Weekly Projection Rankings' own click-to-expand row (WeeklyDetailRow.js)
    -- same .stat-detail-row/.stat-panel/.row-expandable chrome as Player
