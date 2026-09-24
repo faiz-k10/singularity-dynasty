@@ -2160,26 +2160,33 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    track itself (see -rangebar-label below) instead of in their own
    side column, so nothing reserves space around the bar and it sits
    flush against the panel's right edge. */
-.stat-panel-pace-rangebar-wrap{flex:0 0 auto; display:flex; flex-direction:column; align-items:center; gap:4px;}
+/* order:-1 puts the bar before -pace-info without reordering the JSX --
+   flipped to the panel's left edge (explicit ask) so the pace-total
+   number can overflow off that side instead of the right. */
+.stat-panel-pace-rangebar-wrap{flex:0 0 auto; order:-1; display:flex; flex-direction:column; align-items:center; gap:4px;}
 /* Centered on the track's own axis (left:50%), pushed clear of the
    segment edge they label instead of straddling it -- floor sits right
    below the blue/typical fill, ceiling right above the gold/upside fill,
    so they read as in-line with the bar itself, not a separate column of
    numbers beside it. */
-.stat-panel-pace-rangebar-label{position:absolute; left:50%; font-family:var(--font-ibm-plex-mono), monospace; font-size:9.5px; color:var(--star-dim); white-space:nowrap;}
-.stat-panel-pace-rangebar-label-ceiling{transform:translate(-50%, calc(-100% - 3px));}
-.stat-panel-pace-rangebar-label-floor{transform:translate(-50%, calc(100% + 3px));}
+/* line-height:1 keeps the label's own box tight to the glyphs -- the
+   default inherited line-height was inflating the -100%/+100% self-
+   height translate below into a much bigger visual gap than the fixed
+   2px past it looked like it should produce. */
+.stat-panel-pace-rangebar-label{position:absolute; left:50%; line-height:1; font-family:var(--font-ibm-plex-mono), monospace; font-size:9.5px; color:var(--star-dim); white-space:nowrap;}
+.stat-panel-pace-rangebar-label-ceiling{transform:translate(-50%, calc(-100% - 2px));}
+.stat-panel-pace-rangebar-label-floor{transform:translate(-50%, calc(100% + 2px));}
 .stat-panel-pace-rangebar{position:relative; width:8px; flex:1; min-height:50px; background:var(--void-panel-2); border-radius:4px;}
 .stat-panel-pace-rangebar-typical{position:absolute; left:0; right:0; background:var(--neon-blue-dim); border-radius:0 0 4px 4px; min-height:3px;}
 .stat-panel-pace-rangebar-upside{position:absolute; left:0; right:0; background:var(--horizon-gold); opacity:0.45; border-radius:4px 4px 0 0; min-height:2px;}
 .stat-panel-pace-rangebar-marker{position:absolute; left:-5px; right:-5px; height:2px; transform:translateY(1px); z-index:2; border-radius:1px;}
-.stat-panel-pace-rangebar-marker::after{content:""; position:absolute; left:-3px; top:50%; transform:translateY(-50%); width:6px; height:6px; border-radius:50%; background:inherit; box-shadow:0 0 4px currentColor;}
+.stat-panel-pace-rangebar-marker::after{content:""; position:absolute; right:-3px; top:50%; transform:translateY(-50%); width:6px; height:6px; border-radius:50%; background:inherit; box-shadow:0 0 4px currentColor;}
 /* Projected full-season total implied by current pace -- same bottom%
    as the marker tick beside it, offset clear of the 8px-wide track so it
    never overlaps the typical/upside fill, colored to match the tick's
    own hot/cold (reuses -pace-delta's classes, not the marker's, since
    this is text color not a background). */
-.stat-panel-pace-rangebar-total{position:absolute; left:14px; transform:translateY(50%); font-family:var(--font-ibm-plex-mono), monospace; font-size:10.5px; font-weight:600; white-space:nowrap; z-index:2;}
+.stat-panel-pace-rangebar-total{position:absolute; right:14px; transform:translateY(50%); font-family:var(--font-ibm-plex-mono), monospace; font-size:10.5px; font-weight:600; white-space:nowrap; z-index:2;}
 .stat-panel-pace-rangebar-total.pace-hot{color:var(--up);}
 .stat-panel-pace-rangebar-total.pace-cold{color:var(--down);}
 /* Games-played-of-17 loading bar, pinned to the bottom of the whole
