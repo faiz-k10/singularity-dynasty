@@ -14,7 +14,7 @@ import { radarLayoutFor } from "./radarLayout";
 // Detail row unfolded below a player when their name is clicked -- one
 // open at a time (clicking a different player folds this one and opens
 // theirs). colSpan must match the number of columns in the main row.
-function StatDetailRow({ row, colSpan, shapePeers }) {
+function StatDetailRow({ row, colSpan, shapePeers, maxCeiling }) {
   const ranges = row.stat_ranges;
   const entries = STAT_LABELS.filter(([key]) => ranges && ranges[key]);
   // One selection at a time, in one of three modes, so a new click always
@@ -111,28 +111,66 @@ function StatDetailRow({ row, colSpan, shapePeers }) {
               nullable metric on this page already uses. */}
           {row.gamesPlayed > 0 && row.currentPPG != null && row.regressionScore != null && (
             <div className="stat-panel stat-panel-pace">
-              {row.sleeperId && (
-                <img
-                  className="stat-panel-pace-portrait"
-                  src={`https://sleepercdn.com/content/nfl/players/thumb/${row.sleeperId}.jpg`}
-                  alt=""
-                  loading="lazy"
-                />
-              )}
-              <div className="stat-radar-label">This season</div>
-              <div className="stat-panel-pace-actual">
-                {(row.currentPPG * row.gamesPlayed).toFixed(1)}
-                <span className="stat-panel-pace-games">
-                  {" "}
-                  pts · {row.gamesPlayed} {row.gamesPlayed === 1 ? "game" : "games"}
-                </span>
+              <div className="stat-panel-pace-info">
+                {row.sleeperId && (
+                  <img
+                    className="stat-panel-pace-portrait"
+                    src={`https://sleepercdn.com/content/nfl/players/thumb/${row.sleeperId}.jpg`}
+                    alt=""
+                    loading="lazy"
+                  />
+                )}
+                <div className="stat-radar-label">This season</div>
+                <div className="stat-panel-pace-actual">
+                  {(row.currentPPG * row.gamesPlayed).toFixed(1)}
+                  <span className="stat-panel-pace-games">
+                    {" "}
+                    pts · {row.gamesPlayed} {row.gamesPlayed === 1 ? "game" : "games"}
+                  </span>
+                </div>
+                <div className={`stat-panel-pace-delta ${row.regressionScore >= 0 ? "pace-hot" : "pace-cold"}`}>
+                  {row.regressionScore >= 0 ? "+" : ""}
+                  {row.regressionScore.toFixed(2)} vs. pace
+                </div>
+                {row.outcomePercentile != null && (
+                  <div className="stat-panel-pace-pctile">{ordinal(row.outcomePercentile)} percentile pace</div>
+                )}
               </div>
-              <div className={`stat-panel-pace-delta ${row.regressionScore >= 0 ? "pace-hot" : "pace-cold"}`}>
-                {row.regressionScore >= 0 ? "+" : ""}
-                {row.regressionScore.toFixed(2)} vs. pace
-              </div>
-              {row.outcomePercentile != null && (
-                <div className="stat-panel-pace-pctile">{ordinal(row.outcomePercentile)} percentile pace</div>
+              {/* Vertical mirror of the main table's own horizontal Range
+                  bar (same maxCeiling scale, same floor/median/ceiling
+                  segments and pace-marker-hot/cold tick) -- the season
+                  panel's floor/ceiling projection wasn't shown anywhere
+                  on it before, and the bar gives the actual-pts-so-far
+                  number above real context (on pace for where inside its
+                  own projected range) instead of standing alone. */}
+              {row.floor != null && row.median != null && row.ceiling != null && maxCeiling > 0 && (
+                <div className="stat-panel-pace-rangebar-wrap">
+                  <span className="stat-panel-pace-rangebar-label">{formatStat(row.ceiling)}</span>
+                  <div className="stat-panel-pace-rangebar">
+                    <div
+                      className="stat-panel-pace-rangebar-typical"
+                      style={{
+                        bottom: `${(row.floor / maxCeiling) * 100}%`,
+                        height: `${((row.median - row.floor) / maxCeiling) * 100}%`,
+                      }}
+                    />
+                    <div
+                      className="stat-panel-pace-rangebar-upside"
+                      style={{
+                        bottom: `${(row.median / maxCeiling) * 100}%`,
+                        height: `${((row.ceiling - row.median) / maxCeiling) * 100}%`,
+                      }}
+                    />
+                    {row.paceSeasonTotal != null && (
+                      <div
+                        className={`stat-panel-pace-rangebar-marker ${row.outcomePercentile >= 50 ? "pace-marker-hot" : "pace-marker-cold"}`}
+                        style={{ bottom: `${Math.min(100, (row.paceSeasonTotal / maxCeiling) * 100)}%` }}
+                        title={`Current pace: ${ordinal(row.outcomePercentile)} percentile on this player's outcome curve`}
+                      />
+                    )}
+                  </div>
+                  <span className="stat-panel-pace-rangebar-label">{formatStat(row.floor)}</span>
+                </div>
               )}
             </div>
           )}
@@ -650,6 +688,7 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                     row={row}
                     colSpan={11}
                     shapePeers={shapePeers}
+                    maxCeiling={maxCeiling}
                   />
                 )}
                 </Fragment>

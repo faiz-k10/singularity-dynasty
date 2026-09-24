@@ -2069,8 +2069,9 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .stat-detail-grid .pctile-bar{height:5px; margin-bottom:6px;}
 .stat-detail-grid .pctile-bar-lg{height:7px; margin-top:6px;}
 .stat-detail-grid .pctile-hero-value{font-size:24px;}
-.stat-detail-grid .shape-finder-item{padding:4px 8px;}
-.stat-detail-grid .shape-finder-row{margin-top:5px;}
+.stat-detail-grid .shape-finder-entry{padding:8px 10px;}
+.stat-detail-grid .shape-finder-name,
+.stat-detail-grid .shape-finder-layers{padding-bottom:6px;}
 /* Shared card chrome for the three panels above -- a shade lighter than
    the void-panel-2 background behind the whole expanded row, with its
    own border, so each reads as a distinct organized section instead of
@@ -2119,9 +2120,18 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    border instead of wrapping (confirmed live). justify-content:
    flex-start (not the default center) so the stretched box's leftover
    space lands at the bottom, matching -table/-percentile beside it. */
+/* Row now, not column -- the vertical range bar (below) sits beside the
+   text stack rather than under it, sharing the panel's full stretched
+   height (see .stat-detail-grid's align-items:stretch) instead of that
+   height just being dead air below the text once it stopped needing to
+   match the radar panel's own height. */
 .stat-panel-pace{
-  grid-area:season; display:flex; flex-direction:column; justify-content:flex-start; align-items:center;
-  text-align:center; white-space:normal; gap:6px; padding:14px 10px;
+  grid-area:season; display:flex; flex-direction:row; align-items:stretch;
+  white-space:normal; gap:10px; padding:14px 10px;
+}
+.stat-panel-pace-info{
+  flex:1; min-width:0; display:flex; flex-direction:column; justify-content:flex-start; align-items:center;
+  text-align:center; gap:6px;
 }
 .stat-panel-pace-portrait{width:48px; height:48px; border-radius:50%; object-fit:cover; background:var(--void-panel-2);}
 .stat-panel-pace-actual{font-family:var(--font-space-grotesk); font-size:20px; font-weight:700; color:var(--star); line-height:1.2;}
@@ -2130,6 +2140,20 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .stat-panel-pace-delta.pace-hot{color:var(--up);}
 .stat-panel-pace-delta.pace-cold{color:var(--down);}
 .stat-panel-pace-pctile{font-family:var(--font-ibm-plex-mono), monospace; font-size:10.5px; color:var(--star-dim);}
+/* Vertical mirror of the main table's own horizontal Range bar (.sim-
+   bar-track/-typical/-upside/.pace-marker) -- same maxCeiling-scaled
+   0%-100% track, same floor-to-median/median-to-ceiling segments, same
+   pace-marker-hot/cold tick (reuses those exact classes for color, just
+   positioned with bottom/height instead of left/width). Lives along the
+   panel's right edge, its own column so it can stretch the full height
+   independent of the text stack beside it. */
+.stat-panel-pace-rangebar-wrap{flex:0 0 auto; display:flex; flex-direction:column; align-items:center; gap:4px;}
+.stat-panel-pace-rangebar-label{font-family:var(--font-ibm-plex-mono), monospace; font-size:9.5px; color:var(--star-dim);}
+.stat-panel-pace-rangebar{position:relative; width:8px; flex:1; min-height:50px; background:var(--void-panel-2); border-radius:4px;}
+.stat-panel-pace-rangebar-typical{position:absolute; left:0; right:0; background:var(--neon-blue-dim); border-radius:0 0 4px 4px; min-height:3px;}
+.stat-panel-pace-rangebar-upside{position:absolute; left:0; right:0; background:var(--horizon-gold); opacity:0.45; border-radius:4px 4px 0 0; min-height:2px;}
+.stat-panel-pace-rangebar-marker{position:absolute; left:-5px; right:-5px; height:2px; transform:translateY(1px); z-index:2; border-radius:1px;}
+.stat-panel-pace-rangebar-marker::after{content:""; position:absolute; left:-3px; top:50%; transform:translateY(-50%); width:6px; height:6px; border-radius:50%; background:inherit; box-shadow:0 0 4px currentColor;}
 
 /* Weekly Projection Rankings' own click-to-expand row (WeeklyDetailRow.js)
    -- same .stat-detail-row/.stat-panel/.row-expandable chrome as Player
@@ -2521,50 +2545,70 @@ tr.stat-row-selected td{background:var(--void-panel);}
 @media (max-width:900px){
   .shape-finder-list{grid-template-columns:1fr;}
 }
-/* Plain flex pill again (not the grid this used while the score % lived
-   in this same row) -- now that the score callout starts level with the
-   table instead of the header (see .shape-finder-row below), this row
-   has the card's full width to itself, so name/position no longer need
-   to fight a matched-to-the-table grid for room. */
-.shape-finder-item{
-  display:flex; align-items:center; justify-content:space-between; gap:8px;
-  padding:6px 10px; border-radius:8px; border:1px solid var(--line);
+/* One bordered card for the whole comp now (background/border/radius
+   moved here from .shape-finder-item, which used to be its own separate
+   pill floating above a borderless table) -- explicit ask to incorporate
+   the header, score, and table into a single table/panel instead of
+   three visually distinct boxes. */
+.shape-finder-entry{
+  background:var(--void-panel); border:1px solid var(--line); border-radius:12px; padding:10px 12px;
   transition:border-color .15s ease;
 }
-.shape-finder-item:hover, .shape-finder-item.active{border-color:var(--neon-blue);}
-.shape-finder-item.active{background:rgba(var(--neon-blue-rgb),0.08);}
+.shape-finder-entry:hover, .shape-finder-entry.active{border-color:var(--neon-blue);}
+.shape-finder-entry.active{background:rgba(var(--neon-blue-rgb),0.08);}
+/* One shared 2-column grid for name/picker/score/table (see the JSX
+   comment for why) -- column 1 is "auto" (sized to whichever of name/
+   score is wider), column 2 is capped at the same 360px .stat-panel-
+   table itself uses and is THE SAME track for both rows, which is what
+   actually makes the picker and the table render at identical widths:
+   a flex/matched-max-width version (tried first) let a long name eat
+   into the picker's own available width without touching the table's
+   (which only sits next to the much-narrower score box), drifting the
+   two apart by as much as 45px for a long name, confirmed live. Capped
+   at 460px overall for the same reason the table itself used to be --
+   without it the whole card stretches to fill its grid track, several
+   times wider than the actual player data table it's supposed to
+   match. */
+.shape-finder-grid{
+  display:grid; grid-template-columns:auto minmax(0, 360px);
+  grid-template-areas:"name picker" "score table";
+  column-gap:8px; row-gap:8px; align-items:start; max-width:460px;
+}
 .shape-finder-name{
-  all:unset; cursor:pointer; display:flex; align-items:baseline; gap:6px; min-width:0; flex:1;
-  color:var(--star); font-size:12.5px; transition:color .15s ease;
+  grid-area:name; all:unset; cursor:pointer; display:flex; align-items:baseline; gap:6px; min-width:0;
+  color:var(--star); font-size:12.5px; padding-bottom:8px; border-bottom:1px solid var(--line); transition:color .15s ease;
 }
 .shape-finder-name span:first-child{overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
-.shape-finder-item.active .shape-finder-name{color:var(--neon-blue);}
+.shape-finder-entry.active .shape-finder-name{color:var(--neon-blue);}
 .shape-finder-pos{color:var(--star-dim); font-size:10.5px; flex-shrink:0;}
 /* Floor/Median/Ceiling picker -- same three-way pattern as the main
    table's own column headers, spelled out in full now rather than
    abbreviated to F/M/C (which read as too small a target and unclear
-   at a glance) -- auto-width pill per label instead of a fixed square,
-   sized by its own padding so "Median" isn't clipped. */
-.shape-finder-layers{display:flex; gap:4px; flex-shrink:0;}
+   at a glance). 108px-then-three-equal-columns, matching .shape-finder-
+   table's own split below, so these labels land directly above their
+   own data column -- guaranteed by both living in grid column 2 of the
+   same outer grid (above), not by matching sizes independently. The
+   first sub-column is left deliberately empty (nothing needs to sit
+   above the table's own Stat column) -- the three buttons are
+   explicitly placed into sub-columns 2-4 instead of relying on auto-
+   placement, which would otherwise fill 1-3. */
+.shape-finder-layers{
+  grid-area:picker; display:grid; grid-template-columns:108px repeat(3, 1fr); gap:0;
+  padding-bottom:8px; border-bottom:1px solid var(--line);
+}
+.shape-finder-layer-btn:nth-of-type(1){grid-column:2;}
+.shape-finder-layer-btn:nth-of-type(2){grid-column:3;}
+.shape-finder-layer-btn:nth-of-type(3){grid-column:4;}
 .shape-finder-layer-btn{
-  all:unset; cursor:pointer; padding:7px 10px; display:flex; align-items:center;
-  justify-content:center; border-radius:7px; font-size:11px; color:var(--star-dim); white-space:nowrap;
+  all:unset; cursor:pointer; box-sizing:border-box; width:100%; padding:6px 2px; display:flex; align-items:center;
+  justify-content:center; border-radius:7px; font-size:10px; color:var(--star-dim); white-space:nowrap;
   transition:background .15s ease, color .15s ease;
 }
 .shape-finder-layer-btn:hover{color:var(--star);}
 .shape-finder-layer-btn.active{background:var(--neon-blue); color:var(--void);}
-.shape-finder-entry{display:flex; flex-direction:column;}
-/* Score callout sits beside the table itself, not the header row above
-   it -- explicit ask, so the header (.shape-finder-item, above) keeps
-   the card's full width for the name instead of sharing it with this
-   box. align-items:flex-start (not stretch) so the box sizes to its own
-   short content instead of being pulled down to the table's full
-   height, same align-items:start lesson as the outer .stat-detail-grid
-   itself (see its own comment above). */
-.shape-finder-row{display:flex; gap:10px; align-items:flex-start; margin-top:8px;}
 .shape-finder-score{
-  flex:0 0 auto; min-width:60px; display:flex; flex-direction:column; align-items:center;
-  gap:4px; text-align:center;
+  grid-area:score; display:flex; flex-direction:column; align-items:center;
+  gap:4px; text-align:center; padding-top:2px;
 }
 .shape-finder-portrait{width:36px; height:36px; border-radius:50%; object-fit:cover; background:var(--void-panel-2);}
 .shape-finder-score-value{
@@ -2577,15 +2621,9 @@ tr.stat-row-selected td{background:var(--void-panel);}
    same size as the main player's, not as a visibly smaller "mini"
    table. First column is the same fixed 108px as .stat-detail-table's
    own (not a independent percentage) so both tables' Stat-name column
-   has identical dimensions -- explicit ask, not a coincidence. Capped
-   at the same 360px .stat-panel-table itself uses -- without this, the
-   table stretches to fill its whole grid track, which under the list's
-   own single-column breakpoint (<900px, see .shape-finder-list above)
-   is the ENTIRE finder panel's width, several times wider than the
-   actual player data table it's supposed to match. */
+   has identical dimensions -- explicit ask, not a coincidence. */
 .shape-finder-table{
-  flex:1 1 auto; min-width:0; max-width:360px;
-  width:100%; border-collapse:collapse; font-size:13px; table-layout:fixed; margin-top:0;
+  grid-area:table; min-width:0; width:100%; border-collapse:collapse; font-size:13px; table-layout:fixed;
 }
 .shape-finder-table td{padding:0; border-bottom:1px dashed var(--line); color:var(--star); text-align:center;}
 .shape-finder-table td:first-child{width:108px; text-align:left; white-space:normal;}

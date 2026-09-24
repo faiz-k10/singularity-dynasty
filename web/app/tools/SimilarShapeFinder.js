@@ -246,12 +246,22 @@ export default function SimilarShapeFinder({
               : null;
           const displaySimilarity = layerSimilarity ?? p.similarity;
           return (
-            <div key={p.name} className="shape-finder-entry">
-              {/* Full card width, not sharing a row with the score
-                  callout below -- name/position get the entire width to
-                  themselves so a long name doesn't need to compete with
-                  the score box for room. */}
-              <div className={`shape-finder-item ${isActive ? "active" : ""}`}>
+            <div key={p.name} className={`shape-finder-entry${isActive ? " active" : ""}`}>
+              {/* One shared 2-column grid for all four pieces (name,
+                  F/M/C picker, score, table) -- explicit ask to
+                  incorporate the header/score/table into a single card,
+                  AND to line the picker up with the table's own columns.
+                  Column 1 ("auto") is sized by whichever of name/score is
+                  wider, and column 2 (capped at the table's own 360px)
+                  is THE SAME grid track for both rows -- so the picker
+                  and the table always render at the identical width by
+                  construction, regardless of how long any given name is.
+                  A flex/matched-max-width approach (tried first) instead
+                  let a long name eat into column 1, shrinking the picker
+                  without shrinking the table by the same amount -- e.g.
+                  Trevor Lawrence's longer name drifted the picker ~45px
+                  off the table's columns, confirmed live. */}
+              <div className="shape-finder-grid">
                 <button
                   type="button"
                   className="shape-finder-name"
@@ -278,12 +288,7 @@ export default function SimilarShapeFinder({
                     );
                   })}
                 </div>
-              </div>
-              {/* Score callout starts level with the table's first data
-                  row, not the header above -- explicit ask, so the
-                  header stays full-width for the name. */}
-              <div className="shape-finder-row">
-                <div className="shape-finder-score stat-panel">
+                <div className="shape-finder-score">
                   <div className="stat-radar-label">Match</div>
                   {p.sleeperId && (
                     <img
