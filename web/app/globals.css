@@ -2007,16 +2007,14 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    percentile/radar columns' fr shares divide up the space this reclaims
    instead of it turning into a dead gap between a now-narrower table
    panel and wherever the old 1.1fr boundary used to sit. */
-/* align-items:start (was :stretch) -- stretching every top panel to the
-   tallest one's height (the radar chart, ~323px) meant the sparser
-   panels -- the percentile card especially, ~60px of actual content
-   before a stat is selected -- were mostly empty card below their own
-   content, confirmed live (263px of dead space in that one case,
-   143px in the stat table). Reverted per explicit follow-up feedback:
-   the earlier stretch was meant to avoid a shorter panel ending in bare
-   grid background, but in practice the empty space just moved inside
-   the card instead of going away. Each panel is its own natural height
-   again. */
+/* align-items:stretch, back again (3rd time reversing this rule) --
+   explicit ask to extend every top panel down to the radar panel's own
+   bottom edge. Went stretch -> start because a still-empty percentile
+   placeholder (nothing selected yet) made stretch look like 263px of
+   dead space; asked for again once the percentile card actually has
+   content in it (its own bar chart, ~247px vs radar's ~323px -- a much
+   smaller gap than the empty-placeholder case that prompted the
+   revert). */
 /* "season" (the This Season/vs-pace callout) is its own narrow leading
    column/area -- top-left of the dashboard, explicit ask -- separate
    from the table/percentile/radar row it used to share space with
@@ -2026,7 +2024,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .stat-detail-grid{
   display:grid; grid-template-columns:minmax(0,150px) minmax(0,380px) 0.9fr 1fr;
   grid-template-areas:"season table percentile radar" "finder finder finder finder";
-  column-gap:20px; row-gap:20px; align-items:start;
+  column-gap:20px; row-gap:20px; align-items:stretch;
 }
 @media (max-width:1100px){
   .stat-detail-grid{
