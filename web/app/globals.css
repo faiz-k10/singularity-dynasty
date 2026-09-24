@@ -2583,7 +2583,14 @@ tr.stat-row-selected td{background:var(--void-panel);}
 }
 .shape-finder-layer-btn:hover{color:var(--star);}
 .shape-finder-layer-btn.active{background:var(--neon-blue); color:var(--void);}
-.shape-finder-entry{display:flex; flex-direction:column;}
+/* Capped at the same 360px as .stat-panel-table -- without this, a
+   comp's own card stretches to fill its whole grid track, which under
+   the list's own single-column breakpoint (<900px, see .shape-finder-
+   list above) is the ENTIRE finder panel's width, several times wider
+   than the actual player data table it's supposed to match. Measured
+   live: 769.6px vs. the main table's 273.6px at 820px viewport --
+   nowhere close to "the same size" without this cap. */
+.shape-finder-entry{display:flex; flex-direction:column; max-width:360px;}
 /* Same font sizing and .stat-header-trigger/.stat-row-trigger padding as
    .stat-detail-table (no table-specific override here -- both fall back
    to those shared base rules, and the compact .stat-detail-grid scope
