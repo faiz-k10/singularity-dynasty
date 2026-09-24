@@ -1081,7 +1081,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .rankings-table{width:100%; min-width:max-content; border-collapse:collapse; font-size:14px;}
 .rankings-table th{
   text-align:center; font-family:var(--font-ibm-plex-mono), monospace; font-size:11px; letter-spacing:0.08em;
-  text-transform:uppercase; color:var(--star-dim); padding:14px 18px; border-bottom:1px solid var(--line);
+  text-transform:uppercase; color:var(--star-dim); padding:8px 18px; border-bottom:1px solid var(--line);
   background:var(--void-panel-2); white-space:nowrap;
 }
 /* Column headers are centered site-wide, even where the column's data is
