@@ -2076,7 +2076,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .stat-detail-grid .pctile-bar{height:5px; margin-bottom:6px;}
 .stat-detail-grid .pctile-bar-lg{height:7px; margin-top:6px;}
 .stat-detail-grid .pctile-hero-value{font-size:24px;}
-.stat-detail-grid .shape-finder-item{padding:4px 6px 4px 8px;}
+.stat-detail-grid .shape-finder-item{padding:4px 0;}
 .stat-detail-grid .shape-finder-table{margin-top:5px;}
 /* Shared card chrome for the three panels above -- a shade lighter than
    the void-panel-2 background behind the whole expanded row, with its
@@ -2533,15 +2533,26 @@ tr.stat-row-selected td{background:var(--void-panel);}
 @media (max-width:900px){
   .shape-finder-list{grid-template-columns:1fr;}
 }
+/* Grid (not flex) so the Floor/Median/Ceiling buttons land in the same
+   46%-first-column-then-three-equal-columns split as .shape-finder-table
+   below, and its header labels sit directly above their own data column
+   instead of just clustering at the right edge of the card. gap:0 and no
+   horizontal padding on the item itself (moved onto .shape-finder-name/
+   the last layer button instead, below) so this row's grid tracks span
+   the exact same pixel width as the table's -- any padding or gap here
+   would eat into the grid's content box without the table having a
+   matching deduction, drifting the two out of alignment column by
+   column (worse toward the right, since the error compounds). */
 .shape-finder-item{
-  display:flex; justify-content:space-between; align-items:center; gap:8px;
-  padding:6px 8px 6px 10px; border-radius:8px; border:1px solid var(--line);
+  display:grid; grid-template-columns:46% repeat(3, 1fr); align-items:center; gap:0;
+  padding:6px 0; border-radius:8px; border:1px solid var(--line);
   transition:border-color .15s ease;
 }
 .shape-finder-item:hover, .shape-finder-item.active{border-color:var(--neon-blue);}
 .shape-finder-item.active{background:rgba(var(--neon-blue-rgb),0.08);}
 .shape-finder-name{
-  all:unset; cursor:pointer; display:flex; align-items:baseline; gap:6px; min-width:0; flex:1;
+  all:unset; box-sizing:border-box; width:100%; padding-left:10px;
+  cursor:pointer; display:flex; align-items:baseline; gap:6px; min-width:0;
   color:var(--star); font-size:12.5px; transition:color .15s ease;
 }
 .shape-finder-name span:first-child{overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
@@ -2554,10 +2565,20 @@ tr.stat-row-selected td{background:var(--void-panel);}
    abbreviated to F/M/C (which read as too small a target and unclear
    at a glance) -- auto-width pill per label instead of a fixed square,
    sized by its own padding so "Median" isn't clipped. */
-.shape-finder-layers{display:flex; gap:4px; flex-shrink:0;}
+/* display:contents unwraps this div so its three buttons become direct
+   children of the .shape-finder-item grid (see above) and land in grid
+   columns 2-4 themselves, rather than being squeezed into one flex-shrink
+   cluster off to the side. */
+.shape-finder-layers{display:contents;}
+/* font-size/padding trimmed down from the F/M/C picker's earlier,
+   roomier sizing -- three side-by-side comp cards only leave ~50px per
+   layer column (see .shape-finder-item's 46%-plus-three-equal-columns
+   grid above), and "Ceiling" at the old 11px/7px-4px sizing needed
+   ~54px, wider than its own column and enough to throw off the
+   column alignment this sizing exists to achieve. */
 .shape-finder-layer-btn{
-  all:unset; cursor:pointer; padding:7px 10px; display:flex; align-items:center;
-  justify-content:center; border-radius:7px; font-size:11px; color:var(--star-dim); white-space:nowrap;
+  all:unset; cursor:pointer; box-sizing:border-box; width:100%; padding:6px 2px; display:flex; align-items:center;
+  justify-content:center; border-radius:7px; font-size:10px; color:var(--star-dim); white-space:nowrap;
   transition:background .15s ease, color .15s ease;
 }
 .shape-finder-layer-btn:hover{color:var(--star);}
