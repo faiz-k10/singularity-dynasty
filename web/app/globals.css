@@ -2588,14 +2588,18 @@ tr.stat-row-selected td{background:var(--void-panel);}
   font-family:var(--font-ibm-plex-mono), monospace; font-size:10px; letter-spacing:0.08em;
   text-transform:uppercase; color:var(--star-dim); margin-bottom:6px;
 }
-/* auto-fit at the card's own fixed width (498px = .shape-finder-grid's
-   476px + the entry's 11px each-side padding), not a flat repeat(3,1fr)
-   -- now that each card is a hard pixel width rather than a flexible
+/* auto-fit at the card's own fixed width, not a flat repeat(3,1fr) --
+   now that each card is a hard pixel width rather than a flexible
    "auto" column that could shrink to fit, forcing exactly 3 equal
    columns would overflow (confirmed live: 84px past the container)
    anywhere narrower than ~1550px. Cards wrap to as many columns as
-   actually fit instead, same 1-column stack below 900px as before. */
-.shape-finder-list{display:grid; grid-template-columns:repeat(auto-fit, 414px); gap:12px; align-items:start;}
+   actually fit instead, same 1-column stack below 900px as before.
+   justify-content:center (rather than the grid's default stretch/start)
+   so a row that doesn't exactly fill 2 or 3 cards centers the leftover
+   space evenly instead of hugging the left edge -- explicit ask. */
+.shape-finder-list{
+  display:grid; grid-template-columns:repeat(auto-fit, 438px); justify-content:center; gap:12px; align-items:start;
+}
 @media (max-width:900px){
   .shape-finder-list{grid-template-columns:1fr;}
 }
@@ -2636,37 +2640,39 @@ tr.stat-row-selected td{background:var(--void-panel);}
    comfortably wider than the portrait (36px) and "MATCH" label (34px)
    too. Shrinking this column (down from the 108px it needed back when
    the name shared it) is what actually gets 3 cards into one row at
-   normal desktop widths -- the table's own 332px is untouched here.
-   Fixed width (not max-width) on the grid itself, so the whole card is
-   the same 392px for every comp regardless of content. */
+   normal desktop widths. Table column is 356px (up from 332px -- see
+   -table below for why). Fixed width (not max-width) on the grid
+   itself, so the whole card is the same 416px for every comp regardless
+   of content. */
 .shape-finder-grid{
-  display:grid; grid-template-columns:52px 332px;
+  display:grid; grid-template-columns:52px 356px;
   grid-template-areas:". picker" "score table";
-  column-gap:8px; row-gap:8px; align-items:start; width:392px;
+  column-gap:8px; row-gap:8px; align-items:start; width:416px;
 }
 /* Floor/Median/Ceiling picker -- same three-way pattern as the main
    table's own column headers, spelled out in full now rather than
    abbreviated to F/M/C (which read as too small a target and unclear
-   at a glance). 80px-then-three-equal-columns -- 80px matches
+   at a glance). 104px-then-three-equal-columns -- 104px matches
    .shape-finder-table's own first (Stat name) column width below, NOT
    the outer grid's own (unrelated, much narrower) score column, since
    what actually needs to line up is these buttons against the table's
    Floor/Median/Ceiling data columns -- guaranteed by both this and the
-   table sharing the same 332px outer column 2, not by the two 80px
+   table sharing the same 356px outer column 2, not by the two 104px
    values happening to match by coincidence. The first sub-column is
    left deliberately empty (nothing needs to sit above the table's own
    Stat column) -- the three buttons are explicitly placed into sub-
    columns 2-4 instead of relying on auto-placement, which would
-   otherwise fill 1-3. */
+   otherwise fill 1-3. Button padding trimmed from 6px to 2px top/bottom
+   (explicit ask -- as little vertical padding here as possible). */
 .shape-finder-layers{
-  grid-area:picker; display:grid; grid-template-columns:80px repeat(3, 1fr); gap:0;
-  padding-bottom:8px; border-bottom:1px solid var(--line);
+  grid-area:picker; display:grid; grid-template-columns:104px repeat(3, 1fr); gap:0;
+  padding-bottom:4px; border-bottom:1px solid var(--line);
 }
 .shape-finder-layer-btn:nth-of-type(1){grid-column:2;}
 .shape-finder-layer-btn:nth-of-type(2){grid-column:3;}
 .shape-finder-layer-btn:nth-of-type(3){grid-column:4;}
 .shape-finder-layer-btn{
-  all:unset; cursor:pointer; box-sizing:border-box; width:100%; padding:6px 2px; display:flex; align-items:center;
+  all:unset; cursor:pointer; box-sizing:border-box; width:100%; padding:2px 2px; display:flex; align-items:center;
   justify-content:center; border-radius:7px; font-size:10px; color:var(--star-dim); white-space:nowrap;
   transition:background .15s ease, color .15s ease;
 }
@@ -2685,16 +2691,18 @@ tr.stat-row-selected td{background:var(--void-panel);}
    to those shared base rules, and the compact .stat-detail-grid scope
    below sizes them identically) so a comp's own numbers read at the
    same size as the main player's, not as a visibly smaller "mini"
-   table. First column used to match .stat-detail-table's own 108px, but
-   narrowed to 80px (explicit ask, to fit 3 cards per row) -- still
-   comfortably fits every stat label on one line except the rare longer
-   ones (e.g. "YAC Above Exp"), which fall back to wrapping via the
-   existing white-space:normal below rather than truncating. */
+   table. First column is 104px -- narrowed to 80px in an earlier pass
+   (to fit 3 cards per row), but that wrapped the two longest labels,
+   "YAC Above Exp" and "Target Share" (measured 84.2px and 69.4px of
+   actual text), onto two lines. 104px is just past the longer one's
+   measured width plus the button's own 16px horizontal padding (100.2px
+   needed), back to fitting every label on one line -- explicit ask,
+   worth the extra width. */
 .shape-finder-table{
   grid-area:table; min-width:0; width:100%; border-collapse:collapse; font-size:13px; table-layout:fixed;
 }
 .shape-finder-table td{padding:0; border-bottom:1px dashed var(--line); color:var(--star); text-align:center;}
-.shape-finder-table td:first-child{width:80px; text-align:left; white-space:normal;}
+.shape-finder-table td:first-child{width:104px; text-align:left; white-space:normal;}
 .shape-finder-table tr:last-child td{border-bottom:none;}
 
 /* Diverging comparison bars under each comp -- see CompareBar/CompareBars
