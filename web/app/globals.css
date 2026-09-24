@@ -2588,7 +2588,14 @@ tr.stat-row-selected td{background:var(--void-panel);}
   font-family:var(--font-ibm-plex-mono), monospace; font-size:10px; letter-spacing:0.08em;
   text-transform:uppercase; color:var(--star-dim); margin-bottom:6px;
 }
-.shape-finder-list{display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; align-items:start;}
+/* auto-fit at the card's own fixed width (498px = .shape-finder-grid's
+   476px + the entry's 11px each-side padding), not a flat repeat(3,1fr)
+   -- now that each card is a hard pixel width rather than a flexible
+   "auto" column that could shrink to fit, forcing exactly 3 equal
+   columns would overflow (confirmed live: 84px past the container)
+   anywhere narrower than ~1550px. Cards wrap to as many columns as
+   actually fit instead, same 1-column stack below 900px as before. */
+.shape-finder-list{display:grid; grid-template-columns:repeat(auto-fit, 498px); gap:12px; align-items:start;}
 @media (max-width:900px){
   .shape-finder-list{grid-template-columns:1fr;}
 }
@@ -2604,22 +2611,27 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .shape-finder-entry:hover, .shape-finder-entry.active{border-color:var(--neon-blue);}
 .shape-finder-entry.active{background:rgba(var(--neon-blue-rgb),0.08);}
 /* One shared 2-column grid for name/picker/score/table (see the JSX
-   comment for why) -- column 1 is "auto" (sized to whichever of name/
-   score is wider), column 2 is capped at the same 360px .stat-panel-
-   table itself uses and is THE SAME track for both rows, which is what
-   actually makes the picker and the table render at identical widths:
-   a flex/matched-max-width version (tried first) let a long name eat
-   into the picker's own available width without touching the table's
-   (which only sits next to the much-narrower score box), drifting the
-   two apart by as much as 45px for a long name, confirmed live. Capped
-   at 460px overall for the same reason the table itself used to be --
-   without it the whole card stretches to fill its grid track, several
-   times wider than the actual player data table it's supposed to
-   match. */
+   comment for why) -- column 1 is THE SAME track for both rows, which is
+   what actually makes the picker and the table render at identical
+   widths: a flex/matched-max-width version (tried first) let a long name
+   eat into the picker's own available width without touching the
+   table's (which only sits next to the much-narrower score box),
+   drifting the two apart by as much as 45px for a long name, confirmed
+   live. Column 1 was originally "auto" (sized to whichever of name/
+   score was wider per card), which meant a long player name shrank
+   column 2 for THAT card only -- every comp's table ended up a
+   different width depending on its own name length, confirmed live
+   (349/360/346px for three peers in one row alone). Both columns are
+   now hard pixel widths instead: 108px matches the main stat table's
+   own fixed name column (an existing site convention, and comfortably
+   wider than any score box or -- with the name's own ellipsis fallback
+   -- any name), 360px matches the table's own established cap. Fixed
+   width (not max-width) on the grid itself, so the whole card is the
+   same 476px for every comp regardless of content. */
 .shape-finder-grid{
-  display:grid; grid-template-columns:auto minmax(0, 360px);
+  display:grid; grid-template-columns:108px 360px;
   grid-template-areas:"name picker" "score table";
-  column-gap:8px; row-gap:8px; align-items:start; max-width:460px;
+  column-gap:8px; row-gap:8px; align-items:start; width:476px;
 }
 .shape-finder-name{
   grid-area:name; all:unset; cursor:pointer; display:flex; align-items:baseline; gap:6px; min-width:0;
