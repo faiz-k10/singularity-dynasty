@@ -2071,8 +2071,8 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .stat-detail-grid .pctile-bar-lg{height:7px; margin-top:6px;}
 .stat-detail-grid .pctile-hero-value{font-size:24px;}
 .stat-detail-grid .shape-finder-entry{padding:8px 10px;}
-.stat-detail-grid .shape-finder-name,
-.stat-detail-grid .shape-finder-layers{padding-bottom:6px;}
+.stat-detail-grid .shape-finder-name{padding-bottom:6px;}
+.stat-detail-grid .shape-finder-layers{padding-bottom:2px;}
 /* Shared card chrome for the three panels above -- a shade lighter than
    the void-panel-2 background behind the whole expanded row, with its
    own border, so each reads as a distinct organized section instead of
@@ -2663,17 +2663,19 @@ tr.stat-row-selected td{background:var(--void-panel);}
    left deliberately empty (nothing needs to sit above the table's own
    Stat column) -- the three buttons are explicitly placed into sub-
    columns 2-4 instead of relying on auto-placement, which would
-   otherwise fill 1-3. Button padding trimmed from 6px to 2px top/bottom
-   (explicit ask -- as little vertical padding here as possible). */
+   otherwise fill 1-3. Button padding trimmed to 6px, then 2px, then
+   (this pass) 1px top/bottom -- explicit repeated ask for as little
+   vertical padding here as possible; 1px is about the floor before the
+   active-state pill starts looking clipped around the text. */
 .shape-finder-layers{
   grid-area:picker; display:grid; grid-template-columns:104px repeat(3, 1fr); gap:0;
-  padding-bottom:4px; border-bottom:1px solid var(--line);
+  padding-bottom:2px; border-bottom:1px solid var(--line);
 }
 .shape-finder-layer-btn:nth-of-type(1){grid-column:2;}
 .shape-finder-layer-btn:nth-of-type(2){grid-column:3;}
 .shape-finder-layer-btn:nth-of-type(3){grid-column:4;}
 .shape-finder-layer-btn{
-  all:unset; cursor:pointer; box-sizing:border-box; width:100%; padding:2px 2px; display:flex; align-items:center;
+  all:unset; cursor:pointer; box-sizing:border-box; width:100%; padding:1px 2px; display:flex; align-items:center;
   justify-content:center; border-radius:7px; font-size:10px; color:var(--star-dim); white-space:nowrap;
   transition:background .15s ease, color .15s ease;
 }
