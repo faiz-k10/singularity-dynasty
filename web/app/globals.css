@@ -2154,7 +2154,12 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    positioned with bottom/height instead of left/width). Lives along the
    panel's right edge, its own column so it can stretch the full height
    independent of the text stack beside it. */
-.stat-panel-pace-rangebar-wrap{flex:0 0 auto; display:flex; flex-direction:column; align-items:center; padding:0 34px; gap:4px;}
+/* Right side carries no reserved padding -- the pace-total number is
+   allowed to overflow past the panel's own edge (explicit design call),
+   so the bar itself sits at the panel's right edge instead of leaving a
+   gap sized for a number that no longer needs the room. Left padding
+   stays, reserved for the floor/ceiling labels beside the track. */
+.stat-panel-pace-rangebar-wrap{flex:0 0 auto; display:flex; flex-direction:column; align-items:center; padding:0 0 0 34px; gap:4px;}
 /* Positioned at the same bottom% as the segment edge it labels (see the
    JSX comment above), on the track's left side so it never collides
    with the pace-total number mirrored on the right. translateY(50%)
