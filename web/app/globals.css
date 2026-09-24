@@ -2126,14 +2126,21 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    height just being dead air below the text once it stopped needing to
    match the radar panel's own height. */
 .stat-panel-pace{
-  grid-area:season; display:flex; flex-direction:row; align-items:stretch;
+  grid-area:season; display:flex; flex-direction:column;
   white-space:normal; gap:10px; padding:14px 10px;
 }
+.stat-panel-pace-top{display:flex; flex-direction:row; align-items:stretch; gap:10px; flex:1;}
 .stat-panel-pace-info{
   flex:1; min-width:0; display:flex; flex-direction:column; justify-content:flex-start; align-items:center;
   text-align:center; gap:6px;
 }
 .stat-panel-pace-portrait{width:48px; height:48px; border-radius:50%; object-fit:cover; background:var(--void-panel-2);}
+/* Player identity, where "This season" used to sit -- name can wrap
+   (long names, narrow season column) while the position badge stays on
+   its own line beneath it rather than forcing the row wider. */
+.stat-panel-pace-header{display:flex; flex-direction:column; align-items:center; gap:2px;}
+.stat-panel-pace-name{font-family:var(--font-space-grotesk); font-size:13.5px; font-weight:600; color:var(--star); line-height:1.25;}
+.stat-panel-pace-pos{font-size:10.5px; color:var(--star-dim); letter-spacing:0.03em;}
 .stat-panel-pace-actual{font-family:var(--font-space-grotesk); font-size:20px; font-weight:700; color:var(--star); line-height:1.2;}
 .stat-panel-pace-games{display:block; font-family:var(--font-ibm-plex-mono), monospace; font-size:10.5px; font-weight:400; color:var(--star-dim); margin-top:2px;}
 .stat-panel-pace-delta{font-family:var(--font-ibm-plex-mono), monospace; font-size:13px; font-weight:600; word-break:break-word;}
@@ -2154,6 +2161,21 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .stat-panel-pace-rangebar-upside{position:absolute; left:0; right:0; background:var(--horizon-gold); opacity:0.45; border-radius:4px 4px 0 0; min-height:2px;}
 .stat-panel-pace-rangebar-marker{position:absolute; left:-5px; right:-5px; height:2px; transform:translateY(1px); z-index:2; border-radius:1px;}
 .stat-panel-pace-rangebar-marker::after{content:""; position:absolute; left:-3px; top:50%; transform:translateY(-50%); width:6px; height:6px; border-radius:50%; background:inherit; box-shadow:0 0 4px currentColor;}
+/* Projected full-season total implied by current pace -- same bottom%
+   as the marker tick beside it, offset clear of the 8px-wide track so it
+   never overlaps the typical/upside fill, colored to match the tick's
+   own hot/cold (reuses -pace-delta's classes, not the marker's, since
+   this is text color not a background). */
+.stat-panel-pace-rangebar-total{position:absolute; left:14px; transform:translateY(50%); font-family:var(--font-ibm-plex-mono), monospace; font-size:10.5px; font-weight:600; white-space:nowrap; z-index:2;}
+.stat-panel-pace-rangebar-total.pace-hot{color:var(--up);}
+.stat-panel-pace-rangebar-total.pace-cold{color:var(--down);}
+/* Games-played-of-17 loading bar, pinned to the bottom of the whole
+   panel below the info/rangebar split -- a second, more scannable read
+   on schedule progress than the "· N games" text above. */
+.stat-panel-pace-progress{display:flex; align-items:center; gap:8px;}
+.stat-panel-pace-progress-track{position:relative; flex:1; height:6px; background:var(--void-panel-2); border-radius:3px; overflow:hidden;}
+.stat-panel-pace-progress-fill{position:absolute; left:0; top:0; bottom:0; background:var(--neon-blue-dim); border-radius:3px;}
+.stat-panel-pace-progress-label{flex:0 0 auto; font-family:var(--font-ibm-plex-mono), monospace; font-size:9.5px; color:var(--star-dim);}
 
 /* Weekly Projection Rankings' own click-to-expand row (WeeklyDetailRow.js)
    -- same .stat-detail-row/.stat-panel/.row-expandable chrome as Player
