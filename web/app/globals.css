@@ -2534,8 +2534,8 @@ tr.stat-row-selected td{background:var(--void-panel);}
   .shape-finder-list{grid-template-columns:1fr;}
 }
 /* Grid (not flex) so the Floor/Median/Ceiling buttons land in the same
-   46%-first-column-then-three-equal-columns split as .shape-finder-table
-   below, and its header labels sit directly above their own data column
+   108px-first-column-then-three-equal-columns split as .shape-finder-
+   table below, and its header labels sit directly above their own data column
    instead of just clustering at the right edge of the card. gap:0 and no
    horizontal padding on the item itself (moved onto .shape-finder-name/
    the last layer button instead, below) so this row's grid tracks span
@@ -2544,7 +2544,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
    matching deduction, drifting the two out of alignment column by
    column (worse toward the right, since the error compounds). */
 .shape-finder-item{
-  display:grid; grid-template-columns:46% repeat(3, 1fr); align-items:center; gap:0;
+  display:grid; grid-template-columns:108px repeat(3, 1fr); align-items:center; gap:0;
   padding:6px 0; border-radius:8px; border:1px solid var(--line);
   transition:border-color .15s ease;
 }
@@ -2589,12 +2589,12 @@ tr.stat-row-selected td{background:var(--void-panel);}
    to those shared base rules, and the compact .stat-detail-grid scope
    below sizes them identically) so a comp's own numbers read at the
    same size as the main player's, not as a visibly smaller "mini"
-   table. Only the first column's width ratio differs (46% vs. 38%),
-   since a Similar Shape card is narrower than the main table's own grid
-   column and needs relatively more room for the stat label. */
+   table. First column is the same fixed 108px as .stat-detail-table's
+   own (not a independent percentage) so both tables' Stat-name column
+   has identical dimensions -- explicit ask, not a coincidence. */
 .shape-finder-table{width:100%; min-width:0; border-collapse:collapse; font-size:13px; table-layout:fixed; margin-top:8px;}
 .shape-finder-table td{padding:0; border-bottom:1px dashed var(--line); color:var(--star); text-align:center;}
-.shape-finder-table td:first-child{width:46%; text-align:left; white-space:normal;}
+.shape-finder-table td:first-child{width:108px; text-align:left; white-space:normal;}
 .shape-finder-table tr:last-child td{border-bottom:none;}
 
 /* Diverging comparison bars under each comp -- see CompareBar/CompareBars
