@@ -153,7 +153,6 @@ function StatDetailRow({ row, colSpan, shapePeers, maxCeiling }) {
                     not just its position on the bar. */}
                 {row.floor != null && row.median != null && row.ceiling != null && maxCeiling > 0 && (
                   <div className="stat-panel-pace-rangebar-wrap">
-                    <span className="stat-panel-pace-rangebar-label">{formatStat(row.ceiling)}</span>
                     <div className="stat-panel-pace-rangebar">
                       <div
                         className="stat-panel-pace-rangebar-typical"
@@ -169,6 +168,27 @@ function StatDetailRow({ row, colSpan, shapePeers, maxCeiling }) {
                           height: `${((row.ceiling - row.median) / maxCeiling) * 100}%`,
                         }}
                       />
+                      {/* Floor/ceiling numbers pinned to the colored
+                          segment's own top and bottom edge (same bottom%
+                          math as the segments themselves), not to the
+                          track's container edges -- the track spans the
+                          full 0-maxCeiling scale so the pace marker below
+                          has room to sit above the segment, and labels at
+                          the container edges used to read as "top/bottom
+                          of the whole bar" when they actually meant
+                          "top/bottom of this player's own range." */}
+                      <span
+                        className="stat-panel-pace-rangebar-label stat-panel-pace-rangebar-label-ceiling"
+                        style={{ bottom: `${(row.ceiling / maxCeiling) * 100}%` }}
+                      >
+                        {formatStat(row.ceiling)}
+                      </span>
+                      <span
+                        className="stat-panel-pace-rangebar-label stat-panel-pace-rangebar-label-floor"
+                        style={{ bottom: `${(row.floor / maxCeiling) * 100}%` }}
+                      >
+                        {formatStat(row.floor)}
+                      </span>
                       {row.paceSeasonTotal != null && (
                         <>
                           <div
@@ -185,7 +205,6 @@ function StatDetailRow({ row, colSpan, shapePeers, maxCeiling }) {
                         </>
                       )}
                     </div>
-                    <span className="stat-panel-pace-rangebar-label">{formatStat(row.floor)}</span>
                   </div>
                 )}
               </div>

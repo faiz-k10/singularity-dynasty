@@ -2154,8 +2154,12 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    positioned with bottom/height instead of left/width). Lives along the
    panel's right edge, its own column so it can stretch the full height
    independent of the text stack beside it. */
-.stat-panel-pace-rangebar-wrap{flex:0 0 auto; display:flex; flex-direction:column; align-items:center; gap:4px;}
-.stat-panel-pace-rangebar-label{font-family:var(--font-ibm-plex-mono), monospace; font-size:9.5px; color:var(--star-dim);}
+.stat-panel-pace-rangebar-wrap{flex:0 0 auto; display:flex; flex-direction:column; align-items:center; padding:0 34px; gap:4px;}
+/* Positioned at the same bottom% as the segment edge it labels (see the
+   JSX comment above), on the track's left side so it never collides
+   with the pace-total number mirrored on the right. translateY(50%)
+   centers the text vertically on that height, same trick -total uses. */
+.stat-panel-pace-rangebar-label{position:absolute; right:14px; transform:translateY(50%); font-family:var(--font-ibm-plex-mono), monospace; font-size:9.5px; color:var(--star-dim); white-space:nowrap;}
 .stat-panel-pace-rangebar{position:relative; width:8px; flex:1; min-height:50px; background:var(--void-panel-2); border-radius:4px;}
 .stat-panel-pace-rangebar-typical{position:absolute; left:0; right:0; background:var(--neon-blue-dim); border-radius:0 0 4px 4px; min-height:3px;}
 .stat-panel-pace-rangebar-upside{position:absolute; left:0; right:0; background:var(--horizon-gold); opacity:0.45; border-radius:4px 4px 0 0; min-height:2px;}
@@ -2174,7 +2178,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    on schedule progress than the "· N games" text above. */
 .stat-panel-pace-progress{display:flex; align-items:center; gap:8px;}
 .stat-panel-pace-progress-track{position:relative; flex:1; height:6px; background:var(--void-panel-2); border-radius:3px; overflow:hidden;}
-.stat-panel-pace-progress-fill{position:absolute; left:0; top:0; bottom:0; background:var(--neon-blue-dim); border-radius:3px;}
+.stat-panel-pace-progress-fill{position:absolute; left:0; top:0; bottom:0; background:var(--down); border-radius:3px;}
 .stat-panel-pace-progress-label{flex:0 0 auto; font-family:var(--font-ibm-plex-mono), monospace; font-size:9.5px; color:var(--star-dim);}
 
 /* Weekly Projection Rankings' own click-to-expand row (WeeklyDetailRow.js)
