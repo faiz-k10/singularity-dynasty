@@ -2007,27 +2007,25 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    percentile/radar columns' fr shares divide up the space this reclaims
    instead of it turning into a dead gap between a now-narrower table
    panel and wherever the old 1.1fr boundary used to sit. */
-/* align-items:start, not stretch -- stretch forced table/percentile/
-   pace's own boxes to match the radar's full height (by far the tallest
-   of the four: a square chart vs. a 5-row table, a couple of hint lines,
-   or a few stat lines), and top-aligning their CONTENT within that
-   forced-tall box (.stat-panel-table/-percentile/-pace's own
-   justify-content:flex-start, below) only moved the wasted space from
-   above the content to below it -- confirmed live, e.g. the percentile
-   panel had an 11px gap above its hint text and a 326px gap below it.
-   start lets each panel's box size to its own content instead, so a
-   short panel is just a short card, not a tall card with dead air in
-   it. The row is raggeder at the bottom now (radar's real height vs.
-   three shorter boxes), which is the tradeoff for not padding content
-   out to a height it doesn't have. */
+/* align-items:stretch -- explicit ask to extend every top panel's own
+   box down to fill the row instead of stopping short at its own content
+   (a shorter panel used to just end early, leaving bare grid background
+   below it rather than more of that panel's own bordered card -- see
+   the git history on this rule for the opposite tradeoff that used to
+   apply here). Content inside each panel still top-aligns (.stat-panel-
+   table/-percentile/-pace's own justify-content:flex-start, below), so
+   the empty space lands at the bottom of the now-taller card instead of
+   getting redistributed around the content. */
 /* "season" (the This Season/vs-pace callout) is its own narrow leading
    column/area -- top-left of the dashboard, explicit ask -- separate
    from the table/percentile/radar row it used to share space with
-   beside the radar chart. */
+   beside the radar chart. 150px (not the original 110px) -- measured
+   live, "99th percentile pace" needs ~126px at this column's font-size
+   plus its panel's own horizontal padding. */
 .stat-detail-grid{
-  display:grid; grid-template-columns:minmax(0,110px) minmax(0,380px) 0.9fr 1fr;
+  display:grid; grid-template-columns:minmax(0,150px) minmax(0,380px) 0.9fr 1fr;
   grid-template-areas:"season table percentile radar" "finder finder finder finder";
-  column-gap:20px; row-gap:20px; align-items:start;
+  column-gap:20px; row-gap:20px; align-items:stretch;
 }
 @media (max-width:1100px){
   .stat-detail-grid{
@@ -2111,7 +2109,20 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    the radar's own grid cell; explicit ask to pull it out to its own
    spot instead, portrait stacked above the label. Portrait first in DOM
    (not the label) so it's the top element in the stacked column. */
-.stat-panel-pace{grid-area:season; display:flex; flex-direction:column; align-items:center; text-align:center; gap:6px; padding:14px 10px;}
+/* white-space:normal -- the expanded row's own <td> (this whole grid's
+   ancestor) sets white-space:nowrap for the collapsed table's regular
+   cells, which was inherited all the way down into this panel's own
+   multi-word lines. Never visibly broke anything while this panel was
+   wide enough for its longest line to fit on one line anyway -- exposed
+   once the "season" column narrowed to a dedicated 150px track, where
+   "99th percentile pace" doesn't fit and was overflowing the card's own
+   border instead of wrapping (confirmed live). justify-content:
+   flex-start (not the default center) so the stretched box's leftover
+   space lands at the bottom, matching -table/-percentile beside it. */
+.stat-panel-pace{
+  grid-area:season; display:flex; flex-direction:column; justify-content:flex-start; align-items:center;
+  text-align:center; white-space:normal; gap:6px; padding:14px 10px;
+}
 .stat-panel-pace-portrait{width:48px; height:48px; border-radius:50%; object-fit:cover; background:var(--void-panel-2);}
 .stat-panel-pace-actual{font-family:var(--font-space-grotesk); font-size:20px; font-weight:700; color:var(--star); line-height:1.2;}
 .stat-panel-pace-games{display:block; font-family:var(--font-ibm-plex-mono), monospace; font-size:10.5px; font-weight:400; color:var(--star-dim); margin-top:2px;}
