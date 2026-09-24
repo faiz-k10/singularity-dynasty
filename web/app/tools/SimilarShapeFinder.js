@@ -247,30 +247,35 @@ export default function SimilarShapeFinder({
           const displaySimilarity = layerSimilarity ?? p.similarity;
           return (
             <div key={p.name} className={`shape-finder-entry${isActive ? " active" : ""}`}>
-              {/* One shared 2-column grid for all four pieces (name,
-                  F/M/C picker, score, table) -- explicit ask to
+              {/* Name lives as its own full-width centered header above
+                  the grid now, not sharing a column with the score box --
+                  explicit ask, since a name sharing that narrow score-
+                  width column was truncating hard ("Jaxon Smith-..."). */}
+              <button
+                type="button"
+                className="shape-finder-name"
+                onClick={() => onSelect(p.name, "median")}
+                aria-pressed={isActive}
+              >
+                <span>{p.name}</span>
+                <span className="shape-finder-pos mono">{p.position}</span>
+              </button>
+              {/* One shared 2-column grid for the remaining three pieces
+                  (F/M/C picker, score, table) -- explicit ask to
                   incorporate the header/score/table into a single card,
                   AND to line the picker up with the table's own columns.
-                  Column 1 ("auto") is sized by whichever of name/score is
-                  wider, and column 2 (capped at the table's own 360px)
-                  is THE SAME grid track for both rows -- so the picker
-                  and the table always render at the identical width by
-                  construction, regardless of how long any given name is.
-                  A flex/matched-max-width approach (tried first) instead
-                  let a long name eat into column 1, shrinking the picker
-                  without shrinking the table by the same amount -- e.g.
-                  Trevor Lawrence's longer name drifted the picker ~45px
-                  off the table's columns, confirmed live. */}
+                  Column 1 is hard-set to the score box's own widest
+                  possible content (the similarity percentage, "100%"),
+                  and column 2 (capped at the table's own width) is THE
+                  SAME grid track for both rows -- so the picker and the
+                  table always render at the identical width by
+                  construction. A flex/matched-max-width approach (tried
+                  first) instead let a long name eat into column 1,
+                  shrinking the picker without shrinking the table by the
+                  same amount -- e.g. Trevor Lawrence's longer name
+                  drifted the picker ~45px off the table's columns,
+                  confirmed live. */}
               <div className="shape-finder-grid">
-                <button
-                  type="button"
-                  className="shape-finder-name"
-                  onClick={() => onSelect(p.name, "median")}
-                  aria-pressed={isActive}
-                >
-                  <span>{p.name}</span>
-                  <span className="shape-finder-pos mono">{p.position}</span>
-                </button>
                 <div className="shape-finder-layers mono" role="group" aria-label={`${p.name} comparison view`}>
                   {LAYERS.map((layer) => {
                     const layerActive = isActive && selectedLayer === layer.key;

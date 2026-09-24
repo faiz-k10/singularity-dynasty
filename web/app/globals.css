@@ -2595,7 +2595,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
    columns would overflow (confirmed live: 84px past the container)
    anywhere narrower than ~1550px. Cards wrap to as many columns as
    actually fit instead, same 1-column stack below 900px as before. */
-.shape-finder-list{display:grid; grid-template-columns:repeat(auto-fit, 470px); gap:12px; align-items:start;}
+.shape-finder-list{display:grid; grid-template-columns:repeat(auto-fit, 414px); gap:12px; align-items:start;}
 @media (max-width:900px){
   .shape-finder-list{grid-template-columns:1fr;}
 }
@@ -2605,57 +2605,59 @@ tr.stat-row-selected td{background:var(--void-panel);}
    the header, score, and table into a single table/panel instead of
    three visually distinct boxes. */
 .shape-finder-entry{
-  background:var(--void-panel); border:1px solid var(--line); border-radius:12px; padding:10px 12px;
+  background:var(--void-panel); border:1px solid var(--line); border-radius:12px; padding:10px 10px;
   transition:border-color .15s ease;
 }
 .shape-finder-entry:hover, .shape-finder-entry.active{border-color:var(--neon-blue);}
 .shape-finder-entry.active{background:rgba(var(--neon-blue-rgb),0.08);}
-/* One shared 2-column grid for name/picker/score/table (see the JSX
-   comment for why) -- column 1 is THE SAME track for both rows, which is
+/* Name is now a full-width centered header ABOVE this grid (a sibling
+   in the JSX, not a grid cell) -- explicit ask, since sharing the score
+   column's own (now much narrower) width was truncating hard, e.g.
+   "Jaxon Smith-..." for Jaxon Smith-Njigba. Full card width gives it
+   room to show basically any name without truncating. */
+.shape-finder-name{
+  all:unset; cursor:pointer; display:flex; justify-content:center; align-items:baseline; gap:6px; width:100%;
+  color:var(--star); font-size:12.5px; padding-bottom:8px; margin-bottom:8px; border-bottom:1px solid var(--line);
+  transition:color .15s ease;
+}
+.shape-finder-name span:first-child{overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.shape-finder-entry.active .shape-finder-name{color:var(--neon-blue);}
+.shape-finder-pos{color:var(--star-dim); font-size:10.5px; flex-shrink:0;}
+/* One shared 2-column grid for the remaining three pieces (picker,
+   score, table) -- column 1 is THE SAME track for both rows, which is
    what actually makes the picker and the table render at identical
    widths: a flex/matched-max-width version (tried first) let a long name
    eat into the picker's own available width without touching the
    table's (which only sits next to the much-narrower score box),
    drifting the two apart by as much as 45px for a long name, confirmed
-   live. Column 1 was originally "auto" (sized to whichever of name/
-   score was wider per card), which meant a long player name shrank
-   column 2 for THAT card only -- every comp's table ended up a
-   different width depending on its own name length, confirmed live
-   (349/360/346px for three peers in one row alone). Both columns are
-   now hard pixel widths instead: 108px matches the main stat table's
-   own fixed name column (an existing site convention, and comfortably
-   wider than any score box or -- with the name's own ellipsis fallback
-   -- any name); the table column is 332px, 28px narrower than that same
-   table's own 360px cap -- shaved off its first (Stat name) column
-   specifically (108px down to 80px there, see -table below), not off
-   the Floor/Median/Ceiling columns, so 3 cards fit in one row instead
-   of wrapping to 2 at common desktop widths (explicit ask, confirmed
-   live: was wrapping around 1550px, now fits to ~1430px). Fixed width
-   (not max-width) on the grid itself, so the whole card is the same
-   448px for every comp regardless of content. */
+   live. Column 1 is hard-set to 52px -- the score box's own widest
+   possible content, the similarity percentage at its worst case
+   ("100%", measured 50.1px with the score value's own font/weight) --
+   comfortably wider than the portrait (36px) and "MATCH" label (34px)
+   too. Shrinking this column (down from the 108px it needed back when
+   the name shared it) is what actually gets 3 cards into one row at
+   normal desktop widths -- the table's own 332px is untouched here.
+   Fixed width (not max-width) on the grid itself, so the whole card is
+   the same 392px for every comp regardless of content. */
 .shape-finder-grid{
-  display:grid; grid-template-columns:108px 332px;
-  grid-template-areas:"name picker" "score table";
-  column-gap:8px; row-gap:8px; align-items:start; width:448px;
+  display:grid; grid-template-columns:52px 332px;
+  grid-template-areas:". picker" "score table";
+  column-gap:8px; row-gap:8px; align-items:start; width:392px;
 }
-.shape-finder-name{
-  grid-area:name; all:unset; cursor:pointer; display:flex; align-items:baseline; gap:6px; min-width:0;
-  color:var(--star); font-size:12.5px; padding-bottom:8px; border-bottom:1px solid var(--line); transition:color .15s ease;
-}
-.shape-finder-name span:first-child{overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
-.shape-finder-entry.active .shape-finder-name{color:var(--neon-blue);}
-.shape-finder-pos{color:var(--star-dim); font-size:10.5px; flex-shrink:0;}
 /* Floor/Median/Ceiling picker -- same three-way pattern as the main
    table's own column headers, spelled out in full now rather than
    abbreviated to F/M/C (which read as too small a target and unclear
-   at a glance). 108px-then-three-equal-columns, matching .shape-finder-
-   table's own split below, so these labels land directly above their
-   own data column -- guaranteed by both living in grid column 2 of the
-   same outer grid (above), not by matching sizes independently. The
-   first sub-column is left deliberately empty (nothing needs to sit
-   above the table's own Stat column) -- the three buttons are
-   explicitly placed into sub-columns 2-4 instead of relying on auto-
-   placement, which would otherwise fill 1-3. */
+   at a glance). 80px-then-three-equal-columns -- 80px matches
+   .shape-finder-table's own first (Stat name) column width below, NOT
+   the outer grid's own (unrelated, much narrower) score column, since
+   what actually needs to line up is these buttons against the table's
+   Floor/Median/Ceiling data columns -- guaranteed by both this and the
+   table sharing the same 332px outer column 2, not by the two 80px
+   values happening to match by coincidence. The first sub-column is
+   left deliberately empty (nothing needs to sit above the table's own
+   Stat column) -- the three buttons are explicitly placed into sub-
+   columns 2-4 instead of relying on auto-placement, which would
+   otherwise fill 1-3. */
 .shape-finder-layers{
   grid-area:picker; display:grid; grid-template-columns:80px repeat(3, 1fr); gap:0;
   padding-bottom:8px; border-bottom:1px solid var(--line);
