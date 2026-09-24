@@ -2572,14 +2572,8 @@ tr.stat-row-selected td{background:var(--void-panel);}
    since a Similar Shape card is narrower than the main table's own grid
    column and needs relatively more room for the stat label. */
 .shape-finder-table{width:100%; min-width:0; border-collapse:collapse; font-size:13px; table-layout:fixed; margin-top:8px;}
-.shape-finder-table th{
-  text-align:left; font-family:var(--font-ibm-plex-mono), monospace; font-size:10px; letter-spacing:0.06em;
-  text-transform:uppercase; color:var(--star-dim); padding:6px 10px; border-bottom:1px solid var(--line);
-}
-.shape-finder-table th:not(:first-child){text-align:center; padding:0;}
-.shape-finder-table th:first-child{width:46%; white-space:normal;}
 .shape-finder-table td{padding:0; border-bottom:1px dashed var(--line); color:var(--star); text-align:center;}
-.shape-finder-table td:first-child{text-align:left; white-space:normal;}
+.shape-finder-table td:first-child{width:46%; text-align:left; white-space:normal;}
 .shape-finder-table tr:last-child td{border-bottom:none;}
 
 /* Diverging comparison bars under each comp -- see CompareBar/CompareBars

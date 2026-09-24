@@ -120,26 +120,6 @@ function MiniStatTable({ peer, keys, labelByKey, isActive, selectedLayer, onSele
 
   return (
     <table className="shape-finder-table">
-      <thead>
-        <tr>
-          <th></th>
-          {["floor", "median", "ceiling"].map((layer) => {
-            const layerActive = isActive && selectedLayer === layer;
-            return (
-              <th key={layer}>
-                <button
-                  type="button"
-                  className={`stat-header-trigger${layerActive ? " stat-header-trigger-active" : ""}`}
-                  onClick={() => onSelectLayer(layer)}
-                  aria-pressed={layerActive}
-                >
-                  {layer === "floor" ? "Floor" : layer === "median" ? "Med" : "Ceil"}
-                </button>
-              </th>
-            );
-          })}
-        </tr>
-      </thead>
       <tbody>
         {rows.map((key) => {
           const { floor, median, ceiling } = ranges[key];
