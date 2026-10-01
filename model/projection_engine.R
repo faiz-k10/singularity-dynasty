@@ -47,8 +47,41 @@ MIN_GAMES <- 6    # eligibility floor -- below this, a player isn't projected at
 
 MED_DECAY   <- c(RB = 0.87, QB = 0.90, WR = 0.89, TE = 0.92)  # Redraft Rankings
 CEIL_DECAY  <- c(RB = 0.89, QB = 0.98, WR = 0.93, TE = 0.91)  # Best Ball Rankings
-CEIL_Q      <- c(RB = 0.96, QB = 0.96, WR = 0.94, TE = 0.96)  # calibrated internal quantile for "ceiling"
+CEIL_Q      <- c(RB = 0.995, QB = 0.985, WR = 0.975, TE = 0.995)  # calibrated internal quantile for "ceiling" --
+                  # re-swept via backtest_ceiling_calibration.R after real 2026
+                  # Weeks 1-3 data showed the old values (0.94-0.96) were never
+                  # actually validated by any backtest and produced a real
+                  # above-ceiling rate roughly DOUBLE their own intended target
+                  # (e.g. QB: literal 0.96 implies ~4% real exceed rate, actually
+                  # produced ~6.5%; RB/TE ran closer to ~9%) -- confirmed on both
+                  # the 2022-2025 walk-forward AND live 2026 Weeks 1-3 actuals.
+                  # These new values were sourced by sweeping for whichever
+                  # internal quantile makes the REAL exceed rate land at the
+                  # ORIGINAL values' own intended target (4% QB/RB/TE, 6% WR) --
+                  # same calibration-lever concept STAT_GROUP_FLOOR_Q/CEIL_Q's
+                  # comment already describes for Season Sims, just never
+                  # applied here until now. CEIL_DECAY untouched.
 FLOOR_Q     <- c(RB = 0.09, QB = 0.08, WR = 0.12, TE = 0.13)  # calibrated internal quantile for "floor"
+
+# Player Season Simulations' season_floor/season_ceiling internal
+# quantile -- separate from FLOOR_Q/CEIL_Q above (those are the WEEKLY
+# Redraft/Best Ball numbers). Calibrated via backtest_season_calibration.R
+# the same way CEIL_Q above was: sweeping for whichever quantile makes the
+# REAL walk-forward exceed rate (against actual 2022-2025 season totals)
+# land at the intended 10%/10%, replacing a literal, never-validated
+# 0.10/0.90 that a prior comment here incorrectly argued didn't need
+# calibration ("it's already a large Monte Carlo sample" -- true for
+# reducing estimation NOISE, doesn't fix BIAS if the resampled
+# distribution itself understates real season-to-season volatility, which
+# it did: real below/above rates were running 22-34%/17-20% before this).
+# RB floor is the one position that doesn't fully close even at the
+# sweep's lower bound (0.010 -> 14.2% real rate, vs. 10% target) -- going
+# lower risks the ~1st-percentile draw out of N_SIMS becoming unstably
+# noisy rather than closing the gap further; flagged, not chased past
+# that point. season_median stays a plain 0.50 -- only the two tails were
+# ever the problem.
+SEASON_FLOOR_Q <- c(RB = 0.010, QB = 0.020, WR = 0.010, TE = 0.020)
+SEASON_CEIL_Q  <- c(RB = 0.995, QB = 0.985, WR = 0.990, TE = 0.990)
 
 # Sleeper-blend weekly median: blends OUR weighted-quantile median with
 # Sleeper's own published weekly projection, per position. Validated via
@@ -292,6 +325,28 @@ BOUNCEBACK_MIN_PRIOR_GAMES <- MIN_GAMES
 STAT_GROUP_DECAY <- list(
   td_int  = c(QB = 0.97, RB = 0.94, WR = 0.94, TE = 0.97),
   yardage = c(QB = 0.82, RB = 0.85, WR = 0.82, TE = 0.94)
+)
+
+# Separate, next-game-accuracy-tuned decay for the td_int columns
+# specifically as used by weekly_scoring_stats below (Redraft's per-stat
+# custom-scoring numbers) -- STAT_GROUP_DECAY$td_int above stays exactly
+# as-is for Player Season Simulations' season-total bootstrap, its only
+# validated target (backtest_stat_group_decay.R). weekly_scoring_stats
+# reused that same constant for a genuinely different target (next-game
+# accuracy) it was never backtested against; backtest_td_predictor.R plus
+# a QB rushing_tds/passing_interceptions supplement swept it directly and
+# found every td_int stat wants meaningfully faster decay for THIS
+# target (0.60-0.90) than the season-total-tuned 0.94-0.97 -- independent
+# corroboration of the same gap backtest_low_sample_decay.R had already
+# surfaced (see its "established" slice, which found near-identical
+# values). Keyed by exact stat column, not just group+position: even
+# within one position's td_int group, the optimal decay varies a lot --
+# QB's three td_int stats want 0.60/0.87/0.90, not one shared number.
+WEEKLY_TD_DECAY <- list(
+  QB = c(passing_tds = 0.87, passing_interceptions = 0.90, rushing_tds = 0.60),
+  RB = c(rushing_tds = 0.69, receiving_tds = 0.66),
+  WR = c(receiving_tds = 0.69),
+  TE = c(receiving_tds = 0.60)
 )
 
 # Same calibration concept as FLOOR_Q/CEIL_Q above (query the simulated
@@ -1292,6 +1347,24 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
     med <- med * applied_mult
     cei <- cei * applied_mult
 
+    # Monotonicity clamp: fl/med/cei are NOT three quantiles of one
+    # consistent distribution -- med is either an 85/15 quantile-median/
+    # mean blend (MED_DECAY-weighted) or, for QB, a sum of two separately
+    # resampled pass/rush weighted means, while fl/cei are quantiles built
+    # with their own independently-backtested decay/quantile (MED_DECAY
+    # for fl, CEIL_DECAY for cei -- see FLOOR_Q/CEIL_Q's comment). Each was
+    # tuned solely for its OWN accuracy target, so nothing guarantees they
+    # stay ordered -- confirmed live in production: 10/1292 real Redraft
+    # rows (0.77%) had median > ceiling or median < floor, concentrated on
+    # deep-bench/near-zero-usage players with volatile small-sample
+    # history (e.g. Chris Brooks: floor 0, median 6.9, ceiling 5.2). This
+    # only ever widens fl/cei to include med, never touches med itself or
+    # either number's own backtested value in the ~99% of rows already
+    # correctly ordered -- purely a display-consistency fix, not a
+    # different estimate.
+    cei <- max(cei, med)
+    fl  <- min(fl, med)
+
     # Bounce-back trigger: was this player's most recent real game (x's
     # last element -- d/reg is chronologically ordered, see
     # load_history()) at or below `fl`, the EXACT floor value this row
@@ -1353,11 +1426,21 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
     # weighted_mean()'s comment) and no choice of decay closes it -- but it
     # does mean each component is now projected with the decay that best
     # predicts THAT column specifically, same rationale as WOPR/EPA above.
+    #
+    # EXCEPTION: td_int columns use WEEKLY_TD_DECAY instead of
+    # STAT_GROUP_DECAY$td_int -- see that constant's comment for why the
+    # season-total-tuned value is wrong for this next-game target.
     relevant_weekly_stats <- STAT_COLS_BY_POSITION[[pos]]
     weekly_scoring_stats <- if (!is.null(relevant_weekly_stats)) {
       setNames(lapply(relevant_weekly_stats, function(col) {
         col_x <- d[[col]]
-        w_col <- recency_weights(n, STAT_GROUP_DECAY[[STAT_GROUP_BY_STAT[[col]]]][pos])
+        group <- STAT_GROUP_BY_STAT[[col]]
+        decay <- if (group == "td_int" && col %in% names(WEEKLY_TD_DECAY[[pos]])) {
+          WEEKLY_TD_DECAY[[pos]][[col]]
+        } else {
+          STAT_GROUP_DECAY[[group]][pos]
+        }
+        w_col <- recency_weights(n, decay)
         round(weighted_mean(col_x, w_col) * applied_mult, 2)
       }), relevant_weekly_stats)
     } else {
@@ -1426,14 +1509,19 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
       median = round(med, 1),
       ceiling = round(cei, 1),
       weekly_scoring_stats_json = weekly_scoring_stats_json,
-      # Season floor/ceiling use plain 10th/90th percentile of the 30,000-draw
-      # simulated distribution directly -- NOT the calibrated FLOOR_Q/CEIL_Q,
-      # which correct for small-sample bias in a *historical* game log. The
-      # season sim doesn't have that problem; it's already a large Monte
-      # Carlo sample, so a plain empirical quantile is the right tool here.
-      season_floor = round(quantile(szn, 0.10), 0),
+      # Season floor/ceiling now use SEASON_FLOOR_Q/SEASON_CEIL_Q, not a
+      # literal 10th/90th percentile -- see those constants' own comment
+      # for why. Previous reasoning here ("it's already a large Monte
+      # Carlo sample, so a plain empirical quantile is fine") was wrong:
+      # a bigger bootstrap sample reduces NOISE in estimating a quantile,
+      # it doesn't fix BIAS if the resampled distribution itself
+      # understates real season-to-season volatility -- confirmed via
+      # backtest_season_calibration.R against real 2022-2025 season
+      # totals, literal 0.10/0.90 produced real below/above rates of
+      # 22-34% / 17-20% (target 10%/10%) at every position.
+      season_floor = round(quantile(szn, SEASON_FLOOR_Q[pos]), 0),
       season_median = round(quantile(szn, 0.50), 0),
-      season_ceiling = round(quantile(szn, 0.90), 0),
+      season_ceiling = round(quantile(szn, SEASON_CEIL_Q[pos]), 0),
       bust_pct = bust_pct,
       normal_pct = normal_pct,
       boom_pct = boom_pct,
