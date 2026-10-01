@@ -10,6 +10,7 @@ import { computeRegressionScore } from "@/lib/regressionScore";
 import { computeOutcomePercentile } from "@/lib/outcomePercentile";
 import { getPlayerBiosByNamePos } from "@/lib/sleeper";
 import { normalizePlayerName } from "@/lib/portfolio";
+import { fetchAllRows } from "@/lib/fetchAllRows";
 import SiteHeader from "../../SiteHeader";
 import ExportCsvButton from "../ExportCsvButton";
 import PlayerSimSearch from "../PlayerSimSearch";
@@ -62,7 +63,7 @@ const getCachedWeekData = unstable_cache(
 
     if (!latest) return { latest: null, rows: [], totalCount: 0, actualProductionByName: {} };
 
-    const [{ data, count }, { data: actualRows }] = await Promise.all([
+    const [{ data, count }, actualRows] = await Promise.all([
       publicSupabase
         .from("player_simulations")
         .select(
@@ -79,11 +80,18 @@ const getCachedWeekData = unstable_cache(
       // weekly from real nflreadr box scores), not hand-entered -- see
       // scripts/publish-actual-production.mjs, run as part of the normal
       // weekly publish cycle right alongside the game log itself.
-      publicSupabase
-        .from("player_actual_production")
-        .select("player_name, week, actual_points")
-        .eq("season", latest.season)
-        .order("week", { ascending: true }),
+      // Paginated (fetchAllRows below): Supabase's project-level API "max
+      // rows" setting hard-caps any single request at 1000 regardless of
+      // an explicit .limit() asking for more -- confirmed directly (a
+      // .limit(5000) here still only returned 1000 rows). This table is
+      // already past 1000 (1078 rows 3 weeks into the season) and was
+      // silently truncating, dropping a chunk of the LATEST week's games
+      // (sorted last) for whichever players' rows fell past row 1000.
+      // Found via Harold Fannin Jr.'s pace panel showing "2 games" with
+      // his real Week 3 game already live in the table.
+      fetchAllRows(publicSupabase, "player_actual_production", "player_name, week, actual_points", (q) =>
+        q.eq("season", latest.season).order("week", { ascending: true })
+      ),
     ]);
 
     const actualProductionByName = {};
