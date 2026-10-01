@@ -831,13 +831,16 @@ load_out_players <- function(season, week) {
   unique(inj$full_name)
 }
 
-# One QB per team: the current depth-chart starter (pos_rank 1), falling
-# back to the next-ranked QB on that team's chart if the starter isn't in
-# `eligible_players` -- e.g. Deshaun Watson is Cleveland's named 2026
-# starter but has zero 2025 games, so he fails the separate last-season-
-# presence eligibility check. Without this fallback, that team would show
-# no QB at all rather than whoever's actually next in line and has real
-# recent history to project from.
+# Up to 2 QBs per team (the depth-chart starter, pos_rank 1, plus the
+# next-ranked QB who's individually eligible) -- see project_all()'s
+# call site for why the backup is kept too, and export_for_supabase()'s
+# promotion step for how the two get collapsed to one PUBLISHED QB per
+# team once this week's real OUT designations are known. Skips a rank
+# entirely if that QB individually fails eligibility (e.g. Deshaun Watson
+# is Cleveland's named 2026 starter but has zero 2025 games, so he fails
+# the separate last-season-presence check) rather than leaving a gap --
+# a team's kept rows are always its top eligible 1-2, never a hole in the
+# middle of the chart.
 #
 # Matched to player_display_name by player_name (verified 32/32 exact
 # match against the model's own naming, unlike load_out_players' ~96%).
@@ -847,13 +850,19 @@ select_team_qbs <- function(season, eligible_players) {
   dc <- as.data.frame(load_depth_charts(season))
   latest <- dc[dc$dt == max(dc$dt) & dc$pos_abb == "QB", ]
   latest <- latest[order(latest$team, latest$pos_rank), ]
-  picks <- sapply(unique(latest$team), function(tm) {
+  do.call(rbind, lapply(unique(latest$team), function(tm) {
     chart <- latest[latest$team == tm, ]
     chart <- chart[order(chart$pos_rank), ]
-    pick <- chart$player_name[chart$player_name %in% eligible_players]
-    if (length(pick) == 0) NA_character_ else pick[1]
-  })
-  unique(picks[!is.na(picks)])
+    chart <- chart[chart$player_name %in% eligible_players, ]
+    if (nrow(chart) == 0) return(NULL)
+    # Top 2, not just the nominal starter -- keeps a hot-standby backup's
+    # own row computed and ready to publish if the starter turns up OUT
+    # this week (see export_for_supabase()'s promotion step). Only this
+    # week's OUT designations (known later, at export time, not here)
+    # decide which of the two actually gets shown -- this just makes
+    # sure both exist to choose from.
+    head(chart[, c("team", "player_name", "pos_rank")], 2)
+  }))
 }
 
 # ============================= PROJECTION =============================
@@ -898,22 +907,30 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
   played_recently <- unique(reg$player_display_name[reg$season == last_completed_season])
   eligible <- intersect(eligible, played_recently)
 
-  # Backup QBs excluded entirely (all three tables) -- current depth
-  # chart, not last season's history, since a QB's competition/starter
-  # status can change independent of how they performed historically.
-  # Falls back to the next eligible QB on a team's chart if the nominal
-  # starter isn't eligible (see select_team_qbs()). Fails safe: if
-  # depth-chart data is unavailable, skip this filter rather than
-  # accidentally dropping every QB.
-  qb_starters <- tryCatch(select_team_qbs(target_season, eligible), error = function(e) {
+  # 3rd-string-or-deeper QBs excluded entirely (all three tables) --
+  # current depth chart, not last season's history, since a QB's
+  # competition/starter status can change independent of how they
+  # performed historically. Keeps the top 2 per team (not just 1) so a
+  # real backup's row is computed and ready to publish if the starter
+  # ends up OUT -- found via a real gap: Jayden Daniels (WAS, Week 4
+  # 2026) went OUT, and his backup Marcus Mariota (set to actually start)
+  # was invisible on the site all week because the old version of this
+  # filter only ever kept the single nominal starter, decided BEFORE this
+  # week's injury designations even exist. The actual starter-vs-backup
+  # call for which ONE gets published is made in export_for_supabase(),
+  # where OUT status is already known -- this just makes sure both exist
+  # to choose from. Fails safe: if depth-chart data is unavailable, skip
+  # this filter rather than accidentally dropping every QB.
+  qb_depth <- tryCatch(select_team_qbs(target_season, eligible), error = function(e) {
     cat("Depth chart unavailable this run -- skipping backup-QB filter:", conditionMessage(e), "\n")
     NULL
   })
-  if (!is.null(qb_starters)) {
+  if (!is.null(qb_depth)) {
     player_positions <- reg$position[match(eligible, reg$player_display_name)]
-    is_backup_qb <- player_positions == "QB" & !(eligible %in% qb_starters)
-    cat("Backup QBs removed:", sum(is_backup_qb), "-", paste(eligible[is_backup_qb], collapse = ", "), "\n")
-    eligible <- eligible[!is_backup_qb]
+    is_deep_backup_qb <- player_positions == "QB" & !(eligible %in% qb_depth$player_name)
+    cat("3rd-string-or-deeper QBs removed:", sum(is_deep_backup_qb), "-",
+        paste(eligible[is_deep_backup_qb], collapse = ", "), "\n")
+    eligible <- eligible[!is_deep_backup_qb]
   }
 
   # Not currently on any NFL roster this season (retired, cut, unsigned
@@ -1587,6 +1604,39 @@ export_for_supabase <- function(df, target_season = TARGET_SEASON, week = NULL) 
     cat("OUT this week (projection/ceiling set to 0):", sum(is_out), "player(s) -",
         paste(df$player_name[is_out], collapse = ", "), "\n")
   }
+
+  # Promote a team's backup QB into the published tables when its starter
+  # is OUT this week. project_all() keeps the top 2 depth-chart QBs per
+  # team (see select_team_qbs()) specifically so this has a real row to
+  # promote -- without it, a team whose starter goes down mid-week (e.g.
+  # Jayden Daniels, WAS, Week 4 2026) would publish literally no QB at
+  # all, even with a real backup (Marcus Mariota) about to start. The
+  # starter's own row is left alone either way -- it still shows OUT/0 as
+  # usual; this only decides whether the backup ALSO gets shown.
+  qb_depth <- tryCatch(select_team_qbs(season, df$player_name[df$position == "QB"]),
+                        error = function(e) NULL)
+  if (!is.null(qb_depth) && nrow(qb_depth) > 0) {
+    keep_qb <- character(0)
+    for (tm in unique(qb_depth$team)) {
+      chart <- qb_depth[qb_depth$team == tm, ]
+      chart <- chart[order(chart$pos_rank), ]
+      starter <- chart$player_name[1]
+      keep_qb <- c(keep_qb, starter)
+      if (starter %in% out_players && nrow(chart) >= 2) {
+        backup <- chart$player_name[2]
+        keep_qb <- c(keep_qb, backup)
+        cat("Starter OUT -- promoting backup QB into this week's tables:", backup, "(for", tm, ")\n")
+      }
+    }
+    is_extra_qb <- df$position == "QB" & !(df$player_name %in% keep_qb)
+    if (any(is_extra_qb)) {
+      cat("Non-starter/non-promoted QBs excluded from published tables:", sum(is_extra_qb), "-",
+          paste(df$player_name[is_extra_qb], collapse = ", "), "\n")
+      df <- df[!is_extra_qb, ]
+      is_out <- df$player_name %in% out_players
+    }
+  }
+
   df$floor <- ifelse(is_out, 0, df$floor)
   df$median <- ifelse(is_out, 0, df$median)
   df$ceiling <- ifelse(is_out, 0, df$ceiling)
