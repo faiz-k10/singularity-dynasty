@@ -50,6 +50,50 @@ function normalizedIndex(byName) {
   return out;
 }
 
+// This week's head-to-head for one roster, from the matchups feed: find
+// my roster's matchup_id, then the other roster sharing it -> its owner's
+// team name + record. matchupActual is Sleeper's own `points` on each
+// entry -- 0 before kickoff (left null), then live-updating, final once
+// games end. Opponent stays null when matchups aren't posted (offseason)
+// or on a bye. Shared by the full lookup and the lightweight live poll.
+function resolveMatchup(matchups, myRoster, rosters, leagueUsers) {
+  const out = {
+    weekOpponent: null,
+    weekOpponentRecord: null,
+    weekIsBye: false,
+    matchupActual: null,
+    mine: null,
+    oppEntry: null,
+  };
+  if (!matchups) return out;
+  const mine = matchups.find((m) => m.roster_id === myRoster.roster_id);
+  if (!mine || mine.matchup_id == null) return out;
+  out.mine = mine;
+  const oppEntry = matchups.find(
+    (m) => m.matchup_id === mine.matchup_id && m.roster_id !== myRoster.roster_id
+  );
+  if (!oppEntry) {
+    out.weekIsBye = true;
+    return out;
+  }
+  out.oppEntry = oppEntry;
+  const oppRoster = rosters.find((r) => r.roster_id === oppEntry.roster_id);
+  const oppUser = oppRoster ? leagueUsers.find((u) => u.user_id === oppRoster.owner_id) : null;
+  out.weekOpponent =
+    oppUser?.metadata?.team_name || oppUser?.display_name || `Roster ${oppEntry.roster_id}`;
+  const { wins: ow = 0, losses: ol = 0, ties: ot = 0 } = oppRoster?.settings || {};
+  out.weekOpponentRecord = ot > 0 ? `${ow}-${ol}-${ot}` : `${ow}-${ol}`;
+  const myPts = typeof mine.points === "number" ? mine.points : 0;
+  const oppPts = typeof oppEntry.points === "number" ? oppEntry.points : 0;
+  if (myPts > 0 || oppPts > 0) out.matchupActual = { mine: myPts, opp: oppPts };
+  return out;
+}
+
+function formatRecord(settings) {
+  const { wins = 0, losses = 0, ties = 0 } = settings || {};
+  return ties > 0 ? `${wins}-${losses}-${ties}` : `${wins}-${losses}`;
+}
+
 // Looks up every league a Sleeper username plays in for the current NFL
 // season and returns just THEIR roster from each one, with player ids
 // already resolved to real names/positions/teams via Sleeper's own
@@ -93,21 +137,29 @@ export async function lookupSleeperTeams(username) {
   const matchupWeek =
     state.season_type === "regular" ? state.display_week || state.week || 1 : 1;
   const research = await fetchSleeperResearch(season, researchWeek);
-  // Always week 1 specifically (not "whatever week it currently is" like
-  // research above) -- this column is meant as a fixed season-opener
-  // projection, not a rolling one.
-  const projections = await fetchSleeperProjections(season, 1);
+  // Sleeper's projection for the week being played (week 1 preseason).
+  const projections = await fetchSleeperProjections(season, matchupWeek);
 
   // Our own model's week 1 projection, alongside Sleeper's -- same
   // redraft_rankings table /tools/redraft-rankings reads from (public
   // read, no tier gate on the projection column itself), matched by
   // normalized player name since Sleeper IDs don't exist in that table.
   const supabase = await createClient();
+  // Latest week our model has published for this season (it publishes the
+  // upcoming week), rather than a hard-coded week 1.
+  const { data: latestProj } = await supabase
+    .from("redraft_rankings")
+    .select("week")
+    .eq("season", Number(season))
+    .order("week", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  const projWeek = latestProj?.week ?? 1;
   const { data: myProjRows } = await supabase
     .from("redraft_rankings")
     .select("player_name, projection")
     .eq("season", Number(season))
-    .eq("week", 1);
+    .eq("week", projWeek);
   const myProjByName = {};
   (myProjRows || []).forEach((row) => {
     if (row.player_name && typeof row.projection === "number") {
@@ -148,64 +200,39 @@ export async function lookupSleeperTeams(username) {
       // the same way). weekOpponent stays null when matchups aren't
       // posted yet (offseason) or on a bye; matchupProj stays null
       // unless we projected at least 3 starters on each side.
-      let weekOpponent = null;
-      let weekOpponentRecord = null;
-      let weekIsBye = false;
+      const {
+        weekOpponent,
+        weekOpponentRecord,
+        weekIsBye,
+        matchupActual,
+        mine,
+        oppEntry,
+      } = resolveMatchup(matchups, myRoster, rosters, leagueUsers);
+      // matchupProj stays null unless we projected at least 3 starters on
+      // each side (both read from the feed's own `starters` arrays, so
+      // they're measured the same way).
       let matchupProj = null;
-      // Sleeper's own `points` field on each matchup entry -- 0 before
-      // kickoff, then a real live-updating score once games start, final
-      // once they end. Surfaced separately from matchupProj (our own
-      // pre-game projection) rather than replacing it -- the site shows
-      // both side by side once there's a real score to show.
-      let matchupActual = null;
-      if (matchups) {
-        const mine = matchups.find((m) => m.roster_id === myRoster.roster_id);
-        if (mine && mine.matchup_id != null) {
-          const oppEntry = matchups.find(
-            (m) => m.matchup_id === mine.matchup_id && m.roster_id !== myRoster.roster_id
-          );
-          if (oppEntry) {
-            const oppRoster = rosters.find((r) => r.roster_id === oppEntry.roster_id);
-            const oppUser = oppRoster
-              ? leagueUsers.find((u) => u.user_id === oppRoster.owner_id)
-              : null;
-            weekOpponent =
-              oppUser?.metadata?.team_name ||
-              oppUser?.display_name ||
-              `Roster ${oppEntry.roster_id}`;
-            const { wins: ow = 0, losses: ol = 0, ties: ot = 0 } = oppRoster?.settings || {};
-            weekOpponentRecord = ot > 0 ? `${ow}-${ol}-${ot}` : `${ow}-${ol}`;
-
-            const sumProj = (starterIds) => {
-              let sum = 0;
-              let n = 0;
-              for (const pid of starterIds || []) {
-                if (!pid || pid === "0") continue;
-                const pl = players[pid];
-                if (!pl) continue;
-                const nm = `${pl.first_name || ""} ${pl.last_name || ""}`.trim();
-                const v = myProjByName[normalizeName(nm)];
-                if (typeof v === "number") {
-                  sum += v;
-                  n += 1;
-                }
-              }
-              return { sum: Math.round(sum * 10) / 10, n };
-            };
-            const a = sumProj(mine.starters);
-            const b = sumProj(oppEntry.starters);
-            if (a.n >= 3 && b.n >= 3) {
-              matchupProj = { mine: a.sum, opp: b.sum };
+      if (mine && oppEntry) {
+        const sumProj = (starterIds) => {
+          let sum = 0;
+          let n = 0;
+          for (const pid of starterIds || []) {
+            if (!pid || pid === "0") continue;
+            const pl = players[pid];
+            if (!pl) continue;
+            const nm = `${pl.first_name || ""} ${pl.last_name || ""}`.trim();
+            const v = myProjByName[normalizeName(nm)];
+            if (typeof v === "number") {
+              sum += v;
+              n += 1;
             }
-
-            const myPts = typeof mine.points === "number" ? mine.points : 0;
-            const oppPts = typeof oppEntry.points === "number" ? oppEntry.points : 0;
-            if (myPts > 0 || oppPts > 0) {
-              matchupActual = { mine: myPts, opp: oppPts };
-            }
-          } else {
-            weekIsBye = true;
           }
+          return { sum: Math.round(sum * 10) / 10, n };
+        };
+        const a = sumProj(mine.starters);
+        const b = sumProj(oppEntry.starters);
+        if (a.n >= 3 && b.n >= 3) {
+          matchupProj = { mine: a.sum, opp: b.sum };
         }
       }
 
@@ -238,8 +265,7 @@ export async function lookupSleeperTeams(username) {
       // W-L, or W-L-T once any team in the league has an actual tie
       // (rare, so the third number stays hidden until it's ever
       // non-zero rather than always showing "-0").
-      const { wins = 0, losses = 0, ties = 0 } = myRoster.settings || {};
-      const record = ties > 0 ? `${wins}-${losses}-${ties}` : `${wins}-${losses}`;
+      const record = formatRecord(myRoster.settings);
       const settings = {
         record,
         week: scheduleKnown ? matchupWeek : null,
@@ -349,6 +375,94 @@ export async function lookupSleeperTeams(username) {
     sleeperUsername: sleeperUser.display_name,
     teams: teams.filter(Boolean),
   };
+}
+
+// Re-pulls every saved team from Sleeper (record, matchup, live score,
+// roster, projections) and writes it back, so the page isn't stuck on
+// whatever week the team was saved in. Reuses lookupSleeperTeams, one call
+// per distinct Sleeper username.
+export async function refreshSavedTeams() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Sign in to refresh teams." };
+
+  const { data: rows } = await supabase
+    .from("saved_teams")
+    .select("id, platform_username, platform_league_id")
+    .eq("user_id", user.id)
+    .eq("platform", "sleeper");
+  if (!rows?.length) return { teams: {} };
+
+  const usernames = [...new Set(rows.map((r) => r.platform_username).filter(Boolean))];
+  const looked = await Promise.all(usernames.map((u) => lookupSleeperTeams(u)));
+  const byLeague = {};
+  for (const res of looked) {
+    for (const t of res.teams || []) byLeague[t.league_id] = t;
+  }
+
+  const teams = {};
+  await Promise.all(
+    rows.map(async (row) => {
+      const fresh = byLeague[row.platform_league_id];
+      if (!fresh) return;
+      await supabase
+        .from("saved_teams")
+        .update({ team_name: fresh.team_name, settings: fresh.settings, players: fresh.players })
+        .eq("id", row.id)
+        .eq("user_id", user.id);
+      teams[row.id] = { team_name: fresh.team_name, settings: fresh.settings, players: fresh.players };
+    })
+  );
+  return { teams, updatedAt: Date.now() };
+}
+
+// Lightweight poll for the live dashboard: just record, week, opponent and
+// the live score for each saved team -- no player dictionary, no
+// projections -- so it's cheap enough to run every ~30 seconds during
+// games. Returns only the fields that change by the minute; the client
+// merges them over the saved settings.
+export async function pollLiveScores() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Sign in required." };
+
+  const { data: rows } = await supabase
+    .from("saved_teams")
+    .select("id, platform_league_id, platform_roster_id")
+    .eq("user_id", user.id)
+    .eq("platform", "sleeper");
+  if (!rows?.length) return { live: {} };
+
+  const state = await fetchSleeperState();
+  const inSeason = state.season_type === "regular";
+  const week = inSeason ? state.display_week || state.week || 1 : null;
+
+  const live = {};
+  await Promise.all(
+    rows.map(async (row) => {
+      const [rosters, leagueUsers, matchups] = await Promise.all([
+        fetchSleeperRosters(row.platform_league_id),
+        fetchSleeperLeagueUsers(row.platform_league_id),
+        week ? fetchSleeperMatchups(row.platform_league_id, week) : Promise.resolve(null),
+      ]);
+      const myRoster = rosters.find((r) => String(r.roster_id) === String(row.platform_roster_id));
+      if (!myRoster) return;
+      const m = resolveMatchup(matchups, myRoster, rosters, leagueUsers);
+      live[row.id] = {
+        record: formatRecord(myRoster.settings),
+        week: matchups || inSeason ? week : null,
+        opponent: m.weekOpponent,
+        opponentRecord: m.weekOpponentRecord,
+        isBye: m.weekIsBye,
+        matchupActual: m.matchupActual,
+      };
+    })
+  );
+  return { live, updatedAt: Date.now() };
 }
 
 // Persists one already-looked-up team as a snapshot -- re-running the

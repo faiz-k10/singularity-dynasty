@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import Link from "next/link";
-import { lookupSleeperTeams, saveTeam, deleteTeam, setBuyIn } from "./actions";
+import { lookupSleeperTeams, saveTeam, deleteTeam, setBuyIn, refreshSavedTeams, pollLiveScores } from "./actions";
 import TeamBadge from "../tools/TeamBadge";
 import PositionBadge from "../tools/PositionBadge";
 import AchievementDots from "../tools/AchievementDots";
@@ -1140,16 +1140,84 @@ export default function MyTeamClient({
   isSignedIn,
   tier,
   savedTeamLimit,
-  savedTeams,
+  savedTeams: savedTeamsProp,
   playerSims = {},
   playerGameLogs = {},
   playerBios = {},
 }) {
+  // Saved teams are DB snapshots from whenever they were last saved, so
+  // the page overlays live Sleeper data on top: a full refresh on load
+  // (record, matchup, roster, projections) and a light score poll every
+  // 30s while the tab is visible.
+  const [fresh, setFresh] = useState({}); // { [savedTeamId]: {team_name, settings, players} }
+  const [liveScores, setLiveScores] = useState({}); // { [savedTeamId]: live fields }
+  const [updatedAt, setUpdatedAt] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const savedTeams = useMemo(
+    () =>
+      savedTeamsProp.map((t) => {
+        const f = fresh[t.id];
+        const lv = liveScores[t.id];
+        if (!f && !lv) return t;
+        const base = f ? { ...t, ...f } : t;
+        return {
+          ...base,
+          settings: {
+            ...(t.settings || {}),
+            ...(f?.settings || {}),
+            ...(lv || {}),
+            // recordTier is derived server-side and merged in page.js, not part of a refresh
+            ...(t.settings?.recordTier ? { recordTier: t.settings.recordTier } : {}),
+          },
+        };
+      }),
+    [savedTeamsProp, fresh, liveScores]
+  );
+
+  const hasSaved = savedTeamsProp.length > 0 && isSignedIn;
+
+  async function runFullRefresh() {
+    setRefreshing(true);
+    try {
+      const res = await refreshSavedTeams();
+      if (res?.teams) {
+        setFresh(res.teams);
+        setLiveScores({});
+        setUpdatedAt(res.updatedAt || Date.now());
+      }
+    } finally {
+      setRefreshing(false);
+    }
+  }
+
+  useEffect(() => {
+    if (!hasSaved) return;
+    const first = setTimeout(runFullRefresh, 0);
+    let timer = null;
+    const tick = async () => {
+      if (document.hidden) return;
+      const res = await pollLiveScores().catch(() => null);
+      if (res?.live) {
+        setLiveScores(res.live);
+        setUpdatedAt(res.updatedAt || Date.now());
+      }
+    };
+    timer = setInterval(tick, 30000);
+    const onVisible = () => { if (!document.hidden) tick(); };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      clearTimeout(first);
+      clearInterval(timer);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [hasSaved]);
+
   const [username, setUsername] = useState("");
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   const [savedKeys, setSavedKeys] = useState(
-    new Set(savedTeams.map((t) => t.platform_league_id))
+    new Set(savedTeamsProp.map((t) => t.platform_league_id))
   );
   const [pending, startTransition] = useTransition();
   const [savingKey, setSavingKey] = useState(null);
@@ -1157,7 +1225,7 @@ export default function MyTeamClient({
   // buy-in per saved team id, seeded from the DB and updated in place so
   // the Portfolio table re-totals without a page reload.
   const [buyIns, setBuyIns] = useState(() =>
-    Object.fromEntries(savedTeams.map((t) => [t.id, t.buy_in ?? null]))
+    Object.fromEntries(savedTeamsProp.map((t) => [t.id, t.buy_in ?? null]))
   );
   const [buyInSavingId, setBuyInSavingId] = useState(null);
 
@@ -1227,6 +1295,17 @@ export default function MyTeamClient({
         <div className="my-team-saved">
           <div className="my-team-saved-head">
             <h2>Your Saved Teams</h2>
+            {hasSaved && (
+              <span className="my-team-saved-count">
+                {updatedAt
+                  ? `Updated ${new Date(updatedAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit", second: "2-digit" })}`
+                  : "Updating…"}
+                {" · "}
+                <button type="button" className="my-team-remove" disabled={refreshing} onClick={runFullRefresh}>
+                  {refreshing ? "Refreshing…" : "Refresh"}
+                </button>
+              </span>
+            )}
             {isSignedIn && savedTeamLimit != null && (
               <span className="my-team-saved-count">
                 {savedCount} of {savedTeamLimit} saved
