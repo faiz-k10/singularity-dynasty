@@ -30,6 +30,7 @@ export default function PanelBoard({ panels, headerExtra }) {
     Object.fromEntries(panels.map((p) => [p.id, p.defaultOpen !== false]))
   );
   const [orientation, setOrientation] = useState("side"); // "side" | "stack"
+  const [focusId, setFocusId] = useState(null); // transient "maximized" panel; layout state below is untouched
   const [dragOver, setDragOver] = useState(null);
   const dragId = useRef(null);
   const loaded = useRef(false);
@@ -69,17 +70,30 @@ export default function PanelBoard({ panels, headerExtra }) {
   }, [order, idKey, panels]);
 
   const isOpen = (p) => open[p.id] ?? p.defaultOpen !== false;
-  const expanded = ordered.filter(isOpen);
+  const allExpanded = ordered.filter(isOpen);
   const docked = ordered.filter((p) => !isOpen(p));
+  // Focus mode shows just one panel full-board; order/open/orientation are
+  // never modified, so leaving focus restores the layout exactly as it was.
+  const focused = focusId ? allExpanded.find((p) => p.id === focusId) : null;
+  const expanded = focused ? [focused] : allExpanded;
   const cols = columnsFor(expanded.length, orientation);
   const leftover = expanded.length % cols;
   const lastSpan = leftover === 0 ? 1 : cols - leftover + 1;
 
-  const toggle = (id) =>
+  useEffect(() => {
+    if (!focusId) return;
+    const onKey = (e) => { if (e.key === "Escape") setFocusId(null); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [focusId]);
+
+  const toggle = (id) => {
+    if (id === focusId) setFocusId(null);
     setOpen((o) => {
       const p = panels.find((x) => x.id === id);
       return { ...o, [id]: !(o[id] ?? p?.defaultOpen !== false) };
     });
+  };
 
   function drop(targetId) {
     const from = dragId.current;
@@ -157,6 +171,22 @@ export default function PanelBoard({ panels, headerExtra }) {
                 {p.sub && <div className="board-panel-sub">{p.sub}</div>}
                 <span className="board-spacer" />
                 {p.actions && <div className="board-panel-actions">{p.actions}</div>}
+                <button
+                  type="button"
+                  className="board-collapse"
+                  aria-pressed={focusId === p.id}
+                  aria-label={focusId === p.id ? `Restore ${p.title} to the layout` : `Expand ${p.title} to fill the board`}
+                  title={focusId === p.id ? "Restore layout (Esc)" : "Expand to fill the board"}
+                  onClick={() => setFocusId((cur) => (cur === p.id ? null : p.id))}
+                >
+                  <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    {focusId === p.id ? (
+                      <path d="M6 2v4H2M10 14v-4h4M6 6 2 2M10 10l4 4" />
+                    ) : (
+                      <path d="M10 2h4v4M6 14H2v-4M14 2l-4 4M2 14l4-4" />
+                    )}
+                  </svg>
+                </button>
                 <button
                   type="button"
                   className="board-collapse"

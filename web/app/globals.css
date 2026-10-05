@@ -3830,3 +3830,7 @@ summary:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible{
 .board-panel-sub{display:flex; flex-wrap:wrap; gap:4px 16px; margin-left:8px; font-family:var(--font-ibm-plex-mono),monospace; font-size:12px; color:var(--star-dim);}
 .board-panel-sub strong{font-size:14px; color:var(--star);}
 .board-panel-sub .up strong{color:var(--up);} .board-panel-sub .down strong{color:var(--down);}
+
+.board-collapse[aria-pressed="true"]{color:var(--void); background:var(--horizon-gold); border-color:var(--horizon-gold);}
+.board-collapse{display:inline-flex; align-items:center; justify-content:center;}
+.board-panel-head .board-collapse + .board-collapse{margin-left:-4px;}
