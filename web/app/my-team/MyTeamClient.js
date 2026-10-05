@@ -1056,6 +1056,7 @@ export default function MyTeamClient({
   playerBios = {},
   overview = null,
   exposure = null,
+  heading = "My Team",
 }) {
   // Saved teams are DB snapshots from whenever they were last saved, so
   // the page overlays live Sleeper data on top: a full refresh on load
@@ -1485,9 +1486,21 @@ export default function MyTeamClient({
     </div>
   );
 
+  // Page title row: eyebrow + heading on the left, the theater button (when
+  // there's a dashboard to put in theater) on the right.
+  const headingRow = (btn) => (
+    <div className="my-team-titlebar">
+      <div>
+        <div className="eyebrow">My Team</div>
+        <h1>{heading}</h1>
+      </div>
+      {btn}
+    </div>
+  );
+
   // No saved teams yet: just the lookup, no dashboard to arrange.
   if (savedTeams.length === 0) {
-    return <div className="my-team-wrap">{lookupNode}</div>;
+    return <div className="my-team-wrap">{headingRow(null)}{lookupNode}</div>;
   }
 
   const panels = [
@@ -1552,7 +1565,7 @@ export default function MyTeamClient({
         </div>
       ) : (
         <>
-          <div className="rankings-theater-bar">{theaterBtn}</div>
+          {headingRow(theaterBtn)}
           {overview}
           <div className={`my-team-layout${exposure ? " has-side" : ""}`}>
             <div className="my-team-main my-team-main-stack">

@@ -170,14 +170,12 @@ export default async function MyTeamPage() {
       <SiteHeader />
 
       <main className="wrap tool-wrap my-team-page-wrap">
-        <div className="eyebrow">My Team</div>
-        <h1>{sleeperName ? `${sleeperName}’s Teams` : "My Team"}</h1>
-
         <MyTeamClient
           isSignedIn={!!user}
           tier={tier}
           savedTeamLimit={savedTeamLimit(tier)}
           savedTeams={savedTeams}
+          heading={sleeperName ? `${sleeperName}\u2019s Teams` : "My Team"}
           playerSims={playerSims}
           playerGameLogs={playerGameLogs}
           playerBios={playerBios}

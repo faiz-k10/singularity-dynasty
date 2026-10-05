@@ -3859,7 +3859,6 @@ summary:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible{
 .board-static-capped .board-panel-body{max-height:560px;}
 .board-static .board-panel-body{overflow:auto;}
 .my-team-wrap{gap:22px; margin-top:0;}
-.my-team-wrap > .rankings-theater-bar{margin:0 0 -8px;}
 .my-team-wrap > .portfolio-overview{margin-bottom:0;}
 
 .my-team-save-all{flex-shrink:0; white-space:nowrap;}
@@ -3867,3 +3866,9 @@ summary:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible{
 /* Lookup panel: username row, error and results as one column with even
    spacing (the results used to butt right up against the button row). */
 .my-team-lookup-stack{display:flex; flex-direction:column; gap:22px;}
+
+/* My Team title row: heading left, theater button right, no stray rows. */
+.my-team-titlebar{display:flex; align-items:flex-end; justify-content:space-between; gap:16px;}
+.my-team-titlebar .eyebrow{margin-bottom:10px;}
+.my-team-page-wrap .my-team-titlebar h1{margin:0;}
+.my-team-wrap{gap:20px;}
