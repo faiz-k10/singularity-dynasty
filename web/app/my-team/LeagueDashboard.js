@@ -9,7 +9,7 @@ function parseRecord(rec) {
 
 // One row per saved team: the at-a-glance view Sleeper makes you click
 // league-by-league to assemble.
-function buildRow(t) {
+function buildRow(t, injuries) {
   const s = t.settings || {};
   const players = t.players || [];
   const proj = s.matchupProj;
@@ -18,7 +18,16 @@ function buildRow(t) {
   const starters = players.filter((p) => p.isStarter);
   // Our model zeroes players it projects OUT -- a starter at exactly 0
   // is a lineup hole to fix before kickoff.
-  const outStarters = s.bestBall ? [] : starters.filter((p) => p.myProjPts === 0);
+  const modelOut = s.bestBall ? [] : starters.filter((p) => p.myProjPts === 0);
+  // Merge in live-feed flags (Out/Doubtful/Questionable/IR starters),
+  // deduped by name against the model's own OUT calls.
+  const flagged = new Map();
+  for (const p of modelOut) flagged.set(p.name, { name: p.name, status: "OUT", severity: 3 });
+  if (!s.bestBall) for (const i of injuries || []) {
+    const prev = flagged.get(i.name);
+    if (!prev || i.severity > prev.severity) flagged.set(i.name, i);
+  }
+  const outStarters = [...flagged.values()].sort((a, b) => b.severity - a.severity);
   return {
     id: t.id,
     team: t.team_name || "Untitled Team",
@@ -49,13 +58,13 @@ const COLS = [
 // expand its roster and league settings (renderExpanded, supplied by
 // MyTeamClient since those pieces live there). Default sort floats leagues
 // with lineup alerts to the top.
-export default function LeagueDashboard({ savedTeams, renderExpanded }) {
+export default function LeagueDashboard({ savedTeams, renderExpanded, injuriesByTeam }) {
   const [sortKey, setSortKey] = useState("alerts");
   const [dir, setDir] = useState("desc");
   const [open, setOpen] = useState(() => new Set());
 
   const rows = useMemo(() => {
-    const built = savedTeams.map((t) => ({ ...buildRow(t), team_obj: t }));
+    const built = savedTeams.map((t) => ({ ...buildRow(t, injuriesByTeam?.[t.id]), team_obj: t }));
     const col = COLS.find((c) => c.key === sortKey) || COLS[0];
     const mult = dir === "asc" ? 1 : -1;
     return built.sort((a, b) => {
@@ -63,7 +72,7 @@ export default function LeagueDashboard({ savedTeams, renderExpanded }) {
       const y = col.sort(b);
       return (x > y ? 1 : x < y ? -1 : 0) * mult;
     });
-  }, [savedTeams, sortKey, dir]);
+  }, [savedTeams, injuriesByTeam, sortKey, dir]);
 
   const totals = useMemo(() => {
     let winning = 0;
@@ -145,8 +154,8 @@ export default function LeagueDashboard({ savedTeams, renderExpanded }) {
                 </td>
                 <td>
                   {r.outStarters.length ? (
-                    <span className="down" title={r.outStarters.map((p) => p.name).join(", ")}>
-                      {r.outStarters.length} OUT: {r.outStarters.map((p) => p.name).join(", ")}
+                    <span className="down" title={r.outStarters.map((p) => `${p.name} (${p.status})`).join(", ")}>
+                      {r.outStarters.map((p) => `${p.name} (${p.status})`).join(", ")}
                     </span>
                   ) : r.bestBall ? (
                     <span className="league-dash-muted">Best ball</span>

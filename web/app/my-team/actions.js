@@ -22,6 +22,7 @@ import {
   fetchSleeperProjections,
   getSleeperPlayers,
 } from "@/lib/sleeper";
+import { fetchInjuryFeed } from "@/lib/injuryFeed";
 
 // Sleeper's own player dictionary drops name suffixes ("Luther Burden"
 // instead of "Luther Burden III"), but our hand-published
@@ -463,6 +464,63 @@ export async function pollLiveScores() {
     })
   );
   return { live, updatedAt: Date.now() };
+}
+
+// Injury + news for everyone on the signed-in user's saved rosters, from
+// the live ESPN feed (lib/injuryFeed.js). Returns `items` (one per player,
+// with the leagues they start / are rostered in) for the news panel and
+// `byTeam` (flagged starters per saved team) for the dashboard's Alerts
+// column. Healthy players only appear if their latest news is under 72h old.
+export async function getRosterNews() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Sign in required." };
+
+  const [{ data: teams }, feed] = await Promise.all([
+    supabase.from("saved_teams").select("id, team_name, league_name, players").eq("user_id", user.id),
+    fetchInjuryFeed(),
+  ]);
+  if (!feed) return { unavailable: true };
+
+  const byKey = new Map();
+  const byNorm = new Map();
+  for (const f of feed) {
+    byKey.set(`${f.norm}|${f.position}`, f);
+    if (!byNorm.has(f.norm)) byNorm.set(f.norm, f);
+  }
+
+  const items = new Map();
+  const byTeam = {};
+  const cutoff = Date.now() - 72 * 3600 * 1000;
+  for (const t of teams || []) {
+    for (const p of t.players || []) {
+      const norm = normalizeName(p.name);
+      const f = byKey.get(`${norm}|${p.position}`) || byNorm.get(norm);
+      if (!f) continue;
+      const recent = f.date && new Date(f.date).getTime() > cutoff;
+      if (f.severity === 0 && !recent) continue;
+      const key = `${norm}|${p.position}`;
+      if (!items.has(key)) {
+        items.set(key, { ...f, team: p.team, starts: [], rosters: [] });
+      }
+      const it = items.get(key);
+      const label = t.league_name || t.team_name;
+      it.rosters.push(label);
+      if (p.isStarter) it.starts.push(label);
+      if (p.isStarter && f.severity > 0) {
+        (byTeam[t.id] ??= []).push({ name: p.name, status: f.status, severity: f.severity });
+      }
+    }
+  }
+  const list = [...items.values()].sort(
+    (a, b) =>
+      b.severity - a.severity ||
+      b.starts.length - a.starts.length ||
+      new Date(b.date || 0) - new Date(a.date || 0)
+  );
+  return { items: list.slice(0, 80), byTeam, updatedAt: Date.now() };
 }
 
 // Persists one already-looked-up team as a snapshot -- re-running the

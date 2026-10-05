@@ -1,0 +1,68 @@
+"use client";
+
+import { useState } from "react";
+
+const PILL = { 3: "down", 2: "down", 1: "steady", 0: "" };
+
+function ago(iso) {
+  if (!iso) return "";
+  const mins = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
+  if (mins < 60) return `${mins}m ago`;
+  if (mins < 1440) return `${Math.round(mins / 60)}h ago`;
+  return `${Math.round(mins / 1440)}d ago`;
+}
+
+// Injury & news feed for everyone rostered across the saved teams --
+// flagged players (Out / Doubtful / Questionable / IR) first, starters
+// before bench, then the rest of the recent news. Data: getRosterNews().
+export default function RosterNews({ news }) {
+  const [onlyStarters, setOnlyStarters] = useState(false);
+  const [onlyInjuries, setOnlyInjuries] = useState(false);
+  if (!news) return null;
+  if (news.unavailable) {
+    return (
+      <div className="roster-news glass-panel">
+        <h2>Injury &amp; News</h2>
+        <p className="league-dash-muted">The injury feed is temporarily unavailable.</p>
+      </div>
+    );
+  }
+  const items = (news.items || []).filter(
+    (i) => (!onlyStarters || i.starts.length) && (!onlyInjuries || i.severity > 0)
+  );
+  return (
+    <div className="roster-news glass-panel">
+      <div className="my-team-saved-head">
+        <h2>Injury &amp; News</h2>
+        <span className="my-team-saved-count">
+          <label><input type="checkbox" checked={onlyStarters} onChange={(e) => setOnlyStarters(e.target.checked)} /> Starters only</label>
+          {" · "}
+          <label><input type="checkbox" checked={onlyInjuries} onChange={(e) => setOnlyInjuries(e.target.checked)} /> Injuries only</label>
+        </span>
+      </div>
+      {items.length === 0 ? (
+        <p className="league-dash-muted">Nothing new on your rosters.</p>
+      ) : (
+        <ul className="roster-news-list">
+          {items.map((i) => (
+            <li key={`${i.norm}|${i.position}`} className="roster-news-item">
+              <div className="roster-news-head">
+                <strong>{i.name}</strong>
+                <span className="league-dash-muted">{i.position}{i.team ? ` · ${i.team}` : ""}</span>
+                {i.severity > 0 && <span className={`trend-tag ${PILL[i.severity]}`}>{i.status}</span>}
+                {i.detail && i.severity > 0 && <span className="league-dash-muted">{i.detail}</span>}
+                {i.returnDate && i.severity > 0 && <span className="league-dash-muted">· est. return {i.returnDate}</span>}
+                <span className="league-dash-muted roster-news-time">{ago(i.date)}</span>
+              </div>
+              {i.comment && <p className="roster-news-comment">{i.comment}</p>}
+              <div className="league-dash-muted">
+                {i.starts.length > 0 ? `Starting in ${i.starts.length}: ${i.starts.join(", ")}` : `Bench / not starting`}
+                {i.rosters.length > i.starts.length && i.starts.length > 0 ? ` · rostered in ${i.rosters.length}` : ""}
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}

@@ -2,9 +2,10 @@
 
 import { useEffect, useMemo, useState, useTransition } from "react";
 import Link from "next/link";
-import { lookupSleeperTeams, saveTeam, deleteTeam, setBuyIn, refreshSavedTeams, pollLiveScores } from "./actions";
+import { lookupSleeperTeams, saveTeam, deleteTeam, setBuyIn, refreshSavedTeams, pollLiveScores, getRosterNews } from "./actions";
 import TeamBadge from "../tools/TeamBadge";
 import LeagueDashboard from "./LeagueDashboard";
+import RosterNews from "./RosterNews";
 import PositionBadge from "../tools/PositionBadge";
 import AchievementDots from "../tools/AchievementDots";
 import { sortRows, sortArrow } from "@/lib/sortLink";
@@ -1136,6 +1137,26 @@ export default function MyTeamClient({
 
   const hasSaved = savedTeamsProp.length > 0 && isSignedIn;
 
+  // Injury/news feed for rostered players; the server caches the upstream
+  // ESPN call for 2 minutes, so polling at that cadence is cheap.
+  const [news, setNews] = useState(null);
+  useEffect(() => {
+    if (!hasSaved) return;
+    let alive = true;
+    const load = async () => {
+      if (document.hidden) return;
+      const res = await getRosterNews().catch(() => null);
+      if (alive && res && !res.error) setNews(res);
+    };
+    const first = setTimeout(load, 0);
+    const t = setInterval(load, 120000);
+    return () => {
+      alive = false;
+      clearTimeout(first);
+      clearInterval(t);
+    };
+  }, [hasSaved]);
+
   async function runFullRefresh() {
     setRefreshing(true);
     try {
@@ -1279,6 +1300,7 @@ export default function MyTeamClient({
           </div>
           <LeagueDashboard
             savedTeams={savedTeams}
+            injuriesByTeam={news?.byTeam}
             renderExpanded={(t) => (
               <div className="league-dash-detail">
                 <div className="league-dash-detail-head">
@@ -1304,6 +1326,8 @@ export default function MyTeamClient({
           />
         </div>
       )}
+
+      {hasSaved && <RosterNews news={news} />}
 
       {savedTeams.length >= 2 && (
         <Portfolio
