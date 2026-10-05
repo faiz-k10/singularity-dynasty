@@ -55,7 +55,7 @@ const COLS = [
 // expand its roster and league settings (renderExpanded, supplied by
 // MyTeamClient since those pieces live there). Default sort floats leagues
 // with lineup alerts to the top.
-export default function LeagueDashboard({ savedTeams, renderExpanded, injuriesByTeam }) {
+export default function LeagueDashboard({ savedTeams, renderExpanded, injuriesByTeam, refreshing = false }) {
   const [sortKey, setSortKey] = useState("alerts");
   const [dir, setDir] = useState("desc");
   const [open, setOpen] = useState(() => new Set());
@@ -100,7 +100,13 @@ export default function LeagueDashboard({ savedTeams, renderExpanded, injuriesBy
   }
 
   return (
-    <div className="league-dash glass-panel">
+    <div className="league-dash glass-panel" aria-busy={refreshing}>
+      {refreshing && (
+        <div className="league-dash-overlay" role="status">
+          <span className="league-dash-spinner" aria-hidden="true" />
+          <span>Refreshing live data…</span>
+        </div>
+      )}
       <div className="league-dash-summary">
         <div><strong>{rows.length}</strong> {rows.length === 1 ? "league" : "leagues"}</div>
         <div className="up"><strong>{totals.winning}</strong> leading</div>

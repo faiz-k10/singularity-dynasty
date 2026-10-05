@@ -3723,3 +3723,23 @@ summary:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible{
 @media (prefers-reduced-motion: reduce){
   *, *::before, *::after{animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; scroll-behavior:auto !important;}
 }
+
+/* Frosted "refreshing" overlay over the dashboard while a full Sleeper
+   refresh is in flight (not shown for the light 30s score poll). */
+.league-dash{position:relative;}
+.league-dash-overlay{
+  position:absolute; inset:0; z-index:5; border-radius:inherit;
+  display:flex; align-items:center; justify-content:center; gap:12px;
+  background:color-mix(in srgb, var(--void) 28%, transparent);
+  -webkit-backdrop-filter:blur(3px) saturate(1.2); backdrop-filter:blur(3px) saturate(1.2);
+  font-family:var(--font-ibm-plex-mono),monospace; font-size:.85rem; color:var(--star);
+  animation:league-dash-fade .18s ease both;
+}
+.league-dash-spinner{
+  width:20px; height:20px; border-radius:50%;
+  border:2px solid color-mix(in srgb, var(--star) 20%, transparent);
+  border-top-color:var(--horizon);
+  animation:league-dash-spin .8s linear infinite;
+}
+@keyframes league-dash-spin{to{transform:rotate(360deg);}}
+@keyframes league-dash-fade{from{opacity:0;}to{opacity:1;}}

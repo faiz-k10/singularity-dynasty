@@ -1301,6 +1301,7 @@ export default function MyTeamClient({
           <LeagueDashboard
             savedTeams={savedTeams}
             injuriesByTeam={news?.byTeam}
+            refreshing={refreshing}
             renderExpanded={(t) => (
               <div className="league-dash-detail">
                 <div className="league-dash-detail-head">
