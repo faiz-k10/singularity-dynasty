@@ -108,7 +108,7 @@ function StatDetailRow({ row, colSpan, shapePeers, maxCeiling }) {
   function scrubTo(e) {
     const rect = e.currentTarget.getBoundingClientRect();
     const frac = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
-    pickWeek(Math.round(frac * 17) + 1);
+    pickWeek(Math.round(frac * 17));
   }
   function onScrubKey(e) {
     const i = weeks.indexOf(pv.week);
@@ -271,12 +271,12 @@ function StatDetailRow({ row, colSpan, shapePeers, maxCeiling }) {
                     onKeyDown={onScrubKey}
                   >
                     <div className="stat-panel-pace-progress-track">
-                      <div className="stat-panel-pace-progress-ghost" style={{ width: `${(((weeks[weeks.length - 1] - 1) / 17) * 100)}%` }} />
-                      <div className="stat-panel-pace-progress-fill" style={{ width: `${Math.min(100, ((pv.week - 1) / 17) * 100)}%` }} />
+                      <div className="stat-panel-pace-progress-ghost" style={{ width: `${((weeks[weeks.length - 1] / 17) * 100)}%` }} />
+                      <div className="stat-panel-pace-progress-fill" style={{ width: `${Math.min(100, (pv.week / 17) * 100)}%` }} />
                     </div>
-                    <span className="stat-panel-pace-scrub-handle" style={{ left: `${Math.min(100, ((pv.week - 1) / 17) * 100)}%` }} />
+                    <span className="stat-panel-pace-scrub-handle" style={{ left: `${Math.min(100, (pv.week / 17) * 100)}%` }} />
                   </div>
-                  {snap && <span className="stat-panel-pace-scrub-label mono">W{pv.week}</span>}
+                  <span className="stat-panel-pace-scrub-label mono">W{pv.week}</span>
                 </div>
               )}
             </div>

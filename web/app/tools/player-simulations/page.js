@@ -248,19 +248,21 @@ export default async function PlayerSimulationsPage({ searchParams }) {
       gamesPerSeason: GAMES_PER_SEASON,
     });
   }
-  // Pace-panel snapshot for each published week: the projection as it stood
-  // then, plus only the games played before it (a week-W sim is published
-  // before week W's games).
+  // Pace-panel snapshots, one per completed game week: "W3" = everything
+  // through week 3 -- games from weeks <= 3 and the projection as it stood
+  // after them (the sim published for week 4; the latest sim stands in
+  // for any week past it).
+  const lastGameWeek = Math.max(0, ...Object.values(weeklyByName).flatMap((gs) => gs.map((g) => g.week)));
   function snapshotsFor(row) {
     const games = weeklyByName[row.player_name] || [];
     const byWeek = {};
     for (const h of simHistoryByName[row.player_name] || []) byWeek[h.week] = h;
     byWeek[latest.week] = row;
     const out = [];
-    for (let w = 1; w <= latest.week; w++) {
-      const proj = byWeek[w];
+    for (let w = 1; w <= lastGameWeek; w++) {
+      const proj = byWeek[w + 1] || (w + 1 > latest.week ? row : null);
       if (!proj) continue;
-      const played = games.filter((g) => g.week < w);
+      const played = games.filter((g) => g.week <= w);
       const pts = played.map((g) => g.fantasy_points_ppr).filter((v) => typeof v === "number");
       const reg = computeRegressionScore(pts, proj.median / GAMES_PER_SEASON);
       const oc = computeOutcomePercentile(pts, {
