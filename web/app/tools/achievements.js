@@ -107,15 +107,38 @@ export function xfpTrend2(games) {
 // chaff (near-zero floor AND ceiling, so a trivially "tight" ratio) out
 // of contention for either badge. Thresholds were picked off that same
 // audit to land each flag around the top ~10% of eligible players --
-// rare enough to mean something, not so rare it never fires.
+// rare enough to mean something, not so rare it never fires. (Cutoffs are
+// now per-position -- see SPREAD_CUTOFFS below.)
 export const PROJECTION_FLOOR = 8;
-export const LOCKED_RATIO = 1.2;
-export const VOLATILE_RATIO = 2.2;
-export function spreadFlag(floor, ceiling, projection) {
+// RECALIBRATED (Oct 2026): the ratio, the PROJECTION_FLOOR eligibility cut
+// and the "top ~10% of eligible players" target are all unchanged. What
+// changed is that the cutoffs are now PER POSITION. The single global pair
+// (locked <= 1.2, volatile >= 2.2) was fit before the weekly/season ceiling
+// recalibration (CEIL_Q) widened every floor-to-ceiling range, and after it
+// 27% of eligible players read as Risky Icarus and only 5% as Steady Eddy
+// (TEs: 58% Icarus). Position matters because ranges differ structurally --
+// a QB's spread is narrow next to a TE's -- so one bar can't give each badge
+// ~10% at every position. Cutoffs are the 10th (locked) / 90th (volatile)
+// percentile of the ratio over eligible rows, rounded so they don't chase
+// noise. Fit on 2026 WEEK 4 ONLY: it is the first week published with the
+// final ceiling calibration (weeks 1-3 predate it and have narrower ranges),
+// so it is a small sample (19-53 players per position; realized rates land
+// between ~5% and ~11% per badge per position). Re-derive from
+// redraft_rankings as more post-recalibration weeks accumulate.
+export const SPREAD_CUTOFFS = {
+  QB: { locked: 1.2, volatile: 1.95 },
+  RB: { locked: 1.3, volatile: 2.55 },
+  WR: { locked: 1.25, volatile: 2.6 },
+  TE: { locked: 1.6, volatile: 2.9 },
+};
+// Unknown position: roughly the pooled all-position p10 / p90.
+const DEFAULT_SPREAD_CUTOFFS = { locked: 1.3, volatile: 2.5 };
+export function spreadFlag(floor, ceiling, projection, position) {
   if (floor == null || ceiling == null || projection == null || projection < PROJECTION_FLOOR) return null;
   const ratio = (ceiling - floor) / Math.max(projection, 1);
-  if (ratio >= VOLATILE_RATIO) return "volatile";
-  if (ratio <= LOCKED_RATIO) return "locked";
+  const cut = SPREAD_CUTOFFS[position] || DEFAULT_SPREAD_CUTOFFS;
+  if (ratio >= cut.volatile) return "volatile";
+  if (ratio <= cut.locked) return "locked";
   return null;
 }
 
@@ -188,7 +211,7 @@ export function getAchievements(row) {
   const isBuilding = row.sample_confidence === "building";
   const onFire = onFireFlag(row.recentGames);
   const onIce = onThinIceFlag(row.recentGames);
-  const spread = spreadFlag(row.floor, row.ceiling, row.projection);
+  const spread = spreadFlag(row.floor, row.ceiling, row.projection, row.position);
   const xfpFlag = xfpTrend2(row.recentGames);
   const heroWins = Math.max(0, row.heroWins || 0);
   const buyLow = buyLowFlag(row.woprPercentile, row.recentGames);
