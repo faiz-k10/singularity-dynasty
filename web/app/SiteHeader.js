@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { sampleWithReplacement } from "@/lib/sample";
 import { unstable_cache } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createPublicClient } from "@/lib/supabase/public";
@@ -91,7 +92,7 @@ export default async function SiteHeader() {
         }))
     );
     if (pool.length > 0) {
-      tickerItems = Array.from({ length: 50 }, () => pool[Math.floor(Math.random() * pool.length)]);
+      tickerItems = sampleWithReplacement(pool, 50);
     }
   }
 

@@ -3521,20 +3521,6 @@ tr.stat-row-selected td{background:var(--void-panel);}
    Ceiling Chaser, weighted by roster slots), and a legend with exact
    percentages, all of it recomputed fresh from real sim data on every
    save. */
-/* Hero tile of the row, same pattern as pricing's featured plan
-   (69e1495): more padding + a scale lift + z-index, not just a wider
-   grid column, so it reads as "the important one" rather than just
-   "the bigger box." Quiz sits shorter/smaller beside it on purpose --
-   it's a light, occasional detour, Portfolio Pulse is the thing you
-   actually came to check. */
-.portfolio-pulse-card{
-  padding:32px 30px;
-  transform:scale(1.03);
-  z-index:2;
-}
-@media (max-width:900px){
-  .portfolio-pulse-card{transform:none;}
-}
 .portfolio-pulse-head{margin-bottom:14px;}
 .portfolio-pulse-label{
   font-family:var(--font-space-grotesk); font-size:20px; font-weight:700; color:var(--star);
@@ -3565,29 +3551,6 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .portfolio-pulse-legend-item.portfolio-pulse-seg-ceilingChaser .portfolio-pulse-swatch{background:var(--purple);}
 .portfolio-pulse-legend-item.portfolio-pulse-seg-boomBust .portfolio-pulse-swatch{background:var(--down);}
 
-/* Top Exposure -- replaces the old single-line "top exposure: X (75%)"
-   mention and the static explainer paragraph with a real ranked list,
-   same chip language as the position/team pills elsewhere on the site. */
-.portfolio-pulse-exposure{margin-top:18px; padding-top:16px; border-top:1px solid var(--line);}
-.portfolio-pulse-exposure-label{
-  font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--star-dim); margin-bottom:9px;
-}
-.portfolio-pulse-exposure-list{display:flex; gap:8px; flex-wrap:wrap;}
-.portfolio-pulse-exposure-chip{
-  display:flex; align-items:center; gap:7px;
-  padding:6px 12px 6px 8px; border-radius:20px;
-  background:var(--void-panel); border:1px solid var(--line);
-  font-size:13px; color:var(--star);
-}
-.portfolio-pulse-exposure-rank{
-  display:flex; align-items:center; justify-content:center;
-  width:18px; height:18px; border-radius:50%;
-  background:rgba(var(--horizon-gold-rgb),0.18); color:var(--horizon-gold);
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:10.5px; font-weight:700;
-}
-.portfolio-pulse-exposure-pct{
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:12px; color:var(--star-dim);
-}
 .quiz-wrap{max-width:680px;}
 .quiz-form{display:flex; flex-direction:column; gap:28px; margin-top:24px;}
 .quiz-question{border:none; padding:0; margin:0;}
