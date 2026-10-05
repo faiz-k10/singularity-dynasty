@@ -2181,6 +2181,10 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .stat-panel-pace-delta.pace-hot{color:var(--up);}
 .stat-panel-pace-delta.pace-cold{color:var(--down);}
 .stat-panel-pace-recent{display:flex; flex-direction:column; width:100%; margin-top:6px;}
+.pace-game-row{display:grid; grid-template-columns:auto auto auto 1fr; align-items:center; gap:6px; padding:5px 0; border-bottom:1px solid rgba(var(--shadow-rgb),0.5); font-size:11px; white-space:nowrap;}
+.pace-game-row:last-child{border-bottom:none;}
+.pace-game-week,.pace-game-sep{color:var(--star-dim);}
+.pace-game-pts{justify-self:end; color:var(--star); font-weight:600; font-size:12px;}
 /* Vertical mirror of the main table's own horizontal Range bar (.sim-
    bar-track/-typical/-upside/.pace-marker) -- same maxCeiling-scaled
    0%-100% track, same floor-to-median/median-to-ceiling segments, same
