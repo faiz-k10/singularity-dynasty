@@ -3622,7 +3622,12 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .portfolio-overview{display:flex; align-items:stretch; gap:28px; padding:20px 24px; margin-bottom:22px;}
 .po-archetype{display:flex; align-items:center; gap:14px; padding-right:28px; border-right:1px solid var(--line); flex-shrink:0; min-width:200px;}
 .po-archetype:hover .quiz-corner-value{color:var(--horizon-gold);}
-.po-archetype-hint{font-size:12px; color:var(--neon-blue); margin-top:2px;}
+.po-archetype, .po-archetype *{text-decoration:none;}
+.po-archetype .quiz-corner-label{font-family:var(--font-ibm-plex-mono),monospace; font-size:11px; letter-spacing:0.12em;}
+.po-archetype .quiz-corner-value{font-size:19px; line-height:1.2; margin-top:2px;}
+/* same treatment as .hub-panel-link: mono, neon blue, gold on hover */
+.po-archetype-hint{font-family:var(--font-ibm-plex-mono),monospace; font-size:12px; letter-spacing:0.02em; color:var(--neon-blue); margin-top:8px; transition:color .15s ease;}
+.po-archetype:hover .po-archetype-hint{color:var(--horizon-gold);}
 .po-pulse{flex:1; min-width:0;}
 .po-pulse-head{display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 14px; margin-bottom:12px;}
 @media (max-width:760px){
