@@ -3650,3 +3650,35 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .roster-news-head{display:flex; flex-wrap:wrap; align-items:center; gap:8px 12px;}
 .roster-news-time{margin-left:auto;}
 .roster-news-comment{margin:6px 0 4px; font-size:.88rem; line-height:1.45;}
+
+/* My Team page: wide layout with a right-hand exposure column */
+.my-team-page-wrap{max-width:calc(100vw - 48px); padding-left:24px; padding-right:24px;}
+.my-team-layout{display:grid; grid-template-columns:minmax(0,1fr); gap:24px; align-items:start;}
+.my-team-layout.has-side{grid-template-columns:minmax(0,1fr) 320px;}
+@media (max-width:1100px){.my-team-layout.has-side{grid-template-columns:minmax(0,1fr);}}
+.my-team-main{min-width:0;}
+
+/* Combined GM Archetype + Portfolio Pulse panel */
+.portfolio-overview{display:flex; align-items:stretch; gap:28px; padding:24px 28px; margin-bottom:22px; border-radius:20px;}
+.po-archetype{display:flex; align-items:center; gap:14px; padding-right:28px; border-right:1px solid var(--line); flex-shrink:0; min-width:200px;}
+.po-archetype:hover .quiz-corner-value{color:var(--horizon-gold);}
+.po-archetype-hint{font-size:12px; color:var(--neon-blue); margin-top:2px;}
+.po-pulse{flex:1; min-width:0;}
+.po-pulse-head{display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 14px; margin-bottom:12px;}
+@media (max-width:760px){
+  .portfolio-overview{flex-direction:column;}
+  .po-archetype{border-right:0; border-bottom:1px solid var(--line); padding:0 0 16px;}
+}
+
+/* Right-hand vertical exposure list */
+.exposure-side{position:sticky; top:90px; padding:18px 16px; border-radius:20px; max-height:calc(100vh - 120px); display:flex; flex-direction:column;}
+.exposure-side-head{margin-bottom:12px;}
+.exposure-side-list{list-style:none; margin:0; padding:0; overflow-y:auto;}
+.exposure-side-row{display:grid; grid-template-columns:22px minmax(0,1fr) auto 44px; align-items:center; gap:10px; padding:8px 0; border-top:1px solid var(--line);}
+.exposure-side-row:first-child{border-top:0;}
+.exposure-side-rank{font-family:var(--font-ibm-plex-mono),monospace; font-size:11px; color:var(--star-dim); text-align:right;}
+.exposure-side-name{font-size:13.5px; color:var(--star); min-width:0;}
+.exposure-side-bar{display:block; height:3px; margin-top:5px; border-radius:2px; background:var(--void-panel-2); overflow:hidden;}
+.exposure-side-bar > span{display:block; height:100%; background:var(--horizon-gold);}
+.exposure-side-pct{font-family:var(--font-ibm-plex-mono),monospace; font-size:12px; color:var(--star); text-align:right; line-height:1.2;}
+.exposure-side-pct small{display:block; color:var(--star-dim); font-size:10.5px;}

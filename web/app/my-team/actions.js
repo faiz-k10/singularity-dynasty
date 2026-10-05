@@ -22,7 +22,7 @@ import {
   fetchSleeperProjections,
   getSleeperPlayers,
 } from "@/lib/sleeper";
-import { fetchInjuryFeed } from "@/lib/injuryFeed";
+import { fetchInjuryFeed, fetchGameDays, isGameDay } from "@/lib/injuryFeed";
 
 // Sleeper's own player dictionary drops name suffixes ("Luther Burden"
 // instead of "Luther Burden III"), but our hand-published
@@ -469,8 +469,8 @@ export async function pollLiveScores() {
 // Injury + news for everyone on the signed-in user's saved rosters, from
 // the live ESPN feed (lib/injuryFeed.js). Returns `items` (one per player,
 // with the leagues they start / are rostered in) for the news panel and
-// `byTeam` (flagged starters per saved team) for the dashboard's Alerts
-// column. Healthy players only appear if their latest news is under 72h old.
+// `byTeam` (flagged starters per saved team, game-day injuries only) for
+// the dashboard's Alerts column. Healthy players only appear if their latest news is under 72h old.
 export async function getRosterNews() {
   const supabase = await createClient();
   const {
@@ -478,9 +478,10 @@ export async function getRosterNews() {
   } = await supabase.auth.getUser();
   if (!user) return { error: "Sign in required." };
 
-  const [{ data: teams }, feed] = await Promise.all([
+  const [{ data: teams }, feed, gameDays] = await Promise.all([
     supabase.from("saved_teams").select("id, team_name, league_name, players").eq("user_id", user.id),
     fetchInjuryFeed(),
+    fetchGameDays(),
   ]);
   if (!feed) return { unavailable: true };
 
@@ -509,7 +510,8 @@ export async function getRosterNews() {
       const label = t.league_name || t.team_name;
       it.rosters.push(label);
       if (p.isStarter) it.starts.push(label);
-      if (p.isStarter && f.severity > 0) {
+      // Dashboard alerts: only injuries reported on a day games are played.
+      if (p.isStarter && f.severity > 0 && isGameDay(f.date, gameDays)) {
         (byTeam[t.id] ??= []).push({ name: p.name, status: f.status, severity: f.severity });
       }
     }

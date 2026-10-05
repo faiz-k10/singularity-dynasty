@@ -1,4 +1,3 @@
-import Link from "next/link";
 import SiteHeader from "../SiteHeader";
 import { createClient } from "@/lib/supabase/server";
 import { createPublicClient } from "@/lib/supabase/public";
@@ -6,7 +5,8 @@ import { resolveTier, savedTeamLimit } from "@/lib/tier";
 import { normalizePlayerName, buildPortfolio } from "@/lib/portfolio";
 import { getSleeperPlayers } from "@/lib/sleeper";
 import { loadInsight, loadTeamInsightForAll, computeAndSaveInsight } from "@/lib/insights";
-import QuizIcon from "../tools/QuizIcon";
+import PortfolioOverview from "./PortfolioOverview";
+import ExposureSidebar from "./ExposureSidebar";
 import MyTeamClient from "./MyTeamClient";
 
 export const metadata = {
@@ -96,8 +96,10 @@ export default async function MyTeamPage() {
   // page load and cheap to read elsewhere later (a badge, a share card)
   // without re-deriving them.
   let portfolioSummary = null;
+  let exposureRows = [];
   if (user && savedTeams.length >= 2) {
     const { rows } = buildPortfolio(savedTeams, {}, playerSims, {});
+    exposureRows = rows;
     portfolioSummary = await computeAndSaveInsight(supabase, {
       key: "portfolio_summary",
       userId: user.id,
@@ -164,7 +166,7 @@ export default async function MyTeamPage() {
     <div className="tool-page">
       <SiteHeader />
 
-      <main className="wrap tool-wrap">
+      <main className="wrap tool-wrap my-team-page-wrap">
         <div className="eyebrow">My Team</div>
         <h1>My Team</h1>
         <p className="tool-sub">
@@ -173,84 +175,23 @@ export default async function MyTeamPage() {
           personalized Team Analysis.
         </p>
 
-        {(user || portfolioSummary) && (
-          <div className="bento-grid">
-            {user && (
-              <Link href="/my-team/quiz" className="quiz-corner-card bento-cell bento-cell-narrow glass-panel reveal in">
-                <span className="quiz-corner-icon">
-                  <QuizIcon />
-                </span>
-                <span className="quiz-corner-text">
-                  <span className="quiz-corner-label">GM Archetype</span>
-                  <span className="quiz-corner-value">
-                    {archetypeResult ? archetypeResult.label : "Take the Quiz"}
-                  </span>
-                </span>
-              </Link>
-            )}
-
-            {portfolioSummary && (
-              <div className="portfolio-pulse-card bento-cell bento-cell-wide glass-panel reveal in">
-                <div className="portfolio-pulse-head">
-                  <div className="portfolio-pulse-label">Portfolio Pulse</div>
-                  <p className="portfolio-pulse-sub">
-                    {portfolioSummary.totalSlots} roster slots across your saved teams
-                  </p>
-                </div>
-                {portfolioSummary.profile ? (
-                  <div className="portfolio-pulse-bar">
-                    {portfolioSummary.profile.map((b) => (
-                      <div
-                        key={b.key}
-                        className={`portfolio-pulse-seg portfolio-pulse-seg-${b.key}`}
-                        style={{ width: `${b.pct}%` }}
-                        title={`${b.label}: ${b.pct}%`}
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <p className="portfolio-pulse-sub">
-                    Not enough simulation data yet to build a risk profile.
-                  </p>
-                )}
-                {portfolioSummary.profile && (
-                  <div className="portfolio-pulse-legend">
-                    {portfolioSummary.profile.map((b) => (
-                      <span key={b.key} className={`portfolio-pulse-legend-item portfolio-pulse-seg-${b.key}`}>
-                        <span className="portfolio-pulse-swatch" />
-                        {b.label} <strong>{b.pct}%</strong>
-                      </span>
-                    ))}
-                  </div>
-                )}
-                {portfolioSummary.topExposure?.length > 0 && (
-                  <div className="portfolio-pulse-exposure">
-                    <div className="portfolio-pulse-exposure-label">Top Exposure</div>
-                    <div className="portfolio-pulse-exposure-list">
-                      {portfolioSummary.topExposure.map((p, i) => (
-                        <span key={p.name} className="portfolio-pulse-exposure-chip">
-                          <span className="portfolio-pulse-exposure-rank">{i + 1}</span>
-                          {p.name}
-                          <span className="portfolio-pulse-exposure-pct">{Math.round(p.exposurePct)}%</span>
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
+        <div className={`my-team-layout${exposureRows.length ? " has-side" : ""}`}>
+          <div className="my-team-main">
+            {user && <PortfolioOverview archetype={archetypeResult} summary={portfolioSummary} />}
+            <MyTeamClient
+              isSignedIn={!!user}
+              tier={tier}
+              savedTeamLimit={savedTeamLimit(tier)}
+              savedTeams={savedTeams}
+              playerSims={playerSims}
+              playerGameLogs={playerGameLogs}
+              playerBios={playerBios}
+            />
           </div>
-        )}
-
-        <MyTeamClient
-          isSignedIn={!!user}
-          tier={tier}
-          savedTeamLimit={savedTeamLimit(tier)}
-          savedTeams={savedTeams}
-          playerSims={playerSims}
-          playerGameLogs={playerGameLogs}
-          playerBios={playerBios}
-        />
+          {exposureRows.length > 0 && (
+            <ExposureSidebar rows={exposureRows} teamCount={savedTeams.length} />
+          )}
+        </div>
       </main>
     </div>
   );

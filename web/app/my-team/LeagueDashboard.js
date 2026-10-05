@@ -11,18 +11,15 @@ function parseRecord(rec) {
 // league-by-league to assemble.
 function buildRow(t, injuries) {
   const s = t.settings || {};
-  const players = t.players || [];
   const proj = s.matchupProj;
   const live = s.matchupActual;
   const rec = parseRecord(s.record);
-  const starters = players.filter((p) => p.isStarter);
   // Our model zeroes players it projects OUT -- a starter at exactly 0
   // is a lineup hole to fix before kickoff.
-  const modelOut = s.bestBall ? [] : starters.filter((p) => p.myProjPts === 0);
-  // Merge in live-feed flags (Out/Doubtful/Questionable/IR starters),
-  // deduped by name against the model's own OUT calls.
+  // Alerts come only from the live feed, and only injuries reported on a
+  // game day (filtered server-side in getRosterNews) -- no pre-game model
+  // OUT flags here, those live in the Injury & News panel.
   const flagged = new Map();
-  for (const p of modelOut) flagged.set(p.name, { name: p.name, status: "OUT", severity: 3 });
   if (!s.bestBall) for (const i of injuries || []) {
     const prev = flagged.get(i.name);
     if (!prev || i.severity > prev.severity) flagged.set(i.name, i);
@@ -77,15 +74,13 @@ export default function LeagueDashboard({ savedTeams, renderExpanded, injuriesBy
   const totals = useMemo(() => {
     let winning = 0;
     let losing = 0;
-    let projTotal = 0;
     let alerts = 0;
     for (const r of rows) {
       if (r.liveMargin != null) r.liveMargin >= 0 ? winning++ : losing++;
       else if (r.projMine != null && r.projOpp != null) r.projMine >= r.projOpp ? winning++ : losing++;
-      if (r.projMine != null) projTotal += r.projMine;
       alerts += r.outStarters.length;
     }
-    return { winning, losing, projTotal, alerts };
+    return { winning, losing, alerts };
   }, [rows]);
 
   function clickSort(key) {
@@ -110,7 +105,6 @@ export default function LeagueDashboard({ savedTeams, renderExpanded, injuriesBy
         <div><strong>{rows.length}</strong> {rows.length === 1 ? "league" : "leagues"}</div>
         <div className="up"><strong>{totals.winning}</strong> leading</div>
         <div className="down"><strong>{totals.losing}</strong> trailing</div>
-        <div><strong>{totals.projTotal.toFixed(1)}</strong> total proj pts</div>
         <div className={totals.alerts ? "down" : ""}><strong>{totals.alerts}</strong> lineup alerts</div>
       </div>
       <div className="rankings-table-wrap">
