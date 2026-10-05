@@ -63,7 +63,7 @@ const getCachedWeekData = unstable_cache(
 
     if (!latest) return { latest: null, rows: [], totalCount: 0, actualProductionByName: {} };
 
-    const [{ data, count }, actualRows] = await Promise.all([
+    const [{ data, count }, actualRows, logRows] = await Promise.all([
       publicSupabase
         .from("player_simulations")
         .select(
@@ -92,14 +92,20 @@ const getCachedWeekData = unstable_cache(
       fetchAllRows(publicSupabase, "player_actual_production", "player_name, week, actual_points", (q) =>
         q.eq("season", latest.season).order("week", { ascending: true })
       ),
+      fetchAllRows(
+        publicSupabase,
+        "player_game_log",
+        "player_name, season, week, opponent, is_home, fantasy_points_ppr, exp_points_ppr",
+        (q) => q.eq("season", latest.season).order("week", { ascending: true })
+      ),
     ]);
 
     const actualProductionByName = {};
     const weeklyByName = {};
     for (const row of actualRows || []) {
       (actualProductionByName[row.player_name] ??= []).push(row.actual_points);
-      (weeklyByName[row.player_name] ??= []).push({ week: row.week, points: row.actual_points });
     }
+    for (const g of logRows || []) (weeklyByName[g.player_name] ??= []).push(g);
 
     return { latest, rows: data || [], totalCount: count || 0, actualProductionByName, weeklyByName };
   },

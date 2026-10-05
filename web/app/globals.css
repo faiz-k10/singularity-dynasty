@@ -2180,10 +2180,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .stat-panel-pace-delta{font-family:var(--font-ibm-plex-mono), monospace; font-size:13px; font-weight:600; word-break:break-word;}
 .stat-panel-pace-delta.pace-hot{color:var(--up);}
 .stat-panel-pace-delta.pace-cold{color:var(--down);}
-.stat-panel-pace-recent{display:flex; flex-direction:column; gap:4px; width:100%; margin-top:6px; padding-top:10px; border-top:1px solid rgba(var(--star-dot-rgb),.13);}
-.stat-panel-pace-recent-label{font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--star-dim);}
-.stat-panel-pace-recent-row{display:flex; justify-content:space-between; font-size:12px; color:var(--star);}
-.stat-panel-pace-recent-row span:first-child{color:var(--star-dim);}
+.stat-panel-pace-recent{display:flex; flex-direction:column; width:100%; margin-top:6px;}
 /* Vertical mirror of the main table's own horizontal Range bar (.sim-
    bar-track/-typical/-upside/.pace-marker) -- same maxCeiling-scaled
    0%-100% track, same floor-to-median/median-to-ceiling segments, same

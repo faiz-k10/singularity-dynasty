@@ -138,11 +138,16 @@ function StatDetailRow({ row, colSpan, shapePeers, maxCeiling }) {
                   </div>
                   {row.recentGames?.length > 0 && (
                     <div className="stat-panel-pace-recent">
-                      <span className="stat-panel-pace-recent-label mono">Last {row.recentGames.length === 1 ? "game" : `${row.recentGames.length} games`}</span>
                       {row.recentGames.map((g) => (
-                        <div key={g.week} className="stat-panel-pace-recent-row mono">
-                          <span>Wk {g.week}</span>
-                          <span>{Number(g.points).toFixed(1)}</span>
+                        <div key={`${g.season}-${g.week}`} className="weekly-gamelog-row">
+                          <span className="weekly-gamelog-week mono">
+                            {g.season} W{g.week}
+                          </span>
+                          <span className="weekly-gamelog-sep mono">{g.is_home === true ? "vs" : g.is_home === false ? "@" : "·"}</span>
+                          <TeamBadge team={g.opponent} />
+                          <span className="weekly-gamelog-pts mono">
+                            {g.fantasy_points_ppr != null ? g.fantasy_points_ppr.toFixed(1) : "—"}
+                          </span>
                         </div>
                       ))}
                     </div>
