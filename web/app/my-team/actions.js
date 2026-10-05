@@ -599,8 +599,10 @@ export async function saveTeam({ sleeperUsername, leagueId, leagueName, teamName
     }).catch((e) => console.error("[saveTeam] season_record_badge insight failed:", e.message));
   }
 
-  revalidatePath("/my-team");
-  return { success: true };
+  // No revalidatePath here: the client appends the saved team to its own list
+  // so several teams can be added back-to-back without the page re-rendering
+  // after each one. (deleteTeam / setBuyIn still revalidate.)
+  return { success: true, id: savedRow?.id ?? null };
 }
 
 // Scores the GM Archetype quiz (see lib/insights/gmArchetype.js) and

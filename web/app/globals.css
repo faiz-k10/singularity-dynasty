@@ -3856,3 +3856,5 @@ summary:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible{
 .my-team-wrap{gap:22px; margin-top:0;}
 .my-team-wrap > .rankings-theater-bar{margin:0 0 -8px;}
 .my-team-wrap > .portfolio-overview{margin-bottom:0;}
+
+.my-team-save-all{align-self:flex-start; margin-bottom:6px;}

@@ -1066,9 +1066,21 @@ export default function MyTeamClient({
   const [updatedAt, setUpdatedAt] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
 
+  // Teams saved from the lookup panel this session (the server page isn't
+  // re-rendered after each save, so they're appended here) and teams removed
+  // this session. Merged over the server-provided list.
+  const [addedTeams, setAddedTeams] = useState([]);
+  const [removedIds, setRemovedIds] = useState([]);
+  const baseSaved = useMemo(() => {
+    const have = new Set(savedTeamsProp.map((t) => t.id));
+    return [...savedTeamsProp, ...addedTeams.filter((t) => !have.has(t.id))].filter(
+      (t) => !removedIds.includes(t.id)
+    );
+  }, [savedTeamsProp, addedTeams, removedIds]);
+
   const savedTeams = useMemo(
     () =>
-      savedTeamsProp.map((t) => {
+      baseSaved.map((t) => {
         const f = fresh[t.id];
         const lv = liveScores[t.id];
         if (!f && !lv) return t;
@@ -1084,10 +1096,10 @@ export default function MyTeamClient({
           },
         };
       }),
-    [savedTeamsProp, fresh, liveScores]
+    [baseSaved, fresh, liveScores]
   );
 
-  const hasSaved = savedTeamsProp.length > 0 && isSignedIn;
+  const hasSaved = baseSaved.length > 0 && isSignedIn;
 
   // Injury/news feed for rostered players; the server caches the upstream
   // ESPN call for 2 minutes, so polling at that cadence is cheap.
@@ -1207,33 +1219,83 @@ export default function MyTeamClient({
     });
   }
 
+  // Saves one looked-up team and appends it to the local saved list (no
+  // page refresh). Returns the saveTeam result.
+  async function saveOne(team, sleeperUsername) {
+    const res = await saveTeam({
+      sleeperUsername,
+      leagueId: team.league_id,
+      leagueName: team.league_name,
+      teamName: team.team_name,
+      rosterId: team.roster_id,
+      settings: team.settings,
+      players: team.players,
+    });
+    if (!res.error && res.id) {
+      setSavedKeys((prev) => new Set(prev).add(team.league_id));
+      setAddedTeams((prev) => [
+        ...prev,
+        {
+          id: res.id,
+          platform: "sleeper",
+          platform_username: sleeperUsername,
+          platform_league_id: team.league_id,
+          platform_roster_id: team.roster_id ? String(team.roster_id) : null,
+          league_name: team.league_name,
+          team_name: team.team_name,
+          settings: team.settings,
+          players: team.players,
+          buy_in: null,
+        },
+      ]);
+    }
+    return res;
+  }
+
   function handleSave(e, team, sleeperUsername) {
     e.preventDefault();
+    setError(null);
     setSavingKey(team.league_id);
     startTransition(async () => {
-      const res = await saveTeam({
-        sleeperUsername,
-        leagueId: team.league_id,
-        leagueName: team.league_name,
-        teamName: team.team_name,
-        rosterId: team.roster_id,
-        settings: team.settings,
-        players: team.players,
-      });
+      const res = await saveOne(team, sleeperUsername);
       setSavingKey(null);
-      if (res.error) {
-        setError(res.error);
-      } else {
-        setSavedKeys((prev) => new Set(prev).add(team.league_id));
+      if (res.error) setError(res.error);
+    });
+  }
+
+  // Saves every not-yet-saved team from the lookup, one after another,
+  // stopping at the plan's team limit.
+  function handleSaveAll(teams, sleeperUsername) {
+    setError(null);
+    startTransition(async () => {
+      for (const team of teams) {
+        setSavingKey(team.league_id);
+        const res = await saveOne(team, sleeperUsername);
+        if (res.error) {
+          setError(res.error);
+          break;
+        }
       }
+      setSavingKey(null);
     });
   }
 
   function handleDelete(id) {
     setDeletingId(id);
+    const league = savedTeams.find((t) => t.id === id)?.platform_league_id;
     startTransition(async () => {
-      await deleteTeam(id);
+      const res = await deleteTeam(id);
       setDeletingId(null);
+      if (!res?.error) {
+        setRemovedIds((prev) => [...prev, id]);
+        if (league) {
+          setSavedKeys((prev) => {
+            const next = new Set(prev);
+            next.delete(league);
+            return next;
+          });
+        }
+      }
     });
   }
 
@@ -1363,8 +1425,20 @@ export default function MyTeamClient({
               </p>
             );
           }
+          const room = savedTeamLimit == null ? unsaved.length : Math.max(savedTeamLimit - savedCount, 0);
+          const saveAllCount = Math.min(unsaved.length, room);
           return (
             <div className="my-team-results">
+              {isSignedIn && saveAllCount > 1 && (
+                <button
+                  type="button"
+                  className="round-btn primary my-team-save-all"
+                  disabled={pending}
+                  onClick={() => handleSaveAll(unsaved.slice(0, saveAllCount), result.sleeperUsername)}
+                >
+                  {pending ? "Saving…" : `Save all ${saveAllCount} teams`}
+                </button>
+              )}
               {unsaved.map((team) => (
                 <details key={team.league_id} className="my-team-result-card reveal in">
                   <summary className="my-team-result-head">
