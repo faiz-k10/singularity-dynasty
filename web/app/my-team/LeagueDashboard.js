@@ -48,6 +48,22 @@ function buildRow(t, injuries) {
   };
 }
 
+// Headline counts for the Saved Teams panel header: leagues, how many are
+// leading / trailing (live score once games start, else projection) and
+// total lineup alerts. Same rows the table renders, so they always agree.
+export function summarizeLeagues(savedTeams, injuriesByTeam) {
+  let leading = 0;
+  let trailing = 0;
+  let alerts = 0;
+  for (const t of savedTeams) {
+    const r = buildRow(t, injuriesByTeam?.[t.id]);
+    if (r.liveMargin != null) r.liveMargin >= 0 ? leading++ : trailing++;
+    else if (r.projMine != null && r.projOpp != null) r.projMine >= r.projOpp ? leading++ : trailing++;
+    alerts += r.outStarters.length;
+  }
+  return { leagues: savedTeams.length, leading, trailing, alerts };
+}
+
 const COLS = [
   { key: "team", label: "Team", sort: (r) => r.team.toLowerCase() },
   { key: "recPct", label: "Record", sort: (r) => r.recPct },
@@ -77,18 +93,6 @@ export default function LeagueDashboard({ savedTeams, renderExpanded, injuriesBy
     });
   }, [savedTeams, injuriesByTeam, sortKey, dir]);
 
-  const totals = useMemo(() => {
-    let winning = 0;
-    let losing = 0;
-    let alerts = 0;
-    for (const r of rows) {
-      if (r.liveMargin != null) r.liveMargin >= 0 ? winning++ : losing++;
-      else if (r.projMine != null && r.projOpp != null) r.projMine >= r.projOpp ? winning++ : losing++;
-      alerts += r.outStarters.length;
-    }
-    return { winning, losing, alerts };
-  }, [rows]);
-
   function clickSort(key) {
     if (key === sortKey) setDir((d) => (d === "asc" ? "desc" : "asc"));
     else {
@@ -113,12 +117,6 @@ export default function LeagueDashboard({ savedTeams, renderExpanded, injuriesBy
           <span>Refreshing live data…</span>
         </div>
       )}
-      <div className="league-dash-summary">
-        <div><strong>{rows.length}</strong> {rows.length === 1 ? "league" : "leagues"}</div>
-        <div className="up"><strong>{totals.winning}</strong> leading</div>
-        <div className="down"><strong>{totals.losing}</strong> trailing</div>
-        <div className={totals.alerts ? "down" : ""}><strong>{totals.alerts}</strong> lineup alerts</div>
-      </div>
       <div className="rankings-table-wrap">
         <table className="rankings-table league-dash-table">
           <thead>

@@ -3591,9 +3591,6 @@ tr.stat-row-selected td{background:var(--void-panel);}
 
 /* All-leagues dashboard (my-team/LeagueDashboard.js) */
 .league-dash{margin-bottom:22px; padding:20px;}
-.league-dash-summary{display:flex; flex-wrap:wrap; gap:8px 28px; margin-bottom:12px; font-family:var(--font-ibm-plex-mono),monospace; font-size:.8rem; color:var(--star-dim);}
-.league-dash-summary strong{font-size:1.05rem; color:var(--star);}
-.league-dash-summary .up strong{color:var(--up);} .league-dash-summary .down strong{color:var(--down);}
 .league-dash-table th{white-space:nowrap; user-select:none;}
 .league-dash-row{cursor:pointer;}
 .league-dash-team{font-weight:600;}
@@ -3772,7 +3769,7 @@ summary:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible{
 .board-panel-head{display:flex; align-items:center; gap:10px; padding:12px 16px; border-bottom:1px solid rgba(var(--star-dot-rgb),.1); cursor:grab; user-select:none;}
 .board-panel-head:active{cursor:grabbing;}
 .board-grip{color:var(--star-dim); font-size:16px; line-height:1;}
-.board-panel-title{margin:0; flex:1; font-family:var(--font-space-grotesk); font-size:16px; font-weight:600; color:var(--star);}
+.board-panel-title{margin:0; flex:0 0 auto; font-family:var(--font-space-grotesk); font-size:16px; font-weight:600; color:var(--star);}
 .board-collapse{
   width:28px; height:28px; border-radius:8px; cursor:pointer; font-size:18px; line-height:1;
   color:var(--star-dim); background:transparent; border:1px solid rgba(var(--star-dot-rgb),.13);
@@ -3827,3 +3824,9 @@ summary:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible{
 .status-dot-1{background:var(--horizon-gold);}
 .status-text{font-size:12px; font-weight:600;}
 .status-text-3{color:var(--down);} .status-text-2{color:var(--horizon);} .status-text-1{color:var(--horizon-gold);}
+
+/* Headline stats beside a panel title (pinned in the header bar). */
+.board-spacer{flex:1;}
+.board-panel-sub{display:flex; flex-wrap:wrap; gap:4px 16px; margin-left:8px; font-family:var(--font-ibm-plex-mono),monospace; font-size:12px; color:var(--star-dim);}
+.board-panel-sub strong{font-size:14px; color:var(--star);}
+.board-panel-sub .up strong{color:var(--up);} .board-panel-sub .down strong{color:var(--down);}

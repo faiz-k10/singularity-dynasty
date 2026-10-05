@@ -15,8 +15,9 @@ function columnsFor(n, orientation) {
 }
 
 // A customizable dashboard of collapsible, draggable panels.
-//   panels: [{ id, title, node, defaultOpen, actions }]  (actions: controls
-//   shown in the panel's header bar, right of the title)
+//   panels: [{ id, title, node, defaultOpen, sub, actions }]  (sub: headline
+//   stats beside the title; actions: controls at the right -- both live in
+//   the header bar, which stays pinned while the panel body scrolls)
 // Expanded panels share the board's height/width by the rule above;
 // collapsed ones dock as chips above it. Drag any panel header (or dock
 // chip) onto another to reorder. Layout is remembered per browser
@@ -153,6 +154,8 @@ export default function PanelBoard({ panels, headerExtra }) {
               <header className="board-panel-head" {...dragProps(p.id)}>
                 <span className="board-grip" aria-hidden="true">⠿</span>
                 <h2 className="board-panel-title">{p.title}</h2>
+                {p.sub && <div className="board-panel-sub">{p.sub}</div>}
+                <span className="board-spacer" />
                 {p.actions && <div className="board-panel-actions">{p.actions}</div>}
                 <button
                   type="button"

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { lookupSleeperTeams, saveTeam, deleteTeam, setBuyIn, refreshSavedTeams, pollLiveScores, getRosterNews } from "./actions";
 import TeamBadge from "../tools/TeamBadge";
-import LeagueDashboard from "./LeagueDashboard";
+import LeagueDashboard, { summarizeLeagues } from "./LeagueDashboard";
 import RosterNews from "./RosterNews";
 import PanelBoard from "./PanelBoard";
 import PositionBadge from "../tools/PositionBadge";
@@ -1281,6 +1281,16 @@ export default function MyTeamClient({
     </>
   );
 
+  const sum = summarizeLeagues(savedTeams, news?.byTeam);
+  const teamsSub = (
+    <>
+      <span><strong>{sum.leagues}</strong> {sum.leagues === 1 ? "league" : "leagues"}</span>
+      <span className="up"><strong>{sum.leading}</strong> leading</span>
+      <span className="down"><strong>{sum.trailing}</strong> trailing</span>
+      <span className={sum.alerts ? "down" : ""}><strong>{sum.alerts}</strong> lineup alerts</span>
+    </>
+  );
+
   const newsActions = (
     <>
       <label><input type="checkbox" checked={newsFilter.starters} onChange={(e) => setNewsFilter((f) => ({ ...f, starters: e.target.checked }))} /> Starters</label>
@@ -1420,7 +1430,7 @@ export default function MyTeamClient({
 
   const panels = [
     overview && { id: "overview", title: "Overview", node: overview, defaultOpen: false },
-    { id: "teams", title: "Saved Teams", node: teamsNode, actions: teamsActions || null },
+    { id: "teams", title: "Saved Teams", node: teamsNode, sub: teamsSub, actions: teamsActions || null },
     exposure && { id: "exposure", title: "Player Exposure", node: exposure },
     hasSaved && {
       id: "news",
