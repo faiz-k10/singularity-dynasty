@@ -1387,6 +1387,12 @@ export default function MyTeamClient({
         </div>
   );
 
+  // "Save all" lives in the lookup row beside Find My Teams: everything from
+  // the current lookup that isn't saved yet, capped at the plan's team limit.
+  const unsavedFromLookup = result ? result.teams.filter((t) => !savedKeys.has(t.league_id)) : [];
+  const saveAllRoom = savedTeamLimit == null ? unsavedFromLookup.length : Math.max(savedTeamLimit - savedCount, 0);
+  const saveAllCount = Math.min(unsavedFromLookup.length, saveAllRoom);
+
   const lookupNode = (
     <>
       <form className="my-team-lookup glass-panel" onSubmit={handleLookup}>
@@ -1405,10 +1411,17 @@ export default function MyTeamClient({
           <button type="submit" className="btn-primary" disabled={pending}>
             {pending && !result && !error ? "Looking Up…" : "Find My Teams"}
           </button>
+          {isSignedIn && saveAllCount > 1 && (
+            <button
+              type="button"
+              className="btn-ghost my-team-save-all"
+              disabled={pending}
+              onClick={() => handleSaveAll(unsavedFromLookup.slice(0, saveAllCount), result.sleeperUsername)}
+            >
+              {pending && savingKey ? "Saving…" : `Save all ${saveAllCount} teams`}
+            </button>
+          )}
         </div>
-        <p className="my-team-hint">
-          Reads directly from Sleeper&apos;s public API — no login to Sleeper needed.
-        </p>
       </form>
 
       {error && <div className="my-team-error">{error}</div>}
@@ -1425,20 +1438,8 @@ export default function MyTeamClient({
               </p>
             );
           }
-          const room = savedTeamLimit == null ? unsaved.length : Math.max(savedTeamLimit - savedCount, 0);
-          const saveAllCount = Math.min(unsaved.length, room);
           return (
             <div className="my-team-results">
-              {isSignedIn && saveAllCount > 1 && (
-                <button
-                  type="button"
-                  className="round-btn primary my-team-save-all"
-                  disabled={pending}
-                  onClick={() => handleSaveAll(unsaved.slice(0, saveAllCount), result.sleeperUsername)}
-                >
-                  {pending ? "Saving…" : `Save all ${saveAllCount} teams`}
-                </button>
-              )}
               {unsaved.map((team) => (
                 <details key={team.league_id} className="my-team-result-card reveal in">
                   <summary className="my-team-result-head">
