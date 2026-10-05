@@ -3,10 +3,12 @@ import { sampleWithReplacement } from "@/lib/sample";
 import { unstable_cache } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createPublicClient } from "@/lib/supabase/public";
+import { fetchAllRows } from "@/lib/fetchAllRows";
 import ThemeToggle from "./ThemeToggle";
 import InteractiveScript from "./InteractiveScript";
 import NavStars from "./NavStars";
 import { getAchievements } from "./tools/achievements";
+import { computeRegressionScore } from "@/lib/regressionScore";
 import {
   fetchAchievementInputs,
   fetchLatestRedraftFieldsByName,
@@ -23,6 +25,9 @@ import {
 // SAMPLING below still runs fresh on every request against whatever the
 // cache last returned, so "re-rolled on every site refresh" still holds
 // for the picks themselves, just not for the underlying data fetch.
+const TICKER_PLAYERS = 36;
+const TICKER_ITEMS = 60;
+
 const getCachedTickerInputs = unstable_cache(
   async () => {
     const publicSupabase = createPublicClient();
@@ -33,7 +38,7 @@ const getCachedTickerInputs = unstable_cache(
       .order("week", { ascending: false })
       .limit(1)
       .maybeSingle();
-    if (!latestRedraft) return { topRows: [], achievementInputs: null, redraftFieldsByName: {}, woprPercentileByName: {} };
+    if (!latestRedraft) return { topRows: [], paceByName: {}, achievementInputs: null, redraftFieldsByName: {}, woprPercentileByName: {} };
 
     const [{ data: topRows }, achievementInputs, redraftFieldsByName, woprPercentileByName] = await Promise.all([
       publicSupabase
@@ -42,12 +47,46 @@ const getCachedTickerInputs = unstable_cache(
         .eq("season", latestRedraft.season)
         .eq("week", latestRedraft.week)
         .order("rank", { ascending: true })
-        .limit(20),
+        .limit(TICKER_PLAYERS),
       fetchAchievementInputs(publicSupabase, latestRedraft.season),
       fetchLatestRedraftFieldsByName(publicSupabase),
       fetchWoprPercentileByName(publicSupabase),
     ]);
-    return { topRows: topRows || [], achievementInputs, redraftFieldsByName, woprPercentileByName };
+
+    // "vs. pace" per player: points scored so far minus what the latest
+    // season projection implied for those games (same formula as the
+    // Player Season Simulations pace panel, lib/regressionScore.js).
+    const paceByName = {};
+    const names = (topRows || []).map((r) => r.player_name);
+    if (names.length) {
+      const { data: latestSim } = await publicSupabase
+        .from("player_simulations")
+        .select("season, week")
+        .order("season", { ascending: false })
+        .order("week", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (latestSim) {
+        const [{ data: sims }, actual] = await Promise.all([
+          publicSupabase
+            .from("player_simulations")
+            .select("player_name, median")
+            .eq("season", latestSim.season)
+            .eq("week", latestSim.week)
+            .in("player_name", names),
+          fetchAllRows(publicSupabase, "player_actual_production", "player_name, actual_points", (q) =>
+            q.eq("season", latestSim.season).in("player_name", names)
+          ),
+        ]);
+        const pts = {};
+        for (const a of actual || []) (pts[a.player_name] ??= []).push(a.actual_points);
+        for (const sim of sims || []) {
+          const r = computeRegressionScore(pts[sim.player_name], sim.median / 17);
+          if (r) paceByName[sim.player_name] = r.regressionScore;
+        }
+      }
+    }
+    return { topRows: topRows || [], paceByName, achievementInputs, redraftFieldsByName, woprPercentileByName };
   },
   ["site-header-ticker-inputs"],
   { revalidate: 60 }
@@ -77,7 +116,7 @@ export default async function SiteHeader() {
   // against whatever that cache last returned, so "re-rolled on every
   // site refresh" still holds for the actual picks shown.
   let tickerItems = [];
-  const { topRows, achievementInputs, redraftFieldsByName, woprPercentileByName } = await getCachedTickerInputs();
+  const { topRows, paceByName, achievementInputs, redraftFieldsByName, woprPercentileByName } = await getCachedTickerInputs();
   if (achievementInputs) {
     const pool = (topRows || []).flatMap((r) =>
       getAchievements(
@@ -91,8 +130,20 @@ export default async function SiteHeader() {
           label: a.label,
         }))
     );
+    // Each player's vs. pace number rides in the same pool as their badges.
+    for (const r of topRows || []) {
+      const v = paceByName?.[r.player_name];
+      if (typeof v === "number") {
+        pool.push({
+          name: r.player_name,
+          key: "pace",
+          variant: v >= 0 ? "hot" : "cold",
+          label: `${v >= 0 ? "+" : ""}${v.toFixed(2)}`,
+        });
+      }
+    }
     if (pool.length > 0) {
-      tickerItems = sampleWithReplacement(pool, 50);
+      tickerItems = sampleWithReplacement(pool, TICKER_ITEMS);
     }
   }
 

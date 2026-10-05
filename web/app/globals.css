@@ -249,6 +249,9 @@ body::before{
 .ticker-badge.peak{background:var(--peak); color:var(--void); box-shadow:0 0 5px rgba(var(--peak-rgb),0.5);}
 .ticker-badge.honorable{background:var(--scholar); color:var(--void); box-shadow:0 0 5px rgba(var(--scholar-rgb),0.5);}
 .ticker-badge.menace{background:var(--menace); color:var(--void); box-shadow:0 0 6px rgba(var(--menace-rgb),0.65);}
+.ticker-pace{font-weight:600;}
+.ticker-pace.hot{color:var(--up);}
+.ticker-pace.cold{color:var(--down);}
 .ticker-badge-label{font-size:10px; letter-spacing:0.06em; text-transform:uppercase; color:var(--star-dim); opacity:0.75;}
 
 /* ---------- BRAND MARK ---------- */

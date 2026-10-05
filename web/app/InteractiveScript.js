@@ -424,6 +424,10 @@ export default function InteractiveScript({ tickerItems } = {}) {
       let html = "";
       for (let rep = 0; rep < 2; rep++) {
         items.forEach((item) => {
+          if (item.key === "pace") {
+            html += `<span class="ticker-item">${item.name} <span class="ticker-pace ${item.variant}">${item.label}</span> <span class="ticker-badge-label">vs. pace</span></span>`;
+            return;
+          }
           const icon = TICKER_ICONS[item.key] || TICKER_ICONS.confidence;
           html += `<span class="ticker-item">${item.name} <span class="ticker-badge ${item.variant}">${icon}</span> <span class="ticker-badge-label">${item.label}</span></span>`;
         });
