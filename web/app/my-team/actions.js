@@ -468,7 +468,7 @@ export async function pollLiveScores() {
 
 // Injury + news for everyone on the signed-in user's saved rosters, from
 // the live ESPN feed (lib/injuryFeed.js). Returns `items` (one per player,
-// with the leagues they start / are rostered in) for the news panel and
+// with the leagues they start / are rostered in, newest news first) for the news panel and
 // `byTeam` (flagged starters per saved team, game-day injuries only) for
 // the dashboard's Alerts column. Healthy players only appear if their latest news is under 72h old.
 export async function getRosterNews() {
@@ -516,11 +516,10 @@ export async function getRosterNews() {
       }
     }
   }
+  // Newest news first (the 80-item cap then keeps the freshest, not the most severe).
   const list = [...items.values()].sort(
     (a, b) =>
-      b.severity - a.severity ||
-      b.starts.length - a.starts.length ||
-      new Date(b.date || 0) - new Date(a.date || 0)
+      new Date(b.date || 0) - new Date(a.date || 0) || b.severity - a.severity
   );
   return { items: list.slice(0, 80), byTeam, updatedAt: Date.now() };
 }

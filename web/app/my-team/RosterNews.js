@@ -10,9 +10,8 @@ function ago(iso) {
   return `${Math.round(mins / 1440)}d ago`;
 }
 
-// Injury & news feed for everyone rostered across the saved teams --
-// flagged players (Out / Doubtful / Questionable / IR) first, starters
-// before bench, then the rest of the recent news. Data: getRosterNews().
+// Injury & news feed for everyone rostered across the saved teams, newest
+// news first (order set in getRosterNews()).
 export default function RosterNews({ news, onlyStarters = false, onlyInjuries = false }) {
   if (!news) return null;
   if (news.unavailable) {
