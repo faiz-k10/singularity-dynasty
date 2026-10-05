@@ -52,39 +52,3 @@ export async function fetchInjuryFeed() {
     return cached; // stale beats nothing if ESPN hiccups
   }
 }
-
-const SCOREBOARD = "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard";
-const ET_DAY = new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York" }); // YYYY-MM-DD
-
-export function etDay(iso) {
-  const d = new Date(iso);
-  return Number.isNaN(d.getTime()) ? null : ET_DAY.format(d);
-}
-
-// The (Eastern-time) calendar days this NFL week has games on, from ESPN's
-// scoreboard. Used so lineup alerts only fire for injuries reported ON a
-// game day (in-game / game-day news), not midweek practice-report noise.
-// Falls back to a Thu/Sun/Mon check if the scoreboard is unreachable.
-export async function fetchGameDays() {
-  try {
-    const res = await fetch(SCOREBOARD, { next: { revalidate: 600 } });
-    if (!res.ok) return null;
-    const json = await res.json();
-    const days = new Set();
-    for (const ev of json.events || []) {
-      const d = etDay(ev.date);
-      if (d) days.add(d);
-    }
-    return days.size ? days : null;
-  } catch {
-    return null;
-  }
-}
-
-export function isGameDay(iso, gameDays) {
-  const day = etDay(iso);
-  if (!day) return false;
-  if (gameDays) return gameDays.has(day);
-  const dow = new Date(`${day}T12:00:00Z`).getUTCDay(); // 0 Sun, 1 Mon, 4 Thu
-  return dow === 0 || dow === 1 || dow === 4;
-}

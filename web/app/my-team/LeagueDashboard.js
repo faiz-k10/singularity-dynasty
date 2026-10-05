@@ -22,9 +22,9 @@ function buildRow(t, injuries) {
   const rec = parseRecord(s.record);
   // Our model zeroes players it projects OUT -- a starter at exactly 0
   // is a lineup hole to fix before kickoff.
-  // Alerts come only from the live feed, and only injuries reported on a
-  // game day (filtered server-side in getRosterNews) -- no pre-game model
-  // OUT flags here, those live in the Injury & News panel.
+  // Alerts: starters carrying an injury designation (Questionable /
+  // Doubtful / Out / IR) per the live feed -- computed server-side in
+  // getRosterNews, which only flags players in the starting lineup.
   const flagged = new Map();
   if (!s.bestBall) for (const i of injuries || []) {
     const prev = flagged.get(i.name);
