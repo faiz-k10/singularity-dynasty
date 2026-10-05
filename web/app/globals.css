@@ -3645,3 +3645,9 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .exposure-side-bar > span{display:block; height:100%; background:var(--horizon-gold);}
 .exposure-side-pct{font-family:var(--font-ibm-plex-mono),monospace; font-size:12px; color:var(--star); text-align:right; line-height:1.2;}
 .exposure-side-pct small{display:block; color:var(--star-dim); font-size:10.5px;}
+/* My Team: tuck the page up under the fixed header (the shared .tool-wrap
+   150px top padding is sized for the taller tool-page hero blocks). */
+.my-team-page-wrap{padding-top:52px;}
+.my-team-page-wrap .tool-sub{margin-bottom:22px;}
+.my-team-page-wrap h1{margin-bottom:8px;}
+.league-dash-table td:last-child{white-space:normal; min-width:220px;}
