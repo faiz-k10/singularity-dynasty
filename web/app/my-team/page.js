@@ -162,18 +162,16 @@ export default async function MyTeamPage() {
     }
   }
 
+  // Heading follows the Sleeper account the saved teams were imported from.
+  const sleeperName = savedTeams.find((t) => t.platform_username)?.platform_username || null;
+
   return (
     <div className="tool-page">
       <SiteHeader />
 
       <main className="wrap tool-wrap my-team-page-wrap">
         <div className="eyebrow">My Team</div>
-        <h1>My Team</h1>
-        <p className="tool-sub">
-          Import your team from Sleeper to save it here. Yahoo and ESPN
-          import are coming later, and this is the data that will power
-          personalized Team Analysis.
-        </p>
+        <h1>{sleeperName ? `${sleeperName}’s Teams` : "My Team"}</h1>
 
         <div className={`my-team-layout${exposureRows.length ? " has-side" : ""}`}>
           <div className="my-team-main">

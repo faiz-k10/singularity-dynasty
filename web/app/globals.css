@@ -3648,8 +3648,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
 /* My Team: tuck the page up under the fixed header (the shared .tool-wrap
    150px top padding is sized for the taller tool-page hero blocks). */
 .my-team-page-wrap{padding-top:52px;}
-.my-team-page-wrap .tool-sub{margin-bottom:22px;}
-.my-team-page-wrap h1{margin-bottom:8px;}
+.my-team-page-wrap h1{margin-bottom:22px;}
 .league-dash-table td:last-child{white-space:normal; min-width:220px;}
 
 /* ---------- MODERN LAYER ----------
