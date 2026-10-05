@@ -9,6 +9,8 @@ const COLOR = {
   qb: "var(--pos-qb)", rb: "var(--pos-rb)", wr: "var(--pos-wr)", te: "var(--pos-te)",
   starters: "var(--up)", bench: "var(--star-dim)",
   elite: "var(--horizon-gold)", strong: "var(--up)", mid: "var(--neon-blue)", depth: "var(--star-dim)",
+  onFire: "var(--horizon)", onIce: "var(--neon-blue)", volatile: "var(--purple)", locked: "var(--up)",
+  buyLow: "var(--pos-rb)", sellHigh: "var(--down)", hero: "var(--horizon-gold)", honorable: "var(--pos-wr)", conArtist: "var(--pos-qb)",
 };
 
 const RISK_LABEL = "Risk";
@@ -33,7 +35,11 @@ export default function PortfolioPulse({ summary }) {
         <div className="portfolio-pulse-label">Portfolio Pulse</div>
         <span className="portfolio-pulse-sub">
           {tab.title}
-          {tab.total ? ` · ${tab.rated} of ${tab.total} slots` : ` · ${summary.totalSlots} roster slots`}
+          {tab.unit === "badges"
+            ? ` · ${tab.rated} earned across your roster slots`
+            : tab.total
+              ? ` · ${tab.rated} of ${tab.total} slots`
+              : ` · ${summary.totalSlots} roster slots`}
         </span>
         <div className="board-toggle po-pulse-tabs" role="tablist">
           {tabs.map((t) => (
@@ -50,6 +56,10 @@ export default function PortfolioPulse({ summary }) {
           ))}
         </div>
       </div>
+      {tab.buckets.length === 0 ? (
+        <p className="portfolio-pulse-sub">No badges on your roster right now.</p>
+      ) : (
+      <>
       <div className="portfolio-pulse-bar">
         {tab.buckets.map((b) => (
           <div
@@ -64,10 +74,12 @@ export default function PortfolioPulse({ summary }) {
         {tab.buckets.map((b) => (
           <span key={b.key} className={`portfolio-pulse-legend-item${tab.risk ? ` portfolio-pulse-seg-${b.key}` : ""}`}>
             <span className="portfolio-pulse-swatch" style={tab.risk ? undefined : { background: COLOR[b.key] }} />
-            {b.label} <strong>{b.pct}%</strong>
+            {b.label} <strong>{tab.unit === "badges" ? b.slots : `${b.pct}%`}</strong>
           </span>
         ))}
       </div>
+      </>
+      )}
     </div>
   );
 }

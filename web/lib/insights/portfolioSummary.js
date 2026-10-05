@@ -62,6 +62,9 @@ function toPercents(counts) {
 //   position   -> row.position
 //   lineup     -> row.starterCount of row.lineupTeams (best-ball leagues have
 //                 no lineup and are excluded by the caller via lineupTeams)
+//   badges     -> row.badges: achievement keys the player carries (Established /
+//                 Building are the confidence badges and are excluded by the
+//                 caller); counted per roster slot, shown as counts not shares
 //   production -> row.myProjPts (our model's weekly projection) vs
 //                 position-specific cutoffs; a 0 projection means OUT and is
 //                 unrated rather than "depth"
@@ -70,6 +73,20 @@ const AGE_BANDS = [
   { key: "prime", label: "Prime (24\u201327)", test: (a) => a >= 24 && a <= 27 },
   { key: "veteran", label: "Veteran (28\u201330)", test: (a) => a >= 28 && a <= 30 },
   { key: "aging", label: "Aging (31+)", test: (a) => a >= 31 },
+];
+// Achievement badges the Badges tab counts (keys match app/tools/
+// achievements.js getAchievements; the confidence badge -- Established /
+// Building -- is deliberately not counted).
+const BADGES = [
+  { key: "onFire", label: "On Fire" },
+  { key: "onIce", label: "On Thin Ice" },
+  { key: "volatile", label: "Risky Icarus" },
+  { key: "locked", label: "Steady Eddy" },
+  { key: "buyLow", label: "Buy Low" },
+  { key: "sellHigh", label: "Sell High" },
+  { key: "hero", label: "Weekly Hero" },
+  { key: "honorable", label: "Honorable" },
+  { key: "conArtist", label: "Con Artist" },
 ];
 const POSITIONS = ["QB", "RB", "WR", "TE"];
 const PRODUCTION_TIERS = [
@@ -93,6 +110,23 @@ function tab(key, label, title, buckets, counts, rated, total) {
   };
 }
 
+// Badge count: raw counts per badge (a player on 3 teams adds 3), only badges
+// that appear; bar widths are each badge's share of all badges earned.
+function badgeTab(counts) {
+  const earned = BADGES.map((b, i) => ({ ...b, slots: counts[i] })).filter((b) => b.slots > 0);
+  const totalBadges = earned.reduce((s, b) => s + b.slots, 0);
+  const pcts = toPercents(earned.map((b) => b.slots));
+  return {
+    key: "badges",
+    label: "Badges",
+    title: "Badge count",
+    unit: "badges",
+    rated: totalBadges,
+    total: null,
+    buckets: earned.map((b, i) => ({ key: b.key, label: b.label, pct: pcts[i], slots: b.slots })),
+  };
+}
+
 function buildTabs(list) {
   const total = list.reduce((s, r) => s + (r.teams || 0), 0);
 
@@ -101,6 +135,7 @@ function buildTabs(list) {
   let lineupStart = 0;
   let lineupBench = 0;
   const prodCounts = PRODUCTION_TIERS.map(() => 0);
+  const badgeCounts = BADGES.map(() => 0);
 
   for (const r of list) {
     const n = r.teams || 0;
@@ -114,6 +149,11 @@ function buildTabs(list) {
     const lt = r.lineupTeams ?? r.teams ?? 0;
     lineupStart += Math.min(r.starterCount || 0, lt);
     lineupBench += Math.max(lt - (r.starterCount || 0), 0);
+
+    for (const k of r.badges || []) {
+      const bi = BADGES.findIndex((b) => b.key === k);
+      if (bi >= 0) badgeCounts[bi] += n;
+    }
 
     const cuts = PRODUCTION_CUTS[r.position];
     if (cuts && typeof r.myProjPts === "number" && r.myProjPts > 0) {
@@ -130,6 +170,7 @@ function buildTabs(list) {
       [{ key: "starters", label: "Starters" }, { key: "bench", label: "Bench" }],
       [lineupStart, lineupBench], lineupStart + lineupBench, total),
     tab("production", "Production", "Production tier", PRODUCTION_TIERS, prodCounts, sum(prodCounts), total),
+    badgeTab(badgeCounts),
   ];
 }
 

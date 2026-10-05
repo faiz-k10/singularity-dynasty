@@ -112,8 +112,19 @@ export default async function MyTeamPage() {
         if (p.player_id) lineupTeams[p.player_id] = (lineupTeams[p.player_id] || 0) + 1;
       }
     }
+    // Achievement badge keys per player (player-level, so the same in every
+    // league); Established / Building (key "confidence") are excluded.
+    const badgesByPlayer = {};
+    for (const t of savedTeams) {
+      for (const p of t.players || []) {
+        if (p.player_id && !badgesByPlayer[p.player_id]) {
+          badgesByPlayer[p.player_id] = (p.achievements || []).map((a) => a.key).filter((k) => k !== "confidence");
+        }
+      }
+    }
     const pulseRows = rows.map((r) => ({
       ...r,
+      badges: badgesByPlayer[r.player_id] || [],
       age: typeof dict[r.player_id]?.age === "number" ? dict[r.player_id].age : null,
       lineupTeams: lineupTeams[r.player_id] || 0,
     }));
