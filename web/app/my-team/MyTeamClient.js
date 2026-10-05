@@ -925,26 +925,6 @@ function Portfolio({ savedTeams, buyIns, playerSims, playerGameLogs, playerBios 
 
   return (
     <div className="my-team-portfolio">
-      <div className="my-team-saved-head">
-        <h2>My Guys</h2>
-        {tab === "exposure" && (
-          <span className="my-team-saved-count">
-            {rows.length} players across {teamCount} teams
-            {anyBuyIn && (
-              <>
-                {" · "}
-                <span className="my-team-matchup-opp">
-                  ${totalBuyIn.toLocaleString()}
-                </span>{" "}
-                staked
-                {teamsWithBuyIn < teamCount &&
-                  ` (${teamsWithBuyIn}/${teamCount} teams)`}
-              </>
-            )}
-          </span>
-        )}
-      </div>
-
       <div className="portfolio-toggles">
         <div className="board-toggle my-team-view-toggle">
           <button
@@ -1143,6 +1123,7 @@ export default function MyTeamClient({
   // Injury/news feed for rostered players; the server caches the upstream
   // ESPN call for 2 minutes, so polling at that cadence is cheap.
   const [news, setNews] = useState(null);
+  const [newsFilter, setNewsFilter] = useState({ starters: false, injuries: false });
   useEffect(() => {
     if (!hasSaved) return;
     let alive = true;
@@ -1272,33 +1253,51 @@ export default function MyTeamClient({
   const savedCount = savedKeys.size;
   const atLimit = savedTeamLimit != null && savedCount >= savedTeamLimit;
 
+  const teamsActions = (hasSaved || (isSignedIn && savedTeamLimit != null)) && (
+    <>
+      {hasSaved && (
+        <span>
+          {updatedAt
+            ? `Updated ${new Date(updatedAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit", second: "2-digit" })}`
+            : "Updating…"}
+        </span>
+      )}
+      {hasSaved && (
+        <button type="button" className="my-team-remove" disabled={refreshing} onClick={runFullRefresh}>
+          {refreshing ? "Refreshing…" : "Refresh"}
+        </button>
+      )}
+      {isSignedIn && savedTeamLimit != null && (
+        <span>
+          {savedCount} of {savedTeamLimit} saved
+          {atLimit && (
+            <>
+              {" · "}
+              <Link href="/#pricing">upgrade for more</Link>
+            </>
+          )}
+        </span>
+      )}
+    </>
+  );
+
+  const newsActions = (
+    <>
+      <label><input type="checkbox" checked={newsFilter.starters} onChange={(e) => setNewsFilter((f) => ({ ...f, starters: e.target.checked }))} /> Starters only</label>
+      <label><input type="checkbox" checked={newsFilter.injuries} onChange={(e) => setNewsFilter((f) => ({ ...f, injuries: e.target.checked }))} /> Injuries only</label>
+    </>
+  );
+
+  const pf = buildPortfolio(savedTeams, buyIns, {}, {});
+  const portfolioActions = (
+    <span>
+      {pf.rows.length} players across {pf.teamCount} teams
+      {pf.teamsWithBuyIn > 0 && ` · $${pf.totalBuyIn.toLocaleString()} staked${pf.teamsWithBuyIn < pf.teamCount ? ` (${pf.teamsWithBuyIn}/${pf.teamCount} teams)` : ""}`}
+    </span>
+  );
+
   const teamsNode = (
         <div className="my-team-saved">
-          <div className="my-team-saved-head">
-            <h2>Your Saved Teams</h2>
-            {hasSaved && (
-              <span className="my-team-saved-count">
-                {updatedAt
-                  ? `Updated ${new Date(updatedAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit", second: "2-digit" })}`
-                  : "Updating…"}
-                {" · "}
-                <button type="button" className="my-team-remove" disabled={refreshing} onClick={runFullRefresh}>
-                  {refreshing ? "Refreshing…" : "Refresh"}
-                </button>
-              </span>
-            )}
-            {isSignedIn && savedTeamLimit != null && (
-              <span className="my-team-saved-count">
-                {savedCount} of {savedTeamLimit} saved
-                {atLimit && (
-                  <>
-                    {" · "}
-                    <Link href="/#pricing">upgrade for more</Link>
-                  </>
-                )}
-              </span>
-            )}
-          </div>
           <LeagueDashboard
             savedTeams={savedTeams}
             injuriesByTeam={news?.byTeam}
@@ -1421,13 +1420,19 @@ export default function MyTeamClient({
 
   const panels = [
     overview && { id: "overview", title: "Overview", node: overview, defaultOpen: false },
-    { id: "teams", title: "Saved Teams", node: teamsNode },
+    { id: "teams", title: "Saved Teams", node: teamsNode, actions: teamsActions || null },
     exposure && { id: "exposure", title: "Player Exposure", node: exposure },
-    hasSaved && { id: "news", title: "Injury & News", node: <RosterNews news={news} /> },
+    hasSaved && {
+      id: "news",
+      title: "Injury & News",
+      node: <RosterNews news={news} onlyStarters={newsFilter.starters} onlyInjuries={newsFilter.injuries} />,
+      actions: newsActions,
+    },
     savedTeams.length >= 2 && {
       id: "portfolio",
       title: "My Guys",
       defaultOpen: false,
+      actions: portfolioActions,
       node: (
         <Portfolio
           savedTeams={savedTeams}

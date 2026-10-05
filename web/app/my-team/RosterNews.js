@@ -1,7 +1,5 @@
 "use client";
 
-import { useState } from "react";
-
 const PILL = { 3: "down", 2: "down", 1: "steady", 0: "" };
 
 function ago(iso) {
@@ -15,14 +13,11 @@ function ago(iso) {
 // Injury & news feed for everyone rostered across the saved teams --
 // flagged players (Out / Doubtful / Questionable / IR) first, starters
 // before bench, then the rest of the recent news. Data: getRosterNews().
-export default function RosterNews({ news }) {
-  const [onlyStarters, setOnlyStarters] = useState(false);
-  const [onlyInjuries, setOnlyInjuries] = useState(false);
+export default function RosterNews({ news, onlyStarters = false, onlyInjuries = false }) {
   if (!news) return null;
   if (news.unavailable) {
     return (
       <div className="roster-news glass-panel">
-        <h2>Injury &amp; News</h2>
         <p className="league-dash-muted">The injury feed is temporarily unavailable.</p>
       </div>
     );
@@ -32,14 +27,6 @@ export default function RosterNews({ news }) {
   );
   return (
     <div className="roster-news glass-panel">
-      <div className="my-team-saved-head">
-        <h2>Injury &amp; News</h2>
-        <span className="my-team-saved-count">
-          <label><input type="checkbox" checked={onlyStarters} onChange={(e) => setOnlyStarters(e.target.checked)} /> Starters only</label>
-          {" · "}
-          <label><input type="checkbox" checked={onlyInjuries} onChange={(e) => setOnlyInjuries(e.target.checked)} /> Injuries only</label>
-        </span>
-      </div>
       {items.length === 0 ? (
         <p className="league-dash-muted">Nothing new on your rosters.</p>
       ) : (

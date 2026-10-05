@@ -3799,8 +3799,11 @@ summary:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible{
 .board-panel-body .portfolio-overview{padding:0;}
 .board-panel-body .exposure-side{position:static; max-height:none;}
 .board-panel-body .exposure-side-list{overflow:visible;}
-.board-panel-body .exposure-side-head .portfolio-pulse-label,
-.board-panel-body .my-team-saved-head h2,
-.board-panel-body .roster-news h2{display:none;}
-.board-panel-body .my-team-saved-head{justify-content:flex-end; margin-bottom:10px;}
+.board-panel-body .exposure-side-head .portfolio-pulse-label{display:none;}
 .board-panel-body .my-team-saved{margin:0;}
+
+/* Panel header actions: the status/controls that used to sit in a second
+   row inside each panel now ride the title bar. */
+.board-panel-actions{display:flex; align-items:center; gap:14px; font-family:var(--font-ibm-plex-mono),monospace; font-size:12px; color:var(--star-dim);}
+.board-panel-actions label{display:flex; align-items:center; gap:6px; cursor:pointer; white-space:nowrap;}
+.board-panel-actions .my-team-remove{padding:4px 12px; font-size:12px;}
