@@ -19,11 +19,9 @@
 // scale, not a backtested threshold (same "product judgment, not
 // validated" honesty the model's own README uses for similar calls).
 //
-// This is NOT an age-based "young dynasty vs. rebuild" split -- that
-// needs real per-player age/draft-capital data (model/player_meta.R is
-// built but not yet published to Supabase, the same gap flagged for
-// Team Analysis). Building an age dimension here from data that doesn't
-// exist yet would mean faking it, which is worse than not having it.
+// `tabs` adds four more slot-weighted views (age, position, lineup,
+// production) -- see buildTabs. Age comes from Sleeper's player dictionary
+// (attached to rows by the caller), not from model/player_meta.R.
 
 const PROFILE_BUCKETS = [
   { key: "bedrock", label: "Bedrock", test: (ratio) => ratio < 1.2 },
@@ -32,6 +30,108 @@ const PROFILE_BUCKETS = [
   { key: "ceilingChaser", label: "Ceiling Chaser", test: (ratio) => ratio >= 2.0 && ratio < 2.8 },
   { key: "boomBust", label: "Boom/Bust", test: (ratio) => ratio >= 2.8 },
 ];
+
+// Largest-remainder rounding (Hamilton's method): floor every bucket's
+// exact share, then hand out the few leftover points (100 minus the sum of
+// the floors, always a small non-negative number) to whichever buckets had
+// the biggest fractional part rounded away. Guarantees every bucket is >= 0
+// and they sum to exactly 100 -- the earlier "last bucket absorbs the
+// remainder" approach could go NEGATIVE whenever the independently-rounded
+// shares already summed past 100 (caught live: Bedrock 0 / Floor-Safe 28 /
+// Balanced 56 / Ceiling Chaser 17 summed to 101, so Boom/Bust rendered -1%).
+function toPercents(counts) {
+  const total = counts.reduce((s, v) => s + v, 0);
+  if (total <= 0) return counts.map(() => 0);
+  const exact = counts.map((c) => (c / total) * 100);
+  const floors = exact.map(Math.floor);
+  const remainder = 100 - floors.reduce((s, v) => s + v, 0);
+  const order = floors
+    .map((_, i) => i)
+    .sort((a, c) => (exact[c] - floors[c]) - (exact[a] - floors[a]));
+  const pcts = [...floors];
+  for (let i = 0; i < remainder; i++) pcts[order[i]] += 1;
+  return pcts;
+}
+
+// Extra Portfolio Pulse tabs. Every tab is weighted by roster slots (a
+// player on 3 of your teams counts 3 times) and reports how many slots it
+// could actually classify (`rated` of `total`) -- players missing the
+// needed field are left out rather than guessed. Cutoffs are product
+// judgment, not backtested.
+//   age        -> row.age (Sleeper player dictionary)
+//   position   -> row.position
+//   lineup     -> row.starterCount of row.lineupTeams (best-ball leagues have
+//                 no lineup and are excluded by the caller via lineupTeams)
+//   production -> row.myProjPts (our model's weekly projection) vs
+//                 position-specific cutoffs; a 0 projection means OUT and is
+//                 unrated rather than "depth"
+const AGE_BANDS = [
+  { key: "rising", label: "Rising (\u226423)", test: (a) => a <= 23 },
+  { key: "prime", label: "Prime (24\u201327)", test: (a) => a >= 24 && a <= 27 },
+  { key: "veteran", label: "Veteran (28\u201330)", test: (a) => a >= 28 && a <= 30 },
+  { key: "aging", label: "Aging (31+)", test: (a) => a >= 31 },
+];
+const POSITIONS = ["QB", "RB", "WR", "TE"];
+const PRODUCTION_TIERS = [
+  { key: "elite", label: "Elite" },
+  { key: "strong", label: "Strong" },
+  { key: "mid", label: "Mid" },
+  { key: "depth", label: "Depth" },
+];
+// [elite, strong, mid] weekly-projection floors per position; below mid = depth.
+const PRODUCTION_CUTS = { QB: [20, 15, 10], RB: [16, 11, 7], WR: [16, 11, 7], TE: [12, 8, 5] };
+
+function tab(key, label, title, buckets, counts, rated, total) {
+  const pcts = toPercents(counts);
+  return {
+    key,
+    label,
+    title,
+    rated,
+    total,
+    buckets: rated > 0 ? buckets.map((b, i) => ({ key: b.key, label: b.label, pct: pcts[i], slots: counts[i] })) : null,
+  };
+}
+
+function buildTabs(list) {
+  const total = list.reduce((s, r) => s + (r.teams || 0), 0);
+
+  const ageCounts = AGE_BANDS.map(() => 0);
+  const posCounts = POSITIONS.map(() => 0);
+  let lineupStart = 0;
+  let lineupBench = 0;
+  const prodCounts = PRODUCTION_TIERS.map(() => 0);
+
+  for (const r of list) {
+    const n = r.teams || 0;
+    if (typeof r.age === "number" && r.age > 0) {
+      const i = AGE_BANDS.findIndex((b) => b.test(r.age));
+      if (i >= 0) ageCounts[i] += n;
+    }
+    const pi = POSITIONS.indexOf(r.position);
+    if (pi >= 0) posCounts[pi] += n;
+
+    const lt = r.lineupTeams ?? r.teams ?? 0;
+    lineupStart += Math.min(r.starterCount || 0, lt);
+    lineupBench += Math.max(lt - (r.starterCount || 0), 0);
+
+    const cuts = PRODUCTION_CUTS[r.position];
+    if (cuts && typeof r.myProjPts === "number" && r.myProjPts > 0) {
+      const tier = r.myProjPts >= cuts[0] ? 0 : r.myProjPts >= cuts[1] ? 1 : r.myProjPts >= cuts[2] ? 2 : 3;
+      prodCounts[tier] += n;
+    }
+  }
+  const sum = (a) => a.reduce((s, v) => s + v, 0);
+
+  return [
+    tab("age", "Age", "Age profile", AGE_BANDS, ageCounts, sum(ageCounts), total),
+    tab("position", "Position", "Position mix", POSITIONS.map((p) => ({ key: p.toLowerCase(), label: p })), posCounts, sum(posCounts), total),
+    tab("lineup", "Lineup", "Starter vs bench",
+      [{ key: "starters", label: "Starters" }, { key: "bench", label: "Bench" }],
+      [lineupStart, lineupBench], lineupStart + lineupBench, total),
+    tab("production", "Production", "Production tier", PRODUCTION_TIERS, prodCounts, sum(prodCounts), total),
+  ];
+}
 
 const TOP_EXPOSURE_COUNT = 5;
 
@@ -54,33 +154,21 @@ export async function computePortfolioSummary(rows) {
     bucketSlots[bucket.key] += r.teams || 0;
   }
 
-  // Largest-remainder rounding (Hamilton's method): floor every bucket's
-  // exact share, then hand out the few leftover points (100 minus the
-  // sum of the floors, always a small non-negative number) to whichever
-  // buckets had the biggest fractional part rounded away. Guarantees
-  // every bucket is >= 0 and the five sum to exactly 100 -- the earlier
-  // "last bucket absorbs the remainder" approach could go NEGATIVE
-  // whenever the other four independently-rounded shares already summed
-  // past 100 (caught live: Bedrock 0 / Floor-Safe 28 / Balanced 56 /
-  // Ceiling Chaser 17 already summed to 101, so Boom/Bust rendered as
-  // -1%).
-  let profile = null;
-  if (ratedSlots > 0) {
-    const exact = PROFILE_BUCKETS.map((b) => (bucketSlots[b.key] / ratedSlots) * 100);
-    const floors = exact.map(Math.floor);
-    let remainder = 100 - floors.reduce((s, v) => s + v, 0);
-    const order = floors
-      .map((_, i) => i)
-      .sort((a, c) => (exact[c] - floors[c]) - (exact[a] - floors[a]));
-    const pcts = [...floors];
-    for (let i = 0; i < remainder; i++) pcts[order[i]] += 1;
-    profile = PROFILE_BUCKETS.map((b, i) => ({ key: b.key, label: b.label, pct: pcts[i] }));
-  }
+  const profile = ratedSlots > 0
+    ? PROFILE_BUCKETS.map((b, i) => ({
+        key: b.key,
+        label: b.label,
+        pct: toPercents(PROFILE_BUCKETS.map((x) => bucketSlots[x.key]))[i],
+      }))
+    : null;
+
+  const tabs = buildTabs(list);
 
   return {
     totalPlayers: list.length,
     totalSlots,
     topExposure,
     profile,
+    tabs,
   };
 }

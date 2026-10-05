@@ -1,5 +1,6 @@
 import Link from "next/link";
 import QuizIcon from "../tools/QuizIcon";
+import PortfolioPulse from "./PortfolioPulse";
 
 // One combined panel: who you are as a GM (archetype quiz result, links to
 // the quiz) on the left, how your whole portfolio is built (risk-profile
@@ -17,38 +18,7 @@ export default function PortfolioOverview({ archetype, summary }) {
         </span>
       </Link>
 
-      {summary && (
-        <div className="po-pulse">
-          <div className="po-pulse-head">
-            <div className="portfolio-pulse-label">Portfolio Pulse</div>
-            <span className="portfolio-pulse-sub">{summary.totalSlots} roster slots across your saved teams</span>
-          </div>
-          {summary.profile ? (
-            <>
-              <div className="portfolio-pulse-bar">
-                {summary.profile.map((b) => (
-                  <div
-                    key={b.key}
-                    className={`portfolio-pulse-seg portfolio-pulse-seg-${b.key}`}
-                    style={{ width: `${b.pct}%` }}
-                    title={`${b.label}: ${b.pct}%`}
-                  />
-                ))}
-              </div>
-              <div className="portfolio-pulse-legend">
-                {summary.profile.map((b) => (
-                  <span key={b.key} className={`portfolio-pulse-legend-item portfolio-pulse-seg-${b.key}`}>
-                    <span className="portfolio-pulse-swatch" />
-                    {b.label} <strong>{b.pct}%</strong>
-                  </span>
-                ))}
-              </div>
-            </>
-          ) : (
-            <p className="portfolio-pulse-sub">Not enough simulation data yet to build a risk profile.</p>
-          )}
-        </div>
-      )}
+      {summary && <PortfolioPulse summary={summary} />}
     </section>
   );
 }

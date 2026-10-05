@@ -100,10 +100,28 @@ export default async function MyTeamPage() {
   if (user && savedTeams.length >= 2) {
     const { rows } = buildPortfolio(savedTeams, {}, playerSims, {});
     exposureRows = rows;
+
+    // Extra per-player fields the Pulse tabs need: age (Sleeper's player
+    // dictionary, module-cached) and how many of the teams a player is on
+    // are lineup leagues (best-ball leagues have no starters/bench).
+    const dict = await getSleeperPlayers().catch(() => ({}));
+    const lineupTeams = {};
+    for (const t of savedTeams) {
+      if (t.settings?.bestBall) continue;
+      for (const p of t.players || []) {
+        if (p.player_id) lineupTeams[p.player_id] = (lineupTeams[p.player_id] || 0) + 1;
+      }
+    }
+    const pulseRows = rows.map((r) => ({
+      ...r,
+      age: typeof dict[r.player_id]?.age === "number" ? dict[r.player_id].age : null,
+      lineupTeams: lineupTeams[r.player_id] || 0,
+    }));
+
     portfolioSummary = await computeAndSaveInsight(supabase, {
       key: "portfolio_summary",
       userId: user.id,
-      input: rows,
+      input: pulseRows,
     }).catch((e) => {
       console.error("[my-team] portfolio_summary insight failed:", e.message);
       return null;

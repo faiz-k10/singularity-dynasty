@@ -128,12 +128,73 @@ test("computePortfolioSummary: players with no sim data are excluded from the pr
 });
 
 test("computePortfolioSummary: empty/missing rows -> zeros, not a crash", async () => {
-  assert.deepEqual(await computePortfolioSummary([]), {
-    totalPlayers: 0, totalSlots: 0, topExposure: [], profile: null,
-  });
-  assert.deepEqual(await computePortfolioSummary(undefined), {
-    totalPlayers: 0, totalSlots: 0, topExposure: [], profile: null,
-  });
+  for (const input of [[], undefined]) {
+    const r = await computePortfolioSummary(input);
+    assert.equal(r.totalPlayers, 0);
+    assert.equal(r.totalSlots, 0);
+    assert.deepEqual(r.topExposure, []);
+    assert.equal(r.profile, null);
+    // every extra tab reports nothing rated instead of crashing
+    assert.equal(r.tabs.length, 4);
+    for (const t of r.tabs) {
+      assert.equal(t.rated, 0);
+      assert.equal(t.buckets, null);
+    }
+  }
+});
+
+const tabOf = (result, key) => result.tabs.find((t) => t.key === key);
+const pctOf = (t, key) => t.buckets.find((b) => b.key === key).pct;
+
+test("tabs: age bands are weighted by roster slots and unknown ages are left out", async () => {
+  const rows = [
+    { name: "Young", teams: 3, age: 22, position: "WR" },
+    { name: "Prime", teams: 1, age: 26, position: "WR" },
+    { name: "NoAge", teams: 5, age: null, position: "WR" },
+  ];
+  const t = tabOf(await computePortfolioSummary(rows), "age");
+  assert.equal(t.rated, 4);
+  assert.equal(t.total, 9);
+  assert.equal(pctOf(t, "rising"), 75);
+  assert.equal(pctOf(t, "prime"), 25);
+  assert.equal(t.buckets.reduce((s, b) => s + b.pct, 0), 100);
+});
+
+test("tabs: position mix counts QB/RB/WR/TE slots and ignores other positions", async () => {
+  const rows = [
+    { name: "A", teams: 2, position: "QB" },
+    { name: "B", teams: 2, position: "RB" },
+    { name: "K", teams: 9, position: "K" },
+  ];
+  const t = tabOf(await computePortfolioSummary(rows), "position");
+  assert.equal(pctOf(t, "qb"), 50);
+  assert.equal(pctOf(t, "rb"), 50);
+  assert.equal(pctOf(t, "wr"), 0);
+});
+
+test("tabs: lineup splits starters from bench, using lineupTeams to skip best-ball leagues", async () => {
+  const rows = [
+    // on 4 teams, one of them best ball (no lineup): 3 lineup teams, starts in 1
+    { name: "A", teams: 4, lineupTeams: 3, starterCount: 1, position: "RB" },
+  ];
+  const t = tabOf(await computePortfolioSummary(rows), "lineup");
+  assert.equal(t.rated, 3);
+  assert.equal(t.buckets.find((b) => b.key === "starters").slots, 1);
+  assert.equal(t.buckets.find((b) => b.key === "bench").slots, 2);
+});
+
+test("tabs: production tiers use position-specific cutoffs and skip OUT (0) projections", async () => {
+  const rows = [
+    { name: "QB1", teams: 1, position: "QB", myProjPts: 21 }, // elite for a QB
+    { name: "WR1", teams: 1, position: "WR", myProjPts: 12 }, // strong for a WR
+    { name: "WR2", teams: 1, position: "WR", myProjPts: 5 }, // depth
+    { name: "Out", teams: 7, position: "RB", myProjPts: 0 }, // OUT -> unrated
+  ];
+  const t = tabOf(await computePortfolioSummary(rows), "production");
+  assert.equal(t.rated, 3);
+  assert.equal(t.buckets.find((b) => b.key === "elite").slots, 1);
+  assert.equal(t.buckets.find((b) => b.key === "strong").slots, 1);
+  assert.equal(t.buckets.find((b) => b.key === "depth").slots, 1);
 });
 
 test("registerInsight: rejects an invalid scope so a typo fails loudly, not silently", () => {

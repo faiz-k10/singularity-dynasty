@@ -3883,3 +3883,7 @@ summary:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible{
 .league-dash-sep{margin:0 7px; color:var(--star-dim);}
 .league-dash-alerts{display:flex; flex-direction:column; gap:6px; align-items:flex-start;}
 .league-dash-alert{display:inline-flex; align-items:center; gap:8px; font-size:13.5px; white-space:nowrap;}
+
+/* Portfolio Pulse tabs: the segmented toggle sits at the right of the head. */
+.po-pulse-tabs{margin:0 0 0 auto; padding:3px;}
+.po-pulse-tabs button{padding:5px 12px; font-size:12px;}
