@@ -6,7 +6,7 @@ import { lookupSleeperTeams, saveTeam, deleteTeam, setBuyIn, refreshSavedTeams, 
 import TeamBadge from "../tools/TeamBadge";
 import LeagueDashboard, { summarizeLeagues } from "./LeagueDashboard";
 import RosterNews from "./RosterNews";
-import PanelBoard from "./PanelBoard";
+import PanelBoard, { StaticPanel } from "./PanelBoard";
 import PositionBadge from "../tools/PositionBadge";
 import AchievementDots from "../tools/AchievementDots";
 import { sortRows, sortArrow } from "@/lib/sortLink";
@@ -1177,6 +1177,24 @@ export default function MyTeamClient({
     };
   }, [hasSaved]);
 
+  // Theater mode: the customizable panel board only lives in a full-screen
+  // overlay (same idea as the Rankings / Player Sims theater button); the
+  // normal page is the traditional scrolling layout with static panels.
+  const [theater, setTheater] = useState(false);
+  useEffect(() => {
+    if (!theater) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") setTheater(false);
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [theater]);
+
   const [username, setUsername] = useState("");
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
@@ -1435,6 +1453,7 @@ export default function MyTeamClient({
     hasSaved && {
       id: "news",
       title: "Injury & News",
+      capped: true,
       node: <RosterNews news={news} onlyStarters={newsFilter.starters} onlyInjuries={newsFilter.injuries} />,
       actions: newsActions,
     },
@@ -1456,9 +1475,51 @@ export default function MyTeamClient({
     { id: "lookup", title: "Find Teams", node: lookupNode, defaultOpen: false },
   ].filter(Boolean);
 
+  const theaterBtn = (
+    <button
+      type="button"
+      className="rankings-theater-btn"
+      onClick={() => setTheater((v) => !v)}
+      aria-label={theater ? "Exit theater view" : "Open theater view (customizable panels)"}
+      title={theater ? "Exit theater view (Esc)" : "Theater view — customizable panels"}
+    >
+      {theater ? (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M9 4v3a2 2 0 0 1-2 2H4M20 9h-3a2 2 0 0 1-2-2V4M4 15h3a2 2 0 0 1 2 2v3M15 20v-3a2 2 0 0 1 2-2h3" />
+        </svg>
+      ) : (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M9 4H6a2 2 0 0 0-2 2v3M20 9V6a2 2 0 0 0-2-2h-3M4 15v3a2 2 0 0 0 2 2h3M15 20h3a2 2 0 0 0 2-2v-3" />
+        </svg>
+      )}
+    </button>
+  );
+
+  // Normal page: overview on top, then a main column of static panels with
+  // the Player Exposure list pinned in a right-hand column.
+  const staticIds = new Set(["teams", "news", "portfolio", "lookup"]);
+  const staticPanels = panels.filter((p) => staticIds.has(p.id));
+
   return (
     <div className="my-team-wrap">
-      <PanelBoard panels={panels} />
+      {theater ? (
+        <div className="my-team-theater">
+          <PanelBoard panels={panels} headerExtra={theaterBtn} />
+        </div>
+      ) : (
+        <>
+          <div className="rankings-theater-bar">{theaterBtn}</div>
+          {overview}
+          <div className={`my-team-layout${exposure ? " has-side" : ""}`}>
+            <div className="my-team-main my-team-main-stack">
+              {staticPanels.map((p) => (
+                <StaticPanel key={p.id} panel={p} />
+              ))}
+            </div>
+            {exposure}
+          </div>
+        </>
+      )}
     </div>
   );
 }

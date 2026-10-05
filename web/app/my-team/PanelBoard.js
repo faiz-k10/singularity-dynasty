@@ -82,9 +82,15 @@ export default function PanelBoard({ panels, headerExtra }) {
 
   useEffect(() => {
     if (!focusId) return;
-    const onKey = (e) => { if (e.key === "Escape") setFocusId(null); };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    // Capture phase + stopPropagation: Esc closes a focused panel first, and
+    // only a second Esc reaches the theater's own exit handler.
+    const onKey = (e) => {
+      if (e.key !== "Escape") return;
+      e.stopPropagation();
+      setFocusId(null);
+    };
+    window.addEventListener("keydown", onKey, true);
+    return () => window.removeEventListener("keydown", onKey, true);
   }, [focusId]);
 
   const toggle = (id) => {
@@ -203,5 +209,22 @@ export default function PanelBoard({ panels, headerExtra }) {
         </div>
       )}
     </div>
+  );
+}
+
+// The same panel chrome (title bar with stats + controls, flattened body) as
+// the board, but static: no drag, collapse or expand -- used by the normal
+// page layout. The board only appears in theater mode.
+export function StaticPanel({ panel }) {
+  return (
+    <section className={`board-panel board-static glass-panel${panel.capped ? " board-static-capped" : ""}`}>
+      <header className="board-panel-head board-static-head">
+        <h2 className="board-panel-title">{panel.title}</h2>
+        {panel.sub && <div className="board-panel-sub">{panel.sub}</div>}
+        <span className="board-spacer" />
+        {panel.actions && <div className="board-panel-actions">{panel.actions}</div>}
+      </header>
+      <div className="board-panel-body">{panel.node}</div>
+    </section>
   );
 }

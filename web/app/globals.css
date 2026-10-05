@@ -3834,3 +3834,25 @@ summary:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible{
 .board-collapse[aria-pressed="true"]{color:var(--void); background:var(--horizon-gold); border-color:var(--horizon-gold);}
 .board-collapse{display:inline-flex; align-items:center; justify-content:center;}
 .board-panel-head .board-collapse + .board-collapse{margin-left:-4px;}
+
+/* Theater mode for My Team: the customizable panel board lives in a
+   full-viewport overlay (above the fixed header, z-index 200 like the
+   Rankings theater); the normal page keeps static, page-scrolling panels. */
+.my-team-theater{position:fixed; inset:0; z-index:200; background:var(--void-panel); padding:12px 16px 16px; display:flex; flex-direction:column; overflow:hidden;}
+.my-team-theater .board{flex:1; min-height:0;}
+.my-team-theater .board-grid{flex:1; height:auto; min-height:0;}
+@media (max-width:999px){
+  .my-team-theater{overflow:auto;}
+  .my-team-theater .board{flex:none;}
+  .my-team-theater .board-grid{flex:none;}
+}
+/* Static (non-theater) panels: same chrome as board panels, but they flow
+   with the page instead of filling a fixed-height grid. */
+.my-team-main-stack{display:flex; flex-direction:column; gap:22px;}
+.board-static{overflow:visible;}
+.board-static-head{cursor:default; user-select:auto;}
+.board-static-capped .board-panel-body{max-height:560px;}
+.board-static .board-panel-body{overflow:auto;}
+.my-team-wrap{gap:22px; margin-top:0;}
+.my-team-wrap > .rankings-theater-bar{margin:0 0 -8px;}
+.my-team-wrap > .portfolio-overview{margin-bottom:0;}
