@@ -6,6 +6,7 @@ import { lookupSleeperTeams, saveTeam, deleteTeam, setBuyIn, refreshSavedTeams, 
 import TeamBadge from "../tools/TeamBadge";
 import LeagueDashboard from "./LeagueDashboard";
 import RosterNews from "./RosterNews";
+import PanelBoard from "./PanelBoard";
 import PositionBadge from "../tools/PositionBadge";
 import AchievementDots from "../tools/AchievementDots";
 import { sortRows, sortArrow } from "@/lib/sortLink";
@@ -1104,6 +1105,8 @@ export default function MyTeamClient({
   playerSims = {},
   playerGameLogs = {},
   playerBios = {},
+  overview = null,
+  exposure = null,
 }) {
   // Saved teams are DB snapshots from whenever they were last saved, so
   // the page overlays live Sleeper data on top: a full refresh on load
@@ -1269,9 +1272,7 @@ export default function MyTeamClient({
   const savedCount = savedKeys.size;
   const atLimit = savedTeamLimit != null && savedCount >= savedTeamLimit;
 
-  return (
-    <div className="my-team-wrap">
-      {savedTeams.length > 0 && (
+  const teamsNode = (
         <div className="my-team-saved">
           <div className="my-team-saved-head">
             <h2>Your Saved Teams</h2>
@@ -1326,20 +1327,10 @@ export default function MyTeamClient({
             )}
           />
         </div>
-      )}
+  );
 
-      {hasSaved && <RosterNews news={news} />}
-
-      {savedTeams.length >= 2 && (
-        <Portfolio
-          savedTeams={savedTeams}
-          buyIns={buyIns}
-          playerSims={playerSims}
-          playerGameLogs={playerGameLogs}
-          playerBios={playerBios}
-        />
-      )}
-
+  const lookupNode = (
+    <>
       <form className="my-team-lookup glass-panel" onSubmit={handleLookup}>
         <label htmlFor="sleeper-username" className="my-team-label">
           Sleeper Username
@@ -1420,6 +1411,39 @@ export default function MyTeamClient({
             </div>
           );
         })()}
+    </>
+  );
+
+  // No saved teams yet: just the lookup, no dashboard to arrange.
+  if (savedTeams.length === 0) {
+    return <div className="my-team-wrap">{lookupNode}</div>;
+  }
+
+  const panels = [
+    overview && { id: "overview", title: "Overview", node: overview, defaultOpen: false },
+    { id: "teams", title: "Saved Teams", node: teamsNode },
+    exposure && { id: "exposure", title: "Player Exposure", node: exposure },
+    hasSaved && { id: "news", title: "Injury & News", node: <RosterNews news={news} /> },
+    savedTeams.length >= 2 && {
+      id: "portfolio",
+      title: "My Guys",
+      defaultOpen: false,
+      node: (
+        <Portfolio
+          savedTeams={savedTeams}
+          buyIns={buyIns}
+          playerSims={playerSims}
+          playerGameLogs={playerGameLogs}
+          playerBios={playerBios}
+        />
+      ),
+    },
+    { id: "lookup", title: "Find Teams", node: lookupNode, defaultOpen: false },
+  ].filter(Boolean);
+
+  return (
+    <div className="my-team-wrap">
+      <PanelBoard panels={panels} />
     </div>
   );
 }

@@ -173,23 +173,21 @@ export default async function MyTeamPage() {
         <div className="eyebrow">My Team</div>
         <h1>{sleeperName ? `${sleeperName}’s Teams` : "My Team"}</h1>
 
-        <div className={`my-team-layout${exposureRows.length ? " has-side" : ""}`}>
-          <div className="my-team-main">
-            {user && <PortfolioOverview archetype={archetypeResult} summary={portfolioSummary} />}
-            <MyTeamClient
-              isSignedIn={!!user}
-              tier={tier}
-              savedTeamLimit={savedTeamLimit(tier)}
-              savedTeams={savedTeams}
-              playerSims={playerSims}
-              playerGameLogs={playerGameLogs}
-              playerBios={playerBios}
-            />
-          </div>
-          {exposureRows.length > 0 && (
-            <ExposureSidebar rows={exposureRows} teamCount={savedTeams.length} />
-          )}
-        </div>
+        <MyTeamClient
+          isSignedIn={!!user}
+          tier={tier}
+          savedTeamLimit={savedTeamLimit(tier)}
+          savedTeams={savedTeams}
+          playerSims={playerSims}
+          playerGameLogs={playerGameLogs}
+          playerBios={playerBios}
+          overview={user ? <PortfolioOverview archetype={archetypeResult} summary={portfolioSummary} /> : null}
+          exposure={
+            exposureRows.length > 0 ? (
+              <ExposureSidebar rows={exposureRows} teamCount={savedTeams.length} />
+            ) : null
+          }
+        />
       </main>
     </div>
   );

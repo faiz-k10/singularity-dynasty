@@ -3748,3 +3748,59 @@ summary:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible{
   border:0; border-radius:0; box-shadow:none; background:transparent;
   backdrop-filter:none; -webkit-backdrop-filter:none;
 }
+
+/* ---------- PANEL BOARD (my-team/PanelBoard.js) ----------
+   Expanded panels share the board: 1 fills it, 2-4 split into two columns,
+   5-6 into three; an uneven last panel stretches across the leftover
+   cells (--board-span) so there are never holes. Collapsed panels dock as
+   chips above. Desktop fills the viewport and scrolls inside each panel;
+   under 1000px it falls back to a natural stacked page. */
+.board{display:flex; flex-direction:column; gap:14px;}
+.board-dock{display:flex; flex-wrap:wrap; align-items:center; gap:8px;}
+.board-dock-spacer{flex:1;}
+.board-chip, .board-reset{
+  font:inherit; font-size:12.5px; color:var(--star); cursor:grab;
+  background:rgba(var(--scrim-rgb),.6); border:1px solid rgba(var(--star-dot-rgb),.13);
+  border-radius:999px; padding:7px 14px;
+  transition:border-color .15s ease, background-color .15s ease;
+}
+.board-chip:hover{border-color:var(--horizon-gold);}
+.board-reset{cursor:pointer; color:var(--star-dim); border-style:dashed;}
+.board-reset:hover{color:var(--star); border-color:var(--neon-blue);}
+.board-grid{display:grid; grid-template-columns:repeat(var(--board-cols,1), minmax(0,1fr)); gap:16px;}
+.board-panel{padding:0; border-radius:16px; display:flex; flex-direction:column; min-width:0; min-height:0; overflow:hidden; grid-column:span var(--board-span,1);}
+.board-panel-head{display:flex; align-items:center; gap:10px; padding:12px 16px; border-bottom:1px solid rgba(var(--star-dot-rgb),.1); cursor:grab; user-select:none;}
+.board-panel-head:active{cursor:grabbing;}
+.board-grip{color:var(--star-dim); font-size:16px; line-height:1;}
+.board-panel-title{margin:0; flex:1; font-family:var(--font-space-grotesk); font-size:16px; font-weight:600; color:var(--star);}
+.board-collapse{
+  width:28px; height:28px; border-radius:8px; cursor:pointer; font-size:18px; line-height:1;
+  color:var(--star-dim); background:transparent; border:1px solid rgba(var(--star-dot-rgb),.13);
+}
+.board-collapse:hover{color:var(--star); border-color:var(--neon-blue);}
+.board-panel-body{flex:1; min-height:0; overflow:auto; padding:16px;}
+.board-drop{outline:2px dashed var(--horizon-gold); outline-offset:-2px;}
+@media (min-width:1000px){
+  .board-grid{height:calc(100vh - 250px); min-height:520px; grid-auto-rows:minmax(0,1fr);}
+}
+@media (max-width:999px){
+  .board-grid{grid-template-columns:minmax(0,1fr);}
+  .board-panel{grid-column:auto;}
+  .board-panel-head{cursor:default;}
+}
+
+/* Panels render their own chrome (glass border, padding, heading) when used
+   standalone; inside the board the board owns all of that, so flatten it --
+   one border per panel, never a panel inside a panel. */
+.board-panel-body .glass-panel, .board-panel-body .rankings-table-wrap{
+  border:0; box-shadow:none; background:transparent; border-radius:0;
+  backdrop-filter:none; -webkit-backdrop-filter:none; padding:0; margin:0;
+}
+.board-panel-body .portfolio-overview{padding:0;}
+.board-panel-body .exposure-side{position:static; max-height:none;}
+.board-panel-body .exposure-side-list{overflow:visible;}
+.board-panel-body .exposure-side-head .portfolio-pulse-label,
+.board-panel-body .my-team-saved-head h2,
+.board-panel-body .roster-news h2{display:none;}
+.board-panel-body .my-team-saved-head{justify-content:flex-end; margin-bottom:10px;}
+.board-panel-body .my-team-saved{margin:0;}
