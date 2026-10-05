@@ -3743,3 +3743,4 @@ summary:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible{
 }
 @keyframes league-dash-spin{to{transform:rotate(360deg);}}
 @keyframes league-dash-fade{from{opacity:0;}to{opacity:1;}}
+.league-dash-alerts{display:flex; flex-direction:column; gap:2px; align-items:center;}

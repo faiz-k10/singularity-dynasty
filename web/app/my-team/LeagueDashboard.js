@@ -2,6 +2,12 @@
 
 import { Fragment, useMemo, useState } from "react";
 
+// "Rico Dowdle" -> "R. Dowdle" (first initial, full remaining name incl. suffixes).
+function shortName(name) {
+  const [first, ...rest] = String(name || "").trim().split(/\s+/);
+  return rest.length ? `${first[0]}. ${rest.join(" ")}` : first;
+}
+
 function parseRecord(rec) {
   const [w = 0, l = 0, t = 0] = String(rec || "0-0").split("-").map(Number);
   return { w, l, t, games: w + l + t, pct: w + l + t ? (w + t / 2) / (w + l + t) : 0 };
@@ -154,9 +160,11 @@ export default function LeagueDashboard({ savedTeams, renderExpanded, injuriesBy
                 </td>
                 <td>
                   {r.outStarters.length ? (
-                    <span className="down" title={r.outStarters.map((p) => `${p.name} (${p.status})`).join(", ")}>
-                      {r.outStarters.map((p) => `${p.name} (${p.status})`).join(", ")}
-                    </span>
+                    <div className="league-dash-alerts">
+                      {r.outStarters.map((p) => (
+                        <span key={p.name} className="down">{shortName(p.name)} ({p.status})</span>
+                      ))}
+                    </div>
                   ) : r.bestBall ? (
                     <span className="league-dash-muted">Best ball</span>
                   ) : (
