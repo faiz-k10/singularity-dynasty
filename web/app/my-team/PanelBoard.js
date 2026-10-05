@@ -4,12 +4,14 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 const STORE_KEY = "myteam.board.v1";
 
-// How many columns the expanded panels share. 1 panel fills the board, 2-4
-// split it into two columns, 5-6 into three; when the count doesn't divide
+// How many columns the expanded panels share. Side-by-side (default): 1 panel
+// fills the board, 2-4 split it into two columns, 5-6 into three. Stacked
+// (landscape): up to 3 panels are full-width rows, 4+ go two per row; when the count doesn't divide
 // evenly the LAST panel stretches across the leftover cells, so the board is
 // always completely filled (3 panels = two on top, one full-width below).
-function columnsFor(n) {
-  return n <= 1 ? 1 : n <= 4 ? 2 : 3;
+function columnsFor(n, orientation) {
+  if (orientation === "stack") return n <= 3 ? 1 : 2; // landscape: panels stacked top-to-bottom
+  return n <= 1 ? 1 : n <= 4 ? 2 : 3; // portrait: panels side by side
 }
 
 // A customizable dashboard of collapsible, draggable panels.
@@ -26,6 +28,7 @@ export default function PanelBoard({ panels, headerExtra }) {
   const [open, setOpen] = useState(() =>
     Object.fromEntries(panels.map((p) => [p.id, p.defaultOpen !== false]))
   );
+  const [orientation, setOrientation] = useState("side"); // "side" | "stack"
   const [dragOver, setDragOver] = useState(null);
   const dragId = useRef(null);
   const loaded = useRef(false);
@@ -37,6 +40,7 @@ export default function PanelBoard({ panels, headerExtra }) {
       try {
         const saved = JSON.parse(localStorage.getItem(STORE_KEY) || "null");
         if (saved?.order) setOrder(saved.order);
+        if (saved?.orientation === "stack") setOrientation("stack");
         if (saved?.open) setOpen((prev) => ({ ...prev, ...saved.open }));
       } catch {}
       loaded.current = true;
@@ -47,9 +51,9 @@ export default function PanelBoard({ panels, headerExtra }) {
   useEffect(() => {
     if (!loaded.current) return;
     try {
-      localStorage.setItem(STORE_KEY, JSON.stringify({ order, open }));
+      localStorage.setItem(STORE_KEY, JSON.stringify({ order, open, orientation }));
     } catch {}
-  }, [order, open]);
+  }, [order, open, orientation]);
 
   // Panels come and go (e.g. Player Exposure needs 2+ saved teams): keep
   // the stored order for known ids, append any new ones.
@@ -66,7 +70,7 @@ export default function PanelBoard({ panels, headerExtra }) {
   const isOpen = (p) => open[p.id] ?? p.defaultOpen !== false;
   const expanded = ordered.filter(isOpen);
   const docked = ordered.filter((p) => !isOpen(p));
-  const cols = columnsFor(expanded.length);
+  const cols = columnsFor(expanded.length, orientation);
   const leftover = expanded.length % cols;
   const lastSpan = leftover === 0 ? 1 : cols - leftover + 1;
 
@@ -104,6 +108,7 @@ export default function PanelBoard({ panels, headerExtra }) {
 
   function reset() {
     setOrder(ids);
+    setOrientation("side");
     setOpen(Object.fromEntries(panels.map((p) => [p.id, p.defaultOpen !== false])));
   }
 
@@ -125,6 +130,14 @@ export default function PanelBoard({ panels, headerExtra }) {
         ))}
         <span className="board-dock-spacer" />
         {headerExtra}
+        <div className="board-orient" role="group" aria-label="Panel arrangement">
+          <button type="button" aria-pressed={orientation === "side"} onClick={() => setOrientation("side")} title="Side by side">
+            <span className="board-orient-icon board-orient-side" aria-hidden="true" /> Side by side
+          </button>
+          <button type="button" aria-pressed={orientation === "stack"} onClick={() => setOrientation("stack")} title="Stacked top to bottom">
+            <span className="board-orient-icon board-orient-stack" aria-hidden="true" /> Stacked
+          </button>
+        </div>
         <button type="button" className="board-reset" onClick={reset}>Reset layout</button>
       </div>
 
