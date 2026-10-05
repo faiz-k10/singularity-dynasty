@@ -281,7 +281,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
         regressionScore: reg?.regressionScore ?? null,
         paceSeasonTotal: oc?.paceSeasonTotal ?? null,
         outcomePercentile: oc?.percentile ?? null,
-        recentGames: played.slice(-3).reverse(),
+        recentGames: played.slice(-4).reverse(),
       });
     }
     return out;
@@ -302,7 +302,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
       regressionScore: regression?.regressionScore ?? null,
       currentPPG: regression?.currentPPG ?? null,
       gamesPlayed: regression?.gamesPlayed ?? 0,
-      recentGames: (weeklyByName[row.player_name] || []).slice(-3).reverse(),
+      recentGames: (weeklyByName[row.player_name] || []).slice(-4).reverse(),
       snapshots: snapshotsFor(row),
       outcomePercentile: outcome?.percentile ?? null,
       // Same units as floor/median/ceiling (season-total scale), so it
