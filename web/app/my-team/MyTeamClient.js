@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { lookupSleeperTeams, saveTeam, deleteTeam, setBuyIn, refreshSavedTeams, pollLiveScores } from "./actions";
 import TeamBadge from "../tools/TeamBadge";
+import LeagueDashboard from "./LeagueDashboard";
 import PositionBadge from "../tools/PositionBadge";
 import AchievementDots from "../tools/AchievementDots";
 import { sortRows, sortArrow } from "@/lib/sortLink";
@@ -1318,8 +1319,10 @@ export default function MyTeamClient({
               </span>
             )}
           </div>
+          {savedTeams.length >= 2 && <LeagueDashboard savedTeams={savedTeams} />}
           {savedTeams.map((t) => (
             <details
+              id={`team-${t.id}`}
               key={t.id}
               className={`my-team-saved-card glass-panel${t.settings?.matchupActual ? " my-team-saved-card-live" : ""}`}
             >

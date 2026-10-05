@@ -3625,3 +3625,14 @@ tr.stat-row-selected td{background:var(--void-panel);}
   .matchup-score-live-dot{animation:none;}
   body::before{transition:none;}
 }
+
+/* All-leagues dashboard (my-team/LeagueDashboard.js) */
+.league-dash{margin-bottom:18px; padding:14px 16px;}
+.league-dash-summary{display:flex; flex-wrap:wrap; gap:8px 28px; margin-bottom:12px; font-family:var(--font-ibm-plex-mono),monospace; font-size:.8rem; color:var(--star-dim);}
+.league-dash-summary strong{font-size:1.05rem; color:var(--star);}
+.league-dash-summary .up strong{color:var(--up);} .league-dash-summary .down strong{color:var(--down);}
+.league-dash-table th{white-space:nowrap; user-select:none;}
+.league-dash-row{cursor:pointer;}
+.league-dash-team{font-weight:600;}
+.league-dash-league,.league-dash-muted{font-size:.75rem; color:var(--star-dim);}
+.league-dash-table .up{color:var(--up);} .league-dash-table .down{color:var(--down);}
