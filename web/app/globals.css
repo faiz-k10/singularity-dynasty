@@ -3636,3 +3636,9 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .league-dash-team{font-weight:600;}
 .league-dash-league,.league-dash-muted{font-size:.75rem; color:var(--star-dim);}
 .league-dash-table .up{color:var(--up);} .league-dash-table .down{color:var(--down);}
+.league-dash-expanded > td{padding:0 !important; background:rgba(var(--star-rgb,255,255,255),.02);}
+.league-dash-detail{padding:12px 14px 16px;}
+.league-dash-detail-head{display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin-bottom:12px;}
+.league-dash-row .my-team-chevron{margin-right:8px;}
+.league-dash-row td:first-child{position:relative;}
+.league-dash-row .my-team-chevron{position:absolute; left:12px; top:50%; transform:translateY(-50%); margin:0;}

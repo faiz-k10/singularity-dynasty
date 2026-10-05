@@ -101,48 +101,6 @@ function MatchupLine({ settings }) {
   );
 }
 
-// Proj vs. Live, You vs. Opp -- a compact 2x2 figure on the right of the
-// saved-team card's summary bar (where MatchupLine used to inline the
-// same numbers as plain text). matchupProj is our own pre-game
-// projection (actions.js, summed over each side's starters);
-// matchupActual is Sleeper's own `points` field on the matchup entry --
-// 0 before kickoff (actions.js already filters that out), a real
-// live-updating score once games start, final once they end. Either row
-// renders independently -- a mid-week view shows both, a pre-kickoff
-// view shows Proj only.
-function MatchupScoreTable({ settings }) {
-  const proj = settings?.matchupProj;
-  const actual = settings?.matchupActual;
-  if (!proj && !actual) return null;
-  const projFavored = proj ? proj.mine - proj.opp : 0;
-  const actualFavored = actual ? actual.mine - actual.opp : 0;
-  return (
-    <div className="matchup-score-table">
-      <div className="matchup-score-row matchup-score-header">
-        <span />
-        <span>You</span>
-        <span>Opp</span>
-      </div>
-      {proj && (
-        <div className="matchup-score-row">
-          <span className="matchup-score-label">Proj</span>
-          <span className={projFavored >= 0 ? "up" : "down"}>{proj.mine.toFixed(1)}</span>
-          <span className={projFavored <= 0 ? "up" : "down"}>{proj.opp.toFixed(1)}</span>
-        </div>
-      )}
-      {actual && (
-        <div className="matchup-score-row matchup-score-live">
-          <span className="matchup-score-label">
-            Live<span className="matchup-score-live-dot" />
-          </span>
-          <span className={actualFavored >= 0 ? "up" : "down"}>{actual.mine.toFixed(1)}</span>
-          <span className={actualFavored <= 0 ? "up" : "down"}>{actual.opp.toFixed(1)}</span>
-        </div>
-      )}
-    </div>
-  );
-}
-
 function sortByPosition(players) {
   return [...players].sort((a, b) => {
     const ai = POSITION_ORDER.indexOf(a.position);
@@ -1319,48 +1277,31 @@ export default function MyTeamClient({
               </span>
             )}
           </div>
-          {savedTeams.length >= 2 && <LeagueDashboard savedTeams={savedTeams} />}
-          {savedTeams.map((t) => (
-            <details
-              id={`team-${t.id}`}
-              key={t.id}
-              className={`my-team-saved-card glass-panel${t.settings?.matchupActual ? " my-team-saved-card-live" : ""}`}
-            >
-              <summary>
-                <span className="my-team-chevron">▸</span>
-                <div className="my-team-saved-title">
-                  <div>
-                    <span className="my-team-saved-name">{t.team_name || "Untitled Team"}</span>
-                    {t.settings?.record && (
-                      <span className="my-team-record">{t.settings.record}</span>
-                    )}
-                    <span className="my-team-saved-league">{t.league_name}</span>
-                    <BuyInField
-                      teamId={t.id}
-                      value={buyIns[t.id] ?? t.buy_in ?? null}
-                      disabled={pending && buyInSavingId === t.id}
-                      onSave={handleSetBuyIn}
-                    />
-                    <MatchupLine settings={t.settings} />
-                  </div>
+          <LeagueDashboard
+            savedTeams={savedTeams}
+            renderExpanded={(t) => (
+              <div className="league-dash-detail">
+                <div className="league-dash-detail-head">
                   <LeagueBadges settings={t.settings} />
+                  <BuyInField
+                    teamId={t.id}
+                    value={buyIns[t.id] ?? t.buy_in ?? null}
+                    disabled={pending && buyInSavingId === t.id}
+                    onSave={handleSetBuyIn}
+                  />
+                  <button
+                    type="button"
+                    className="my-team-remove"
+                    disabled={pending && deletingId === t.id}
+                    onClick={() => handleDelete(t.id)}
+                  >
+                    {pending && deletingId === t.id ? "Removing…" : "Remove"}
+                  </button>
                 </div>
-                <MatchupScoreTable settings={t.settings} />
-                <button
-                  type="button"
-                  className="my-team-remove"
-                  disabled={pending && deletingId === t.id}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handleDelete(t.id);
-                  }}
-                >
-                  {pending && deletingId === t.id ? "Removing…" : "Remove"}
-                </button>
-              </summary>
-              <RosterTable players={t.players || []} bestBall={t.settings?.bestBall} />
-            </details>
-          ))}
+                <RosterTable players={t.players || []} bestBall={t.settings?.bestBall} />
+              </div>
+            )}
+          />
         </div>
       )}
 

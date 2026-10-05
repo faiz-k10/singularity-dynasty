@@ -1,19 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
-
-// Normal CDF (Abramowitz-Stegun) -- for a rough pre-game win estimate only.
-function normCdf(z) {
-  const t = 1 / (1 + 0.2316419 * Math.abs(z));
-  const d = 0.3989423 * Math.exp((-z * z) / 2);
-  const p = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
-  return z > 0 ? 1 - p : p;
-}
-
-// Std dev of the projected-score MARGIN between two lineups. A rough
-// league-wide constant (a starting lineup's weekly score swings ~20 pts,
-// two lineups ~28), not fitted -- so the win % is labelled "est." in the UI.
-const MARGIN_SD = 28;
+import { Fragment, useMemo, useState } from "react";
 
 function parseRecord(rec) {
   const [w = 0, l = 0, t = 0] = String(rec || "0-0").split("-").map(Number);
@@ -32,7 +19,6 @@ function buildRow(t) {
   // Our model zeroes players it projects OUT -- a starter at exactly 0
   // is a lineup hole to fix before kickoff.
   const outStarters = s.bestBall ? [] : starters.filter((p) => p.myProjPts === 0);
-  const winPct = proj ? normCdf((proj.mine - proj.opp) / MARGIN_SD) : null;
   return {
     id: t.id,
     team: t.team_name || "Untitled Team",
@@ -45,7 +31,6 @@ function buildRow(t) {
     liveMine: live?.mine ?? null,
     liveOpp: live?.opp ?? null,
     liveMargin: live ? live.mine - live.opp : null,
-    winPct,
     outStarters,
     bestBall: !!s.bestBall,
   };
@@ -57,16 +42,20 @@ const COLS = [
   { key: "opponent", label: "Opponent", sort: (r) => r.opponent.toLowerCase() },
   { key: "projMine", label: "Proj", sort: (r) => r.projMine ?? -1 },
   { key: "liveMargin", label: "Live", sort: (r) => r.liveMargin ?? -999 },
-  { key: "winPct", label: "Win % (est.)", sort: (r) => r.winPct ?? -1 },
   { key: "alerts", label: "Alerts", sort: (r) => r.outStarters.length },
 ];
 
-export default function LeagueDashboard({ savedTeams }) {
-  const [sortKey, setSortKey] = useState("winPct");
-  const [dir, setDir] = useState("asc"); // lowest win % first = leagues needing attention
+// The main saved-teams view: one sortable row per league, click a row to
+// expand its roster and league settings (renderExpanded, supplied by
+// MyTeamClient since those pieces live there). Default sort floats leagues
+// with lineup alerts to the top.
+export default function LeagueDashboard({ savedTeams, renderExpanded }) {
+  const [sortKey, setSortKey] = useState("alerts");
+  const [dir, setDir] = useState("desc");
+  const [open, setOpen] = useState(() => new Set());
 
   const rows = useMemo(() => {
-    const built = savedTeams.map(buildRow);
+    const built = savedTeams.map((t) => ({ ...buildRow(t), team_obj: t }));
     const col = COLS.find((c) => c.key === sortKey) || COLS[0];
     const mult = dir === "asc" ? 1 : -1;
     return built.sort((a, b) => {
@@ -98,18 +87,19 @@ export default function LeagueDashboard({ savedTeams }) {
     }
   }
 
-  function openCard(id) {
-    const el = document.getElementById(`team-${id}`);
-    if (!el) return;
-    el.open = true;
-    el.scrollIntoView({ behavior: "smooth", block: "start" });
+  function toggle(id) {
+    setOpen((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
   }
 
   return (
     <div className="league-dash glass-panel">
       <div className="league-dash-summary">
-        <div><strong>{rows.length}</strong> leagues</div>
-        <div className="up"><strong>{totals.winning}</strong> winning / leading</div>
+        <div><strong>{rows.length}</strong> {rows.length === 1 ? "league" : "leagues"}</div>
+        <div className="up"><strong>{totals.winning}</strong> leading</div>
         <div className="down"><strong>{totals.losing}</strong> trailing</div>
         <div><strong>{totals.projTotal.toFixed(1)}</strong> total proj pts</div>
         <div className={totals.alerts ? "down" : ""}><strong>{totals.alerts}</strong> lineup alerts</div>
@@ -128,8 +118,10 @@ export default function LeagueDashboard({ savedTeams }) {
           </thead>
           <tbody>
             {rows.map((r) => (
-              <tr key={r.id} className="league-dash-row" onClick={() => openCard(r.id)}>
+              <Fragment key={r.id}>
+              <tr className="league-dash-row" onClick={() => toggle(r.id)}>
                 <td>
+                  <span className="my-team-chevron">{open.has(r.id) ? "▾" : "▸"}</span>
                   <div className="league-dash-team">{r.team}</div>
                   <div className="league-dash-league">{r.league}</div>
                 </td>
@@ -151,7 +143,6 @@ export default function LeagueDashboard({ savedTeams }) {
                     </span>
                   ) : "—"}
                 </td>
-                <td>{r.winPct != null ? `${Math.round(r.winPct * 100)}%` : "—"}</td>
                 <td>
                   {r.outStarters.length ? (
                     <span className="down" title={r.outStarters.map((p) => p.name).join(", ")}>
@@ -164,6 +155,12 @@ export default function LeagueDashboard({ savedTeams }) {
                   )}
                 </td>
               </tr>
+              {open.has(r.id) && (
+                <tr className="league-dash-expanded">
+                  <td colSpan={COLS.length}>{renderExpanded(r.team_obj)}</td>
+                </tr>
+              )}
+              </Fragment>
             ))}
           </tbody>
         </table>
