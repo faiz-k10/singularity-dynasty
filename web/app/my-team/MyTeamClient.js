@@ -1340,7 +1340,7 @@ export default function MyTeamClient({
         />
       )}
 
-      <form className="my-team-lookup" onSubmit={handleLookup}>
+      <form className="my-team-lookup glass-panel" onSubmit={handleLookup}>
         <label htmlFor="sleeper-username" className="my-team-label">
           Sleeper Username
         </label>
