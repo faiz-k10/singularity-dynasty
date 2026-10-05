@@ -140,8 +140,7 @@ function StatDetailRow({ row, colSpan, shapePeers, maxCeiling }) {
                     <div className="stat-panel-pace-recent">
                       {row.recentGames.map((g) => (
                         <div key={`${g.season}-${g.week}`} className="pace-game-row" title={`${g.season} Week ${g.week}`}>
-                          <span className="pace-game-week mono">W{g.week}</span>
-                          <span className="pace-game-sep mono">{g.is_home === true ? "vs" : g.is_home === false ? "@" : "·"}</span>
+                          <span className="pace-game-week mono">W{g.week} {g.is_home === true ? "vs" : g.is_home === false ? "@" : "·"}</span>
                           <TeamBadge team={g.opponent} />
                           <span className="pace-game-pts mono">
                             {g.fantasy_points_ppr != null ? g.fantasy_points_ppr.toFixed(1) : "—"}
