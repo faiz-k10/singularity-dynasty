@@ -8,8 +8,10 @@ const COLOR = {
   rising: "var(--neon-blue)", prime: "var(--up)", veteran: "var(--horizon-gold)", aging: "var(--down)",
   qb: "var(--pos-qb)", rb: "var(--pos-rb)", wr: "var(--pos-wr)", te: "var(--pos-te)",
   elite: "var(--horizon-gold)", strong: "var(--up)", mid: "var(--neon-blue)", depth: "var(--star-dim)",
-  onFire: "var(--horizon)", onIce: "var(--neon-blue)", volatile: "var(--purple)", locked: "var(--up)",
-  buyLow: "var(--pos-rb)", sellHigh: "var(--down)", hero: "var(--horizon-gold)", honorable: "var(--pos-wr)", conArtist: "var(--pos-qb)",
+  // Badge keys use the SAME colors as the badge dots/medallions elsewhere on the
+  // site (globals.css .player-achv-dot.*), so a color means one badge everywhere.
+  onFire: "var(--horizon)", onIce: "var(--frost)", volatile: "var(--purple)", locked: "var(--up)",
+  buyLow: "var(--sprout)", sellHigh: "var(--peak)", hero: "var(--cape)", honorable: "var(--scholar)", conArtist: "var(--menace)",
 };
 
 // Tabbed Portfolio Pulse: one slot-weighted stacked bar per lens. Tabs come
