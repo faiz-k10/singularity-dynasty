@@ -14,12 +14,13 @@
   --up:#6FE3A8;
   --down:#FF6B6B;
   --purple:#B18AFF;
-  --frost:#6FB8E0; /* On Ice's own blue -- distinct from --neon-blue (Bounce-back already owns that hue) */
-  --cape:#B22234; /* Weekly Hero's own patriotic red (Old Glory Red), by request */
-  --scholar:#2DD4BF; /* Honorable's own teal -- distinct from every other blue/green already in use */
-  --menace:#6B0F2A; /* Con Artist's own color -- a near-black blood red, deliberately darker/more sinister than any other badge hue (incl. --down's coral-red) to read as a warning, not just another accent */
-  --sprout:#84CC16; /* Buy Low's own lime -- distinct from --up's mint-teal (Steady Eddy already owns that hue), "growth coming" read fits real workload that hasn't scored yet */
-  --peak:#F0A020; /* Sell High's own amber -- distinct from --horizon's coral-orange and --horizon-gold's pale gold, "cash out, this is the high point" warning read */
+  --frost:#4F8EF7;
+  /* Badge palette (cape/fire/peak/sprout/eddy/scholar/frost/icarus/menace): nine badge hues spread around the color wheel (red, orange, yellow, lime, green, cyan, blue, violet, magenta), tuned separately for dark and light mode so no two read as the same color in either. Used by the badge dots/medallions/ticker AND Portfolio Pulse's Badges tab. */
+  --cape:#E5384F;
+  --scholar:#22D3EE;
+  --menace:#E879F9;
+  --sprout:#A3E635;
+  --peak:#FACC15;
   --matchup-neutral:#F0C43D;  /* deliberately distinct from --horizon-gold --
                                   that's already "established" confidence;
                                   reusing it here would conflate the two
@@ -47,12 +48,18 @@
   --up-rgb:111,227,168;
   --down-rgb:255,107,107;
   --purple-rgb:177,138,255;
-  --frost-rgb:111,184,224;
-  --cape-rgb:178,34,52;
-  --scholar-rgb:45,212,191;
-  --menace-rgb:107,15,42;
-  --sprout-rgb:132,204,22;
-  --peak-rgb:240,160,32;
+  --frost-rgb:79,142,247;
+  --cape-rgb:229,56,79;
+  --scholar-rgb:34,211,238;
+  --menace-rgb:232,121,249;
+  --sprout-rgb:163,230,53;
+  --peak-rgb:250,204,21;
+  --fire:#FF7A45;
+  --fire-rgb:255,122,69;
+  --eddy:#4ADE80;
+  --eddy-rgb:74,222,128;
+  --icarus:#A78BFA;
+  --icarus-rgb:167,139,250;
   --matchup-neutral-rgb:240,196,61;
   --star-dim-rgb:153,151,168;
   --orbit-alpha:0.3;
@@ -76,12 +83,12 @@
     --up:#1C8F52;
     --purple:#7C3AED;
     --down:#D63F39;
-    --frost:#1D6FA5;
-    --cape:#B22234;
-    --scholar:#0F766E;
-    --menace:#4A0A1D;
-    --sprout:#4D7C0F;
-    --peak:#92400E;
+    --frost:#2563EB;
+    --cape:#C41E3A;
+    --scholar:#0891B2;
+    --menace:#C026D3;
+    --sprout:#65A30D;
+    --peak:#CA8A04;
     --matchup-neutral:#A87B00;
     --pos-qb:#D6005E;
     --pos-rb:#007A50;
@@ -95,12 +102,18 @@
     --up-rgb:28,143,82;
     --purple-rgb:124,58,237;
     --down-rgb:214,63,57;
-    --frost-rgb:29,111,165;
-    --cape-rgb:178,34,52;
-    --scholar-rgb:15,118,110;
-    --menace-rgb:74,10,29;
-    --sprout-rgb:77,124,15;
-    --peak-rgb:146,64,14;
+    --frost-rgb:37,99,235;
+    --cape-rgb:196,30,58;
+    --scholar-rgb:8,145,178;
+    --menace-rgb:192,38,211;
+    --sprout-rgb:101,163,13;
+    --peak-rgb:202,138,4;
+    --fire:#EA580C;
+    --fire-rgb:234,88,12;
+    --eddy:#16A34A;
+    --eddy-rgb:22,163,74;
+    --icarus:#7C3AED;
+    --icarus-rgb:124,58,237;
     --matchup-neutral-rgb:168,123,0;
     --star-dim-rgb:104,99,111;
     --orbit-alpha:0.8;
@@ -119,12 +132,12 @@
   --up:#1C8F52;
   --purple:#7C3AED;
   --down:#D63F39;
-  --frost:#1D6FA5;
-  --cape:#B22234;
-  --scholar:#0F766E;
-  --menace:#4A0A1D;
-  --sprout:#4D7C0F;
-  --peak:#92400E;
+  --frost:#2563EB;
+  --cape:#C41E3A;
+  --scholar:#0891B2;
+  --menace:#C026D3;
+  --sprout:#65A30D;
+  --peak:#CA8A04;
   --matchup-neutral:#A87B00;
   --pos-qb:#D6005E;
   --pos-rb:#007A50;
@@ -138,12 +151,18 @@
   --up-rgb:28,143,82;
   --purple-rgb:124,58,237;
   --down-rgb:214,63,57;
-  --frost-rgb:29,111,165;
-  --cape-rgb:178,34,52;
-  --scholar-rgb:15,118,110;
-  --menace-rgb:74,10,29;
-  --sprout-rgb:77,124,15;
-  --peak-rgb:146,64,14;
+  --frost-rgb:37,99,235;
+  --cape-rgb:196,30,58;
+  --scholar-rgb:8,145,178;
+  --menace-rgb:192,38,211;
+  --sprout-rgb:101,163,13;
+  --peak-rgb:202,138,4;
+  --fire:#EA580C;
+  --fire-rgb:234,88,12;
+  --eddy:#16A34A;
+  --eddy-rgb:22,163,74;
+  --icarus:#7C3AED;
+  --icarus-rgb:124,58,237;
   --matchup-neutral-rgb:168,123,0;
   --orbit-alpha:0.8;
 }
@@ -218,18 +237,18 @@ body::before{
 .ticker-badge svg{width:14px; height:14px; display:block;}
 .ticker-badge.gold{background:var(--horizon-gold); color:var(--void); box-shadow:0 0 5px rgba(var(--horizon-gold-rgb),0.5);}
 .ticker-badge.silver{background:#A0AAB9; color:var(--void); box-shadow:0 0 4px rgba(160,170,185,0.4);}
-.ticker-badge.icarus{background:var(--purple); color:#fff; box-shadow:0 0 5px rgba(var(--purple-rgb),0.5);}
-.ticker-badge.eddy{background:var(--up); color:var(--void); box-shadow:0 0 5px rgba(var(--up-rgb),0.5);}
+.ticker-badge.icarus{background:var(--icarus); color:var(--void); box-shadow:0 0 5px rgba(var(--icarus-rgb),0.5);}
+.ticker-badge.eddy{background:var(--eddy); color:var(--void); box-shadow:0 0 5px rgba(var(--eddy-rgb),0.5);}
 /* Added once the ticker's pool grew from Confidence/Risky Icarus/Steady
    Eddy to the full achievement set -- same colors as .weekly-glyph-badge's
    own variants, just this component's own smaller glow radius. */
-.ticker-badge.heat{background:var(--horizon); color:#fff; box-shadow:0 0 5px rgba(var(--horizon-rgb),0.5);}
-.ticker-badge.ice{background:var(--frost); color:#fff; box-shadow:0 0 5px rgba(var(--frost-rgb),0.5);}
-.ticker-badge.cape{background:var(--cape); color:#fff; box-shadow:0 0 5px rgba(var(--cape-rgb),0.5);}
+.ticker-badge.heat{background:var(--fire); color:var(--void); box-shadow:0 0 5px rgba(var(--fire-rgb),0.5);}
+.ticker-badge.ice{background:var(--frost); color:var(--void); box-shadow:0 0 5px rgba(var(--frost-rgb),0.5);}
+.ticker-badge.cape{background:var(--cape); color:var(--void); box-shadow:0 0 5px rgba(var(--cape-rgb),0.5);}
 .ticker-badge.sprout{background:var(--sprout); color:var(--void); box-shadow:0 0 5px rgba(var(--sprout-rgb),0.5);}
 .ticker-badge.peak{background:var(--peak); color:var(--void); box-shadow:0 0 5px rgba(var(--peak-rgb),0.5);}
 .ticker-badge.honorable{background:var(--scholar); color:var(--void); box-shadow:0 0 5px rgba(var(--scholar-rgb),0.5);}
-.ticker-badge.menace{background:var(--menace); color:#fff; box-shadow:0 0 6px rgba(var(--menace-rgb),0.65);}
+.ticker-badge.menace{background:var(--menace); color:var(--void); box-shadow:0 0 6px rgba(var(--menace-rgb),0.65);}
 .ticker-badge-label{font-size:10px; letter-spacing:0.06em; text-transform:uppercase; color:var(--star-dim); opacity:0.75;}
 
 /* ---------- BRAND MARK ---------- */
@@ -1912,10 +1931,10 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .rankings-table tr.row-expandable:hover .player-achv-dot{transform:scale(1.35);}
 .player-achv-dot.gold{background:var(--horizon-gold); box-shadow:0 0 4px rgba(var(--horizon-gold-rgb),0.7);}
 .player-achv-dot.silver{background:#A0AAB9; box-shadow:0 0 3px rgba(160,170,185,0.6);}
-.player-achv-dot.heat{background:var(--horizon); box-shadow:0 0 4px rgba(var(--horizon-rgb),0.7);}
+.player-achv-dot.heat{background:var(--fire); box-shadow:0 0 4px rgba(var(--fire-rgb),0.7);}
 .player-achv-dot.ice{background:var(--frost); box-shadow:0 0 4px rgba(var(--frost-rgb),0.7);}
-.player-achv-dot.icarus{background:var(--purple); box-shadow:0 0 4px rgba(var(--purple-rgb),0.7);}
-.player-achv-dot.eddy{background:var(--up); box-shadow:0 0 4px rgba(var(--up-rgb),0.7);}
+.player-achv-dot.icarus{background:var(--icarus); box-shadow:0 0 4px rgba(var(--icarus-rgb),0.7);}
+.player-achv-dot.eddy{background:var(--eddy); box-shadow:0 0 4px rgba(var(--eddy-rgb),0.7);}
 .player-achv-dot.cape{background:var(--cape); box-shadow:0 0 4px rgba(var(--cape-rgb),0.7);}
 .player-achv-dot.sprout{background:var(--sprout); box-shadow:0 0 4px rgba(var(--sprout-rgb),0.7);}
 .player-achv-dot.peak{background:var(--peak); box-shadow:0 0 4px rgba(var(--peak-rgb),0.7);}
@@ -2304,10 +2323,10 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .weekly-achievement-badge.open .weekly-achievement-label{max-width:130px; margin-left:6px; opacity:1;}
 .weekly-achievement-badge.gold .weekly-achievement-label{color:var(--horizon-gold);}
 .weekly-achievement-badge.silver .weekly-achievement-label{color:#A0AAB9;}
-.weekly-achievement-badge.heat .weekly-achievement-label{color:var(--horizon);}
+.weekly-achievement-badge.heat .weekly-achievement-label{color:var(--fire);}
 .weekly-achievement-badge.ice .weekly-achievement-label{color:var(--frost);}
-.weekly-achievement-badge.icarus .weekly-achievement-label{color:var(--purple);}
-.weekly-achievement-badge.eddy .weekly-achievement-label{color:var(--up);}
+.weekly-achievement-badge.icarus .weekly-achievement-label{color:var(--icarus);}
+.weekly-achievement-badge.eddy .weekly-achievement-label{color:var(--eddy);}
 .weekly-achievement-badge.cape .weekly-achievement-label{color:var(--cape);}
 .weekly-achievement-badge.sprout .weekly-achievement-label{color:var(--sprout);}
 .weekly-achievement-badge.peak .weekly-achievement-label{color:var(--peak);}
@@ -2334,15 +2353,15 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
   border-radius:50%; font-size:17px; line-height:1; flex-shrink:0; cursor:pointer; vertical-align:middle;
 }
 .weekly-glyph-badge svg{width:20px; height:20px; display:block;}
-.weekly-glyph-badge.heat{background:var(--horizon); color:#fff; box-shadow:0 0 8px rgba(var(--horizon-rgb),0.55);}
-.weekly-glyph-badge.ice{background:var(--frost); color:#fff; box-shadow:0 0 8px rgba(var(--frost-rgb),0.55);}
-.weekly-glyph-badge.icarus{background:var(--purple); color:#fff; box-shadow:0 0 8px rgba(var(--purple-rgb),0.55);}
-.weekly-glyph-badge.eddy{background:var(--up); color:var(--void); box-shadow:0 0 8px rgba(var(--up-rgb),0.55);}
-.weekly-glyph-badge.cape{background:var(--cape); color:#fff; box-shadow:0 0 8px rgba(var(--cape-rgb),0.55);}
+.weekly-glyph-badge.heat{background:var(--fire); color:var(--void); box-shadow:0 0 8px rgba(var(--fire-rgb),0.55);}
+.weekly-glyph-badge.ice{background:var(--frost); color:var(--void); box-shadow:0 0 8px rgba(var(--frost-rgb),0.55);}
+.weekly-glyph-badge.icarus{background:var(--icarus); color:var(--void); box-shadow:0 0 8px rgba(var(--icarus-rgb),0.55);}
+.weekly-glyph-badge.eddy{background:var(--eddy); color:var(--void); box-shadow:0 0 8px rgba(var(--eddy-rgb),0.55);}
+.weekly-glyph-badge.cape{background:var(--cape); color:var(--void); box-shadow:0 0 8px rgba(var(--cape-rgb),0.55);}
 .weekly-glyph-badge.sprout{background:var(--sprout); color:var(--void); box-shadow:0 0 8px rgba(var(--sprout-rgb),0.55);}
 .weekly-glyph-badge.peak{background:var(--peak); color:var(--void); box-shadow:0 0 8px rgba(var(--peak-rgb),0.55);}
 .weekly-glyph-badge.honorable{background:var(--scholar); color:var(--void); box-shadow:0 0 8px rgba(var(--scholar-rgb),0.55);}
-.weekly-glyph-badge.menace{background:var(--menace); color:#fff; box-shadow:0 0 10px rgba(var(--menace-rgb),0.75);}
+.weekly-glyph-badge.menace{background:var(--menace); color:var(--void); box-shadow:0 0 10px rgba(var(--menace-rgb),0.75);}
 /* Four stats, each its own little label-over-value stack -- same
    eyebrow-adjacent mono-uppercase label language as .weekly-panel-title
    elsewhere in this row, just without the gold dash (these are plain

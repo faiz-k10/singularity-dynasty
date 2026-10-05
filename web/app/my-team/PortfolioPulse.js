@@ -10,7 +10,7 @@ const COLOR = {
   elite: "var(--horizon-gold)", strong: "var(--up)", mid: "var(--neon-blue)", depth: "var(--star-dim)",
   // Badge keys use the SAME colors as the badge dots/medallions elsewhere on the
   // site (globals.css .player-achv-dot.*), so a color means one badge everywhere.
-  onFire: "var(--horizon)", onIce: "var(--frost)", volatile: "var(--purple)", locked: "var(--up)",
+  onFire: "var(--fire)", onIce: "var(--frost)", volatile: "var(--icarus)", locked: "var(--eddy)",
   buyLow: "var(--sprout)", sellHigh: "var(--peak)", hero: "var(--cape)", honorable: "var(--scholar)", conArtist: "var(--menace)",
 };
 
