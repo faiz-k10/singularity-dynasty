@@ -3822,8 +3822,8 @@ summary:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible{
    status word in the same color. */
 .status-dot{width:10px; height:10px; border-radius:50%; flex-shrink:0; background:color-mix(in srgb, var(--star-dim) 45%, transparent);}
 .status-dot-3{background:var(--down); box-shadow:0 0 8px color-mix(in srgb, var(--down) 60%, transparent);}
-.status-dot-2{background:var(--horizon);}
-.status-dot-1{background:var(--horizon-gold);}
+.status-dot-2{background:var(--horizon); box-shadow:0 0 8px color-mix(in srgb, var(--horizon) 60%, transparent);}
+.status-dot-1{background:var(--horizon-gold); box-shadow:0 0 8px color-mix(in srgb, var(--horizon-gold) 60%, transparent);}
 .status-text{font-size:12px; font-weight:600;}
 .status-text-3{color:var(--down);} .status-text-2{color:var(--horizon);} .status-text-1{color:var(--horizon-gold);}
 
