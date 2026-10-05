@@ -53,16 +53,16 @@ function toPercents(counts) {
   return pcts;
 }
 
-// Extra Portfolio Pulse tabs. Every tab is weighted by roster slots (a
-// player on 3 of your teams counts 3 times) and reports how many slots it
-// could actually classify (`rated` of `total`) -- players missing the
+// Extra Portfolio Pulse tabs. Every tab counts each DISTINCT player once (a
+// snapshot of who is in your portfolio, not how heavily you own them) and
+// reports how many players it could actually classify (`rated` of `total`) -- players missing the
 // needed field are left out rather than guessed. Cutoffs are product
 // judgment, not backtested.
 //   age        -> row.age (Sleeper player dictionary)
 //   position   -> row.position
 //   badges     -> row.badges: achievement keys the player carries (Established /
 //                 Building are the confidence badges and are excluded by the
-//                 caller); counted per roster slot, shown as counts not shares
+//                 caller); counted once per player, shown as counts not shares
 //   production -> row.myProjPts (our model's weekly projection) vs
 //                 position-specific cutoffs; a 0 projection means OUT and is
 //                 unrated rather than "depth"
@@ -127,7 +127,7 @@ function badgeTab(counts) {
 }
 
 function buildTabs(list) {
-  const total = list.reduce((s, r) => s + (r.teams || 0), 0);
+  const total = list.length;
 
   const ageCounts = AGE_BANDS.map(() => 0);
   const posCounts = POSITIONS.map(() => 0);
@@ -135,7 +135,7 @@ function buildTabs(list) {
   const badgeCounts = BADGES.map(() => 0);
 
   for (const r of list) {
-    const n = r.teams || 0;
+    const n = 1; // each player counts once, however many of your teams roster him
     if (typeof r.age === "number" && r.age > 0) {
       const i = AGE_BANDS.findIndex((b) => b.test(r.age));
       if (i >= 0) ageCounts[i] += n;

@@ -14,7 +14,7 @@ const COLOR = {
   buyLow: "var(--sprout)", sellHigh: "var(--peak)", hero: "var(--cape)", honorable: "var(--scholar)", conArtist: "var(--menace)",
 };
 
-// Tabbed Portfolio Pulse: one slot-weighted stacked bar per lens. Tabs come
+// Tabbed Portfolio Pulse: one stacked bar per lens, each distinct player counted once. Tabs come
 // from the portfolio_summary insight (lib/insights/portfolioSummary.js).
 export default function PortfolioPulse({ summary }) {
   const tabs = (summary.tabs || []).filter((t) => t.buckets);
@@ -29,10 +29,10 @@ export default function PortfolioPulse({ summary }) {
         <span className="portfolio-pulse-sub">
           {tab.title}
           {tab.unit === "badges"
-            ? ` · ${tab.rated} earned across your roster slots`
+            ? ` · ${tab.rated} earned across your players`
             : tab.total
-              ? ` · ${tab.rated} of ${tab.total} slots`
-              : ` · ${summary.totalSlots} roster slots`}
+              ? ` · ${tab.rated} of ${tab.total} players`
+              : ` · ${summary.totalPlayers} players`}
         </span>
         <div className="board-toggle po-pulse-tabs" role="tablist">
           {tabs.map((t) => (

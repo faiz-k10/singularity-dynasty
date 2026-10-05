@@ -147,24 +147,25 @@ test("computePortfolioSummary: empty/missing rows -> zeros, not a crash", async 
 const tabOf = (result, key) => result.tabs.find((t) => t.key === key);
 const pctOf = (t, key) => t.buckets.find((b) => b.key === key).pct;
 
-test("tabs: age bands are weighted by roster slots and unknown ages are left out", async () => {
+test("tabs: age bands count each player once (not per team) and leave unknown ages out", async () => {
   const rows = [
     { name: "Young", teams: 3, age: 22, position: "WR" },
+    { name: "Young2", teams: 5, age: 23, position: "WR" },
     { name: "Prime", teams: 1, age: 26, position: "WR" },
     { name: "NoAge", teams: 5, age: null, position: "WR" },
   ];
   const t = tabOf(await computePortfolioSummary(rows), "age");
-  assert.equal(t.rated, 4);
-  assert.equal(t.total, 9);
-  assert.equal(pctOf(t, "rising"), 75);
-  assert.equal(pctOf(t, "prime"), 25);
+  assert.equal(t.rated, 3);
+  assert.equal(t.total, 4);
+  assert.equal(pctOf(t, "rising"), 67);
+  assert.equal(pctOf(t, "prime"), 33);
   assert.equal(t.buckets.reduce((s, b) => s + b.pct, 0), 100);
 });
 
-test("tabs: position mix counts QB/RB/WR/TE slots and ignores other positions", async () => {
+test("tabs: position mix counts distinct QB/RB/WR/TE players and ignores other positions", async () => {
   const rows = [
-    { name: "A", teams: 2, position: "QB" },
-    { name: "B", teams: 2, position: "RB" },
+    { name: "A", teams: 9, position: "QB" },
+    { name: "B", teams: 1, position: "RB" },
     { name: "K", teams: 9, position: "K" },
   ];
   const t = tabOf(await computePortfolioSummary(rows), "position");
@@ -173,9 +174,20 @@ test("tabs: position mix counts QB/RB/WR/TE slots and ignores other positions", 
   assert.equal(pctOf(t, "wr"), 0);
 });
 
+test("tabs: badge count is one per player, skips unlisted keys (e.g. confidence) and unearned badges", async () => {
+  const rows = [
+    { name: "A", teams: 6, badges: ["onFire", "confidence", "hero"] },
+    { name: "B", teams: 1, badges: ["onFire"] },
+  ];
+  const t = tabOf(await computePortfolioSummary(rows), "badges");
+  assert.equal(t.rated, 3); // onFire x2 (two players) + hero x1
+  assert.deepEqual(t.buckets.map((b) => [b.key, b.slots]), [["hero", 1], ["onFire", 2]]);
+  assert.equal(t.buckets.reduce((s, b) => s + b.pct, 0), 100);
+});
+
 test("tabs: production tiers use position-specific cutoffs and skip OUT (0) projections", async () => {
   const rows = [
-    { name: "QB1", teams: 1, position: "QB", myProjPts: 21 }, // elite for a QB
+    { name: "QB1", teams: 4, position: "QB", myProjPts: 21 }, // elite for a QB
     { name: "WR1", teams: 1, position: "WR", myProjPts: 12 }, // strong for a WR
     { name: "WR2", teams: 1, position: "WR", myProjPts: 5 }, // depth
     { name: "Out", teams: 7, position: "RB", myProjPts: 0 }, // OUT -> unrated
