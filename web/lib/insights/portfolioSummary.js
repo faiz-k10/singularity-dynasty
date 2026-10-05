@@ -72,17 +72,18 @@ const AGE_BANDS = [
   { key: "veteran", label: "Veteran (28\u201330)", test: (a) => a >= 28 && a <= 30 },
   { key: "aging", label: "Aging (31+)", test: (a) => a >= 31 },
 ];
-// Achievement badges the Badges tab counts (keys match app/tools/
+// Achievement badges the Badges tab counts, in display order (Weekly Hero,
+// Buy Low / Sell High, Risky Icarus / Steady Eddy, then the rest; keys match app/tools/
 // achievements.js getAchievements; the confidence badge -- Established /
 // Building -- is deliberately not counted).
 const BADGES = [
-  { key: "onFire", label: "On Fire" },
-  { key: "onIce", label: "On Thin Ice" },
-  { key: "volatile", label: "Risky Icarus" },
-  { key: "locked", label: "Steady Eddy" },
+  { key: "hero", label: "Weekly Hero" },
   { key: "buyLow", label: "Buy Low" },
   { key: "sellHigh", label: "Sell High" },
-  { key: "hero", label: "Weekly Hero" },
+  { key: "volatile", label: "Risky Icarus" },
+  { key: "locked", label: "Steady Eddy" },
+  { key: "onFire", label: "On Fire" },
+  { key: "onIce", label: "On Thin Ice" },
   { key: "honorable", label: "Honorable" },
   { key: "conArtist", label: "Con Artist" },
 ];
