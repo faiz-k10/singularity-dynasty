@@ -136,8 +136,16 @@ function StatDetailRow({ row, colSpan, shapePeers, maxCeiling }) {
                     {row.regressionScore >= 0 ? "+" : ""}
                     {row.regressionScore.toFixed(2)} vs. pace
                   </div>
-                  {row.outcomePercentile != null && (
-                    <div className="stat-panel-pace-pctile">{ordinal(row.outcomePercentile)} percentile pace</div>
+                  {row.recentGames?.length > 0 && (
+                    <div className="stat-panel-pace-recent">
+                      <span className="stat-panel-pace-recent-label mono">Last {row.recentGames.length === 1 ? "game" : `${row.recentGames.length} games`}</span>
+                      {row.recentGames.map((g) => (
+                        <div key={g.week} className="stat-panel-pace-recent-row mono">
+                          <span>Wk {g.week}</span>
+                          <span>{Number(g.points).toFixed(1)}</span>
+                        </div>
+                      ))}
+                    </div>
                   )}
                 </div>
                 {/* Vertical mirror of the main table's own horizontal Range

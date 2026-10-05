@@ -95,11 +95,13 @@ const getCachedWeekData = unstable_cache(
     ]);
 
     const actualProductionByName = {};
+    const weeklyByName = {};
     for (const row of actualRows || []) {
       (actualProductionByName[row.player_name] ??= []).push(row.actual_points);
+      (weeklyByName[row.player_name] ??= []).push({ week: row.week, points: row.actual_points });
     }
 
-    return { latest, rows: data || [], totalCount: count || 0, actualProductionByName };
+    return { latest, rows: data || [], totalCount: count || 0, actualProductionByName, weeklyByName };
   },
   ["player-simulations-latest-week"],
   { revalidate: 60 }
@@ -134,7 +136,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
   // there's no real caching benefit to bundling it into the 60s payload,
   // and keeping it separate mirrors how redraft-rankings' own expanded
   // row already does this same lookup.
-  const [{ tier }, { latest, rows, totalCount: fetchedCount, actualProductionByName }, bioByNamePos] =
+  const [{ tier }, { latest, rows, totalCount: fetchedCount, actualProductionByName, weeklyByName }, bioByNamePos] =
     await Promise.all([resolveTier(supabase), getCachedWeekData(), getPlayerBiosByNamePos()]);
   const hasFullAccess = PAID_TIERS.includes(tier);
 
@@ -249,6 +251,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
       regressionScore: regression?.regressionScore ?? null,
       currentPPG: regression?.currentPPG ?? null,
       gamesPlayed: regression?.gamesPlayed ?? 0,
+      recentGames: (weeklyByName[row.player_name] || []).slice(-3).reverse(),
       outcomePercentile: outcome?.percentile ?? null,
       // Same units as floor/median/ceiling (season-total scale), so it
       // can be positioned on the Range bar with the exact same maxCeiling
