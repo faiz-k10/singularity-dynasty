@@ -122,31 +122,12 @@ function formatPts(v) {
   return v === null || v === undefined ? "—" : v.toFixed(1);
 }
 
-function formatDiff(v) {
-  if (v === null || v === undefined) return "—";
-  return `${v > 0 ? "+" : ""}${v.toFixed(1)}`;
-}
-
-// Same good/bad/heat shape as MatchupBadge's matchupTint, reusing the
-// site's existing .matchup-cell heat-tint classes -- green the more our
-// model is above Sleeper's, red the more it's below, capped at a 5-point
-// spread (roughly a full tier of fantasy scoring) so one huge outlier
-// doesn't wash out every other row's tint.
-function diffTint(diff) {
-  if (diff === null || diff === undefined) return null;
-  const heat = Math.min(Math.abs(diff) / 5, 1);
-  const cls = diff > 0 ? "good" : diff < 0 ? "bad" : "neutral";
-  return { cls, heat };
-}
-
 const ROSTER_COLUMN_TYPES = {
   slot: "string",
   name: "string",
   position: "string",
   team: "string",
   myProjPts: "number",
-  sleeperProjPts: "number",
-  diffProj: "number",
   startPct: "number",
   rosterPct: "number",
 };
@@ -247,15 +228,12 @@ function RosterTable({ players, bestBall = false }) {
               <Th label="Pos" sortKeyName="position" {...thProps} />
               <Th label="Team" sortKeyName="team" {...thProps} />
               <Th label="Singularity Proj" sortKeyName="myProjPts" {...thProps} />
-              <Th label="Sleeper Proj" sortKeyName="sleeperProjPts" {...thProps} />
-              <Th label="Diff" sortKeyName="diffProj" {...thProps} />
               {view === "full" && <Th label="Start %" sortKeyName="startPct" {...thProps} />}
               {view === "full" && <Th label="Roster %" sortKeyName="rosterPct" {...thProps} />}
             </tr>
           </thead>
           <tbody>
             {rows.map((p) => {
-              const tint = diffTint(p.diffProj);
               return (
                 <tr
                   key={p.player_id}
@@ -272,13 +250,6 @@ function RosterTable({ players, bestBall = false }) {
                   <td><PositionBadge position={p.position} /></td>
                   <td><TeamBadge team={p.team} /></td>
                   <td className="mono">{formatPts(p.myProjPts)}</td>
-                  <td className="mono">{formatPts(p.sleeperProjPts)}</td>
-                  <td
-                    className={`mono${tint ? ` matchup-cell ${tint.cls}` : ""}`}
-                    style={tint ? { "--heat": tint.heat } : undefined}
-                  >
-                    {formatDiff(p.diffProj)}
-                  </td>
                   {view === "full" && <td className="mono">{formatPct(p.startPct)}</td>}
                   {view === "full" && <td className="mono">{formatPct(p.rosterPct)}</td>}
                 </tr>
@@ -311,8 +282,6 @@ const ANALYSIS_METRICS = [
   { key: "glPOE", label: "FP − xFP / G", fmt: signed, gameLog: true },
   { key: "glGames", label: "Games", fmt: n0, gameLog: true },
   { key: "myProjPts", label: "Singularity Proj", fmt: n1 },
-  { key: "sleeperProjPts", label: "Sleeper Proj", fmt: n1 },
-  { key: "diffProj", label: "Proj Diff", fmt: signed },
   { key: "simMedian", label: "Sim Median", fmt: n0 },
   { key: "simCeiling", label: "Sim Ceiling", fmt: n0 },
   { key: "simFloor", label: "Sim Floor", fmt: n0 },

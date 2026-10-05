@@ -19,7 +19,6 @@ import {
   fetchSleeperMatchups,
   fetchSleeperState,
   fetchSleeperResearch,
-  fetchSleeperProjections,
   getSleeperPlayers,
 } from "@/lib/sleeper";
 import { fetchInjuryFeed } from "@/lib/injuryFeed";
@@ -138,8 +137,6 @@ export async function lookupSleeperTeams(username) {
   const matchupWeek =
     state.season_type === "regular" ? state.display_week || state.week || 1 : 1;
   const research = await fetchSleeperResearch(season, researchWeek);
-  // Sleeper's projection for the week being played (week 1 preseason).
-  const projections = await fetchSleeperProjections(season, matchupWeek);
 
   // Our own model's week 1 projection, alongside Sleeper's -- same
   // redraft_rankings table /tools/redraft-rankings reads from (public
@@ -311,18 +308,10 @@ export async function lookupSleeperTeams(username) {
       // its own badge alongside Teams/Roster Spots/QB Format/Scoring.
       settings.starters = nonBenchSlots.length;
 
-      // Same recPts already computed above for the Scoring badge decides
-      // which of the three projection flavors actually matches this
-      // league's format -- a half-PPR league's players should show their
-      // half-PPR week 1 number, not the PPR or standard one.
-      const projField = recPts >= 1 ? "ppr" : recPts > 0 ? "half" : "std";
-
       const rosterPlayers = (myRoster.players || []).map((playerId) => {
         const p = players[playerId];
         const r = research[playerId];
-        const proj = projections[playerId];
         const name = p ? `${p.first_name || ""} ${p.last_name || ""}`.trim() || playerId : playerId;
-        const sleeperProjPts = proj ? proj[projField] : null;
         const normName = normalizeName(name);
         const myProjPts = myProjByName[normName] ?? null;
         const achievements = getAchievements(
@@ -346,16 +335,7 @@ export async function lookupSleeperTeams(username) {
           // defines) -- what lets the default view show starters in
           // Sleeper's actual lineup order instead of an arbitrary one.
           slotIndex: slotIndexByPlayerId[playerId] ?? 999,
-          sleeperProjPts,
           myProjPts,
-          // Computed once here (not in the client) so the sortable Diff
-          // column has a real numeric field to sort on, same as every
-          // other column -- null whenever either side is missing rather
-          // than treating a missing projection as a 0-point player.
-          diffProj:
-            myProjPts !== null && sleeperProjPts !== null
-              ? myProjPts - sleeperProjPts
-              : null,
           rosterPct: typeof r?.owned === "number" ? r.owned : null,
           startPct: typeof r?.started === "number" ? r.started : null,
         };
