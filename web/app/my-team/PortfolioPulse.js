@@ -3,28 +3,19 @@
 import { useState } from "react";
 
 // Segment colors by bucket key -- all existing theme tokens, so they flip
-// correctly in light mode. (Risk buckets keep their original CSS classes.)
+// correctly in light mode.
 const COLOR = {
   rising: "var(--neon-blue)", prime: "var(--up)", veteran: "var(--horizon-gold)", aging: "var(--down)",
   qb: "var(--pos-qb)", rb: "var(--pos-rb)", wr: "var(--pos-wr)", te: "var(--pos-te)",
-  starters: "var(--up)", bench: "var(--star-dim)",
   elite: "var(--horizon-gold)", strong: "var(--up)", mid: "var(--neon-blue)", depth: "var(--star-dim)",
   onFire: "var(--horizon)", onIce: "var(--neon-blue)", volatile: "var(--purple)", locked: "var(--up)",
   buyLow: "var(--pos-rb)", sellHigh: "var(--down)", hero: "var(--horizon-gold)", honorable: "var(--pos-wr)", conArtist: "var(--pos-qb)",
 };
 
-const RISK_LABEL = "Risk";
-
 // Tabbed Portfolio Pulse: one slot-weighted stacked bar per lens. Tabs come
-// from the portfolio_summary insight (lib/insights/portfolioSummary.js) plus
-// the original ceiling-to-floor Risk profile as a last tab.
+// from the portfolio_summary insight (lib/insights/portfolioSummary.js).
 export default function PortfolioPulse({ summary }) {
-  const tabs = [
-    ...(summary.tabs || []).filter((t) => t.buckets),
-    ...(summary.profile
-      ? [{ key: "risk", label: RISK_LABEL, title: "Risk profile", buckets: summary.profile, risk: true }]
-      : []),
-  ];
+  const tabs = (summary.tabs || []).filter((t) => t.buckets);
   const [active, setActive] = useState(tabs[0]?.key);
   const tab = tabs.find((t) => t.key === active) || tabs[0];
   if (!tab) return null;
@@ -64,16 +55,16 @@ export default function PortfolioPulse({ summary }) {
         {tab.buckets.map((b) => (
           <div
             key={b.key}
-            className={`portfolio-pulse-seg${tab.risk ? ` portfolio-pulse-seg-${b.key}` : ""}`}
-            style={{ width: `${b.pct}%`, ...(tab.risk ? null : { background: COLOR[b.key] }) }}
+            className="portfolio-pulse-seg"
+            style={{ width: `${b.pct}%`, background: COLOR[b.key] }}
             title={`${b.label}: ${b.pct}%`}
           />
         ))}
       </div>
       <div className="portfolio-pulse-legend">
         {tab.buckets.map((b) => (
-          <span key={b.key} className={`portfolio-pulse-legend-item${tab.risk ? ` portfolio-pulse-seg-${b.key}` : ""}`}>
-            <span className="portfolio-pulse-swatch" style={tab.risk ? undefined : { background: COLOR[b.key] }} />
+          <span key={b.key} className="portfolio-pulse-legend-item">
+            <span className="portfolio-pulse-swatch" style={{ background: COLOR[b.key] }} />
             {b.label} <strong>{tab.unit === "badges" ? b.slots : `${b.pct}%`}</strong>
           </span>
         ))}

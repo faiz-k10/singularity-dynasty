@@ -19,8 +19,8 @@
 // scale, not a backtested threshold (same "product judgment, not
 // validated" honesty the model's own README uses for similar calls).
 //
-// `tabs` adds four more slot-weighted views (age, position, lineup,
-// production) -- see buildTabs. Age comes from Sleeper's player dictionary
+// `tabs` adds four more slot-weighted views (age, position, production,
+// badges) -- see buildTabs. Age comes from Sleeper's player dictionary
 // (attached to rows by the caller), not from model/player_meta.R.
 
 const PROFILE_BUCKETS = [
@@ -60,8 +60,6 @@ function toPercents(counts) {
 // judgment, not backtested.
 //   age        -> row.age (Sleeper player dictionary)
 //   position   -> row.position
-//   lineup     -> row.starterCount of row.lineupTeams (best-ball leagues have
-//                 no lineup and are excluded by the caller via lineupTeams)
 //   badges     -> row.badges: achievement keys the player carries (Established /
 //                 Building are the confidence badges and are excluded by the
 //                 caller); counted per roster slot, shown as counts not shares
@@ -132,8 +130,6 @@ function buildTabs(list) {
 
   const ageCounts = AGE_BANDS.map(() => 0);
   const posCounts = POSITIONS.map(() => 0);
-  let lineupStart = 0;
-  let lineupBench = 0;
   const prodCounts = PRODUCTION_TIERS.map(() => 0);
   const badgeCounts = BADGES.map(() => 0);
 
@@ -145,10 +141,6 @@ function buildTabs(list) {
     }
     const pi = POSITIONS.indexOf(r.position);
     if (pi >= 0) posCounts[pi] += n;
-
-    const lt = r.lineupTeams ?? r.teams ?? 0;
-    lineupStart += Math.min(r.starterCount || 0, lt);
-    lineupBench += Math.max(lt - (r.starterCount || 0), 0);
 
     for (const k of r.badges || []) {
       const bi = BADGES.findIndex((b) => b.key === k);
@@ -166,9 +158,6 @@ function buildTabs(list) {
   return [
     tab("age", "Age", "Age profile", AGE_BANDS, ageCounts, sum(ageCounts), total),
     tab("position", "Position", "Position mix", POSITIONS.map((p) => ({ key: p.toLowerCase(), label: p })), posCounts, sum(posCounts), total),
-    tab("lineup", "Lineup", "Starter vs bench",
-      [{ key: "starters", label: "Starters" }, { key: "bench", label: "Bench" }],
-      [lineupStart, lineupBench], lineupStart + lineupBench, total),
     tab("production", "Production", "Production tier", PRODUCTION_TIERS, prodCounts, sum(prodCounts), total),
     badgeTab(badgeCounts),
   ];

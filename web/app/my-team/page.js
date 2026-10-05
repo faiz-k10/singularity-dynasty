@@ -102,16 +102,8 @@ export default async function MyTeamPage() {
     exposureRows = rows;
 
     // Extra per-player fields the Pulse tabs need: age (Sleeper's player
-    // dictionary, module-cached) and how many of the teams a player is on
-    // are lineup leagues (best-ball leagues have no starters/bench).
+    // dictionary, module-cached).
     const dict = await getSleeperPlayers().catch(() => ({}));
-    const lineupTeams = {};
-    for (const t of savedTeams) {
-      if (t.settings?.bestBall) continue;
-      for (const p of t.players || []) {
-        if (p.player_id) lineupTeams[p.player_id] = (lineupTeams[p.player_id] || 0) + 1;
-      }
-    }
     // Achievement badge keys per player (player-level, so the same in every
     // league); Established / Building (key "confidence") are excluded.
     const badgesByPlayer = {};
@@ -126,7 +118,6 @@ export default async function MyTeamPage() {
       ...r,
       badges: badgesByPlayer[r.player_id] || [],
       age: typeof dict[r.player_id]?.age === "number" ? dict[r.player_id].age : null,
-      lineupTeams: lineupTeams[r.player_id] || 0,
     }));
 
     portfolioSummary = await computeAndSaveInsight(supabase, {

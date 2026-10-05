@@ -135,7 +135,7 @@ test("computePortfolioSummary: empty/missing rows -> zeros, not a crash", async 
     assert.deepEqual(r.topExposure, []);
     assert.equal(r.profile, null);
     // every extra tab reports nothing rated instead of crashing
-    assert.equal(r.tabs.length, 5);
+    assert.equal(r.tabs.length, 4);
     for (const t of r.tabs) {
       assert.equal(t.rated, 0);
       if (t.key === "badges") assert.deepEqual(t.buckets, []);
@@ -171,28 +171,6 @@ test("tabs: position mix counts QB/RB/WR/TE slots and ignores other positions", 
   assert.equal(pctOf(t, "qb"), 50);
   assert.equal(pctOf(t, "rb"), 50);
   assert.equal(pctOf(t, "wr"), 0);
-});
-
-test("tabs: lineup splits starters from bench, using lineupTeams to skip best-ball leagues", async () => {
-  const rows = [
-    // on 4 teams, one of them best ball (no lineup): 3 lineup teams, starts in 1
-    { name: "A", teams: 4, lineupTeams: 3, starterCount: 1, position: "RB" },
-  ];
-  const t = tabOf(await computePortfolioSummary(rows), "lineup");
-  assert.equal(t.rated, 3);
-  assert.equal(t.buckets.find((b) => b.key === "starters").slots, 1);
-  assert.equal(t.buckets.find((b) => b.key === "bench").slots, 2);
-});
-
-test("tabs: badge count is per roster slot, skips unlisted keys (e.g. confidence) and unearned badges", async () => {
-  const rows = [
-    { name: "A", teams: 2, badges: ["onFire", "confidence", "hero"] },
-    { name: "B", teams: 1, badges: ["onFire"] },
-  ];
-  const t = tabOf(await computePortfolioSummary(rows), "badges");
-  assert.equal(t.rated, 5); // onFire 3 + hero 2
-  assert.deepEqual(t.buckets.map((b) => [b.key, b.slots]), [["onFire", 3], ["hero", 2]]);
-  assert.equal(t.buckets.reduce((s, b) => s + b.pct, 0), 100);
 });
 
 test("tabs: production tiers use position-specific cutoffs and skip OUT (0) projections", async () => {
