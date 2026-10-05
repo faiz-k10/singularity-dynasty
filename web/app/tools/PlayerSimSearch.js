@@ -126,11 +126,10 @@ function StatDetailRow({ row, colSpan, shapePeers, maxCeiling }) {
                     <span className="stat-panel-pace-pos mono">{row.position}</span>
                   </div>
                   <div className="stat-panel-pace-actual">
-                    {(row.currentPPG * row.gamesPlayed).toFixed(1)}
                     <span className="stat-panel-pace-games">
-                      {" "}
-                      pts · {row.gamesPlayed} {row.gamesPlayed === 1 ? "game" : "games"}
+                      {row.gamesPlayed} {row.gamesPlayed === 1 ? "game" : "games"}
                     </span>
+                    {(row.currentPPG * row.gamesPlayed).toFixed(1)}
                   </div>
                   <div className={`stat-panel-pace-delta ${row.regressionScore >= 0 ? "pace-hot" : "pace-cold"}`} title="Points vs. the pace their projection implied">
                     {row.regressionScore >= 0 ? "+" : ""}
