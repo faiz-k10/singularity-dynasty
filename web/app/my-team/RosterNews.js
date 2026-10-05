@@ -1,7 +1,5 @@
 "use client";
 
-const PILL = { 3: "down", 2: "down", 1: "steady", 0: "" };
-
 function ago(iso) {
   if (!iso) return "";
   const mins = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
@@ -33,9 +31,10 @@ export default function RosterNews({ news, onlyStarters = false, onlyInjuries = 
           {items.map((i) => (
             <li key={`${i.norm}|${i.position}`} className="roster-news-item">
               <div className="roster-news-head">
+                <span className={`status-dot status-dot-${i.severity}`} title={i.status} aria-label={i.status} />
                 <strong>{i.name}</strong>
                 <span className="league-dash-muted">{i.position}{i.team ? ` · ${i.team}` : ""}</span>
-                {i.severity > 0 && <span className={`trend-tag ${PILL[i.severity]}`}>{i.status}</span>}
+                {i.severity > 0 && <span className={`status-text status-text-${i.severity}`}>{i.status}</span>}
                 {i.detail && i.severity > 0 && <span className="league-dash-muted">{i.detail}</span>}
                 {i.returnDate && i.severity > 0 && <span className="league-dash-muted">· est. return {i.returnDate}</span>}
                 <span className="league-dash-muted roster-news-time">{ago(i.date)}</span>

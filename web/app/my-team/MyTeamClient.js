@@ -1283,8 +1283,8 @@ export default function MyTeamClient({
 
   const newsActions = (
     <>
-      <label><input type="checkbox" checked={newsFilter.starters} onChange={(e) => setNewsFilter((f) => ({ ...f, starters: e.target.checked }))} /> Starters only</label>
-      <label><input type="checkbox" checked={newsFilter.injuries} onChange={(e) => setNewsFilter((f) => ({ ...f, injuries: e.target.checked }))} /> Injuries only</label>
+      <label><input type="checkbox" checked={newsFilter.starters} onChange={(e) => setNewsFilter((f) => ({ ...f, starters: e.target.checked }))} /> Starters</label>
+      <label><input type="checkbox" checked={newsFilter.injuries} onChange={(e) => setNewsFilter((f) => ({ ...f, injuries: e.target.checked }))} /> Injuries</label>
     </>
   );
 
