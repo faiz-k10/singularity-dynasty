@@ -65,12 +65,12 @@ export function summarizeLeagues(savedTeams, injuriesByTeam) {
 }
 
 const COLS = [
-  { key: "team", label: "Team", sort: (r) => r.team.toLowerCase() },
+  { key: "team", label: "Team", align: "left", sort: (r) => r.team.toLowerCase() },
   { key: "recPct", label: "Record", sort: (r) => r.recPct },
-  { key: "opponent", label: "Opponent", sort: (r) => r.opponent.toLowerCase() },
+  { key: "opponent", label: "Opponent", align: "left", sort: (r) => r.opponent.toLowerCase() },
   { key: "projMine", label: "Proj", sort: (r) => r.projMine ?? -1 },
   { key: "liveMargin", label: "Live", sort: (r) => r.liveMargin ?? -999 },
-  { key: "alerts", label: "Alerts", sort: (r) => r.outStarters.length },
+  { key: "alerts", label: "Alerts", align: "left", sort: (r) => r.outStarters.length },
 ];
 
 // The main saved-teams view: one sortable row per league, click a row to
@@ -122,9 +122,14 @@ export default function LeagueDashboard({ savedTeams, renderExpanded, injuriesBy
           <thead>
             <tr>
               {COLS.map((c) => (
-                <th key={c.key} onClick={() => clickSort(c.key)} style={{ cursor: "pointer" }}>
+                <th
+                  key={c.key}
+                  className={`${c.align === "left" ? "align-left " : ""}league-dash-th`}
+                  aria-sort={sortKey === c.key ? (dir === "asc" ? "ascending" : "descending") : "none"}
+                  onClick={() => clickSort(c.key)}
+                >
                   {c.label}
-                  {sortKey === c.key ? (dir === "asc" ? " ▲" : " ▼") : ""}
+                  {sortKey === c.key && <span className="league-dash-sort">{dir === "asc" ? "▲" : "▼"}</span>}
                 </th>
               ))}
             </tr>
@@ -133,40 +138,52 @@ export default function LeagueDashboard({ savedTeams, renderExpanded, injuriesBy
             {rows.map((r) => (
               <Fragment key={r.id}>
               <tr className="league-dash-row" onClick={() => toggle(r.id)}>
-                <td>
-                  <span className="my-team-chevron">{open.has(r.id) ? "▾" : "▸"}</span>
-                  <div className="league-dash-team">{r.team}</div>
-                  <div className="league-dash-league">{r.league}</div>
+                <td className="align-left">
+                  <div className="league-dash-teamcell">
+                    <span className={`league-dash-chev${open.has(r.id) ? " open" : ""}`} aria-hidden="true">▸</span>
+                    <div>
+                      <div className="league-dash-team">{r.team}</div>
+                      <div className="league-dash-league">{r.league}</div>
+                    </div>
+                  </div>
                 </td>
-                <td>{r.record}</td>
-                <td>{r.opponent}</td>
-                <td>
+                <td className="mono">{r.record}</td>
+                <td className="align-left league-dash-opp">{r.opponent}</td>
+                <td className="mono league-dash-score">
                   {r.projMine != null ? (
-                    <span>
+                    <>
                       <span className={r.projMine >= r.projOpp ? "up" : "down"}>{r.projMine.toFixed(1)}</span>
-                      {" – "}
-                      {r.projOpp.toFixed(1)}
-                    </span>
-                  ) : "—"}
+                      <span className="league-dash-sep">–</span>
+                      <span>{r.projOpp.toFixed(1)}</span>
+                    </>
+                  ) : (
+                    <span className="league-dash-muted">—</span>
+                  )}
                 </td>
-                <td>
+                <td className="mono league-dash-score">
                   {r.liveMine != null ? (
-                    <span className={r.liveMargin >= 0 ? "up" : "down"}>
-                      {r.liveMine.toFixed(1)} – {r.liveOpp.toFixed(1)}
-                    </span>
-                  ) : "—"}
+                    <>
+                      <span className={r.liveMargin >= 0 ? "up" : "down"}>{r.liveMine.toFixed(1)}</span>
+                      <span className="league-dash-sep">–</span>
+                      <span>{r.liveOpp.toFixed(1)}</span>
+                    </>
+                  ) : (
+                    <span className="league-dash-muted">—</span>
+                  )}
                 </td>
-                <td>
-                  {r.outStarters.length ? (
+                <td className="align-left">
+                  {r.outStarters.length > 0 ? (
                     <div className="league-dash-alerts">
                       {r.outStarters.map((p) => (
-                        <span key={p.name} className="down">{shortName(p.name)} ({p.status})</span>
+                        <span key={p.name} className="league-dash-alert">
+                          <span className={`status-dot status-dot-${p.severity}`} aria-hidden="true" />
+                          {shortName(p.name)}
+                          <span className={`status-text status-text-${p.severity}`}>{p.status}</span>
+                        </span>
                       ))}
                     </div>
-                  ) : r.bestBall ? (
-                    <span className="league-dash-muted">Best ball</span>
-                  ) : (
-                    <span className="league-dash-muted">None</span>
+                  ) : r.bestBall ? null : (
+                    <span className="league-dash-muted">—</span>
                   )}
                 </td>
               </tr>

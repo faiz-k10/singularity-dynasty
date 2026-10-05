@@ -3591,17 +3591,16 @@ tr.stat-row-selected td{background:var(--void-panel);}
 
 /* All-leagues dashboard (my-team/LeagueDashboard.js) */
 .league-dash{margin-bottom:22px; padding:20px;}
-.league-dash-table th{white-space:nowrap; user-select:none;}
+.league-dash-th{white-space:nowrap; user-select:none; cursor:pointer;}
+.league-dash-th:hover{color:var(--star);}
+.league-dash-sort{margin-left:6px; font-size:9px; color:var(--horizon-gold);}
 .league-dash-row{cursor:pointer;}
-.league-dash-team{font-weight:600;}
+.league-dash-team{font-family:var(--font-space-grotesk),sans-serif; font-weight:600; font-size:15px; color:var(--star);}
 .league-dash-league,.league-dash-muted{font-size:.75rem; color:var(--star-dim);}
 .league-dash-table .up{color:var(--up);} .league-dash-table .down{color:var(--down);}
 .league-dash-expanded > td{padding:0 !important; background:rgba(var(--star-rgb,255,255,255),.02);}
 .league-dash-detail{padding:12px 14px 16px;}
 .league-dash-detail-head{display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin-bottom:12px;}
-.league-dash-row .my-team-chevron{margin-right:8px;}
-.league-dash-row td:first-child{position:relative;}
-.league-dash-row .my-team-chevron{position:absolute; left:12px; top:50%; transform:translateY(-50%); margin:0;}
 /* Injury & news panel (my-team/RosterNews.js) */
 .roster-news{margin-bottom:22px; padding:20px;}
 .roster-news-list{list-style:none; margin:0; padding:0;}
@@ -3651,7 +3650,6 @@ tr.stat-row-selected td{background:var(--void-panel);}
    150px top padding is sized for the taller tool-page hero blocks). */
 .my-team-page-wrap{padding-top:52px;}
 .my-team-page-wrap h1{margin-bottom:22px;}
-.league-dash-table td:last-child{white-space:normal; min-width:220px;}
 
 /* ---------- MODERN LAYER ----------
    Zero-JS, progressive-enhancement CSS only: every rule here either
@@ -3737,7 +3735,6 @@ summary:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible{
 }
 @keyframes league-dash-spin{to{transform:rotate(360deg);}}
 @keyframes league-dash-fade{from{opacity:0;}to{opacity:1;}}
-.league-dash-alerts{display:flex; flex-direction:column; gap:2px; align-items:center;}
 
 /* My Team panel system: every top-level panel on the page shares one
    radius (16px, the site-wide content-panel standard), one inner padding
@@ -3872,3 +3869,17 @@ summary:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible{
 .my-team-titlebar .eyebrow{margin-bottom:10px;}
 .my-team-page-wrap .my-team-titlebar h1{margin:0;}
 .my-team-wrap{gap:20px;}
+
+/* Saved Teams table: left-aligned names, mono numerics, status dots. */
+.league-dash-table td{padding-top:14px; padding-bottom:14px; vertical-align:middle;}
+.league-dash-teamcell{display:flex; align-items:center; gap:12px; text-align:left;}
+.league-dash-chev{width:12px; color:var(--star-dim); font-size:11px; transition:transform .18s ease, color .15s ease;}
+.league-dash-chev.open{transform:rotate(90deg); color:var(--horizon-gold);}
+.league-dash-row:hover .league-dash-chev{color:var(--star);}
+.league-dash-league{margin-top:2px;}
+.league-dash-opp{color:var(--star);}
+.league-dash-score{white-space:nowrap;}
+.league-dash-score .up, .league-dash-score .down{font-weight:600;}
+.league-dash-sep{margin:0 7px; color:var(--star-dim);}
+.league-dash-alerts{display:flex; flex-direction:column; gap:6px; align-items:flex-start;}
+.league-dash-alert{display:inline-flex; align-items:center; gap:8px; font-size:13.5px; white-space:nowrap;}
