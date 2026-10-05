@@ -1394,7 +1394,7 @@ export default function MyTeamClient({
   const saveAllCount = Math.min(unsavedFromLookup.length, saveAllRoom);
 
   const lookupNode = (
-    <>
+    <div className="my-team-lookup-stack">
       <form className="my-team-lookup glass-panel" onSubmit={handleLookup}>
         <label htmlFor="sleeper-username" className="my-team-label">
           Sleeper Username
@@ -1482,7 +1482,7 @@ export default function MyTeamClient({
             </div>
           );
         })()}
-    </>
+    </div>
   );
 
   // No saved teams yet: just the lookup, no dashboard to arrange.

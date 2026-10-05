@@ -3858,3 +3858,7 @@ summary:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible{
 .my-team-wrap > .portfolio-overview{margin-bottom:0;}
 
 .my-team-save-all{flex-shrink:0; white-space:nowrap;}
+
+/* Lookup panel: username row, error and results as one column with even
+   spacing (the results used to butt right up against the button row). */
+.my-team-lookup-stack{display:flex; flex-direction:column; gap:22px;}
