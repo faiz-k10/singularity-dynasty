@@ -3651,3 +3651,75 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .my-team-page-wrap .tool-sub{margin-bottom:22px;}
 .my-team-page-wrap h1{margin-bottom:8px;}
 .league-dash-table td:last-child{white-space:normal; min-width:220px;}
+
+/* ---------- MODERN LAYER ----------
+   Zero-JS, progressive-enhancement CSS only: every rule here either
+   degrades to the existing look or is ignored by older browsers. Palette
+   and fonts are untouched (brand rule) -- these only change motion,
+   typography rhythm, and interaction polish. */
+
+/* Cross-page View Transitions (Chrome/Safari): navigating between pages
+   crossfades instead of hard-cutting. The fixed ticker + header keep their
+   own transition names so they stay put instead of fading with the page. */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition { navigation: auto; }
+  .ticker-bar{view-transition-name:site-ticker;}
+  .site-header{view-transition-name:site-header;}
+  ::view-transition-old(root), ::view-transition-new(root){animation-duration:.22s; animation-timing-function:ease;}
+}
+::view-transition-group(site-ticker), ::view-transition-group(site-header){animation:none;}
+
+/* Typography rhythm: balanced headings (no one-word last lines), no
+   orphans in body copy. */
+h1, h2, h3, .tool-sub{text-wrap:balance;}
+p, li{text-wrap:pretty;}
+
+/* Brand-tinted selection + form accents + themed thin scrollbars. */
+::selection{background:color-mix(in srgb, var(--horizon) 38%, transparent); color:inherit;}
+:root{accent-color:var(--horizon);}
+html{scrollbar-width:thin; scrollbar-color:color-mix(in srgb, var(--neon-blue) 45%, transparent) transparent;}
+
+/* One consistent keyboard focus ring for every control, not just links
+   and buttons. */
+input:focus-visible, select:focus-visible, textarea:focus-visible,
+summary:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible{
+  outline:2px solid var(--neon-blue); outline-offset:3px; border-radius:8px;
+}
+
+/* Glass panels: a soft accent edge-glow on hover/focus-within, mixed from
+   the existing theme tokens so it flips correctly in light mode. */
+.glass-panel{transition:border-color .2s ease, box-shadow .25s ease;}
+.glass-panel:hover, .glass-panel:focus-within{
+  border-color:color-mix(in srgb, var(--horizon) 38%, var(--line));
+}
+
+/* Table rows: tinted hover + press feedback (:has() lets the expandable
+   dashboard row stay highlighted while its detail row is open). */
+.rankings-table tbody tr{transition:background-color .15s ease;}
+.rankings-table tbody tr:hover{background:color-mix(in srgb, var(--neon-blue) 7%, transparent);}
+.league-dash-row:active{background:color-mix(in srgb, var(--horizon) 10%, transparent);}
+.league-dash-row:has(+ .league-dash-expanded){background:color-mix(in srgb, var(--horizon) 7%, transparent);}
+
+/* Buttons: tactile press. */
+/* (scoped to the .btn-* classes/.my-team-remove: a blanket button rule would clobber buttons positioned with transform, e.g. the radial menu) */
+.btn-primary:active, .btn-ghost:active, .my-team-remove:active{transform:translateY(1px) scale(.985);}
+
+/* Scroll-driven reveal for browsers that support it, replacing the need
+   for JS-added classes on cards that opt in with .scroll-reveal. */
+@supports (animation-timeline: view()) {
+  .scroll-reveal{
+    animation:scroll-reveal-in linear both;
+    animation-timeline:view();
+    animation-range:entry 0% cover 28%;
+  }
+  @keyframes scroll-reveal-in{
+    from{opacity:0; transform:translateY(22px);}
+    to{opacity:1; transform:none;}
+  }
+}
+
+/* Motion safety net: any remaining animation/transition collapses for
+   users who ask for reduced motion. */
+@media (prefers-reduced-motion: reduce){
+  *, *::before, *::after{animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; scroll-behavior:auto !important;}
+}
