@@ -63,7 +63,7 @@ const getCachedWeekData = unstable_cache(
 
     if (!latest) return { latest: null, rows: [], totalCount: 0, actualProductionByName: {} };
 
-    const [{ data, count }, actualRows, logRows] = await Promise.all([
+    const [{ data, count }, actualRows, logRows, historyRows] = await Promise.all([
       publicSupabase
         .from("player_simulations")
         .select(
@@ -98,6 +98,11 @@ const getCachedWeekData = unstable_cache(
         "player_name, season, week, opponent, is_home, fantasy_points_ppr, exp_points_ppr",
         (q) => q.eq("season", latest.season).order("week", { ascending: true })
       ),
+      // Earlier weeks' published sims of this season -- powers the pace
+      // panel's week scrubber (snapshot of the projection as it stood then).
+      fetchAllRows(publicSupabase, "player_simulations", "player_name, week, floor, median, ceiling", (q) =>
+        q.eq("season", latest.season).lt("week", latest.week).order("week", { ascending: true })
+      ),
     ]);
 
     const actualProductionByName = {};
@@ -106,8 +111,10 @@ const getCachedWeekData = unstable_cache(
       (actualProductionByName[row.player_name] ??= []).push(row.actual_points);
     }
     for (const g of logRows || []) (weeklyByName[g.player_name] ??= []).push(g);
+    const simHistoryByName = {};
+    for (const h of historyRows || []) (simHistoryByName[h.player_name] ??= []).push(h);
 
-    return { latest, rows: data || [], totalCount: count || 0, actualProductionByName, weeklyByName };
+    return { latest, rows: data || [], totalCount: count || 0, actualProductionByName, weeklyByName, simHistoryByName };
   },
   ["player-simulations-latest-week"],
   { revalidate: 60 }
@@ -142,7 +149,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
   // there's no real caching benefit to bundling it into the 60s payload,
   // and keeping it separate mirrors how redraft-rankings' own expanded
   // row already does this same lookup.
-  const [{ tier }, { latest, rows, totalCount: fetchedCount, actualProductionByName, weeklyByName }, bioByNamePos] =
+  const [{ tier }, { latest, rows, totalCount: fetchedCount, actualProductionByName, weeklyByName, simHistoryByName }, bioByNamePos] =
     await Promise.all([resolveTier(supabase), getCachedWeekData(), getPlayerBiosByNamePos()]);
   const hasFullAccess = PAID_TIERS.includes(tier);
 
@@ -241,6 +248,42 @@ export default async function PlayerSimulationsPage({ searchParams }) {
       gamesPerSeason: GAMES_PER_SEASON,
     });
   }
+  // Pace-panel snapshot for each published week: the projection as it stood
+  // then, plus only the games played before it (a week-W sim is published
+  // before week W's games).
+  function snapshotsFor(row) {
+    const games = weeklyByName[row.player_name] || [];
+    const byWeek = {};
+    for (const h of simHistoryByName[row.player_name] || []) byWeek[h.week] = h;
+    byWeek[latest.week] = row;
+    const out = [];
+    for (let w = 1; w <= latest.week; w++) {
+      const proj = byWeek[w];
+      if (!proj) continue;
+      const played = games.filter((g) => g.week < w);
+      const pts = played.map((g) => g.fantasy_points_ppr).filter((v) => typeof v === "number");
+      const reg = computeRegressionScore(pts, proj.median / GAMES_PER_SEASON);
+      const oc = computeOutcomePercentile(pts, {
+        floor: proj.floor,
+        median: proj.median,
+        ceiling: proj.ceiling,
+        gamesPerSeason: GAMES_PER_SEASON,
+      });
+      out.push({
+        week: w,
+        floor: proj.floor,
+        median: proj.median,
+        ceiling: proj.ceiling,
+        gamesPlayed: pts.length,
+        currentPPG: reg?.currentPPG ?? null,
+        regressionScore: reg?.regressionScore ?? null,
+        paceSeasonTotal: oc?.paceSeasonTotal ?? null,
+        outcomePercentile: oc?.percentile ?? null,
+        recentGames: played.slice(-3).reverse(),
+      });
+    }
+    return out;
+  }
   const simsWithComputed = sims.map((row) => {
     const heat = heatFor("median", row);
     const floorHeat = heatFor("floor", row);
@@ -258,6 +301,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
       currentPPG: regression?.currentPPG ?? null,
       gamesPlayed: regression?.gamesPlayed ?? 0,
       recentGames: (weeklyByName[row.player_name] || []).slice(-3).reverse(),
+      snapshots: snapshotsFor(row),
       outcomePercentile: outcome?.percentile ?? null,
       // Same units as floor/median/ceiling (season-total scale), so it
       // can be positioned on the Range bar with the exact same maxCeiling

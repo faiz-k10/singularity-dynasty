@@ -92,6 +92,32 @@ function StatDetailRow({ row, colSpan, shapePeers, maxCeiling }) {
     ? radarEntries.map(([key, label]) => [key, label, comparePctiles?.[key]])
     : null;
 
+
+  // Week scrubber state (see the bar at the bottom of the pace panel):
+  // null = the latest published week; otherwise a snapshot's week.
+  const [snapWeek, setSnapWeek] = useState(null);
+  const snaps = row.snapshots || [];
+  const weeks = snaps.map((x) => x.week);
+  const latestWeek = weeks[weeks.length - 1];
+  const snap = snapWeek != null && snapWeek !== latestWeek ? snaps.find((x) => x.week === snapWeek) : null;
+  const pv = snap ? { ...row, ...snap } : { ...row, week: latestWeek };
+  function pickWeek(w) {
+    const nearest = weeks.reduce((best, x) => (Math.abs(x - w) < Math.abs(best - w) ? x : best), weeks[0]);
+    setSnapWeek(nearest === latestWeek ? null : nearest);
+  }
+  function scrubTo(e) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const frac = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+    pickWeek(Math.round(frac * 17) + 1);
+  }
+  function onScrubKey(e) {
+    const i = weeks.indexOf(pv.week);
+    if (e.key === "ArrowLeft" || e.key === "ArrowDown") pickWeek(weeks[Math.max(0, i - 1)]);
+    else if (e.key === "ArrowRight" || e.key === "ArrowUp") pickWeek(weeks[Math.min(weeks.length - 1, i + 1)]);
+    else return;
+    e.preventDefault();
+  }
+
   if (entries.length === 0) return null;
 
   return (
@@ -113,31 +139,33 @@ function StatDetailRow({ row, colSpan, shapePeers, maxCeiling }) {
             <div className="stat-panel stat-panel-pace">
               <div className="stat-panel-pace-top">
                 <div className="stat-panel-pace-info">
-                  {row.sleeperId && (
+                  {pv.sleeperId && (
                     <img
                       className="stat-panel-pace-portrait"
-                      src={`https://sleepercdn.com/content/nfl/players/thumb/${row.sleeperId}.jpg`}
+                      src={`https://sleepercdn.com/content/nfl/players/thumb/${pv.sleeperId}.jpg`}
                       alt=""
                       loading="lazy"
                     />
                   )}
                   <div className="stat-panel-pace-header">
-                    <span className="stat-panel-pace-name">{row.player_name}</span>
-                    <span className="stat-panel-pace-pos mono">{row.position}</span>
+                    <span className="stat-panel-pace-name">{pv.player_name}</span>
+                    <span className="stat-panel-pace-pos mono">{pv.position}</span>
                   </div>
                   <div className="stat-panel-pace-actual">
                     <span className="stat-panel-pace-games">
-                      {row.gamesPlayed} {row.gamesPlayed === 1 ? "game" : "games"}
+                      {pv.gamesPlayed} {pv.gamesPlayed === 1 ? "game" : "games"}
                     </span>
-                    {(row.currentPPG * row.gamesPlayed).toFixed(1)}
+                    {pv.currentPPG != null ? (pv.currentPPG * pv.gamesPlayed).toFixed(1) : "—"}
                   </div>
-                  <div className={`stat-panel-pace-delta ${row.regressionScore >= 0 ? "pace-hot" : "pace-cold"}`} title="Points vs. the pace their projection implied">
-                    {row.regressionScore >= 0 ? "+" : ""}
-                    {row.regressionScore.toFixed(2)}
+                  {pv.regressionScore != null && (
+                  <div className={`stat-panel-pace-delta ${pv.regressionScore >= 0 ? "pace-hot" : "pace-cold"}`} title="Points vs. the pace their projection implied">
+                    {pv.regressionScore >= 0 ? "+" : ""}
+                    {pv.regressionScore.toFixed(2)}
                   </div>
-                  {row.recentGames?.length > 0 && (
+                  )}
+                  {pv.recentGames?.length > 0 && (
                     <div className="stat-panel-pace-recent">
-                      {row.recentGames.map((g) => (
+                      {pv.recentGames.map((g) => (
                         <div key={`${g.season}-${g.week}`} className="pace-game-row" title={`${g.season} Week ${g.week}`}>
                           <span className="pace-game-week mono">W{g.week} {g.is_home === true ? "vs" : g.is_home === false ? "@" : "·"}</span>
                           <TeamBadge team={g.opponent} />
@@ -160,21 +188,21 @@ function StatDetailRow({ row, colSpan, shapePeers, maxCeiling }) {
                     (same hot/cold color) so the projected full-season total
                     implied by the current pace is readable at a glance,
                     not just its position on the bar. */}
-                {row.floor != null && row.median != null && row.ceiling != null && maxCeiling > 0 && (
+                {pv.floor != null && pv.median != null && pv.ceiling != null && maxCeiling > 0 && (
                   <div className="stat-panel-pace-rangebar-wrap">
                     <div className="stat-panel-pace-rangebar">
                       <div
                         className="stat-panel-pace-rangebar-typical"
                         style={{
-                          bottom: `${(row.floor / maxCeiling) * 100}%`,
-                          height: `${((row.median - row.floor) / maxCeiling) * 100}%`,
+                          bottom: `${(pv.floor / maxCeiling) * 100}%`,
+                          height: `${((pv.median - pv.floor) / maxCeiling) * 100}%`,
                         }}
                       />
                       <div
                         className="stat-panel-pace-rangebar-upside"
                         style={{
-                          bottom: `${(row.median / maxCeiling) * 100}%`,
-                          height: `${((row.ceiling - row.median) / maxCeiling) * 100}%`,
+                          bottom: `${(pv.median / maxCeiling) * 100}%`,
+                          height: `${((pv.ceiling - pv.median) / maxCeiling) * 100}%`,
                         }}
                       />
                       {/* Floor/ceiling numbers pinned to the colored
@@ -188,28 +216,28 @@ function StatDetailRow({ row, colSpan, shapePeers, maxCeiling }) {
                           "top/bottom of this player's own range." */}
                       <span
                         className="stat-panel-pace-rangebar-label stat-panel-pace-rangebar-label-ceiling"
-                        style={{ bottom: `${(row.ceiling / maxCeiling) * 100}%` }}
+                        style={{ bottom: `${(pv.ceiling / maxCeiling) * 100}%` }}
                       >
-                        {formatStat(row.ceiling)}
+                        {formatStat(pv.ceiling)}
                       </span>
                       <span
                         className="stat-panel-pace-rangebar-label stat-panel-pace-rangebar-label-floor"
-                        style={{ bottom: `${(row.floor / maxCeiling) * 100}%` }}
+                        style={{ bottom: `${(pv.floor / maxCeiling) * 100}%` }}
                       >
-                        {formatStat(row.floor)}
+                        {formatStat(pv.floor)}
                       </span>
-                      {row.paceSeasonTotal != null && (
+                      {pv.paceSeasonTotal != null && (
                         <>
                           <div
-                            className={`stat-panel-pace-rangebar-marker ${row.outcomePercentile >= 50 ? "pace-marker-hot" : "pace-marker-cold"}`}
-                            style={{ bottom: `${Math.min(100, (row.paceSeasonTotal / maxCeiling) * 100)}%` }}
-                            title={`Current pace: ${ordinal(row.outcomePercentile)} percentile on this player's outcome curve`}
+                            className={`stat-panel-pace-rangebar-marker ${pv.outcomePercentile >= 50 ? "pace-marker-hot" : "pace-marker-cold"}`}
+                            style={{ bottom: `${Math.min(100, (pv.paceSeasonTotal / maxCeiling) * 100)}%` }}
+                            title={`Current pace: ${ordinal(pv.outcomePercentile)} percentile on this player's outcome curve`}
                           />
                           <div
-                            className={`stat-panel-pace-rangebar-total ${row.outcomePercentile >= 50 ? "pace-hot" : "pace-cold"}`}
-                            style={{ bottom: `${Math.min(100, (row.paceSeasonTotal / maxCeiling) * 100)}%` }}
+                            className={`stat-panel-pace-rangebar-total ${pv.outcomePercentile >= 50 ? "pace-hot" : "pace-cold"}`}
+                            style={{ bottom: `${Math.min(100, (pv.paceSeasonTotal / maxCeiling) * 100)}%` }}
                           >
-                            {formatStat(row.paceSeasonTotal)}
+                            {formatStat(pv.paceSeasonTotal)}
                           </div>
                         </>
                       )}
@@ -217,19 +245,40 @@ function StatDetailRow({ row, colSpan, shapePeers, maxCeiling }) {
                   </div>
                 )}
               </div>
-              {/* Games-played-of-17 progress bar, pinned to the bottom of
-                  the whole panel (its own row below the info/rangebar
-                  split above) -- a second read on schedule progress
-                  alongside the games count already in -pace-games. No
-                  text label of its own (that count already lives there). */}
-              <div className="stat-panel-pace-progress">
-                <div className="stat-panel-pace-progress-track">
+              {/* Week scrubber: the red bar doubles as a time slider. Click or
+                  drag along it (or use the arrow keys) to rewind the whole
+                  panel to how this player's projection and games looked
+                  as of an earlier published week; the faint trail past
+                  the handle is the way back to the latest week. */}
+              {weeks.length > 1 && (
+                <div className="stat-panel-pace-progress">
                   <div
-                    className="stat-panel-pace-progress-fill"
-                    style={{ width: `${Math.min(100, (row.gamesPlayed / 17) * 100)}%` }}
-                  />
+                    className="stat-panel-pace-scrub"
+                    role="slider"
+                    tabIndex={0}
+                    aria-label="Rewind to an earlier week"
+                    aria-valuemin={weeks[0]}
+                    aria-valuemax={weeks[weeks.length - 1]}
+                    aria-valuenow={pv.week}
+                    aria-valuetext={`Week ${pv.week}`}
+                    onPointerDown={(e) => {
+                      e.currentTarget.setPointerCapture(e.pointerId);
+                      scrubTo(e);
+                    }}
+                    onPointerMove={(e) => {
+                      if (e.buttons) scrubTo(e);
+                    }}
+                    onKeyDown={onScrubKey}
+                  >
+                    <div className="stat-panel-pace-progress-track">
+                      <div className="stat-panel-pace-progress-ghost" style={{ width: `${(((weeks[weeks.length - 1] - 1) / 17) * 100)}%` }} />
+                      <div className="stat-panel-pace-progress-fill" style={{ width: `${Math.min(100, ((pv.week - 1) / 17) * 100)}%` }} />
+                    </div>
+                    <span className="stat-panel-pace-scrub-handle" style={{ left: `${Math.min(100, ((pv.week - 1) / 17) * 100)}%` }} />
+                  </div>
+                  {snap && <span className="stat-panel-pace-scrub-label mono">W{pv.week}</span>}
                 </div>
-              </div>
+              )}
             </div>
           )}
           <div className="stat-panel stat-panel-table">
