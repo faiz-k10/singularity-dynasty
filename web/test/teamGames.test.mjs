@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { indexGameLog, teamGamesThrough } from "../lib/teamGames.js";
+import { buildTeamWeeks, indexGameLog, missedSegments, missedWeeks, teamGamesThrough } from "../lib/teamGames.js";
 
 const row = (player_name, team, week) => ({ player_name, team, week });
 
@@ -37,4 +37,50 @@ test("unknown player or no team -> null", () => {
   assert.equal(teamGamesThrough(idx, "Nobody", 4), null);
   assert.equal(teamGamesThrough(idx, "Z", 4), null);
   assert.equal(teamGamesThrough(indexGameLog([]), "Z"), null);
+});
+
+test("missedWeeks: team played, he did not (byes excluded)", () => {
+  const idx = indexGameLog([
+    row("Star", "WAS", 1), row("Mate", "WAS", 1),
+    row("Star", "WAS", 2), row("Mate", "WAS", 2),
+    row("Mate", "WAS", 3),
+    // bye in week 4
+    row("Mate", "WAS", 5), row("Star", "WAS", 5),
+  ]);
+  assert.deepEqual(missedWeeks(idx, "Star"), [3]);
+  assert.deepEqual(missedWeeks(idx, "Mate"), []);
+  assert.deepEqual(missedWeeks(idx, "Nobody"), []);
+});
+
+test("buildTeamWeeks works from a partial set of rows (e.g. only QBs)", () => {
+  const weeks = buildTeamWeeks([row("QB1", "KC", 1), row("QB1", "KC", 2), row("QB2", "KC", 4), { player_name: "X", team: null, week: 9 }]);
+  assert.deepEqual([...weeks.KC].sort(), [1, 2, 4]);
+  assert.equal(Object.keys(weeks).length, 1);
+});
+
+const near = (a, b) => Math.abs(a - b) < 1e-9;
+
+test("missedSegments: Daniels-style (missed weeks 3 and 4 of 4) at the latest week -> one gray stretch, 50% to the end", () => {
+  const segs = missedSegments([3, 4], 4, 4);
+  assert.equal(segs.length, 1);
+  assert.ok(near(segs[0].start, 50) && near(segs[0].end, 100));
+});
+
+test("missedSegments: only the filled part shows when scrubbed back", () => {
+  // selected W3: handle at 66.7%, week 3's stretch is 50%..83.3% clipped to the handle
+  const segs = missedSegments([3, 4], 3, 4);
+  assert.equal(segs.length, 1);
+  assert.ok(near(segs[0].start, 50) && near(segs[0].end, (2 / 3) * 100));
+  // selected W2: nothing missed yet
+  assert.deepEqual(missedSegments([3, 4], 2, 4), []);
+});
+
+test("missedSegments: separate misses stay separate, week 1 starts at the left edge, no misses -> none", () => {
+  const segs = missedSegments([1, 3], 4, 4);
+  assert.equal(segs.length, 2);
+  assert.ok(near(segs[0].start, 0) && near(segs[0].end, 100 / 6));
+  assert.ok(near(segs[1].start, 50) && near(segs[1].end, 250 / 3));
+  assert.deepEqual(missedSegments([], 4, 4), []);
+  assert.deepEqual(missedSegments(undefined, 4, 4), []);
+  assert.deepEqual(missedSegments([2], 1, 1), []);
 });

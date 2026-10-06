@@ -36,3 +36,20 @@ test("score scales with games played (not a per-game normalized figure)", () => 
   assert.equal(twoIn, 20);
   assert.equal(eightIn, 80);
 });
+
+test("missed games count against the pace when the team's games are known", () => {
+  // 32.4 points in 2 games; projected 11.7 ppg; his team has played 4.
+  // 32.4 - 11.7 * 4 = -14.4 (behind), not 32.4 - 11.7 * 2 = +9 (ahead).
+  const r = computeRegressionScore([17.7, 14.7], 11.7, 4);
+  assert.equal(r.gamesPlayed, 2);
+  assert.equal(r.gamesElapsed, 4);
+  assert.ok(Math.abs(r.regressionScore - -14.4) < 1e-9);
+});
+
+test("no missed games (or unknown / bad team games) -> same as before", () => {
+  const base = computeRegressionScore([25, 25, 25, 25], 15).regressionScore;
+  assert.equal(computeRegressionScore([25, 25, 25, 25], 15, 4).regressionScore, base);
+  for (const bad of [undefined, null, 0, -1, NaN, "4", 2]) {
+    assert.equal(computeRegressionScore([25, 25, 25, 25], 15, bad).regressionScore, base);
+  }
+});

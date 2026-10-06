@@ -9,6 +9,7 @@ import StatRadar from "./StatRadar";
 import SimilarShapeFinder from "./SimilarShapeFinder";
 import PercentileCard from "./PercentileCard";
 import { radarLayoutFor } from "./radarLayout";
+import { missedSegments } from "@/lib/teamGames";
 
 // Week-scrubber data comes from /api/player-sim-history, fetched lazily and
 // remembered for the life of the page (one request per player, one for the
@@ -228,7 +229,7 @@ function StatDetailRow({ row, colSpan, shapePeers, maxCeiling }) {
                     {pv.currentPPG != null ? (pv.currentPPG * pv.gamesPlayed).toFixed(1) : "—"}
                   </div>
                   {pv.regressionScore != null && (
-                  <div className={`stat-panel-pace-delta ${pv.regressionScore >= 0 ? "pace-hot" : "pace-cold"}`} title="Points vs. the pace their projection implied">
+                  <div className={`stat-panel-pace-delta ${pv.regressionScore >= 0 ? "pace-hot" : "pace-cold"}`} title="Points ahead of (+) or behind (−) the pace the season projection implied through his team's games so far; missed games count against it">
                     {pv.regressionScore >= 0 ? "+" : ""}
                     {pv.regressionScore.toFixed(2)}
                   </div>
@@ -344,6 +345,15 @@ function StatDetailRow({ row, colSpan, shapePeers, maxCeiling }) {
                   >
                     <div className="stat-panel-pace-progress-track">
                       <div className="stat-panel-pace-progress-fill" style={{ width: `${progress}%` }} />
+                      {/* Weeks his team played but he didn't read gray instead of red. */}
+                      {missedSegments(row.missedWeeks, pv.week, latestWeek).map((seg) => (
+                        <div
+                          key={seg.start}
+                          className="stat-panel-pace-seg-missed"
+                          style={{ left: `${seg.start}%`, width: `${seg.end - seg.start}%` }}
+                          title="Games missed"
+                        />
+                      ))}
                     </div>
                     <span className="stat-panel-pace-scrub-handle" style={{ left: `calc(6px + (100% - 12px) * ${progress / 100})` }} />
                   </div>
@@ -758,7 +768,7 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                 <SortableTh
                   label="vs Pace"
                   sortKey="regressionScore"
-                  title="Total fantasy points scored so far this season vs. the pace their projection implied (actual − projected PPG × games played). Positive = running hot, expect to cool off toward projection; negative = running cold, expect to warm back up."
+                  title="Fantasy points scored so far this season minus the pace the season projection implied through his team's games so far (season median ÷ 17 × team games played), so missed games count against it. Positive = ahead of pace (hot starts tend to cool off toward projection); negative = behind pace (a cold start, or games missed)."
                   {...sortProps}
                 />
                 <SortableTh

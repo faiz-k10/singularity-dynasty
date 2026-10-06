@@ -1,10 +1,19 @@
-// Regression score: how many total fantasy points a player is currently
-// ahead of (positive) or behind (negative) the pace their preseason
-// projection implied for the games they've actually played so far --
-// i.e. real cumulative points minus (projectedPPG * gamesPlayed). A
-// large positive score flags a "hot start" candidate likely to cool off
-// toward their projection over the rest of the season; a large negative
-// score flags a "cold start" candidate likely to warm back up.
+// Regression score ("vs pace"): how many total fantasy points a player is
+// currently ahead of (positive) or behind (negative) the pace their season
+// projection implied through the games his TEAM has played so far -- i.e.
+// real cumulative points minus (projectedPPG * team games played). A large
+// positive score flags a "hot start" candidate likely to cool off toward
+// their projection over the rest of the season; a large negative score
+// flags a "cold start" (or a player who has missed games).
+//
+// Counting the team's games, not just the games he appeared in, keeps this
+// on the same footing as the pace marker and the floor/median/ceiling bar it
+// is read next to: the projection's season median already prices in missed
+// games, so a score that only looked at games played would read "ahead of
+// pace" for a player whose bar had slid down because he was out. For a
+// player who has played every team game the two are identical, so nothing
+// changes for healthy players. The sign always matches the pace marker
+// (above the median <=> positive).
 //
 // This is a POINTS-TOTAL rescaling of the underlying per-game signal
 // (regressionScore == (currentPPG - projectedPPG) * gamesPlayed), by
@@ -39,17 +48,24 @@
 // wired to a data source or the UI. actualPoints is the caller's own
 // array of real weekly fantasy-point totals for the games played so far
 // this season.
-export function computeRegressionScore(actualPoints, projectedPPG) {
+export function computeRegressionScore(actualPoints, projectedPPG, gamesElapsed) {
   if (!Array.isArray(actualPoints) || actualPoints.length === 0) return null;
   if (typeof projectedPPG !== "number" || !Number.isFinite(projectedPPG)) return null;
 
   const gamesPlayed = actualPoints.length;
   const actualTotal = actualPoints.reduce((sum, p) => sum + p, 0);
   const currentPPG = actualTotal / gamesPlayed;
-  const regressionScore = actualTotal - projectedPPG * gamesPlayed;
+  // Games his team has played (never fewer than he did); falls back to games
+  // played when the caller doesn't know.
+  const elapsed =
+    typeof gamesElapsed === "number" && Number.isFinite(gamesElapsed) && gamesElapsed > 0
+      ? Math.max(gamesElapsed, gamesPlayed)
+      : gamesPlayed;
+  const regressionScore = actualTotal - projectedPPG * elapsed;
 
   return {
     gamesPlayed,
+    gamesElapsed: elapsed,
     currentPPG,
     projectedPPG,
     // Positive = ahead of pace (hot -- expect to cool off).

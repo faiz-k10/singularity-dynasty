@@ -11,7 +11,7 @@ import { computeOutcomePercentile } from "@/lib/outcomePercentile";
 import { getPlayerBiosByNamePos } from "@/lib/sleeper";
 import { normalizePlayerName } from "@/lib/portfolio";
 import { fetchAllRows } from "@/lib/fetchAllRows";
-import { indexGameLog, teamGamesThrough } from "@/lib/teamGames";
+import { indexGameLog, missedWeeks, teamGamesThrough } from "@/lib/teamGames";
 import SiteHeader from "../../SiteHeader";
 import ExportCsvButton from "../ExportCsvButton";
 import PlayerSimSearch from "../PlayerSimSearch";
@@ -113,6 +113,7 @@ const getCachedWeekData = unstable_cache(
     const lastGameWeek = gameIndex.lastGameWeek;
     const recentByName = {};
     const teamGamesByName = {};
+    const missedWeeksByName = {};
     for (const [name, games] of Object.entries(gameIndex.gamesByName)) {
       recentByName[name] = games
         .slice(-3)
@@ -126,9 +127,11 @@ const getCachedWeekData = unstable_cache(
         }));
       const n = teamGamesThrough(gameIndex, name);
       if (n != null) teamGamesByName[name] = n;
+      const missed = missedWeeks(gameIndex, name);
+      if (missed.length) missedWeeksByName[name] = missed;
     }
 
-    return { latest, rows: data || [], totalCount: count || 0, actualProductionByName, recentByName, lastGameWeek, teamGamesByName };
+    return { latest, rows: data || [], totalCount: count || 0, actualProductionByName, recentByName, lastGameWeek, teamGamesByName, missedWeeksByName };
   },
   ["player-simulations-latest-week"],
   { revalidate: 60 }
@@ -163,7 +166,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
   // there's no real caching benefit to bundling it into the 60s payload,
   // and keeping it separate mirrors how redraft-rankings' own expanded
   // row already does this same lookup.
-  const [{ tier }, { latest, rows, totalCount: fetchedCount, actualProductionByName, recentByName, lastGameWeek, teamGamesByName }, bioByNamePos] =
+  const [{ tier }, { latest, rows, totalCount: fetchedCount, actualProductionByName, recentByName, lastGameWeek, teamGamesByName, missedWeeksByName }, bioByNamePos] =
     await Promise.all([resolveTier(supabase), getCachedWeekData(), getPlayerBiosByNamePos()]);
   const hasFullAccess = PAID_TIERS.includes(tier);
 
@@ -250,7 +253,8 @@ export default async function PlayerSimulationsPage({ searchParams }) {
     // the exact backtest correlation.
     regressionByName[row.player_name] = computeRegressionScore(
       actualProductionByName[row.player_name],
-      row.median / GAMES_PER_SEASON
+      row.median / GAMES_PER_SEASON,
+      teamGamesByName?.[row.player_name]
     );
     // Where the player's current pace, extrapolated across a full
     // season, would land on their own floor-to-ceiling outcome curve --
@@ -285,6 +289,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
       gamesPlayed: regression?.gamesPlayed ?? 0,
       recentGames: recentByName[row.player_name] || [],
       lastWeek: lastGameWeek,
+      missedWeeks: missedWeeksByName?.[row.player_name] || [],
       simLatestWeek: latest.week,
       outcomePercentile: outcome?.percentile ?? null,
       // Same units as floor/median/ceiling (season-total scale), so it

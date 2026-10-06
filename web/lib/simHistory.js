@@ -109,13 +109,14 @@ export function buildSnapshots(ctx, name) {
     if (!proj) continue;
     const played = games.filter((g) => g.week <= w);
     const pts = played.map((g) => g.fantasy_points_ppr).filter((v) => typeof v === "number");
-    const reg = computeRegressionScore(pts, proj.median / GAMES_PER_SEASON);
+    const elapsed = teamGamesThrough(ctx, name, w);
+    const reg = computeRegressionScore(pts, proj.median / GAMES_PER_SEASON, elapsed);
     const oc = computeOutcomePercentile(pts, {
       floor: proj.floor,
       median: proj.median,
       ceiling: proj.ceiling,
       gamesPerSeason: GAMES_PER_SEASON,
-      gamesElapsed: teamGamesThrough(ctx, name, w),
+      gamesElapsed: elapsed,
     });
     const perc = ctx.percByWeek[simWeek]?.[name];
     out.push({

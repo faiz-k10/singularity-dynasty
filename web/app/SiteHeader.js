@@ -9,6 +9,7 @@ import InteractiveScript from "./InteractiveScript";
 import NavStars from "./NavStars";
 import { getAchievements } from "./tools/achievements";
 import { computeRegressionScore } from "@/lib/regressionScore";
+import { buildTeamWeeks, indexGameLog, teamGamesThrough } from "@/lib/teamGames";
 import {
   fetchAchievementInputs,
   fetchLatestRedraftFieldsByName,
@@ -54,8 +55,9 @@ const getCachedTickerInputs = unstable_cache(
     ]);
 
     // "vs. pace" per player: points scored so far minus what the latest
-    // season projection implied for those games (same formula as the
-    // Player Season Simulations pace panel, lib/regressionScore.js).
+    // season projection implied through his team's games so far (same
+    // formula as the Player Season Simulations pace panel,
+    // lib/regressionScore.js).
     const paceByName = {};
     const names = (topRows || []).map((r) => r.player_name);
     if (names.length) {
@@ -80,8 +82,27 @@ const getCachedTickerInputs = unstable_cache(
         ]);
         const pts = {};
         for (const a of actual || []) (pts[a.player_name] ??= []).push(a.actual_points);
+        // Games each player's team has played, so games he missed count against
+        // his pace like they do on Player Season Simulations (lib/teamGames.js).
+        // Every game has a QB row, so the QBs' rows alone give each team's
+        // played weeks cheaply. Optional: without it, falls back to games played.
+        let teamIdx = null;
+        try {
+          const [ownRows, qbRows] = await Promise.all([
+            fetchAllRows(publicSupabase, "player_game_log", "player_name, team, week", (q) =>
+              q.eq("season", latestSim.season).in("player_name", names).order("week", { ascending: true })
+            ),
+            fetchAllRows(publicSupabase, "player_game_log", "player_name, team, week", (q) =>
+              q.eq("season", latestSim.season).eq("position", "QB").order("week", { ascending: true })
+            ),
+          ]);
+          teamIdx = { gamesByName: indexGameLog(ownRows).gamesByName, teamWeeks: buildTeamWeeks(qbRows) };
+        } catch (e) {
+          console.error("[ticker] team games unavailable, using games played:", e.message);
+        }
         for (const sim of sims || []) {
-          const r = computeRegressionScore(pts[sim.player_name], sim.median / 17);
+          const elapsed = teamIdx ? teamGamesThrough(teamIdx, sim.player_name) : null;
+          const r = computeRegressionScore(pts[sim.player_name], sim.median / 17, elapsed);
           if (r) paceByName[sim.player_name] = r.regressionScore;
         }
       }
