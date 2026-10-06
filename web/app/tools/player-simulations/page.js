@@ -277,6 +277,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
       gamesPlayed: regression?.gamesPlayed ?? 0,
       recentGames: recentByName[row.player_name] || [],
       lastWeek: lastGameWeek,
+      simLatestWeek: latest.week,
       outcomePercentile: outcome?.percentile ?? null,
       // Same units as floor/median/ceiling (season-total scale), so it
       // can be positioned on the Range bar with the exact same maxCeiling

@@ -158,7 +158,8 @@ function StatDetailRow({ row, colSpan, shapePeers, maxCeiling }) {
   }));
 
   const shapeSignature = entries.map(([key]) => key).sort().join("|");
-  const shapePool = (snap ? peersByWeek?.[snap.simWeek] : shapePeers)?.[shapeSignature];
+  // A snapshot built on the latest published sim reuses the page's own comp pool.
+  const shapePool = (snap && snap.simWeek !== row.simLatestWeek ? peersByWeek?.[snap.simWeek] : shapePeers)?.[shapeSignature];
   const compareRow = compareName ? shapePool?.find((p) => p.name === compareName) : null;
   const comparePctiles =
     compareLayer === "floor"
