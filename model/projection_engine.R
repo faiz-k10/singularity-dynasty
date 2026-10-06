@@ -95,6 +95,61 @@ SEASON_CEIL_Q  <- c(RB = 0.995, QB = 0.985, WR = 0.990, TE = 0.990)
 # a separate step.
 BANK_SEASON_TOTALS <- identical(Sys.getenv("BANK_SEASON_TOTALS", "0"), "1")
 
+# Floor/ceiling in banked mode: a distance from the published median with the shape of
+# a healthy player's range (runs where he plays >= BANKED_HEALTHY_SHARE of his team's
+# remaining games), stretched by factors fitted in analyze_banked_calibration.R so that
+# about 10% of players who stayed on the field land at or below the floor / at or above
+# the ceiling (checked out of sample). The MEDIAN is untouched: still the median of the
+# all-runs simulation, availability and injury history included. A player who actually
+# misses games is handled the usual way -- those games are banked and the next weekly run
+# lowers his numbers; the floor does not price in a lost season. Because floor and
+# ceiling are distances from the median, they cannot cross it.
+BANKED_HEALTHY_SHARE <- 0.75
+BANKED_COUNT_STATS <- c("passing_tds", "passing_interceptions", "rushing_tds", "receiving_tds")
+if (file.exists("banked_k_table.R")) source("banked_k_table.R")
+
+# Sums of `g[i]` weighted bootstrap draws of each column of `vals`, for every run i.
+bank_sim_sums <- function(vals, w, g) {
+  out <- matrix(0, nrow = length(g), ncol = ncol(vals))
+  total <- sum(g)
+  if (total == 0) return(out)
+  idx <- sample.int(nrow(vals), total, replace = TRUE, prob = w)
+  s <- rowsum(vals[idx, , drop = FALSE], rep.int(seq_along(g), g))
+  out[as.integer(rownames(s)), ] <- s
+  out
+}
+
+# k_lo / k_hi for a position + stat at `games_left`, interpolated across the as-of weeks
+# the backtest covered (clamped at the ends).
+banked_k <- function(pos, stat, games_left) {
+  if (!exists("BANKED_K")) stop("BANK_SEASON_TOTALS is on but banked_k_table.R was not found next to projection_engine.R")
+  t <- BANKED_K[BANKED_K$pos == pos & BANKED_K$stat == stat, ]
+  if (nrow(t) == 0) {
+    cat("banked_k: no calibration for", pos, stat, "-- using k = 1\n")
+    return(list(lo = 1, hi = 1))
+  }
+  t <- t[order(t$games_left), ]
+  list(lo = approx(t$games_left, t$k_lo, xout = games_left, rule = 2)$y,
+       hi = approx(t$games_left, t$k_hi, xout = games_left, rule = 2)$y)
+}
+
+# floor / median / ceiling for one stat: `banked` is what he has already done, `rem` the
+# simulated remaining-games totals (one per run), `healthy` which runs kept him on the field.
+bank_band <- function(pos, stat, banked, rem, healthy, games_left) {
+  if (games_left <= 0) return(c(floor = round(banked), median = round(banked), ceiling = round(banked)))
+  k <- banked_k(pos, stat, games_left)
+  med <- as.numeric(quantile(rem, 0.50))
+  h <- rem[healthy]
+  h_med <- as.numeric(quantile(h, 0.50))
+  unit <- if (stat %in% BANKED_COUNT_STATS) 1 else 0   # whole-number stats need at least a unit of spread to stretch
+  lo_w <- max(h_med - as.numeric(quantile(h, 0.10)), unit)
+  hi_w <- max(as.numeric(quantile(h, 0.90)) - h_med, unit)
+  m <- round(banked + med)
+  c(floor = min(round(banked + max(med - k$lo * lo_w, 0)), m),
+    median = m,
+    ceiling = max(round(banked + med + k$hi * hi_w), m))
+}
+
 # Sleeper-blend weekly median: blends OUR weighted-quantile median with
 # Sleeper's own published weekly projection, per position. Validated via
 # backtest_vs_sleeper.R -- real head-to-head, 7,853 player-weeks across
@@ -1138,6 +1193,14 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
       n_draw <- max(MAX_GAMES_PER_SEASON - tg, 0)
       banked_pts <- sum(cur$fantasy_points_ppr, na.rm = TRUE)
     }
+    bank_g <- NULL; bank_healthy <- NULL
+    if (bank_on) {
+      bank_g <- rbinom(n_sims, n_draw, avail)
+      bank_healthy <- bank_g >= ceiling(BANKED_HEALTHY_SHARE * n_draw)
+      # A very injury-prone player may have too few "stays on the field" runs to read a
+      # range from; use his healthiest 20% of runs instead.
+      if (sum(bank_healthy) < 200) bank_healthy <- bank_g >= quantile(bank_g, 0.8)
+    }
 
     # Season fantasy-points total: unchanged mechanism from before --
     # samples GAME INDICES (not points values directly), resampled with
@@ -1146,10 +1209,16 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
     # and the boom/bust profile only; NOT part of the stat-group split
     # below (that backtest targeted the granular per-stat columns, not
     # the blended points total).
-    szn <- replicate(n_sims, {
-      g <- sum(runif(n_draw) < avail)
-      if (g == 0) 0 else sum(x[sample(idx, g, replace = TRUE, prob = wm)])
-    }) + banked_pts
+    if (bank_on) {
+      rem_pts <- bank_sim_sums(matrix(x, ncol = 1), wm, bank_g)[, 1]
+      szn <- rem_pts + banked_pts
+      szn_band <- bank_band(pos, "pts", banked_pts, rem_pts, bank_healthy, n_draw)
+    } else {
+      szn <- replicate(n_sims, {
+        g <- sum(runif(n_draw) < avail)
+        if (g == 0) 0 else sum(x[sample(idx, g, replace = TRUE, prob = wm)])
+      }) + banked_pts
+    }
 
     # Boom/bust profile: share of simulated seasons landing 20%+ below vs.
     # above THIS PLAYER'S OWN median (not a fixed league-wide point
@@ -1186,6 +1255,16 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
         w_group <- recency_weights(n, STAT_GROUP_DECAY[[group_name]][pos])
         floor_q <- STAT_GROUP_FLOOR_Q[[group_name]][pos]
         ceil_q  <- STAT_GROUP_CEIL_Q[[group_name]][pos]
+
+        if (bank_on) {
+          # Banked mode: see bank_band(). One games-played draw per run, shared by every stat.
+          rem <- bank_sim_sums(as.matrix(d[, cols, drop = FALSE]), w_group, bank_g)
+          for (j in seq_along(cols)) {
+            band <- bank_band(pos, cols[j], sum(cur[[cols[j]]], na.rm = TRUE), rem[, j], bank_healthy, n_draw)
+            stat_ranges[[cols[j]]] <- list(floor = band[["floor"]], median = band[["median"]], ceiling = band[["ceiling"]])
+          }
+          next
+        }
 
         group_sim <- replicate(n_sims, {
           g <- sum(runif(n_draw) < avail)
@@ -1579,9 +1658,9 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
       # backtest_season_calibration.R against real 2022-2025 season
       # totals, literal 0.10/0.90 produced real below/above rates of
       # 22-34% / 17-20% (target 10%/10%) at every position.
-      season_floor = round(quantile(szn, SEASON_FLOOR_Q[pos]), 0),
-      season_median = round(quantile(szn, 0.50), 0),
-      season_ceiling = round(quantile(szn, SEASON_CEIL_Q[pos]), 0),
+      season_floor = if (bank_on) szn_band[["floor"]] else round(quantile(szn, SEASON_FLOOR_Q[pos]), 0),
+      season_median = if (bank_on) szn_band[["median"]] else round(quantile(szn, 0.50), 0),
+      season_ceiling = if (bank_on) szn_band[["ceiling"]] else round(quantile(szn, SEASON_CEIL_Q[pos]), 0),
       bust_pct = bust_pct,
       normal_pct = normal_pct,
       boom_pct = boom_pct,

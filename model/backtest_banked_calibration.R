@@ -31,8 +31,6 @@ AS_OF_WEEKS <- c(2, 3, 5, 7, 9, 11, 13, 15)
 N_SIMS <- 6000
 HEALTHY_SHARE <- 0.75
 PROBS <- seq(0.01, 0.99, by = 0.01)
-KEY_YARDS <- c(QB = "passing_yards", RB = "rushing_yards", WR = "receiving_yards", TE = "receiving_yards")
-KEY_TDS   <- c(QB = "passing_tds",   RB = "rushing_tds",   WR = "receiving_tds",   TE = "receiving_tds")
 
 reg_all <- load_history((Y - 3):Y)
 cat(sprintf("Season %d: %d player-game rows loaded\n", Y, nrow(reg_all)))
@@ -76,33 +74,29 @@ for (w in AS_OF_WEEKS) {
     n_draw <- max(MAX_GAMES_PER_SEASON - tg, 0)
     g <- rbinom(N_SIMS, n_draw, avail)   # same as summing n_draw Bernoulli(avail) trials
 
-    yard_cols <- c(KEY_YARDS[[pos]], if (pos %in% c("WR", "TE")) "targets")
-    pts <- sim_sums(matrix(d$fantasy_points_ppr, ncol = 1), recency_weights(n, MED_DECAY[[pos]]), g)[, 1]
-    yds <- sim_sums(as.matrix(d[, yard_cols, drop = FALSE]), recency_weights(n, STAT_GROUP_DECAY[["yardage"]][[pos]]), g)
-    tds <- sim_sums(as.matrix(d[, KEY_TDS[[pos]], drop = FALSE]), recency_weights(n, STAT_GROUP_DECAY[["td_int"]][[pos]]), g)[, 1]
-
-    real <- full_year[full_year$player_display_name == p, ]
-    banked <- list(pts = sum(cur$fantasy_points_ppr), yds = colSums(cur[, yard_cols, drop = FALSE]), tds = sum(cur[[KEY_TDS[[pos]]]]))
-    # Same simulation restricted to runs where he plays at least 75% of the
-    # remaining games ("stays on the field") -- for a floor/ceiling that doesn't
-    # price in a lost season. Quantiles of that subset, stored beside the full ones.
+    # Every stat the page shows for this position, simulated the way the engine does:
+    # one joint draw per stat group (yardage / td_int) at that group's own decay.
+    stat_cols <- STAT_COLS_BY_POSITION[[pos]]
+    groups <- split(stat_cols, STAT_GROUP_BY_STAT[stat_cols])
+    # Runs where he stays on the field (>= 75% of the remaining games): the shape of the
+    # floor/ceiling comes from these; the median stays the all-runs median (see analyze script).
     healthy <- g >= ceiling(HEALTHY_SHARE * n_draw)
-    hq <- function(v) if (sum(healthy) >= 200) unname(quantile(v[healthy], PROBS)) else rep(NA_real_, length(PROBS))
-    rec <- list(
-      player = p, pos = pos, season = Y, week = w, games_banked = nrow(cur), team_games = tg, games_left = n_draw, avail = avail,
-      yard_cols = yard_cols,
-      q_pts = unname(quantile(pts, PROBS)), q_tds = unname(quantile(tds, PROBS)),
-      q_yds = lapply(seq_along(yard_cols), function(j) unname(quantile(yds[, j], PROBS))),
-      mean_pts = mean(pts),
-      p_healthy = mean(healthy), q_pts_h = hq(pts), q_tds_h = hq(tds),
-      q_yds_h = lapply(seq_along(yard_cols), function(j) hq(yds[, j])),
-      banked_pts = banked$pts, banked_tds = banked$tds, banked_yds = banked$yds,
-      real_pts = sum(real$fantasy_points_ppr), real_tds = sum(real[[KEY_TDS[[pos]]]]),
-      real_yds = colSums(real[, yard_cols, drop = FALSE]), real_games = nrow(real)
-    )
-    names(rec$q_yds) <- yard_cols; names(rec$q_yds_h) <- yard_cols
-    # Pool membership: ranked by simulated season median (banked + remaining median).
-    rec$season_median <- rec$banked_pts + rec$q_pts[50]
+    qs <- function(v) unname(quantile(v, PROBS))
+    qh <- function(v) if (sum(healthy) >= 200) unname(quantile(v[healthy], PROBS)) else rep(NA_real_, length(PROBS))
+    q <- list(); q_h <- list(); banked <- list()
+    pts <- sim_sums(matrix(d$fantasy_points_ppr, ncol = 1), recency_weights(n, MED_DECAY[[pos]]), g)[, 1]
+    q[["pts"]] <- qs(pts); q_h[["pts"]] <- qh(pts); banked[["pts"]] <- sum(cur$fantasy_points_ppr)
+    for (gn in names(groups)) {
+      cols <- groups[[gn]]
+      sims <- sim_sums(as.matrix(d[, cols, drop = FALSE]), recency_weights(n, STAT_GROUP_DECAY[[gn]][[pos]]), g)
+      for (j in seq_along(cols)) { q[[cols[j]]] <- qs(sims[, j]); q_h[[cols[j]]] <- qh(sims[, j]); banked[[cols[j]]] <- sum(cur[[cols[j]]]) }
+    }
+    real <- full_year[full_year$player_display_name == p, ]
+    real_tot <- c(list(pts = sum(real$fantasy_points_ppr)), lapply(setNames(stat_cols, stat_cols), function(cn) sum(real[[cn]])))
+    rec <- list(player = p, pos = pos, season = Y, week = w, games_banked = nrow(cur), team_games = tg, games_left = n_draw,
+                avail = avail, p_healthy = mean(healthy), real_games = nrow(real),
+                q = q, q_h = q_h, banked = banked, real = real_tot)
+    rec$season_median <- rec$banked$pts + rec$q$pts[50]
     eval_rows[[p]] <- rec
   }
   med <- sapply(eval_rows, function(r) r$season_median)
