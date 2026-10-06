@@ -382,7 +382,7 @@ STAT_GROUP_BY_STAT <- c(
   passing_tds = "td_int", passing_interceptions = "td_int",
   rushing_tds = "td_int", receiving_tds = "td_int",
   passing_yards = "yardage", rushing_yards = "yardage",
-  receiving_yards = "yardage", receptions = "yardage"
+  receiving_yards = "yardage", receptions = "yardage", targets = "yardage"
 )
 
 MAX_GAMES_PER_SEASON <- 16   # 17 weeks minus 1 bye (weeks 1-17; week 18 excluded — see below)
@@ -449,12 +449,12 @@ EXCLUDE_WEEKS <- c(18)
 # carry meaningless passing_yards fields.
 STAT_COLS <- c("passing_yards", "passing_tds", "passing_interceptions",
                "rushing_yards", "rushing_tds",
-               "receptions", "receiving_yards", "receiving_tds")
+               "targets", "receptions", "receiving_yards", "receiving_tds")
 STAT_COLS_BY_POSITION <- list(
   QB = c("passing_yards", "passing_tds", "passing_interceptions", "rushing_yards", "rushing_tds"),
   RB = c("rushing_yards", "rushing_tds", "receptions", "receiving_yards", "receiving_tds"),
-  WR = c("receptions", "receiving_yards", "receiving_tds"),
-  TE = c("receptions", "receiving_yards", "receiving_tds")
+  WR = c("targets", "receptions", "receiving_yards", "receiving_tds"),
+  TE = c("targets", "receptions", "receiving_yards", "receiving_tds")
 )
 
 # Usage/efficiency columns for Player Season Simulations' WOPR/EPA fields.
@@ -587,7 +587,7 @@ load_history <- function(seasons = history_seasons()) {
   stats <- as.data.frame(load_player_stats(seasons = seasons))
   reg <- stats[stats$season_type == "REG",
                c("player_id", "player_display_name", "position", "season", "week",
-                 "fantasy_points_ppr", "carries", "targets", "attempts", "team",
+                 "fantasy_points_ppr", "carries", "attempts", "team",
                  "target_share", STAT_COLS, USAGE_METRIC_COLS)]
   reg <- reg[reg$position %in% c("QB", "RB", "WR", "TE"), ]
   reg <- reg[!is.na(reg$fantasy_points_ppr), ]
@@ -1447,7 +1447,10 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
     # EXCEPTION: td_int columns use WEEKLY_TD_DECAY instead of
     # STAT_GROUP_DECAY$td_int -- see that constant's comment for why the
     # season-total-tuned value is wrong for this next-game target.
-    relevant_weekly_stats <- STAT_COLS_BY_POSITION[[pos]]
+    # Targets is a display-only season stat (Player Season Simulations) -- not
+    # a scoring component, so it stays out of the weekly scoring_stats JSON
+    # that Redraft's custom scoring reads.
+    relevant_weekly_stats <- setdiff(STAT_COLS_BY_POSITION[[pos]], "targets")
     weekly_scoring_stats <- if (!is.null(relevant_weekly_stats)) {
       setNames(lapply(relevant_weekly_stats, function(col) {
         col_x <- d[[col]]

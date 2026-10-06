@@ -9,6 +9,8 @@ const STAT_LABELS = [
   ["passing_interceptions", "INTs"],
   ["rushing_yards", "Rush Yards"],
   ["rushing_tds", "Rush TDs"],
+  // WR/TE only: raw targets (season total), published from the next projection run on.
+  ["targets", "Targets"],
   ["receptions", "Receptions"],
   ["receiving_yards", "Rec Yards"],
   ["receiving_tds", "Rec TDs"],
