@@ -2763,11 +2763,10 @@ tr.stat-row-selected td{background:var(--void-panel);}
   color:var(--neon-blue); font-family:var(--font-ibm-plex-mono), monospace; font-size:11px; font-weight:600;
   letter-spacing:0.02em; line-height:1.3; text-align:center; white-space:normal;
 }
-/* Narrow card column: one line, centered, allowed to run a few px into the card's own padding. */
-.archetype-pill-compact{padding:2px 4px; font-size:8px; line-height:1.25; letter-spacing:0; white-space:nowrap; max-width:none; margin:0 -7px;}
+/* On a comparison card: sits in the picker row's empty first column, left-aligned with the stat names below. */
+.archetype-pill-compact{grid-column:1; grid-row:1; justify-self:start; align-self:center; padding:2px 8px; font-size:9.5px; line-height:1.3; letter-spacing:0; white-space:nowrap;}
 .role-block{text-align:center; margin-bottom:14px; padding-bottom:12px; border-bottom:1px dashed var(--line);}
 .role-block-caption{font-size:9.5px; letter-spacing:0.08em; text-transform:uppercase; color:var(--star-dim); margin-bottom:6px;}
-.role-block-blurb{margin:8px auto 0; max-width:30ch; font-size:12px; line-height:1.45; color:var(--star-dim);}
 .role-block-near{margin:6px auto 0; max-width:34ch; font-size:11px; line-height:1.4; color:var(--star-dim);}
 .role-block-near strong{color:var(--star); font-weight:600;}
 .shape-finder-score-value{

@@ -8,7 +8,6 @@ import STAT_LABELS from "./statLabels";
 import StatRadar from "./StatRadar";
 import SimilarShapeFinder from "./SimilarShapeFinder";
 import ArchetypePill from "./ArchetypePill";
-import { ARCHETYPE_BLURB } from "@/lib/archetypes";
 import PercentileCard from "./PercentileCard";
 import { radarLayoutFor } from "./radarLayout";
 import { missedSegments } from "@/lib/teamGames";
@@ -399,7 +398,6 @@ function StatDetailRow({ row, colSpan, shapePeers, archetypeByName, maxCeiling, 
               <div className="role-block">
                 <div className="role-block-caption mono">Player role</div>
                 <ArchetypePill name={row.archetype} />
-                {ARCHETYPE_BLURB[row.archetype] && <p className="role-block-blurb">{ARCHETYPE_BLURB[row.archetype]}</p>}
                 {row.archetypeNear && (
                   <p className="role-block-near">
                     Close to <strong>{row.archetypeNear}</strong> &mdash; his role sits near the line between the two.
