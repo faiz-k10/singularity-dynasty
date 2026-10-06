@@ -2631,6 +2631,8 @@ tr.stat-row-selected td{background:var(--void-panel);}
    instead of stacked -- uses the real width it has instead of leaving it
    as a narrow vertical list with dead space to the right of each card. */
 .shape-finder{grid-area:finder;}
+/* Outer wrapper is transparent: just the title and the comp cards, no panel behind them. */
+.shape-finder.stat-panel{background:none; border:none; padding:0;}
 .shape-finder-label{
   font-family:var(--font-ibm-plex-mono), monospace; font-size:10px; letter-spacing:0.08em;
   text-transform:uppercase; color:var(--star-dim); margin-bottom:6px;
