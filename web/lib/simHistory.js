@@ -64,8 +64,22 @@ const getGameRows = unstable_cache(
   { revalidate: 60 }
 );
 
-// Everything the builders below need, fetched (cached) together.
-export async function loadSimHistoryContext() {
+// Everything the builders below need, fetched (cached) together. The derived
+// part (every week's stat pool, percentiles and position ranks -- thousands of
+// rank lookups) is remembered in memory for a minute, like the inputs, so a
+// burst of requests (hovering down the table) does that work once, not per hit.
+let contextMemo = null;
+export function loadSimHistoryContext() {
+  if (contextMemo && Date.now() - contextMemo.at < 60_000) return contextMemo.promise;
+  const promise = buildSimHistoryContext().catch((e) => {
+    if (contextMemo?.promise === promise) contextMemo = null; // don't keep a failure
+    throw e;
+  });
+  contextMemo = { at: Date.now(), promise };
+  return promise;
+}
+
+async function buildSimHistoryContext() {
   const { latest, latestRows } = await getLatestInputs();
   if (!latest) return null;
   const [historyRows, gameRows] = await Promise.all([getHistoryRows(latest.season, latest.week), getGameRows(latest.season)]);

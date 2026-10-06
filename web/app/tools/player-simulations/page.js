@@ -64,35 +64,25 @@ const getCachedWeekData = unstable_cache(
 
     if (!latest) return { latest: null, rows: [], totalCount: 0, actualProductionByName: {} };
 
-    const [{ data, count }, actualRows, logRows] = await Promise.all([
+    const [{ data, count }, logRows] = await Promise.all([
       publicSupabase
         .from("player_simulations")
         .select(
-          "player_name, position, team, floor, median, ceiling, stat_ranges, trend, sample_confidence, notes",
+          "player_name, position, team, floor, median, ceiling, stat_ranges",
           { count: "exact" }
         )
         .eq("season", latest.season)
         .eq("week", latest.week)
         .order("median", { ascending: false }),
-      // Real weekly actual production -- powers the regression-to-
-      // projection score below. Scoped to latest.season, not latest.week:
-      // this is the whole season's games-played-so-far, not just one
-      // week's batch. Derived from player_game_log (already refreshed
-      // weekly from real nflreadr box scores), not hand-entered -- see
-      // scripts/publish-actual-production.mjs, run as part of the normal
-      // weekly publish cycle right alongside the game log itself.
-      // Paginated (fetchAllRows below): Supabase's project-level API "max
-      // rows" setting hard-caps any single request at 1000 regardless of
-      // an explicit .limit() asking for more -- confirmed directly (a
-      // .limit(5000) here still only returned 1000 rows). This table is
-      // already past 1000 (1078 rows 3 weeks into the season) and was
-      // silently truncating, dropping a chunk of the LATEST week's games
-      // (sorted last) for whichever players' rows fell past row 1000.
-      // Found via Harold Fannin Jr.'s pace panel showing "2 games" with
-      // his real Week 3 game already live in the table.
-      fetchAllRows(publicSupabase, "player_actual_production", "player_name, week, actual_points", (q) =>
-        q.eq("season", latest.season).order("week", { ascending: true })
-      ),
+      // The season's game log: each player's real points by week (powers the
+      // regression-to-projection score and pace below), his latest games, and
+      // which games his team played. This is the same data
+      // player_actual_production holds -- that table is built from this one --
+      // so it is read once, here, instead of fetching both.
+      // Paginated (fetchAllRows): Supabase's project-level API "max rows"
+      // setting hard-caps any single request at 1000 regardless of an explicit
+      // .limit() -- confirmed directly -- and this table passes 1000 rows a
+      // few weeks into the season.
       fetchAllRows(
         publicSupabase,
         "player_game_log",
@@ -102,8 +92,8 @@ const getCachedWeekData = unstable_cache(
     ]);
 
     const actualProductionByName = {};
-    for (const row of actualRows || []) {
-      (actualProductionByName[row.player_name] ??= []).push(row.actual_points);
+    for (const g of logRows || []) {
+      if (typeof g.fantasy_points_ppr === "number") (actualProductionByName[g.player_name] ??= []).push(g.fantasy_points_ppr);
     }
     // Only each player's latest three games ride on the page (the pace
     // panel's default view); earlier-week snapshots load on demand from
@@ -238,13 +228,12 @@ export default async function PlayerSimulationsPage({ searchParams }) {
   // baseline has to be drawn from the whole population, not whatever a
   // teaser-truncated fetch happens to include.
   const porByName = computeReplacementValues(poolRows, { teams: leagueTeams, superflex });
-  // Regr/Pace %ile are computed once per player here (over the WHOLE
-  // pool, not the teaser-capped `sims`) so a free/signed-out visitor's
-  // truncated fetch doesn't change the numbers for the players who ARE
-  // visible.
+  // Regr/Pace %ile depend only on the player's own games and his own
+  // floor/median/ceiling, so they are computed just for the rows that are
+  // actually sent (10 for a free visitor, not all 300).
   const regressionByName = {};
   const outcomeByName = {};
-  for (const row of poolRows) {
+  for (const row of sims) {
     // Approximation, not the literal backtested formula -- see
     // lib/regressionScore.js's comment. season_median/GAMES_PER_SEASON
     // is a bootstrapped season-total median divided by games, not the
@@ -267,71 +256,35 @@ export default async function PlayerSimulationsPage({ searchParams }) {
       gamesElapsed: teamGamesByName?.[row.player_name],
     });
   }
-  // Pace-panel snapshots, one per completed game week: "W3" = everything
-  // through week 3 -- games from weeks <= 3 and the projection as it stood
-  // after them (the sim published for week 4; the latest sim stands in
-  // for any week past it).
+  // Rounded to the precision the page actually shows (and no more): these rows
+  // are serialized into the page for every visitor, 300 of them for a
+  // Singularity member, and a 16-digit float is ~10 bytes of nothing.
+  const round = (v, digits) => (v == null ? v : Math.round(v * 10 ** digits) / 10 ** digits);
   const simsWithComputed = sims.map((row) => {
-    const heat = heatFor("median", row);
-    const floorHeat = heatFor("floor", row);
-    const ceilingHeat = heatFor("ceiling", row);
     const regression = regressionByName[row.player_name];
     const outcome = outcomeByName[row.player_name];
+    const missed = missedWeeksByName?.[row.player_name];
     return {
       ...row,
-      heat,
-      floorHeat,
-      ceilingHeat,
+      heat: round(heatFor("median", row), 2),
+      floorHeat: round(heatFor("floor", row), 2),
+      ceilingHeat: round(heatFor("ceiling", row), 2),
       sleeperId: bioByNamePos[`${normalizePlayerName(row.player_name)}|${row.position}`]?.sleeperId || null,
-      por: porByName[row.player_name],
-      regressionScore: regression?.regressionScore ?? null,
-      currentPPG: regression?.currentPPG ?? null,
+      por: round(porByName[row.player_name], 1),
+      regressionScore: round(regression?.regressionScore ?? null, 2),
+      currentPPG: round(regression?.currentPPG ?? null, 3),
       gamesPlayed: regression?.gamesPlayed ?? 0,
       recentGames: recentByName[row.player_name] || [],
-      lastWeek: lastGameWeek,
-      missedWeeks: missedWeeksByName?.[row.player_name] || [],
-      simLatestWeek: latest.week,
-      outcomePercentile: outcome?.percentile ?? null,
+      ...(missed ? { missedWeeks: missed } : {}),
+      outcomePercentile: round(outcome?.percentile ?? null, 2),
       // Same units as floor/median/ceiling (season-total scale), so it
       // can be positioned on the Range bar with the exact same maxCeiling
       // denominator the bar's own floor/median/ceiling segments use.
-      paceSeasonTotal: outcome?.paceSeasonTotal ?? null,
+      paceSeasonTotal: round(outcome?.paceSeasonTotal ?? null, 1),
       ...computeStatPercentiles(row, statPoolByPos),
     };
   });
   const simsWithHeat = sortRows(simsWithComputed, sortKey, sortDir, COLUMN_TYPES);
-  // Peer pool for SimilarShapeFinder, grouped by the exact set of stat
-  // keys a player carries rather than by position -- QBs only match QBs
-  // (unique passing keys), but WRs and TEs share one pool since they
-  // carry the identical 3 receiving keys, so "similar shape" can surface
-  // a cross-position comp there instead of being siloed like the sliders.
-  const shapePeers = {};
-  for (const row of simsWithHeat) {
-    if (!row.stat_ranges) continue;
-    const signature = Object.keys(row.stat_ranges).sort().join("|");
-    (shapePeers[signature] ??= []).push({
-      name: row.player_name,
-      position: row.position,
-      positionRank: row.positionRank ?? null,
-      sleeperId: bioByNamePos[`${normalizePlayerName(row.player_name)}|${row.position}`]?.sleeperId || null,
-      statPercentiles: row.statPercentiles,
-      statFloorPercentiles: row.statFloorPercentiles,
-      statCeilingPercentiles: row.statCeilingPercentiles,
-      stat_ranges: row.stat_ranges,
-    });
-  }
-  // CSV export stays in points-per-game terms regardless of the on-page
-  // toggle -- it's baked into server-rendered HTML at request time (see
-  // ExportCsvButton's comment), not reactive to PlayerSimSearch's client
-  // state, so it needs its own converted copy independent of what the
-  // table happens to be displaying.
-  const csvRows = simsWithHeat.map((row) => ({
-    ...row,
-    floor: Math.round((row.floor / GAMES_PER_SEASON) * 10) / 10,
-    median: Math.round((row.median / GAMES_PER_SEASON) * 10) / 10,
-    ceiling: Math.round((row.ceiling / GAMES_PER_SEASON) * 10) / 10,
-  }));
-
   return (
     <div className="tool-page">
       <SiteHeader />
@@ -361,7 +314,8 @@ export default async function PlayerSimulationsPage({ searchParams }) {
               currentParams={params}
               positions={positions}
               maxCeiling={maxCeiling}
-              shapePeers={shapePeers}
+              lastWeek={lastGameWeek}
+              simLatestWeek={latest.week}
               leagueTeams={leagueTeams}
               superflex={superflex}
               header={
@@ -379,19 +333,8 @@ export default async function PlayerSimulationsPage({ searchParams }) {
                     <div className="toggle-row-flex">
                       <div className="toggle-row-actions">
                         <ExportCsvButton
-                          id="csv-player-simulations"
                           filename={`player-simulations-week${latest.week}-${latest.season}.csv`}
-                          columns={[
-                            { key: "player_name", label: "Player" },
-                            { key: "position", label: "Position" },
-                            { key: "team", label: "Team" },
-                            { key: "floor", label: "Floor (PPG)" },
-                            { key: "median", label: "Median (PPG)" },
-                            { key: "ceiling", label: "Ceiling (PPG)" },
-                            { key: "trend", label: "Trend" },
-                            { key: "sample_confidence", label: "Confidence" },
-                          ]}
-                          rows={csvRows}
+                          href="/api/player-simulations/csv"
                         />
                       </div>
                     </div>

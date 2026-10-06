@@ -69,33 +69,32 @@ const getCachedTickerInputs = unstable_cache(
         .limit(1)
         .maybeSingle();
       if (latestSim) {
-        const [{ data: sims }, actual] = await Promise.all([
+        // Their games from the season's game log (the same points
+        // player_actual_production holds -- it is built from this table).
+        const [{ data: sims }, ownRows] = await Promise.all([
           publicSupabase
             .from("player_simulations")
             .select("player_name, median")
             .eq("season", latestSim.season)
             .eq("week", latestSim.week)
             .in("player_name", names),
-          fetchAllRows(publicSupabase, "player_actual_production", "player_name, actual_points", (q) =>
-            q.eq("season", latestSim.season).in("player_name", names)
+          fetchAllRows(publicSupabase, "player_game_log", "player_name, team, week, fantasy_points_ppr", (q) =>
+            q.eq("season", latestSim.season).in("player_name", names).order("week", { ascending: true })
           ),
         ]);
         const pts = {};
-        for (const a of actual || []) (pts[a.player_name] ??= []).push(a.actual_points);
+        for (const g of ownRows || []) {
+          if (typeof g.fantasy_points_ppr === "number") (pts[g.player_name] ??= []).push(g.fantasy_points_ppr);
+        }
         // Games each player's team has played, so games he missed count against
         // his pace like they do on Player Season Simulations (lib/teamGames.js).
         // Every game has a QB row, so the QBs' rows alone give each team's
         // played weeks cheaply. Optional: without it, falls back to games played.
         let teamIdx = null;
         try {
-          const [ownRows, qbRows] = await Promise.all([
-            fetchAllRows(publicSupabase, "player_game_log", "player_name, team, week", (q) =>
-              q.eq("season", latestSim.season).in("player_name", names).order("week", { ascending: true })
-            ),
-            fetchAllRows(publicSupabase, "player_game_log", "player_name, team, week", (q) =>
-              q.eq("season", latestSim.season).eq("position", "QB").order("week", { ascending: true })
-            ),
-          ]);
+          const qbRows = await fetchAllRows(publicSupabase, "player_game_log", "player_name, team, week", (q) =>
+            q.eq("season", latestSim.season).eq("position", "QB").order("week", { ascending: true })
+          );
           teamIdx = { gamesByName: indexGameLog(ownRows).gamesByName, teamWeeks: buildTeamWeeks(qbRows) };
         } catch (e) {
           console.error("[ticker] team games unavailable, using games played:", e.message);

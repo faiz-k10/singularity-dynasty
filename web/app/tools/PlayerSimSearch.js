@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, memo, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import SortableTh from "./SortableTh";
 import TeamBadge from "./TeamBadge";
@@ -45,7 +45,7 @@ function loadPeers() {
 // Detail row unfolded below a player when their name is clicked -- one
 // open at a time (clicking a different player folds this one and opens
 // theirs). colSpan must match the number of columns in the main row.
-function StatDetailRow({ row, colSpan, shapePeers, maxCeiling, onGoToPlayer }) {
+function StatDetailRow({ row, colSpan, shapePeers, maxCeiling, lastWeek, simLatestWeek, onGoToPlayer }) {
   // Week scrubber state (see the bar at the bottom of the pace panel):
   // null = the latest published week; otherwise a snapshot's week.
   const [snapWeek, setSnapWeek] = useState(null);
@@ -81,7 +81,7 @@ function StatDetailRow({ row, colSpan, shapePeers, maxCeiling, onGoToPlayer }) {
     };
   }, [snapWeek]);
   const weeks = snaps.map((x) => x.week);
-  const latestWeek = row.lastWeek;
+  const latestWeek = lastWeek;
   const snap = snapWeek != null && snapWeek !== latestWeek ? snaps.find((x) => x.week === snapWeek) : null;
   const pv = snap ? { ...row, ...snap } : { ...row, week: latestWeek };
   // Dots are evenly spaced: W1 at the very start of the bar, the latest week at
@@ -181,7 +181,7 @@ function StatDetailRow({ row, colSpan, shapePeers, maxCeiling, onGoToPlayer }) {
   // Must match the server-built pool signature (every key the player carries, shown or not).
   const shapeSignature = Object.keys(ranges || {}).sort().join("|");
   // A snapshot built on the latest published sim reuses the page's own comp pool.
-  const shapePool = (snap && snap.simWeek !== row.simLatestWeek ? peersByWeek?.[snap.simWeek] : shapePeers)?.[shapeSignature];
+  const shapePool = (snap && snap.simWeek !== simLatestWeek ? peersByWeek?.[snap.simWeek] : shapePeers)?.[shapeSignature];
   const compareRow = compareName ? shapePool?.find((p) => p.name === compareName) : null;
   const comparePctiles =
     compareLayer === "floor"
@@ -504,10 +504,130 @@ function leagueHref(currentParams, key, value) {
   return `?${params.toString()}`;
 }
 
+// One player's table row (plus his unfolded detail row). Memoized: expanding
+// a row, typing in the search box or flipping a position pill re-renders the
+// table component, but a row whose own props are unchanged is skipped
+// entirely -- with ~300 rows that is the difference between redoing every row
+// and redoing the one that changed.
+const pct = (v) => Math.round(v * 10) / 10; // bar positions to 0.1% -- finer is invisible
+
+const PlayerRow = memo(function PlayerRow({
+  row,
+  expandedFlag,
+  maxCeiling,
+  shapePeers,
+  lastWeek,
+  simLatestWeek,
+  onToggle,
+  onGoToPlayer,
+}) {
+  const hasStats = row.stat_ranges && Object.keys(row.stat_ranges).length > 0;
+  const isExpanded = hasStats && expandedFlag;
+  // Warm his earlier-week data when the pointer settles on the row (not on every row
+  // it sweeps across), or at once on focus / press -- so opening it is instant
+  // without a request for every player the mouse happens to pass.
+  const hoverTimer = useRef(null);
+  const prefetch = hasStats && lastWeek > 1 ? () => loadSnapshots(row.player_name) : undefined;
+  return (
+    <Fragment>
+      <tr
+        data-pos={row.position}
+        data-player={row.player_name}
+        className={hasStats ? "row-expandable" : undefined}
+        onClick={hasStats ? () => onToggle(row.player_name) : undefined}
+        onPointerEnter={prefetch ? () => { hoverTimer.current = setTimeout(prefetch, 140); } : undefined}
+        onPointerLeave={prefetch ? () => clearTimeout(hoverTimer.current) : undefined}
+        onPointerDown={prefetch}
+        onFocus={prefetch}
+        role={hasStats ? "button" : undefined}
+        tabIndex={hasStats ? 0 : undefined}
+        aria-expanded={hasStats ? isExpanded : undefined}
+        onKeyDown={
+          hasStats
+            ? (e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  onToggle(row.player_name);
+                }
+              }
+            : undefined
+        }
+      >
+        <td className="mono">{row.rank}</td>
+        <td className="player-cell">{row.player_name}</td>
+        <td className="mono align-left">
+          {row.position}
+          {row.positionRank != null && <span className="pos-rank">{row.positionRank}</span>}
+        </td>
+        <td className="mono align-left">
+          <TeamBadge team={row.team} />
+        </td>
+        <td className="mono heat-cell-alt" style={{ "--heat": row.floorHeat || 0 }}>
+          {formatStat(row.floor)}
+        </td>
+        <td className="mono heat-cell" style={{ "--heat": row.heat || 0 }}>
+          <strong>{formatStat(row.median)}</strong>
+        </td>
+        <td className="mono heat-cell-alt" style={{ "--heat": row.ceilingHeat || 0 }}>
+          {formatStat(row.ceiling)}
+        </td>
+        <td>
+          <div className="sim-bar-track">
+            <div
+              className="sim-bar-typical"
+              style={{
+                left: `${pct((row.floor / maxCeiling) * 100)}%`,
+                width: `${pct(((row.median - row.floor) / maxCeiling) * 100)}%`,
+              }}
+            ></div>
+            <div
+              className="sim-bar-upside"
+              style={{
+                left: `${pct((row.median / maxCeiling) * 100)}%`,
+                width: `${pct(((row.ceiling - row.median) / maxCeiling) * 100)}%`,
+              }}
+            ></div>
+            {row.paceSeasonTotal != null && (
+              <div
+                className={`pace-marker ${row.outcomePercentile >= 50 ? "pace-marker-hot" : "pace-marker-cold"}`}
+                style={{ left: `${pct(Math.min(100, (row.paceSeasonTotal / maxCeiling) * 100))}%` }}
+                title={`Current pace: ${ordinal(row.outcomePercentile)} percentile on this player's outcome curve`}
+              ></div>
+            )}
+          </div>
+        </td>
+        <td
+          className={`mono align-left ${row.regressionScore != null ? (row.regressionScore >= 0 ? "por-positive" : "por-negative") : ""}`}
+        >
+          {row.regressionScore != null
+            ? `${row.regressionScore >= 0 ? "+" : ""}${row.regressionScore.toFixed(2)}`
+            : "—"}
+        </td>
+        <td className="mono align-left">{row.outcomePercentile != null ? ordinal(row.outcomePercentile) : "—"}</td>
+        <td className={`mono por-cell ${row.por >= 0 ? "por-positive" : "por-negative"}`}>
+          {row.por >= 0 ? "+" : ""}
+          {row.por.toFixed(1)}
+        </td>
+      </tr>
+      {isExpanded && (
+        <StatDetailRow
+          row={row}
+          colSpan={11}
+          shapePeers={shapePeers}
+          maxCeiling={maxCeiling}
+          lastWeek={lastWeek}
+          simLatestWeek={simLatestWeek}
+          onGoToPlayer={onGoToPlayer}
+        />
+      )}
+    </Fragment>
+  );
+});
+
 // Same pattern as RankingsSearch (Redraft) / BestBallSearch: position-pill
 // filter + player name search, both client-side. Sorting stays
 // server-driven via the existing URL-param mechanism.
-export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams, positions, maxCeiling, shapePeers, leagueTeams, superflex, header }) {
+export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams, positions, maxCeiling, lastWeek, simLatestWeek, leagueTeams, superflex, header }) {
   const showPositionFilter = Array.isArray(positions) && positions.length > 0;
   const [selected, setSelected] = useState(positions || []);
   const [query, setQuery] = useState("");
@@ -530,14 +650,39 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
     );
   }
 
-  function toggleExpanded(name) {
+  const toggleExpanded = useCallback((name) => {
     setExpanded((prev) => {
       const next = new Set(prev);
       if (next.has(name)) next.delete(name);
       else next.add(name);
       return next;
     });
-  }
+  }, []);
+
+  // Peer pool for the Similar Shape comps, grouped by the exact set of stat keys
+  // a player carries rather than by position -- QBs only match QBs (unique
+  // passing keys), but WRs and TEs share one pool since they carry the same
+  // receiving keys, so a comp can cross positions there. Built here from the
+  // rows already on the page (the same objects, not copies) instead of being
+  // shipped to the browser a second time.
+  const shapePeers = useMemo(() => {
+    const out = {};
+    for (const row of rows) {
+      if (!row.stat_ranges) continue;
+      const signature = Object.keys(row.stat_ranges).sort().join("|");
+      (out[signature] ??= []).push({
+        name: row.player_name,
+        position: row.position,
+        positionRank: row.positionRank ?? null,
+        sleeperId: row.sleeperId ?? null,
+        statPercentiles: row.statPercentiles,
+        statFloorPercentiles: row.statFloorPercentiles,
+        statCeilingPercentiles: row.statCeilingPercentiles,
+        stat_ranges: row.stat_ranges,
+      });
+    }
+    return out;
+  }, [rows]);
 
   // Clicking a comp's photo: close the player we came from, open the comp, make
   // sure his row is visible under the current filters, then scroll to it.
@@ -556,18 +701,28 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
     });
     pendingScroll.current = name;
   }
+  // goToPlayer closes over the current filters, so it changes every render; rows
+  // get a stable wrapper that always calls the latest one (keeps them memoized).
+  const goToPlayerRef = useRef(goToPlayer);
+  useEffect(() => {
+    goToPlayerRef.current = goToPlayer;
+  });
+  const stableGoToPlayer = useCallback((name, fromName) => goToPlayerRef.current(name, fromName), []);
 
+  // The list follows the search box a beat behind it: typing stays instant and
+  // the (up to ~300 row) filter runs at lower priority instead of blocking keys.
+  const deferredQuery = useDeferredValue(query);
   const filteredRows = useMemo(() => {
     let out = rows;
     if (showPositionFilter) {
       out = out.filter((row) => selected.includes(row.position));
     }
-    const q = query.trim().toLowerCase();
+    const q = deferredQuery.trim().toLowerCase();
     if (q) {
       out = out.filter((row) => row.player_name.toLowerCase().includes(q));
     }
     return out;
-  }, [rows, selected, query, showPositionFilter]);
+  }, [rows, selected, deferredQuery, showPositionFilter]);
 
   const displayRows = filteredRows;
 
@@ -851,106 +1006,19 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                   </td>
                 </tr>
               )}
-              {(() => {
-                return displayRows.map((row) => {
-                  const hasStats = row.stat_ranges && Object.keys(row.stat_ranges).length > 0;
-                  const isExpanded = hasStats && expanded.has(row.player_name);
-                  return (
-                <Fragment key={row.player_name}>
-                <tr
-                  data-pos={row.position}
-                  data-player={row.player_name}
-                  className={hasStats ? "row-expandable" : undefined}
-                  onClick={hasStats ? () => toggleExpanded(row.player_name) : undefined}
-                  onPointerEnter={hasStats && row.lastWeek > 1 ? () => loadSnapshots(row.player_name) : undefined}
-                  onFocus={hasStats && row.lastWeek > 1 ? () => loadSnapshots(row.player_name) : undefined}
-                  role={hasStats ? "button" : undefined}
-                  tabIndex={hasStats ? 0 : undefined}
-                  aria-expanded={hasStats ? isExpanded : undefined}
-                  onKeyDown={
-                    hasStats
-                      ? (e) => {
-                          if (e.key === "Enter" || e.key === " ") {
-                            e.preventDefault();
-                            toggleExpanded(row.player_name);
-                          }
-                        }
-                      : undefined
-                  }
-                >
-                  <td className="mono">{row.rank}</td>
-                  <td className="player-cell">{row.player_name}</td>
-                  <td className="mono align-left">
-                    {row.position}
-                    {row.positionRank != null && (
-                      <span className="pos-rank">{row.positionRank}</span>
-                    )}
-                  </td>
-                  <td className="mono align-left">
-                    <TeamBadge team={row.team} />
-                  </td>
-                  <td className="mono heat-cell-alt" style={{ "--heat": row.floorHeat || 0 }}>
-                    {formatStat(row.floor)}
-                  </td>
-                  <td className="mono heat-cell" style={{ "--heat": row.heat || 0 }}>
-                    <strong>{formatStat(row.median)}</strong>
-                  </td>
-                  <td className="mono heat-cell-alt" style={{ "--heat": row.ceilingHeat || 0 }}>
-                    {formatStat(row.ceiling)}
-                  </td>
-                  <td>
-                    <div className="sim-bar-track">
-                      <div
-                        className="sim-bar-typical"
-                        style={{
-                          left: `${(row.floor / maxCeiling) * 100}%`,
-                          width: `${((row.median - row.floor) / maxCeiling) * 100}%`,
-                        }}
-                      ></div>
-                      <div
-                        className="sim-bar-upside"
-                        style={{
-                          left: `${(row.median / maxCeiling) * 100}%`,
-                          width: `${((row.ceiling - row.median) / maxCeiling) * 100}%`,
-                        }}
-                      ></div>
-                      {row.paceSeasonTotal != null && (
-                        <div
-                          className={`pace-marker ${row.outcomePercentile >= 50 ? "pace-marker-hot" : "pace-marker-cold"}`}
-                          style={{ left: `${Math.min(100, (row.paceSeasonTotal / maxCeiling) * 100)}%` }}
-                          title={`Current pace: ${ordinal(row.outcomePercentile)} percentile on this player's outcome curve`}
-                        ></div>
-                      )}
-                    </div>
-                  </td>
-                  <td
-                    className={`mono align-left ${row.regressionScore != null ? (row.regressionScore >= 0 ? "por-positive" : "por-negative") : ""}`}
-                  >
-                    {row.regressionScore != null
-                      ? `${row.regressionScore >= 0 ? "+" : ""}${row.regressionScore.toFixed(2)}`
-                      : "—"}
-                  </td>
-                  <td className="mono align-left">
-                    {row.outcomePercentile != null ? ordinal(row.outcomePercentile) : "—"}
-                  </td>
-                  <td className={`mono por-cell ${row.por >= 0 ? "por-positive" : "por-negative"}`}>
-                    {row.por >= 0 ? "+" : ""}
-                    {row.por.toFixed(1)}
-                  </td>
-                </tr>
-                {isExpanded && (
-                  <StatDetailRow
-                    row={row}
-                    colSpan={11}
-                    shapePeers={shapePeers}
-                    maxCeiling={maxCeiling}
-                    onGoToPlayer={goToPlayer}
-                  />
-                )}
-                </Fragment>
-                  );
-                });
-              })()}
+              {displayRows.map((row) => (
+                <PlayerRow
+                  key={row.player_name}
+                  row={row}
+                  expandedFlag={expanded.has(row.player_name)}
+                  maxCeiling={maxCeiling}
+                  shapePeers={shapePeers}
+                  lastWeek={lastWeek}
+                  simLatestWeek={simLatestWeek}
+                  onToggle={toggleExpanded}
+                  onGoToPlayer={stableGoToPlayer}
+                />
+              ))}
             </tbody>
           </table>
           </div>
