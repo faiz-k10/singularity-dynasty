@@ -1,6 +1,7 @@
 import Link from "next/link";
+import { unstable_cache } from "next/cache";
 import SiteHeader from "./SiteHeader";
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 function formatPostDate(iso) {
@@ -36,81 +37,102 @@ const CHIP_SLOTS = [
 // up; clamped at 0 rather than going negative once the cohort fills.
 const SINGULARITY_FOUNDING_CAP = 50;
 
+// Everything the landing page reads is the same for every visitor (public
+// tables, plus one service-role count), so it is fetched once -- the three
+// independent chains in parallel -- and cached for 60s. It used to run six
+// queries back to back on every load, which was most of the page's ~2s wait.
+// The per-visitor shuffle of the hero chips stays in Home(), after the cache.
+const getCachedHomeData = unstable_cache(
+  async () => {
+    const supabase = createPublicClient();
+
+    const redraftChain = async () => {
+      const { data: latestWeek } = await supabase
+        .from("redraft_rankings")
+        .select("season, week")
+        .order("season", { ascending: false })
+        .order("week", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (!latestWeek) return { latestWeek: null, topRedraft: [], trendRows: [] };
+      const [{ data: top }, { data: trend }] = await Promise.all([
+        supabase
+          .from("redraft_rankings")
+          .select("rank, player_name, position, projection")
+          .eq("season", latestWeek.season)
+          .eq("week", latestWeek.week)
+          .order("rank", { ascending: true })
+          .limit(3),
+        // Same RISING/FALLING trend field the ticker uses (SiteHeader.js) --
+        // real week-over-week movement, not a fabricated stat.
+        supabase
+          .from("redraft_rankings")
+          .select("player_name, trend, projection")
+          .eq("season", latestWeek.season)
+          .eq("week", latestWeek.week)
+          .in("trend", ["RISING", "FALLING"])
+          .limit(30),
+      ]);
+      return { latestWeek, topRedraft: top || [], trendRows: trend || [] };
+    };
+
+    const simsChain = async () => {
+      const { data: simSeasonRow } = await supabase
+        .from("player_simulations")
+        .select("season")
+        .order("season", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (!simSeasonRow) return [];
+      const { data } = await supabase
+        .from("player_simulations")
+        .select("player_name, floor, median, ceiling")
+        .eq("season", simSeasonRow.season)
+        .limit(30);
+      return data || [];
+    };
+
+    const [{ data: posts }, { latestWeek, topRedraft, trendRows }, simRows, { count: singularityCount }] = await Promise.all([
+      supabase.from("posts").select("id, title, url, published_at").order("published_at", { ascending: false }).limit(3),
+      redraftChain(),
+      simsChain(),
+      // profiles' RLS only lets a visitor read their OWN row (see
+      // 0001_profiles.sql), so a real cross-user count needs the
+      // service-role admin client -- otherwise every signed-out visitor's
+      // count query would just return 0 and this would silently show a
+      // static, wrong "50 remaining" forever regardless of real signups.
+      createAdminClient().from("profiles").select("*", { count: "exact", head: true }).eq("tier", "singularity"),
+    ]);
+    return { posts: posts || [], latestWeek, topRedraft, trendRows, simRows, singularityCount: singularityCount || 0 };
+  },
+  ["landing-page-data"],
+  { revalidate: 60 }
+);
+
 export default async function Home() {
-  const supabase = await createClient();
-  const { data: posts } = await supabase
-    .from("posts")
-    .select("id, title, url, published_at")
-    .order("published_at", { ascending: false })
-    .limit(3);
-
-  const { data: latestWeek } = await supabase
-    .from("redraft_rankings")
-    .select("season, week")
-    .order("season", { ascending: false })
-    .order("week", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  let topRedraft = [];
+  const { posts, latestWeek, topRedraft, trendRows, simRows, singularityCount } = await getCachedHomeData();
   const heroCandidates = [];
 
-  if (latestWeek) {
-    const { data } = await supabase
-      .from("redraft_rankings")
-      .select("rank, player_name, position, projection")
-      .eq("season", latestWeek.season)
-      .eq("week", latestWeek.week)
-      .order("rank", { ascending: true })
-      .limit(3);
-    topRedraft = data || [];
-
-    // Same RISING/FALLING trend field the ticker uses (SiteHeader.js) --
-    // real week-over-week movement, not a fabricated stat.
-    const { data: trendRows } = await supabase
-      .from("redraft_rankings")
-      .select("player_name, trend, projection")
-      .eq("season", latestWeek.season)
-      .eq("week", latestWeek.week)
-      .in("trend", ["RISING", "FALLING"])
-      .limit(30);
-
-    for (const r of trendRows || []) {
-      heroCandidates.push({
-        name: r.player_name,
-        value: `${r.projection.toFixed(1)} PROJ ${r.trend === "RISING" ? "▲" : "▼"}`,
-        dir: r.trend === "RISING" ? "up" : "down",
-      });
-    }
+  for (const r of trendRows) {
+    heroCandidates.push({
+      name: r.player_name,
+      value: `${r.projection.toFixed(1)} PROJ ${r.trend === "RISING" ? "▲" : "▼"}`,
+      dir: r.trend === "RISING" ? "up" : "down",
+    });
   }
 
-  const { data: simSeasonRow } = await supabase
-    .from("player_simulations")
-    .select("season")
-    .order("season", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  if (simSeasonRow) {
-    const { data: simRows } = await supabase
-      .from("player_simulations")
-      .select("player_name, floor, median, ceiling")
-      .eq("season", simSeasonRow.season)
-      .limit(30);
-
-    // Boom/bust lean from the simulation's own shape -- more ceiling
-    // upside than floor downside reads "up", the reverse reads "down".
-    // Real derived signal, not an invented number.
-    for (const r of simRows || []) {
-      const upside = r.ceiling - r.median;
-      const downside = r.median - r.floor;
-      const isUp = upside >= downside;
-      heroCandidates.push({
-        name: r.player_name,
-        value: `${Math.round(isUp ? r.ceiling : r.floor)} ${isUp ? "CEIL ▲" : "FLOOR ▼"}`,
-        dir: isUp ? "up" : "down",
-      });
-    }
+  // Boom/bust lean from the simulation's own shape -- more ceiling
+  // upside than floor downside reads "up", the reverse reads "down".
+  // Real derived signal, not an invented number.
+  for (const r of simRows) {
+    const upside = r.ceiling - r.median;
+    const downside = r.median - r.floor;
+    const isUp = upside >= downside;
+    heroCandidates.push({
+      name: r.player_name,
+      value: `${Math.round(isUp ? r.ceiling : r.floor)} ${isUp ? "CEIL ▲" : "FLOOR ▼"}`,
+      dir: isUp ? "up" : "down",
+    });
   }
 
   // heroCandidates is built from two independent queries above (trend
@@ -130,17 +152,7 @@ export default async function Home() {
   });
   const heroChips = shuffle(uniqueCandidates).slice(0, CHIP_SLOTS.length);
 
-  // profiles' RLS only lets a visitor read their OWN row (see
-  // 0001_profiles.sql), so a real cross-user count needs the
-  // service-role admin client, not the session-scoped one above --
-  // otherwise every signed-out visitor's count query would just return
-  // 0 and this would silently show a static, wrong "50 remaining"
-  // forever regardless of real signups.
-  const { count: singularityCount } = await createAdminClient()
-    .from("profiles")
-    .select("*", { count: "exact", head: true })
-    .eq("tier", "singularity");
-  const singularityRemaining = Math.max(0, SINGULARITY_FOUNDING_CAP - (singularityCount || 0));
+  const singularityRemaining = Math.max(0, SINGULARITY_FOUNDING_CAP - singularityCount);
 
   return (
     <>

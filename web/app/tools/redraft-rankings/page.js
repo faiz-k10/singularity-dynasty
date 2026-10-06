@@ -1,5 +1,9 @@
 import Link from "next/link";
-import { getUserTier } from "@/lib/tier";
+import { unstable_cache } from "next/cache";
+import { resolveTier } from "@/lib/tier";
+import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
+import { fetchAllRows } from "@/lib/fetchAllRows";
 import { resolveSort, sortRows } from "@/lib/sortLink";
 import { percentileRank, INVERTED_STATS } from "@/lib/statPercentiles";
 import { getPlayerBiosByNamePos } from "@/lib/sleeper";
@@ -186,13 +190,19 @@ async function fetchSimsMetrics(supabase) {
 //   - heroWinsByName: how many (season, week, position) groups THIS
 //     SEASON this player finished in the top 3 scorers at their own
 //     position -- "Weekly Hero" in achievements.js.
-async function fetchGameLogData(supabase, season, floorCeilingByGame) {
-  const { data } = await supabase
-    .from("player_game_log")
-    .select("player_name, position, season, week, opponent, is_home, fantasy_points_ppr, exp_points_ppr")
-    .order("season", { ascending: false })
-    .order("week", { ascending: false });
+// Paginated (fetchAllRows): the table is ~7,500 rows and Supabase hard-caps a
+// single request at 1000, which used to silently cut this to the newest 1000
+// games (so this season's xFP average and Weekly Hero counts were partial).
+function fetchGameLogRows(supabase) {
+  return fetchAllRows(
+    supabase,
+    "player_game_log",
+    "player_name, position, season, week, opponent, is_home, fantasy_points_ppr, exp_points_ppr",
+    (q) => q.order("season", { ascending: false }).order("week", { ascending: false }).order("player_name", { ascending: true })
+  );
+}
 
+function deriveGameLogData(data, season, floorCeilingByGame) {
   const byPlayer = {};
   for (const r of data || []) {
     const fc = floorCeilingByGame[`${r.player_name}|${r.season}|${r.week}`] || {};
@@ -282,9 +292,14 @@ async function fetchGameLogData(supabase, season, floorCeilingByGame) {
 // before migration 0029 predate floor/ceiling entirely and read null,
 // same as the live table already handles.
 async function fetchHistoricalFloorCeiling(supabase) {
-  const { data } = await supabase
-    .from("redraft_rankings")
-    .select("player_name, season, week, floor, ceiling, projection");
+  // Paginated for the same reason as fetchGameLogRows: the table passes 2,000
+  // rows and one request returns at most 1000.
+  const data = await fetchAllRows(
+    supabase,
+    "redraft_rankings",
+    "player_name, season, week, floor, ceiling, projection",
+    (q) => q.order("season", { ascending: true }).order("week", { ascending: true }).order("player_name", { ascending: true })
+  );
   const map = {};
   for (const r of data || []) {
     map[`${r.player_name}|${r.season}|${r.week}`] = { floor: r.floor, ceiling: r.ceiling, median: r.projection };
@@ -303,65 +318,90 @@ function sortPositions(positions) {
   });
 }
 
+// Everything below that is the same for every visitor (the latest week's
+// rows, the per-player game-log stats, the Sims-derived metrics) is fetched
+// once, in parallel, and cached for 60s -- the page used to run seven
+// Supabase round trips back to back on every load, two of them whole-table
+// reads. Tier gating (top 50 vs everything) happens afterwards, in JS, on
+// this cached result, so a free visitor's page still never contains the extra
+// rows. Trimmed to the players actually ranked this week so each cache entry
+// stays well under Next's 2MB limit.
+const getCachedRedraftData = unstable_cache(
+  async () => {
+    const publicSupabase = createPublicClient();
+    const { data: latest } = await publicSupabase
+      .from("redraft_rankings")
+      .select("season, week")
+      .order("season", { ascending: false })
+      .order("week", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (!latest) return { latest: null, rows: [] };
+
+    const [rows, floorCeilingByGame, simsByName, gameLogRows] = await Promise.all([
+      fetchAllRows(
+        publicSupabase,
+        "redraft_rankings",
+        "rank, player_name, position, team, opponent, is_home, projection, floor, ceiling, matchup_mult, trend, sample_confidence, scoring_stats, notes",
+        (q) => q.eq("season", latest.season).eq("week", latest.week).order("rank", { ascending: true })
+      ),
+      fetchHistoricalFloorCeiling(publicSupabase),
+      fetchSimsMetrics(publicSupabase),
+      fetchGameLogRows(publicSupabase),
+    ]);
+    const gameLog = deriveGameLogData(gameLogRows, latest.season, floorCeilingByGame);
+
+    const ranked = new Set(rows.map((r) => r.player_name));
+    const only = (byName) => Object.fromEntries(Object.entries(byName).filter(([name]) => ranked.has(name)));
+    return {
+      latest,
+      rows,
+      simsByName: only(simsByName),
+      avgXfpByName: only(gameLog.avgXfpByName),
+      recentGamesByName: only(gameLog.recentGamesByName),
+      lastWeekRankByName: only(gameLog.lastWeekRankByName),
+      heroWinsByName: only(gameLog.heroWinsByName),
+    };
+  },
+  ["redraft-rankings-latest-week"],
+  { revalidate: 60 }
+);
+
 // Stargazer sees the top 50 only; Explorer/Singularity see the full
 // list — matches the pricing copy's "Weekly Projection Rankings (Top
 // 50)" Stargazer bullet.
 export default async function RedraftRankingsPage({ searchParams }) {
   const params = await searchParams;
 
-  const { supabase, tier } = await getUserTier();
+  // Tier (auth + profile) is per-visitor, the cached bundle and the Sleeper
+  // bios aren't -- all three run at once.
+  const supabase = await createClient();
+  const [{ tier }, cached, bioByNamePos] = await Promise.all([
+    resolveTier(supabase),
+    getCachedRedraftData(),
+    getPlayerBiosByNamePos(),
+  ]);
   const hasFullAccess = PAID_TIERS.includes(tier);
-
-  const { data: latest } = await supabase
-    .from("redraft_rankings")
-    .select("season, week")
-    .order("season", { ascending: false })
-    .order("week", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  const { latest } = cached;
 
   let rankings = [];
   let totalCount = 0;
 
   if (latest) {
-    const { count } = await supabase
-      .from("redraft_rankings")
-      .select("*", { count: "exact", head: true })
-      .eq("season", latest.season)
-      .eq("week", latest.week);
-    totalCount = count || 0;
-
-    let query = supabase
-      .from("redraft_rankings")
-      .select(
-        "rank, player_name, position, team, opponent, is_home, projection, floor, ceiling, matchup_mult, trend, sample_confidence, scoring_stats, notes"
-      )
-      .eq("season", latest.season)
-      .eq("week", latest.week)
-      .order("rank", { ascending: true });
-
-    if (!hasFullAccess) {
-      query = query.limit(50);
-    }
-
-    const { data } = await query;
+    totalCount = cached.rows.length;
+    const data = hasFullAccess ? cached.rows : cached.rows.slice(0, 50);
+    const { simsByName, avgXfpByName, recentGamesByName, lastWeekRankByName, heroWinsByName } = cached;
 
     // Position-relative rank (RB1, WR23, ...) computed once from the
     // natural rank order -- stays fixed on each row even if the table is
-    // later re-sorted by a different column via SortableTh.
+    // later re-sorted by a different column via SortableTh. Counted over the
+    // rows shown (as before), so a free visitor's top-50 labels are the same.
     const positionCounters = {};
-    rankings = (data || []).map((r) => {
+    rankings = data.map((r) => {
       positionCounters[r.position] = (positionCounters[r.position] || 0) + 1;
       return { ...r, ...r.scoring_stats, positionLabel: `${r.position}${positionCounters[r.position]}` };
     });
 
-    const floorCeilingByGame = await fetchHistoricalFloorCeiling(supabase);
-    const [simsByName, { avgXfpByName, recentGamesByName, lastWeekRankByName, heroWinsByName }, bioByNamePos] =
-      await Promise.all([
-        fetchSimsMetrics(supabase),
-        fetchGameLogData(supabase, latest.season, floorCeilingByGame),
-        getPlayerBiosByNamePos(),
-      ]);
     rankings = rankings.map((r) => {
       const sims = simsByName[r.player_name] || {};
       return {

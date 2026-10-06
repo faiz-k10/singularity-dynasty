@@ -17,6 +17,9 @@ export default function SortableTh({
         href={sortHref(currentParams, sortKey, activeSort, activeDir, sortParam, dirParam)}
         className={sortKey === activeSort ? "sort-active" : ""}
         scroll={false}
+        // A sort is an explicit click; prefetching every column's sorted view
+        // on page load cost a server render each (~12 per page view).
+        prefetch={false}
       >
         {label}
         {sortArrow(sortKey, activeSort, activeDir)}

@@ -98,6 +98,7 @@ function PlayerCell({ row, withPopover }) {
             <Link
               href={`/tools/compare-players?p1=${encodeURIComponent(row.player_name)}`}
               className="player-popover-compare"
+              prefetch={false}
             >
               + Compare
             </Link>
