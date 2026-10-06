@@ -133,7 +133,7 @@ export function buildSnapshots(ctx, name) {
       paceSeasonTotal: oc?.paceSeasonTotal ?? null,
       outcomePercentile: oc?.percentile ?? null,
       recentGames: played
-        .slice(-4)
+        .slice(-3)
         .reverse()
         .map((g) => ({ season: g.season, week: g.week, opponent: g.opponent, is_home: g.is_home, fantasy_points_ppr: g.fantasy_points_ppr })),
       ...(proj.stat_ranges && perc ? { stat_ranges: proj.stat_ranges, ...perc } : {}),

@@ -106,7 +106,7 @@ const getCachedWeekData = unstable_cache(
     for (const row of actualRows || []) {
       (actualProductionByName[row.player_name] ??= []).push(row.actual_points);
     }
-    // Only each player's latest four games ride on the page (the pace
+    // Only each player's latest three games ride on the page (the pace
     // panel's default view); earlier-week snapshots load on demand from
     // /api/player-sim-history.
     for (const g of logRows || []) {
@@ -119,7 +119,7 @@ const getCachedWeekData = unstable_cache(
       });
       if (g.week > lastGameWeek) lastGameWeek = g.week;
     }
-    for (const k of Object.keys(recentByName)) recentByName[k] = recentByName[k].slice(-4).reverse();
+    for (const k of Object.keys(recentByName)) recentByName[k] = recentByName[k].slice(-3).reverse();
 
     return { latest, rows: data || [], totalCount: count || 0, actualProductionByName, recentByName, lastGameWeek };
   },
