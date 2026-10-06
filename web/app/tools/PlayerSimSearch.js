@@ -14,8 +14,33 @@ import { radarLayoutFor } from "./radarLayout";
 // Detail row unfolded below a player when their name is clicked -- one
 // open at a time (clicking a different player folds this one and opens
 // theirs). colSpan must match the number of columns in the main row.
-function StatDetailRow({ row, colSpan, shapePeers, maxCeiling }) {
-  const ranges = row.stat_ranges;
+function StatDetailRow({ row, colSpan, shapePeers, shapePeersByWeek, maxCeiling }) {
+  // Week scrubber state (see the bar at the bottom of the pace panel):
+  // null = the latest published week; otherwise a snapshot's week.
+  const [snapWeek, setSnapWeek] = useState(null);
+  const snaps = row.snapshots || [];
+  const weeks = snaps.map((x) => x.week);
+  const latestWeek = weeks[weeks.length - 1];
+  const snap = snapWeek != null && snapWeek !== latestWeek ? snaps.find((x) => x.week === snapWeek) : null;
+  const pv = snap ? { ...row, ...snap } : { ...row, week: latestWeek };
+  function pickWeek(w) {
+    const nearest = weeks.reduce((best, x) => (Math.abs(x - w) < Math.abs(best - w) ? x : best), weeks[0]);
+    setSnapWeek(nearest === latestWeek ? null : nearest);
+  }
+  function scrubTo(e) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const frac = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+    pickWeek(Math.round(frac * 17));
+  }
+  function onScrubKey(e) {
+    const i = weeks.indexOf(pv.week);
+    if (e.key === "ArrowLeft" || e.key === "ArrowDown") pickWeek(weeks[Math.max(0, i - 1)]);
+    else if (e.key === "ArrowRight" || e.key === "ArrowUp") pickWeek(weeks[Math.min(weeks.length - 1, i + 1)]);
+    else return;
+    e.preventDefault();
+  }
+
+  const ranges = pv.stat_ranges;
   const entries = STAT_LABELS.filter(([key]) => ranges && ranges[key]);
   // One selection at a time, in one of three modes, so a new click always
   // fully replaces whatever was highlighted before instead of stacking on
@@ -58,9 +83,9 @@ function StatDetailRow({ row, colSpan, shapePeers, maxCeiling }) {
   const radarEntriesRaw = entries.map(([key, label]) => [
     key,
     label,
-    row.statPercentiles?.[key],
-    row.statFloorPercentiles?.[key],
-    row.statCeilingPercentiles?.[key],
+    pv.statPercentiles?.[key],
+    pv.statFloorPercentiles?.[key],
+    pv.statCeilingPercentiles?.[key],
   ]);
   const { entries: radarEntries, startDeg: radarStartDeg } = radarLayoutFor(radarEntriesRaw, row.position);
   // Table-order (not radar-vertex-order) percentile lookup for the card
@@ -71,16 +96,16 @@ function StatDetailRow({ row, colSpan, shapePeers, maxCeiling }) {
   const percentileStats = entries.map(([key, label]) => ({
     key,
     label,
-    floorPctile: row.statFloorPercentiles?.[key],
-    medianPctile: row.statPercentiles?.[key],
-    ceilingPctile: row.statCeilingPercentiles?.[key],
+    floorPctile: pv.statFloorPercentiles?.[key],
+    medianPctile: pv.statPercentiles?.[key],
+    ceilingPctile: pv.statCeilingPercentiles?.[key],
     floorValue: ranges[key]?.floor,
     medianValue: ranges[key]?.median,
     ceilingValue: ranges[key]?.ceiling,
   }));
 
   const shapeSignature = entries.map(([key]) => key).sort().join("|");
-  const shapePool = shapePeers?.[shapeSignature];
+  const shapePool = (shapePeersByWeek?.[pv.simWeek] ?? shapePeers)?.[shapeSignature];
   const compareRow = compareName ? shapePool?.find((p) => p.name === compareName) : null;
   const comparePctiles =
     compareLayer === "floor"
@@ -92,31 +117,6 @@ function StatDetailRow({ row, colSpan, shapePeers, maxCeiling }) {
     ? radarEntries.map(([key, label]) => [key, label, comparePctiles?.[key]])
     : null;
 
-
-  // Week scrubber state (see the bar at the bottom of the pace panel):
-  // null = the latest published week; otherwise a snapshot's week.
-  const [snapWeek, setSnapWeek] = useState(null);
-  const snaps = row.snapshots || [];
-  const weeks = snaps.map((x) => x.week);
-  const latestWeek = weeks[weeks.length - 1];
-  const snap = snapWeek != null && snapWeek !== latestWeek ? snaps.find((x) => x.week === snapWeek) : null;
-  const pv = snap ? { ...row, ...snap } : { ...row, week: latestWeek };
-  function pickWeek(w) {
-    const nearest = weeks.reduce((best, x) => (Math.abs(x - w) < Math.abs(best - w) ? x : best), weeks[0]);
-    setSnapWeek(nearest === latestWeek ? null : nearest);
-  }
-  function scrubTo(e) {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const frac = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
-    pickWeek(Math.round(frac * 17));
-  }
-  function onScrubKey(e) {
-    const i = weeks.indexOf(pv.week);
-    if (e.key === "ArrowLeft" || e.key === "ArrowDown") pickWeek(weeks[Math.max(0, i - 1)]);
-    else if (e.key === "ArrowRight" || e.key === "ArrowUp") pickWeek(weeks[Math.min(weeks.length - 1, i + 1)]);
-    else return;
-    e.preventDefault();
-  }
 
   if (entries.length === 0) return null;
 
@@ -369,9 +369,9 @@ function StatDetailRow({ row, colSpan, shapePeers, maxCeiling }) {
           </div>
           <SimilarShapeFinder
             ownName={row.player_name}
-            statPercentiles={row.statPercentiles}
-            statFloorPercentiles={row.statFloorPercentiles}
-            statCeilingPercentiles={row.statCeilingPercentiles}
+            statPercentiles={pv.statPercentiles}
+            statFloorPercentiles={pv.statFloorPercentiles}
+            statCeilingPercentiles={pv.statCeilingPercentiles}
             stats={percentileStats}
             keys={entries.map(([key]) => key)}
             peers={shapePool}
@@ -417,7 +417,7 @@ function leagueHref(currentParams, key, value) {
 // Same pattern as RankingsSearch (Redraft) / BestBallSearch: position-pill
 // filter + player name search, both client-side. Sorting stays
 // server-driven via the existing URL-param mechanism.
-export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams, positions, maxCeiling, shapePeers, leagueTeams, superflex, header }) {
+export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams, positions, maxCeiling, shapePeers, shapePeersByWeek, leagueTeams, superflex, header }) {
   const showPositionFilter = Array.isArray(positions) && positions.length > 0;
   const [selected, setSelected] = useState(positions || []);
   const [query, setQuery] = useState("");
@@ -795,6 +795,7 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                     row={row}
                     colSpan={11}
                     shapePeers={shapePeers}
+                    shapePeersByWeek={shapePeersByWeek}
                     maxCeiling={maxCeiling}
                   />
                 )}
