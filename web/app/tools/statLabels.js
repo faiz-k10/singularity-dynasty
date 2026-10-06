@@ -12,12 +12,13 @@ const STAT_LABELS = [
   ["receptions", "Receptions"],
   ["receiving_yards", "Rec Yards"],
   ["receiving_tds", "Rec TDs"],
+  // YAC Above Exp is still published in stat_ranges but deliberately not shown
+  // (it also drops out of the radar and Similar Shape matching).
   // WR/TE only -- real bootstrap floor/median/ceiling (backtested decay +
-  // calibrated quantiles), not a flat point value. YAC Above Exp is real
-  // Next Gen Stats; Target Share is load_player_stats()' own column,
+  // calibrated quantiles), not a flat point value. Target Share is
+  // load_player_stats()' own column,
   // stored as percentage points (31.4, not 0.314) -- see
   // projection_engine.R's per-player loop.
-  ["yac_above_exp", "YAC Above Exp"],
   ["target_share", "Target Share"],
 ];
 

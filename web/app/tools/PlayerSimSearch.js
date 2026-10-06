@@ -173,7 +173,8 @@ function StatDetailRow({ row, colSpan, shapePeers, maxCeiling }) {
     ceilingValue: ranges[key]?.ceiling,
   }));
 
-  const shapeSignature = entries.map(([key]) => key).sort().join("|");
+  // Must match the server-built pool signature (every key the player carries, shown or not).
+  const shapeSignature = Object.keys(ranges || {}).sort().join("|");
   // A snapshot built on the latest published sim reuses the page's own comp pool.
   const shapePool = (snap && snap.simWeek !== row.simLatestWeek ? peersByWeek?.[snap.simWeek] : shapePeers)?.[shapeSignature];
   const compareRow = compareName ? shapePool?.find((p) => p.name === compareName) : null;
