@@ -1,5 +1,7 @@
 "use client";
 
+import ArchetypePill from "./ArchetypePill";
+
 // Plain squared distance across whatever stat keys the two players share.
 function shapeDistance(a, b, keys) {
   let sum = 0;
@@ -201,6 +203,7 @@ export default function SimilarShapeFinder({
   onSelect,
   onGoToPlayer,
   selection,
+  archetypeByName,
 }) {
   if (!peers || peers.length === 0 || !keys || keys.length === 0) return null;
 
@@ -326,6 +329,7 @@ export default function SimilarShapeFinder({
                       );
                     })()}
                   <div className="shape-finder-score-value">{displaySimilarity}%</div>
+                  {archetypeByName?.[p.name] && <ArchetypePill name={archetypeByName[p.name]} compact />}
                 </div>
                 <MiniStatTable
                   peer={p}

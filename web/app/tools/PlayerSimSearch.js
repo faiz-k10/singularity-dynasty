@@ -7,6 +7,8 @@ import TeamBadge from "./TeamBadge";
 import STAT_LABELS from "./statLabels";
 import StatRadar from "./StatRadar";
 import SimilarShapeFinder from "./SimilarShapeFinder";
+import ArchetypePill from "./ArchetypePill";
+import { ARCHETYPE_BLURB } from "@/lib/archetypes";
 import PercentileCard from "./PercentileCard";
 import { radarLayoutFor } from "./radarLayout";
 import { missedSegments } from "@/lib/teamGames";
@@ -45,7 +47,7 @@ function loadPeers() {
 // Detail row unfolded below a player when their name is clicked -- one
 // open at a time (clicking a different player folds this one and opens
 // theirs). colSpan must match the number of columns in the main row.
-function StatDetailRow({ row, colSpan, shapePeers, maxCeiling, lastWeek, simLatestWeek, onGoToPlayer }) {
+function StatDetailRow({ row, colSpan, shapePeers, archetypeByName, maxCeiling, lastWeek, simLatestWeek, onGoToPlayer }) {
   // Week scrubber state (see the bar at the bottom of the pace panel):
   // null = the latest published week; otherwise a snapshot's week.
   const [snapWeek, setSnapWeek] = useState(null);
@@ -393,6 +395,18 @@ function StatDetailRow({ row, colSpan, shapePeers, maxCeiling, lastWeek, simLate
             </div>
           )}
           <div className="stat-panel stat-panel-table">
+            {row.archetype && (
+              <div className="role-block">
+                <div className="role-block-caption mono">Player role</div>
+                <ArchetypePill name={row.archetype} />
+                {ARCHETYPE_BLURB[row.archetype] && <p className="role-block-blurb">{ARCHETYPE_BLURB[row.archetype]}</p>}
+                {row.archetypeNear && (
+                  <p className="role-block-near">
+                    Close to <strong>{row.archetypeNear}</strong> &mdash; his role sits near the line between the two.
+                  </p>
+                )}
+              </div>
+            )}
             <table className="stat-detail-table">
               <thead>
                 <tr>
@@ -491,6 +505,7 @@ function StatDetailRow({ row, colSpan, shapePeers, maxCeiling, lastWeek, simLate
             onSelect={selectCompare}
             onGoToPlayer={onGoToPlayer ? (name) => onGoToPlayer(name, row.player_name) : undefined}
             selection={selection}
+            archetypeByName={archetypeByName}
           />
         </div>
       </td>
@@ -538,6 +553,7 @@ const PlayerRow = memo(function PlayerRow({
   expandedFlag,
   maxCeiling,
   shapePeers,
+  archetypeByName,
   lastWeek,
   simLatestWeek,
   onToggle,
@@ -636,6 +652,7 @@ const PlayerRow = memo(function PlayerRow({
           row={row}
           colSpan={11}
           shapePeers={shapePeers}
+          archetypeByName={archetypeByName}
           maxCeiling={maxCeiling}
           lastWeek={lastWeek}
           simLatestWeek={simLatestWeek}
@@ -703,6 +720,14 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
         stat_ranges: row.stat_ranges,
       });
     }
+    return out;
+  }, [rows]);
+
+  // name -> role group, for the pill on each comparison card (works for earlier-week comps too, whose
+  // peers come from the history API and carry no archetype of their own).
+  const archetypeByName = useMemo(() => {
+    const out = {};
+    for (const row of rows) if (row.archetype) out[row.player_name] = row.archetype;
     return out;
   }, [rows]);
 
@@ -1035,6 +1060,7 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                   expandedFlag={expanded.has(row.player_name)}
                   maxCeiling={maxCeiling}
                   shapePeers={shapePeers}
+                  archetypeByName={archetypeByName}
                   lastWeek={lastWeek}
                   simLatestWeek={simLatestWeek}
                   onToggle={toggleExpanded}

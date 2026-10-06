@@ -11,6 +11,7 @@ import { computeOutcomePercentile } from "@/lib/outcomePercentile";
 import { getPlayerBiosByNamePos } from "@/lib/sleeper";
 import { normalizePlayerName } from "@/lib/portfolio";
 import { fetchAllRows } from "@/lib/fetchAllRows";
+import { ARCHETYPE_NEAR_CONFIDENCE } from "@/lib/archetypes";
 import { indexGameLog, missedWeeks, teamGamesThrough } from "@/lib/teamGames";
 import SiteHeader from "../../SiteHeader";
 import ExportCsvButton from "../ExportCsvButton";
@@ -41,6 +42,41 @@ const COLUMN_TYPES = {
   outcomePercentile: "number",
 };
 
+// Role groups (RB/WR/TE) from the player_archetypes table: this sim week's rows, or the newest week
+// that has any if archetypes haven't been published for this one yet. Optional by design -- a missing
+// table or an empty result just means no archetype shows, never an error on the page.
+async function loadArchetypes(client, latest) {
+  try {
+    let { data } = await client
+      .from("player_archetypes")
+      .select("player_name, archetype, runner_up, confidence, week")
+      .eq("season", latest.season)
+      .eq("week", latest.week);
+    if (!data?.length) {
+      const { data: newest } = await client
+        .from("player_archetypes")
+        .select("week")
+        .eq("season", latest.season)
+        .order("week", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (!newest) return {};
+      ({ data } = await client
+        .from("player_archetypes")
+        .select("player_name, archetype, runner_up, confidence, week")
+        .eq("season", latest.season)
+        .eq("week", newest.week));
+    }
+    const out = {};
+    for (const r of data || []) {
+      out[r.player_name] = { a: r.archetype, ...(r.confidence != null && r.confidence < ARCHETYPE_NEAR_CONFIDENCE && r.runner_up ? { near: r.runner_up } : {}) };
+    }
+    return out;
+  } catch {
+    return {};
+  }
+}
+
 // The full published week's data (all 425-ish rows) is identical for
 // every visitor regardless of tier or the League Size / QB Format
 // toggles -- gating happens afterward, in JS, on this same cached result
@@ -64,7 +100,7 @@ const getCachedWeekData = unstable_cache(
 
     if (!latest) return { latest: null, rows: [], totalCount: 0, actualProductionByName: {} };
 
-    const [{ data, count }, logRows] = await Promise.all([
+    const [{ data, count }, logRows, archetypeByName] = await Promise.all([
       publicSupabase
         .from("player_simulations")
         .select(
@@ -89,6 +125,7 @@ const getCachedWeekData = unstable_cache(
         "player_name, team, season, week, opponent, is_home, fantasy_points_ppr",
         (q) => q.eq("season", latest.season).order("week", { ascending: true })
       ),
+      loadArchetypes(publicSupabase, latest),
     ]);
 
     const actualProductionByName = {};
@@ -121,7 +158,7 @@ const getCachedWeekData = unstable_cache(
       if (missed.length) missedWeeksByName[name] = missed;
     }
 
-    return { latest, rows: data || [], totalCount: count || 0, actualProductionByName, recentByName, lastGameWeek, teamGamesByName, missedWeeksByName };
+    return { latest, rows: data || [], totalCount: count || 0, actualProductionByName, recentByName, lastGameWeek, teamGamesByName, missedWeeksByName, archetypeByName };
   },
   ["player-simulations-latest-week"],
   { revalidate: 60 }
@@ -156,7 +193,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
   // there's no real caching benefit to bundling it into the 60s payload,
   // and keeping it separate mirrors how redraft-rankings' own expanded
   // row already does this same lookup.
-  const [{ tier }, { latest, rows, totalCount: fetchedCount, actualProductionByName, recentByName, lastGameWeek, teamGamesByName, missedWeeksByName }, bioByNamePos] =
+  const [{ tier }, { latest, rows, totalCount: fetchedCount, actualProductionByName, recentByName, lastGameWeek, teamGamesByName, missedWeeksByName, archetypeByName }, bioByNamePos] =
     await Promise.all([resolveTier(supabase), getCachedWeekData(), getPlayerBiosByNamePos()]);
   const hasFullAccess = PAID_TIERS.includes(tier);
 
@@ -264,8 +301,10 @@ export default async function PlayerSimulationsPage({ searchParams }) {
     const regression = regressionByName[row.player_name];
     const outcome = outcomeByName[row.player_name];
     const missed = missedWeeksByName?.[row.player_name];
+    const role = archetypeByName?.[row.player_name];
     return {
       ...row,
+      ...(role ? { archetype: role.a, ...(role.near ? { archetypeNear: role.near } : {}) } : {}),
       heat: round(heatFor("median", row), 2),
       floorHeat: round(heatFor("floor", row), 2),
       ceilingHeat: round(heatFor("ceiling", row), 2),
