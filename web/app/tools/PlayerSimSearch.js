@@ -84,12 +84,11 @@ function StatDetailRow({ row, colSpan, shapePeers, maxCeiling }) {
   const latestWeek = row.lastWeek;
   const snap = snapWeek != null && snapWeek !== latestWeek ? snaps.find((x) => x.week === snapWeek) : null;
   const pv = snap ? { ...row, ...snap } : { ...row, week: latestWeek };
-  // Track runs W1 (left end) to the latest week (right end).
-  // The handle sits at the selected week's position; the fill covers that whole
-  // week's stretch of the bar (the half past the handle included), so a played
-  // week is solid red rather than half red.
-  const progress = latestWeek > 1 ? ((pv.week - 1) / (latestWeek - 1)) * 100 : 100;
-  const fillTo = latestWeek > 1 ? Math.min(100, ((pv.week - 0.5) / (latestWeek - 1)) * 100) : 100;
+  // One equal stretch of the bar per week (W1 at the left through the latest
+  // week at the right end). The handle sits at the RIGHT end of the selected
+  // week's stretch and the fill runs up to it, so every week up to the selected
+  // one is solid red (or gray if he missed it) and the handle marks its end.
+  const progress = latestWeek > 1 ? (pv.week / latestWeek) * 100 : 100;
   function pickWeek(w) {
     if (weeks.length === 0) {
       pendingWeek.current = w; // applied as soon as the history arrives
@@ -99,9 +98,10 @@ function StatDetailRow({ row, colSpan, shapePeers, maxCeiling }) {
     setSnapWeek(nearest === weeks[weeks.length - 1] ? null : nearest);
   }
   function scrubTo(e) {
+    // The bar sits inside 6px of side padding (room for the handle at either end).
     const rect = e.currentTarget.getBoundingClientRect();
-    const frac = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
-    pickWeek(Math.round(frac * (latestWeek - 1)) + 1);
+    const frac = Math.min(1, Math.max(0, (e.clientX - rect.left - 6) / (rect.width - 12)));
+    pickWeek(Math.max(1, Math.ceil(frac * latestWeek)));
   }
   function onScrubKey(e) {
     const i = weeks.indexOf(pv.week);
@@ -348,7 +348,7 @@ function StatDetailRow({ row, colSpan, shapePeers, maxCeiling }) {
                     onKeyDown={onScrubKey}
                   >
                     <div className="stat-panel-pace-progress-track">
-                      <div className="stat-panel-pace-progress-fill" style={{ width: `${fillTo}%` }} />
+                      <div className="stat-panel-pace-progress-fill" style={{ width: `${progress}%` }} />
                       {/* Weeks his team played but he didn't read gray instead of red. */}
                       {missedSegments(row.missedWeeks, pv.week, latestWeek).map((seg) => (
                         <div
