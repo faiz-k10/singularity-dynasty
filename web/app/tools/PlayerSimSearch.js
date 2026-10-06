@@ -85,7 +85,11 @@ function StatDetailRow({ row, colSpan, shapePeers, maxCeiling }) {
   const snap = snapWeek != null && snapWeek !== latestWeek ? snaps.find((x) => x.week === snapWeek) : null;
   const pv = snap ? { ...row, ...snap } : { ...row, week: latestWeek };
   // Track runs W1 (left end) to the latest week (right end).
+  // The handle sits at the selected week's position; the fill covers that whole
+  // week's stretch of the bar (the half past the handle included), so a played
+  // week is solid red rather than half red.
   const progress = latestWeek > 1 ? ((pv.week - 1) / (latestWeek - 1)) * 100 : 100;
+  const fillTo = latestWeek > 1 ? Math.min(100, ((pv.week - 0.5) / (latestWeek - 1)) * 100) : 100;
   function pickWeek(w) {
     if (weeks.length === 0) {
       pendingWeek.current = w; // applied as soon as the history arrives
@@ -344,7 +348,7 @@ function StatDetailRow({ row, colSpan, shapePeers, maxCeiling }) {
                     onKeyDown={onScrubKey}
                   >
                     <div className="stat-panel-pace-progress-track">
-                      <div className="stat-panel-pace-progress-fill" style={{ width: `${progress}%` }} />
+                      <div className="stat-panel-pace-progress-fill" style={{ width: `${fillTo}%` }} />
                       {/* Weeks his team played but he didn't read gray instead of red. */}
                       {missedSegments(row.missedWeeks, pv.week, latestWeek).map((seg) => (
                         <div

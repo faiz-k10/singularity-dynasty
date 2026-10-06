@@ -60,13 +60,13 @@ export function missedWeeks({ gamesByName, teamWeeks, lastGameWeek }, name) {
 // Stretches of the week bar (percent of its width) to paint gray: the weeks
 // his team played and he didn't. The bar runs W1 at the left end to the
 // latest week at the right end, each week owning the stretch centred on its
-// handle position; only the part already filled (weeks up to the selected
-// one, ending at the handle) is shown, and runs of consecutive missed weeks
+// handle position; only the part already filled (every week up to and
+// including the selected one) is shown, and runs of consecutive missed weeks
 // merge into one segment so there is no hairline seam between them.
 export function missedSegments(missed, selectedWeek, latestWeek) {
   if (!Array.isArray(missed) || latestWeek < 2) return [];
   const step = 100 / (latestWeek - 1);
-  const filledTo = ((selectedWeek - 1) / (latestWeek - 1)) * 100;
+  const filledTo = Math.min(100, (selectedWeek - 0.5) * step);
   const out = [];
   for (const w of [...missed].filter((m) => m <= selectedWeek).sort((a, b) => a - b)) {
     const start = Math.max(0, (w - 1.5) * step);

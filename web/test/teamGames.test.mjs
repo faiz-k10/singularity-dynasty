@@ -66,13 +66,19 @@ test("missedSegments: Daniels-style (missed weeks 3 and 4 of 4) at the latest we
   assert.ok(near(segs[0].start, 50) && near(segs[0].end, 100));
 });
 
-test("missedSegments: only the filled part shows when scrubbed back", () => {
-  // selected W3: handle at 66.7%, week 3's stretch is 50%..83.3% clipped to the handle
+test("missedSegments: scrubbed back, the selected week's whole stretch shows (not just up to the handle)", () => {
+  // selected W3 of 4: filled through the end of week 3's stretch (83.3%)
   const segs = missedSegments([3, 4], 3, 4);
   assert.equal(segs.length, 1);
-  assert.ok(near(segs[0].start, 50) && near(segs[0].end, (2 / 3) * 100));
-  // selected W2: nothing missed yet
+  assert.ok(near(segs[0].start, 50) && near(segs[0].end, 250 / 3));
+  // selected W2: weeks 3 and 4 aren't filled yet
   assert.deepEqual(missedSegments([3, 4], 2, 4), []);
+});
+
+test("missedSegments: missed weeks 1-2, played week 3 (Bowers-style) -> gray stops where week 3 begins", () => {
+  const segs = missedSegments([1, 2], 3, 4);
+  assert.equal(segs.length, 1);
+  assert.ok(near(segs[0].start, 0) && near(segs[0].end, 50));
 });
 
 test("missedSegments: separate misses stay separate, week 1 starts at the left edge, no misses -> none", () => {
