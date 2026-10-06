@@ -84,15 +84,12 @@ function StatDetailRow({ row, colSpan, shapePeers, maxCeiling }) {
   const latestWeek = row.lastWeek;
   const snap = snapWeek != null && snapWeek !== latestWeek ? snaps.find((x) => x.week === snapWeek) : null;
   const pv = snap ? { ...row, ...snap } : { ...row, week: latestWeek };
-  // One equal stretch of the bar per week (W1 at the left through the latest
-  // week at the right end). The handle sits at the RIGHT end of the selected
-  // week's stretch and the fill runs up to it, so every week up to the selected
-  // one is solid red (or gray if he missed it) and the handle marks its end.
-  const progress = latestWeek > 1 ? (pv.week / latestWeek) * 100 : 100;
-  // Week 1 is the starting point: its dot sits at the very start of the bar and
-  // nothing is filled yet (Week 1's own stretch shows once a later week is selected).
-  const handleAt = pv.week === 1 ? 0 : progress;
-  const fillTo = pv.week === 1 ? 0 : progress;
+  // Dots are evenly spaced: W1 at the very start of the bar, the latest week at
+  // the very end, the rest equally between. The fill runs from the start up to
+  // the dot (W1 is the starting point, so nothing is filled there), and each
+  // week's stretch is the span ending at its own dot -- red if he played that
+  // week, gray if his team played and he didn't.
+  const progress = latestWeek > 1 ? ((pv.week - 1) / (latestWeek - 1)) * 100 : 100;
   function pickWeek(w) {
     if (weeks.length === 0) {
       pendingWeek.current = w; // applied as soon as the history arrives
@@ -105,7 +102,7 @@ function StatDetailRow({ row, colSpan, shapePeers, maxCeiling }) {
     // The bar sits inside 6px of side padding (room for the handle at either end).
     const rect = e.currentTarget.getBoundingClientRect();
     const frac = Math.min(1, Math.max(0, (e.clientX - rect.left - 6) / (rect.width - 12)));
-    pickWeek(Math.max(1, Math.ceil(frac * latestWeek)));
+    pickWeek(Math.round(frac * (latestWeek - 1)) + 1);
   }
   function onScrubKey(e) {
     const i = weeks.indexOf(pv.week);
@@ -352,7 +349,7 @@ function StatDetailRow({ row, colSpan, shapePeers, maxCeiling }) {
                     onKeyDown={onScrubKey}
                   >
                     <div className="stat-panel-pace-progress-track">
-                      <div className="stat-panel-pace-progress-fill" style={{ width: `${fillTo}%` }} />
+                      <div className="stat-panel-pace-progress-fill" style={{ width: `${progress}%` }} />
                       {/* Weeks his team played but he didn't read gray instead of red. */}
                       {missedSegments(row.missedWeeks, pv.week, latestWeek).map((seg) => (
                         <div
@@ -363,7 +360,7 @@ function StatDetailRow({ row, colSpan, shapePeers, maxCeiling }) {
                         />
                       ))}
                     </div>
-                    <span className="stat-panel-pace-scrub-handle" style={{ left: `calc(6px + (100% - 12px) * ${handleAt / 100})` }} />
+                    <span className="stat-panel-pace-scrub-handle" style={{ left: `calc(6px + (100% - 12px) * ${progress / 100})` }} />
                   </div>
                   <span className="stat-panel-pace-scrub-label mono">W{pv.week}</span>
                 </div>

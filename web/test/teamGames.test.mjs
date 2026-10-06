@@ -59,41 +59,35 @@ test("buildTeamWeeks works from a partial set of rows (e.g. only QBs)", () => {
 });
 
 const near = (a, b) => Math.abs(a - b) < 1e-9;
+const third = 100 / 3;
 
-test("missedSegments: missed weeks 3 and 4 of 4, at the latest week -> one gray stretch, 50% to the end", () => {
+test("missedSegments: each week's stretch is the span ending at its own dot (W1 at 0%, W4 at 100%, evenly between)", () => {
+  // missed weeks 3 and 4 of 4, at the latest week: one merged gray stretch from W2's dot to the end
   const segs = missedSegments([3, 4], 4, 4);
   assert.equal(segs.length, 1);
-  assert.ok(near(segs[0].start, 50) && near(segs[0].end, 100));
+  assert.ok(near(segs[0].start, third) && near(segs[0].end, 100));
 });
 
-test("missedSegments: the handle is at the right end of the selected week, so that week's whole stretch shows", () => {
-  // selected W3 of 4: filled through 75%; week 3's stretch is 50%..75%
+test("missedSegments: scrubbed back, only the weeks up to the selected one show", () => {
   const segs = missedSegments([3, 4], 3, 4);
   assert.equal(segs.length, 1);
-  assert.ok(near(segs[0].start, 50) && near(segs[0].end, 75));
-  // selected W2: weeks 3 and 4 aren't filled yet
+  assert.ok(near(segs[0].start, third) && near(segs[0].end, 2 * third));
   assert.deepEqual(missedSegments([3, 4], 2, 4), []);
 });
 
-test("missedSegments: missed weeks 1-2, played week 3 (Bowers-style) -> gray stops exactly where week 3 begins", () => {
+test("missedSegments: missed weeks 1-2, played week 3 -> gray ends exactly where week 3's stretch begins; week 1 has no stretch", () => {
   const segs = missedSegments([1, 2], 3, 4);
   assert.equal(segs.length, 1);
-  assert.ok(near(segs[0].start, 0) && near(segs[0].end, 50));
+  assert.ok(near(segs[0].start, 0) && near(segs[0].end, third));
 });
 
-test("missedSegments: separate misses stay separate, no misses -> none", () => {
-  const segs = missedSegments([1, 3], 4, 4);
+test("missedSegments: separate misses stay separate; nothing at Week 1; no misses -> none", () => {
+  const segs = missedSegments([2, 4], 4, 4);
   assert.equal(segs.length, 2);
-  assert.ok(near(segs[0].start, 0) && near(segs[0].end, 25));
-  assert.ok(near(segs[1].start, 50) && near(segs[1].end, 75));
+  assert.ok(near(segs[0].start, 0) && near(segs[0].end, third));
+  assert.ok(near(segs[1].start, 2 * third) && near(segs[1].end, 100));
+  assert.deepEqual(missedSegments([1, 2], 1, 4), []);
   assert.deepEqual(missedSegments([], 4, 4), []);
   assert.deepEqual(missedSegments(undefined, 4, 4), []);
   assert.deepEqual(missedSegments([2], 1, 1), []);
-});
-
-test("missedSegments: nothing is filled at Week 1 (the starting point); week 1's stretch appears once a later week is selected", () => {
-  assert.deepEqual(missedSegments([1, 2], 1, 4), []);
-  const segs = missedSegments([1], 2, 4);
-  assert.equal(segs.length, 1);
-  assert.ok(near(segs[0].start, 0) && near(segs[0].end, 25));
 });

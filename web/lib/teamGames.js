@@ -58,22 +58,20 @@ export function missedWeeks({ gamesByName, teamWeeks, lastGameWeek }, name) {
 }
 
 // Stretches of the week bar (percent of its width) to paint gray: the weeks
-// his team played and he didn't. The bar is split into one equal stretch per
-// week, W1 at the left through the latest week at the right end, and the
-// handle sits at the RIGHT end of the selected week's stretch -- so every
-// week up to and including the selected one is filled, end to end. Runs of
+// his team played and he didn't. The dots are evenly spaced -- W1 at the left
+// end, the latest week at the right end -- and each week's stretch is the
+// span of bar that ENDS at that week's dot (from the previous week's dot to
+// its own), so the dot always sits at the end of the stretch it just
+// filled. Week 1 is the starting point and has no stretch of its own. Runs of
 // consecutive missed weeks merge into one segment so there is no hairline
 // seam between them.
 export function missedSegments(missed, selectedWeek, latestWeek) {
-  // Week 1 is the starting point of the bar: nothing is filled yet.
   if (!Array.isArray(missed) || latestWeek < 2 || selectedWeek <= 1) return [];
-  const step = 100 / latestWeek;
-  const filledTo = Math.min(100, selectedWeek * step);
+  const step = 100 / (latestWeek - 1);
   const out = [];
-  for (const w of [...missed].filter((m) => m <= selectedWeek).sort((a, b) => a - b)) {
-    const start = (w - 1) * step;
-    const end = Math.min(filledTo, w * step);
-    if (end <= start) continue;
+  for (const w of [...missed].filter((m) => m >= 2 && m <= selectedWeek).sort((a, b) => a - b)) {
+    const start = (w - 2) * step;
+    const end = (w - 1) * step;
     const last = out[out.length - 1];
     if (last && Math.abs(last.end - start) < 1e-9) last.end = end;
     else out.push({ start, end });
