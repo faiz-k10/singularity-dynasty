@@ -103,6 +103,8 @@ function StatDetailRow({ row, colSpan, shapePeers, maxCeiling }) {
     const i = weeks.indexOf(pv.week);
     if (e.key === "ArrowLeft" || e.key === "ArrowDown") pickWeek(weeks[Math.max(0, i - 1)]);
     else if (e.key === "ArrowRight" || e.key === "ArrowUp") pickWeek(weeks[Math.min(weeks.length - 1, i + 1)]);
+    else if (e.key === "Home") pickWeek(weeks[0]);
+    else if (e.key === "End") pickWeek(weeks[weeks.length - 1]);
     else return;
     e.preventDefault();
   }
@@ -232,7 +234,7 @@ function StatDetailRow({ row, colSpan, shapePeers, maxCeiling }) {
                   </div>
                   )}
                   {pv.recentGames?.length > 0 && (
-                    <div className="stat-panel-pace-recent">
+                    <div className="stat-panel-pace-recent snap-fade" key={pv.week}>
                       {pv.recentGames.map((g) => (
                         <div key={`${g.season}-${g.week}`} className="pace-game-row" title={`${g.season} Week ${g.week}`}>
                           <span className="pace-game-week mono">W{g.week} {g.is_home === true ? "vs" : g.is_home === false ? "@" : "·"}</span>
@@ -369,7 +371,7 @@ function StatDetailRow({ row, colSpan, shapePeers, maxCeiling }) {
                   ))}
                 </tr>
               </thead>
-              <tbody>
+              <tbody key={pv.week} className="snap-fade">
                 {entries.map(([key, label]) => {
                   const { floor, median, ceiling } = ranges[key];
                   const isRowMode = selection?.mode === "row" && selection.key === key;
@@ -773,6 +775,18 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
               </tr>
             </thead>
             <tbody>
+              {displayRows.length === 0 && (
+                <tr className="player-empty-row">
+                  <td colSpan={11}>
+                    <span>{query ? `No players match \u201c${query}\u201d.` : "No players match these filters."}</span>
+                    {query && (
+                      <button type="button" className="player-empty-clear" onClick={() => setQuery("")}>
+                        Clear search
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              )}
               {(() => {
                 return displayRows.map((row) => {
                   const hasStats = row.stat_ranges && Object.keys(row.stat_ranges).length > 0;
