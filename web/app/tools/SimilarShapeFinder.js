@@ -229,7 +229,6 @@ export default function SimilarShapeFinder({
 
   return (
     <div className="shape-finder stat-panel stat-panel-finder">
-      <div className="shape-finder-label mono">Most similar shape</div>
       <div className="shape-finder-list">
         {ranked.map((p) => {
           const isActive = selectedName === p.name;
