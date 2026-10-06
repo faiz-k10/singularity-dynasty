@@ -18,6 +18,11 @@ export const ARCHETYPE_BLURB = {
   "Outside Starter": "A starting perimeter receiver: about 5 targets a game, working downfield.",
   "Slot / YAC Receiver": "A short-area receiver: shorter routes, with over half his yards coming after the catch.",
   "Deep-Threat Depth": "A low-volume downfield option: about 3 targets a game, each travelling far.",
+  // QB
+  "Dual-Threat QB": "A mobile quarterback who adds real rushing production: about 6 carries and 35 rushing yards a game.",
+  "Downfield Passer": "A pocket passer who attacks downfield: about 8.6 air yards per attempt, with little rushing.",
+  "Balanced Starter": "A pass-first starter with some mobility: about 32 attempts and 4 carries a game.",
+  "Pocket Distributor": "A high-volume passer working short to intermediate: about 33 attempts a game, rarely running.",
   // TE
   "Featured Receiving TE": "A focal part of the passing game: about 6 targets a game and a fifth of his team's targets.",
   "Balanced TE": "A mid-volume tight end: about 4 targets a game, used downfield more than most.",
@@ -38,6 +43,10 @@ export const ARCHETYPE_SHORT = {
   "Featured Receiving TE": "Featured TE",
   "Balanced TE": "Balanced TE",
   "Low-Volume TE": "Low-Volume",
+  "Dual-Threat QB": "Dual-Threat",
+  "Downfield Passer": "Downfield",
+  "Balanced Starter": "Balanced",
+  "Pocket Distributor": "Pocket",
 };
 
 // Colour family of each tag (a CSS class, see .tone-* in globals.css). Role pills have no entry and use the default.

@@ -6,7 +6,7 @@
 # Two modes:
 #   Rscript player_archetypes.R analyze     -- diagnostics for choosing the number of groups per position
 #                                              (silhouette, stability, who lands where). Writes nothing.
-#   Rscript player_archetypes.R fit         -- ONE-TIME: fits the groups and writes archetype_model.R (the
+#   Rscript player_archetypes.R fit [POS]   -- ONE-TIME (POS = refit only that position): fits the groups and writes archetype_model.R (the
 #                                              frozen scaling/PCA/centres + names). Commit that file.
 #   Rscript player_archetypes.R             -- weekly: assigns every current player to the frozen groups
 #                                              and writes upload_player_archetypes.csv. Cheap, deterministic,
@@ -16,13 +16,15 @@
 # stable early in a season, when he only has a few games of the current one.
 suppressMessages(library(nflreadr))
 
-WINDOW_SEASONS <- function() { cur <- min(2026, most_recent_season()); (cur - 1):cur }
+# Seasons of history loaded: enough for the position with the longest window (QB, see `seasons` in ARCH_CONFIG).
+WINDOW_SEASONS <- function(n = 3) { cur <- min(2026, most_recent_season()); (cur - n + 1):cur }
 MIN_GAMES <- 4
 
 # Per-position features and eligibility. All are per game or shares/rates -- nothing that is
 # just "plays more".
 ARCH_CONFIG <- list(
   RB = list(
+    seasons = 2,
     sum_cols = c("carries", "rushing_yards", "targets", "receiving_yards"),
     features = function(a) data.frame(
       rec_yd_share = a$receiving_yards / pmax(a$rushing_yards + a$receiving_yards, 1),
@@ -30,6 +32,7 @@ ARCH_CONFIG <- list(
       carries_pg = a$carries / a$games, targets_pg = a$targets / a$games),
     eligible = function(a, sc = 1) (a$carries + a$targets) >= 40 * sc),
   WR = list(
+    seasons = 2,
     sum_cols = c("targets", "receiving_yards", "receiving_air_yards", "receiving_yards_after_catch", "target_share_sum"),
     features = function(a) data.frame(
       targets_pg = a$targets / a$games, target_share = a$target_share_sum / a$games,
@@ -37,18 +40,21 @@ ARCH_CONFIG <- list(
       yac_share = a$receiving_yards_after_catch / pmax(a$receiving_yards, 1)),
     eligible = function(a, sc = 1) a$targets >= 25 * sc),
   TE = list(
+    seasons = 2,
     sum_cols = c("targets", "receiving_yards", "receiving_air_yards", "receiving_yards_after_catch", "target_share_sum"),
     features = function(a) data.frame(
       targets_pg = a$targets / a$games, target_share = a$target_share_sum / a$games,
       adot = a$receiving_air_yards / pmax(a$targets, 1),
       yac_share = a$receiving_yards_after_catch / pmax(a$receiving_yards, 1)),
     eligible = function(a, sc = 1) a$targets >= 20 * sc),
+  # QB: three seasons (a QB's style changes slowly and an injury year -- e.g. Lamar Jackson's 2025 -- would
+  # otherwise hide it), and rushing PRODUCTION (yards a game) rather than rushing share of yards.
   QB = list(
-    sum_cols = c("attempts", "passing_yards", "passing_air_yards", "passing_yards_after_catch", "carries", "rushing_yards"),
+    seasons = 3,
+    sum_cols = c("attempts", "passing_air_yards", "carries", "rushing_yards"),
     features = function(a) data.frame(
       attempts_pg = a$attempts / a$games, air_per_att = a$passing_air_yards / pmax(a$attempts, 1),
-      carries_pg = a$carries / a$games, rush_yd_share = a$rushing_yards / pmax(a$rushing_yards + a$passing_yards, 1),
-      yac_share = a$passing_yards_after_catch / pmax(a$passing_yards, 1)),
+      carries_pg = a$carries / a$games, rush_yd_pg = a$rushing_yards / a$games),
     eligible = function(a, sc = 1) a$attempts >= 60 * sc)
 )
 
@@ -66,7 +72,7 @@ load_window <- function() {
 # unweighted totals; `vol_scale` loosens the volume threshold for short windows.
 player_features <- function(s, pos, only_names = NULL, min_games = MIN_GAMES, half_life = NULL, vol_scale = 1) {
   cfg <- ARCH_CONFIG[[pos]]
-  x <- s[s$position == pos, ]
+  x <- s[s$position == pos & s$season > max(s$season) - cfg$seasons, ]   # this position's own history window
   if (!is.null(only_names)) x <- x[x$player_display_name %in% only_names, ]
   if (nrow(x) == 0) return(NULL)
   x <- x[order(x$player_display_name, x$season, x$week), ]
@@ -139,14 +145,14 @@ analyze <- function() {
 # Groups per position (chosen in the analysis: best cleanliness/stability for the number of types
 # that read as distinct roles). QB is deliberately not here yet -- its groups did not pass the eye
 # test (Lamar Jackson / Jalen Hurts did not land with the mobile QBs).
-ARCH_K <- c(RB = 4, WR = 4, TE = 3)
+ARCH_K <- c(RB = 4, WR = 4, TE = 3, QB = 4)
 
 # Recent games count more in the weekly assignment: a game this many games back counts half as much as
-# his latest. Chosen by backtest on 2025 (weeks 5-13): with equal weights only 12-36% of real role
+# his latest. RB/WR/TE chosen by backtest on 2025 (weeks 5-13): with equal weights only 12-36% of real role
 # changes showed up within 4 games; at 4, about 67-74% do, for a modest rise in week-to-week label flips
 # (RB 4.6%, TE 7%, WR 11.5% -- mostly players sitting on a group boundary; see `confidence`). The group
 # definitions themselves are still fitted on equal-weight, long-run profiles.
-ARCH_HALF_LIFE <- 4
+ARCH_HALF_LIFE <- c(RB = 4, WR = 4, TE = 4, QB = 17)   # QB: about a season -- style changes slowly
 
 # Names are attached by rule from each group's average profile (never by cluster number), so a refit
 # can't swap two labels. Every position's rule must hand out each name exactly once.
@@ -163,6 +169,11 @@ name_groups <- function(pos, cent) {
     sl <- pick(rest, "yac_share"); lab[sl] <- "Slot / YAC Receiver"; rest <- setdiff(rest, sl)
     dp <- pick(rest, "targets_pg", which.min); lab[dp] <- "Deep-Threat Depth"; rest <- setdiff(rest, dp)
     lab[rest] <- "Outside Starter"
+  } else if (pos == "QB") {
+    d <- pick(idx, "carries_pg"); lab[d] <- "Dual-Threat QB"; rest <- setdiff(idx, d)
+    dn <- pick(rest, "air_per_att"); lab[dn] <- "Downfield Passer"; rest <- setdiff(rest, dn)
+    b <- pick(rest, "carries_pg"); lab[b] <- "Balanced Starter"; rest <- setdiff(rest, b)
+    lab[rest] <- "Pocket Distributor"
   } else if (pos == "TE") {
     o <- order(cent[, "targets_pg"], decreasing = TRUE); lab[o] <- c("Featured Receiving TE", "Balanced TE", "Low-Volume TE")
   }
@@ -170,9 +181,11 @@ name_groups <- function(pos, cent) {
   lab
 }
 
-fit_all <- function() {
+fit_all <- function(only = NULL) {
   s <- load_window(); out <- list()
-  for (pos in names(ARCH_K)) {
+  # `fit QB` refits just that position and keeps every other frozen definition exactly as it was.
+  if (!is.null(only) && file.exists("archetype_model.R")) { source("archetype_model.R"); out <- ARCHETYPE_MODEL }
+  for (pos in (if (is.null(only)) names(ARCH_K) else only)) {
     f <- player_features(s, pos, pool_names(pos)); m <- fit_model(f, ARCH_K[[pos]])
     a <- assign_groups(f, m); g <- a$group
     cent <- do.call(rbind, lapply(seq_len(nrow(m$centers)), function(i) colMeans(f[g == i, , drop = FALSE])))
@@ -201,7 +214,7 @@ assign_weekly <- function() {
   s <- load_window(); rows <- list()
   for (pos in names(ARCHETYPE_MODEL)) {
     m <- ARCHETYPE_MODEL[[pos]]
-    f <- player_features(s, pos, sims$player_name[sims$position == pos], half_life = ARCH_HALF_LIFE)
+    f <- player_features(s, pos, sims$player_name[sims$position == pos], half_life = ARCH_HALF_LIFE[[pos]])
     if (is.null(f)) next
     a <- assign_groups(f, m)
     rows[[pos]] <- data.frame(season = season, week = week, player_name = a$player, position = pos,
@@ -215,5 +228,5 @@ assign_weekly <- function() {
 
 if (sys.nframe() == 0) {
   mode <- commandArgs(trailingOnly = TRUE)[1]
-  if (identical(mode, "analyze")) analyze() else if (identical(mode, "fit")) fit_all() else assign_weekly()
+  if (identical(mode, "analyze")) analyze() else if (identical(mode, "fit")) fit_all(if (length(commandArgs(trailingOnly = TRUE)) > 1) commandArgs(trailingOnly = TRUE)[-1] else NULL) else assign_weekly()
 }
