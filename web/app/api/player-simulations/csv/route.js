@@ -1,8 +1,6 @@
-import { createClient } from "@/lib/supabase/server";
 import { createPublicClient } from "@/lib/supabase/public";
-import { resolveTier } from "@/lib/tier";
 import { fetchAllRows } from "@/lib/fetchAllRows";
-import { toCsv } from "@/lib/csv";
+import { csvResponse, requireSingularity } from "@/lib/csvDownload";
 
 const GAMES_PER_SEASON = 17;
 
@@ -18,15 +16,10 @@ const COLUMNS = [
 ];
 
 // Singularity-only download of the latest week's simulations, in points per
-// game, best median first. Built here on request instead of being embedded in
-// the page: the page no longer carries a second, full copy of every row just
-// so a rarely-clicked button has something to export.
+// game, best median first.
 export async function GET() {
-  const supabase = await createClient();
-  const { tier } = await resolveTier(supabase);
-  if (tier !== "singularity") {
-    return new Response("Singularity members only.", { status: 403 });
-  }
+  const denied = await requireSingularity();
+  if (denied) return denied;
 
   const pub = createPublicClient();
   const { data: latest } = await pub
@@ -45,15 +38,9 @@ export async function GET() {
     (q) => q.eq("season", latest.season).eq("week", latest.week).order("median", { ascending: false })
   );
   const perGame = (v) => Math.round((v / GAMES_PER_SEASON) * 10) / 10;
-  const csv = toCsv(
-    COLUMNS,
-    rows.map((r) => ({ ...r, floor: perGame(r.floor), median: perGame(r.median), ceiling: perGame(r.ceiling) }))
-  );
-  return new Response(csv, {
-    headers: {
-      "Content-Type": "text/csv; charset=utf-8",
-      "Content-Disposition": `attachment; filename="player-simulations-week${latest.week}-${latest.season}.csv"`,
-      "Cache-Control": "private, no-store",
-    },
+  return csvResponse({
+    filename: `player-simulations-week${latest.week}-${latest.season}.csv`,
+    columns: COLUMNS,
+    rows: rows.map((r) => ({ ...r, floor: perGame(r.floor), median: perGame(r.median), ceiling: perGame(r.ceiling) })),
   });
 }

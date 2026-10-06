@@ -108,18 +108,8 @@ export default async function DraftBoardPage({ searchParams }) {
               </div>
               {canExport && (
                 <ExportCsvButton
-                  id="csv-draft-board"
                   filename={`draft-board-${boardType}-${latest.season}.csv`}
-                  columns={[
-                    { key: "round", label: "Round" },
-                    { key: "pick", label: "Pick" },
-                    { key: "player_name", label: "Player" },
-                    { key: "position", label: "Position" },
-                    { key: "team", label: "Team" },
-                    { key: "is_stack", label: "Stack" },
-                    { key: "stack_note", label: "Stack Note" },
-                  ]}
-                  rows={picks}
+                  href={`/api/draft-board/csv?type=${boardType}`}
                 />
               )}
             </div>

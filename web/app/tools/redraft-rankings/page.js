@@ -468,21 +468,8 @@ export default async function RedraftRankingsPage({ searchParams }) {
                       </Link>
                       {canExport && (
                         <ExportCsvButton
-                          id="csv-redraft-rankings"
                           filename={`redraft-rankings-week${latest.week}-${latest.season}.csv`}
-                          columns={[
-                            { key: "rank", label: "Rank" },
-                            { key: "player_name", label: "Player" },
-                            { key: "position", label: "Position" },
-                            { key: "team", label: "Team" },
-                            { key: "opponent", label: "Opponent" },
-                            { key: "floor", label: "Floor" },
-                            { key: "ceiling", label: "Ceiling" },
-                            { key: "trend", label: "Trend" },
-                            { key: "sample_confidence", label: "Confidence" },
-                            { key: "notes", label: "Notes" },
-                          ]}
-                          rows={overallRows}
+                          href="/api/redraft-rankings/csv"
                         />
                       )}
                     </div>

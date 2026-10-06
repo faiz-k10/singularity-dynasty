@@ -132,16 +132,8 @@ export default async function ProspectRankingsPage({ searchParams }) {
             {canExport && (
               <div className="tool-export-row">
                 <ExportCsvButton
-                  id="csv-prospect-rankings"
                   filename={`prospect-rankings-${latest.draft_class}.csv`}
-                  columns={[
-                    { key: "rank", label: "Rank" },
-                    { key: "player_name", label: "Player" },
-                    { key: "position", label: "Position" },
-                    { key: "school", label: "School" },
-                    { key: "comp", label: "Comp" },
-                  ]}
-                  rows={[...sortedWrs, ...sortedQbs]}
+                  href="/api/prospect-rankings/csv"
                 />
               </div>
             )}
