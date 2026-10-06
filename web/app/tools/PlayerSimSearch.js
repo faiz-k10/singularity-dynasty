@@ -11,21 +11,72 @@ import SimilarShapeFinder from "./SimilarShapeFinder";
 import PercentileCard from "./PercentileCard";
 import { radarLayoutFor } from "./radarLayout";
 
+// Week-scrubber data comes from /api/player-sim-history, fetched lazily and
+// remembered for the life of the page (one request per player, one for the
+// earlier-week comp pools).
+const snapshotCache = new Map();
+let peersPromise = null;
+function loadSnapshots(name) {
+  if (!snapshotCache.has(name)) {
+    snapshotCache.set(
+      name,
+      fetch(`/api/player-sim-history?player=${encodeURIComponent(name)}`)
+        .then((r) => (r.ok ? r.json() : { snapshots: [] }))
+        .then((d) => d.snapshots || [])
+        .catch(() => {
+          snapshotCache.delete(name);
+          return [];
+        })
+    );
+  }
+  return snapshotCache.get(name);
+}
+function loadPeers() {
+  peersPromise ??= fetch("/api/player-sim-history?peers=1")
+    .then((r) => (r.ok ? r.json() : { peersByWeek: {} }))
+    .then((d) => d.peersByWeek || {})
+    .catch(() => {
+      peersPromise = null;
+      return {};
+    });
+  return peersPromise;
+}
+
 // Detail row unfolded below a player when their name is clicked -- one
 // open at a time (clicking a different player folds this one and opens
 // theirs). colSpan must match the number of columns in the main row.
-function StatDetailRow({ row, colSpan, shapePeers, shapePeersByWeek, maxCeiling }) {
+function StatDetailRow({ row, colSpan, shapePeers, maxCeiling }) {
   // Week scrubber state (see the bar at the bottom of the pace panel):
   // null = the latest published week; otherwise a snapshot's week.
   const [snapWeek, setSnapWeek] = useState(null);
-  const snaps = row.snapshots || [];
+  const [snaps, setSnaps] = useState([]);
+  const [peersByWeek, setPeersByWeek] = useState(null);
+  // Earlier-week snapshots are fetched when the row opens (the page itself
+  // only ships the latest week); the earlier-week comp pools wait until
+  // the first rewind.
+  useEffect(() => {
+    let live = true;
+    loadSnapshots(row.player_name).then((x) => live && setSnaps(x));
+    return () => {
+      live = false;
+    };
+  }, [row.player_name]);
+  useEffect(() => {
+    if (snapWeek == null) return;
+    let live = true;
+    loadPeers().then((x) => live && setPeersByWeek(x));
+    return () => {
+      live = false;
+    };
+  }, [snapWeek]);
   const weeks = snaps.map((x) => x.week);
-  const latestWeek = weeks[weeks.length - 1];
+  const latestWeek = row.lastWeek;
   const snap = snapWeek != null && snapWeek !== latestWeek ? snaps.find((x) => x.week === snapWeek) : null;
   const pv = snap ? { ...row, ...snap } : { ...row, week: latestWeek };
   function pickWeek(w) {
+    if (weeks.length === 0) return;
     const nearest = weeks.reduce((best, x) => (Math.abs(x - w) < Math.abs(best - w) ? x : best), weeks[0]);
-    setSnapWeek(nearest === latestWeek ? null : nearest);
+    setSnapWeek(nearest === weeks[weeks.length - 1] ? null : nearest);
   }
   function scrubTo(e) {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -105,7 +156,7 @@ function StatDetailRow({ row, colSpan, shapePeers, shapePeersByWeek, maxCeiling 
   }));
 
   const shapeSignature = entries.map(([key]) => key).sort().join("|");
-  const shapePool = (shapePeersByWeek?.[pv.simWeek] ?? shapePeers)?.[shapeSignature];
+  const shapePool = (snap ? peersByWeek?.[snap.simWeek] : shapePeers)?.[shapeSignature];
   const compareRow = compareName ? shapePool?.find((p) => p.name === compareName) : null;
   const comparePctiles =
     compareLayer === "floor"
@@ -250,15 +301,15 @@ function StatDetailRow({ row, colSpan, shapePeers, shapePeersByWeek, maxCeiling 
                   panel to how this player's projection and games looked
                   as of an earlier published week; the faint trail past
                   the handle is the way back to the latest week. */}
-              {weeks.length > 1 && (
+              {latestWeek > 1 && (
                 <div className="stat-panel-pace-progress">
                   <div
                     className="stat-panel-pace-scrub"
                     role="slider"
                     tabIndex={0}
                     aria-label="Rewind to an earlier week"
-                    aria-valuemin={weeks[0]}
-                    aria-valuemax={weeks[weeks.length - 1]}
+                    aria-valuemin={weeks[0] ?? 1}
+                    aria-valuemax={latestWeek}
                     aria-valuenow={pv.week}
                     aria-valuetext={`Week ${pv.week}`}
                     onPointerDown={(e) => {
@@ -271,7 +322,7 @@ function StatDetailRow({ row, colSpan, shapePeers, shapePeersByWeek, maxCeiling 
                     onKeyDown={onScrubKey}
                   >
                     <div className="stat-panel-pace-progress-track">
-                      <div className="stat-panel-pace-progress-ghost" style={{ width: `${((weeks[weeks.length - 1] / 17) * 100)}%` }} />
+                      <div className="stat-panel-pace-progress-ghost" style={{ width: `${((latestWeek / 17) * 100)}%` }} />
                       <div className="stat-panel-pace-progress-fill" style={{ width: `${Math.min(100, (pv.week / 17) * 100)}%` }} />
                     </div>
                     <span className="stat-panel-pace-scrub-handle" style={{ left: `${Math.min(100, (pv.week / 17) * 100)}%` }} />
@@ -417,7 +468,7 @@ function leagueHref(currentParams, key, value) {
 // Same pattern as RankingsSearch (Redraft) / BestBallSearch: position-pill
 // filter + player name search, both client-side. Sorting stays
 // server-driven via the existing URL-param mechanism.
-export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams, positions, maxCeiling, shapePeers, shapePeersByWeek, leagueTeams, superflex, header }) {
+export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams, positions, maxCeiling, shapePeers, leagueTeams, superflex, header }) {
   const showPositionFilter = Array.isArray(positions) && positions.length > 0;
   const [selected, setSelected] = useState(positions || []);
   const [query, setQuery] = useState("");
@@ -795,7 +846,6 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                     row={row}
                     colSpan={11}
                     shapePeers={shapePeers}
-                    shapePeersByWeek={shapePeersByWeek}
                     maxCeiling={maxCeiling}
                   />
                 )}

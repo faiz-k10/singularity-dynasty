@@ -63,7 +63,7 @@ const getCachedWeekData = unstable_cache(
 
     if (!latest) return { latest: null, rows: [], totalCount: 0, actualProductionByName: {} };
 
-    const [{ data, count }, actualRows, logRows, historyRows] = await Promise.all([
+    const [{ data, count }, actualRows, logRows] = await Promise.all([
       publicSupabase
         .from("player_simulations")
         .select(
@@ -95,26 +95,33 @@ const getCachedWeekData = unstable_cache(
       fetchAllRows(
         publicSupabase,
         "player_game_log",
-        "player_name, season, week, opponent, is_home, fantasy_points_ppr, exp_points_ppr",
+        "player_name, season, week, opponent, is_home, fantasy_points_ppr",
         (q) => q.eq("season", latest.season).order("week", { ascending: true })
-      ),
-      // Earlier weeks' published sims of this season -- powers the pace
-      // panel's week scrubber (snapshot of the projection as it stood then).
-      fetchAllRows(publicSupabase, "player_simulations", "player_name, week, floor, median, ceiling, stat_ranges", (q) =>
-        q.eq("season", latest.season).lt("week", latest.week).order("week", { ascending: true })
       ),
     ]);
 
     const actualProductionByName = {};
-    const weeklyByName = {};
+    const recentByName = {};
+    let lastGameWeek = 0;
     for (const row of actualRows || []) {
       (actualProductionByName[row.player_name] ??= []).push(row.actual_points);
     }
-    for (const g of logRows || []) (weeklyByName[g.player_name] ??= []).push(g);
-    const simHistoryByName = {};
-    for (const h of historyRows || []) (simHistoryByName[h.player_name] ??= []).push(h);
+    // Only each player's latest four games ride on the page (the pace
+    // panel's default view); earlier-week snapshots load on demand from
+    // /api/player-sim-history.
+    for (const g of logRows || []) {
+      (recentByName[g.player_name] ??= []).push({
+        season: g.season,
+        week: g.week,
+        opponent: g.opponent,
+        is_home: g.is_home,
+        fantasy_points_ppr: g.fantasy_points_ppr,
+      });
+      if (g.week > lastGameWeek) lastGameWeek = g.week;
+    }
+    for (const k of Object.keys(recentByName)) recentByName[k] = recentByName[k].slice(-4).reverse();
 
-    return { latest, rows: data || [], totalCount: count || 0, actualProductionByName, weeklyByName, simHistoryByName, historyRows };
+    return { latest, rows: data || [], totalCount: count || 0, actualProductionByName, recentByName, lastGameWeek };
   },
   ["player-simulations-latest-week"],
   { revalidate: 60 }
@@ -149,7 +156,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
   // there's no real caching benefit to bundling it into the 60s payload,
   // and keeping it separate mirrors how redraft-rankings' own expanded
   // row already does this same lookup.
-  const [{ tier }, { latest, rows, totalCount: fetchedCount, actualProductionByName, weeklyByName, simHistoryByName, historyRows }, bioByNamePos] =
+  const [{ tier }, { latest, rows, totalCount: fetchedCount, actualProductionByName, recentByName, lastGameWeek }, bioByNamePos] =
     await Promise.all([resolveTier(supabase), getCachedWeekData(), getPlayerBiosByNamePos()]);
   const hasFullAccess = PAID_TIERS.includes(tier);
 
@@ -252,79 +259,6 @@ export default async function PlayerSimulationsPage({ searchParams }) {
   // through week 3 -- games from weeks <= 3 and the projection as it stood
   // after them (the sim published for week 4; the latest sim stands in
   // for any week past it).
-  // Per-sim-week stat percentiles and shape-comp pools, so the stat table,
-  // radar and Similar Shape comps rewind with the week scrubber. Each
-  // week's percentiles rank against THAT week's full player pool.
-  const posByName = {};
-  for (const r of poolRows) posByName[r.player_name] = r.position;
-  const poolByWeek = { [latest.week]: poolRows };
-  for (const h of historyRows || []) {
-    if (!posByName[h.player_name]) continue;
-    (poolByWeek[h.week] ??= []).push({ ...h, position: posByName[h.player_name] });
-  }
-  const percByWeek = {};
-  for (const [wk, rowsAtWeek] of Object.entries(poolByWeek)) {
-    const pool = buildStatPoolByPos(rowsAtWeek);
-    const m = {};
-    for (const r of rowsAtWeek) m[r.player_name] = computeStatPercentiles(r, pool);
-    percByWeek[wk] = m;
-  }
-  const visibleNames = new Set(sims.map((r) => r.player_name));
-  const shapePeersByWeek = {};
-  for (const [wk, rowsAtWeek] of Object.entries(poolByWeek)) {
-    const byWeek = {};
-    for (const r of rowsAtWeek) {
-      if (!r.stat_ranges || !visibleNames.has(r.player_name)) continue;
-      const signature = Object.keys(r.stat_ranges).sort().join("|");
-      const perc = percByWeek[wk][r.player_name];
-      (byWeek[signature] ??= []).push({
-        name: r.player_name,
-        position: r.position,
-        sleeperId: bioByNamePos[`${normalizePlayerName(r.player_name)}|${r.position}`]?.sleeperId || null,
-        ...perc,
-        stat_ranges: r.stat_ranges,
-      });
-    }
-    shapePeersByWeek[wk] = byWeek;
-  }
-  const lastGameWeek = Math.max(0, ...Object.values(weeklyByName).flatMap((gs) => gs.map((g) => g.week)));
-  function snapshotsFor(row) {
-    const games = weeklyByName[row.player_name] || [];
-    const byWeek = {};
-    for (const h of simHistoryByName[row.player_name] || []) byWeek[h.week] = h;
-    byWeek[latest.week] = row;
-    const out = [];
-    for (let w = 1; w <= lastGameWeek; w++) {
-      const proj = byWeek[w + 1] || (w + 1 > latest.week ? row : null);
-      if (!proj) continue;
-      const played = games.filter((g) => g.week <= w);
-      const pts = played.map((g) => g.fantasy_points_ppr).filter((v) => typeof v === "number");
-      const reg = computeRegressionScore(pts, proj.median / GAMES_PER_SEASON);
-      const oc = computeOutcomePercentile(pts, {
-        floor: proj.floor,
-        median: proj.median,
-        ceiling: proj.ceiling,
-        gamesPerSeason: GAMES_PER_SEASON,
-      });
-      out.push({
-        week: w,
-        floor: proj.floor,
-        median: proj.median,
-        ceiling: proj.ceiling,
-        gamesPlayed: pts.length,
-        currentPPG: reg?.currentPPG ?? null,
-        regressionScore: reg?.regressionScore ?? null,
-        paceSeasonTotal: oc?.paceSeasonTotal ?? null,
-        outcomePercentile: oc?.percentile ?? null,
-        recentGames: played.slice(-4).reverse(),
-        simWeek: proj === row ? latest.week : proj.week,
-        ...(proj.stat_ranges && percByWeek[proj === row ? latest.week : proj.week]?.[row.player_name]
-          ? { stat_ranges: proj.stat_ranges, ...percByWeek[proj === row ? latest.week : proj.week][row.player_name] }
-          : {}),
-      });
-    }
-    return out;
-  }
   const simsWithComputed = sims.map((row) => {
     const heat = heatFor("median", row);
     const floorHeat = heatFor("floor", row);
@@ -341,8 +275,8 @@ export default async function PlayerSimulationsPage({ searchParams }) {
       regressionScore: regression?.regressionScore ?? null,
       currentPPG: regression?.currentPPG ?? null,
       gamesPlayed: regression?.gamesPlayed ?? 0,
-      recentGames: (weeklyByName[row.player_name] || []).slice(-4).reverse(),
-      snapshots: snapshotsFor(row),
+      recentGames: recentByName[row.player_name] || [],
+      lastWeek: lastGameWeek,
       outcomePercentile: outcome?.percentile ?? null,
       // Same units as floor/median/ceiling (season-total scale), so it
       // can be positioned on the Range bar with the exact same maxCeiling
@@ -413,7 +347,6 @@ export default async function PlayerSimulationsPage({ searchParams }) {
               positions={positions}
               maxCeiling={maxCeiling}
               shapePeers={shapePeers}
-              shapePeersByWeek={shapePeersByWeek}
               leagueTeams={leagueTeams}
               superflex={superflex}
               header={
