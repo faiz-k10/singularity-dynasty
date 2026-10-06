@@ -3,7 +3,6 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import SortableTh from "./SortableTh";
-import TrendTag from "./TrendTag";
 import TeamBadge from "./TeamBadge";
 import STAT_LABELS from "./statLabels";
 import StatRadar from "./StatRadar";
@@ -815,9 +814,7 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                   }
                 >
                   <td className="mono">{row.rank}</td>
-                  <td className="player-cell">
-                    <TrendTag trend={row.trend} /> {row.player_name}
-                  </td>
+                  <td className="player-cell">{row.player_name}</td>
                   <td className="mono align-left">
                     {row.position}
                     {row.positionRank != null && (
