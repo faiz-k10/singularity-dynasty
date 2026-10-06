@@ -917,6 +917,9 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 /* ---------- TOOL PAGES (real gated data, e.g. /tools/redraft-rankings) ---------- */
 .tool-page{position:relative; min-height:100vh; overflow-x:hidden;}
 .tool-wrap{padding:150px 0 100px; max-width:1140px;}
+/* .tool-wrap zeroes the .wrap side padding, so below the 1140px max width the content touched the screen edge. */
+@media (max-width:1188px){.tool-wrap{padding-left:24px; padding-right:24px;}}
+@media (max-width:640px){.tool-wrap{padding-left:16px; padding-right:16px;}}
 /* Player Season Simulations only -- widened to fill the screen instead of
    the standard 1140px tool-page column, since its table (13 columns) is
    the widest content on the site and benefits most from the extra room.
@@ -3992,4 +3995,133 @@ summary:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible{
 @keyframes row-flash{from{box-shadow:inset 0 0 0 999px rgba(var(--neon-blue-rgb),.32);} to{box-shadow:inset 0 0 0 999px rgba(var(--neon-blue-rgb),0);}}
 @media (prefers-reduced-motion:no-preference){
   .player-sims-table > tbody > tr.row-flash > td{animation:row-flash 1.4s ease-out;}
+}
+
+/* ===== Phone pass (<=640px) =====
+   Everything below only applies on a phone; desktop rules above are untouched. */
+@media (max-width:640px){
+  /* Table pages: use the screen. The desktop gutter (24px margin + 24px padding
+     each side) left a 279px table on a 375px phone. */
+  .player-sims-wrap, .redraft-wrap{max-width:100%; padding-left:12px; padding-right:12px;}
+  .tool-wrap{padding-top:120px; padding-bottom:64px;}
+
+  /* Player Sims: freeze only Rank + Player (the desktop freeze of Rank/Player/Pos is
+     ~330px, i.e. the whole phone, so nothing could scroll). Pos scrolls with the rest. */
+  .player-sims-table > thead > tr > th:nth-child(1),
+  .player-sims-table > tbody > tr:not(.stat-detail-row) td:nth-child(1){width:40px; min-width:40px; max-width:40px; padding-left:2px; padding-right:2px;}
+  .player-sims-table > thead > tr > th:nth-child(2),
+  .player-sims-table > tbody > tr:not(.stat-detail-row) td:nth-child(2){
+    left:40px; width:124px; min-width:124px; max-width:124px; padding-left:6px; padding-right:6px; text-align:left;
+    box-shadow:6px 0 12px -6px rgba(var(--shadow-rgb),0.5);
+  }
+  .player-sims-table > tbody > tr:not(.stat-detail-row) td.player-cell{text-align:left;}
+  .player-sims-table > thead > tr > th:nth-child(3),
+  .player-sims-table > tbody > tr:not(.stat-detail-row) td:nth-child(3){position:static; box-shadow:none; z-index:auto;}
+  .player-sims-table > thead > tr > th:nth-child(3){z-index:3;}
+  .player-sims-table > tbody > tr.row-expandable:hover td:nth-child(3){box-shadow:inset 0 0 0 999px rgba(var(--neon-blue-rgb),0.08);}
+  .player-sims-table > thead > tr > th,
+  .player-sims-table > tbody > tr:not(.stat-detail-row) td{padding-left:8px; padding-right:8px;}
+  /* Fixed layout would split the leftover width evenly, clipping the 80px Range bar and
+     the longer headers -- give each scrolling column the width its content needs. */
+  .player-sims-table > thead > tr > th:nth-child(3){width:64px;}
+  .player-sims-table > thead > tr > th:nth-child(4){width:62px;}
+  .player-sims-table > thead > tr > th:nth-child(5),
+  .player-sims-table > thead > tr > th:nth-child(7){width:62px;}
+  .player-sims-table > thead > tr > th:nth-child(6){width:76px;}
+  .player-sims-table > thead > tr > th:nth-child(8){width:108px;}
+  .player-sims-table > thead > tr > th:nth-child(9){width:80px;}
+  .player-sims-table > thead > tr > th:nth-child(10){width:92px;}
+  .player-sims-table > thead > tr > th:nth-child(11){width:60px;}
+
+  /* The opened player's panels are one full-width cell of the 830px table. Pin them to the
+     visible part of the scroller (sticky) at the visible width, so they stack in a single
+     column instead of scrolling sideways with the numbers. */
+  .stat-detail-row td{padding:10px 0;}
+  .stat-detail-row > td > .stat-detail-grid{position:sticky; left:10px; width:calc(100vw - 26px - 20px); box-sizing:border-box;}
+
+  /* Similar Shape comp cards were a fixed 416px; let them fill the phone-width panel. */
+  .shape-finder-grid{width:100%; grid-template-columns:44px minmax(0,1fr);}
+  .shape-finder-layers{grid-template-columns:92px repeat(3, 1fr);}
+  .shape-finder-table td:first-child{width:92px;}
+  .shape-finder-score-value{font-size:16px;}
+
+  /* The pace bar's total number hangs ~16px off the panel's left edge by design; on a
+     phone that edge is the scroller's, so it was being cut off. Make room inside the panel. */
+  .stat-detail-grid .stat-panel-pace{padding-left:28px;}
+
+  /* Tool-page header block: the desktop spacing pushed the table a full screen down. */
+  .tool-header-split{gap:0;}
+  .tool-header-left, .tool-header-right{flex:1 1 100%; min-width:0;}
+  .tool-wrap h1{font-size:26px; margin-bottom:8px;}
+  .tool-sub{font-size:13.5px; margin-bottom:16px;}
+  .tool-export-row{margin-bottom:10px;}
+  .filter-accordion{width:100%; margin-bottom:12px;}
+  .filter-row-header{padding:11px 14px;}
+  .filter-row .position-filter-row, .filter-row .tier-toggle{margin:0 14px 14px;}
+  .player-search-row{margin-bottom:12px;}
+
+  /* Thumb-sized tap targets inside the player panels (they were 18-26px tall). */
+  .stat-detail-grid .tag-btn{padding:7px 12px;}
+  .shape-finder-layer-btn{padding:7px 2px; font-size:11px;}
+  .stat-detail-grid .stat-header-trigger,
+  .stat-detail-grid .stat-row-trigger{padding:7px 8px;}
+  .stat-panel-pace-scrub{padding:14px 6px;}
+
+  /* 100vh on a phone includes the browser's address bar, which pushed the bottom of the
+     scroll box off-screen; svh is the visible height. */
+  .player-sims-table-wrap, .redraft-table-wrap{max-height:calc(100svh - var(--fixed-header-height, 68px) - 16px);}
+
+  /* Redraft Rankings: same idea as Player Sims -- freeze Rank + Player only (the desktop
+     Rank/Player/Pos freeze was 351px, the whole phone width). */
+  .redraft-table > thead > tr > th:nth-child(1),
+  .redraft-table > tbody > tr td:nth-child(1){width:50px; min-width:50px; max-width:50px; padding-left:18px; padding-right:4px;}
+  .rankings-table td.rank-cell{padding-left:18px;}
+  .player-achv-dots.vertical{left:6px;}
+  .redraft-table > thead > tr > th:nth-child(2),
+  .redraft-table > tbody > tr td:nth-child(2){
+    left:50px; width:124px; min-width:124px; max-width:124px; padding-left:6px; padding-right:6px; text-align:left;
+    box-shadow:6px 0 12px -6px rgba(var(--shadow-rgb),0.5);
+  }
+  .redraft-table > tbody > tr td.player-cell{text-align:left;}
+  .redraft-table > thead > tr > th:nth-child(3),
+  .redraft-table > tbody > tr td:nth-child(3){position:static; box-shadow:none; z-index:auto;}
+  .redraft-table > thead > tr > th:nth-child(3){z-index:3;}
+  .redraft-table > tbody > tr:hover td:nth-child(3){box-shadow:inset 0 0 0 999px rgba(var(--neon-blue-rgb),0.05);}
+  .redraft-table > thead > tr > th,
+  .redraft-table > tbody > tr td{padding-left:8px; padding-right:8px;}
+
+  /* Redraft Rankings' opened player: same single-column, visible-width treatment. */
+  .weekly-detail-wrap{display:block; position:sticky; left:10px; width:calc(100vw - 26px - 20px); max-width:none; box-sizing:border-box;}
+  .weekly-detail-grid > *{flex:1 1 100%; max-width:none;}
+  .weekly-detail-side-col{max-width:none;}
+  .weekly-player-header{padding:12px 14px; gap:12px;}
+
+  .weekly-player-stats{flex:1 1 100%; flex-shrink:1; min-width:0; justify-content:space-between; gap:10px 14px;}
+  .weekly-player-stat{align-items:flex-start;}
+
+  /* Landing hero: get the headline AND both buttons onto the first screen. */
+  .hero{padding:108px 0 40px; min-height:100svh;}
+  .hero h1{font-size:clamp(30px, 9vw, 38px); margin-bottom:16px;}
+  .hero p.lede{font-size:15.5px; margin-bottom:24px;}
+
+  /* iPhone Safari zooms the page when a focused field's text is under 16px. */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), select, textarea{font-size:16px;}
+
+  /* Footer / inline links were ~20px tall; pad them to a finger-sized target. */
+  footer .flinks{gap:2px 20px;}
+  footer .flinks a{padding:9px 0;}
+  .hub-panel-link{display:inline-block; padding:8px 0;}
+
+  /* Compare table: the stat labels stay put while the player columns scroll under them. */
+  .compare-table th, .compare-table td{padding:10px 12px;}
+  .compare-table thead th:first-child, .compare-table tbody th{position:sticky; left:0; z-index:2; box-shadow:6px 0 10px -6px rgba(var(--shadow-rgb),0.5);}
+  .compare-table thead th:not(:first-child){min-width:132px; font-size:14px;}
+  .compare-table tbody td.tool-notes{min-width:170px;}
+
+  /* A 22px backdrop blur behind a 300-row scrolling table makes phone scrolling stutter; use a
+     solid panel on the big data surfaces only. */
+  .rankings-table-wrap, .compare-table-wrap{backdrop-filter:none; -webkit-backdrop-filter:none; background:var(--void-panel);}
+
+  /* My Team had the same double gutter (margin + padding) as the table pages. */
+  .my-team-page-wrap{max-width:100%; padding-left:14px; padding-right:14px;}
 }
