@@ -74,7 +74,8 @@ function CompareBars({ selection, stats, peer }) {
   if (selection.mode === "column") {
     const layer = selection.layer;
     const pctileKey = `${layer}Pctile`;
-    const ranked = [...stats].sort((a, b) => (b[pctileKey] ?? 0) - (a[pctileKey] ?? 0));
+    // Same order as the stat table above (stats is built in table order).
+    const ranked = stats;
     return (
       <div className="shape-compare">
         <div className="shape-compare-head">{LAYER_LABEL[layer]} vs. player</div>
