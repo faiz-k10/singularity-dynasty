@@ -83,6 +83,18 @@ FLOOR_Q     <- c(RB = 0.09, QB = 0.08, WR = 0.12, TE = 0.13)  # calibrated inter
 SEASON_FLOOR_Q <- c(RB = 0.010, QB = 0.020, WR = 0.010, TE = 0.020)
 SEASON_CEIL_Q  <- c(RB = 0.995, QB = 0.985, WR = 0.990, TE = 0.990)
 
+# Banked season totals (Player Season Simulations floor/median/ceiling and the
+# per-stat ranges). OFF by default, so the published numbers don't change until
+# this is deliberately switched on (BANK_SEASON_TOTALS=1 in the environment).
+# When on, once a season is underway each player's real totals so far are locked
+# in and the existing bootstrap only simulates the games his team has LEFT
+# (MAX_GAMES_PER_SEASON minus its games played), instead of redrawing a whole
+# fresh 16-game season that ignores the games already played. Preseason (no
+# games yet) it changes nothing. The floor/ceiling cutoffs above are unchanged
+# and still tuned for a full season -- recalibrating them by games remaining is
+# a separate step.
+BANK_SEASON_TOTALS <- identical(Sys.getenv("BANK_SEASON_TOTALS", "0"), "1")
+
 # Sleeper-blend weekly median: blends OUR weighted-quantile median with
 # Sleeper's own published weekly projection, per position. Validated via
 # backtest_vs_sleeper.R -- real head-to-head, 7,853 player-weeks across
@@ -872,7 +884,8 @@ select_team_qbs <- function(season, eligible_players) {
 # Season Simulations), and a weeks-15-17 playoff ceiling (for Best Ball's
 # second column).
 project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
-                         target_season = TARGET_SEASON) {
+                         target_season = TARGET_SEASON, only_players = NULL,
+                         bank_season_totals = BANK_SEASON_TOTALS) {
   set.seed(seed)
   reg <- load_history(seasons)
   # Position-relevant EPA as a single column, computed up front so every
@@ -1084,6 +1097,15 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
     NULL
   })
 
+  # Test hook: restrict the run to named players (a quick before/after check
+  # without the full ~30 minute run). NULL in production.
+  if (!is.null(only_players)) eligible <- intersect(eligible, only_players)
+
+  # Games each team has played so far this season (distinct weeks with a game
+  # in the log) -- how many are left for the banked-totals mode below.
+  cur_rows <- reg[reg$season == target_season, ]
+  team_games_played <- if (nrow(cur_rows) > 0) tapply(cur_rows$week, cur_rows$team, function(w) length(unique(w))) else c()
+
   rows <- vector("list", length(eligible))
   names(rows) <- eligible
 
@@ -1103,6 +1125,20 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
     idx <- seq_len(n)
     relevant_stats <- STAT_COLS_BY_POSITION[[pos]]
 
+    # Banked-totals mode (see BANK_SEASON_TOTALS): this season's real totals so
+    # far, plus how many games his team has left to simulate.
+    bank_on <- isTRUE(bank_season_totals) && completed_weeks > 0
+    cur <- d[d$season == target_season, ]
+    banked_pts <- 0
+    n_draw <- MAX_GAMES_PER_SEASON
+    if (bank_on) {
+      tg <- if (nrow(cur) > 0) unname(team_games_played[tail(cur$team, 1)]) else unname(team_games_played[team])
+      if (length(tg) != 1 || is.na(tg)) tg <- completed_weeks
+      tg <- max(tg, nrow(cur))
+      n_draw <- max(MAX_GAMES_PER_SEASON - tg, 0)
+      banked_pts <- sum(cur$fantasy_points_ppr, na.rm = TRUE)
+    }
+
     # Season fantasy-points total: unchanged mechanism from before --
     # samples GAME INDICES (not points values directly), resampled with
     # the single position-level MED_DECAY (wm), matching Redraft/Best
@@ -1111,9 +1147,9 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
     # below (that backtest targeted the granular per-stat columns, not
     # the blended points total).
     szn <- replicate(n_sims, {
-      g <- sum(runif(MAX_GAMES_PER_SEASON) < avail)
+      g <- sum(runif(n_draw) < avail)
       if (g == 0) 0 else sum(x[sample(idx, g, replace = TRUE, prob = wm)])
-    })
+    }) + banked_pts
 
     # Boom/bust profile: share of simulated seasons landing 20%+ below vs.
     # above THIS PLAYER'S OWN median (not a fixed league-wide point
@@ -1152,7 +1188,7 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
         ceil_q  <- STAT_GROUP_CEIL_Q[[group_name]][pos]
 
         group_sim <- replicate(n_sims, {
-          g <- sum(runif(MAX_GAMES_PER_SEASON) < avail)
+          g <- sum(runif(n_draw) < avail)
           if (g == 0) setNames(rep(0, length(cols)), cols)
           else {
             sampled <- sample(idx, g, replace = TRUE, prob = w_group)
@@ -1164,6 +1200,10 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
         # back to a 1-row matrix so `group_sim[col, ]` always works.
         if (is.null(dim(group_sim))) {
           group_sim <- matrix(group_sim, nrow = 1, dimnames = list(cols, NULL))
+        }
+        if (bank_on && nrow(cur) > 0) {
+          # Each row of group_sim is one stat; add that stat's real total so far.
+          group_sim <- group_sim + vapply(cols, function(col) sum(cur[[col]], na.rm = TRUE), numeric(1))
         }
 
         for (col in cols) {
