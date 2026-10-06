@@ -6,6 +6,7 @@ import { computeRegressionScore } from "@/lib/regressionScore";
 import { computeOutcomePercentile } from "@/lib/outcomePercentile";
 import { normalizePlayerName } from "@/lib/portfolio";
 import { indexGameLog, teamGamesThrough } from "@/lib/teamGames";
+import { positionRanks } from "@/lib/positionRank";
 
 const GAMES_PER_SEASON = 17;
 
@@ -41,7 +42,7 @@ const getLatestInputs = unstable_cache(
 const getHistoryRows = unstable_cache(
   async (season, week) => {
     const pub = createPublicClient();
-    return fetchAllRows(pub, "player_simulations", "player_name, week, floor, median, ceiling, stat_ranges", (q) =>
+    return fetchAllRows(pub, "player_simulations", "player_name, position, week, floor, median, ceiling, stat_ranges", (q) =>
       q.eq("season", season).lt("week", week).order("week", { ascending: true })
     );
   },
@@ -79,20 +80,24 @@ export async function loadSimHistoryContext() {
   // Each sim week's full pool, ranked against itself for stat percentiles.
   const poolByWeek = { [latest.week]: latestRows };
   for (const h of historyRows) {
-    if (!posByName[h.player_name]) continue;
-    (poolByWeek[h.week] ??= []).push({ ...h, position: posByName[h.player_name] });
+    // The pool as it was that week -- everyone published then, with the position
+    // they carried then (a player who has since dropped out of the pool still counts).
+    if (!(h.position || posByName[h.player_name])) continue;
+    (poolByWeek[h.week] ??= []).push({ ...h, position: h.position || posByName[h.player_name] });
   }
   const percByWeek = {};
+  const rankByWeek = {};
   for (const [wk, rows] of Object.entries(poolByWeek)) {
     const pool = buildStatPoolByPos(rows);
     const m = {};
     for (const r of rows) m[r.player_name] = computeStatPercentiles(r, pool);
     percByWeek[wk] = m;
+    rankByWeek[wk] = positionRanks(rows);
   }
   const historyByName = {};
   for (const h of historyRows) (historyByName[h.player_name] ??= {})[h.week] = h;
 
-  return { latest, latestRows, rowByName, gamesByName, teamWeeks, lastGameWeek, poolByWeek, percByWeek, historyByName };
+  return { latest, latestRows, rowByName, gamesByName, teamWeeks, lastGameWeek, poolByWeek, percByWeek, rankByWeek, historyByName };
 }
 
 // "W3" = every game through week 3 and the projection as it stood after
@@ -153,6 +158,7 @@ export function buildPeersByWeek(ctx, visibleNames, bioByNamePos) {
       (bySig[signature] ??= []).push({
         name: r.player_name,
         position: r.position,
+        positionRank: ctx.rankByWeek[wk]?.[r.player_name] ?? null,
         sleeperId: bioByNamePos[`${normalizePlayerName(r.player_name)}|${r.position}`]?.sleeperId || null,
         ...ctx.percByWeek[wk][r.player_name],
         stat_ranges: r.stat_ranges,

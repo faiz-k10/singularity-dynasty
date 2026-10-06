@@ -199,6 +199,7 @@ export default function SimilarShapeFinder({
   selectedName,
   selectedLayer,
   onSelect,
+  onGoToPlayer,
   selection,
 }) {
   if (!peers || peers.length === 0 || !keys || keys.length === 0) return null;
@@ -258,7 +259,10 @@ export default function SimilarShapeFinder({
                 aria-pressed={isActive}
               >
                 <span>{p.name}</span>
-                <span className="shape-finder-pos mono">{p.position}</span>
+                <span className="shape-finder-pos mono">
+                  {p.position}
+                  {p.positionRank != null && <span className="pos-rank">{p.positionRank}</span>}
+                </span>
               </button>
               {/* One shared 2-column grid for the remaining three pieces
                   (F/M/C picker, score, table) -- explicit ask to
@@ -295,14 +299,32 @@ export default function SimilarShapeFinder({
                 </div>
                 <div className="shape-finder-score">
                   <div className="stat-radar-label">Match</div>
-                  {p.sleeperId && (
-                    <img
-                      className="shape-finder-portrait"
-                      src={`https://sleepercdn.com/content/nfl/players/thumb/${p.sleeperId}.jpg`}
-                      alt=""
-                      loading="lazy"
-                    />
-                  )}
+                  {p.sleeperId &&
+                    (() => {
+                      const portrait = (
+                        <img
+                          className="shape-finder-portrait"
+                          src={`https://sleepercdn.com/content/nfl/players/thumb/${p.sleeperId}.jpg`}
+                          alt=""
+                          loading="lazy"
+                        />
+                      );
+                      // The photo doubles as a "go to this player" link: the table
+                      // opens and scrolls to his row.
+                      return onGoToPlayer ? (
+                        <button
+                          type="button"
+                          className="shape-finder-portrait-btn"
+                          onClick={() => onGoToPlayer(p.name)}
+                          title={`Go to ${p.name} in the table`}
+                          aria-label={`Go to ${p.name} in the table`}
+                        >
+                          {portrait}
+                        </button>
+                      ) : (
+                        portrait
+                      );
+                    })()}
                   <div className="shape-finder-score-value">{displaySimilarity}%</div>
                 </div>
                 <MiniStatTable

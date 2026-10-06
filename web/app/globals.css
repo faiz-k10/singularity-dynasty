@@ -2742,6 +2742,11 @@ tr.stat-row-selected td{background:var(--void-panel);}
   gap:4px; text-align:center; padding-top:2px;
 }
 .shape-finder-portrait{width:36px; height:36px; border-radius:50%; object-fit:cover; background:var(--void-panel-2);}
+/* The comp's photo is a button that takes you to his row in the table. */
+.shape-finder-portrait-btn{display:inline-flex; padding:0; border:0; background:none; border-radius:50%; cursor:pointer; transition:transform .15s ease, box-shadow .15s ease;}
+.shape-finder-portrait-btn:hover{transform:scale(1.07); box-shadow:0 0 0 2px rgba(var(--neon-blue-rgb),.7);}
+.shape-finder-portrait-btn:focus-visible{outline:2px solid var(--neon-blue); outline-offset:2px;}
+.shape-finder-pos .pos-rank{font-size:inherit; margin-left:1px;}
 .shape-finder-score-value{
   font-family:var(--font-space-grotesk); font-size:20px; font-weight:700; color:var(--neon-blue-dim);
 }
@@ -3940,3 +3945,9 @@ summary:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible{
 .player-empty-row td{padding:36px 16px; text-align:center; color:var(--star-dim); font-size:14px;}
 .player-empty-clear{margin-left:12px; background:none; border:1px solid var(--line); border-radius:999px; padding:4px 12px; color:var(--star); font:inherit; font-size:12px; cursor:pointer;}
 .player-empty-clear:hover{border-color:var(--horizon);}
+
+/* Landing on a row via a comp's photo: a brief highlight (reduced-motion users get none). */
+@keyframes row-flash{from{box-shadow:inset 0 0 0 999px rgba(var(--neon-blue-rgb),.32);} to{box-shadow:inset 0 0 0 999px rgba(var(--neon-blue-rgb),0);}}
+@media (prefers-reduced-motion:no-preference){
+  .player-sims-table > tbody > tr.row-flash > td{animation:row-flash 1.4s ease-out;}
+}

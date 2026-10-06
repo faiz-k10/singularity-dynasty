@@ -312,6 +312,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
     (shapePeers[signature] ??= []).push({
       name: row.player_name,
       position: row.position,
+      positionRank: row.positionRank ?? null,
       sleeperId: bioByNamePos[`${normalizePlayerName(row.player_name)}|${row.position}`]?.sleeperId || null,
       statPercentiles: row.statPercentiles,
       statFloorPercentiles: row.statFloorPercentiles,

@@ -45,7 +45,7 @@ function loadPeers() {
 // Detail row unfolded below a player when their name is clicked -- one
 // open at a time (clicking a different player folds this one and opens
 // theirs). colSpan must match the number of columns in the main row.
-function StatDetailRow({ row, colSpan, shapePeers, maxCeiling }) {
+function StatDetailRow({ row, colSpan, shapePeers, maxCeiling, onGoToPlayer }) {
   // Week scrubber state (see the bar at the bottom of the pace panel):
   // null = the latest published week; otherwise a snapshot's week.
   const [snapWeek, setSnapWeek] = useState(null);
@@ -467,6 +467,7 @@ function StatDetailRow({ row, colSpan, shapePeers, maxCeiling }) {
             selectedName={compareName}
             selectedLayer={compareLayer}
             onSelect={selectCompare}
+            onGoToPlayer={onGoToPlayer ? (name) => onGoToPlayer(name, row.player_name) : undefined}
             selection={selection}
           />
         </div>
@@ -538,6 +539,24 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
     });
   }
 
+  // Clicking a comp's photo: close the player we came from, open the comp, make
+  // sure his row is visible under the current filters, then scroll to it.
+  const pendingScroll = useRef(null);
+  function goToPlayer(name, fromName) {
+    const target = rows.find((r) => r.player_name === name);
+    if (!target) return;
+    if (showPositionFilter && !selected.includes(target.position)) setSelected((prev) => [...prev, target.position]);
+    const q = query.trim().toLowerCase();
+    if (q && !target.player_name.toLowerCase().includes(q)) setQuery("");
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (fromName) next.delete(fromName);
+      next.add(name);
+      return next;
+    });
+    pendingScroll.current = name;
+  }
+
   const filteredRows = useMemo(() => {
     let out = rows;
     if (showPositionFilter) {
@@ -577,6 +596,33 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
       document.removeEventListener("keydown", onKeyDown);
     };
   }, [theater]);
+
+  // Runs after the render that opened the comp's row (no deps: it only acts when
+  // a scroll is pending). Scrolls the table panel so his row sits just under its
+  // sticky header, brings the panel into view under the site header, and
+  // flashes the row so the eye lands on it.
+  useEffect(() => {
+    const name = pendingScroll.current;
+    if (!name) return;
+    pendingScroll.current = null;
+    const wrap = tableWrapRef.current;
+    const tr = wrap?.querySelector(`tr[data-player="${CSS.escape(name)}"]`);
+    if (!tr) return;
+    const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+    const headerH = wrap.querySelector("thead")?.getBoundingClientRect().height ?? 40;
+    const wrapRect = wrap.getBoundingClientRect();
+    const rowRect = tr.getBoundingClientRect();
+    wrap.scrollTo({ top: wrap.scrollTop + (rowRect.top - wrapRect.top) - headerH - 8, behavior });
+    if (!theater) {
+      const fixed = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--fixed-header-height")) || 108;
+      if (wrapRect.top < fixed || wrapRect.bottom > window.innerHeight) {
+        window.scrollBy({ top: wrapRect.top - fixed - 12, behavior });
+      }
+    }
+    tr.focus({ preventScroll: true });
+    tr.classList.add("row-flash");
+    window.setTimeout(() => tr.classList.remove("row-flash"), 1600);
+  });
 
   return (
     <>
@@ -813,6 +859,7 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                 <Fragment key={row.player_name}>
                 <tr
                   data-pos={row.position}
+                  data-player={row.player_name}
                   className={hasStats ? "row-expandable" : undefined}
                   onClick={hasStats ? () => toggleExpanded(row.player_name) : undefined}
                   onPointerEnter={hasStats && row.lastWeek > 1 ? () => loadSnapshots(row.player_name) : undefined}
@@ -897,6 +944,7 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                     colSpan={11}
                     shapePeers={shapePeers}
                     maxCeiling={maxCeiling}
+                    onGoToPlayer={goToPlayer}
                   />
                 )}
                 </Fragment>
