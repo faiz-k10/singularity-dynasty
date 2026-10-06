@@ -249,13 +249,27 @@ function StatDetailRow({ row, colSpan, shapePeers, maxCeiling, lastWeek, simLate
                   )}
                   {pv.recentGames?.length > 0 && (
                     <div className="stat-panel-pace-recent snap-fade" key={pv.week}>
-                      {pv.recentGames.map((g) => (
-                        <div key={`${g.season}-${g.week}`} className="pace-game-row" title={`${g.season} Week ${g.week}`}>
+                      {pv.recentGames.map((g, i) => (
+                        <div
+                          key={`${g.season}-${g.week}`}
+                          className={`pace-game-row${i === pv.recentGames.length - 1 ? " pace-game-row-last" : ""}`}
+                          title={`${g.season} Week ${g.week}`}
+                        >
                           <span className="pace-game-week mono">W{g.week} {g.is_home === true ? "vs" : g.is_home === false ? "@" : "·"}</span>
                           <TeamBadge team={g.opponent} />
                           <span className="pace-game-pts mono">
                             {g.fantasy_points_ppr != null ? g.fantasy_points_ppr.toFixed(1) : "—"}
                           </span>
+                        </div>
+                      ))}
+                      {/* Always three rows tall: with fewer games the missing rows are invisible
+                          placeholders, so the photo above (it takes whatever height is left)
+                          stays the same size as in the three-game view. */}
+                      {Array.from({ length: Math.max(0, 3 - pv.recentGames.length) }, (_, i) => (
+                        <div key={`pad-${i}`} className="pace-game-row pace-game-row-pad" aria-hidden="true">
+                          <span className="pace-game-week mono">W0 @</span>
+                          <TeamBadge team="XXX" />
+                          <span className="pace-game-pts mono">0.0</span>
                         </div>
                       ))}
                     </div>
