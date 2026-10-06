@@ -89,6 +89,8 @@ function StatDetailRow({ row, colSpan, shapePeers, maxCeiling }) {
   // week's stretch and the fill runs up to it, so every week up to the selected
   // one is solid red (or gray if he missed it) and the handle marks its end.
   const progress = latestWeek > 1 ? (pv.week / latestWeek) * 100 : 100;
+  // Week 1's dot sits at the very start of the bar instead of the end of its stretch.
+  const handleAt = pv.week === 1 ? 0 : progress;
   function pickWeek(w) {
     if (weeks.length === 0) {
       pendingWeek.current = w; // applied as soon as the history arrives
@@ -359,7 +361,7 @@ function StatDetailRow({ row, colSpan, shapePeers, maxCeiling }) {
                         />
                       ))}
                     </div>
-                    <span className="stat-panel-pace-scrub-handle" style={{ left: `calc(6px + (100% - 12px) * ${progress / 100})` }} />
+                    <span className="stat-panel-pace-scrub-handle" style={{ left: `calc(6px + (100% - 12px) * ${handleAt / 100})` }} />
                   </div>
                   <span className="stat-panel-pace-scrub-label mono">W{pv.week}</span>
                 </div>
