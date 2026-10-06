@@ -8,6 +8,7 @@
 //
 // game-data    model/player_game_log.R -> publish-player-game-log.mjs -> publish-actual-production.mjs
 // projections  model/projection_engine.R -> publish-rankings.mjs -> publish-player-simulations.mjs
+//              then (never fatal) model/player_archetypes.R -> publish-player-archetypes.mjs
 //
 // Exits non-zero (and prints why) when a check fails, so a scheduled run can
 // report it instead of silently publishing something wrong.
@@ -100,7 +101,24 @@ async function projections() {
   const after = await latestWeek("redraft_rankings");
   const sAfter = await latestWeek("player_simulations");
   log(`\nVerified: redraft_rankings wk${after.week} = ${after.count} rows, player_simulations wk${sAfter.week} = ${sAfter.count} rows`);
+  try {
+    archetypes();
+  } catch (e) {
+    log(`SKIPPED: archetypes threw -- ${e.message}`);
+  }
   return { week: after.week };
+}
+
+// Player archetypes (role groups for RB/WR/TE). Deliberately NEVER fatal: the projections above are
+// already published, and nothing on the site depends on archetypes yet, so a problem here (R error,
+// the table not created yet) is reported and skipped instead of failing the run.
+function archetypes() {
+  log("\n--- Player archetypes (optional) ---");
+  const r = spawnSync("Rscript", ["player_archetypes.R"], { cwd: MODEL, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
+  if (r.status !== 0) return log(`SKIPPED: archetype assignment failed -- ${(r.stderr || "").trim().split("\n").slice(-3).join(" ")}`);
+  const p = spawnSync(process.execPath, ["--env-file=.env.local", "scripts/publish-player-archetypes.mjs"], { cwd: WEB, encoding: "utf8" });
+  const tail = ((p.stdout || "") + (p.stderr || "")).trim().split("\n").slice(-3).join("\n");
+  log(p.status === 0 ? tail : `SKIPPED: archetype publish failed (exit ${p.status}) -- ${tail}`);
 }
 
 const mode = process.argv[2];
