@@ -2248,10 +2248,13 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .stat-panel-pace-scrub[data-loading] .stat-panel-pace-progress-track{opacity:.6;}
 .stat-panel-pace-scrub:focus-visible .stat-panel-pace-progress-track{box-shadow:0 0 0 2px rgba(var(--star-dot-rgb),.4);}
 .stat-panel-pace-progress-ghost{position:absolute; left:0; top:0; bottom:0; background:var(--down); opacity:.3; border-radius:3px;}
+.stat-panel-pace-scrub{--missed-gray:#77777d; --missed-gray:color-mix(in srgb, rgb(var(--star-dot-rgb)) 40%, var(--void-panel-2));}
 .stat-panel-pace-scrub-handle{position:absolute; top:50%; width:12px; height:12px; margin:-6px 0 0 -6px; border-radius:50%; background:var(--down); border:2px solid var(--void-panel); box-shadow:0 0 0 1px var(--down); pointer-events:none;}
 .stat-panel-pace-scrub-label{font-size:10px; color:var(--down); font-weight:600;}
 /* Opaque on purpose: it sits on top of the red fill, so a translucent gray would just tint it. */
-.stat-panel-pace-seg-missed{position:absolute; top:0; bottom:0; background:#77777d; background:color-mix(in srgb, rgb(var(--star-dot-rgb)) 40%, var(--void-panel-2));}
+.stat-panel-pace-seg-missed{position:absolute; top:0; bottom:0; background:var(--missed-gray);}
+/* When the selected week was one he missed, the dot goes the same gray as that week's stretch. */
+.stat-panel-pace-scrub-handle.missed{background:var(--missed-gray); box-shadow:0 0 0 1px var(--missed-gray);}
 .stat-panel-pace-progress-fill{position:absolute; left:0; top:0; bottom:0; background:var(--down); border-radius:3px;}
 
 /* Weekly Projection Rankings' own click-to-expand row (WeeklyDetailRow.js)

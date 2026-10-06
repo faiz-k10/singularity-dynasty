@@ -360,7 +360,10 @@ function StatDetailRow({ row, colSpan, shapePeers, maxCeiling }) {
                         />
                       ))}
                     </div>
-                    <span className="stat-panel-pace-scrub-handle" style={{ left: `calc(6px + (100% - 12px) * ${progress / 100})` }} />
+                    <span
+                      className={`stat-panel-pace-scrub-handle${(row.missedWeeks || []).includes(pv.week) ? " missed" : ""}`}
+                      style={{ left: `calc(6px + (100% - 12px) * ${progress / 100})` }}
+                    />
                   </div>
                   <span className="stat-panel-pace-scrub-label mono">W{pv.week}</span>
                 </div>
