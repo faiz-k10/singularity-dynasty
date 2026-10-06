@@ -2242,7 +2242,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    of its own (explicit ask -- the count already lives above). */
 .stat-panel-pace-progress{display:flex; align-items:center; gap:8px;}
 .stat-panel-pace-progress-track{position:relative; flex:1; height:6px; background:var(--void-panel-2); border-radius:3px; overflow:hidden;}
-.stat-panel-pace-scrub{position:relative; flex:1; padding:7px 0; cursor:pointer; touch-action:none; outline:none;}
+.stat-panel-pace-scrub{position:relative; flex:1; padding:7px 6px; cursor:pointer; touch-action:none; outline:none;}
 .stat-panel-pace-scrub:focus-visible .stat-panel-pace-progress-track{box-shadow:0 0 0 2px rgba(var(--star-dot-rgb),.4);}
 .stat-panel-pace-progress-ghost{position:absolute; left:0; top:0; bottom:0; background:var(--down); opacity:.3; border-radius:3px;}
 .stat-panel-pace-scrub-handle{position:absolute; top:50%; width:12px; height:12px; margin:-6px 0 0 -6px; border-radius:50%; background:var(--down); border:2px solid var(--void-panel); box-shadow:0 0 0 1px var(--down); pointer-events:none;}

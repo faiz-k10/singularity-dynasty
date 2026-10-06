@@ -73,6 +73,8 @@ function StatDetailRow({ row, colSpan, shapePeers, maxCeiling }) {
   const latestWeek = row.lastWeek;
   const snap = snapWeek != null && snapWeek !== latestWeek ? snaps.find((x) => x.week === snapWeek) : null;
   const pv = snap ? { ...row, ...snap } : { ...row, week: latestWeek };
+  // Track runs W1 (left end) to the latest week (right end).
+  const progress = latestWeek > 1 ? ((pv.week - 1) / (latestWeek - 1)) * 100 : 100;
   function pickWeek(w) {
     if (weeks.length === 0) return;
     const nearest = weeks.reduce((best, x) => (Math.abs(x - w) < Math.abs(best - w) ? x : best), weeks[0]);
@@ -81,7 +83,7 @@ function StatDetailRow({ row, colSpan, shapePeers, maxCeiling }) {
   function scrubTo(e) {
     const rect = e.currentTarget.getBoundingClientRect();
     const frac = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
-    pickWeek(Math.round(frac * 17));
+    pickWeek(Math.round(frac * (latestWeek - 1)) + 1);
   }
   function onScrubKey(e) {
     const i = weeks.indexOf(pv.week);
@@ -322,10 +324,9 @@ function StatDetailRow({ row, colSpan, shapePeers, maxCeiling }) {
                     onKeyDown={onScrubKey}
                   >
                     <div className="stat-panel-pace-progress-track">
-                      <div className="stat-panel-pace-progress-ghost" style={{ width: `${((latestWeek / 17) * 100)}%` }} />
-                      <div className="stat-panel-pace-progress-fill" style={{ width: `${Math.min(100, (pv.week / 17) * 100)}%` }} />
+                      <div className="stat-panel-pace-progress-fill" style={{ width: `${progress}%` }} />
                     </div>
-                    <span className="stat-panel-pace-scrub-handle" style={{ left: `${Math.min(100, (pv.week / 17) * 100)}%` }} />
+                    <span className="stat-panel-pace-scrub-handle" style={{ left: `calc(6px + (100% - 12px) * ${progress / 100})` }} />
                   </div>
                   <span className="stat-panel-pace-scrub-label mono">W{pv.week}</span>
                 </div>
