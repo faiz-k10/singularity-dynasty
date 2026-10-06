@@ -84,8 +84,8 @@ SEASON_FLOOR_Q <- c(RB = 0.010, QB = 0.020, WR = 0.010, TE = 0.020)
 SEASON_CEIL_Q  <- c(RB = 0.995, QB = 0.985, WR = 0.990, TE = 0.990)
 
 # Banked season totals (Player Season Simulations floor/median/ceiling and the
-# per-stat ranges). OFF by default, so the published numbers don't change until
-# this is deliberately switched on (BANK_SEASON_TOTALS=1 in the environment).
+# per-stat ranges). ON by default; set BANK_SEASON_TOTALS=0 in the environment to
+# fall back to the old fresh-16-game-season simulation.
 # When on, once a season is underway each player's real totals so far are locked
 # in and the existing bootstrap only simulates the games his team has LEFT
 # (MAX_GAMES_PER_SEASON minus its games played), instead of redrawing a whole
@@ -93,7 +93,7 @@ SEASON_CEIL_Q  <- c(RB = 0.995, QB = 0.985, WR = 0.990, TE = 0.990)
 # games yet) it changes nothing. The floor/ceiling cutoffs above are unchanged
 # and still tuned for a full season -- recalibrating them by games remaining is
 # a separate step.
-BANK_SEASON_TOTALS <- identical(Sys.getenv("BANK_SEASON_TOTALS", "0"), "1")
+BANK_SEASON_TOTALS <- identical(Sys.getenv("BANK_SEASON_TOTALS", "1"), "1")
 
 # Floor/ceiling in banked mode: a distance from the published median with the shape of
 # a healthy player's range (runs where he plays >= BANKED_HEALTHY_SHARE of his team's
