@@ -203,7 +203,8 @@ export default function SimilarShapeFinder({
   onSelect,
   onGoToPlayer,
   selection,
-  archetypeByName,
+  tagsByName,
+  tagKind,
 }) {
   if (!peers || peers.length === 0 || !keys || keys.length === 0) return null;
 
@@ -284,8 +285,8 @@ export default function SimilarShapeFinder({
                   confirmed live. */}
               <div className="shape-finder-grid">
                 <div className="shape-finder-layers mono" role="group" aria-label={`${p.name} comparison view`}>
-                  {/* His role group, in the row's empty first column (above the stat names). */}
-                  {archetypeByName?.[p.name] && <ArchetypePill name={archetypeByName[p.name]} compact />}
+                  {/* The selected kind of tag (role / sustainability / career stage) for this player, in the row's empty first column. */}
+                  {tagsByName?.[p.name]?.[tagKind] && <ArchetypePill name={tagsByName[p.name][tagKind]} compact />}
                   {LAYERS.map((layer) => {
                     const layerActive = isActive && selectedLayer === layer.key;
                     return (

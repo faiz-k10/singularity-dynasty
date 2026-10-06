@@ -39,3 +39,32 @@ export const ARCHETYPE_SHORT = {
   "Balanced TE": "Balanced TE",
   "Low-Volume TE": "Low-Volume",
 };
+
+// Colour family of each tag (a CSS class, see .tone-* in globals.css). Role pills have no entry and use the default.
+export const TAG_TONE = {
+  "Running Hot": "hot",
+  "Running Cold": "cold",
+  "In Line": "neutral",
+  Ascending: "up",
+  Prime: "prime",
+  "Decline Watch": "warn",
+  "Late Career": "late",
+  Veteran: "neutral",
+};
+
+// The three kinds of tag a player can carry, in display order, with the small heading shown over the
+// caption when that kind is selected.
+export const TAG_KINDS = [
+  { key: "role", heading: "Player role" },
+  { key: "sus", heading: "Sustainability" },
+  { key: "stage", heading: "Career stage" },
+];
+
+// Plain-language age ranges behind each career stage, per position. These mirror STAGE_CUTS in
+// model/player_groups.R (from the README's longitudinal age curves) -- change both together.
+export const STAGE_TEXT = {
+  RB: { Ascending: "still in the growth years for RBs (through age 23)", Prime: "prime years for RBs (ages 24-26)", "Decline Watch": "RBs typically begin to decline around here (ages 27-28)", "Late Career": "RBs typically fall off sharply from age 29" },
+  WR: { Ascending: "still in the growth years for WRs (through age 24)", Prime: "prime years for WRs (ages 25-27)", "Decline Watch": "WRs typically begin to decline around here (ages 28-29)", "Late Career": "WRs typically fall off sharply from age 30" },
+  TE: { Ascending: "still in the growth years for TEs (through age 25)", Prime: "prime years for TEs (ages 26-29)", "Decline Watch": "TEs age slowly, but decline begins around here (ages 30-31)", "Late Career": "late career for a TE (age 32 and up)" },
+  QB: { Ascending: "a young QB (through age 24)", Prime: "QBs hold their value well through the mid-30s (ages 25-35)", Veteran: "veteran QB territory (age 36 and up)" },
+};

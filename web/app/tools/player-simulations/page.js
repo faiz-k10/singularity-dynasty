@@ -77,6 +77,29 @@ async function loadArchetypes(client, latest) {
   }
 }
 
+// Sustainability and career-stage labels from player_groups (same optional treatment as the archetypes above):
+// name -> { sus: { l, fp, xfp }, stage: { l, age } }.
+async function loadGroups(client, latest) {
+  try {
+    const cols = "player_name, kind, label, detail, week";
+    let { data } = await client.from("player_groups").select(cols).eq("season", latest.season).eq("week", latest.week);
+    if (!data?.length) {
+      const { data: newest } = await client.from("player_groups").select("week").eq("season", latest.season).order("week", { ascending: false }).limit(1).maybeSingle();
+      if (!newest) return {};
+      ({ data } = await client.from("player_groups").select(cols).eq("season", latest.season).eq("week", newest.week));
+    }
+    const out = {};
+    for (const r of data || []) {
+      const e = (out[r.player_name] ??= {});
+      if (r.kind === "sustainability") e.sus = { l: r.label, fp: r.detail?.fp_pg ?? null, xfp: r.detail?.xfp_pg ?? null };
+      else if (r.kind === "career_stage") e.stage = { l: r.label, age: r.detail?.age ?? null };
+    }
+    return out;
+  } catch {
+    return {};
+  }
+}
+
 // The full published week's data (all 425-ish rows) is identical for
 // every visitor regardless of tier or the League Size / QB Format
 // toggles -- gating happens afterward, in JS, on this same cached result
@@ -100,7 +123,7 @@ const getCachedWeekData = unstable_cache(
 
     if (!latest) return { latest: null, rows: [], totalCount: 0, actualProductionByName: {} };
 
-    const [{ data, count }, logRows, archetypeByName] = await Promise.all([
+    const [{ data, count }, logRows, archetypeByName, groupsByName] = await Promise.all([
       publicSupabase
         .from("player_simulations")
         .select(
@@ -126,6 +149,7 @@ const getCachedWeekData = unstable_cache(
         (q) => q.eq("season", latest.season).order("week", { ascending: true })
       ),
       loadArchetypes(publicSupabase, latest),
+      loadGroups(publicSupabase, latest),
     ]);
 
     const actualProductionByName = {};
@@ -158,7 +182,7 @@ const getCachedWeekData = unstable_cache(
       if (missed.length) missedWeeksByName[name] = missed;
     }
 
-    return { latest, rows: data || [], totalCount: count || 0, actualProductionByName, recentByName, lastGameWeek, teamGamesByName, missedWeeksByName, archetypeByName };
+    return { latest, rows: data || [], totalCount: count || 0, actualProductionByName, recentByName, lastGameWeek, teamGamesByName, missedWeeksByName, archetypeByName, groupsByName };
   },
   ["player-simulations-latest-week"],
   { revalidate: 60 }
@@ -193,7 +217,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
   // there's no real caching benefit to bundling it into the 60s payload,
   // and keeping it separate mirrors how redraft-rankings' own expanded
   // row already does this same lookup.
-  const [{ tier }, { latest, rows, totalCount: fetchedCount, actualProductionByName, recentByName, lastGameWeek, teamGamesByName, missedWeeksByName, archetypeByName }, bioByNamePos] =
+  const [{ tier }, { latest, rows, totalCount: fetchedCount, actualProductionByName, recentByName, lastGameWeek, teamGamesByName, missedWeeksByName, archetypeByName, groupsByName }, bioByNamePos] =
     await Promise.all([resolveTier(supabase), getCachedWeekData(), getPlayerBiosByNamePos()]);
   const hasFullAccess = PAID_TIERS.includes(tier);
 
@@ -302,9 +326,12 @@ export default async function PlayerSimulationsPage({ searchParams }) {
     const outcome = outcomeByName[row.player_name];
     const missed = missedWeeksByName?.[row.player_name];
     const role = archetypeByName?.[row.player_name];
+    const grp = groupsByName?.[row.player_name];
     return {
       ...row,
       ...(role ? { archetype: role.a, ...(role.near ? { archetypeNear: role.near } : {}) } : {}),
+      ...(grp?.sus ? { sus: grp.sus.l, susFp: grp.sus.fp, susXfp: grp.sus.xfp } : {}),
+      ...(grp?.stage ? { stage: grp.stage.l, age: grp.stage.age } : {}),
       heat: round(heatFor("median", row), 2),
       floorHeat: round(heatFor("floor", row), 2),
       ceilingHeat: round(heatFor("ceiling", row), 2),

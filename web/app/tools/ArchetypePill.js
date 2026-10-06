@@ -1,21 +1,24 @@
-import { ARCHETYPE_BLURB, ARCHETYPE_SHORT } from "@/lib/archetypes";
+import { ARCHETYPE_BLURB, ARCHETYPE_SHORT, TAG_TONE } from "@/lib/archetypes";
 
-// The role-group pill ("Lead Back", "Slot / YAC Receiver", ...). The description lives in the hover
-// title. `compact` is the small version used on the comparison cards: a shorter name (full name on
-// hover) so it fits the card's narrow first column.
-export default function ArchetypePill({ name, compact = false }) {
+// One tag pill: a role group ("Lead Back"), a sustainability label ("Running Hot") or a career stage
+// ("Prime"). With `onClick` it is a toggle button (`active` = the selected one). `compact` is the small
+// version on the comparison cards: a shorter name for roles, full name on hover.
+export default function ArchetypePill({ name, compact = false, active = false, onClick }) {
   if (!name) return null;
   const blurb = ARCHETYPE_BLURB[name];
-  if (!compact) {
+  const cls = ["archetype-pill", compact && "archetype-pill-compact", `tone-${TAG_TONE[name] || "role"}`, onClick && "tag-btn"].filter(Boolean).join(" ");
+  const text = compact ? ARCHETYPE_SHORT[name] || name : name;
+  const title = blurb ? (compact ? `${name} -- ${blurb}` : blurb) : name;
+  if (onClick) {
     return (
-      <span className="archetype-pill" title={blurb}>
-        {name}
-      </span>
+      <button type="button" className={cls} aria-pressed={active} onClick={onClick} title={title}>
+        {text}
+      </button>
     );
   }
   return (
-    <span className="archetype-pill archetype-pill-compact" title={blurb ? `${name} -- ${blurb}` : name}>
-      {ARCHETYPE_SHORT[name] || name}
+    <span className={cls} title={title}>
+      {text}
     </span>
   );
 }

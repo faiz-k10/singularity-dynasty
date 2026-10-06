@@ -8,6 +8,8 @@ import STAT_LABELS from "./statLabels";
 import StatRadar from "./StatRadar";
 import SimilarShapeFinder from "./SimilarShapeFinder";
 import ArchetypePill from "./ArchetypePill";
+import TagCaption from "./TagCaption";
+import { TAG_KINDS } from "@/lib/archetypes";
 import PercentileCard from "./PercentileCard";
 import { radarLayoutFor } from "./radarLayout";
 import { missedSegments } from "@/lib/teamGames";
@@ -46,9 +48,17 @@ function loadPeers() {
 // Detail row unfolded below a player when their name is clicked -- one
 // open at a time (clicking a different player folds this one and opens
 // theirs). colSpan must match the number of columns in the main row.
-function StatDetailRow({ row, colSpan, shapePeers, archetypeByName, maxCeiling, lastWeek, simLatestWeek, onGoToPlayer }) {
+// A player's label for one tag kind: "role" (archetype), "sus" (sustainability) or "stage" (career stage).
+const tagLabel = (row, kind) => (kind === "role" ? row.archetype : row[kind]);
+
+function StatDetailRow({ row, colSpan, shapePeers, tagsByName, maxCeiling, lastWeek, simLatestWeek, onGoToPlayer }) {
   // Week scrubber state (see the bar at the bottom of the pace panel):
   // null = the latest published week; otherwise a snapshot's week.
+  // Which tag (role / sustainability / career stage) is selected: it sets the caption under the pills
+  // and which kind of tag the comparison cards show for their players.
+  const tagKinds = TAG_KINDS.map((k) => k.key).filter((k) => tagLabel(row, k));
+  const [tagKind, setTagKind] = useState(null);
+  const activeTag = tagKinds.includes(tagKind) ? tagKind : tagKinds[0];
   const [snapWeek, setSnapWeek] = useState(null);
   const [snaps, setSnaps] = useState([]);
   const pendingWeek = useRef(null);
@@ -394,15 +404,15 @@ function StatDetailRow({ row, colSpan, shapePeers, archetypeByName, maxCeiling, 
             </div>
           )}
           <div className="stat-panel stat-panel-table">
-            {row.archetype && (
+            {tagKinds.length > 0 && (
               <div className="role-block">
-                <div className="role-block-caption mono">Player role</div>
-                <ArchetypePill name={row.archetype} />
-                {row.archetypeNear && (
-                  <p className="role-block-near">
-                    Close to <strong>{row.archetypeNear}</strong> &mdash; his role sits near the line between the two.
-                  </p>
-                )}
+                <div className="role-block-caption mono">{TAG_KINDS.find((k) => k.key === activeTag)?.heading}</div>
+                <div className="role-block-tags">
+                  {tagKinds.map((k) => (
+                    <ArchetypePill key={k} name={tagLabel(row, k)} active={k === activeTag} onClick={() => setTagKind(k)} />
+                  ))}
+                </div>
+                <TagCaption row={row} kind={activeTag} />
               </div>
             )}
             <table className="stat-detail-table">
@@ -503,7 +513,8 @@ function StatDetailRow({ row, colSpan, shapePeers, archetypeByName, maxCeiling, 
             onSelect={selectCompare}
             onGoToPlayer={onGoToPlayer ? (name) => onGoToPlayer(name, row.player_name) : undefined}
             selection={selection}
-            archetypeByName={archetypeByName}
+            tagsByName={tagsByName}
+            tagKind={activeTag}
           />
         </div>
       </td>
@@ -551,7 +562,7 @@ const PlayerRow = memo(function PlayerRow({
   expandedFlag,
   maxCeiling,
   shapePeers,
-  archetypeByName,
+  tagsByName,
   lastWeek,
   simLatestWeek,
   onToggle,
@@ -650,7 +661,7 @@ const PlayerRow = memo(function PlayerRow({
           row={row}
           colSpan={11}
           shapePeers={shapePeers}
-          archetypeByName={archetypeByName}
+          tagsByName={tagsByName}
           maxCeiling={maxCeiling}
           lastWeek={lastWeek}
           simLatestWeek={simLatestWeek}
@@ -721,11 +732,11 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
     return out;
   }, [rows]);
 
-  // name -> role group, for the pill on each comparison card (works for earlier-week comps too, whose
+  // name -> { role, sus, stage }, for the pill on each comparison card (works for earlier-week comps too, whose
   // peers come from the history API and carry no archetype of their own).
-  const archetypeByName = useMemo(() => {
+  const tagsByName = useMemo(() => {
     const out = {};
-    for (const row of rows) if (row.archetype) out[row.player_name] = row.archetype;
+    for (const row of rows) if (row.archetype || row.sus || row.stage) out[row.player_name] = { role: row.archetype, sus: row.sus, stage: row.stage };
     return out;
   }, [rows]);
 
@@ -1058,7 +1069,7 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                   expandedFlag={expanded.has(row.player_name)}
                   maxCeiling={maxCeiling}
                   shapePeers={shapePeers}
-                  archetypeByName={archetypeByName}
+                  tagsByName={tagsByName}
                   lastWeek={lastWeek}
                   simLatestWeek={simLatestWeek}
                   onToggle={toggleExpanded}
