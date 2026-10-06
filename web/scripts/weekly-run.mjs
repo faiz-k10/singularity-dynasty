@@ -9,6 +9,7 @@
 // game-data    model/player_game_log.R -> publish-player-game-log.mjs -> publish-actual-production.mjs
 // projections  model/projection_engine.R -> publish-rankings.mjs -> publish-player-simulations.mjs
 //              then (never fatal) model/player_archetypes.R -> publish-player-archetypes.mjs
+//              then (never fatal) model/player_groups.R -> publish-player-groups.mjs
 //
 // Exits non-zero (and prints why) when a check fails, so a scheduled run can
 // report it instead of silently publishing something wrong.
@@ -106,7 +107,22 @@ async function projections() {
   } catch (e) {
     log(`SKIPPED: archetypes threw -- ${e.message}`);
   }
+  try {
+    groups();
+  } catch (e) {
+    log(`SKIPPED: player groups threw -- ${e.message}`);
+  }
   return { week: after.week };
+}
+
+// Extra groupings (sustainability, career stage) -- same never-fatal treatment as archetypes below.
+function groups() {
+  log("\n--- Player groups (optional) ---");
+  const r = spawnSync("Rscript", ["player_groups.R"], { cwd: MODEL, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
+  if (r.status !== 0) return log(`SKIPPED: player groups failed -- ${(r.stderr || "").trim().split("\n").slice(-3).join(" ")}`);
+  const p = spawnSync(process.execPath, ["--env-file=.env.local", "scripts/publish-player-groups.mjs"], { cwd: WEB, encoding: "utf8" });
+  const tail = ((p.stdout || "") + (p.stderr || "")).trim().split("\n").slice(-4).join("\n");
+  log(p.status === 0 ? tail : `SKIPPED: player groups publish failed (exit ${p.status}) -- ${tail}`);
 }
 
 // Player archetypes (role groups for RB/WR/TE). Deliberately NEVER fatal: the projections above are
