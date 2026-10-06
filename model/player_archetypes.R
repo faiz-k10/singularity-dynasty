@@ -28,28 +28,28 @@ ARCH_CONFIG <- list(
       rec_yd_share = a$receiving_yards / pmax(a$rushing_yards + a$receiving_yards, 1),
       target_per_touch = a$targets / pmax(a$carries + a$targets, 1),
       carries_pg = a$carries / a$games, targets_pg = a$targets / a$games),
-    eligible = function(a) (a$carries + a$targets) >= 40),
+    eligible = function(a, sc = 1) (a$carries + a$targets) >= 40 * sc),
   WR = list(
     sum_cols = c("targets", "receiving_yards", "receiving_air_yards", "receiving_yards_after_catch", "target_share_sum"),
     features = function(a) data.frame(
       targets_pg = a$targets / a$games, target_share = a$target_share_sum / a$games,
       adot = a$receiving_air_yards / pmax(a$targets, 1),
       yac_share = a$receiving_yards_after_catch / pmax(a$receiving_yards, 1)),
-    eligible = function(a) a$targets >= 25),
+    eligible = function(a, sc = 1) a$targets >= 25 * sc),
   TE = list(
     sum_cols = c("targets", "receiving_yards", "receiving_air_yards", "receiving_yards_after_catch", "target_share_sum"),
     features = function(a) data.frame(
       targets_pg = a$targets / a$games, target_share = a$target_share_sum / a$games,
       adot = a$receiving_air_yards / pmax(a$targets, 1),
       yac_share = a$receiving_yards_after_catch / pmax(a$receiving_yards, 1)),
-    eligible = function(a) a$targets >= 20),
+    eligible = function(a, sc = 1) a$targets >= 20 * sc),
   QB = list(
     sum_cols = c("attempts", "passing_yards", "passing_air_yards", "passing_yards_after_catch", "carries", "rushing_yards"),
     features = function(a) data.frame(
       attempts_pg = a$attempts / a$games, air_per_att = a$passing_air_yards / pmax(a$attempts, 1),
       carries_pg = a$carries / a$games, rush_yd_share = a$rushing_yards / pmax(a$rushing_yards + a$passing_yards, 1),
       yac_share = a$passing_yards_after_catch / pmax(a$passing_yards, 1)),
-    eligible = function(a) a$attempts >= 60)
+    eligible = function(a, sc = 1) a$attempts >= 60 * sc)
 )
 
 load_window <- function() {
@@ -59,17 +59,27 @@ load_window <- function() {
   s
 }
 
-# One row per player: summed counting stats + games, then the position's features.
-player_features <- function(s, pos, only_names = NULL, min_games = MIN_GAMES) {
+# One row per player: the position's features from his games. `half_life` (in games) weights recent
+# games more heavily -- a game `half_life` games back counts half as much as his latest -- so a real
+# role change shows up within a few games instead of being averaged away by two seasons of history.
+# NULL = every game counts equally. Eligibility (enough games and volume) is always judged on the raw,
+# unweighted totals; `vol_scale` loosens the volume threshold for short windows.
+player_features <- function(s, pos, only_names = NULL, min_games = MIN_GAMES, half_life = NULL, vol_scale = 1) {
   cfg <- ARCH_CONFIG[[pos]]
   x <- s[s$position == pos, ]
   if (!is.null(only_names)) x <- x[x$player_display_name %in% only_names, ]
   if (nrow(x) == 0) return(NULL)
+  x <- x[order(x$player_display_name, x$season, x$week), ]
+  # games back from the player's most recent game in this slice: 0 = latest
+  back <- ave(seq_len(nrow(x)), x$player_display_name, FUN = function(i) rev(seq_along(i)) - 1)
+  w <- if (is.null(half_life)) rep(1, nrow(x)) else 0.5^(back / half_life)
   cols <- intersect(cfg$sum_cols, names(x))
-  a <- aggregate(x[, cols, drop = FALSE], by = list(player = x$player_display_name), FUN = function(v) sum(v, na.rm = TRUE))
-  a$games <- as.vector(table(x$player_display_name)[a$player])
-  a <- a[a$games >= min_games & cfg$eligible(a), ]
-  if (nrow(a) == 0) return(NULL)
+  agg <- function(m) aggregate(m, by = list(player = x$player_display_name), FUN = function(v) sum(v, na.rm = TRUE))
+  raw <- agg(x[, cols, drop = FALSE]); raw$games <- as.vector(table(x$player_display_name)[raw$player])
+  wt <- agg(x[, cols, drop = FALSE] * w); wt$games <- agg(data.frame(w = w))$w   # effective number of games
+  keep <- raw$games >= min_games & cfg$eligible(raw, vol_scale)
+  if (!any(keep)) return(NULL)
+  a <- wt[keep, , drop = FALSE]
   f <- cfg$features(a); rownames(f) <- a$player; f
 }
 
@@ -131,6 +141,13 @@ analyze <- function() {
 # test (Lamar Jackson / Jalen Hurts did not land with the mobile QBs).
 ARCH_K <- c(RB = 4, WR = 4, TE = 3)
 
+# Recent games count more in the weekly assignment: a game this many games back counts half as much as
+# his latest. Chosen by backtest on 2025 (weeks 5-13): with equal weights only 12-36% of real role
+# changes showed up within 4 games; at 4, about 67-74% do, for a modest rise in week-to-week label flips
+# (RB 4.6%, TE 7%, WR 11.5% -- mostly players sitting on a group boundary; see `confidence`). The group
+# definitions themselves are still fitted on equal-weight, long-run profiles.
+ARCH_HALF_LIFE <- 4
+
 # Names are attached by rule from each group's average profile (never by cluster number), so a refit
 # can't swap two labels. Every position's rule must hand out each name exactly once.
 name_groups <- function(pos, cent) {
@@ -184,7 +201,7 @@ assign_weekly <- function() {
   s <- load_window(); rows <- list()
   for (pos in names(ARCHETYPE_MODEL)) {
     m <- ARCHETYPE_MODEL[[pos]]
-    f <- player_features(s, pos, sims$player_name[sims$position == pos])
+    f <- player_features(s, pos, sims$player_name[sims$position == pos], half_life = ARCH_HALF_LIFE)
     if (is.null(f)) next
     a <- assign_groups(f, m)
     rows[[pos]] <- data.frame(season = season, week = week, player_name = a$player, position = pos,
