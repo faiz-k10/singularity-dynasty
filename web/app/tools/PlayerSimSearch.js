@@ -216,12 +216,14 @@ function StatDetailRow({ row, colSpan, shapePeers, maxCeiling, lastWeek, simLate
               <div className="stat-panel-pace-top">
                 <div className="stat-panel-pace-info">
                   {pv.sleeperId && (
-                    <img
-                      className="stat-panel-pace-portrait"
-                      src={`https://sleepercdn.com/content/nfl/players/thumb/${pv.sleeperId}.jpg`}
-                      alt=""
-                      loading="lazy"
-                    />
+                    <div className="stat-panel-pace-portrait-slot">
+                      <img
+                        className="stat-panel-pace-portrait"
+                        src={`https://sleepercdn.com/content/nfl/players/thumb/${pv.sleeperId}.jpg`}
+                        alt=""
+                        loading="lazy"
+                      />
+                    </div>
                   )}
                   <div className="stat-panel-pace-header">
                     <span className="stat-panel-pace-name">{pv.player_name}</span>

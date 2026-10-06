@@ -2095,7 +2095,7 @@ a.export-csv-btn{text-decoration:none;}
    separate font-size overrides needed inside StatRadar.js itself. */
 .stat-detail-grid .stat-panel-radar{max-width:340px;}
 .stat-detail-grid .stat-panel-pace{padding:10px 8px;}
-.stat-detail-grid .stat-panel-pace-portrait{width:40px; height:40px;}
+.stat-detail-grid .stat-panel-pace-portrait-slot{min-height:40px;}
 .stat-detail-grid .pctile-card{margin-top:8px; padding-top:8px;}
 /* PercentileCard now lives in its own top-level panel (.stat-panel-
    percentile) instead of stacked under the stat table -- the divider
@@ -2172,7 +2172,11 @@ a.export-csv-btn{text-decoration:none;}
   flex:1; min-width:0; display:flex; flex-direction:column; justify-content:flex-start; align-items:center;
   text-align:center; gap:6px;
 }
-.stat-panel-pace-portrait{width:48px; height:48px; border-radius:50%; object-fit:cover; background:var(--void-panel-2);}
+/* The photo takes whatever height the column has left over, so the recent-games list ends up
+   against the week bar below it: the slot grows to fill the column (never below 48px), and the
+   photo is the largest circle that fits it (capped at 220px so a very tall panel doesn't balloon). */
+.stat-panel-pace-portrait-slot{flex:1 1 48px; min-height:48px; width:100%; min-width:0; container-type:size; display:flex; align-items:center; justify-content:center;}
+.stat-panel-pace-portrait{--pp:min(100cqw, 100cqh, 220px); width:var(--pp); height:var(--pp); flex:none; border-radius:50%; object-fit:cover; background:var(--void-panel-2);}
 /* Player identity, where "This season" used to sit -- name can wrap
    (long names, narrow season column) while the position badge stays on
    its own line beneath it rather than forcing the row wider. */
