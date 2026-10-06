@@ -1,13 +1,20 @@
-import { STAGE_TEXT } from "@/lib/archetypes";
+import { ARCHETYPE_BLURB, STAGE_TEXT } from "@/lib/archetypes";
 
 // The sentence under the tag pills in a player's panel: explains whichever tag is selected.
 export default function TagCaption({ row, kind }) {
   if (kind === "role") {
-    return row.archetypeNear ? (
-      <p className="role-block-near">
-        Close to <strong>{row.archetypeNear}</strong>{" "}&mdash; his role sits near the line between the two.
-      </p>
-    ) : null;
+    const blurb = ARCHETYPE_BLURB[row.archetype];
+    if (!blurb && !row.archetypeNear) return null;
+    return (
+      <>
+        {blurb && <p className="role-block-blurb">{blurb}</p>}
+        {row.archetypeNear && (
+          <p className="role-block-near">
+            Close to <strong>{row.archetypeNear}</strong>{" "}&mdash; his role sits near the line between the two.
+          </p>
+        )}
+      </>
+    );
   }
   if (kind === "sus") {
     const fp = row.susFp;
