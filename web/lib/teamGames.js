@@ -65,7 +65,8 @@ export function missedWeeks({ gamesByName, teamWeeks, lastGameWeek }, name) {
 // consecutive missed weeks merge into one segment so there is no hairline
 // seam between them.
 export function missedSegments(missed, selectedWeek, latestWeek) {
-  if (!Array.isArray(missed) || latestWeek < 2) return [];
+  // Week 1 is the starting point of the bar: nothing is filled yet.
+  if (!Array.isArray(missed) || latestWeek < 2 || selectedWeek <= 1) return [];
   const step = 100 / latestWeek;
   const filledTo = Math.min(100, selectedWeek * step);
   const out = [];

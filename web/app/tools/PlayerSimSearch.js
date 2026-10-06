@@ -89,8 +89,10 @@ function StatDetailRow({ row, colSpan, shapePeers, maxCeiling }) {
   // week's stretch and the fill runs up to it, so every week up to the selected
   // one is solid red (or gray if he missed it) and the handle marks its end.
   const progress = latestWeek > 1 ? (pv.week / latestWeek) * 100 : 100;
-  // Week 1's dot sits at the very start of the bar instead of the end of its stretch.
+  // Week 1 is the starting point: its dot sits at the very start of the bar and
+  // nothing is filled yet (Week 1's own stretch shows once a later week is selected).
   const handleAt = pv.week === 1 ? 0 : progress;
+  const fillTo = pv.week === 1 ? 0 : progress;
   function pickWeek(w) {
     if (weeks.length === 0) {
       pendingWeek.current = w; // applied as soon as the history arrives
@@ -350,7 +352,7 @@ function StatDetailRow({ row, colSpan, shapePeers, maxCeiling }) {
                     onKeyDown={onScrubKey}
                   >
                     <div className="stat-panel-pace-progress-track">
-                      <div className="stat-panel-pace-progress-fill" style={{ width: `${progress}%` }} />
+                      <div className="stat-panel-pace-progress-fill" style={{ width: `${fillTo}%` }} />
                       {/* Weeks his team played but he didn't read gray instead of red. */}
                       {missedSegments(row.missedWeeks, pv.week, latestWeek).map((seg) => (
                         <div

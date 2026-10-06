@@ -90,3 +90,10 @@ test("missedSegments: separate misses stay separate, no misses -> none", () => {
   assert.deepEqual(missedSegments(undefined, 4, 4), []);
   assert.deepEqual(missedSegments([2], 1, 1), []);
 });
+
+test("missedSegments: nothing is filled at Week 1 (the starting point); week 1's stretch appears once a later week is selected", () => {
+  assert.deepEqual(missedSegments([1, 2], 1, 4), []);
+  const segs = missedSegments([1], 2, 4);
+  assert.equal(segs.length, 1);
+  assert.ok(near(segs[0].start, 0) && near(segs[0].end, 25));
+});
