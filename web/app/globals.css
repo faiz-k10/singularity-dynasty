@@ -2130,7 +2130,7 @@ a.export-csv-btn{text-decoration:none;}
    own padding. Matches the grid's own column-2 track cap exactly (see
    .stat-detail-grid above) so there's no leftover space trapped inside
    the track beyond what the panel itself uses. */
-.stat-panel-table{grid-area:table; max-width:360px; display:flex; flex-direction:column; justify-content:flex-start;}
+.stat-panel-table{grid-area:table; max-width:360px; display:flex; flex-direction:column; justify-content:center;}
 /* max-width:520px -- matches the grid's own column-3 track cap, for the
    same reason .stat-panel-table's does: without it, this panel (no
    natural max-width of its own) just stretches to fill the whole track,
@@ -2839,6 +2839,8 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .pctile-card{margin-top:14px; padding-top:14px; border-top:1px dashed var(--line); white-space:normal;}
 .pctile-card-empty{color:var(--star-dim); font-size:12.5px; line-height:1.5;}
 .pctile-card-empty p{margin:0;}
+/* The empty-state hint sits in the middle of its panel (the panel is a flex column stretched to the row's height). */
+.stat-panel-percentile .pctile-card-empty{flex:1; display:flex; align-items:center; justify-content:center; text-align:center;}
 .pctile-card-head{display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin-bottom:10px;}
 .pctile-card-title{font-family:var(--font-space-grotesk); font-size:14px; font-weight:600; color:var(--star);}
 .pctile-card-sub{
