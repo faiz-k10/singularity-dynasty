@@ -225,7 +225,13 @@ function StatDetailRow({ row, colSpan, shapePeers, maxCeiling, lastWeek, simLate
                   )}
                   <div className="stat-panel-pace-header">
                     <span className="stat-panel-pace-name">{pv.player_name}</span>
-                    <span className="stat-panel-pace-pos mono">{pv.position}</span>
+                    <span className="stat-panel-pace-pos mono">
+                      <span>
+                        {pv.position}
+                        {pv.positionRank != null && <span className="pos-rank">{pv.positionRank}</span>}
+                      </span>
+                      <TeamBadge team={pv.team} />
+                    </span>
                   </div>
                   <div className="stat-panel-pace-actual">
                     <span className="stat-panel-pace-games">

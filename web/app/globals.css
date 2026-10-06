@@ -2178,7 +2178,8 @@ a.export-csv-btn{text-decoration:none;}
    its own line beneath it rather than forcing the row wider. */
 .stat-panel-pace-header{display:flex; flex-direction:column; align-items:center; gap:2px;}
 .stat-panel-pace-name{font-family:var(--font-space-grotesk); font-size:13.5px; font-weight:600; color:var(--star); line-height:1.25;}
-.stat-panel-pace-pos{font-size:10.5px; color:var(--star-dim); letter-spacing:0.03em;}
+.stat-panel-pace-pos{display:flex; align-items:center; justify-content:center; gap:6px; font-size:10.5px; color:var(--star-dim); letter-spacing:0.03em;}
+.stat-panel-pace-pos .pos-rank{font-size:inherit; margin-left:1px;}
 .stat-panel-pace-actual{font-family:var(--font-space-grotesk); font-size:20px; font-weight:700; color:var(--star); line-height:1.2;}
 .stat-panel-pace-games{display:block; font-family:var(--font-ibm-plex-mono), monospace; font-size:10.5px; font-weight:400; color:var(--star-dim); margin-bottom:2px;}
 .stat-panel-pace-delta{font-family:var(--font-ibm-plex-mono), monospace; font-size:13px; font-weight:600; word-break:break-word;}
