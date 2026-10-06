@@ -31,3 +31,21 @@ test("beyond the tails: slope extended but clamped to [1, 99]", () => {
   assert.equal(computeOutcomePercentile([1000 / 17], dist).percentile, 99);
   assert.equal(computeOutcomePercentile([1 / 17], dist).percentile, 1);
 });
+
+test("missed games pull the pace down when the team's games are known", () => {
+  // 32.4 points in 2 games, but his team has played 4: 32.4 / 4 * 17 = 137.7
+  const r = computeOutcomePercentile([17.7, 14.7], { ...dist, gamesElapsed: 4 });
+  assert.equal(Math.round(r.paceSeasonTotal * 10) / 10, 137.7);
+  assert.equal(r.gamesPlayed, 2);
+  // same games with no missed games is the plain per-game pace
+  const healthy = computeOutcomePercentile([17.7, 14.7], { ...dist, gamesElapsed: 2 });
+  assert.equal(Math.round(healthy.paceSeasonTotal * 10) / 10, 275.4);
+});
+
+test("gamesElapsed never goes below games played, and bad values fall back", () => {
+  const base = computeOutcomePercentile([10, 20], dist).paceSeasonTotal;
+  for (const bad of [undefined, null, 0, -3, NaN, "4"]) {
+    assert.equal(computeOutcomePercentile([10, 20], { ...dist, gamesElapsed: bad }).paceSeasonTotal, base);
+  }
+  assert.equal(computeOutcomePercentile([10, 20], { ...dist, gamesElapsed: 1 }).paceSeasonTotal, base);
+});

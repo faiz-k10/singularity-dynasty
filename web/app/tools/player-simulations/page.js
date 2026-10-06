@@ -11,6 +11,7 @@ import { computeOutcomePercentile } from "@/lib/outcomePercentile";
 import { getPlayerBiosByNamePos } from "@/lib/sleeper";
 import { normalizePlayerName } from "@/lib/portfolio";
 import { fetchAllRows } from "@/lib/fetchAllRows";
+import { indexGameLog, teamGamesThrough } from "@/lib/teamGames";
 import SiteHeader from "../../SiteHeader";
 import ExportCsvButton from "../ExportCsvButton";
 import PlayerSimSearch from "../PlayerSimSearch";
@@ -95,33 +96,39 @@ const getCachedWeekData = unstable_cache(
       fetchAllRows(
         publicSupabase,
         "player_game_log",
-        "player_name, season, week, opponent, is_home, fantasy_points_ppr",
+        "player_name, team, season, week, opponent, is_home, fantasy_points_ppr",
         (q) => q.eq("season", latest.season).order("week", { ascending: true })
       ),
     ]);
 
     const actualProductionByName = {};
-    const recentByName = {};
-    let lastGameWeek = 0;
     for (const row of actualRows || []) {
       (actualProductionByName[row.player_name] ??= []).push(row.actual_points);
     }
     // Only each player's latest three games ride on the page (the pace
     // panel's default view); earlier-week snapshots load on demand from
-    // /api/player-sim-history.
-    for (const g of logRows || []) {
-      (recentByName[g.player_name] ??= []).push({
-        season: g.season,
-        week: g.week,
-        opponent: g.opponent,
-        is_home: g.is_home,
-        fantasy_points_ppr: g.fantasy_points_ppr,
-      });
-      if (g.week > lastGameWeek) lastGameWeek = g.week;
+    // /api/player-sim-history. Games each player's TEAM has played (a bye is
+    // not a game) let pace count the games he missed -- lib/teamGames.js.
+    const gameIndex = indexGameLog(logRows);
+    const lastGameWeek = gameIndex.lastGameWeek;
+    const recentByName = {};
+    const teamGamesByName = {};
+    for (const [name, games] of Object.entries(gameIndex.gamesByName)) {
+      recentByName[name] = games
+        .slice(-3)
+        .reverse()
+        .map((g) => ({
+          season: g.season,
+          week: g.week,
+          opponent: g.opponent,
+          is_home: g.is_home,
+          fantasy_points_ppr: g.fantasy_points_ppr,
+        }));
+      const n = teamGamesThrough(gameIndex, name);
+      if (n != null) teamGamesByName[name] = n;
     }
-    for (const k of Object.keys(recentByName)) recentByName[k] = recentByName[k].slice(-3).reverse();
 
-    return { latest, rows: data || [], totalCount: count || 0, actualProductionByName, recentByName, lastGameWeek };
+    return { latest, rows: data || [], totalCount: count || 0, actualProductionByName, recentByName, lastGameWeek, teamGamesByName };
   },
   ["player-simulations-latest-week"],
   { revalidate: 60 }
@@ -156,7 +163,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
   // there's no real caching benefit to bundling it into the 60s payload,
   // and keeping it separate mirrors how redraft-rankings' own expanded
   // row already does this same lookup.
-  const [{ tier }, { latest, rows, totalCount: fetchedCount, actualProductionByName, recentByName, lastGameWeek }, bioByNamePos] =
+  const [{ tier }, { latest, rows, totalCount: fetchedCount, actualProductionByName, recentByName, lastGameWeek, teamGamesByName }, bioByNamePos] =
     await Promise.all([resolveTier(supabase), getCachedWeekData(), getPlayerBiosByNamePos()]);
   const hasFullAccess = PAID_TIERS.includes(tier);
 
@@ -253,6 +260,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
       median: row.median,
       ceiling: row.ceiling,
       gamesPerSeason: GAMES_PER_SEASON,
+      gamesElapsed: teamGamesByName?.[row.player_name],
     });
   }
   // Pace-panel snapshots, one per completed game week: "W3" = everything

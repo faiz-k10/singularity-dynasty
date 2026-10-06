@@ -5,6 +5,7 @@ import { buildStatPoolByPos, computeStatPercentiles } from "@/lib/statPercentile
 import { computeRegressionScore } from "@/lib/regressionScore";
 import { computeOutcomePercentile } from "@/lib/outcomePercentile";
 import { normalizePlayerName } from "@/lib/portfolio";
+import { indexGameLog, teamGamesThrough } from "@/lib/teamGames";
 
 const GAMES_PER_SEASON = 17;
 
@@ -54,7 +55,7 @@ const getGameRows = unstable_cache(
     return fetchAllRows(
       pub,
       "player_game_log",
-      "player_name, season, week, opponent, is_home, fantasy_points_ppr",
+      "player_name, team, season, week, opponent, is_home, fantasy_points_ppr",
       (q) => q.eq("season", season).order("week", { ascending: true })
     );
   },
@@ -73,12 +74,7 @@ export async function loadSimHistoryContext() {
   const rowByName = {};
   latestRows.forEach((r) => (rowByName[r.player_name] = r));
 
-  const gamesByName = {};
-  let lastGameWeek = 0;
-  for (const g of gameRows) {
-    (gamesByName[g.player_name] ??= []).push(g);
-    if (g.week > lastGameWeek) lastGameWeek = g.week;
-  }
+  const { gamesByName, teamWeeks, lastGameWeek } = indexGameLog(gameRows);
 
   // Each sim week's full pool, ranked against itself for stat percentiles.
   const poolByWeek = { [latest.week]: latestRows };
@@ -96,7 +92,7 @@ export async function loadSimHistoryContext() {
   const historyByName = {};
   for (const h of historyRows) (historyByName[h.player_name] ??= {})[h.week] = h;
 
-  return { latest, latestRows, rowByName, gamesByName, lastGameWeek, poolByWeek, percByWeek, historyByName };
+  return { latest, latestRows, rowByName, gamesByName, teamWeeks, lastGameWeek, poolByWeek, percByWeek, historyByName };
 }
 
 // "W3" = every game through week 3 and the projection as it stood after
@@ -119,6 +115,7 @@ export function buildSnapshots(ctx, name) {
       median: proj.median,
       ceiling: proj.ceiling,
       gamesPerSeason: GAMES_PER_SEASON,
+      gamesElapsed: teamGamesThrough(ctx, name, w),
     });
     const perc = ctx.percByWeek[simWeek]?.[name];
     out.push({
