@@ -50,13 +50,24 @@ function StatDetailRow({ row, colSpan, shapePeers, maxCeiling }) {
   // null = the latest published week; otherwise a snapshot's week.
   const [snapWeek, setSnapWeek] = useState(null);
   const [snaps, setSnaps] = useState([]);
+  const pendingWeek = useRef(null);
   const [peersByWeek, setPeersByWeek] = useState(null);
   // Earlier-week snapshots are fetched when the row opens (the page itself
   // only ships the latest week); the earlier-week comp pools wait until
   // the first rewind.
   useEffect(() => {
     let live = true;
-    loadSnapshots(row.player_name).then((x) => live && setSnaps(x));
+    loadSnapshots(row.player_name).then((x) => {
+      if (!live) return;
+      setSnaps(x);
+      const w = pendingWeek.current;
+      if (w != null && x.length > 0) {
+        pendingWeek.current = null;
+        const ws = x.map((y) => y.week);
+        const nearest = ws.reduce((best, v) => (Math.abs(v - w) < Math.abs(best - w) ? v : best), ws[0]);
+        setSnapWeek(nearest === ws[ws.length - 1] ? null : nearest);
+      }
+    });
     return () => {
       live = false;
     };
@@ -76,7 +87,10 @@ function StatDetailRow({ row, colSpan, shapePeers, maxCeiling }) {
   // Track runs W1 (left end) to the latest week (right end).
   const progress = latestWeek > 1 ? ((pv.week - 1) / (latestWeek - 1)) * 100 : 100;
   function pickWeek(w) {
-    if (weeks.length === 0) return;
+    if (weeks.length === 0) {
+      pendingWeek.current = w; // applied as soon as the history arrives
+      return;
+    }
     const nearest = weeks.reduce((best, x) => (Math.abs(x - w) < Math.abs(best - w) ? x : best), weeks[0]);
     setSnapWeek(nearest === weeks[weeks.length - 1] ? null : nearest);
   }
@@ -311,6 +325,8 @@ function StatDetailRow({ row, colSpan, shapePeers, maxCeiling }) {
                     role="slider"
                     tabIndex={0}
                     aria-label="Rewind to an earlier week"
+                    title="Drag to see this player as of an earlier week"
+                    data-loading={snaps.length === 0 ? "true" : undefined}
                     aria-valuemin={weeks[0] ?? 1}
                     aria-valuemax={latestWeek}
                     aria-valuenow={pv.week}
@@ -767,6 +783,8 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                   data-pos={row.position}
                   className={hasStats ? "row-expandable" : undefined}
                   onClick={hasStats ? () => toggleExpanded(row.player_name) : undefined}
+                  onPointerEnter={hasStats && row.lastWeek > 1 ? () => loadSnapshots(row.player_name) : undefined}
+                  onFocus={hasStats && row.lastWeek > 1 ? () => loadSnapshots(row.player_name) : undefined}
                   role={hasStats ? "button" : undefined}
                   tabIndex={hasStats ? 0 : undefined}
                   aria-expanded={hasStats ? isExpanded : undefined}
