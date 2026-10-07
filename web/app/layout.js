@@ -60,13 +60,7 @@ export default function RootLayout({ children }) {
                 document.documentElement.setAttribute('data-theme', stored);
               }
             } catch (e) {}
-            try {
-              var g = parseInt(localStorage.getItem('glass'), 10);
-              if (!isNaN(g)) {
-                g = Math.min(100, Math.max(0, g));
-                document.documentElement.style.setProperty('--glass-alpha', (0.2 + 0.006 * g).toFixed(3));
-              }
-            } catch (e) {}
+
           `}
         </Script>
         {/* Browsers auto-restore the previous scroll position on reload by
