@@ -3,6 +3,7 @@
 import { Fragment, memo, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import SortableTh from "./SortableTh";
+import { MyPlayersFilter, MyBadge, MyStrip, useMyView } from "./MyPlayers";
 import TeamBadge from "./TeamBadge";
 import STAT_LABELS from "./statLabels";
 import StatRadar from "./StatRadar";
@@ -51,7 +52,7 @@ function loadPeers() {
 // A player's label for one tag kind: "role" (archetype), "sus" (sustainability) or "stage" (career stage).
 const tagLabel = (row, kind) => (kind === "role" ? row.archetype : row[kind]);
 
-function StatDetailRow({ row, colSpan, shapePeers, tagsByName, maxCeiling, lastWeek, simLatestWeek, onGoToPlayer }) {
+function StatDetailRow({ row, colSpan, shapePeers, tagsByName, maxCeiling, lastWeek, simLatestWeek, onGoToPlayer, owned }) {
   // Week scrubber state (see the bar at the bottom of the pace panel):
   // null = the latest published week; otherwise a snapshot's week.
   // Which tag (role / sustainability / career stage) is selected: it sets the caption under the pills
@@ -210,6 +211,11 @@ function StatDetailRow({ row, colSpan, shapePeers, tagsByName, maxCeiling, lastW
   return (
     <tr className="stat-detail-row">
       <td colSpan={colSpan}>
+        {owned && (
+          <div className="stat-detail-mine">
+            <MyStrip owned={owned} />
+          </div>
+        )}
         <div className="stat-detail-grid">
           {/* Actual points scored so far this season + vs Pace, spelled
               out in the same units and color language (--up/--down) as
@@ -567,6 +573,7 @@ const PlayerRow = memo(function PlayerRow({
   simLatestWeek,
   onToggle,
   onGoToPlayer,
+  owned,
 }) {
   const hasStats = row.stat_ranges && Object.keys(row.stat_ranges).length > 0;
   const isExpanded = hasStats && expandedFlag;
@@ -601,7 +608,10 @@ const PlayerRow = memo(function PlayerRow({
         }
       >
         <td className="mono">{row.rank}</td>
-        <td className="player-cell">{row.player_name}</td>
+        <td className="player-cell">
+          <MyBadge owned={owned} />
+          {row.player_name}
+        </td>
         <td className="mono align-left">
           {row.position}
           {row.positionRank != null && <span className="pos-rank">{row.positionRank}</span>}
@@ -666,6 +676,7 @@ const PlayerRow = memo(function PlayerRow({
           lastWeek={lastWeek}
           simLatestWeek={simLatestWeek}
           onGoToPlayer={onGoToPlayer}
+          owned={owned}
         />
       )}
     </Fragment>
@@ -675,10 +686,11 @@ const PlayerRow = memo(function PlayerRow({
 // Same pattern as RankingsSearch (Redraft) / BestBallSearch: position-pill
 // filter + player name search, both client-side. Sorting stays
 // server-driven via the existing URL-param mechanism.
-export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams, positions, maxCeiling, lastWeek, simLatestWeek, leagueTeams, superflex, header }) {
+export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams, positions, maxCeiling, lastWeek, simLatestWeek, leagueTeams, superflex, header, mine, gated }) {
   const showPositionFilter = Array.isArray(positions) && positions.length > 0;
   const [selected, setSelected] = useState(positions || []);
   const [query, setQuery] = useState("");
+  const myView = useMyView(mine, rows);
   const [expanded, setExpanded] = useState(() => new Set()); // player_names currently unfolded
   // Each filter row's LABEL always shows (plus its current value, so
   // it's legible at a glance) -- only the actual toggle buttons underneath
@@ -773,12 +785,15 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
     if (showPositionFilter) {
       out = out.filter((row) => selected.includes(row.position));
     }
+    if (myView.on) {
+      out = out.filter((row) => myView.ownedByName.has(row.player_name));
+    }
     const q = deferredQuery.trim().toLowerCase();
     if (q) {
       out = out.filter((row) => row.player_name.toLowerCase().includes(q));
     }
     return out;
-  }, [rows, selected, deferredQuery, showPositionFilter]);
+  }, [rows, selected, deferredQuery, showPositionFilter, myView.on, myView.ownedByName]);
 
   const displayRows = filteredRows;
 
@@ -960,6 +975,7 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
           </span>
         )}
       </div>
+      <MyPlayersFilter mine={mine} view={myView} gated={gated} />
       </div>
       </div>
 
@@ -1053,7 +1069,15 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
               {displayRows.length === 0 && (
                 <tr className="player-empty-row">
                   <td colSpan={11}>
-                    <span>{query ? `No players match \u201c${query}\u201d.` : "No players match these filters."}</span>
+                    <span>
+                      {query
+                        ? `No players match \u201c${query}\u201d.`
+                        : myView.on
+                          ? gated
+                            ? "None of your players are in the free view \u2014 the full table unlocks with Singularity."
+                            : "None of your players are in this table."
+                          : "No players match these filters."}
+                    </span>
                     {query && (
                       <button type="button" className="player-empty-clear" onClick={() => setQuery("")}>
                         Clear search
@@ -1074,6 +1098,7 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                   simLatestWeek={simLatestWeek}
                   onToggle={toggleExpanded}
                   onGoToPlayer={stableGoToPlayer}
+                  owned={myView.ownedByName.get(row.player_name)}
                 />
               ))}
             </tbody>

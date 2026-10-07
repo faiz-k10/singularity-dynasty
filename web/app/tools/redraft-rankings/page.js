@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { unstable_cache } from "next/cache";
 import { resolveTier } from "@/lib/tier";
+import { loadMyPlayers } from "@/lib/myPlayers";
 import { createClient } from "@/lib/supabase/server";
 import { createPublicClient } from "@/lib/supabase/public";
 import { fetchAllRows } from "@/lib/fetchAllRows";
@@ -376,8 +377,9 @@ export default async function RedraftRankingsPage({ searchParams }) {
   // Tier (auth + profile) is per-visitor, the cached bundle and the Sleeper
   // bios aren't -- all three run at once.
   const supabase = await createClient();
-  const [{ tier }, cached, bioByNamePos] = await Promise.all([
-    resolveTier(supabase),
+  const [{ tier, mine }, cached, bioByNamePos] = await Promise.all([
+    // Per-visitor like the tier: their saved teams (own rows only) for the My players view.
+    resolveTier(supabase).then(async (r) => ({ ...r, mine: await loadMyPlayers(supabase, r.user) })),
     getCachedRedraftData(),
     getPlayerBiosByNamePos(),
   ]);
@@ -490,6 +492,8 @@ export default async function RedraftRankingsPage({ searchParams }) {
               currentParams={params}
               positions={positions}
               maxSpread={maxSpread}
+              mine={mine}
+              gated={isTeaser}
               header={
                 <>
                   <div className="eyebrow">

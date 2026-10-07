@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { unstable_cache } from "next/cache";
 import { resolveTier } from "@/lib/tier";
+import { loadMyPlayers } from "@/lib/myPlayers";
 import { createClient } from "@/lib/supabase/server";
 import { createPublicClient } from "@/lib/supabase/public";
 import { resolveSort, sortRows } from "@/lib/sortLink";
@@ -217,8 +218,14 @@ export default async function PlayerSimulationsPage({ searchParams }) {
   // there's no real caching benefit to bundling it into the 60s payload,
   // and keeping it separate mirrors how redraft-rankings' own expanded
   // row already does this same lookup.
-  const [{ tier }, { latest, rows, totalCount: fetchedCount, actualProductionByName, recentByName, lastGameWeek, teamGamesByName, missedWeeksByName, archetypeByName, groupsByName }, bioByNamePos] =
-    await Promise.all([resolveTier(supabase), getCachedWeekData(), getPlayerBiosByNamePos()]);
+  const [{ tier, mine }, { latest, rows, totalCount: fetchedCount, actualProductionByName, recentByName, lastGameWeek, teamGamesByName, missedWeeksByName, archetypeByName, groupsByName }, bioByNamePos] =
+    await Promise.all([
+      // Who the viewer is and what teams they've saved (their own rows only) -- per-visitor,
+      // so it sits outside the cached week data, in parallel with it.
+      resolveTier(supabase).then(async (r) => ({ ...r, mine: await loadMyPlayers(supabase, r.user) })),
+      getCachedWeekData(),
+      getPlayerBiosByNamePos(),
+    ]);
   const hasFullAccess = PAID_TIERS.includes(tier);
 
   let sims = [];
@@ -384,6 +391,8 @@ export default async function PlayerSimulationsPage({ searchParams }) {
               simLatestWeek={latest.week}
               leagueTeams={leagueTeams}
               superflex={superflex}
+              mine={mine}
+              gated={isTeaser}
               header={
                 <>
                   <div className="eyebrow">

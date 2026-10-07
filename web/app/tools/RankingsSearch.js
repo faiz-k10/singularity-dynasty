@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import RankingsTable from "./RankingsTable";
+import { MyPlayersFilter, useMyView } from "./MyPlayers";
 
 // Search box + combined table, optionally filtered to a subset of
 // positions (any combination of QB/RB/WR/TE). Sorting stays server-driven
@@ -23,21 +24,27 @@ export default function RankingsSearch({
   maxSpread,
   header, // optional -- when set, wraps header (left) + rightExtra/search (right) in the same
   rightExtra, // top-right split layout Player Sims uses, rendered above the search box
+  mine, // the viewer's saved teams (lib/myPlayers.js) -- adds the My players view
+  gated, // true when the viewer only sees a teaser slice of the table
 }) {
   const showPositionFilter = Array.isArray(positions) && positions.length > 0;
   const [query, setQuery] = useState("");
+  const myView = useMyView(mine, rows);
 
   const filteredRows = useMemo(() => {
     let out = rows;
     if (showPositionFilter) {
       out = out.filter((row) => selected.includes(row.position));
     }
+    if (myView.on) {
+      out = out.filter((row) => myView.ownedByName.has(row.player_name));
+    }
     const q = query.trim().toLowerCase();
     if (q) {
       out = out.filter((row) => row.player_name.toLowerCase().includes(q));
     }
     return out;
-  }, [rows, selected, query, showPositionFilter]);
+  }, [rows, selected, query, showPositionFilter, myView.on, myView.ownedByName]);
 
   const searchRow = (
     <div className="player-search-row">
@@ -56,6 +63,7 @@ export default function RankingsSearch({
       )}
     </div>
   );
+  const myFilter = <MyPlayersFilter mine={mine} view={myView} gated={gated} />;
 
   return (
     <>
@@ -65,10 +73,14 @@ export default function RankingsSearch({
           <div className="tool-header-right">
             {rightExtra}
             {searchRow}
+            {myFilter}
           </div>
         </div>
       ) : (
-        searchRow
+        <>
+          {searchRow}
+          {myFilter}
+        </>
       )}
 
       {showPositionFilter && selected.length === 0 ? (
@@ -93,6 +105,9 @@ export default function RankingsSearch({
           positions={positions}
           selectedPositions={selected}
           onTogglePosition={onTogglePosition}
+          ownedByName={myView.ownedByName}
+          myViewOn={myView.on}
+          gated={gated}
         />
       )}
     </>

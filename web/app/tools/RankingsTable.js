@@ -7,6 +7,7 @@ import TrendTag from "./TrendTag";
 import TeamBadge from "./TeamBadge";
 import OutcomeCurve from "./OutcomeCurve";
 import WeeklyDetailRow from "./WeeklyDetailRow";
+import { MyBadge } from "./MyPlayers";
 import { matchupTint } from "./MatchupBadge";
 import { STAT_COLUMNS } from "./statColumns";
 import { getAchievements } from "./achievements";
@@ -66,12 +67,18 @@ function formatStat(value) {
 // shared (AchievementDots.js) -- every other tool page showing these
 // same badges reuses it too.
 
-function PlayerCell({ row, withPopover }) {
+function PlayerCell({ row, withPopover, owned }) {
   if (!withPopover) {
-    return <td className="player-cell">{row.player_name}</td>;
+    return (
+      <td className="player-cell">
+        <MyBadge owned={owned} />
+        {row.player_name}
+      </td>
+    );
   }
   return (
     <td className="player-cell">
+      <MyBadge owned={owned} />
       <span className="player-hover" tabIndex={0}>
         {row.player_name}
         <div className="player-popover">
@@ -131,6 +138,9 @@ export default function RankingsTable({
   positions,
   selectedPositions,
   onTogglePosition,
+  ownedByName, // Map of player_name -> where he sits on the viewer's saved teams (MyPlayers.js)
+  myViewOn,
+  gated,
 }) {
   const showTheaterPositionFilter = Array.isArray(positions) && positions.length > 0 && onTogglePosition;
   const sortProps = { activeSort: sortKey, activeDir: sortDir, currentParams, sortParam, dirParam };
@@ -376,7 +386,7 @@ export default function RankingsTable({
                     <AchievementDots achievements={achievements} vertical />
                     {row.displayRank}
                   </td>
-                  <PlayerCell row={row} withPopover={popoverOnName} />
+                  <PlayerCell row={row} withPopover={popoverOnName} owned={ownedByName?.get(row.player_name)} />
                   {showPosition && (
                     <td className="mono align-left">
                       {row.position}
@@ -441,10 +451,19 @@ export default function RankingsTable({
                     ))}
                   {showNotes && <td className="tool-notes">{row.notes || ""}</td>}
                 </tr>
-                {isExpanded && <WeeklyDetailRow row={row} colSpan={colCount} maxSpread={maxSpread} />}
+                {isExpanded && <WeeklyDetailRow row={row} colSpan={colCount} maxSpread={maxSpread} owned={ownedByName?.get(row.player_name)} />}
               </Fragment>
             );
           })}
+          {displayRows.length === 0 && myViewOn && (
+            <tr>
+              <td colSpan={colCount} className="rankings-table-empty">
+                {gated
+                  ? "None of your players are in the free view \u2014 the full list unlocks with Explorer."
+                  : "None of your players are in this list."}
+              </td>
+            </tr>
+          )}
           {displayRows.length === 0 && selectedBadgeIds.size > 0 && (
             <tr>
               <td colSpan={colCount} className="rankings-table-empty">
