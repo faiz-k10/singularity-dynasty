@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createPublicClient } from "@/lib/supabase/public";
 import { fetchAllRows } from "@/lib/fetchAllRows";
 import ThemeToggle from "./ThemeToggle";
+import GlassControl from "./GlassControl";
 import InteractiveScript from "./InteractiveScript";
 import NavStars from "./NavStars";
 import { getAchievements } from "./tools/achievements";
@@ -174,6 +175,7 @@ export default async function SiteHeader() {
       </div>
 
       <ThemeToggle />
+      <GlassControl />
       <button
         className="menu-btn"
         id="menuBtn"
