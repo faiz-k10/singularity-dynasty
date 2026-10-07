@@ -6,16 +6,11 @@
 //   { signedIn, teams: ["League A", ...], byName: { "josh allen": [[teamIndex, isStarter 0|1], ...] } }
 import { normalizePlayerName } from "./portfolio.js";
 
-export async function loadMyPlayers(supabase, user) {
-  if (!user) return { signedIn: false, teams: [], byName: {} };
-  const { data } = await supabase
-    .from("saved_teams")
-    .select("team_name, league_name, players")
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: true });
+// Same lookup from saved-team rows already in hand (the My Team page has them).
+export function mineFromTeams(rows) {
   const teams = [];
   const byName = {};
-  (data || []).forEach((t, i) => {
+  (rows || []).forEach((t, i) => {
     teams.push(t.league_name || t.team_name || `Team ${i + 1}`);
     for (const p of t.players || []) {
       if (!p?.name) continue;
@@ -24,6 +19,16 @@ export async function loadMyPlayers(supabase, user) {
     }
   });
   return { signedIn: true, teams, byName };
+}
+
+export async function loadMyPlayers(supabase, user) {
+  if (!user) return { signedIn: false, teams: [], byName: {} };
+  const { data } = await supabase
+    .from("saved_teams")
+    .select("team_name, league_name, players")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: true });
+  return mineFromTeams(data);
 }
 
 // Where a player sits on the user's teams: null when he is on none (of the chosen league),

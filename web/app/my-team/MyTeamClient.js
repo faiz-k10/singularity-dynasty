@@ -7,6 +7,7 @@ import TeamBadge from "../tools/TeamBadge";
 import LeagueDashboard, { summarizeLeagues } from "./LeagueDashboard";
 import RosterNews from "./RosterNews";
 import PanelBoard, { StaticPanel } from "./PanelBoard";
+import MyWeekFeed from "./MyWeekFeed";
 import PositionBadge from "../tools/PositionBadge";
 import AchievementDots from "../tools/AchievementDots";
 import { sortRows, sortArrow } from "@/lib/sortLink";
@@ -1056,6 +1057,7 @@ export default function MyTeamClient({
   playerBios = {},
   overview = null,
   exposure = null,
+  feed = null,
   heading = "My Team",
 }) {
   // Saved teams are DB snapshots from whenever they were last saved, so
@@ -1505,6 +1507,12 @@ export default function MyTeamClient({
 
   const panels = [
     overview && { id: "overview", title: "Overview", node: overview, defaultOpen: false },
+    {
+      id: "week",
+      title: "Your Players This Week",
+      sub: feed?.ready && feed.week != null ? `Week ${feed.week} vs ${feed.prevWeek}` : null,
+      node: <MyWeekFeed feed={feed} />,
+    },
     { id: "teams", title: "Saved Teams", node: teamsNode, sub: teamsSub, actions: teamsActions || null },
     exposure && { id: "exposure", title: "Player Exposure", node: exposure },
     hasSaved && {
@@ -1554,7 +1562,7 @@ export default function MyTeamClient({
 
   // Normal page: overview on top, then a main column of static panels with
   // the Player Exposure list pinned in a right-hand column.
-  const staticIds = new Set(["teams", "news", "portfolio", "lookup"]);
+  const staticIds = new Set(["week", "teams", "news", "portfolio", "lookup"]);
   const staticPanels = panels.filter((p) => staticIds.has(p.id));
 
   return (

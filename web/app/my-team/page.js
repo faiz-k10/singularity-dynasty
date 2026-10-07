@@ -8,6 +8,9 @@ import { loadInsight, loadTeamInsightForAll, computeAndSaveInsight } from "@/lib
 import PortfolioOverview from "./PortfolioOverview";
 import ExposureSidebar from "./ExposureSidebar";
 import MyTeamClient from "./MyTeamClient";
+import { mineFromTeams } from "@/lib/myPlayers";
+import { buildFeed } from "@/lib/myFeed";
+import { loadFeedInputs } from "@/lib/myFeedData";
 
 export const metadata = {
   title: "My Team — Singularity Dynasty",
@@ -36,6 +39,9 @@ export default async function MyTeamPage() {
       .order("created_at", { ascending: true });
     savedTeams = data || [];
   }
+
+  // "Your players this week": the public two-week inputs load in parallel with everything below.
+  const feedInputs = user && savedTeams.length ? loadFeedInputs().catch(() => null) : null;
 
   // GM Archetype (user-scoped) + per-team season-record badges
   // (team-scoped) -- see lib/insights/. Merging the record tier straight
@@ -182,6 +188,31 @@ export default async function MyTeamPage() {
     }
   }
 
+  // What moved for the players on these teams since the previous published week (lib/myFeed.js).
+  let feed = null;
+  if (feedInputs) {
+    try {
+      const inp = await feedInputs;
+      if (inp) {
+        const mine = mineFromTeams(savedTeams);
+        const pair = (x) => (x ? { cur: x.cur, prev: x.prev } : undefined);
+        const args = { sims: pair(inp.sims), ranks: pair(inp.ranks), roles: pair(inp.roles), groups: pair(inp.groups) };
+        const simPrevWeek = inp.sims?.prevWeek ?? null;
+        const ready = [inp.sims, inp.ranks, inp.roles, inp.groups].some((x) => x && x.prevWeek != null);
+        feed = {
+          ready,
+          week: inp.sims?.week ?? inp.ranks?.week ?? null,
+          prevWeek: inp.sims?.prevWeek ?? inp.ranks?.prevWeek ?? null,
+          teams: mine.teams,
+          all: buildFeed({ mine, ...args, simPrevWeek }),
+          byTeam: mine.teams.map((_, i) => buildFeed({ mine, ...args, teamIndex: i, simPrevWeek })),
+        };
+      }
+    } catch (e) {
+      console.error("[my-team] weekly feed failed:", e?.message || e);
+    }
+  }
+
   // Heading follows the Sleeper account the saved teams were imported from.
   const sleeperName = savedTeams.find((t) => t.platform_username)?.platform_username || null;
 
@@ -199,6 +230,7 @@ export default async function MyTeamPage() {
           playerSims={playerSims}
           playerGameLogs={playerGameLogs}
           playerBios={playerBios}
+          feed={feed}
           overview={user ? <PortfolioOverview archetype={archetypeResult} summary={portfolioSummary} /> : null}
           exposure={
             exposureRows.length > 0 ? (
