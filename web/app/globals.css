@@ -2781,6 +2781,11 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .tag-btn[aria-pressed="true"]{opacity:1; background:color-mix(in srgb, var(--tone) 26%, transparent); box-shadow:0 0 0 1px var(--tone);}
 .tag-btn:focus-visible{outline:2px solid var(--tone); outline-offset:2px;}
 .role-block-tags{display:flex; flex-wrap:wrap; justify-content:center; gap:6px;}
+/* Desktop/tablet: the three tags share one line (a touch smaller); a phone's narrow panel still wraps. */
+@media (min-width:641px){
+  .role-block-tags{flex-wrap:nowrap; gap:5px;}
+  .role-block-tags .archetype-pill{font-size:10px; padding:3px 8px; white-space:nowrap; min-width:0; flex:0 1 auto; overflow:hidden; text-overflow:ellipsis;}
+}
 .archetype-pill-compact{grid-column:1; grid-row:1; justify-self:start; align-self:center; padding:2px 8px; font-size:9.5px; line-height:1.3; letter-spacing:0; white-space:nowrap;}
 .role-block{text-align:center; margin-bottom:14px; padding-bottom:12px; border-bottom:1px dashed var(--line);}
 .role-block-caption{font-size:9.5px; letter-spacing:0.08em; text-transform:uppercase; color:var(--star-dim); margin-bottom:6px;}
