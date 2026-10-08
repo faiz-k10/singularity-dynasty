@@ -661,15 +661,17 @@ const PlayerRow = memo(function PlayerRow({
             : "—"}
         </td>
         <td className="mono align-left">{row.outcomePercentile != null ? ordinal(row.outcomePercentile) : "—"}</td>
-        <td className={`mono por-cell ${row.por >= 0 ? "por-positive" : "por-negative"}`}>
-          {row.por >= 0 ? "+" : ""}
-          {row.por.toFixed(1)}
-        </td>
+        {SHOW_POR && (
+          <td className={`mono por-cell ${row.por >= 0 ? "por-positive" : "por-negative"}`}>
+            {row.por >= 0 ? "+" : ""}
+            {row.por.toFixed(1)}
+          </td>
+        )}
       </tr>
       {isExpanded && (
         <StatDetailRow
           row={row}
-          colSpan={11}
+          colSpan={COLS}
           shapePeers={shapePeers}
           tagsByName={tagsByName}
           maxCeiling={maxCeiling}
@@ -682,6 +684,12 @@ const PlayerRow = memo(function PlayerRow({
     </Fragment>
   );
 });
+
+// POR (points over replacement) and the League Size / QB Format toggles that only exist to set its
+// baseline are hidden: once games are being played the season totals already carry the story and
+// POR adds nothing. The computation and the column are kept behind this switch, not deleted.
+const SHOW_POR = false;
+const COLS = SHOW_POR ? 11 : 10;
 
 // Same pattern as RankingsSearch (Redraft) / BestBallSearch: position-pill
 // filter + player name search, both client-side. Sorting stays
@@ -895,6 +903,8 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
           </div>
         )}
 
+        {SHOW_POR && (
+          <>
         <div className="filter-row">
           <button
             type="button"
@@ -958,6 +968,8 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
             </div>
           )}
         </div>
+          </>
+        )}
       </div>
 
       <div className="player-search-row">
@@ -1057,18 +1069,20 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                   sortKey="outcomePercentile"
                   {...sortProps}
                 />
-                <SortableTh
-                  label="POR"
-                  sortKey="por"
-                  title={`Points over Replacement — composite floor/median/ceiling score vs. the replacement-level baseline at this position (${leagueTeams}-team, ${superflex ? "Superflex" : "1QB"})`}
-                  {...sortProps}
-                />
+                {SHOW_POR && (
+                  <SortableTh
+                    label="POR"
+                    sortKey="por"
+                    title={`Points over Replacement — composite floor/median/ceiling score vs. the replacement-level baseline at this position (${leagueTeams}-team, ${superflex ? "Superflex" : "1QB"})`}
+                    {...sortProps}
+                  />
+                )}
               </tr>
             </thead>
             <tbody>
               {displayRows.length === 0 && (
                 <tr className="player-empty-row">
-                  <td colSpan={11}>
+                  <td colSpan={COLS}>
                     <span>
                       {query
                         ? `No players match \u201c${query}\u201d.`
