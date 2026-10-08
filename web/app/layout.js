@@ -2,6 +2,7 @@ import { Space_Grotesk, Inter, IBM_Plex_Mono } from "next/font/google";
 import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
+import Tooltip from "./Tooltip";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
@@ -80,6 +81,7 @@ export default function RootLayout({ children }) {
       </head>
       <body>
         {children}
+        <Tooltip />
         <Analytics />
       </body>
     </html>
