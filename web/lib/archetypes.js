@@ -1,32 +1,34 @@
 // Player archetypes (role groups for RB/WR/TE) as the site displays them. The groups, and which
 // player lands where, come from model/player_archetypes.R (table `player_archetypes`); this file
-// only holds the wording shown next to a group. The numbers in each blurb are the group's average
-// profile from the frozen fit in model/archetype_model.R -- if that model is ever refit, re-check them.
+// only holds the wording shown next to a group. The blurbs are deliberately number-free (the stat
+// table has the numbers); they describe each group's profile from the frozen fit in
+// model/archetype_model.R -- if that model is ever refit, re-read them against the new groups.
 
 // Below this confidence a player sits on the boundary with his runner-up group, so the panel says so
 // instead of presenting the label as clear-cut.
 export const ARCHETYPE_NEAR_CONFIDENCE = 0.15;
 
 export const ARCHETYPE_BLURB = {
+  // Purely descriptive on purpose: no workload numbers (the stat table beside it has those).
   // RB
-  "Dual-Threat Workhorse": "An every-down back who does it all: about 16 carries and 5-6 targets a game.",
-  "Lead Back": "The primary rusher: about 14 carries and 3 targets a game, with a modest receiving share.",
-  "Rotational Rusher": "Shares the backfield: about 7 carries and 1 target a game, mostly early-down rushing.",
-  "Receiving Back": "A pass-catching specialist: few carries, with about half his yards coming through the air.",
+  "Dual-Threat Workhorse": "An every-down back who does it all: a heavy carry load and a real role in the passing game.",
+  "Lead Back": "The primary rusher in his backfield, with a modest role as a receiver.",
+  "Rotational Rusher": "Shares the backfield, mostly early-down rushing with little work in the passing game.",
+  "Receiving Back": "A pass-catching specialist: few carries, with much of his production coming through the air.",
   // WR
-  "Target Alpha": "The offense's top target: about 8 targets a game and over a quarter of his team's targets.",
-  "Outside Starter": "A starting perimeter receiver: about 5 targets a game, working downfield.",
-  "Slot / YAC Receiver": "A short-area receiver: shorter routes, with over half his yards coming after the catch.",
-  "Deep-Threat Depth": "A low-volume downfield option: about 3 targets a game, each travelling far.",
+  "Target Alpha": "The offense's top target, drawing a large share of his team's looks.",
+  "Outside Starter": "A starting perimeter receiver, working downfield.",
+  "Slot / YAC Receiver": "A short-area receiver: shorter routes, with much of his yardage coming after the catch.",
+  "Deep-Threat Depth": "A low-volume downfield option: few targets, each travelling far.",
   // QB
-  "Dual-Threat QB": "A mobile quarterback who adds real rushing production: about 6 carries and 35 rushing yards a game.",
-  "Downfield Passer": "A pocket passer who attacks downfield: about 8.6 air yards per attempt, with little rushing.",
-  "Balanced Starter": "A pass-first starter with some mobility: about 32 attempts and 4 carries a game.",
-  "Pocket Distributor": "A high-volume passer working short to intermediate: about 33 attempts a game, rarely running.",
+  "Dual-Threat QB": "A mobile quarterback who adds real rushing production on top of his passing.",
+  "Downfield Passer": "A pocket passer who attacks downfield, with little rushing.",
+  "Balanced Starter": "A pass-first starter with some mobility.",
+  "Pocket Distributor": "A high-volume passer working short to intermediate, rarely running.",
   // TE
-  "Featured Receiving TE": "A focal part of the passing game: about 6 targets a game and a fifth of his team's targets.",
-  "Balanced TE": "A mid-volume tight end: about 4 targets a game, used downfield more than most.",
-  "Low-Volume TE": "A low-volume tight end: about 3 targets a game, mostly short work after the catch.",
+  "Featured Receiving TE": "A focal part of the passing game, drawing a large share of his team's targets.",
+  "Balanced TE": "A mid-volume tight end, used downfield more than most.",
+  "Low-Volume TE": "A low-volume tight end, mostly short work after the catch.",
 };
 
 // Short forms for the small pill under a comparison card's match % (that column is only ~52px wide).
