@@ -4,6 +4,11 @@ import SiteHeader from "./SiteHeader";
 import { createPublicClient } from "@/lib/supabase/public";
 import { createAdminClient } from "@/lib/supabase/admin";
 
+// Always rendered per request (it already was: the header reads the visitor's session). Said out loud so
+// `next build` never tries to prerender it -- without database settings (CI) the public data fetches
+// would throw before the build noticed the page is dynamic.
+export const dynamic = "force-dynamic";
+
 function formatPostDate(iso) {
   return new Date(iso)
     .toLocaleDateString("en-US", { month: "short", day: "numeric" })
