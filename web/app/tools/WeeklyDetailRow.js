@@ -5,6 +5,7 @@ import PositionBadge from "./PositionBadge";
 import ConfidenceBadge from "./ConfidenceBadge";
 import { getAchievements } from "./achievements";
 import { MyStrip } from "./MyPlayers";
+import DefFlag from "./DefFlag";
 
 // Season-level usage/efficiency metrics, not weekly stats -- attached
 // server-side in page.js's fetchSimsMetrics()/fetchSeasonXfp() (joined
@@ -190,6 +191,12 @@ function OpponentPanel({ row }) {
         {pct >= 0 ? "+" : ""}
         {pct}%
       </span>
+      {row.defLean && (
+        <div className={`weekly-opp-flag ${row.defLean.call === "SMASH" ? "weekly-opp-flag-smash" : "weekly-opp-flag-avoid"}`} title={row.defLean.text}>
+          <DefFlag lean={row.defLean} />
+          <span>{row.defLean.call === "SMASH" ? "Smash matchup" : "Tough matchup"}</span>
+        </div>
+      )}
     </div>
   );
 }

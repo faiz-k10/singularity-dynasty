@@ -10,6 +10,7 @@
 // projections  model/projection_engine.R -> publish-rankings.mjs -> publish-player-simulations.mjs
 //              then (never fatal) model/player_archetypes.R -> publish-player-archetypes.mjs
 //              then (never fatal) model/player_groups.R -> publish-player-groups.mjs
+//              then (never fatal) model/defense_impact.R -> publish-defense-leans.mjs  (matchup flags, display only)
 //
 // Exits non-zero (and prints why) when a check fails, so a scheduled run can
 // report it instead of silently publishing something wrong.
@@ -112,7 +113,23 @@ async function projections() {
   } catch (e) {
     log(`SKIPPED: player groups threw -- ${e.message}`);
   }
+  try {
+    defenseLeans();
+  } catch (e) {
+    log(`SKIPPED: defense leans threw -- ${e.message}`);
+  }
   return { week: after.week };
+}
+
+// Defense-vs-position matchup flags for the weekly rankings (display only, never a projection input):
+// same never-fatal treatment as the groupings below.
+function defenseLeans() {
+  log("\n--- Defense leans (optional) ---");
+  const r = spawnSync("Rscript", ["defense_impact.R"], { cwd: MODEL, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
+  if (r.status !== 0) return log(`SKIPPED: defense leans failed -- ${(r.stderr || "").trim().split("\n").slice(-3).join(" ")}`);
+  const p = spawnSync(process.execPath, ["--env-file=.env.local", "scripts/publish-defense-leans.mjs"], { cwd: WEB, encoding: "utf8" });
+  const tail = ((p.stdout || "") + (p.stderr || "")).trim().split("\n").slice(-4).join("\n");
+  log(p.status === 0 ? tail : `SKIPPED: defense leans publish failed (exit ${p.status}) -- ${tail}`);
 }
 
 // Extra groupings (sustainability, career stage) -- same never-fatal treatment as archetypes below.

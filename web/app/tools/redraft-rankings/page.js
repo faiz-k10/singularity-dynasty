@@ -2,6 +2,7 @@ import Link from "next/link";
 import { unstable_cache } from "next/cache";
 import { resolveTier } from "@/lib/tier";
 import { loadMyPlayers } from "@/lib/myPlayers";
+import { indexLeans, flagFor } from "@/lib/defenseLeans";
 import { createClient } from "@/lib/supabase/server";
 import { createPublicClient } from "@/lib/supabase/public";
 import { fetchAllRows } from "@/lib/fetchAllRows";
@@ -368,6 +369,34 @@ const getCachedRedraftData = unstable_cache(
   { revalidate: 60 }
 );
 
+// Defense-vs-position trends (model/defense_impact.R -> defense_leans), the newest week published.
+// Optional by design: a missing table or an empty result just means no flags, never an error.
+const getCachedLeans = unstable_cache(
+  async () => {
+    try {
+      const pub = createPublicClient();
+      const { data: latest } = await pub
+        .from("defense_leans")
+        .select("season, week")
+        .order("season", { ascending: false })
+        .order("week", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (!latest) return [];
+      const { data } = await pub
+        .from("defense_leans")
+        .select("defense, position, call, score, effect, rank_now, rank_prior")
+        .eq("season", latest.season)
+        .eq("week", latest.week);
+      return data || [];
+    } catch {
+      return [];
+    }
+  },
+  ["defense-leans-latest"],
+  { revalidate: 60 }
+);
+
 // Stargazer sees the top 50 only; Explorer/Singularity see the full
 // list — matches the pricing copy's "Weekly Projection Rankings (Top
 // 50)" Stargazer bullet.
@@ -377,11 +406,12 @@ export default async function RedraftRankingsPage({ searchParams }) {
   // Tier (auth + profile) is per-visitor, the cached bundle and the Sleeper
   // bios aren't -- all three run at once.
   const supabase = await createClient();
-  const [{ tier, mine }, cached, bioByNamePos] = await Promise.all([
+  const [{ tier, mine }, cached, bioByNamePos, leanRows] = await Promise.all([
     // Per-visitor like the tier: their saved teams (own rows only) for the My players view.
     resolveTier(supabase).then(async (r) => ({ ...r, mine: await loadMyPlayers(supabase, r.user) })),
     getCachedRedraftData(),
     getPlayerBiosByNamePos(),
+    getCachedLeans(),
   ]);
   const hasFullAccess = PAID_TIERS.includes(tier);
   const { latest } = cached;
@@ -430,6 +460,13 @@ export default async function RedraftRankingsPage({ searchParams }) {
       floorHeat: floorHeatFor(r),
       ceilingHeat: ceilingHeatFor(r),
     }));
+    // Matchup flags (smash / tough spot) from the strongest defense-vs-position trends. Display only --
+    // nothing here feeds a projection.
+    const leans = indexLeans(leanRows);
+    rankings = rankings.map((r) => {
+      const f = flagFor(leans, r.opponent, r.position);
+      return f ? { ...r, defLean: f } : r;
+    });
     rankings = attachStatPercentiles(rankings);
     // Buy Low/Sell High (achievements.js) need WOPR ranked WITHIN
     // position -- a raw WOPR cutoff shared across positions is wrong
@@ -504,6 +541,11 @@ export default async function RedraftRankingsPage({ searchParams }) {
                     Standard weekly projection rankings, refreshed every week of the season and
                     adjusted for opponent-strength and matchup efficiency data.
                     Top 50 free for every Stargazer.
+                  </p>
+                  <p className="matchup-legend">
+                    <span className="def-flag def-flag-smash" aria-hidden="true">{"\u25B2"}</span> smash spot
+                    <span className="def-flag def-flag-avoid" aria-hidden="true">{"\u25BC"}</span> tough spot
+                    {" \u2014 "}the strongest defense-vs-position trends this season, beside the opponent. A signal to weigh, not part of the projections.
                   </p>
                   <div className="toggle-row-flex">
                     <div className="toggle-row-actions">

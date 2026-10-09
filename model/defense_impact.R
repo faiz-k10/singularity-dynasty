@@ -13,7 +13,15 @@
 # defense effect = fantasy points per game that defense allows to that position ABOVE an average defense
 # (positive = generous / bad, negative = stingy / good). "total" adds QB+RB+WR+TE.
 #
-# Run: Rscript defense_impact.R          writes defense_impact.csv and prints the summary
+# Strongest leans (for the site's matchup flags -- display only, never a model input): every team x position
+# cell is scored = size of its adjusted effect in league standard deviations at that position
+#   + 1.0 if it sat in the same extreme (top/bottom 8 of 32) last season, or +0.5 for top/bottom 12
+#   + 0.5 if it held in at least 3 of this season's games
+#   - 1.0 if the raw (unadjusted) numbers point the other way.
+# Cells scoring >= LEAN_MIN_SCORE are written to upload_defense_leans.csv (tier 1 = 3.0+, 2 = 2.5+, 3 = 2.0+); the
+# site decides how many tiers to flag.
+#
+# Run: Rscript defense_impact.R          writes defense_impact.csv + upload_defense_leans.csv and prints the summary
 suppressMessages(library(nflreadr))
 
 SEASON <- as.integer(Sys.getenv("DI_SEASON", "2026"))
@@ -122,3 +130,38 @@ show <- function(x) print(x[, c("team", "games", "QB", "RB", "WR", "TE", "total"
 cat("\nMOST GENEROUS (smash spots):\n"); show(head(out, 6))
 cat("\nSTINGIEST (avoid spots):\n"); show(tail(out[order(-out$total), ], 6)[6:1, ])
 cat("\nLeague spread of the total effect: sd =", round(sd(out$total), 2), "; middle 20 teams within +/-", round(quantile(abs(out$total), 0.6), 2), "\n")
+
+# ---- strongest leans -> upload_defense_leans.csv ---------------------------------------------------------
+LEAN_MIN_SCORE <- 2.0
+rank_most_generous <- function(v) rank(-v, ties.method = "min")
+lean_rows <- list()
+for (pos in POS) {
+  eff <- setNames(out[[pos]], out$team); sd_pos <- sd(eff)
+  cur <- g[g$season == SEASON & g$pos == pos, ]; prv <- g[g$season == PRIOR_SEASON & g$pos == pos, ]
+  ppg_vs_league <- function(x) tapply(x$y, x$def, mean) - mean(x$y)
+  r_now <- ppg_vs_league(cur); r_prior <- ppg_vs_league(prv)
+  rk_now <- rank_most_generous(r_now); rk_prior <- rank_most_generous(r_prior)
+  lg <- mean(cur$y)
+  for (t in out$team) {
+    e <- eff[[t]]; side <- if (e > 0) "SMASH" else "AVOID"
+    vals <- cur$y[cur$def == t]
+    held <- if (side == "SMASH") sum(vals > lg) else sum(vals <= lg)
+    kp <- rk_prior[t]
+    same8 <- !is.na(kp) && (if (side == "SMASH") kp <= 8 else kp >= 25)
+    same12 <- !is.na(kp) && (if (side == "SMASH") kp <= 12 else kp >= 21)
+    score <- abs(e) / sd_pos + (if (same8) 1 else if (same12) 0.5 else 0) + (if (held >= 3) 0.5 else 0) +
+      (if (sign(r_now[t]) != sign(e)) -1 else 0)
+    lean_rows[[length(lean_rows) + 1]] <- data.frame(
+      season = SEASON, week = latest, defense = t, position = pos, call = side, score = round(score, 2),
+      tier = if (score >= 3) 1L else if (score >= 2.5) 2L else 3L,
+      effect = round(e, 2), effect_sd = round(e / sd_pos, 2), games = length(vals), lean_games = held,
+      rank_now = as.integer(rk_now[t]), rank_prior = if (is.na(kp)) NA_integer_ else as.integer(kp),
+      ppg_now = round(r_now[t], 1), ppg_prior = if (is.na(r_prior[t])) NA_real_ else round(r_prior[t], 1))
+  }
+}
+leans <- do.call(rbind, lean_rows)
+leans <- leans[leans$score >= LEAN_MIN_SCORE, ]
+leans <- leans[order(-leans$score), ]
+write.csv(leans, "upload_defense_leans.csv", row.names = FALSE)
+cat(sprintf("\nWrote upload_defense_leans.csv: %d leans (tier 1: %d, tier 2: %d, tier 3: %d)\n",
+            nrow(leans), sum(leans$tier == 1), sum(leans$tier == 2), sum(leans$tier == 3)))
