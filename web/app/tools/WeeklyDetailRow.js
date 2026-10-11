@@ -574,7 +574,7 @@ function achievementNode(a, row) {
         <GlyphBadge
           variant="honorable"
           glyph={<GraduationCapIcon />}
-          title="Scored at or above xFP in each of the last 2 games"
+          title="Scored at or above xFP in each of the last 3 games"
         />
       );
     case "conArtist":

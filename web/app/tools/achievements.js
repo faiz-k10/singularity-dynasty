@@ -71,10 +71,9 @@ export function onThinIceFlag(games) {
   return floorHitMostRecent(games) || missedXfpAndMedianAllLast3(games);
 }
 
-// "Honorable" / "Con Artist" -- two opposite xFP badges, both all-or-nothing:
-//   Honorable:  scored at-or-above xFP in BOTH of the last 2 logged games.
-//   Con Artist: scored strictly below xFP in ALL of the last 3 logged games
-//               (a longer run than Honorable on purpose -- it takes three straight misses).
+// "Honorable" / "Con Artist" -- two opposite xFP badges, both all-or-nothing over the last 3 logged games:
+//   Honorable:  scored at-or-above xFP in ALL 3.
+//   Con Artist: scored strictly below xFP in ALL 3.
 // A mixed result earns neither. Missing xFP for any game the badge needs (~12% of games, see
 // CLAUDE.md) voids that read entirely rather than judging off fewer data points. ("Con Artist" was "Rug Pull"
 // until its icon got redrawn -- a small ornate carpet read as an
@@ -84,14 +83,10 @@ export function onThinIceFlag(games) {
 const hasXfp = (g) => g.exp_points_ppr != null && g.fantasy_points_ppr != null;
 export function xfpTrend2(games) {
   if (!games) return null;
-  const last2 = games.slice(0, 2);
-  if (last2.length === 2 && last2.every(hasXfp) && last2.every((g) => g.fantasy_points_ppr >= g.exp_points_ppr)) {
-    return "honorable";
-  }
   const last3 = games.slice(0, 3);
-  if (last3.length === 3 && last3.every(hasXfp) && last3.every((g) => g.fantasy_points_ppr < g.exp_points_ppr)) {
-    return "conArtist";
-  }
+  if (last3.length < 3 || !last3.every(hasXfp)) return null;
+  if (last3.every((g) => g.fantasy_points_ppr >= g.exp_points_ppr)) return "honorable";
+  if (last3.every((g) => g.fantasy_points_ppr < g.exp_points_ppr)) return "conArtist";
   return null;
 }
 
