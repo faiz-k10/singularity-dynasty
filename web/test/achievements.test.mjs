@@ -28,3 +28,27 @@ test("spreadFlag falls back to pooled cutoffs for an unknown position", () => {
   assert.equal(flag(2.5, "K"), "volatile");
   assert.equal(flag(1.1, undefined), "locked");
 });
+
+// ---- xFP badges: Honorable (last 2, at-or-above) and Con Artist (last 3, strictly below) ----
+import { xfpTrend2 } from "../app/tools/achievements.js";
+const g = (pts, xfp) => ({ fantasy_points_ppr: pts, exp_points_ppr: xfp });
+
+test("Con Artist needs all of the last 3 games below xFP", () => {
+  assert.equal(xfpTrend2([g(8, 10), g(9, 12), g(5, 7)]), "conArtist");
+  assert.equal(xfpTrend2([g(8, 10), g(9, 12), g(14, 11)]), null); // third game beat xFP
+});
+
+test("two misses are no longer enough for Con Artist", () => {
+  assert.equal(xfpTrend2([g(8, 10), g(9, 12)]), null); // only 2 games
+  assert.equal(xfpTrend2([g(8, 10), g(9, 12), g(14, 11), g(1, 9)]), null); // third game back beat xFP
+});
+
+test("Con Artist is voided by missing xFP in any of the 3 games", () => {
+  assert.equal(xfpTrend2([g(8, 10), g(9, 12), { fantasy_points_ppr: 5, exp_points_ppr: null }]), null);
+});
+
+test("Honorable is unchanged: at-or-above xFP in both of the last 2", () => {
+  assert.equal(xfpTrend2([g(12, 10), g(10, 10)]), "honorable");
+  assert.equal(xfpTrend2([g(12, 10), g(9, 10)]), null);
+  assert.equal(xfpTrend2([g(12, 10), g(10, 10), g(1, 9)]), "honorable"); // an older miss doesn't matter
+});

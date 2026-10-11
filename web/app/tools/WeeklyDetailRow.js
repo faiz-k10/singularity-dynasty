@@ -582,7 +582,7 @@ function achievementNode(a, row) {
         <GlyphBadge
           variant="menace"
           glyph={<ConArtistIcon />}
-          title="Scored below xFP in each of the last 2 games"
+          title="Scored below xFP in each of the last 3 games"
         />
       );
     default:

@@ -71,23 +71,27 @@ export function onThinIceFlag(games) {
   return floorHitMostRecent(games) || missedXfpAndMedianAllLast3(games);
 }
 
-// "Honorable" / "Con Artist" -- scored at-or-above, or strictly below,
-// xFP in BOTH of the last 2 logged games. Same all-or-nothing shape as
-// the old 3-game xFP streak, just over 2 games and split into two
-// opposite badges instead of one heat/cold pair -- a mixed result (beat
-// it once, missed it once) earns neither. Missing xFP for either of the
-// 2 games (~12% of games, see CLAUDE.md) voids the read entirely rather
-// than judging off just one data point. ("Con Artist" was "Rug Pull"
+// "Honorable" / "Con Artist" -- two opposite xFP badges, both all-or-nothing:
+//   Honorable:  scored at-or-above xFP in BOTH of the last 2 logged games.
+//   Con Artist: scored strictly below xFP in ALL of the last 3 logged games
+//               (a longer run than Honorable on purpose -- it takes three straight misses).
+// A mixed result earns neither. Missing xFP for any game the badge needs (~12% of games, see
+// CLAUDE.md) voids that read entirely rather than judging off fewer data points. ("Con Artist" was "Rug Pull"
 // until its icon got redrawn -- a small ornate carpet read as an
 // envelope/dollar sign at badge size, so the badge itself was renamed
 // to match the new comedy/tragedy-masks icon: putting on a good number,
 // then not delivering it, twice running.)
+const hasXfp = (g) => g.exp_points_ppr != null && g.fantasy_points_ppr != null;
 export function xfpTrend2(games) {
-  if (!games || games.length < 2) return null;
+  if (!games) return null;
   const last2 = games.slice(0, 2);
-  if (last2.some((g) => g.exp_points_ppr == null || g.fantasy_points_ppr == null)) return null;
-  if (last2.every((g) => g.fantasy_points_ppr >= g.exp_points_ppr)) return "honorable";
-  if (last2.every((g) => g.fantasy_points_ppr < g.exp_points_ppr)) return "conArtist";
+  if (last2.length === 2 && last2.every(hasXfp) && last2.every((g) => g.fantasy_points_ppr >= g.exp_points_ppr)) {
+    return "honorable";
+  }
+  const last3 = games.slice(0, 3);
+  if (last3.length === 3 && last3.every(hasXfp) && last3.every((g) => g.fantasy_points_ppr < g.exp_points_ppr)) {
+    return "conArtist";
+  }
   return null;
 }
 
