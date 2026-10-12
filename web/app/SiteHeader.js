@@ -137,23 +137,25 @@ export default async function SiteHeader() {
   let tickerItems = [];
   const { topRows, paceByName, achievementInputs, redraftFieldsByName, woprPercentileByName } = await getCachedTickerInputs();
   if (achievementInputs) {
-    const pool = (topRows || []).flatMap((r) =>
-      getAchievements(
-        buildAchievementRow(r.player_name, r.position, { ...achievementInputs, redraftFieldsByName, woprPercentileByName })
-      )
-        .filter((a) => a.key !== "confidence")
-        .map((a) => ({
-          name: r.player_name,
-          key: a.key,
-          variant: a.variant,
-          label: a.label,
-        }))
-    );
-    // Each player's vs. pace number rides in the same pool as their badges.
+    // One ticker item per player: his name followed by ALL his badge icons (no text labels), so the strip reads as
+    // "who, and what they have earned" at a glance. Players with no badge are skipped.
+    const pool = (topRows || [])
+      .map((r) => {
+        const badges = getAchievements(
+          buildAchievementRow(r.player_name, r.position, { ...achievementInputs, redraftFieldsByName, woprPercentileByName })
+        )
+          .filter((a) => a.key !== "confidence")
+          .map((a) => ({ key: a.key, variant: a.variant }));
+        return badges.length ? { name: r.player_name, badges } : null;
+      })
+      .filter(Boolean);
+    // Each player's vs. pace number is its own kind of item. Badge items lead the strip (about two thirds of it); a sample of
+    // each kind is drawn separately so the smaller badge pool is not drowned out by the larger pace pool.
+    const pacePool = [];
     for (const r of topRows || []) {
       const v = paceByName?.[r.player_name];
       if (typeof v === "number") {
-        pool.push({
+        pacePool.push({
           name: r.player_name,
           key: "pace",
           variant: v >= 0 ? "hot" : "cold",
@@ -161,9 +163,12 @@ export default async function SiteHeader() {
         });
       }
     }
-    if (pool.length > 0) {
-      tickerItems = sampleWithReplacement(pool, TICKER_ITEMS);
-    }
+    const badgeShare = pool.length > 0 && pacePool.length > 0 ? Math.round(TICKER_ITEMS * 0.65) : pool.length > 0 ? TICKER_ITEMS : 0;
+    const picks = [
+      ...(badgeShare > 0 ? sampleWithReplacement(pool, badgeShare) : []),
+      ...(pacePool.length > 0 ? sampleWithReplacement(pacePool, TICKER_ITEMS - badgeShare) : []),
+    ];
+    if (picks.length > 0) tickerItems = picks;
   }
 
   return (

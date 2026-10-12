@@ -428,8 +428,13 @@ export default function InteractiveScript({ tickerItems } = {}) {
             html += `<span class="ticker-item">${item.name} <span class="ticker-pace ${item.variant}">${item.label}</span></span>`;
             return;
           }
-          const icon = TICKER_ICONS[item.key] || TICKER_ICONS.confidence;
-          html += `<span class="ticker-item">${item.name} <span class="ticker-badge ${item.variant}">${icon}</span> <span class="ticker-badge-label">${item.label}</span></span>`;
+          // One item per player: his name, then every badge he has as an icon only (no text labels). The made-up
+          // fallback items carry a single badge in the same shape.
+          const badges = item.badges || [{ key: item.key, variant: item.variant }];
+          const icons = badges
+            .map((b) => `<span class="ticker-badge ${b.variant}">${TICKER_ICONS[b.key] || TICKER_ICONS.confidence}</span>`)
+            .join("");
+          html += `<span class="ticker-item">${item.name} <span class="ticker-badges">${icons}</span></span>`;
         });
       }
       track.innerHTML = html;

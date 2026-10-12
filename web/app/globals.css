@@ -227,6 +227,7 @@ body::before{
    20 players' real flags and re-rolled on every page load. Same flat-
    fill + glow language and same variant colors as everywhere else those
    badges appear -- just scaled down to fit a one-line ticker strip. */
+.ticker-badges{display:inline-flex; align-items:center; gap:5px;}
 .ticker-badge{
   display:inline-flex; align-items:center; justify-content:center; width:16px; height:16px;
   border-radius:50%; font-size:12px; line-height:1; flex-shrink:0;
@@ -252,7 +253,6 @@ body::before{
 .ticker-pace{font-weight:600;}
 .ticker-pace.hot{color:var(--up);}
 .ticker-pace.cold{color:var(--down);}
-.ticker-badge-label{font-size:10px; letter-spacing:0.06em; text-transform:uppercase; color:var(--star-dim); opacity:0.75;}
 
 /* ---------- BRAND MARK ---------- */
 .brandmark{
