@@ -318,9 +318,9 @@ body::before{
    scaling with the window so it never runs into the nav at the narrowest full-width size (1180px). */
 .site-header .brandmark{
   flex:1 1 0; flex-shrink:0; min-width:0; gap:12px;
-  font-size:clamp(22px, 2.05vw, 30px); font-weight:700; letter-spacing:0.08em; text-transform:uppercase; white-space:nowrap;
+  font-size:clamp(19px, 1.75vw, 30px); font-weight:700; letter-spacing:clamp(0.05em, 0.5vw, 0.08em); text-transform:uppercase; white-space:nowrap;
 }
-.site-header .brandmark .ring{width:clamp(24px, 2vw, 30px); height:clamp(24px, 2vw, 30px);}
+.site-header .brandmark .ring{width:clamp(22px, 1.8vw, 30px); height:clamp(22px, 1.8vw, 30px);}
 /* Phones: the menu + theme buttons take the right side, so the name steps down (still uppercase, still wide-set). */
 @media (max-width:640px){
   .site-header .brandmark{font-size:18px; letter-spacing:0.05em; gap:9px;}
@@ -366,14 +366,14 @@ body::before{
 .tn-tier:first-child{border-left:0;}
 .tn-tier b{font-family:var(--font-display), sans-serif; font-size:13.5px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;}
 .tn-tier small{font-family:var(--font-mono), monospace; font-size:9px; font-weight:600; letter-spacing:0.02em; opacity:0.78;}
-@media (max-width:1320px){
+@media (max-width:1480px){
   .tn-tier{padding:6px 8px;}
   .tn-tier b{font-size:12.5px; letter-spacing:0.06em;}
 }
 /* The nav is one tight group centred in the bar: the brand and the spacer are equal-width zones either side of it (the brand
    never shrinks below its own text, so a narrow window just pushes the group off-centre rather than into the brand). */
 .site-header .brandmark{flex:1 1 0; min-width:max-content;}
-.site-header .top-nav-bar{flex:0 0 auto; justify-content:center; gap:28px;}
+.site-header .top-nav-bar{flex:0 0 auto; justify-content:center; gap:clamp(14px, 1.7vw, 28px);}
 .site-header-spacer{flex:1 1 0;}
 /* "Tools" dropdown -- CSS-only (:hover/:focus-within, no JS state needed)
    since this only has to work in .top-nav-bar, which is itself hidden
