@@ -2450,12 +2450,19 @@ a.export-csv-btn{text-decoration:none;}
 .weekly-detail-curve-panel{flex:0 1 auto; max-width:400px; display:flex; flex-direction:column;}
 .weekly-detail-pct-panel{flex:0 1 auto; max-width:320px; display:flex; flex-direction:column;}
 .weekly-pct-head{margin-bottom:7px; flex-shrink:0;}
-/* The three quick-read stats, now at the top of the Outcome Curve panel instead of the identity strip. */
+/* Opened-player grid: left column = quick-read stats panel over the Outcome Curve; middle column = touchdown /
+   usage panel over Recent Games; far right (only for a player the viewer owns) = the vertical "Your player" panel. */
+.weekly-detail-col{display:flex; flex-direction:column; gap:12px; flex:0 1 auto;}
+.weekly-detail-col-left{max-width:400px;}
+.weekly-detail-col-mid{max-width:320px;}
+.weekly-detail-col .weekly-detail-curve-panel,
+.weekly-detail-col .weekly-detail-pct-panel{flex:1 1 auto; max-width:none;}
+.weekly-detail-mine-panel{flex:0 0 auto; align-self:stretch; max-width:176px;}
+.weekly-stats-panel .weekly-panel-stats{margin:0;}
+/* The three quick-read stats (their own small panel above the Outcome Curve). */
 .weekly-panel-stats{display:flex; flex-wrap:wrap; justify-content:space-between; gap:8px 12px; margin:6px 0 10px; flex-shrink:0;}
 .weekly-panel-stats .weekly-player-stat{align-items:flex-start;}
-/* Matchup (teams + the matchup %) at the top of the middle panel -- replaces the separate Opponent Defense panel. */
-.weekly-opp-block{display:flex; flex-direction:column; align-items:center; gap:2px; margin:6px 0 10px; padding-bottom:10px; border-bottom:1px solid var(--line); cursor:default; flex-shrink:0;}
-.weekly-opp-block .weekly-opp-matchup{gap:10px;}
+
 /* justify-content:center used to live on the PANEL itself, centering the
    title along with the curve/rows as one block -- fine for Curve (its
    content is tall enough that the title barely moves), but Usage's
@@ -4168,6 +4175,9 @@ summary:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible{
 .mine-strip-chip{display:inline-flex; align-items:center; gap:6px; color:var(--star); background:var(--void-panel-2); border:1px solid var(--line); border-radius:999px; padding:3px 10px;}
 .mine-strip-role{font-family:var(--font-ibm-plex-mono), monospace; font-size:10px; color:var(--star-dim);}
 .mine-strip-role.starter{color:var(--up);}
+/* Vertical variant: the "Your player" panel on the far right of the opened-player view. */
+.mine-strip-vertical{flex-direction:column; align-items:flex-start; flex-wrap:nowrap; padding:0; border:0; background:none; gap:10px;}
+.mine-strip-vertical .mine-strip-chip{flex-direction:column; align-items:flex-start; gap:2px; border-radius:12px; padding:6px 10px; width:100%; box-sizing:border-box;}
 @media (max-width:640px){
   /* "Your player" strip sits outside the grid, so pin it to the visible width too. */
   .stat-detail-row > td > .stat-detail-mine{position:sticky; left:10px; width:calc(100vw - 26px - 20px); box-sizing:border-box;}

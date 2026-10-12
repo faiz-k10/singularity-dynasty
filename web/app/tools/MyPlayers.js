@@ -95,10 +95,10 @@ export function MyBadge({ owned }) {
   );
 }
 
-export function MyStrip({ owned }) {
+export function MyStrip({ owned, vertical = false }) {
   if (!owned) return null;
   return (
-    <div className="mine-strip">
+    <div className={`mine-strip${vertical ? " mine-strip-vertical" : ""}`}>
       <span className="mine-strip-star">★ Your player</span>
       {owned.leagues.map((l, i) => (
         <span key={i} className="mine-strip-chip">

@@ -5,7 +5,6 @@ import PositionBadge from "./PositionBadge";
 import ConfidenceBadge from "./ConfidenceBadge";
 import { getAchievements } from "./achievements";
 import { MyStrip } from "./MyPlayers";
-import DefFlag from "./DefFlag";
 
 // Season-level usage/efficiency metrics, not weekly stats -- attached
 // server-side in page.js's fetchSimsMetrics()/fetchSeasonXfp() (joined
@@ -176,51 +175,6 @@ function GameLogPanel({ games }) {
           );
         })}
       </div>
-    </div>
-  );
-}
-
-// Opponent-strength context for THIS week's matchup -- matchup_mult is
-// already computed and published on every redraft_rankings row
-// (compute_matchup_multipliers() in projection_engine.R): the ratio of
-// fantasy PPR points that defense allows to this exact position vs. the
-// league average at that position, shrunk toward 1.0 for a small
-// defensive sample and clamped to [0.90, 1.10]. Shown here as a plain
-// +/-% read (positive = softer matchup, allows more than average; green/
-// red follow that same "more is good for this offense" direction, not a
-// generic up/down). Explicitly NOT folded into the floor/projection/
-// ceiling numbers above yet -- APPLY_MATCHUP_MULTIPLIER is off in the
-// model while defenses build a real early-season sample. That caveat,
-// and the "fantasy pts allowed to X vs. league avg" description line,
-// both used to be permanent on-panel text; both are now on a single
-// title tooltip on the panel itself (hover/long-press) instead --
-// removed by request to keep the panel to just the badges + number, but
-// the explanation isn't gone, just off by default.
-const MATCHUP_TOOLTIP = (position) =>
-  `Fantasy points allowed to ${position} vs. league average. Not yet factored into the numbers above -- ` +
-  `off while defenses build a real early-season sample.`;
-
-function OpponentMatchup({ row }) {
-  if (row.matchup_mult == null || !row.opponent) return null;
-  const pct = Math.round((row.matchup_mult - 1) * 100);
-  const sep = row.is_home === true ? "vs" : row.is_home === false ? "@" : "·";
-  return (
-    <div className="weekly-opp-block" title={MATCHUP_TOOLTIP(row.position)}>
-      <div className="weekly-opp-matchup">
-        <TeamBadge team={row.team} />
-        <span className="matchup-sep">{sep}</span>
-        <TeamBadge team={row.opponent} />
-        <span className={`weekly-opp-pct ${pct >= 0 ? "weekly-opp-pct-soft" : "weekly-opp-pct-tough"}`}>
-          {pct >= 0 ? "+" : ""}
-          {pct}%
-        </span>
-      </div>
-      {row.defLean && (
-        <div className={`weekly-opp-flag ${row.defLean.call === "SMASH" ? "weekly-opp-flag-smash" : "weekly-opp-flag-avoid"}`} title={row.defLean.text}>
-          <DefFlag lean={row.defLean} />
-          <span>{row.defLean.call === "SMASH" ? "Smash matchup" : "Tough matchup"}</span>
-        </div>
-      )}
     </div>
   );
 }
@@ -623,11 +577,12 @@ function achievementNode(a, row) {
 // median projection, and last week's actual positional finish
 // (lastWeekRank, from fetchGameLogData -- null before the season's first
 // game log exists).
-// This Week (projected position rank) / median projection / last week's finish -- sits at the top of the Outcome
-// Curve panel (moved out of the identity strip by request).
+// This Week (projected position rank) / median projection / last week's finish -- its own small panel above the
+// Outcome Curve (moved out of the identity strip by request).
 function PlayerStatsRow({ row }) {
   const lastWeek = row.lastWeekRank;
   return (
+    <div className="stat-panel weekly-stats-panel">
       <div className="weekly-panel-stats">
         <div className="weekly-player-stat">
           <span className="weekly-player-stat-label">This Week (Projected)</span>
@@ -642,6 +597,7 @@ function PlayerStatsRow({ row }) {
           <span className="weekly-player-stat-value">{lastWeek ? `${row.position}${lastWeek.rank}` : "—"}</span>
         </div>
       </div>
+    </div>
   );
 }
 
@@ -726,54 +682,55 @@ export default function WeeklyDetailRow({ row, colSpan, maxSpread, owned }) {
     <tr className="stat-detail-row weekly-detail-row">
       <td colSpan={colSpan}>
         <div className="weekly-detail-wrap">
-          {owned && (
-            <div className="stat-detail-mine">
-              <MyStrip owned={owned} />
-            </div>
-          )}
           <PlayerHeaderPanel row={row} />
           <div className="weekly-detail-grid">
-            <div className="stat-panel weekly-detail-curve-panel">
-              <div className="weekly-pct-head">
-                <span className="weekly-panel-title">Outcome Curve</span>
-              </div>
+            <div className="weekly-detail-col weekly-detail-col-left">
               <PlayerStatsRow row={row} />
-              <div className="weekly-panel-body">
-                <OutcomeCurveDetail
-                  floor={row.floor}
-                  median={row.projection}
-                  ceiling={row.ceiling}
-                  maxSpread={maxSpread}
-                  floorPct={pct.floor}
-                  medianPct={pct.projection}
-                  ceilingPct={pct.ceiling}
-                />
+              <div className="stat-panel weekly-detail-curve-panel">
+                <div className="weekly-pct-head">
+                  <span className="weekly-panel-title">Outcome Curve</span>
+                </div>
+                <div className="weekly-panel-body">
+                  <OutcomeCurveDetail
+                    floor={row.floor}
+                    median={row.projection}
+                    ceiling={row.ceiling}
+                    maxSpread={maxSpread}
+                    floorPct={pct.floor}
+                    medianPct={pct.projection}
+                    ceilingPct={pct.ceiling}
+                  />
+                </div>
               </div>
             </div>
-            <div className="stat-panel weekly-detail-pct-panel">
-              <div className="weekly-pct-head">
-                <span className="weekly-panel-title">{showTd ? "Touchdown profile" : "Usage"} vs. the {row.position} pool</span>
-              </div>
-              <OpponentMatchup row={row} />
-              <div className="weekly-panel-body">
-                {advancedEntries.length > 0 ? (
-                  advancedEntries.map((m) =>
-                    showTd ? (
-                      <RankRow key={m.key} label={m.label} value={row[m.key]} format={m.format} rank={row.tdRank[m.key]} hint={m.hint} />
-                    ) : (
-                      <PctRow key={m.key} label={m.label} value={row[m.key]} pctile={pct[m.key]} format={m.format} hint={m.hint} />
+            <div className="weekly-detail-col weekly-detail-col-mid">
+              <div className="stat-panel weekly-detail-pct-panel">
+                <div className="weekly-pct-head">
+                  <span className="weekly-panel-title">{showTd ? "Touchdown profile" : "Usage"} vs. the {row.position} pool</span>
+                </div>
+                <div className="weekly-panel-body">
+                  {advancedEntries.length > 0 ? (
+                    advancedEntries.map((m) =>
+                      showTd ? (
+                        <RankRow key={m.key} label={m.label} value={row[m.key]} format={m.format} rank={row.tdRank[m.key]} hint={m.hint} />
+                      ) : (
+                        <PctRow key={m.key} label={m.label} value={row[m.key]} pctile={pct[m.key]} format={m.format} hint={m.hint} />
+                      )
                     )
-                  )
-                ) : (
-                  <p className="weekly-opp-caption">
-                    {showTd ? "Not enough games yet for a touchdown profile." : "No usage metrics published for this player yet."}
-                  </p>
-                )}
+                  ) : (
+                    <p className="weekly-opp-caption">
+                      {showTd ? "Not enough games yet for a touchdown profile." : "No usage metrics published for this player yet."}
+                    </p>
+                  )}
+                </div>
               </div>
-            </div>
-            <div className="weekly-detail-side-col">
               <GameLogPanel games={row.recentGames} />
             </div>
+            {owned && (
+              <div className="stat-panel weekly-detail-mine-panel">
+                <MyStrip owned={owned} vertical />
+              </div>
+            )}
           </div>
         </div>
       </td>
