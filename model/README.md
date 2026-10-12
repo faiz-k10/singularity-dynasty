@@ -703,6 +703,16 @@ name-brand players who miss real time (Christian McCaffrey, 77% — 2024 was
 largely lost to injury), which inverted correctly once availability was
 applied (Bijan's season total overtakes CMC's).
 
+**Role-aware (added Oct 2026).** A past season in which the player was only a backup (usage per game below
+`AVAIL_ROLE_MIN_USAGE`: QB 15 pass attempts, RB 6 touches, WR/TE 3 targets) is a depth-chart record, not an injury
+record, so it is dropped from the average -- but only for a player who is in a real role *this* season (same usage
+test on his current games); a player still in a backup role, and every season he really started, are scored as
+before. Case that found it: Malik Willis, a QB who has started every MIA game this year, was read as 59% available
+(his backup years counted as missed games) and projected for 1,759 passing yards / 5 TDs; with the fix he reads 100%
+and projects 2,406 / 8 (floor 1,916, ceiling 3,334). Across the 399 players with games this season only 27 moved by
+more than 0.05 (6 QBs, 4 RBs, 1 TE, 8 WRs, mostly backups-turned-starters); Josh Allen and other established
+starters are unchanged. The thresholds are a judgment call, not backtested.
+
 Availability is naive — it can't distinguish "missed games from injury"
 from "was a healthy inactive backup," and treats each week's absence as
 independent (real injuries cluster into multi-week absences, so this

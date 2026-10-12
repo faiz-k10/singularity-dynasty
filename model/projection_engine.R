@@ -454,6 +454,9 @@ STAT_GROUP_BY_STAT <- c(
 )
 
 MAX_GAMES_PER_SEASON <- 16   # 17 weeks minus 1 bye (weeks 1-17; week 18 excluded — see below)
+# Usage per game (QB pass attempts, RB carries + targets, WR/TE targets) at or above which a season counts as
+# a starter season for the availability calc -- see player_availability(). A judgment call, like the decay below.
+AVAIL_ROLE_MIN_USAGE <- c(QB = 15, RB = 6, WR = 3, TE = 3)
 AVAILABILITY_YEAR_DECAY <- 0.6  # not backtested — a judgment call weighting recent seasons'
                                  # availability more heavily than older ones
 
@@ -767,6 +770,26 @@ player_availability <- function(player_games_df, target_season = TARGET_SEASON,
     }
     min(sum(player_games_df$season == s) / denom, 1)
   })
+  # Role-aware (added after Malik Willis, a QB who has started all of MIA's games this year, was being
+  # projected for ~58% of the remaining ones): a past season in which he was only a backup -- low usage in the
+  # few games he appeared in -- is not an injury record, it is a depth-chart record, so it is left out of the
+  # average. Only done for a player in a real role THIS season (usage per game at or above AVAIL_ROLE_MIN_USAGE);
+  # a player who is still a backup, and every season in which he really was a starter (injuries included),
+  # are scored exactly as before.
+  pos <- player_games_df$position[1]
+  thr <- AVAIL_ROLE_MIN_USAGE[pos]
+  if (!is.na(thr) && target_season %in% player_games_df$season) {
+    use <- function(d) if (pos == "QB") d$attempts else if (pos == "RB") d$touches else d$targets
+    cur <- player_games_df[player_games_df$season == target_season, ]
+    if (mean(use(cur), na.rm = TRUE) >= thr) {
+      keep <- sapply(yrs, function(s) {
+        if (s == target_season) return(TRUE)
+        mean(use(player_games_df[player_games_df$season == s, ]), na.rm = TRUE) >= thr
+      })
+      yrs <- yrs[keep]
+      a_by_yr <- a_by_yr[keep]
+    }
+  }
   yw <- AVAILABILITY_YEAR_DECAY ^ ((length(yrs) - 1):0)
   yw <- yw / sum(yw)
   min(sum(a_by_yr * yw), 1)
