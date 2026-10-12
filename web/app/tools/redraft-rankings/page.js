@@ -474,6 +474,32 @@ function tdRanksByName(rows, tdProfile) {
   return out;
 }
 
+// Same idea for the usage numbers (WOPR, xFP, RYOE, scramble / play-action rate, ...): where each player ranks at his
+// position among everyone ranked this week who has the number (1 = highest).
+const USAGE_RANK_KEYS = ["wopr", "targetShare", "yacAboveExp", "avgXfp", "ryoe", "scrambleRate", "playActionRate"];
+function usageRanksByName(rows, simsByName, avgXfpByName) {
+  const valueOf = (r, k) => (k === "avgXfp" ? avgXfpByName[r.player_name] : simsByName[r.player_name]?.[k]) ?? null;
+  const pools = {};
+  for (const r of rows) {
+    for (const k of USAGE_RANK_KEYS) {
+      const v = valueOf(r, k);
+      if (v != null) ((pools[r.position] ??= {})[k] ??= []).push(v);
+    }
+  }
+  const out = {};
+  for (const r of rows) {
+    const ranks = {};
+    for (const k of USAGE_RANK_KEYS) {
+      const v = valueOf(r, k);
+      const pool = pools[r.position]?.[k];
+      if (v == null || !pool) continue;
+      ranks[k] = { rank: 1 + pool.filter((x) => x > v).length, of: pool.length };
+    }
+    out[r.player_name] = ranks;
+  }
+  return out;
+}
+
 // Stargazer sees the top 50 only; Explorer/Singularity see the full
 // list — matches the pricing copy's "Weekly Projection Rankings (Top
 // 50)" Stargazer bullet.
@@ -502,6 +528,7 @@ export default async function RedraftRankingsPage({ searchParams }) {
     const data = hasFullAccess ? cached.rows : cached.rows.slice(0, 50);
     const { simsByName, avgXfpByName, recentGamesByName, lastWeekRankByName, heroWinsByName } = cached;
     const tdRanks = tdRanksByName(cached.rows, tdProfile);
+    const usageRanks = usageRanksByName(cached.rows, simsByName, avgXfpByName);
 
     // Position-relative rank (RB1, WR23, ...) computed once from the
     // natural rank order -- stays fixed on each row even if the table is
@@ -527,7 +554,7 @@ export default async function RedraftRankingsPage({ searchParams }) {
         p2Td: tdProfile[r.player_name]?.p2 ?? null,
         i10Pg: tdProfile[r.player_name]?.i10_pg ?? null,
         i10Share: tdProfile[r.player_name]?.i10_share ?? null,
-        tdRank: tdRanks[r.player_name] || null,
+        metricRank: { ...(usageRanks[r.player_name] || {}), ...(tdRanks[r.player_name] || {}) },
         recentGames: recentGamesByName[r.player_name] || [],
         lastWeekRank: lastWeekRankByName[r.player_name] || null,
         heroWins: heroWinsByName[r.player_name]?.count || 0,

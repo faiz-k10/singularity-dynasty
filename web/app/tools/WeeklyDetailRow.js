@@ -55,7 +55,7 @@ const TD_METRICS = [
 ];
 const TD_POSITIONS = new Set(["WR", "TE"]);
 
-// One line of the touchdown profile: the metric, its value, and where he ranks at his position (#1 = highest).
+// One line of the touchdown profile / usage panel: the metric, its value, and where he ranks at his position (#1 = highest).
 function RankRow({ label, value, format, rank, hint }) {
   if (!rank) return null;
   return (
@@ -77,49 +77,6 @@ function ordinal(n) {
     case 3: return `${rounded}rd`;
     default: return `${rounded}th`;
   }
-}
-
-// Same break points/labels as PercentileCard.js's tier() (Player Season
-// Simulations) -- kept as its own small copy rather than a shared import
-// since the two pages' percentile shapes differ (one value+percentile
-// per stat here, vs. floor/median/ceiling triples there); duplicating
-// five lines is cheaper than threading a shared dependency between two
-// otherwise-unrelated tool pages for this.
-function tier(pctile) {
-  if (pctile >= 90) return { label: "Elite", cls: "elite" };
-  if (pctile >= 70) return { label: "Above Average", cls: "above" };
-  if (pctile >= 40) return { label: "Average", cls: "avg" };
-  if (pctile >= 15) return { label: "Below Average", cls: "below" };
-  return { label: "Weak", cls: "weak" };
-}
-
-function formatValue(value) {
-  if (value == null) return "—";
-  return Number.isInteger(value) ? String(value) : String(Math.round(value * 100) / 100);
-}
-
-// One horizontal bar -- reuses the same .pctile-bar/.pctile-bar-fill/
-// .pctile-bar-midtick classes Player Season Simulations' PercentileCard
-// already styles globally, just with this page's own row shape (label +
-// raw value + one percentile, not three). `format` lets a caller override
-// the generic integer/2-decimal default -- ADVANCED_METRICS' four rows
-// each need their own real-world formatting (a percent sign on Target
-// Share, fixed decimal places on WOPR/xFP) rather than one shared rule.
-function PctRow({ label, value, pctile, format = formatValue, hint }) {
-  if (pctile == null) return null;
-  const t = tier(pctile);
-  return (
-    <div className="weekly-pct-row">
-      <span className="weekly-pct-label" title={hint}>{label}</span>
-      <span className="weekly-pct-value">{value == null ? "—" : format(value)}</span>
-      <div className="pctile-bar">
-        <div className={`pctile-bar-fill pctile-bar-${t.cls}`} style={{ width: `${Math.max(pctile, 2)}%` }} />
-        <div className="pctile-bar-midtick" />
-        <span className="pctile-bar-midtick-label">50</span>
-      </div>
-      <span className="weekly-pct-ordinal">{ordinal(pctile)}</span>
-    </div>
-  );
 }
 
 // Last 5 logged games (player_game_log, via page.js's fetchGameLogData) --
@@ -693,9 +650,7 @@ function PlayerHeaderPanel({ row }) {
 export default function WeeklyDetailRow({ row, colSpan, maxSpread, owned, mineStatus }) {
   const pct = row.statPct || {};
   const showTd = TD_POSITIONS.has(row.position);
-  const advancedEntries = showTd
-    ? TD_METRICS.filter((m) => row[m.key] != null && row.tdRank?.[m.key])
-    : ADVANCED_METRICS.filter((m) => row[m.key] != null && pct[m.key] != null);
+  const advancedEntries = (showTd ? TD_METRICS : ADVANCED_METRICS).filter((m) => row[m.key] != null && row.metricRank?.[m.key]);
 
   return (
     <tr className="stat-detail-row weekly-detail-row">
@@ -729,13 +684,9 @@ export default function WeeklyDetailRow({ row, colSpan, maxSpread, owned, mineSt
                 </div>
                 <div className="weekly-panel-body">
                   {advancedEntries.length > 0 ? (
-                    advancedEntries.map((m) =>
-                      showTd ? (
-                        <RankRow key={m.key} label={m.label} value={row[m.key]} format={m.format} rank={row.tdRank[m.key]} hint={m.hint} />
-                      ) : (
-                        <PctRow key={m.key} label={m.label} value={row[m.key]} pctile={pct[m.key]} format={m.format} hint={m.hint} />
-                      )
-                    )
+                    advancedEntries.map((m) => (
+                      <RankRow key={m.key} label={m.label} value={row[m.key]} format={m.format} rank={row.metricRank[m.key]} hint={m.hint} />
+                    ))
                   ) : (
                     <p className="weekly-opp-caption">
                       {showTd ? "Not enough games yet for a touchdown profile." : "No usage metrics published for this player yet."}
