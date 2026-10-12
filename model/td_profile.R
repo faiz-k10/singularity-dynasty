@@ -4,16 +4,18 @@
 #
 #   xtd_pg     expected touchdowns per game: ffopportunity's expected TDs (how likely each touch was to score, from
 #              its field position), recency-weighted over his last 24 games (half-life 8 games)
-#   p2         chance of 2+ touchdowns in a game: a logistic curve of xtd_pg fitted per position on 2018 through last
-#              season (the same weighting, using only games before each one). Out-of-sample on 2025: AUC ~0.76
-#              for WR and TE; the top WR band is overstated (predicted 12.9% vs 7.8% actual), so the order is more
-#              trustworthy than the exact percentage at the very top.
+#   p2         chance of 2+ touchdowns in a game: a Poisson-shaped curve of xtd_pg (1 - e^-L (1+L), L = a*xtd^b) fitted per
+#              position on 2018 through last season (the same weighting, using only games before each one). Leave-
+#              one-season-out: AUC ~0.76 for WR and TE and calibrated across the range (e.g. WR predicted 7.5% /
+#              11.3% vs actual 8.4% / 8.9% in the 6-10% and 10-15% bands). A WR at 0.84 expected TDs a game reads ~13%.
 #   i10_pg     targets per game from inside the 10-yard line, same weighting
 #   i10_share  share of his targets that came from inside the 10, same weighting
 #
 # Deliberately NOT used: touchdown conversion rate on goal-line targets and the player's own past 2+ TD games.
 # Tested on 2021-25: neither adds anything once role is known (conversion rate ~0.1 correlation with future
 # touchdowns; finishing above expectation does not persist, r ~0.01).
+#
+# Windows use regular-season games only (expected TDs and targets alike).
 #
 # Called from player_groups.R (weekly, after projection_engine.R). Needs the current season's rankings for the pool.
 suppressMessages(library(nflreadr))
@@ -27,6 +29,7 @@ td_wmean <- function(x, w = NULL) {
   ok <- !is.na(x); if (!any(ok)) return(NA_real_)
   sum(wt[ok] * x[ok]) / sum(wt[ok])
 }
+td_p2 <- function(par, x) { L <- exp(par[1]) * x^par[2]; 1 - exp(-L) * (1 + L) }
 td_name_key <- function(x) gsub("[^a-z]", "", tolower(gsub("\\b(jr|sr|ii|iii|iv|v)\\b\\.?", "", x, ignore.case = TRUE)))
 
 td_profile_rows <- function(pool, season, week) {
@@ -35,7 +38,9 @@ td_profile_rows <- function(pool, season, week) {
 
   # expected TDs per player-game, 2018 on
   ffo <- as.data.frame(load_ff_opportunity(2018:season, stat_type = "weekly"))
-  ffo <- ffo[ffo$position %in% c("WR", "TE") & !is.na(ffo$week), ]
+  # Regular season only (weeks 1-18): the feed also carries playoff games, which only some teams play and which would
+  # make one player's 24-game window reach further back than another's.
+  ffo <- ffo[ffo$position %in% c("WR", "TE") & !is.na(ffo$week) & ffo$week <= 18, ]
   ffo <- ffo[order(ffo$player_id, ffo$season, ffo$week), ]
   ffo$td <- ffo$rush_touchdown + ffo$rec_touchdown
   ffo$xtd <- ffo$rush_touchdown_exp + ffo$rec_touchdown_exp
@@ -45,9 +50,13 @@ td_profile_rows <- function(pool, season, week) {
     i <- which(ffo$player_id == id); if (length(i) < TD_MIN_GAMES) next
     for (k in TD_MIN_GAMES:length(i)) ffo$pre[i[k]] <- td_wmean(ffo$xtd[i[max(1, k - TD_WIN):(k - 1)]])
   }
+  # P(2+ TDs) = 1 - exp(-L) * (1 + L) with L = a * xtd^b (a Poisson-shaped curve; a and b fitted per position on
+  # completed seasons only, using each game's pre-game xtd). Replaced a logistic that overstated the top end
+  # (players it put at 15-20%+ actually hit ~13% / ~11%); this curve is calibrated across the range.
   fits <- lapply(c(WR = "WR", TE = "TE"), function(ps) {
-    d <- ffo[ffo$position == ps & !is.na(ffo$pre) & ffo$season < season, ]
-    glm(two ~ pre, d, family = binomial)
+    d <- ffo[ffo$position == ps & !is.na(ffo$pre) & ffo$pre > 0 & ffo$season < season, ]
+    nll <- function(par) { p <- pmin(pmax(td_p2(par, d$pre), 1e-6), 1 - 1e-6); -sum(d$two * log(p) + (1 - d$two) * log(1 - p)) }
+    optim(c(log(0.5), 1.5), nll)$par
   })
 
   # targets and inside-10 targets per player-game, the window's seasons
@@ -72,7 +81,7 @@ td_profile_rows <- function(pool, season, week) {
     f <- ffo[ffo$player_id == id, ]; f <- tail(f, TD_WIN)
     if (nrow(x) < TD_MIN_GAMES || nrow(f) < TD_MIN_GAMES) next
     xtd <- td_wmean(f$xtd)
-    p2 <- 100 * predict(fits[[pool$position[r]]], data.frame(pre = xtd), type = "response")
+    p2 <- 100 * td_p2(fits[[pool$position[r]]], xtd)
     n <- nrow(x); wt <- 0.5^(((n - 1):0) / TD_HL)
     i10_pg <- sum(wt * x$i10) / sum(wt)
     share <- if (sum(wt * x$targets) > 0) 100 * sum(wt * x$i10) / sum(wt * x$targets) else 0
