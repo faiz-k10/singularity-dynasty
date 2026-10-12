@@ -312,8 +312,18 @@ body::before{
    links spread out with justify-content:space-between to fill it — rather
    than justify-content:space-between on the whole header, which crowded
    the links against the fixed theme toggle on the right. */
-.site-header .brandmark{flex:1 1 0; flex-shrink:0; min-width:0; font-size:22px; letter-spacing:0.025em; gap:12px;}
-.site-header .brandmark .ring{width:22px; height:22px;}
+/* The brand name is the most prominent thing in the bar: bigger, bolder, uppercase and widely spaced (still Big Shoulders),
+   scaling with the window so it never runs into the nav at the narrowest full-width size (1180px). */
+.site-header .brandmark{
+  flex:1 1 0; flex-shrink:0; min-width:0; gap:12px;
+  font-size:clamp(22px, 2.05vw, 30px); font-weight:700; letter-spacing:0.08em; text-transform:uppercase; white-space:nowrap;
+}
+.site-header .brandmark .ring{width:clamp(24px, 2vw, 30px); height:clamp(24px, 2vw, 30px);}
+/* Phones: the menu + theme buttons take the right side, so the name steps down (still uppercase, still wide-set). */
+@media (max-width:640px){
+  .site-header .brandmark{font-size:18px; letter-spacing:0.05em; gap:9px;}
+  .site-header .brandmark .ring{width:22px; height:22px;}
+}
 .site-header-spacer{flex:1 1 0;}
 .top-nav-bar{display:flex; align-items:center; justify-content:space-between; gap:20px; flex:1.6 1 0;}
 .top-nav-bar a{
