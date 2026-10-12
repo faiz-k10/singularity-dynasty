@@ -4438,3 +4438,29 @@ a.mine-empty-note{color:var(--horizon-gold);}
 .weekly-opp-flag{display:inline-flex; align-items:center; gap:6px; margin-top:6px; font-family:var(--font-mono), monospace; font-size:11px; letter-spacing:.04em; cursor:help;}
 .weekly-opp-flag-smash{color:var(--horizon-gold);}
 .weekly-opp-flag-avoid{color:var(--neon-blue);}
+
+/* ---------- TYPE ROLES ----------
+   One system so a small widget never mixes three fonts:
+   - Display font (Big Shoulders): headings, the brand, nav, the .btn-primary / .btn-ghost / .round-btn buttons and
+     big figures -- nothing smaller than ~17px except the brand and nav.
+   - Libron (serif): prose and names (players, teams).
+   - Mono (Overpass Mono): everything that is data or chrome -- numbers, chart and axis labels, panel titles and
+     small captions, and every control (buttons, inputs, selects, toggles, filter headers). */
+button, input, select, textarea, summary, label,
+.filter-row-header, .filter-row-chevron, .tier-toggle-label, .tier-toggle a, .tier-toggle button,
+.my-filter-cta, .my-filter-note, .player-search-count, .feed-input, .compare-select, .my-analysis-week-input{
+  font-family:var(--font-mono), monospace;
+}
+/* chart text (SVG) and chart labels */
+svg text, .pctile-vbar-label, .pctile-vbar-value, .pctile-hero-label{font-family:var(--font-mono), monospace;}
+/* small panel / card titles: mono eyebrow style, like "USAGE VS. THE QB POOL" */
+.pctile-card-title, .board-panel-title, .stat-panel-pace-name, .mock-head h4, .portfolio-group-count, .quiz-corner-value, .mac-watermark-text{
+  font-family:var(--font-mono), monospace; letter-spacing:0.06em;
+}
+.pctile-card-title, .board-panel-title, .stat-panel-pace-name{text-transform:uppercase; font-size:12px; font-weight:600;}
+/* names and sentences stay in the serif */
+.compare-radar-card-name, .my-team-saved-name, .league-dash-team, .week-feed-headline, .compare-table thead th, .quiz-prompt{
+  font-family:var(--font-body), Georgia, serif; font-weight:700;
+}
+/* stat-name labels down the left of the stat tables are data labels */
+.stat-detail-table td:first-child, .stat-detail-table tbody th, .compare-table tbody th{font-family:var(--font-mono), monospace;}
