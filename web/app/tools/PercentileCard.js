@@ -148,20 +148,51 @@ export default function PercentileCard({ stats, position, selection, onSelectCel
     const pctile = stat[`${selection.layer}Pctile`];
     const value = stat[`${selection.layer}Value`];
     const t = tier(pctile);
+    const pos = Math.min(100, Math.max(0, pctile ?? 0));
     return (
-      <div className="pctile-card">
+      <div className="pctile-card pctile-card-cell">
         <div className="pctile-card-head">
           <span className="pctile-card-title">
             {stat.label} · {LAYER_LABEL[selection.layer]}
           </span>
           <span className="pctile-card-sub">vs. {position} pool</span>
         </div>
-        <div className="pctile-hero">
-          <span className="pctile-hero-value">{formatValue(value)}</span>
-          <span className="pctile-hero-pctile">{ordinal(pctile)}</span>
-          <span className={`pctile-hero-tier pctile-bar-${t.cls}`}>{t.label}</span>
+        {/* One number picked: the value as a big headline, where it sits on the whole pool's 0-100 scale, and the
+            same stat's three layers underneath (click one to move there), so the panel is never mostly empty. */}
+        <div className="pctile-cell">
+          <div className="pctile-cell-hero">{formatValue(value)}</div>
+          <div className="pctile-cell-read">
+            <span className="pctile-hero-pctile">{ordinal(pctile)} percentile</span>
+            <span className={`pctile-hero-tier pctile-bar-${t.cls}`}>{t.label}</span>
+          </div>
+          <div className="pctile-scale">
+            <div className="pctile-scale-track">
+              <div className={`pctile-scale-fill pctile-bar-${t.cls}`} style={{ width: `${Math.max(pos, 1)}%` }} />
+              <div className="pctile-scale-mid" />
+              <div className="pctile-scale-dot" style={{ left: `${pos}%` }} />
+            </div>
+            <div className="pctile-scale-ticks">
+              {[0, 25, 50, 75, 100].map((n) => (
+                <span key={n} style={{ left: `${n}%` }}>{n}</span>
+              ))}
+            </div>
+          </div>
+          <p className="pctile-cell-sentence">Higher than {Math.round(pos)}% of the {position} pool for this stat.</p>
+          <div className="pctile-layers">
+            {["floor", "median", "ceiling"].map((layer) => (
+              <button
+                key={layer}
+                type="button"
+                className={`pctile-layer${layer === selection.layer ? " pctile-layer-active" : ""}`}
+                onClick={() => onSelectCell(stat.key, layer)}
+              >
+                <span className="pctile-layer-name">{LAYER_LABEL[layer]}</span>
+                <span className="pctile-layer-value">{formatValue(stat[`${layer}Value`])}</span>
+                <span className="pctile-layer-ord">{stat[`${layer}Pctile`] == null ? "—" : ordinal(stat[`${layer}Pctile`])}</span>
+              </button>
+            ))}
+          </div>
         </div>
-        <PercentileBar pctile={pctile} size="lg" />
       </div>
     );
   }

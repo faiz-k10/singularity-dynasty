@@ -3066,6 +3066,39 @@ tr.stat-row-selected td{background:var(--void-panel);}
   padding:3px 8px; border-radius:20px; color:var(--void); font-weight:600;
 }
 
+/* Single number picked in the percentile panel (PercentileCard "cell" mode): a centred headline value, the 0-100 scale
+   with a marker, a plain-English line, and the same stat's three layers as chips -- sized to fill the panel. */
+.pctile-card-cell{display:flex; flex-direction:column; flex:1; min-height:0;}
+.pctile-cell{flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:12px; text-align:center; padding:6px 4px 2px;}
+.pctile-cell-hero{font-family:var(--font-display), sans-serif; font-size:clamp(44px, 7vw, 76px); font-weight:700; line-height:0.95; color:var(--star);}
+.pctile-cell-read{display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap;}
+.pctile-scale{width:100%; max-width:440px; padding:0 6px; box-sizing:border-box;}
+.pctile-scale-track{position:relative; height:12px; border-radius:6px; background:var(--void-panel-2);}
+.pctile-scale-fill{position:absolute; top:0; left:0; bottom:0; border-radius:inherit;}
+.pctile-scale-mid{position:absolute; left:50%; top:-3px; bottom:-3px; width:1px; background:rgba(var(--star-dim-rgb),0.55); transform:translateX(-50%);}
+.pctile-scale-dot{
+  position:absolute; top:50%; width:20px; height:20px; border-radius:50%; transform:translate(-50%, -50%);
+  background:var(--star); border:3px solid var(--horizon-gold); box-shadow:0 0 12px rgba(var(--horizon-gold-rgb),0.45); z-index:2;
+}
+.pctile-scale-ticks{position:relative; height:14px; margin-top:8px;}
+.pctile-scale-ticks span{
+  position:absolute; top:0; transform:translateX(-50%); font-family:var(--font-mono), monospace; font-size:9px; line-height:1; color:var(--star-dim);
+}
+.pctile-scale-ticks span:first-child{transform:none;}
+.pctile-scale-ticks span:last-child{transform:translateX(-100%);}
+.pctile-cell-sentence{margin:0; font-size:12.5px; line-height:1.4; color:var(--star-dim); max-width:36ch;}
+.pctile-layers{display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:8px; width:100%; max-width:440px;}
+.pctile-layer{
+  all:unset; cursor:pointer; box-sizing:border-box; display:flex; flex-direction:column; align-items:center; gap:3px;
+  padding:8px 6px; border-radius:10px; border:1px solid var(--line); background:rgba(var(--star-dim-rgb),0.06);
+}
+.pctile-layer:hover{border-color:rgba(var(--neon-blue-rgb),0.5);}
+.pctile-layer-active{border-color:rgba(var(--horizon-gold-rgb),0.7); background:rgba(var(--horizon-gold-rgb),0.1);}
+.pctile-layer-name{font-family:var(--font-mono), monospace; font-size:9.5px; letter-spacing:0.08em; text-transform:uppercase; color:var(--star-dim);}
+.pctile-layer-value{font-family:var(--font-mono), monospace; font-size:16px; font-weight:700; color:var(--star); font-variant-numeric:tabular-nums;}
+.pctile-layer-active .pctile-layer-value{color:var(--horizon-gold);}
+.pctile-layer-ord{font-family:var(--font-mono), monospace; font-size:11px; color:var(--star-dim); font-variant-numeric:tabular-nums;}
+
 /* ---------- COMPARE PLAYERS ---------- */
 .compare-form{
   display:flex; flex-wrap:wrap; gap:16px; align-items:flex-end;
