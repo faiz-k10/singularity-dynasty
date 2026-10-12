@@ -503,6 +503,7 @@ function StatDetailRow({ row, colSpan, shapePeers, tagsByName, maxCeiling, lastW
               startDeg={radarStartDeg}
               compareEntries={compareEntries}
               onSelectKey={selectRow}
+              tight
             />
           </div>
           <SimilarShapeFinder

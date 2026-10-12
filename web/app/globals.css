@@ -2099,7 +2099,7 @@ a.export-csv-btn{text-decoration:none;}
 /* Radar is an SVG with a fixed viewBox -- shrinking its rendered CSS
    width scales the whole chart (paths AND text) down together, no
    separate font-size overrides needed inside StatRadar.js itself. */
-.stat-detail-grid .stat-panel-radar{max-width:340px;}
+.stat-detail-grid .stat-panel-radar{max-width:340px; justify-content:center;}
 .stat-detail-grid .stat-panel-pace{padding:10px 8px;}
 .stat-detail-grid .stat-panel-pace-portrait-slot{min-height:40px;}
 .stat-detail-grid .pctile-card{margin-top:8px; padding-top:8px;}

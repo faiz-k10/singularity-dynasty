@@ -117,7 +117,12 @@ function bandPath(entries, n, startDeg, outerAt, innerAt) {
 // vertex+layer, nothing else -- mirrors clicking one specific number in
 // the table. Each mode fully replaces the last (see StatDetailRow), so
 // there's never a mix of a stale row and a fresh column both lit up.
-export default function StatRadar({ entries, selection = null, startDeg = -90, compareEntries, onSelectKey }) {
+// tight (the opened-row panel on Player Season Simulations): crop the viewBox to the chart's real content (measured
+// with getBBox, plus a few units of padding) instead of the roomier square used elsewhere, so the same panel width
+// draws the chart ~15-20% larger and nothing is left as dead space around it.
+const TIGHT_VIEWBOX = { up: [30, 42, 232, 186], down: [21, 58, 244, 185] };
+
+export default function StatRadar({ entries, selection = null, startDeg = -90, compareEntries, onSelectKey, tight = false }) {
   if (!entries || entries.length < 3) return null;
   const n = entries.length;
   const columnLayer = selection?.mode === "column" ? selection.layer : null;
@@ -137,7 +142,7 @@ export default function StatRadar({ entries, selection = null, startDeg = -90, c
     : null;
   // See the CROP_* comment above for where these numbers come from.
   const [cropTop, cropBottom] = startDeg === 90 ? [CROP_TOP_DOWN, CROP_BOTTOM_DOWN] : [CROP_TOP_UP, CROP_BOTTOM_UP];
-  const viewBox = `0 ${cropTop} ${SIZE} ${SIZE - cropTop - cropBottom}`;
+  const viewBox = tight ? TIGHT_VIEWBOX[startDeg === 90 ? "down" : "up"].join(" ") : `0 ${cropTop} ${SIZE} ${SIZE - cropTop - cropBottom}`;
 
   return (
     <div className="stat-radar">
