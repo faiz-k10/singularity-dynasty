@@ -292,6 +292,13 @@ export default async function PlayerSimulationsPage({ searchParams }) {
     return r && r.max > r.min ? (row[col] - r.min) / (r.max - r.min) : 0;
   }
   const statPoolByPos = buildStatPoolByPos(poolRows);
+  // WR and TE pooled together per stat (every WR's and TE's floor/median/ceiling): the similar-player comparison rows
+  // rank both players in this one pool, so a TE and a WR are measured on the same scale. Everything else (radar,
+  // percentile bars, the table) keeps the per-position pools above. Built from the whole pool, not the teaser slice.
+  const wrTePool = {};
+  for (const pos of ["WR", "TE"]) {
+    for (const [key, values] of Object.entries(statPoolByPos[pos] || {})) (wrTePool[key] ??= []).push(...values);
+  }
   // Same reasoning as heatFor/maxCeiling above -- the replacement-level
   // baseline has to be drawn from the whole population, not whatever a
   // teaser-truncated fetch happens to include.
@@ -387,6 +394,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
               currentParams={params}
               positions={positions}
               maxCeiling={maxCeiling}
+              wrTePool={wrTePool}
               lastWeek={lastGameWeek}
               simLatestWeek={latest.week}
               leagueTeams={leagueTeams}

@@ -52,7 +52,7 @@ function loadPeers() {
 // A player's label for one tag kind: "role" (archetype), "sus" (sustainability) or "stage" (career stage).
 const tagLabel = (row, kind) => (kind === "role" ? row.archetype : row[kind]);
 
-function StatDetailRow({ row, colSpan, shapePeers, tagsByName, maxCeiling, lastWeek, simLatestWeek, onGoToPlayer, owned }) {
+function StatDetailRow({ row, colSpan, shapePeers, wrTePool, tagsByName, maxCeiling, lastWeek, simLatestWeek, onGoToPlayer, owned }) {
   // Week scrubber state (see the bar at the bottom of the pace panel):
   // null = the latest published week; otherwise a snapshot's week.
   // Which tag (role / sustainability / career stage) is selected: it sets the caption under the pills
@@ -513,6 +513,7 @@ function StatDetailRow({ row, colSpan, shapePeers, tagsByName, maxCeiling, lastW
             statCeilingPercentiles={pv.statCeilingPercentiles}
             stats={percentileStats}
             keys={entries.map(([key]) => key)}
+            comparePool={row.position === "WR" || row.position === "TE" ? wrTePool : undefined}
             peers={shapePool}
             selectedName={compareName}
             selectedLayer={compareLayer}
@@ -568,6 +569,7 @@ const PlayerRow = memo(function PlayerRow({
   expandedFlag,
   maxCeiling,
   shapePeers,
+  wrTePool,
   tagsByName,
   lastWeek,
   simLatestWeek,
@@ -673,6 +675,7 @@ const PlayerRow = memo(function PlayerRow({
           row={row}
           colSpan={COLS}
           shapePeers={shapePeers}
+          wrTePool={wrTePool}
           tagsByName={tagsByName}
           maxCeiling={maxCeiling}
           lastWeek={lastWeek}
@@ -694,7 +697,7 @@ const COLS = SHOW_POR ? 11 : 10;
 // Same pattern as RankingsSearch (Redraft) / BestBallSearch: position-pill
 // filter + player name search, both client-side. Sorting stays
 // server-driven via the existing URL-param mechanism.
-export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams, positions, maxCeiling, lastWeek, simLatestWeek, leagueTeams, superflex, header, mine, gated }) {
+export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams, positions, maxCeiling, wrTePool, lastWeek, simLatestWeek, leagueTeams, superflex, header, mine, gated }) {
   const showPositionFilter = Array.isArray(positions) && positions.length > 0;
   const [selected, setSelected] = useState(positions || []);
   const [query, setQuery] = useState("");
@@ -1107,6 +1110,7 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                   expandedFlag={expanded.has(row.player_name)}
                   maxCeiling={maxCeiling}
                   shapePeers={shapePeers}
+                  wrTePool={wrTePool}
                   tagsByName={tagsByName}
                   lastWeek={lastWeek}
                   simLatestWeek={simLatestWeek}
