@@ -42,12 +42,11 @@ const ADVANCED_METRICS = [
 ];
 
 // WR/TE touchdown profile (model/td_profile.R -> player_groups kind "td_profile", attached in page.js). Replaces
-// the usage rows above for those two positions. Display only. Short labels because the label column is 100px;
+// the usage rows above for those two positions. Display only. No separate "Expected TDs/G" row: the 2+ TD chance is
+// a direct function of it, so it was redundant (removed by request; the number is still in the published detail). Short labels because the label column is 100px;
 // the full explanation is in the hover tip. Deliberately no touchdown-conversion rate: tested, it carries no
 // predictive signal once a player's role is known.
 const TD_METRICS = [
-  { key: "xtdPg", label: "Expected TDs/G", format: (v) => v.toFixed(2),
-    hint: "Expected touchdowns per game: how likely each of his touches was to score given where on the field it happened. Last 24 games, recent games weighted most." },
   { key: "p2Td", label: "2+ TD Chance", format: (v) => `${v.toFixed(1)}%`,
     hint: "Chance of scoring 2 or more touchdowns in a single game, from his expected touchdowns. Treat the order as more reliable than the exact percentage at the very top." },
   { key: "i10Pg", label: "In-10 Tgts/G", format: (v) => v.toFixed(2),

@@ -432,7 +432,7 @@ const getCachedTdProfile = unstable_cache(
 // Where each WR/TE ranks on the four touchdown-profile numbers (1 = highest), among EVERY ranked player at his
 // position that has a profile -- not just the rows a free visitor can see, so a rank means the same thing on every
 // tier. Ties share the better rank. Only the rank and the pool size are exposed, never other players' values.
-const TD_RANK_KEYS = { xtdPg: "xtd_pg", p2Td: "p2", i10Pg: "i10_pg", i10Share: "i10_share" };
+const TD_RANK_KEYS = { p2Td: "p2", i10Pg: "i10_pg", i10Share: "i10_share" };
 function tdRanksByName(rows, tdProfile) {
   const pools = {};
   for (const r of rows) {
@@ -507,7 +507,6 @@ export default async function RedraftRankingsPage({ searchParams }) {
         ryoe: sims.ryoe ?? null,
         scrambleRate: sims.scrambleRate ?? null,
         playActionRate: sims.playActionRate ?? null,
-        xtdPg: tdProfile[r.player_name]?.xtd_pg ?? null,
         p2Td: tdProfile[r.player_name]?.p2 ?? null,
         i10Pg: tdProfile[r.player_name]?.i10_pg ?? null,
         i10Share: tdProfile[r.player_name]?.i10_share ?? null,

@@ -107,6 +107,7 @@ BANK_SEASON_TOTALS <- identical(Sys.getenv("BANK_SEASON_TOTALS", "1"), "1")
 BANKED_HEALTHY_SHARE <- 0.75
 BANKED_COUNT_STATS <- c("passing_tds", "passing_interceptions", "rushing_tds", "receiving_tds")
 if (file.exists("banked_k_table.R")) source("banked_k_table.R")
+source("rec_td_blend.R")   # WR/TE weekly receiving-TD figure (75% expected TDs + 25% slow actual); see its header
 
 # Sums of `g[i]` weighted bootstrap draws of each column of `vals`, for every run i.
 bank_sim_sums <- function(vals, w, g) {
@@ -1087,6 +1088,17 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
     NULL
   })
 
+  # Expected receiving TDs per game (ffopportunity), for rec_td_blend.R's WR/TE weekly receiving-TD figure.
+  # Fails safe: NULL means weekly_scoring_stats keeps the old recency-weighted actual-TD mean.
+  rec_td_exp_hist <- tryCatch({
+    o <- as.data.frame(load_ff_opportunity(seasons = seasons, stat_type = "weekly"))
+    o <- o[o$position %in% c("WR", "TE") & !is.na(o$week), c("player_id", "season", "week", "rec_touchdown_exp")]
+    o[!duplicated(o[, c("player_id", "season", "week")]), ]
+  }, error = function(e) {
+    cat("Expected-TD data unavailable this run -- keeping the old WR/TE receiving-TD method:", conditionMessage(e), "\n")
+    NULL
+  })
+
   # RYOE (RB/QB, display-only -- see RYOE_DECAY's own comment above) --
   # real Next Gen Stats rushing, same per-game/gsis_id join pattern as
   # ngs_receiving_hist above.
@@ -1566,6 +1578,9 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
     # EXCEPTION: td_int columns use WEEKLY_TD_DECAY instead of
     # STAT_GROUP_DECAY$td_int -- see that constant's comment for why the
     # season-total-tuned value is wrong for this next-game target.
+    # SECOND EXCEPTION: WR/TE receiving_tds use rec_td_blend.R (75% expected
+    # TDs + 25% slow-decay actual TDs) instead -- the fast-decay actual-TD
+    # mean above was the worst of every method tested; see that file's header.
     # Targets is a display-only season stat (Player Season Simulations) -- not
     # a scoring component, so it stays out of the weekly scoring_stats JSON
     # that Redraft's custom scoring reads.
@@ -1580,6 +1595,10 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
           STAT_GROUP_DECAY[[group]][pos]
         }
         w_col <- recency_weights(n, decay)
+        if (col == "receiving_tds" && pos %in% c("WR", "TE")) {
+          blended <- blended_rec_td(d, rec_td_exp_hist)
+          if (!is.na(blended)) return(round(blended * applied_mult, 2))
+        }
         round(weighted_mean(col_x, w_col) * applied_mult, 2)
       }), relevant_weekly_stats)
     } else {
