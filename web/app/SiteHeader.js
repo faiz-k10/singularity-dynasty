@@ -189,11 +189,56 @@ export default async function SiteHeader() {
         <nav className="top-nav-bar" id="topNavBar" aria-label="Primary">
           <div className="nav-dropdown">
             <Link href="/#tools">Tools</Link>
-            <div className="nav-dropdown-menu">
-              <Link href="/tools/player-simulations">Player Season Simulations</Link>
-              <Link href="/tools/draft-board">Dynasty Draft Board</Link>
-              <Link href="/tools/redraft-rankings">Weekly Projection Rankings</Link>
-              <Link href="/tools/prospect-rankings">WR/QB Prospect Rankings &amp; Comparisons</Link>
+            {/* Foldout: a wide glass panel that unfolds under the link -- one card per tool (icon, name, what it does,
+                who it is for), plus quick links underneath. CSS-only (:hover / :focus-within), like the other menus. */}
+            <div className="nav-foldout">
+              <div className="nav-foldout-grid">
+                <Link href="/tools/player-simulations" className="nav-fold-card">
+                  <span className="nav-fold-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 20V13M9 20V6M14 20v-9M19 20V9" /><path d="M3 20h18" /></svg>
+                  </span>
+                  <span className="nav-fold-body">
+                    <span className="nav-fold-title">Player Season Simulations</span>
+                    <span className="nav-fold-desc">10,000 simulated seasons per player: floor, median and ceiling.</span>
+                    <span className="nav-fold-chip nf-singularity">Singularity <i>Top 10 free</i></span>
+                  </span>
+                </Link>
+                <Link href="/tools/redraft-rankings" className="nav-fold-card">
+                  <span className="nav-fold-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9 6h12M9 12h12M9 18h12" /><path d="M3.5 6h.01M3.5 12h.01M3.5 18h.01" strokeWidth="3" /></svg>
+                  </span>
+                  <span className="nav-fold-body">
+                    <span className="nav-fold-title">Weekly Projection Rankings</span>
+                    <span className="nav-fold-desc">This week&apos;s matchup-adjusted rankings, with floor and ceiling.</span>
+                    <span className="nav-fold-chip nf-explorer">Explorer <i>Top 50 free</i></span>
+                  </span>
+                </Link>
+                <Link href="/tools/draft-board" className="nav-fold-card">
+                  <span className="nav-fold-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="1.6" /><rect x="13.5" y="3.5" width="7" height="7" rx="1.6" /><rect x="3.5" y="13.5" width="7" height="7" rx="1.6" /><rect x="13.5" y="13.5" width="7" height="7" rx="1.6" /></svg>
+                  </span>
+                  <span className="nav-fold-body">
+                    <span className="nav-fold-title">Dynasty Draft Board</span>
+                    <span className="nav-fold-desc">Startup and rookie boards, round by round, with stacks flagged.</span>
+                    <span className="nav-fold-chip nf-explorer">Explorer <i>Round 1 free</i></span>
+                  </span>
+                </Link>
+                <Link href="/tools/prospect-rankings" className="nav-fold-card">
+                  <span className="nav-fold-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3.5 2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 17l-5.2 2.7 1-5.9-4.3-4.1 5.9-.8Z" /></svg>
+                  </span>
+                  <span className="nav-fold-body">
+                    <span className="nav-fold-title">Prospect Rankings</span>
+                    <span className="nav-fold-desc">WR and QB prospect boards with side-by-side comparisons.</span>
+                    <span className="nav-fold-chip nf-free">Free <i>For everyone</i></span>
+                  </span>
+                </Link>
+              </div>
+              <div className="nav-foldout-foot">
+                <Link href="/tools/compare-players">Compare players →</Link>
+                <Link href="/tools/compare-player-sims">Compare simulations →</Link>
+                <Link href="/#tools">All tools →</Link>
+              </div>
             </div>
           </div>
           <Link href="/#feed">Feed</Link>
