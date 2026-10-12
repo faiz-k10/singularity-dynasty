@@ -356,7 +356,7 @@ body::before{
 }
 .top-nav-bar a.tn-account:hover{border-color:var(--neon-blue); color:var(--neon-blue);}
 .top-nav-bar a.tn-cta{
-  background:linear-gradient(135deg, var(--horizon-gold), var(--horizon));
+  background:linear-gradient(225deg, var(--horizon-gold), var(--horizon));
   color:#1A0D05; padding:7px 24px; border-radius:20px; font-weight:700;
 }
 .top-nav-bar a.tn-cta:hover{box-shadow:0 6px 18px rgba(255,122,69,0.35); color:#1A0D05;}
@@ -375,11 +375,20 @@ body::before{
 @media (max-width:1480px){
   .tn-tier b{font-size:13px; letter-spacing:0.07em;}
 }
-/* The nav is one tight group centred in the bar: the brand and the spacer are equal-width zones either side of it (the brand
-   never shrinks below its own text, so a narrow window just pushes the group off-centre rather than into the brand). */
-.site-header .brandmark{flex:1 1 0; min-width:max-content;}
-.site-header .top-nav-bar{flex:0 0 auto; justify-content:center; gap:clamp(14px, 1.7vw, 28px);}
-.site-header-spacer{flex:1 1 0;}
+/* Layout of the bar: brand | Tools Feed My Team Account | the three-tier pill, which stretches to fill all the room up to just
+   before the theme toggle (the spacer holds the toggle's place: 48px toggle + 78px from the edge, minus the bar's padding). */
+.site-header .brandmark{flex:0 0 auto; min-width:max-content;}
+.site-header .top-nav-bar{flex:1 1 0; justify-content:flex-start; gap:clamp(14px, 1.7vw, 28px);}
+.top-nav-bar a.tn-cta.tn-cta-tiers{flex:1 1 auto; margin-left:clamp(0px, 1vw, 16px);}
+.tn-tier{flex:1 1 0;}
+/* The signature neon blue rings the pill: a crisp 2px line plus a soft glow (it stays on hover; the orange glow is added to it). */
+.top-nav-bar a.tn-cta.tn-cta-tiers{
+  box-shadow:0 0 0 2px var(--neon-blue), 0 0 16px rgba(var(--neon-blue-rgb), 0.45);
+}
+.top-nav-bar a.tn-cta.tn-cta-tiers:hover{
+  box-shadow:0 0 0 2px var(--neon-blue), 0 0 22px rgba(var(--neon-blue-rgb), 0.6), 0 6px 18px rgba(255,122,69,0.35);
+}
+.site-header-spacer{flex:0 0 90px;}
 /* "Tools" dropdown -- CSS-only (:hover/:focus-within, no JS state needed)
    since this only has to work in .top-nav-bar, which is itself hidden
    below 1180px in favor of the hamburger/radial-menu fallback (touch
