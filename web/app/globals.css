@@ -4465,3 +4465,18 @@ svg text, .pctile-vbar-label, .pctile-vbar-value, .pctile-hero-label{font-family
 /* stat-name labels down the left of the stat tables are data labels */
 .stat-detail-table td:first-child, .stat-detail-table tbody th, .compare-table tbody th,
 .stat-detail-row table td:first-child, .stat-detail-row table th:first-child, .stat-detail-grid table td:first-child, .stat-detail-grid table th:first-child{font-family:var(--font-mono), monospace;}
+
+/* Player Sims opened row: the percentile card sits directly on its panel, laid out like the radar next to it
+   (no inner glass box; title centred in the same small mono eyebrow style, "vs. pool" caption under it). */
+.stat-detail-grid .stat-panel-percentile .pctile-card{
+  background:none; box-shadow:none; border:0; border-radius:0; backdrop-filter:none; -webkit-backdrop-filter:none;
+}
+.stat-detail-grid .stat-panel-percentile .pctile-card-head{flex-direction:column; align-items:center; justify-content:flex-start; gap:2px; margin-bottom:4px; text-align:center;}
+.stat-detail-grid .stat-panel-percentile .pctile-card-title{
+  font-size:10px; font-weight:400; letter-spacing:0.08em; color:var(--star-dim); text-align:center;
+}
+.stat-detail-grid .stat-panel-percentile .pctile-card-sub{font-size:9.5px; opacity:0.8;}
+/* In the narrow opened-row panel the five bars share the width instead of overflowing both sides (which clipped the
+   first bar's value and label). */
+.stat-detail-grid .pctile-rows{gap:2px; justify-content:safe center;}
+.stat-detail-grid .pctile-rows .pctile-vbar{flex:1 1 0; min-width:0; width:auto; max-width:56px; padding:4px 2px;}
