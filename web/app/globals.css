@@ -1034,6 +1034,8 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    nothing below it in the fixed bar). */
 .rankings-theater-bar .rankings-theater-controls{display:flex; align-items:center; gap:16px; flex:1; min-width:0;}
 .rankings-theater-bar .player-search-input{margin:0;}
+/* Full-screen view: the name search sits at the right, just left of the expand/collapse button; the filters stay at the left. */
+.rankings-theater-bar.theater .rankings-theater-controls .player-search-input{order:99; margin-left:auto;}
 .rankings-theater-bar .position-filter-row{margin-bottom:0;}
 /* Badges filter -- a dropdown rather than always-visible pills (unlike
    Position's 4 options, 11 badges won't fit inline next to search and
