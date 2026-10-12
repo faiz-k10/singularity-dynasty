@@ -21,6 +21,7 @@ export default function RankingsSearch({
   tableClassName = "",
   showStatColumns = false,
   showCurve = false,
+  showNotes = true,
   maxSpread,
   header, // optional -- when set, wraps header (left) + rightExtra/search (right) in the same
   rightExtra, // top-right split layout Player Sims uses, rendered above the search box
@@ -94,6 +95,7 @@ export default function RankingsSearch({
           showOpponent
           showRange
           showCurve={showCurve}
+          showNotes={showNotes}
           maxSpread={maxSpread}
           sortKey={sortKey}
           sortDir={sortDir}

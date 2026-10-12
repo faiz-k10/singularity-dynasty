@@ -60,6 +60,7 @@ export default function RedraftRankingsClient({ rawRows, sortKey, sortDir, curre
       selected={selectedPositions}
       onTogglePosition={togglePosition}
       tableClassName="redraft-table"
+      showNotes={false}
       showStatColumns
       showCurve
       maxSpread={maxSpread}
