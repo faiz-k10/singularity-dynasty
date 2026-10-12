@@ -163,7 +163,8 @@ export default function PercentileCard({ stats, position, selection, onSelectCel
           </div>
           <div className="pctile-cell-read">
             <span className="pctile-cell-value">
-              {formatValue(value)} <span className="pctile-cell-stat">{stat.label}</span>
+              {formatValue(value)}
+              <span className="pctile-cell-stat">{stat.label}</span>
             </span>
             <span className={`pctile-hero-tier pctile-bar-${t.cls}`}>{t.label}</span>
           </div>
