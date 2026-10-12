@@ -1,25 +1,38 @@
-import { Space_Grotesk, Inter, IBM_Plex_Mono } from "next/font/google";
+import { Big_Shoulders, Overpass_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import Tooltip from "./Tooltip";
 
-const spaceGrotesk = Space_Grotesk({
-  variable: "--font-space-grotesk",
+// Display: Big Shoulders (condensed, scoreboard / jersey-number feel) for headings, the brand name and
+// buttons. Body: Libron (a free OFL serif made for reading; files + license in app/fonts/) for paragraphs and
+// labels. Mono: Overpass Mono for numbers, tables and small labels. Libron ships only Regular / Bold (+ italics),
+// so CSS weights 500/600 resolve to those two.
+// (Google merged "Big Shoulders Display" and "Big Shoulders Text" into one variable font, "Big Shoulders", whose
+// optical-size axis gives the tall display cut at large sizes automatically.)
+const display = Big_Shoulders({
+  variable: "--font-display",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  axes: ["opsz"],
 });
 
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+const body = localFont({
+  variable: "--font-body",
+  display: "swap",
+  fallback: ["Georgia", "serif"],
+  src: [
+    { path: "./fonts/Libron-Regular.woff2", weight: "400", style: "normal" },
+    { path: "./fonts/Libron-Italic.woff2", weight: "400", style: "italic" },
+    { path: "./fonts/Libron-Bold.woff2", weight: "700", style: "normal" },
+    { path: "./fonts/Libron-BoldItalic.woff2", weight: "700", style: "italic" },
+  ],
 });
 
-const ibmPlexMono = IBM_Plex_Mono({
-  variable: "--font-ibm-plex-mono",
+const mono = Overpass_Mono({
+  variable: "--font-mono",
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
+  weight: ["400", "500", "600", "700"],
 });
 
 const SITE_URL = "https://web-kohl-ten-94.vercel.app";
@@ -49,7 +62,7 @@ export default function RootLayout({ children }) {
   return (
     <html
       lang="en"
-      className={`${spaceGrotesk.variable} ${inter.variable} ${ibmPlexMono.variable}`}
+      className={`${display.variable} ${body.variable} ${mono.variable}`}
       suppressHydrationWarning
     >
       <head>

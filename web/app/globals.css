@@ -176,7 +176,7 @@ html[data-theme="light"]{color-scheme:light;}
 body{
   background:var(--void);
   color:var(--star);
-  font-family:var(--font-inter), sans-serif;
+  font-family:var(--font-body), Georgia, serif;
   line-height:1.55;
   -webkit-font-smoothing:antialiased;
   padding-top:38px;
@@ -184,11 +184,11 @@ body{
   transition:background-color .3s ease, color .3s ease;
 }
 h1,h2,h3,.display{
-  font-family:var(--font-space-grotesk), sans-serif;
+  font-family:var(--font-display), sans-serif;
   letter-spacing:-0.01em;
   font-weight:600;
 }
-.mono{font-family:var(--font-ibm-plex-mono), monospace;}
+.mono{font-family:var(--font-mono), monospace;}
 a{color:inherit;}
 .wrap{max-width:1320px; margin:0 auto; padding:0 28px;}
 img,svg{display:block;}
@@ -218,7 +218,7 @@ body::before{
   opacity:0.28; pointer-events:none;
 }
 .ticker-track{display:inline-flex; gap:36px; padding:4px 0; animation:scroll-ticker 40s linear infinite;}
-.ticker-item{font-family:var(--font-ibm-plex-mono), monospace; font-size:12px; color:var(--star-dim); display:inline-flex; gap:8px; align-items:center;}
+.ticker-item{font-family:var(--font-mono), monospace; font-size:12px; color:var(--star-dim); display:inline-flex; gap:8px; align-items:center;}
 @keyframes scroll-ticker{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
 
 /* Ticker badges -- a random assortment of the same Confidence/Bounce-
@@ -257,7 +257,7 @@ body::before{
 /* ---------- BRAND MARK ---------- */
 .brandmark{
   display:flex; align-items:center; gap:10px;
-  font-family:var(--font-space-grotesk), sans-serif; font-size:15px; font-weight:600; letter-spacing:0.01em;
+  font-family:var(--font-display), sans-serif; font-size:15px; font-weight:600; letter-spacing:0.01em;
   text-decoration:none; color:var(--star);
 }
 .brandmark .ring{
@@ -317,7 +317,7 @@ body::before{
 .site-header-spacer{flex:1 1 0;}
 .top-nav-bar{display:flex; align-items:center; justify-content:space-between; gap:20px; flex:1.6 1 0;}
 .top-nav-bar a{
-  font-family:var(--font-space-grotesk), sans-serif; font-size:14.5px; font-weight:700;
+  font-family:var(--font-display), sans-serif; font-size:14.5px; font-weight:700;
   color:var(--star); text-decoration:none; letter-spacing:0.015em; white-space:nowrap;
   position:relative; padding:6px 1px; transition:color .2s ease;
 }
@@ -469,7 +469,7 @@ body::before{
 .radial-menu.open{clip-path:circle(160% at calc(100% - 46px) 72px); pointer-events:auto;}
 .radial-menu nav{display:flex; flex-direction:column; gap:24px; text-align:center;}
 .radial-menu a{
-  font-family:var(--font-space-grotesk), sans-serif; font-size:clamp(26px,5vw,40px); text-decoration:none; color:var(--star);
+  font-family:var(--font-display), sans-serif; font-size:clamp(26px,5vw,40px); text-decoration:none; color:var(--star);
   opacity:0; transform:translateY(16px); transition:opacity .45s ease, transform .45s ease, color .2s ease;
 }
 .radial-menu a:hover{color:var(--horizon-gold);}
@@ -488,7 +488,7 @@ body::before{
 .orbit-dot{width:9px; height:9px; border-radius:50%; background:var(--void-panel-2); border:1px solid var(--neon-blue-dim); position:relative; cursor:pointer; transition:background .25s ease, border-color .25s ease, transform .25s ease;}
 .orbit-dot::after{
   content:attr(data-label); position:absolute; right:20px; top:50%; transform:translateY(-50%);
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase;
+  font-family:var(--font-mono), monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase;
   color:var(--star-dim); white-space:nowrap; opacity:0; transition:opacity .2s ease; pointer-events:none;
 }
 .orbit-dot:hover::after, .orbit-dot.active::after{opacity:1;}
@@ -501,7 +501,7 @@ body::before{
 .eh-meter circle{fill:none; stroke-width:2;}
 .eh-track{stroke:var(--line);}
 .eh-fill{stroke:var(--horizon-gold); stroke-linecap:round; transition:stroke-dashoffset .1s linear;}
-.eh-pct{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:var(--font-ibm-plex-mono), monospace; font-size:9px; color:var(--star-dim);}
+.eh-pct{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:var(--font-mono), monospace; font-size:9px; color:var(--star-dim);}
 @media (max-width:640px){.eh-meter{display:none;}}
 
 /* ---------- SCROLL REVEAL ---------- */
@@ -518,7 +518,7 @@ section{padding:96px 0 20px; position:relative;}
 #tools{padding-top:56px;}
 #tools .section-head{margin-bottom:28px;}
 .eyebrow{
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:12px; color:var(--horizon-gold);
+  font-family:var(--font-mono), monospace; font-size:12px; color:var(--horizon-gold);
   letter-spacing:0.14em; text-transform:uppercase; margin-bottom:18px;
   display:flex; align-items:center; gap:10px;
 }
@@ -555,6 +555,8 @@ section{padding:96px 0 20px; position:relative;}
   transition:box-shadow .2s ease, transform .18s var(--ease);
 }
 .btn-primary:hover{box-shadow:0 8px 24px rgba(255,122,69,0.35);}
+/* Buttons use the headline font (condensed, uppercase) rather than the serif body font. */
+.btn-primary, .btn-ghost, .round-btn{font-family:var(--font-display), sans-serif; text-transform:uppercase; letter-spacing:0.07em; font-size:16px; font-weight:700;}
 .btn-ghost{
   background:transparent; color:var(--star); padding:15px 28px; font-weight:600; font-size:14px;
   border:1px solid var(--line); border-radius:30px; cursor:pointer; text-decoration:none; display:inline-block;
@@ -575,7 +577,7 @@ section{padding:96px 0 20px; position:relative;}
   animation:os-pulse 6s ease-in-out infinite;
   display:flex; align-items:center; justify-content:center; text-align:center;
 }
-.os-core span{font-family:var(--font-ibm-plex-mono), monospace; font-size:10px; color:#1A0D05; font-weight:700; letter-spacing:0.05em;}
+.os-core span{font-family:var(--font-mono), monospace; font-size:10px; color:#1A0D05; font-weight:700; letter-spacing:0.05em;}
 @keyframes os-pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.05);}}
 .os-chips-layer{position:absolute; inset:0; transform:rotate(var(--drag-rot, 0deg)); cursor:grab; touch-action:none;}
 .os-chips-layer:active{cursor:grabbing;}
@@ -583,7 +585,7 @@ section{padding:96px 0 20px; position:relative;}
 .os-chip .chip-inner{
   transform:rotate(calc(-1 * var(--ang) - var(--drag-rot, 0deg)));
   background:var(--void-panel); border:1px solid var(--line); border-radius:20px; padding:7px 13px;
-  display:flex; gap:8px; align-items:center; font-family:var(--font-ibm-plex-mono), monospace; font-size:11px; white-space:nowrap;
+  display:flex; gap:8px; align-items:center; font-family:var(--font-mono), monospace; font-size:11px; white-space:nowrap;
   box-shadow:0 10px 24px rgba(var(--shadow-rgb),0.45); cursor:grab;
   transition:border-color .2s ease, box-shadow .2s ease, transform .2s var(--ease);
 }
@@ -606,22 +608,22 @@ section{padding:96px 0 20px; position:relative;}
 
 .mock-panel{background:var(--void-panel-2); border:1px solid var(--line); border-radius:10px; padding:18px;}
 .mock-head{display:flex; justify-content:space-between; align-items:baseline; border-bottom:1px solid var(--line); padding-bottom:9px; margin-bottom:12px;}
-.mock-head h4{font-family:var(--font-space-grotesk), sans-serif; font-size:12px; letter-spacing:0.03em; color:var(--star); font-weight:600;}
-.mock-head span{font-family:var(--font-ibm-plex-mono), monospace; font-size:10px; color:var(--horizon-gold);}
+.mock-head h4{font-family:var(--font-display), sans-serif; font-size:12px; letter-spacing:0.03em; color:var(--star); font-weight:600;}
+.mock-head span{font-family:var(--font-mono), monospace; font-size:10px; color:var(--horizon-gold);}
 
 .board-row{display:flex; align-items:center; gap:10px; padding:7px 0; border-bottom:1px dashed var(--line); font-size:12.5px;}
 .board-row:last-child{border-bottom:none;}
-.board-rank{font-family:var(--font-ibm-plex-mono), monospace; color:var(--star-dim); width:14px; flex-shrink:0;}
+.board-rank{font-family:var(--font-mono), monospace; color:var(--star-dim); width:14px; flex-shrink:0;}
 .board-name{flex:1; color:var(--star); font-weight:500;}
-.board-pos{font-family:var(--font-ibm-plex-mono), monospace; font-size:10px; color:var(--star-dim); margin-left:6px;}
-.board-tier{font-family:var(--font-ibm-plex-mono), monospace; font-size:10px; font-weight:700; width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+.board-pos{font-family:var(--font-mono), monospace; font-size:10px; color:var(--star-dim); margin-left:6px;}
+.board-tier{font-family:var(--font-mono), monospace; font-size:10px; font-weight:700; width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
 .tier-s{background:rgba(255,199,115,0.18); color:var(--horizon-gold); border:1px solid rgba(255,199,115,0.4);}
 .tier-a{background:rgba(61,220,255,0.15); color:var(--neon-blue); border:1px solid rgba(61,220,255,0.35);}
 
 .chart-bars{display:flex; align-items:flex-end; gap:8px; height:100px; margin-bottom:8px;}
 .chart-bars .bar{flex:1; background:var(--void-panel); border:1px solid var(--line); border-radius:3px 3px 0 0;}
 .chart-bars .bar.accent{background:linear-gradient(180deg, var(--neon-blue), var(--neon-blue-dim)); border-color:var(--neon-blue);}
-.chart-labels{display:flex; justify-content:space-between; font-family:var(--font-ibm-plex-mono), monospace; font-size:10px; color:var(--star-dim);}
+.chart-labels{display:flex; justify-content:space-between; font-family:var(--font-mono), monospace; font-size:10px; color:var(--star-dim);}
 
 /* ---------- TOOLS — ORBITAL SELECTOR (mobile-first; curved-horizon layout only on wide viewports where it can't collide) ---------- */
 .orbital-selector{position:relative; display:flex; flex-direction:column;}
@@ -632,11 +634,11 @@ section{padding:96px 0 20px; position:relative;}
 .hub-panel{display:none; opacity:0;}
 .hub-panel.active{display:block; opacity:1; animation:hub-in .5s var(--ease);}
 @keyframes hub-in{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
-.hub-tag{font-family:var(--font-ibm-plex-mono), monospace; font-size:10px; color:var(--horizon-gold); letter-spacing:0.08em; text-transform:uppercase; margin-bottom:10px; display:inline-block;}
+.hub-tag{font-family:var(--font-mono), monospace; font-size:10px; color:var(--horizon-gold); letter-spacing:0.08em; text-transform:uppercase; margin-bottom:10px; display:inline-block;}
 .hub-panel h3{font-size:20px; margin-bottom:10px;}
 .hub-panel p{font-size:13.5px; color:var(--star-dim); line-height:1.6;}
 .hub-panel-link{
-  display:inline-block; margin-bottom:14px; font-family:var(--font-ibm-plex-mono), monospace; font-size:12px;
+  display:inline-block; margin-bottom:14px; font-family:var(--font-mono), monospace; font-size:12px;
   color:var(--neon-blue); text-decoration:none; letter-spacing:0.02em;
 }
 .hub-panel-link:hover{color:var(--horizon-gold);}
@@ -675,7 +677,7 @@ section{padding:96px 0 20px; position:relative;}
   text-align:left; color:var(--star); cursor:pointer; display:flex; flex-direction:column; gap:4px;
   transition:border-color .25s ease, background .25s ease, transform .25s var(--ease), box-shadow .25s ease;
 }
-.node-label{font-family:var(--font-space-grotesk), sans-serif; font-size:15px; font-weight:600; line-height:1.3;}
+.node-label{font-family:var(--font-display), sans-serif; font-size:15px; font-weight:600; line-height:1.3;}
 .node:hover{border-color:var(--neon-blue);}
 .node.active{border-color:var(--horizon-gold); background:linear-gradient(180deg, rgba(255,199,115,0.10), var(--void-panel)); box-shadow:0 12px 28px rgba(255,122,69,0.18);}
 
@@ -733,7 +735,7 @@ section{padding:96px 0 20px; position:relative;}
 .toggle.on{border-color:var(--horizon);}
 .toggle.on .knob{transform:translateX(24px); background:var(--horizon-gold);}
 .toggle-row span{font-size:14px; font-weight:600;}
-.save-tag{font-family:var(--font-ibm-plex-mono), monospace; font-size:11px; background:rgba(255,122,69,0.15); color:var(--horizon-gold); padding:3px 9px; border-radius:20px; font-weight:600; border:1px solid rgba(255,122,69,0.3);}
+.save-tag{font-family:var(--font-mono), monospace; font-size:11px; background:rgba(255,122,69,0.15); color:var(--horizon-gold); padding:3px 9px; border-radius:20px; font-weight:600; border:1px solid rgba(255,122,69,0.3);}
 
 /* Bento hierarchy, not three identical boxes: the featured tier gets
    genuine extra visual weight (a wider column, more padding, a scale
@@ -771,7 +773,7 @@ section{padding:96px 0 20px; position:relative;}
 @media (max-width:900px){
   .round-card.featured{transform:none;}
 }
-.round-label{font-family:var(--font-ibm-plex-mono), monospace; font-size:11px; letter-spacing:0.08em; color:var(--star-dim); text-transform:uppercase; margin-bottom:6px;}
+.round-label{font-family:var(--font-mono), monospace; font-size:11px; letter-spacing:0.08em; color:var(--star-dim); text-transform:uppercase; margin-bottom:6px;}
 .round-card.featured .round-label{color:var(--horizon-gold);}
 /* Badge sits inline next to the tier name itself (not a floating ribbon
    pinned to the card's top edge) -- reads as part of the title at a
@@ -780,7 +782,7 @@ section{padding:96px 0 20px; position:relative;}
 .round-title-row h3{margin-bottom:0;}
 .round-card h3{font-size:22px; margin-bottom:4px;}
 .round-badge{
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:11px; font-weight:700; letter-spacing:0.06em;
+  font-family:var(--font-mono), monospace; font-size:11px; font-weight:700; letter-spacing:0.06em;
   padding:4px 12px; border-radius:20px; white-space:nowrap; line-height:1.4;
 }
 .round-badge-gold{
@@ -791,9 +793,9 @@ section{padding:96px 0 20px; position:relative;}
   background:linear-gradient(135deg, var(--neon-blue), var(--neon-blue-dim)); color:#07131A;
   box-shadow:0 4px 14px rgba(var(--neon-blue-rgb),0.4);
 }
-.round-price{font-family:var(--font-space-grotesk), sans-serif; font-size:38px; font-weight:700; margin:14px 0 2px;}
+.round-price{font-family:var(--font-display), sans-serif; font-size:38px; font-weight:700; margin:14px 0 2px;}
 .round-price sup{font-size:16px; font-weight:500; margin-right:2px;}
-.round-price sub{font-family:var(--font-inter), sans-serif; font-size:13px; font-weight:400; color:var(--star-dim);}
+.round-price sub{font-family:var(--font-body), Georgia, serif; font-size:13px; font-weight:400; color:var(--star-dim);}
 .round-desc{font-size:13.5px; color:var(--star-dim); margin-bottom:20px;}
 .round-features{list-style:none; margin-bottom:26px; flex:1;}
 .round-features li{font-size:13.5px; padding:8px 0; border-bottom:1px dashed var(--line); display:flex; gap:9px; align-items:flex-start; color:var(--star);}
@@ -818,7 +820,7 @@ section{padding:96px 0 20px; position:relative;}
 .feed-input-row{display:flex; gap:10px; flex-wrap:wrap;}
 .feed-input{
   flex:1; min-width:200px; background:var(--void-panel-2); border:1px solid var(--line); border-radius:30px;
-  padding:14px 20px; color:var(--star); font-family:var(--font-inter), sans-serif; font-size:14px; outline:none;
+  padding:14px 20px; color:var(--star); font-family:var(--font-body), Georgia, serif; font-size:14px; outline:none;
   transition:border-color .2s ease, box-shadow .2s ease;
 }
 .feed-input::placeholder{color:var(--star-dim);}
@@ -844,7 +846,7 @@ section{padding:96px 0 20px; position:relative;}
 
 footer{background:var(--void-panel); border-top:1px solid var(--line); padding:36px 0;}
 footer .wrap{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;}
-footer .fbrand{font-family:var(--font-space-grotesk), sans-serif; font-size:15px;}
+footer .fbrand{font-family:var(--font-display), sans-serif; font-size:15px;}
 footer .flinks{display:flex; gap:18px 22px; font-size:13px; flex-wrap:wrap;}
 footer .flinks a{text-decoration:none; color:var(--star-dim); position:relative;}
 footer .flinks a::after{content:''; position:absolute; left:0; bottom:-3px; width:0; height:1px; background:var(--horizon-gold); transition:width .25s ease;}
@@ -890,7 +892,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .auth-actions form{display:contents;}
 
 .account-tier{background:var(--void-panel-2); border:1px solid var(--line); border-radius:12px; padding:18px 20px; margin-bottom:24px;}
-.account-tier-name{font-family:var(--font-space-grotesk), sans-serif; font-size:24px; font-weight:700; color:var(--horizon-gold); margin-top:6px;}
+.account-tier-name{font-family:var(--font-display), sans-serif; font-size:24px; font-weight:700; color:var(--horizon-gold); margin-top:6px;}
 
 /* ---------- LEGAL PAGES (privacy / terms / disclaimer / contact) ---------- */
 .legal-card{
@@ -899,7 +901,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 }
 .legal-card::before{content:''; position:absolute; top:-1px; left:16px; right:16px; height:1px; background:linear-gradient(90deg, transparent, var(--horizon-gold), var(--neon-blue), transparent);}
 .legal-card h1{font-size:28px; margin-bottom:8px;}
-.legal-updated{font-family:var(--font-ibm-plex-mono), monospace; font-size:11px; color:var(--star-dim); letter-spacing:0.08em; text-transform:uppercase; margin-bottom:36px;}
+.legal-updated{font-family:var(--font-mono), monospace; font-size:11px; color:var(--star-dim); letter-spacing:0.08em; text-transform:uppercase; margin-bottom:36px;}
 .legal-card h2{font-size:18px; margin:30px 0 12px; color:var(--star);}
 .legal-card h2:first-of-type{margin-top:0;}
 .legal-card p{font-size:14px; line-height:1.75; color:var(--star-dim); margin-bottom:14px;}
@@ -1044,7 +1046,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .theater-badge-filter-btn{
   display:inline-flex; align-items:center; gap:6px; height:34px; padding:0 12px;
   background:transparent; border:1px solid var(--line); border-radius:var(--radius);
-  color:var(--star-dim); font-family:var(--font-ibm-plex-mono), monospace; font-size:13px; cursor:pointer;
+  color:var(--star-dim); font-family:var(--font-mono), monospace; font-size:13px; cursor:pointer;
   white-space:nowrap;
 }
 .theater-badge-filter-btn:hover{border-color:var(--neon-blue); color:var(--star);}
@@ -1059,7 +1061,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .theater-badge-pill{
   display:inline-flex; align-items:center; gap:6px; padding:5px 10px;
   background:transparent; border:1px solid var(--line); border-radius:999px;
-  color:var(--star-dim); font-family:var(--font-ibm-plex-mono), monospace; font-size:12px; cursor:pointer; white-space:nowrap;
+  color:var(--star-dim); font-family:var(--font-mono), monospace; font-size:12px; cursor:pointer; white-space:nowrap;
 }
 .theater-badge-pill:hover{border-color:var(--neon-blue); color:var(--star);}
 .theater-badge-pill.active{background:var(--void-panel-2); border-color:var(--horizon-gold); color:var(--star);}
@@ -1105,7 +1107,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    content needs. */
 .rankings-table{width:100%; min-width:max-content; border-collapse:collapse; font-size:14px;}
 .rankings-table th{
-  text-align:center; font-family:var(--font-ibm-plex-mono), monospace; font-size:11px; letter-spacing:0.08em;
+  text-align:center; font-family:var(--font-mono), monospace; font-size:11px; letter-spacing:0.08em;
   text-transform:uppercase; color:var(--star-dim); padding:8px 18px; border-bottom:1px solid var(--line);
   background:var(--void-panel-2); white-space:nowrap;
 }
@@ -1128,7 +1130,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .tool-export-row{display:flex; justify-content:flex-end; margin-bottom:20px;}
 .export-csv-btn{
   background:transparent; color:var(--neon-blue); border:1px solid rgba(var(--neon-blue-rgb),0.4); border-radius:20px;
-  padding:8px 16px; font-family:var(--font-ibm-plex-mono), monospace; font-size:12px; font-weight:600; letter-spacing:0.02em;
+  padding:8px 16px; font-family:var(--font-mono), monospace; font-size:12px; font-weight:600; letter-spacing:0.02em;
   cursor:pointer; display:inline-flex; align-items:center; white-space:nowrap;
   transition:border-color .2s ease, color .2s ease, box-shadow .2s ease;
 }
@@ -1423,7 +1425,7 @@ a.export-csv-btn{text-decoration:none;}
    such variance, so this is deterministic everywhere. */
 .trend-tag{
   display:inline-flex; align-items:center; justify-content:center; width:19px; height:19px;
-  font-size:10px; font-weight:700; font-family:var(--font-ibm-plex-mono), monospace;
+  font-size:10px; font-weight:700; font-family:var(--font-mono), monospace;
   border-radius:50%; background:var(--void-panel-2); border:1px solid var(--line);
   flex-shrink:0; cursor:default; vertical-align:middle;
   box-shadow:0 1px 2px rgba(var(--shadow-rgb),0.3);
@@ -1477,7 +1479,7 @@ a.export-csv-btn{text-decoration:none;}
 /* Best Ball Rankings — This Week ceiling range + hit-probability badge */
 .ceiling-cell{white-space:nowrap;}
 .ceiling-pct{
-  margin-left:7px; font-size:10.5px; color:var(--star-dim); font-family:var(--font-ibm-plex-mono), monospace;
+  margin-left:7px; font-size:10.5px; color:var(--star-dim); font-family:var(--font-mono), monospace;
   background:var(--void-panel-2); border:1px solid var(--line); border-radius:10px; padding:1px 6px;
 }
 
@@ -1534,10 +1536,10 @@ a.export-csv-btn{text-decoration:none;}
 .outcome-curve-detail{width:100%; max-width:440px; height:210px; display:block; margin:0 auto;}
 .outcome-curve-peak-dot{fill:var(--horizon-gold);}
 .outcome-curve-median-label{
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:19px; font-weight:600;
+  font-family:var(--font-mono), monospace; font-size:19px; font-weight:600;
   fill:var(--horizon-gold); text-transform:uppercase; letter-spacing:0.02em;
 }
-.outcome-curve-end-label{font-family:var(--font-ibm-plex-mono), monospace; font-size:16px;}
+.outcome-curve-end-label{font-family:var(--font-mono), monospace; font-size:16px;}
 .outcome-curve-end-label-floor{fill:var(--down);}
 .outcome-curve-end-label-ceiling{fill:var(--neon-blue);}
 /* Percentile-vs-pool ordinal folded directly onto each of the curve's own
@@ -1547,7 +1549,7 @@ a.export-csv-btn{text-decoration:none;}
    the bold value above it, not a fourth label competing for attention --
    sizing has otherwise scaled up right along with the two labels above. */
 .outcome-curve-pct-label{
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:14px; fill:var(--star-dim);
+  font-family:var(--font-mono), monospace; font-size:14px; fill:var(--star-dim);
 }
 
 /* .tier-toggle/.tier-toggle-label: shared pill-button styling for the
@@ -1588,7 +1590,7 @@ a.export-csv-btn{text-decoration:none;}
 .filter-row-header:hover{background:var(--void-panel-2);}
 .filter-row-chevron{display:inline-block; font-size:11px; color:var(--star-dim); transition:transform .2s ease;}
 .filter-row-chevron-open{transform:rotate(90deg);}
-.filter-row-value{margin-left:auto; font-size:13px; color:var(--star-dim); font-family:var(--font-ibm-plex-mono), monospace;}
+.filter-row-value{margin-left:auto; font-size:13px; color:var(--star-dim); font-family:var(--font-mono), monospace;}
 .filter-row-value-active{color:var(--horizon-gold); font-weight:600;}
 .filter-row .position-filter-row, .filter-row .tier-toggle{margin:0 20px 16px;}
 .filter-row .tier-toggle{display:flex;}
@@ -1608,7 +1610,7 @@ a.export-csv-btn{text-decoration:none;}
    team-code text in the Team column. */
 .team-badge{
   display:inline-flex; align-items:center; justify-content:center; min-width:34px; height:19px;
-  padding:0 7px; border-radius:9px; font-family:var(--font-ibm-plex-mono), monospace;
+  padding:0 7px; border-radius:9px; font-family:var(--font-mono), monospace;
   font-size:10.5px; font-weight:700; letter-spacing:0.02em;
 }
 
@@ -1620,7 +1622,7 @@ a.export-csv-btn{text-decoration:none;}
    truly missing team. */
 .position-badge{
   display:inline-flex; align-items:center; justify-content:center; min-width:34px; height:19px;
-  padding:0 7px; border-radius:9px; font-family:var(--font-ibm-plex-mono), monospace;
+  padding:0 7px; border-radius:9px; font-family:var(--font-mono), monospace;
   font-size:10.5px; font-weight:700; letter-spacing:0.02em;
   background:var(--void-panel-2); color:var(--star-dim);
 }
@@ -1634,7 +1636,7 @@ a.export-csv-btn{text-decoration:none;}
    the text and the border together. */
 .slot-badge{
   display:inline-flex; align-items:center; justify-content:center; min-width:34px; height:19px;
-  padding:0 8px; border-radius:9px; font-family:var(--font-ibm-plex-mono), monospace;
+  padding:0 8px; border-radius:9px; font-family:var(--font-mono), monospace;
   font-size:10.5px; font-weight:700; letter-spacing:0.02em;
   background:transparent; border:1.5px solid currentColor; color:var(--star-dim);
 }
@@ -1671,7 +1673,7 @@ a.export-csv-btn{text-decoration:none;}
    within the full cell width the same way every other column's plain
    text-align:center does. */
 .matchup-combined-cell{display:flex; width:100%; align-items:center; justify-content:center; gap:7px;}
-.matchup-bye{font-family:var(--font-ibm-plex-mono), monospace; font-size:10.5px; letter-spacing:0.08em; color:var(--star-dim); white-space:nowrap;}
+.matchup-bye{font-family:var(--font-mono), monospace; font-size:10.5px; letter-spacing:0.08em; color:var(--star-dim); white-space:nowrap;}
 .matchup-sep{font-size:11px; color:var(--star-dim); text-transform:uppercase; letter-spacing:0.02em;}
 
 /* Heat-tint for a table's primary value column (Median / Projection /
@@ -1710,11 +1712,11 @@ a.export-csv-btn{text-decoration:none;}
 .board-toggle button.active{background:var(--horizon-gold); color:#1A0D05;}
 .draft-round{margin-bottom:32px;}
 .draft-round-title{
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:12px; letter-spacing:0.08em; text-transform:uppercase;
+  font-family:var(--font-mono), monospace; font-size:12px; letter-spacing:0.08em; text-transform:uppercase;
   color:var(--neon-blue); margin-bottom:12px;
 }
 .stack-badge{
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:10px; font-weight:700; letter-spacing:0.05em;
+  font-family:var(--font-mono), monospace; font-size:10px; font-weight:700; letter-spacing:0.05em;
   background:rgba(255,122,69,0.15); color:var(--horizon-gold); border:1px solid rgba(255,122,69,0.35);
   padding:3px 8px; border-radius:20px; cursor:default;
 }
@@ -1734,18 +1736,18 @@ a.export-csv-btn{text-decoration:none;}
 .player-search-row{display:flex; align-items:center; gap:12px; margin-bottom:16px;}
 .player-search-input{
   flex:0 1 320px; background:var(--void-panel-2); border:1px solid var(--line); border-radius:10px;
-  padding:10px 14px; font-family:var(--font-ibm-plex-mono), monospace; font-size:13px; color:var(--star);
+  padding:10px 14px; font-family:var(--font-mono), monospace; font-size:13px; color:var(--star);
   outline:none; transition:border-color .2s ease;
 }
 .player-search-input::placeholder{color:var(--star-dim);}
 .player-search-input:focus{border-color:var(--neon-blue);}
-.player-search-count{font-family:var(--font-ibm-plex-mono), monospace; font-size:11.5px; color:var(--star-dim);}
+.player-search-count{font-family:var(--font-mono), monospace; font-size:11.5px; color:var(--star-dim);}
 @media (max-width:640px){.player-search-input{flex:1 1 auto;}}
 
 /* Redraft Rankings — By Position view: multi-select position pills */
 .position-filter-row{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;}
 .position-pill{
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:12.5px; font-weight:600; letter-spacing:0.03em;
+  font-family:var(--font-mono), monospace; font-size:12.5px; font-weight:600; letter-spacing:0.03em;
   padding:8px 18px; border-radius:20px; background:var(--void-panel-2); border:1px solid var(--line);
   color:var(--star-dim); cursor:pointer; transition:border-color .2s ease, background .2s ease, color .2s ease;
 }
@@ -1760,11 +1762,11 @@ a.export-csv-btn{text-decoration:none;}
    own standalone rules. */
 .scoring-panel-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;}
 .scoring-panel-title{
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:12px; font-weight:700; letter-spacing:0.06em;
+  font-family:var(--font-mono), monospace; font-size:12px; font-weight:700; letter-spacing:0.06em;
   text-transform:uppercase; color:var(--star-dim);
 }
 .scoring-reset-btn{
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:12px; color:var(--neon-blue);
+  font-family:var(--font-mono), monospace; font-size:12px; color:var(--neon-blue);
   background:none; border:none; cursor:pointer; padding:2px 0; text-decoration:underline; text-underline-offset:2px;
 }
 .scoring-reset-btn:hover{color:var(--horizon-gold);}
@@ -1822,7 +1824,7 @@ a.export-csv-btn{text-decoration:none;}
      inside of. Without this, a tick centered on the same x position as
      the thumb (see the percentage-positioning comment above) visibly
      collides with it every time, not just at the endpoints. */
-  position:relative; height:14px; margin-top:10px; font-family:var(--font-ibm-plex-mono), monospace;
+  position:relative; height:14px; margin-top:10px; font-family:var(--font-mono), monospace;
   font-size:10.5px; color:var(--star-dim);
 }
 .scoring-slider-ticks span{position:absolute; top:0; transform:translateX(-50%); white-space:nowrap;}
@@ -1862,11 +1864,11 @@ a.export-csv-btn{text-decoration:none;}
 .position-col:first-child .player-popover{left:0; transform:none;}
 .position-col:last-child .player-popover{left:auto; right:0; transform:none;}
 .player-popover-row{display:flex; justify-content:space-between; gap:12px; font-size:12px; color:var(--star-dim); padding:2px 0;}
-.player-popover-row span:last-child{font-family:var(--font-ibm-plex-mono), monospace; color:var(--star);}
+.player-popover-row span:last-child{font-family:var(--font-mono), monospace; color:var(--star);}
 .player-popover-notes{margin-top:8px; padding-top:8px; border-top:1px dashed var(--line); font-size:12px; line-height:1.5; color:var(--star-dim);}
 .player-popover-compare{
   display:inline-flex; align-items:center; gap:4px; margin-top:10px;
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:11px; font-weight:600; letter-spacing:0.03em;
+  font-family:var(--font-mono), monospace; font-size:11px; font-weight:600; letter-spacing:0.03em;
   color:var(--horizon-gold); text-decoration:none; border:1px solid rgba(255,199,115,0.35);
   background:rgba(255,199,115,0.1); border-radius:20px; padding:5px 11px;
   transition:background .15s ease, border-color .15s ease;
@@ -1963,7 +1965,7 @@ a.export-csv-btn{text-decoration:none;}
    actually clipped, just covered. */
 .stat-detail-table{width:100%; min-width:0; border-collapse:collapse; font-size:13px; table-layout:fixed;}
 .stat-detail-table th{
-  text-align:left; font-family:var(--font-ibm-plex-mono), monospace; font-size:10px; letter-spacing:0.06em;
+  text-align:left; font-family:var(--font-mono), monospace; font-size:10px; letter-spacing:0.06em;
   text-transform:uppercase; color:var(--star-dim); padding:6px 10px; border-bottom:1px solid var(--line);
 }
 .stat-detail-table th:not(:first-child){text-align:center; padding:0;}
@@ -2185,12 +2187,12 @@ a.export-csv-btn{text-decoration:none;}
    (long names, narrow season column) while the position badge stays on
    its own line beneath it rather than forcing the row wider. */
 .stat-panel-pace-header{display:flex; flex-direction:column; align-items:center; gap:2px;}
-.stat-panel-pace-name{font-family:var(--font-space-grotesk); font-size:13.5px; font-weight:600; color:var(--star); line-height:1.25;}
+.stat-panel-pace-name{font-family:var(--font-display); font-size:13.5px; font-weight:600; color:var(--star); line-height:1.25;}
 .stat-panel-pace-pos{display:flex; align-items:center; justify-content:center; gap:6px; font-size:10.5px; color:var(--star-dim); letter-spacing:0.03em;}
 .stat-panel-pace-pos .pos-rank{font-size:inherit; margin-left:1px;}
-.stat-panel-pace-actual{font-family:var(--font-space-grotesk); font-size:20px; font-weight:700; color:var(--star); line-height:1.2;}
-.stat-panel-pace-games{display:block; font-family:var(--font-ibm-plex-mono), monospace; font-size:10.5px; font-weight:400; color:var(--star-dim); margin-bottom:2px;}
-.stat-panel-pace-delta{font-family:var(--font-ibm-plex-mono), monospace; font-size:13px; font-weight:600; word-break:break-word;}
+.stat-panel-pace-actual{font-family:var(--font-display); font-size:20px; font-weight:700; color:var(--star); line-height:1.2;}
+.stat-panel-pace-games{display:block; font-family:var(--font-mono), monospace; font-size:10.5px; font-weight:400; color:var(--star-dim); margin-bottom:2px;}
+.stat-panel-pace-delta{font-family:var(--font-mono), monospace; font-size:13px; font-weight:600; word-break:break-word;}
 .stat-panel-pace-delta.pace-hot{color:var(--up);}
 .stat-panel-pace-delta.pace-cold{color:var(--down);}
 /* One shared 3-column grid for all rows (each row is a subgrid), so the week label, team pill and
@@ -2228,7 +2230,7 @@ a.export-csv-btn{text-decoration:none;}
    numbers beside it. */
 /* line-height:1 keeps the label's own box tight to its glyphs, so the
    px offsets below are measuring against the actual text height. */
-.stat-panel-pace-rangebar-label{position:absolute; left:50%; line-height:1; font-family:var(--font-ibm-plex-mono), monospace; font-size:9.5px; color:var(--star-dim); white-space:nowrap;}
+.stat-panel-pace-rangebar-label{position:absolute; left:50%; line-height:1; font-family:var(--font-mono), monospace; font-size:9.5px; color:var(--star-dim); white-space:nowrap;}
 /* Both labels use `bottom:X%`, which already places their box flush
    ABOVE the anchor line (the box's own height sits above it) -- floor
    needs +100% to flip it back down past that height and clear the
@@ -2248,7 +2250,7 @@ a.export-csv-btn{text-decoration:none;}
    never overlaps the typical/upside fill, colored to match the tick's
    own hot/cold (reuses -pace-delta's classes, not the marker's, since
    this is text color not a background). */
-.stat-panel-pace-rangebar-total{position:absolute; right:14px; transform:translateY(50%); font-family:var(--font-ibm-plex-mono), monospace; font-size:10.5px; font-weight:600; white-space:nowrap; z-index:2;}
+.stat-panel-pace-rangebar-total{position:absolute; right:14px; transform:translateY(50%); font-family:var(--font-mono), monospace; font-size:10.5px; font-weight:600; white-space:nowrap; z-index:2;}
 .stat-panel-pace-rangebar-total.pace-hot{color:var(--up);}
 .stat-panel-pace-rangebar-total.pace-cold{color:var(--down);}
 /* Games-played-of-17 loading bar, pinned to the bottom of the whole
@@ -2307,7 +2309,7 @@ a.export-csv-btn{text-decoration:none;}
 }
 .weekly-player-idtext{display:flex; flex-direction:column; gap:6px; min-width:0;}
 .weekly-player-name{
-  font-family:var(--font-space-grotesk), sans-serif; font-size:18px; font-weight:700; color:var(--star);
+  font-family:var(--font-display), sans-serif; font-size:18px; font-weight:700; color:var(--star);
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
 }
 .weekly-player-badges{display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
@@ -2351,7 +2353,7 @@ a.export-csv-btn{text-decoration:none;}
 }
 .weekly-achievement-label{
   display:inline-block; max-width:0; margin-left:0; overflow:hidden; opacity:0; white-space:nowrap;
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:11px; font-weight:700; letter-spacing:0.02em;
+  font-family:var(--font-mono), monospace; font-size:11px; font-weight:700; letter-spacing:0.02em;
   transition:max-width .22s ease, margin-left .22s ease, opacity .16s ease;
 }
 .weekly-achievement-badge.open .weekly-achievement-label{max-width:130px; margin-left:6px; opacity:1;}
@@ -2403,11 +2405,11 @@ a.export-csv-btn{text-decoration:none;}
 .weekly-player-stats{display:flex; align-items:center; gap:26px; flex-wrap:wrap; flex-shrink:0;}
 .weekly-player-stat{display:flex; flex-direction:column; align-items:flex-end; gap:4px;}
 .weekly-player-stat-label{
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:10px; letter-spacing:0.08em;
+  font-family:var(--font-mono), monospace; font-size:10px; letter-spacing:0.08em;
   text-transform:uppercase; color:var(--star-dim); white-space:nowrap;
 }
 .weekly-player-stat-value{
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:16px; font-weight:700; color:var(--star);
+  font-family:var(--font-mono), monospace; font-size:16px; font-weight:700; color:var(--star);
 }
 @media (max-width:700px){
   .weekly-player-id{justify-content:flex-start;}
@@ -2466,15 +2468,15 @@ a.export-csv-btn{text-decoration:none;}
 .weekly-stats-split{display:grid; grid-template-columns:1.45fr 1fr; gap:12px;}
 .weekly-detail-grid .weekly-stats-last,
 .weekly-detail-grid .weekly-stats-next{display:flex; flex-direction:column; gap:10px; padding:14px 16px; min-width:0;}
-.weekly-stats-eyebrow{font-family:var(--font-ibm-plex-mono), monospace; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--star-dim); white-space:nowrap;}
+.weekly-stats-eyebrow{font-family:var(--font-mono), monospace; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--star-dim); white-space:nowrap;}
 .weekly-stats-eyebrow-next{color:var(--horizon-gold); font-weight:700;}
 /* One line, always: even a three-digit position rank ("TE103") and a median fit beside each other, so the numbers
    shrink and the labels tighten instead of wrapping onto a second row. */
 .weekly-stats-pair{display:flex; flex-wrap:nowrap; justify-content:space-between; gap:14px;}
 .weekly-stats-item{display:flex; flex-direction:column; gap:3px; min-width:0;}
 .weekly-stats-split .weekly-player-stat-label{font-size:9.5px; letter-spacing:0.06em; white-space:nowrap;}
-.weekly-stats-value-dim{white-space:nowrap; font-family:var(--font-ibm-plex-mono), monospace; font-size:17px; font-weight:600; color:var(--star-dim);}
-.weekly-stats-value-big{font-family:var(--font-ibm-plex-mono), monospace; font-size:26px; white-space:nowrap; font-weight:700; line-height:1.05; color:var(--star);}
+.weekly-stats-value-dim{white-space:nowrap; font-family:var(--font-mono), monospace; font-size:17px; font-weight:600; color:var(--star-dim);}
+.weekly-stats-value-big{font-family:var(--font-mono), monospace; font-size:26px; white-space:nowrap; font-weight:700; line-height:1.05; color:var(--star);}
 .weekly-stats-value-gold{color:var(--horizon-gold); text-shadow:0 0 18px rgba(var(--horizon-gold-rgb),0.45);}
 .weekly-detail-grid .weekly-stats-next{
   border-color:rgba(var(--horizon-gold-rgb),0.6);
@@ -2509,7 +2511,7 @@ a.export-csv-btn{text-decoration:none;}
    uses that plain style and isn't part of this pass). */
 .weekly-panel-title{
   display:flex; align-items:center; gap:8px;
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:10.5px; letter-spacing:0.1em;
+  font-family:var(--font-mono), monospace; font-size:10.5px; letter-spacing:0.1em;
   text-transform:uppercase; color:var(--star-dim);
 }
 .weekly-panel-title::before{content:''; width:14px; height:1px; background:var(--horizon-gold); flex-shrink:0;}
@@ -2528,7 +2530,7 @@ a.export-csv-btn{text-decoration:none;}
 .weekly-rank-row{display:grid; grid-template-columns:minmax(0,1fr) 84px 60px; align-items:center; column-gap:8px;}
 .weekly-rank-head{
   padding:0 4px 5px; margin-bottom:0; border-bottom:1px solid var(--line);
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:9.5px; letter-spacing:0.1em; text-transform:uppercase; color:var(--star-dim);
+  font-family:var(--font-mono), monospace; font-size:9.5px; letter-spacing:0.1em; text-transform:uppercase; color:var(--star-dim);
 }
 .weekly-rank-head span:nth-child(2){text-align:center;}
 .weekly-rank-head span:nth-child(3){text-align:right;}
@@ -2537,15 +2539,15 @@ a.export-csv-btn{text-decoration:none;}
 .weekly-rank-label{font-size:12.5px; color:var(--star); text-align:left; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:default;}
 .weekly-rank-num{
   justify-self:center; display:inline-flex; align-items:baseline; gap:2px; width:66px; justify-content:center; box-sizing:border-box;
-  padding:1px 8px; border-radius:999px; font-family:var(--font-ibm-plex-mono), monospace; font-size:12px; line-height:1.35; font-weight:700; color:var(--horizon-gold);
+  padding:1px 8px; border-radius:999px; font-family:var(--font-mono), monospace; font-size:12px; line-height:1.35; font-weight:700; color:var(--horizon-gold);
   background:rgba(var(--horizon-gold-rgb),0.10); border:1px solid rgba(var(--horizon-gold-rgb),0.32); cursor:default;
 }
 .weekly-rank-of{font-size:9.5px; font-weight:400; color:var(--star-dim);}
 .weekly-rank-num.weekly-rank-none{color:var(--star-dim); font-weight:400; background:none; border-color:var(--line);}
 .weekly-rank-row .weekly-pct-value{font-size:12.5px; text-align:right;}
 .weekly-pct-label{font-size:11.5px; color:var(--star-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-.weekly-pct-value{font-family:var(--font-ibm-plex-mono), monospace; font-size:12px; color:var(--star); text-align:right;}
-.weekly-pct-ordinal{font-family:var(--font-ibm-plex-mono), monospace; font-size:11px; color:var(--star-dim); text-align:right;}
+.weekly-pct-value{font-family:var(--font-mono), monospace; font-size:12px; color:var(--star); text-align:right;}
+.weekly-pct-ordinal{font-family:var(--font-mono), monospace; font-size:11px; color:var(--star-dim); text-align:right;}
 .weekly-pct-divider{border-top:1px dashed var(--line); margin:2px 0 8px;}
 
 /* Recent Games -- plain record, no percentile bar (see GameLogPanel's
@@ -2612,7 +2614,7 @@ a.export-csv-btn{text-decoration:none;}
    established glow language (hero's dual radial glow, .pace-marker's
    currentColor dot) instead of sitting flat like plain colored text. */
 .weekly-opp-pct{
-  display:block; font-family:var(--font-ibm-plex-mono), monospace; font-size:20px; font-weight:700;
+  display:block; font-family:var(--font-mono), monospace; font-size:20px; font-weight:700;
   text-shadow:0 0 16px currentColor;
 }
 .weekly-opp-pct-soft{color:var(--up);}
@@ -2648,7 +2650,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
    picks up the same gold used for .stat-row-selected. */
 .stat-radar{min-width:0; width:100%;}
 .stat-radar-label{
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:10px; letter-spacing:0.08em;
+  font-family:var(--font-mono), monospace; font-size:10px; letter-spacing:0.08em;
   text-transform:uppercase; color:var(--star-dim); margin-bottom:4px;
 }
 /* overflow:visible is a safety net, not the fix -- StatRadar's MAX_R and
@@ -2670,7 +2672,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .radar-shape-dim{opacity:0.3;}
 .radar-point{fill:var(--horizon-gold);}
 .radar-point-active{fill:var(--star); stroke:var(--horizon-gold); stroke-width:2;}
-.radar-axis-label{font-family:var(--font-ibm-plex-mono), monospace; font-size:9.5px; fill:var(--star-dim);}
+.radar-axis-label{font-family:var(--font-mono), monospace; font-size:9.5px; fill:var(--star-dim);}
 .radar-axis-label-active{fill:var(--horizon-gold); font-weight:700;}
 /* Clickable vertex -- mirrors .stat-row-trigger so a stat can be
    selected from either the table or the radar and both stay in sync.
@@ -2711,7 +2713,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
 /* Outer wrapper is transparent: just the title and the comp cards, no panel behind them. */
 .shape-finder.stat-panel{background:none; border:none; padding:0;}
 .shape-finder-label{
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:10px; letter-spacing:0.08em;
+  font-family:var(--font-mono), monospace; font-size:10px; letter-spacing:0.08em;
   text-transform:uppercase; color:var(--star-dim); margin-bottom:6px;
 }
 /* auto-fit at the card's own fixed width, not a flat repeat(3,1fr) --
@@ -2821,7 +2823,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
   --tone:var(--neon-blue);
   display:inline-block; max-width:100%; padding:3px 10px; border-radius:999px;
   border:1px solid color-mix(in srgb, var(--tone) 55%, transparent); background:color-mix(in srgb, var(--tone) 10%, transparent);
-  color:var(--tone); font-family:var(--font-ibm-plex-mono), monospace; font-size:11px; font-weight:600;
+  color:var(--tone); font-family:var(--font-mono), monospace; font-size:11px; font-weight:600;
   letter-spacing:0.02em; line-height:1.3; text-align:center; white-space:normal; appearance:none;
 }
 /* Colour families (set --tone): sustainability, career stage; role pills keep the default blue. */
@@ -2850,7 +2852,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .role-block-near{margin:6px auto 0; max-width:34ch; font-size:11px; line-height:1.4; color:var(--star-dim);}
 .role-block-near strong{color:var(--star); font-weight:600;}
 .shape-finder-score-value{
-  font-family:var(--font-space-grotesk); font-size:20px; font-weight:700; color:var(--neon-blue-dim);
+  font-family:var(--font-display); font-size:20px; font-weight:700; color:var(--neon-blue-dim);
 }
 /* Same font sizing and .stat-header-trigger/.stat-row-trigger padding as
    .stat-detail-table (no table-specific override here -- both fall back
@@ -2880,7 +2882,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
    of a one-off green/red. */
 .shape-compare{margin:8px 2px 4px; padding-top:8px; border-top:1px dashed var(--line);}
 .shape-compare-head{
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:9.5px; letter-spacing:0.06em;
+  font-family:var(--font-mono), monospace; font-size:9.5px; letter-spacing:0.06em;
   text-transform:uppercase; color:var(--star-dim); margin-bottom:6px;
   /* Centered over the bar tracks, not the whole panel: same offsets as the
      row grid below (88px label + 8px gap on the left, 34px value + 8px gap on the right). */
@@ -2905,7 +2907,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .shape-compare-midtick{position:absolute; left:50%; top:-2px; bottom:-2px; width:1px; background:rgba(var(--star-dim-rgb),0.45); transform:translateX(-50%);}
 .shape-compare-midtick-label{
   position:absolute; left:50%; top:calc(100% + 2px); transform:translateX(-50%);
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:8px; line-height:1; color:var(--star-dim);
+  font-family:var(--font-mono), monospace; font-size:8px; line-height:1; color:var(--star-dim);
 }
 .shape-compare-tick{
   position:absolute; top:50%; width:8px; height:8px; border-radius:50%;
@@ -2914,7 +2916,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .shape-compare-tick-player{background:var(--horizon-gold); z-index:2;}
 .shape-compare-tick-comp{background:var(--neon-blue); z-index:1;}
 .shape-compare-diff{
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:11px; text-align:right;
+  font-family:var(--font-mono), monospace; font-size:11px; text-align:right;
   font-variant-numeric:tabular-nums;
 }
 .shape-compare-diff-up{color:var(--up);}
@@ -2942,9 +2944,9 @@ tr.stat-row-selected td{background:var(--void-panel);}
 /* The empty-state hint sits in the middle of its panel (the panel is a flex column stretched to the row's height). */
 .stat-panel-percentile .pctile-card-empty{flex:1; display:flex; align-items:center; justify-content:center; text-align:center;}
 .pctile-card-head{display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin-bottom:10px;}
-.pctile-card-title{font-family:var(--font-space-grotesk); font-size:14px; font-weight:600; color:var(--star);}
+.pctile-card-title{font-family:var(--font-display); font-size:14px; font-weight:600; color:var(--star);}
 .pctile-card-sub{
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:10px; letter-spacing:0.06em;
+  font-family:var(--font-mono), monospace; font-size:10px; letter-spacing:0.06em;
   text-transform:uppercase; color:var(--star-dim); white-space:nowrap;
 }
 /* Horizontal row of vertical bars -- a real bar chart instead of the
@@ -2988,11 +2990,11 @@ tr.stat-row-selected td{background:var(--void-panel);}
    so the shape/percentile view still carries the actual stat. */
 .pctile-vbar-value{display:flex; flex-direction:column; align-items:center; line-height:1.25;}
 .pctile-row-raw{
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:12px; color:var(--star);
+  font-family:var(--font-mono), monospace; font-size:12px; color:var(--star);
   font-variant-numeric:tabular-nums;
 }
 .pctile-row-ordinal{
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:10px; color:var(--star-dim);
+  font-family:var(--font-mono), monospace; font-size:10px; color:var(--star-dim);
   font-variant-numeric:tabular-nums;
 }
 /* The bar itself -- a fixed-height track with the fill growing up from
@@ -3004,7 +3006,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .pctile-vbar-midline{position:absolute; left:0; right:0; top:50%; height:1px; background:rgba(var(--star-dim-rgb),0.45); z-index:1;}
 .pctile-vbar-midline-label{
   position:absolute; left:100%; top:50%; transform:translate(3px, -50%);
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:9px; color:var(--star-dim);
+  font-family:var(--font-mono), monospace; font-size:9px; color:var(--star-dim);
 }
 /* overflow was hidden here for the fill's rounded corners, but that also
    clipped a below-the-bar "50" label -- the fill already carries its own
@@ -3030,18 +3032,18 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .pctile-bar-midtick{position:absolute; left:50%; top:-2px; bottom:-2px; width:1px; background:rgba(var(--star-dim-rgb),0.45); transform:translateX(-50%);}
 .pctile-bar-midtick-label{
   position:absolute; left:50%; top:calc(100% + 2px); transform:translateX(-50%);
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:8px; line-height:1; color:var(--star-dim);
+  font-family:var(--font-mono), monospace; font-size:8px; line-height:1; color:var(--star-dim);
 }
 .pctile-hero{display:flex; align-items:baseline; gap:10px; flex-wrap:wrap;}
-.pctile-hero-value{font-family:var(--font-space-grotesk); font-size:32px; font-weight:700; color:var(--star); line-height:1;}
+.pctile-hero-value{font-family:var(--font-display); font-size:32px; font-weight:700; color:var(--star); line-height:1;}
 /* The raw stat value is the headline number now (pctile-hero-value);
    this is its percentile read out in plain text right beside it. */
 .pctile-hero-pctile{
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:13px; color:var(--star-dim);
+  font-family:var(--font-mono), monospace; font-size:13px; color:var(--star-dim);
   font-variant-numeric:tabular-nums;
 }
 .pctile-hero-tier{
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:11px; letter-spacing:0.05em; text-transform:uppercase;
+  font-family:var(--font-mono), monospace; font-size:11px; letter-spacing:0.05em; text-transform:uppercase;
   padding:3px 8px; border-radius:20px; color:var(--void); font-weight:600;
 }
 
@@ -3054,7 +3056,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .compare-form-field{display:flex; flex-direction:column; min-width:180px; flex:1;}
 .compare-select{
   background:var(--void-panel-2); border:1px solid var(--line); border-radius:10px;
-  padding:11px 14px; color:var(--star); font-family:var(--font-inter), sans-serif; font-size:13.5px;
+  padding:11px 14px; color:var(--star); font-family:var(--font-body), Georgia, serif; font-size:13.5px;
   outline:none; transition:border-color .2s ease, box-shadow .2s ease;
 }
 .compare-select:focus{border-color:var(--neon-blue); box-shadow:0 0 0 3px rgba(61,220,255,0.15);}
@@ -3081,13 +3083,13 @@ tr.stat-row-selected td{background:var(--void-panel);}
   padding:9px 12px; border-radius:8px; cursor:pointer; font-size:13.5px; color:var(--star);
 }
 .compare-picker-list li button:hover{background:rgba(var(--neon-blue-rgb),0.1); color:var(--neon-blue);}
-.compare-picker-pos{font-family:var(--font-ibm-plex-mono), monospace; font-size:11px; color:var(--star-dim);}
+.compare-picker-pos{font-family:var(--font-mono), monospace; font-size:11px; color:var(--star-dim);}
 .compare-table-wrap{overflow-x:auto; background:var(--void-panel); border:1px solid var(--line); border-radius:16px; box-shadow:0 30px 70px rgba(var(--shadow-rgb),0.4);}
 .compare-table{width:100%; border-collapse:collapse; font-size:14px;}
 .compare-table th, .compare-table td{padding:12px 20px; border-bottom:1px dashed var(--line); text-align:left; white-space:nowrap;}
 .compare-table tr:last-child th, .compare-table tr:last-child td{border-bottom:none;}
 .compare-table thead th{
-  font-family:var(--font-space-grotesk), sans-serif; font-size:15px; font-weight:700; color:var(--star);
+  font-family:var(--font-display), sans-serif; font-size:15px; font-weight:700; color:var(--star);
   background:var(--void-panel-2); border-bottom:1px solid var(--line); white-space:nowrap;
   text-align:center;
 }
@@ -3095,7 +3097,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
    stay left; the value cells under the centered player-name headers get
    centered to match. */
 .compare-table tbody th{
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:11px; letter-spacing:0.06em; text-transform:uppercase;
+  font-family:var(--font-mono), monospace; font-size:11px; letter-spacing:0.06em; text-transform:uppercase;
   color:var(--star-dim); font-weight:500; background:var(--void-panel-2);
 }
 .compare-table tbody td{color:var(--star); text-align:center;}
@@ -3136,7 +3138,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
   box-shadow:0 30px 70px rgba(var(--shadow-rgb),0.4); display:flex; flex-direction:column; align-items:center; min-width:0;
 }
 .compare-radar-card-head{display:flex; align-items:baseline; gap:8px; justify-content:center; margin-bottom:4px; width:100%;}
-.compare-radar-card-name{font-family:var(--font-space-grotesk), sans-serif; font-weight:600; font-size:15px; color:var(--star);}
+.compare-radar-card-name{font-family:var(--font-display), sans-serif; font-weight:600; font-size:15px; color:var(--star);}
 .compare-radar-card-pos{font-size:11px; color:var(--star-dim);}
 .compare-radar-card .stat-radar{width:100%;}
 .compare-radar-card .pctile-card{width:100%; box-sizing:border-box;}
@@ -3170,19 +3172,19 @@ tr.stat-row-selected td{background:var(--void-panel);}
 }
 .my-team-saved-card summary{
   display:flex; align-items:center; gap:14px; padding:14px 20px; cursor:pointer;
-  list-style:none; font-family:var(--font-ibm-plex-mono), monospace;
+  list-style:none; font-family:var(--font-mono), monospace;
 }
 .my-team-saved-card summary::-webkit-details-marker{display:none;}
 .my-team-saved-title{display:flex; align-items:center; justify-content:space-between; gap:14px; flex:1; flex-wrap:wrap;}
 .my-team-saved-title > div{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
-.my-team-saved-name{font-weight:700; color:var(--star); font-family:var(--font-space-grotesk), sans-serif;}
+.my-team-saved-name{font-weight:700; color:var(--star); font-family:var(--font-display), sans-serif;}
 .my-team-saved-league{color:var(--star-dim); font-size:12.5px;}
 /* Team record (W-L), inline next to the team name -- muted mono like a
    stat line, not another colored pill, since it's identity info paired
    with the name rather than a league-format fact grouped with the
    badges below it. */
 .my-team-record{
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:12.5px; font-weight:600;
+  font-family:var(--font-mono), monospace; font-size:12.5px; font-weight:600;
   color:var(--star-dim); margin-left:8px;
 }
 /* This week's matchup ("Week 1 · vs Opponent (0-0)") -- its own line
@@ -3193,7 +3195,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
    you're playing, not the boilerplate around it. */
 .my-team-matchup{
   display:block; flex-basis:100%; margin-top:4px;
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:12px;
+  font-family:var(--font-mono), monospace; font-size:12px;
   color:var(--star-dim); letter-spacing:0.02em;
 }
 .my-team-matchup-opp{color:var(--star); font-weight:600;}
@@ -3212,7 +3214,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
 }
 .my-team-saved-head h2{margin-bottom:0;}
 .my-team-saved-count{
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:12px; color:var(--star-dim);
+  font-family:var(--font-mono), monospace; font-size:12px; color:var(--star-dim);
 }
 .my-team-saved-count a{color:var(--horizon-gold); text-decoration:none;}
 .my-team-saved-count a:hover{text-decoration:underline;}
@@ -3221,7 +3223,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
    with the team name / league like the record badge does. */
 .my-team-buyin{
   display:inline-flex; align-items:center; gap:2px; margin-left:8px;
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:12px; color:var(--star-dim);
+  font-family:var(--font-mono), monospace; font-size:12px; color:var(--star-dim);
 }
 .my-team-buyin-input{
   width:64px; padding:2px 6px; font:inherit; color:var(--star);
@@ -3249,7 +3251,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .my-analysis-filters label,
 .my-analysis-axes label{
   display:flex; flex-direction:column; gap:6px;
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:11px; letter-spacing:0.08em;
+  font-family:var(--font-mono), monospace; font-size:11px; letter-spacing:0.08em;
   text-transform:uppercase; color:var(--star-dim);
 }
 /* every picker in the two bars is the same width so the rows read as a
@@ -3263,14 +3265,14 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .my-analysis-week-input{
   flex:1; min-width:0; padding:11px 8px; text-align:center;
   background:var(--void-panel-2); border:1px solid var(--line); border-radius:10px;
-  color:var(--star); font-family:var(--font-inter), sans-serif; font-size:13.5px; outline:none;
+  color:var(--star); font-family:var(--font-body), Georgia, serif; font-size:13.5px; outline:none;
   -moz-appearance:textfield;
 }
 .my-analysis-week-input::-webkit-outer-spin-button,
 .my-analysis-week-input::-webkit-inner-spin-button{-webkit-appearance:none; margin:0;}
 .my-analysis-week-input:focus{border-color:var(--neon-blue);}
 .my-analysis-window-line{
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:11.5px; color:var(--horizon-gold);
+  font-family:var(--font-mono), monospace; font-size:11.5px; color:var(--horizon-gold);
   margin-bottom:14px;
 }
 .my-team-bestball-note{margin:0 16px 14px;}
@@ -3303,17 +3305,17 @@ tr.stat-row-selected td{background:var(--void-panel);}
 }
 .my-analysis-profile-headtext{display:flex; flex-direction:column; gap:9px; min-width:0;}
 .my-analysis-profile-name{
-  font-family:var(--font-space-grotesk), sans-serif; font-size:23px; font-weight:700; color:var(--star);
+  font-family:var(--font-display), sans-serif; font-size:23px; font-weight:700; color:var(--star);
 }
 .my-analysis-profile-badges{display:flex; gap:6px; flex-wrap:wrap;}
 .my-analysis-profile-grid{display:flex; flex-direction:column; gap:15px;}
 .my-analysis-profile-grid > div{display:flex; justify-content:space-between; gap:12px; align-items:baseline;}
 .my-analysis-profile-grid dt{
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:12.5px; letter-spacing:0.06em;
+  font-family:var(--font-mono), monospace; font-size:12.5px; letter-spacing:0.06em;
   text-transform:uppercase; color:var(--star-dim);
 }
 .my-analysis-profile-grid dd{
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:16.5px; color:var(--star); text-align:right;
+  font-family:var(--font-mono), monospace; font-size:16.5px; color:var(--star); text-align:right;
 }
 /* the two chart-axis metrics for this player -- set off from the bio
    rows and tinted with the primary accent since they're the reason the
@@ -3327,13 +3329,13 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .mac-axis{stroke:var(--line); stroke-width:1;}
 /* dashed mean crosshair for the two axes */
 .mac-mean{stroke:var(--star-dim); stroke-width:1; stroke-dasharray:4 4; opacity:0.55;}
-.mac-mean-label{fill:var(--star-dim); font-family:var(--font-ibm-plex-mono), monospace; font-size:9px; opacity:0.8;}
+.mac-mean-label{fill:var(--star-dim); font-family:var(--font-mono), monospace; font-size:9px; opacity:0.8;}
 .mac-axis-label{
-  fill:var(--star-dim); font-family:var(--font-ibm-plex-mono), monospace;
+  fill:var(--star-dim); font-family:var(--font-mono), monospace;
   font-size:11px; letter-spacing:0.06em; text-transform:uppercase;
 }
 .mac-tick{
-  fill:var(--star-dim); font-family:var(--font-ibm-plex-mono), monospace; font-size:10px;
+  fill:var(--star-dim); font-family:var(--font-mono), monospace; font-size:10px;
 }
 .mac-dot{stroke:var(--void); stroke-width:1.5; transition:r .12s ease; cursor:pointer;}
 .mac-point:hover .mac-dot{r:7;}
@@ -3341,17 +3343,17 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .mac-point.selected .mac-label{opacity:1;}
 /* player name -- hidden until the point is hovered */
 .mac-label{
-  fill:var(--star); font-family:var(--font-ibm-plex-mono), monospace; font-size:11px;
+  fill:var(--star); font-family:var(--font-mono), monospace; font-size:11px;
   opacity:0; pointer-events:none; transition:opacity .1s ease;
   paint-order:stroke; stroke:var(--void); stroke-width:3px; stroke-linejoin:round;
 }
 .mac-point:hover .mac-label{opacity:1;}
-.mac-empty{fill:var(--star-dim); font-family:var(--font-ibm-plex-mono), monospace; font-size:11px;}
+.mac-empty{fill:var(--star-dim); font-family:var(--font-mono), monospace; font-size:11px;}
 /* brand signature bottom-right of the plot -- shows up when the chart is
    screenshot. Circle = the site brandmark's event-horizon gradient. */
 .mac-watermark{opacity:0.75;}
 .mac-watermark-text{
-  fill:var(--star); font-family:var(--font-space-grotesk), sans-serif;
+  fill:var(--star); font-family:var(--font-display), sans-serif;
   font-size:12.5px; font-weight:700; letter-spacing:0.2em;
 }
 .mac-logo-s0{stop-color:var(--horizon-gold);}
@@ -3382,7 +3384,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .matchup-score-table{
   align-self:stretch;
   display:flex; flex-direction:column; justify-content:center; gap:7px;
-  font-family:var(--font-ibm-plex-mono), monospace;
+  font-family:var(--font-mono), monospace;
   padding:0 26px; margin:-14px 0 -14px auto;
   border-left:1px solid var(--line);
   background:linear-gradient(180deg, rgba(var(--horizon-gold-rgb),0.07), transparent 75%);
@@ -3467,12 +3469,12 @@ tr.stat-row-selected td{background:var(--void-panel);}
 }
 .portfolio-group > summary{
   display:flex; align-items:center; gap:12px; padding:13px 18px; cursor:pointer;
-  list-style:none; font-family:var(--font-ibm-plex-mono), monospace;
+  list-style:none; font-family:var(--font-mono), monospace;
 }
 .portfolio-group > summary::-webkit-details-marker{display:none;}
 .portfolio-group-name{display:inline-flex; align-items:center;}
 .portfolio-group-count{
-  font-family:var(--font-space-grotesk), sans-serif; font-weight:700; font-size:14px; color:var(--star);
+  font-family:var(--font-display), sans-serif; font-weight:700; font-size:14px; color:var(--star);
 }
 .portfolio-group-meta{color:var(--star-dim); font-size:12.5px;}
 .portfolio-group[open] .my-team-chevron{transform:rotate(90deg);}
@@ -3483,7 +3485,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
   padding:24px; box-shadow:0 20px 45px rgba(var(--shadow-rgb),0.35);
 }
 .my-team-label{
-  display:block; font-family:var(--font-ibm-plex-mono), monospace; font-size:11px;
+  display:block; font-family:var(--font-mono), monospace; font-size:11px;
   letter-spacing:0.08em; text-transform:uppercase; color:var(--star-dim); margin-bottom:10px;
 }
 .my-team-lookup-row{display:flex; gap:12px;}
@@ -3513,11 +3515,11 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .my-team-result-card[open] .my-team-result-head{margin-bottom:16px;}
 .my-team-result-title{display:flex; align-items:center; gap:10px;}
 .my-team-result-head h3{font-size:18px; margin-bottom:2px;}
-.my-team-result-league{font-size:12.5px; color:var(--star-dim); font-family:var(--font-ibm-plex-mono), monospace;}
+.my-team-result-league{font-size:12.5px; color:var(--star-dim); font-family:var(--font-mono), monospace;}
 .my-team-save-btn{white-space:nowrap; padding:9px 20px; width:auto;}
 .my-team-settings{display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;}
 .my-team-setting-pill{
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:12.5px; font-weight:600; letter-spacing:0.03em;
+  font-family:var(--font-mono), monospace; font-size:12.5px; font-weight:600; letter-spacing:0.03em;
   padding:4px 12px; border-radius:20px; background:var(--void-panel-2); border:1px solid var(--line); color:var(--star-dim);
 }
 /* One color per category so the 4 pills read apart at a glance instead
@@ -3668,7 +3670,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .quiz-corner-icon svg{width:100%; height:100%;}
 .quiz-corner-text{display:flex; flex-direction:column; gap:1px;}
 .quiz-corner-label{font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--star-dim);}
-.quiz-corner-value{font-family:var(--font-space-grotesk); font-size:15px; color:var(--star); font-weight:600;}
+.quiz-corner-value{font-family:var(--font-display); font-size:15px; color:var(--star); font-weight:600;}
 
 /* Portfolio Pulse -- deliberately bigger/louder than the old single-line
    card: a label, a 3-segment stacked bar (Floor-Safe / Balanced /
@@ -3677,7 +3679,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
    save. */
 .portfolio-pulse-head{margin-bottom:14px;}
 .portfolio-pulse-label{
-  font-family:var(--font-space-grotesk); font-size:20px; font-weight:700; color:var(--star);
+  font-family:var(--font-display); font-size:20px; font-weight:700; color:var(--star);
 }
 .portfolio-pulse-sub{font-size:13px; color:var(--star-dim); margin-top:4px;}
 .portfolio-pulse-bar{
@@ -3708,7 +3710,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .quiz-wrap{max-width:680px;}
 .quiz-form{display:flex; flex-direction:column; gap:28px; margin-top:24px;}
 .quiz-question{border:none; padding:0; margin:0;}
-.quiz-prompt{font-family:var(--font-space-grotesk); font-size:16px; padding:0 0 12px; margin:0;}
+.quiz-prompt{font-family:var(--font-display); font-size:16px; padding:0 0 12px; margin:0;}
 .quiz-options{display:flex; flex-direction:column; gap:8px;}
 .quiz-option{
   text-align:left; padding:12px 16px; border-radius:10px;
@@ -3721,7 +3723,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .quiz-error{color:var(--down); font-size:13.5px;}
 .quiz-result{padding:28px; border-radius:16px; background:var(--void-panel-2); border:1px solid var(--line); margin-top:24px;}
 .quiz-result-label{font-size:12px; letter-spacing:0.08em; text-transform:uppercase; color:var(--star-dim);}
-.quiz-result-title{font-family:var(--font-space-grotesk); font-size:28px; margin:6px 0 10px; color:var(--horizon-gold);}
+.quiz-result-title{font-family:var(--font-display); font-size:28px; margin:6px 0 10px; color:var(--horizon-gold);}
 .quiz-result-blurb{font-size:15px; color:var(--star-dim); max-width:56ch; margin-bottom:20px;}
 .quiz-result-back{display:block; margin-top:14px; font-size:13.5px; color:var(--neon-blue);}
 .my-team-chevron{
@@ -3749,7 +3751,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .league-dash-th:hover{color:var(--star);}
 .league-dash-sort{margin-left:6px; font-size:9px; color:var(--horizon-gold);}
 .league-dash-row{cursor:pointer;}
-.league-dash-team{font-family:var(--font-space-grotesk),sans-serif; font-weight:600; font-size:15px; color:var(--star);}
+.league-dash-team{font-family:var(--font-display),sans-serif; font-weight:600; font-size:15px; color:var(--star);}
 .league-dash-league,.league-dash-muted{font-size:.75rem; color:var(--star-dim);}
 .league-dash-table .up{color:var(--up);} .league-dash-table .down{color:var(--down);}
 .league-dash-expanded > td{padding:0 !important; background:rgba(var(--star-rgb,255,255,255),.02);}
@@ -3776,10 +3778,10 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .po-archetype{display:flex; align-items:center; gap:14px; padding-right:28px; border-right:1px solid var(--line); flex-shrink:0; min-width:200px;}
 .po-archetype:hover .quiz-corner-value{color:var(--horizon-gold);}
 .po-archetype, .po-archetype *{text-decoration:none;}
-.po-archetype .quiz-corner-label{font-family:var(--font-ibm-plex-mono),monospace; font-size:11px; letter-spacing:0.12em;}
+.po-archetype .quiz-corner-label{font-family:var(--font-mono), monospace; font-size:11px; letter-spacing:0.12em;}
 .po-archetype .quiz-corner-value{font-size:19px; line-height:1.2; margin-top:2px;}
 /* same treatment as .hub-panel-link: mono, neon blue, gold on hover */
-.po-archetype-hint{font-family:var(--font-ibm-plex-mono),monospace; font-size:12px; letter-spacing:0.02em; color:var(--neon-blue); margin-top:8px; transition:color .15s ease;}
+.po-archetype-hint{font-family:var(--font-mono), monospace; font-size:12px; letter-spacing:0.02em; color:var(--neon-blue); margin-top:8px; transition:color .15s ease;}
 .po-archetype:hover .po-archetype-hint{color:var(--horizon-gold);}
 .po-pulse{flex:1; min-width:0;}
 .po-pulse-head{display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 14px; margin-bottom:12px;}
@@ -3794,11 +3796,11 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .exposure-side-list{list-style:none; margin:0; padding:0; overflow-y:auto;}
 .exposure-side-row{display:grid; grid-template-columns:22px minmax(0,1fr) auto 44px; align-items:center; gap:10px; padding:8px 0; border-top:1px solid var(--line);}
 .exposure-side-row:first-child{border-top:0;}
-.exposure-side-rank{font-family:var(--font-ibm-plex-mono),monospace; font-size:11px; color:var(--star-dim); text-align:right;}
+.exposure-side-rank{font-family:var(--font-mono), monospace; font-size:11px; color:var(--star-dim); text-align:right;}
 .exposure-side-name{font-size:13.5px; color:var(--star); min-width:0;}
 .exposure-side-bar{display:block; height:3px; margin-top:5px; border-radius:2px; background:var(--void-panel-2); overflow:hidden;}
 .exposure-side-bar > span{display:block; height:100%; background:var(--horizon-gold);}
-.exposure-side-pct{font-family:var(--font-ibm-plex-mono),monospace; font-size:12px; color:var(--star); text-align:right; line-height:1.2;}
+.exposure-side-pct{font-family:var(--font-mono), monospace; font-size:12px; color:var(--star); text-align:right; line-height:1.2;}
 .exposure-side-pct small{display:block; color:var(--star-dim); font-size:10.5px;}
 /* My Team: tuck the page up under the fixed header (the shared .tool-wrap
    150px top padding is sized for the taller tool-page hero blocks). */
@@ -3878,7 +3880,7 @@ summary:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible{
   display:flex; align-items:center; justify-content:center; gap:12px;
   background:color-mix(in srgb, var(--void) 28%, transparent);
   -webkit-backdrop-filter:blur(3px) saturate(1.2); backdrop-filter:blur(3px) saturate(1.2);
-  font-family:var(--font-ibm-plex-mono),monospace; font-size:.85rem; color:var(--star);
+  font-family:var(--font-mono), monospace; font-size:.85rem; color:var(--star);
   animation:league-dash-fade .18s ease both;
 }
 .league-dash-spinner{
@@ -3925,7 +3927,7 @@ summary:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible{
 .board-panel-head{display:flex; align-items:center; gap:10px; padding:12px 16px; border-bottom:1px solid rgba(var(--star-dot-rgb),.1); cursor:grab; user-select:none;}
 .board-panel-head:active{cursor:grabbing;}
 .board-grip{color:var(--star-dim); font-size:16px; line-height:1;}
-.board-panel-title{margin:0; flex:0 0 auto; font-family:var(--font-space-grotesk); font-size:16px; font-weight:600; color:var(--star);}
+.board-panel-title{margin:0; flex:0 0 auto; font-family:var(--font-display); font-size:16px; font-weight:600; color:var(--star);}
 .board-collapse{
   width:28px; height:28px; border-radius:8px; cursor:pointer; font-size:18px; line-height:1;
   color:var(--star-dim); background:transparent; border:1px solid rgba(var(--star-dot-rgb),.13);
@@ -3957,7 +3959,7 @@ summary:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible{
 
 /* Panel header actions: the status/controls that used to sit in a second
    row inside each panel now ride the title bar. */
-.board-panel-actions{display:flex; align-items:center; gap:14px; font-family:var(--font-ibm-plex-mono),monospace; font-size:12px; color:var(--star-dim);}
+.board-panel-actions{display:flex; align-items:center; gap:14px; font-family:var(--font-mono), monospace; font-size:12px; color:var(--star-dim);}
 .board-panel-actions label{display:flex; align-items:center; gap:6px; cursor:pointer; white-space:nowrap;}
 .board-panel-actions .my-team-remove{padding:4px 12px; font-size:12px;}
 
@@ -3983,7 +3985,7 @@ summary:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible{
 
 /* Headline stats beside a panel title (pinned in the header bar). */
 .board-spacer{flex:1;}
-.board-panel-sub{display:flex; flex-wrap:wrap; gap:4px 16px; margin-left:8px; font-family:var(--font-ibm-plex-mono),monospace; font-size:12px; color:var(--star-dim);}
+.board-panel-sub{display:flex; flex-wrap:wrap; gap:4px 16px; margin-left:8px; font-family:var(--font-mono), monospace; font-size:12px; color:var(--star-dim);}
 .board-panel-sub strong{font-size:14px; color:var(--star);}
 .board-panel-sub .up strong{color:var(--up);} .board-panel-sub .down strong{color:var(--down);}
 
@@ -4193,13 +4195,13 @@ summary:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible{
 .my-filter-toggle button{font-size:12px; padding:6px 12px; white-space:nowrap;}
 .my-filter-select{
   background:var(--void-panel-2); border:1px solid var(--line); border-radius:10px; color:var(--star);
-  font-family:var(--font-ibm-plex-mono), monospace; font-size:12px; padding:7px 10px; max-width:100%;
+  font-family:var(--font-mono), monospace; font-size:12px; padding:7px 10px; max-width:100%;
 }
-.my-filter-note{font-family:var(--font-ibm-plex-mono), monospace; font-size:11.5px; color:var(--star-dim);}
+.my-filter-note{font-family:var(--font-mono), monospace; font-size:11.5px; color:var(--star-dim);}
 .my-filter-note a{color:var(--horizon-gold); text-decoration:none;}
 .my-filter-note a:hover{text-decoration:underline;}
 .my-filter-cta{
-  display:inline-block; margin:-4px 0 14px; font-family:var(--font-ibm-plex-mono), monospace; font-size:12px;
+  display:inline-block; margin:-4px 0 14px; font-family:var(--font-mono), monospace; font-size:12px;
   color:var(--horizon-gold); text-decoration:none; border:1px dashed rgba(var(--horizon-gold-rgb),0.45);
   border-radius:20px; padding:7px 14px;
 }
@@ -4207,14 +4209,14 @@ summary:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible{
 /* Star next to a name: filled = starts for you, hollow = on your bench. */
 .mine-badge{display:inline-flex; align-items:baseline; gap:1px; margin-right:6px; color:var(--horizon-gold); font-size:12px; line-height:1; vertical-align:baseline; cursor:help;}
 .mine-badge-bench{opacity:.75;}
-.mine-badge-n{font-family:var(--font-ibm-plex-mono), monospace; font-size:9px; font-weight:700;}
+.mine-badge-n{font-family:var(--font-mono), monospace; font-size:9px; font-weight:700;}
 /* "Your player" strip at the top of an opened player. */
 .stat-detail-mine{margin-bottom:10px;}
 .weekly-detail-wrap > .stat-detail-mine{margin-bottom:12px;}
 .mine-strip{display:flex; flex-wrap:wrap; align-items:center; gap:6px 8px; padding:8px 12px; border:1px solid rgba(var(--horizon-gold-rgb),0.35); background:rgba(var(--horizon-gold-rgb),0.07); border-radius:12px; font-size:12px;}
-.mine-strip-star{font-family:var(--font-ibm-plex-mono), monospace; font-size:10.5px; letter-spacing:0.08em; text-transform:uppercase; color:var(--horizon-gold); font-weight:700;}
+.mine-strip-star{font-family:var(--font-mono), monospace; font-size:10.5px; letter-spacing:0.08em; text-transform:uppercase; color:var(--horizon-gold); font-weight:700;}
 .mine-strip-chip{display:inline-flex; align-items:center; gap:6px; color:var(--star); background:var(--void-panel-2); border:1px solid var(--line); border-radius:999px; padding:3px 10px;}
-.mine-strip-role{font-family:var(--font-ibm-plex-mono), monospace; font-size:10px; color:var(--star-dim);}
+.mine-strip-role{font-family:var(--font-mono), monospace; font-size:10px; color:var(--star-dim);}
 .mine-strip-role.starter{color:var(--up);}
 /* Vertical variant: the "Your player" panel on the far right of the opened-player view. */
 .mine-strip-vertical{flex-direction:column; align-items:flex-start; flex-wrap:nowrap; padding:0; border:0; background:none; gap:10px;}
@@ -4229,7 +4231,7 @@ a.mine-empty-note{color:var(--horizon-gold);}
 
 /* ===== Your players this week (My Team panel + theater board) ===== */
 .week-feed-top{display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:6px;}
-.week-feed-headline{font-family:var(--font-space-grotesk), sans-serif; font-size:16px; font-weight:600; color:var(--star);}
+.week-feed-headline{font-family:var(--font-display), sans-serif; font-size:16px; font-weight:600; color:var(--star);}
 .week-feed-list{display:flex; flex-direction:column; gap:8px; margin-top:8px;}
 .week-card{display:grid; grid-template-columns:26px minmax(0,1fr) auto; gap:10px; align-items:center; background:var(--void-panel-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px;}
 .week-card-icon{width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; background:var(--void-panel); color:var(--star-dim);}
@@ -4237,11 +4239,11 @@ a.mine-empty-note{color:var(--horizon-gold);}
 .week-card-icon.down{color:var(--down);}
 .week-card-icon.flag{color:var(--neon-blue);}
 .week-card-name{font-weight:600; font-size:14px; color:var(--star);}
-.week-card-pos{font-family:var(--font-ibm-plex-mono), monospace; font-size:10.5px; color:var(--star-dim); margin-left:8px; font-weight:400;}
+.week-card-pos{font-family:var(--font-mono), monospace; font-size:10.5px; color:var(--star-dim); margin-left:8px; font-weight:400;}
 .week-card-line{font-size:13px; color:var(--star); margin-top:1px;}
 .week-card-line-more{color:var(--star-dim); font-size:12.5px;}
 .week-card-where{display:flex; flex-direction:column; align-items:flex-end; gap:3px; text-align:right; max-width:190px;}
-.week-card-role{font-family:var(--font-ibm-plex-mono), monospace; font-size:10.5px; border:1px solid var(--line); border-radius:999px; padding:1px 8px; color:var(--star-dim);}
+.week-card-role{font-family:var(--font-mono), monospace; font-size:10.5px; border:1px solid var(--line); border-radius:999px; padding:1px 8px; color:var(--star-dim);}
 .week-card-role.starter{color:var(--up); border-color:rgba(74,222,128,.4);}
 .week-card-teams{font-size:11.5px; color:var(--star-dim);}
 .week-feed-more{margin-top:10px; background:none; border:none; padding:6px 0; color:var(--neon-blue); font:inherit; font-size:13px; cursor:pointer;}
@@ -4402,7 +4404,7 @@ a.mine-empty-note{color:var(--horizon-gold);}
   position:fixed; left:0; top:0; z-index:300; pointer-events:none;
   max-width:min(270px, calc(100vw - 16px)); padding:8px 12px 8px;
   border-radius:10px;
-  font-family:var(--font-inter), sans-serif; font-size:12.5px; line-height:1.4; font-weight:500; color:var(--star);
+  font-family:var(--font-body), Georgia, serif; font-size:12.5px; line-height:1.4; font-weight:500; color:var(--star);
   background:linear-gradient(180deg, rgba(255,255,255,var(--glass-spec)), rgba(255,255,255,0) 60%), rgba(var(--scrim-rgb), .88);
   border:1px solid rgba(var(--star-dot-rgb),.14);
   box-shadow:inset 0 1px 0 var(--glass-rim), inset 0 0 12px -6px var(--glass-edge), 0 14px 34px rgba(var(--shadow-rgb),.5);
@@ -4433,6 +4435,6 @@ a.mine-empty-note{color:var(--horizon-gold);}
 .matchup-combined-cell .def-flag{margin-left:1px;}
 .matchup-legend{display:flex; flex-wrap:wrap; align-items:center; gap:6px 8px; margin:2px 0 12px; font-size:12.5px; color:var(--star-dim);}
 .matchup-legend .def-flag{cursor:default;}
-.weekly-opp-flag{display:inline-flex; align-items:center; gap:6px; margin-top:6px; font-family:var(--font-ibm-plex-mono), monospace; font-size:11px; letter-spacing:.04em; cursor:help;}
+.weekly-opp-flag{display:inline-flex; align-items:center; gap:6px; margin-top:6px; font-family:var(--font-mono), monospace; font-size:11px; letter-spacing:.04em; cursor:help;}
 .weekly-opp-flag-smash{color:var(--horizon-gold);}
 .weekly-opp-flag-avoid{color:var(--neon-blue);}
