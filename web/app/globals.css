@@ -2450,6 +2450,12 @@ a.export-csv-btn{text-decoration:none;}
 .weekly-detail-curve-panel{flex:0 1 auto; max-width:400px; display:flex; flex-direction:column;}
 .weekly-detail-pct-panel{flex:0 1 auto; max-width:320px; display:flex; flex-direction:column;}
 .weekly-pct-head{margin-bottom:7px; flex-shrink:0;}
+/* The three quick-read stats, now at the top of the Outcome Curve panel instead of the identity strip. */
+.weekly-panel-stats{display:flex; flex-wrap:wrap; justify-content:space-between; gap:8px 12px; margin:6px 0 10px; flex-shrink:0;}
+.weekly-panel-stats .weekly-player-stat{align-items:flex-start;}
+/* Matchup (teams + the matchup %) at the top of the middle panel -- replaces the separate Opponent Defense panel. */
+.weekly-opp-block{display:flex; flex-direction:column; align-items:center; gap:2px; margin:6px 0 10px; padding-bottom:10px; border-bottom:1px solid var(--line); cursor:default; flex-shrink:0;}
+.weekly-opp-block .weekly-opp-matchup{gap:10px;}
 /* justify-content:center used to live on the PANEL itself, centering the
    title along with the curve/rows as one block -- fine for Curve (its
    content is tall enough that the title barely moves), but Usage's

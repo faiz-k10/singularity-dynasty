@@ -200,24 +200,21 @@ const MATCHUP_TOOLTIP = (position) =>
   `Fantasy points allowed to ${position} vs. league average. Not yet factored into the numbers above -- ` +
   `off while defenses build a real early-season sample.`;
 
-function OpponentPanel({ row }) {
+function OpponentMatchup({ row }) {
   if (row.matchup_mult == null || !row.opponent) return null;
   const pct = Math.round((row.matchup_mult - 1) * 100);
   const sep = row.is_home === true ? "vs" : row.is_home === false ? "@" : "·";
   return (
-    <div className="stat-panel weekly-opp-panel" title={MATCHUP_TOOLTIP(row.position)}>
-      <div className="weekly-pct-head">
-        <span className="weekly-panel-title">Opponent Defense</span>
-      </div>
+    <div className="weekly-opp-block" title={MATCHUP_TOOLTIP(row.position)}>
       <div className="weekly-opp-matchup">
         <TeamBadge team={row.team} />
         <span className="matchup-sep">{sep}</span>
         <TeamBadge team={row.opponent} />
+        <span className={`weekly-opp-pct ${pct >= 0 ? "weekly-opp-pct-soft" : "weekly-opp-pct-tough"}`}>
+          {pct >= 0 ? "+" : ""}
+          {pct}%
+        </span>
       </div>
-      <span className={`weekly-opp-pct ${pct >= 0 ? "weekly-opp-pct-soft" : "weekly-opp-pct-tough"}`}>
-        {pct >= 0 ? "+" : ""}
-        {pct}%
-      </span>
       {row.defLean && (
         <div className={`weekly-opp-flag ${row.defLean.call === "SMASH" ? "weekly-opp-flag-smash" : "weekly-opp-flag-avoid"}`} title={row.defLean.text}>
           <DefFlag lean={row.defLean} />
@@ -626,11 +623,32 @@ function achievementNode(a, row) {
 // median projection, and last week's actual positional finish
 // (lastWeekRank, from fetchGameLogData -- null before the season's first
 // game log exists).
+// This Week (projected position rank) / median projection / last week's finish -- sits at the top of the Outcome
+// Curve panel (moved out of the identity strip by request).
+function PlayerStatsRow({ row }) {
+  const lastWeek = row.lastWeekRank;
+  return (
+      <div className="weekly-panel-stats">
+        <div className="weekly-player-stat">
+          <span className="weekly-player-stat-label">This Week (Projected)</span>
+          <span className="weekly-player-stat-value">{row.positionLabel || "—"}</span>
+        </div>
+        <div className="weekly-player-stat">
+          <span className="weekly-player-stat-label">Median Proj</span>
+          <span className="weekly-player-stat-value">{row.projection != null ? row.projection.toFixed(1) : "—"}</span>
+        </div>
+        <div className="weekly-player-stat">
+          <span className="weekly-player-stat-label">Last Week (Finish)</span>
+          <span className="weekly-player-stat-value">{lastWeek ? `${row.position}${lastWeek.rank}` : "—"}</span>
+        </div>
+      </div>
+  );
+}
+
 function PlayerHeaderPanel({ row }) {
   const bio = row.bio || {};
   const ht = formatHeight(bio.height);
   const sizeText = [ht, bio.weight ? `${bio.weight} lbs` : null].filter(Boolean).join(" · ");
-  const lastWeek = row.lastWeekRank;
 
   // getAchievements (achievements.js) is the one source of truth for
   // which flags apply -- RankingsTable's collapsed-row dot preview calls
@@ -673,20 +691,6 @@ function PlayerHeaderPanel({ row }) {
               ))}
             </span>
           </div>
-        </div>
-      </div>
-      <div className="weekly-player-stats">
-        <div className="weekly-player-stat">
-          <span className="weekly-player-stat-label">This Week (Projected)</span>
-          <span className="weekly-player-stat-value">{row.positionLabel || "—"}</span>
-        </div>
-        <div className="weekly-player-stat">
-          <span className="weekly-player-stat-label">Median Proj</span>
-          <span className="weekly-player-stat-value">{row.projection != null ? row.projection.toFixed(1) : "—"}</span>
-        </div>
-        <div className="weekly-player-stat">
-          <span className="weekly-player-stat-label">Last Week (Finish)</span>
-          <span className="weekly-player-stat-value">{lastWeek ? `${row.position}${lastWeek.rank}` : "—"}</span>
         </div>
       </div>
     </div>
@@ -733,6 +737,7 @@ export default function WeeklyDetailRow({ row, colSpan, maxSpread, owned }) {
               <div className="weekly-pct-head">
                 <span className="weekly-panel-title">Outcome Curve</span>
               </div>
+              <PlayerStatsRow row={row} />
               <div className="weekly-panel-body">
                 <OutcomeCurveDetail
                   floor={row.floor}
@@ -749,6 +754,7 @@ export default function WeeklyDetailRow({ row, colSpan, maxSpread, owned }) {
               <div className="weekly-pct-head">
                 <span className="weekly-panel-title">{showTd ? "Touchdown profile" : "Usage"} vs. the {row.position} pool</span>
               </div>
+              <OpponentMatchup row={row} />
               <div className="weekly-panel-body">
                 {advancedEntries.length > 0 ? (
                   advancedEntries.map((m) =>
@@ -766,7 +772,6 @@ export default function WeeklyDetailRow({ row, colSpan, maxSpread, owned }) {
               </div>
             </div>
             <div className="weekly-detail-side-col">
-              <OpponentPanel row={row} />
               <GameLogPanel games={row.recentGames} />
             </div>
           </div>
