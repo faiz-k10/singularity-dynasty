@@ -2461,10 +2461,24 @@ a.export-csv-btn{text-decoration:none;}
 .weekly-detail-col .weekly-detail-curve-panel,
 .weekly-detail-col .weekly-detail-pct-panel{flex:1 1 auto; max-width:none;}
 .weekly-detail-mine-panel{flex:0 0 150px; align-self:stretch; max-width:176px;}
-.weekly-stats-panel .weekly-panel-stats{margin:0;}
-/* The three quick-read stats (their own small panel above the Outcome Curve). */
-.weekly-panel-stats{display:flex; flex-wrap:wrap; justify-content:space-between; gap:8px 12px; margin:6px 0 10px; flex-shrink:0;}
-.weekly-panel-stats .weekly-player-stat{align-items:flex-start;}
+/* Last week (muted) | This week (emphasised). */
+.weekly-stats-split{display:grid; grid-template-columns:1fr 1.45fr; gap:12px;}
+.weekly-detail-grid .weekly-stats-last,
+.weekly-detail-grid .weekly-stats-next{display:flex; flex-direction:column; gap:10px; padding:14px 16px; min-width:0;}
+.weekly-stats-eyebrow{font-family:var(--font-ibm-plex-mono), monospace; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--star-dim); white-space:nowrap;}
+.weekly-stats-eyebrow-next{color:var(--horizon-gold); font-weight:700;}
+.weekly-stats-pair{display:flex; flex-wrap:wrap; gap:8px 18px;}
+.weekly-stats-item{display:flex; flex-direction:column; gap:3px;}
+.weekly-stats-value-dim{font-family:var(--font-ibm-plex-mono), monospace; font-size:17px; font-weight:600; color:var(--star-dim);}
+.weekly-stats-value-big{font-family:var(--font-ibm-plex-mono), monospace; font-size:30px; font-weight:700; line-height:1.05; color:var(--star);}
+.weekly-stats-value-gold{color:var(--horizon-gold); text-shadow:0 0 18px rgba(var(--horizon-gold-rgb),0.45);}
+.weekly-detail-grid .weekly-stats-next{
+  border-color:rgba(var(--horizon-gold-rgb),0.6);
+  background:linear-gradient(160deg, rgba(var(--horizon-gold-rgb),0.14), rgba(var(--horizon-gold-rgb),0.03) 60%, transparent);
+  box-shadow:0 0 0 1px rgba(var(--horizon-gold-rgb),0.12), 0 8px 28px rgba(var(--horizon-gold-rgb),0.10);
+}
+@media (max-width:640px){ .weekly-stats-split{grid-template-columns:1fr;} .weekly-detail-grid .weekly-stats-next{order:-1;} }
+
 
 /* justify-content:center used to live on the PANEL itself, centering the
    title along with the curve/rows as one block -- fine for Curve (its
