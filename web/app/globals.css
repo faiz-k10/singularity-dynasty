@@ -2192,9 +2192,15 @@ a.export-csv-btn{text-decoration:none;}
 .stat-panel-pace-pos .pos-rank{font-size:inherit; margin-left:1px;}
 .stat-panel-pace-actual{font-family:var(--font-display); font-size:20px; font-weight:700; color:var(--star); line-height:1.2;}
 .stat-panel-pace-games{display:block; font-family:var(--font-mono), monospace; font-size:10.5px; font-weight:400; color:var(--star-dim); margin-bottom:2px;}
-.stat-panel-pace-delta{font-family:var(--font-mono), monospace; font-size:13px; font-weight:600; word-break:break-word;}
-.stat-panel-pace-delta.pace-hot{color:var(--up);}
-.stat-panel-pace-delta.pace-cold{color:var(--down);}
+/* Points ahead of / behind pace, as a tinted tag in the same recipe as the role / sustainability pills. */
+.stat-panel-pace-delta{
+  --tone:var(--up);
+  display:inline-block; padding:3px 10px; border-radius:999px; margin-top:2px;
+  border:1px solid color-mix(in srgb, var(--tone) 55%, transparent); background:color-mix(in srgb, var(--tone) 10%, transparent);
+  color:var(--tone); font-family:var(--font-mono), monospace; font-size:12px; font-weight:600; line-height:1.3; word-break:break-word;
+}
+.stat-panel-pace-delta.pace-hot{--tone:var(--up);}
+.stat-panel-pace-delta.pace-cold{--tone:var(--down);}
 /* One shared 3-column grid for all rows (each row is a subgrid), so the week label, team pill and
    points columns are sized together and every pill starts at the same x -- left edges match. */
 .stat-panel-pace-recent{display:grid; grid-template-columns:auto minmax(0,1fr) auto; column-gap:6px; width:100%; min-width:0; margin-top:6px;}
