@@ -277,16 +277,17 @@ body::before{
 .menu-btn:hover{border-color:var(--horizon-gold); transform:scale(1.06);}
 
 .theme-toggle{
-  position:fixed; top:30px; right:78px; z-index:90;
-  width:36px; height:36px; border-radius:50%;
+  position:fixed; top:26px; right:78px; z-index:90;
+  width:44px; height:44px; border-radius:50%;
   background:rgba(var(--scrim-rgb),0.7); border:1px solid var(--line); backdrop-filter:blur(8px);
   color:var(--star); cursor:pointer;
   display:flex; align-items:center; justify-content:center;
   transition:border-color .2s ease, transform .2s var(--ease);
 }
 .theme-toggle:hover{border-color:var(--neon-blue); transform:scale(1.06);}
-.theme-toggle svg{width:16px; height:16px;}
-@media (min-width:1180px){ .theme-toggle{top:36px;} }
+.theme-toggle svg{width:18px; height:18px;}
+/* Full-width bar: the toggle fills the bar's height (the bar is 60px; 2px margin top and bottom). */
+@media (min-width:1180px){ .theme-toggle{top:26px; width:56px; height:56px;} .theme-toggle svg{width:22px; height:22px;} }
 .theme-toggle .icon-sun{display:none;}
 .theme-toggle .icon-moon{display:block;}
 @media (prefers-color-scheme: light){
@@ -369,10 +370,11 @@ body::before{
   .tn-tier{padding:6px 8px;}
   .tn-tier b{font-size:12.5px; letter-spacing:0.06em;}
 }
-/* The bar's nav takes all the room between the brand and the toggle (it used to be a fixed share, with a balancing spacer). */
-.site-header .brandmark{flex:0 1 auto;}
-.site-header .top-nav-bar{flex:1 1 0;}
-.site-header-spacer{flex:0 0 96px;}
+/* The nav is one tight group centred in the bar: the brand and the spacer are equal-width zones either side of it (the brand
+   never shrinks below its own text, so a narrow window just pushes the group off-centre rather than into the brand). */
+.site-header .brandmark{flex:1 1 0; min-width:max-content;}
+.site-header .top-nav-bar{flex:0 0 auto; justify-content:center; gap:28px;}
+.site-header-spacer{flex:1 1 0;}
 /* "Tools" dropdown -- CSS-only (:hover/:focus-within, no JS state needed)
    since this only has to work in .top-nav-bar, which is itself hidden
    below 1180px in favor of the hamburger/radial-menu fallback (touch
