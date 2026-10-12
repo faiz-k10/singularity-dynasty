@@ -4463,4 +4463,5 @@ svg text, .pctile-vbar-label, .pctile-vbar-value, .pctile-hero-label{font-family
   font-family:var(--font-body), Georgia, serif; font-weight:700;
 }
 /* stat-name labels down the left of the stat tables are data labels */
-.stat-detail-table td:first-child, .stat-detail-table tbody th, .compare-table tbody th{font-family:var(--font-mono), monospace;}
+.stat-detail-table td:first-child, .stat-detail-table tbody th, .compare-table tbody th,
+.stat-detail-row table td:first-child, .stat-detail-row table th:first-child, .stat-detail-grid table td:first-child, .stat-detail-grid table th:first-child{font-family:var(--font-mono), monospace;}
