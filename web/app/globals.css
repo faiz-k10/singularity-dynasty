@@ -3071,6 +3071,11 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .pctile-card-cell{display:flex; flex-direction:column; flex:1; min-height:0;}
 .pctile-cell{flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:9px; text-align:center; padding:6px 4px 2px;}
 .pctile-cell-hero{font-family:var(--font-display), sans-serif; font-size:clamp(44px, 7vw, 62px); font-weight:700; line-height:0.95; color:var(--star);}
+.pctile-cell-hero-sym{
+  font-family:var(--font-mono), monospace; font-size:0.26em; font-weight:700; letter-spacing:0.02em; margin-left:6px;
+  color:var(--horizon-gold); vertical-align:0.9em;
+}
+.pctile-cell-stat{font-size:0.62em; font-weight:500; letter-spacing:0.04em; color:var(--star-dim); margin-left:2px;}
 .pctile-cell-hero-unit{
   display:block; margin-top:6px; font-family:var(--font-mono), monospace; font-size:10px; font-weight:400; line-height:1;
   letter-spacing:0.12em; text-transform:uppercase; color:var(--star-dim);

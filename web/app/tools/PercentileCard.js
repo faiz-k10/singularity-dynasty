@@ -162,10 +162,13 @@ export default function PercentileCard({ stats, position, selection, onSelectCel
         <div className="pctile-cell">
           <div className="pctile-cell-hero">
             {pctile == null ? "—" : ordinal(pctile)}
+            {pctile != null && <span className="pctile-cell-hero-sym" title="percentile">%ile</span>}
             <span className="pctile-cell-hero-unit">percentile</span>
           </div>
           <div className="pctile-cell-read">
-            <span className="pctile-cell-value">{formatValue(value)}</span>
+            <span className="pctile-cell-value">
+              {formatValue(value)} <span className="pctile-cell-stat">{stat.label}</span>
+            </span>
             <span className={`pctile-hero-tier pctile-bar-${t.cls}`}>{t.label}</span>
           </div>
           <div className="pctile-scale">
