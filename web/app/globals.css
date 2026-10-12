@@ -2527,22 +2527,22 @@ a.export-csv-btn{text-decoration:none;}
 .weekly-rank-head,
 .weekly-rank-row{display:grid; grid-template-columns:minmax(0,1fr) 84px 60px; align-items:center; column-gap:8px;}
 .weekly-rank-head{
-  padding:2px 4px 8px; margin-bottom:2px; border-bottom:1px solid var(--line);
+  padding:0 4px 5px; margin-bottom:0; border-bottom:1px solid var(--line);
   font-family:var(--font-ibm-plex-mono), monospace; font-size:9.5px; letter-spacing:0.1em; text-transform:uppercase; color:var(--star-dim);
 }
 .weekly-rank-head span:nth-child(2){text-align:center;}
 .weekly-rank-head span:nth-child(3){text-align:right;}
-.weekly-rank-row{padding:9px 4px; border-bottom:1px solid rgba(var(--shadow-rgb),0.5);}
+.weekly-rank-row{padding:4px 4px; border-bottom:1px solid rgba(var(--shadow-rgb),0.5);}
 .weekly-rank-row:last-child{border-bottom:none; padding-bottom:2px;}
 .weekly-rank-label{font-size:12.5px; color:var(--star); text-align:left; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:default;}
 .weekly-rank-num{
-  justify-self:center; display:inline-flex; align-items:baseline; gap:2px; min-width:58px; justify-content:center; box-sizing:border-box;
-  padding:3px 10px; border-radius:999px; font-family:var(--font-ibm-plex-mono), monospace; font-size:13px; font-weight:700; color:var(--horizon-gold);
+  justify-self:center; display:inline-flex; align-items:baseline; gap:2px; width:66px; justify-content:center; box-sizing:border-box;
+  padding:1px 8px; border-radius:999px; font-family:var(--font-ibm-plex-mono), monospace; font-size:12px; line-height:1.35; font-weight:700; color:var(--horizon-gold);
   background:rgba(var(--horizon-gold-rgb),0.10); border:1px solid rgba(var(--horizon-gold-rgb),0.32); cursor:default;
 }
 .weekly-rank-of{font-size:9.5px; font-weight:400; color:var(--star-dim);}
 .weekly-rank-num.weekly-rank-none{color:var(--star-dim); font-weight:400; background:none; border-color:var(--line);}
-.weekly-rank-row .weekly-pct-value{font-size:13px; text-align:right;}
+.weekly-rank-row .weekly-pct-value{font-size:12.5px; text-align:right;}
 .weekly-pct-label{font-size:11.5px; color:var(--star-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
 .weekly-pct-value{font-family:var(--font-ibm-plex-mono), monospace; font-size:12px; color:var(--star); text-align:right;}
 .weekly-pct-ordinal{font-family:var(--font-ibm-plex-mono), monospace; font-size:11px; color:var(--star-dim); text-align:right;}
