@@ -713,8 +713,8 @@ and projects 2,406 / 8 (floor 1,916, ceiling 3,334). Across the 399 players with
 more than 0.05 (6 QBs, 4 RBs, 1 TE, 8 WRs, mostly backups-turned-starters); Josh Allen and other established
 starters are unchanged. The thresholds are a judgment call, not backtested.
 
-Availability is naive — it can't distinguish "missed games from injury"
-from "was a healthy inactive backup," and treats each week's absence as
+Availability is still naive beyond the role-aware rule above — it can't tell "missed games from injury"
+from "was a healthy inactive backup" for a player who is still a backup, and treats each week's absence as
 independent (real injuries cluster into multi-week absences, so this
 somewhat understates season-total variance). Fine for the durable/injured
 split among clear starters; noisier further down the depth chart.
