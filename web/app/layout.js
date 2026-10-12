@@ -1,4 +1,4 @@
-import { Big_Shoulders, Overpass_Mono } from "next/font/google";
+import { Big_Shoulders, Martian_Mono } from "next/font/google";
 import localFont from "next/font/local";
 import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
@@ -7,7 +7,7 @@ import Tooltip from "./Tooltip";
 
 // Display: Big Shoulders (condensed, scoreboard / jersey-number feel) for headings, the brand name and
 // buttons. Body: Libron (a free OFL serif made for reading; files + license in app/fonts/) for paragraphs and
-// labels. Mono: Overpass Mono for numbers, tables and small labels. Libron ships only Regular / Bold (+ italics),
+// labels. Mono: Martian Mono for numbers, tables and small labels. Libron ships only Regular / Bold (+ italics),
 // so CSS weights 500/600 resolve to those two.
 // (Google merged "Big Shoulders Display" and "Big Shoulders Text" into one variable font, "Big Shoulders", whose
 // optical-size axis gives the tall display cut at large sizes automatically.)
@@ -29,10 +29,13 @@ const body = localFont({
   ],
 });
 
-const mono = Overpass_Mono({
+// Martian Mono is a wide face; it also has a width axis, which globals.css narrows slightly (html{font-stretch}) so
+// the compact panels (percentile labels, stat tables) fit on one line.
+const mono = Martian_Mono({
   variable: "--font-mono",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: "variable",
+  axes: ["wdth"],
 });
 
 const SITE_URL = "https://web-kohl-ten-94.vercel.app";
