@@ -31,10 +31,11 @@ import { MyStrip, MyEmpty } from "./MyPlayers";
 // read as more machinery than the row needed; the exact scope is in
 // this comment for whoever touches the number next, not the UI.
 const ADVANCED_METRICS = [
+  // xFP always leads the list (by request), for every position that shows this panel.
+  { key: "avgXfp", label: "xFP", format: (v) => v.toFixed(1) },
   { key: "wopr", label: "WOPR", format: (v) => v.toFixed(2) },
   { key: "targetShare", label: "Target Share", format: (v) => `${v.toFixed(1)}%` },
   { key: "yacAboveExp", label: "YAC Above Exp", format: (v) => v.toFixed(2) },
-  { key: "avgXfp", label: "xFP", format: (v) => v.toFixed(1) },
   { key: "ryoe", label: "RYOE/Att", format: (v) => `${v >= 0 ? "+" : ""}${v.toFixed(2)}` },
   { key: "scrambleRate", label: "Scramble Rate", format: (v) => `${v.toFixed(1)}%` },
   { key: "playActionRate", label: "Play-Action Rate", format: (v) => `${v.toFixed(1)}%` },
