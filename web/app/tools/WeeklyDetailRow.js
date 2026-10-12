@@ -41,6 +41,22 @@ const ADVANCED_METRICS = [
   { key: "playActionRate", label: "Play-Action Rate", format: (v) => `${v.toFixed(1)}%` },
 ];
 
+// WR/TE touchdown profile (model/td_profile.R -> player_groups kind "td_profile", attached in page.js). Replaces
+// the usage rows above for those two positions. Display only. Short labels because the label column is 100px;
+// the full explanation is in the hover tip. Deliberately no touchdown-conversion rate: tested, it carries no
+// predictive signal once a player's role is known.
+const TD_METRICS = [
+  { key: "xtdPg", label: "Expected TDs/G", format: (v) => v.toFixed(2),
+    hint: "Expected touchdowns per game: how likely each of his touches was to score given where on the field it happened. Last 24 games, recent games weighted most." },
+  { key: "p2Td", label: "2+ TD Chance", format: (v) => `${v.toFixed(1)}%`,
+    hint: "Chance of scoring 2 or more touchdowns in a single game, from his expected touchdowns. Treat the order as more reliable than the exact percentage at the very top." },
+  { key: "i10Pg", label: "In-10 Tgts/G", format: (v) => v.toFixed(2),
+    hint: "Targets per game from inside the opponent's 10-yard line (last 24 games, recent weighted most). Targets there score 30-47% of the time." },
+  { key: "i10Share", label: "In-10 Share", format: (v) => `${v.toFixed(1)}%`,
+    hint: "Share of his targets that came from inside the opponent's 10-yard line." },
+];
+const TD_POSITIONS = new Set(["WR", "TE"]);
+
 function ordinal(n) {
   const rounded = Math.round(n);
   const mod100 = rounded % 100;
@@ -79,12 +95,12 @@ function formatValue(value) {
 // the generic integer/2-decimal default -- ADVANCED_METRICS' four rows
 // each need their own real-world formatting (a percent sign on Target
 // Share, fixed decimal places on WOPR/xFP) rather than one shared rule.
-function PctRow({ label, value, pctile, format = formatValue }) {
+function PctRow({ label, value, pctile, format = formatValue, hint }) {
   if (pctile == null) return null;
   const t = tier(pctile);
   return (
     <div className="weekly-pct-row">
-      <span className="weekly-pct-label">{label}</span>
+      <span className="weekly-pct-label" title={hint}>{label}</span>
       <span className="weekly-pct-value">{value == null ? "—" : format(value)}</span>
       <div className="pctile-bar">
         <div className={`pctile-bar-fill pctile-bar-${t.cls}`} style={{ width: `${Math.max(pctile, 2)}%` }} />
@@ -686,7 +702,8 @@ function PlayerHeaderPanel({ row }) {
 // than it needs to.
 export default function WeeklyDetailRow({ row, colSpan, maxSpread, owned }) {
   const pct = row.statPct || {};
-  const advancedEntries = ADVANCED_METRICS.filter((m) => row[m.key] != null && pct[m.key] != null);
+  const showTd = TD_POSITIONS.has(row.position);
+  const advancedEntries = (showTd ? TD_METRICS : ADVANCED_METRICS).filter((m) => row[m.key] != null && pct[m.key] != null);
 
   return (
     <tr className="stat-detail-row weekly-detail-row">
@@ -717,15 +734,17 @@ export default function WeeklyDetailRow({ row, colSpan, maxSpread, owned }) {
             </div>
             <div className="stat-panel weekly-detail-pct-panel">
               <div className="weekly-pct-head">
-                <span className="weekly-panel-title">Usage vs. the {row.position} pool</span>
+                <span className="weekly-panel-title">{showTd ? "Touchdown profile" : "Usage"} vs. the {row.position} pool</span>
               </div>
               <div className="weekly-panel-body">
                 {advancedEntries.length > 0 ? (
                   advancedEntries.map((m) => (
-                    <PctRow key={m.key} label={m.label} value={row[m.key]} pctile={pct[m.key]} format={m.format} />
+                    <PctRow key={m.key} label={m.label} value={row[m.key]} pctile={pct[m.key]} format={m.format} hint={m.hint} />
                   ))
                 ) : (
-                  <p className="weekly-opp-caption">No usage metrics published for this player yet.</p>
+                  <p className="weekly-opp-caption">
+                    {showTd ? "Not enough games yet for a touchdown profile." : "No usage metrics published for this player yet."}
+                  </p>
                 )}
               </div>
             </div>

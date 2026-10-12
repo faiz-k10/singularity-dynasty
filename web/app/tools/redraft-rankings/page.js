@@ -83,6 +83,7 @@ const PERCENTILE_KEYS = [
   "floor", "projection", "ceiling",
   "wopr", "targetShare", "yacAboveExp", "avgXfp",
   "ryoe", "scrambleRate", "playActionRate",
+  "xtdPg", "p2Td", "i10Pg", "i10Share",
 ];
 function buildPoolsByPosition(rows, keys) {
   const pools = {};
@@ -397,6 +398,38 @@ const getCachedLeans = unstable_cache(
   { revalidate: 60 }
 );
 
+// Touchdown profile for WRs and TEs (model/td_profile.R -> player_groups, kind "td_profile"): expected TDs per
+// game, chance of 2+ TDs in a game, inside-10 targets per game and share of targets. Display only. Optional by
+// design: nothing published (or an error) just leaves the panel's "not enough games" note.
+const getCachedTdProfile = unstable_cache(
+  async () => {
+    try {
+      const pub = createPublicClient();
+      const { data: latest } = await pub
+        .from("player_groups")
+        .select("season, week")
+        .eq("kind", "td_profile")
+        .order("season", { ascending: false })
+        .order("week", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (!latest) return {};
+      const { data } = await pub
+        .from("player_groups")
+        .select("player_name, detail")
+        .eq("kind", "td_profile")
+        .eq("season", latest.season)
+        .eq("week", latest.week)
+        .limit(1000);
+      return Object.fromEntries((data || []).filter((r) => r.detail).map((r) => [r.player_name, r.detail]));
+    } catch {
+      return {};
+    }
+  },
+  ["td-profile-latest"],
+  { revalidate: 60 }
+);
+
 // Stargazer sees the top 50 only; Explorer/Singularity see the full
 // list — matches the pricing copy's "Weekly Projection Rankings (Top
 // 50)" Stargazer bullet.
@@ -406,12 +439,13 @@ export default async function RedraftRankingsPage({ searchParams }) {
   // Tier (auth + profile) is per-visitor, the cached bundle and the Sleeper
   // bios aren't -- all three run at once.
   const supabase = await createClient();
-  const [{ tier, mine }, cached, bioByNamePos, leanRows] = await Promise.all([
+  const [{ tier, mine }, cached, bioByNamePos, leanRows, tdProfile] = await Promise.all([
     // Per-visitor like the tier: their saved teams (own rows only) for the My players view.
     resolveTier(supabase).then(async (r) => ({ ...r, mine: await loadMyPlayers(supabase, r.user) })),
     getCachedRedraftData(),
     getPlayerBiosByNamePos(),
     getCachedLeans(),
+    getCachedTdProfile(),
   ]);
   const hasFullAccess = PAID_TIERS.includes(tier);
   const { latest } = cached;
@@ -445,6 +479,10 @@ export default async function RedraftRankingsPage({ searchParams }) {
         ryoe: sims.ryoe ?? null,
         scrambleRate: sims.scrambleRate ?? null,
         playActionRate: sims.playActionRate ?? null,
+        xtdPg: tdProfile[r.player_name]?.xtd_pg ?? null,
+        p2Td: tdProfile[r.player_name]?.p2 ?? null,
+        i10Pg: tdProfile[r.player_name]?.i10_pg ?? null,
+        i10Share: tdProfile[r.player_name]?.i10_share ?? null,
         recentGames: recentGamesByName[r.player_name] || [],
         lastWeekRank: lastWeekRankByName[r.player_name] || null,
         heroWins: heroWinsByName[r.player_name]?.count || 0,

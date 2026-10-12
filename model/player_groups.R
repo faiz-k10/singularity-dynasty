@@ -10,11 +10,13 @@
 #   career_stage    Ascending / Prime / Decline Watch / Late Career (QB: Ascending / Prime / Veteran), from
 #                   age as of Sept 1 with per-position cutoffs taken from the longitudinal age curves in the
 #                   README ("Age curves -- longitudinal").
+#   td_profile      WR and TE only, for everyone ranked on Weekly Projection Rankings (td_profile.R): expected TDs per
+#                   game, chance of 2+ TD in a game, inside-10 targets per game and share. Display only.
 #
 # Run: Rscript player_groups.R   (after projection_engine.R; reads upload_player_simulations.csv for the pool and
 # season/week, and upload_player_game_log.csv for actual vs expected points). Writes upload_player_groups.csv.
 # Publish with: node --env-file=.env.local scripts/publish-player-groups.mjs
-suppressMessages({ library(jsonlite); source("player_meta.R") })
+suppressMessages({ library(jsonlite); source("player_meta.R"); source("td_profile.R") })
 
 SUSTAIN_MIN_GAMES <- 8       # games with expected-points data
 SUSTAIN_MIN_GAP   <- 1.0     # points per game, vs the position baseline
@@ -65,6 +67,12 @@ if (sys.nframe() == 0) {
   season <- sims$season[1]; week <- sims$week[1]
   pool <- unique(sims[sims$position %in% c("QB", "RB", "WR", "TE"), c("player_name", "position")])
   out <- rbind(sustainability_rows(pool, season, week), career_stage_rows(pool, season, week))
+  # td_profile covers the whole weekly ranking (more players than the sims pool); never fatal
+  rk <- tryCatch(read.csv("upload_redraft_rankings.csv", stringsAsFactors = FALSE), error = function(e) NULL)
+  if (!is.null(rk)) {
+    td <- tryCatch(td_profile_rows(unique(rk[, c("player_name", "position")]), rk$season[1], rk$week[1]), error = function(e) { cat("td_profile skipped:", conditionMessage(e), "\n"); NULL })
+    if (!is.null(td) && nrow(td)) out <- rbind(out, td)
+  }
   write.csv(out, "upload_player_groups.csv", row.names = FALSE)
   cat(sprintf("Wrote upload_player_groups.csv: %d rows (season %s, week %s)\n", nrow(out), season, week))
   print(table(out$kind, out$label))
