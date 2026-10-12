@@ -109,3 +109,14 @@ test("a starter listed out outranks a big median move", () => {
   });
   assert.equal(f.items[0].lines[0].kind, "status");
 });
+
+test("a player on a bye gets no rank-move line (his rank only drops because he has no game)", () => {
+  const f = buildFeed({
+    mine,
+    ranks: {
+      prev: [{ player_name: "Puka Nacua", rank: 4, week: 5 }],
+      cur: [{ player_name: "Puka Nacua", rank: 40, week: 6, opponent: "NA" }],
+    },
+  });
+  assert.equal(f.items.length, 0);
+});

@@ -40,6 +40,11 @@ export async function GET() {
   return csvResponse({
     filename: `redraft-rankings-week${latest.week}-${latest.season}.csv`,
     columns: COLUMNS,
-    rows: rows.map((r) => (isBye(r.opponent) ? { ...r, opponent: BYE_LABEL } : r)),
+    // A team on a bye shows only who he is: no rank, range, trend or notes.
+    rows: rows.map((r) =>
+      isBye(r.opponent)
+        ? { player_name: r.player_name, position: r.position, team: r.team, opponent: BYE_LABEL }
+        : r
+    ),
   });
 }

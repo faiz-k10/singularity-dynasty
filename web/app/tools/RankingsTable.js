@@ -363,7 +363,10 @@ export default function RankingsTable({
         <tbody>
           {displayRows.map(({ row, achievements }) => {
             const rowKey = `${row.position}-${row.rank}`;
-            const hasDetail = showCurve && row.floor != null && row.ceiling != null;
+            // A team on its bye has no game, so nothing about this week is shown for him (no rank, projection range,
+            // stat line or opened panel) -- just who he is and "BYE WEEK" in the Matchup column.
+            const bye = isBye(row.opponent);
+            const hasDetail = !bye && showCurve && row.floor != null && row.ceiling != null;
             const isExpanded = hasDetail && expanded.has(rowKey);
             return (
               <Fragment key={rowKey}>
@@ -386,21 +389,27 @@ export default function RankingsTable({
                   }
                 >
                   <td className="mono rank-cell">
-                    <AchievementDots achievements={achievements} vertical />
-                    {row.displayRank}
+                    {bye ? (
+                      "—"
+                    ) : (
+                      <>
+                        <AchievementDots achievements={achievements} vertical />
+                        {row.displayRank}
+                      </>
+                    )}
                   </td>
-                  <PlayerCell row={row} withPopover={popoverOnName} owned={ownedByName?.get(row.player_name)} />
+                  <PlayerCell row={row} withPopover={popoverOnName && !bye} owned={ownedByName?.get(row.player_name)} />
                   {showPosition && (
                     <td className="mono align-left">
                       {row.position}
-                      {row.positionLabel && row.positionLabel !== row.position && (
+                      {!bye && row.positionLabel && row.positionLabel !== row.position && (
                         <span className="pos-rank">{row.positionLabel.slice(row.position.length)}</span>
                       )}
                     </td>
                   )}
                   {showTeam && showOpponent ? (
                     (() => {
-                      const tint = matchupTint(row.matchup_mult);
+                      const tint = bye ? null : matchupTint(row.matchup_mult);
                       // is_home is null for rows published before migration
                       // 0032 (or when the schedule lookup failed) -- a
                       // neutral "·" rather than guessing vs/@ in that case.
@@ -434,29 +443,31 @@ export default function RankingsTable({
                     )
                   )}
                   {showRange && (
-                    <td className="mono heat-cell-floor" style={{ "--heat": row.floorHeat || 0 }}>
-                      {formatRange(row.floor)}
+                    <td className="mono heat-cell-floor" style={{ "--heat": bye ? 0 : row.floorHeat || 0 }}>
+                      {bye ? "—" : formatRange(row.floor)}
                     </td>
                   )}
                   {showCurve && (
                     <td>
-                      <OutcomeCurve
-                        floor={row.floor}
-                        median={row.projection}
-                        ceiling={row.ceiling}
-                        maxSpread={maxSpread}
-                      />
+                      {!bye && (
+                        <OutcomeCurve
+                          floor={row.floor}
+                          median={row.projection}
+                          ceiling={row.ceiling}
+                          maxSpread={maxSpread}
+                        />
+                      )}
                     </td>
                   )}
                   {showRange && (
-                    <td className="mono heat-cell" style={{ "--heat": row.ceilingHeat || 0 }}>
-                      {formatRange(row.ceiling)}
+                    <td className="mono heat-cell" style={{ "--heat": bye ? 0 : row.ceilingHeat || 0 }}>
+                      {bye ? "—" : formatRange(row.ceiling)}
                     </td>
                   )}
                   {showStatColumns &&
                     STAT_COLUMNS.map((c) => (
                       <td key={c.key} className="mono">
-                        {formatStat(row[c.key])}
+                        {bye ? "—" : formatStat(row[c.key])}
                       </td>
                     ))}
                   {showNotes && <td className="tool-notes">{row.notes || ""}</td>}

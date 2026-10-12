@@ -95,8 +95,9 @@ export function buildFeed({ mine, sims, ranks, roles, groups, teamIndex = null, 
         lines.push({ kind: "status", dir: "down", text: `Listed ${note.length <= 14 ? note.toUpperCase() : note} for week ${rc.week}`, score: 8 });
       } else if (prevNote && !note) {
         lines.push({ kind: "status", dir: "up", text: `Back in the week ${rc.week} rankings (#${rc.rank}) after being listed ${prevNote.length <= 14 ? prevNote.toUpperCase() : prevNote}`, score: 7 });
-      } else if (!note && Math.abs(moved) >= FEED_RULES.rankMove && Math.min(rp.rank, rc.rank) <= FEED_RULES.rankDepth) {
-        const opp = rc.opponent ? (isBye(rc.opponent) ? " · bye week" : ` · ${rc.is_home === false ? "@" : "vs"} ${rc.opponent}`) : "";
+      } else if (!note && !isBye(rc.opponent) && Math.abs(moved) >= FEED_RULES.rankMove && Math.min(rp.rank, rc.rank) <= FEED_RULES.rankDepth) {
+        // (no rank-move line for a player on a bye: his rank drops only because he has no game)
+        const opp = rc.opponent ? ` · ${rc.is_home === false ? "@" : "vs"} ${rc.opponent}` : "";
         lines.push({
           kind: "rank",
           dir: moved > 0 ? "up" : "down",
