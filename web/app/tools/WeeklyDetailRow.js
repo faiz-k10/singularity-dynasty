@@ -171,6 +171,12 @@ function GameLogPanel({ games }) {
               <span className="weekly-gamelog-pts mono">
                 {g.fantasy_points_ppr != null ? g.fantasy_points_ppr.toFixed(1) : "—"}
               </span>
+              <span
+                className="weekly-gamelog-rank mono"
+                title={g.posRank != null ? `Finished ${g.position}${g.posRank} that week` : undefined}
+              >
+                {g.posRank != null ? `${g.position}${g.posRank}` : "—"}
+              </span>
             </div>
           );
         })}

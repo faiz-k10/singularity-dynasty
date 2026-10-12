@@ -2533,7 +2533,7 @@ a.export-csv-btn{text-decoration:none;}
    a distinct stat chip rather than blending into the row's other text. */
 .weekly-gamelog-panel{display:flex; flex-direction:column; justify-content:flex-start;}
 .weekly-gamelog-row{
-  display:grid; grid-template-columns:1fr 20px auto 46px; align-items:center; gap:8px;
+  display:grid; grid-template-columns:1fr 20px auto 46px 44px; align-items:center; gap:8px;
   padding:5px 0; border-bottom:1px solid rgba(var(--shadow-rgb),0.5); font-size:12px;
 }
 .weekly-gamelog-row:last-child{border-bottom:none;}
@@ -2550,6 +2550,7 @@ a.export-csv-btn{text-decoration:none;}
 .weekly-gamelog-dot.tie{background:#E3B341; color:#E3B341;}
 .weekly-gamelog-dot.neutral{background:var(--star-dim); color:var(--star-dim); box-shadow:none;}
 .weekly-gamelog-sep{color:var(--star-dim); font-size:11px; text-align:right;}
+.weekly-gamelog-rank{color:var(--horizon-gold); font-size:12px; font-weight:600; text-align:right;}
 .weekly-gamelog-pts{
   color:var(--star); font-weight:700; text-align:center; background:var(--void-panel-2);
   border:1px solid var(--line); border-radius:7px; padding:2px 0;

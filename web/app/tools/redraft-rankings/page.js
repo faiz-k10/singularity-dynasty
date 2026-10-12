@@ -205,6 +205,22 @@ function fetchGameLogRows(supabase) {
 }
 
 function deriveGameLogData(data, season, floorCeilingByGame) {
+  // Each game's finish at his position that week (1 = highest PPR score among everyone logged at the position),
+  // shown as the rightmost column of the Recent Games panel.
+  const posRankByGame = {};
+  const byWeekPosition = {};
+  for (const r of data || []) {
+    if (r.fantasy_points_ppr == null) continue;
+    (byWeekPosition[`${r.season}|${r.week}|${r.position}`] ??= []).push(r);
+  }
+  for (const rows of Object.values(byWeekPosition)) {
+    [...rows]
+      .sort((a, b) => b.fantasy_points_ppr - a.fantasy_points_ppr)
+      .forEach((r, i) => {
+        posRankByGame[`${r.player_name}|${r.season}|${r.week}`] = i + 1;
+      });
+  }
+
   const byPlayer = {};
   for (const r of data || []) {
     const fc = floorCeilingByGame[`${r.player_name}|${r.season}|${r.week}`] || {};
@@ -213,6 +229,7 @@ function deriveGameLogData(data, season, floorCeilingByGame) {
       floor: fc.floor ?? null,
       ceiling: fc.ceiling ?? null,
       median: fc.median ?? null,
+      posRank: posRankByGame[`${r.player_name}|${r.season}|${r.week}`] ?? null,
     });
   }
 
@@ -365,7 +382,7 @@ const getCachedRedraftData = unstable_cache(
       heroWinsByName: only(gameLog.heroWinsByName),
     };
   },
-  ["redraft-rankings-latest-week"],
+  ["redraft-rankings-latest-week-v2"],
   { revalidate: 60 }
 );
 
