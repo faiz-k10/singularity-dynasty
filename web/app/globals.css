@@ -3069,9 +3069,14 @@ tr.stat-row-selected td{background:var(--void-panel);}
 /* Single number picked in the percentile panel (PercentileCard "cell" mode): a centred headline value, the 0-100 scale
    with a marker, a plain-English line, and the same stat's three layers as chips -- sized to fill the panel. */
 .pctile-card-cell{display:flex; flex-direction:column; flex:1; min-height:0;}
-.pctile-cell{flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:12px; text-align:center; padding:6px 4px 2px;}
-.pctile-cell-hero{font-family:var(--font-display), sans-serif; font-size:clamp(44px, 7vw, 76px); font-weight:700; line-height:0.95; color:var(--star);}
+.pctile-cell{flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:9px; text-align:center; padding:6px 4px 2px;}
+.pctile-cell-hero{font-family:var(--font-display), sans-serif; font-size:clamp(44px, 7vw, 62px); font-weight:700; line-height:0.95; color:var(--star);}
+.pctile-cell-hero-unit{
+  display:block; margin-top:6px; font-family:var(--font-mono), monospace; font-size:10px; font-weight:400; line-height:1;
+  letter-spacing:0.12em; text-transform:uppercase; color:var(--star-dim);
+}
 .pctile-cell-read{display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap;}
+.pctile-cell-value{font-family:var(--font-mono), monospace; font-size:20px; font-weight:700; color:var(--star); font-variant-numeric:tabular-nums;}
 .pctile-scale{width:100%; max-width:440px; padding:0 6px; box-sizing:border-box;}
 .pctile-scale-track{position:relative; height:12px; border-radius:6px; background:var(--void-panel-2);}
 .pctile-scale-fill{position:absolute; top:0; left:0; bottom:0; border-radius:inherit;}

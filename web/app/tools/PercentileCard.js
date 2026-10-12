@@ -157,12 +157,15 @@ export default function PercentileCard({ stats, position, selection, onSelectCel
           </span>
           <span className="pctile-card-sub">vs. {position} pool</span>
         </div>
-        {/* One number picked: the value as a big headline, where it sits on the whole pool's 0-100 scale, and the
+        {/* One number picked: its percentile as the big headline (the stat value sits underneath), where it sits on the whole pool's 0-100 scale, and the
             same stat's three layers underneath (click one to move there), so the panel is never mostly empty. */}
         <div className="pctile-cell">
-          <div className="pctile-cell-hero">{formatValue(value)}</div>
+          <div className="pctile-cell-hero">
+            {pctile == null ? "—" : ordinal(pctile)}
+            <span className="pctile-cell-hero-unit">percentile</span>
+          </div>
           <div className="pctile-cell-read">
-            <span className="pctile-hero-pctile">{ordinal(pctile)} percentile</span>
+            <span className="pctile-cell-value">{formatValue(value)}</span>
             <span className={`pctile-hero-tier pctile-bar-${t.cls}`}>{t.label}</span>
           </div>
           <div className="pctile-scale">
