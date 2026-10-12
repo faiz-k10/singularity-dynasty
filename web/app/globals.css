@@ -286,8 +286,14 @@ body::before{
 }
 .theme-toggle:hover{border-color:var(--neon-blue); transform:scale(1.06);}
 .theme-toggle svg{width:18px; height:18px;}
-/* Full-width bar: the toggle fills the bar's height (the bar is 60px; 2px margin top and bottom). */
-@media (min-width:1180px){ .theme-toggle{top:26px; width:56px; height:56px;} .theme-toggle svg{width:22px; height:22px;} }
+/* The bar has a fixed height (48px with the menu buttons, 60px on the full-width layout) and the toggle is a circle centred
+   inside it with a 6px / 2px margin, so it can never poke out of the bar whatever the bar's content does. */
+.site-header{height:48px;}
+@media (min-width:1180px){
+  .site-header{height:60px;}
+  .theme-toggle{top:30px; width:48px; height:48px;}
+  .theme-toggle svg{width:20px; height:20px;}
+}
 .theme-toggle .icon-sun{display:none;}
 .theme-toggle .icon-moon{display:block;}
 @media (prefers-color-scheme: light){

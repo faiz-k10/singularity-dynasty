@@ -207,9 +207,9 @@ export default async function SiteHeader() {
             aria-label="Get started: Stargazer is free, Explorer is $9 a month, Singularity is $25 a month"
             title="Get started"
           >
-            <span className="tn-tier"><b>Stargazer</b><small>Free · Top 50</small></span>
-            <span className="tn-tier"><b>Explorer</b><small>$9/mo · Full lists</small></span>
             <span className="tn-tier"><b>Singularity</b><small>$25/mo · Everything</small></span>
+            <span className="tn-tier"><b>Explorer</b><small>$9/mo · Full lists</small></span>
+            <span className="tn-tier"><b>Stargazer</b><small>Free · Top 50</small></span>
           </Link>
         </nav>
         <div className="site-header-spacer" aria-hidden="true"></div>
