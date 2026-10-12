@@ -187,16 +187,6 @@ export default async function SiteHeader() {
           <span className="ring"></span>Singularity Dynasty
         </Link>
         <nav className="top-nav-bar" id="topNavBar" aria-label="Primary">
-          <Link
-            href="/#pricing"
-            className="tn-cta tn-cta-tiers"
-            aria-label="Get started: Stargazer is free, Explorer is $9 a month, Singularity is $25 a month"
-            title="Get started"
-          >
-            <span className="tn-tier"><b>Stargazer</b><small>Free · Top 50</small></span>
-            <span className="tn-tier"><b>Explorer</b><small>$9/mo · Full lists</small></span>
-            <span className="tn-tier"><b>Singularity</b><small>$25/mo · Everything</small></span>
-          </Link>
           <div className="nav-dropdown">
             <Link href="/#tools">Tools</Link>
             <div className="nav-dropdown-menu">
@@ -210,6 +200,16 @@ export default async function SiteHeader() {
           <Link href="/my-team">My Team</Link>
           <Link href={user ? "/account" : "/login"} className="tn-account">
             {user ? "Account" : "Sign In"}
+          </Link>
+          <Link
+            href="/#pricing"
+            className="tn-cta tn-cta-tiers"
+            aria-label="Get started: Stargazer is free, Explorer is $9 a month, Singularity is $25 a month"
+            title="Get started"
+          >
+            <span className="tn-tier"><b>Stargazer</b><small>Free · Top 50</small></span>
+            <span className="tn-tier"><b>Explorer</b><small>$9/mo · Full lists</small></span>
+            <span className="tn-tier"><b>Singularity</b><small>$25/mo · Everything</small></span>
           </Link>
         </nav>
         <div className="site-header-spacer" aria-hidden="true"></div>
