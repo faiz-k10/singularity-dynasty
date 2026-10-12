@@ -6,7 +6,6 @@ import { createPublicClient } from "@/lib/supabase/public";
 import { fetchAllRows } from "@/lib/fetchAllRows";
 import ThemeToggle from "./ThemeToggle";
 import InteractiveScript from "./InteractiveScript";
-import NavStars from "./NavStars";
 import { getAchievements } from "./tools/achievements";
 import { computeRegressionScore } from "@/lib/regressionScore";
 import { buildTeamWeeks, indexGameLog, teamGamesThrough } from "@/lib/teamGames";
@@ -188,8 +187,15 @@ export default async function SiteHeader() {
           <span className="ring"></span>Singularity Dynasty
         </Link>
         <nav className="top-nav-bar" id="topNavBar" aria-label="Primary">
-          <Link href="/#pricing" className="tn-cta">
-            Get Started
+          <Link
+            href="/#pricing"
+            className="tn-cta tn-cta-tiers"
+            aria-label="Get started: Stargazer is free, Explorer is $9 a month, Singularity is $25 a month"
+            title="Get started"
+          >
+            <span className="tn-tier"><b>Stargazer</b><small>Free · Top 50</small></span>
+            <span className="tn-tier"><b>Explorer</b><small>$9/mo · Full lists</small></span>
+            <span className="tn-tier"><b>Singularity</b><small>$25/mo · Everything</small></span>
           </Link>
           <div className="nav-dropdown">
             <Link href="/#tools">Tools</Link>
@@ -198,15 +204,6 @@ export default async function SiteHeader() {
               <Link href="/tools/draft-board">Dynasty Draft Board</Link>
               <Link href="/tools/redraft-rankings">Weekly Projection Rankings</Link>
               <Link href="/tools/prospect-rankings">WR/QB Prospect Rankings &amp; Comparisons</Link>
-            </div>
-          </div>
-          <div className="nav-dropdown">
-            <Link href="/#pricing">Pricing</Link>
-            <div className="nav-dropdown-menu nav-dropdown-menu-stars">
-              <NavStars />
-              <Link href="/#pricing">Stargazer</Link>
-              <Link href="/#pricing">Explorer</Link>
-              <Link href="/#pricing">Singularity</Link>
             </div>
           </div>
           <Link href="/#feed">Feed</Link>
