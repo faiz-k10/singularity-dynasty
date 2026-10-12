@@ -3086,10 +3086,10 @@ tr.stat-row-selected td{background:var(--void-panel);}
   font-family:var(--font-mono), monospace; font-size:0.26em; font-weight:700; letter-spacing:0.02em; margin-left:6px;
   color:var(--horizon-gold); vertical-align:0.9em;
 }
-.pctile-cell-stat{font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--star-dim); padding-left:10px; border-left:1px solid var(--line); line-height:1.4;}
+.pctile-cell-stat{font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--star-dim); line-height:1;}
 .pctile-cell-read{display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px;}
 .pctile-cell-value{
-  display:inline-flex; align-items:center; gap:10px; padding:5px 14px; border-radius:999px;
+  display:inline-flex; align-items:baseline; gap:7px; padding:6px 14px; border-radius:999px;
   border:1px solid var(--line); background:rgba(var(--star-dim-rgb),0.07);
   font-family:var(--font-mono), monospace; font-size:20px; font-weight:700; line-height:1.1; color:var(--star); font-variant-numeric:tabular-nums;
 }
