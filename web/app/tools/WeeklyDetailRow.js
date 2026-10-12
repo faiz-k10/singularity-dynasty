@@ -61,14 +61,31 @@ const TD_POSITIONS = new Set(["WR", "TE"]);
 function RankRow({ label, value, format, rank, hint, unrankedHint }) {
   if (!rank && !unrankedHint) return null;
   return (
-    <div className="weekly-rank-row">
-      <span className="weekly-pct-label" title={hint}>{label}</span>
-      <span className="weekly-pct-value">{value == null ? "—" : format(value)}</span>
+    <div className="weekly-rank-row" role="row">
+      <span className="weekly-rank-label" title={hint} role="rowheader">{label}</span>
       {rank ? (
-        <span className="weekly-rank-num" title={`${ordinal(rank.rank)} of ${rank.of}`}>#{rank.rank}</span>
+        <span className="weekly-rank-num" title={`${ordinal(rank.rank)} of ${rank.of}`} role="cell">
+          #{rank.rank}
+          <span className="weekly-rank-of">/{rank.of}</span>
+        </span>
       ) : (
-        <span className="weekly-rank-num weekly-rank-none" title={unrankedHint}>—</span>
+        <span className="weekly-rank-num weekly-rank-none" title={unrankedHint} role="cell">—</span>
       )}
+      <span className="weekly-pct-value" role="cell">{value == null ? "—" : format(value)}</span>
+    </div>
+  );
+}
+
+// Header + rows of the usage / touchdown panel: Metric | Rank | Value.
+function RankTable({ children }) {
+  return (
+    <div className="weekly-rank-table" role="table">
+      <div className="weekly-rank-head" role="row">
+        <span role="columnheader">Metric</span>
+        <span role="columnheader">Rank</span>
+        <span role="columnheader">Value</span>
+      </div>
+      {children}
     </div>
   );
 }
@@ -692,9 +709,11 @@ export default function WeeklyDetailRow({ row, colSpan, maxSpread, owned, mineSt
                 </div>
                 <div className="weekly-panel-body">
                   {advancedEntries.length > 0 ? (
-                    advancedEntries.map((m) => (
-                      <RankRow key={m.key} label={m.label} value={row[m.key]} format={m.format} rank={row.metricRank?.[m.key]} hint={m.hint} unrankedHint={m.unrankedHint} />
-                    ))
+                    <RankTable>
+                      {advancedEntries.map((m) => (
+                        <RankRow key={m.key} label={m.label} value={row[m.key]} format={m.format} rank={row.metricRank?.[m.key]} hint={m.hint} unrankedHint={m.unrankedHint} />
+                      ))}
+                    </RankTable>
                   ) : (
                     <p className="weekly-opp-caption">
                       {showTd ? "Not enough games yet for a touchdown profile." : "No usage metrics published for this player yet."}
