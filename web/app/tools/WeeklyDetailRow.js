@@ -52,8 +52,8 @@ const TD_METRICS = [
   { key: "i10Pg", label: "In-10 Tgts/G", format: (v) => v.toFixed(2),
     hint: "Targets per game from inside the opponent's 10-yard line (last 24 games, recent weighted most). Targets there score 30-47% of the time." },
   { key: "i10Share", label: "In-10 Share", format: (v) => `${v.toFixed(1)}%`,
-    hint: "Share of his targets that came from inside the opponent's 10-yard line. Ranked only among players averaging 3+ targets a game (6+ games) since the start of last season.",
-    unrankedHint: "Not ranked: needs an average of 3+ targets a game (and 6+ games) since the start of last season." },
+    hint: "Share of his targets that came from inside the opponent's 10-yard line. Ranked only among players averaging 4+ targets a game (6+ games) since the start of last season.",
+    unrankedHint: "Not ranked: needs an average of 4+ targets a game (and 6+ games) since the start of last season." },
 ];
 const TD_POSITIONS = new Set(["WR", "TE"]);
 

@@ -450,10 +450,10 @@ const getCachedTdProfile = unstable_cache(
 // position that has a profile -- not just the rows a free visitor can see, so a rank means the same thing on every
 // tier. Ties share the better rank. Only the rank and the pool size are exposed, never other players' values.
 const TD_RANK_KEYS = { p2Td: "p2", i10Pg: "i10_pg", i10Share: "i10_share" };
-// In-10 Share is only ranked for players with real volume -- an average of 3+ targets a game over the games he has
+// In-10 Share is only ranked for players with real volume -- an average of 4+ targets a game over the games he has
 // played since the start of last season, and at least 6 of them -- so a backup with two goal-line targets can't top
 // the list. (Players who don't qualify still see their number, just no rank.) Numbers come from model/td_profile.R.
-const SHARE_MIN_TGT_PG = 3;
+const SHARE_MIN_TGT_PG = 4;
 const SHARE_MIN_GAMES = 6;
 const qualifiesForShare = (d) => d.tgt_pg != null && d.tgt_games != null && d.tgt_pg >= SHARE_MIN_TGT_PG && d.tgt_games >= SHARE_MIN_GAMES;
 const rankedOn = (k, d) => k !== "i10Share" || qualifiesForShare(d);
