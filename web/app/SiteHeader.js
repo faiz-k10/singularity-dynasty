@@ -205,7 +205,7 @@ export default async function SiteHeader() {
                   <span className="nav-fold-body">
                     <span className="nav-fold-title">Player Season Simulations</span>
                     <span className="nav-fold-desc">10,000 simulated seasons per player: floor, median and ceiling.</span>
-                    <span className="nav-fold-chip nf-singularity">Singularity <i>Top 10 free</i></span>
+                    <span className="nav-fold-chip nf-singularity">Singularity <i>Updated Tuesdays</i></span>
                   </span>
                 </Link>
                 <Link href="/tools/redraft-rankings" className="nav-fold-card">
@@ -215,7 +215,7 @@ export default async function SiteHeader() {
                   <span className="nav-fold-body">
                     <span className="nav-fold-title">Weekly Projection Rankings</span>
                     <span className="nav-fold-desc">This week&apos;s matchup-adjusted rankings, with floor and ceiling.</span>
-                    <span className="nav-fold-chip nf-explorer">Explorer <i>Top 50 free</i></span>
+                    <span className="nav-fold-chip nf-explorer">Explorer <i>Updated Tuesdays</i></span>
                   </span>
                 </Link>
                 <Link href="/tools/draft-board" className="nav-fold-card">
@@ -225,7 +225,7 @@ export default async function SiteHeader() {
                   <span className="nav-fold-body">
                     <span className="nav-fold-title">Dynasty Draft Board</span>
                     <span className="nav-fold-desc">Startup and rookie boards, round by round, with stacks flagged.</span>
-                    <span className="nav-fold-chip nf-explorer">Explorer <i>Round 1 free</i></span>
+                    <span className="nav-fold-chip nf-explorer">Explorer <i>Updated weekly</i></span>
                   </span>
                 </Link>
                 <Link href="/tools/prospect-rankings" className="nav-fold-card">
@@ -235,7 +235,7 @@ export default async function SiteHeader() {
                   <span className="nav-fold-body">
                     <span className="nav-fold-title">Prospect Rankings</span>
                     <span className="nav-fold-desc">WR and QB prospect boards with side-by-side comparisons.</span>
-                    <span className="nav-fold-chip nf-free">Free <i>For everyone</i></span>
+                    <span className="nav-fold-chip nf-free">Free <i>Updated weekly</i></span>
                   </span>
                 </Link>
               </div>
