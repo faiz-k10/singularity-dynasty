@@ -10,6 +10,7 @@
 #              11.3% vs actual 8.4% / 8.9% in the 6-10% and 10-15% bands). A WR at 0.84 expected TDs a game reads ~13%.
 #   i10_pg     targets per game from inside the 10-yard line, same weighting
 #   i10_share  share of his targets that came from inside the 10, same weighting
+#   tgt_pg / tgt_games  targets per game and games played since the start of last season (regular season)
 #
 # Deliberately NOT used: touchdown conversion rate on goal-line targets and the player's own past 2+ TD games.
 # Tested on 2021-25: neither adds anything once role is known (conversion rate ~0.1 correlation with future
@@ -82,13 +83,17 @@ td_profile_rows <- function(pool, season, week) {
     if (nrow(x) < TD_MIN_GAMES || nrow(f) < TD_MIN_GAMES) next
     xtd <- td_wmean(f$xtd)
     p2 <- 100 * td_p2(fits[[pool$position[r]]], xtd)
+    # Volume since the start of last season (regular-season games he played): feeds the "qualifies for the In-10
+    # Share ranking" rule on the site (3+ targets a game, 6+ games) so a backup with two goal-line targets can't
+    # top a share leaderboard.
+    sx <- st[st$player_id == id & st$season >= season - 1, ]
     n <- nrow(x); wt <- 0.5^(((n - 1):0) / TD_HL)
     i10_pg <- sum(wt * x$i10) / sum(wt)
     share <- if (sum(wt * x$targets) > 0) 100 * sum(wt * x$i10) / sum(wt * x$targets) else 0
     out[[length(out) + 1]] <- data.frame(
       season = season, week = week, player_name = pool$player_name[r], position = pool$position[r], kind = "td_profile",
       label = sprintf("%.1f%% chance of 2+ TDs", p2),
-      detail = as.character(jsonlite::toJSON(list(games = n, xtd_pg = round(xtd, 2), p2 = round(p2, 1), i10_pg = round(i10_pg, 2), i10_share = round(share, 1)), auto_unbox = TRUE)),
+      detail = as.character(jsonlite::toJSON(list(games = n, xtd_pg = round(xtd, 2), p2 = round(p2, 1), i10_pg = round(i10_pg, 2), i10_share = round(share, 1), tgt_pg = round(mean(sx$targets, na.rm = TRUE), 2), tgt_games = nrow(sx)), auto_unbox = TRUE)),
       stringsAsFactors = FALSE)
   }
   do.call(rbind, out)

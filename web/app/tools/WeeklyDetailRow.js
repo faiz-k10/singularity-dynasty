@@ -52,18 +52,23 @@ const TD_METRICS = [
   { key: "i10Pg", label: "In-10 Tgts/G", format: (v) => v.toFixed(2),
     hint: "Targets per game from inside the opponent's 10-yard line (last 24 games, recent weighted most). Targets there score 30-47% of the time." },
   { key: "i10Share", label: "In-10 Share", format: (v) => `${v.toFixed(1)}%`,
-    hint: "Share of his targets that came from inside the opponent's 10-yard line." },
+    hint: "Share of his targets that came from inside the opponent's 10-yard line. Ranked only among players averaging 3+ targets a game (6+ games) since the start of last season.",
+    unrankedHint: "Not ranked: needs an average of 3+ targets a game (and 6+ games) since the start of last season." },
 ];
 const TD_POSITIONS = new Set(["WR", "TE"]);
 
 // One line of the touchdown profile / usage panel: the metric, its value, and where he ranks at his position (#1 = highest).
-function RankRow({ label, value, format, rank, hint }) {
-  if (!rank) return null;
+function RankRow({ label, value, format, rank, hint, unrankedHint }) {
+  if (!rank && !unrankedHint) return null;
   return (
     <div className="weekly-rank-row">
       <span className="weekly-pct-label" title={hint}>{label}</span>
       <span className="weekly-pct-value">{value == null ? "—" : format(value)}</span>
-      <span className="weekly-rank-num" title={`${ordinal(rank.rank)} of ${rank.of}`}>#{rank.rank}</span>
+      {rank ? (
+        <span className="weekly-rank-num" title={`${ordinal(rank.rank)} of ${rank.of}`}>#{rank.rank}</span>
+      ) : (
+        <span className="weekly-rank-num weekly-rank-none" title={unrankedHint}>—</span>
+      )}
     </div>
   );
 }
@@ -651,7 +656,9 @@ function PlayerHeaderPanel({ row }) {
 export default function WeeklyDetailRow({ row, colSpan, maxSpread, owned, mineStatus }) {
   const pct = row.statPct || {};
   const showTd = TD_POSITIONS.has(row.position);
-  const advancedEntries = (showTd ? TD_METRICS : ADVANCED_METRICS).filter((m) => row[m.key] != null && row.metricRank?.[m.key]);
+  const advancedEntries = (showTd ? TD_METRICS : ADVANCED_METRICS).filter(
+    (m) => row[m.key] != null && (row.metricRank?.[m.key] || m.unrankedHint)
+  );
 
   return (
     <tr className="stat-detail-row weekly-detail-row">
@@ -686,7 +693,7 @@ export default function WeeklyDetailRow({ row, colSpan, maxSpread, owned, mineSt
                 <div className="weekly-panel-body">
                   {advancedEntries.length > 0 ? (
                     advancedEntries.map((m) => (
-                      <RankRow key={m.key} label={m.label} value={row[m.key]} format={m.format} rank={row.metricRank[m.key]} hint={m.hint} />
+                      <RankRow key={m.key} label={m.label} value={row[m.key]} format={m.format} rank={row.metricRank?.[m.key]} hint={m.hint} unrankedHint={m.unrankedHint} />
                     ))
                   ) : (
                     <p className="weekly-opp-caption">
