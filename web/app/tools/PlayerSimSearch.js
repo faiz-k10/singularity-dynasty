@@ -257,11 +257,13 @@ function StatDetailRow({ row, colSpan, shapePeers, wrTePool, tagsByName, maxCeil
                       {pv.gamesPlayed} {pv.gamesPlayed === 1 ? "game" : "games"}
                     </span>
                     {pv.currentPPG != null ? (pv.currentPPG * pv.gamesPlayed).toFixed(1) : "—"}
+                    {pv.currentPPG != null && <span className="stat-panel-pace-unit">pts</span>}
                   </div>
                   {pv.regressionScore != null && (
                   <div className={`stat-panel-pace-delta ${pv.regressionScore >= 0 ? "pace-hot" : "pace-cold"}`} title="Points ahead of (+) or behind (−) the pace the season projection implied through his team's games so far; missed games count against it">
                     {pv.regressionScore >= 0 ? "+" : ""}
                     {pv.regressionScore.toFixed(2)}
+                    <span className="stat-panel-pace-unit">pts</span>
                   </div>
                   )}
                   {pv.recentGames?.length > 0 && (

@@ -2193,9 +2193,9 @@ a.export-csv-btn{text-decoration:none;}
 /* The season total is the headline of this panel: same treatment as the weekly "This week · Projected" panel
    (gold-tinted box, gold glow, big mono figure). */
 .stat-panel-pace-actual{
-  display:inline-block; font-family:var(--font-mono), monospace; font-size:28px; font-weight:700; line-height:1.1;
+  display:inline-block; font-family:var(--font-mono), monospace; font-size:24px; font-weight:700; line-height:1.1;
   color:var(--horizon-gold); text-shadow:0 0 18px rgba(var(--horizon-gold-rgb),0.45);
-  padding:8px 14px 9px; border-radius:12px; border:1px solid rgba(var(--horizon-gold-rgb),0.6);
+  padding:8px 10px 9px; border-radius:12px; border:1px solid rgba(var(--horizon-gold-rgb),0.6);
   background:linear-gradient(160deg, rgba(var(--horizon-gold-rgb),0.14), rgba(var(--horizon-gold-rgb),0.03) 60%, transparent);
   box-shadow:0 0 0 1px rgba(var(--horizon-gold-rgb),0.12), 0 8px 28px rgba(var(--horizon-gold-rgb),0.10);
 }
@@ -2207,6 +2207,9 @@ a.export-csv-btn{text-decoration:none;}
   border:1px solid color-mix(in srgb, var(--tone) 55%, transparent); background:color-mix(in srgb, var(--tone) 10%, transparent);
   color:var(--tone); font-family:var(--font-mono), monospace; font-size:12px; font-weight:600; line-height:1.3; word-break:break-word;
 }
+.stat-panel-pace-unit{font-family:var(--font-mono), monospace; font-weight:600; letter-spacing:0.06em; margin-left:4px; opacity:0.75; text-shadow:none;}
+.stat-panel-pace-actual .stat-panel-pace-unit{font-size:12px;}
+.stat-panel-pace-delta .stat-panel-pace-unit{font-size:9.5px; margin-left:3px;}
 .stat-panel-pace-delta.pace-hot{--tone:var(--up);}
 .stat-panel-pace-delta.pace-cold{--tone:var(--down);}
 /* One shared 3-column grid for all rows (each row is a subgrid), so the week label, team pill and
