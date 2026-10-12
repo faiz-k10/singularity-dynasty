@@ -257,9 +257,9 @@ export default async function SiteHeader() {
             aria-label="Get started: Stargazer is free, Explorer is $9 a month, Singularity is $25 a month"
             title="Get started"
           >
-            <span className="tn-tier"><b>Singularity</b><small>Everything · $25/mo</small></span>
-            <span className="tn-tier"><b>Explorer</b><small>Full lists · $9/mo</small></span>
-            <span className="tn-tier"><b>Stargazer</b><small>Top 50 · Free</small></span>
+            <span className="tn-tier"><b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5" /><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none" /></svg>Singularity</b><small>Everything · $25/mo</small></span>
+            <span className="tn-tier"><b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m15.5 8.5-2 5-5 2 2-5Z" fill="currentColor" /><circle cx="12" cy="12" r="9" /></svg>Explorer</b><small>Full lists · $9/mo</small></span>
+            <span className="tn-tier"><b><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2.8 2.7 5.7 6.2.8-4.6 4.3 1.2 6.1L12 16.7 6.5 19.7l1.2-6.1L3.1 9.3l6.2-.8Z" /></svg>Stargazer</b><small>Top 50 · Free</small></span>
           </Link>
         </nav>
         <div className="site-header-spacer" aria-hidden="true"></div>

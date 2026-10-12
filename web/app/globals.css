@@ -370,11 +370,14 @@ body::before{
   border-left:1px solid rgba(26,13,5,0.28); white-space:nowrap; line-height:1;
 }
 .tn-tier:first-child{border-left:0;}
-.tn-tier b{font-family:var(--font-display), sans-serif; font-size:13.5px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;}
-.tn-tier small{font-family:var(--font-mono), monospace; font-size:9px; font-weight:600; letter-spacing:0.02em; opacity:0.78;}
-@media (max-width:1480px){
-  .tn-tier b{font-size:13px; letter-spacing:0.07em;}
+.tn-tier b{
+  display:inline-flex; align-items:center; gap:0.38em; font-family:var(--font-display), sans-serif; font-size:clamp(15px, 1.3vw, 19px); font-weight:800;
+  letter-spacing:0.09em; text-transform:uppercase; line-height:1; text-shadow:0 1px 0 rgba(255,255,255,0.28);
 }
+/* Each tier carries its own small glyph before the name: a singularity (ring + core), a compass, a star. */
+.tn-tier b svg{width:0.82em; height:0.82em; flex:0 0 auto; filter:drop-shadow(0 1px 0 rgba(255,255,255,0.25));}
+.tn-tier small{font-family:var(--font-mono), monospace; font-size:9px; font-weight:600; letter-spacing:0.02em; opacity:0.78;}
+
 /* Layout of the bar: brand | Tools Feed My Team Account | the three-tier pill, which stretches to fill all the room up to just
    before the theme toggle (the spacer holds the toggle's place: 48px toggle + 78px from the edge, minus the bar's padding). */
 .site-header .brandmark{flex:0 0 auto; min-width:max-content;}
