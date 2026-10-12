@@ -108,6 +108,7 @@ export default function RankingsSearch({
           selectedPositions={selected}
           onTogglePosition={onTogglePosition}
           ownedByName={myView.ownedByName}
+          mineStatus={!mine ? undefined : !mine.signedIn ? "signedOut" : mine.teams.length === 0 ? "noTeams" : "ready"}
           myViewOn={myView.on}
           gated={gated}
         />

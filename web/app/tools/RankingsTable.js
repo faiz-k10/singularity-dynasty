@@ -139,6 +139,7 @@ export default function RankingsTable({
   positions,
   selectedPositions,
   onTogglePosition,
+  mineStatus, // "signedOut" | "noTeams" | "ready" -- what the far-right Your player panel says for a player who isn't on any of the viewer's teams
   ownedByName, // Map of player_name -> where he sits on the viewer's saved teams (MyPlayers.js)
   myViewOn,
   gated,
@@ -453,7 +454,7 @@ export default function RankingsTable({
                     ))}
                   {showNotes && <td className="tool-notes">{row.notes || ""}</td>}
                 </tr>
-                {isExpanded && <WeeklyDetailRow row={row} colSpan={colCount} maxSpread={maxSpread} owned={ownedByName?.get(row.player_name)} />}
+                {isExpanded && <WeeklyDetailRow row={row} colSpan={colCount} maxSpread={maxSpread} owned={ownedByName?.get(row.player_name)} mineStatus={mineStatus} />}
               </Fragment>
             );
           })}

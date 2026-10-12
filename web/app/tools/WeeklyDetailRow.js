@@ -4,7 +4,7 @@ import TeamBadge from "./TeamBadge";
 import PositionBadge from "./PositionBadge";
 import ConfidenceBadge from "./ConfidenceBadge";
 import { getAchievements } from "./achievements";
-import { MyStrip } from "./MyPlayers";
+import { MyStrip, MyEmpty } from "./MyPlayers";
 
 // Season-level usage/efficiency metrics, not weekly stats -- attached
 // server-side in page.js's fetchSimsMetrics()/fetchSeasonXfp() (joined
@@ -671,7 +671,7 @@ function PlayerHeaderPanel({ row }) {
 // both are compact/badge-driven, so pairing them vertically instead of
 // giving each its own full-width slot keeps the row from running wider
 // than it needs to.
-export default function WeeklyDetailRow({ row, colSpan, maxSpread, owned }) {
+export default function WeeklyDetailRow({ row, colSpan, maxSpread, owned, mineStatus }) {
   const pct = row.statPct || {};
   const showTd = TD_POSITIONS.has(row.position);
   const advancedEntries = showTd
@@ -726,9 +726,9 @@ export default function WeeklyDetailRow({ row, colSpan, maxSpread, owned }) {
               </div>
               <GameLogPanel games={row.recentGames} />
             </div>
-            {owned && (
+            {(owned || mineStatus) && (
               <div className="stat-panel weekly-detail-mine-panel">
-                <MyStrip owned={owned} vertical />
+                {owned ? <MyStrip owned={owned} vertical /> : <MyEmpty status={mineStatus} />}
               </div>
             )}
           </div>

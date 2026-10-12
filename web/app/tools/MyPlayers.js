@@ -95,6 +95,23 @@ export function MyBadge({ owned }) {
   );
 }
 
+// The far-right panel's empty state, for a player who is on none of the viewer's saved teams (or a viewer with no
+// saved teams / not signed in). `status`: "signedOut" | "noTeams" | "ready".
+export function MyEmpty({ status }) {
+  return (
+    <div className="mine-strip mine-strip-vertical">
+      <span className="mine-strip-star">★ Your player</span>
+      {status === "signedOut" ? (
+        <Link href="/login" prefetch={false} className="mine-empty-note">Sign in to see which of your teams he is on</Link>
+      ) : status === "noTeams" ? (
+        <Link href="/my-team" prefetch={false} className="mine-empty-note">Add your team to see where he is</Link>
+      ) : (
+        <span className="mine-empty-note">Not on any of your teams</span>
+      )}
+    </div>
+  );
+}
+
 export function MyStrip({ owned, vertical = false }) {
   if (!owned) return null;
   return (
