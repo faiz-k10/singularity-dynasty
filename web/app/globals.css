@@ -4505,4 +4505,8 @@ svg text, .pctile-vbar-label, .pctile-vbar-value, .pctile-hero-label{font-family
 .stat-detail-grid .stat-panel-percentile .pctile-vbar-track{flex:1; width:min(100%, 40px); min-height:100px; height:auto; align-self:center;}
 .stat-detail-grid .stat-panel-percentile .pctile-row-raw{font-size:15px;}
 .stat-detail-grid .stat-panel-percentile .pctile-row-ordinal{font-size:12px;}
-.stat-detail-grid .stat-panel-percentile .pctile-vbar-label{font-size:12px;}
+.stat-detail-grid .stat-panel-percentile .pctile-vbar-label{font-size:12px; white-space:nowrap; letter-spacing:-0.01em;}
+/* On a phone five bars share ~300px, too narrow for "Target Share" on one line -- let it wrap there only. */
+@media (max-width:640px){
+  .stat-detail-grid .stat-panel-percentile .pctile-vbar-label{white-space:normal; font-size:10.5px;}
+}
