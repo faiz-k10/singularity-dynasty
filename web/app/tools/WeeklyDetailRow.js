@@ -583,26 +583,13 @@ function achievementNode(a, row) {
 // median projection, and last week's actual positional finish
 // (lastWeekRank, from fetchGameLogData -- null before the season's first
 // game log exists).
-// Two small panels above the Outcome Curve: LAST WEEK on the left (his output and position finish -- muted, it is
-// history) and THIS WEEK on the right (projected position rank and median -- emphasised with a gold accent, larger
-// numbers and a glow, because it is the number the page is about). Moved out of the identity strip by request.
+// Two small panels above the Outcome Curve: THIS WEEK on the left (projected position rank and median -- emphasised with a gold accent, larger
+// numbers and a glow, because it is the number the page is about) and LAST WEEK on the right (his output and position finish --
+// muted, it is history). Moved out of the identity strip by request.
 function PlayerStatsRow({ row }) {
   const lastWeek = row.lastWeekRank;
   return (
     <div className="weekly-stats-split">
-      <div className="stat-panel weekly-stats-last">
-        <span className="weekly-stats-eyebrow">Last week{lastWeek ? ` · W${lastWeek.week}` : ""}</span>
-        <div className="weekly-stats-pair">
-          <div className="weekly-stats-item">
-            <span className="weekly-player-stat-label">Output</span>
-            <span className="weekly-stats-value-dim">{lastWeek?.points != null ? lastWeek.points.toFixed(1) : "—"}</span>
-          </div>
-          <div className="weekly-stats-item">
-            <span className="weekly-player-stat-label">Finish</span>
-            <span className="weekly-stats-value-dim">{lastWeek ? `${row.position}${lastWeek.rank}` : "—"}</span>
-          </div>
-        </div>
-      </div>
       <div className="stat-panel weekly-stats-next">
         <span className="weekly-stats-eyebrow weekly-stats-eyebrow-next">This week · Projected</span>
         <div className="weekly-stats-pair">
@@ -613,6 +600,19 @@ function PlayerStatsRow({ row }) {
           <div className="weekly-stats-item">
             <span className="weekly-player-stat-label">Median proj</span>
             <span className="weekly-stats-value-big">{row.projection != null ? row.projection.toFixed(1) : "—"}</span>
+          </div>
+        </div>
+      </div>
+      <div className="stat-panel weekly-stats-last">
+        <span className="weekly-stats-eyebrow">Last week{lastWeek ? ` · W${lastWeek.week}` : ""}</span>
+        <div className="weekly-stats-pair">
+          <div className="weekly-stats-item">
+            <span className="weekly-player-stat-label">Output</span>
+            <span className="weekly-stats-value-dim">{lastWeek?.points != null ? lastWeek.points.toFixed(1) : "—"}</span>
+          </div>
+          <div className="weekly-stats-item">
+            <span className="weekly-player-stat-label">Finish</span>
+            <span className="weekly-stats-value-dim">{lastWeek ? `${row.position}${lastWeek.rank}` : "—"}</span>
           </div>
         </div>
       </div>

@@ -2461,8 +2461,8 @@ a.export-csv-btn{text-decoration:none;}
 .weekly-detail-col .weekly-detail-curve-panel,
 .weekly-detail-col .weekly-detail-pct-panel{flex:1 1 auto; max-width:none;}
 .weekly-detail-mine-panel{flex:0 0 150px; align-self:stretch; max-width:176px;}
-/* Last week (muted) | This week (emphasised). */
-.weekly-stats-split{display:grid; grid-template-columns:1fr 1.45fr; gap:12px;}
+/* This week (emphasised) | Last week (muted). */
+.weekly-stats-split{display:grid; grid-template-columns:1.45fr 1fr; gap:12px;}
 .weekly-detail-grid .weekly-stats-last,
 .weekly-detail-grid .weekly-stats-next{display:flex; flex-direction:column; gap:10px; padding:14px 16px; min-width:0;}
 .weekly-stats-eyebrow{font-family:var(--font-ibm-plex-mono), monospace; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--star-dim); white-space:nowrap;}
@@ -2477,7 +2477,7 @@ a.export-csv-btn{text-decoration:none;}
   background:linear-gradient(160deg, rgba(var(--horizon-gold-rgb),0.14), rgba(var(--horizon-gold-rgb),0.03) 60%, transparent);
   box-shadow:0 0 0 1px rgba(var(--horizon-gold-rgb),0.12), 0 8px 28px rgba(var(--horizon-gold-rgb),0.10);
 }
-@media (max-width:640px){ .weekly-stats-split{grid-template-columns:1fr;} .weekly-detail-grid .weekly-stats-next{order:-1;} }
+@media (max-width:640px){ .weekly-stats-split{grid-template-columns:1fr;} }
 
 
 /* justify-content:center used to live on the PANEL itself, centering the
