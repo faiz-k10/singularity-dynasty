@@ -1,6 +1,7 @@
 "use client";
 
 import ArchetypePill from "./ArchetypePill";
+import { INVERTED_STATS } from "@/lib/statPercentiles";
 
 // Plain squared distance across whatever stat keys the two players share.
 function shapeDistance(a, b, keys) {
@@ -28,12 +29,26 @@ const LAYER_LABEL = { floor: "Floor", median: "Median", ceiling: "Ceiling" };
 // for whoever doesn't want to read bar positions -- "pctl" rides along
 // in dim text right on the number instead of a separate legend, so the
 // unit is obvious in place without a key to cross-reference.
-function CompareBar({ label, playerPctile, compPctile }) {
+// The row shows the gap twice, both as (this player) minus (the comp): first in the stat itself (e.g. receiving
+// yards), then in percentile. They can point different ways -- a percentile is ranked within each player's own
+// position, so a tight end with fewer yards than a receiver can still sit higher in his own pool.
+function formatGap(gap) {
+  const rounded = Math.abs(gap) >= 10 ? Math.round(gap) : Math.round(gap * 10) / 10;
+  if (rounded === 0) return "±0";
+  return rounded > 0 ? `+${rounded}` : `−${Math.abs(rounded)}`;
+}
+
+function CompareBar({ label, statKey, playerPctile, compPctile, playerValue, compValue }) {
   if (playerPctile == null || compPctile == null) return null;
   const diff = Math.round(playerPctile) - Math.round(compPctile);
   const dir = diff > 0 ? "up" : diff < 0 ? "down" : "even";
   const lo = Math.min(playerPctile, compPctile);
   const hi = Math.max(playerPctile, compPctile);
+  const hasValues = typeof playerValue === "number" && typeof compValue === "number";
+  const gap = hasValues ? playerValue - compValue : null;
+  // Lower is better for interceptions, so the colour follows who is better, not who is bigger.
+  const better = gap == null || gap === 0 ? 0 : INVERTED_STATS.has(statKey) ? -gap : gap;
+  const gapDir = better > 0 ? "up" : better < 0 ? "down" : "even";
   return (
     <div className="shape-compare-row">
       <span className="shape-compare-row-label">{label}</span>
@@ -47,6 +62,13 @@ function CompareBar({ label, playerPctile, compPctile }) {
         <div className="shape-compare-tick shape-compare-tick-comp" style={{ left: `${compPctile}%` }} />
         <div className="shape-compare-tick shape-compare-tick-player" style={{ left: `${playerPctile}%` }} />
       </div>
+      <span
+        className={`shape-compare-diff shape-compare-diff-${gapDir}`}
+        title={hasValues ? `${playerValue} vs ${compValue} in the stat itself` : undefined}
+      >
+        {gap == null ? "—" : formatGap(gap)}
+        <span className="shape-compare-diff-unit">stat</span>
+      </span>
       <span className={`shape-compare-diff shape-compare-diff-${dir}`}>
         {diff > 0 ? `+${diff}` : diff === 0 ? "±0" : diff}
         <span className="shape-compare-diff-unit">pctl</span>
@@ -82,7 +104,15 @@ function CompareBars({ selection, stats, peer }) {
       <div className="shape-compare">
         <div className="shape-compare-head">{LAYER_LABEL[layer]} vs. player</div>
         {ranked.map((stat) => (
-          <CompareBar key={stat.key} label={stat.label} playerPctile={stat[pctileKey]} compPctile={compPctileFor(peer, layer, stat.key)} />
+          <CompareBar
+            key={stat.key}
+            label={stat.label}
+            statKey={stat.key}
+            playerPctile={stat[pctileKey]}
+            compPctile={compPctileFor(peer, layer, stat.key)}
+            playerValue={stat[`${layer}Value`]}
+            compValue={peer.stat_ranges?.[stat.key]?.[layer]}
+          />
         ))}
       </div>
     );
@@ -98,8 +128,11 @@ function CompareBars({ selection, stats, peer }) {
         <CompareBar
           key={layer}
           label={LAYER_LABEL[layer]}
+          statKey={selection.key}
           playerPctile={stat[`${layer}Pctile`]}
           compPctile={compPctileFor(peer, layer, selection.key)}
+          playerValue={stat[`${layer}Value`]}
+          compValue={peer.stat_ranges?.[selection.key]?.[layer]}
         />
       ))}
     </div>

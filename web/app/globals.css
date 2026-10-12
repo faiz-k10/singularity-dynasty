@@ -2899,10 +2899,10 @@ tr.stat-row-selected td{background:var(--void-panel);}
   font-family:var(--font-mono), monospace; font-size:9.5px; letter-spacing:0.06em;
   text-transform:uppercase; color:var(--star-dim); margin-bottom:6px;
   /* Centered over the bar tracks, not the whole panel: same offsets as the
-     row grid below (88px label + 8px gap on the left, 34px value + 8px gap on the right). */
-  text-align:center; padding:0 42px 0 96px;
+     row grid below (88px label + 8px gap on the left, the 62px stat-gap and 46px percentile-gap columns + gaps on the right). */
+  text-align:center; padding:0 124px 0 96px;
 }
-.shape-compare-row{display:grid; grid-template-columns:88px 1fr 34px; align-items:center; gap:8px; padding:2px 0;}
+.shape-compare-row{display:grid; grid-template-columns:88px 1fr 62px 46px; align-items:center; gap:8px; padding:2px 0;}
 /* 88px (not the old 52px) fits the longest full stat name on one line
    ("YAC Above Exp", "Avg Separation") without truncating -- was
    clipped to "YAC Ab…"/"Avg Sep…", illegible at a glance. The bar
