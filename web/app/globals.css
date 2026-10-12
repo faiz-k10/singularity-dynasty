@@ -4494,3 +4494,15 @@ svg text, .pctile-vbar-label, .pctile-vbar-value, .pctile-hero-label{font-family
    first bar's value and label). */
 .stat-detail-grid .pctile-rows{gap:2px; justify-content:safe center;}
 .stat-detail-grid .pctile-rows .pctile-vbar{flex:1 1 0; min-width:0; width:auto; max-width:56px; padding:4px 2px;}
+/* ...and the card fills the whole panel: the bars stretch to the panel's height and the numbers, labels and bar width
+   scale up with them, so nothing is left as dead space under the chart. */
+.stat-detail-grid .stat-panel-percentile{justify-content:stretch;}
+.stat-detail-grid .stat-panel-percentile .pctile-card{flex:1; display:flex; flex-direction:column; min-height:0;}
+.stat-detail-grid .stat-panel-percentile .pctile-card-title{font-size:12px;}
+.stat-detail-grid .stat-panel-percentile .pctile-card-sub{font-size:11px;}
+.stat-detail-grid .stat-panel-percentile .pctile-rows{flex:1; align-items:stretch; padding:8px 2px 2px; gap:4px;}
+.stat-detail-grid .stat-panel-percentile .pctile-rows .pctile-vbar{max-width:none; padding:4px 2px; gap:8px;}
+.stat-detail-grid .stat-panel-percentile .pctile-vbar-track{flex:1; width:min(100%, 40px); min-height:100px; height:auto; align-self:center;}
+.stat-detail-grid .stat-panel-percentile .pctile-row-raw{font-size:15px;}
+.stat-detail-grid .stat-panel-percentile .pctile-row-ordinal{font-size:12px;}
+.stat-detail-grid .stat-panel-percentile .pctile-vbar-label{font-size:12px;}
