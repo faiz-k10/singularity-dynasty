@@ -122,7 +122,7 @@ function bandPath(entries, n, startDeg, outerAt, innerAt) {
 // draws the chart ~15-20% larger and nothing is left as dead space around it.
 const TIGHT_VIEWBOX = { up: [30, 42, 232, 186], down: [21, 58, 244, 185] };
 
-export default function StatRadar({ entries, selection = null, startDeg = -90, compareEntries, onSelectKey, tight = false }) {
+export default function StatRadar({ entries, selection = null, startDeg = -90, compareEntries, onSelectKey, tight = false, pool }) {
   if (!entries || entries.length < 3) return null;
   const n = entries.length;
   const columnLayer = selection?.mode === "column" ? selection.layer : null;
@@ -147,6 +147,7 @@ export default function StatRadar({ entries, selection = null, startDeg = -90, c
   return (
     <div className="stat-radar">
       <div className="stat-radar-label">Percentile shape</div>
+      {pool && <div className="stat-radar-sub">vs. {pool} pool</div>}
       <svg
         viewBox={viewBox}
         className="stat-radar-svg"

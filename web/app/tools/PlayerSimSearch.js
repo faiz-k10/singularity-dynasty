@@ -504,6 +504,7 @@ function StatDetailRow({ row, colSpan, shapePeers, wrTePool, tagsByName, maxCeil
               compareEntries={compareEntries}
               onSelectKey={selectRow}
               tight
+              pool={row.position}
             />
           </div>
           <SimilarShapeFinder

@@ -63,7 +63,7 @@ export default function ComparePlayerRadars({ players }) {
               <span className="compare-radar-card-name">{p.name}</span>
               <span className="compare-radar-card-pos mono">{p.positionLabel || p.position}</span>
             </div>
-            <StatRadar entries={p.radarEntries} startDeg={p.radarStartDeg} selection={selection} onSelectKey={selectRow} />
+            <StatRadar entries={p.radarEntries} startDeg={p.radarStartDeg} selection={selection} onSelectKey={selectRow} pool={p.position} />
             <PercentileCard
               stats={p.percentileStats}
               position={p.position}

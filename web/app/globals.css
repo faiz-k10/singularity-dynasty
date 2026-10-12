@@ -2671,6 +2671,11 @@ tr.stat-row-selected td{background:var(--void-panel);}
    LABEL_FRAC are sized so labels fit inside the viewBox on their own;
    this just keeps an edge case from getting hard-clipped instead of
    only slightly crowding the panel edge. */
+/* "vs. TE pool" caption under the title, same style as the percentile bars' caption, so both charts say which pool they rank against. */
+.stat-radar-sub{
+  font-family:var(--font-mono), monospace; font-size:9.5px; letter-spacing:0.06em; text-transform:uppercase;
+  color:var(--star-dim); opacity:0.8; text-align:center; margin:-2px 0 4px; white-space:nowrap;
+}
 .stat-radar-svg{width:100%; display:block; overflow:visible;}
 .radar-ring{fill:none; stroke:var(--line); stroke-width:1;}
 .radar-spoke{stroke:var(--line); stroke-width:1;}
