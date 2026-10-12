@@ -2829,9 +2829,15 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .shape-finder-layer-btn.active{background:var(--neon-blue); color:var(--void);}
 .shape-finder-score{
   grid-area:score; display:flex; flex-direction:column; align-items:center;
-  gap:4px; text-align:center; padding-top:2px;
+  gap:0; text-align:center; padding-top:2px; align-self:stretch;
 }
-.shape-finder-portrait{width:36px; height:36px; border-radius:50%; object-fit:cover; background:var(--void-panel-2);}
+/* The area is as tall as the stat table beside it: "MATCH" stays on top and the photo + percentage are centred in
+   the space under it (auto margins), sized up to use that space (the 52px column width itself is unchanged). */
+.shape-finder-score > .stat-radar-label{margin-bottom:0;}
+.shape-finder-score > :nth-child(2){margin-top:auto;}
+.shape-finder-score > :last-child{margin-bottom:auto;}
+.shape-finder-score .shape-finder-score-value{margin-top:6px;}
+.shape-finder-portrait{width:48px; height:48px; border-radius:50%; object-fit:cover; background:var(--void-panel-2);}
 /* The comp's photo is a button that takes you to his row in the table. */
 .shape-finder-portrait-btn{display:inline-flex; padding:0; border:0; background:none; border-radius:50%; cursor:pointer; transition:transform .15s ease, box-shadow .15s ease;}
 .shape-finder-portrait-btn:hover{transform:scale(1.07); box-shadow:0 0 0 2px rgba(var(--neon-blue-rgb),.7);}
@@ -2871,7 +2877,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .role-block-near{margin:6px auto 0; max-width:34ch; font-size:11px; line-height:1.4; color:var(--star-dim);}
 .role-block-near strong{color:var(--star); font-weight:600;}
 .shape-finder-score-value{
-  font-family:var(--font-display); font-size:20px; font-weight:700; color:var(--neon-blue-dim);
+  font-family:var(--font-display); font-size:26px; font-weight:700; line-height:1; color:var(--neon-blue-dim);
 }
 /* Same font sizing and .stat-header-trigger/.stat-row-trigger padding as
    .stat-detail-table (no table-specific override here -- both fall back
@@ -4169,7 +4175,8 @@ summary:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible{
   .shape-finder-grid{width:100%; grid-template-columns:44px minmax(0,1fr);}
   .shape-finder-layers{grid-template-columns:92px repeat(3, 1fr);}
   .shape-finder-table td:first-child{width:92px; white-space:normal;}
-  .shape-finder-score-value{font-size:16px;}
+  .shape-finder-score-value{font-size:18px;}
+  .shape-finder-portrait{width:40px; height:40px;}
 
   /* The pace bar's total number hangs ~16px off the panel's left edge by design; on a
      phone that edge is the scroller's, so it was being cut off. Make room inside the panel. */
