@@ -3082,11 +3082,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
   color:var(--horizon-gold); vertical-align:0.9em;
 }
 .pctile-cell-stat{font-size:0.62em; font-weight:500; letter-spacing:0.04em; color:var(--star-dim); margin-left:2px;}
-.pctile-cell-hero-unit{
-  display:block; margin-top:6px; font-family:var(--font-mono), monospace; font-size:10px; font-weight:400; line-height:1;
-  letter-spacing:0.12em; text-transform:uppercase; color:var(--star-dim);
-}
-.pctile-cell-read{display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap;}
+.pctile-cell-read{display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px;}
 .pctile-cell-value{font-family:var(--font-mono), monospace; font-size:20px; font-weight:700; color:var(--star); font-variant-numeric:tabular-nums;}
 .pctile-scale{width:100%; max-width:440px; padding:0 6px; box-sizing:border-box;}
 .pctile-scale-track{position:relative; height:12px; border-radius:6px; background:var(--void-panel-2);}
