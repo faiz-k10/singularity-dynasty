@@ -372,7 +372,6 @@ function StatDetailRow({ row, colSpan, shapePeers, tagsByName, maxCeiling, lastW
                     role="slider"
                     tabIndex={0}
                     aria-label="Rewind to an earlier week"
-                    title="Drag to see this player as of an earlier week"
                     data-loading={snaps.length === 0 ? "true" : undefined}
                     aria-valuemin={weeks[0] ?? 1}
                     aria-valuemax={latestWeek}
