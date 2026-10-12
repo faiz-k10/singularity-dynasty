@@ -4530,6 +4530,10 @@ svg text, .pctile-vbar-label, .pctile-vbar-value, .pctile-hero-label{font-family
   font-family:var(--font-mono), monospace; letter-spacing:0.06em;
 }
 .pctile-card-title, .board-panel-title, .stat-panel-pace-name{text-transform:uppercase; font-size:12px; font-weight:600;}
+/* Similar-player card names: same style as the opened player's own name (mono, uppercase, spaced). */
+.shape-finder-name span:first-child{
+  font-family:var(--font-mono), monospace; text-transform:uppercase; font-size:12px; font-weight:600; letter-spacing:0.06em; line-height:1.25;
+}
 /* names and sentences stay in the serif */
 .compare-radar-card-name, .my-team-saved-name, .league-dash-team, .week-feed-headline, .compare-table thead th, .quiz-prompt{
   font-family:var(--font-body), Georgia, serif; font-weight:700;
