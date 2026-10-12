@@ -5,10 +5,11 @@
 # here is rerun weekly. Rerun only if the model or its history changes materially.
 #
 # Definition. For each stat (and the fantasy-points total), per position:
-#   median  = banked + the all-runs median of the remaining games   (unchanged: same
-#             number the page ranks by, availability/injury history included)
-#   floor   = banked + max(0, rem_median - k_lo * (h_median - h_q10))
-#   ceiling = banked + rem_median + k_hi * (h_q90 - h_median)
+#   median  = banked + the median of the simulation in which he plays EVERY remaining game
+#             (f_median; Oct 2026 -- was the all-runs median, injury history included -- so
+#             nothing assumes he misses games he has not missed yet)
+#   floor   = banked + max(0, f_median - k_lo * (h_median - h_q10))
+#   ceiling = banked + f_median + k_hi * (h_q90 - h_median)
 # where h_* are quantiles of the SAME simulation restricted to runs where the player
 # stays on the field (plays >= 75% of his team's remaining games). So the floor and
 # ceiling are a distance from the published median, with the shape of a healthy
@@ -34,7 +35,7 @@ stat_frame <- function(stat, pos) {
     if (r$pos != pos || is.null(r$q[[stat]]) || any(is.na(r$q_h[[stat]]))) return(NULL)
     q <- r$q[[stat]]; h <- r$q_h[[stat]]
     data.frame(season = r$season, week = r$week, games_left = r$games_left, banked = r$banked[[stat]], real = r$real[[stat]],
-               med = q[50], h_med = h[50], h_q10 = h[10], h_q90 = h[90],
+               med = q[50], f_med = r$q_full[[stat]][50], h_med = h[50], h_q10 = h[10], h_q90 = h[90],
                stayed = (r$real_games - r$games_banked) >= HEALTHY_SHARE * r$games_left)
   })
   do.call(rbind, rows)
@@ -42,9 +43,9 @@ stat_frame <- function(stat, pos) {
 min_spread <- function(stat) if (stat %in% COUNT_STATS) 1 else 0   # a count stat's quantiles are whole numbers
 bounds <- function(x, stat, k_lo, k_hi) {
   lo_w <- pmax(x$h_med - x$h_q10, min_spread(stat)); hi_w <- pmax(x$h_q90 - x$h_med, min_spread(stat))
-  med <- round(x$banked + x$med)
-  floor <- pmin(round(x$banked + pmax(x$med - k_lo * lo_w, 0)), med)
-  ceiling <- pmax(round(x$banked + x$med + k_hi * hi_w), med)
+  med <- round(x$banked + x$f_med)
+  floor <- pmin(round(x$banked + pmax(x$f_med - k_lo * lo_w, 0)), med)
+  ceiling <- pmax(round(x$banked + x$f_med + k_hi * hi_w), med)
   list(floor = floor, median = med, ceiling = ceiling)
 }
 fit_k <- function(x, stat, tail) {
@@ -73,6 +74,7 @@ for (pos in c("QB", "RB", "WR", "TE")) {
         k_lo = k_lo, k_hi = k_hi,
         oos_below_stayed = round(100 * lo_hit / n, 1), oos_above_stayed = round(100 * hi_hit / n, 1),
         below_everyone = round(100 * mean(x$real <= ba$floor), 1), above_everyone = round(100 * mean(x$real >= ba$ceiling), 1),
+        real_above_median_stayed = round(100 * mean(h$real > ba$median[x$stayed]), 1),
         order_violations = sum(ba$floor > ba$median | ba$ceiling < ba$median))
     }
   }

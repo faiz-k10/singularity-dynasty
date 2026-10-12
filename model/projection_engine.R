@@ -99,11 +99,14 @@ BANK_SEASON_TOTALS <- identical(Sys.getenv("BANK_SEASON_TOTALS", "1"), "1")
 # a healthy player's range (runs where he plays >= BANKED_HEALTHY_SHARE of his team's
 # remaining games), stretched by factors fitted in analyze_banked_calibration.R so that
 # about 10% of players who stayed on the field land at or below the floor / at or above
-# the ceiling (checked out of sample). The MEDIAN is untouched: still the median of the
-# all-runs simulation, availability and injury history included. A player who actually
-# misses games is handled the usual way -- those games are banked and the next weekly run
-# lowers his numbers; the floor does not price in a lost season. Because floor and
-# ceiling are distances from the median, they cannot cross it.
+# the ceiling (checked out of sample). The MEDIAN follows the same logic (changed Oct 2026, at
+# the founder's direction): it is the median of the simulation in which he plays every remaining
+# game, and the floor and ceiling are distances from it, so no number assumes he misses games he
+# has not missed yet. A player who actually misses games is handled the usual way -- those games
+# are banked and the next weekly run lowers his numbers; nothing prices in a lost season in
+# advance. (Before this change the median was the median of ALL runs, injury history included;
+# that version ranked injury-prone players lower and was slightly more accurate on real totals,
+# see the README.) Because floor and ceiling are distances from the median, they cannot cross it.
 BANKED_HEALTHY_SHARE <- 0.75
 BANKED_COUNT_STATS <- c("passing_tds", "passing_interceptions", "rushing_tds", "receiving_tds")
 if (file.exists("banked_k_table.R")) source("banked_k_table.R")
@@ -136,12 +139,15 @@ banked_k <- function(pos, stat, games_left) {
 
 # floor / median / ceiling for one stat: `banked` is what he has already done, `rem` the
 # simulated remaining-games totals (one per run), `healthy` which runs kept him on the field.
-bank_band <- function(pos, stat, banked, rem, healthy, games_left) {
+bank_band <- function(pos, stat, banked, rem, healthy, games_left, rem_full) {
   if (games_left <= 0) return(c(floor = round(banked), median = round(banked), ceiling = round(banked)))
   k <- banked_k(pos, stat, games_left)
-  med <- as.numeric(quantile(rem, 0.50))
   h <- rem[healthy]
   h_med <- as.numeric(quantile(h, 0.50))
+  # The median (and the floor/ceiling anchored on it) assumes he plays EVERY remaining game: `rem_full` is the same
+  # simulation with no games missed. Games he actually misses are banked and lower the numbers at the next run.
+  # The width of the range still comes from the stays-on-the-field runs (`healthy`).
+  med <- as.numeric(quantile(rem_full, 0.50))
   unit <- if (stat %in% BANKED_COUNT_STATS) 1 else 0   # whole-number stats need at least a unit of spread to stretch
   lo_w <- max(h_med - as.numeric(quantile(h, 0.10)), unit)
   hi_w <- max(as.numeric(quantile(h, 0.90)) - h_med, unit)
@@ -1246,8 +1252,9 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
     # the blended points total).
     if (bank_on) {
       rem_pts <- bank_sim_sums(matrix(x, ncol = 1), wm, bank_g)[, 1]
+      rem_pts_full <- bank_sim_sums(matrix(x, ncol = 1), wm, rep.int(n_draw, n_sims))[, 1]
       szn <- rem_pts + banked_pts
-      szn_band <- bank_band(pos, "pts", banked_pts, rem_pts, bank_healthy, n_draw)
+      szn_band <- bank_band(pos, "pts", banked_pts, rem_pts, bank_healthy, n_draw, rem_pts_full)
     } else {
       szn <- replicate(n_sims, {
         g <- sum(runif(n_draw) < avail)
@@ -1294,8 +1301,9 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
         if (bank_on) {
           # Banked mode: see bank_band(). One games-played draw per run, shared by every stat.
           rem <- bank_sim_sums(as.matrix(d[, cols, drop = FALSE]), w_group, bank_g)
+          rem_full <- bank_sim_sums(as.matrix(d[, cols, drop = FALSE]), w_group, rep.int(n_draw, n_sims))
           for (j in seq_along(cols)) {
-            band <- bank_band(pos, cols[j], sum(cur[[cols[j]]], na.rm = TRUE), rem[, j], bank_healthy, n_draw)
+            band <- bank_band(pos, cols[j], sum(cur[[cols[j]]], na.rm = TRUE), rem[, j], bank_healthy, n_draw, rem_full[, j])
             stat_ranges[[cols[j]]] <- list(floor = band[["floor"]], median = band[["median"]], ceiling = band[["ceiling"]])
           }
           next

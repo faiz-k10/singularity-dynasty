@@ -683,6 +683,24 @@ trust are now two separate knobs (see next section) — a player only needs 8
 games to appear at all, but doesn't get treated as a fully independent
 signal until 20.
 
+## Season-sim median assumes he plays every remaining game (Oct 12 2026)
+
+Player Season Simulations' median is now the median of the banked-totals simulation in which the player plays
+EVERY remaining game of his team's season (`rem_full` in `bank_band()`), not the all-runs median that carried his
+injury history. Floor and ceiling are distances from that median (shape from the stays-on-the-field runs, stretch
+factors refit on the new anchor), so none of the three numbers assumes he misses games he has not missed yet; a
+player who actually misses games is lowered by the next weekly run because those games are banked. Founder's call
+(he first accepted the injury-history median on Oct 6 after the backtest below, then reversed it after Jayden
+Daniels showed at 1,608 passing yards).
+
+What it costs, from the Oct 6 backtest of the old version (2022-25): the all-runs median was the more accurate and
+better-ranked one (average error ~5% lower, rank agreement 0.829 vs 0.820) and an injury-prone WR ranked below a
+durable one. Now injury-prone players rank higher than they used to, until they actually miss games. Among players
+who did stay on the field, real totals land above the new median 37-49% of the time depending on position and stat
+(a little optimistic by construction: it assumes every game is played); floor/ceiling hit rates out of sample are
+10-11% each. Examples at week 5, passing yards / TDs median: Daniels 1,608 / 12 -> 2,306 / 18, Williams 2,281 / 13
+-> 2,906 / 17, Malik Willis 1,759 / 5 -> 2,407 / 8, Josh Allen unchanged (~3,890 / 25).
+
 ## Availability adjustment (season totals only)
 
 Weekly figures (Redraft median/floor, Best Ball ceiling) are **pure

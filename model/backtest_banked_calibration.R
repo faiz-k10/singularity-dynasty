@@ -83,19 +83,24 @@ for (w in AS_OF_WEEKS) {
     healthy <- g >= ceiling(HEALTHY_SHARE * n_draw)
     qs <- function(v) unname(quantile(v, PROBS))
     qh <- function(v) if (sum(healthy) >= 200) unname(quantile(v[healthy], PROBS)) else rep(NA_real_, length(PROBS))
-    q <- list(); q_h <- list(); banked <- list()
+    # q_full: the same simulation if he plays EVERY remaining game (nothing assumed missed) -- the anchor the median
+    # now uses (Oct 2026); q / q_h are kept as before.
+    g_full <- rep.int(n_draw, N_SIMS)
+    q <- list(); q_h <- list(); q_full <- list(); banked <- list()
     pts <- sim_sums(matrix(d$fantasy_points_ppr, ncol = 1), recency_weights(n, MED_DECAY[[pos]]), g)[, 1]
-    q[["pts"]] <- qs(pts); q_h[["pts"]] <- qh(pts); banked[["pts"]] <- sum(cur$fantasy_points_ppr)
+    pts_full <- sim_sums(matrix(d$fantasy_points_ppr, ncol = 1), recency_weights(n, MED_DECAY[[pos]]), g_full)[, 1]
+    q[["pts"]] <- qs(pts); q_h[["pts"]] <- qh(pts); q_full[["pts"]] <- qs(pts_full); banked[["pts"]] <- sum(cur$fantasy_points_ppr)
     for (gn in names(groups)) {
       cols <- groups[[gn]]
       sims <- sim_sums(as.matrix(d[, cols, drop = FALSE]), recency_weights(n, STAT_GROUP_DECAY[[gn]][[pos]]), g)
-      for (j in seq_along(cols)) { q[[cols[j]]] <- qs(sims[, j]); q_h[[cols[j]]] <- qh(sims[, j]); banked[[cols[j]]] <- sum(cur[[cols[j]]]) }
+      sims_full <- sim_sums(as.matrix(d[, cols, drop = FALSE]), recency_weights(n, STAT_GROUP_DECAY[[gn]][[pos]]), g_full)
+      for (j in seq_along(cols)) { q[[cols[j]]] <- qs(sims[, j]); q_h[[cols[j]]] <- qh(sims[, j]); q_full[[cols[j]]] <- qs(sims_full[, j]); banked[[cols[j]]] <- sum(cur[[cols[j]]]) }
     }
     real <- full_year[full_year$player_display_name == p, ]
     real_tot <- c(list(pts = sum(real$fantasy_points_ppr)), lapply(setNames(stat_cols, stat_cols), function(cn) sum(real[[cn]])))
     rec <- list(player = p, pos = pos, season = Y, week = w, games_banked = nrow(cur), team_games = tg, games_left = n_draw,
                 avail = avail, p_healthy = mean(healthy), real_games = nrow(real),
-                q = q, q_h = q_h, banked = banked, real = real_tot)
+                q = q, q_h = q_h, q_full = q_full, banked = banked, real = real_tot)
     rec$season_median <- rec$banked$pts + rec$q$pts[50]
     eval_rows[[p]] <- rec
   }
