@@ -607,12 +607,12 @@ function PlayerStatsRow({ row }) {
         <span className="weekly-stats-eyebrow">Last week{lastWeek ? ` · W${lastWeek.week}` : ""}</span>
         <div className="weekly-stats-pair">
           <div className="weekly-stats-item">
-            <span className="weekly-player-stat-label">Output</span>
-            <span className="weekly-stats-value-dim">{lastWeek?.points != null ? lastWeek.points.toFixed(1) : "—"}</span>
-          </div>
-          <div className="weekly-stats-item">
             <span className="weekly-player-stat-label">Finish</span>
             <span className="weekly-stats-value-dim">{lastWeek ? `${row.position}${lastWeek.rank}` : "—"}</span>
+          </div>
+          <div className="weekly-stats-item">
+            <span className="weekly-player-stat-label">Output</span>
+            <span className="weekly-stats-value-dim">{lastWeek?.points != null ? lastWeek.points.toFixed(1) : "—"}</span>
           </div>
         </div>
       </div>
