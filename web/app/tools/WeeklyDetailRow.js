@@ -57,6 +57,18 @@ const TD_METRICS = [
 ];
 const TD_POSITIONS = new Set(["WR", "TE"]);
 
+// One line of the touchdown profile: the metric, its value, and where he ranks at his position (#1 = highest).
+function RankRow({ label, value, format, rank, hint }) {
+  if (!rank) return null;
+  return (
+    <div className="weekly-rank-row">
+      <span className="weekly-pct-label" title={hint}>{label}</span>
+      <span className="weekly-pct-value">{value == null ? "—" : format(value)}</span>
+      <span className="weekly-rank-num" title={`${ordinal(rank.rank)} of ${rank.of}`}>#{rank.rank}</span>
+    </div>
+  );
+}
+
 function ordinal(n) {
   const rounded = Math.round(n);
   const mod100 = rounded % 100;
@@ -703,7 +715,9 @@ function PlayerHeaderPanel({ row }) {
 export default function WeeklyDetailRow({ row, colSpan, maxSpread, owned }) {
   const pct = row.statPct || {};
   const showTd = TD_POSITIONS.has(row.position);
-  const advancedEntries = (showTd ? TD_METRICS : ADVANCED_METRICS).filter((m) => row[m.key] != null && pct[m.key] != null);
+  const advancedEntries = showTd
+    ? TD_METRICS.filter((m) => row[m.key] != null && row.tdRank?.[m.key])
+    : ADVANCED_METRICS.filter((m) => row[m.key] != null && pct[m.key] != null);
 
   return (
     <tr className="stat-detail-row weekly-detail-row">
@@ -738,9 +752,13 @@ export default function WeeklyDetailRow({ row, colSpan, maxSpread, owned }) {
               </div>
               <div className="weekly-panel-body">
                 {advancedEntries.length > 0 ? (
-                  advancedEntries.map((m) => (
-                    <PctRow key={m.key} label={m.label} value={row[m.key]} pctile={pct[m.key]} format={m.format} hint={m.hint} />
-                  ))
+                  advancedEntries.map((m) =>
+                    showTd ? (
+                      <RankRow key={m.key} label={m.label} value={row[m.key]} format={m.format} rank={row.tdRank[m.key]} hint={m.hint} />
+                    ) : (
+                      <PctRow key={m.key} label={m.label} value={row[m.key]} pctile={pct[m.key]} format={m.format} hint={m.hint} />
+                    )
+                  )
                 ) : (
                   <p className="weekly-opp-caption">
                     {showTd ? "Not enough games yet for a touchdown profile." : "No usage metrics published for this player yet."}

@@ -83,7 +83,6 @@ const PERCENTILE_KEYS = [
   "floor", "projection", "ceiling",
   "wopr", "targetShare", "yacAboveExp", "avgXfp",
   "ryoe", "scrambleRate", "playActionRate",
-  "xtdPg", "p2Td", "i10Pg", "i10Share",
 ];
 function buildPoolsByPosition(rows, keys) {
   const pools = {};
@@ -430,6 +429,34 @@ const getCachedTdProfile = unstable_cache(
   { revalidate: 60 }
 );
 
+// Where each WR/TE ranks on the four touchdown-profile numbers (1 = highest), among EVERY ranked player at his
+// position that has a profile -- not just the rows a free visitor can see, so a rank means the same thing on every
+// tier. Ties share the better rank. Only the rank and the pool size are exposed, never other players' values.
+const TD_RANK_KEYS = { xtdPg: "xtd_pg", p2Td: "p2", i10Pg: "i10_pg", i10Share: "i10_share" };
+function tdRanksByName(rows, tdProfile) {
+  const pools = {};
+  for (const r of rows) {
+    const d = tdProfile[r.player_name];
+    if (!d) continue;
+    for (const [k, src] of Object.entries(TD_RANK_KEYS)) {
+      if (d[src] != null) ((pools[r.position] ??= {})[k] ??= []).push(d[src]);
+    }
+  }
+  const out = {};
+  for (const r of rows) {
+    const d = tdProfile[r.player_name];
+    if (!d) continue;
+    const ranks = {};
+    for (const [k, src] of Object.entries(TD_RANK_KEYS)) {
+      const pool = pools[r.position]?.[k];
+      if (d[src] == null || !pool) continue;
+      ranks[k] = { rank: 1 + pool.filter((v) => v > d[src]).length, of: pool.length };
+    }
+    out[r.player_name] = ranks;
+  }
+  return out;
+}
+
 // Stargazer sees the top 50 only; Explorer/Singularity see the full
 // list — matches the pricing copy's "Weekly Projection Rankings (Top
 // 50)" Stargazer bullet.
@@ -457,6 +484,7 @@ export default async function RedraftRankingsPage({ searchParams }) {
     totalCount = cached.rows.length;
     const data = hasFullAccess ? cached.rows : cached.rows.slice(0, 50);
     const { simsByName, avgXfpByName, recentGamesByName, lastWeekRankByName, heroWinsByName } = cached;
+    const tdRanks = tdRanksByName(cached.rows, tdProfile);
 
     // Position-relative rank (RB1, WR23, ...) computed once from the
     // natural rank order -- stays fixed on each row even if the table is
@@ -483,6 +511,7 @@ export default async function RedraftRankingsPage({ searchParams }) {
         p2Td: tdProfile[r.player_name]?.p2 ?? null,
         i10Pg: tdProfile[r.player_name]?.i10_pg ?? null,
         i10Share: tdProfile[r.player_name]?.i10_share ?? null,
+        tdRank: tdRanks[r.player_name] || null,
         recentGames: recentGamesByName[r.player_name] || [],
         lastWeekRank: lastWeekRankByName[r.player_name] || null,
         heroWins: heroWinsByName[r.player_name]?.count || 0,
