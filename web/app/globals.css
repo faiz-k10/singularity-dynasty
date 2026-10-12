@@ -1671,6 +1671,7 @@ a.export-csv-btn{text-decoration:none;}
    within the full cell width the same way every other column's plain
    text-align:center does. */
 .matchup-combined-cell{display:flex; width:100%; align-items:center; justify-content:center; gap:7px;}
+.matchup-bye{font-family:var(--font-ibm-plex-mono), monospace; font-size:10.5px; letter-spacing:0.08em; color:var(--star-dim); white-space:nowrap;}
 .matchup-sep{font-size:11px; color:var(--star-dim); text-transform:uppercase; letter-spacing:0.02em;}
 
 /* Heat-tint for a table's primary value column (Median / Projection /

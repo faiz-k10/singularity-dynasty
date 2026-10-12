@@ -2,6 +2,7 @@
 // two most recent published weeks. Pure -- the data loading is in myFeedData.js, the tests in
 // test/myFeed.test.mjs. Every threshold is here so "what counts as a change" lives in one place.
 import { normalizePlayerName } from "./portfolio.js";
+import { isBye } from "./bye.js";
 
 export const FEED_RULES = {
   medianPct: 0.05, // season median must move by this share of last week's...
@@ -95,7 +96,7 @@ export function buildFeed({ mine, sims, ranks, roles, groups, teamIndex = null, 
       } else if (prevNote && !note) {
         lines.push({ kind: "status", dir: "up", text: `Back in the week ${rc.week} rankings (#${rc.rank}) after being listed ${prevNote.length <= 14 ? prevNote.toUpperCase() : prevNote}`, score: 7 });
       } else if (!note && Math.abs(moved) >= FEED_RULES.rankMove && Math.min(rp.rank, rc.rank) <= FEED_RULES.rankDepth) {
-        const opp = rc.opponent ? ` · ${rc.is_home === false ? "@" : "vs"} ${rc.opponent}` : "";
+        const opp = rc.opponent ? (isBye(rc.opponent) ? " · bye week" : ` · ${rc.is_home === false ? "@" : "vs"} ${rc.opponent}`) : "";
         lines.push({
           kind: "rank",
           dir: moved > 0 ? "up" : "down",

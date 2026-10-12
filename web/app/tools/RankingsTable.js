@@ -7,6 +7,7 @@ import TrendTag from "./TrendTag";
 import TeamBadge from "./TeamBadge";
 import OutcomeCurve from "./OutcomeCurve";
 import WeeklyDetailRow from "./WeeklyDetailRow";
+import { isBye, BYE_LABEL } from "@/lib/bye";
 import { MyBadge } from "./MyPlayers";
 import DefFlag from "./DefFlag";
 import { matchupTint } from "./MatchupBadge";
@@ -412,9 +413,15 @@ export default function RankingsTable({
                         >
                           <span className="matchup-combined-cell">
                             <TeamBadge team={row.team} />
-                            <span className="matchup-sep">{sep}</span>
-                            <TeamBadge team={row.opponent} />
-                            <DefFlag lean={row.defLean} />
+                            {isBye(row.opponent) ? (
+                              <span className="matchup-bye">{BYE_LABEL}</span>
+                            ) : (
+                              <>
+                                <span className="matchup-sep">{sep}</span>
+                                <TeamBadge team={row.opponent} />
+                                <DefFlag lean={row.defLean} />
+                              </>
+                            )}
                           </span>
                         </td>
                       );

@@ -1,6 +1,7 @@
 import { createPublicClient } from "@/lib/supabase/public";
 import { fetchAllRows } from "@/lib/fetchAllRows";
 import { csvResponse, requireSingularity } from "@/lib/csvDownload";
+import { isBye, BYE_LABEL } from "@/lib/bye";
 
 const COLUMNS = [
   { key: "rank", label: "Rank" },
@@ -39,6 +40,6 @@ export async function GET() {
   return csvResponse({
     filename: `redraft-rankings-week${latest.week}-${latest.season}.csv`,
     columns: COLUMNS,
-    rows,
+    rows: rows.map((r) => (isBye(r.opponent) ? { ...r, opponent: BYE_LABEL } : r)),
   });
 }
