@@ -4672,17 +4672,11 @@ a.mine-empty-note{color:var(--horizon-gold);}
 @keyframes site-tip-in{from{opacity:0; transform:translateY(4px) scale(.97);} to{opacity:1; transform:none;}}
 @keyframes site-tip-in-b{from{opacity:0; transform:translateY(-4px) scale(.97);} to{opacity:1; transform:none;}}
 
-/* Matchup flags (app/tools/DefFlag.js): the strongest defense-vs-position trends, beside the opponent.
-   Gold = a smash spot (like Running Hot), blue = a tough spot (like Running Cold). */
-.def-flag{
-  display:inline-flex; align-items:center; justify-content:center; width:16px; height:16px; border-radius:50%;
-  font-size:8px; line-height:1; flex-shrink:0; cursor:help; border:1px solid transparent;
-}
-.def-flag-smash{color:var(--horizon-gold); background:rgba(var(--horizon-gold-rgb),.16); border-color:rgba(var(--horizon-gold-rgb),.55);}
-.def-flag-avoid{color:var(--neon-blue); background:rgba(var(--neon-blue-rgb),.14); border-color:rgba(var(--neon-blue-rgb),.5);}
-.matchup-combined-cell .def-flag{margin-left:1px;}
-.matchup-legend{display:flex; flex-wrap:wrap; align-items:center; gap:6px 8px; margin:2px 0 12px; font-size:12.5px; color:var(--star-dim);}
-.matchup-legend .def-flag{cursor:default;}
+/* Matchup flags: the strongest defense-vs-position trends, shown as Smash Spot / Tough Spot badges (the arrows that
+   used to sit beside the opponent were removed). */
+.matchup-legend{margin:2px 0 12px; font-size:12.5px; line-height:1.5; color:var(--star-dim);}
+.matchup-legend .player-achv-dot{display:inline-block; width:8px; height:8px; margin:0 5px 0 0; vertical-align:middle;}
+.matchup-legend .legend-gap{display:inline-block; width:14px;}
 .weekly-opp-flag{display:inline-flex; align-items:center; gap:6px; margin-top:6px; font-family:var(--font-mono), monospace; font-size:11px; letter-spacing:.04em; cursor:help;}
 .weekly-opp-flag-smash{color:var(--horizon-gold);}
 .weekly-opp-flag-avoid{color:var(--neon-blue);}

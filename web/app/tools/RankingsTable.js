@@ -9,7 +9,6 @@ import OutcomeCurve from "./OutcomeCurve";
 import WeeklyDetailRow from "./WeeklyDetailRow";
 import { isBye, BYE_LABEL } from "@/lib/bye";
 import { MyBadge } from "./MyPlayers";
-import DefFlag from "./DefFlag";
 import { matchupTint } from "./MatchupBadge";
 import { STAT_COLUMNS } from "./statColumns";
 import { getAchievements } from "./achievements";
@@ -506,7 +505,6 @@ export default function RankingsTable({
                               <>
                                 <span className="matchup-sep">{sep}</span>
                                 <TeamBadge team={row.opponent} />
-                                <DefFlag lean={row.defLean} />
                               </>
                             )}
                           </span>

@@ -660,9 +660,10 @@ export default async function RedraftRankingsPage({ searchParams }) {
                     Top 50 free for every Stargazer.
                   </p>
                   <p className="matchup-legend">
-                    <span className="def-flag def-flag-smash" aria-hidden="true">{"\u25B2"}</span> smash spot
-                    <span className="def-flag def-flag-avoid" aria-hidden="true">{"\u25BC"}</span> tough spot
-                    {" \u2014 "}the strongest defense-vs-position trends this season, beside the opponent. A signal to weigh, not part of the projections.
+                    <span className="player-achv-dot smash" aria-hidden="true" />Smash Spot
+                    <span className="legend-gap" />
+                    <span className="player-achv-dot tough" aria-hidden="true" />Tough Spot
+                    {" \u2014 "}badges for the strongest defense-vs-position trends this season. A signal to weigh, not part of the projections.
                   </p>
                   <div className="toggle-row-flex">
                     <div className="toggle-row-actions">
