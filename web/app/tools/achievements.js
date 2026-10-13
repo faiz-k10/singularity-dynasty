@@ -225,6 +225,10 @@ export function getAchievements(row) {
   const heroWins = Math.max(0, row.heroWins || 0);
   const buyLow = buyLowFlag(row.woprPercentile, row.recentGames);
   const sellHigh = sellHighFlag(row.woprPercentile, row.recentGames);
+  // Matchup badge: just the ▲ / ▼ beside the opponent (lib/defenseLeans.js flagFor, attached as row.defLean by
+  // Weekly Projection Rankings), shown as a badge too. Display only -- never a projection input. Rows without a
+  // defLean (every page that doesn't load the leans, bye weeks, defenses with no strong trend) just don't get it.
+  const matchup = row.defLean || null;
 
   return [
     (isEstablished || isBuilding) && {
@@ -238,6 +242,12 @@ export function getAchievements(row) {
     spread === "locked" && { key: "locked", variant: "eddy", label: "Steady Eddy" },
     buyLow && { key: "buyLow", variant: "sprout", label: "Buy Low" },
     sellHigh && { key: "sellHigh", variant: "peak", label: "Sell High" },
+    matchup && {
+      key: "matchup",
+      variant: matchup.call === "SMASH" ? "smash" : "tough",
+      label: matchup.call === "SMASH" ? "Smash Spot" : "Tough Spot",
+      text: matchup.text,
+    },
     heroWins > 0 && {
       key: "hero",
       variant: "cape",

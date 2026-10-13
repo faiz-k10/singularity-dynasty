@@ -437,6 +437,16 @@ function SproutIcon() {
   );
 }
 
+// Matchup badge's icon -- the same solid triangle as the ▲ / ▼ beside the opponent in the table (up = smash spot,
+// down = tough spot), so the badge and the mark read as one thing.
+function MatchupIcon({ up }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d={up ? "M12 5.5 20 18.5H4Z" : "M12 18.5 4 5.5h16Z"} />
+    </svg>
+  );
+}
+
 // Sell High's own icon -- a cinched money bag with a $ punched through
 // it (the $ is filled with var(--peak), the badge's own background
 // color, so in both light and dark theme it reads as a genuine cutout
@@ -523,6 +533,14 @@ function achievementNode(a, row) {
           variant="sprout"
           glyph={<SproutIcon />}
           title="High usage (WOPR) that hasn't shown up in points the last 2 games, while still scoring at or above xFP in 2 of the last 3 -- volume tends to catch up"
+        />
+      );
+    case "matchup":
+      return (
+        <GlyphBadge
+          variant={a.variant}
+          glyph={<MatchupIcon up={a.variant === "smash"} />}
+          title={a.text}
         />
       );
     case "sellHigh":

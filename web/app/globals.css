@@ -2070,6 +2070,8 @@ a.export-csv-btn{text-decoration:none;}
 .player-achv-dot.cape{background:var(--cape); box-shadow:0 0 4px rgba(var(--cape-rgb),0.7);}
 .player-achv-dot.sprout{background:var(--sprout); box-shadow:0 0 4px rgba(var(--sprout-rgb),0.7);}
 .player-achv-dot.peak{background:var(--peak); box-shadow:0 0 4px rgba(var(--peak-rgb),0.7);}
+.player-achv-dot.smash{background:var(--horizon-gold); box-shadow:0 0 4px rgba(var(--horizon-gold-rgb),0.7);}
+.player-achv-dot.tough{background:var(--neon-blue); box-shadow:0 0 4px rgba(var(--neon-blue-rgb),0.7);}
 .player-achv-dot.honorable{background:var(--scholar); box-shadow:0 0 4px rgba(var(--scholar-rgb),0.7);}
 .player-achv-dot.menace{background:var(--menace); box-shadow:0 0 4px rgba(var(--menace-rgb),0.85);}
 
@@ -2505,6 +2507,8 @@ a.export-csv-btn{text-decoration:none;}
 .weekly-achievement-badge.cape .weekly-achievement-label{color:var(--cape);}
 .weekly-achievement-badge.sprout .weekly-achievement-label{color:var(--sprout);}
 .weekly-achievement-badge.peak .weekly-achievement-label{color:var(--peak);}
+.weekly-achievement-badge.smash .weekly-achievement-label{color:var(--horizon-gold);}
+.weekly-achievement-badge.tough .weekly-achievement-label{color:var(--neon-blue);}
 .weekly-achievement-badge.honorable .weekly-achievement-label{color:var(--scholar);}
 .weekly-achievement-badge.menace .weekly-achievement-label{color:var(--menace);}
 
@@ -2535,6 +2539,8 @@ a.export-csv-btn{text-decoration:none;}
 .weekly-glyph-badge.cape{background:var(--cape); color:var(--void); box-shadow:0 0 8px rgba(var(--cape-rgb),0.55);}
 .weekly-glyph-badge.sprout{background:var(--sprout); color:var(--void); box-shadow:0 0 8px rgba(var(--sprout-rgb),0.55);}
 .weekly-glyph-badge.peak{background:var(--peak); color:var(--void); box-shadow:0 0 8px rgba(var(--peak-rgb),0.55);}
+.weekly-glyph-badge.smash{background:var(--horizon-gold); color:var(--void); box-shadow:0 0 8px rgba(var(--horizon-gold-rgb),0.55);}
+.weekly-glyph-badge.tough{background:var(--neon-blue); color:var(--void); box-shadow:0 0 8px rgba(var(--neon-blue-rgb),0.55);}
 .weekly-glyph-badge.honorable{background:var(--scholar); color:var(--void); box-shadow:0 0 8px rgba(var(--scholar-rgb),0.55);}
 .weekly-glyph-badge.menace{background:var(--menace); color:var(--void); box-shadow:0 0 10px rgba(var(--menace-rgb),0.75);}
 /* Four stats, each its own little label-over-value stack -- same

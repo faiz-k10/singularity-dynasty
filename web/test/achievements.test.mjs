@@ -81,3 +81,17 @@ test("Buy Low: a game with no xFP row does not count toward the 2", () => {
   assert.equal(buyLowFlag(85, [bg(8, 12, 7), noXfp, bg(5, 12, 20)]), false); // only 1 confirmed
   assert.equal(buyLowFlag(85, [bg(8, 12, 7), noXfp, bg(14, 12, 11)]), true); // 2 confirmed
 });
+
+import { getAchievements } from "../app/tools/achievements.js";
+
+test("Matchup badge follows the row's defLean: SMASH -> Smash Spot, AVOID -> Tough Spot, none -> no badge", () => {
+  const pick = (row) => getAchievements(row).find((a) => a.key === "matchup");
+  const smash = pick({ defLean: { call: "SMASH", text: "why" } });
+  assert.equal(smash.variant, "smash");
+  assert.equal(smash.label, "Smash Spot");
+  assert.equal(smash.text, "why");
+  const tough = pick({ defLean: { call: "AVOID", text: "why" } });
+  assert.equal(tough.variant, "tough");
+  assert.equal(tough.label, "Tough Spot");
+  assert.equal(pick({}), undefined);
+});
