@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import SortableTh from "./SortableTh";
 import TrendTag from "./TrendTag";
@@ -36,6 +36,16 @@ const BADGE_FILTERS = [
   { id: "hero", variant: "ball", label: "Super Hero", match: (a) => a.key === "hero" },
   { id: "honorable", variant: "honorable", label: "Honorable", match: (a) => a.key === "honorable" },
   { id: "conArtist", variant: "menace", label: "Con Artist", match: (a) => a.key === "conArtist" },
+];
+
+// The same filters, grouped for the dropdown so it reads as a short list of themes instead of one wall of pills.
+const BADGE_GROUPS = [
+  { label: "Confidence", ids: ["established", "building"] },
+  { label: "Form", ids: ["onFire", "onIce", "honorable", "conArtist"] },
+  { label: "Range", ids: ["volatile", "locked"] },
+  { label: "Value", ids: ["buyLow", "sellHigh"] },
+  { label: "Matchup", ids: ["smash", "tough"] },
+  { label: "Track record", ids: ["hero"] },
 ];
 
 // Weekly floor/ceiling formatting -- null for rows published before
@@ -211,6 +221,28 @@ export default function RankingsTable({
   // table the instant theater opens, before anyone's touched the control.
   const [selectedBadgeIds, setSelectedBadgeIds] = useState(() => new Set());
   const [badgeFilterOpen, setBadgeFilterOpen] = useState(false);
+  // "or": players with ANY selected badge. "and": players with ALL selected badges.
+  const [badgeMatch, setBadgeMatch] = useState("or");
+  const badgeFilterRef = useRef(null);
+  // Close the dropdown on an outside click or Escape. Escape is caught in the capture phase and stopped, so with the
+  // dropdown open it only closes the dropdown (a second Escape then leaves the full-screen view).
+  useEffect(() => {
+    if (!badgeFilterOpen) return;
+    const onDown = (e) => {
+      if (badgeFilterRef.current && !badgeFilterRef.current.contains(e.target)) setBadgeFilterOpen(false);
+    };
+    const onKey = (e) => {
+      if (e.key !== "Escape") return;
+      e.stopPropagation();
+      setBadgeFilterOpen(false);
+    };
+    document.addEventListener("pointerdown", onDown);
+    document.addEventListener("keydown", onKey, true);
+    return () => {
+      document.removeEventListener("pointerdown", onDown);
+      document.removeEventListener("keydown", onKey, true);
+    };
+  }, [badgeFilterOpen]);
   function toggleBadgeFilter(id) {
     setSelectedBadgeIds((prev) => {
       const next = new Set(prev);
@@ -235,9 +267,11 @@ export default function RankingsTable({
     if (!theater || selectedBadgeIds.size === 0) return rowsWithAchievements;
     const activeFilters = BADGE_FILTERS.filter((f) => selectedBadgeIds.has(f.id));
     return rowsWithAchievements.filter(({ achievements }) =>
-      achievements.some((a) => activeFilters.some((f) => f.match(a)))
+      badgeMatch === "and"
+        ? activeFilters.every((f) => achievements.some((a) => f.match(a)))
+        : achievements.some((a) => activeFilters.some((f) => f.match(a)))
     );
-  }, [rowsWithAchievements, theater, selectedBadgeIds]);
+  }, [rowsWithAchievements, theater, selectedBadgeIds, badgeMatch]);
 
   const colCount =
     2 + // Rank, Player
@@ -279,39 +313,81 @@ export default function RankingsTable({
               </div>
             )}
             {showBadgeFilter && (
-              <div className="theater-badge-filter">
+              <div className="theater-badge-filter" ref={badgeFilterRef}>
                 <button
                   type="button"
-                  className="theater-badge-filter-btn"
+                  className={`theater-badge-filter-btn${selectedBadgeIds.size > 0 ? " has-selection" : ""}`}
                   onClick={() => setBadgeFilterOpen((v) => !v)}
                   aria-expanded={badgeFilterOpen}
+                  aria-haspopup="dialog"
                 >
-                  Badges{selectedBadgeIds.size > 0 ? ` (${selectedBadgeIds.size})` : ""}
+                  Badges
+                  {selectedBadgeIds.size > 0 && (
+                    <span className="theater-badge-filter-count">
+                      {selectedBadgeIds.size}
+                      {selectedBadgeIds.size > 1 ? ` · ${badgeMatch.toUpperCase()}` : ""}
+                    </span>
+                  )}
                   <span className={`theater-badge-filter-chevron${badgeFilterOpen ? " open" : ""}`}>▾</span>
                 </button>
                 {badgeFilterOpen && (
-                  <div className="theater-badge-filter-panel">
-                    {BADGE_FILTERS.map((f) => (
-                      <button
-                        key={f.id}
-                        type="button"
-                        className={`theater-badge-pill ${selectedBadgeIds.has(f.id) ? "active" : ""}`}
-                        onClick={() => toggleBadgeFilter(f.id)}
-                        aria-pressed={selectedBadgeIds.has(f.id)}
-                      >
-                        <span className={`player-achv-dot ${f.variant}`} />
-                        {f.label}
-                      </button>
+                  <div className="theater-badge-filter-panel" role="dialog" aria-label="Filter players by badge">
+                    <div className="tbf-head">
+                      <span className="tbf-title">Filter by badge</span>
+                      <div className="tbf-mode" role="group" aria-label="How to match the selected badges">
+                        {["or", "and"].map((m) => (
+                          <button
+                            key={m}
+                            type="button"
+                            className={badgeMatch === m ? "on" : ""}
+                            aria-pressed={badgeMatch === m}
+                            onClick={() => setBadgeMatch(m)}
+                          >
+                            {m.toUpperCase()}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <p className="tbf-hint">
+                      {badgeMatch === "or"
+                        ? "Show players who have any of the selected badges."
+                        : "Show only players who have all of the selected badges."}
+                    </p>
+                    {BADGE_GROUPS.map((g) => (
+                      <div key={g.label} className="tbf-group">
+                        <span className="tbf-group-label">{g.label}</span>
+                        <div className="tbf-group-pills">
+                          {g.ids.map((id) => {
+                            const f = BADGE_FILTERS.find((x) => x.id === id);
+                            const on = selectedBadgeIds.has(id);
+                            return (
+                              <button
+                                key={id}
+                                type="button"
+                                className={`theater-badge-pill ${on ? "active" : ""}`}
+                                onClick={() => toggleBadgeFilter(id)}
+                                aria-pressed={on}
+                              >
+                                <span className={`player-achv-dot ${f.variant}`} />
+                                {f.label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
                     ))}
-                    {selectedBadgeIds.size > 0 && (
-                      <button
-                        type="button"
-                        className="theater-badge-filter-clear"
-                        onClick={() => setSelectedBadgeIds(new Set())}
-                      >
-                        Clear
-                      </button>
-                    )}
+                    <div className="tbf-foot">
+                      <span className="tbf-count">
+                        {selectedBadgeIds.size === 0
+                          ? `All ${rows.length} players`
+                          : `${displayRows.length} of ${rows.length} players`}
+                      </span>
+                      {selectedBadgeIds.size > 0 && (
+                        <button type="button" className="theater-badge-filter-clear" onClick={() => setSelectedBadgeIds(new Set())}>
+                          Clear all
+                        </button>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>

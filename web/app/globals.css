@@ -1188,23 +1188,52 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .theater-badge-filter-btn:hover{border-color:var(--neon-blue); color:var(--star);}
 .theater-badge-filter-chevron{font-size:10px; display:inline-block; transition:transform .2s ease;}
 .theater-badge-filter-chevron.open{transform:rotate(180deg);}
-.theater-badge-filter-panel{
-  position:absolute; top:calc(100% + 8px); left:0; z-index:5;
-  display:flex; flex-wrap:wrap; align-items:center; gap:6px; width:360px; max-width:min(80vw, 360px);
-  background:var(--void-panel); border:1px solid var(--line); border-radius:var(--radius);
-  padding:10px; box-shadow:0 8px 24px rgba(var(--shadow-rgb),0.4);
+.theater-badge-filter-btn.has-selection{border-color:var(--horizon-gold); color:var(--star);}
+.theater-badge-filter-count{
+  padding:1px 7px; border-radius:999px; font-size:11px; letter-spacing:0.04em;
+  background:color-mix(in srgb, var(--horizon-gold) 20%, transparent); color:var(--horizon-gold);
 }
+.theater-badge-filter-panel{
+  position:absolute; top:calc(100% + 8px); left:0; z-index:5; width:400px; max-width:min(86vw, 400px);
+  display:flex; flex-direction:column; gap:12px; padding:14px 14px 12px;
+  background:var(--void-panel); border:1px solid var(--line); border-radius:var(--radius);
+  box-shadow:0 12px 32px rgba(var(--shadow-rgb),0.45);
+}
+.tbf-head{display:flex; align-items:center; justify-content:space-between; gap:12px;}
+.tbf-title{font-family:var(--font-mono), monospace; font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--star);}
+/* OR / AND: a recessed track with a lit thumb, same segmented language as the other toggles on the site. */
+.tbf-mode{display:inline-flex; padding:2px; gap:2px; border:1px solid var(--line); border-radius:999px; background:rgba(var(--shadow-rgb),0.18);}
+.tbf-mode button{
+  min-width:48px; padding:4px 12px; border:none; border-radius:999px; background:transparent; cursor:pointer;
+  font-family:var(--font-mono), monospace; font-size:11px; font-weight:700; letter-spacing:0.08em; color:var(--star-dim);
+  transition:background .15s ease, color .15s ease;
+}
+.tbf-mode button:hover{color:var(--star);}
+.tbf-mode button.on{background:var(--horizon-gold); color:var(--void);}
+.tbf-hint{margin:-4px 0 0; font-size:12px; line-height:1.4; color:var(--star-dim);}
+.tbf-group{display:grid; grid-template-columns:92px 1fr; align-items:start; gap:8px;}
+.tbf-group-label{padding-top:7px; font-family:var(--font-mono), monospace; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--star-dim);}
+.tbf-group-pills{display:flex; flex-wrap:wrap; gap:6px;}
 .theater-badge-pill{
   display:inline-flex; align-items:center; gap:6px; padding:5px 10px;
   background:transparent; border:1px solid var(--line); border-radius:999px;
   color:var(--star-dim); font-family:var(--font-mono), monospace; font-size:12px; cursor:pointer; white-space:nowrap;
+  transition:border-color .15s ease, background .15s ease, color .15s ease;
 }
 .theater-badge-pill:hover{border-color:var(--neon-blue); color:var(--star);}
-.theater-badge-pill.active{background:var(--void-panel-2); border-color:var(--horizon-gold); color:var(--star);}
+.theater-badge-pill.active{background:color-mix(in srgb, var(--horizon-gold) 14%, transparent); border-color:var(--horizon-gold); color:var(--star);}
 .theater-badge-pill .player-achv-dot{width:6px; height:6px; flex-shrink:0;}
+/* Super Hero's dot is white here (the star colour, so it stays visible in light mode too). */
+.theater-badge-pill .player-achv-dot.ball{background:var(--star); box-shadow:0 0 4px rgba(var(--star-dot-rgb),0.6);}
+.tbf-foot{display:flex; align-items:center; justify-content:space-between; gap:12px; padding-top:10px; border-top:1px solid var(--line);}
+.tbf-count{font-family:var(--font-mono), monospace; font-size:12px; color:var(--star-dim);}
 .theater-badge-filter-clear{
-  background:none; border:none; color:var(--neon-blue); font-size:12px; cursor:pointer; text-decoration:underline;
-  padding:5px 4px;
+  background:none; border:none; color:var(--neon-blue); font-family:var(--font-mono), monospace; font-size:12px; cursor:pointer;
+  text-decoration:underline; padding:2px 0;
+}
+@media (max-width:640px){
+  .tbf-group{grid-template-columns:1fr; gap:4px;}
+  .tbf-group-label{padding-top:0;}
 }
 .rankings-table-empty{text-align:center; padding:32px; color:var(--star-dim); font-size:14px;}
 /* Plain-icon, bordered-square language (.theme-toggle/.player-popover-
