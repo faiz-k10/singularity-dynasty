@@ -225,7 +225,7 @@ export default async function SiteHeader() {
                   <span className="nav-fold-body">
                     <span className="nav-fold-title">Dynasty Draft Board</span>
                     <span className="nav-fold-desc">Startup and rookie boards, round by round, with stacks flagged.</span>
-                    <span className="nav-fold-chip nf-explorer">Explorer <i>Updated weekly</i></span>
+                    <span className="nav-fold-chip nf-explorer">Explorer <i>Updated every 2 weeks</i></span>
                   </span>
                 </Link>
                 <Link href="/tools/prospect-rankings" className="nav-fold-card">
@@ -235,7 +235,7 @@ export default async function SiteHeader() {
                   <span className="nav-fold-body">
                     <span className="nav-fold-title">Prospect Rankings</span>
                     <span className="nav-fold-desc">WR and QB prospect boards with side-by-side comparisons.</span>
-                    <span className="nav-fold-chip nf-free">Free <i>Updated weekly</i></span>
+                    <span className="nav-fold-chip nf-free">Free <i>Updated every 2 weeks</i></span>
                   </span>
                 </Link>
               </div>
