@@ -17,7 +17,7 @@
   --frost:#4F8EF7;
   /* Badge palette (cape/fire/peak/sprout/eddy/scholar/frost/icarus/menace): nine badge hues spread around the color wheel (red, orange, yellow, lime, green, cyan, blue, violet, magenta), tuned separately for dark and light mode so no two read as the same color in either. Used by the badge dots/medallions/ticker AND Portfolio Pulse's Badges tab. */
   --cape:#E5384F;
-  --scholar:#22D3EE;
+  --scholar:#2DD4BF;
   --menace:#E879F9;
   --sprout:#A3E635;
   --peak:#FACC15;
@@ -50,12 +50,16 @@
   --purple-rgb:177,138,255;
   --frost-rgb:79,142,247;
   --cape-rgb:229,56,79;
-  --scholar-rgb:34,211,238;
+  --scholar-rgb:45,212,191;
   --menace-rgb:232,121,249;
   --sprout-rgb:163,230,53;
   --peak-rgb:250,204,21;
-  --fire:#FF7A45;
-  --fire-rgb:255,122,69;
+  --fire:#FF2400;
+  --fire-rgb:255,36,0;
+  --smash:#FF7A45;
+  --smash-rgb:255,122,69;
+  --silver:#A0AAB9;
+  --silver-rgb:160,170,185;
   --eddy:#4ADE80;
   --eddy-rgb:74,222,128;
   --icarus:#A78BFA;
@@ -85,10 +89,10 @@
     --down:#D63F39;
     --frost:#2563EB;
     --cape:#C41E3A;
-    --scholar:#0891B2;
+    --scholar:#0D9488;
     --menace:#C026D3;
-    --sprout:#65A30D;
-    --peak:#CA8A04;
+    --sprout:#5A9A0A;
+    --peak:#8F7F00;
     --matchup-neutral:#A87B00;
     --pos-qb:#D6005E;
     --pos-rb:#007A50;
@@ -104,12 +108,16 @@
     --down-rgb:214,63,57;
     --frost-rgb:37,99,235;
     --cape-rgb:196,30,58;
-    --scholar-rgb:8,145,178;
+    --scholar-rgb:13,148,136;
     --menace-rgb:192,38,211;
-    --sprout-rgb:101,163,13;
-    --peak-rgb:202,138,4;
-    --fire:#EA580C;
-    --fire-rgb:234,88,12;
+    --sprout-rgb:90,154,10;
+    --peak-rgb:143,127,0;
+    --fire:#E11D0B;
+    --fire-rgb:225,29,11;
+    --smash:#EA6A0A;
+    --smash-rgb:234,106,10;
+    --silver:#7C8798;
+    --silver-rgb:124,135,152;
     --eddy:#16A34A;
     --eddy-rgb:22,163,74;
     --icarus:#7C3AED;
@@ -134,10 +142,10 @@
   --down:#D63F39;
   --frost:#2563EB;
   --cape:#C41E3A;
-  --scholar:#0891B2;
+  --scholar:#0D9488;
   --menace:#C026D3;
-  --sprout:#65A30D;
-  --peak:#CA8A04;
+  --sprout:#5A9A0A;
+  --peak:#8F7F00;
   --matchup-neutral:#A87B00;
   --pos-qb:#D6005E;
   --pos-rb:#007A50;
@@ -153,12 +161,16 @@
   --down-rgb:214,63,57;
   --frost-rgb:37,99,235;
   --cape-rgb:196,30,58;
-  --scholar-rgb:8,145,178;
+  --scholar-rgb:13,148,136;
   --menace-rgb:192,38,211;
-  --sprout-rgb:101,163,13;
-  --peak-rgb:202,138,4;
-  --fire:#EA580C;
-  --fire-rgb:234,88,12;
+  --sprout-rgb:90,154,10;
+  --peak-rgb:143,127,0;
+  --fire:#E11D0B;
+  --fire-rgb:225,29,11;
+  --smash:#EA6A0A;
+  --smash-rgb:234,106,10;
+  --silver:#7C8798;
+  --silver-rgb:124,135,152;
   --eddy:#16A34A;
   --eddy-rgb:22,163,74;
   --icarus:#7C3AED;
@@ -237,7 +249,7 @@ body::before{
    evenly and ends up looking a pixel off-center on one side). */
 .ticker-badge svg{width:14px; height:14px; display:block;}
 .ticker-badge.gold{background:var(--horizon-gold); color:var(--void); box-shadow:0 0 5px rgba(var(--horizon-gold-rgb),0.5);}
-.ticker-badge.silver{background:#A0AAB9; color:var(--void); box-shadow:0 0 4px rgba(160,170,185,0.4);}
+.ticker-badge.silver{background:var(--silver); color:var(--void); box-shadow:0 0 4px rgba(var(--silver-rgb),0.4);}
 .ticker-badge.icarus{background:var(--icarus); color:var(--void); box-shadow:0 0 5px rgba(var(--icarus-rgb),0.5);}
 .ticker-badge.eddy{background:var(--eddy); color:var(--void); box-shadow:0 0 5px rgba(var(--eddy-rgb),0.5);}
 /* Added once the ticker's pool grew from Confidence/Risky Icarus/Steady
@@ -1596,7 +1608,7 @@ a.export-csv-btn{text-decoration:none;}
    getBBox, before and after. */
 .confidence-badge svg{width:14px; height:14px; display:block;}
 .confidence-badge.gold{background:rgba(255,199,115,0.18); color:var(--horizon-gold); border:1px solid rgba(255,199,115,0.4);}
-.confidence-badge.silver{background:rgba(160,170,185,0.15); color:#A0AAB9; border:1px solid rgba(160,170,185,0.35);}
+.confidence-badge.silver{background:rgba(var(--silver-rgb),0.15); color:var(--silver); border:1px solid rgba(var(--silver-rgb),0.35);}
 
 /* Best Ball Rankings — This Week ceiling range + hit-probability badge */
 .ceiling-cell{white-space:nowrap;}
@@ -2062,7 +2074,7 @@ a.export-csv-btn{text-decoration:none;}
 .player-achv-dot{width:5px; height:5px; border-radius:50%; flex-shrink:0; transition:transform .15s var(--ease);}
 .rankings-table tr.row-expandable:hover .player-achv-dot{transform:scale(1.35);}
 .player-achv-dot.gold{background:var(--horizon-gold); box-shadow:0 0 4px rgba(var(--horizon-gold-rgb),0.7);}
-.player-achv-dot.silver{background:#A0AAB9; box-shadow:0 0 3px rgba(160,170,185,0.6);}
+.player-achv-dot.silver{background:var(--silver); box-shadow:0 0 3px rgba(var(--silver-rgb),0.6);}
 .player-achv-dot.heat{background:var(--fire); box-shadow:0 0 4px rgba(var(--fire-rgb),0.7);}
 .player-achv-dot.ice{background:var(--frost); box-shadow:0 0 4px rgba(var(--frost-rgb),0.7);}
 .player-achv-dot.icarus{background:var(--icarus); box-shadow:0 0 4px rgba(var(--icarus-rgb),0.7);}
@@ -2070,7 +2082,7 @@ a.export-csv-btn{text-decoration:none;}
 .player-achv-dot.cape{background:var(--cape); box-shadow:0 0 4px rgba(var(--cape-rgb),0.7);}
 .player-achv-dot.sprout{background:var(--sprout); box-shadow:0 0 4px rgba(var(--sprout-rgb),0.7);}
 .player-achv-dot.peak{background:var(--peak); box-shadow:0 0 4px rgba(var(--peak-rgb),0.7);}
-.player-achv-dot.smash{background:var(--horizon); box-shadow:0 0 4px rgba(var(--horizon-rgb),0.7);}
+.player-achv-dot.smash{background:var(--smash); box-shadow:0 0 4px rgba(var(--smash-rgb),0.7);}
 .player-achv-dot.tough{background:var(--neon-blue); box-shadow:0 0 4px rgba(var(--neon-blue-rgb),0.7);}
 .player-achv-dot.honorable{background:var(--scholar); box-shadow:0 0 4px rgba(var(--scholar-rgb),0.7);}
 .player-achv-dot.menace{background:var(--menace); box-shadow:0 0 4px rgba(var(--menace-rgb),0.85);}
@@ -2480,8 +2492,8 @@ a.export-csv-btn{text-decoration:none;}
   box-shadow:0 0 8px rgba(var(--horizon-gold-rgb),0.55);
 }
 .weekly-player-achievements .confidence-badge.silver{
-  background:#A0AAB9; color:var(--void);
-  box-shadow:0 0 6px rgba(160,170,185,0.4);
+  background:var(--silver); color:var(--void);
+  box-shadow:0 0 6px rgba(var(--silver-rgb),0.4);
 }
 
 /* Click/tap-to-reveal wrapper around each achievement badge -- the badge
@@ -2499,7 +2511,7 @@ a.export-csv-btn{text-decoration:none;}
 }
 .weekly-achievement-badge.open .weekly-achievement-label{max-width:130px; margin-left:6px; opacity:1;}
 .weekly-achievement-badge.gold .weekly-achievement-label{color:var(--horizon-gold);}
-.weekly-achievement-badge.silver .weekly-achievement-label{color:#A0AAB9;}
+.weekly-achievement-badge.silver .weekly-achievement-label{color:var(--silver);}
 .weekly-achievement-badge.heat .weekly-achievement-label{color:var(--fire);}
 .weekly-achievement-badge.ice .weekly-achievement-label{color:var(--frost);}
 .weekly-achievement-badge.icarus .weekly-achievement-label{color:var(--icarus);}
@@ -2507,7 +2519,7 @@ a.export-csv-btn{text-decoration:none;}
 .weekly-achievement-badge.cape .weekly-achievement-label{color:var(--cape);}
 .weekly-achievement-badge.sprout .weekly-achievement-label{color:var(--sprout);}
 .weekly-achievement-badge.peak .weekly-achievement-label{color:var(--peak);}
-.weekly-achievement-badge.smash .weekly-achievement-label{color:var(--horizon);}
+.weekly-achievement-badge.smash .weekly-achievement-label{color:var(--smash);}
 .weekly-achievement-badge.tough .weekly-achievement-label{color:var(--neon-blue);}
 .weekly-achievement-badge.honorable .weekly-achievement-label{color:var(--scholar);}
 .weekly-achievement-badge.menace .weekly-achievement-label{color:var(--menace);}
@@ -2539,7 +2551,7 @@ a.export-csv-btn{text-decoration:none;}
 .weekly-glyph-badge.cape{background:var(--cape); color:var(--void); box-shadow:0 0 8px rgba(var(--cape-rgb),0.55);}
 .weekly-glyph-badge.sprout{background:var(--sprout); color:var(--void); box-shadow:0 0 8px rgba(var(--sprout-rgb),0.55);}
 .weekly-glyph-badge.peak{background:var(--peak); color:var(--void); box-shadow:0 0 8px rgba(var(--peak-rgb),0.55);}
-.weekly-glyph-badge.smash{background:var(--horizon); color:var(--void); box-shadow:0 0 8px rgba(var(--horizon-rgb),0.55);}
+.weekly-glyph-badge.smash{background:var(--smash); color:var(--void); box-shadow:0 0 8px rgba(var(--smash-rgb),0.55);}
 .weekly-glyph-badge.tough{background:var(--neon-blue); color:var(--void); box-shadow:0 0 8px rgba(var(--neon-blue-rgb),0.55);}
 .weekly-glyph-badge.honorable{background:var(--scholar); color:var(--void); box-shadow:0 0 8px rgba(var(--scholar-rgb),0.55);}
 .weekly-glyph-badge.menace{background:var(--menace); color:var(--void); box-shadow:0 0 10px rgba(var(--menace-rgb),0.75);}
