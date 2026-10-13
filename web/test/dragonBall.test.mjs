@@ -14,12 +14,12 @@ test("counts above 6 show the 6-star ball; zero/garbage falls back to 1", () => 
   assert.equal(ballStars(undefined).stars.length, 1);
 });
 
-test("Weekly Hero badge carries the ball variant and its tier is capped at the 6-star art", () => {
+test("Super Hero badge carries the ball variant and its tier is capped at the 6-star art", () => {
   assert.equal(HERO_MAX_TIER, MAX_BALL_STARS);
   const hero = (wins) => getAchievements({ heroWins: wins }).find((a) => a.key === "hero");
   assert.equal(hero(2).variant, "ball");
   assert.equal(hero(2).tier, 2);
   assert.equal(hero(7).tier, 6);
-  assert.equal(hero(7).label, "7x Weekly Hero");
+  assert.equal(hero(7).label, "7x Super Hero");
   assert.equal(hero(0), undefined);
 });

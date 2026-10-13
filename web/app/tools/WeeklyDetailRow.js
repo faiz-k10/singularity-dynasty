@@ -276,7 +276,7 @@ function LockIcon() {
   );
 }
 
-// Names the actual week(s) a Weekly Hero win happened -- a bare "top
+// Names the actual week(s) a Super Hero win happened -- a bare "top
 // scorer in 1 week" title next to THIS week's own (unrelated, often much
 // lower) positional rank reads as a bug at a glance; naming the real
 // past week it happened is what makes an old, real WR1 finish legible

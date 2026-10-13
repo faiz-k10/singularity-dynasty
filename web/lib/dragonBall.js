@@ -1,4 +1,4 @@
-// Weekly Hero badge art: an orange crystal ball with 1-6 red stars, one asset per count of top-3 finishes
+// Super Hero badge art: an orange crystal ball with 1-6 red stars, one asset per count of top-3 finishes
 // this season (capped at 6). Pure geometry so the React badge and any preview/export share one source.
 // Coordinates are a 64x64 viewBox with the ball centred at (32,32), radius 29.
 

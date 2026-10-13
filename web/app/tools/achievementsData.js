@@ -40,7 +40,7 @@ export async function fetchHistoricalFloorCeiling(supabase) {
 // recentGames (last 5 logged games, most-recent-first, each carrying its
 // own week's floor/ceiling) and heroWins (top-3-at-position finishes
 // THIS season, with the actual weeks they happened) per player, pulled
-// from the full player_game_log. `season` scopes Weekly Hero only --
+// from the full player_game_log. `season` scopes Super Hero only --
 // recentGames itself still spans the season boundary same as every page
 // that already uses it.
 export async function fetchAchievementInputs(supabase, season) {

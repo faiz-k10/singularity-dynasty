@@ -166,10 +166,10 @@ export async function lookupSleeperTeams(username) {
   });
 
   // Same achievement badges Weekly Projection Rankings shows (On Fire/On
-  // Thin Ice/Risky Icarus/Steady Eddy/Buy Low/Sell High/Weekly Hero/
+  // Thin Ice/Risky Icarus/Steady Eddy/Buy Low/Sell High/Super Hero/
   // Honorable/Con Artist), applied here as-is -- not retuned for a roster context. Uses the
   // current season (the same one already resolved above for the
-  // projection lookup) for Weekly Hero's own season-scoping.
+  // projection lookup) for Super Hero's own season-scoping.
   const [achievementInputs, redraftFieldsByName, woprPercentileByName] = await Promise.all([
     fetchAchievementInputs(supabase, Number(season)),
     fetchLatestRedraftFieldsByName(supabase),

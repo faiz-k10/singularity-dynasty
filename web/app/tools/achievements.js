@@ -1,7 +1,7 @@
 // Shared source of truth for the ten "achievement" flags a Weekly
 // Projection Rankings row can carry (Established/Building confidence,
 // On Fire, On Thin Ice, Risky Icarus, Steady Eddy, Buy Low, Sell High,
-// Weekly Hero, Honorable, Con Artist) -- WeeklyDetailRow.js's expanded player banner renders
+// Super Hero, Honorable, Con Artist) -- WeeklyDetailRow.js's expanded player banner renders
 // these as full click-to-expand badges, and RankingsTable.js's collapsed
 // row renders the same list as a tiny dot preview. Both read off this
 // one function so the two views can't quietly drift out of sync with
@@ -200,13 +200,13 @@ export function sellHighFlag(woprPercentile, games) {
   return overperformingMedianLast2(games);
 }
 
-// "Weekly Hero" -- outright top scorer at their own position for a given
+// "Super Hero" -- outright top scorer at their own position for a given
 // (season, week), counted across every week player_game_log holds (both
 // trailing seasons, not just the current one -- see page.js's
 // fetchGameLogData). Repeatable by design: a player can win it many
 // times, and the badge's own art (DragonBall.js: a ball with 1-6 stars) grows
 // a star per top-3 finish. `tier` caps the ART at 6 even though `wins` can keep climbing past that -- the
-// label text still states the real count (e.g. "7x Weekly Hero"), only
+// label text still states the real count (e.g. "7x Super Hero"), only
 // the illustration stops getting busier past a 6-time winner.
 export const HERO_MAX_TIER = 6;
 
@@ -250,7 +250,7 @@ export function getAchievements(row) {
     heroWins > 0 && {
       key: "hero",
       variant: "ball",
-      label: `${heroWins}x Weekly Hero`,
+      label: `${heroWins}x Super Hero`,
       wins: heroWins,
       weeks: row.heroWinWeeks || [],
       tier: Math.min(heroWins, HERO_MAX_TIER),

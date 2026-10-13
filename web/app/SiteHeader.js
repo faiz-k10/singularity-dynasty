@@ -124,7 +124,7 @@ export default async function SiteHeader() {
 
   // Ticker: a random assortment of 50 achievement badges -- the FULL set
   // (On Fire/On Thin Ice/Risky Icarus/Steady Eddy/Buy Low/Sell High/
-  // Weekly Hero/Honorable/Con Artist; Confidence excluded, see below) drawn from the top 20
+  // Super Hero/Honorable/Con Artist; Confidence excluded, see below) drawn from the top 20
   // players of the latest published redraft_rankings week, same as every
   // other badge surface on the site now uses (achievementsData.js).
   // Confidence (Established/Building) is the one flag deliberately left

@@ -336,7 +336,7 @@ export default function InteractiveScript({ tickerItems } = {}) {
        SiteHeader.js) is the source of truth: 50 real {name, key, variant,
        label} picks already randomly sampled server-side from the top 20
        players' FULL achievement set (On Fire/On Thin Ice/Risky Icarus/
-       Steady Eddy/Buy Low/Sell High/Weekly Hero/Honorable/Con Artist -- see
+       Steady Eddy/Buy Low/Sell High/Super Hero/Honorable/Con Artist -- see
        achievements.js and achievementsData.js). Confidence (Established/Building) is
        deliberately excluded there by request -- it's common enough among
        the top 20 that it drowned out every rarer flag. RISING/FALLING/
@@ -392,7 +392,7 @@ export default function InteractiveScript({ tickerItems } = {}) {
       { key: "locked", variant: "eddy", label: "Steady Eddy" },
       { key: "buyLow", variant: "sprout", label: "Buy Low" },
       { key: "sellHigh", variant: "peak", label: "Sell High" },
-      { key: "hero", variant: "ball", label: "1x Weekly Hero", tier: 1 },
+      { key: "hero", variant: "ball", label: "1x Super Hero", tier: 1 },
       { key: "honorable", variant: "honorable", label: "Honorable" },
       { key: "conArtist", variant: "menace", label: "Con Artist" },
     ];

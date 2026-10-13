@@ -191,10 +191,10 @@ async function fetchSimsMetrics(supabase) {
 //     definition. Powers the expanded row's player-header panel.
 //   - heroWinsByName: how many (season, week, position) groups THIS
 //     SEASON this player finished in the top 3 scorers at their own
-//     position -- "Weekly Hero" in achievements.js.
+//     position -- "Super Hero" in achievements.js.
 // Paginated (fetchAllRows): the table is ~7,500 rows and Supabase hard-caps a
 // single request at 1000, which used to silently cut this to the newest 1000
-// games (so this season's xFP average and Weekly Hero counts were partial).
+// games (so this season's xFP average and Super Hero counts were partial).
 function fetchGameLogRows(supabase) {
   return fetchAllRows(
     supabase,
@@ -263,7 +263,7 @@ function deriveGameLogData(data, season, floorCeilingByGame) {
 
   // Tracks the actual (season, week) of each win, not just a count -- a
   // real week 17 WR1 finish reads as a bug at a glance if all the UI
-  // shows is "1x Weekly Hero" sitting right next to THIS week's own
+  // shows is "1x Super Hero" sitting right next to THIS week's own
   // positional rank or last week's unrelated finish. Newest win first so
   // the tooltip can lead with the most recent one. Scoped to THIS season
   // only (by request) -- player_game_log holds two trailing seasons for

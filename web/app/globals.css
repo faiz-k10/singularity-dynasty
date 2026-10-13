@@ -2529,7 +2529,7 @@ a.export-csv-btn{text-decoration:none;}
 .weekly-achievement-badge.menace .weekly-achievement-label{color:var(--menace);}
 
 /* On Fire (FlameIcon) / On Ice (SnowflakeIcon) / Risky Icarus
-   (NightSkyIcon) / Steady Eddy (LockIcon) / Weekly Hero (HeroIcon) /
+   (NightSkyIcon) / Steady Eddy (LockIcon) / Super Hero (HeroIcon) /
    Honorable (GraduationCapIcon) / Con Artist (ConArtistIcon) -- same 24px
    flat-fill medallion as the other two achievement badges (confidence/bounce),
    all seven small inline SVGs (WeeklyDetailRow.js) instead of platform

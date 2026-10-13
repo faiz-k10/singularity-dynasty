@@ -33,7 +33,7 @@ const BADGE_FILTERS = [
   { id: "sellHigh", variant: "peak", label: "Sell High", match: (a) => a.key === "sellHigh" },
   { id: "smash", variant: "smash", label: "Smash Spot", match: (a) => a.key === "matchup" && a.variant === "smash" },
   { id: "tough", variant: "tough", label: "Tough Spot", match: (a) => a.key === "matchup" && a.variant === "tough" },
-  { id: "hero", variant: "cape", label: "Weekly Hero", match: (a) => a.key === "hero" },
+  { id: "hero", variant: "ball", label: "Super Hero", match: (a) => a.key === "hero" },
   { id: "honorable", variant: "honorable", label: "Honorable", match: (a) => a.key === "honorable" },
   { id: "conArtist", variant: "menace", label: "Con Artist", match: (a) => a.key === "conArtist" },
 ];
