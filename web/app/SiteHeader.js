@@ -145,7 +145,7 @@ export default async function SiteHeader() {
           buildAchievementRow(r.player_name, r.position, { ...achievementInputs, redraftFieldsByName, woprPercentileByName })
         )
           .filter((a) => a.key !== "confidence")
-          .map((a) => ({ key: a.key, variant: a.variant }));
+          .map((a) => ({ key: a.key, variant: a.variant, ...(a.tier ? { tier: a.tier } : {}) }));
         return badges.length ? { name: r.player_name, badges } : null;
       })
       .filter(Boolean);

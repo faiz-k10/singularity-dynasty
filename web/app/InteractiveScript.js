@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { dragonBallSvg } from "@/lib/dragonBall";
 
 export default function InteractiveScript({ tickerItems } = {}) {
   useEffect(() => {
@@ -365,8 +366,6 @@ export default function InteractiveScript({ tickerItems } = {}) {
         '<svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" clip-rule="evenodd" d="M12.963 2.286a.75.75 0 00-1.071-.136 9.742 9.742 0 00-3.539 6.176 7.547 7.547 0 01-1.705-1.715.75.75 0 00-1.152-.082A9 9 0 1015.68 4.534a7.46 7.46 0 01-2.717-2.248zM15.75 14.25a3.75 3.75 0 11-7.313-1.172c.628.465 1.35.81 2.133.998a5.27 5.27 0 01-.32-1.83c0-1.014.377-1.94 1-2.647a3.752 3.752 0 014.5 4.65z"/></svg>',
       onIce:
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 3v18M4.8 7.5l14.4 9M4.8 16.5l14.4-9"/><path d="M12 5.2l-1.8 1.5M12 5.2l1.8 1.5M12 18.8l-1.8-1.5M12 18.8l1.8-1.5"/><path d="M6 8.6l-.3 2.1-2 .6M18 15.4l.3-2.1 2-.6"/></svg>',
-      hero:
-        '<svg viewBox="0 0 24 24" fill="currentColor"><line x1="4.6" y1="3.5" x2="4.6" y2="21" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><rect x="5.6" y="4.5" width="14.2" height="10" rx="0.6"/><rect x="5.6" y="4.5" width="7.6" height="5.6" fill="#0A3161"/><circle cx="9.4" cy="7.3" r="0.85"/></svg>',
       buyLow:
         '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 20V11" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M12 14.2c-3.6 0-6.2-2.3-6.2-6.5C9.9 8 12 10.4 12 14.2z"/><path d="M12 11.3c2.9 0 5.1-1.9 5.1-5.4C13.9 6 12 8.1 12 11.3z" opacity="0.85"/></svg>',
       sellHigh:
@@ -393,7 +392,7 @@ export default function InteractiveScript({ tickerItems } = {}) {
       { key: "locked", variant: "eddy", label: "Steady Eddy" },
       { key: "buyLow", variant: "sprout", label: "Buy Low" },
       { key: "sellHigh", variant: "peak", label: "Sell High" },
-      { key: "hero", variant: "cape", label: "1x Weekly Hero" },
+      { key: "hero", variant: "ball", label: "1x Weekly Hero", tier: 1 },
       { key: "honorable", variant: "honorable", label: "Honorable" },
       { key: "conArtist", variant: "menace", label: "Con Artist" },
     ];
@@ -432,7 +431,7 @@ export default function InteractiveScript({ tickerItems } = {}) {
           // fallback items carry a single badge in the same shape.
           const badges = item.badges || [{ key: item.key, variant: item.variant }];
           const icons = badges
-            .map((b) => `<span class="ticker-badge ${b.variant}">${TICKER_ICONS[b.key] || TICKER_ICONS.confidence}</span>`)
+            .map((b) => `<span class="ticker-badge ${b.variant}">${b.key === "hero" ? dragonBallSvg(b.tier || 1, 18) : TICKER_ICONS[b.key] || TICKER_ICONS.confidence}</span>`)
             .join("");
           html += `<span class="ticker-item">${item.name} <span class="ticker-badges">${icons}</span></span>`;
         });

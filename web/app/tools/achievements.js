@@ -204,12 +204,11 @@ export function sellHighFlag(woprPercentile, games) {
 // (season, week), counted across every week player_game_log holds (both
 // trailing seasons, not just the current one -- see page.js's
 // fetchGameLogData). Repeatable by design: a player can win it many
-// times, and the badge's own art (HeroIcon in WeeklyDetailRow.js) scales
-// up through 5 "wearing a cape" tiers as the count climbs. `tier` caps
-// the ART at 5 even though `wins` can keep climbing past that -- the
+// times, and the badge's own art (DragonBall.js: a ball with 1-6 stars) grows
+// a star per top-3 finish. `tier` caps the ART at 6 even though `wins` can keep climbing past that -- the
 // label text still states the real count (e.g. "7x Weekly Hero"), only
-// the illustration stops getting busier past a 5-time winner.
-export const HERO_MAX_TIER = 5;
+// the illustration stops getting busier past a 6-time winner.
+export const HERO_MAX_TIER = 6;
 
 // Ordered list of whichever of the flags apply to this row, as plain
 // {key, variant, label, ...} metadata -- no JSX/icons here, since the
@@ -250,7 +249,7 @@ export function getAchievements(row) {
     },
     heroWins > 0 && {
       key: "hero",
-      variant: "cape",
+      variant: "ball",
       label: `${heroWins}x Weekly Hero`,
       wins: heroWins,
       weeks: row.heroWinWeeks || [],

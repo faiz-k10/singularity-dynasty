@@ -11,7 +11,7 @@ const COLOR = {
   // Badge keys use the SAME colors as the badge dots/medallions elsewhere on the
   // site (globals.css .player-achv-dot.*), so a color means one badge everywhere.
   onFire: "var(--fire)", onIce: "var(--frost)", volatile: "var(--icarus)", locked: "var(--eddy)",
-  buyLow: "var(--sprout)", sellHigh: "var(--peak)", hero: "var(--cape)", honorable: "var(--scholar)", conArtist: "var(--menace)",
+  buyLow: "var(--sprout)", sellHigh: "var(--peak)", hero: "var(--horizon)", honorable: "var(--scholar)", conArtist: "var(--menace)",
 };
 
 // Tabbed Portfolio Pulse: one stacked bar per lens, each distinct player counted once. Tabs come

@@ -4,6 +4,7 @@ import TeamBadge from "./TeamBadge";
 import PositionBadge from "./PositionBadge";
 import ConfidenceBadge from "./ConfidenceBadge";
 import { getAchievements } from "./achievements";
+import DragonBall from "./DragonBall";
 import { MyStrip, MyEmpty } from "./MyPlayers";
 
 // Season-level usage/efficiency metrics, not weekly stats -- attached
@@ -275,15 +276,6 @@ function LockIcon() {
   );
 }
 
-// Weekly Hero's own icon -- was a caped figure with fold-line/dot
-// escalation, replaced with a flag (pole + field + canton) by request,
-// keeping the patriotic red/white/blue direction. `tier` (1-5, see
-// achievements.js's HERO_MAX_TIER) now shows as that many stars in the
-// canton -- the same "discrete dots beat parallel lines for at-a-glance
-// counting" lesson from the cape version, just inside a canton instead
-// of on a cape. The art stops getting busier past 5 stars; the badge's
-// `label` text is what keeps counting past that (see GlyphBadge's title
-// below).
 // Names the actual week(s) a Weekly Hero win happened -- a bare "top
 // scorer in 1 week" title next to THIS week's own (unrelated, often much
 // lower) positional rank reads as a bug at a glance; naming the real
@@ -296,61 +288,6 @@ function heroTitle(position, weeks) {
   const rest = weeks.length - shown.length;
   const list = shown.join(", ") + (rest > 0 ? `, +${rest} more` : "");
   return `Top 3 at ${position} in ${list}`;
-}
-
-// Canton star layout per tier, dice-pip style (1 centered, 2/3 diagonal,
-// 4 corners, 5 corners+center) -- the single most well-established
-// "recognize the count without counting" pattern there is (it's how dice
-// faces work), which is exactly what a single row of dots inside a
-// canton this small couldn't reliably do at 5.
-const LEFT_X = 7.2;
-const CENTER_X = 9.4;
-const RIGHT_X = 11.6;
-const TOP_Y = 5.8;
-const CENTER_Y = 7.3;
-const BOTTOM_Y = 8.8;
-const HERO_STAR_LAYOUTS = {
-  1: [[CENTER_X, CENTER_Y]],
-  2: [
-    [LEFT_X, TOP_Y],
-    [RIGHT_X, BOTTOM_Y],
-  ],
-  3: [
-    [LEFT_X, TOP_Y],
-    [CENTER_X, CENTER_Y],
-    [RIGHT_X, BOTTOM_Y],
-  ],
-  4: [
-    [LEFT_X, TOP_Y],
-    [RIGHT_X, TOP_Y],
-    [LEFT_X, BOTTOM_Y],
-    [RIGHT_X, BOTTOM_Y],
-  ],
-  5: [
-    [LEFT_X, TOP_Y],
-    [RIGHT_X, TOP_Y],
-    [CENTER_X, CENTER_Y],
-    [LEFT_X, BOTTOM_Y],
-    [RIGHT_X, BOTTOM_Y],
-  ],
-};
-
-function HeroIcon({ tier }) {
-  const count = Math.max(1, Math.min(tier || 1, 5));
-  const stars = HERO_STAR_LAYOUTS[count];
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <line x1="4.6" y1="3.5" x2="4.6" y2="21" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-      <rect x="5.6" y="4.5" width="14.2" height="10" rx="0.6" />
-      {/* Canton is hardcoded Old Glory Blue rather than currentColor --
-          deliberately a different hue from the white field, patriotic
-          red/white/blue by request (badge background is the red). */}
-      <rect x="5.6" y="4.5" width="7.6" height="5.6" fill="#0A3161" />
-      {stars.map(([x, y], i) => (
-        <circle key={i} cx={x} cy={y} r="0.85" />
-      ))}
-    </svg>
-  );
 }
 
 // Honorable's own icon -- a graduation cap (mortarboard) with its
@@ -526,7 +463,7 @@ function achievementNode(a, row) {
         />
       );
     case "hero":
-      return <GlyphBadge variant="cape" glyph={<HeroIcon tier={a.tier} />} title={heroTitle(row.position, a.weeks)} />;
+      return <GlyphBadge variant="ball" glyph={<DragonBall stars={a.tier} />} title={heroTitle(row.position, a.weeks)} />;
     case "buyLow":
       return (
         <GlyphBadge
