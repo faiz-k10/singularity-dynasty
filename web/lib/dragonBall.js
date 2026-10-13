@@ -50,11 +50,13 @@ export function ballStars(count) {
 // The approved ball art as an SVG string (React renders it through DragonBall.js; the vanilla-DOM ticker uses it
 // directly). Gradient ids are per star count, so every instance of the same ball carries identical defs.
 // Colors: the site's own orange ramp (--horizon-gold / --horizon), a neon-blue rim light, red stars.
+// `size` is the diameter of the ball itself (the viewBox is cropped to the ball's edge; the soft halo spills outside it),
+// so a 24px ball fills a 24px badge slot exactly like the other medallions.
 export function dragonBallSvg(count, size = 24) {
   const { count: n, stars } = ballStars(count);
   const id = `db${n}`;
   return (
-    `<svg width="${size}" height="${size}" viewBox="0 0 64 64" aria-hidden="true" focusable="false">` +
+    `<svg width="${size}" height="${size}" viewBox="5 5 54 54" style="overflow:visible" aria-hidden="true" focusable="false">` +
     `<defs>` +
     `<radialGradient id="${id}g" cx="50%" cy="50%" r="50%"><stop offset="0.6" stop-color="#FF7A45" stop-opacity="0.4"/><stop offset="1" stop-color="#FF7A45" stop-opacity="0"/></radialGradient>` +
     `<radialGradient id="${id}b" cx="37%" cy="30%" r="80%"><stop offset="0" stop-color="#FFEDB8"/><stop offset="0.22" stop-color="#FFC773"/><stop offset="0.52" stop-color="#FF9A4D"/><stop offset="0.76" stop-color="#FF7A45"/><stop offset="1" stop-color="#A93A0B"/></radialGradient>` +

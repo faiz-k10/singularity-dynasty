@@ -247,6 +247,9 @@ export function getAchievements(row) {
       label: matchup.call === "SMASH" ? "Smash Spot" : "Tough Spot",
       text: matchup.text,
     },
+    xfpFlag === "honorable" && { key: "honorable", variant: "honorable", label: "Honorable" },
+    xfpFlag === "conArtist" && { key: "conArtist", variant: "menace", label: "Con Artist" },
+    // Always last: the ball badge closes the row.
     heroWins > 0 && {
       key: "hero",
       variant: "ball",
@@ -255,7 +258,5 @@ export function getAchievements(row) {
       weeks: row.heroWinWeeks || [],
       tier: Math.min(heroWins, HERO_MAX_TIER),
     },
-    xfpFlag === "honorable" && { key: "honorable", variant: "honorable", label: "Honorable" },
-    xfpFlag === "conArtist" && { key: "conArtist", variant: "menace", label: "Con Artist" },
   ].filter(Boolean);
 }

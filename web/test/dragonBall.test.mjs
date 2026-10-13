@@ -23,3 +23,8 @@ test("Super Hero badge carries the ball variant and its tier is capped at the 6-
   assert.equal(hero(7).label, "7x Super Hero");
   assert.equal(hero(0), undefined);
 });
+
+test("Super Hero is always the last badge in the row", () => {
+  const keys = getAchievements({ heroWins: 3, sample_confidence: "established", defLean: { call: "SMASH", text: "x" } }).map((a) => a.key);
+  assert.equal(keys[keys.length - 1], "hero");
+});

@@ -431,7 +431,7 @@ export default function InteractiveScript({ tickerItems } = {}) {
           // fallback items carry a single badge in the same shape.
           const badges = item.badges || [{ key: item.key, variant: item.variant }];
           const icons = badges
-            .map((b) => `<span class="ticker-badge ${b.variant}">${b.key === "hero" ? dragonBallSvg(b.tier || 1, 18) : TICKER_ICONS[b.key] || TICKER_ICONS.confidence}</span>`)
+            .map((b) => `<span class="ticker-badge ${b.variant}">${b.key === "hero" ? dragonBallSvg(b.tier || 1, 16) : TICKER_ICONS[b.key] || TICKER_ICONS.confidence}</span>`)
             .join("");
           html += `<span class="ticker-item">${item.name} <span class="ticker-badges">${icons}</span></span>`;
         });
