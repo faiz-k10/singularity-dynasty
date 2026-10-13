@@ -142,7 +142,7 @@ export function spreadFlag(floor, ceiling, projection, position) {
 }
 
 // "Buy Low" -- real workload that hasn't shown up on the scoreboard the
-// last 2 games. A genuinely different dimension from every badge above:
+// last 2 games (and who has still scored at or above xFP in 2 of his last 3 -- see atOrAboveXfpTwoOfLast3). A genuinely different dimension from every badge above:
 // those all key off floor/ceiling/median/xFP (a projection vs. an
 // outcome); this keys off WOPR (weighted opportunity rating -- target
 // share + air yards share, from Player Season Simulations' own latest
@@ -167,9 +167,19 @@ export function underperformingMedianLast2(games) {
   if (last2.some((g) => g.fantasy_points_ppr == null || g.median == null)) return false;
   return last2.every((g) => g.fantasy_points_ppr < g.median);
 }
+// Added Oct 2026 at the founder's direction: the usage + below-median reads alone let genuinely bad players
+// in (heavy-ish usage, bad results, no sign the results were about to turn). So the player must also have
+// scored at or above his xFP in at least 2 of his last 3 games -- his production has been keeping pace
+// with the opportunity most of the time, and the below-median pair is the dip. A game with no xFP row
+// (~12% of games) just doesn't count toward the 2, so it can't help a player qualify.
+export function atOrAboveXfpTwoOfLast3(games) {
+  if (!games || games.length < 3) return false;
+  const hits = games.slice(0, 3).filter((g) => hasXfp(g) && g.fantasy_points_ppr >= g.exp_points_ppr).length;
+  return hits >= 2;
+}
 export function buyLowFlag(woprPercentile, games) {
   if (woprPercentile == null || woprPercentile < USAGE_HIGH_PERCENTILE) return false;
-  return underperformingMedianLast2(games);
+  return underperformingMedianLast2(games) && atOrAboveXfpTwoOfLast3(games);
 }
 
 // "Sell High" -- the literal inverse of Buy Low: LOW usage (within

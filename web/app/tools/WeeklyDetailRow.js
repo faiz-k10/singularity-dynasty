@@ -522,7 +522,7 @@ function achievementNode(a, row) {
         <GlyphBadge
           variant="sprout"
           glyph={<SproutIcon />}
-          title="High usage (WOPR) that hasn't shown up in points the last 2 games -- volume tends to catch up"
+          title="High usage (WOPR) that hasn't shown up in points the last 2 games, while still scoring at or above xFP in 2 of the last 3 -- volume tends to catch up"
         />
       );
     case "sellHigh":

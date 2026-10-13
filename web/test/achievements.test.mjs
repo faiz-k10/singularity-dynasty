@@ -57,3 +57,27 @@ test("Honorable needs all of the last 3 games at or above xFP", () => {
 test("Honorable is voided by missing xFP in any of the 3 games", () => {
   assert.equal(xfpTrend2([g(12, 10), { fantasy_points_ppr: 10, exp_points_ppr: null }, g(15, 11)]), null);
 });
+
+import { buyLowFlag } from "../app/tools/achievements.js";
+const bg = (pts, med, xfp) => ({ fantasy_points_ppr: pts, median: med, exp_points_ppr: xfp });
+
+test("Buy Low needs high usage, two games under median, and at/above xFP in 2 of the last 3", () => {
+  // last 2 under median (8 < 12); at/above xFP in games 1 and 3 -> fires
+  assert.equal(buyLowFlag(85, [bg(8, 12, 7), bg(9, 12, 10), bg(14, 12, 11)]), true);
+  // at/above xFP in only 1 of the last 3 -> the bad-player case, no badge
+  assert.equal(buyLowFlag(85, [bg(8, 12, 11), bg(9, 12, 10), bg(14, 12, 15)]), false);
+  // equal to xFP counts as at-or-above
+  assert.equal(buyLowFlag(85, [bg(8, 12, 8), bg(9, 12, 9), bg(5, 12, 20)]), true);
+});
+
+test("Buy Low keeps its other rules: usage percentile and the below-median pair", () => {
+  assert.equal(buyLowFlag(79, [bg(8, 12, 7), bg(9, 12, 8), bg(14, 12, 11)]), false); // usage too low
+  assert.equal(buyLowFlag(85, [bg(13, 12, 7), bg(9, 12, 8), bg(14, 12, 11)]), false); // latest game above median
+  assert.equal(buyLowFlag(85, [bg(8, 12, 7), bg(9, 12, 8)]), false); // only 2 games logged
+});
+
+test("Buy Low: a game with no xFP row does not count toward the 2", () => {
+  const noXfp = { fantasy_points_ppr: 9, median: 12, exp_points_ppr: null };
+  assert.equal(buyLowFlag(85, [bg(8, 12, 7), noXfp, bg(5, 12, 20)]), false); // only 1 confirmed
+  assert.equal(buyLowFlag(85, [bg(8, 12, 7), noXfp, bg(14, 12, 11)]), true); // 2 confirmed
+});
