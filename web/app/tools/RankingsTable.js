@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import SortableTh from "./SortableTh";
 import TrendTag from "./TrendTag";
@@ -13,39 +13,6 @@ import { matchupTint } from "./MatchupBadge";
 import { STAT_COLUMNS } from "./statColumns";
 import { getAchievements } from "./achievements";
 import AchievementDots from "./AchievementDots";
-
-// Every badge getAchievements() can return, as a flat filter list --
-// Established/Building split out of the single "confidence" key by
-// variant since they're really two different filters a viewer would
-// want separately, not "has any confidence tier." Theater-mode-only
-// (see the theater bar below): normal flow has no room for an 11-option
-// filter the way it does for the 4-option Position filter, and this
-// isn't a control that needs to survive outside the full-screen view.
-const BADGE_FILTERS = [
-  { id: "established", variant: "gold", label: "Established", match: (a) => a.key === "confidence" && a.variant === "gold" },
-  { id: "building", variant: "silver", label: "Building", match: (a) => a.key === "confidence" && a.variant === "silver" },
-  { id: "onFire", variant: "heat", label: "On Fire", match: (a) => a.key === "onFire" },
-  { id: "onIce", variant: "ice", label: "On Thin Ice", match: (a) => a.key === "onIce" },
-  { id: "volatile", variant: "icarus", label: "Risky Icarus", match: (a) => a.key === "volatile" },
-  { id: "locked", variant: "eddy", label: "Steady Eddy", match: (a) => a.key === "locked" },
-  { id: "buyLow", variant: "sprout", label: "Buy Low", match: (a) => a.key === "buyLow" },
-  { id: "sellHigh", variant: "peak", label: "Sell High", match: (a) => a.key === "sellHigh" },
-  { id: "smash", variant: "smash", label: "Smash Spot", match: (a) => a.key === "matchup" && a.variant === "smash" },
-  { id: "tough", variant: "tough", label: "Tough Spot", match: (a) => a.key === "matchup" && a.variant === "tough" },
-  { id: "hero", variant: "ball", label: "Super Hero", match: (a) => a.key === "hero" },
-  { id: "honorable", variant: "honorable", label: "Honorable", match: (a) => a.key === "honorable" },
-  { id: "conArtist", variant: "menace", label: "Con Artist", match: (a) => a.key === "conArtist" },
-];
-
-// The same filters, grouped for the dropdown so it reads as a short list of themes instead of one wall of pills.
-const BADGE_GROUPS = [
-  { label: "Confidence", ids: ["established", "building"] },
-  { label: "Form", ids: ["onFire", "onIce", "honorable", "conArtist"] },
-  { label: "Range", ids: ["volatile", "locked"] },
-  { label: "Value", ids: ["buyLow", "sellHigh"] },
-  { label: "Matchup", ids: ["smash", "tough"] },
-  { label: "Track record", ids: ["hero"] },
-];
 
 // Weekly floor/ceiling formatting -- null for rows published before
 // migration 0029 added these columns, until the next model re-run.
@@ -146,17 +113,13 @@ export default function RankingsTable({
   sortParam = "sort",
   dirParam = "dir",
   tableClassName = "",
-  searchValue,
-  onSearchChange,
-  positions,
-  selectedPositions,
-  onTogglePosition,
+  toolbar, // the shared filter toolbar (RankingsToolbar), rendered in the full-screen bar so both views look identical
+  badgeFilterOn, // a badge filter is active (only changes the empty-state message)
   mineStatus, // "signedOut" | "noTeams" | "ready" -- what the far-right Your player panel says for a player who isn't on any of the viewer's teams
   ownedByName, // Map of player_name -> where he sits on the viewer's saved teams (MyPlayers.js)
   myViewOn,
   gated,
 }) {
-  const showTheaterPositionFilter = Array.isArray(positions) && positions.length > 0 && onTogglePosition;
   const sortProps = { activeSort: sortKey, activeDir: sortDir, currentParams, sortParam, dirParam };
   // Click-to-expand/collapse, keyed by the same string the row itself is
   // keyed by -- a Set rather than one active key, so multiple rows can be
@@ -176,28 +139,11 @@ export default function RankingsTable({
     });
   }
 
-  // Theater mode: the table wrap goes position:fixed edge-to-edge over
-  // the whole viewport (globals.css .rankings-table-wrap.theater) instead
-  // of sitting in its normal spot in the page flow -- a wide table with
-  // many stat columns is exactly the case a fixed side panel (Position
-  // filter) and page margins cost the most real width, and this is a
-  // cheaper way to reclaim it than a separate route/modal component.
-  // Body scroll is locked while active so the page behind the overlay
-  // doesn't scroll along with it; Escape closes it the same as the
-  // visible button does. The fixed overlay (z-index 200) sits ABOVE both
-  // the page's own search box AND the Position filter accordion
-  // (RankingsSearch.js/RedraftRankingsClient.js, both rendered above this
-  // component in normal flow), making them unreachable while theater
-  // mode is on -- searchValue/onSearchChange and positions/
-  // selectedPositions/onTogglePosition are all optional controlled props
-  // so the theater bar can carry a second copy of the exact same search
-  // box and position pills, wired to the SAME state the parent already
-  // owns, rather than this component inventing its own separate search/
-  // filter logic. The Badges filter (below) is the one exception -- there
-  // is no normal-flow counterpart to mirror (11 options is too many for
-  // the always-visible Position-pill treatment, and this isn't a control
-  // that needs to survive outside the full-screen view), so it's owned
-  // entirely as local state here instead of threaded down from the page.
+  // Theater mode: the table wrap goes position:fixed edge-to-edge over the whole viewport (globals.css
+  // .rankings-table-wrap.theater) -- a wide table with many stat columns is exactly the case page margins cost the
+  // most real width. Body scroll is locked while active; Escape closes it like the visible button. The fixed overlay
+  // sits above the page's own filter toolbar, so RankingsSearch hands the SAME toolbar element in as `toolbar` and
+  // the full-screen bar renders it: one set of controls, one look, one piece of state.
   const [theater, setTheater] = useState(false);
   useEffect(() => {
     if (!theater) return;
@@ -213,48 +159,8 @@ export default function RankingsTable({
     };
   }, [theater]);
 
-  // Badge filter: theater-only (see BADGE_FILTERS above), empty selection
-  // means "no filter" (show everything) rather than mirroring Position's
-  // "empty = show nothing" -- most players don't carry an exciting badge
-  // at all, so defaulting to "must match a badge" would hide most of the
-  // table the instant theater opens, before anyone's touched the control.
-  const [selectedBadgeIds, setSelectedBadgeIds] = useState(() => new Set());
-  const [badgeFilterOpen, setBadgeFilterOpen] = useState(false);
-  // "or": players with ANY selected badge. "and": players with ALL selected badges.
-  const [badgeMatch, setBadgeMatch] = useState("or");
-  const badgeFilterRef = useRef(null);
-  // Close the dropdown on an outside click or Escape. Escape is caught in the capture phase and stopped, so with the
-  // dropdown open it only closes the dropdown (a second Escape then leaves the full-screen view).
-  useEffect(() => {
-    if (!badgeFilterOpen) return;
-    const onDown = (e) => {
-      if (badgeFilterRef.current && !badgeFilterRef.current.contains(e.target)) setBadgeFilterOpen(false);
-    };
-    const onKey = (e) => {
-      if (e.key !== "Escape") return;
-      e.stopPropagation();
-      setBadgeFilterOpen(false);
-    };
-    document.addEventListener("pointerdown", onDown);
-    document.addEventListener("keydown", onKey, true);
-    return () => {
-      document.removeEventListener("pointerdown", onDown);
-      document.removeEventListener("keydown", onKey, true);
-    };
-  }, [badgeFilterOpen]);
-  function toggleBadgeFilter(id) {
-    setSelectedBadgeIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }
-  const showBadgeFilter = showCurve;
-  // Achievements computed once per row here (not inline in the render
-  // loop below) so the badge filter and the actual row rendering share
-  // one pass instead of calling getAchievements() twice per row.
-  const rowsWithAchievements = useMemo(
+  // Achievements computed once per row (not inline in the render loop below) for the dots/badges.
+  const displayRows = useMemo(
     () =>
       rows.map((row) => ({
         row,
@@ -262,15 +168,6 @@ export default function RankingsTable({
       })),
     [rows, showCurve]
   );
-  const displayRows = useMemo(() => {
-    if (!theater || selectedBadgeIds.size === 0) return rowsWithAchievements;
-    const activeFilters = BADGE_FILTERS.filter((f) => selectedBadgeIds.has(f.id));
-    return rowsWithAchievements.filter(({ achievements }) =>
-      badgeMatch === "and"
-        ? activeFilters.every((f) => achievements.some((a) => f.match(a)))
-        : achievements.some((a) => activeFilters.some((f) => f.match(a)))
-    );
-  }, [rowsWithAchievements, theater, selectedBadgeIds, badgeMatch]);
 
   const colCount =
     2 + // Rank, Player
@@ -284,115 +181,7 @@ export default function RankingsTable({
   return (
     <>
       <div className={`rankings-theater-bar${theater ? " theater" : ""}`}>
-        {theater && (onSearchChange || showTheaterPositionFilter || showBadgeFilter) && (
-          <div className="rankings-theater-controls">
-            {onSearchChange && (
-              <input
-                type="search"
-                className="player-search-input"
-                placeholder="Search a player's name…"
-                value={searchValue || ""}
-                onChange={(e) => onSearchChange(e.target.value)}
-                aria-label="Search players"
-              />
-            )}
-            {showTheaterPositionFilter && (
-              <div className="position-filter-row">
-                {positions.map((pos) => (
-                  <button
-                    key={pos}
-                    type="button"
-                    className={`position-pill ${selectedPositions.includes(pos) ? "active" : ""}`}
-                    onClick={() => onTogglePosition(pos)}
-                    aria-pressed={selectedPositions.includes(pos)}
-                  >
-                    {pos}
-                  </button>
-                ))}
-              </div>
-            )}
-            {showBadgeFilter && (
-              <div className="theater-badge-filter" ref={badgeFilterRef}>
-                <button
-                  type="button"
-                  className={`theater-badge-filter-btn${selectedBadgeIds.size > 0 ? " has-selection" : ""}`}
-                  onClick={() => setBadgeFilterOpen((v) => !v)}
-                  aria-expanded={badgeFilterOpen}
-                  aria-haspopup="dialog"
-                >
-                  Badges
-                  {selectedBadgeIds.size > 0 && (
-                    <span className="theater-badge-filter-count">
-                      {selectedBadgeIds.size}
-                      {selectedBadgeIds.size > 1 ? ` · ${badgeMatch.toUpperCase()}` : ""}
-                    </span>
-                  )}
-                  <span className={`theater-badge-filter-chevron${badgeFilterOpen ? " open" : ""}`}>▾</span>
-                </button>
-                {badgeFilterOpen && (
-                  <div className="theater-badge-filter-panel" role="dialog" aria-label="Filter players by badge">
-                    <div className="tbf-head">
-                      <span className="tbf-title">Filter by badge</span>
-                      <div className="tbf-mode" role="group" aria-label="How to match the selected badges">
-                        {["or", "and"].map((m) => (
-                          <button
-                            key={m}
-                            type="button"
-                            className={badgeMatch === m ? "on" : ""}
-                            aria-pressed={badgeMatch === m}
-                            onClick={() => setBadgeMatch(m)}
-                          >
-                            {m.toUpperCase()}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                    <p className="tbf-hint">
-                      {badgeMatch === "or"
-                        ? "Show players who have any of the selected badges."
-                        : "Show only players who have all of the selected badges."}
-                    </p>
-                    {BADGE_GROUPS.map((g) => (
-                      <div key={g.label} className="tbf-group">
-                        <span className="tbf-group-label">{g.label}</span>
-                        <div className="tbf-group-pills">
-                          {g.ids.map((id) => {
-                            const f = BADGE_FILTERS.find((x) => x.id === id);
-                            const on = selectedBadgeIds.has(id);
-                            return (
-                              <button
-                                key={id}
-                                type="button"
-                                className={`theater-badge-pill ${on ? "active" : ""}`}
-                                onClick={() => toggleBadgeFilter(id)}
-                                aria-pressed={on}
-                              >
-                                <span className={`player-achv-dot ${f.variant}`} />
-                                {f.label}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    ))}
-                    <div className="tbf-foot">
-                      <span className="tbf-count">
-                        {selectedBadgeIds.size === 0
-                          ? `All ${rows.length} players`
-                          : `${displayRows.length} of ${rows.length} players`}
-                      </span>
-                      {selectedBadgeIds.size > 0 && (
-                        <button type="button" className="theater-badge-filter-clear" onClick={() => setSelectedBadgeIds(new Set())}>
-                          Clear all
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
+        {theater && toolbar && <div className="rankings-theater-controls">{toolbar}</div>}
         <button
           type="button"
           className="rankings-theater-btn"
@@ -561,7 +350,7 @@ export default function RankingsTable({
               </td>
             </tr>
           )}
-          {displayRows.length === 0 && selectedBadgeIds.size > 0 && (
+          {displayRows.length === 0 && badgeFilterOn && (
             <tr>
               <td colSpan={colCount} className="rankings-table-empty">
                 No players match the selected badges this week.

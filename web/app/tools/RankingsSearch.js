@@ -2,6 +2,9 @@
 
 import { useMemo, useState } from "react";
 import RankingsTable from "./RankingsTable";
+import RankingsToolbar from "./RankingsToolbar";
+import { matchesBadgeFilters } from "./badgeFilters";
+import { getAchievements } from "./achievements";
 import { MyPlayersFilter, MyPlayersNote, useMyView } from "./MyPlayers";
 
 // The Weekly Projection Rankings page's top block and table: title row (title left, Compare Players / Export CSV
@@ -28,10 +31,26 @@ export default function RankingsSearch({
 }) {
   const showPositionFilter = Array.isArray(positions) && positions.length > 0;
   const [query, setQuery] = useState("");
+  const [badgeIds, setBadgeIds] = useState(() => new Set());
+  const [badgeMatch, setBadgeMatch] = useState("or"); // "or": any selected badge; "and": all of them
   const myView = useMyView(mine, rows);
+  function toggleBadge(id) {
+    setBadgeIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
 
   const filteredRows = useMemo(() => {
     let out = rows;
+    if (badgeIds.size > 0) {
+      out = out.filter((row) => {
+        const ach = showCurve && row.floor != null && row.ceiling != null ? getAchievements(row) : [];
+        return matchesBadgeFilters(ach, badgeIds, badgeMatch);
+      });
+    }
     if (showPositionFilter) {
       out = out.filter((row) => selected.includes(row.position));
     }
@@ -43,10 +62,27 @@ export default function RankingsSearch({
       out = out.filter((row) => row.player_name.toLowerCase().includes(q));
     }
     return out;
-  }, [rows, selected, query, showPositionFilter, myView.on, myView.ownedByName]);
+  }, [rows, selected, query, showPositionFilter, myView.on, myView.ownedByName, badgeIds, badgeMatch, showCurve]);
 
-  const filtering = query.trim() !== "" || (showPositionFilter && selected.length < positions.length);
+  const filtering = query.trim() !== "" || (showPositionFilter && selected.length < positions.length) || badgeIds.size > 0;
   const note = <MyPlayersNote mine={mine} view={myView} gated={gated} />;
+  const toolbar = (
+    <RankingsToolbar
+      positions={positions}
+      selected={selected}
+      onTogglePosition={onTogglePosition}
+      badgeIds={badgeIds}
+      onToggleBadge={toggleBadge}
+      onClearBadges={() => setBadgeIds(new Set())}
+      badgeMatch={badgeMatch}
+      onBadgeMatch={setBadgeMatch}
+      shownCount={filteredRows.length}
+      totalCount={rows.length}
+      query={query}
+      onQuery={setQuery}
+      view={<MyPlayersFilter mine={mine} view={myView} gated={gated} compact />}
+    />
+  );
 
   return (
     <>
@@ -57,37 +93,7 @@ export default function RankingsSearch({
         </div>
       )}
 
-      <div className="rk-toolbar">
-        <label className="rk-search">
-          <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-            <circle cx="11" cy="11" r="6.5" />
-            <path d="m20 20-4.2-4.2" />
-          </svg>
-          <input
-            type="search"
-            placeholder="Search a player's name…"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            aria-label="Search players"
-          />
-        </label>
-        {showPositionFilter && (
-          <div className="rk-positions" role="group" aria-label="Positions">
-            {positions.map((pos) => (
-              <button
-                key={pos}
-                type="button"
-                className={selected.includes(pos) ? "active" : ""}
-                onClick={() => onTogglePosition(pos)}
-                aria-pressed={selected.includes(pos)}
-              >
-                {pos}
-              </button>
-            ))}
-          </div>
-        )}
-        <MyPlayersFilter mine={mine} view={myView} gated={gated} compact />
-      </div>
+      <div className="rk-toolbar">{toolbar}</div>
       {(myView.on || filtering) && (
         <p className="rk-status">
           {note}
@@ -117,11 +123,8 @@ export default function RankingsSearch({
           currentParams={currentParams}
           tableClassName={tableClassName}
           showStatColumns={showStatColumns}
-          searchValue={query}
-          onSearchChange={setQuery}
-          positions={positions}
-          selectedPositions={selected}
-          onTogglePosition={onTogglePosition}
+          toolbar={toolbar}
+          badgeFilterOn={badgeIds.size > 0}
           ownedByName={myView.ownedByName}
           mineStatus={!mine ? undefined : !mine.signedIn ? "signedOut" : mine.teams.length === 0 ? "noTeams" : "ready"}
           myViewOn={myView.on}
