@@ -4742,3 +4742,47 @@ svg text, .pctile-vbar-label, .pctile-vbar-value, .pctile-hero-label{font-family
 
 /* Martian Mono's width axis (the only font here that has one): a touch narrower than its default so data fits compact panels. */
 html{font-stretch:82%;}
+
+/* ===== Weekly Projection Rankings: title row + one filter toolbar (RankingsSearch.js) =====
+   Title left, the page's two actions right; below it a single toolbar -- search, position pills, All players /
+   My players (+ team picker once My players is on) -- and a one-line status under it when something is filtered. */
+.rk-top{display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:12px 24px; margin-bottom:18px;}
+.rk-top-title{min-width:0;}
+.rk-top-title h1{margin-bottom:0;}
+.rk-top-actions{display:flex; align-items:center; flex-wrap:wrap; gap:14px 18px; padding-bottom:4px;}
+.rk-top-actions .hub-panel-link{margin:0;}
+.rk-toolbar{
+  display:flex; flex-wrap:wrap; align-items:center; gap:10px 14px; padding:10px 12px; margin-bottom:14px;
+  background:var(--void-panel); border:1px solid var(--line); border-radius:var(--r-lg, 16px);
+}
+.rk-search{flex:1 1 260px; min-width:200px; position:relative; display:block;}
+.rk-search svg{position:absolute; left:13px; top:50%; width:16px; height:16px; margin-top:-8px; color:var(--star-dim); pointer-events:none;}
+.rk-search input{
+  width:100%; box-sizing:border-box; height:38px; padding:0 14px 0 38px;
+  background:var(--void-panel-2); border:1px solid var(--line); border-radius:999px;
+  font-family:var(--font-mono), monospace; font-size:13px; color:var(--star); outline:none; transition:border-color .2s ease;
+}
+.rk-search input::placeholder{color:var(--star-dim);}
+.rk-search input:focus{border-color:var(--neon-blue);}
+/* Position pills: one recessed track, each position a lit chip when on. */
+.rk-positions{display:inline-flex; gap:3px; padding:3px; background:var(--void-panel-2); border:1px solid var(--line); border-radius:999px;}
+.rk-positions button{
+  all:unset; cursor:pointer; min-width:38px; box-sizing:border-box; text-align:center; padding:7px 12px; border-radius:999px;
+  font-family:var(--font-mono), monospace; font-size:12px; font-weight:700; letter-spacing:0.04em; color:var(--star-dim);
+  transition:background .15s ease, color .15s ease;
+}
+.rk-positions button:hover{color:var(--star);}
+.rk-positions button.active{background:var(--horizon-gold); color:#1A0D05;}
+.rk-positions button:focus-visible, .rk-toolbar .tier-toggle button:focus-visible{outline:2px solid var(--neon-blue); outline-offset:1px;}
+.rk-toolbar .my-filter-toggle button{font-size:12px; padding:7px 14px;}
+.rk-toolbar .my-filter-select{height:38px;}
+.rk-toolbar .my-filter-cta{margin:0;}
+.rk-status{display:flex; flex-wrap:wrap; align-items:center; gap:4px 12px; margin:-6px 4px 14px;}
+@media (max-width:640px){
+  .rk-top{align-items:flex-start;}
+  .rk-toolbar{padding:10px;}
+  .rk-search{flex:1 1 100%;}
+  .rk-positions{width:100%; box-sizing:border-box;}
+  .rk-positions button{flex:1 1 0;}
+}
+

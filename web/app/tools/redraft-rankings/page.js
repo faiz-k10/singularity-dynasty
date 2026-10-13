@@ -654,19 +654,19 @@ export default async function RedraftRankingsPage({ searchParams }) {
                     {latest ? `Week ${latest.week} · ${latest.season}` : "Projections"}
                   </div>
                   <h1>Weekly Projection Rankings</h1>
-                  <div className="toggle-row-flex">
-                    <div className="toggle-row-actions">
-                      <Link href="/tools/compare-players" className="hub-panel-link">
-                        Compare Players →
-                      </Link>
-                      {canExport && (
-                        <ExportCsvButton
-                          filename={`redraft-rankings-week${latest.week}-${latest.season}.csv`}
-                          href="/api/redraft-rankings/csv"
-                        />
-                      )}
-                    </div>
-                  </div>
+                </>
+              }
+              actions={
+                <>
+                  <Link href="/tools/compare-players" className="hub-panel-link">
+                    Compare Players →
+                  </Link>
+                  {canExport && (
+                    <ExportCsvButton
+                      filename={`redraft-rankings-week${latest.week}-${latest.season}.csv`}
+                      href="/api/redraft-rankings/csv"
+                    />
+                  )}
                 </>
               }
             />

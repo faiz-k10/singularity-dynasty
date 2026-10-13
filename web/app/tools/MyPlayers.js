@@ -23,7 +23,28 @@ export function useMyView(mine, rows) {
   return { on, setOn, league, setLeague, ownedByName, matched: ownedByName.size, total };
 }
 
-export function MyPlayersFilter({ mine, view, gated }) {
+// The line under the filter toolbar when the My players view is on ("83 of your 118 players are here").
+export function MyPlayersNote({ mine, view, gated }) {
+  if (!mine?.signedIn || mine.teams.length === 0 || !view.on) return null;
+  const { matched, total } = view;
+  return (
+    <span className="my-filter-note">
+      {matched} of your {total} {total === 1 ? "player is" : "players are"} here
+      {gated && matched < total && (
+        <>
+          {" · "}
+          <Link href="/#pricing" prefetch={false}>
+            see all
+          </Link>
+        </>
+      )}
+    </span>
+  );
+}
+
+// `compact`: just the All players / My players switch (and the team picker once My players is on), for a toolbar row;
+// the count line is MyPlayersNote.
+export function MyPlayersFilter({ mine, view, gated, compact }) {
   if (!mine?.signedIn) {
     return (
       <Link href="/login" prefetch={false} className="my-filter-cta">
@@ -39,6 +60,30 @@ export function MyPlayersFilter({ mine, view, gated }) {
     );
   }
   const { on, setOn, league, setLeague, matched, total } = view;
+  if (compact) {
+    return (
+      <>
+        <div className="tier-toggle my-filter-toggle" role="group" aria-label="Player view">
+          <button type="button" className={on ? "" : "active"} aria-pressed={!on} onClick={() => setOn(false)}>
+            All players
+          </button>
+          <button type="button" className={on ? "active" : ""} aria-pressed={on} onClick={() => setOn(true)}>
+            ★ My players
+          </button>
+        </div>
+        {on && mine.teams.length > 1 && (
+          <select className="my-filter-select" value={league} onChange={(e) => setLeague(e.target.value)} aria-label="Which of your teams">
+            <option value="all">All my teams</option>
+            {mine.teams.map((t, i) => (
+              <option key={i} value={String(i)}>
+                {t}
+              </option>
+            ))}
+          </select>
+        )}
+      </>
+    );
+  }
   return (
     <div className="my-filter">
       <div className="tier-toggle my-filter-toggle" role="group" aria-label="Player view">

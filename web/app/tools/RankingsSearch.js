@@ -2,14 +2,12 @@
 
 import { useMemo, useState } from "react";
 import RankingsTable from "./RankingsTable";
-import { MyPlayersFilter, useMyView } from "./MyPlayers";
+import { MyPlayersFilter, MyPlayersNote, useMyView } from "./MyPlayers";
 
-// Search box + combined table, optionally filtered to a subset of
-// positions (any combination of QB/RB/WR/TE). Sorting stays server-driven
-// via the existing URL-param mechanism; the search text is the only
-// client state owned here -- which positions are selected, and the
-// filter-row UI for picking them, are owned by the parent
-// (RedraftRankingsClient) and passed in as `rightExtra`.
+// The Weekly Projection Rankings page's top block and table: title row (title left, Compare Players / Export CSV
+// right), one filter toolbar (search, position pills, All players / My players), then the table. Sorting stays
+// server-driven via the URL-param mechanism; the search text is the only state owned here -- which positions are
+// selected is owned by the parent (RedraftRankingsClient) and passed in as `selected` / `onTogglePosition`.
 export default function RankingsSearch({
   rows,
   sortKey,
@@ -23,8 +21,8 @@ export default function RankingsSearch({
   showCurve = false,
   showNotes = true,
   maxSpread,
-  header, // optional -- when set, wraps header (left) + rightExtra/search (right) in the same
-  rightExtra, // top-right split layout Player Sims uses, rendered above the search box
+  header, // the title block (eyebrow + h1), left of the top row
+  actions, // the links/buttons at the right of the top row (Compare Players, Export CSV)
   mine, // the viewer's saved teams (lib/myPlayers.js) -- adds the My players view
   gated, // true when the viewer only sees a teaser slice of the table
 }) {
@@ -47,41 +45,58 @@ export default function RankingsSearch({
     return out;
   }, [rows, selected, query, showPositionFilter, myView.on, myView.ownedByName]);
 
-  const searchRow = (
-    <div className="player-search-row">
-      <input
-        type="search"
-        className="player-search-input"
-        placeholder="Search a player's name…"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        aria-label="Search players"
-      />
-      {(query || (showPositionFilter && selected.length < positions.length)) && (
-        <span className="player-search-count">
-          {filteredRows.length} of {rows.length}
-        </span>
-      )}
-    </div>
-  );
-  const myFilter = <MyPlayersFilter mine={mine} view={myView} gated={gated} />;
+  const filtering = query.trim() !== "" || (showPositionFilter && selected.length < positions.length);
+  const note = <MyPlayersNote mine={mine} view={myView} gated={gated} />;
 
   return (
     <>
-      {header ? (
-        <div className="tool-header-split">
-          <div className="tool-header-left">{header}</div>
-          <div className="tool-header-right">
-            {rightExtra}
-            {searchRow}
-            {myFilter}
-          </div>
+      {(header || actions) && (
+        <div className="rk-top">
+          <div className="rk-top-title">{header}</div>
+          {actions && <div className="rk-top-actions">{actions}</div>}
         </div>
-      ) : (
-        <>
-          {searchRow}
-          {myFilter}
-        </>
+      )}
+
+      <div className="rk-toolbar">
+        <label className="rk-search">
+          <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <circle cx="11" cy="11" r="6.5" />
+            <path d="m20 20-4.2-4.2" />
+          </svg>
+          <input
+            type="search"
+            placeholder="Search a player's name…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            aria-label="Search players"
+          />
+        </label>
+        {showPositionFilter && (
+          <div className="rk-positions" role="group" aria-label="Positions">
+            {positions.map((pos) => (
+              <button
+                key={pos}
+                type="button"
+                className={selected.includes(pos) ? "active" : ""}
+                onClick={() => onTogglePosition(pos)}
+                aria-pressed={selected.includes(pos)}
+              >
+                {pos}
+              </button>
+            ))}
+          </div>
+        )}
+        <MyPlayersFilter mine={mine} view={myView} gated={gated} compact />
+      </div>
+      {(myView.on || filtering) && (
+        <p className="rk-status">
+          {note}
+          {!myView.on && (
+            <span className="my-filter-note">
+              {filteredRows.length} of {rows.length} players
+            </span>
+          )}
+        </p>
       )}
 
       {showPositionFilter && selected.length === 0 ? (

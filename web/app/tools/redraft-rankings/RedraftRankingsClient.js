@@ -31,14 +31,8 @@ const COLUMN_TYPES = {
 // why this page dropped the PPR/TE-premium settings panel it used to
 // have (lib/scoring.js's computeCustomProjection only ever produced one
 // recomputed number, not a distribution).
-export default function RedraftRankingsClient({ rawRows, sortKey, sortDir, currentParams, positions, maxSpread, header, mine, gated }) {
-  const showPositionFilter = Array.isArray(positions) && positions.length > 0;
+export default function RedraftRankingsClient({ rawRows, sortKey, sortDir, currentParams, positions, maxSpread, header, actions, mine, gated }) {
   const [selectedPositions, setSelectedPositions] = useState(positions || []);
-  // Collapsed by default regardless of whether a non-default selection is
-  // already active -- the always-visible value text next to the chevron
-  // is what surfaces that without needing to open anything.
-  const [positionOpen, setPositionOpen] = useState(false);
-
   function togglePosition(pos) {
     setSelectedPositions((prev) =>
       prev.includes(pos) ? prev.filter((p) => p !== pos) : [...prev, pos]
@@ -67,41 +61,7 @@ export default function RedraftRankingsClient({ rawRows, sortKey, sortDir, curre
       mine={mine}
       gated={gated}
       header={header}
-      rightExtra={
-        showPositionFilter && (
-          <div className="filter-accordion">
-            <div className="filter-row">
-              <button
-                type="button"
-                className="filter-row-header"
-                onClick={() => setPositionOpen((v) => !v)}
-                aria-expanded={positionOpen}
-              >
-                <span className={`filter-row-chevron${positionOpen ? " filter-row-chevron-open" : ""}`}>▸</span>
-                <span className="tier-toggle-label">Position</span>
-                <span className={`filter-row-value${selectedPositions.length < positions.length ? " filter-row-value-active" : ""}`}>
-                  {selectedPositions.length === positions.length ? "All" : selectedPositions.length === 0 ? "None" : selectedPositions.join(", ")}
-                </span>
-              </button>
-              {positionOpen && (
-                <div className="position-filter-row">
-                  {positions.map((pos) => (
-                    <button
-                      key={pos}
-                      type="button"
-                      className={`position-pill ${selectedPositions.includes(pos) ? "active" : ""}`}
-                      onClick={() => togglePosition(pos)}
-                      aria-pressed={selectedPositions.includes(pos)}
-                    >
-                      {pos}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        )
-      }
+      actions={actions}
     />
   );
 }
