@@ -204,11 +204,11 @@ export function sellHighFlag(woprPercentile, games) {
 // (season, week), counted across every week player_game_log holds (both
 // trailing seasons, not just the current one -- see page.js's
 // fetchGameLogData). Repeatable by design: a player can win it many
-// times, and the badge's own art (DragonBall.js: a ball with 1-6 stars) grows
-// a star per top-3 finish. `tier` caps the ART at 6 even though `wins` can keep climbing past that -- the
-// label text still states the real count (e.g. "7x Super Hero"), only
-// the illustration stops getting busier past a 6-time winner.
-export const HERO_MAX_TIER = 6;
+// times, and the badge's own art (DragonBall.js: a ball with 1-7 stars) grows
+// a star per top-3 finish. `tier` caps the ART at 7 even though `wins` can keep climbing past that -- the
+// label text still states the real count (e.g. "9x Super Hero"), only
+// the illustration stops getting busier past a 7-time winner.
+export const HERO_MAX_TIER = 7;
 
 // Ordered list of whichever of the flags apply to this row, as plain
 // {key, variant, label, ...} metadata -- no JSX/icons here, since the

@@ -1,8 +1,8 @@
-// Super Hero badge art: an orange crystal ball with 1-6 red stars, one asset per count of top-3 finishes
-// this season (capped at 6). Pure geometry so the React badge and any preview/export share one source.
+// Super Hero badge art: an orange crystal ball with 1-7 red stars, one asset per count of top-3 finishes
+// this season (capped at 7). Pure geometry so the React badge and any preview/export share one source.
 // Coordinates are a 64x64 viewBox with the ball centred at (32,32), radius 29.
 
-export const MAX_BALL_STARS = 6;
+export const MAX_BALL_STARS = 7;
 
 const round = (n) => Math.round(n * 100) / 100;
 
@@ -14,6 +14,8 @@ const LAYOUT = {
   4: { r: 8.8, at: [[32, 18.5], [18.5, 32], [45.5, 32], [32, 45.5]] },
   5: { r: 8, at: pentagon(32, 32, 15) },
   6: { r: 7.2, at: hexagon(32, 32, 15.5) },
+  // The 6-star ring with the seventh star in the middle (slightly smaller so the centre star clears the ring).
+  7: { r: 6.8, at: [...hexagon(32, 32, 16), [32, 32]] },
 };
 
 function pentagon(cx, cy, d) {
