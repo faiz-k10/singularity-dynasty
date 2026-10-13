@@ -215,6 +215,10 @@ export const HERO_MAX_TIER = 7;
 // two consumers render the same flag very differently (a full badge vs.
 // a bare dot).
 export function getAchievements(row) {
+  // A player projected for zero points (listed OUT, or otherwise not expected to play) earns no badges at all --
+  // there is nothing to flag about someone who is not on the field. (Bye weeks never reach the badges either.)
+  // Rows without a `projection` (pages that don't carry one) are unaffected.
+  if (row.projection != null && row.projection <= 0) return [];
   const isEstablished = row.sample_confidence === "established";
   const isBuilding = row.sample_confidence === "building";
   const onFire = onFireFlag(row.recentGames);

@@ -29,3 +29,10 @@ test("Super Hero is always the last badge in the row", () => {
   const keys = getAchievements({ heroWins: 3, sample_confidence: "established", defLean: { call: "SMASH", text: "x" } }).map((a) => a.key);
   assert.equal(keys[keys.length - 1], "hero");
 });
+
+test("a player projected for 0 points gets no badges at all, even with earned ones", () => {
+  const base = { heroWins: 3, sample_confidence: "established", defLean: { call: "SMASH", text: "x" } };
+  assert.ok(getAchievements({ ...base, projection: 5 }).length > 0);
+  assert.deepEqual(getAchievements({ ...base, projection: 0 }), []);
+  assert.ok(getAchievements(base).length > 0); // no projection on the row -> unchanged
+});
