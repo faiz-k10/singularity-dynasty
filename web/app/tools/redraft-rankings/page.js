@@ -654,11 +654,6 @@ export default async function RedraftRankingsPage({ searchParams }) {
                     {latest ? `Week ${latest.week} · ${latest.season}` : "Projections"}
                   </div>
                   <h1>Weekly Projection Rankings</h1>
-                  <p className="tool-sub">
-                    Standard weekly projection rankings, refreshed every week of the season and
-                    adjusted for opponent-strength and matchup efficiency data.
-                    Top 50 free for every Stargazer.
-                  </p>
                   <div className="toggle-row-flex">
                     <div className="toggle-row-actions">
                       <Link href="/tools/compare-players" className="hub-panel-link">
