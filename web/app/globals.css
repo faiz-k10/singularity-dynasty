@@ -2489,13 +2489,19 @@ a.export-csv-btn{text-decoration:none;}
 }
 .weekly-player-id{display:flex; align-items:center; justify-content:center; gap:14px; flex:1; min-width:0;}
 .weekly-player-photo{
-  width:52px; height:52px; border-radius:50%; object-fit:cover; flex-shrink:0;
+  width:64px; height:64px; border-radius:50%; object-fit:cover; flex-shrink:0;
   background:var(--void-panel-2); border:1px solid var(--line);
 }
-.weekly-player-idtext{display:flex; flex-direction:column; gap:6px; min-width:0;}
+.weekly-player-idtext{display:flex; flex-direction:column; gap:8px; min-width:0;}
+/* The opened player's name is the card's headline: display font, heavy, uppercase, wide-spaced like the brand name. */
 .weekly-player-name{
-  font-family:var(--font-display), sans-serif; font-size:18px; font-weight:700; color:var(--star);
+  font-family:var(--font-display), sans-serif; font-size:30px; font-weight:800; letter-spacing:0.07em; line-height:1.1;
+  text-transform:uppercase; color:var(--star);
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+@media (max-width:700px){
+  .weekly-player-photo{width:52px; height:52px;}
+  .weekly-player-name{font-size:22px; letter-spacing:0.05em;}
 }
 .weekly-player-badges{display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
 .weekly-player-size{font-size:12px; color:var(--star-dim);}
