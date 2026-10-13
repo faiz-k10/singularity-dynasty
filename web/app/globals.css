@@ -4674,9 +4674,6 @@ a.mine-empty-note{color:var(--horizon-gold);}
 
 /* Matchup flags: the strongest defense-vs-position trends, shown as Smash Spot / Tough Spot badges (the arrows that
    used to sit beside the opponent were removed). */
-.matchup-legend{margin:2px 0 12px; font-size:12.5px; line-height:1.5; color:var(--star-dim);}
-.matchup-legend .player-achv-dot{display:inline-block; width:8px; height:8px; margin:0 5px 0 0; vertical-align:middle;}
-.matchup-legend .legend-gap{display:inline-block; width:14px;}
 .weekly-opp-flag{display:inline-flex; align-items:center; gap:6px; margin-top:6px; font-family:var(--font-mono), monospace; font-size:11px; letter-spacing:.04em; cursor:help;}
 .weekly-opp-flag-smash{color:var(--horizon-gold);}
 .weekly-opp-flag-avoid{color:var(--neon-blue);}
