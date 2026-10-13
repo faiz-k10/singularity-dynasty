@@ -1230,8 +1230,6 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .theater-badge-pill:hover{border-color:var(--neon-blue); color:var(--star);}
 .theater-badge-pill.active{background:color-mix(in srgb, var(--horizon-gold) 14%, transparent); border-color:var(--horizon-gold); color:var(--star);}
 .theater-badge-pill .player-achv-dot{width:6px; height:6px; flex-shrink:0;}
-/* Super Hero's dot is white here (the star colour, so it stays visible in light mode too). */
-.theater-badge-pill .player-achv-dot.ball{background:var(--star); box-shadow:0 0 4px rgba(var(--star-dot-rgb),0.6);}
 .tbf-foot{display:flex; align-items:center; justify-content:space-between; gap:12px; padding-top:10px; border-top:1px solid var(--line);}
 .tbf-count{font-family:var(--font-mono), monospace; font-size:12px; color:var(--star-dim);}
 .theater-badge-filter-clear{
@@ -2122,7 +2120,8 @@ a.export-csv-btn{text-decoration:none;}
 .player-achv-dot.peak{background:var(--peak); box-shadow:0 0 4px rgba(var(--peak-rgb),0.7);}
 .player-achv-dot.smash{background:var(--smash); box-shadow:0 0 4px rgba(var(--smash-rgb),0.7);}
 .player-achv-dot.tough{background:var(--neon-blue); box-shadow:0 0 4px rgba(var(--neon-blue-rgb),0.7);}
-.player-achv-dot.ball{background:var(--horizon); box-shadow:0 0 4px rgba(var(--horizon-rgb),0.7);}
+/* Super Hero's dot is white everywhere (the star colour, so it also shows in light mode). */
+.player-achv-dot.ball{background:var(--star); box-shadow:0 0 4px rgba(var(--star-dot-rgb),0.6);}
 .player-achv-dot.honorable{background:var(--scholar); box-shadow:0 0 4px rgba(var(--scholar-rgb),0.7);}
 .player-achv-dot.menace{background:var(--menace); box-shadow:0 0 4px rgba(var(--menace-rgb),0.85);}
 
