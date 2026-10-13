@@ -51,7 +51,8 @@ export default function RankingsSearch({
         return matchesBadgeFilters(ach, badgeIds, badgeMatch);
       });
     }
-    if (showPositionFilter) {
+    // No position selected = no position filter (show everyone), same as all four selected.
+    if (showPositionFilter && selected.length > 0) {
       out = out.filter((row) => selected.includes(row.position));
     }
     if (myView.on) {
@@ -64,7 +65,7 @@ export default function RankingsSearch({
     return out;
   }, [rows, selected, query, showPositionFilter, myView.on, myView.ownedByName, badgeIds, badgeMatch, showCurve]);
 
-  const filtering = query.trim() !== "" || (showPositionFilter && selected.length < positions.length) || badgeIds.size > 0;
+  const filtering = query.trim() !== "" || (showPositionFilter && selected.length > 0 && selected.length < positions.length) || badgeIds.size > 0;
   const note = <MyPlayersNote mine={mine} view={myView} gated={gated} />;
   const toolbar = (
     <RankingsToolbar
@@ -105,32 +106,26 @@ export default function RankingsSearch({
         </p>
       )}
 
-      {showPositionFilter && selected.length === 0 ? (
-        <div className="tool-empty">
-          <p>Pick at least one position above.</p>
-        </div>
-      ) : (
-        <RankingsTable
-          rows={filteredRows}
-          showPosition
-          showOpponent
-          showRange
-          showCurve={showCurve}
-          showNotes={showNotes}
-          maxSpread={maxSpread}
-          sortKey={sortKey}
-          sortDir={sortDir}
-          currentParams={currentParams}
-          tableClassName={tableClassName}
-          showStatColumns={showStatColumns}
-          toolbar={toolbar}
-          badgeFilterOn={badgeIds.size > 0}
-          ownedByName={myView.ownedByName}
-          mineStatus={!mine ? undefined : !mine.signedIn ? "signedOut" : mine.teams.length === 0 ? "noTeams" : "ready"}
-          myViewOn={myView.on}
-          gated={gated}
-        />
-      )}
+      <RankingsTable
+        rows={filteredRows}
+        showPosition
+        showOpponent
+        showRange
+        showCurve={showCurve}
+        showNotes={showNotes}
+        maxSpread={maxSpread}
+        sortKey={sortKey}
+        sortDir={sortDir}
+        currentParams={currentParams}
+        tableClassName={tableClassName}
+        showStatColumns={showStatColumns}
+        toolbar={toolbar}
+        badgeFilterOn={badgeIds.size > 0}
+        ownedByName={myView.ownedByName}
+        mineStatus={!mine ? undefined : !mine.signedIn ? "signedOut" : mine.teams.length === 0 ? "noTeams" : "ready"}
+        myViewOn={myView.on}
+        gated={gated}
+      />
     </>
   );
 }
