@@ -102,6 +102,22 @@ literally his single best recent game (33.5) rather than a stable
 statistical property. Interpolating between the two straddling values fixed
 it (27.2).
 
+## Weekly ceiling: one big game, tested and left alone (Oct 2026)
+
+Concern: the weekly ceiling is a 97.5-99.5th percentile of a player's recency-weighted games, which on a 20-50 game history is
+effectively his best recent game (Kyle Pitts: median 7.9, ceiling 43.4, all from one 45.6-point game; Oronde Gadsden: median 5.0,
+ceiling 27.5). `backtest_ceiling_outlier.R` (walk-forward 2022-2025 next-game, one scale parameter per position calibrated to the
+same 4%/6% real exceed rate) compared the live method against (B) median + k x the 80th/90th-percentile spread, (C) capping each
+game at median + c x the 90th-percentile spread, and (D) the average of his top 2-6 games times a calibrated factor.
+
+Result: the live method is the best calibrated for exactly the players it was feared to hurt. Where a history leans on one game
+(top game > 1.6x the next, 4-14% of games) players beat the live ceiling 5.0% (RB) / 5.2% (TE) / 8.4% (WR) / 8.0% (QB) of the time,
+i.e. at or slightly ABOVE the target, so those ceilings are not too high. B and D at the same overall coverage push the lean group to
+7-22% exceed (ceilings too low for them) and carry a worse pinball loss (TE 0.67-0.86 vs 0.657 live); C needs a quantile past what the
+data supports and overshoots the target. Live 2026 weeks 1-5 (players projected 3+ pts): ceilings were beaten by 8.0% of WRs, 7.5% of
+RBs, 7.8% of TEs and 4.2% of QBs, so this season's ceilings, if anything, run a little LOW. A single player rarely reaching his ceiling
+(Gadsden's best is 9.8 against 27.5) is expected for a ~4% outcome and says nothing about accuracy. Not changed.
+
 ## Bounce-back trigger (informational only — tried as a real adjustment, backtest said no)
 
 A player whose most recent real game (week 18 excluded, see below) landed
