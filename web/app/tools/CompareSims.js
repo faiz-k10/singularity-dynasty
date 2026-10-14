@@ -20,6 +20,27 @@ function bestIndexes(values, best = "high") {
 
 const photoUrl = (id) => (id ? `https://sleepercdn.com/content/nfl/players/thumb/${id}.jpg` : "");
 
+function SimRow({ r, players }) {
+  return (
+    <tr>
+      <th>{r.label}</th>
+      {r.values.map((v, i) => (
+        <td key={players[i].player_name} className={`mono${r.best.has(i) ? " compare-best" : ""}${r.strong ? " compare-strong" : ""}`}>
+          {v == null ? "—" : r.fmt(v)}
+        </td>
+      ))}
+    </tr>
+  );
+}
+
+function GroupRow({ label, n }) {
+  return (
+    <tr className="compare-group-row">
+      <th colSpan={n + 1}>{label}</th>
+    </tr>
+  );
+}
+
 export default function CompareSims({ players, maxCeiling }) {
   const n = players.length;
   const statRows = STAT_LABELS.map(([key, label]) => {
@@ -50,25 +71,6 @@ export default function CompareSims({ players, maxCeiling }) {
     simple("Pace season total", (p) => p.paceSeasonTotal, int),
     simple("Pace percentile", (p) => p.outcomePercentile, (v) => `${Math.round(v)}`),
   ].filter(Boolean);
-
-  const Row = ({ r }) => (
-    <tr>
-      <th>{r.label}</th>
-      {r.values.map((v, i) => (
-        <td
-          key={players[i].player_name}
-          className={`mono${r.best.has(i) ? " compare-best" : ""}${r.strong ? " compare-strong" : ""}`}
-        >
-          {v == null ? "—" : r.fmt(v)}
-        </td>
-      ))}
-    </tr>
-  );
-  const Group = ({ label }) => (
-    <tr className="compare-group-row">
-      <th colSpan={n + 1}>{label}</th>
-    </tr>
-  );
 
   return (
     <>
@@ -123,9 +125,9 @@ export default function CompareSims({ players, maxCeiling }) {
               </>
             )}
 
-            <Group label="Season outlook (fantasy points)" />
+            <GroupRow label="Season outlook (fantasy points)" n={n} />
             {seasonRows.map((r) => (
-              <Row key={r.label} r={r} />
+              <SimRow key={r.label} r={r} players={players} />
             ))}
             <tr>
               <th>Range</th>
@@ -145,12 +147,12 @@ export default function CompareSims({ players, maxCeiling }) {
               ))}
             </tr>
 
-            {paceRows.length > 0 && <Group label="Season to date" />}
+            {paceRows.length > 0 && <GroupRow label="Season to date" n={n} />}
             {paceRows.map((r) => (
-              <Row key={r.label} r={r} />
+              <SimRow key={r.label} r={r} players={players} />
             ))}
 
-            {statRows.length > 0 && <Group label="Projected season stats (median, with floor – ceiling)" />}
+            {statRows.length > 0 && <GroupRow label="Projected season stats (median, with floor – ceiling)" n={n} />}
             {statRows.map((s) => (
               <tr key={s.key}>
                 <th>{s.label}</th>
