@@ -4799,3 +4799,57 @@ html{font-stretch:82%;}
   .rk-positions button{flex:1 1 0;}
 }
 
+
+/* ===== Compare Players (weekly projections): head-to-head table + one dashboard panel per player =====
+   CompareWeekly.js. The table marks each row's leader in gold; below it the same panels the opened-player row shows,
+   one grid row per panel type so the players line up. */
+.compare-wrap{max-width:calc(100vw - 48px); padding-left:24px; padding-right:24px;}
+.compare-h2h .compare-table th:first-child, .compare-h2h .compare-table tbody th{min-width:150px;}
+.compare-h2h .compare-table td{padding:10px 20px;}
+.compare-table td.compare-best{color:var(--horizon-gold); font-weight:700; background:rgba(var(--horizon-gold-rgb),0.08);}
+.compare-table td.compare-strong{font-size:16px;}
+.compare-table .compare-group-row th{
+  padding:9px 20px; background:transparent; color:var(--horizon-gold); letter-spacing:0.1em; font-size:10.5px;
+  border-bottom:1px solid var(--line);
+}
+.compare-matchup{display:inline-flex; align-items:center; gap:8px;}
+.compare-matchup-lean{display:inline-flex; align-items:center; gap:5px; font-family:var(--font-mono), monospace; font-size:11px; color:var(--star-dim); cursor:help;}
+.compare-matchup-lean .player-achv-dot{width:7px; height:7px;}
+.compare-legend{margin:10px 4px 0; font-size:12px; color:var(--star-dim);}
+.compare-panels{display:flex; flex-direction:column; gap:12px; margin-top:18px;}
+.compare-panel-row{display:grid; grid-template-columns:repeat(var(--cmp-n, 3), minmax(0, 1fr)); gap:12px; align-items:stretch;}
+.compare-panel-row > *{min-width:0; margin:0;}
+.compare-panels .weekly-stats-split{grid-template-columns:1fr;}
+.compare-panels .weekly-stats-last, .compare-panels .weekly-stats-next{display:flex; flex-direction:column; gap:10px; padding:14px 16px; min-width:0;}
+.compare-panels .weekly-stats-next{
+  border-color:rgba(var(--horizon-gold-rgb),0.6);
+  background:linear-gradient(160deg, rgba(var(--horizon-gold-rgb),0.14), rgba(var(--horizon-gold-rgb),0.03) 60%, transparent);
+  box-shadow:0 0 0 1px rgba(var(--horizon-gold-rgb),0.12), 0 8px 28px rgba(var(--horizon-gold-rgb),0.10);
+}
+.compare-panels .weekly-detail-curve-panel, .compare-panels .weekly-detail-pct-panel{max-width:none; padding:16px;}
+.compare-panels .weekly-gamelog-panel{padding:16px;}
+@media (min-width:1250px){
+  .compare-panels .weekly-stats-split{grid-template-columns:1.45fr 1fr;}
+}
+.compare-panels .weekly-player-header{margin-bottom:0; padding:12px 14px; gap:12px; justify-content:flex-start;}
+.compare-panels .weekly-player-id{justify-content:flex-start; gap:12px;}
+.compare-panels .weekly-player-photo{width:56px; height:56px;}
+.compare-panels .weekly-player-name{font-size:22px; letter-spacing:0.05em;}
+.compare-panels .weekly-player-badges{flex-wrap:wrap;}
+@media (max-width:900px){
+  .compare-panel-row{grid-template-columns:1fr;}
+}
+
+/* Compare tools: slim access note instead of the full paywall card, and the sims table's header / stat cells. */
+.compare-wrap .tool-paywall{
+  display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px 18px;
+  padding:12px 18px; margin-bottom:14px; text-align:left;
+}
+.compare-wrap .tool-paywall p{margin:0; font-size:13.5px;}
+.compare-wrap .tool-paywall .btn-primary{padding:8px 18px; font-size:13px;}
+.compare-sims-head{display:inline-flex; align-items:center; gap:10px;}
+.compare-sims-photo{width:34px; height:34px; border-radius:50%; object-fit:cover; background:var(--void-panel-2); border:1px solid var(--line);}
+.compare-stat{display:inline-flex; flex-direction:column; align-items:center; gap:2px; line-height:1.15;}
+.compare-stat strong{font-size:15px;}
+.compare-stat-range{font-size:10.5px; color:var(--star-dim); font-weight:400;}
+.compare-table td.compare-best .compare-stat-range{color:var(--star-dim);}

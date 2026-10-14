@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import OutcomeCurveDetail from "./OutcomeCurveDetail";
 import TeamBadge from "./TeamBadge";
@@ -124,7 +126,7 @@ function ordinal(n) {
 // actual-vs-expected match is a real, not-hypothetical case. Dim/
 // neutral, not red, for the ~12% of games with no xFP row (see
 // CLAUDE.md) -- a missing comparison isn't the same as underperforming.
-function GameLogPanel({ games }) {
+export function GameLogPanel({ games }) {
   if (!games || games.length === 0) return null;
   return (
     <div className="stat-panel weekly-gamelog-panel">
@@ -521,7 +523,7 @@ function achievementNode(a, row) {
 // Two small panels above the Outcome Curve: THIS WEEK on the left (projected position rank and median -- emphasised with a gold accent, larger
 // numbers and a glow, because it is the number the page is about) and LAST WEEK on the right (his output and position finish --
 // muted, it is history). Moved out of the identity strip by request.
-function PlayerStatsRow({ row }) {
+export function PlayerStatsRow({ row }) {
   const lastWeek = row.lastWeekRank;
   return (
     <div className="weekly-stats-split">
@@ -555,7 +557,7 @@ function PlayerStatsRow({ row }) {
   );
 }
 
-function PlayerHeaderPanel({ row }) {
+export function PlayerHeaderPanel({ row }) {
   const bio = row.bio || {};
   const ht = formatHeight(bio.height);
   const sizeText = [ht, bio.weight ? `${bio.weight} lbs` : null].filter(Boolean).join(" · ");
@@ -607,6 +609,58 @@ function PlayerHeaderPanel({ row }) {
   );
 }
 
+// The Outcome Curve panel (floor / median / ceiling with each one's percentile vs the pool) -- shared by the opened
+// player row and the Compare Players tool.
+export function OutcomeCurvePanel({ row, maxSpread }) {
+  const pct = row.statPct || {};
+  return (
+    <div className="stat-panel weekly-detail-curve-panel">
+      <div className="weekly-pct-head">
+        <span className="weekly-panel-title">Outcome Curve</span>
+      </div>
+      <div className="weekly-panel-body">
+        <OutcomeCurveDetail
+          floor={row.floor}
+          median={row.projection}
+          ceiling={row.ceiling}
+          maxSpread={maxSpread}
+          floorPct={pct.floor}
+          medianPct={pct.projection}
+          ceilingPct={pct.ceiling}
+        />
+      </div>
+    </div>
+  );
+}
+
+// Touchdown profile (WR/TE) or usage (RB/QB) ranked against the same-position pool.
+export function UsageTdPanel({ row }) {
+  const showTd = TD_POSITIONS.has(row.position);
+  const advancedEntries = (showTd ? TD_METRICS : ADVANCED_METRICS).filter(
+    (m) => row[m.key] != null && (row.metricRank?.[m.key] || m.unrankedHint)
+  );
+  return (
+    <div className="stat-panel weekly-detail-pct-panel">
+      <div className="weekly-pct-head">
+        <span className="weekly-panel-title">{showTd ? "Touchdown profile" : "Usage"} vs. the {row.position} pool</span>
+      </div>
+      <div className="weekly-panel-body">
+        {advancedEntries.length > 0 ? (
+          <RankTable>
+            {advancedEntries.map((m) => (
+              <RankRow key={m.key} label={m.label} value={row[m.key]} format={m.format} rank={row.metricRank?.[m.key]} hint={m.hint} unrankedHint={m.unrankedHint} />
+            ))}
+          </RankTable>
+        ) : (
+          <p className="weekly-opp-caption">
+            {showTd ? "Not enough games yet for a touchdown profile." : "No usage metrics published for this player yet."}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // Row unfolded below a player on Weekly Projection Rankings -- same
 // click-to-expand/collapse mechanic as Player Season Simulations'
 // StatDetailRow (RankingsTable.js owns the open/close state and single-
@@ -626,12 +680,6 @@ function PlayerHeaderPanel({ row }) {
 // giving each its own full-width slot keeps the row from running wider
 // than it needs to.
 export default function WeeklyDetailRow({ row, colSpan, maxSpread, owned, mineStatus }) {
-  const pct = row.statPct || {};
-  const showTd = TD_POSITIONS.has(row.position);
-  const advancedEntries = (showTd ? TD_METRICS : ADVANCED_METRICS).filter(
-    (m) => row[m.key] != null && (row.metricRank?.[m.key] || m.unrankedHint)
-  );
-
   return (
     <tr className="stat-detail-row weekly-detail-row">
       <td colSpan={colSpan}>
@@ -640,42 +688,10 @@ export default function WeeklyDetailRow({ row, colSpan, maxSpread, owned, mineSt
           <div className="weekly-detail-grid">
             <div className="weekly-detail-col weekly-detail-col-left">
               <PlayerStatsRow row={row} />
-              <div className="stat-panel weekly-detail-curve-panel">
-                <div className="weekly-pct-head">
-                  <span className="weekly-panel-title">Outcome Curve</span>
-                </div>
-                <div className="weekly-panel-body">
-                  <OutcomeCurveDetail
-                    floor={row.floor}
-                    median={row.projection}
-                    ceiling={row.ceiling}
-                    maxSpread={maxSpread}
-                    floorPct={pct.floor}
-                    medianPct={pct.projection}
-                    ceilingPct={pct.ceiling}
-                  />
-                </div>
-              </div>
+              <OutcomeCurvePanel row={row} maxSpread={maxSpread} />
             </div>
             <div className="weekly-detail-col weekly-detail-col-mid">
-              <div className="stat-panel weekly-detail-pct-panel">
-                <div className="weekly-pct-head">
-                  <span className="weekly-panel-title">{showTd ? "Touchdown profile" : "Usage"} vs. the {row.position} pool</span>
-                </div>
-                <div className="weekly-panel-body">
-                  {advancedEntries.length > 0 ? (
-                    <RankTable>
-                      {advancedEntries.map((m) => (
-                        <RankRow key={m.key} label={m.label} value={row[m.key]} format={m.format} rank={row.metricRank?.[m.key]} hint={m.hint} unrankedHint={m.unrankedHint} />
-                      ))}
-                    </RankTable>
-                  ) : (
-                    <p className="weekly-opp-caption">
-                      {showTd ? "Not enough games yet for a touchdown profile." : "No usage metrics published for this player yet."}
-                    </p>
-                  )}
-                </div>
-              </div>
+              <UsageTdPanel row={row} />
               <GameLogPanel games={row.recentGames} />
             </div>
             {(owned || mineStatus) && (
