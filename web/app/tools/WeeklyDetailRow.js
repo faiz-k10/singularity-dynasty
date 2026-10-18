@@ -528,7 +528,7 @@ export function PlayerStatsRow({ row }) {
   return (
     <div className="weekly-stats-split">
       <div className="stat-panel weekly-stats-next">
-        <span className="weekly-stats-eyebrow weekly-stats-eyebrow-next">This week · Projected</span>
+        <span className="weekly-stats-eyebrow weekly-stats-eyebrow-next">This week · {row.playedThisWeek != null ? "Already played" : "Projected"}</span>
         <div className="weekly-stats-pair">
           <div className="weekly-stats-item">
             <span className="weekly-player-stat-label">Position rank</span>
@@ -539,11 +539,6 @@ export function PlayerStatsRow({ row }) {
             <span className="weekly-stats-value-big">{row.projection != null ? row.projection.toFixed(1) : "—"}</span>
           </div>
         </div>
-        {row.playedThisWeek != null && (
-          <span className="weekly-stats-played">
-            Already played: <b>{row.playedThisWeek.toFixed(1)}</b> pts
-          </span>
-        )}
       </div>
       <div className="stat-panel weekly-stats-last">
         <span className="weekly-stats-eyebrow">Last week{lastWeek ? ` · W${lastWeek.week}` : ""}</span>

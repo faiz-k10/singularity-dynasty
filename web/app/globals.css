@@ -5073,8 +5073,6 @@ html{font-stretch:82%;}
 /* Compare pickers: the third slot for accounts limited to two players (a link styled like the inputs beside it). */
 .compare-locked{display:flex; align-items:center; text-decoration:none; color:var(--star-dim); font-size:13px; cursor:pointer;}
 .compare-locked:hover{color:var(--horizon-gold); border-color:rgba(var(--horizon-gold-rgb),0.5);}
-.weekly-stats-played{font-family:var(--font-mono), monospace; font-size:11px; color:var(--star-dim);}
-.weekly-stats-played b{color:var(--horizon-gold); font-weight:700;}
 
 /* Weekly Projection Rankings: the median, between Pos and Matchup, in glowing gold. */
 .rankings-table td.median-cell{color:var(--horizon-gold); font-weight:700; font-size:15px; text-shadow:0 0 12px rgba(var(--horizon-gold-rgb),0.55);}
