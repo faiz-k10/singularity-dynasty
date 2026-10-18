@@ -285,7 +285,6 @@ export function buildSimRows({ cached, hasFullAccess, bioByNamePos, leagueTeams 
       floorHeat: round(heatFor("floor", row), 2),
       ceilingHeat: round(heatFor("ceiling", row), 2),
       sleeperId: bioByNamePos[`${normalizePlayerName(row.player_name)}|${row.position}`]?.sleeperId || null,
-      yearsExp: bioByNamePos[`${normalizePlayerName(row.player_name)}|${row.position}`]?.yearsExp ?? null,
       por: round(porByName[row.player_name], 1),
       regressionScore: round(regression?.regressionScore ?? null, 2),
       currentPPG: round(regression?.currentPPG ?? null, 3),

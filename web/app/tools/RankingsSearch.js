@@ -34,10 +34,6 @@ export default function RankingsSearch({
   const [badgeIds, setBadgeIds] = useState(() => new Set());
   const [badgeMatch, setBadgeMatch] = useState("or"); // "or": any selected badge; "and": all of them
   const [teamIds, setTeamIds] = useState(() => new Set());
-  // Rookies only: Sleeper's years of experience is 0 in a player's first season (row.bio.yearsExp).
-  const [rookiesOnly, setRookiesOnly] = useState(false);
-  // The toggle only appears once a rookie is actually ranked (the model needs 6 games, so early in a season there are none).
-  const hasRookies = useMemo(() => rows.some((row) => row.bio?.yearsExp === 0), [rows]);
   function toggleTeam(t) {
     setTeamIds((prev) => {
       const next = new Set(prev);
@@ -67,9 +63,6 @@ export default function RankingsSearch({
     if (teamIds.size > 0) {
       out = out.filter((row) => teamIds.has(row.team));
     }
-    if (rookiesOnly && hasRookies) {
-      out = out.filter((row) => row.bio?.yearsExp === 0);
-    }
     // No position selected = no position filter (show everyone), same as all four selected.
     if (showPositionFilter && selected.length > 0) {
       out = out.filter((row) => selected.includes(row.position));
@@ -82,9 +75,9 @@ export default function RankingsSearch({
       out = out.filter((row) => row.player_name.toLowerCase().includes(q));
     }
     return out;
-  }, [rows, selected, query, showPositionFilter, myView.on, myView.ownedByName, badgeIds, badgeMatch, showCurve, teamIds, rookiesOnly, hasRookies]);
+  }, [rows, selected, query, showPositionFilter, myView.on, myView.ownedByName, badgeIds, badgeMatch, showCurve, teamIds]);
 
-  const filtering = query.trim() !== "" || (showPositionFilter && selected.length > 0 && selected.length < positions.length) || badgeIds.size > 0 || teamIds.size > 0 || rookiesOnly;
+  const filtering = query.trim() !== "" || (showPositionFilter && selected.length > 0 && selected.length < positions.length) || badgeIds.size > 0 || teamIds.size > 0;
   const note = <MyPlayersNote mine={mine} view={myView} gated={gated} />;
   const toolbar = (
     <RankingsToolbar
@@ -104,8 +97,6 @@ export default function RankingsSearch({
       teamIds={teamIds}
       onToggleTeam={toggleTeam}
       onClearTeams={() => setTeamIds(new Set())}
-      rookiesOnly={rookiesOnly}
-      onToggleRookies={hasRookies ? () => setRookiesOnly((v) => !v) : null}
     />
   );
 

@@ -209,7 +209,7 @@ export default function RankingsTable({
             <SortableTh label="Rank" sortKey="rank" {...sortProps} />
             <SortableTh label="Player" sortKey="player_name" {...sortProps} />
             {showPosition && <SortableTh label="Pos" sortKey="position" {...sortProps} />}
-            {showRange && <SortableTh label="Median" sortKey="projection" {...sortProps} />}
+            {showRange && <SortableTh label="Projection" sortKey="projection" {...sortProps} />}
             {showTeam && showOpponent ? (
               <th>Matchup</th>
             ) : (

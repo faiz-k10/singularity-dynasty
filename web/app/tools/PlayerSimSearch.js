@@ -707,10 +707,9 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
   const [selected, setSelected] = useState(positions || []);
   const [query, setQuery] = useState("");
   const myView = useMyView(mine, rows);
-  // Full-screen toolbar extras (the same RankingsToolbar Weekly Projection Rankings uses): teams and rookies. They only
+  // Full-screen toolbar extras (the same RankingsToolbar Weekly Projection Rankings uses): teams and badges. They only
   // exist in the full-screen view, so they reset when it closes (no invisible filter left on the normal page).
   const [teamIds, setTeamIds] = useState(() => new Set());
-  const [rookiesOnly, setRookiesOnly] = useState(false);
   // Badges = this week's Weekly Projection Rankings badges (row.weeklyBadges, attached server-side).
   const [badgeIds, setBadgeIds] = useState(() => new Set());
   const [badgeMatch, setBadgeMatch] = useState("or");
@@ -722,7 +721,6 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
       return next;
     });
   }
-  const hasRookies = useMemo(() => rows.some((r) => r.yearsExp === 0), [rows]);
   function toggleTeam(t) {
     setTeamIds((prev) => {
       const next = new Set(prev);
@@ -832,9 +830,6 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
     if (badgeIds.size > 0) {
       out = out.filter((row) => matchesBadgeFilters(row.weeklyBadges || [], badgeIds, badgeMatch));
     }
-    if (rookiesOnly && hasRookies) {
-      out = out.filter((row) => row.yearsExp === 0);
-    }
     if (myView.on) {
       out = out.filter((row) => myView.ownedByName.has(row.player_name));
     }
@@ -843,7 +838,7 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
       out = out.filter((row) => row.player_name.toLowerCase().includes(q));
     }
     return out;
-  }, [rows, selected, deferredQuery, showPositionFilter, myView.on, myView.ownedByName, teamIds, rookiesOnly, hasRookies, badgeIds, badgeMatch]);
+  }, [rows, selected, deferredQuery, showPositionFilter, myView.on, myView.ownedByName, teamIds, badgeIds, badgeMatch]);
 
   const displayRows = filteredRows;
 
@@ -875,7 +870,6 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
   function exitTheater() {
     setTheater(false);
     setTeamIds(new Set());
-    setRookiesOnly(false);
     setBadgeIds(new Set());
   }
 
@@ -1061,8 +1055,6 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                   teamIds={teamIds}
                   onToggleTeam={toggleTeam}
                   onClearTeams={() => setTeamIds(new Set())}
-                  rookiesOnly={rookiesOnly}
-                  onToggleRookies={hasRookies ? () => setRookiesOnly((v) => !v) : null}
                 />
               </div>
             )}
