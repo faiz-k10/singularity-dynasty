@@ -66,11 +66,21 @@ export async function fetchAchievementInputs(supabase, season) {
     recentGamesByName[name] = games.slice(0, 5);
   }
 
+  // The newest published rankings week is the one being played right now (a Thursday game is already in the log), so
+  // only weeks before it can hand out Super Hero wins -- a top-3 among the few who've played isn't a real finish.
+  const { data: cur } = await supabase
+    .from("redraft_rankings")
+    .select("season, week")
+    .order("season", { ascending: false })
+    .order("week", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  const done = (r) => !cur || r.season < cur.season || r.week < cur.week;
   const HERO_WIN_SLOTS = 3;
   const heroWinsByName = {};
   const byWeekPos = {};
   for (const r of data || []) {
-    if (r.fantasy_points_ppr == null || r.season !== season) continue;
+    if (r.fantasy_points_ppr == null || r.season !== season || !done(r)) continue;
     (byWeekPos[`${r.season}|${r.week}|${r.position}`] ??= []).push(r);
   }
   for (const rows of Object.values(byWeekPos)) {

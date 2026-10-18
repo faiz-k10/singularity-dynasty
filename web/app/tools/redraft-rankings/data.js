@@ -191,13 +191,17 @@ function fetchGameLogRows(supabase) {
   );
 }
 
-function deriveGameLogData(data, season, floorCeilingByGame) {
+// `currentWeek` is the week the rankings are projecting (the newest published week). Its games are still being played
+// (a Thursday game is in the log before Sunday's), so it is not a "finished" week: no position finishes, no Super Hero
+// wins, and it is never "last week".
+function deriveGameLogData(data, season, floorCeilingByGame, currentWeek = Infinity) {
+  const complete = (r) => r.season < season || r.week < currentWeek;
   // Each game's finish at his position that week (1 = highest PPR score among everyone logged at the position),
   // shown as the rightmost column of the Recent Games panel.
   const posRankByGame = {};
   const byWeekPosition = {};
   for (const r of data || []) {
-    if (r.fantasy_points_ppr == null) continue;
+    if (r.fantasy_points_ppr == null || !complete(r)) continue;
     (byWeekPosition[`${r.season}|${r.week}|${r.position}`] ??= []).push(r);
   }
   for (const rows of Object.values(byWeekPosition)) {
@@ -232,8 +236,9 @@ function deriveGameLogData(data, season, floorCeilingByGame) {
   }
 
   const lastWeekRankByName = {};
-  if (data && data.length > 0) {
-    const { season: lwSeason, week: lwWeek } = data[0];
+  const lastDone = (data || []).find(complete);
+  if (lastDone) {
+    const { season: lwSeason, week: lwWeek } = lastDone;
     const byPos = {};
     for (const r of data) {
       if (r.season === lwSeason && r.week === lwWeek && r.fantasy_points_ppr != null) {
@@ -268,7 +273,7 @@ function deriveGameLogData(data, season, floorCeilingByGame) {
   const heroWinsByName = {};
   const byWeekPos = {};
   for (const r of data || []) {
-    if (r.fantasy_points_ppr == null || r.season !== season) continue;
+    if (r.fantasy_points_ppr == null || r.season !== season || !complete(r)) continue;
     (byWeekPos[`${r.season}|${r.week}|${r.position}`] ??= []).push(r);
   }
   for (const rows of Object.values(byWeekPos)) {
@@ -355,7 +360,7 @@ export const getCachedRedraftData = unstable_cache(
       fetchSimsMetrics(publicSupabase),
       fetchGameLogRows(publicSupabase),
     ]);
-    const gameLog = deriveGameLogData(gameLogRows, latest.season, floorCeilingByGame);
+    const gameLog = deriveGameLogData(gameLogRows, latest.season, floorCeilingByGame, latest.week);
 
     const ranked = new Set(rows.map((r) => r.player_name));
     const only = (byName) => Object.fromEntries(Object.entries(byName).filter(([name]) => ranked.has(name)));
@@ -530,6 +535,11 @@ export function enrichRankings({ cached, hasFullAccess = true, tdProfile, leanRo
       i10Share: tdProfile[r.player_name]?.i10_share ?? null,
       metricRank: { ...(usageRanks[r.player_name] || {}), ...(tdRanks[r.player_name] || {}) },
       recentGames: recentGamesByName[r.player_name] || [],
+      // He has already played this week's game (Thursday / Friday / Saturday): his real points so far this week.
+      playedThisWeek: (() => {
+        const g = (recentGamesByName[r.player_name] || [])[0];
+        return g && g.season === cached.latest?.season && g.week === cached.latest?.week && g.fantasy_points_ppr != null ? g.fantasy_points_ppr : null;
+      })(),
       lastWeekRank: lastWeekRankByName[r.player_name] || null,
       heroWins: heroWinsByName[r.player_name]?.count || 0,
       heroWinWeeks: heroWinsByName[r.player_name]?.weeks || [],

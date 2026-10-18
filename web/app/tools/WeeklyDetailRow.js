@@ -539,6 +539,11 @@ export function PlayerStatsRow({ row }) {
             <span className="weekly-stats-value-big">{row.projection != null ? row.projection.toFixed(1) : "—"}</span>
           </div>
         </div>
+        {row.playedThisWeek != null && (
+          <span className="weekly-stats-played">
+            Already played: <b>{row.playedThisWeek.toFixed(1)}</b> pts
+          </span>
+        )}
       </div>
       <div className="stat-panel weekly-stats-last">
         <span className="weekly-stats-eyebrow">Last week{lastWeek ? ` · W${lastWeek.week}` : ""}</span>
