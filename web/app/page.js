@@ -477,7 +477,8 @@ export default async function Home() {
                 <li>
                   Weekly email and lineup alert <em className="round-soon">Soon</em>
                 </li>
-                <li>Every player in the rankings, full compare</li>
+                <li>Every player in the weekly rankings</li>
+                <li>Compare up to 3 players</li>
                 <li>
                   Dynasty rankings and rookie board <em className="round-soon">Soon</em>
                 </li>
