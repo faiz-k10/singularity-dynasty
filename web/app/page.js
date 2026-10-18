@@ -175,25 +175,21 @@ export default async function Home() {
         <a
           href="#hero"
           className="orbit-dot active"
-          data-label="Signal"
           aria-label="Signal section"
         ></a>
         <a
           href="#tools"
           className="orbit-dot"
-          data-label="Tools"
           aria-label="Tools section"
         ></a>
         <a
           href="#pricing"
           className="orbit-dot"
-          data-label="Pricing"
           aria-label="Pricing section"
         ></a>
         <a
           href="#feed"
           className="orbit-dot"
-          data-label="Feed"
           aria-label="Feed section"
         ></a>
       </nav>

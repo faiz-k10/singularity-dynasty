@@ -620,12 +620,6 @@ body::before{
 /* ---------- ORBIT SIDE-NAV (scrollspy) ---------- */
 .orbit-nav{position:fixed; right:28px; top:50%; transform:translateY(-50%); z-index:55; display:flex; flex-direction:column; gap:20px; align-items:center;}
 .orbit-dot{width:9px; height:9px; border-radius:50%; background:var(--void-panel-2); border:1px solid var(--neon-blue-dim); position:relative; cursor:pointer; transition:background .25s ease, border-color .25s ease, transform .25s ease;}
-.orbit-dot::after{
-  content:attr(data-label); position:absolute; right:20px; top:50%; transform:translateY(-50%);
-  font-family:var(--font-mono), monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase;
-  color:var(--star-dim); white-space:nowrap; opacity:0; transition:opacity .2s ease; pointer-events:none;
-}
-.orbit-dot:hover::after, .orbit-dot.active::after{opacity:1;}
 .orbit-dot.active{background:var(--horizon-gold); border-color:var(--horizon-gold); box-shadow:0 0 0 4px rgba(255,199,115,0.15); transform:scale(1.35);}
 @media (max-width:960px){.orbit-nav{display:none;}}
 
