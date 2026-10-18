@@ -2,29 +2,17 @@
 
 import { useEffect, useRef, useState } from "react";
 import { BADGE_FILTERS, BADGE_GROUPS } from "./badgeFilters";
+import TeamBadge from "./TeamBadge";
+import { NFL_DIVISIONS } from "@/lib/nflDivisions";
 
 // The Weekly Projection Rankings filter controls, in one row: position pills, the Badges dropdown (grouped, with an
-// OR / AND match toggle), the All players / My players switch (passed in as `view`), and the name search pinned to
+// OR / AND match toggle), the Teams dropdown (by division), the All players / My players switch (passed in as `view`), and the name search pinned to
 // the right. The same element is shown in the normal page and in the full-screen view, so both look identical.
-export default function RankingsToolbar({
-  positions,
-  selected,
-  onTogglePosition,
-  badgeIds,
-  onToggleBadge,
-  onClearBadges,
-  badgeMatch,
-  onBadgeMatch,
-  shownCount,
-  totalCount,
-  query,
-  onQuery,
-  view,
-}) {
+// Open/close state for a toolbar dropdown: closes on an outside click or Escape. Escape is caught in the capture phase and
+// stopped, so with a dropdown open it only closes the dropdown (a second Escape then leaves the full-screen view).
+function useDropdown() {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
-  // Close the dropdown on an outside click or Escape. Escape is caught in the capture phase and stopped, so with the
-  // dropdown open it only closes the dropdown (a second Escape then leaves the full-screen view).
   useEffect(() => {
     if (!open) return;
     const onDown = (e) => {
@@ -42,6 +30,29 @@ export default function RankingsToolbar({
       document.removeEventListener("keydown", onKey, true);
     };
   }, [open]);
+  return [open, setOpen, ref];
+}
+
+export default function RankingsToolbar({
+  positions,
+  selected,
+  onTogglePosition,
+  badgeIds,
+  onToggleBadge,
+  onClearBadges,
+  badgeMatch,
+  onBadgeMatch,
+  shownCount,
+  totalCount,
+  query,
+  onQuery,
+  view,
+  teamIds,
+  onToggleTeam,
+  onClearTeams,
+}) {
+  const [open, setOpen, ref] = useDropdown();
+  const [teamsOpen, setTeamsOpen, teamsRef] = useDropdown();
 
   return (
     <div className="rk-controls">
@@ -131,6 +142,60 @@ export default function RankingsToolbar({
           </div>
         )}
       </div>
+
+      {teamIds && (
+        <div className="theater-badge-filter" ref={teamsRef}>
+          <button
+            type="button"
+            className={`theater-badge-filter-btn${teamIds.size > 0 ? " has-selection" : ""}`}
+            onClick={() => setTeamsOpen((v) => !v)}
+            aria-expanded={teamsOpen}
+            aria-haspopup="dialog"
+          >
+            Teams
+            {teamIds.size > 0 && <span className="theater-badge-filter-count">{teamIds.size}</span>}
+            <span className={`theater-badge-filter-chevron${teamsOpen ? " open" : ""}`}>▾</span>
+          </button>
+          {teamsOpen && (
+            <div className="theater-badge-filter-panel team-filter-panel" role="dialog" aria-label="Filter players by team">
+              <div className="tbf-head">
+                <span className="tbf-title">Filter by team</span>
+              </div>
+              <div className="tf-confs">
+                {["AFC", "NFC"].map((conf) => (
+                  <div key={conf} className="tf-conf">
+                    {NFL_DIVISIONS.filter((d) => d.conf === conf).map((d) => (
+                      <div key={d.name} className="tf-div">
+                        <span className="tbf-group-label">{d.name}</span>
+                        <div className="tf-teams">
+                          {d.teams.map((t) => {
+                            const on = teamIds.has(t);
+                            return (
+                              <button key={t} type="button" className={`tf-team${on ? " on" : ""}`} onClick={() => onToggleTeam(t)} aria-pressed={on} title={t}>
+                                <TeamBadge team={t} />
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+              <div className="tbf-foot">
+                <span className="tbf-count">
+                  {teamIds.size === 0 ? `All ${totalCount} players` : `${shownCount} of ${totalCount} players`}
+                </span>
+                {teamIds.size > 0 && (
+                  <button type="button" className="theater-badge-filter-clear" onClick={onClearTeams}>
+                    Clear all
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {view}
 

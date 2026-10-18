@@ -5076,3 +5076,16 @@ html{font-stretch:82%;}
 
 /* Weekly Projection Rankings: the median, between Pos and Matchup, in glowing gold. */
 .rankings-table td.median-cell{color:var(--horizon-gold); font-weight:700; font-size:15px; text-shadow:0 0 12px rgba(var(--horizon-gold-rgb),0.55);}
+
+/* Teams filter (RankingsToolbar.js): AFC | NFC columns, a labelled row of team badges per division. */
+.team-filter-panel{width:440px; max-width:min(92vw, 440px);}
+.tf-confs{display:grid; grid-template-columns:1fr 1fr; gap:14px 18px;}
+.tf-conf{display:flex; flex-direction:column; gap:10px;}
+.tf-div{display:flex; flex-direction:column; gap:5px;}
+.tf-div .tbf-group-label{padding-top:0;}
+.tf-teams{display:flex; flex-wrap:wrap; gap:5px;}
+.tf-team{all:unset; cursor:pointer; border-radius:999px; padding:2px; border:1px solid transparent; opacity:0.75; transition:opacity .15s ease, border-color .15s ease;}
+.tf-team:hover{opacity:1;}
+.tf-team.on{opacity:1; border-color:var(--horizon-gold); box-shadow:0 0 8px rgba(var(--horizon-gold-rgb),0.45);}
+.tf-team:focus-visible{outline:2px solid var(--neon-blue);}
+.tf-team .team-badge{pointer-events:none;}

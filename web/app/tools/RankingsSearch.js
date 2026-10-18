@@ -33,6 +33,15 @@ export default function RankingsSearch({
   const [query, setQuery] = useState("");
   const [badgeIds, setBadgeIds] = useState(() => new Set());
   const [badgeMatch, setBadgeMatch] = useState("or"); // "or": any selected badge; "and": all of them
+  const [teamIds, setTeamIds] = useState(() => new Set());
+  function toggleTeam(t) {
+    setTeamIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(t)) next.delete(t);
+      else next.add(t);
+      return next;
+    });
+  }
   const myView = useMyView(mine, rows);
   function toggleBadge(id) {
     setBadgeIds((prev) => {
@@ -51,6 +60,9 @@ export default function RankingsSearch({
         return matchesBadgeFilters(ach, badgeIds, badgeMatch);
       });
     }
+    if (teamIds.size > 0) {
+      out = out.filter((row) => teamIds.has(row.team));
+    }
     // No position selected = no position filter (show everyone), same as all four selected.
     if (showPositionFilter && selected.length > 0) {
       out = out.filter((row) => selected.includes(row.position));
@@ -63,9 +75,9 @@ export default function RankingsSearch({
       out = out.filter((row) => row.player_name.toLowerCase().includes(q));
     }
     return out;
-  }, [rows, selected, query, showPositionFilter, myView.on, myView.ownedByName, badgeIds, badgeMatch, showCurve]);
+  }, [rows, selected, query, showPositionFilter, myView.on, myView.ownedByName, badgeIds, badgeMatch, showCurve, teamIds]);
 
-  const filtering = query.trim() !== "" || (showPositionFilter && selected.length > 0 && selected.length < positions.length) || badgeIds.size > 0;
+  const filtering = query.trim() !== "" || (showPositionFilter && selected.length > 0 && selected.length < positions.length) || badgeIds.size > 0 || teamIds.size > 0;
   const note = <MyPlayersNote mine={mine} view={myView} gated={gated} />;
   const toolbar = (
     <RankingsToolbar
@@ -82,6 +94,9 @@ export default function RankingsSearch({
       query={query}
       onQuery={setQuery}
       view={<MyPlayersFilter mine={mine} view={myView} gated={gated} compact />}
+      teamIds={teamIds}
+      onToggleTeam={toggleTeam}
+      onClearTeams={() => setTeamIds(new Set())}
     />
   );
 
