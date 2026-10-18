@@ -74,6 +74,7 @@ export default function RankingsToolbar({
         </div>
       )}
 
+      {badgeIds && (
       <div className="theater-badge-filter" ref={ref}>
         <button
           type="button"
@@ -144,6 +145,7 @@ export default function RankingsToolbar({
           </div>
         )}
       </div>
+      )}
 
       {teamIds && (
         <div className="theater-badge-filter" ref={teamsRef}>

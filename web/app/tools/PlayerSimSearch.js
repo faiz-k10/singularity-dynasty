@@ -4,6 +4,8 @@ import { Fragment, memo, useCallback, useDeferredValue, useEffect, useMemo, useR
 import Link from "next/link";
 import SortableTh from "./SortableTh";
 import { MyPlayersFilter, MyBadge, MyStrip, useMyView } from "./MyPlayers";
+import RankingsToolbar from "./RankingsToolbar";
+import { matchesBadgeFilters } from "./badgeFilters";
 import TeamBadge from "./TeamBadge";
 import STAT_LABELS from "./statLabels";
 import StatRadar from "./StatRadar";
@@ -705,6 +707,30 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
   const [selected, setSelected] = useState(positions || []);
   const [query, setQuery] = useState("");
   const myView = useMyView(mine, rows);
+  // Full-screen toolbar extras (the same RankingsToolbar Weekly Projection Rankings uses): teams and rookies. They only
+  // exist in the full-screen view, so they reset when it closes (no invisible filter left on the normal page).
+  const [teamIds, setTeamIds] = useState(() => new Set());
+  const [rookiesOnly, setRookiesOnly] = useState(false);
+  // Badges = this week's Weekly Projection Rankings badges (row.weeklyBadges, attached server-side).
+  const [badgeIds, setBadgeIds] = useState(() => new Set());
+  const [badgeMatch, setBadgeMatch] = useState("or");
+  function toggleBadge(id) {
+    setBadgeIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+  const hasRookies = useMemo(() => rows.some((r) => r.yearsExp === 0), [rows]);
+  function toggleTeam(t) {
+    setTeamIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(t)) next.delete(t);
+      else next.add(t);
+      return next;
+    });
+  }
   const [expanded, setExpanded] = useState(() => new Set()); // player_names currently unfolded
   // Each filter row's LABEL always shows (plus its current value, so
   // it's legible at a glance) -- only the actual toggle buttons underneath
@@ -796,8 +822,18 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
   const deferredQuery = useDeferredValue(query);
   const filteredRows = useMemo(() => {
     let out = rows;
-    if (showPositionFilter) {
+    // No position selected = no position filter (everyone), same as Weekly Projection Rankings.
+    if (showPositionFilter && selected.length > 0) {
       out = out.filter((row) => selected.includes(row.position));
+    }
+    if (teamIds.size > 0) {
+      out = out.filter((row) => teamIds.has(row.team));
+    }
+    if (badgeIds.size > 0) {
+      out = out.filter((row) => matchesBadgeFilters(row.weeklyBadges || [], badgeIds, badgeMatch));
+    }
+    if (rookiesOnly && hasRookies) {
+      out = out.filter((row) => row.yearsExp === 0);
     }
     if (myView.on) {
       out = out.filter((row) => myView.ownedByName.has(row.player_name));
@@ -807,7 +843,7 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
       out = out.filter((row) => row.player_name.toLowerCase().includes(q));
     }
     return out;
-  }, [rows, selected, deferredQuery, showPositionFilter, myView.on, myView.ownedByName]);
+  }, [rows, selected, deferredQuery, showPositionFilter, myView.on, myView.ownedByName, teamIds, rookiesOnly, hasRookies, badgeIds, badgeMatch]);
 
   const displayRows = filteredRows;
 
@@ -828,7 +864,7 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const onKeyDown = (e) => {
-      if (e.key === "Escape") setTheater(false);
+      if (e.key === "Escape") exitTheater();
     };
     document.addEventListener("keydown", onKeyDown);
     return () => {
@@ -836,6 +872,12 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
       document.removeEventListener("keydown", onKeyDown);
     };
   }, [theater]);
+  function exitTheater() {
+    setTheater(false);
+    setTeamIds(new Set());
+    setRookiesOnly(false);
+    setBadgeIds(new Set());
+  }
 
   // Runs after the render that opened the comp's row (no deps: it only acts when
   // a scroll is pending). Scrolls the table panel so his row sits just under its
@@ -888,7 +930,7 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
               <span className={`filter-row-chevron${openGroups.position ? " filter-row-chevron-open" : ""}`}>▸</span>
               <span className="tier-toggle-label">Position</span>
               <span className={`filter-row-value${selected.length < positions.length ? " filter-row-value-active" : ""}`}>
-                {selected.length === positions.length ? "All" : selected.length === 0 ? "None" : selected.join(", ")}
+                {selected.length === positions.length || selected.length === 0 ? "All" : selected.join(", ")}
               </span>
             </button>
             {openGroups.position && (
@@ -987,7 +1029,7 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
           onChange={(e) => setQuery(e.target.value)}
           aria-label="Search players"
         />
-        {(query || (showPositionFilter && selected.length < positions.length)) && (
+        {(query || (showPositionFilter && selected.length > 0 && selected.length < positions.length)) && (
           <span className="player-search-count">
             {filteredRows.length} of {rows.length}
           </span>
@@ -997,44 +1039,37 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
       </div>
       </div>
 
-      {showPositionFilter && selected.length === 0 ? (
-        <div className="tool-empty">
-          <p>Pick at least one position above.</p>
-        </div>
-      ) : (
+      {(
         <>
           <div className={`rankings-theater-bar${theater ? " theater" : ""}`}>
             {theater && (
               <div className="rankings-theater-controls">
-                <input
-                  type="search"
-                  className="player-search-input"
-                  placeholder="Search a player's name…"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  aria-label="Search players"
+                <RankingsToolbar
+                  positions={showPositionFilter ? positions : null}
+                  selected={selected}
+                  onTogglePosition={toggle}
+                  shownCount={filteredRows.length}
+                  totalCount={rows.length}
+                  query={query}
+                  onQuery={setQuery}
+                  view={<MyPlayersFilter mine={mine} view={myView} gated={gated} compact />}
+                  badgeIds={badgeIds}
+                  onToggleBadge={toggleBadge}
+                  onClearBadges={() => setBadgeIds(new Set())}
+                  badgeMatch={badgeMatch}
+                  onBadgeMatch={setBadgeMatch}
+                  teamIds={teamIds}
+                  onToggleTeam={toggleTeam}
+                  onClearTeams={() => setTeamIds(new Set())}
+                  rookiesOnly={rookiesOnly}
+                  onToggleRookies={hasRookies ? () => setRookiesOnly((v) => !v) : null}
                 />
-                {showPositionFilter && (
-                  <div className="position-filter-row">
-                    {positions.map((pos) => (
-                      <button
-                        key={pos}
-                        type="button"
-                        className={`position-pill ${selected.includes(pos) ? "active" : ""}`}
-                        onClick={() => toggle(pos)}
-                        aria-pressed={selected.includes(pos)}
-                      >
-                        {pos}
-                      </button>
-                    ))}
-                  </div>
-                )}
               </div>
             )}
             <button
               type="button"
               className="rankings-theater-btn"
-              onClick={() => setTheater((v) => !v)}
+              onClick={() => (theater ? exitTheater() : setTheater(true))}
               aria-label={theater ? "Exit full-screen view" : "Expand to full-screen view"}
               title={theater ? "Exit full-screen view" : "Expand to full-screen view"}
             >
