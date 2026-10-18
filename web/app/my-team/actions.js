@@ -423,6 +423,7 @@ export async function pollLiveScores() {
   const week = inSeason ? state.display_week || state.week || 1 : null;
 
   const live = {};
+  const lineups = {};
   await Promise.all(
     rows.map(async (row) => {
       const [rosters, leagueUsers, matchups] = await Promise.all([
@@ -432,6 +433,8 @@ export async function pollLiveScores() {
       ]);
       const myRoster = rosters.find((r) => String(r.roster_id) === String(row.platform_roster_id));
       if (!myRoster) return;
+      // Current starting lineup, so the client can tell when it changed in Sleeper and refresh (lib/rosterAlerts.js).
+      lineups[row.id] = (myRoster.starters || []).filter((id) => id && id !== "0").map(String);
       const m = resolveMatchup(matchups, myRoster, rosters, leagueUsers);
       live[row.id] = {
         record: formatRecord(myRoster.settings),
@@ -443,7 +446,7 @@ export async function pollLiveScores() {
       };
     })
   );
-  return { live, updatedAt: Date.now() };
+  return { live, lineups, updatedAt: Date.now() };
 }
 
 // Injury + news for everyone on the signed-in user's saved rosters, from
@@ -473,6 +476,9 @@ export async function getRosterNews() {
 
   const items = new Map();
   const byTeam = {};
+  // Every rostered player's designation, keyed like the client's lib/rosterAlerts.js, so the browser can rebuild the
+  // alerts from the current lineup (a player benched since this ran stops being an alert right away).
+  const statusByKey = {};
   const cutoff = Date.now() - 72 * 3600 * 1000;
   for (const t of teams || []) {
     for (const p of t.players || []) {
@@ -480,10 +486,11 @@ export async function getRosterNews() {
       const f = byKey.get(`${norm}|${p.position}`) || byNorm.get(norm);
       if (!f) continue;
       const recent = f.date && new Date(f.date).getTime() > cutoff;
-      if (f.severity === 0 && !recent) continue;
       const key = `${norm}|${p.position}`;
+      if (f.severity > 0) statusByKey[key] = { status: f.status, severity: f.severity };
+      if (f.severity === 0 && !recent) continue;
       if (!items.has(key)) {
-        items.set(key, { ...f, team: p.team, starts: [], rosters: [] });
+        items.set(key, { ...f, key, team: p.team, starts: [], rosters: [] });
       }
       const it = items.get(key);
       const label = t.league_name || t.team_name;
@@ -501,7 +508,7 @@ export async function getRosterNews() {
     (a, b) =>
       new Date(b.date || 0) - new Date(a.date || 0) || b.severity - a.severity
   );
-  return { items: list.slice(0, 80), byTeam, updatedAt: Date.now() };
+  return { items: list.slice(0, 80), byTeam, statusByKey, updatedAt: Date.now() };
 }
 
 // Persists one already-looked-up team as a snapshot -- re-running the

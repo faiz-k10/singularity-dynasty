@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useSyncExternalStore, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore, useTransition } from "react";
 import Link from "next/link";
 import { UpgradeMoment, BuyInPrompt, startExplorerCheckout } from "./UpgradeMoment";
 import EmailDigestToggle from "./EmailDigestToggle";
@@ -14,6 +14,7 @@ import PositionBadge from "../tools/PositionBadge";
 import AchievementDots from "../tools/AchievementDots";
 import { sortRows, sortArrow } from "@/lib/sortLink";
 import { buildPortfolio, aggregateGames, PORTFOLIO_COLUMN_TYPES } from "@/lib/portfolio";
+import { liveRosterNews, lineupChanged } from "@/lib/rosterAlerts";
 
 // Display-only relabel -- Sleeper's own roster_positions/starters value is
 // the literal string "SUPER_FLEX"; sorting/matching still uses that raw
@@ -1128,7 +1129,17 @@ export default function MyTeamClient({
     };
   }, [hasSaved]);
 
+  // Alerts + "starts in" follow the current rosters (fresh after a refresh), not the copy the feed request read.
+  const liveNews = useMemo(() => liveRosterNews(savedTeams, news), [savedTeams, news]);
+  const savedTeamsRef = useRef(savedTeams);
+  useEffect(() => {
+    savedTeamsRef.current = savedTeams;
+  }, [savedTeams]);
+  const refreshingRef = useRef(false);
+
   async function runFullRefresh() {
+    if (refreshingRef.current) return;
+    refreshingRef.current = true;
     setRefreshing(true);
     try {
       const res = await refreshSavedTeams();
@@ -1137,7 +1148,11 @@ export default function MyTeamClient({
         setLiveScores({});
         setUpdatedAt(res.updatedAt || Date.now());
       }
+      // The feed is cached ~2 min upstream, so this is cheap; it picks up any status change along with the new lineup.
+      const n = await getRosterNews().catch(() => null);
+      if (n && !n.error) setNews(n);
     } finally {
+      refreshingRef.current = false;
       setRefreshing(false);
     }
   }
@@ -1156,6 +1171,8 @@ export default function MyTeamClient({
         setLiveScores(res.live);
         setUpdatedAt(res.updatedAt || Date.now());
       }
+      // Lineup changed in Sleeper since our copy -> full refresh (lineup, alerts, projections).
+      if (lineupChanged(savedTeamsRef.current, res?.lineups)) runFullRefresh();
     };
     timer = setInterval(tick, 30000);
     const onVisible = () => { if (!document.hidden) tick(); };
@@ -1364,7 +1381,7 @@ export default function MyTeamClient({
     </>
   );
 
-  const sum = summarizeLeagues(savedTeams, news?.byTeam);
+  const sum = summarizeLeagues(savedTeams, liveNews?.byTeam);
   const teamsSub = (
     <>
       <span><strong>{sum.leagues}</strong> {sum.leagues === 1 ? "league" : "leagues"}</span>
@@ -1393,7 +1410,7 @@ export default function MyTeamClient({
         <div className="my-team-saved">
           <LeagueDashboard
             savedTeams={savedTeams}
-            injuriesByTeam={news?.byTeam}
+            injuriesByTeam={liveNews?.byTeam}
             refreshing={refreshing}
             renderExpanded={(t) => (
               <div className="league-dash-detail">
@@ -1577,7 +1594,7 @@ export default function MyTeamClient({
       id: "news",
       title: "Injury & News",
       capped: true,
-      node: <RosterNews news={news} onlyStarters={newsFilter.starters} onlyInjuries={newsFilter.injuries} />,
+      node: <RosterNews news={liveNews} onlyStarters={newsFilter.starters} onlyInjuries={newsFilter.injuries} />,
       actions: newsActions,
     },
     savedTeams.length >= 2 && {
