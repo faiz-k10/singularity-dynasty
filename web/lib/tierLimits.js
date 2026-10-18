@@ -3,12 +3,13 @@
 // alongside the DB-touching resolveTier()/getUserTier().
 
 // How many teams each tier can save in /my-team. null = unlimited.
-// Mirrored by the DB trigger in 0024_saved_teams_tier_limit.sql -- keep
-// the two in sync. Stargazer 1, Explorer/Singularity unlimited, matching
-// the pricing copy ("no ceiling on teams" for Explorer).
+// Mirrored by the DB trigger (0024_saved_teams_tier_limit.sql, raised for Explorer by 0037_explorer_team_cap.sql) --
+// keep the two in sync. Stargazer 1, Explorer 10, Singularity unlimited, matching the pricing copy. The ladder is the
+// usual league-sync one (FantasyPros caps active leagues per plan too): 10 covers the engaged multi-league player
+// we sell Explorer to, so unlimited is a reason to move up to Singularity, not a reason to skip Explorer.
 export const SAVED_TEAM_LIMITS = {
   stargazer: 1,
-  explorer: null,
+  explorer: 10,
   singularity: null,
 };
 

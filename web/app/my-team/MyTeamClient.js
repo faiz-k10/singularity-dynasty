@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState, useSyncExternalStore, useTransition } from "react";
 import Link from "next/link";
+import { UpgradeMoment, BuyInPrompt, startExplorerCheckout } from "./UpgradeMoment";
+import EmailDigestToggle from "./EmailDigestToggle";
 import { lookupSleeperTeams, saveTeam, deleteTeam, setBuyIn, refreshSavedTeams, pollLiveScores, getRosterNews } from "./actions";
 import TeamBadge from "../tools/TeamBadge";
 import LeagueDashboard, { summarizeLeagues } from "./LeagueDashboard";
@@ -1058,6 +1060,7 @@ export default function MyTeamClient({
   overview = null,
   exposure = null,
   feed = null,
+  emailDigest = false,
   heading = "My Team",
 }) {
   // Saved teams are DB snapshots from whenever they were last saved, so
@@ -1139,8 +1142,11 @@ export default function MyTeamClient({
     }
   }
 
+  // Keeping saved leagues fresh automatically (refresh on load, live scores every 30s) is part of Explorer and up; a free
+  // account sees its saved snapshot and can refresh by hand.
+  const autoRefresh = tier !== "stargazer";
   useEffect(() => {
-    if (!hasSaved) return;
+    if (!hasSaved || !autoRefresh) return;
     const first = setTimeout(runFullRefresh, 0);
     let timer = null;
     const tick = async () => {
@@ -1159,7 +1165,7 @@ export default function MyTeamClient({
       clearInterval(timer);
       document.removeEventListener("visibilitychange", onVisible);
     };
-  }, [hasSaved]);
+  }, [hasSaved, autoRefresh]);
 
   // Theater mode: the customizable panel board only lives in a full-screen
   // overlay (same idea as the Rankings / Player Sims theater button); the
@@ -1207,6 +1213,8 @@ export default function MyTeamClient({
     Object.fromEntries(savedTeamsProp.map((t) => [t.id, t.buy_in ?? null]))
   );
   const [buyInSavingId, setBuyInSavingId] = useState(null);
+  // Right after a save, ask what the league cost to enter (BuyInPrompt); { id, name } of the team just saved.
+  const [buyInPrompt, setBuyInPrompt] = useState(null);
 
   function handleSetBuyIn(teamId, raw) {
     setBuyInSavingId(teamId);
@@ -1276,6 +1284,7 @@ export default function MyTeamClient({
       const res = await saveOne(team, sleeperUsername);
       setSavingKey(null);
       if (res.error) setError(res.error);
+      else if (res.id) setBuyInPrompt((cur) => cur || { id: res.id, name: team.league_name });
     });
   }
 
@@ -1291,6 +1300,7 @@ export default function MyTeamClient({
           setError(res.error);
           break;
         }
+        if (res.id) setBuyInPrompt((cur) => cur || { id: res.id, name: team.league_name });
       }
       setSavingKey(null);
     });
@@ -1324,7 +1334,15 @@ export default function MyTeamClient({
         <span>
           {updatedAt
             ? `Updated ${new Date(updatedAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit", second: "2-digit" })}`
-            : "Updating…"}
+            : autoRefresh
+              ? "Updating…"
+              : "Saved snapshot"}
+          {!autoRefresh && (
+            <>
+              {" · "}
+              <Link href="/#pricing">auto-refresh: Explorer</Link>
+            </>
+          )}
         </span>
       )}
       {hasSaved && (
@@ -1442,6 +1460,21 @@ export default function MyTeamClient({
 
       {error && <div className="my-team-error">{error}</div>}
 
+      {isSignedIn && buyInPrompt && (
+        <BuyInPrompt
+          key={buyInPrompt.id}
+          leagueName={buyInPrompt.name}
+          tier={tier}
+          saving={buyInSavingId === buyInPrompt.id}
+          onSave={(v) => handleSetBuyIn(buyInPrompt.id, v)}
+          onSkip={() => setBuyInPrompt(null)}
+        />
+      )}
+
+      {isSignedIn && atLimit && result && result.teams.some((t) => !savedKeys.has(t.league_id)) && (
+        <UpgradeMoment teams={result.teams} savedCount={savedCount} limit={savedTeamLimit} />
+      )}
+
       {result &&
         (() => {
           // Teams already in the saved section above are hidden here so
@@ -1478,9 +1511,16 @@ export default function MyTeamClient({
                         Sign In To Save
                       </a>
                     ) : atLimit ? (
-                      <Link href="/#pricing" className="round-btn outline my-team-save-btn">
-                        Upgrade To Save
-                      </Link>
+                      <button
+                        type="button"
+                        className="round-btn outline my-team-save-btn"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          startExplorerCheckout("annual").catch(() => setError("Couldn't start checkout. Please try again."));
+                        }}
+                      >
+                        Unlock To Save
+                      </button>
                     ) : (
                       <button
                         type="button"
@@ -1524,7 +1564,12 @@ export default function MyTeamClient({
       id: "week",
       title: "Your Players This Week",
       sub: feed?.ready && feed.week != null ? `Week ${feed.week} vs ${feed.prevWeek}` : null,
-      node: <MyWeekFeed feed={feed} />,
+      node: (
+        <>
+          <EmailDigestToggle tier={tier} enabled={emailDigest} />
+          <MyWeekFeed feed={feed} />
+        </>
+      ),
     },
     { id: "teams", title: "Saved Teams", node: teamsNode, sub: teamsSub, actions: teamsActions || null },
     exposure && { id: "exposure", title: "Player Exposure", node: exposure },

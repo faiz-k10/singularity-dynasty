@@ -313,18 +313,23 @@ export default function InteractiveScript({ tickerItems } = {}) {
     });
 
     /* ---- billing toggle ---- */
+    // Annual is the default (the page renders with it on): the engaged player plays all year, and it is the cheaper way in.
     const toggle = document.getElementById("billingToggle");
-    let annual = false;
+    let annual = toggle ? toggle.classList.contains("on") : true;
     if (toggle) {
       toggle.addEventListener(
         "click",
         () => {
           annual = !annual;
           toggle.classList.toggle("on", annual);
+          toggle.setAttribute("aria-pressed", String(annual));
           document.querySelectorAll(".price-amt").forEach((el) => {
             el.textContent = annual
               ? el.dataset.annual
               : el.dataset.monthly;
+          });
+          document.querySelectorAll(".round-bill").forEach((el) => {
+            el.textContent = annual ? el.dataset.annual : el.dataset.monthly;
           });
         },
         { signal }
@@ -449,7 +454,7 @@ export default function InteractiveScript({ tickerItems } = {}) {
           const plan = btn.getAttribute("data-plan");
 
           if (plan === "stargazer") {
-            alert("Stargazer is free — account creation is coming soon.");
+            window.location.href = "/login";
             return;
           }
 

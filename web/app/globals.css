@@ -5010,3 +5010,58 @@ html{font-stretch:82%;}
   .hero-lookup-exposure li{grid-template-columns:1fr auto;}
   .hero-lookup-pleagues{display:none;}
 }
+
+/* ===== Pricing: billed-yearly line, "Soon" tags, refund line, per-league calculator ===== */
+.round-bill{margin:-6px 0 12px; font-family:var(--font-mono), monospace; font-size:11px; letter-spacing:0.04em; color:var(--star-dim);}
+.round-soon{font-style:normal; margin-left:6px; padding:1px 7px; border-radius:999px; font-family:var(--font-mono), monospace; font-size:9.5px; letter-spacing:0.08em; text-transform:uppercase; color:var(--neon-blue); border:1px solid rgba(var(--neon-blue-rgb),0.45); white-space:nowrap;}
+.round-assure{margin:10px 0 0; text-align:center; font-family:var(--font-mono), monospace; font-size:11px; letter-spacing:0.05em; color:var(--star-dim);}
+.league-price{max-width:560px; margin:30px auto 0; padding:16px 20px; text-align:center; background:var(--void-panel); border:1px solid var(--line); border-radius:var(--r-lg, 16px);}
+.league-price-q{display:inline-flex; align-items:center; flex-wrap:wrap; justify-content:center; gap:10px; font-size:15px; color:var(--star);}
+.league-price-step{display:inline-flex; align-items:center; gap:2px; padding:2px; background:var(--void-panel-2); border:1px solid var(--line); border-radius:999px;}
+.league-price-step button{all:unset; cursor:pointer; width:28px; height:28px; border-radius:50%; text-align:center; line-height:28px; font-family:var(--font-mono), monospace; font-size:16px; color:var(--star-dim);}
+.league-price-step button:hover{color:var(--star); background:rgba(var(--horizon-gold-rgb),0.15);}
+.league-price-step button:focus-visible{outline:2px solid var(--neon-blue);}
+.league-price-step b{min-width:30px; text-align:center; font-family:var(--font-display), sans-serif; font-size:22px; color:var(--horizon-gold);}
+.league-price ul{list-style:none; margin:12px 0 0; padding:0; display:flex; flex-direction:column; gap:5px; font-size:13.5px; color:var(--star-dim);}
+.league-price li strong{color:var(--horizon-gold); font-family:var(--font-mono), monospace;}
+.league-price li b{color:var(--star);}
+
+/* ===== My Team: the upgrade moment and the first buy-in prompt (app/my-team/UpgradeMoment.js) ===== */
+.upgrade-moment{
+  margin:0 0 16px; padding:20px 22px; border-radius:var(--r-lg, 16px);
+  background:linear-gradient(160deg, rgba(var(--horizon-gold-rgb),0.14), rgba(var(--horizon-gold-rgb),0.03) 60%, transparent), var(--void-panel);
+  border:1px solid rgba(var(--horizon-gold-rgb),0.55);
+}
+.upgrade-moment h3{margin:0 0 8px; font-family:var(--font-display), sans-serif; font-size:24px; font-weight:700; letter-spacing:0.02em; color:var(--star);}
+.um-hook{margin:0 0 14px; font-size:15px; color:var(--star-dim);}
+.um-hook b{color:var(--horizon-gold);}
+.um-locked{list-style:none; margin:0 0 16px; padding:0; display:flex; flex-direction:column; gap:7px;}
+.um-locked li{display:grid; grid-template-columns:minmax(0, 1fr) auto auto; gap:12px; align-items:center; padding:7px 12px; border-radius:10px; background:var(--void-panel-2); border:1px dashed var(--line); font-size:13.5px; color:var(--star);}
+.um-locked .um-row-more{grid-template-columns:minmax(0, 1fr) auto; color:var(--star-dim);}
+.um-blur{filter:blur(5px); user-select:none; pointer-events:none;}
+.um-tag{font-family:var(--font-mono), monospace; font-size:9.5px; letter-spacing:0.1em; text-transform:uppercase; color:var(--horizon-gold); border:1px solid rgba(var(--horizon-gold-rgb),0.5); border-radius:999px; padding:1px 8px;}
+.um-cta{border:none;}
+.um-cta:disabled{opacity:.6;}
+.um-fine{margin:12px 0 0; font-size:12px; color:var(--star-dim);}
+.um-link{all:unset; cursor:pointer; color:var(--neon-blue); text-decoration:underline; font-size:inherit;}
+.um-link:hover{color:var(--horizon-gold);}
+.um-err{margin:10px 0 0; font-size:12.5px; color:var(--down);}
+.buyin-prompt{margin:0 0 16px; padding:16px 18px; border-radius:var(--r-lg, 16px); background:var(--void-panel); border:1px solid rgba(var(--neon-blue-rgb),0.45);}
+.buyin-prompt label{display:block; margin-bottom:10px; font-size:15px; color:var(--star);}
+.buyin-row{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+.buyin-dollar{font-family:var(--font-mono), monospace; color:var(--star-dim);}
+.buyin-row input{width:140px; height:42px; padding:0 14px; box-sizing:border-box; background:var(--void-panel-2); border:1px solid var(--line); border-radius:999px; font-family:var(--font-mono), monospace; font-size:14px; color:var(--star); outline:none;}
+.buyin-row input:focus{border-color:var(--neon-blue);}
+.buyin-row .btn-primary{height:42px; padding:0 22px; border:none;}
+.buyin-hint{margin:10px 0 0; font-size:12px; color:var(--star-dim);}
+.buyin-done{display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;}
+.buyin-done p{margin:0; font-size:14px; color:var(--star);}
+.buyin-done b{color:var(--horizon-gold);}
+
+/* ===== My Team: weekly email switch (EmailDigestToggle.js) ===== */
+.email-digest{display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin:0 0 12px; font-size:13.5px; color:var(--star);}
+.email-digest label{display:inline-flex; align-items:center; gap:9px; cursor:pointer;}
+.email-digest input{accent-color:var(--horizon-gold); width:16px; height:16px;}
+.email-digest-err{font-size:12.5px; color:var(--down);}
+.email-digest-locked{margin:0 0 12px; font-size:13px; color:var(--star-dim);}
+.email-digest-locked a{color:var(--neon-blue);}

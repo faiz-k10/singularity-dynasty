@@ -34,6 +34,7 @@ export default function HeroLookup({ signedIn }) {
         setShownName(res.sleeperUsername || name);
         try {
           localStorage.setItem("sd-sleeper-user", res.sleeperUsername || name);
+          localStorage.setItem("sd-league-count", String((res.teams || []).length));
         } catch {}
       } catch {
         setError("Couldn't reach Sleeper just now. Try again in a moment.");

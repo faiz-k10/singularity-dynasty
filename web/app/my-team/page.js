@@ -213,6 +213,13 @@ export default async function MyTeamPage() {
     }
   }
 
+  // Weekly email opt-in (migration 0038; a missing column just reads as off).
+  let emailDigest = false;
+  if (user) {
+    const { data: prof } = await supabase.from("profiles").select("email_digest").eq("id", user.id).maybeSingle();
+    emailDigest = Boolean(prof?.email_digest);
+  }
+
   // Heading follows the Sleeper account the saved teams were imported from.
   const sleeperName = savedTeams.find((t) => t.platform_username)?.platform_username || null;
 
@@ -231,6 +238,7 @@ export default async function MyTeamPage() {
           playerGameLogs={playerGameLogs}
           playerBios={playerBios}
           feed={feed}
+          emailDigest={emailDigest}
           overview={user ? <PortfolioOverview archetype={archetypeResult} summary={portfolioSummary} /> : null}
           exposure={
             exposureRows.length > 0 ? (

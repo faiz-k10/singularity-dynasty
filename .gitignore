@@ -47,3 +47,4 @@ model/projections.csv
 model/upload_*.csv
 model/*.rds
 model/*.json
+web/scripts/_digest_preview/

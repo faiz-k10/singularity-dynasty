@@ -692,3 +692,18 @@ export async function deleteTeam(id) {
   revalidatePath("/my-team");
   return { success: true };
 }
+
+
+// Turns the weekly "Your Players This Week" email on or off (Explorer and up; sent by scripts/send-weekly-digest.mjs).
+// Needs migration 0038 (profiles.email_digest, and the column privilege that lets a member change only this one).
+export async function setEmailDigest(enabled) {
+  const supabase = await createClient();
+  const { user, tier } = await resolveTier(supabase);
+  if (!user) return { error: "Sign in first." };
+  if (tier === "stargazer") return { error: "The weekly email is part of Explorer." };
+  const { error } = await supabase.from("profiles").update({ email_digest: Boolean(enabled) }).eq("id", user.id);
+  if (error) {
+    return { error: /email_digest/.test(error.message || "") ? "The weekly email isn't set up yet (database migration 0038 is pending)." : "Couldn't save that. Please try again." };
+  }
+  return { enabled: Boolean(enabled) };
+}

@@ -8,12 +8,13 @@ import ExportCsvButton from "../ExportCsvButton";
 export const metadata = {
   title: "WR/QB Rookie Prospect Rankings & Comparisons — Singularity Dynasty",
   description:
-    "Incoming rookie wide receiver and quarterback rankings with side-by-side statistical comparisons against past draft classes, using athletic and production percentiles. Free for every Stargazer.",
+    "Incoming rookie wide receiver and quarterback rankings with side-by-side statistical comparisons against past draft classes, using athletic and production percentiles. Top 5 per position free for every Stargazer.",
 };
 
 const TEASER_LIMIT_PER_POSITION = 5;
-// Singularity-only per the pricing copy.
-const PAID_TIERS = ["singularity"];
+// Full board for Explorer and up (rookie boards are dynasty-player territory, which is who Explorer is for); everyone else sees
+// the top 5 per position. CSV export stays Singularity-only (canExport below).
+const PAID_TIERS = ["explorer", "singularity"];
 const COLUMN_TYPES = { rank: "number", player_name: "string", school: "string" };
 
 async function fetchPosition(supabase, draftClass, position, hasFullAccess) {
@@ -145,7 +146,7 @@ export default async function ProspectRankingsPage({ searchParams }) {
                 <p>
                   You&apos;re seeing the top {TEASER_LIMIT_PER_POSITION} at
                   each position ({totalRows} of {totalCount} prospects).
-                  Unlock the full boards with Singularity.
+                  Unlock the full boards with Explorer or Singularity.
                 </p>
                 <Link href="/#pricing" className="btn-primary">
                   See Pricing

@@ -4,7 +4,7 @@
 
 const norm = (s) => String(s || "").toLowerCase().replace(/[^a-z]/g, "");
 
-export function summarizeLeagues(teams) {
+export function summarizeLeagues(teams, { exposureLimit = 3 } = {}) {
   const list = Array.isArray(teams) ? teams : [];
   const leagues = list.length;
 
@@ -32,7 +32,7 @@ export function summarizeLeagues(teams) {
   const exposure = [...owned.values()]
     .filter((e) => e.leagues >= 2)
     .sort((a, b) => b.leagues - a.leagues || (b.proj ?? -1) - (a.proj ?? -1))
-    .slice(0, 3);
+    .slice(0, exposureLimit);
 
   let wins = 0;
   let projected = 0;
