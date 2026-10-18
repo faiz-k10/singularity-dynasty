@@ -947,7 +947,7 @@ load_out_players <- function(season, week) {
 # match against the model's own naming, unlike load_out_players' ~96%).
 # Unlike stats/injuries, depth charts aren't gated by most_recent_season()
 # -- daily snapshots are already available for TARGET_SEASON.
-select_team_qbs <- function(season, eligible_players) {
+select_team_qbs <- function(season, eligible_players, n = 2) {
   dc <- as.data.frame(load_depth_charts(season))
   latest <- dc[dc$dt == max(dc$dt) & dc$pos_abb == "QB", ]
   latest <- latest[order(latest$team, latest$pos_rank), ]
@@ -962,7 +962,7 @@ select_team_qbs <- function(season, eligible_players) {
     # week's OUT designations (known later, at export time, not here)
     # decide which of the two actually gets shown -- this just makes
     # sure both exist to choose from.
-    head(chart[, c("team", "player_name", "pos_rank")], 2)
+    head(chart[, c("team", "player_name", "pos_rank")], n)
   }))
 }
 
@@ -1037,21 +1037,27 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
   # where OUT status is already known -- this just makes sure both exist
   # to choose from. Fails safe: if depth-chart data is unavailable, skip
   # this filter rather than accidentally dropping every QB.
-  qb_depth <- tryCatch(select_team_qbs(target_season, c(eligible, short_qbs)), error = function(e) {
+  # The short-history QBs are checked against the chart separately and only
+  # ADDED: they never push a regular QB out of his team's top 2 (a hurt
+  # starter is often listed last -- Jalen Hurts was PHI's QB4 behind McKee,
+  # Cole Payton and Joe Milton -- and must keep his rows).
+  qb_depth <- tryCatch(select_team_qbs(target_season, eligible), error = function(e) {
     cat("Depth chart unavailable this run -- skipping backup-QB filter:", conditionMessage(e), "\n")
     NULL
   })
+  short_in <- if (length(short_qbs)) {
+    tryCatch(intersect(short_qbs, select_team_qbs(target_season, c(eligible, short_qbs))$player_name), error = function(e) character(0))
+  } else character(0)
   if (!is.null(qb_depth)) {
-    short_in <- intersect(short_qbs, qb_depth$player_name)
-    if (length(short_in)) {
-      cat("Short-history top-2 depth-chart QBs let in:", paste(short_in, collapse = ", "), "\n")
-      eligible <- c(eligible, short_in)
-    }
     player_positions <- reg$position[match(eligible, reg$player_display_name)]
     is_deep_backup_qb <- player_positions == "QB" & !(eligible %in% qb_depth$player_name)
     cat("3rd-string-or-deeper QBs removed:", sum(is_deep_backup_qb), "-",
         paste(eligible[is_deep_backup_qb], collapse = ", "), "\n")
     eligible <- eligible[!is_deep_backup_qb]
+    if (length(short_in)) {
+      cat("Short-history top-2 depth-chart QBs let in:", paste(short_in, collapse = ", "), "\n")
+      eligible <- c(eligible, short_in)
+    }
   }
 
   # Not currently on any NFL roster this season (retired, cut, unsigned
@@ -1808,19 +1814,32 @@ export_for_supabase <- function(df, target_season = TARGET_SEASON, week = NULL) 
   # all, even with a real backup (Marcus Mariota) about to start. The
   # starter's own row is left alone either way -- it still shows OUT/0 as
   # usual; this only decides whether the backup ALSO gets shown.
-  qb_depth <- tryCatch(select_team_qbs(season, df$player_name[df$position == "QB"]),
+  #
+  # Per team: the first QB on the chart who is NOT out (this week's starter,
+  # whether he is listed first or the chart already moved a hurt starter
+  # down), plus the injured real starter -- the OUT QB with the biggest
+  # season median, if it beats the healthy starter's -- so he keeps his OUT
+  # row here and his season simulation (Jalen Hurts, PHI Week 6 2026, was
+  # listed QB4 while hurt and briefly vanished from both tables). Not every
+  # OUT QB: backups with no Sleeper projection are flagged OUT above, and
+  # keeping them published a dozen idle backups. Uses the whole chart, not
+  # just its top 2, for the same reason.
+  qb_depth <- tryCatch(select_team_qbs(season, df$player_name[df$position == "QB"], n = Inf),
                         error = function(e) NULL)
   if (!is.null(qb_depth) && nrow(qb_depth) > 0) {
     keep_qb <- character(0)
     for (tm in unique(qb_depth$team)) {
       chart <- qb_depth[qb_depth$team == tm, ]
       chart <- chart[order(chart$pos_rank), ]
-      starter <- chart$player_name[1]
-      keep_qb <- c(keep_qb, starter)
-      if (starter %in% out_players && nrow(chart) >= 2) {
-        backup <- chart$player_name[2]
-        keep_qb <- c(keep_qb, backup)
-        cat("Starter OUT -- promoting backup QB into this week's tables:", backup, "(for", tm, ")\n")
+      healthy <- chart$player_name[!(chart$player_name %in% out_players)]
+      hurt <- chart$player_name[chart$player_name %in% out_players]
+      starter <- if (length(healthy)) healthy[1] else character(0)
+      sm <- function(p) df$season_median[match(p, df$player_name)]
+      hurt_top <- if (length(hurt)) hurt[which.max(sm(hurt))] else character(0)
+      if (length(hurt_top) && length(starter) && !(sm(hurt_top) > sm(starter))) hurt_top <- character(0)
+      keep_qb <- c(keep_qb, starter, hurt_top)
+      if (length(hurt_top) && length(starter)) {
+        cat("Starter OUT -- promoting backup QB into this week's tables:", starter, "(for", tm, ")\n")
       }
     }
     is_extra_qb <- df$position == "QB" & !(df$player_name %in% keep_qb)
