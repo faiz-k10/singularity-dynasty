@@ -118,6 +118,24 @@ data supports and overshoots the target. Live 2026 weeks 1-5 (players projected 
 RBs, 7.8% of TEs and 4.2% of QBs, so this season's ceilings, if anything, run a little LOW. A single player rarely reaching his ceiling
 (Gadsden's best is 9.8 against 27.5) is expected for a ~4% outcome and says nothing about accuracy. Not changed.
 
+## Rookie accuracy once they qualify (Oct 2026, `backtest_rookie_accuracy.R`)
+
+Walk-forward 2022-2025, next-game, live weekly method (without the 15% mean and Sleeper blends, so absolute numbers run a
+little worse than live). Rookies in their first season with 6-9 prior games (where a new rookie enters the rankings) vs
+veterans with 20+ games:
+
+| group | games | median MAE | bias (actual - median) | below floor | above ceiling |
+|---|---|---|---|---|---|
+| rookie, 6-9 games | 909 | 4.22 | +2.21 | 6.7% | 15.7% |
+| rookie, 10+ games | 682 | 4.73 | +2.04 | 8.5% | 9.8% |
+| veteran, 20+ games | 14,976 | 4.73 | +0.67 | 10.9% | 3.6% |
+
+The typical miss in points is about the same, but rookies score less (6.8 vs 8.8 a game), so it is larger relative to
+their output, and it is lopsided: rookie medians run about 2 points a game LOW and rookies beat their ceiling ~4x as often
+(1 game in 6 vs 1 in 28), at every position. Their first games include pre-role and learning weeks and they improve
+during the season, which a recency-weighted history of 6-9 games cannot see yet. Not corrected yet: the natural fix is
+a first-season adjustment (raise the median and widen the ceiling for rookies), which needs its own backtest.
+
 ## Bounce-back trigger (informational only — tried as a real adjustment, backtest said no)
 
 A player whose most recent real game (week 18 excluded, see below) landed
