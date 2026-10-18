@@ -36,7 +36,7 @@ function Card({ title, sub, href, cta, wide, children }) {
           </Link>
         )}
       </header>
-      {children}
+      <div className="hub-card-body">{children}</div>
     </article>
   );
 }
