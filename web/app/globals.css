@@ -4895,12 +4895,12 @@ html{font-stretch:82%;}
 .hub-mover-delta.up{color:var(--up);} .hub-mover-delta.down{color:var(--down);}
 .hub-mover-vals{grid-column:1 / -1; font-family:var(--font-mono), monospace; font-size:10.5px; color:var(--star-dim);}
 /* range bars (ceilings, sim leaders) */
-.hub-range-row{display:grid; grid-template-columns:minmax(0, 1.3fr) minmax(70px, 1.2fr) 64px; align-items:center; gap:10px;}
+.hub-range-row{display:grid; grid-template-columns:minmax(0, 1.3fr) minmax(70px, 1.2fr) 108px; align-items:center; gap:10px;}
 .hub-range-name{font-size:13.5px; color:var(--star); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
 .hub-range-track{position:relative; height:10px; background:var(--void-panel-2); border-radius:5px;}
 .hub-range-span{position:absolute; top:0; bottom:0; border-radius:5px; background:linear-gradient(90deg, rgba(var(--down-rgb), 0.55), rgba(var(--horizon-gold-rgb), 0.7) 55%, rgba(var(--neon-blue-rgb), 0.65));}
 .hub-range-median{position:absolute; top:-3px; bottom:-3px; width:2px; margin-left:-1px; background:var(--star); border-radius:1px;}
-.hub-range-nums{display:flex; flex-direction:column; align-items:flex-end; line-height:1.15; font-family:var(--font-mono), monospace;}
+.hub-range-nums{display:flex; align-items:baseline; justify-content:flex-end; font-family:var(--font-mono), monospace; white-space:nowrap;}
 .hub-range-nums b{font-size:14px; color:var(--horizon-gold);}
 .hub-range-nums i{font-style:normal; font-size:10px; color:var(--star-dim);}
 /* matchups */

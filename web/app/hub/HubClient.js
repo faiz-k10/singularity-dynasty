@@ -99,10 +99,10 @@ function RangeRow({ r, max }) {
         <span className="hub-range-median" style={{ left: `${(r.mid / max) * 100}%` }} />
       </span>
       <span className="hub-range-nums">
-        <b>{int(r.hi)}</b>
         <i>
-          {int(r.lo)}–{int(r.mid)}
+          {int(r.lo)}–{int(r.mid)}–
         </i>
+        <b>{int(r.hi)}</b>
       </span>
     </li>
   );
@@ -114,7 +114,7 @@ function Ceilings({ data, pos, limit }) {
   return (
     <Card title="Highest ceilings this week" sub="Floor to ceiling, with the median marked (top 50 shown)" href="/tools/redraft-rankings" cta="Full rankings">
       <ul className="hub-list">{list.map((r) => <RangeRow key={r.n} r={r} max={max} />)}</ul>
-      <p className="hub-foot">Bar = floor to ceiling · tick = median · right: ceiling, then floor–median</p>
+      <p className="hub-foot">Bar = floor to ceiling · tick = median · right: floor–median–ceiling</p>
     </Card>
   );
 }
