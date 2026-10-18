@@ -15,6 +15,7 @@ const COLUMN_TYPES = {
   position: "string",
   team: "string",
   opponent: "string",
+  projection: "number",
   floor: "number",
   ceiling: "number",
   notes: "string",

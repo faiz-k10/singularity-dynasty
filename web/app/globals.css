@@ -1550,11 +1550,10 @@ a.export-csv-btn{text-decoration:none;}
    (2-3 digit yardage, 1-2 decimal TD/rec rates) but were sized by their
    own header labels, same over-padded issue Player Sims' Floor/Median/
    Ceiling columns had -- narrower padding so they're not mostly empty
-   space around a short value. nth-child(7) through (14): Rank/Player/Pos
-   (1-3) + Team/Opp/Proj (4-6, always on for this table) land the 8 stat
-   columns at 7-14, Notes at 15. */
-.redraft-table > thead > tr > th:nth-child(n+7):nth-child(-n+14),
-.redraft-table > tbody > tr td:nth-child(n+7):nth-child(-n+14){
+   space around a short value. Rank / Player / Pos / Median / Matchup /
+   Floor / Curve / Ceiling are columns 1-8, so the 8 stat columns are 9-16. */
+.redraft-table > thead > tr > th:nth-child(n+9):nth-child(-n+16),
+.redraft-table > tbody > tr td:nth-child(n+9):nth-child(-n+16){
   padding-left:8px; padding-right:8px;
 }
 
@@ -5076,3 +5075,6 @@ html{font-stretch:82%;}
 .compare-locked:hover{color:var(--horizon-gold); border-color:rgba(var(--horizon-gold-rgb),0.5);}
 .weekly-stats-played{font-family:var(--font-mono), monospace; font-size:11px; color:var(--star-dim);}
 .weekly-stats-played b{color:var(--horizon-gold); font-weight:700;}
+
+/* Weekly Projection Rankings: the median, between Pos and Matchup, in glowing gold. */
+.rankings-table td.median-cell{color:var(--horizon-gold); font-weight:700; font-size:15px; text-shadow:0 0 12px rgba(var(--horizon-gold-rgb),0.55);}

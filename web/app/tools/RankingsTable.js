@@ -173,7 +173,7 @@ export default function RankingsTable({
     2 + // Rank, Player
     (showPosition ? 1 : 0) +
     (showTeam ? 1 : 0) + // Matchup (merged) or Team -- always exactly one column
-    (showRange ? 2 : 0) + // Floor, Ceiling
+    (showRange ? 3 : 0) + // Median, Floor, Ceiling
     (showCurve ? 1 : 0) +
     (showStatColumns ? STAT_COLUMNS.length : 0) +
     (showNotes ? 1 : 0);
@@ -209,6 +209,7 @@ export default function RankingsTable({
             <SortableTh label="Rank" sortKey="rank" {...sortProps} />
             <SortableTh label="Player" sortKey="player_name" {...sortProps} />
             {showPosition && <SortableTh label="Pos" sortKey="position" {...sortProps} />}
+            {showRange && <SortableTh label="Median" sortKey="projection" {...sortProps} />}
             {showTeam && showOpponent ? (
               <th>Matchup</th>
             ) : (
@@ -271,6 +272,11 @@ export default function RankingsTable({
                       {!bye && row.positionLabel && row.positionLabel !== row.position && (
                         <span className="pos-rank">{row.positionLabel.slice(row.position.length)}</span>
                       )}
+                    </td>
+                  )}
+                  {showRange && (
+                    <td className="mono median-cell" title={bye ? undefined : "Median projection for this week"}>
+                      {bye || row.projection == null ? "—" : Number(row.projection).toFixed(1)}
                     </td>
                   )}
                   {showTeam && showOpponent ? (
