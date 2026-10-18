@@ -15,6 +15,7 @@ import AchievementDots from "../tools/AchievementDots";
 import { sortRows, sortArrow } from "@/lib/sortLink";
 import { buildPortfolio, aggregateGames, PORTFOLIO_COLUMN_TYPES } from "@/lib/portfolio";
 import { liveRosterNews, lineupChanged } from "@/lib/rosterAlerts";
+import { livePointsFor } from "@/lib/gameStatus";
 
 // Display-only relabel -- Sleeper's own roster_positions/starters value is
 // the literal string "SUPER_FLEX"; sorting/matching still uses that raw
@@ -132,6 +133,7 @@ const ROSTER_COLUMN_TYPES = {
   position: "string",
   team: "string",
   myProjPts: "number",
+  livePts: "number",
   startPct: "number",
   rosterPct: "number",
 };
@@ -163,7 +165,20 @@ function Th({ label, sortKeyName, sortKey, sortDir, onSort, className }) {
 // the Starters/Full Roster toggle resets any active sort back to that
 // view's own default order, rather than carrying a sort across into a
 // view it wasn't set on.
-function RosterTable({ players, bestBall = false }) {
+// playerPoints (Sleeper's points so far this week, by player id, this league's scoring) + gameStates (lib/gameStatus.js)
+// drive the Points column: "—" until the player's game kicks off, then live (pulsing dot) and final.
+function RosterTable({ players: rawPlayers, bestBall = false, playerPoints = null, gameStates = null }) {
+  const showLive = Boolean(playerPoints && gameStates && Object.keys(gameStates).length);
+  const players = useMemo(
+    () =>
+      showLive
+        ? rawPlayers.map((p) => {
+            const { pts, state } = livePointsFor(p, playerPoints, gameStates);
+            return { ...p, livePts: pts, liveState: state };
+          })
+        : rawPlayers,
+    [rawPlayers, playerPoints, gameStates, showLive]
+  );
   const hasStarters = !bestBall && players.some((p) => p.isStarter);
   const [view, setView] = useState(hasStarters ? "starters" : "full");
   const [sortKey, setSortKey] = useState(null);
@@ -232,6 +247,7 @@ function RosterTable({ players, bestBall = false }) {
               <Th label="Pos" sortKeyName="position" {...thProps} />
               <Th label="Team" sortKeyName="team" {...thProps} />
               <Th label="Singularity Proj" sortKeyName="myProjPts" {...thProps} />
+              {showLive && <Th label="Points" sortKeyName="livePts" {...thProps} />}
               {view === "full" && <Th label="Start %" sortKeyName="startPct" {...thProps} />}
               {view === "full" && <Th label="Roster %" sortKeyName="rosterPct" {...thProps} />}
             </tr>
@@ -254,6 +270,17 @@ function RosterTable({ players, bestBall = false }) {
                   <td><PositionBadge position={p.position} /></td>
                   <td><TeamBadge team={p.team} /></td>
                   <td className="mono">{formatPts(p.myProjPts)}</td>
+                  {showLive && (
+                    <td
+                      className={`mono live-pts-cell${p.liveState === "in" ? " is-live" : ""}${
+                        p.livePts != null && p.myProjPts != null && p.livePts >= p.myProjPts ? " beat" : ""
+                      }`}
+                      title={p.liveState === "in" ? "In progress" : p.liveState === "post" ? "Final" : "Not started"}
+                    >
+                      {p.liveState === "in" && <span className="matchup-score-live-dot" aria-hidden="true" />}
+                      {formatPts(p.livePts)}
+                    </td>
+                  )}
                   {view === "full" && <td className="mono">{formatPct(p.startPct)}</td>}
                   {view === "full" && <td className="mono">{formatPct(p.rosterPct)}</td>}
                 </tr>
@@ -1111,6 +1138,8 @@ export default function MyTeamClient({
   // Injury/news feed for rostered players; the server caches the upstream
   // ESPN call for 2 minutes, so polling at that cadence is cheap.
   const [news, setNews] = useState(null);
+  // Which games have kicked off (lib/gameStatus.js), from the refresh and the 30s live poll.
+  const [gameStates, setGameStates] = useState(null);
   const [newsFilter, setNewsFilter] = useState({ starters: false, injuries: false });
   useEffect(() => {
     if (!hasSaved) return;
@@ -1148,6 +1177,7 @@ export default function MyTeamClient({
         setLiveScores({});
         setUpdatedAt(res.updatedAt || Date.now());
       }
+      if (res?.gameStates) setGameStates(res.gameStates);
       // The feed is cached ~2 min upstream, so this is cheap; it picks up any status change along with the new lineup.
       const n = await getRosterNews().catch(() => null);
       if (n && !n.error) setNews(n);
@@ -1171,6 +1201,7 @@ export default function MyTeamClient({
         setLiveScores(res.live);
         setUpdatedAt(res.updatedAt || Date.now());
       }
+      if (res?.gameStates) setGameStates(res.gameStates);
       // Lineup changed in Sleeper since our copy -> full refresh (lineup, alerts, projections).
       if (lineupChanged(savedTeamsRef.current, res?.lineups)) runFullRefresh();
     };
@@ -1431,7 +1462,7 @@ export default function MyTeamClient({
                     {pending && deletingId === t.id ? "Removing…" : "Remove"}
                   </button>
                 </div>
-                <RosterTable players={t.players || []} bestBall={t.settings?.bestBall} />
+                <RosterTable players={t.players || []} bestBall={t.settings?.bestBall} playerPoints={t.settings?.playerPoints} gameStates={gameStates} />
               </div>
             )}
           />
@@ -1549,7 +1580,7 @@ export default function MyTeamClient({
                       </button>
                     )}
                   </summary>
-                  <RosterTable players={team.players} bestBall={team.settings?.bestBall} />
+                  <RosterTable players={team.players} bestBall={team.settings?.bestBall} playerPoints={team.settings?.playerPoints} gameStates={gameStates} />
                 </details>
               ))}
             </div>

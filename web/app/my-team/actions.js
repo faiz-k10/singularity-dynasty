@@ -21,6 +21,7 @@ import {
   fetchSleeperResearch,
   getSleeperPlayers,
 } from "@/lib/sleeper";
+import { fetchGameStates } from "@/lib/gameStatus";
 import { fetchInjuryFeed } from "@/lib/injuryFeed";
 
 // Sleeper's own player dictionary drops name suffixes ("Luther Burden"
@@ -272,6 +273,7 @@ export async function lookupSleeperTeams(username) {
         isBye: weekIsBye,
         matchupProj,
         matchupActual,
+        playerPoints: mine?.players_points || null,
         // Best ball leagues have no set lineup -- the platform auto-starts
         // your top scorers -- so Sleeper's `starters` array is mostly "0"
         // placeholders and the Starting Lineup view is meaningless.
@@ -396,7 +398,7 @@ export async function refreshSavedTeams() {
       teams[row.id] = { team_name: fresh.team_name, settings: fresh.settings, players: fresh.players };
     })
   );
-  return { teams, updatedAt: Date.now() };
+  return { teams, gameStates: await fetchGameStates(), updatedAt: Date.now() };
 }
 
 // Lightweight poll for the live dashboard: just record, week, opponent and
@@ -418,6 +420,7 @@ export async function pollLiveScores() {
     .eq("platform", "sleeper");
   if (!rows?.length) return { live: {} };
 
+  const gameStatesP = fetchGameStates();
   const state = await fetchSleeperState();
   const inSeason = state.season_type === "regular";
   const week = inSeason ? state.display_week || state.week || 1 : null;
@@ -443,10 +446,12 @@ export async function pollLiveScores() {
         opponentRecord: m.weekOpponentRecord,
         isBye: m.weekIsBye,
         matchupActual: m.matchupActual,
+        // Each player's points so far this week in this league's scoring (the Starting Lineup's Points column).
+        playerPoints: m.mine?.players_points || null,
       };
     })
   );
-  return { live, lineups, updatedAt: Date.now() };
+  return { live, lineups, gameStates: await gameStatesP, updatedAt: Date.now() };
 }
 
 // Injury + news for everyone on the signed-in user's saved rosters, from

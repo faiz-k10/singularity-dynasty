@@ -3657,6 +3657,12 @@ tr.stat-row-selected td{background:var(--void-panel);}
   display:inline-block; position:relative;
   animation:live-pulse-ring 1.8s ease-out infinite;
 }
+/* My Team lineup's live Points column: gold once a player has matched his projection; the pulsing dot only while his
+   game is in progress. */
+.live-pts-cell{white-space:nowrap;}
+.live-pts-cell .matchup-score-live-dot{width:6px; height:6px; margin-right:7px; vertical-align:middle;}
+.live-pts-cell.is-live{color:var(--star); font-weight:700;}
+.live-pts-cell.beat{color:var(--horizon-gold); font-weight:700;}
 @keyframes live-pulse-ring{
   0%{box-shadow:0 0 0 0 rgba(var(--down-rgb),0.55);}
   70%{box-shadow:0 0 0 7px rgba(var(--down-rgb),0);}
