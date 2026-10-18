@@ -442,7 +442,6 @@ export default async function Home() {
                 <li>Check any Sleeper account, save 1 league</li>
                 <li>Weekly rankings, top 50</li>
                 <li>Season simulations, top 10</li>
-                <li>Compare up to 3 players</li>
                 <li>
                   Dynasty and prospect previews <em className="round-soon">Soon</em>
                 </li>
