@@ -20,10 +20,10 @@ export const HUB_CONFIG = {
       label: "This week",
       blurb: "What moved, who has the highest ceiling, and where the matchups are",
       modules: [
-        { id: "movers", enabled: true, limit: 5 },
-        { id: "ceilings", enabled: true, limit: 6 },
+        { id: "movers", enabled: true, limit: 3 },
+        { id: "ceilings", enabled: true, limit: 3 },
         { id: "matchups", enabled: true, limit: 6 },
-        { id: "hotcold", enabled: true, limit: 4 },
+        { id: "hotcold", enabled: true, limit: 3 },
         { id: "simLeaders", enabled: true, limit: 6 },
       ],
     },
