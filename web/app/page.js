@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { unstable_cache } from "next/cache";
 import SiteHeader from "./SiteHeader";
+import LandingHub from "./hub/LandingHub";
 import { createPublicClient } from "@/lib/supabase/public";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -255,6 +256,8 @@ export default async function Home() {
       </header>
 
       <main className="wrap">
+        <LandingHub />
+
         <section id="tools">
           <div className="section-head reveal">
             <div className="eyebrow blue">What&apos;s Inside</div>
