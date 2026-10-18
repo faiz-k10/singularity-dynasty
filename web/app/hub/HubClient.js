@@ -90,7 +90,8 @@ function Movers({ data, pos, limit }) {
   );
 }
 
-function RangeRow({ r, max }) {
+// `highlight`: which of the three numbers is the big gold one (the ceiling on the ceilings card, the median on the season outlook card).
+function RangeRow({ r, max, highlight = "hi" }) {
   return (
     <li className="hub-range-row">
       <Nm n={r.n} pos={r.pos} cls="hub-range-name" />
@@ -99,10 +100,20 @@ function RangeRow({ r, max }) {
         <span className="hub-range-median" style={{ left: `${(r.mid / max) * 100}%` }} />
       </span>
       <span className="hub-range-nums">
-        <i>
-          {int(r.lo)}–{int(r.mid)}–
-        </i>
-        <b>{int(r.hi)}</b>
+        {highlight === "mid" ? (
+          <>
+            <i>{int(r.lo)}–</i>
+            <b>{int(r.mid)}</b>
+            <i>–{int(r.hi)}</i>
+          </>
+        ) : (
+          <>
+            <i>
+              {int(r.lo)}–{int(r.mid)}–
+            </i>
+            <b>{int(r.hi)}</b>
+          </>
+        )}
       </span>
     </li>
   );
@@ -199,8 +210,8 @@ function SimLeaders({ data, pos, limit }) {
   if (!list.length) return null;
   return (
     <Card title="Season outlook leaders" sub="Full-season floor, median and ceiling from 10,000 simulated seasons" href="/tools/player-simulations" cta="All simulations">
-      <ul className="hub-list">{list.map((r) => <RangeRow key={r.n} r={r} max={max} />)}</ul>
-      <p className="hub-foot">Free preview shows the top 10 · the full list unlocks with Singularity</p>
+      <ul className="hub-list">{list.map((r) => <RangeRow key={r.n} r={r} max={max} highlight="mid" />)}</ul>
+      <p className="hub-foot">Bar = floor to ceiling · tick and big number = median · free preview shows the top 10, the full list unlocks with Singularity</p>
     </Card>
   );
 }
