@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore, useTransition } from "react";
 import Link from "next/link";
 import { lookupSleeperTeams, saveTeam, deleteTeam, setBuyIn, refreshSavedTeams, pollLiveScores, getRosterNews } from "./actions";
 import TeamBadge from "../tools/TeamBadge";
@@ -1179,7 +1179,20 @@ export default function MyTeamClient({
     };
   }, [theater]);
 
-  const [username, setUsername] = useState("");
+  // The landing page's Sleeper box remembers the username; it prefills here so "Save your leagues" is one click.
+  const rememberedUsername = useSyncExternalStore(
+    () => () => {},
+    () => {
+      try {
+        return localStorage.getItem("sd-sleeper-user") || "";
+      } catch {
+        return "";
+      }
+    },
+    () => ""
+  );
+  const [typedUsername, setUsername] = useState(null);
+  const username = typedUsername ?? rememberedUsername;
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   const [savedKeys, setSavedKeys] = useState(

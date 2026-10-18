@@ -9,6 +9,7 @@ export default async function LoginPage({ searchParams }) {
   const params = await searchParams;
   const error = params?.error;
   const message = params?.message;
+  const next = typeof params?.next === "string" ? params.next : "";
 
   return (
     <div className="auth-page">
@@ -26,6 +27,7 @@ export default async function LoginPage({ searchParams }) {
           {message && <p className="auth-notice mono">{message}</p>}
 
           <form className="auth-form">
+            {next && <input type="hidden" name="next" value={next} />}
             <label className="feed-label mono" htmlFor="email">
               EMAIL
             </label>

@@ -2,6 +2,8 @@ import Link from "next/link";
 import { unstable_cache } from "next/cache";
 import SiteHeader from "./SiteHeader";
 import LandingHub from "./hub/LandingHub";
+import HeroLookup from "./HeroLookup";
+import { createClient } from "@/lib/supabase/server";
 import { createPublicClient } from "@/lib/supabase/public";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -117,6 +119,10 @@ const getCachedHomeData = unstable_cache(
 
 export default async function Home() {
   const { posts, latestWeek, topRedraft, trendRows, simRows, singularityCount } = await getCachedHomeData();
+  // Signed in? Only changes the hero box's last button ("Open my leagues" vs "Save your leagues").
+  const {
+    data: { user },
+  } = await (await createClient()).auth.getUser();
   const heroCandidates = [];
 
   for (const r of trendRows) {
@@ -206,25 +212,17 @@ export default async function Home() {
           <div>
             <div className="eyebrow">Dynasty · Best Ball · Data Gravity</div>
             <h1>
-              Every stat, every trend —<br />
-              pulled toward one
+              Know the range
               <br />
-              <span>endpoint</span>.
+              on every player,
+              <br />
+              in every <span>league</span>.
             </h1>
             <p className="lede">
-              Singularity Dynasty runs rankings, prospect grades, and Monte
-              Carlo season simulations through the same regression models,
-              distilling thousands of data points into one clear number. No
-              noise, no small-sample bias — just signal.
+              Enter your Sleeper username. We pull every league you play in and show you the floor, median and ceiling on your
+              roster &mdash; and the players you&apos;re most exposed to.
             </p>
-            <div className="hero-ctas">
-              <a href="#pricing" className="btn-primary">
-                See Pricing
-              </a>
-              <a href="#tools" className="btn-ghost">
-                Explore the Tools
-              </a>
-            </div>
+            <HeroLookup signedIn={Boolean(user)} />
           </div>
 
           <div className="orbit-signal" aria-hidden="true">
