@@ -20,6 +20,8 @@ export const metadata = {
 };
 
 const SLOTS = ["p1", "p2", "p3"];
+// Stargazer compares 2 players, Explorer and Singularity 3.
+const MAX_COMPARE = { stargazer: 2 };
 const TEASER_LIMIT = 50;
 
 // Same data and the same access rule as Weekly Projection Rankings: Explorer and Singularity can compare any ranked
@@ -39,7 +41,8 @@ export default async function ComparePlayersPage({ searchParams }) {
 
   const pool = latest ? enrichRankings({ cached, hasFullAccess, tdProfile, leanRows, bioByNamePos }) : [];
   const byName = new Map(pool.map((r) => [r.player_name, r]));
-  const selected = SLOTS.map((slot) => byName.get(params?.[slot])).filter(Boolean);
+  const maxPlayers = MAX_COMPARE[tier] ?? 3;
+  const selected = SLOTS.slice(0, maxPlayers).map((slot) => byName.get(params?.[slot])).filter(Boolean);
   const playerOptions = pool.map((r) => ({ player_name: r.player_name, position: r.position }));
   const maxSpread = pool.reduce((m, r) => Math.max(m, r.floor != null && r.ceiling != null ? r.ceiling - r.floor : 0), 1);
   const gated = !hasFullAccess && cached.rows.length > TEASER_LIMIT;
@@ -52,7 +55,7 @@ export default async function ComparePlayersPage({ searchParams }) {
         <div className="eyebrow">{latest ? `Week ${latest.week} · ${latest.season}` : "Compare"}</div>
         <h1>Compare Players</h1>
         <p className="tool-sub">
-          Pick two or three players from this week&apos;s projections to see them side by side. Looking for full-season outlooks?{" "}
+          Pick two{maxPlayers > 2 ? " or three" : ""} players from this week&apos;s projections to see them side by side. Looking for full-season outlooks?{" "}
           <Link href="/tools/compare-player-sims" className="hub-panel-link">
             Compare season simulations →
           </Link>
@@ -78,6 +81,7 @@ export default async function ComparePlayersPage({ searchParams }) {
               <ComparePlayerPickers
                 players={playerOptions}
                 defaults={{ p1: params?.p1 || "", p2: params?.p2 || "", p3: params?.p3 || "" }}
+                maxPlayers={maxPlayers}
               />
             </form>
 

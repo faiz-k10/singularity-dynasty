@@ -17,6 +17,8 @@ export const metadata = {
 };
 
 const SLOTS = ["p1", "p2", "p3"];
+// Stargazer compares 2 players, Explorer and Singularity 3.
+const MAX_COMPARE = { stargazer: 2 };
 
 // Singularity-only, same as Player Season Simulations itself (free viewers get the top 10): the rows are the very ones
 // that dashboard shows (shared buildSimRows), so the tier gate has to match exactly.
@@ -29,7 +31,8 @@ export default async function ComparePlayerSimsPage({ searchParams }) {
 
   const { sims, maxCeiling, simsWithComputed } = buildSimRows({ cached: weekData, hasFullAccess, bioByNamePos });
   const byName = new Map(simsWithComputed.map((r) => [r.player_name, r]));
-  const selected = SLOTS.map((slot) => byName.get(params?.[slot])).filter(Boolean);
+  const maxPlayers = MAX_COMPARE[tier] ?? 3;
+  const selected = SLOTS.slice(0, maxPlayers).map((slot) => byName.get(params?.[slot])).filter(Boolean);
   const playerOptions = sims.map((r) => ({ player_name: r.player_name, position: r.position }));
   const gated = !hasFullAccess && weekData.rows.length > sims.length;
 
@@ -67,7 +70,7 @@ export default async function ComparePlayerSimsPage({ searchParams }) {
         <div className="eyebrow">{latest ? `${latest.season} Season · Week ${latest.week}` : "Compare"}</div>
         <h1>Compare Players — Season Simulations</h1>
         <p className="tool-sub">
-          Pick two or three players from Player Season Simulations to see their full-season outlooks side by side. Looking for this
+          Pick two{maxPlayers > 2 ? " or three" : ""} players from Player Season Simulations to see their full-season outlooks side by side. Looking for this
           week&apos;s projections?{" "}
           <Link href="/tools/compare-players" className="hub-panel-link">
             Compare weekly projections →
@@ -94,6 +97,7 @@ export default async function ComparePlayerSimsPage({ searchParams }) {
               <ComparePlayerPickers
                 players={playerOptions}
                 defaults={{ p1: params?.p1 || "", p2: params?.p2 || "", p3: params?.p3 || "" }}
+                maxPlayers={maxPlayers}
               />
             </form>
 

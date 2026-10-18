@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
+import Link from "next/link";
 
 const MAX_SUGGESTIONS = 8;
 const SLOTS = [
@@ -94,12 +95,22 @@ function PickerField({ slot, players, defaultValue }) {
   );
 }
 
-export default function ComparePlayerPickers({ players, defaults }) {
+// maxPlayers: how many players this viewer may compare (Stargazer 2, Explorer and up 3). Slots past it show as locked.
+export default function ComparePlayerPickers({ players, defaults, maxPlayers = 3 }) {
   return (
     <>
-      {SLOTS.map((slot) => (
-        <PickerField key={slot.name} slot={slot} players={players} defaultValue={defaults[slot.name] || ""} />
-      ))}
+      {SLOTS.map((slot, i) =>
+        i < maxPlayers ? (
+          <PickerField key={slot.name} slot={slot} players={players} defaultValue={defaults[slot.name] || ""} />
+        ) : (
+          <div className="compare-form-field" key={slot.name}>
+            <span className="feed-label mono">{slot.label}</span>
+            <Link href="/#pricing" className="compare-select compare-picker-input compare-locked">
+              Add a third with Explorer →
+            </Link>
+          </div>
+        )
+      )}
       <button type="submit" className="btn-primary compare-submit">
         Compare
       </button>
