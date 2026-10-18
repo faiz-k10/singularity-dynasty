@@ -488,7 +488,6 @@ export default function InteractiveScript({ tickerItems } = {}) {
     /* ---- pricing card tilt + spotlight ---- */
     if (isFinePointer && !reducedMotion) {
       document.querySelectorAll(".round-card").forEach((card) => {
-        const featured = card.classList.contains("featured");
         card.addEventListener(
           "mousemove",
           (e) => {
@@ -499,15 +498,14 @@ export default function InteractiveScript({ tickerItems } = {}) {
             const ry = (px - 0.5) * 7;
             card.style.setProperty("--mx", px * 100 + "%");
             card.style.setProperty("--my", py * 100 + "%");
-            const base = featured ? "translateY(-8px) " : "";
-            card.style.transform = `${base}perspective(800px) rotateX(${rx}deg) rotateY(${ry}deg)`;
+            card.style.transform = `perspective(800px) rotateX(${rx}deg) rotateY(${ry}deg)`;
           },
           { signal }
         );
         card.addEventListener(
           "mouseleave",
           () => {
-            card.style.transform = featured ? "translateY(-8px)" : "";
+            card.style.transform = "";
             card.style.removeProperty("--mx");
             card.style.removeProperty("--my");
           },

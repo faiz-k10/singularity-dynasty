@@ -432,14 +432,17 @@ export default async function Home() {
           <div className="rounds">
             <div className="round-card reveal">
               <div className="round-label">Free</div>
-              <h3>Stargazer</h3>
+              <div className="round-title-row">
+                <h3>Stargazer</h3>
+              </div>
               <div className="round-price">$0</div>
-              <div className="round-desc">Look at your leagues before you pay for anything.</div>
+              <div className="round-bill">&nbsp;</div>
+              <div className="round-desc">Look at your leagues before you pay.</div>
               <ul className="round-features">
                 <li>Check any Sleeper account, save 1 league</li>
-                <li>Weekly Projection Rankings (top 50)</li>
-                <li>Season simulations (top 10)</li>
-                <li>Compare up to 3 players (top 50)</li>
+                <li>Weekly rankings, top 50</li>
+                <li>Season simulations, top 10</li>
+                <li>Compare up to 3 players</li>
                 <li>
                   Dynasty and prospect previews <em className="round-soon">Soon</em>
                 </li>
@@ -448,6 +451,7 @@ export default async function Home() {
               <a href="/login" className="round-btn outline" data-plan="stargazer">
                 Become a Stargazer
               </a>
+              <p className="round-assure">Free, no card</p>
             </div>
 
             <div className="round-card featured reveal d1">
@@ -469,14 +473,14 @@ export default async function Home() {
               <div className="round-desc">All your leagues, saved and watched.</div>
               <ul className="round-features">
                 <li>Everything in Stargazer</li>
-                <li>Up to 10 leagues, saved and auto-refreshed</li>
-                <li>Exposure map across every league, plus buy-ins at risk</li>
+                <li>Up to 10 leagues, auto-refreshed</li>
+                <li>Exposure map and buy-ins at risk</li>
                 <li>
-                  &ldquo;Your Players This Week&rdquo; email and Sunday lineup alert <em className="round-soon">Soon</em>
+                  Weekly email and lineup alert <em className="round-soon">Soon</em>
                 </li>
-                <li>Every player in the weekly rankings, and full compare</li>
+                <li>Every player in the rankings, full compare</li>
                 <li>
-                  Full dynasty rankings and the rookie draft board <em className="round-soon">Soon</em>
+                  Dynasty rankings and rookie board <em className="round-soon">Soon</em>
                 </li>
                 <li>
                   Full prospect rankings <em className="round-soon">Soon</em>
@@ -489,7 +493,7 @@ export default async function Home() {
               <p className="round-assure">14-day refund · cancel anytime</p>
             </div>
 
-            <div className="round-card reveal d2">
+            <div className="round-card round-card-blue reveal d2">
               <div className="round-label">Full Access</div>
               <div className="round-title-row">
                 <h3>Singularity</h3>
@@ -509,19 +513,17 @@ export default async function Home() {
               <div className="round-bill" data-monthly="billed monthly" data-annual="$240 billed yearly">
                 $240 billed yearly
               </div>
-              <div className="round-desc">
-                {`Every player's full range, for the leagues where the edge decides it. Only ${SINGULARITY_FOUNDING_CAP} founding spots — ${singularityRemaining} remaining.`}
-              </div>
+              <div className="round-desc">Every player&apos;s full range, for the leagues where the edge decides it.</div>
               <ul className="round-features">
                 <li>Everything in Explorer</li>
                 <li>Unlimited leagues</li>
-                <li>Full season simulations: every player&apos;s floor, median and ceiling</li>
-                <li>Pace, percentile shapes, and role and career-stage tags</li>
+                <li>Full season simulations, every player</li>
+                <li>Pace, percentile and role tags</li>
                 <li>
                   Personal Team Analysis <em className="round-soon">Soon</em>
                 </li>
                 <li>CSV export of every list</li>
-                <li>Priority Discord and early beta access</li>
+                <li>Priority Discord, early beta access</li>
               </ul>
               <a href="#" className="round-btn outline" data-plan="singularity">
                 Reach Singularity
