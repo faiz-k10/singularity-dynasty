@@ -3657,6 +3657,12 @@ tr.stat-row-selected td{background:var(--void-panel);}
   display:inline-block; position:relative;
   animation:live-pulse-ring 1.8s ease-out infinite;
 }
+/* My Team roster table hugs its content: no column stretches to fill the card, so there are no wide empty gaps
+   between columns (the wrap shrinks with it, centred under the Starting Lineup / Full Roster toggle). */
+.rankings-table-wrap.roster-table-wrap, .my-team-saved-card .rankings-table-wrap.roster-table-wrap{width:fit-content; max-width:calc(100% - 32px); margin-left:auto; margin-right:auto;}
+.rankings-table.roster-table{width:auto; min-width:0;}
+.rankings-table.roster-table th, .rankings-table.roster-table td{padding-left:14px; padding-right:14px;}
+.rankings-table.roster-table td.player-cell{padding-right:28px;}
 /* My Team lineup's live Points column: gold once a player has matched his projection; the pulsing dot only while his
    game is in progress. */
 .live-pts-cell{white-space:nowrap;}

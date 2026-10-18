@@ -238,16 +238,16 @@ function RosterTable({ players: rawPlayers, bestBall = false, playerPoints = nul
           </button>
         </div>
       )}
-      <div className="rankings-table-wrap">
-        <table className="rankings-table">
+      <div className="rankings-table-wrap roster-table-wrap">
+        <table className="rankings-table roster-table">
           <thead>
             <tr>
               {view === "starters" && <Th label="Slot" sortKeyName="slot" {...thProps} />}
               <Th label="Player" sortKeyName="name" className="align-left" {...thProps} />
               <Th label="Pos" sortKeyName="position" {...thProps} />
               <Th label="Team" sortKeyName="team" {...thProps} />
-              <Th label="Singularity Proj" sortKeyName="myProjPts" {...thProps} />
               {showLive && <Th label="Points" sortKeyName="livePts" {...thProps} />}
+              <Th label="Singularity Proj" sortKeyName="myProjPts" {...thProps} />
               {view === "full" && <Th label="Start %" sortKeyName="startPct" {...thProps} />}
               {view === "full" && <Th label="Roster %" sortKeyName="rosterPct" {...thProps} />}
             </tr>
@@ -269,7 +269,6 @@ function RosterTable({ players: rawPlayers, bestBall = false, playerPoints = nul
                   </td>
                   <td><PositionBadge position={p.position} /></td>
                   <td><TeamBadge team={p.team} /></td>
-                  <td className="mono">{formatPts(p.myProjPts)}</td>
                   {showLive && (
                     <td
                       className={`mono live-pts-cell${p.liveState === "in" ? " is-live" : ""}${
@@ -281,6 +280,7 @@ function RosterTable({ players: rawPlayers, bestBall = false, playerPoints = nul
                       {formatPts(p.livePts)}
                     </td>
                   )}
+                  <td className="mono">{formatPts(p.myProjPts)}</td>
                   {view === "full" && <td className="mono">{formatPct(p.startPct)}</td>}
                   {view === "full" && <td className="mono">{formatPct(p.rosterPct)}</td>}
                 </tr>
