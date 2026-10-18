@@ -133,8 +133,9 @@ veterans with 20+ games:
 The typical miss in points is about the same, but rookies score less (6.8 vs 8.8 a game), so it is larger relative to
 their output, and it is lopsided: rookie medians run about 2 points a game LOW and rookies beat their ceiling ~4x as often
 (1 game in 6 vs 1 in 28), at every position. Their first games include pre-role and learning weeks and they improve
-during the season, which a recency-weighted history of 6-9 games cannot see yet. Not corrected yet: the natural fix is
-a first-season adjustment (raise the median and widen the ceiling for rookies), which needs its own backtest.
+during the season, which a recency-weighted history of 6-9 games cannot see yet. **Deliberately NOT corrected (founder's decision, Oct 2026):** rookie
+projections stay conservative until the rookie proves a role and scores -- the burden of proof is on him. Don't add a
+first-season boost to the median or ceiling without being asked.
 
 ## Bounce-back trigger (informational only — tried as a real adjustment, backtest said no)
 
