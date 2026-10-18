@@ -45,6 +45,10 @@ MIN_GAMES <- 6    # eligibility floor -- below this, a player isn't projected at
                   # heavy (sub-3 median) and functionally irrelevant -- Sanders
                   # was the only meaningful addition.
 
+QB_SHORT_MIN_GAMES <- 3  # a top-2 depth-chart QB needs only this many games
+                        # (see project_all()), so an OUT starter's backup can be
+                        # promoted even before he reaches MIN_GAMES.
+
 MED_DECAY   <- c(RB = 0.87, QB = 0.90, WR = 0.89, TE = 0.92)  # Redraft Rankings
 CEIL_DECAY  <- c(RB = 0.89, QB = 0.98, WR = 0.93, TE = 0.91)  # Best Ball Rankings
 CEIL_Q      <- c(RB = 0.995, QB = 0.985, WR = 0.975, TE = 0.995)  # calibrated internal quantile for "ceiling" --
@@ -1002,8 +1006,22 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
   # than letting a real cold/inactive season drag them down the rankings
   # naturally via the recency-weighted numbers once games start counting.
   last_completed_season <- TARGET_SEASON - 1
-  played_recently <- unique(reg$player_display_name[reg$season == last_completed_season])
+  # ...or games THIS season: a player who sat out all of last year but is
+  # back and playing now (Deshaun Watson: 0 games in 2025, CLE's starter in
+  # 2026) is current, not stale. Without this he was dropped every week.
+  played_recently <- unique(reg$player_display_name[reg$season %in% c(last_completed_season, target_season)])
   eligible <- intersect(eligible, played_recently)
+
+  # A team's top-2 QB with a short history (QB_SHORT_MIN_GAMES..MIN_GAMES-1
+  # games) is let in too, so a backup who takes over when the starter is OUT
+  # has a row to promote (Tanner McKee, PHI Week 6 2026: 5 career games, Jalen
+  # Hurts OUT -- the Eagles published no QB at all). He is projected from his
+  # own few games like anyone else (no boost; labelled Building), and the
+  # promotion step in export_for_supabase() still publishes only the starter,
+  # or the backup when the starter is OUT.
+  short_qbs <- names(counts[counts >= QB_SHORT_MIN_GAMES & counts < MIN_GAMES])
+  short_qbs <- intersect(short_qbs, played_recently)
+  short_qbs <- short_qbs[reg$position[match(short_qbs, reg$player_display_name)] == "QB"]
 
   # 3rd-string-or-deeper QBs excluded entirely (all three tables) --
   # current depth chart, not last season's history, since a QB's
@@ -1019,11 +1037,16 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
   # where OUT status is already known -- this just makes sure both exist
   # to choose from. Fails safe: if depth-chart data is unavailable, skip
   # this filter rather than accidentally dropping every QB.
-  qb_depth <- tryCatch(select_team_qbs(target_season, eligible), error = function(e) {
+  qb_depth <- tryCatch(select_team_qbs(target_season, c(eligible, short_qbs)), error = function(e) {
     cat("Depth chart unavailable this run -- skipping backup-QB filter:", conditionMessage(e), "\n")
     NULL
   })
   if (!is.null(qb_depth)) {
+    short_in <- intersect(short_qbs, qb_depth$player_name)
+    if (length(short_in)) {
+      cat("Short-history top-2 depth-chart QBs let in:", paste(short_in, collapse = ", "), "\n")
+      eligible <- c(eligible, short_in)
+    }
     player_positions <- reg$position[match(eligible, reg$player_display_name)]
     is_deep_backup_qb <- player_positions == "QB" & !(eligible %in% qb_depth$player_name)
     cat("3rd-string-or-deeper QBs removed:", sum(is_deep_backup_qb), "-",
