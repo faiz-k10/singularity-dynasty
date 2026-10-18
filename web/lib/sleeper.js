@@ -128,7 +128,7 @@ export async function getPlayerBiosByNamePos() {
   for (const [id, p] of Object.entries(dict)) {
     const name = normalizePlayerName(`${p.first_name || ""} ${p.last_name || ""}`);
     if (!name || !p.position) continue;
-    byNamePos[`${name}|${p.position}`] = { sleeperId: id, height: p.height ?? null, weight: p.weight ?? null };
+    byNamePos[`${name}|${p.position}`] = { sleeperId: id, height: p.height ?? null, weight: p.weight ?? null, yearsExp: p.years_exp ?? null };
   }
   return byNamePos;
 }

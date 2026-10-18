@@ -6,7 +6,7 @@ import TeamBadge from "./TeamBadge";
 import { NFL_DIVISIONS } from "@/lib/nflDivisions";
 
 // The Weekly Projection Rankings filter controls, in one row: position pills, the Badges dropdown (grouped, with an
-// OR / AND match toggle), the Teams dropdown (by division), the All players / My players switch (passed in as `view`), and the name search pinned to
+// OR / AND match toggle), the Teams dropdown (by division), a Rookies toggle, the All players / My players switch (passed in as `view`), and the name search pinned to
 // the right. The same element is shown in the normal page and in the full-screen view, so both look identical.
 // Open/close state for a toolbar dropdown: closes on an outside click or Escape. Escape is caught in the capture phase and
 // stopped, so with a dropdown open it only closes the dropdown (a second Escape then leaves the full-screen view).
@@ -50,6 +50,8 @@ export default function RankingsToolbar({
   teamIds,
   onToggleTeam,
   onClearTeams,
+  rookiesOnly,
+  onToggleRookies,
 }) {
   const [open, setOpen, ref] = useDropdown();
   const [teamsOpen, setTeamsOpen, teamsRef] = useDropdown();
@@ -195,6 +197,18 @@ export default function RankingsToolbar({
             </div>
           )}
         </div>
+      )}
+
+      {onToggleRookies && (
+        <button
+          type="button"
+          className={`theater-badge-filter-btn rk-rookies${rookiesOnly ? " has-selection" : ""}`}
+          onClick={onToggleRookies}
+          aria-pressed={Boolean(rookiesOnly)}
+          title="Show only first-year players"
+        >
+          Rookies
+        </button>
       )}
 
       {view}
