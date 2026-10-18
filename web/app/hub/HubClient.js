@@ -132,24 +132,43 @@ function Ceilings({ data, pos, limit }) {
 
 function Matchups({ data, pos, limit }) {
   const playing = data.playingDefs && data.playingDefs.length ? new Set(data.playingDefs) : null;
-  const groups = buildLeanGroups(playing ? data.leans.filter((l) => playing.has(l.def)) : data.leans, { pos, limit });
+  const leans = playing ? data.leans.filter((l) => playing.has(l.def)) : data.leans;
+  const every = buildLeanGroups(leans, { pos, limit: 99 });
+  const groups = every.slice(0, limit);
   if (!groups.length) return null;
+  const items = every.flatMap((g) => g.items);
+  const smash = items.filter((l) => l.call === "SMASH").length;
+  const tough = items.length - smash;
   return (
     <Card title="Matchup spots" sub="Defenses with the strongest trends against a position" href="/tools/redraft-rankings" cta="See the badges">
+      <div className="hub-lean-stats">
+        <div>
+          <b>{every.length}</b>
+          <span>{every.length === 1 ? "defense" : "defenses"}</span>
+        </div>
+        <div>
+          <b className="smash">{smash}</b>
+          <span>smash {smash === 1 ? "spot" : "spots"}</span>
+        </div>
+        <div>
+          <b className="tough">{tough}</b>
+          <span>tough {tough === 1 ? "spot" : "spots"}</span>
+        </div>
+      </div>
       <ul className="hub-list">
         {groups.map((g) => (
           <li key={g.def} className="hub-lean-row">
             <TeamBadge team={g.def} />
             <span className="hub-lean-chips">
               {g.items.map((l) => {
-                const smash = l.call === "SMASH";
+                const smashSpot = l.call === "SMASH";
                 return (
                   <span
                     key={l.pos}
-                    className={`hub-lean ${smash ? "smash" : "tough"}`}
-                    title={`${g.def} ${smash ? "gives up" : "shuts down"} ${l.pos} scoring: ${l.effect > 0 ? "+" : "−"}${Math.abs(l.effect).toFixed(1)} pts a game vs an average defense`}
+                    className={`hub-lean ${smashSpot ? "smash" : "tough"}`}
+                    title={`${g.def} ${smashSpot ? "gives up" : "shuts down"} ${l.pos} scoring: ${l.effect > 0 ? "+" : "−"}${Math.abs(l.effect).toFixed(1)} pts a game vs an average defense`}
                   >
-                    {smash ? "▲" : "▼"} {l.pos} {l.effect > 0 ? "+" : "−"}
+                    {smashSpot ? "▲" : "▼"} {l.pos} {l.effect > 0 ? "+" : "−"}
                     {Math.abs(l.effect).toFixed(1)}
                   </span>
                 );
