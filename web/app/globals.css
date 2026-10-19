@@ -5353,7 +5353,17 @@ html{font-stretch:82%;}
   position:relative; display:flex; flex-direction:column; gap:12px; padding:16px 18px 14px; cursor:pointer; text-align:left;
   transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
 }
-.sb-card::before{content:""; position:absolute; left:0; top:14px; bottom:14px; width:3px; border-radius:0 3px 3px 0; background:var(--tone);}
+/* The border IS the win chance: a ring in the card's colour from the middle of the left edge, clockwise, covering the share of
+   the way round equal to the chance to win (--win, 0-1; all the way round when locked in or won). It animates as the chance
+   moves. The card's own faint border is the unfilled track. */
+@property --win{syntax:"<number>"; inherits:true; initial-value:0;}
+.sb-card.has-ring::after{
+  content:""; position:absolute; inset:0; padding:2.5px; border-radius:inherit; pointer-events:none;
+  background:conic-gradient(from 270deg, var(--tone) 0, var(--tone) calc(var(--win) * 360deg), transparent calc(var(--win) * 360deg));
+  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite:xor;
+          mask:linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  transition:--win .8s ease;
+}
 .sb-card.is-ahead, .sb-card.is-won{--tone:var(--horizon-gold);}
 .sb-card.is-behind, .sb-card.is-lost{--tone:var(--neon-blue);}
 .sb-card.is-close{--tone:var(--star);}
@@ -5374,17 +5384,15 @@ html{font-stretch:82%;}
 .sb-card-word{font-family:var(--font-display), sans-serif; font-weight:800; font-size:30px; line-height:1; letter-spacing:.03em; text-transform:uppercase; color:var(--tone);}
 .sb-card.is-close .sb-card-word{color:var(--star);}
 .sb-card-pct{font-size:13px; color:var(--star-dim);}
-.sb-card-meter{display:block; height:4px; border-radius:2px; background:rgba(var(--star-dot-rgb),.1); overflow:hidden; margin-top:-4px;}
-.sb-card-meter > span{display:block; height:100%; border-radius:2px; background:var(--tone); transition:width .8s ease;}
 /* A result that is settled reads in a settled colour: green for a win that is in the bag (Locked in, or Won once the games
    are over), red for a loss that can't be undone (Out of reach, or Lost) -- the word and its bar, on the Sunday board card
    and on the matchup scoreboard. Everything else keeps the gold / blue / plain language. */
 .sb-card.is-sealed-win, .h2h-center.is-sealed-win{--tone:var(--up);} /* the card's left edge follows too */
 .sb-card.is-sealed-loss, .h2h-center.is-sealed-loss{--tone:var(--down);}
 .sb-card.is-sealed-win .sb-card-word, .h2h-center.is-sealed-win .h2h-word{color:var(--up);}
-.sb-card.is-sealed-win .sb-card-meter > span, .h2h-center.is-sealed-win .h2h-win-bar > span{background:var(--up);}
+.h2h-center.is-sealed-win .h2h-win-bar > span{background:var(--up);}
 .sb-card.is-sealed-loss .sb-card-word, .h2h-center.is-sealed-loss .h2h-word{color:var(--down);}
-.sb-card.is-sealed-loss .sb-card-meter > span, .h2h-center.is-sealed-loss .h2h-win-bar > span{background:var(--down);}
+.h2h-center.is-sealed-loss .h2h-win-bar > span{background:var(--down);}
 
 .sb-card-scores{flex:1; display:flex; flex-direction:column; justify-content:center; gap:10px;}
 .sb-card-side{display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:10px;}

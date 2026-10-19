@@ -67,6 +67,11 @@ function LeagueCard({ team, gameStates, injuries, onOpen }) {
   const mounted = useMounted();
   const { s, row, mine, opp, myScore, oppScore, pct, playing, done, st } = useMemo(() => matchupState(team, gameStates, injuries), [team, gameStates, injuries]);
   const url = sleeperMatchupUrl(team.platform_league_id);
+  // The card's border is its win chance: a line in the card's colour drawn clockwise from the middle of the left edge, as
+  // long as the share of the perimeter equal to the chance to win (all the way round = locked in / won). A settled game
+  // uses the final score; a loss keeps a short stub so its colour still shows.
+  const ringPct = pct == null ? null : done ? (myScore > oppScore ? 1 : myScore < oppScore ? 0 : 0.5) : pct;
+  const ringStyle = ringPct == null ? undefined : { "--win": Math.min(1, Math.max(0.02, ringPct)) };
   const alerts = row.outStarters.length;
   const myLeft = mine ? mine.players.filter((p) => p.outlook.state === "pre" || p.outlook.state === "in" || p.outlook.state === null) : [];
   // Earliest kickoff still to come on either side.
@@ -80,7 +85,8 @@ function LeagueCard({ team, gameStates, injuries, onOpen }) {
 
   return (
     <div
-      className={`sb-card is-${st.key}${sealedClass(st.label)}`}
+      className={`sb-card is-${st.key}${sealedClass(st.label)}${ringStyle ? " has-ring" : ""}`}
+      style={ringStyle}
       role="button"
       tabIndex={0}
       data-league-id={team.id}
@@ -136,11 +142,6 @@ function LeagueCard({ team, gameStates, injuries, onOpen }) {
               <span className="sb-card-word sb-muted">{s.bestBall ? "Best ball" : "—"}</span>
               {s.bestBall && <span className="sb-card-pct mono">Top scorers start automatically</span>}
             </div>
-          )}
-          {pct != null && !done && (
-            <span className="sb-card-meter" aria-hidden="true">
-              <span style={{ width: `${Math.max(2, pct * 100)}%` }} />
-            </span>
           )}
 
           <div className="sb-card-scores">
