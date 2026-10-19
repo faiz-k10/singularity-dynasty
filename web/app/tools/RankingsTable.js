@@ -331,7 +331,7 @@ export default function RankingsTable({
                     </td>
                   )}
                   {showRange && (
-                    <td className="mono heat-cell" style={{ "--heat": bye ? 0 : row.ceilingHeat || 0 }}>
+                    <td className="mono heat-cell-ceiling" style={{ "--heat": bye ? 0 : row.ceilingHeat || 0 }}>
                       {bye ? "—" : formatRange(row.ceiling)}
                     </td>
                   )}

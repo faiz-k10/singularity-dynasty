@@ -1693,8 +1693,10 @@ a.export-csv-btn{text-decoration:none;}
    way would have implied a shared meaning that isn't there. */
 .outcome-curve{width:130px; height:34px; display:block;}
 .outcome-curve-middle{fill:var(--horizon-gold); opacity:0.55; stroke:none;}
-.outcome-curve-tail-floor{fill:var(--down); opacity:0.45; stroke:none;}
-.outcome-curve-tail-ceiling{fill:var(--neon-blue-dim); opacity:0.4; stroke:none;}
+/* Floor wedge BLUE (cold, the low end), ceiling wedge RED (hot, the high end) -- swapped on request Oct 19 2026, everywhere an
+   outcome curve is drawn (table cell, opened-row curve, My Team lineup curves). */
+.outcome-curve-tail-floor{fill:var(--neon-blue-dim); opacity:0.4; stroke:none;}
+.outcome-curve-tail-ceiling{fill:var(--down); opacity:0.45; stroke:none;}
 @media (max-width:640px){.outcome-curve{width:80px;}}
 
 /* Larger fully-labeled curve (OutcomeCurveDetail.js) shown only inside a
@@ -1714,8 +1716,8 @@ a.export-csv-btn{text-decoration:none;}
   fill:var(--horizon-gold); text-transform:uppercase; letter-spacing:0.02em;
 }
 .outcome-curve-end-label{font-family:var(--font-mono), monospace; font-size:16px;}
-.outcome-curve-end-label-floor{fill:var(--down);}
-.outcome-curve-end-label-ceiling{fill:var(--neon-blue);}
+.outcome-curve-end-label-floor{fill:var(--neon-blue);}
+.outcome-curve-end-label-ceiling{fill:var(--down);}
 /* Percentile-vs-pool ordinal folded directly onto each of the curve's own
    three labels -- replaces the Floor/Projection/Ceiling rows the
    Percentiles panel used to show separately (the exact same three
@@ -1872,12 +1874,11 @@ a.export-csv-btn{text-decoration:none;}
    as a distinct signal from the Median column's heat-cell rather than
    implying the same "good/bad" scale. */
 .heat-cell-alt{background:rgba(var(--horizon-gold-rgb), calc(var(--heat, 0) * 0.35));}
-/* Red instead of blue -- Weekly Projection Rankings' Floor column
-   specifically (Ceiling on that same page stays on the plain blue
-   .heat-cell above; this doesn't touch it). Matches the Curve's own
-   floor tail (.outcome-curve-tail-floor), so "floor" reads as the same
-   color everywhere it shows up on this page. */
-.heat-cell-floor{background:rgba(var(--down-rgb), calc(var(--heat, 0) * 0.35));}
+/* Weekly Projection Rankings' Floor and Ceiling columns match the Curve beside them (Oct 19 2026 swap: floor = blue, the low
+   end; ceiling = red, the high end): same colours as .outcome-curve-tail-floor / -ceiling, so "floor" and "ceiling" read as the
+   same colour everywhere on that page. */
+.heat-cell-floor{background:rgba(var(--neon-blue-rgb), calc(var(--heat, 0) * 0.35));}
+.heat-cell-ceiling{background:rgba(var(--down-rgb), calc(var(--heat, 0) * 0.35));}
 
 /* Dynasty Draft Board — round grouping, stack flags, startup/rookie toggle */
 .board-toggle{display:inline-flex; gap:4px; background:var(--void-panel-2); border:1px solid var(--line); border-radius:30px; padding:4px; margin-bottom:32px;}
@@ -5237,21 +5238,21 @@ html{font-stretch:82%;}
 .h2h-row.h2h-head .h2h-c-curve{justify-content:center; text-align:center; white-space:nowrap;}
 .score-curve{display:block; width:156px; max-width:100%; height:auto; overflow:visible;}
 .sc-label{font-family:var(--font-mono), monospace; font-size:10px; fill:var(--star-dim);}
-.sc-floor{fill:var(--down);}
-.sc-ceiling{fill:var(--neon-blue);}
-.score-curve .outcome-curve-tail-ceiling{fill:var(--neon-blue); opacity:.55;}
-.score-curve .outcome-curve-tail-floor{opacity:.6;}
+.sc-floor{fill:var(--neon-blue);}
+.sc-ceiling{fill:var(--down);}
+.score-curve .outcome-curve-tail-ceiling{fill:var(--down); opacity:.6;}
+.score-curve .outcome-curve-tail-floor{fill:var(--neon-blue); opacity:.55;}
 .sc-median{font-size:11px; font-weight:700; fill:var(--horizon-gold);} /* gold, like the hump it belongs to */
 .score-curve-peak{fill:var(--horizon-gold);}
 .score-curve-marker line{stroke:var(--star); stroke-width:1.4; stroke-linecap:round;}
 .score-curve-dot{fill:var(--star); stroke:var(--void-panel); stroke-width:1.5;}
 .score-curve-halo{fill:rgba(var(--star-dot-rgb),.18);}
-.score-curve.zone-low .score-curve-marker line{stroke:var(--down);}
-.score-curve.zone-low .score-curve-dot{fill:var(--down);}
-.score-curve.zone-low .score-curve-halo{fill:rgba(255,107,107,.3);}
-.score-curve.zone-good .score-curve-marker line{stroke:var(--neon-blue);}
-.score-curve.zone-good .score-curve-dot{fill:var(--neon-blue);}
-.score-curve.zone-good .score-curve-halo{fill:rgba(var(--neon-blue-rgb),.3);}
+.score-curve.zone-low .score-curve-marker line{stroke:var(--neon-blue);}
+.score-curve.zone-low .score-curve-dot{fill:var(--neon-blue);}
+.score-curve.zone-low .score-curve-halo{fill:rgba(var(--neon-blue-rgb),.3);}
+.score-curve.zone-good .score-curve-marker line{stroke:var(--down);}
+.score-curve.zone-good .score-curve-dot{fill:var(--down);}
+.score-curve.zone-good .score-curve-halo{fill:rgba(255,107,107,.3);}
 .score-curve.is-live .score-curve-halo{animation:sc-pulse 1.8s ease-out infinite; transform-box:fill-box; transform-origin:center;}
 @keyframes sc-pulse{0%{transform:scale(.7); opacity:1;} 100%{transform:scale(1.7); opacity:0;}}
 @media (prefers-reduced-motion:reduce){ .score-curve.is-live .score-curve-halo{animation:none;} }
@@ -5268,8 +5269,8 @@ html{font-stretch:82%;}
 .h2h-side.opp .h2h-c-pts{text-align:left;}
 .h2h-row.h2h-head .h2h-c-pts{font-size:10px; font-weight:400;}
 .h2h-c-pts.is-live{color:var(--star);}
-.h2h-c-pts.tone-good, .tone-good-text{color:var(--neon-blue);}
-.h2h-c-pts.tone-low, .tone-low-text{color:var(--down);}
+.h2h-c-pts.tone-good, .tone-good-text{color:var(--down);}
+.h2h-c-pts.tone-low, .tone-low-text{color:var(--neon-blue);}
 /* How to read the curves: a one-line legend under the lineups. */
 .h2h-legend{list-style:none; margin:2px 0 0; padding:0; display:flex; flex-wrap:wrap; gap:6px 18px; font-size:11.5px; line-height:1.4; color:var(--star-dim);}
 .h2h-legend li{display:inline-flex; align-items:baseline; gap:7px;}
@@ -5277,9 +5278,9 @@ html{font-stretch:82%;}
 .h2h-legend strong{color:var(--star); font-weight:700;}
 .h2h-legend li:nth-child(2) strong{color:var(--horizon-gold);}
 .h2h-legend-swatch{width:14px; height:9px; border-radius:2px 2px 0 0; flex:none;}
-.h2h-legend-swatch.is-low{background:var(--down); opacity:.7;}
+.h2h-legend-swatch.is-low{background:var(--neon-blue); opacity:.7;}
 .h2h-legend-swatch.is-mid{background:var(--horizon-gold); opacity:.65;}
-.h2h-legend-swatch.is-good{background:var(--neon-blue); opacity:.7;}
+.h2h-legend-swatch.is-good{background:var(--down); opacity:.7;}
 .h2h-legend-dot{width:9px; height:9px; border-radius:50%; background:var(--star); box-shadow:0 0 0 2px rgba(var(--star-dot-rgb),.2); flex:none;}
 /* Players who haven't played yet: the WHOLE row -- edge to edge across the lineup card, slot to points -- is shaded and
    boxed with a clear border in its side's colour (gold = yours, blue = your opponent's, the same language as the live

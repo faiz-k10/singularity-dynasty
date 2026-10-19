@@ -65,7 +65,7 @@ function SideRow({ p, scoreboardKnown, uncertain, mounted }) {
   // Before the scoreboard is read (a saved snapshot), fall back to the points Sleeper had on the board.
   const pts = o.pts ?? (!scoreboardKnown && p.pts ? p.pts : null);
   const done = o.state === "post" || o.state === "bye" || p.out;
-  // Same reading as the curve, by the zone the score sits in: red under his floor, blue at or over his ceiling, plain
+  // Same reading as the curve, by the zone the score sits in: blue under his floor, red at or over his ceiling, plain
   // anywhere in his normal range (median included).
   const tone = pts == null || o.state === "pre" || typeof p.floor !== "number" || typeof p.ceiling !== "number" ? null : pts < p.floor ? "low" : pts >= p.ceiling ? "good" : "mid";
   const showCurve = !p.out && o.state !== "bye" && p.proj > 0 && typeof p.floor === "number" && typeof p.ceiling === "number" && p.ceiling > p.floor;
@@ -114,7 +114,7 @@ function Side({ title, side, opp = false, scoreboardKnown, uncertain, mounted })
       <div className="h2h-row h2h-head" aria-hidden="true">
         <span className="h2h-c-slot">Slot</span>
         <span className="h2h-c-player">Player</span>
-        <span className="h2h-c-curve" title="The outcome curve: floor (red), median projection and ceiling (blue) under it, and the points scored so far as the marker on it">Floor · median · ceiling</span>
+        <span className="h2h-c-curve" title="The outcome curve: floor (blue), median projection and ceiling (red) under it, and the points scored so far as the marker on it">Floor · median · ceiling</span>
         <span className="h2h-c-pts">Pts</span>
       </div>
       {side.players.map((p, i) => (
@@ -254,7 +254,7 @@ function MatchupBody({ team, gameStates }) {
       <ul className="h2h-legend" aria-label="How to read the curves">
         <li>
           <span className="h2h-legend-swatch is-low" aria-hidden="true" />
-          <span><strong>Floor</strong> a bad game: red zone</span>
+          <span><strong>Floor</strong> a bad game: blue zone</span>
         </li>
         <li>
           <span className="h2h-legend-swatch is-mid" aria-hidden="true" />
@@ -262,12 +262,12 @@ function MatchupBody({ team, gameStates }) {
         </li>
         <li>
           <span className="h2h-legend-swatch is-good" aria-hidden="true" />
-          <span><strong>Ceiling</strong> a great game: blue zone</span>
+          <span><strong>Ceiling</strong> a great game: red zone</span>
         </li>
         <li>
           <span className="h2h-legend-dot" aria-hidden="true" />
           <span>
-            Points so far: <span className="tone-low-text">red</span> under his floor, <span className="tone-good-text">blue</span> at or over his ceiling, plain in between
+            Points so far: <span className="tone-low-text">blue</span> under his floor, <span className="tone-good-text">red</span> at or over his ceiling, plain in between
           </span>
         </li>
       </ul>

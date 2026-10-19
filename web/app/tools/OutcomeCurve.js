@@ -1,9 +1,9 @@
 // Weekly Projection Rankings' outcome curve -- floor/ceiling (this
 // week's real 10th/96th percentile quantiles, migration 0029) anchor
 // three zones: below this week's floor, the floor-to-ceiling range
-// itself, and above this week's ceiling. The floor tail is red and the
-// ceiling tail stays the original blue -- matching the Floor column's
-// own red heat-tint (.heat-cell-floor) so "floor" reads as the same
+// itself, and above this week's ceiling. The floor tail is blue and the
+// ceiling tail red (swapped Oct 19 2026) -- matching the Floor / Ceiling columns'
+// heat-tints (.heat-cell-floor / .heat-cell-ceiling) so "floor" reads as the same
 // color wherever it shows up on this page, not just two generic
 // "outside the range" wedges anymore.
 //
