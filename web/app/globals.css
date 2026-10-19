@@ -5440,7 +5440,7 @@ html{font-stretch:82%;}
 
 /* ===== My Team standings + playoff odds (my-team/Standings.js, under the matchup panel) and the dashboard's
    Playoffs column. Odds colour: green likely (75%+), gold in the hunt (35-75%), red long shot. ===== */
-.standings{display:flex; flex-direction:column; gap:10px;}
+.standings{display:flex; flex-direction:column; gap:10px; padding:0; margin:0;} /* <section> carries the landing page's 96px top padding */
 .standings-head{display:flex; flex-wrap:wrap; align-items:baseline; gap:6px 16px;}
 .standings-note{font-size:11px; color:var(--star-dim);}
 .standings-wrap{overflow-x:auto; border:1px solid rgba(var(--star-dot-rgb),.08); border-radius:var(--r-md);}
@@ -5458,7 +5458,7 @@ html{font-stretch:82%;}
 .standings-odds{font-weight:700;}
 .standings-first{color:var(--star-dim);}
 /* Best available (WaiverWire.js): the standings table's look, a position filter on the right of the heading. */
-.waivers{margin-top:8px;}
+.waivers{margin:0;}
 .waivers .waivers-pos{margin:0 0 0 auto; padding:3px;}
 .waivers .waivers-pos button{padding:5px 13px; font-size:11.5px;}
 .waivers-player{display:inline-flex; align-items:center; gap:8px; min-width:0;}

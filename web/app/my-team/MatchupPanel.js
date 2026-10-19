@@ -147,15 +147,15 @@ function TeamScore({ name, record, score, proj, left, opp = false }) {
 // Head-to-head view for one saved league: this week's two lineups slot by slot with live points, our projection, the
 // range still to come and each game's status, under a scoreboard with the live score, projected finals, players left
 // and the win chance (lib/winChance.js, computed server-side and refreshed by the 30-second poll). The league's
-// standings + playoff odds (Standings.js) sit underneath once a full refresh has gathered them, then the best players
-// still available in that league (WaiverWire.js).
+// best players still available in that league (WaiverWire.js) sit underneath, then the standings + playoff odds
+// (Standings.js, once a full refresh has gathered them).
 export default function MatchupPanel({ team, gameStates }) {
   const s = team.settings || {};
   return (
     <div className="h2h-wrap">
       <MatchupBody team={team} gameStates={gameStates} />
-      <Standings season={s.season} opponent={s.isBye ? null : s.opponent} />
       <WaiverWire teamId={team.id} />
+      <Standings season={s.season} opponent={s.isBye ? null : s.opponent} />
     </div>
   );
 }
