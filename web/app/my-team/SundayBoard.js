@@ -315,7 +315,14 @@ function BetweenGames({ feed, gameStates, oneLeague }) {
       </div>
       <span className="sb-wait-eyebrow mono">{eyebrow}</span>
       <span className="sb-wait-title">{title}</span>
-      <span className={`sb-wait-sub mono${feed.nextStart ? " is-clock" : ""}`}>{sub}</span>
+      {feed.nextStart ? (
+        <div className="sb-wait-count">
+          <span className="sb-wait-count-label">Countdown</span>
+          <span className="sb-wait-sub mono is-clock">{sub}</span>
+        </div>
+      ) : (
+        <span className="sb-wait-sub mono">{sub}</span>
+      )}
       {games.length > 0 && (
         <ul className="sb-wait-games">
           {games.slice(0, 3).map((g) => (
