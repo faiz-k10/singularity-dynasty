@@ -411,7 +411,7 @@ export default async function Home() {
         <section id="pricing">
           <div className="section-head reveal">
             <div className="sec-index" aria-hidden="true"><b>03</b><span className="mono">Titles</span><i></i><span className="mono">03 / 04</span></div>
-          <div className="eyebrow">Pricing</div>
+            <div className="eyebrow">Pricing</div>
             <h2>Every subscriber earns a title.</h2>
             <p>
               Start as a Stargazer, free. Ascend when you want the full
@@ -433,16 +433,27 @@ export default async function Home() {
             <span className="save-tag">~20% Off</span>
           </div>
 
-          <div className="rounds">
-            <div className="round-card reveal">
-              <div className="round-label">Free</div>
-              <div className="round-title-row">
-                <h3>Stargazer</h3>
+          <div className="ladder">
+            <article className="rung rung-1 reveal">
+              <div className="rung-num" aria-hidden="true">I</div>
+              <div className="rung-id">
+                <div className="round-label">Free</div>
+                <div className="round-title-row">
+                  <h3>Stargazer</h3>
+                </div>
+                <div className="round-desc">Look at your leagues before you pay.</div>
               </div>
-              <div className="round-price">$0</div>
-              <div className="round-bill">&nbsp;</div>
-              <div className="round-desc">Look at your leagues before you pay.</div>
-              <ul className="round-features">
+              <div className="rung-price">
+                <div className="round-price">$0</div>
+                <div className="round-bill">&nbsp;</div>
+              </div>
+              <div className="rung-cta">
+                <a href="/login" className="round-btn outline" data-plan="stargazer">
+                  Become a Stargazer
+                </a>
+                <p className="round-assure">Free, no card</p>
+              </div>
+              <ul className="round-features rung-feats">
                 <li>Check any Sleeper account, save 1 league</li>
                 <li>Weekly rankings, top 50</li>
                 <li>Season simulations, top 10</li>
@@ -451,30 +462,37 @@ export default async function Home() {
                 </li>
                 <li>Newsletter and Discord</li>
               </ul>
-              <a href="/login" className="round-btn outline" data-plan="stargazer">
-                Become a Stargazer
-              </a>
-              <p className="round-assure">Free, no card</p>
-            </div>
+            </article>
 
-            <div className="round-card featured reveal d1">
-              <div className="round-label">Run every league</div>
-              <div className="round-title-row">
-                <h3>Explorer</h3>
-                <span className="round-badge round-badge-gold">MOST POPULAR</span>
+            <article className="rung rung-2 reveal d1">
+              <div className="rung-num" aria-hidden="true">II</div>
+              <div className="rung-id">
+                <div className="round-label">Run every league</div>
+                <div className="round-title-row">
+                  <h3>Explorer</h3>
+                  <span className="round-badge round-badge-gold">MOST POPULAR</span>
+                </div>
+                <div className="round-desc">All your leagues, saved and watched.</div>
               </div>
-              <div className="round-price">
-                <sup>$</sup>
-                <span className="price-amt" data-monthly="9" data-annual="7">
-                  7
-                </span>
-                <sub>/mo</sub>
+              <div className="rung-price">
+                <div className="round-price">
+                  <sup>$</sup>
+                  <span className="price-amt" data-monthly="9" data-annual="7">
+                    7
+                  </span>
+                  <sub>/mo</sub>
+                </div>
+                <div className="round-bill" data-monthly="billed monthly" data-annual="$84 billed yearly">
+                  $84 billed yearly
+                </div>
               </div>
-              <div className="round-bill" data-monthly="billed monthly" data-annual="$84 billed yearly">
-                $84 billed yearly
+              <div className="rung-cta">
+                <a href="#" className="round-btn primary" data-plan="explorer">
+                  Become an Explorer
+                </a>
+                <p className="round-assure">14-day refund · cancel anytime</p>
               </div>
-              <div className="round-desc">All your leagues, saved and watched.</div>
-              <ul className="round-features">
+              <ul className="round-features rung-feats">
                 <li>Everything in Stargazer</li>
                 <li>Up to 10 leagues, auto-refreshed</li>
                 <li>Exposure map and buy-ins at risk</li>
@@ -491,34 +509,42 @@ export default async function Home() {
                 </li>
                 <li>Special Discord role</li>
               </ul>
-              <a href="#" className="round-btn primary" data-plan="explorer">
-                Become an Explorer
-              </a>
-              <p className="round-assure">14-day refund · cancel anytime</p>
-            </div>
+            </article>
 
-            <div className="round-card round-card-blue reveal d2">
-              <div className="round-label">Full Access</div>
-              <div className="round-title-row">
-                <h3>Singularity</h3>
-                <span className="round-badge round-badge-blue">
-                  {singularityRemaining > 0
-                    ? `${singularityRemaining} FOUNDING SPOTS LEFT`
-                    : "FOUNDING SPOTS FULL"}
-                </span>
+            <article className="rung rung-3 reveal d2">
+              <div className="rung-end mono" aria-hidden="true">Endpoint →</div>
+              <div className="rung-num" aria-hidden="true">III</div>
+              <div className="rung-id">
+                <div className="round-label">Full Access</div>
+                <div className="round-title-row">
+                  <h3>Singularity</h3>
+                  <span className="round-badge round-badge-blue">
+                    {singularityRemaining > 0
+                      ? `${singularityRemaining} FOUNDING SPOTS LEFT`
+                      : "FOUNDING SPOTS FULL"}
+                  </span>
+                </div>
+                <div className="round-desc">Every player&apos;s full range, for the leagues where the edge decides it.</div>
               </div>
-              <div className="round-price">
-                <sup>$</sup>
-                <span className="price-amt" data-monthly="25" data-annual="20">
-                  20
-                </span>
-                <sub>/mo</sub>
+              <div className="rung-price">
+                <div className="round-price">
+                  <sup>$</sup>
+                  <span className="price-amt" data-monthly="25" data-annual="20">
+                    20
+                  </span>
+                  <sub>/mo</sub>
+                </div>
+                <div className="round-bill" data-monthly="billed monthly" data-annual="$240 billed yearly">
+                  $240 billed yearly
+                </div>
               </div>
-              <div className="round-bill" data-monthly="billed monthly" data-annual="$240 billed yearly">
-                $240 billed yearly
+              <div className="rung-cta">
+                <a href="#" className="round-btn outline" data-plan="singularity">
+                  Reach Singularity
+                </a>
+                <p className="round-assure">14-day refund · cancel anytime</p>
               </div>
-              <div className="round-desc">Every player&apos;s full range, for the leagues where the edge decides it.</div>
-              <ul className="round-features">
+              <ul className="round-features rung-feats">
                 <li>Everything in Explorer</li>
                 <li>Unlimited leagues</li>
                 <li>Full season simulations, every player</li>
@@ -529,11 +555,7 @@ export default async function Home() {
                 <li>CSV export of every list</li>
                 <li>Priority Discord, early beta access</li>
               </ul>
-              <a href="#" className="round-btn outline" data-plan="singularity">
-                Reach Singularity
-              </a>
-              <p className="round-assure">14-day refund · cancel anytime</p>
-            </div>
+            </article>
           </div>
 
           <LeaguePrice />

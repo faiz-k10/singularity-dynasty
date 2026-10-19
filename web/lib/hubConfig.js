@@ -2,7 +2,8 @@
 //
 //   defaultTab   "auto" picks "inseason" during the NFL season (September through January, once this season's
 //                projections are published) and "offseason" otherwise. Set "inseason" or "offseason" to force one.
-//   tabs         the tab bar, in order; each tab lists its modules in the order they appear.
+//   tabs         the tab bar, in order; each tab lists its modules in the order they appear. The FIRST enabled module is the
+//                big lead panel on the left; every other one stacks, numbered, in the column beside it.
 //   modules      { id, enabled, limit }. `limit` is how many rows the module shows. Set enabled:false to hide one.
 //
 // Module ids (see app/hub/HubClient.js):
@@ -20,11 +21,11 @@ export const HUB_CONFIG = {
       label: "This week",
       blurb: "What moved, who has the highest ceiling, and where the matchups are",
       modules: [
-        { id: "movers", enabled: true, limit: 3 },
+        { id: "movers", enabled: true, limit: 5 },
         { id: "ceilings", enabled: true, limit: 3 },
-        { id: "matchups", enabled: true, limit: 6 },
-        { id: "hotcold", enabled: true, limit: 3 },
-        { id: "simLeaders", enabled: true, limit: 6 },
+        { id: "matchups", enabled: true, limit: 3 },
+        { id: "hotcold", enabled: true, limit: 2 },
+        { id: "simLeaders", enabled: true, limit: 3 },
       ],
     },
     {
@@ -32,9 +33,9 @@ export const HUB_CONFIG = {
       label: "Dynasty & offseason",
       blurb: "Age, career stage and role across the league -- built for long-term value",
       modules: [
+        { id: "ageCurve", enabled: true },
         { id: "stageMap", enabled: true },
         { id: "roleMap", enabled: true },
-        { id: "ageCurve", enabled: true },
         { id: "assets", enabled: true, limit: 5 },
         { id: "boards", enabled: true, limit: 5 },
       ],

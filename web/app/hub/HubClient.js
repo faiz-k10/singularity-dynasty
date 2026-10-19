@@ -502,13 +502,22 @@ export default function HubClient({ data, config, defaultTab }) {
       </div>
       <p className="hub-blurb">{active.blurb}</p>
 
-      <div className="hub-grid-cards">
-        {active.modules
-          .filter((m) => m.enabled && MODULES[m.id])
-          .map((m) => {
+      {/* One lead panel (the tab's first module) with every other module stacked beside it as a single ranked column. */}
+      <div className="hub-console">
+        {(() => {
+          const mods = active.modules.filter((m) => m.enabled && MODULES[m.id]);
+          const [first, ...rest] = mods;
+          const render = (m) => {
             const Module = MODULES[m.id];
             return <Module key={m.id} data={data} pos={pos} limit={m.limit || 5} />;
-          })}
+          };
+          return (
+            <>
+              <div className="hub-main">{first && render(first)}</div>
+              <div className="hub-rail">{rest.map(render)}</div>
+            </>
+          );
+        })()}
       </div>
     </section>
   );

@@ -5631,3 +5631,110 @@ html{font-stretch:82%;}
   -webkit-mask-image:radial-gradient(circle at 50% 50%, #000 0, #000 35%, transparent 72%); mask-image:radial-gradient(circle at 50% 50%, #000 0, #000 35%, transparent 72%);
 }
 .hub-stats{display:none;}
+
+/* ---------- PRICING LADDER (Oct 19 2026, replaces the three equal cards) ----------
+   Three rungs that widen toward the endpoint: Stargazer ~62%, Explorer ~82%, Singularity the full width and the tallest. Same
+   hooks as before for the billing toggle and checkout (.price-amt, .round-bill, [data-plan]); no tilt, no glow. */
+.ladder{display:flex; flex-direction:column; gap:14px; align-items:flex-start;}
+.rung{
+  position:relative; width:100%; box-sizing:border-box; min-width:0;
+  display:grid; align-items:center; column-gap:22px; row-gap:10px; padding:18px 22px 16px 20px;
+  background:rgba(var(--scrim-rgb), var(--glass-alpha)); border:1px solid var(--rule); border-top:2px solid var(--rule-strong); border-radius:var(--r-lg);
+  grid-template-columns:auto minmax(0, 1.2fr) auto minmax(0, 200px);
+  grid-template-areas:"num id price cta" ". feats feats feats";
+}
+.rung-1{width:64%;}
+.rung-2{width:82%; border-top-color:var(--horizon-gold); border-left:3px solid var(--horizon-gold);}
+.rung-3{width:100%; border-top-color:var(--neon-blue); border-left:3px solid var(--neon-blue); padding:26px 26px 24px 24px; row-gap:0;
+  grid-template-columns:auto minmax(0, 1fr) minmax(0, 230px) minmax(0, 1.35fr);
+  grid-template-areas:"num id price feats" "num id cta feats";
+  align-items:start; overflow:hidden;
+}
+/* the endpoint is ringed by orbit rules, a tight set sunk into its right edge */
+.rung-3::before{
+  content:''; position:absolute; right:-140px; top:50%; width:520px; height:520px; transform:translateY(-50%); pointer-events:none;
+  background:repeating-radial-gradient(circle at 50% 50%, transparent 0 34px, rgba(var(--neon-blue-rgb), .10) 34px 35px);
+  -webkit-mask-image:radial-gradient(circle, #000 0, transparent 70%); mask-image:radial-gradient(circle, #000 0, transparent 70%);
+}
+.rung > *{position:relative;}
+.rung-num{grid-area:num; font-family:var(--font-display), sans-serif; font-weight:800; font-size:44px; line-height:.85; min-width:54px; color:transparent; -webkit-text-stroke:1.5px var(--star-dim);}
+.rung-2 .rung-num{-webkit-text-stroke-color:var(--horizon-gold);}
+.rung-3 .rung-num{font-size:96px; min-width:104px; -webkit-text-stroke:2px var(--neon-blue);}
+.rung-id{grid-area:id; min-width:0;}
+.rung-id .round-desc{min-height:0; margin:4px 0 0; max-width:360px;}
+.rung .round-title-row{min-height:0;}
+.rung .round-card h3, .rung h3{font-family:var(--font-display), sans-serif; font-size:30px; font-weight:800; letter-spacing:.03em; text-transform:uppercase; margin:0;}
+.rung-3 h3{font-size:52px; line-height:.95;}
+.rung-price{grid-area:price;}
+.rung-price .round-price{font-size:46px;}
+.rung-price .round-price sup{font-size:20px; top:3px;}
+.rung-price .round-bill{margin:2px 0 0;}
+.rung-3 .rung-price .round-price{font-size:112px; line-height:.85;}
+.rung-3 .rung-price .round-price sup{font-size:40px; top:8px;}
+.rung-3 .rung-price .round-bill{margin:8px 0 14px;}
+.rung-cta{grid-area:cta;}
+.rung-cta .round-btn{padding:12px 10px;}
+.rung-3 .rung-cta .round-btn{padding:15px 10px; border-color:var(--neon-blue); color:var(--neon-blue);}
+.rung-3 .rung-cta .round-btn:hover{background:var(--neon-blue); color:#04141A;}
+.rung-feats{grid-area:feats; margin:0; display:flex; flex-wrap:wrap; gap:2px 26px; flex:none;}
+.rung-feats li{border-bottom:0; padding:3px 0; font-size:13px;}
+.rung-3 .rung-feats{display:grid; grid-template-columns:1fr; gap:0; align-self:stretch; border-left:1px solid var(--rule); padding-left:26px;}
+.rung-3 .rung-feats li{padding:7px 0; border-bottom:1px dashed var(--line); font-size:14px;}
+.rung-end{position:absolute; top:10px; right:16px; font-size:10.5px; letter-spacing:.18em; text-transform:uppercase; color:var(--neon-blue);}
+@media (max-width:1100px){
+  .rung-1, .rung-2{width:100%;}
+  .rung{grid-template-columns:auto minmax(0, 1fr) auto; grid-template-areas:"num id price" ". cta cta" ". feats feats";}
+  .rung-cta{display:flex; align-items:center; gap:14px;}
+  .rung-cta .round-btn{flex:0 0 220px;}
+  .rung-3{grid-template-columns:auto minmax(0, 1fr) minmax(0, 1fr); grid-template-areas:"num id price" "num id cta" ". feats feats";}
+  .rung-3 .rung-feats{border-left:0; padding-left:0; margin-top:16px; grid-template-columns:1fr 1fr; column-gap:26px;}
+  .rung-3 .rung-cta{display:block;}
+  .rung-3 .rung-cta .round-btn{flex:none;}
+}
+@media (max-width:640px){
+  .rung, .rung-3{grid-template-columns:1fr; grid-template-areas:"num" "id" "price" "cta" "feats"; padding:18px 16px 16px; row-gap:12px;}
+  .rung-3{padding:20px 16px;}
+  .rung-num{font-size:34px;} .rung-3 .rung-num{font-size:60px;}
+  .rung-cta{display:block;} .rung-cta .round-btn{flex:none;}
+  .rung-3 h3{font-size:40px;} .rung-3 .rung-price .round-price{font-size:84px;}
+  .rung-3 .rung-feats{grid-template-columns:1fr; margin-top:0;}
+  .rung-end{display:none;}
+}
+
+/* ---------- HUB: ONE LEAD PANEL + A RANKED COLUMN (Oct 19 2026, replaces the grid of equal cards) ----------
+   The tab's first module is the lead panel (big figures, sticky while the column scrolls past); every other module sits in
+   ONE panel beside it, numbered 02, 03... and separated by hairlines instead of boxed on its own. */
+.hub-console{display:grid; grid-template-columns:minmax(0, 1.15fr) minmax(0, 1fr); gap:22px; align-items:start;}
+.hub-main:empty{display:none;}
+.hub-console:has(.hub-main:empty){grid-template-columns:1fr;}
+.hub-main{position:sticky; top:96px; align-self:start;}
+.hub-main .hub-card{
+  padding:22px 24px 20px; background:rgba(var(--scrim-rgb), var(--glass-alpha));
+  border:1px solid var(--rule); border-top:2px solid var(--horizon-gold); border-radius:var(--r-lg);
+}
+.hub-main .hub-card h3{font-size:30px; text-transform:uppercase; letter-spacing:.04em;}
+.hub-main .hub-lead-fig{font-size:clamp(84px, 9vw, 132px);}
+.hub-main .hub-lead{margin:4px 0 14px; padding-bottom:14px;}
+.hub-main .hub-split{gap:26px;}
+.hub-rail{
+  counter-reset:rail 1; padding:4px 22px 12px; min-width:0;
+  background:rgba(var(--scrim-rgb), var(--glass-alpha)); border:1px solid var(--rule); border-top:2px solid var(--rule-strong); border-radius:var(--r-lg);
+}
+.hub-rail .hub-card{padding:18px 0 14px; background:none; border:0; border-top:1px solid var(--rule); border-radius:0;}
+.hub-rail .hub-card:first-child{border-top:0;}
+.hub-rail .hub-card h3{font-size:19px; text-transform:uppercase; letter-spacing:.05em; display:flex; align-items:baseline; gap:10px;}
+.hub-rail .hub-card h3::before{
+  counter-increment:rail; content:counter(rail, decimal-leading-zero);
+  font-family:var(--font-mono), monospace; font-size:11px; font-weight:700; letter-spacing:.1em; color:var(--horizon-gold);
+}
+.hub-rail .hub-card-head{margin-bottom:10px;}
+.hub-rail .hub-lead{flex-direction:row; align-items:baseline; gap:12px; margin:0 0 10px; padding-bottom:8px;}
+.hub-rail .hub-lead-fig{font-size:46px;}
+.hub-rail .hub-lead-cap{min-width:0;}
+.hub-rail .hub-lean-stats div{background:none;}
+.hub-rail .hub-lean-row{background:none; padding:8px 0; border:0; border-bottom:1px solid var(--rule); border-radius:0;}
+.hub-rail .hub-list{gap:7px;}
+@media (max-width:1000px){
+  .hub-console{grid-template-columns:1fr;}
+  .hub-main{position:static;}
+}
