@@ -1220,6 +1220,15 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .theater-badge-pill:hover{border-color:var(--neon-blue); color:var(--star);}
 .theater-badge-pill.active{background:color-mix(in srgb, var(--horizon-gold) 14%, transparent); border-color:var(--horizon-gold); color:var(--star);}
 .theater-badge-pill .player-achv-dot{width:6px; height:6px; flex-shrink:0;}
+/* The Sunday board's league filter (app/my-team/BoardFilters.js): the same dropdown, anchored to the right edge of the
+   header strip, chips carrying their league counts. */
+.sb-filter-panel{left:auto; right:0; width:430px; max-width:92vw;}
+@media (max-width:640px){ .sb-filter-panel{position:fixed; top:96px; left:12px; right:12px; width:auto; max-width:none; max-height:75vh; overflow:auto;} }
+.sb-grid-empty{grid-column:1 / -1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; padding:60px 20px; text-align:center; color:var(--star-dim);}
+.sb-grid-empty p{margin:0; font-size:15px;}
+.sb-filter-n{margin-left:2px; padding:0 6px; border-radius:999px; font-size:10.5px; background:rgba(var(--star-dot-rgb),.1); color:var(--star-dim);}
+.theater-badge-pill.active .sb-filter-n{background:color-mix(in srgb, var(--horizon-gold) 28%, transparent); color:var(--star);}
+.sb-filter-hint{font-size:10.5px; color:var(--star-dim); opacity:.85;}
 .tbf-foot{display:flex; align-items:center; justify-content:space-between; gap:12px; padding-top:10px; border-top:1px solid var(--line);}
 .tbf-count{font-family:var(--font-mono), monospace; font-size:12px; color:var(--star-dim);}
 .theater-badge-filter-clear{

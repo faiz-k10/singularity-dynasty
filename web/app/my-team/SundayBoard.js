@@ -11,6 +11,8 @@ import { summarizeSide } from "@/lib/winChance";
 import { buildLiveFeed, trackScoring, sortFeed, formatCountdown } from "@/lib/liveFeed";
 import { getLivePlays } from "./actions";
 import { leadState } from "@/lib/leadState";
+import { leagueFacts, matchesFilters, emptyFilters, filterCount } from "@/lib/boardFilters";
+import BoardFilters from "./BoardFilters";
 
 const fmt1 = (v) => (v == null ? "—" : v.toFixed(1));
 // "Christian McCaffrey" -> "C. McCaffrey"
@@ -40,15 +42,12 @@ function Score({ value, state }) {
   );
 }
 
-// One league at a glance, built to answer "am I winning?" in one look: the standing (Favored / Toss-up / Underdog,
-// Won / Lost once every game is over) with the win chance, the two scores with yours marked, who of yours is still to
-// play, then playoffs and alerts in plain words. Colour means one thing everywhere: gold = going your way, blue = not.
-function LeagueCard({ team, gameStates, injuries, onOpen }) {
-  const mounted = useMounted();
+// Everything a league card (and the filters) need to know about this week's matchup, computed once.
+function matchupState(team, gameStates, injuries) {
   const s = team.settings || {};
   const row = buildRow(team, injuries);
-  const mine = useMemo(() => (s.h2h ? summarizeSide(s.h2h.mine, gameStates) : null), [s.h2h, gameStates]);
-  const opp = useMemo(() => (s.h2h ? summarizeSide(s.h2h.opp, gameStates) : null), [s.h2h, gameStates]);
+  const mine = s.h2h ? summarizeSide(s.h2h.mine, gameStates) : null;
+  const opp = s.h2h ? summarizeSide(s.h2h.opp, gameStates) : null;
   const live = s.matchupActual;
   const myScore = live ? live.mine : mine?.pts ?? null;
   const oppScore = live ? live.opp : opp?.pts ?? null;
@@ -58,6 +57,15 @@ function LeagueCard({ team, gameStates, injuries, onOpen }) {
   const started = myScore > 0 || oppScore > 0 || playing > 0;
   const done = Boolean(mine && opp && started && playing === 0 && toPlay === 0);
   const st = standing(pct, done);
+  return { s, row, mine, opp, myScore, oppScore, pct, playing, toPlay, done, st };
+}
+
+// One league at a glance, built to answer "am I winning?" in one look: the standing (Favored / Toss-up / Underdog,
+// Won / Lost once every game is over) with the win chance, the two scores (green leading, red trailing), who of yours is still to
+// play, then playoffs and alerts in plain words. Colour means one thing everywhere: gold = going your way, blue = not.
+function LeagueCard({ team, gameStates, injuries, onOpen }) {
+  const mounted = useMounted();
+  const { s, row, mine, opp, myScore, oppScore, pct, playing, done, st } = useMemo(() => matchupState(team, gameStates, injuries), [team, gameStates, injuries]);
   const url = sleeperMatchupUrl(team.platform_league_id);
   const alerts = row.outStarters.length;
   const myLeft = mine ? mine.players.filter((p) => p.outlook.state === "pre" || p.outlook.state === "in" || p.outlook.state === null) : [];
@@ -425,6 +433,19 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
   const [openId, setOpenIdState] = useState(null);
   // Which of the open league's views is showing (Matchup / Standings / Best available); opening a league starts on Matchup.
   const [panelTab, setPanelTab] = useState("matchup");
+  // League filters (BoardFilters.js): league type / win chance / score / playoff odds. Not remembered between visits, so the
+  // board always opens showing every league; the pill and the "Showing N of M" line say when something is filtered.
+  const [filters, setFilters] = useState(emptyFilters);
+  const factsById = useMemo(() => {
+    const m = {};
+    for (const t of savedTeams) {
+      const ms = matchupState(t, gameStates, injuriesByTeam?.[t.id]);
+      m[t.id] = leagueFacts({ settings: ms.s, standingLabel: ms.st.label, myScore: ms.myScore, oppScore: ms.oppScore, odds: ms.s.playoffOdds ?? null, settled: Boolean(ms.s.playoffSettled) });
+    }
+    return m;
+  }, [savedTeams, gameStates, injuriesByTeam]);
+  const visibleTeams = useMemo(() => savedTeams.filter((t) => matchesFilters(filters, factsById[t.id])), [savedTeams, filters, factsById]);
+  const filtered = filterCount(filters) > 0;
   const openTeam = openId ? savedTeams.find((t) => t.id === openId) : null;
   const gridRef = useRef(null);
   const lastCard = useRef(null);
@@ -485,7 +506,7 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
   let behind = 0;
   let alerts = 0;
   let live = 0;
-  for (const t of savedTeams) {
+  for (const t of visibleTeams) {
     const r = buildRow(t, injuriesByTeam?.[t.id]);
     if (r.winPct != null) r.winPct >= 0.6 ? ahead++ : r.winPct <= 0.4 ? behind++ : close++;
     alerts += r.outStarters.length;
@@ -496,6 +517,7 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
   const counted = ahead + close + behind;
   // One plain sentence instead of a row of counters.
   const parts = [];
+  if (filtered) parts.push(`Showing ${visibleTeams.length} of ${savedTeams.length} leagues`);
   if (counted) parts.push(`Favored in ${ahead} of ${counted}`);
   if (close) parts.push(`${close} too close to call`);
   if (alerts) parts.push(`${alerts} lineup ${alerts === 1 ? "alert" : "alerts"}`);
@@ -513,6 +535,9 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
             {live > 0 && <span className="sb-live-dot" aria-hidden="true" />}
             {live > 0 ? "Live" : "Updated"} · {time}
           </span>
+        )}
+        {!openTeam && savedTeams.length > 1 && (
+          <BoardFilters filters={filters} onChange={setFilters} factsList={Object.values(factsById)} shown={visibleTeams.length} total={savedTeams.length} />
         )}
         {toolbar}
       </div>
@@ -534,13 +559,21 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
           </section>
         ) : (
           <div className="sb-grid" ref={gridRef}>
-            {savedTeams.map((t) => (
+            {visibleTeams.map((t) => (
               <LeagueCard key={t.id} team={t} gameStates={gameStates} injuries={injuriesByTeam?.[t.id]} onOpen={setOpenId} />
             ))}
+            {visibleTeams.length === 0 && (
+              <div className="sb-grid-empty">
+                <p>No leagues match these filters.</p>
+                <button type="button" className="theater-badge-filter-clear" onClick={() => setFilters(emptyFilters())}>
+                  Clear filters
+                </button>
+              </div>
+            )}
           </div>
         )}
         <LiveFeed
-          savedTeams={savedTeams}
+          savedTeams={openTeam ? savedTeams : visibleTeams}
           gameStates={gameStates}
           updatedAt={updatedAt}
           teamId={openTeam ? openTeam.id : null}

@@ -333,6 +333,8 @@ export async function lookupSleeperTeams(username, opts = {}) {
         // your top scorers -- so Sleeper's `starters` array is mostly "0"
         // placeholders and the Starting Lineup view is meaningless.
         bestBall,
+        // Sleeper's league type: 0 redraft, 1 keeper, 2 dynasty (the Sunday board's league-type filter).
+        leagueType: ["redraft", "keeper", "dynasty"][league.settings?.type] || null,
         teams: league.total_rosters || null,
         rosterSpots: totalRosterSpots
           ? `${filledRosterSpots}/${totalRosterSpots}`
