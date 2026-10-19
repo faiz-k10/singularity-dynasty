@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import MatchupPanel, { sleeperMatchupUrl, formatWin, standing, PanelTabs, leagueTabs } from "./MatchupPanel";
+import MatchupPanel, { sleeperMatchupUrl, formatWin, standing, sealedClass, PanelTabs, leagueTabs } from "./MatchupPanel";
 import { useMounted } from "./useMounted";
 import { buildRow, isTyping, moveFocus } from "./LeagueDashboard";
 import { formatOdds, oddsTone } from "./Standings";
@@ -80,7 +80,7 @@ function LeagueCard({ team, gameStates, injuries, onOpen }) {
 
   return (
     <div
-      className={`sb-card is-${st.key}${st.label === "Locked in" || st.label === "Won" ? " is-secured" : ""}`}
+      className={`sb-card is-${st.key}${sealedClass(st.label)}`}
       role="button"
       tabIndex={0}
       data-league-id={team.id}

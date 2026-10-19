@@ -32,6 +32,9 @@ export function standing(pct, done) {
   return { key: "close", label: "Toss-up" };
 }
 
+// Settled results get a settled colour (green: Locked in / Won, red: Out of reach / Lost) on the word and its bar.
+export const sealedClass = (label) => (label === "Locked in" || label === "Won" ? " is-sealed-win" : label === "Out of reach" || label === "Lost" ? " is-sealed-loss" : "");
+
 // "Mon 8:15 PM" for a game not started yet, the clock while it's on, "Final" after.
 function gameLabel(p, mounted) {
   const o = p.outlook;
@@ -211,7 +214,7 @@ function MatchupBody({ team, gameStates }) {
     mine && opp && mine.yetToPlay + mine.playing + opp.yetToPlay + opp.playing === 0 && (mine.pts > 0 || opp.pts > 0);
   const st = standing(s.bestBall ? null : pct, allDone);
   const center = (
-    <div className={`h2h-center is-${st.key}${st.label === "Locked in" || st.label === "Won" ? " is-secured" : ""}`}>
+    <div className={`h2h-center is-${st.key}${sealedClass(st.label)}`}>
       {st.label && <div className="h2h-word">{st.label}</div>}
       {pct != null && !allDone && pct > 0.005 && pct < 0.995 && <div className="h2h-win-label mono">{formatWin(pct)} to win</div>}
       {pct != null && !allDone && (

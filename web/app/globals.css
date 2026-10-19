@@ -5357,7 +5357,6 @@ html{font-stretch:82%;}
 .sb-card.is-ahead, .sb-card.is-won{--tone:var(--horizon-gold);}
 .sb-card.is-behind, .sb-card.is-lost{--tone:var(--neon-blue);}
 .sb-card.is-close{--tone:var(--star);}
-.sb-card.is-won{box-shadow:inset 0 1px 0 var(--glass-rim), 0 0 0 1px rgba(var(--horizon-gold-rgb),.28), 0 0 28px -10px rgba(var(--horizon-gold-rgb),.55);}
 .sb-card:hover{transform:translateY(-2px); border-color:rgba(var(--star-dot-rgb),.2);}
 .sb-card:focus-visible{outline:2px solid var(--neon-blue); outline-offset:2px;}
 .sb-card-head{display:flex; align-items:center; gap:10px; min-height:22px;}
@@ -5377,14 +5376,13 @@ html{font-stretch:82%;}
 .sb-card-pct{font-size:13px; color:var(--star-dim);}
 .sb-card-meter{display:block; height:4px; border-radius:2px; background:rgba(var(--star-dot-rgb),.1); overflow:hidden; margin-top:-4px;}
 .sb-card-meter > span{display:block; height:100%; border-radius:2px; background:var(--tone); transition:width .8s ease;}
-/* A win that is secured (Locked in, or Won once the games are over): the word and its bar glow gold -- a faint, slowly breathing
-   halo -- on the Sunday board card and the matchup scoreboard. */
-.sb-card.is-secured .sb-card-word, .h2h-center.is-secured .h2h-word{text-shadow:0 0 8px rgba(var(--horizon-gold-rgb),.3); animation:win-glow 3.6s ease-in-out infinite;}
-.sb-card.is-secured .sb-card-meter, .h2h-center.is-secured .h2h-win-bar{overflow:visible;}
-.sb-card.is-secured .sb-card-meter > span, .h2h-center.is-secured .h2h-win-bar > span{box-shadow:0 0 6px rgba(var(--horizon-gold-rgb),.4); animation:win-glow-bar 3.6s ease-in-out infinite;}
-@keyframes win-glow{0%,100%{text-shadow:0 0 5px rgba(var(--horizon-gold-rgb),.18);} 50%{text-shadow:0 0 10px rgba(var(--horizon-gold-rgb),.38);}}
-@keyframes win-glow-bar{0%,100%{box-shadow:0 0 4px rgba(var(--horizon-gold-rgb),.25);} 50%{box-shadow:0 0 8px rgba(var(--horizon-gold-rgb),.5);}}
-@media (prefers-reduced-motion:reduce){ .sb-card.is-secured .sb-card-word, .h2h-center.is-secured .h2h-word, .sb-card.is-secured .sb-card-meter > span, .h2h-center.is-secured .h2h-win-bar > span{animation:none;} }
+/* A result that is settled reads in a settled colour: green for a win that is in the bag (Locked in, or Won once the games
+   are over), red for a loss that can't be undone (Out of reach, or Lost) -- the word and its bar, on the Sunday board card
+   and on the matchup scoreboard. Everything else keeps the gold / blue / plain language. */
+.sb-card.is-sealed-win .sb-card-word, .h2h-center.is-sealed-win .h2h-word{color:var(--up);}
+.sb-card.is-sealed-win .sb-card-meter > span, .h2h-center.is-sealed-win .h2h-win-bar > span{background:var(--up);}
+.sb-card.is-sealed-loss .sb-card-word, .h2h-center.is-sealed-loss .h2h-word{color:var(--down);}
+.sb-card.is-sealed-loss .sb-card-meter > span, .h2h-center.is-sealed-loss .h2h-win-bar > span{background:var(--down);}
 
 .sb-card-scores{flex:1; display:flex; flex-direction:column; justify-content:center; gap:10px;}
 .sb-card-side{display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:10px;}
