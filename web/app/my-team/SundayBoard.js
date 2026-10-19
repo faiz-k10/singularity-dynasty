@@ -74,13 +74,9 @@ function LeagueCard({ team, gameStates, injuries, onOpen }) {
   const ringStyle = ringPct == null ? undefined : { "--win": ringPct >= 0.995 ? 1 : Math.max(0.02, ringPct) };
   const alerts = row.outStarters.length;
   const myLeft = mine ? mine.players.filter((p) => p.outlook.state === "pre" || p.outlook.state === "in" || p.outlook.state === null) : [];
-  // Earliest kickoff still to come on either side.
-  const nextStart = [...(mine?.players || []), ...(opp?.players || [])]
-    .filter((p) => p.outlook.state === "pre" && p.outlook.start)
-    .map((p) => p.outlook.start)
-    .sort()[0];
   const oppLeft = opp ? opp.yetToPlay + opp.playing : 0;
-  const status = done ? "Final" : playing ? "Live" : nextStart && mounted ? `Next ${kickoff(nextStart)}` : null;
+  // Only "Live" and "Final" -- the next kickoff is on the Playing now panel's countdown, not repeated on every card.
+  const status = done ? "Final" : playing ? "Live" : null;
   const hasMatchup = !s.isBye && s.opponent;
 
   return (
