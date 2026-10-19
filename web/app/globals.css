@@ -5336,7 +5336,7 @@ html{font-stretch:82%;}
 .sb-body.has-drawer .sb-plays{border-left:0; border-top:1px solid rgba(var(--star-dot-rgb),.14);}
 /* Cards share the height evenly (two rows of three fill a 900px screen); with more leagues they keep their natural
    height and the grid scrolls. */
-.sb-grid{min-height:0; overflow:auto; display:grid; grid-template-columns:repeat(auto-fill, minmax(300px,1fr)); grid-auto-rows:minmax(min-content, 1fr); align-content:stretch; gap:16px; padding:4px 4px 8px 4px;}
+.sb-grid{min-height:0; overflow:auto; display:grid; grid-template-columns:repeat(auto-fill, minmax(300px,1fr)); grid-auto-rows:auto; align-content:start; gap:16px; padding:4px 4px 8px 4px;} /* cards keep their natural height -- a few leagues don't stretch to fill the screen */
 
 /* League card. One colour language: gold = going your way, blue = not, plain = too close to call. */
 .sb-card{
