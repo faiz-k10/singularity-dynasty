@@ -517,7 +517,6 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
   const counted = ahead + close + behind;
   // One plain sentence instead of a row of counters.
   const parts = [];
-  if (filtered) parts.push(`Showing ${visibleTeams.length} of ${savedTeams.length} leagues`);
   if (counted) parts.push(`Favored in ${ahead} of ${counted}`);
   if (close) parts.push(`${close} too close to call`);
   if (alerts) parts.push(`${alerts} lineup ${alerts === 1 ? "alert" : "alerts"}`);
@@ -535,9 +534,6 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
             {live > 0 && <span className="sb-live-dot" aria-hidden="true" />}
             {live > 0 ? "Live" : "Updated"} · {time}
           </span>
-        )}
-        {!openTeam && savedTeams.length > 1 && (
-          <BoardFilters filters={filters} onChange={setFilters} factsList={Object.values(factsById)} shown={visibleTeams.length} total={savedTeams.length} />
         )}
         {toolbar}
       </div>
@@ -558,18 +554,30 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
             <MatchupPanel team={openTeam} gameStates={gameStates} tab={panelTab} />
           </section>
         ) : (
-          <div className="sb-grid" ref={gridRef}>
-            {visibleTeams.map((t) => (
-              <LeagueCard key={t.id} team={t} gameStates={gameStates} injuries={injuriesByTeam?.[t.id]} onOpen={setOpenId} />
-            ))}
-            {visibleTeams.length === 0 && (
-              <div className="sb-grid-empty">
-                <p>No leagues match these filters.</p>
-                <button type="button" className="theater-badge-filter-clear" onClick={() => setFilters(emptyFilters())}>
-                  Clear filters
-                </button>
+          <div className="sb-main">
+            {savedTeams.length > 1 && (
+              <div className="sb-filterbar">
+                <BoardFilters filters={filters} onChange={setFilters} factsList={Object.values(factsById)} shown={visibleTeams.length} total={savedTeams.length} />
+                {filtered && (
+                  <span className="sb-filterbar-note mono">
+                    Showing {visibleTeams.length} of {savedTeams.length} leagues
+                  </span>
+                )}
               </div>
             )}
+            <div className="sb-grid" ref={gridRef}>
+              {visibleTeams.map((t) => (
+                <LeagueCard key={t.id} team={t} gameStates={gameStates} injuries={injuriesByTeam?.[t.id]} onOpen={setOpenId} />
+              ))}
+              {visibleTeams.length === 0 && (
+                <div className="sb-grid-empty">
+                  <p>No leagues match these filters.</p>
+                  <button type="button" className="theater-badge-filter-clear" onClick={() => setFilters(emptyFilters())}>
+                    Clear filters
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         )}
         <LiveFeed
