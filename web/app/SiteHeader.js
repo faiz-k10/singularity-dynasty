@@ -79,7 +79,7 @@ const getCachedTickerInputs = unstable_cache(
             .eq("week", latestSim.week)
             .in("player_name", names),
           fetchAllRows(publicSupabase, "player_game_log", "player_name, team, week, fantasy_points_ppr", (q) =>
-            q.eq("season", latestSim.season).in("player_name", names).order("week", { ascending: true })
+            q.eq("season", latestSim.season).in("player_name", names).order("week", { ascending: true }).order("player_name", { ascending: true })
           ),
         ]);
         const pts = {};
@@ -93,7 +93,7 @@ const getCachedTickerInputs = unstable_cache(
         let teamIdx = null;
         try {
           const qbRows = await fetchAllRows(publicSupabase, "player_game_log", "player_name, team, week", (q) =>
-            q.eq("season", latestSim.season).eq("position", "QB").order("week", { ascending: true })
+            q.eq("season", latestSim.season).eq("position", "QB").order("week", { ascending: true }).order("player_name", { ascending: true })
           );
           teamIdx = { gamesByName: indexGameLog(ownRows).gamesByName, teamWeeks: buildTeamWeeks(qbRows) };
         } catch (e) {

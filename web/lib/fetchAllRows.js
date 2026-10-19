@@ -6,6 +6,10 @@
 // that cap. `queryFn` applies filters/ordering to the base query
 // (everything except .range(), which this owns).
 //
+// THE ORDERING MUST BE UNIQUE (end it with a key column, e.g. .order("week").order("player_name")). Rows that tie on the ordering
+// can come back in a different order for each page's request, so a row can appear twice and another not at all -- Jaylen Warren's
+// Week 3 showed twice and his Week 4 vanished (Oct 19 2026) when the game log was paged by week alone.
+//
 // The first page also asks for the exact row count, and every remaining page is then fetched IN PARALLEL (it used to walk the
 // pages one after another -- a 7,500-row table was eight round trips in a row on every cold cache). Pages are the same
 // 1000-row windows of the same ordered query, so the result is identical to the sequential walk.

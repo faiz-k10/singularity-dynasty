@@ -35,7 +35,7 @@ export async function GET() {
     pub,
     "player_simulations",
     "player_name, position, team, floor, median, ceiling, trend, sample_confidence",
-    (q) => q.eq("season", latest.season).eq("week", latest.week).order("median", { ascending: false })
+    (q) => q.eq("season", latest.season).eq("week", latest.week).order("median", { ascending: false }).order("player_name", { ascending: true })
   );
   const perGame = (v) => Math.round((v / GAMES_PER_SEASON) * 10) / 10;
   return csvResponse({

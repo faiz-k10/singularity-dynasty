@@ -120,7 +120,7 @@ export const getCachedWeekData = unstable_cache(
         publicSupabase,
         "player_game_log",
         "player_name, team, season, week, opponent, is_home, fantasy_points_ppr",
-        (q) => q.eq("season", latest.season).order("week", { ascending: true })
+        (q) => q.eq("season", latest.season).order("week", { ascending: true }).order("player_name", { ascending: true })
       ),
       loadArchetypes(publicSupabase, latest),
       loadGroups(publicSupabase, latest),

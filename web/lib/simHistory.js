@@ -31,7 +31,7 @@ const getLatestInputs = unstable_cache(
       pub,
       "player_simulations",
       "player_name, position, floor, median, ceiling, stat_ranges",
-      (q) => q.eq("season", latest.season).eq("week", latest.week).order("median", { ascending: false })
+      (q) => q.eq("season", latest.season).eq("week", latest.week).order("median", { ascending: false }).order("player_name", { ascending: true })
     );
     return { latest, latestRows };
   },
@@ -43,7 +43,7 @@ const getHistoryRows = unstable_cache(
   async (season, week) => {
     const pub = createPublicClient();
     return fetchAllRows(pub, "player_simulations", "player_name, position, week, floor, median, ceiling, stat_ranges", (q) =>
-      q.eq("season", season).lt("week", week).order("week", { ascending: true })
+      q.eq("season", season).lt("week", week).order("week", { ascending: true }).order("player_name", { ascending: true })
     );
   },
   ["sim-history-rows"],
@@ -57,7 +57,7 @@ const getGameRows = unstable_cache(
       pub,
       "player_game_log",
       "player_name, team, season, week, opponent, is_home, fantasy_points_ppr",
-      (q) => q.eq("season", season).order("week", { ascending: true })
+      (q) => q.eq("season", season).order("week", { ascending: true }).order("player_name", { ascending: true })
     );
   },
   ["sim-history-games"],
