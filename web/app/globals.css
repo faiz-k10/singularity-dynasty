@@ -5379,6 +5379,8 @@ html{font-stretch:82%;}
 /* A result that is settled reads in a settled colour: green for a win that is in the bag (Locked in, or Won once the games
    are over), red for a loss that can't be undone (Out of reach, or Lost) -- the word and its bar, on the Sunday board card
    and on the matchup scoreboard. Everything else keeps the gold / blue / plain language. */
+.sb-card.is-sealed-win, .h2h-center.is-sealed-win{--tone:var(--up);} /* the card's left edge follows too */
+.sb-card.is-sealed-loss, .h2h-center.is-sealed-loss{--tone:var(--down);}
 .sb-card.is-sealed-win .sb-card-word, .h2h-center.is-sealed-win .h2h-word{color:var(--up);}
 .sb-card.is-sealed-win .sb-card-meter > span, .h2h-center.is-sealed-win .h2h-win-bar > span{background:var(--up);}
 .sb-card.is-sealed-loss .sb-card-word, .h2h-center.is-sealed-loss .h2h-word{color:var(--down);}
