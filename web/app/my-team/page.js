@@ -4,6 +4,7 @@ import { createPublicClient } from "@/lib/supabase/public";
 import { resolveTier, savedTeamLimit } from "@/lib/tier";
 import { normalizePlayerName, buildPortfolio } from "@/lib/portfolio";
 import { getSleeperPlayers } from "@/lib/sleeper";
+import { fetchGameStates } from "@/lib/gameStatus";
 import { loadInsight, loadTeamInsightForAll, computeAndSaveInsight } from "@/lib/insights";
 import PortfolioOverview from "./PortfolioOverview";
 import ExposureSidebar from "./ExposureSidebar";
@@ -43,53 +44,34 @@ export default async function MyTeamPage() {
   // "Your players this week": the public two-week inputs load in parallel with everything below.
   const feedInputs = user && savedTeams.length ? loadFeedInputs().catch(() => null) : null;
 
+  // Everything below is independent, so it loads in parallel (it used to run one query after another): the page's
+  // first paint is the saved snapshot, and the live Sleeper refresh happens in the browser afterwards, so nothing here
+  // should wait on more than the slowest single read. Sleeper's player dictionary (~16MB, cached a day per server) is
+  // capped at 3 seconds on a cold server -- past that the page renders without ages / bios rather than stall.
+  const many = savedTeams.length >= 2;
+  // The live scoreboard (cached 30s, capped at 1.5s) rides along so the first paint already knows which games are on.
+  const [archetypeRow, recordInsights, playerSims, playerGameLogs, dict, emailDigest, gameStates] = await Promise.all([
+    user ? loadInsight(supabase, { key: "gm_archetype_quiz", userId: user.id }).catch(() => null) : null,
+    user && savedTeams.length
+      ? loadTeamInsightForAll(supabase, { key: "season_record_badge", userId: user.id, savedTeamIds: savedTeams.map((t) => t.id) }).catch(() => new Map())
+      : new Map(),
+    many ? loadPlayerSims().catch(() => ({})) : {},
+    many ? loadGameLogs(savedTeams).catch(() => ({})) : {},
+    many ? Promise.race([getSleeperPlayers().catch(() => ({})), new Promise((r) => setTimeout(() => r({}), 3000))]) : {},
+    user ? loadEmailDigest(supabase, user.id).catch(() => false) : false,
+    savedTeams.length ? Promise.race([fetchGameStates().catch(() => null), new Promise((r) => setTimeout(() => r(null), 1500))]) : null,
+  ]);
+
   // GM Archetype (user-scoped) + per-team season-record badges
   // (team-scoped) -- see lib/insights/. Merging the record tier straight
   // into each team's settings object is what lets MyTeamClient's
   // existing LeagueBadges render it as one more pill alongside Teams/
   // Roster Spots/Scoring, without threading a separate prop through.
-  let archetypeResult = null;
-  if (user) {
-    const row = await loadInsight(supabase, { key: "gm_archetype_quiz", userId: user.id });
-    archetypeResult = row?.value || null;
-  }
-  if (user && savedTeams.length) {
-    const recordInsights = await loadTeamInsightForAll(supabase, {
-      key: "season_record_badge",
-      userId: user.id,
-      savedTeamIds: savedTeams.map((t) => t.id),
-    });
-    savedTeams = savedTeams.map((t) => {
-      const tier = recordInsights.get(t.id)?.value?.tier;
-      return tier ? { ...t, settings: { ...(t.settings || {}), recordTier: tier } } : t;
-    });
-  }
-
-  // Season sim numbers for the My Guys > My Analysis scatter -- public
-  // read, no tier gate on these columns (same as the tool pages). Keyed
-  // by normalized name so the client can join Sleeper roster players to
-  // it. Only fetched when there's actually a portfolio to plot.
-  let playerSims = {};
-  if (savedTeams.length >= 2) {
-    const pub = createPublicClient();
-    const { data: latest } = await pub
-      .from("player_simulations")
-      .select("season, week")
-      .order("season", { ascending: false })
-      .order("week", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    if (latest) {
-      const { data: sims } = await pub
-        .from("player_simulations")
-        .select("player_name, floor, median, ceiling, wopr, epa")
-        .eq("season", latest.season)
-        .eq("week", latest.week);
-      for (const s of sims || []) {
-        if (s.player_name) playerSims[normalizePlayerName(s.player_name)] = s;
-      }
-    }
-  }
+  const archetypeResult = archetypeRow?.value || null;
+  savedTeams = savedTeams.map((t) => {
+    const tier = recordInsights.get(t.id)?.value?.tier;
+    return tier ? { ...t, settings: { ...(t.settings || {}), recordTier: tier } } : t;
+  });
 
   // Portfolio Pulse (user-scoped insight) -- a distilled, cacheable
   // summary of the SAME rows the My Guys panel already builds client-
@@ -103,13 +85,10 @@ export default async function MyTeamPage() {
   // without re-deriving them.
   let portfolioSummary = null;
   let exposureRows = [];
-  if (user && savedTeams.length >= 2) {
+  if (user && many) {
     const { rows } = buildPortfolio(savedTeams, {}, playerSims, {});
     exposureRows = rows;
 
-    // Extra per-player fields the Pulse tabs need: age (Sleeper's player
-    // dictionary, module-cached).
-    const dict = await getSleeperPlayers().catch(() => ({}));
     // Achievement badge keys per player (player-level, so the same in every
     // league); Established / Building (key "confidence") are excluded.
     const badgesByPlayer = {};
@@ -120,6 +99,7 @@ export default async function MyTeamPage() {
         }
       }
     }
+    // Extra per-player fields the Pulse tabs need: age (Sleeper's player dictionary).
     const pulseRows = rows.map((r) => ({
       ...r,
       badges: badgesByPlayer[r.player_id] || [],
@@ -136,55 +116,14 @@ export default async function MyTeamPage() {
     });
   }
 
-  // Per-player-week game log (trailing two seasons) for the My Analysis
-  // filter builder -- public read, scoped to just the saved-team players
-  // (by normalized name) so the payload stays a few thousand rows.
-  // model/player_game_log.R -> player_game_log table.
-  let playerGameLogs = {};
-  if (savedTeams.length >= 2) {
-    const names = new Set();
-    for (const t of savedTeams) {
-      for (const p of t.players || []) {
-        if (p.name) names.add(normalizePlayerName(p.name));
-      }
-    }
-    if (names.size) {
-      const pub = createPublicClient();
-      const list = [...names];
-      // ~24 games/player over two seasons blows past PostgREST's 1000-row
-      // default cap for a portfolio of any size, so page through it.
-      const PAGE = 1000;
-      for (let from = 0; ; from += PAGE) {
-        const { data: chunk } = await pub
-          .from("player_game_log")
-          .select("normalized_name, season, week, is_home, won, fantasy_points_ppr, exp_points_ppr")
-          .in("normalized_name", list)
-          .order("normalized_name", { ascending: true })
-          .order("season", { ascending: true })
-          .order("week", { ascending: true })
-          .range(from, from + PAGE - 1);
-        if (!chunk || chunk.length === 0) break;
-        for (const g of chunk) {
-          (playerGameLogs[g.normalized_name] ??= []).push(g);
-        }
-        if (chunk.length < PAGE) break;
-      }
-    }
-  }
-
   // Basic demographics (jersey, HT/WT, age, experience, college, status)
   // for the My Analysis player card -- from Sleeper's own player
   // dictionary (module-cached, see lib/sleeper.js). Scoped to just the
   // players on the saved teams so the prop stays small.
-  let playerBios = {};
-  if (savedTeams.length >= 2) {
-    const ids = new Set();
+  const playerBios = {};
+  if (many) {
     for (const t of savedTeams) {
-      for (const p of t.players || []) if (p.player_id) ids.add(p.player_id);
-    }
-    const dict = await getSleeperPlayers().catch(() => ({}));
-    for (const id of ids) {
-      if (dict[id]) playerBios[id] = dict[id];
+      for (const p of t.players || []) if (p.player_id && dict[p.player_id]) playerBios[p.player_id] = dict[p.player_id];
     }
   }
 
@@ -213,13 +152,6 @@ export default async function MyTeamPage() {
     }
   }
 
-  // Weekly email opt-in (migration 0038; a missing column just reads as off).
-  let emailDigest = false;
-  if (user) {
-    const { data: prof } = await supabase.from("profiles").select("email_digest").eq("id", user.id).maybeSingle();
-    emailDigest = Boolean(prof?.email_digest);
-  }
-
   // Heading follows the Sleeper account the saved teams were imported from.
   const sleeperName = savedTeams.find((t) => t.platform_username)?.platform_username || null;
 
@@ -233,6 +165,7 @@ export default async function MyTeamPage() {
           tier={tier}
           savedTeamLimit={savedTeamLimit(tier)}
           savedTeams={savedTeams}
+          initialGameStates={gameStates}
           heading={sleeperName ? `${sleeperName}\u2019s Teams` : "My Team"}
           playerSims={playerSims}
           playerGameLogs={playerGameLogs}
@@ -249,4 +182,72 @@ export default async function MyTeamPage() {
       </main>
     </div>
   );
+}
+
+// Season sim numbers for the My Guys > My Analysis scatter -- public
+// read, no tier gate on these columns (same as the tool pages). Keyed
+// by normalized name so the client can join Sleeper roster players to
+// it. Only fetched when there's actually a portfolio to plot.
+async function loadPlayerSims() {
+  const out = {};
+  const pub = createPublicClient();
+  const { data: latest } = await pub
+    .from("player_simulations")
+    .select("season, week")
+    .order("season", { ascending: false })
+    .order("week", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (!latest) return out;
+  const { data: sims } = await pub
+    .from("player_simulations")
+    .select("player_name, floor, median, ceiling, wopr, epa")
+    .eq("season", latest.season)
+    .eq("week", latest.week);
+  for (const s of sims || []) {
+    if (s.player_name) out[normalizePlayerName(s.player_name)] = s;
+  }
+  return out;
+}
+
+// Per-player-week game log (trailing two seasons) for the My Analysis
+// filter builder -- public read, scoped to just the saved-team players
+// (by normalized name) so the payload stays a few thousand rows.
+// model/player_game_log.R -> player_game_log table.
+async function loadGameLogs(savedTeams) {
+  const out = {};
+  const names = new Set();
+  for (const t of savedTeams) {
+    for (const p of t.players || []) {
+      if (p.name) names.add(normalizePlayerName(p.name));
+    }
+  }
+  if (!names.size) return out;
+  const pub = createPublicClient();
+  const list = [...names];
+  // ~24 games/player over two seasons blows past PostgREST's 1000-row
+  // default cap for a portfolio of any size, so page through it.
+  const PAGE = 1000;
+  for (let from = 0; ; from += PAGE) {
+    const { data: chunk } = await pub
+      .from("player_game_log")
+      .select("normalized_name, season, week, is_home, won, fantasy_points_ppr, exp_points_ppr")
+      .in("normalized_name", list)
+      .order("normalized_name", { ascending: true })
+      .order("season", { ascending: true })
+      .order("week", { ascending: true })
+      .range(from, from + PAGE - 1);
+    if (!chunk || chunk.length === 0) break;
+    for (const g of chunk) {
+      (out[g.normalized_name] ??= []).push(g);
+    }
+    if (chunk.length < PAGE) break;
+  }
+  return out;
+}
+
+// Weekly email opt-in (migration 0038; a missing column just reads as off).
+async function loadEmailDigest(supabase, userId) {
+  const { data: prof } = await supabase.from("profiles").select("email_digest").eq("id", userId).maybeSingle();
+  return Boolean(prof?.email_digest);
 }

@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import MatchupPanel, { sleeperMatchupUrl, formatWin } from "./MatchupPanel";
-import { buildRow } from "./LeagueDashboard";
+import { buildRow, isTyping, moveFocus } from "./LeagueDashboard";
 import { formatOdds, oddsTone } from "./Standings";
 import PositionBadge from "../tools/PositionBadge";
 import TeamBadge from "../tools/TeamBadge";
@@ -10,6 +10,11 @@ import { summarizeSide } from "@/lib/winChance";
 import { buildLiveFeed, trackScoring, sortFeed } from "@/lib/liveFeed";
 
 const fmt1 = (v) => (v == null ? "—" : v.toFixed(1));
+// "Christian McCaffrey" -> "C. McCaffrey"
+const shortName = (name) => {
+  const [first, ...rest] = String(name || "").split(" ");
+  return rest.length ? `${first[0]}. ${rest.join(" ")}` : first;
+};
 
 function leftText(side) {
   if (!side) return null;
@@ -40,6 +45,7 @@ function LeagueCard({ team, gameStates, injuries, onOpen }) {
       data-league-id={team.id}
       onClick={() => onOpen(team.id)}
       onKeyDown={(e) => {
+        if (e.target !== e.currentTarget) return;
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
           onOpen(team.id);
@@ -50,11 +56,6 @@ function LeagueCard({ team, gameStates, injuries, onOpen }) {
       <div className="sb-card-head">
         <span className="sb-card-league">{row.league}</span>
         {anyLive && <span className="matchup-score-live-dot" title="Games in progress" aria-hidden="true" />}
-        {row.playoffOdds != null && (
-          <span className={`sb-card-odds mono ${oddsTone(row.playoffOdds)}`} title="Chance to make the playoffs">
-            {formatOdds(row.playoffOdds)} playoffs
-          </span>
-        )}
         {url && (
           <a
             className="league-dash-sleeper sb-card-sleeper"
@@ -88,11 +89,27 @@ function LeagueCard({ team, gameStates, injuries, onOpen }) {
             <span className="sb-card-left mono">{leftText(opp)}</span>
             <span className={`sb-card-score mono${myScore != null && oppScore != null && oppScore > myScore ? " lead" : ""}`}>{fmt1(oppScore)}</span>
           </div>
+          {mine && (mine.yetToPlay > 0 || mine.playing > 0) && (
+            <div className="sb-card-todo" title="Your starters still to play or playing now">
+              {mine.players
+                .filter((p) => p.outlook.state === "pre" || p.outlook.state === "in" || p.outlook.state === null)
+                .map((p) => (
+                  <span key={p.id} className={p.outlook.state === "in" ? "is-live" : ""}>
+                    {shortName(p.name)}
+                  </span>
+                ))}
+            </div>
+          )}
           <div className="sb-card-foot">
             <span className={`sb-card-win mono${pct == null ? "" : pct >= 0.5 ? " up" : " down"}`}>{formatWin(pct)}</span>
             <span className="sb-card-winbar" aria-hidden="true">
               {pct != null && <span style={{ width: `${pct * 100}%` }} />}
             </span>
+            {row.playoffOdds != null && (
+              <span className={`sb-card-odds mono ${oddsTone(row.playoffOdds)}`} title="Chance to make the playoffs">
+                {formatOdds(row.playoffOdds)} PO
+              </span>
+            )}
             {alerts > 0 ? (
               <span className="sb-card-alerts mono" title={row.outStarters.map((p) => `${p.name}: ${p.status}`).join("\n")}>
                 <span className={`status-dot status-dot-${row.outStarters[0].severity}`} aria-hidden="true" />
@@ -170,20 +187,62 @@ function LiveFeed({ savedTeams, gameStates, updatedAt }) {
 
 // The full-screen game-day layout (My Team's theater, default on game days): a card per league and one running list
 // of your players' scoring. Clicking a card opens that league's head-to-head matchup in a drawer.
+// Keyboard: j / k or the arrow keys move between cards, Enter opens one, Esc closes the drawer (a second Esc leaves
+// full screen). The open drawer is remembered per browser, so a reload lands back on the same matchup.
 export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, updatedAt, toolbar }) {
-  const [openId, setOpenId] = useState(null);
+  const [openId, setOpenIdState] = useState(null);
   const openTeam = openId ? savedTeams.find((t) => t.id === openId) : null;
+  const gridRef = useRef(null);
+  const lastCard = useRef(null);
 
-  // Esc closes the drawer first (capture phase, so the theater's own Esc handler doesn't also fire).
+  function setOpenId(id) {
+    if (id) lastCard.current = id;
+    setOpenIdState(id);
+    try {
+      localStorage.setItem("myteam.boardOpen", id || "");
+    } catch {}
+  }
+  useEffect(() => {
+    const t = setTimeout(() => {
+      try {
+        const id = localStorage.getItem("myteam.boardOpen");
+        if (id) {
+          lastCard.current = id;
+          setOpenIdState(id);
+        }
+      } catch {}
+    }, 0);
+    return () => clearTimeout(t);
+  }, []);
+
+  // Esc closes the drawer first (capture phase, so the theater's own Esc handler doesn't also fire) and puts focus
+  // back on that league's card.
   useEffect(() => {
     if (!openId) return;
     const onKey = (e) => {
       if (e.key !== "Escape") return;
       e.stopPropagation();
       setOpenId(null);
+      setTimeout(() => gridRef.current?.querySelector(`[data-league-id="${lastCard.current}"]`)?.focus(), 0);
     };
     window.addEventListener("keydown", onKey, true);
     return () => window.removeEventListener("keydown", onKey, true);
+  }, [openId]);
+
+  // j / k / arrows between cards while no drawer is open.
+  useEffect(() => {
+    if (openId) return;
+    const onKey = (e) => {
+      if (isTyping(e)) return;
+      const step = e.key === "j" || e.key === "ArrowDown" || e.key === "ArrowRight" ? 1 : e.key === "k" || e.key === "ArrowUp" || e.key === "ArrowLeft" ? -1 : 0;
+      if (!step) return;
+      const inGrid = gridRef.current?.contains(document.activeElement);
+      if (!inGrid && e.key !== "j" && e.key !== "k") return; // arrows only once a card has focus
+      e.preventDefault();
+      moveFocus(gridRef.current, ".sb-card", step);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
   }, [openId]);
 
   let ahead = 0;
@@ -212,7 +271,7 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
         {toolbar}
       </div>
       <div className="sb-body">
-        <div className="sb-grid">
+        <div className="sb-grid" ref={gridRef}>
           {savedTeams.map((t) => (
             <LeagueCard key={t.id} team={t} gameStates={gameStates} injuries={injuriesByTeam?.[t.id]} onOpen={setOpenId} />
           ))}

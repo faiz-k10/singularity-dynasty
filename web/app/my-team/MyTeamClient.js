@@ -268,7 +268,24 @@ function RosterTable({ players: rawPlayers, bestBall = false, playerPoints = nul
 // league's badges + buy-in + remove controls, shown in the header row beside the toggle.
 function LeagueDetail({ team, gameStates, children }) {
   const s = team.settings || {};
-  const [tab, setTab] = useState(s.opponent || s.isBye ? "matchup" : "roster");
+  const [tab, setTabState] = useState(s.opponent || s.isBye ? "matchup" : "roster");
+  // The tab picked per league is remembered per browser.
+  useEffect(() => {
+    const t = setTimeout(() => {
+      try {
+        const saved = JSON.parse(localStorage.getItem("myteam.leagueTabs") || "{}")[team.id];
+        if (saved === "matchup" || saved === "roster") setTabState(saved);
+      } catch {}
+    }, 0);
+    return () => clearTimeout(t);
+  }, [team.id]);
+  function setTab(next) {
+    setTabState(next);
+    try {
+      const all = JSON.parse(localStorage.getItem("myteam.leagueTabs") || "{}");
+      localStorage.setItem("myteam.leagueTabs", JSON.stringify({ ...all, [team.id]: next }));
+    } catch {}
+  }
   return (
     <div className="league-dash-detail">
       <div className="league-dash-detail-head">
@@ -1082,6 +1099,7 @@ export default function MyTeamClient({
   tier,
   savedTeamLimit,
   savedTeams: savedTeamsProp,
+  initialGameStates = null,
   playerSims = {},
   playerGameLogs = {},
   playerBios = {},
@@ -1139,7 +1157,7 @@ export default function MyTeamClient({
   // ESPN call for 2 minutes, so polling at that cadence is cheap.
   const [news, setNews] = useState(null);
   // Which games have kicked off (lib/gameStatus.js), from the refresh and the 30s live poll.
-  const [gameStates, setGameStates] = useState(null);
+  const [gameStates, setGameStates] = useState(initialGameStates);
   const [newsFilter, setNewsFilter] = useState({ starters: false, injuries: false });
   // Desktop alerts (DesktopAlerts.js, Explorer and up): while they're on, the news + live polls keep running in a
   // background tab so the alerts still arrive.
@@ -1235,10 +1253,20 @@ export default function MyTeamClient({
       try {
         const saved = JSON.parse(localStorage.getItem("myteam.theaterLayout") || "null");
         if (saved?.day === new Date().toDateString()) setTheaterPick(saved.layout);
+        // Full screen stays open across reloads (a second monitor left on the Sunday board).
+        if (localStorage.getItem("myteam.theaterOpen") === "1") setTheater(true);
       } catch {}
+      theaterLoaded.current = true;
     }, 0);
     return () => clearTimeout(t);
   }, []);
+  const theaterLoaded = useRef(false);
+  useEffect(() => {
+    if (!theaterLoaded.current) return;
+    try {
+      localStorage.setItem("myteam.theaterOpen", theater ? "1" : "0");
+    } catch {}
+  }, [theater]);
   function pickTheaterLayout(layout) {
     setTheaterPick(layout);
     try {
@@ -1676,8 +1704,8 @@ export default function MyTeamClient({
       type="button"
       className="rankings-theater-btn"
       onClick={() => setTheater((v) => !v)}
-      aria-label={theater ? "Exit theater view" : "Open theater view (customizable panels)"}
-      title={theater ? "Exit theater view (Esc)" : "Theater view — customizable panels"}
+      aria-label={theater ? "Exit full screen" : "Open full screen (Sunday board and panels)"}
+      title={theater ? "Exit full screen (Esc)" : "Full screen — Sunday board and customizable panels"}
     >
       {theater ? (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

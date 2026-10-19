@@ -4134,17 +4134,9 @@ summary:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible{
   *, *::before, *::after{animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; scroll-behavior:auto !important;}
 }
 
-/* Frosted "refreshing" overlay over the dashboard while a full Sleeper
-   refresh is in flight (not shown for the light 30s score poll). */
+/* "Refreshing" indicator on the dashboard while a full Sleeper refresh is in flight (not shown for the light 30s
+   score poll) -- see .league-dash-refresh below. */
 .league-dash{position:relative;}
-.league-dash-overlay{
-  position:absolute; inset:0; z-index:5; border-radius:inherit;
-  display:flex; align-items:center; justify-content:center; gap:12px;
-  background:color-mix(in srgb, var(--void) 28%, transparent);
-  -webkit-backdrop-filter:blur(3px) saturate(1.2); backdrop-filter:blur(3px) saturate(1.2);
-  font-family:var(--font-mono), monospace; font-size:.85rem; color:var(--star);
-  animation:league-dash-fade .18s ease both;
-}
 .league-dash-spinner{
   width:20px; height:20px; border-radius:50%;
   border:2px solid color-mix(in srgb, var(--star) 20%, transparent);
@@ -4153,6 +4145,23 @@ summary:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible{
 }
 @keyframes league-dash-spin{to{transform:rotate(360deg);}}
 @keyframes league-dash-fade{from{opacity:0;}to{opacity:1;}}
+/* The refresh indicator that replaced the overlay: a chip in the top-right corner plus a sweeping hairline along
+   the card's top edge; pointer-events off so nothing underneath is blocked. */
+.league-dash-refresh{
+  position:absolute; top:6px; right:14px; z-index:5; pointer-events:none;
+  display:inline-flex; align-items:center; gap:8px; padding:4px 10px; border-radius:999px;
+  background:rgba(var(--scrim-rgb),.85); border:1px solid rgba(var(--star-dot-rgb),.12);
+  font-family:var(--font-mono), monospace; font-size:11px; color:var(--star-dim);
+  animation:league-dash-fade .18s ease both;
+}
+.league-dash-refresh .league-dash-spinner{width:12px; height:12px; border-width:1.5px;}
+.league-dash[aria-busy="true"]::before{
+  content:""; position:absolute; left:16px; right:16px; top:0; height:2px; z-index:5; pointer-events:none; border-radius:2px;
+  background:linear-gradient(90deg, transparent, var(--horizon-gold), var(--neon-blue), transparent) 0 0 / 40% 100% no-repeat;
+  animation:league-dash-sweep 1.2s ease-in-out infinite;
+}
+@keyframes league-dash-sweep{from{background-position:-40% 0;} to{background-position:140% 0;}}
+@media (prefers-reduced-motion:reduce){ .league-dash[aria-busy="true"]::before{animation:none; background-size:100% 100%;} }
 
 /* My Team panel system: every top-level panel on the page shares one
    radius (16px, the site-wide content-panel standard), one inner padding
@@ -4290,6 +4299,9 @@ summary:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible{
 
 /* Saved Teams table: left-aligned names, mono numerics, status dots. */
 .league-dash-table td{padding-top:14px; padding-bottom:14px; vertical-align:middle;}
+/* Nine columns since the Playoffs / Win % / Sleeper ones (Oct 2026): tighter sides so the table fits next to the
+   Player Exposure column at 1440px. */
+.rankings-table.league-dash-table th, .rankings-table.league-dash-table td{padding-left:12px; padding-right:12px;}
 .league-dash-teamcell{display:flex; align-items:center; gap:12px; text-align:left;}
 .league-dash-chev{width:12px; color:var(--star-dim); font-size:11px; transition:transform .18s ease, color .15s ease;}
 .league-dash-chev.open{transform:rotate(90deg); color:var(--horizon-gold);}
@@ -4326,6 +4338,14 @@ summary:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible{
 /* ===== Phone pass (<=640px) =====
    Everything below only applies on a phone; desktop rules above are untouched. */
 @media (max-width:640px){
+  /* My Team panel headers: title, counts and controls each get their own line instead of squeezing into one row
+     (the counts used to break one word per line and the Desktop alerts pill ran off the edge). */
+  .board-static-head{flex-wrap:wrap; row-gap:8px;}
+  .board-static-head .board-spacer{display:none;}
+  .board-static-head .board-panel-sub{margin-left:0; flex-basis:100%;}
+  .board-static-head .board-panel-sub > span{white-space:nowrap;}
+  .board-static-head .board-panel-actions{flex-wrap:wrap; gap:8px 14px; flex-basis:100%;}
+
   /* My Team matchup view: win chance on top, the two scores under it, and the "to come" range column dropped so a
      lineup row fits a phone (the doubled .h2h selectors outrank the 900px rules that come later in the file). */
   .h2h .h2h-board{grid-template-columns:1fr 1fr; grid-template-areas:"center center" "mine opp"; gap:12px; padding:14px;}
@@ -5137,7 +5157,7 @@ html{font-stretch:82%;}
 .h2h{display:flex; flex-direction:column; gap:14px; text-align:left;}
 /* Inside the dashboard table (min-width:max-content) the panel adds no width of its own: it fills the opened row's
    cell instead of stretching the table past its card. */
-.h2h-wrap{display:flex; flex-direction:column; gap:20px; text-align:left;}
+.h2h-wrap{display:flex; flex-direction:column; gap:16px; text-align:left;}
 .league-dash-detail .h2h-wrap{width:0; min-width:100%; box-sizing:border-box;}
 /* When the dashboard table is wider than its card (phones, narrow windows) the opened league stays pinned to the
    visible width instead of scrolling sideways with the table: the scroller is a size container and the detail is
@@ -5171,10 +5191,10 @@ html{font-stretch:82%;}
 .h2h-side.opp .h2h-side-title{text-align:right;}
 .h2h-row{
   display:grid; align-items:center; gap:10px; min-height:52px; padding:6px 4px;
-  grid-template-columns:76px minmax(0,1fr) 62px 48px 62px; grid-template-areas:"slot player range proj pts";
+  grid-template-columns:72px minmax(0,1fr) 50px 42px 52px; grid-template-areas:"slot player range proj pts";
   border-top:1px solid rgba(var(--star-dot-rgb),.07);
 }
-.h2h-side.opp .h2h-row{grid-template-columns:62px 48px 62px minmax(0,1fr) 76px; grid-template-areas:"pts proj range player slot";}
+.h2h-side.opp .h2h-row{grid-template-columns:52px 42px 50px minmax(0,1fr) 72px; grid-template-areas:"pts proj range player slot";}
 .h2h-row.h2h-head{min-height:0; padding-top:2px; padding-bottom:6px; border-top:0; font-family:var(--font-mono), monospace; font-size:10px; text-transform:uppercase; letter-spacing:.07em; color:var(--star-dim);}
 .h2h-c-slot{grid-area:slot;}
 .h2h-c-player{grid-area:player; min-width:0; display:flex; flex-direction:column; gap:4px;}
@@ -5185,7 +5205,9 @@ html{font-stretch:82%;}
 .h2h-side.opp .h2h-c-player{align-items:flex-end; text-align:right;}
 .h2h-side.opp .h2h-c-range, .h2h-side.opp .h2h-c-proj, .h2h-side.opp .h2h-c-pts{text-align:left;}
 .h2h-player-name{font-size:14.5px; color:var(--star); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;}
-.h2h-player-sub{display:flex; align-items:center; gap:6px; flex-wrap:wrap;}
+.h2h-player-sub{display:flex; align-items:center; gap:6px; flex-wrap:nowrap; min-width:0; overflow:hidden;}
+.h2h-player-sub .h2h-game{overflow:hidden; text-overflow:ellipsis; min-width:0;}
+.h2h .slot-badge{min-width:0; padding:0 6px; font-size:9.5px;}
 .h2h-slot-inline{display:none;} /* the slot moves into this line on phones (Phone pass) */
 .h2h-side.opp .h2h-player-sub{justify-content:flex-end;}
 .h2h-game{font-size:10.5px; color:var(--star-dim); white-space:nowrap;}
@@ -5195,7 +5217,7 @@ html{font-stretch:82%;}
 .h2h-note{margin:0; font-size:11.5px; line-height:1.5; color:var(--star-dim);}
 @media (max-width:900px){
   .h2h-lineups{grid-template-columns:minmax(0,1fr);}
-  .h2h-side.opp .h2h-row{grid-template-columns:76px minmax(0,1fr) 62px 48px 62px; grid-template-areas:"slot player range proj pts";}
+  .h2h-side.opp .h2h-row{grid-template-columns:72px minmax(0,1fr) 50px 42px 52px; grid-template-areas:"slot player range proj pts";}
   .h2h-side.opp .h2h-side-title, .h2h-side.opp .h2h-c-slot{text-align:left;}
   .h2h-side.opp .h2h-c-player{align-items:flex-start; text-align:left;}
   .h2h-side.opp .h2h-player-sub{justify-content:flex-start;}
@@ -5229,8 +5251,11 @@ html{font-stretch:82%;}
 .sb-card-league{font-family:var(--font-mono), monospace; font-size:11px; text-transform:uppercase; letter-spacing:.07em; color:var(--star-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0;}
 .sb-card-head .matchup-score-live-dot{width:6px; height:6px; flex:none;}
 .sb-card-sleeper{margin-left:auto; flex:none;}
-.sb-card-odds{margin-left:auto; font-size:10.5px; white-space:nowrap;}
-.sb-card-odds + .sb-card-sleeper{margin-left:0;}
+.sb-card-odds{font-size:10.5px; white-space:nowrap;}
+.sb-card-todo{display:flex; flex-wrap:wrap; gap:4px 10px; font-size:11.5px; color:var(--star-dim); border-top:1px solid rgba(var(--star-dot-rgb),.07); padding-top:7px;}
+.sb-card-todo::before{content:"To play"; font-family:var(--font-mono), monospace; font-size:9.5px; text-transform:uppercase; letter-spacing:.07em; color:var(--star-dim); opacity:.75; align-self:center;}
+.sb-card-todo .is-live{color:var(--star);}
+.sb-card-todo .is-live::after{content:""; display:inline-block; width:5px; height:5px; margin-left:5px; border-radius:50%; background:var(--down); vertical-align:middle;}
 .sb-card-side{display:grid; grid-template-columns:minmax(0,1fr) auto auto; align-items:baseline; gap:10px;}
 .sb-card-team{font-size:15px; color:var(--star); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
 .sb-card-team.sb-muted{color:var(--star-dim);}
@@ -5302,7 +5327,7 @@ html{font-stretch:82%;}
 .desk-alerts{display:inline-flex; align-items:center; gap:8px; font-family:var(--font-mono), monospace; font-size:11.5px; color:var(--star-dim);}
 .desk-alerts svg{flex:none;}
 .desk-alerts-locked a{color:var(--neon-blue);}
-.desk-alerts-btn{display:inline-flex; align-items:center; gap:6px; font:inherit; font-size:11.5px; color:var(--star-dim); background:rgba(var(--scrim-rgb),.5); border:1px solid rgba(var(--star-dot-rgb),.14); border-radius:999px; padding:5px 11px; cursor:pointer; transition:color .15s ease, border-color .15s ease, background-color .15s ease;}
+.desk-alerts-btn{white-space:nowrap; display:inline-flex; align-items:center; gap:6px; font:inherit; font-size:11.5px; color:var(--star-dim); background:rgba(var(--scrim-rgb),.5); border:1px solid rgba(var(--star-dot-rgb),.14); border-radius:999px; padding:5px 11px; cursor:pointer; transition:color .15s ease, border-color .15s ease, background-color .15s ease;}
 .desk-alerts-btn:hover{color:var(--star); border-color:var(--neon-blue);}
 .desk-alerts-btn.on{color:var(--void); background:var(--horizon-gold); border-color:var(--horizon-gold);}
 .desk-alerts-note{font-size:11px; color:var(--down);}

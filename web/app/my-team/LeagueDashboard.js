@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { sleeperMatchupUrl, formatWin } from "./MatchupPanel";
 import { formatOdds, oddsTone } from "./Standings";
 
@@ -82,14 +82,81 @@ const COLS = [
   { key: "alerts", label: "Alerts", align: "left", sort: (r) => r.outStarters.length },
 ];
 
+// Keys typed into a field are never shortcuts.
+export function isTyping(e) {
+  const t = e.target;
+  return e.metaKey || e.ctrlKey || e.altKey || (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)));
+}
+
+// Moves keyboard focus to the next / previous element matching `selector` inside `root` (j / k, arrow keys).
+export function moveFocus(root, selector, step) {
+  const items = [...(root?.querySelectorAll(selector) || [])];
+  if (!items.length) return;
+  const at = items.indexOf(document.activeElement);
+  const next = at < 0 ? (step > 0 ? 0 : items.length - 1) : Math.min(items.length - 1, Math.max(0, at + step));
+  items[next].focus();
+  items[next].scrollIntoView({ block: "nearest" });
+}
+
+const STORE_KEY = "myteam.dashboard";
+
 // The main saved-teams view: one sortable row per league, click a row to
 // expand its roster and league settings (renderExpanded, supplied by
 // MyTeamClient since those pieces live there). Default sort floats leagues
 // with lineup alerts to the top.
+// Keyboard: j / k (anywhere) or the arrow keys (on a row) move between leagues, Enter opens or closes one, Esc closes
+// it. Which leagues are open and the sort are remembered per browser (localStorage, a convenience).
 export default function LeagueDashboard({ savedTeams, renderExpanded, injuriesByTeam, refreshing = false }) {
   const [sortKey, setSortKey] = useState("alerts");
   const [dir, setDir] = useState("desc");
   const [open, setOpen] = useState(() => new Set());
+  const rootRef = useRef(null);
+  const loaded = useRef(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => {
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORE_KEY) || "null");
+        if (saved?.sortKey && COLS.some((c) => c.key === saved.sortKey)) setSortKey(saved.sortKey);
+        if (saved?.dir === "asc" || saved?.dir === "desc") setDir(saved.dir);
+        if (Array.isArray(saved?.open)) setOpen(new Set(saved.open));
+      } catch {}
+      loaded.current = true;
+    }, 0);
+    return () => clearTimeout(t);
+  }, []);
+  useEffect(() => {
+    if (!loaded.current) return;
+    try {
+      localStorage.setItem(STORE_KEY, JSON.stringify({ sortKey, dir, open: [...open] }));
+    } catch {}
+  }, [sortKey, dir, open]);
+
+  // j / k from anywhere on the page (not while typing).
+  useEffect(() => {
+    const onKey = (e) => {
+      if (isTyping(e) || (e.key !== "j" && e.key !== "k")) return;
+      if (!rootRef.current?.offsetParent) return;
+      e.preventDefault();
+      moveFocus(rootRef.current, "[data-dash-row]", e.key === "j" ? 1 : -1);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  function rowKey(e, id) {
+    if (e.target !== e.currentTarget) return; // keys inside the row's links / controls keep their own meaning
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      toggle(id);
+    } else if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      e.preventDefault();
+      moveFocus(rootRef.current, "[data-dash-row]", e.key === "ArrowDown" ? 1 : -1);
+    } else if (e.key === "Escape" && open.has(id)) {
+      e.stopPropagation(); // close the league first; a second Esc can leave full screen
+      toggle(id);
+    }
+  }
 
   const rows = useMemo(() => {
     const built = savedTeams.map((t) => ({ ...buildRow(t, injuriesByTeam?.[t.id]), team_obj: t }));
@@ -119,9 +186,10 @@ export default function LeagueDashboard({ savedTeams, renderExpanded, injuriesBy
   }
 
   return (
-    <div className="league-dash glass-panel" aria-busy={refreshing}>
+    <div className="league-dash glass-panel" aria-busy={refreshing} ref={rootRef}>
+      {/* Non-blocking: the saved snapshot stays readable and clickable while the live refresh runs. */}
       {refreshing && (
-        <div className="league-dash-overlay" role="status">
+        <div className="league-dash-refresh" role="status">
           <span className="league-dash-spinner" aria-hidden="true" />
           <span>Refreshing live data…</span>
         </div>
@@ -147,7 +215,14 @@ export default function LeagueDashboard({ savedTeams, renderExpanded, injuriesBy
           <tbody>
             {rows.map((r) => (
               <Fragment key={r.id}>
-              <tr className="league-dash-row" onClick={() => toggle(r.id)}>
+              <tr
+                className="league-dash-row"
+                tabIndex={0}
+                data-dash-row={r.id}
+                aria-expanded={open.has(r.id)}
+                onClick={() => toggle(r.id)}
+                onKeyDown={(e) => rowKey(e, r.id)}
+              >
                 <td className="align-left">
                   <div className="league-dash-teamcell">
                     <span className={`league-dash-chev${open.has(r.id) ? " open" : ""}`} aria-hidden="true">▸</span>
@@ -226,7 +301,15 @@ export default function LeagueDashboard({ savedTeams, renderExpanded, injuriesBy
                 </td>
               </tr>
               {open.has(r.id) && (
-                <tr className="league-dash-expanded">
+                <tr
+                  className="league-dash-expanded"
+                  onKeyDown={(e) => {
+                    if (e.key !== "Escape" || isTyping(e)) return;
+                    e.stopPropagation();
+                    toggle(r.id);
+                    rootRef.current?.querySelector(`[data-dash-row="${r.id}"]`)?.focus();
+                  }}
+                >
                   <td colSpan={COLS.length + 1}>{renderExpanded(r.team_obj)}</td>
                 </tr>
               )}

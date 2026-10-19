@@ -96,7 +96,7 @@ function Side({ title, side, opp = false, scoreboardKnown, uncertain }) {
       <div className="h2h-row h2h-head" aria-hidden="true">
         <span className="h2h-c-slot">Slot</span>
         <span className="h2h-c-player">Player</span>
-        <span className="h2h-c-range">To come</span>
+        <span className="h2h-c-range" title="Points still to come (80% range)">Left</span>
         <span className="h2h-c-proj">Proj</span>
         <span className="h2h-c-pts">Pts</span>
       </div>
