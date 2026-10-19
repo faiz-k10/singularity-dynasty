@@ -5259,6 +5259,7 @@ html{font-stretch:82%;}
 .h2h-legend-swatch{width:14px; height:9px; border-radius:2px 2px 0 0; flex:none;}
 .h2h-legend-swatch.is-low{background:var(--down); opacity:.7;}
 .h2h-legend-swatch.is-mid{background:var(--horizon-gold); opacity:.65;}
+.h2h-legend-swatch.is-faded{opacity:.3;}
 .h2h-legend-swatch.is-good{background:var(--neon-blue); opacity:.7;}
 .h2h-legend-dot{width:9px; height:9px; border-radius:50%; background:var(--star); box-shadow:0 0 0 2px rgba(var(--star-dot-rgb),.2); flex:none;}
 /* Players who haven't played yet: the WHOLE row -- edge to edge across the lineup card, slot to points -- is shaded and

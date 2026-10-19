@@ -274,6 +274,14 @@ function MatchupBody({ team, gameStates }) {
             Points so far: <span className="tone-low-text">red</span> under his floor, <span className="tone-good-text">blue</span> at or over his ceiling, plain in between
           </span>
         </li>
+        {[...(mine?.players || []), ...(opp?.players || [])].some((p) => p.est && !p.out) && (
+          <li>
+            <span className="h2h-legend-swatch is-mid is-faded" aria-hidden="true" />
+            <span>
+              <strong>Faded curve</strong> we don&apos;t project this player, so it shows a typical range for his position
+            </span>
+          </li>
+        )}
       </ul>
       <p
         className="h2h-note"
