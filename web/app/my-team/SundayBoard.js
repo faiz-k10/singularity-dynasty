@@ -523,19 +523,34 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
 
   return (
     <div className="sb">
-      <div className="sb-top">
-        <div className="sb-heading">
-          <h2 className="sb-title">Week {week ?? "—"}</h2>
-          <p className="sb-summary">{parts.join(" · ") || `${savedTeams.length} leagues`}</p>
+      <div className={`sb-top${openTeam ? " has-drawer" : ""}`}>
+        {/* Same two columns as the body below: the week and its summary with the Filter at the right end of the cards'
+            column, then the clock and board controls over the live panel. */}
+        <div className="sb-top-main">
+          <div className="sb-heading">
+            <h2 className="sb-title">Week {week ?? "—"}</h2>
+            <p className="sb-summary">{parts.join(" · ") || `${savedTeams.length} leagues`}</p>
+          </div>
+          {!openTeam && savedTeams.length > 1 && (
+            <div className="sb-filterbar">
+              {filtered && (
+                <span className="sb-filterbar-note mono">
+                  Showing {visibleTeams.length} of {savedTeams.length} leagues
+                </span>
+              )}
+              <BoardFilters filters={filters} onChange={setFilters} factsList={Object.values(factsById)} shown={visibleTeams.length} total={savedTeams.length} />
+            </div>
+          )}
         </div>
-        <span className="board-dock-spacer" />
-        {time && (
-          <span className={`sb-updated mono${live ? " is-live" : ""}`} title="Scores refresh every 30 seconds">
-            {live > 0 && <span className="sb-live-dot" aria-hidden="true" />}
-            {live > 0 ? "Live" : "Updated"} · {time}
-          </span>
-        )}
-        {toolbar}
+        <div className="sb-top-side">
+          {time && (
+            <span className={`sb-updated mono${live ? " is-live" : ""}`} title="Scores refresh every 30 seconds">
+              {live > 0 && <span className="sb-live-dot" aria-hidden="true" />}
+              {live > 0 ? "Live" : "Updated"} · {time}
+            </span>
+          )}
+          {toolbar}
+        </div>
       </div>
       <div className={`sb-body${openTeam ? " has-drawer" : ""}`}>
         {openTeam ? (
@@ -555,16 +570,6 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
           </section>
         ) : (
           <div className="sb-main">
-            {savedTeams.length > 1 && (
-              <div className="sb-filterbar">
-                <BoardFilters filters={filters} onChange={setFilters} factsList={Object.values(factsById)} shown={visibleTeams.length} total={savedTeams.length} />
-                {filtered && (
-                  <span className="sb-filterbar-note mono">
-                    Showing {visibleTeams.length} of {savedTeams.length} leagues
-                  </span>
-                )}
-              </div>
-            )}
             <div className="sb-grid" ref={gridRef}>
               {visibleTeams.map((t) => (
                 <LeagueCard key={t.id} team={t} gameStates={gameStates} injuries={injuriesByTeam?.[t.id]} onOpen={setOpenId} />

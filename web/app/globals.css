@@ -1222,11 +1222,11 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .theater-badge-pill .player-achv-dot{width:6px; height:6px; flex-shrink:0;}
 /* The Sunday board's league filter (app/my-team/BoardFilters.js): the same dropdown, anchored to the right edge of the
    header strip, chips carrying their league counts. */
-.sb-main{min-height:0; display:flex; flex-direction:column; gap:10px;}
+.sb-main{min-height:0; display:flex; flex-direction:column;}
 .sb-main > .sb-grid{flex:1;}
-.sb-filterbar{display:flex; align-items:center; gap:14px; padding:0 4px; flex:none;}
+.sb-filterbar{display:flex; align-items:center; gap:14px; flex:none;}
 .sb-filterbar-note{font-size:12px; color:var(--star-dim);}
-.sb-filter-panel{left:0; right:auto; width:430px; max-width:92vw;}
+.sb-filter-panel{left:auto; right:0; width:430px; max-width:92vw;}
 @media (max-width:640px){ .sb-filter-panel{position:fixed; top:96px; left:12px; right:12px; width:auto; max-width:none; max-height:75vh; overflow:auto;} }
 .sb-grid-empty{grid-column:1 / -1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; padding:60px 20px; text-align:center; color:var(--star-dim);}
 .sb-grid-empty p{margin:0; font-size:15px;}
@@ -5326,7 +5326,10 @@ html{font-stretch:82%;}
    league's matchup in a drawer over the board. Cards are tier-2 Golden Gate cards; the feed is a tier-1 panel. */
 .my-team-theater .sb{flex:1; min-height:0;}
 .sb{display:flex; flex-direction:column; gap:12px;}
-.sb-top{display:flex; flex-wrap:wrap; align-items:center; gap:10px 16px; padding:2px 4px 0 6px;}
+.sb-top{display:grid; grid-template-columns:minmax(0,1fr) minmax(560px,680px); gap:10px 18px; align-items:center; padding:2px 4px 0 6px;} /* same columns as .sb-body */
+.sb-top.has-drawer{grid-template-columns:minmax(0,1fr) minmax(320px,380px);}
+.sb-top-main{display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px 14px; min-width:0;}
+.sb-top-side{display:flex; flex-wrap:wrap; align-items:center; justify-content:flex-end; gap:10px 16px; min-width:0;}
 .sb-heading{display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; min-width:0;}
 .sb-title{margin:0; font-family:var(--font-display), sans-serif; font-weight:800; font-size:28px; line-height:1; text-transform:uppercase; letter-spacing:.06em; color:var(--star);}
 .sb-summary{margin:0; font-size:15px; color:var(--star-dim);}
@@ -5466,7 +5469,7 @@ html{font-stretch:82%;}
 .sb-feed-split > .sb-feed-scroll{flex:1 1 0; min-width:0;}
 .sb-plays{flex:1 1 0; min-width:0; min-height:0; display:flex; flex-direction:column; padding:0; margin:0; border-left:1px solid rgba(var(--star-dot-rgb),.14);}
 @media (max-width:1239px){
-  .sb-body{grid-template-columns:minmax(0,1fr) minmax(320px,380px);}
+  .sb-body, .sb-top{grid-template-columns:minmax(0,1fr) minmax(320px,380px);}
   .sb-feed-split{flex-direction:column;}
   .sb-plays{border-left:0; border-top:1px solid rgba(var(--star-dot-rgb),.14);}
 }
@@ -5502,7 +5505,8 @@ html{font-stretch:82%;}
 @keyframes sb-drawer-in{from{transform:translateX(-28px); opacity:0;} to{transform:none; opacity:1;}}
 @media (prefers-reduced-motion:reduce){ .sb-drawer{animation:none;} .sb-card{transition:none;} .sb-card-score.bumped, .sb-live-dot{animation:none;} }
 @media (max-width:999px){
-  .sb-body, .sb-body.has-drawer{grid-template-columns:minmax(0,1fr);}
+  .sb-body, .sb-body.has-drawer, .sb-top, .sb-top.has-drawer{grid-template-columns:minmax(0,1fr);}
+  .sb-top-side{justify-content:flex-start;}
   .sb-grid, .sb-feed-scroll, .sb-plays-scroll, .sb-drawer{overflow:visible;}
   .my-team-theater .sb{flex:none;}
 }
