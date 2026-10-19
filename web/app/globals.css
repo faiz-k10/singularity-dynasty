@@ -5552,3 +5552,82 @@ html{font-stretch:82%;}
 .desk-alerts-btn:hover{color:var(--star); border-color:var(--neon-blue);}
 .desk-alerts-btn.on{color:var(--void); background:var(--horizon-gold); border-color:var(--horizon-gold);}
 .desk-alerts-note{font-size:11px; color:var(--down);}
+
+/* ---------- EVENT HORIZON BAND + SECTION INDEXES (Oct 19 2026) ----------
+   Lines, ticks and numbers instead of glows. The band is full bleed: the run count is the one oversized figure on the
+   page, set across the whole viewport over concentric orbit rules, with a 0-10K telemetry ruler under it. */
+.horizon-band{
+  position:relative; width:100%; overflow:hidden; padding:40px 28px 0;
+  border-top:2px solid var(--rule-strong); border-bottom:1px solid var(--rule);
+  background:rgba(var(--scrim-rgb), .55);
+}
+.hb-rings{position:absolute; inset:0; width:100%; height:100%; pointer-events:none;}
+.hb-orbits circle{fill:none; stroke:rgba(var(--star-dot-rgb), .10); stroke-width:1; vector-effect:non-scaling-stroke;}
+.hb-horizon{fill:none; stroke:var(--horizon-gold); stroke-width:2; opacity:.55; vector-effect:non-scaling-stroke;}
+.hb-spin{fill:none; stroke:var(--neon-blue); stroke-width:2; stroke-dasharray:2 14; opacity:.7; vector-effect:non-scaling-stroke; transform-origin:800px 300px; animation:hb-spin 90s linear infinite;}
+.hb-axis{stroke:rgba(var(--star-dot-rgb), .14); stroke-width:1; vector-effect:non-scaling-stroke;}
+@keyframes hb-spin{to{transform:rotate(360deg);}}
+@media (prefers-reduced-motion: reduce){.hb-spin{animation:none;}}
+.hb-top{position:relative; display:flex; justify-content:space-between; gap:16px; max-width:1320px; margin:0 auto;}
+.hb-tag{font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--star-dim);}
+.hb-tag:first-child{color:var(--neon-blue);}
+.hb-fig{
+  position:relative; display:block; text-align:center; line-height:.8; margin:10px 0 0;
+  font-family:var(--font-display), sans-serif; font-weight:800; letter-spacing:.01em; font-variant-numeric:tabular-nums;
+  font-size:min(34vw, 560px); color:var(--star);
+}
+.hb-cap{position:relative; max-width:620px; margin:calc(min(34vw, 560px) * .16) auto 0; text-align:center; color:var(--star-dim); font-size:16px;}
+.hb-cap em{font-style:normal; color:var(--horizon-gold); font-weight:700;}
+.hb-ruler{position:relative; max-width:1320px; margin:34px auto 0;}
+.hb-ticks{
+  height:18px; border-top:1px solid var(--rule-strong);
+  background:
+    repeating-linear-gradient(to right, rgba(var(--star-dot-rgb), .55) 0 1px, transparent 1px 10%) 0 0 / 100% 18px no-repeat,
+    repeating-linear-gradient(to right, rgba(var(--star-dot-rgb), .28) 0 1px, transparent 1px 1%) 0 0 / 100% 8px no-repeat;
+}
+.hb-nums{display:flex; justify-content:space-between; font-size:10.5px; letter-spacing:.08em; color:var(--star-dim); margin-top:-2px;}
+.hb-nums .end{color:var(--horizon-gold); font-weight:700;}
+.hb-cells{
+  position:relative; list-style:none; margin:26px auto 0; padding:0; max-width:1320px;
+  display:grid; grid-template-columns:repeat(4, 1fr); border-top:1px solid var(--rule);
+}
+.hb-cells li{padding:16px 18px 18px; border-left:1px solid var(--rule); display:flex; flex-direction:column; gap:2px;}
+.hb-cells li:first-child{border-left:0; padding-left:0;}
+.hb-cells b{font-family:var(--font-display), sans-serif; font-size:34px; font-weight:800; line-height:1; color:var(--star); letter-spacing:.02em;}
+.hb-cells span{font-family:var(--font-mono), monospace; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--star-dim);}
+@media (max-width:720px){
+  .horizon-band{padding:28px 16px 0;}
+  .hb-fig{font-size:30vw;}
+  .hb-horizon{opacity:.28;} .hb-spin{opacity:.35;} .hb-orbits circle{stroke:rgba(var(--star-dot-rgb), .06);}
+  .hb-cap{font-size:14.5px; margin-top:calc(30vw * .16);}
+  .hb-cells{grid-template-columns:1fr 1fr;}
+  .hb-cells li:nth-child(odd){border-left:0; padding-left:0;}
+  .hb-cells li:nth-child(n+3){border-top:1px solid var(--rule);}
+  .hb-cells b{font-size:28px;}
+  .hb-nums span:nth-child(even):not(.end){visibility:hidden;}
+}
+
+/* Section index: a big outlined numeral, its name, a hairline with tick marks running to the right edge, and "NN / 04".
+   Reads like the sector counter on a telemetry readout. */
+.sec-index{display:flex; align-items:center; gap:14px; margin:0 0 26px; width:min(1264px, calc(100vw - 56px)); max-width:none;}
+.sec-index b{
+  font-family:var(--font-display), sans-serif; font-weight:800; font-size:64px; line-height:.8; letter-spacing:.02em;
+  color:transparent; -webkit-text-stroke:1.5px var(--horizon-gold);
+}
+.sec-index span{font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--star-dim); white-space:nowrap;}
+.sec-index span:first-of-type{color:var(--star);}
+.sec-index i{
+  flex:1; height:12px; border-top:1px solid var(--rule-strong);
+  background:repeating-linear-gradient(to right, rgba(var(--star-dot-rgb), .4) 0 1px, transparent 1px 14px) 0 0 / 100% 7px no-repeat;
+}
+@media (max-width:720px){.sec-index{width:calc(100vw - 32px);} .sec-index b{font-size:46px;}}
+
+/* The hero's two blurred colour glows are turned down and a field of orbit rules sits behind the signal instead. */
+.hero::before{opacity:.45;}
+.hero::after{opacity:.4;}
+.hero .wrap::before{
+  content:''; position:absolute; inset:-120px -28px -120px 38%; pointer-events:none;
+  background:repeating-radial-gradient(circle at 50% 50%, transparent 0 58px, rgba(var(--star-dot-rgb), .08) 58px 59px);
+  -webkit-mask-image:radial-gradient(circle at 50% 50%, #000 0, #000 35%, transparent 72%); mask-image:radial-gradient(circle at 50% 50%, #000 0, #000 35%, transparent 72%);
+}
+.hub-stats{display:none;}

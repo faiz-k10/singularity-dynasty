@@ -2,6 +2,7 @@ import Link from "next/link";
 import { unstable_cache } from "next/cache";
 import SiteHeader from "./SiteHeader";
 import LandingHub from "./hub/LandingHub";
+import HorizonBand from "./hub/HorizonBand";
 import HeroLookup from "./HeroLookup";
 import LeaguePrice from "./LeaguePrice";
 import { createClient } from "@/lib/supabase/server";
@@ -249,12 +250,15 @@ export default async function Home() {
         </div>
       </header>
 
+      <HorizonBand />
+
       <main className="wrap">
         <LandingHub />
 
         <section id="tools">
           <div className="section-head reveal">
-            <div className="eyebrow blue">What&apos;s Inside</div>
+            <div className="sec-index" aria-hidden="true"><b>02</b><span className="mono">Modules</span><i></i><span className="mono">02 / 04</span></div>
+          <div className="eyebrow blue">What&apos;s Inside</div>
             <h2>Six tools. One gravity well.</h2>
             <p>
               Built by a data analyst who got tired of rankings based on
@@ -406,7 +410,8 @@ export default async function Home() {
 
         <section id="pricing">
           <div className="section-head reveal">
-            <div className="eyebrow">Pricing</div>
+            <div className="sec-index" aria-hidden="true"><b>03</b><span className="mono">Titles</span><i></i><span className="mono">03 / 04</span></div>
+          <div className="eyebrow">Pricing</div>
             <h2>Every subscriber earns a title.</h2>
             <p>
               Start as a Stargazer, free. Ascend when you want the full
@@ -545,6 +550,7 @@ export default async function Home() {
 
         <section id="feed" className="feed-section">
           <div className="section-head reveal">
+            <div className="sec-index" aria-hidden="true"><b>04</b><span className="mono">Transmissions</span><i></i><span className="mono">04 / 04</span></div>
             <div className="eyebrow blue">The Feed</div>
             <h2>Cutting-edge dynasty &amp; fantasy football, in your inbox.</h2>
             <p>

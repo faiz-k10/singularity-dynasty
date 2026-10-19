@@ -474,36 +474,15 @@ export default function HubClient({ data, config, defaultTab }) {
   const [pos, setPos] = useState("ALL");
   const active = tabs.find((t) => t.id === tab) || tabs[0];
   if (!active) return null;
-  const { counts, latest } = data;
 
   return (
     <section id="hub" className="hub">
       <div className="section-head reveal">
+        <div className="sec-index" aria-hidden="true"><b>01</b><span className="mono">Telemetry</span><i></i><span className="mono">01 / 04</span></div>
         <div className="eyebrow blue">Live data</div>
         <h2>See what the model sees.</h2>
         <p>Real numbers from this week&apos;s projections and the season simulations, in season and out of it. Pick a view, narrow it by position.</p>
       </div>
-
-      <ul className="hub-stats">
-        {latest && (
-          <li>
-            <b>Week {latest.week}</b>
-            <span>{latest.season} season</span>
-          </li>
-        )}
-        <li>
-          <b>{counts.ranked || "—"}</b>
-          <span>players ranked</span>
-        </li>
-        <li>
-          <b>{counts.simmed || "—"}</b>
-          <span>seasons simulated</span>
-        </li>
-        <li>
-          <b>{counts.runs.toLocaleString()}</b>
-          <span>runs each</span>
-        </li>
-      </ul>
 
       <div className="hub-controls">
         <div className="hub-tabs" role="tablist" aria-label="Choose a view">
