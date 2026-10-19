@@ -20,6 +20,7 @@ import SlotBadge from "./SlotBadge";
 import MatchupPanel from "./MatchupPanel";
 import SundayBoard from "./SundayBoard";
 import { isGameDay } from "@/lib/liveFeed";
+import DesktopAlertsToggle, { useDesktopAlerts, useDesktopAlertsSetting } from "./DesktopAlerts";
 
 const POSITION_ORDER = ["QB", "RB", "WR", "TE", "K", "DEF"];
 
@@ -1140,11 +1141,18 @@ export default function MyTeamClient({
   // Which games have kicked off (lib/gameStatus.js), from the refresh and the 30s live poll.
   const [gameStates, setGameStates] = useState(null);
   const [newsFilter, setNewsFilter] = useState({ starters: false, injuries: false });
+  // Desktop alerts (DesktopAlerts.js, Explorer and up): while they're on, the news + live polls keep running in a
+  // background tab so the alerts still arrive.
+  const [alertsOn, setAlertsOn] = useDesktopAlertsSetting();
+  const alertsOnRef = useRef(false);
+  useEffect(() => {
+    alertsOnRef.current = alertsOn && tier !== "stargazer";
+  }, [alertsOn, tier]);
   useEffect(() => {
     if (!hasSaved) return;
     let alive = true;
     const load = async () => {
-      if (document.hidden) return;
+      if (document.hidden && !alertsOnRef.current) return;
       const res = await getRosterNews().catch(() => null);
       if (alive && res && !res.error) setNews(res);
     };
@@ -1159,6 +1167,7 @@ export default function MyTeamClient({
 
   // Alerts + "starts in" follow the current rosters (fresh after a refresh), not the copy the feed request read.
   const liveNews = useMemo(() => liveRosterNews(savedTeams, news), [savedTeams, news]);
+  useDesktopAlerts({ on: alertsOn && tier !== "stargazer", savedTeams, injuriesByTeam: liveNews?.byTeam, gameStates });
   const savedTeamsRef = useRef(savedTeams);
   useEffect(() => {
     savedTeamsRef.current = savedTeams;
@@ -1194,7 +1203,7 @@ export default function MyTeamClient({
     const first = setTimeout(runFullRefresh, 0);
     let timer = null;
     const tick = async () => {
-      if (document.hidden) return;
+      if (document.hidden && !alertsOnRef.current) return;
       const res = await pollLiveScores().catch(() => null);
       if (res?.live) {
         setLiveScores(res.live);
@@ -1393,8 +1402,10 @@ export default function MyTeamClient({
   const savedCount = savedKeys.size;
   const atLimit = savedTeamLimit != null && savedCount >= savedTeamLimit;
 
+  const alertsToggle = hasSaved ? <DesktopAlertsToggle on={alertsOn} setOn={setAlertsOn} allowed={autoRefresh} /> : null;
   const teamsActions = (hasSaved || (isSignedIn && savedTeamLimit != null)) && (
     <>
+      {alertsToggle}
       {hasSaved && (
         <span>
           {updatedAt
@@ -1707,7 +1718,7 @@ export default function MyTeamClient({
               gameStates={gameStates}
               injuriesByTeam={liveNews?.byTeam}
               updatedAt={updatedAt}
-              toolbar={<>{layoutSwitch}{theaterBtn}</>}
+              toolbar={<>{alertsToggle}{layoutSwitch}{theaterBtn}</>}
             />
           ) : (
             <PanelBoard panels={panels} headerExtra={<>{layoutSwitch}{theaterBtn}</>} />

@@ -5297,3 +5297,12 @@ html{font-stretch:82%;}
 .standings-odds{font-weight:700;}
 .standings-first{color:var(--star-dim);}
 .odds-high, td.standings-odds.odds-high{color:var(--up);} .odds-mid, td.standings-odds.odds-mid{color:var(--horizon-gold);} .odds-low, td.standings-odds.odds-low{color:var(--down);}
+
+/* My Team "Desktop alerts" switch (my-team/DesktopAlerts.js): a small mono pill, gold when on. */
+.desk-alerts{display:inline-flex; align-items:center; gap:8px; font-family:var(--font-mono), monospace; font-size:11.5px; color:var(--star-dim);}
+.desk-alerts svg{flex:none;}
+.desk-alerts-locked a{color:var(--neon-blue);}
+.desk-alerts-btn{display:inline-flex; align-items:center; gap:6px; font:inherit; font-size:11.5px; color:var(--star-dim); background:rgba(var(--scrim-rgb),.5); border:1px solid rgba(var(--star-dot-rgb),.14); border-radius:999px; padding:5px 11px; cursor:pointer; transition:color .15s ease, border-color .15s ease, background-color .15s ease;}
+.desk-alerts-btn:hover{color:var(--star); border-color:var(--neon-blue);}
+.desk-alerts-btn.on{color:var(--void); background:var(--horizon-gold); border-color:var(--horizon-gold);}
+.desk-alerts-note{font-size:11px; color:var(--down);}
