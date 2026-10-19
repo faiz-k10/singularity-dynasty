@@ -41,6 +41,15 @@ function Card({ title, sub, href, cta, wide, children }) {
   );
 }
 
+// The big condensed figure that leads a hub column -- the one number the card is about, scoreboard-style; the list below it
+// is the detail. tone: "up" | "down" | "gold".
+const Lead = ({ fig, cap, tone = "gold" }) => (
+  <div className={`hub-lead is-${tone}`}>
+    <b className="hub-lead-fig">{fig}</b>
+    <span className="hub-lead-cap">{cap}</span>
+  </div>
+);
+
 const PosTag = ({ pos }) => <span className={`hub-pos hub-pos-${pos}`}>{pos}</span>;
 // A name that shortens with an ellipsis while its position tag always stays visible.
 const Nm = ({ n, pos, cls }) => (
@@ -79,10 +88,12 @@ function Movers({ data, pos, limit }) {
       <div className="hub-split">
         <div>
           <h4 className="hub-subhead up">Risers</h4>
+          {m.risers[0] && <Lead tone="up" fig={`+${m.risers[0].delta.toFixed(1)}`} cap={m.risers[0].n} />}
           <ul className="hub-list">{m.risers.map((p) => <MoverRow key={p.n} p={p} maxAbs={m.maxAbs} />)}</ul>
         </div>
         <div>
           <h4 className="hub-subhead down">Fallers</h4>
+          {m.fallers[0] && <Lead tone="down" fig={`−${Math.abs(m.fallers[0].delta).toFixed(1)}`} cap={m.fallers[0].n} />}
           <ul className="hub-list">{m.fallers.map((p) => <MoverRow key={p.n} p={p} maxAbs={m.maxAbs} />)}</ul>
         </div>
       </div>
@@ -124,6 +135,7 @@ function Ceilings({ data, pos, limit }) {
   if (!list.length) return null;
   return (
     <Card title="Highest ceilings this week" sub="Floor to ceiling, with the median marked (top 50 shown)" href="/tools/redraft-rankings" cta="Full rankings">
+      <Lead tone="gold" fig={int(list[0].hi)} cap={`${list[0].n} · highest ceiling`} />
       <ul className="hub-list">{list.map((r) => <RangeRow key={r.n} r={r} max={max} />)}</ul>
       <p className="hub-foot">Bar = floor to ceiling · tick = median · right: floor–median–ceiling</p>
     </Card>
@@ -211,10 +223,12 @@ function HotCold({ data, pos, limit }) {
       <div className="hub-split">
         <div>
           <h4 className="hub-subhead up">Running hot</h4>
+          {hot[0] && <Lead tone="up" fig={`+${Math.abs(hot[0].gap).toFixed(1)}`} cap={hot[0].n} />}
           <ul className="hub-list">{hot.map((p) => <GapRow key={p.n} p={p} />)}</ul>
         </div>
         <div>
           <h4 className="hub-subhead down">Running cold</h4>
+          {cold[0] && <Lead tone="down" fig={`−${Math.abs(cold[0].gap).toFixed(1)}`} cap={cold[0].n} />}
           <ul className="hub-list">{cold.map((p) => <GapRow key={p.n} p={p} />)}</ul>
         </div>
       </div>
@@ -229,6 +243,7 @@ function SimLeaders({ data, pos, limit }) {
   if (!list.length) return null;
   return (
     <Card title="Season outlook leaders" sub="Full-season floor, median and ceiling from 10,000 simulated seasons" href="/tools/player-simulations" cta="All simulations">
+      <Lead tone="gold" fig={int(list[0].mid)} cap={`${list[0].n} · highest season median`} />
       <ul className="hub-list">{list.map((r) => <RangeRow key={r.n} r={r} max={max} highlight="mid" />)}</ul>
       <p className="hub-foot">Bar = floor to ceiling · tick and big number = median · free preview shows the top 10, the full list unlocks with Singularity</p>
     </Card>
