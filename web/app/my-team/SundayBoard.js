@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import MatchupPanel, { sleeperMatchupUrl, formatWin } from "./MatchupPanel";
+import MatchupPanel, { sleeperMatchupUrl, formatWin, standing } from "./MatchupPanel";
+import { useMounted } from "./useMounted";
 import { buildRow, isTyping, moveFocus } from "./LeagueDashboard";
 import { formatOdds, oddsTone } from "./Standings";
 import PositionBadge from "../tools/PositionBadge";
@@ -16,15 +17,32 @@ const shortName = (name) => {
   return rest.length ? `${first[0]}. ${rest.join(" ")}` : first;
 };
 
-function leftText(side) {
-  if (!side) return null;
-  const n = side.yetToPlay + side.playing;
-  if (!n) return "done";
-  return side.playing ? `${n} left · ${side.playing} on` : `${n} left`;
+const kickoff = (iso) => {
+  if (!iso) return null;
+  const d = new Date(iso);
+  return d.toLocaleString([], { weekday: "short", hour: "numeric", minute: "2-digit" });
+};
+
+// The number briefly glows when it changes between polls (not on first paint).
+function Score({ value, lead }) {
+  const prev = useRef(value);
+  const [bump, setBump] = useState(0);
+  useEffect(() => {
+    if (prev.current != null && value != null && value !== prev.current) setBump((b) => b + 1);
+    prev.current = value;
+  }, [value]);
+  return (
+    <span key={bump} className={`sb-card-score mono${lead ? " lead" : ""}${bump ? " bumped" : ""}`}>
+      {fmt1(value)}
+    </span>
+  );
 }
 
-// One league at a glance: both scores, win chance, players left per side, lineup alerts, Open in Sleeper.
+// One league at a glance, built to answer "am I winning?" in one look: the standing (Favored / Toss-up / Underdog,
+// Won / Lost once every game is over) with the win chance, the two scores with yours marked, who of yours is still to
+// play, then playoffs and alerts in plain words. Colour means one thing everywhere: gold = going your way, blue = not.
 function LeagueCard({ team, gameStates, injuries, onOpen }) {
+  const mounted = useMounted();
   const s = team.settings || {};
   const row = buildRow(team, injuries);
   const mine = useMemo(() => (s.h2h ? summarizeSide(s.h2h.mine, gameStates) : null), [s.h2h, gameStates]);
@@ -33,13 +51,26 @@ function LeagueCard({ team, gameStates, injuries, onOpen }) {
   const myScore = live ? live.mine : mine?.pts ?? null;
   const oppScore = live ? live.opp : opp?.pts ?? null;
   const pct = row.winPct;
-  const anyLive = (mine?.playing || 0) + (opp?.playing || 0) > 0;
-  const tone = pct == null ? "" : pct >= 0.5 ? " is-ahead" : " is-behind";
+  const playing = (mine?.playing || 0) + (opp?.playing || 0);
+  const toPlay = (mine?.yetToPlay || 0) + (opp?.yetToPlay || 0);
+  const started = myScore > 0 || oppScore > 0 || playing > 0;
+  const done = Boolean(mine && opp && started && playing === 0 && toPlay === 0);
+  const st = standing(pct, done);
   const url = sleeperMatchupUrl(team.platform_league_id);
   const alerts = row.outStarters.length;
+  const myLeft = mine ? mine.players.filter((p) => p.outlook.state === "pre" || p.outlook.state === "in" || p.outlook.state === null) : [];
+  // Earliest kickoff still to come on either side.
+  const nextStart = [...(mine?.players || []), ...(opp?.players || [])]
+    .filter((p) => p.outlook.state === "pre" && p.outlook.start)
+    .map((p) => p.outlook.start)
+    .sort()[0];
+  const oppLeft = opp ? opp.yetToPlay + opp.playing : 0;
+  const status = done ? "Final" : playing ? "Live" : nextStart && mounted ? `Next ${kickoff(nextStart)}` : null;
+  const hasMatchup = !s.isBye && s.opponent;
+
   return (
     <div
-      className={`sb-card${tone}`}
+      className={`sb-card is-${st.key}`}
       role="button"
       tabIndex={0}
       data-league-id={team.id}
@@ -55,10 +86,15 @@ function LeagueCard({ team, gameStates, injuries, onOpen }) {
     >
       <div className="sb-card-head">
         <span className="sb-card-league">{row.league}</span>
-        {anyLive && <span className="matchup-score-live-dot" title="Games in progress" aria-hidden="true" />}
+        {status && hasMatchup && (
+          <span className={`sb-card-status mono${playing ? " is-live" : ""}`}>
+            {playing > 0 && <span className="sb-live-dot" aria-hidden="true" />}
+            {status}
+          </span>
+        )}
         {url && (
           <a
-            className="league-dash-sleeper sb-card-sleeper"
+            className="sb-card-sleeper"
             href={url}
             target="_blank"
             rel="noopener noreferrer"
@@ -73,51 +109,69 @@ function LeagueCard({ team, gameStates, injuries, onOpen }) {
           </a>
         )}
       </div>
+
       {s.isBye ? (
-        <div className="sb-card-bye">Bye week</div>
+        <div className="sb-card-empty">Bye week</div>
       ) : !s.opponent ? (
-        <div className="sb-card-bye">Matchup not posted yet</div>
+        <div className="sb-card-empty">Matchup not posted yet</div>
       ) : (
         <>
-          <div className="sb-card-side">
-            <span className="sb-card-team">{row.team}</span>
-            <span className="sb-card-left mono">{leftText(mine)}</span>
-            <span className={`sb-card-score mono${myScore != null && oppScore != null && myScore >= oppScore ? " lead" : ""}`}>{fmt1(myScore)}</span>
+          {st.label ? (
+            <div className="sb-card-verdict">
+              <span className="sb-card-word">{st.label}</span>
+              {!done && pct > 0.005 && pct < 0.995 && <span className="sb-card-pct mono">{formatWin(pct)} to win</span>}
+            </div>
+          ) : (
+            <div className="sb-card-verdict">
+              <span className="sb-card-word sb-muted">{s.bestBall ? "Best ball" : "—"}</span>
+              {s.bestBall && <span className="sb-card-pct mono">Top scorers start automatically</span>}
+            </div>
+          )}
+          {pct != null && !done && (
+            <span className="sb-card-meter" aria-hidden="true">
+              <span style={{ width: `${Math.max(2, pct * 100)}%` }} />
+            </span>
+          )}
+
+          <div className="sb-card-scores">
+            <div className="sb-card-side is-me">
+              <span className="sb-card-you mono">You</span>
+              <span className="sb-card-team">{row.team}</span>
+              <Score value={myScore} lead={myScore != null && oppScore != null && myScore >= oppScore} />
+            </div>
+            <div className="sb-card-side">
+              <span className="sb-card-you" aria-hidden="true" />
+              <span className="sb-card-team sb-muted">{row.opponent}</span>
+              <Score value={oppScore} lead={myScore != null && oppScore != null && oppScore > myScore} />
+            </div>
           </div>
-          <div className="sb-card-side">
-            <span className="sb-card-team sb-muted">{row.opponent}</span>
-            <span className="sb-card-left mono">{leftText(opp)}</span>
-            <span className={`sb-card-score mono${myScore != null && oppScore != null && oppScore > myScore ? " lead" : ""}`}>{fmt1(oppScore)}</span>
-          </div>
-          {mine && (mine.yetToPlay > 0 || mine.playing > 0) && (
-            <div className="sb-card-todo" title="Your starters still to play or playing now">
-              {mine.players
-                .filter((p) => p.outlook.state === "pre" || p.outlook.state === "in" || p.outlook.state === null)
-                .map((p) => (
+
+          <div className="sb-card-foot">
+            {myLeft.length > 0 ? (
+              <span className="sb-card-todo" title="Your starters still to play or playing now">
+                <span className="sb-card-label">Still to play</span>
+                {myLeft.map((p) => (
                   <span key={p.id} className={p.outlook.state === "in" ? "is-live" : ""}>
                     {shortName(p.name)}
                   </span>
                 ))}
-            </div>
-          )}
-          <div className="sb-card-foot">
-            <span className={`sb-card-win mono${pct == null ? "" : pct >= 0.5 ? " up" : " down"}`}>{formatWin(pct)}</span>
-            <span className="sb-card-winbar" aria-hidden="true">
-              {pct != null && <span style={{ width: `${pct * 100}%` }} />}
-            </span>
-            {row.playoffOdds != null && (
-              <span className={`sb-card-odds mono ${oddsTone(row.playoffOdds)}`} title="Chance to make the playoffs">
-                {formatOdds(row.playoffOdds)} PO
+                {oppLeft > 0 && <span className="sb-muted">· them {oppLeft}</span>}
               </span>
+            ) : (
+              <span className="sb-card-todo sb-muted">{done ? "All games final" : oppLeft > 0 ? `All yours done · them ${oppLeft} to play` : "All yours done"}</span>
             )}
-            {alerts > 0 ? (
-              <span className="sb-card-alerts mono" title={row.outStarters.map((p) => `${p.name}: ${p.status}`).join("\n")}>
-                <span className={`status-dot status-dot-${row.outStarters[0].severity}`} aria-hidden="true" />
-                {alerts} {alerts === 1 ? "alert" : "alerts"}
-              </span>
-            ) : s.bestBall ? (
-              <span className="sb-card-alerts mono sb-muted">Best ball</span>
-            ) : null}
+            <span className="sb-card-extras">
+              {row.playoffOdds != null && (
+                <span className={`sb-card-odds mono ${oddsTone(row.playoffOdds)}`} title="Chance to make the playoffs">
+                  Playoffs {formatOdds(row.playoffOdds)}
+                </span>
+              )}
+              {alerts > 0 && (
+                <span className="sb-card-alerts mono" title={row.outStarters.map((p) => `${p.name}: ${p.status}`).join("\n")}>
+                  {alerts} {alerts === 1 ? "alert" : "alerts"}
+                </span>
+              )}
+            </span>
           </div>
         </>
       )}
@@ -140,9 +194,9 @@ function LiveFeed({ savedTeams, gameStates, updatedAt }) {
   return (
     <aside className="sb-feed glass-panel" aria-label="My players live">
       <div className="sb-feed-head">
-        <h2 className="board-panel-title">My players live</h2>
-        <span className="sb-feed-total mono" title="Each start counts once per league, in that league's scoring">
-          <strong>{fmt1(feed.points)}</strong> pts · {feed.starts} {feed.starts === 1 ? "start" : "starts"}
+        <h2 className="board-panel-title">Your players</h2>
+        <span className="sb-feed-total mono" title="Every start counts once per league, in that league's scoring">
+          <strong>{fmt1(feed.points)}</strong> pts across {feed.starts} {feed.starts === 1 ? "start" : "starts"}
         </span>
       </div>
       {rows.length === 0 ? (
@@ -163,15 +217,16 @@ function LiveFeed({ savedTeams, gameStates, updatedAt }) {
                     <TeamBadge team={r.team} />
                     <span className="h2h-game mono">{r.state === "in" ? r.detail || "Live" : "Final"}</span>
                   </span>
-                  <span className="sb-feed-leagues" title={r.starts.map((x) => `${x.league}: ${x.pts.toFixed(1)}`).join("\n")}>
-                    {r.starts.length > 1 && <span className="sb-feed-mult mono">×{r.starts.length}</span>}
-                    {r.starts.map((x) => x.league).join(" · ")}
+                  <span className="sb-feed-leagues">
+                    {r.pts === r.ptsMin
+                      ? r.starts.map((x) => x.league).join(" · ")
+                      : r.starts.map((x) => `${x.league} ${fmt1(x.pts)}`).join(" · ")}
                   </span>
                 </div>
                 <div className="sb-feed-nums">
                   <span className={`sb-feed-pts mono live-pts-cell${r.state === "in" ? " is-live" : ""}${beat ? " beat" : ""}`}>
                     {r.state === "in" && <span className="matchup-score-live-dot" aria-hidden="true" />}
-                    {r.pts === r.ptsMin ? fmt1(r.pts) : `${fmt1(r.ptsMin)}–${fmt1(r.pts)}`}
+                    {fmt1(r.pts)}
                   </span>
                   {isNew && t.delta[r.id] > 0 && <span className="sb-feed-delta mono">+{fmt1(t.delta[r.id])}</span>}
                   <span className="sb-feed-proj mono">proj {fmt1(r.proj)}</span>
@@ -190,6 +245,7 @@ function LiveFeed({ savedTeams, gameStates, updatedAt }) {
 // Keyboard: j / k or the arrow keys move between cards, Enter opens one, Esc closes the drawer (a second Esc leaves
 // full screen). The open drawer is remembered per browser, so a reload lands back on the same matchup.
 export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, updatedAt, toolbar }) {
+  const mounted = useMounted();
   const [openId, setOpenIdState] = useState(null);
   const openTeam = openId ? savedTeams.find((t) => t.id === openId) : null;
   const gridRef = useRef(null);
@@ -246,28 +302,39 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
   }, [openId]);
 
   let ahead = 0;
+  let close = 0;
   let behind = 0;
   let alerts = 0;
+  let live = 0;
   for (const t of savedTeams) {
     const r = buildRow(t, injuriesByTeam?.[t.id]);
-    if (r.winPct != null) r.winPct >= 0.5 ? ahead++ : behind++;
+    if (r.winPct != null) r.winPct >= 0.6 ? ahead++ : r.winPct <= 0.4 ? behind++ : close++;
     alerts += r.outStarters.length;
+    for (const p of t.settings?.h2h?.mine || []) if (gameStates?.[p.team]?.state === "in") { live++; break; }
   }
   const week = savedTeams.find((t) => t.settings?.week)?.settings.week;
-  const time = updatedAt ? new Date(updatedAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit", second: "2-digit" }) : null;
+  const time = updatedAt && mounted ? new Date(updatedAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) : null;
+  const counted = ahead + close + behind;
+  // One plain sentence instead of a row of counters.
+  const parts = [];
+  if (counted) parts.push(`Favored in ${ahead} of ${counted}`);
+  if (close) parts.push(`${close} too close to call`);
+  if (alerts) parts.push(`${alerts} lineup ${alerts === 1 ? "alert" : "alerts"}`);
 
   return (
     <div className="sb">
       <div className="sb-top">
-        <h2 className="sb-title">Sunday board{week ? <span className="sb-week mono"> · Week {week}</span> : null}</h2>
-        <div className="sb-stats mono">
-          <span><strong>{savedTeams.length}</strong> leagues</span>
-          <span className="up"><strong>{ahead}</strong> favored</span>
-          <span className="down"><strong>{behind}</strong> underdog</span>
-          <span className={alerts ? "down" : ""}><strong>{alerts}</strong> alerts</span>
-          {time && <span className="sb-muted">Updated {time}</span>}
+        <div className="sb-heading">
+          <h2 className="sb-title">Week {week ?? "—"}</h2>
+          <p className="sb-summary">{parts.join(" · ") || `${savedTeams.length} leagues`}</p>
         </div>
         <span className="board-dock-spacer" />
+        {time && (
+          <span className={`sb-updated mono${live ? " is-live" : ""}`} title="Scores refresh every 30 seconds">
+            {live > 0 && <span className="sb-live-dot" aria-hidden="true" />}
+            {live > 0 ? "Live" : "Updated"} · {time}
+          </span>
+        )}
         {toolbar}
       </div>
       <div className="sb-body">
