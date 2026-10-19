@@ -1,4 +1,5 @@
 import { percentileRank } from "@/lib/statPercentiles";
+import { fetchAllRows } from "@/lib/fetchAllRows";
 
 // Server-side data plumbing for getAchievements() (achievements.js),
 // shared by every tool page that wants to show the same badges Weekly
@@ -27,9 +28,11 @@ import { percentileRank } from "@/lib/statPercentiles";
 // floor/ceiling entirely and read null; median (`projection`) has always
 // existed.
 export async function fetchHistoricalFloorCeiling(supabase) {
-  const { data } = await supabase
-    .from("redraft_rankings")
-    .select("player_name, season, week, floor, ceiling, projection");
+  // EVERY published week (a response is capped at 1000 rows, and this table is ~480 rows a week, so a plain select returned an
+  // arbitrary 1000 of them and the per-game floor / ceiling join behind On Fire / On Thin Ice came back empty for the rest).
+  const data = await fetchAllRows(supabase, "redraft_rankings", "player_name, season, week, floor, ceiling, projection", (q) =>
+    q.order("season", { ascending: true }).order("week", { ascending: true }).order("player_name", { ascending: true })
+  );
   const map = {};
   for (const r of data || []) {
     map[`${r.player_name}|${r.season}|${r.week}`] = { floor: r.floor, ceiling: r.ceiling, median: r.projection };
@@ -43,13 +46,26 @@ export async function fetchHistoricalFloorCeiling(supabase) {
 // from the full player_game_log. `season` scopes Super Hero only --
 // recentGames itself still spans the season boundary same as every page
 // that already uses it.
-export async function fetchAchievementInputs(supabase, season) {
+// Reading every game is real work (the whole game log plus every published week), and My Team's refresh runs it on every
+// page view, so one answer is kept per server instance for 5 minutes (and concurrent callers share one in-flight read).
+const INPUT_TTL_MS = 5 * 60 * 1000;
+const inputsMemo = new Map(); // season -> { at, promise }
+export function fetchAchievementInputs(supabase, season) {
+  const hit = inputsMemo.get(season);
+  if (hit && Date.now() - hit.at < INPUT_TTL_MS) return hit.promise;
+  const promise = loadAchievementInputs(supabase, season);
+  inputsMemo.set(season, { at: Date.now(), promise });
+  promise.catch(() => inputsMemo.delete(season)); // never remember a failure
+  return promise;
+}
+
+async function loadAchievementInputs(supabase, season) {
   const floorCeilingByGame = await fetchHistoricalFloorCeiling(supabase);
-  const { data } = await supabase
-    .from("player_game_log")
-    .select("player_name, position, season, week, fantasy_points_ppr, exp_points_ppr")
-    .order("season", { ascending: false })
-    .order("week", { ascending: false });
+  // EVERY game in the log, newest first. A plain select stopped at the newest 1000 rows (about four weeks of games), so Super
+  // Hero wins (top-3 finishes at a position each week) silently missed the earlier weeks of the season.
+  const data = await fetchAllRows(supabase, "player_game_log", "player_name, position, season, week, fantasy_points_ppr, exp_points_ppr", (q) =>
+    q.order("season", { ascending: false }).order("week", { ascending: false }).order("player_name", { ascending: true }).order("team", { ascending: true })
+  );
 
   const byPlayer = {};
   for (const r of data || []) {
