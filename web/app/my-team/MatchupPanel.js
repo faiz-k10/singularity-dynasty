@@ -70,8 +70,9 @@ function SideRow({ p, scoreboardKnown, uncertain, mounted }) {
   // Before the scoreboard is read (a saved snapshot), fall back to the points Sleeper had on the board.
   const pts = o.pts ?? (!scoreboardKnown && p.pts ? p.pts : null);
   const done = o.state === "post" || o.state === "bye" || p.out;
-  // Same reading as the curve: red under his floor, blue at or above his median, plain between.
-  const tone = pts == null || o.state === "pre" ? null : typeof p.floor === "number" && pts < p.floor ? "low" : p.proj > 0 && pts >= p.proj ? "good" : "mid";
+  // Same reading as the curve, by the zone the score sits in: red under his floor, blue at or over his ceiling, plain
+  // anywhere in his normal range (median included).
+  const tone = pts == null || o.state === "pre" || typeof p.floor !== "number" || typeof p.ceiling !== "number" ? null : pts < p.floor ? "low" : pts >= p.ceiling ? "good" : "mid";
   const showCurve = !p.out && o.state !== "bye" && p.proj > 0 && typeof p.floor === "number" && typeof p.ceiling === "number" && p.ceiling > p.floor;
   return (
     <div className={`h2h-row${o.state === "in" ? " is-live" : ""}${done ? " is-done" : ""}${o.state === "pre" && !p.out ? " is-upcoming" : ""}`}>
@@ -270,7 +271,7 @@ function MatchupBody({ team, gameStates }) {
         <li>
           <span className="h2h-legend-dot" aria-hidden="true" />
           <span>
-            Points so far: <span className="tone-low-text">red</span> under his floor, <span className="tone-good-text">blue</span> at or above his median
+            Points so far: <span className="tone-low-text">red</span> under his floor, <span className="tone-good-text">blue</span> at or over his ceiling, plain in between
           </span>
         </li>
       </ul>

@@ -3,8 +3,8 @@
 // gold floor-to-ceiling hump peaking at the median, a blue wedge above the ceiling. Floor, median and ceiling are
 // written under it; the points scored so far ride on the curve as a marker -- a dot sitting on the hump with a line
 // down to the baseline. The number itself is NOT drawn here: it is the row's own big Pts cell, so the three small range
-// numbers can't be mistaken for it. Coloured by where it lands: red under his floor, plain below his median, blue at or above
-// it (the ceiling wedge is blue too); a pulse while his game is on. No marker before kickoff.
+// numbers can't be mistaken for it. Coloured by the zone it lands in: red wedge (under his floor), plain on the gold hump (his normal
+// range, median included), blue wedge (at or over his ceiling); a pulse while his game is on. No marker before kickoff.
 //
 // Geometry is fixed (not scaled to the week's widest range like the table's curve) so every row lines up and the
 // three numbers always have room: the labels sit under the floor edge, the peak and the ceiling edge, and the peak is
@@ -25,9 +25,10 @@ export default function ScoreCurve({ floor, median, ceiling, pts, state, est = f
   const scored = typeof pts === "number" && state !== "pre" && state != null;
   const x = scored ? Math.min(W - MARGIN - 2, Math.max(MARGIN + 2, xOf(pts))) : null;
   const y = scored ? yAt(x) : null;
-  // Where the score landed: under the floor (a bust, red), up to the median (below his projection, plain), or at / above
-  // it (beating his projection, blue).
-  const zone = !scored ? null : pts < floor ? "low" : pts >= median ? "good" : "mid";
+  // Where the score landed, in the colour of the zone it sits in: the red wedge (under his floor), the gold hump (his
+  // normal range -- plain), or the blue wedge (at or over his ceiling).
+  const zone = !scored ? null : pts < floor ? "low" : pts >= ceiling ? "good" : "mid";
+
   const title = [
     `Floor ${f1(floor)} · median ${f1(median)} · ceiling ${f1(ceiling)}${est ? " (typical range for the position -- we don't project this player)" : ""}`,
     scored ? `Scored ${f1(pts)} so far${state === "in" ? " (game in progress)" : ""}` : null,
