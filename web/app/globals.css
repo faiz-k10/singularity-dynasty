@@ -1261,8 +1261,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    (the click-and-drag handler in InteractiveScript.js is the active
    one) -- default OS scrollbars are thin-to-invisible until actively
    scrolling, which is exactly what was hiding the affordance. */
-.rankings-table-wrap{scrollbar-width:auto; scrollbar-color:rgba(var(--neon-blue-rgb),0.5) transparent;}
-.rankings-table-wrap::-webkit-scrollbar{height:10px;}
+.rankings-table-wrap::-webkit-scrollbar{height:7px;}
 .rankings-table-wrap::-webkit-scrollbar-track{background:transparent;}
 .rankings-table-wrap::-webkit-scrollbar-thumb{background:rgba(var(--neon-blue-rgb),0.5); border-radius:6px;}
 .rankings-table-wrap::-webkit-scrollbar-thumb:hover{background:rgba(var(--neon-blue-rgb),0.75);}
@@ -4122,7 +4121,18 @@ p, li{text-wrap:pretty;}
 /* Brand-tinted selection + form accents + themed thin scrollbars. */
 ::selection{background:color-mix(in srgb, var(--horizon) 38%, transparent); color:inherit;}
 :root{accent-color:var(--horizon);}
-html{scrollbar-width:thin; scrollbar-color:color-mix(in srgb, var(--neon-blue) 45%, transparent) transparent;}
+/* Slim scrollbars everywhere (founder: thinner). Chrome / Safari get an explicit 6px bar with a rounded, softly tinted thumb through
+   the ::-webkit-scrollbar pieces -- Chrome ignores those as soon as the standard `scrollbar-width` / `scrollbar-color` are set,
+   so the standard pair is given to Firefox only, where `thin` is as slim as it gets. Note `scrollbar-width` is not inherited,
+   so it has to be on every element, not just html. */
+::-webkit-scrollbar{width:6px; height:6px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:color-mix(in srgb, var(--neon-blue) 38%, transparent); border-radius:6px;}
+::-webkit-scrollbar-thumb:hover{background:color-mix(in srgb, var(--neon-blue) 62%, transparent);}
+::-webkit-scrollbar-corner{background:transparent;}
+@supports (-moz-appearance:none){
+  html, *{scrollbar-width:thin; scrollbar-color:color-mix(in srgb, var(--neon-blue) 38%, transparent) transparent;}
+}
 
 /* One consistent keyboard focus ring for every control, not just links
    and buttons. */
