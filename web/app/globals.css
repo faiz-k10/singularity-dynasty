@@ -5239,7 +5239,7 @@ html{font-stretch:82%;}
 .sb-updated.is-live{color:var(--star);}
 .sb-live-dot{width:7px; height:7px; border-radius:50%; background:var(--down); flex:none; animation:live-pulse-ring 1.8s ease-out infinite;}
 .sb-muted{color:var(--star-dim);}
-.sb-body{flex:1; min-height:0; display:grid; grid-template-columns:minmax(0,1fr) minmax(320px,380px); gap:18px;}
+.sb-body{flex:1; min-height:0; display:grid; grid-template-columns:minmax(0,1fr) minmax(560px,680px); gap:18px;} /* the live panel holds two columns (players | plays) */
 /* Cards share the height evenly (two rows of three fill a 900px screen); with more leagues they keep their natural
    height and the grid scrolls. */
 .sb-grid{min-height:0; overflow:auto; display:grid; grid-template-columns:repeat(auto-fill, minmax(300px,1fr)); grid-auto-rows:minmax(min-content, 1fr); align-content:stretch; gap:16px; padding:4px 4px 8px 4px;}
@@ -5327,10 +5327,16 @@ html{font-stretch:82%;}
 .sb-feed-delta{font-size:11px; font-weight:700; color:var(--horizon-gold);}
 .sb-feed-row.is-theirs .sb-feed-delta{color:var(--neon-blue);}
 .sb-feed-proj{font-size:10.5px; color:var(--star-dim);}
-/* Split panel: who is on the field (top) over their recent plays (bottom), each half scrolling on its own. */
-.sb-feed-split{flex:1; min-height:0; display:flex; flex-direction:column;}
-.sb-feed-split > .sb-feed-scroll{flex:1 1 0;}
-.sb-plays{flex:1 1 0; min-height:0; display:flex; flex-direction:column; padding:0; margin:0; border-top:1px solid rgba(var(--star-dot-rgb),.14);}
+/* Split panel, lengthwise: who is on the field (left) beside their recent plays (right), each column scrolling on its
+   own. Under 1240px the panel narrows back to one column and the two halves stack (players over plays). */
+.sb-feed-split{flex:1; min-height:0; display:flex; flex-direction:row;}
+.sb-feed-split > .sb-feed-scroll{flex:1 1 0; min-width:0;}
+.sb-plays{flex:1 1 0; min-width:0; min-height:0; display:flex; flex-direction:column; padding:0; margin:0; border-left:1px solid rgba(var(--star-dot-rgb),.14);}
+@media (max-width:1239px){
+  .sb-body{grid-template-columns:minmax(0,1fr) minmax(320px,380px);}
+  .sb-feed-split{flex-direction:column;}
+  .sb-plays{border-left:0; border-top:1px solid rgba(var(--star-dot-rgb),.14);}
+}
 .sb-plays-label{position:static; color:var(--star);}
 .sb-plays-scroll{overflow:auto; min-height:0; flex:1;}
 .sb-play{display:flex; align-items:flex-start; gap:12px; padding:8px 16px 8px 13px; border-top:1px solid rgba(var(--star-dot-rgb),.06); border-left:3px solid transparent; transition:background-color .6s ease;}

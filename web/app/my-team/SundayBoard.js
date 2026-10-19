@@ -328,7 +328,7 @@ function LiveFeed({ savedTeams, gameStates, updatedAt, teamId = null, league = n
               : "Nobody's on the field right now."}
         </p>
       ) : (
-        // Split in two: who is on the field (top) and what they just did (bottom), each scrolling on its own.
+        // Split lengthwise: who is on the field (left) beside what they just did (right), each scrolling on its own.
         <div className="sb-feed-split">
           <div className="sb-feed-scroll">
             {section(feed.mine, "mine", "Yours", feed.mineTotal)}

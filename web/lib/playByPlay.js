@@ -111,7 +111,9 @@ export function roleLabel(type, roles, text = "") {
     if (type === "Rush") return "Run";
   }
   if (has("returner") && /Kickoff|Punt/.test(type)) return td ? "Return touchdown" : "Return";
-  if (has("kicker") || has("patScorer")) {
+  // After a touchdown: the two-point try's target is listed as "patScorer" (no kicker role) -- a failed try is no play.
+  if (has("patScorer") && !has("kicker")) return /ATTEMPT FAIL/i.test(text) ? null : "Two-point conversion";
+  if (has("kicker")) {
     if (/Field Goal Good/.test(type)) return "Field goal";
     if (/Field Goal/.test(type)) return "Missed field goal";
     if (td) return /no good|blocked|failed/i.test(text) ? "Missed extra point" : "Extra point";
@@ -131,7 +133,7 @@ export function defenseLabel(type) {
   return null;
 }
 
-const NO_YARDS = /intercept|fumble|extra point|missed|safety|blocked|^sack$/i;
+const NO_YARDS = /intercept|fumble|extra point|two-point|missed|safety|blocked|^sack$/i;
 export function yardsFor(label, yards) {
   if (yards == null || NO_YARDS.test(label)) return null;
   if (yards === 0) return label === "Field goal" ? null : "no gain";

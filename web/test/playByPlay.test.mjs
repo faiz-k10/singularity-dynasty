@@ -63,6 +63,9 @@ test("roleLabel keeps only plays that move fantasy points", () => {
   assert.equal(roleLabel("Field Goal Missed", ["kicker"]), "Missed field goal");
   assert.equal(roleLabel("Passing Touchdown", ["kicker", "patScorer"], "(T.Smack kick is good)"), "Extra point");
   assert.equal(roleLabel("Rushing Touchdown", ["kicker"], "(B.Aubrey kick is No Good)"), "Missed extra point");
+  // A two-point try's target: counted only when it succeeds (ESPN calls him patScorer either way).
+  assert.equal(roleLabel("Passing Touchdown", ["patScorer"], "TWO-POINT CONVERSION ATTEMPT. D.Prescott pass to C.Lamb is incomplete. ATTEMPT FAILS"), null);
+  assert.equal(roleLabel("Passing Touchdown", ["patScorer"], "TWO-POINT CONVERSION ATTEMPT. D.Prescott pass to C.Lamb is complete. ATTEMPT SUCCEEDS"), "Two-point conversion");
   // Left off: incompletions, sacks taken, recovered fumbles, penalties, kickoffs.
   assert.equal(roleLabel("Pass Incompletion", ["receiver"]), null);
   assert.equal(roleLabel("Pass Incompletion", ["passer"]), null);
