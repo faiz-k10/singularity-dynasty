@@ -60,12 +60,15 @@ export function fetchAchievementInputs(supabase, season) {
 }
 
 async function loadAchievementInputs(supabase, season) {
-  const floorCeilingByGame = await fetchHistoricalFloorCeiling(supabase);
-  // EVERY game in the log, newest first. A plain select stopped at the newest 1000 rows (about four weeks of games), so Super
+  // The two big reads are independent, so they run together (they used to run one after the other).
+  // The whole game log, newest first: a plain select stopped at the newest 1000 rows (about four weeks of games), so Super
   // Hero wins (top-3 finishes at a position each week) silently missed the earlier weeks of the season.
-  const data = await fetchAllRows(supabase, "player_game_log", "player_name, position, season, week, fantasy_points_ppr, exp_points_ppr", (q) =>
-    q.order("season", { ascending: false }).order("week", { ascending: false }).order("player_name", { ascending: true }).order("team", { ascending: true })
-  );
+  const [floorCeilingByGame, data] = await Promise.all([
+    fetchHistoricalFloorCeiling(supabase),
+    fetchAllRows(supabase, "player_game_log", "player_name, position, season, week, fantasy_points_ppr, exp_points_ppr", (q) =>
+      q.order("season", { ascending: false }).order("week", { ascending: false }).order("player_name", { ascending: true }).order("team", { ascending: true })
+    ),
+  ]);
 
   const byPlayer = {};
   for (const r of data || []) {
