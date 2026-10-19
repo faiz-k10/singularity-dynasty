@@ -211,7 +211,7 @@ function MatchupBody({ team, gameStates }) {
     mine && opp && mine.yetToPlay + mine.playing + opp.yetToPlay + opp.playing === 0 && (mine.pts > 0 || opp.pts > 0);
   const st = standing(s.bestBall ? null : pct, allDone);
   const center = (
-    <div className={`h2h-center is-${st.key}`}>
+    <div className={`h2h-center is-${st.key}${st.label === "Locked in" || st.label === "Won" ? " is-secured" : ""}`}>
       {st.label && <div className="h2h-word">{st.label}</div>}
       {pct != null && !allDone && pct > 0.005 && pct < 0.995 && <div className="h2h-win-label mono">{formatWin(pct)} to win</div>}
       {pct != null && !allDone && (

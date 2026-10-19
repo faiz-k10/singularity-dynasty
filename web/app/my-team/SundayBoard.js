@@ -80,7 +80,7 @@ function LeagueCard({ team, gameStates, injuries, onOpen }) {
 
   return (
     <div
-      className={`sb-card is-${st.key}`}
+      className={`sb-card is-${st.key}${st.label === "Locked in" || st.label === "Won" ? " is-secured" : ""}`}
       role="button"
       tabIndex={0}
       data-league-id={team.id}

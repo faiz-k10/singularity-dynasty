@@ -5377,6 +5377,14 @@ html{font-stretch:82%;}
 .sb-card-pct{font-size:13px; color:var(--star-dim);}
 .sb-card-meter{display:block; height:4px; border-radius:2px; background:rgba(var(--star-dot-rgb),.1); overflow:hidden; margin-top:-4px;}
 .sb-card-meter > span{display:block; height:100%; border-radius:2px; background:var(--tone); transition:width .8s ease;}
+/* A win that is secured (Locked in, or Won once the games are over): the word and its bar glow gold -- a slow breathing
+   halo -- on the Sunday board card and the matchup scoreboard. */
+.sb-card.is-secured .sb-card-word, .h2h-center.is-secured .h2h-word{text-shadow:0 0 14px rgba(var(--horizon-gold-rgb),.7), 0 0 34px rgba(var(--horizon-gold-rgb),.4); animation:win-glow 3.2s ease-in-out infinite;}
+.sb-card.is-secured .sb-card-meter, .h2h-center.is-secured .h2h-win-bar{overflow:visible;}
+.sb-card.is-secured .sb-card-meter > span, .h2h-center.is-secured .h2h-win-bar > span{box-shadow:0 0 10px 1px rgba(var(--horizon-gold-rgb),.75), 0 0 24px 2px rgba(var(--horizon-gold-rgb),.4); animation:win-glow-bar 3.2s ease-in-out infinite;}
+@keyframes win-glow{0%,100%{text-shadow:0 0 12px rgba(var(--horizon-gold-rgb),.55), 0 0 28px rgba(var(--horizon-gold-rgb),.3);} 50%{text-shadow:0 0 18px rgba(var(--horizon-gold-rgb),.9), 0 0 44px rgba(var(--horizon-gold-rgb),.55);}}
+@keyframes win-glow-bar{0%,100%{box-shadow:0 0 8px 1px rgba(var(--horizon-gold-rgb),.6), 0 0 18px 2px rgba(var(--horizon-gold-rgb),.3);} 50%{box-shadow:0 0 12px 2px rgba(var(--horizon-gold-rgb),.95), 0 0 30px 4px rgba(var(--horizon-gold-rgb),.5);}}
+@media (prefers-reduced-motion:reduce){ .sb-card.is-secured .sb-card-word, .h2h-center.is-secured .h2h-word, .sb-card.is-secured .sb-card-meter > span, .h2h-center.is-secured .h2h-win-bar > span{animation:none;} }
 
 .sb-card-scores{flex:1; display:flex; flex-direction:column; justify-content:center; gap:10px;}
 .sb-card-side{display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:10px;}
