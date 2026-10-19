@@ -3,6 +3,7 @@
 // This is what makes Sleeper the easy first platform to support (Yahoo
 // needs real OAuth, ESPN has no official API at all -- see the /my-team
 // roadmap in CLAUDE.md).
+import { unstable_cache } from "next/cache";
 import { normalizePlayerName } from "./portfolio";
 
 const SLEEPER_BASE = "https://api.sleeper.app/v1";
@@ -121,6 +122,8 @@ export async function getSleeperPlayers() {
       status: p.status ?? null,
     };
   }
+  // A failed download (Sleeper returned nothing) must not be remembered for a day as "no players".
+  if (!Object.keys(trimmed).length) throw new Error("Sleeper player dictionary unavailable");
   cachedPlayers = trimmed;
   cachedAt = Date.now();
   return cachedPlayers;
@@ -136,13 +139,30 @@ export async function getSleeperPlayers() {
 // without needing a real id crosswalk. Shared by redraft-rankings' and
 // player-simulations' own expanded-row bio/headshot lookups so the
 // name+pos normalization only lives in one place.
+// Cached for a day in Next's shared data cache (the lookup below is ~1MB, under the cache's 2MB entry limit), NOT just in
+// each server instance's memory: every Weekly Rankings / Player Sims / compare page awaits this, and a fresh instance (every
+// deploy, scale-out or idle restart) used to download and parse Sleeper's whole 16MB player dictionary right in the page's
+// critical path before it could answer. Now that happens once a day for everyone, in the background.
+const cachedBiosByNamePos = unstable_cache(
+  async () => {
+    const dict = await getSleeperPlayers();
+    const byNamePos = {};
+    for (const [id, p] of Object.entries(dict)) {
+      const name = normalizePlayerName(`${p.first_name || ""} ${p.last_name || ""}`);
+      if (!name || !p.position) continue;
+      byNamePos[`${name}|${p.position}`] = { sleeperId: id, height: p.height ?? null, weight: p.weight ?? null, yearsExp: p.years_exp ?? null };
+    }
+    if (!Object.keys(byNamePos).length) throw new Error("Sleeper player dictionary unavailable"); // never cache an empty answer
+    return byNamePos;
+  },
+  ["sleeper-bios-by-name-pos-v1"],
+  { revalidate: 86400 }
+);
+
 export async function getPlayerBiosByNamePos() {
-  const dict = await getSleeperPlayers().catch(() => ({}));
-  const byNamePos = {};
-  for (const [id, p] of Object.entries(dict)) {
-    const name = normalizePlayerName(`${p.first_name || ""} ${p.last_name || ""}`);
-    if (!name || !p.position) continue;
-    byNamePos[`${name}|${p.position}`] = { sleeperId: id, height: p.height ?? null, weight: p.weight ?? null, yearsExp: p.years_exp ?? null };
+  try {
+    return await cachedBiosByNamePos();
+  } catch {
+    return {};
   }
-  return byNamePos;
 }

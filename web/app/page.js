@@ -5,6 +5,7 @@ import LandingHub from "./hub/LandingHub";
 import HeroLookup from "./HeroLookup";
 import LeaguePrice from "./LeaguePrice";
 import { createClient } from "@/lib/supabase/server";
+import { getAuthUser } from "@/lib/authUser";
 import { createPublicClient } from "@/lib/supabase/public";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -121,9 +122,7 @@ const getCachedHomeData = unstable_cache(
 export default async function Home() {
   const { posts, latestWeek, topRedraft, trendRows, simRows, singularityCount } = await getCachedHomeData();
   // Signed in? Only changes the hero box's last button ("Open my leagues" vs "Save your leagues").
-  const {
-    data: { user },
-  } = await (await createClient()).auth.getUser();
+  const user = await getAuthUser(await createClient());
   const heroCandidates = [];
 
   for (const r of trendRows) {

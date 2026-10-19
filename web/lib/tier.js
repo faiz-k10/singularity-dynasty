@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { getAuthUser } from "@/lib/authUser";
 
 // Pure tier-policy bits live in tierLimits.js (no imports -> unit-tested).
 export { SAVED_TEAM_LIMITS, savedTeamLimit } from "./tierLimits";
@@ -8,9 +9,7 @@ export { SAVED_TEAM_LIMITS, savedTeamLimit } from "./tierLimits";
 // on it first) can call this directly against a client it already has,
 // rather than pulling in a second one. See player-simulations/page.js.
 export async function resolveTier(supabase) {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getAuthUser(supabase); // local JWT check, no round trip to Supabase Auth
 
   if (!user) {
     return { user: null, tier: "stargazer" };

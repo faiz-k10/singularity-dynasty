@@ -2,6 +2,7 @@ import Link from "next/link";
 import { sampleWithReplacement } from "@/lib/sample";
 import { unstable_cache } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { getAuthUser } from "@/lib/authUser";
 import { createPublicClient } from "@/lib/supabase/public";
 import { fetchAllRows } from "@/lib/fetchAllRows";
 import ThemeToggle from "./ThemeToggle";
@@ -108,7 +109,8 @@ const getCachedTickerInputs = unstable_cache(
     return { topRows: topRows || [], paceByName, achievementInputs, redraftFieldsByName, woprPercentileByName };
   },
   ["site-header-ticker-inputs"],
-  { revalidate: 60 }
+  // 10 minutes: the picks are re-rolled on every request anyway, and the data underneath only changes when a week is published.
+  { revalidate: 600 }
 );
 
 // Shared by every page: the fixed telemetry ticker + full-width site banner
@@ -118,9 +120,7 @@ const getCachedTickerInputs = unstable_cache(
 // tool/auth/legal page (full navigation back to the homepage section).
 export default async function SiteHeader() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getAuthUser(supabase);
 
   // Ticker: a random assortment of 50 achievement badges -- the FULL set
   // (On Fire/On Thin Ice/Risky Icarus/Steady Eddy/Buy Low/Sell High/

@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, useTransition } from "react";
 import Link from "next/link";
 import { UpgradeMoment, BuyInPrompt, startExplorerCheckout } from "./UpgradeMoment";
 import EmailDigestToggle from "./EmailDigestToggle";
-import { lookupSleeperTeams, saveTeam, deleteTeam, setBuyIn, refreshSavedTeams, pollLiveScores, getRosterNews } from "./actions";
+import { lookupSleeperTeams, saveTeam, deleteTeam, setBuyIn, refreshSavedTeams, pollLiveScores, getRosterNews, getMyGameLogs } from "./actions";
 import TeamBadge from "../tools/TeamBadge";
 import LeagueDashboard, { summarizeLeagues } from "./LeagueDashboard";
 import RosterNews from "./RosterNews";
@@ -898,8 +898,12 @@ function ExposureTable({ rows, teamCount, anyBuyIn, thProps }) {
   );
 }
 
-function Portfolio({ savedTeams, buyIns, playerSims, playerGameLogs, playerBios }) {
+function Portfolio({ savedTeams, buyIns, playerSims, playerGameLogs, playerBios, onNeedLogs, logsLoading }) {
   const [tab, setTab] = useState("exposure");
+  // The Analytics tab is the only user of the game log, so it is fetched the first time that tab opens (not with the page).
+  useEffect(() => {
+    if (tab === "analysis") onNeedLogs?.();
+  }, [tab, onNeedLogs]);
   const [groupBy, setGroupBy] = useState("none");
   const [openGroups, setOpenGroups] = useState({}); // { [groupKey]: bool } override of the default-open rule
   const [sortKey, setSortKey] = useState(null);
@@ -972,6 +976,7 @@ function Portfolio({ savedTeams, buyIns, playerSims, playerGameLogs, playerBios 
         )}
       </div>
 
+      {tab === "analysis" && logsLoading && <p className="board-panel-sub mono">Loading game logs…</p>}
       {tab === "analysis" ? (
         <MyAnalysisPanel rows={rows} playerBios={playerBios} />
       ) : (
@@ -1094,7 +1099,6 @@ export default function MyTeamClient({
   savedTeams: savedTeamsProp,
   initialGameStates = null,
   playerSims = {},
-  playerGameLogs = {},
   playerBios = {},
   overview = null,
   exposure = null,
@@ -1107,6 +1111,19 @@ export default function MyTeamClient({
   // (record, matchup, roster, projections) and a light score poll every
   // 30s while the tab is visible.
   const [fresh, setFresh] = useState({}); // { [savedTeamId]: {team_name, settings, players} }
+  // The Analytics tab's game log: fetched the first time that tab opens ("idle" -> "loading" -> "ready"), not with the page.
+  const [gameLogs, setGameLogs] = useState({});
+  const [gameLogsState, setGameLogsState] = useState("idle");
+  const gameLogsRequested = useRef(false);
+  const loadGameLogs = useCallback(() => {
+    if (gameLogsRequested.current) return;
+    gameLogsRequested.current = true;
+    setGameLogsState("loading");
+    getMyGameLogs()
+      .then((r) => setGameLogs(r?.logs || {}))
+      .catch(() => {})
+      .finally(() => setGameLogsState("ready"));
+  }, []);
   const [liveScores, setLiveScores] = useState({}); // { [savedTeamId]: live fields }
   const [updatedAt, setUpdatedAt] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -1684,8 +1701,10 @@ export default function MyTeamClient({
           savedTeams={savedTeams}
           buyIns={buyIns}
           playerSims={playerSims}
-          playerGameLogs={playerGameLogs}
+          playerGameLogs={gameLogs}
           playerBios={playerBios}
+          onNeedLogs={loadGameLogs}
+          logsLoading={gameLogsState === "loading"}
         />
       ),
     },

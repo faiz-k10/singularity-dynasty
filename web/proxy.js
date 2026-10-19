@@ -27,14 +27,15 @@ export async function proxy(request) {
     }
   );
 
-  // Touching getUser() is what actually triggers a token refresh when needed.
-  await supabase.auth.getUser();
+  // Reading the session (getClaims) is what triggers a token refresh when one is due -- and, unlike getUser(), it verifies the
+  // JWT locally instead of calling Supabase's Auth server on EVERY navigation.
+  await supabase.auth.getClaims();
 
   return response;
 }
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|api/webhooks|.*\\.(?:svg|png|jpg|jpeg|gif|webp|woff2?)$).*)",
   ],
 };

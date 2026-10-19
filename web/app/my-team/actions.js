@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { resolveTier, savedTeamLimit } from "@/lib/tier";
+import { getAuthUser } from "@/lib/authUser";
+import { loadGameLogsFor, namesOnTeams } from "@/lib/myGameLogs";
 import { computeAndSaveInsight } from "@/lib/insights";
 import { getAchievements } from "../tools/achievements";
 import {
@@ -153,7 +155,7 @@ export async function lookupSleeperTeams(username, opts = {}) {
     };
   }
 
-  const players = await getSleeperPlayers();
+  const players = await getSleeperPlayers().catch(() => ({}));
 
   // Platform-wide roster%/start% is the same for a given player
   // regardless of which of the user's leagues we're looking at, so this
@@ -416,9 +418,7 @@ export async function lookupSleeperTeams(username, opts = {}) {
 // per distinct Sleeper username.
 export async function refreshSavedTeams() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getAuthUser(supabase); // read path: local JWT check, no round trip to Supabase Auth
   if (!user) return { error: "Sign in to refresh teams." };
 
   const { data: rows } = await supabase
@@ -460,9 +460,7 @@ export async function refreshSavedTeams() {
 // that change by the minute; the client merges them over the saved settings.
 export async function pollLiveScores() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getAuthUser(supabase); // read path: local JWT check, no round trip to Supabase Auth
   if (!user) return { error: "Sign in required." };
 
   const { data: rows } = await supabase
@@ -536,9 +534,7 @@ export async function pollLiveScores() {
 // The browser sends the panel's rows (it already knows who is live and on which side); nothing is stored.
 export async function getLivePlays(players) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getAuthUser(supabase); // read path: local JWT check, no round trip to Supabase Auth
   if (!user) return { error: "Sign in required." };
   if (!Array.isArray(players) || !players.length) return { plays: [] };
   const clean = players
@@ -590,6 +586,16 @@ export async function getWaiverWire(teamId) {
   return { players, hidden, full, week: week.week };
 }
 
+// The Analytics tab's game log, loaded when that tab opens instead of with every My Team page view (lib/myGameLogs.js). The
+// players come from the signed-in user's own saved teams, never from the browser.
+export async function getMyGameLogs() {
+  const supabase = await createClient();
+  const user = await getAuthUser(supabase);
+  if (!user) return { logs: {} };
+  const { data: teams } = await supabase.from("saved_teams").select("players").eq("user_id", user.id);
+  return { logs: await loadGameLogsFor(namesOnTeams(teams)) };
+}
+
 // Injury + news for everyone on the signed-in user's saved rosters, from
 // the live ESPN feed (lib/injuryFeed.js). Returns `items` (one per player,
 // with the leagues they start / are rostered in, newest news first) for the news panel and
@@ -597,9 +603,7 @@ export async function getWaiverWire(teamId) {
 // the dashboard's Alerts column. Healthy players only appear if their latest news is under 72h old.
 export async function getRosterNews() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getAuthUser(supabase); // read path: local JWT check, no round trip to Supabase Auth
   if (!user) return { error: "Sign in required." };
 
   const [{ data: teams }, feed] = await Promise.all([
