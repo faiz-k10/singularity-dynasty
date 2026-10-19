@@ -257,19 +257,21 @@ function MatchupBody({ team, gameStates }) {
       <ul className="h2h-legend" aria-label="How to read the curves">
         <li>
           <span className="h2h-legend-swatch is-low" aria-hidden="true" />
-          <strong>Floor</strong> a bad game: red zone
+          <span><strong>Floor</strong> a bad game: red zone</span>
         </li>
         <li>
           <span className="h2h-legend-swatch is-mid" aria-hidden="true" />
-          <strong>Median</strong> his most likely score; 8 in 10 games land on the gold
+          <span><strong>Median</strong> his most likely score; 8 in 10 games land on the gold</span>
         </li>
         <li>
           <span className="h2h-legend-swatch is-good" aria-hidden="true" />
-          <strong>Ceiling</strong> a great game: blue zone
+          <span><strong>Ceiling</strong> a great game: blue zone</span>
         </li>
         <li>
           <span className="h2h-legend-dot" aria-hidden="true" />
-          Points so far: <span className="tone-low-text">red</span> under his floor, <span className="tone-good-text">blue</span> at or above his median
+          <span>
+            Points so far: <span className="tone-low-text">red</span> under his floor, <span className="tone-good-text">blue</span> at or above his median
+          </span>
         </li>
       </ul>
       <p

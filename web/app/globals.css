@@ -4373,7 +4373,7 @@ summary:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible{
   .h2h .h2h-row.h2h-head{display:none;} /* the curve sits under the name on a phone; the tooltip text stays on the curve */
   .h2h .h2h-side .h2h-c-slot{display:none;}
   .h2h .h2h-side .h2h-slot-inline{display:inline-flex;}
-  .h2h .h2h-side{padding:8px 8px 4px;}
+  .h2h .h2h-side{--side-pad:8px; padding:8px 8px 4px;}
 
   /* Table pages: use the screen. The desktop gutter (24px margin + 24px padding
      each side) left a 279px table on a 375px phone. */
@@ -5204,7 +5204,7 @@ html{font-stretch:82%;}
 .h2h-sleeper:hover{text-decoration:underline;}
 
 .h2h-lineups{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:14px;}
-.h2h-side{padding:10px 12px 6px; min-width:0;}
+.h2h-side{--side-pad:12px; padding:10px var(--side-pad) 6px; min-width:0; overflow:hidden;}
 .h2h-side-title{font-size:13px; color:var(--star-dim); padding:2px 4px 8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
 .h2h-side.opp .h2h-side-title{text-align:right;}
 .h2h-row{
@@ -5252,18 +5252,20 @@ html{font-stretch:82%;}
 .h2h-c-pts.tone-low, .tone-low-text{color:var(--down);}
 /* How to read the curves: a one-line legend under the lineups. */
 .h2h-legend{list-style:none; margin:2px 0 0; padding:0; display:flex; flex-wrap:wrap; gap:6px 18px; font-size:11.5px; line-height:1.4; color:var(--star-dim);}
-.h2h-legend li{display:inline-flex; align-items:center; gap:7px;}
+.h2h-legend li{display:inline-flex; align-items:baseline; gap:7px;}
+.h2h-legend-swatch, .h2h-legend-dot{align-self:center;}
 .h2h-legend strong{color:var(--star); font-weight:700;}
 .h2h-legend-swatch{width:14px; height:9px; border-radius:2px 2px 0 0; flex:none;}
 .h2h-legend-swatch.is-low{background:var(--down); opacity:.7;}
 .h2h-legend-swatch.is-mid{background:var(--horizon-gold); opacity:.65;}
 .h2h-legend-swatch.is-good{background:var(--neon-blue); opacity:.7;}
 .h2h-legend-dot{width:9px; height:9px; border-radius:50%; background:var(--star); box-shadow:0 0 0 2px rgba(var(--star-dot-rgb),.2); flex:none;}
-/* Players who haven't played yet: the row is lightly shaded and boxed with a clear border in its side's colour (gold =
-   yours, blue = your opponent's, the same language as the live panel), so what is still to come stands out from what
-   is done. A flat tint, no gradient; the border replaces the row's top rule. */
-.h2h-row.is-upcoming{background:rgba(var(--horizon-gold-rgb),.08); border:1.5px solid rgba(var(--horizon-gold-rgb),.65); border-radius:8px; padding:4.5px 2.5px;} /* border + padding add up to the normal 6px 4px, so columns stay aligned with the other rows */
-.h2h-side.opp .h2h-row.is-upcoming{background:rgba(var(--neon-blue-rgb),.08); border-color:rgba(var(--neon-blue-rgb),.65);}
+/* Players who haven't played yet: the WHOLE row -- edge to edge across the lineup card, slot to points -- is shaded and
+   boxed with a clear border in its side's colour (gold = yours, blue = your opponent's, the same language as the live
+   panel), so what is still to come stands out from what is done. A flat tint, no gradient. The row bleeds out over the
+   card's side padding and pads itself back in, so its content stays aligned with the other rows. */
+.h2h-row.is-upcoming{background:rgba(var(--horizon-gold-rgb),.14); border:1.5px solid rgba(var(--horizon-gold-rgb),.7); border-left-width:0; border-right-width:0; border-radius:0; margin:0 calc(-1 * var(--side-pad)); padding:4.5px calc(var(--side-pad) + 4px);}
+.h2h-side.opp .h2h-row.is-upcoming{background:rgba(var(--neon-blue-rgb),.14); border-color:rgba(var(--neon-blue-rgb),.7);}
 .h2h-side.opp .h2h-c-slot{text-align:right;}
 .h2h-side.opp .h2h-c-player{align-items:flex-end; text-align:right;}
 
