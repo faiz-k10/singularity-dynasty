@@ -92,10 +92,11 @@ test("buildPlayFeed: one entry per play, newest first, both ends of a pass named
   const codeById = { 6: "DAL", 9: "GB" };
   const plays = parsePlays(
     [
-      raw("p1", 1, "Rush", "J.Williams right tackle for 8 yards", [["200", "rusher"], ["900", "tackler"]]),
-      raw("p2", 2, "Pass Reception", "D.Prescott pass short right to C.Lamb for 9 yards", [["100", "passer"], ["300", "receiver"]]),
+      raw("p1", 1, "Rush", "J.Williams right tackle for 20 yards", [["200", "rusher"], ["900", "tackler"]]),
+      raw("p2", 2, "Pass Reception", "D.Prescott pass short right to C.Lamb for 24 yards", [["100", "passer"], ["300", "receiver"]]),
       raw("p3", 3, "Pass Incompletion", "D.Prescott pass incomplete to C.Lamb", [["100", "passer"], ["300", "receiver"]]),
       raw("p4", 4, "Passing Touchdown", "J.Love pass to M.Golden for 9 yards, TOUCHDOWN", [["500", "passer"], ["600", "receiver"], ["600", "scorer"]], { team: team(9), start: { team: team(9) } }),
+      raw("p6", 6, "Rush", "J.Williams left guard for 19 yards", [["200", "rusher"]]),
       raw("p5", 5, "Sack", "D.Prescott sacked at GB 16 for -3 yards", [["100", "passer"], ["901", "sackedBy"]]),
     ],
     codeById,
@@ -108,23 +109,22 @@ test("buildPlayFeed: one entry per play, newest first, both ends of a pass named
     { playerId: "GB", name: "Green Bay Packers", pos: "DEF", team: "GB", side: "mine" },
   ];
   const feed = buildPlayFeed(players, plays, { names: { 100: "Dak Prescott" } });
-  assert.deepEqual(feed.map((e) => e.id), ["p5", "p4", "p2", "p1"]); // incompletion dropped
-  const [sack, td, catchPlay, run] = feed;
-  assert.equal(sack.label, "Sack");
-  assert.equal(sack.side, "mine");
+  // Only scoring plays and 20+ yard gains: the incompletion, the sack and the 19-yard run are left off.
+  assert.deepEqual(feed.map((e) => e.id), ["p4", "p2", "p1"]);
+  const [td, catchPlay, run] = feed;
   assert.equal(td.pair, true);
   assert.deepEqual(td.who.map((w) => w.name), ["Jordan Love", "Matthew Golden"]);
   assert.equal(td.label, "Touchdown pass");
   assert.equal(td.td, true);
   assert.equal(catchPlay.label, "Catch");
-  assert.equal(catchPlay.yards, "9 yds");
+  assert.equal(catchPlay.yards, "24 yds");
   assert.equal(catchPlay.partner, "from D. Prescott");
   assert.equal(catchPlay.side, "theirs");
   assert.equal(run.when, "3:01 - 4th");
 });
 
 test("buildPlayFeed: a player who is yours in one league and theirs in another is one line, side both", () => {
-  const plays = parsePlays([raw("p1", 1, "Rush", "J.Williams for 4 yards", [["200", "rusher"]])], { 6: "DAL" }).map((p) => ({ ...p, teams: ["DAL", "GB"] }));
+  const plays = parsePlays([raw("p1", 1, "Rush", "J.Williams for 25 yards", [["200", "rusher"]])], { 6: "DAL" }).map((p) => ({ ...p, teams: ["DAL", "GB"] }));
   const feed = buildPlayFeed(
     [
       { playerId: "a", name: "Javonte Williams", pos: "RB", team: "DAL", side: "mine", espnId: "200" },
@@ -135,4 +135,26 @@ test("buildPlayFeed: a player who is yours in one league and theirs in another i
   assert.equal(feed.length, 1);
   assert.equal(feed[0].who.length, 1);
   assert.equal(feed[0].side, "both");
+});
+
+test("buildPlayFeed: the kicker's extra point rides on the touchdown row as a note, not as part of the pass", () => {
+  const plays = parsePlays(
+    [raw("p1", 1, "Passing Touchdown", "J.Love pass to M.Golden for 9 yards, TOUCHDOWN. T.Smack extra point is GOOD", [["500", "passer"], ["600", "receiver"], ["600", "scorer"], ["700", "kicker"], ["700", "patScorer"]])],
+    { 9: "GB" },
+  ).map((p) => ({ ...p, teams: ["DAL", "GB"] }));
+  const feed = buildPlayFeed(
+    [
+      { playerId: "k", name: "Trey Smack", pos: "K", team: "GB", side: "mine", espnId: "700" },
+      { playerId: "c", name: "Jordan Love", pos: "QB", team: "GB", side: "mine", espnId: "500" },
+      { playerId: "d", name: "Matthew Golden", pos: "WR", team: "GB", side: "mine", espnId: "600" },
+    ],
+    plays,
+  );
+  const [e] = feed;
+  assert.equal(e.label, "Touchdown pass");
+  assert.deepEqual(e.who.map((w) => [w.name, w.arrow, w.note]), [
+    ["Jordan Love", false, null],
+    ["Matthew Golden", true, null],
+    ["Trey Smack", false, "extra point"],
+  ]);
 });

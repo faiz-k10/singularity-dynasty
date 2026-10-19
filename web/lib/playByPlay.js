@@ -143,9 +143,15 @@ export function yardsFor(label, yards) {
 
 const ord = (n) => (n == null ? "" : n > 4 ? "OT" : ["1st", "2nd", "3rd", "4th"][n - 1]);
 
+// The panel lists scoring plays (touchdowns, field goals, extra points, two-point conversions, defensive scores,
+// safeties) and offensive gains of BIG_YARDS or more; everything else is left off.
+export const BIG_YARDS = 20;
+const BIG_PLAY = /^(Catch|Completion|Run|Return)$/;
+
 // players: [{ playerId, name, pos, team, side: "mine" | "theirs", espnId? }] -- the panel's rows, espnId resolved by
 // matchAthlete. plays: parsed plays, each with `teams` (the two team codes in its game). names: { espnAthleteId: full
-// name } for the other end of a pass. Returns the newest `limit` plays involving any of them, one entry per play.
+// name } for the other end of a pass. Returns the newest `limit` scoring / big plays involving any of them, one entry
+// per play.
 export function buildPlayFeed(players, plays, { names = {}, limit = 40 } = {}) {
   const byAthlete = new Map();
   const defenses = [];
@@ -177,7 +183,9 @@ export function buildPlayFeed(players, plays, { names = {}, limit = 40 } = {}) {
       if (label) add(d, label);
     }
     if (!who.size) continue;
-    const list = [...who.values()].sort((a, b) => Number(b.roles.includes("passer")) - Number(a.roles.includes("passer")));
+    // Passer first, then receiver, then anyone else (a kicker's extra point on the same play).
+    const rank = (w) => (w.roles.includes("passer") ? 0 : w.roles.includes("receiver") ? 1 : 2);
+    const list = [...who.values()].sort((a, b) => rank(a) - rank(b));
     // Both ends of a pass are ours -> "Jordan Love → Matthew Golden" with the passer's wording.
     const pair = list.length > 1 && list[0].roles.includes("passer") && list.some((w) => w.roles.includes("receiver"));
     const lead = pair ? list[0] : list.find((w) => !w.roles.includes("passer")) || list[0];
@@ -187,6 +195,8 @@ export function buildPlayFeed(players, plays, { names = {}, limit = 40 } = {}) {
       const aid = other && play.people.find((x) => x.role === other)?.id;
       if (aid && names[aid]) partner = `${other === "passer" ? "from" : "to"} ${initialed(names[aid])}`;
     }
+    // Only the plays that matter (founder's rule): scoring plays, and offensive plays of 20+ yards.
+    if (!play.scoring && !(BIG_PLAY.test(lead.label) && play.yards >= BIG_YARDS)) continue;
     const sides = new Set(list.map((w) => w.side));
     out.push({
       id: play.id,
@@ -199,7 +209,12 @@ export function buildPlayFeed(players, plays, { names = {}, limit = 40 } = {}) {
       td: play.scoring && /Touchdown|Interception touchdown|Fumble return touchdown|Return touchdown/.test(lead.label),
       pair,
       side: sides.size === 1 ? [...sides][0] : "both",
-      who: list.map(({ playerId, name, pos, team, side }) => ({ playerId, name, pos, team, side })),
+      // arrow: this name is the catch end of "passer → receiver"; note: what someone else on the play did, when it
+      // isn't the headline (e.g. "extra point" for the kicker on a touchdown row).
+      who: list.map(({ playerId, name, pos, team, side, label, roles }, i) => {
+        const inPair = pair && rank({ roles }) < 2;
+        return { playerId, name, pos, team, side, arrow: pair && i === 1 && roles.includes("receiver"), note: !inPair && label !== lead.label && label ? label.toLowerCase() : null };
+      }),
     });
   }
   out.sort((a, b) => String(b.wall || "").localeCompare(String(a.wall || "")) || b.seq - a.seq);

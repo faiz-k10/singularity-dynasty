@@ -213,8 +213,9 @@ function PlayRow({ e, isNew }) {
         <span className="sb-play-who">
           {e.who.map((w, i) => (
             <span key={w.playerId}>
-              {i > 0 && <span className="sb-play-join">{e.pair ? " → " : " · "}</span>}
+              {i > 0 && <span className="sb-play-join">{w.arrow ? " → " : " · "}</span>}
               <span className={`sb-play-name is-${w.side}`}>{w.name}</span>
+              {w.note && <span className="sb-play-note"> ({w.note})</span>}
             </span>
           ))}
         </span>
@@ -229,7 +230,7 @@ function PlayRow({ e, isNew }) {
   );
 }
 
-// The panel's lower half: the latest plays by the players listed above, newest first (lib/playByPlay.js via the
+// The panel's right half: the latest scoring plays and 20+ yard gains by the players listed beside it, newest first (lib/playByPlay.js via the
 // getLivePlays action), refreshed with every 30-second poll. Plays new since the last refresh flash once.
 function RecentPlays({ rows, updatedAt }) {
   // The request is keyed on who is listed (and the poll time), so it re-runs exactly when either changes.
@@ -259,7 +260,7 @@ function RecentPlays({ rows, updatedAt }) {
     <section className="sb-plays" aria-label="Recent plays">
       <h3 className="sb-feed-label sb-plays-label mono">
         <span>Recent plays</span>
-        <span className="sb-feed-sum">newest first</span>
+        <span className="sb-feed-sum">scores · 20+ yards</span>
       </h3>
       <div className="sb-plays-scroll">
         {list.length > 0 ? (
@@ -269,7 +270,7 @@ function RecentPlays({ rows, updatedAt }) {
             ))}
           </ol>
         ) : (
-          <p className="sb-muted sb-feed-empty">{state.loaded ? "No catches, runs or scores from these players yet." : "Loading plays…"}</p>
+          <p className="sb-muted sb-feed-empty">{state.loaded ? "No scores or 20+ yard plays from these players yet." : "Loading plays…"}</p>
         )}
       </div>
     </section>

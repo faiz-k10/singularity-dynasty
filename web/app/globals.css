@@ -5351,6 +5351,7 @@ html{font-stretch:82%;}
 .sb-play-name.is-mine{color:var(--star);}
 .sb-play-name.is-theirs{color:color-mix(in srgb, var(--star) 80%, transparent);}
 .sb-play-join{color:var(--star-dim);}
+.sb-play-note{font-family:var(--font-mono); font-size:11px; color:var(--star-dim);}
 .sb-play-what{font-family:var(--font-mono); font-size:11.5px; color:var(--star-dim);}
 .sb-play-what strong{font-weight:700; color:var(--star);}
 .sb-play.is-td .sb-play-what strong{color:var(--horizon-gold);}
