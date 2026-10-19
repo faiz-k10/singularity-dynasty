@@ -63,3 +63,19 @@ test("isGameDay: a live game, a kickoff today, or Thu/Sun/Mon without a scoreboa
   assert.equal(isGameDay(null, new Date("2026-10-18T12:00:00")), true); // Sunday
   assert.equal(isGameDay(null, new Date("2026-10-21T12:00:00")), false); // Wednesday
 });
+
+test("buildLiveFeed: nextUp names the next kickoff's games and counts your / their starters in them", () => {
+  const g = {
+    SF: { state: "pre", start: "2026-10-20T00:15Z", eventId: "e1", home: true },
+    WAS: { state: "pre", start: "2026-10-20T00:15Z", eventId: "e1", home: false },
+    GB: { state: "post", start: "2026-10-19T00:20Z", eventId: "e0" },
+  };
+  const p = (id, t) => ({ id, name: id, pos: "WR", team: t, proj: 10, pts: 0 });
+  const feed = buildLiveFeed([team("a", "A", [p("1", "SF"), p("2", "WAS"), p("3", "GB")], {}, [p("4", "SF")])], g);
+  assert.equal(feed.nextStart, "2026-10-20T00:15Z");
+  assert.deepEqual(feed.nextUp, { games: [["WAS", "SF"]], mine: 2, theirs: 1 }); // away team first
+  assert.equal(feed.anyLeft, true);
+  const done = buildLiveFeed([team("a", "A", [p("3", "GB")])], g);
+  assert.equal(done.nextUp, null);
+  assert.equal(done.anyLeft, false);
+});

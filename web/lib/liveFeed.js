@@ -10,10 +10,11 @@
 
 // gameStates: lib/gameStatus.js parseScoreboard() output.
 export function buildLiveFeed(savedTeams, gameStates, { onlyTeamId = null } = {}) {
-  const empty = { mine: [], theirs: [], mineTotal: 0, theirsTotal: 0, nextStart: null };
+  const empty = { mine: [], theirs: [], mineTotal: 0, theirsTotal: 0, nextStart: null, nextUp: null, anyLeft: false };
   if (!gameStates) return empty;
   const sides = { mine: new Map(), theirs: new Map() };
   let nextStart = null;
+  const waiting = []; // starters whose game hasn't kicked off: { side, id, team, start }
   for (const t of savedTeams || []) {
     const s = t.settings || {};
     if (s.bestBall || s.isBye) continue;
@@ -24,7 +25,10 @@ export function buildLiveFeed(savedTeams, gameStates, { onlyTeamId = null } = {}
         if (!p.id || !p.team) continue;
         const g = gameStates[p.team];
         if (!g) continue;
-        if (g.state === "pre" && g.start && (!nextStart || g.start < nextStart)) nextStart = g.start;
+        if (g.state === "pre" && g.start) {
+          if (!nextStart || g.start < nextStart) nextStart = g.start;
+          waiting.push({ side, id: p.id, team: p.team, start: g.start });
+        }
         if (g.state !== "in") continue;
         const pts = typeof p.pts === "number" ? p.pts : 0;
         let row = sides[side].get(p.id);
@@ -44,7 +48,21 @@ export function buildLiveFeed(savedTeams, gameStates, { onlyTeamId = null } = {}
   const mine = finish(sides.mine);
   const theirs = finish(sides.theirs);
   const sum = (rows) => Math.round(rows.reduce((a, r) => a + r.total, 0) * 10) / 10;
-  return { mine, theirs, mineTotal: sum(mine), theirsTotal: sum(theirs), nextStart };
+  // The panel's between-games card: the games at the next kickoff (team pairs from ESPN's event id, away team first) and how many of
+  // your / your opponents' starters play in them.
+  let nextUp = null;
+  if (nextStart) {
+    const at = waiting.filter((w) => w.start === nextStart);
+    const games = new Map();
+    for (const w of at) {
+      const ev = gameStates[w.team]?.eventId || w.team;
+      if (!games.has(ev)) games.set(ev, Object.keys(gameStates).filter((t) => gameStates[t].eventId && gameStates[t].eventId === ev).sort((a, b) => Number(!!gameStates[a].home) - Number(!!gameStates[b].home) || a.localeCompare(b)));
+      if (!games.get(ev).length) games.set(ev, [w.team]);
+    }
+    const count = (side) => new Set(at.filter((w) => w.side === side).map((w) => w.id)).size;
+    nextUp = { games: [...games.values()], mine: count("mine"), theirs: count("theirs") };
+  }
+  return { mine, theirs, mineTotal: sum(mine), theirsTotal: sum(theirs), nextStart, nextUp, anyLeft: waiting.length > 0 };
 }
 
 // Remembers when each player's points last went up, so the list can put the newest scoring first.

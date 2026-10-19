@@ -5327,6 +5327,33 @@ html{font-stretch:82%;}
 .sb-feed-delta{font-size:11px; font-weight:700; color:var(--horizon-gold);}
 .sb-feed-row.is-theirs .sb-feed-delta{color:var(--neon-blue);}
 .sb-feed-proj{font-size:10.5px; color:var(--star-dim);}
+/* Between games: one centred card filling the panel -- a small event-horizon ring (gold-to-blue rim, a slow orbiting
+   dot), a gold eyebrow, the kickoff time in the display font, a countdown, the next game(s) as glass pills, and the
+   gold / blue count of starters in them. */
+.sb-wait{flex:1; min-height:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:10px; padding:40px 24px 48px;}
+.sb-wait-orbit{position:relative; width:76px; height:76px; margin-bottom:10px;}
+.sb-wait-orbit::before{content:""; position:absolute; inset:0; border-radius:50%;
+  background:conic-gradient(from 210deg, var(--horizon-gold), var(--horizon), var(--neon-blue), var(--horizon-gold));
+  -webkit-mask:radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1.5px));
+          mask:radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1.5px));}
+.sb-wait-orbit::after{content:""; position:absolute; inset:-3px; border-radius:50%; animation:sb-orbit 9s linear infinite;
+  background:radial-gradient(circle at 50% 4px, var(--star) 0 3px, transparent 4px);}
+.sb-wait-orbit.is-still::after{animation:none; opacity:.45;}
+.sb-wait-core{position:absolute; inset:14px; border-radius:50%; background:radial-gradient(circle, var(--void) 50%, rgba(var(--horizon-gold-rgb),.16) 80%, rgba(var(--neon-blue-rgb),.10)); box-shadow:0 0 28px rgba(var(--horizon-gold-rgb),.22);}
+@keyframes sb-orbit{to{transform:rotate(360deg);}}
+.sb-wait-eyebrow{font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.16em; color:var(--horizon-gold);}
+.sb-wait-title{font-family:var(--font-display); font-weight:800; font-size:clamp(34px, 3.4vw, 48px); line-height:1; text-transform:uppercase; letter-spacing:.03em; color:var(--star);}
+.sb-wait-sub{font-size:12.5px; color:var(--star-dim);}
+.sb-wait-games{list-style:none; margin:14px 0 0; padding:0; display:flex; flex-wrap:wrap; justify-content:center; gap:10px;}
+.sb-wait-game{display:inline-flex; align-items:center; gap:8px; padding:7px 14px; border-radius:999px; background:rgba(var(--star-dot-rgb),.05); border:1px solid rgba(var(--star-dot-rgb),.12); box-shadow:inset 0 1px 0 rgba(255,255,255,var(--glass-spec));}
+.sb-wait-team{display:inline-flex; align-items:center; gap:8px;}
+.sb-wait-vs, .sb-wait-more{font-size:10.5px; text-transform:uppercase; letter-spacing:.1em; color:var(--star-dim);}
+.sb-wait-more{align-self:center;}
+.sb-wait-who{margin:4px 0 0; font-size:12px; color:var(--star-dim);}
+.sb-wait-who strong{font-weight:700;}
+.sb-wait-who .is-mine strong{color:var(--horizon-gold);}
+.sb-wait-who .is-theirs strong{color:var(--neon-blue);}
+@media (prefers-reduced-motion:reduce){ .sb-wait-orbit::after{animation:none;} }
 /* Split panel, lengthwise: who is on the field (left) beside their recent plays (right), each column scrolling on its
    own. Under 1240px the panel narrows back to one column and the two halves stack (players over plays). */
 .sb-feed-split{flex:1; min-height:0; display:flex; flex-direction:row;}
