@@ -91,7 +91,16 @@ function SideRow({ p, scoreboardKnown, uncertain, mounted }) {
           .filter(Boolean)
           .join("\n")}
       >
-        {fmt1(p.proj)}
+        {p.floor != null && p.ceiling != null && p.proj > 0 ? (
+          // Stacked like a number line: ceiling on top, the median (our projection) in the middle, floor underneath.
+          <span className="h2h-range">
+            <span className="h2h-range-hi">{fmt1(p.ceiling)}</span>
+            <span className="h2h-range-mid">{fmt1(p.proj)}</span>
+            <span className="h2h-range-lo">{fmt1(p.floor)}</span>
+          </span>
+        ) : (
+          fmt1(p.proj)
+        )}
       </span>
       <span
         className={`h2h-c-pts mono live-pts-cell${o.state === "in" ? " is-live" : ""}${beat ? " beat" : ""}`}
@@ -111,7 +120,7 @@ function Side({ title, side, opp = false, scoreboardKnown, uncertain, mounted })
       <div className="h2h-row h2h-head" aria-hidden="true">
         <span className="h2h-c-slot">Slot</span>
         <span className="h2h-c-player">Player</span>
-        <span className="h2h-c-proj">Proj</span>
+        <span className="h2h-c-proj" title="Ceiling, median projection and floor, top to bottom">Proj</span>
         <span className="h2h-c-pts">Pts</span>
       </div>
       {side.players.map((p, i) => (

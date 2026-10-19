@@ -5201,6 +5201,15 @@ html{font-stretch:82%;}
 .h2h-c-slot{grid-area:slot;}
 .h2h-c-player{grid-area:player; min-width:0; display:flex; flex-direction:column; gap:4px;}
 .h2h-c-proj{grid-area:proj; text-align:right; font-size:12.5px;}
+/* Projection as a stack -- ceiling over median over floor -- the median larger and bright, the ends small and dim. */
+.h2h-range{display:inline-flex; flex-direction:column; align-items:inherit; line-height:1.15;}
+.h2h-range-hi, .h2h-range-lo{font-size:10px; color:var(--star-dim);}
+.h2h-range-mid{font-size:13px; font-weight:700; color:var(--star);}
+.h2h-c-proj.h2h-muted .h2h-range-mid{color:var(--star-dim); font-weight:400;}
+.h2h-side .h2h-c-proj{display:flex; flex-direction:column; align-items:flex-end; justify-content:center;}
+.h2h-side.opp .h2h-c-proj{align-items:flex-start;}
+@media (max-width:900px){ .h2h-side.opp .h2h-c-proj{align-items:flex-end;} }
+@container h2h (max-width:900px){ .h2h-side.opp .h2h-c-proj{align-items:flex-end;} }
 .h2h-c-pts{grid-area:pts; text-align:right; font-size:15px; font-weight:700;}
 .h2h-side.opp .h2h-c-slot{text-align:right;}
 .h2h-side.opp .h2h-c-player{align-items:flex-end; text-align:right;}
