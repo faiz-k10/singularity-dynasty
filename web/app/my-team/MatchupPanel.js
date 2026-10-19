@@ -8,6 +8,7 @@ import { summarizeSide } from "@/lib/winChance";
 import Standings from "./Standings";
 import WaiverWire from "./WaiverWire";
 import ScoreCurve from "./ScoreCurve";
+import { leadState } from "@/lib/leadState";
 import { useMounted } from "./useMounted";
 
 // Sleeper's own page for this week's matchup in a league (opens in a new tab).
@@ -129,12 +130,12 @@ function Side({ title, side, opp = false, scoreboardKnown, uncertain, mounted })
   );
 }
 
-function TeamScore({ name, record, score, proj, left, opp = false }) {
+function TeamScore({ name, record, score, proj, left, state = null, opp = false }) {
   return (
     <div className={`h2h-team${opp ? " opp" : ""}`}>
       <div className="h2h-team-name">{name}</div>
       {record && <div className="h2h-team-rec mono">{record}</div>}
-      <div className="h2h-score mono">{fmt1(score)}</div>
+      <div className={`h2h-score mono${state ? ` is-${state}` : ""}`}>{fmt1(score)}</div>
       <div className="h2h-meta mono">
         {proj != null && <span>Proj {fmt1(proj)}</span>}
         {left && <span>{left}</span>}
@@ -227,9 +228,9 @@ function MatchupBody({ team, gameStates }) {
     return (
       <div className="h2h">
         <div className="h2h-board">
-          <TeamScore name={myName} record={s.record} score={live?.mine ?? null} proj={s.matchupProj?.mine ?? null} />
+          <TeamScore state={leadState(live?.mine, live?.opp)[0]} name={myName} record={s.record} score={live?.mine ?? null} proj={s.matchupProj?.mine ?? null} />
           {center}
-          <TeamScore name={s.opponent} record={s.opponentRecord} score={live?.opp ?? null} proj={s.matchupProj?.opp ?? null} opp />
+          <TeamScore state={leadState(live?.mine, live?.opp)[1]} name={s.opponent} record={s.opponentRecord} score={live?.opp ?? null} proj={s.matchupProj?.opp ?? null} opp />
         </div>
         <p className="h2h-note">
           {s.bestBall
@@ -247,9 +248,9 @@ function MatchupBody({ team, gameStates }) {
   return (
     <div className="h2h">
       <div className="h2h-board">
-        <TeamScore name={myName} record={s.record} score={myScore} proj={uncertain ? null : myScore + mine.projFinal - mine.pts} left={uncertain ? null : leftLabel(mine)} />
+        <TeamScore state={leadState(myScore, oppScore)[0]} name={myName} record={s.record} score={myScore} proj={uncertain ? null : myScore + mine.projFinal - mine.pts} left={uncertain ? null : leftLabel(mine)} />
         {center}
-        <TeamScore name={s.opponent} record={s.opponentRecord} score={oppScore} proj={uncertain ? null : oppScore + opp.projFinal - opp.pts} left={uncertain ? null : leftLabel(opp)} opp />
+        <TeamScore state={leadState(myScore, oppScore)[1]} name={s.opponent} record={s.opponentRecord} score={oppScore} proj={uncertain ? null : oppScore + opp.projFinal - opp.pts} left={uncertain ? null : leftLabel(opp)} opp />
       </div>
       <div className="h2h-lineups">
         <Side title={myName} side={mine} scoreboardKnown={scoreboardKnown} uncertain={uncertain} mounted={mounted} />

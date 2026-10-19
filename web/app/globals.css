@@ -5189,6 +5189,8 @@ html{font-stretch:82%;}
 .h2h-team-name{font-size:16px; color:var(--star); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
 .h2h-team-rec{font-size:11px; color:var(--star-dim); margin-top:2px;}
 .h2h-score{font-family:var(--font-display), sans-serif; font-weight:800; font-size:44px; line-height:1.05; color:var(--star); margin-top:6px; letter-spacing:.01em;}
+.h2h-score.is-lead{color:var(--up);}
+.h2h-score.is-trail{color:var(--down);}
 .h2h-meta{display:flex; flex-wrap:wrap; gap:4px 14px; font-size:11.5px; color:var(--star-dim); margin-top:4px;}
 .h2h-team.opp .h2h-meta{justify-content:flex-end;}
 .h2h-center{display:flex; flex-direction:column; align-items:center; gap:6px; min-width:170px;}
@@ -5361,7 +5363,8 @@ html{font-stretch:82%;}
 .sb-card-team{font-size:17px; color:var(--star); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
 .sb-card-team.sb-muted{color:var(--star-dim);}
 .sb-card-score{font-family:var(--font-display), sans-serif; font-weight:800; font-size:clamp(30px, 2.6vw, 42px); line-height:1; text-align:right; color:var(--star-dim); font-variant-numeric:tabular-nums;}
-.sb-card-score.lead{color:var(--star);}
+.sb-card-score.is-lead{color:var(--up);}
+.sb-card-score.is-trail{color:var(--down);}
 .sb-card-score.bumped{animation:sb-bump 1.4s ease-out;}
 @keyframes sb-bump{0%{color:var(--horizon-gold); text-shadow:0 0 16px rgba(var(--horizon-gold-rgb),.7);} 100%{text-shadow:none;}}
 

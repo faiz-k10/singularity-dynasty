@@ -10,6 +10,7 @@ import TeamBadge from "../tools/TeamBadge";
 import { summarizeSide } from "@/lib/winChance";
 import { buildLiveFeed, trackScoring, sortFeed, formatCountdown } from "@/lib/liveFeed";
 import { getLivePlays } from "./actions";
+import { leadState } from "@/lib/leadState";
 
 const fmt1 = (v) => (v == null ? "—" : v.toFixed(1));
 // "Christian McCaffrey" -> "C. McCaffrey"
@@ -24,8 +25,8 @@ const kickoff = (iso) => {
   return d.toLocaleString([], { weekday: "short", hour: "numeric", minute: "2-digit" });
 };
 
-// The number briefly glows when it changes between polls (not on first paint).
-function Score({ value, lead }) {
+// The number briefly glows when it changes between polls (not on first paint); green while leading, red while trailing.
+function Score({ value, state }) {
   const prev = useRef(value);
   const [bump, setBump] = useState(0);
   useEffect(() => {
@@ -33,7 +34,7 @@ function Score({ value, lead }) {
     prev.current = value;
   }, [value]);
   return (
-    <span key={bump} className={`sb-card-score mono${lead ? " lead" : ""}${bump ? " bumped" : ""}`}>
+    <span key={bump} className={`sb-card-score mono${state ? ` is-${state}` : ""}${bump ? " bumped" : ""}`}>
       {fmt1(value)}
     </span>
   );
@@ -138,12 +139,12 @@ function LeagueCard({ team, gameStates, injuries, onOpen }) {
             <div className="sb-card-side is-me">
               <span className="sb-card-you mono">You</span>
               <span className="sb-card-team">{row.team}</span>
-              <Score value={myScore} lead={myScore != null && oppScore != null && myScore >= oppScore} />
+              <Score value={myScore} state={leadState(myScore, oppScore)[0]} />
             </div>
             <div className="sb-card-side">
               <span className="sb-card-you" aria-hidden="true" />
               <span className="sb-card-team sb-muted">{row.opponent}</span>
-              <Score value={oppScore} lead={myScore != null && oppScore != null && oppScore > myScore} />
+              <Score value={oppScore} state={leadState(myScore, oppScore)[1]} />
             </div>
           </div>
 
