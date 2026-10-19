@@ -129,3 +129,12 @@ test("matchupOutlook: null without lineups, null win chance when points are up b
   assert.ok(o.winChance > 0.5 && o.winChance < 1);
   assert.equal(o.mine.projFinal, 20);
 });
+
+import { simulateWinChance as _sim, summarizeSide as _sum } from "../lib/winChance.js";
+test("a late-scratch allowance: a team behind with two starters still to play is never 'certain'", () => {
+  const gs = { SF: { state: "pre", start: "2026-10-20T00:15Z" }, DAL: { state: "post" } };
+  const mine = _sum([{ id: "a", name: "A", pos: "RB", team: "SF", proj: 20.8, floor: 13.8, ceiling: 39.8, pts: 0 }, { id: "b", name: "B", pos: "TE", team: "SF", proj: 15.6, floor: 6.1, ceiling: 26.1, pts: 0 }, { id: "c", name: "C", pos: "WR", team: "DAL", proj: 10, floor: 3, ceiling: 20, pts: 97 }], gs);
+  const opp = _sum([{ id: "d", name: "D", pos: "WR", team: "DAL", proj: 10, floor: 3, ceiling: 20, pts: 110.2 }], gs);
+  const p = _sim(mine, opp, { draws: 40000 });
+  assert.ok(p > 0.95 && p < 0.995, `expected a high but not locked-in chance, got ${p}`);
+});

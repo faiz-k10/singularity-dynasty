@@ -56,7 +56,7 @@ function matchupState(team, gameStates, injuries) {
   const toPlay = (mine?.yetToPlay || 0) + (opp?.yetToPlay || 0);
   const started = myScore > 0 || oppScore > 0 || playing > 0;
   const done = Boolean(mine && opp && started && playing === 0 && toPlay === 0);
-  const st = standing(pct, done);
+  const st = standing(pct, done, myScore > oppScore ? true : myScore < oppScore ? false : null);
   return { s, row, mine, opp, myScore, oppScore, pct, playing, toPlay, done, st };
 }
 

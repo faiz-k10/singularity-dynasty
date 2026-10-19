@@ -20,17 +20,8 @@ export function formatWin(p) {
   return p == null ? "—" : `${Math.round(p * 100)}%`;
 }
 
-// One word for where a matchup stands, from the win chance -- shared by the Sunday board cards and this panel so the
-// colour and the headline mean the same thing everywhere (gold = going your way, blue = not, plain = too close).
-export function standing(pct, done) {
-  if (pct == null) return { key: "none", label: null };
-  if (done) return pct >= 0.5 ? { key: "won", label: "Won" } : { key: "lost", label: "Lost" };
-  if (pct >= 0.995) return { key: "ahead", label: "Locked in" };
-  if (pct <= 0.005) return { key: "behind", label: "Out of reach" };
-  if (pct >= 0.6) return { key: "ahead", label: "Favored" };
-  if (pct <= 0.4) return { key: "behind", label: "Underdog" };
-  return { key: "close", label: "Toss-up" };
-}
+import { standing } from "@/lib/standing";
+export { standing };
 
 // Settled results get a settled colour (green: Locked in / Won, red: Out of reach / Lost) on the word and its bar.
 export const sealedClass = (label) => (label === "Locked in" || label === "Won" ? " is-sealed-win" : label === "Out of reach" || label === "Lost" ? " is-sealed-loss" : "");
@@ -212,7 +203,8 @@ function MatchupBody({ team, gameStates }) {
   const pct = s.winChance;
   const allDone =
     mine && opp && mine.yetToPlay + mine.playing + opp.yetToPlay + opp.playing === 0 && (mine.pts > 0 || opp.pts > 0);
-  const st = standing(s.bestBall ? null : pct, allDone);
+  const [leadMine] = leadState(live ? live.mine : mine?.pts ?? null, live ? live.opp : opp?.pts ?? null);
+  const st = standing(s.bestBall ? null : pct, allDone, leadMine === "lead" ? true : leadMine === "trail" ? false : null);
   const center = (
     <div className={`h2h-center is-${st.key}${sealedClass(st.label)}`}>
       {st.label && <div className="h2h-word">{st.label}</div>}

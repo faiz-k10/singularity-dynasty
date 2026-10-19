@@ -184,6 +184,13 @@ function normals(seed) {
   };
 }
 
+// An allowance for what a projection can't see: a starter who has not played yet can be a late scratch (inactive, rested,
+// hurt in warm-ups) and scores nothing -- about 3% of starters; one whose game is on can leave early -- about 1% of what
+// is left. Without it a team a few points behind with two big names to play reads 99.7% and "Locked in"; with it the same
+// team reads about 98%. An assumption, not a backtested number.
+export const SCRATCH_PRE = 0.03;
+export const SCRATCH_LIVE = 0.01;
+
 // P(mine beats opp) from two summarizeSide() results. Returns a 0-1 number.
 export function simulateWinChance(mine, opp, { draws = 5000, seed = 20261018 } = {}) {
   const live = (s) => s.players.map((p) => p.outlook).filter((o) => o.sdLo > 0 || o.sdHi > 0 || o.mid > 0);
@@ -192,8 +199,11 @@ export function simulateWinChance(mine, opp, { draws = 5000, seed = 20261018 } =
   const base = mine.pts - opp.pts;
   if (!a.length && !b.length) return base > 0 ? 1 : base < 0 ? 0 : 0.5;
   const z = normals(seed);
+  const u = rng(seed + 7919);
   const draw = (o) => {
     const n = z();
+    const risk = o.state === "pre" || o.state === null ? SCRATCH_PRE : o.state === "in" ? SCRATCH_LIVE : 0;
+    if (risk && u() < risk) return 0;
     return Math.max(0, o.mid + n * (n < 0 ? o.sdLo : o.sdHi));
   };
   let wins = 0;
