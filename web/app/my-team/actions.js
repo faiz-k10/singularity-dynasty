@@ -319,7 +319,13 @@ export async function lookupSleeperTeams(username, opts = {}) {
         h2h,
         winChance: h2h ? matchupOutlook(h2h, gameStates)?.winChance ?? null : null,
         // Standings + playoff odds (full refresh only; see opts.season above).
-        ...(season ? { season, playoffOdds: season.standings.find((t) => t.isMe)?.playoffOdds ?? null } : {}),
+        ...(season
+          ? {
+              season,
+              playoffOdds: season.standings.find((t) => t.isMe)?.playoffOdds ?? null,
+              playoffSettled: Boolean(season.standings.find((t) => t.isMe)?.settled),
+            }
+          : {}),
         // Best ball leagues have no set lineup -- the platform auto-starts
         // your top scorers -- so Sleeper's `starters` array is mostly "0"
         // placeholders and the Starting Lineup view is meaningless.

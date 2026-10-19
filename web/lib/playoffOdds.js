@@ -1,20 +1,74 @@
 // Standings + playoff odds for one Sleeper league (My Team's season view). Pure, no imports; tested in
 // test/playoffOdds.test.mjs. The server (app/my-team/actions.js) gathers the inputs once a day per league.
 //
-// Method: every week not yet in the standings (league.settings.last_scored_leg) is played out a few thousand times.
-// - Each team's score in a future week is a normal draw: mean = half its current lineup's projection (our weekly
-//   medians for the starters it has set; a starter on a bye this week stands in at a typical score for his position)
-//   + half its points per game so far (which carries the league's own scoring and lineup luck); spread = its
-//   starters' weekly spreads (from floor / ceiling) added in quadrature, at least 12 points (best ball, with no lineup
-//   to read: points per game alone, spread 20% of it).
+// Method (backtested Oct 18 2026 on 339 completed Sleeper league-seasons, ~3,800 team-seasons; see seasonStrengths):
+// every regular-season week not yet in the standings is played out a few thousand times.
+// - A team's future weekly score = its true strength + weekly noise. True strength is NOT taken as its points per game
+//   so far: early scoring only partly predicts the rest of a season, so it is pulled toward the league average by how
+//   much a few games can tell (empirical Bayes: shrink = tau^2 / (tau^2 + sigma^2 / games)), and each simulated season
+//   draws its own strength for every team (the remaining uncertainty, plus 5% of the league average for roster changes
+//   over the rest of the season). Treating points per game as exact made the odds far too sure of themselves: after
+//   week 5, teams it put near 2% actually made the playoffs 12% of the time, and teams near 98% only 91%.
+// - Weekly noise = the league's own week-to-week spread (pooled across its teams so far).
 // - The week being played now starts from the points already scored plus what each team's starters have left
 //   (the same split as the matchup win chance), so a nearly-finished week is nearly settled.
 // - Ranking: wins (a tie is half), then points for -- Sleeper's default tiebreaker. Best ball ranks by points for.
 //   Leagues with a weekly median game add a win for every team scoring above the week's median.
-// - Not modelled: divisions (division winners' guaranteed seeds), injuries / trades beyond this week's lineup.
+// - Not modelled: divisions (division winners' guaranteed seeds).
 // Same inputs + seed -> same answer.
 
-const MIN_SD = 12;
+// League-wide shape when there are too few games to measure it (medians over the backtest leagues): a team's weekly
+// score swings about 20% of the league average, and teams' true strengths differ by about 11% of it.
+const PRIOR_SIGMA = 0.2;
+const PRIOR_TAU = 0.108;
+// Roster changes over the rest of the season (injuries, trades, waivers): extra strength spread, share of league avg.
+const DRIFT = 0.05;
+
+// scores: { [teamId]: [weekly points so far] }. Returns { [teamId]: {mean, sd, tau} } for future weeks:
+// mean = shrunk strength, sd = weekly noise, tau = spread of the true strength (drawn once per simulated season).
+export function seasonStrengths(scores) {
+  const ids = Object.keys(scores);
+  const n = ids.length;
+  const ppg = {};
+  let games = 0;
+  for (const id of ids) {
+    const v = scores[id] || [];
+    ppg[id] = v.length ? v.reduce((a, b) => a + b, 0) / v.length : null;
+    games = Math.max(games, v.length);
+  }
+  const known = ids.filter((id) => ppg[id] != null);
+  const avg = known.length ? known.reduce((a, id) => a + ppg[id], 0) / known.length : 0;
+  let ss = 0;
+  let df = 0;
+  for (const id of known) {
+    for (const x of scores[id]) ss += (x - ppg[id]) ** 2;
+    df += scores[id].length - 1;
+  }
+  // Measured from the league once there are 3+ games each (what the backtest validated), else the typical shape.
+  const sigma = games >= 3 && df > 0 ? Math.sqrt(ss / df) : PRIOR_SIGMA * avg;
+  let tau2;
+  if (games >= 3 && known.length > 2) {
+    const varPpg = known.reduce((a, id) => a + (ppg[id] - avg) ** 2, 0) / (known.length - 1);
+    tau2 = Math.max(0, varPpg - (sigma * sigma) / games);
+  } else tau2 = (PRIOR_TAU * avg) ** 2;
+  const out = {};
+  for (const id of ids) {
+    const g = (scores[id] || []).length;
+    if (!g || !avg) {
+      out[id] = { mean: avg, sd: sigma, tau: Math.sqrt(tau2 + (DRIFT * avg) ** 2) };
+      continue;
+    }
+    const noise = (sigma * sigma) / g;
+    const r = tau2 + noise > 0 ? tau2 / (tau2 + noise) : 0;
+    const post = r * noise; // posterior variance of the true strength
+    out[id] = {
+      mean: Math.round((avg + r * (ppg[id] - avg)) * 10) / 10,
+      sd: Math.round(sigma * 10) / 10,
+      tau: Math.round(Math.sqrt(post + (DRIFT * avg) ** 2) * 10) / 10,
+    };
+  }
+  return out;
+}
 
 function rng(seed) {
   let a = seed >>> 0;
@@ -53,30 +107,12 @@ export function rankStandings(teams, { byPoints = false } = {}) {
   return sorted.map((t, i) => ({ ...t, rank: i + 1 }));
 }
 
-// A future week's score for one team: {mean, sd}. lineup: [{proj, floor, ceiling}] (Sleeper starters already mapped
-// to our weekly ranges), ppg: its points per game so far (null early in the season).
-export function teamStrength(lineup, ppg, gamesPlayed) {
-  let mean = 0;
-  let varSum = 0;
-  for (const p of lineup || []) {
-    const med = Math.max(0, p.proj || 0);
-    const lo = typeof p.floor === "number" ? Math.max(0, med - p.floor) / 1.2816 : med * 0.5;
-    const hi = typeof p.ceiling === "number" ? Math.max(0, p.ceiling - med) / 1.6 : med * 0.5;
-    mean += med;
-    varSum += ((lo + hi) / 2) ** 2;
-  }
-  // No lineup to read (best ball) -> points per game alone; too few games -> the lineup alone.
-  const hasLineup = mean > 0;
-  const blended = !hasLineup ? ppg || 0 : ppg != null && gamesPlayed >= 3 ? 0.5 * mean + 0.5 * ppg : mean;
-  // Without a lineup, a typical weekly swing of ~20% of the team's average.
-  const sd = hasLineup ? Math.sqrt(varSum) : 0.2 * blended;
-  return { mean: Math.round(blended * 10) / 10, sd: Math.max(MIN_SD, Math.round(sd * 10) / 10) };
-}
-
 // teams: [{id, wins, losses, ties, pf}] (current standings, before the weeks below).
-// weeks: [{ games: [[idA, idB], ...], dist: { [id]: {mean, sd} } }] -- every week still to be scored, in order.
+// weeks: [{ games: [[idA, idB], ...], dist: { [id]: {mean, sd} }, live?: true }] -- every week still to be scored, in
+// order. tau: { [id]: spread of each team's true strength } -- one draw per team per simulated season, added to every
+// week that isn't `live` (the week being played already has its own live distribution).
 // Returns { [id]: {playoffOdds, avgWins, avgRank, firstOdds} }.
-export function simulatePlayoffOdds({ teams, weeks, playoffTeams, byPoints = false, medianGame = false, sims = 3000, seed = 20261018 }) {
+export function simulatePlayoffOdds({ teams, weeks, playoffTeams, tau = {}, byPoints = false, medianGame = false, sims = 3000, seed = 20261018 }) {
   const ids = teams.map((t) => t.id);
   const idx = new Map(ids.map((id, i) => [id, i]));
   const n = ids.length;
@@ -90,16 +126,19 @@ export function simulatePlayoffOdds({ teams, weeks, playoffTeams, byPoints = fal
   const pf = new Float64Array(n);
   const score = new Float64Array(n);
   const order = ids.map((_, i) => i);
+  const off = new Float64Array(n);
+  const tauArr = ids.map((id) => tau[id] || 0);
   // Exact ties (same wins and points) fall back to input order, so the result is stable run to run.
   for (let s = 0; s < sims; s++) {
     for (let i = 0; i < n; i++) {
       w[i] = winPts(teams[i]);
       pf[i] = teams[i].pf;
+      off[i] = tauArr[i] ? z() * tauArr[i] : 0;
     }
     for (const wk of weeks) {
       for (let i = 0; i < n; i++) {
         const d = wk.dist[ids[i]];
-        score[i] = d ? Math.max(0, d.mean + z() * d.sd) : 0;
+        score[i] = d ? Math.max(0, d.mean + (wk.live ? 0 : off[i]) + z() * d.sd) : 0;
         pf[i] += score[i];
       }
       for (const [a, b] of wk.games) {

@@ -5,8 +5,8 @@
 // The math is in lib/playoffOdds.js.
 import { fetchSleeperMatchups } from "./sleeper";
 import { normalizePlayerName } from "./portfolio";
-import { buildSide, summarizeSide, DEFAULT_RANGES } from "./winChance";
-import { rankStandings, teamStrength, simulatePlayoffOdds } from "./playoffOdds";
+import { buildSide, summarizeSide } from "./winChance";
+import { rankStandings, seasonStrengths, simulatePlayoffOdds } from "./playoffOdds";
 
 const cache = new Map();
 
@@ -54,27 +54,25 @@ export async function getLeagueSeason({ league, rosters, users, myRosterId, curr
     };
   });
 
-  // Each team's lineup as our weekly ranges (a starter on a bye this week stands in at a typical score).
+  // Each team's weekly scores so far (one Sleeper matchups call per scored week) -> how strong each team really is and
+  // how much a week swings in this league (lib/playoffOdds.js seasonStrengths, backtested).
   const infoFor = (id) => {
     const p = players?.[id];
     if (!p) return null;
     return { name: `${p.first_name || ""} ${p.last_name || ""}`.trim(), pos: p.position || null, team: p.team || null, active: p.status ? p.status === "Active" : true };
   };
   const projFor = (name) => projByName?.[normalizePlayerName(name)] || null;
-  const boardKnown = gameStates && Object.keys(gameStates).length > 0;
-  const entryByRoster = new Map((currentMatchups || []).map((m) => [m.roster_id, m]));
-  const strength = {};
-  for (const r of rosters) {
-    const starters = entryByRoster.get(r.roster_id)?.starters || r.starters || [];
-    const lineup = byPoints
-      ? []
-      : buildSide(starters, null, infoFor, projFor, null).map((p) =>
-          p.id && boardKnown && p.team && !gameStates[p.team] && !p.out ? { ...p, ...(DEFAULT_RANGES[p.pos] || {}) } : p
-        );
-    const t = teams.find((x) => x.id === r.roster_id);
-    const games = t.wins + t.losses + t.ties;
-    strength[r.roster_id] = teamStrength(lineup, games ? t.pf / games : null, games);
+  const pastNums = [];
+  for (let w = 1; w <= Math.min(lastScored, lastRegular); w++) pastNums.push(w);
+  const pastFeeds = await Promise.all(pastNums.map((w) => fetchSleeperMatchups(league.league_id, w).catch(() => null)));
+  const scores = Object.fromEntries(rosters.map((r) => [r.roster_id, []]));
+  for (const feed of pastFeeds) {
+    // A week where nobody scored wasn't played (a league that started late) -- it says nothing about anyone.
+    if (!(feed || []).some((m) => (m.points || 0) > 0)) continue;
+    for (const m of feed) if (scores[m.roster_id] && typeof m.points === "number") scores[m.roster_id].push(m.points);
   }
+  const strength = seasonStrengths(scores);
+  const tau = Object.fromEntries(Object.entries(strength).map(([id, v]) => [id, v.tau]));
 
   // Every regular-season week not yet in the standings: this week from its live state, later weeks from strength.
   const weekNums = [];
@@ -85,31 +83,45 @@ export async function getLeagueSeason({ league, rosters, users, myRosterId, curr
   const weeks = weekNums.map((w, i) => {
     const feed = feeds[i];
     const dist = { ...strength };
-    if (w === currentWeek && feed) {
+    // The week being played counts as "live" once anyone has points on the board; before kickoff it's just another
+    // future week (league-scale strength + the season-long strength draw).
+    const live = w === currentWeek && Boolean(feed) && feed.some((m) => (m.points || 0) > 0);
+    if (live) {
       for (const m of feed) {
-        if (byPoints) {
-          const base = strength[m.roster_id];
-          dist[m.roster_id] = { mean: Math.max(m.points || 0, base.mean), sd: base.sd };
+        const base = strength[m.roster_id];
+        if (byPoints || !base) {
+          if (base) dist[m.roster_id] = { mean: Math.max(m.points || 0, base.mean), sd: base.sd };
           continue;
         }
         const side = summarizeSide(buildSide(m.starters, null, infoFor, projFor, m.players_points), gameStates);
-        let mean = side.pts;
+        let rest = 0;
         let v = 0;
+        let full = 0;
         for (const p of side.players) {
-          mean += p.outlook.mid;
+          rest += p.outlook.mid;
           v += ((p.outlook.sdLo + p.outlook.sdHi) / 2) ** 2;
+          if (p.id) full += Math.max(0, p.proj || 0);
         }
-        dist[m.roster_id] = { mean, sd: Math.sqrt(v) };
+        // Points scored are Sleeper's, in this league's scoring; what's still to come is on our projections' scale,
+        // so it's converted with the ratio of the team's league-scale strength to its full lineup projection.
+        const k = full > 0 ? Math.min(2, Math.max(0.5, base.mean / full)) : 1;
+        dist[m.roster_id] = { mean: (m.points || 0) + k * rest, sd: k * Math.sqrt(v) };
       }
     }
-    return { games: gamesOf(feed), dist };
+    return { games: gamesOf(feed), dist, live };
   });
 
   const playoffTeams = Number(s.playoff_teams) || 0;
-  const odds = simulatePlayoffOdds({ teams, weeks, playoffTeams, byPoints, medianGame, sims: 3000 });
-  const standings = rankStandings(teams, { byPoints }).map((t) => ({
+  const odds = simulatePlayoffOdds({ teams, weeks, playoffTeams, tau, byPoints, medianGame, sims: 3000 });
+  // "settled": the number is a fact, not a simulation result -- the regular season is over, or the team can't reach
+  // the current playoff cut's wins even by winning out (shown as 0% then; otherwise a 0 from the sims reads "<1%").
+  const ranked = rankStandings(teams, { byPoints });
+  const cutWins = playoffTeams && ranked[playoffTeams - 1] ? ranked[playoffTeams - 1].wins + 0.5 * (ranked[playoffTeams - 1].ties || 0) : null;
+  const gamesLeft = weekNums.length * (medianGame ? 2 : 1);
+  const standings = ranked.map((t) => ({
     ...t,
     ...odds[t.id],
+    settled: weekNums.length === 0 || (!byPoints && cutWins != null && t.wins + 0.5 * (t.ties || 0) + gamesLeft < cutWins),
     mean: strength[t.id]?.mean ?? null,
     isMe: String(t.id) === String(myRosterId),
   }));

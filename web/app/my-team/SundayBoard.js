@@ -163,7 +163,7 @@ function LeagueCard({ team, gameStates, injuries, onOpen }) {
             <span className="sb-card-extras">
               {row.playoffOdds != null && (
                 <span className={`sb-card-odds mono ${oddsTone(row.playoffOdds)}`} title="Chance to make the playoffs">
-                  Playoffs {formatOdds(row.playoffOdds)}
+                  Playoffs {formatOdds(row.playoffOdds, row.playoffSettled)}
                 </span>
               )}
               {alerts > 0 && (

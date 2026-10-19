@@ -4,7 +4,13 @@
 // matchup panel: rank, record, points for / against, projected wins and the chance to make the playoffs / finish
 // first. Your row is gold, this week's opponent blue; a line marks the current playoff cut.
 
-const pct = (p) => (p == null ? "—" : p >= 0.995 ? ">99%" : p > 0 && p < 0.005 ? "<1%" : `${Math.round(p * 100)}%`);
+// A simulated 0 or 100 is shown as "<1%" / ">99%": thousands of simulated seasons without a miss is not a guarantee.
+// Exact 0% / 100% only when `settled` (season over, or mathematically out -- lib/leagueSeason.js).
+const pct = (p, settled = false) => {
+  if (p == null) return "—";
+  if (settled && (p === 0 || p === 1)) return `${p * 100}%`;
+  return p >= 0.995 ? ">99%" : p < 0.005 ? "<1%" : `${Math.round(p * 100)}%`;
+};
 
 export function oddsTone(p) {
   if (p == null) return "";
@@ -54,17 +60,18 @@ export default function Standings({ season, opponent }) {
                 <td className="mono">{t.pf.toFixed(1)}</td>
                 <td className="mono">{t.pa.toFixed(1)}</td>
                 <td className="mono">{t.avgWins ?? "—"}</td>
-                <td className={`mono standings-odds ${oddsTone(t.playoffOdds)}`}>{pct(t.playoffOdds)}</td>
-                <td className="mono standings-first">{pct(t.firstOdds)}</td>
+                <td className={`mono standings-odds ${oddsTone(t.playoffOdds)}`}>{pct(t.playoffOdds, t.settled)}</td>
+                <td className="mono standings-first">{pct(t.firstOdds, t.settled)}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
       <p className="h2h-note">
-        Playoff odds: the rest of the regular season played out 3,000 times. Each team&apos;s weekly score is drawn from
-        half its current lineup&apos;s projection and half its scoring average so far; this week starts from the points
-        already on the board. Divisions aren&apos;t modelled. Updated once a day.
+        Playoff odds: the rest of the regular season played out 3,000 times. A team&apos;s strength is its scoring so far,
+        pulled toward the league average by how much a few weeks can really tell (checked against 327 finished Sleeper
+        seasons); this week starts from the points already on the board. Divisions aren&apos;t modelled. Updated once a
+        day.
       </p>
     </section>
   );

@@ -49,6 +49,7 @@ export function buildRow(t, injuries) {
     winPct: s.isBye || s.bestBall ? null : s.winChance ?? null,
     // Chance to make the playoffs (lib/leagueSeason.js, refreshed once a day).
     playoffOdds: s.playoffOdds ?? null,
+    playoffSettled: Boolean(s.playoffSettled),
     sleeperUrl: sleeperMatchupUrl(t.platform_league_id),
     outStarters,
     bestBall: !!s.bestBall,
@@ -233,7 +234,7 @@ export default function LeagueDashboard({ savedTeams, renderExpanded, injuriesBy
                   </div>
                 </td>
                 <td className="mono">{r.record}</td>
-                <td className={`mono standings-odds ${oddsTone(r.playoffOdds)}`}>{formatOdds(r.playoffOdds)}</td>
+                <td className={`mono standings-odds ${oddsTone(r.playoffOdds)}`}>{formatOdds(r.playoffOdds, r.playoffSettled)}</td>
                 <td className="align-left league-dash-opp">{r.opponent}</td>
                 <td className="mono league-dash-score">
                   {r.projMine != null ? (
