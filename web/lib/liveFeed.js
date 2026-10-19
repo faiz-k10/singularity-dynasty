@@ -1,41 +1,50 @@
-// The Sunday board's "My players live" list and its game-day check (app/my-team/SundayBoard.js). Pure, no imports;
+// The Sunday board's live panel and its game-day check (app/my-team/SundayBoard.js). Pure, no imports;
 // tested in test/liveFeed.test.mjs.
 //
-// One row per player who STARTS for you somewhere and whose game is in progress or final, across every saved league
-// (from each league's head-to-head lineup, settings.h2h.mine, refreshed by the 30-second poll). A player started in 3
-// leagues is one row with 3 starts; the header total adds each start's points in that league's own scoring, so he
-// counts 3x there, which is what those games actually feel.
+// Only players ON THE FIELD RIGHT NOW (game in progress) -- yours and your opponents' -- across every saved league, or
+// just one league when its matchup is open (onlyTeamId). Finished and not-started players are left out on purpose: the
+// panel is for "who is playing for / against me at this moment", and finals made it noisy. From each league's
+// head-to-head lineups (settings.h2h.mine / .opp, refreshed by the 30-second poll). A player who starts for you in 3
+// leagues is one row with 3 starts; one who starts for you in one league and against you in another gets a row on
+// each side. Each side's total adds every start's points in that league's own scoring.
 
 // gameStates: lib/gameStatus.js parseScoreboard() output.
-export function buildLiveFeed(savedTeams, gameStates) {
-  const byId = new Map();
-  if (!gameStates) return { rows: [], starts: 0, points: 0 };
+export function buildLiveFeed(savedTeams, gameStates, { onlyTeamId = null } = {}) {
+  const empty = { mine: [], theirs: [], mineTotal: 0, theirsTotal: 0, nextStart: null };
+  if (!gameStates) return empty;
+  const sides = { mine: new Map(), theirs: new Map() };
+  let nextStart = null;
   for (const t of savedTeams || []) {
     const s = t.settings || {};
     if (s.bestBall || s.isBye) continue;
-    for (const p of s.h2h?.mine || []) {
-      if (!p.id || !p.team) continue;
-      const g = gameStates[p.team];
-      if (!g || (g.state !== "in" && g.state !== "post")) continue;
-      const pts = typeof p.pts === "number" ? p.pts : 0;
-      let row = byId.get(p.id);
-      if (!row) {
-        row = { id: p.id, name: p.name, pos: p.pos, team: p.team, proj: p.proj, est: !!p.est, state: g.state, detail: g.detail || null, starts: [] };
-        byId.set(p.id, row);
+    if (onlyTeamId != null && t.id !== onlyTeamId) continue;
+    const league = t.league_name || t.team_name || "League";
+    for (const [side, list] of [["mine", s.h2h?.mine], ["theirs", s.h2h?.opp]]) {
+      for (const p of list || []) {
+        if (!p.id || !p.team) continue;
+        const g = gameStates[p.team];
+        if (!g) continue;
+        if (g.state === "pre" && g.start && (!nextStart || g.start < nextStart)) nextStart = g.start;
+        if (g.state !== "in") continue;
+        const pts = typeof p.pts === "number" ? p.pts : 0;
+        let row = sides[side].get(p.id);
+        if (!row) {
+          row = { id: `${side}:${p.id}`, playerId: p.id, side, name: p.name, pos: p.pos, team: p.team, proj: p.proj, est: !!p.est, detail: g.detail || null, starts: [] };
+          sides[side].set(p.id, row);
+        }
+        row.starts.push({ teamId: t.id, league, opponent: side === "theirs" ? s.opponent || null : null, pts });
       }
-      row.starts.push({ teamId: t.id, league: t.league_name || t.team_name || "League", pts });
     }
   }
-  let starts = 0;
-  let points = 0;
-  const rows = [...byId.values()].map((r) => {
-    const all = r.starts.map((x) => x.pts);
-    const total = all.reduce((a, b) => a + b, 0);
-    starts += r.starts.length;
-    points += total;
-    return { ...r, pts: Math.max(...all), ptsMin: Math.min(...all), total: Math.round(total * 100) / 100 };
-  });
-  return { rows, starts, points: Math.round(points * 10) / 10 };
+  const finish = (m) =>
+    [...m.values()].map((r) => {
+      const all = r.starts.map((x) => x.pts);
+      return { ...r, pts: Math.max(...all), ptsMin: Math.min(...all), total: Math.round(all.reduce((a, b) => a + b, 0) * 100) / 100 };
+    });
+  const mine = finish(sides.mine);
+  const theirs = finish(sides.theirs);
+  const sum = (rows) => Math.round(rows.reduce((a, r) => a + r.total, 0) * 10) / 10;
+  return { mine, theirs, mineTotal: sum(mine), theirsTotal: sum(theirs), nextStart };
 }
 
 // Remembers when each player's points last went up, so the list can put the newest scoring first.
@@ -56,12 +65,9 @@ export function trackScoring(prev, rows, now) {
   return { last, changedAt, delta };
 }
 
-// Newest scoring first; then games still on before finals; then most points.
+// Newest scoring first, then most points.
 export function sortFeed(rows, changedAt = {}) {
-  const live = (r) => (r.state === "in" ? 1 : 0);
-  return [...rows].sort(
-    (a, b) => (changedAt[b.id] || 0) - (changedAt[a.id] || 0) || live(b) - live(a) || b.pts - a.pts || a.name.localeCompare(b.name)
-  );
+  return [...rows].sort((a, b) => (changedAt[b.id] || 0) - (changedAt[a.id] || 0) || b.pts - a.pts || a.name.localeCompare(b.name));
 }
 
 // A game day: a game is on, or one kicks off / finished today (local date). Without a scoreboard, fall back to the

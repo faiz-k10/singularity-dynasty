@@ -179,71 +179,97 @@ function LeagueCard({ team, gameStates, injuries, onOpen }) {
   );
 }
 
-// "My players live": every starter of yours whose game is on or over, across all leagues, newest scoring first.
-function LiveFeed({ savedTeams, gameStates, updatedAt }) {
-  const feed = useMemo(() => buildLiveFeed(savedTeams, gameStates), [savedTeams, gameStates]);
-  const key = feed.rows.map((r) => `${r.id}:${r.pts}`).join(",");
+function FeedRow({ r, isNew, delta, showLeagues }) {
+  const beat = r.proj > 0 && r.pts >= r.proj;
+  const where =
+    r.side === "theirs"
+      ? r.starts.map((x) => (showLeagues ? x.league : null)).filter(Boolean)
+      : r.starts.map((x) => (r.pts === r.ptsMin ? x.league : `${x.league} ${fmt1(x.pts)}`));
+  return (
+    <li className={`sb-feed-row is-${r.side}${isNew ? " is-new" : ""}`}>
+      <div className="sb-feed-who">
+        <span className="sb-feed-name">{r.name}</span>
+        <span className="sb-feed-sub">
+          <PositionBadge position={r.pos} />
+          <TeamBadge team={r.team} />
+          <span className="h2h-game mono">{r.detail || "Live"}</span>
+        </span>
+        {showLeagues && where.length > 0 && <span className="sb-feed-leagues">{where.join(" · ")}</span>}
+      </div>
+      <div className="sb-feed-nums">
+        <span className={`sb-feed-pts mono${beat ? " beat" : ""}`}>{fmt1(r.pts)}</span>
+        {isNew && delta > 0 ? <span className="sb-feed-delta mono">+{fmt1(delta)}</span> : <span className="sb-feed-proj mono">proj {fmt1(r.proj)}</span>}
+      </div>
+    </li>
+  );
+}
+
+// The live panel beside the cards: only players on the field right now -- yours, then your opponents' -- across every
+// league, or just the open league's two lineups (teamId). Newest scoring first within each side; a row flashes gold
+// with "+6.4" when he scores. Finished and not-started players stay off it so it never fills with noise.
+function LiveFeed({ savedTeams, gameStates, updatedAt, teamId = null, league = null }) {
+  const mounted = useMounted();
+  const feed = useMemo(() => buildLiveFeed(savedTeams, gameStates, { onlyTeamId: teamId }), [savedTeams, gameStates, teamId]);
+  const all = useMemo(() => [...feed.mine, ...feed.theirs], [feed]);
+  const key = all.map((r) => `${r.id}:${r.pts}`).join(",");
   // Points history across polls (React's "adjust state while rendering" pattern: only runs when the points change).
   const [track, setTrack] = useState({ key: null, t: null, stamp: 0 });
   if (track.key !== key) {
     const stamp = updatedAt || track.stamp + 1;
-    setTrack({ key, t: trackScoring(track.t, feed.rows, stamp), stamp });
+    setTrack({ key, t: trackScoring(track.t, all, stamp), stamp });
   }
   const t = track.t || { changedAt: {}, delta: {} };
-  const rows = sortFeed(feed.rows, t.changedAt);
+  const isNew = (r) => Boolean(t.changedAt[r.id] && t.changedAt[r.id] === track.stamp);
+  const showLeagues = teamId == null;
+  const section = (rows, side, label, total) =>
+    rows.length > 0 && (
+      <section className={`sb-feed-section is-${side}`}>
+        <h3 className="sb-feed-label mono">
+          <span>{label}</span>
+          <span className="sb-feed-sum">
+            {rows.length} on the field · <strong>{fmt1(total)}</strong> pts
+          </span>
+        </h3>
+        <ol className="sb-feed-list">
+          {sortFeed(rows, t.changedAt).map((r) => (
+            <FeedRow key={r.id} r={r} isNew={isNew(r)} delta={t.delta[r.id]} showLeagues={showLeagues} />
+          ))}
+        </ol>
+      </section>
+    );
+  const nobody = feed.mine.length + feed.theirs.length === 0;
   return (
-    <aside className="sb-feed glass-panel" aria-label="My players live">
+    <aside className="sb-feed glass-panel" aria-label="Playing now">
       <div className="sb-feed-head">
-        <h2 className="board-panel-title">Your players</h2>
-        <span className="sb-feed-total mono" title="Every start counts once per league, in that league's scoring">
-          <strong>{fmt1(feed.points)}</strong> pts across {feed.starts} {feed.starts === 1 ? "start" : "starts"}
-        </span>
+        <h2 className="board-panel-title">
+          {all.length > 0 && <span className="sb-live-dot" aria-hidden="true" />}
+          Playing now
+        </h2>
+        {league && <span className="sb-feed-scope mono">{league}</span>}
       </div>
-      {rows.length === 0 ? (
+      {nobody ? (
         <p className="sb-muted sb-feed-empty">
-          {gameStates ? "None of your starters has kicked off yet." : "Waiting for the live scoreboard…"}
+          {!gameStates
+            ? "Waiting for the live scoreboard…"
+            : feed.nextStart && mounted
+              ? `Nobody's on the field right now. Next kickoff ${new Date(feed.nextStart).toLocaleString([], { weekday: "short", hour: "numeric", minute: "2-digit" })}.`
+              : "Nobody's on the field right now."}
         </p>
       ) : (
-        <ol className="sb-feed-list">
-          {rows.map((r) => {
-            const isNew = t.changedAt[r.id] && t.changedAt[r.id] === track.stamp;
-            const beat = r.proj > 0 && r.pts >= r.proj;
-            return (
-              <li key={r.id} className={`sb-feed-row${r.state === "in" ? " is-live" : " is-final"}${isNew ? " is-new" : ""}`}>
-                <div className="sb-feed-who">
-                  <span className="sb-feed-name">{r.name}</span>
-                  <span className="sb-feed-sub">
-                    <PositionBadge position={r.pos} />
-                    <TeamBadge team={r.team} />
-                    <span className="h2h-game mono">{r.state === "in" ? r.detail || "Live" : "Final"}</span>
-                  </span>
-                  <span className="sb-feed-leagues">
-                    {r.pts === r.ptsMin
-                      ? r.starts.map((x) => x.league).join(" · ")
-                      : r.starts.map((x) => `${x.league} ${fmt1(x.pts)}`).join(" · ")}
-                  </span>
-                </div>
-                <div className="sb-feed-nums">
-                  <span className={`sb-feed-pts mono live-pts-cell${r.state === "in" ? " is-live" : ""}${beat ? " beat" : ""}`}>
-                    {r.state === "in" && <span className="matchup-score-live-dot" aria-hidden="true" />}
-                    {fmt1(r.pts)}
-                  </span>
-                  {isNew && t.delta[r.id] > 0 && <span className="sb-feed-delta mono">+{fmt1(t.delta[r.id])}</span>}
-                  <span className="sb-feed-proj mono">proj {fmt1(r.proj)}</span>
-                </div>
-              </li>
-            );
-          })}
-        </ol>
+        <div className="sb-feed-scroll">
+          {section(feed.mine, "mine", "Yours", feed.mineTotal)}
+          {section(feed.theirs, "theirs", teamId ? "Theirs" : "Your opponents'", feed.theirsTotal)}
+        </div>
       )}
     </aside>
   );
 }
 
 // The full-screen game-day layout (My Team's theater, default on game days): a card per league and one running list
-// of your players' scoring. Clicking a card opens that league's head-to-head matchup in a drawer.
-// Keyboard: j / k or the arrow keys move between cards, Enter opens one, Esc closes the drawer (a second Esc leaves
-// full screen). The open drawer is remembered per browser, so a reload lands back on the same matchup.
+// of who is on the field right now. Clicking a card slides that league's head-to-head matchup in from the left over the
+// cards, and the live panel narrows to that league. Keyboard: j / k or the arrow keys move between cards, Enter opens
+// one, Esc goes back to all leagues (a second Esc leaves full screen). The open league is remembered per browser, so a
+// reload lands back on the same matchup.
 export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, updatedAt, toolbar }) {
   const mounted = useMounted();
   const [openId, setOpenIdState] = useState(null);
@@ -338,26 +364,33 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
         {toolbar}
       </div>
       <div className="sb-body">
-        <div className="sb-grid" ref={gridRef}>
-          {savedTeams.map((t) => (
-            <LeagueCard key={t.id} team={t} gameStates={gameStates} injuries={injuriesByTeam?.[t.id]} onOpen={setOpenId} />
-          ))}
-        </div>
-        <LiveFeed savedTeams={savedTeams} gameStates={gameStates} updatedAt={updatedAt} />
-      </div>
-      {openTeam && (
-        <div className="sb-drawer-backdrop" onClick={() => setOpenId(null)}>
-          <div className="sb-drawer glass-panel" role="dialog" aria-modal="true" aria-label={`${openTeam.league_name} matchup`} onClick={(e) => e.stopPropagation()}>
+        {openTeam ? (
+          // The league's matchup slides in from the left over the cards; the live panel stays beside it, narrowed to
+          // this league's two lineups.
+          <section className="sb-drawer glass-panel" aria-label={`${openTeam.league_name} matchup`}>
             <div className="sb-drawer-head">
-              <h2 className="board-panel-title">{openTeam.league_name}</h2>
-              <button type="button" className="board-collapse" onClick={() => setOpenId(null)} aria-label="Close matchup" title="Close (Esc)">
-                ✕
+              <button type="button" className="sb-drawer-back mono" onClick={() => setOpenId(null)} title="Back to all leagues (Esc)">
+                <span aria-hidden="true">←</span> All leagues
               </button>
+              <h2 className="board-panel-title">{openTeam.league_name}</h2>
             </div>
             <MatchupPanel team={openTeam} gameStates={gameStates} />
+          </section>
+        ) : (
+          <div className="sb-grid" ref={gridRef}>
+            {savedTeams.map((t) => (
+              <LeagueCard key={t.id} team={t} gameStates={gameStates} injuries={injuriesByTeam?.[t.id]} onOpen={setOpenId} />
+            ))}
           </div>
-        </div>
-      )}
+        )}
+        <LiveFeed
+          savedTeams={savedTeams}
+          gameStates={gameStates}
+          updatedAt={updatedAt}
+          teamId={openTeam ? openTeam.id : null}
+          league={openTeam ? openTeam.league_name : null}
+        />
+      </div>
     </div>
   );
 }
