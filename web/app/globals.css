@@ -4387,7 +4387,7 @@ summary:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible{
   .h2h .h2h-row.h2h-head{display:none;} /* the curve sits under the name on a phone; the tooltip text stays on the curve */
   .h2h .h2h-side .h2h-c-slot{display:none;}
   .h2h .h2h-side .h2h-slot-inline{display:inline-flex;}
-  .h2h .h2h-side{--side-pad:8px; padding:8px 8px 4px;}
+  .h2h .h2h-side{--side-pad:8px; padding:8px 8px 0;}
 
   /* Table pages: use the screen. The desktop gutter (24px margin + 24px padding
      each side) left a 279px table on a 375px phone. */
@@ -5220,7 +5220,7 @@ html{font-stretch:82%;}
 .h2h-sleeper:hover{text-decoration:underline;}
 
 .h2h-lineups{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:14px;}
-.h2h-side{--side-pad:12px; padding:10px var(--side-pad) 6px; min-width:0; overflow:hidden;}
+.h2h-side{--side-pad:12px; padding:10px var(--side-pad) 0; min-width:0; overflow:hidden;} /* no bottom padding: a highlighted last row runs to the card's bottom edge */
 .h2h-side-title{font-size:13px; color:var(--star-dim); padding:2px 4px 8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
 .h2h-side.opp .h2h-side-title{text-align:right;}
 .h2h-row{
