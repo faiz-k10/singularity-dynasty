@@ -23,8 +23,8 @@ export function formatWin(p) {
 import { standing } from "@/lib/standing";
 export { standing };
 
-// Settled results get a settled colour (green: Locked in / Won, red: Out of reach / Lost) on the word and its bar.
-export const sealedClass = (label) => (label === "Locked in" || label === "Won" ? " is-sealed-win" : label === "Out of reach" || label === "Lost" ? " is-sealed-loss" : "");
+// Settled results get a settled colour (green: You win / Won, red: Out of reach / Lost) on the word and its bar.
+export const sealedClass = (label) => (label === "You win" || label === "Won" ? " is-sealed-win" : label === "Out of reach" || label === "Lost" ? " is-sealed-loss" : "");
 
 // "Mon 8:15 PM" for a game not started yet, the clock while it's on, "Final" after.
 function gameLabel(p, mounted) {

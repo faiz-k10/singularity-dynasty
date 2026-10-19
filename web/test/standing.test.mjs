@@ -12,8 +12,8 @@ test("standing: the one-word reading from the win chance", () => {
 });
 
 test("standing: Locked in / Out of reach need the score to agree", () => {
-  assert.equal(standing(0.997, false, true).label, "Locked in");
-  assert.equal(standing(0.997, false, null).label, "Locked in"); // level or unknown: the number decides
+  assert.equal(standing(0.997, false, true).label, "You win");
+  assert.equal(standing(0.997, false, null).label, "You win"); // level or unknown: the number decides
   assert.equal(standing(0.997, false, false).label, "Favored"); // still BEHIND on the board: never "locked in"
   assert.equal(standing(0.002, false, false).label, "Out of reach");
   assert.equal(standing(0.002, false, true).label, "Underdog"); // leading on the board: not "out of reach"
