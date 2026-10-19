@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import SlotBadge from "./SlotBadge";
 import PositionBadge from "../tools/PositionBadge";
 import TeamBadge from "../tools/TeamBadge";
@@ -144,53 +144,18 @@ function TeamScore({ name, record, score, proj, left, opp = false }) {
   );
 }
 
-// Head-to-head view for one saved league: this week's two lineups slot by slot with live points, our projection, the
-// range still to come and each game's status, under a scoreboard with the live score, projected finals, players left
-// and the win chance (lib/winChance.js, computed server-side and refreshed by the 30-second poll). The league's
-// standings + playoff odds (Standings.js, once a full refresh has gathered them) and the best players still available
-// in that league (WaiverWire.js) sit underneath as two tabs.
-export default function MatchupPanel({ team, gameStates, panelTab }) {
-  const s = team.settings || {};
-  return (
-    <div className="h2h-wrap">
-      <MatchupBody team={team} gameStates={gameStates} />
-      <LeagueTabs team={team} tab={panelTab} />
-    </div>
-  );
+// The views a league opens on, as tabs: Matchup (this week's scoreboard + both lineups), Standings (with playoff odds,
+// once a full refresh has gathered them) and Best available. The switch itself (PanelTabs) lives in the header of
+// whoever hosts the panel: the Sunday board's drawer, and the dashboard's opened row (which adds Roster).
+export const hasStandings = (team) => Boolean(team?.settings?.season?.standings?.length);
+export function leagueTabs(team) {
+  return [["matchup", "Matchup"], ...(hasStandings(team) ? [["standings", "Standings"]] : []), ["available", "Best available"]];
 }
 
-// Under the matchup: Standings (with playoff odds) and Best available as two tabs, so the panel stays short. The
-// tab is remembered per browser; Best available only loads (and only asks Sleeper) once its tab is opened. Before a
-// full refresh has gathered the standings there is nothing to tab between, so Best available just shows on its own.
-// The Sunday board puts the tab switch in its header row instead (it owns the state through usePanelTab and passes
-// `tab` down); anywhere else the switch sits right above the content.
-export function usePanelTab() {
-  const [tab, setTab] = useState("standings");
-  useEffect(() => {
-    const t = setTimeout(() => {
-      try {
-        const v = localStorage.getItem("myteam.panelTab");
-        if (v === "standings" || v === "available") setTab(v);
-      } catch {}
-    }, 0);
-    return () => clearTimeout(t);
-  }, []);
-  function pick(v) {
-    setTab(v);
-    try {
-      localStorage.setItem("myteam.panelTab", v);
-    } catch {}
-  }
-  return [tab, pick];
-}
-
-export function PanelTabs({ value, onChange }) {
+export function PanelTabs({ tabs, value, onChange }) {
   return (
-    <div className="board-toggle league-dash-tabs" role="tablist" aria-label="Standings or best available">
-      {[
-        ["standings", "Standings"],
-        ["available", "Best available"],
-      ].map(([key, label]) => (
+    <div className="board-toggle league-dash-tabs" role="tablist" aria-label="League view">
+      {tabs.map(([key, label]) => (
         <button key={key} type="button" role="tab" aria-selected={value === key} className={value === key ? "active" : ""} onClick={() => onChange(key)}>
           {label}
         </button>
@@ -199,17 +164,22 @@ export function PanelTabs({ value, onChange }) {
   );
 }
 
-export const hasStandings = (team) => Boolean(team?.settings?.season?.standings?.length);
-
-function LeagueTabs({ team, tab: outerTab }) {
+// Head-to-head view for one saved league: this week's two lineups slot by slot with live points, our projection, the
+// range still to come and each game's status, under a scoreboard with the live score, projected finals, players left
+// and the win chance (lib/winChance.js, computed server-side and refreshed by the 30-second poll). `tab` picks the
+// view: "matchup" (default), "standings" (Standings.js) or "available" (WaiverWire.js -- it only loads, and only asks
+// Sleeper, once its tab is opened).
+export default function MatchupPanel({ team, gameStates, tab = "matchup" }) {
   const s = team.settings || {};
-  const [ownTab, pick] = usePanelTab();
-  if (!hasStandings(team)) return <WaiverWire teamId={team.id} />;
-  const tab = outerTab || ownTab;
   return (
-    <div className="h2h-tabs">
-      {!outerTab && <PanelTabs value={tab} onChange={pick} />}
-      {tab === "standings" ? <Standings season={s.season} opponent={s.isBye ? null : s.opponent} bare /> : <WaiverWire teamId={team.id} bare />}
+    <div className="h2h-wrap">
+      {tab === "standings" && hasStandings(team) ? (
+        <Standings season={s.season} opponent={s.isBye ? null : s.opponent} bare />
+      ) : tab === "available" ? (
+        <WaiverWire teamId={team.id} bare />
+      ) : (
+        <MatchupBody team={team} gameStates={gameStates} />
+      )}
     </div>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import MatchupPanel, { sleeperMatchupUrl, formatWin, standing, usePanelTab, PanelTabs, hasStandings } from "./MatchupPanel";
+import MatchupPanel, { sleeperMatchupUrl, formatWin, standing, PanelTabs, leagueTabs } from "./MatchupPanel";
 import { useMounted } from "./useMounted";
 import { buildRow, isTyping, moveFocus } from "./LeagueDashboard";
 import { formatOdds, oddsTone } from "./Standings";
@@ -429,12 +429,14 @@ function LiveFeed({ savedTeams, gameStates, updatedAt, teamId = null, league = n
 export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, updatedAt, toolbar }) {
   const mounted = useMounted();
   const [openId, setOpenIdState] = useState(null);
-  const [panelTab, setPanelTab] = usePanelTab();
+  // Which of the open league's views is showing (Matchup / Standings / Best available); opening a league starts on Matchup.
+  const [panelTab, setPanelTab] = useState("matchup");
   const openTeam = openId ? savedTeams.find((t) => t.id === openId) : null;
   const gridRef = useRef(null);
   const lastCard = useRef(null);
 
   function setOpenId(id) {
+    setPanelTab("matchup");
     if (id) lastCard.current = id;
     setOpenIdState(id);
     try {
@@ -530,13 +532,11 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
                 <span aria-hidden="true">←</span> All leagues
               </button>
               <h2 className="board-panel-title">{openTeam.league_name}</h2>
-              {hasStandings(openTeam) && (
-                <span className="sb-drawer-tabs">
-                  <PanelTabs value={panelTab} onChange={setPanelTab} />
-                </span>
-              )}
+              <span className="sb-drawer-tabs">
+                <PanelTabs tabs={leagueTabs(openTeam)} value={panelTab} onChange={setPanelTab} />
+              </span>
             </div>
-            <MatchupPanel team={openTeam} gameStates={gameStates} panelTab={panelTab} />
+            <MatchupPanel team={openTeam} gameStates={gameStates} tab={panelTab} />
           </section>
         ) : (
           <div className="sb-grid" ref={gridRef}>
