@@ -22,6 +22,7 @@ import {
   getSleeperPlayers,
 } from "@/lib/sleeper";
 import { fetchGameStates } from "@/lib/gameStatus";
+import { loadLivePlays } from "@/lib/playByPlay";
 import { getWeekProjections } from "@/lib/weekProjections";
 import { buildSide, matchupOutlook } from "@/lib/winChance";
 import { getLeagueSeason } from "@/lib/leagueSeason";
@@ -525,6 +526,32 @@ export async function pollLiveScores() {
     })
   );
   return { live, lineups, gameStates: await gameStatesP, updatedAt: Date.now() };
+}
+
+// Recent plays for the players on the field right now (the Sunday board's "Playing now" panel, lib/playByPlay.js).
+// The browser sends the panel's rows (it already knows who is live and on which side); nothing is stored.
+export async function getLivePlays(players) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Sign in required." };
+  if (!Array.isArray(players) || !players.length) return { plays: [] };
+  const clean = players
+    .slice(0, 80)
+    .map((p) => ({
+      playerId: String(p?.playerId ?? "").slice(0, 20),
+      name: String(p?.name ?? "").slice(0, 60),
+      pos: String(p?.pos ?? "").slice(0, 4),
+      team: String(p?.team ?? "").slice(0, 4),
+      side: p?.side === "theirs" ? "theirs" : "mine",
+    }))
+    .filter((p) => p.playerId && p.name && p.team);
+  try {
+    return { plays: await loadLivePlays(clean, await fetchGameStates()) };
+  } catch {
+    return { plays: [] };
+  }
 }
 
 // Injury + news for everyone on the signed-in user's saved rosters, from

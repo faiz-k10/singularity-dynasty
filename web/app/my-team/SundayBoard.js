@@ -9,6 +9,7 @@ import PositionBadge from "../tools/PositionBadge";
 import TeamBadge from "../tools/TeamBadge";
 import { summarizeSide } from "@/lib/winChance";
 import { buildLiveFeed, trackScoring, sortFeed } from "@/lib/liveFeed";
+import { getLivePlays } from "./actions";
 
 const fmt1 = (v) => (v == null ? "—" : v.toFixed(1));
 // "Christian McCaffrey" -> "C. McCaffrey"
@@ -204,6 +205,77 @@ function FeedRow({ r, isNew, delta, showLeagues }) {
   );
 }
 
+// One play: who (gold = yours, blue = your opponents'), what happened in plain words, and when. Touchdowns stand out.
+function PlayRow({ e, isNew }) {
+  return (
+    <li className={`sb-play is-${e.side}${e.td ? " is-td" : ""}${isNew ? " is-new" : ""}`}>
+      <div className="sb-play-main">
+        <span className="sb-play-who">
+          {e.who.map((w, i) => (
+            <span key={w.playerId}>
+              {i > 0 && <span className="sb-play-join">{e.pair ? " → " : " · "}</span>}
+              <span className={`sb-play-name is-${w.side}`}>{w.name}</span>
+            </span>
+          ))}
+        </span>
+        <span className="sb-play-what">
+          <strong>{e.label}</strong>
+          {e.yards && <> · {e.yards}</>}
+          {e.partner && <span className="sb-play-partner"> · {e.partner}</span>}
+        </span>
+      </div>
+      <span className="sb-play-when mono">{e.when}</span>
+    </li>
+  );
+}
+
+// The panel's lower half: the latest plays by the players listed above, newest first (lib/playByPlay.js via the
+// getLivePlays action), refreshed with every 30-second poll. Plays new since the last refresh flash once.
+function RecentPlays({ rows, updatedAt }) {
+  // The request is keyed on who is listed (and the poll time), so it re-runs exactly when either changes.
+  const req = JSON.stringify(
+    rows.map((r) => ({ playerId: r.playerId, name: r.name, pos: r.pos, team: r.team, side: r.side })).sort((a, b) => `${a.side}${a.playerId}`.localeCompare(`${b.side}${b.playerId}`)),
+  );
+  const [state, setState] = useState({ list: [], fresh: new Set(), loaded: false });
+  useEffect(() => {
+    let cancelled = false;
+    getLivePlays(JSON.parse(req))
+      .then((res) => {
+        if (cancelled || !res?.plays) return;
+        setState((prev) => {
+          const before = new Set(prev.list.map((e) => e.id));
+          return { list: res.plays, fresh: prev.loaded ? new Set(res.plays.filter((e) => !before.has(e.id)).map((e) => e.id)) : new Set(), loaded: true };
+        });
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [req, updatedAt]);
+  // Until a new answer arrives (e.g. right after opening one league), only show plays by players still listed.
+  const listed = new Set(rows.map((r) => `${r.side}:${r.playerId}`));
+  const list = state.list.filter((e) => e.who.some((w) => listed.has(`mine:${w.playerId}`) || listed.has(`theirs:${w.playerId}`)));
+  return (
+    <section className="sb-plays" aria-label="Recent plays">
+      <h3 className="sb-feed-label sb-plays-label mono">
+        <span>Recent plays</span>
+        <span className="sb-feed-sum">newest first</span>
+      </h3>
+      <div className="sb-plays-scroll">
+        {list.length > 0 ? (
+          <ol className="sb-feed-list">
+            {list.map((e) => (
+              <PlayRow key={e.id} e={e} isNew={state.fresh.has(e.id)} />
+            ))}
+          </ol>
+        ) : (
+          <p className="sb-muted sb-feed-empty">{state.loaded ? "No catches, runs or scores from these players yet." : "Loading plays…"}</p>
+        )}
+      </div>
+    </section>
+  );
+}
+
 // The live panel beside the cards: only players on the field right now -- yours, then your opponents' -- across every
 // league, or just the open league's two lineups (teamId). Newest scoring first within each side; a row flashes gold
 // with "+6.4" when he scores. Finished and not-started players stay off it so it never fills with noise.
@@ -256,9 +328,13 @@ function LiveFeed({ savedTeams, gameStates, updatedAt, teamId = null, league = n
               : "Nobody's on the field right now."}
         </p>
       ) : (
-        <div className="sb-feed-scroll">
-          {section(feed.mine, "mine", "Yours", feed.mineTotal)}
-          {section(feed.theirs, "theirs", teamId ? "Theirs" : "Your opponents'", feed.theirsTotal)}
+        // Split in two: who is on the field (top) and what they just did (bottom), each scrolling on its own.
+        <div className="sb-feed-split">
+          <div className="sb-feed-scroll">
+            {section(feed.mine, "mine", "Yours", feed.mineTotal)}
+            {section(feed.theirs, "theirs", teamId ? "Theirs" : "Your opponents'", feed.theirsTotal)}
+          </div>
+          <RecentPlays rows={all} updatedAt={updatedAt} />
         </div>
       )}
     </aside>

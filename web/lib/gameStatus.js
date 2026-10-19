@@ -8,9 +8,10 @@ const URL = "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboa
 const ALIAS = { WSH: "WAS", JAC: "JAX" };
 export const teamCode = (t) => (t ? ALIAS[t] || t : t);
 
-// { TEAM: { state: "pre" | "in" | "post", detail, period, clock, start } } for every team in this week's scoreboard.
-// period + clock (seconds left in the period) let lib/winChance.js tell how much of a live game is left; start is the
-// kickoff time (ISO) for games not started yet.
+// { TEAM: { state: "pre" | "in" | "post", detail, period, clock, start, eventId, espnId } } for every team in this
+// week's scoreboard. period + clock (seconds left in the period) let lib/winChance.js tell how much of a live game is
+// left; start is the kickoff time (ISO) for games not started yet; eventId + espnId (ESPN's game and team ids) are how
+// lib/playByPlay.js finds a live game's plays and the team's roster.
 export function parseScoreboard(json) {
   const out = {};
   for (const e of json?.events || []) {
@@ -26,6 +27,8 @@ export function parseScoreboard(json) {
           period: typeof c.status.period === "number" ? c.status.period : null,
           clock: typeof c.status.clock === "number" ? c.status.clock : null,
           start: c.date || e.date || null,
+          eventId: e.id || c.id || null,
+          espnId: comp.team?.id || null,
         };
       }
     }

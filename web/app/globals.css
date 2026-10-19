@@ -5327,6 +5327,29 @@ html{font-stretch:82%;}
 .sb-feed-delta{font-size:11px; font-weight:700; color:var(--horizon-gold);}
 .sb-feed-row.is-theirs .sb-feed-delta{color:var(--neon-blue);}
 .sb-feed-proj{font-size:10.5px; color:var(--star-dim);}
+/* Split panel: who is on the field (top) over their recent plays (bottom), each half scrolling on its own. */
+.sb-feed-split{flex:1; min-height:0; display:flex; flex-direction:column;}
+.sb-feed-split > .sb-feed-scroll{flex:1 1 0;}
+.sb-plays{flex:1 1 0; min-height:0; display:flex; flex-direction:column; padding:0; margin:0; border-top:1px solid rgba(var(--star-dot-rgb),.14);}
+.sb-plays-label{position:static; color:var(--star);}
+.sb-plays-scroll{overflow:auto; min-height:0; flex:1;}
+.sb-play{display:flex; align-items:flex-start; gap:12px; padding:8px 16px 8px 13px; border-top:1px solid rgba(var(--star-dot-rgb),.06); border-left:3px solid transparent; transition:background-color .6s ease;}
+.sb-feed-list .sb-play:first-child{border-top-color:transparent;}
+.sb-play.is-mine{border-left-color:rgba(var(--horizon-gold-rgb),.55);}
+.sb-play.is-theirs{border-left-color:rgba(var(--neon-blue-rgb),.55);}
+.sb-play.is-both{border-image:linear-gradient(180deg, var(--horizon-gold), var(--neon-blue)) 1;}
+.sb-play.is-new{background:rgba(var(--horizon-gold-rgb),.1);}
+.sb-play.is-theirs.is-new{background:rgba(var(--neon-blue-rgb),.1);}
+.sb-play-main{flex:1; min-width:0; display:flex; flex-direction:column; gap:2px;}
+.sb-play-who{font-size:14px; line-height:1.3;}
+.sb-play-name.is-mine{color:var(--star);}
+.sb-play-name.is-theirs{color:color-mix(in srgb, var(--star) 80%, transparent);}
+.sb-play-join{color:var(--star-dim);}
+.sb-play-what{font-family:var(--font-mono); font-size:11.5px; color:var(--star-dim);}
+.sb-play-what strong{font-weight:700; color:var(--star);}
+.sb-play.is-td .sb-play-what strong{color:var(--horizon-gold);}
+.sb-play.is-td.is-theirs .sb-play-what strong{color:var(--neon-blue);}
+.sb-play-when{flex:none; font-size:10.5px; color:var(--star-dim); padding-top:3px; white-space:nowrap;}
 
 /* The open league: takes the cards' column (sliding in from the left), the live panel stays on the right. */
 .sb-drawer.glass-panel{background:linear-gradient(180deg, rgba(255,255,255,var(--glass-spec)), rgba(255,255,255,0) 30%), var(--void-panel);}
@@ -5339,7 +5362,7 @@ html{font-stretch:82%;}
 @media (prefers-reduced-motion:reduce){ .sb-drawer{animation:none;} .sb-card{transition:none;} .sb-card-score.bumped, .sb-live-dot{animation:none;} }
 @media (max-width:999px){
   .sb-body{grid-template-columns:minmax(0,1fr);}
-  .sb-grid, .sb-feed-scroll, .sb-drawer{overflow:visible;}
+  .sb-grid, .sb-feed-scroll, .sb-plays-scroll, .sb-drawer{overflow:visible;}
   .my-team-theater .sb{flex:none;}
 }
 
