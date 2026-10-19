@@ -70,7 +70,7 @@ function SideRow({ p, scoreboardKnown, uncertain, mounted }) {
   // Before the scoreboard is read (a saved snapshot), fall back to the points Sleeper had on the board.
   const pts = o.pts ?? (!scoreboardKnown && p.pts ? p.pts : null);
   const done = o.state === "post" || o.state === "bye" || p.out;
-  // Same traffic-light reading as the curve: red under his floor, green at or above his median, plain between.
+  // Same reading as the curve: red under his floor, blue at or above his median, plain between.
   const tone = pts == null || o.state === "pre" ? null : typeof p.floor === "number" && pts < p.floor ? "low" : p.proj > 0 && pts >= p.proj ? "good" : "mid";
   const showCurve = !p.out && o.state !== "bye" && p.proj > 0 && typeof p.floor === "number" && typeof p.ceiling === "number" && p.ceiling > p.floor;
   return (
@@ -265,11 +265,11 @@ function MatchupBody({ team, gameStates }) {
         </li>
         <li>
           <span className="h2h-legend-swatch is-good" aria-hidden="true" />
-          <strong>Ceiling</strong> a great game: green zone
+          <strong>Ceiling</strong> a great game: blue zone
         </li>
         <li>
           <span className="h2h-legend-dot" aria-hidden="true" />
-          Points so far: <span className="tone-low-text">red</span> under his floor, <span className="tone-good-text">green</span> at or above his median
+          Points so far: <span className="tone-low-text">red</span> under his floor, <span className="tone-good-text">blue</span> at or above his median
         </li>
       </ul>
       <p
