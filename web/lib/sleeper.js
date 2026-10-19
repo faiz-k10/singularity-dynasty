@@ -51,6 +51,20 @@ export async function fetchSleeperMatchups(leagueId, week) {
 // Current NFL week/season-type, used to pick which week's ownership
 // research data actually has real numbers in it (see below -- during
 // preseason, only week 1's regular-season research is populated yet).
+// Sleeper's most-added players over the last 24 hours ([{ player_id, count }]), for My Team's "Best available"
+// panel. Cached 30 minutes in module memory -- it moves slowly and is the same for everyone.
+let trendingCache = null;
+let trendingAt = 0;
+export async function fetchSleeperTrending() {
+  if (trendingCache && Date.now() - trendingAt < 30 * 60 * 1000) return trendingCache;
+  const data = await sleeperGet(`/players/nfl/trending/add?lookback_hours=24&limit=200`);
+  if (Array.isArray(data)) {
+    trendingCache = data;
+    trendingAt = Date.now();
+  }
+  return trendingCache || [];
+}
+
 export async function fetchSleeperState() {
   return (await sleeperGet(`/state/nfl`)) || {};
 }

@@ -20,10 +20,12 @@ import {
   fetchSleeperState,
   fetchSleeperResearch,
   getSleeperPlayers,
+  fetchSleeperTrending,
 } from "@/lib/sleeper";
 import { fetchGameStates } from "@/lib/gameStatus";
 import { loadLivePlays } from "@/lib/playByPlay";
-import { getWeekProjections } from "@/lib/weekProjections";
+import { getWeekProjections, getWeekRankRows } from "@/lib/weekProjections";
+import { buildWaiverList, sleeperIndex } from "@/lib/waivers";
 import { buildSide, matchupOutlook } from "@/lib/winChance";
 import { getLeagueSeason } from "@/lib/leagueSeason";
 import { fetchInjuryFeed } from "@/lib/injuryFeed";
@@ -552,6 +554,38 @@ export async function getLivePlays(players) {
   } catch {
     return { plays: [] };
   }
+}
+
+// "Best available" for one saved league (app/my-team/WaiverWire.js): QB / RB / WR / TE on no roster in that league,
+// ranked by this week's projection, with Sleeper's trending-add counts (lib/waivers.js). Depth follows the weekly
+// rankings gate: Explorer and up see everyone; free accounts see available players inside the free top 50 plus a
+// count of the rest. Read fresh from Sleeper each time the panel opens; nothing is stored.
+let waiverIdx = { dict: null, idx: null };
+export async function getWaiverWire(teamId) {
+  const supabase = await createClient();
+  const { user, tier } = await resolveTier(supabase);
+  if (!user) return { error: "Sign in required." };
+  const { data: row } = await supabase
+    .from("saved_teams")
+    .select("platform_league_id")
+    .eq("id", teamId)
+    .eq("user_id", user.id)
+    .eq("platform", "sleeper")
+    .maybeSingle();
+  if (!row?.platform_league_id) return { error: "League not found." };
+  const [rosters, dict, week, trending] = await Promise.all([
+    fetchSleeperRosters(row.platform_league_id).catch(() => null),
+    getSleeperPlayers().catch(() => null),
+    getWeekRankRows(supabase, new Date().getFullYear()),
+    fetchSleeperTrending().catch(() => []),
+  ]);
+  if (!rosters?.length || !dict) return { error: "Couldn't read this league from Sleeper right now." };
+  if (waiverIdx.dict !== dict) waiverIdx = { dict, idx: sleeperIndex(dict) };
+  const rostered = new Set();
+  for (const r of rosters) for (const id of [...(r.players || []), ...(r.reserve || []), ...(r.taxi || [])]) rostered.add(String(id));
+  const full = tier === "explorer" || tier === "singularity";
+  const { players, hidden } = buildWaiverList({ rows: week.rows, rostered, idx: waiverIdx.idx, trending, maxRank: full ? Infinity : 50 });
+  return { players, hidden, full, week: week.week };
 }
 
 // Injury + news for everyone on the signed-in user's saved rosters, from

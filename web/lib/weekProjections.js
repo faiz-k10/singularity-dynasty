@@ -37,3 +37,22 @@ export async function getWeekProjections(supabase, season) {
   if (!error) cache.set(season, { at: Date.now(), value });
   return value;
 }
+
+// This week's full ranking rows (who, where, against whom, projection + range) for My Team's "Best available" panel
+// (lib/waivers.js). Same week rule and 5-minute module cache as above.
+const rowsCache = new Map(); // season -> { at, value }
+export async function getWeekRankRows(supabase, season) {
+  const hit = rowsCache.get(season);
+  if (hit && Date.now() - hit.at < TTL_MS) return hit.value;
+  const { week } = await getWeekProjections(supabase, season);
+  const { data: rows, error } = await supabase
+    .from("redraft_rankings")
+    .select("rank, player_name, position, team, opponent, is_home, projection, floor, ceiling")
+    .eq("season", season)
+    .eq("week", week)
+    .order("rank", { ascending: true })
+    .limit(2000);
+  const value = { week, rows: rows || [] };
+  if (!error) rowsCache.set(season, { at: Date.now(), value });
+  return value;
+}
