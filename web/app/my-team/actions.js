@@ -24,6 +24,7 @@ import {
 import { fetchGameStates } from "@/lib/gameStatus";
 import { getWeekProjections } from "@/lib/weekProjections";
 import { buildSide, matchupOutlook } from "@/lib/winChance";
+import { getLeagueSeason } from "@/lib/leagueSeason";
 import { fetchInjuryFeed } from "@/lib/injuryFeed";
 
 // Sleeper's own player dictionary drops name suffixes ("Luther Burden"
@@ -128,7 +129,9 @@ function formatRecord(settings) {
 // required redraft_rankings projection lookup below -- this still works
 // for a signed-out visitor previewing their team before deciding to
 // sign in and save it, same as the pure-Sleeper data.
-export async function lookupSleeperTeams(username) {
+// opts.season: also gather standings + playoff odds per league (lib/leagueSeason.js, cached a day) -- only the saved
+// teams' full refresh asks for it; the landing page box and the lookup preview stay fast.
+export async function lookupSleeperTeams(username, opts = {}) {
   const trimmed = (username || "").trim();
   if (!trimmed) {
     return { error: "Enter a Sleeper username." };
@@ -287,6 +290,22 @@ export async function lookupSleeperTeams(username) {
       const bestBall = league.settings?.best_ball === 1;
       // Head-to-head lineups + live win chance (not in best ball: no set lineup).
       const h2h = bestBall ? null : buildH2H(mine, oppEntry, nonBenchSlots, (id) => dictInfo(players[id]), weekProj.byName);
+      const season = opts?.season
+        ? await getLeagueSeason({
+            league,
+            rosters,
+            users: leagueUsers,
+            myRosterId: myRoster.roster_id,
+            currentWeek: matchupWeek,
+            currentMatchups: matchups,
+            players,
+            projByName: weekProj.byName,
+            gameStates,
+          }).catch((e) => {
+            console.error("[lookupSleeperTeams] season odds failed:", e.message);
+            return null;
+          })
+        : null;
       const settings = {
         record,
         week: scheduleKnown ? matchupWeek : null,
@@ -299,6 +318,8 @@ export async function lookupSleeperTeams(username) {
         slots: nonBenchSlots,
         h2h,
         winChance: h2h ? matchupOutlook(h2h, gameStates)?.winChance ?? null : null,
+        // Standings + playoff odds (full refresh only; see opts.season above).
+        ...(season ? { season, playoffOdds: season.standings.find((t) => t.isMe)?.playoffOdds ?? null } : {}),
         // Best ball leagues have no set lineup -- the platform auto-starts
         // your top scorers -- so Sleeper's `starters` array is mostly "0"
         // placeholders and the Starting Lineup view is meaningless.
@@ -397,7 +418,7 @@ export async function refreshSavedTeams() {
   if (!rows?.length) return { teams: {} };
 
   const usernames = [...new Set(rows.map((r) => r.platform_username).filter(Boolean))];
-  const looked = await Promise.all(usernames.map((u) => lookupSleeperTeams(u)));
+  const looked = await Promise.all(usernames.map((u) => lookupSleeperTeams(u, { season: true })));
   const byLeague = {};
   for (const res of looked) {
     for (const t of res.teams || []) byLeague[t.league_id] = t;

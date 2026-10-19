@@ -2,6 +2,7 @@
 
 import { Fragment, useMemo, useState } from "react";
 import { sleeperMatchupUrl, formatWin } from "./MatchupPanel";
+import { formatOdds, oddsTone } from "./Standings";
 
 // "Rico Dowdle" -> "R. Dowdle" (first initial, full remaining name incl. suffixes).
 function shortName(name) {
@@ -46,6 +47,8 @@ export function buildRow(t, injuries) {
     liveMargin: live ? live.mine - live.opp : null,
     // Live win chance (lib/winChance.js via actions.js); none on a bye or in best ball.
     winPct: s.isBye || s.bestBall ? null : s.winChance ?? null,
+    // Chance to make the playoffs (lib/leagueSeason.js, refreshed once a day).
+    playoffOdds: s.playoffOdds ?? null,
     sleeperUrl: sleeperMatchupUrl(t.platform_league_id),
     outStarters,
     bestBall: !!s.bestBall,
@@ -71,6 +74,7 @@ export function summarizeLeagues(savedTeams, injuriesByTeam) {
 const COLS = [
   { key: "team", label: "Team", align: "left", sort: (r) => r.team.toLowerCase() },
   { key: "recPct", label: "Record", sort: (r) => r.recPct },
+  { key: "playoffOdds", label: "Playoffs", sort: (r) => r.playoffOdds ?? -1 },
   { key: "opponent", label: "Opponent", align: "left", sort: (r) => r.opponent.toLowerCase() },
   { key: "projMine", label: "Proj", sort: (r) => r.projMine ?? -1 },
   { key: "liveMargin", label: "Live", sort: (r) => r.liveMargin ?? -999 },
@@ -154,6 +158,7 @@ export default function LeagueDashboard({ savedTeams, renderExpanded, injuriesBy
                   </div>
                 </td>
                 <td className="mono">{r.record}</td>
+                <td className={`mono standings-odds ${oddsTone(r.playoffOdds)}`}>{formatOdds(r.playoffOdds)}</td>
                 <td className="align-left league-dash-opp">{r.opponent}</td>
                 <td className="mono league-dash-score">
                   {r.projMine != null ? (

@@ -5,6 +5,7 @@ import SlotBadge from "./SlotBadge";
 import PositionBadge from "../tools/PositionBadge";
 import TeamBadge from "../tools/TeamBadge";
 import { summarizeSide } from "@/lib/winChance";
+import Standings from "./Standings";
 
 // Sleeper's own page for this week's matchup in a league (opens in a new tab).
 export const sleeperMatchupUrl = (leagueId) => (leagueId ? `https://sleeper.com/leagues/${leagueId}/matchup` : null);
@@ -122,8 +123,19 @@ function TeamScore({ name, record, score, proj, left, opp = false }) {
 
 // Head-to-head view for one saved league: this week's two lineups slot by slot with live points, our projection, the
 // range still to come and each game's status, under a scoreboard with the live score, projected finals, players left
-// and the win chance (lib/winChance.js, computed server-side and refreshed by the 30-second poll).
+// and the win chance (lib/winChance.js, computed server-side and refreshed by the 30-second poll). The league's
+// standings + playoff odds (Standings.js) sit underneath once a full refresh has gathered them.
 export default function MatchupPanel({ team, gameStates }) {
+  const s = team.settings || {};
+  return (
+    <div className="h2h-wrap">
+      <MatchupBody team={team} gameStates={gameStates} />
+      <Standings season={s.season} opponent={s.isBye ? null : s.opponent} />
+    </div>
+  );
+}
+
+function MatchupBody({ team, gameStates }) {
   const s = team.settings || {};
   const scoreboardKnown = Boolean(gameStates && Object.keys(gameStates).length);
   const mine = useMemo(() => (s.h2h ? summarizeSide(s.h2h.mine, gameStates) : null), [s.h2h, gameStates]);

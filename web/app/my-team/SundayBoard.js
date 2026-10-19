@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import MatchupPanel, { sleeperMatchupUrl, formatWin } from "./MatchupPanel";
 import { buildRow } from "./LeagueDashboard";
+import { formatOdds, oddsTone } from "./Standings";
 import PositionBadge from "../tools/PositionBadge";
 import TeamBadge from "../tools/TeamBadge";
 import { summarizeSide } from "@/lib/winChance";
@@ -49,6 +50,11 @@ function LeagueCard({ team, gameStates, injuries, onOpen }) {
       <div className="sb-card-head">
         <span className="sb-card-league">{row.league}</span>
         {anyLive && <span className="matchup-score-live-dot" title="Games in progress" aria-hidden="true" />}
+        {row.playoffOdds != null && (
+          <span className={`sb-card-odds mono ${oddsTone(row.playoffOdds)}`} title="Chance to make the playoffs">
+            {formatOdds(row.playoffOdds)} playoffs
+          </span>
+        )}
         {url && (
           <a
             className="league-dash-sleeper sb-card-sleeper"

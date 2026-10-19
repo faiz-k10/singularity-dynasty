@@ -4731,7 +4731,7 @@ svg text, .pctile-vbar-label, .pctile-vbar-value, .pctile-hero-label{font-family
 }
 /* names and sentences stay in the serif */
 .compare-radar-card-name, .my-team-saved-name, .league-dash-team, .week-feed-headline, .compare-table thead th, .quiz-prompt,
-.h2h-team-name, .h2h-side-title, .h2h-player-name, .sb-card-team, .sb-feed-name{
+.h2h-team-name, .h2h-side-title, .h2h-player-name, .sb-card-team, .sb-feed-name, .standings-team{
   font-family:var(--font-body), Georgia, serif; font-weight:700;
 }
 /* stat-name labels down the left of the stat tables are data labels */
@@ -5137,7 +5137,8 @@ html{font-stretch:82%;}
 .h2h{display:flex; flex-direction:column; gap:14px; text-align:left;}
 /* Inside the dashboard table (min-width:max-content) the panel adds no width of its own: it fills the opened row's
    cell instead of stretching the table past its card. */
-.league-dash-detail .h2h{width:0; min-width:100%; box-sizing:border-box;}
+.h2h-wrap{display:flex; flex-direction:column; gap:20px; text-align:left;}
+.league-dash-detail .h2h-wrap{width:0; min-width:100%; box-sizing:border-box;}
 /* When the dashboard table is wider than its card (phones, narrow windows) the opened league stays pinned to the
    visible width instead of scrolling sideways with the table: the scroller is a size container and the detail is
    sticky at its left edge, exactly as wide as what's visible. */
@@ -5228,6 +5229,8 @@ html{font-stretch:82%;}
 .sb-card-league{font-family:var(--font-mono), monospace; font-size:11px; text-transform:uppercase; letter-spacing:.07em; color:var(--star-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0;}
 .sb-card-head .matchup-score-live-dot{width:6px; height:6px; flex:none;}
 .sb-card-sleeper{margin-left:auto; flex:none;}
+.sb-card-odds{margin-left:auto; font-size:10.5px; white-space:nowrap;}
+.sb-card-odds + .sb-card-sleeper{margin-left:0;}
 .sb-card-side{display:grid; grid-template-columns:minmax(0,1fr) auto auto; align-items:baseline; gap:10px;}
 .sb-card-team{font-size:15px; color:var(--star); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
 .sb-card-team.sb-muted{color:var(--star-dim);}
@@ -5273,3 +5276,24 @@ html{font-stretch:82%;}
   .sb-grid, .sb-feed-list{overflow:visible;}
   .my-team-theater .sb{flex:none;}
 }
+
+/* ===== My Team standings + playoff odds (my-team/Standings.js, under the matchup panel) and the dashboard's
+   Playoffs column. Odds colour: green likely (75%+), gold in the hunt (35-75%), red long shot. ===== */
+.standings{display:flex; flex-direction:column; gap:10px;}
+.standings-head{display:flex; flex-wrap:wrap; align-items:baseline; gap:6px 16px;}
+.standings-note{font-size:11px; color:var(--star-dim);}
+.standings-wrap{overflow-x:auto; border:1px solid rgba(var(--star-dot-rgb),.08); border-radius:var(--r-md);}
+.standings-table{width:100%; border-collapse:collapse; font-size:13px;}
+.standings-table th{font-family:var(--font-mono), monospace; font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:.07em; color:var(--star-dim); text-align:right; padding:9px 12px; white-space:nowrap; border-bottom:1px solid rgba(var(--star-dot-rgb),.1);}
+.standings-table td{text-align:right; padding:8px 12px; white-space:nowrap; border-top:1px solid rgba(var(--star-dot-rgb),.05);}
+.standings-table th:first-child, .standings-table td:first-child{text-align:center; width:34px; color:var(--star-dim);}
+.standings-table .align-left{text-align:left;}
+.standings-team{color:var(--star); max-width:240px; overflow:hidden; text-overflow:ellipsis;}
+.standings-table tr.is-me td{background:rgba(var(--horizon-gold-rgb),.09);}
+.standings-table tr.is-me .standings-team{color:var(--horizon-gold); font-weight:700;}
+.standings-table tr.is-opp td{background:rgba(var(--neon-blue-rgb),.07);}
+.standings-table tr.is-opp .standings-team{color:var(--neon-blue);}
+.standings-table tr.is-cut td{border-bottom:1.5px dashed rgba(var(--horizon-gold-rgb),.45);}
+.standings-odds{font-weight:700;}
+.standings-first{color:var(--star-dim);}
+.odds-high, td.standings-odds.odds-high{color:var(--up);} .odds-mid, td.standings-odds.odds-mid{color:var(--horizon-gold);} .odds-low, td.standings-odds.odds-low{color:var(--down);}
