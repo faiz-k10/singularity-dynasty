@@ -7,6 +7,7 @@ import TeamBadge from "../tools/TeamBadge";
 import { summarizeSide } from "@/lib/winChance";
 import Standings from "./Standings";
 import WaiverWire from "./WaiverWire";
+import ScoreCurve from "./ScoreCurve";
 import { useMounted } from "./useMounted";
 
 // Sleeper's own page for this week's matchup in a league (opens in a new tab).
@@ -60,8 +61,7 @@ function SideRow({ p, scoreboardKnown, uncertain, mounted }) {
       <div className="h2h-row is-empty">
         <span className="h2h-c-slot"><SlotBadge slot={p.slot} /></span>
         <span className="h2h-c-player h2h-player-name h2h-muted">Empty slot</span>
-        <span className="h2h-c-proj mono">—</span>
-        <span className="h2h-c-pts mono">—</span>
+        <span className="h2h-c-curve mono h2h-curve-text">—</span>
       </div>
     );
   }
@@ -70,6 +70,7 @@ function SideRow({ p, scoreboardKnown, uncertain, mounted }) {
   const pts = o.pts ?? (!scoreboardKnown && p.pts ? p.pts : null);
   const done = o.state === "post" || o.state === "bye" || p.out;
   const beat = pts != null && p.proj > 0 && pts >= p.proj;
+  const showCurve = !p.out && o.state !== "bye" && p.proj > 0 && typeof p.floor === "number" && typeof p.ceiling === "number" && p.ceiling > p.floor;
   return (
     <div className={`h2h-row${o.state === "in" ? " is-live" : ""}${done ? " is-done" : ""}`}>
       <span className="h2h-c-slot"><SlotBadge slot={p.slot} /></span>
@@ -83,31 +84,22 @@ function SideRow({ p, scoreboardKnown, uncertain, mounted }) {
         </span>
       </span>
       <span
-        className={`h2h-c-proj mono${p.est ? " h2h-muted" : ""}`}
-        title={[
-          p.est ? "Typical score for the position (our model doesn't project this player)" : "Singularity weekly projection",
-          done || uncertain || o.hi <= 0 ? null : `Still to come: ${Math.round(o.lo)}–${Math.round(o.hi)} pts (8 in 10 outcomes)`,
-        ]
-          .filter(Boolean)
-          .join("\n")}
+        className={`h2h-c-curve${p.est ? " h2h-muted" : ""}`}
+        title={
+          done || uncertain || o.hi <= 0
+            ? undefined
+            : `Still to come: ${Math.round(o.lo)}–${Math.round(o.hi)} pts (8 in 10 outcomes)`
+        }
       >
-        {p.floor != null && p.ceiling != null && p.proj > 0 ? (
-          // Stacked like a number line: ceiling on top, the median (our projection) in the middle, floor underneath.
-          <span className="h2h-range">
-            <span className="h2h-range-hi">{fmt1(p.ceiling)}</span>
-            <span className="h2h-range-mid">{fmt1(p.proj)}</span>
-            <span className="h2h-range-lo">{fmt1(p.floor)}</span>
-          </span>
+        {showCurve ? (
+          <ScoreCurve floor={p.floor} median={p.proj} ceiling={p.ceiling} pts={pts} state={o.state} est={p.est} />
         ) : (
-          fmt1(p.proj)
+          // Nothing to draw a range from (out, bye, or no floor / ceiling): the plain numbers.
+          <span className="h2h-curve-text mono">
+            <span className="h2h-curve-proj">{p.out ? "Out" : fmt1(p.proj)}</span>
+            <span className={`h2h-curve-pts${beat ? " beat" : ""}`}>{fmt1(pts)}</span>
+          </span>
         )}
-      </span>
-      <span
-        className={`h2h-c-pts mono live-pts-cell${o.state === "in" ? " is-live" : ""}${beat ? " beat" : ""}`}
-        title={o.state === "in" ? "In progress" : o.state === "post" ? "Final" : "Not started"}
-      >
-        {o.state === "in" && <span className="matchup-score-live-dot" aria-hidden="true" />}
-        {fmt1(pts)}
       </span>
     </div>
   );
@@ -120,8 +112,7 @@ function Side({ title, side, opp = false, scoreboardKnown, uncertain, mounted })
       <div className="h2h-row h2h-head" aria-hidden="true">
         <span className="h2h-c-slot">Slot</span>
         <span className="h2h-c-player">Player</span>
-        <span className="h2h-c-proj" title="Ceiling, median projection and floor, top to bottom">Proj</span>
-        <span className="h2h-c-pts">Pts</span>
+        <span className="h2h-c-curve" title="The outcome curve: floor (red), median projection and ceiling (blue) under it, and the points scored so far as the marker on it">Floor · median · ceiling</span>
       </div>
       {side.players.map((p, i) => (
         <SideRow key={p.id || `empty-${i}`} p={p} scoreboardKnown={scoreboardKnown} uncertain={uncertain} mounted={mounted} />

@@ -4368,7 +4368,9 @@ summary:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible{
   .h2h .h2h-board .h2h-center{grid-area:center; min-width:0;}
   .h2h .h2h-score{font-size:32px;}
   .h2h .h2h-word{font-size:28px;}
-  .h2h .h2h-side .h2h-row, .h2h .h2h-side.opp .h2h-row{grid-template-columns:minmax(0,1fr) 40px 50px; grid-template-areas:"player proj pts"; gap:8px;}
+  .h2h .h2h-side .h2h-row, .h2h .h2h-side.opp .h2h-row{grid-template-columns:minmax(0,1fr) 132px; grid-template-areas:"player curve"; gap:8px;}
+  .h2h .score-curve{width:132px;}
+  .h2h .h2h-row.h2h-head .h2h-c-curve{font-size:0;} /* the header label doesn't fit a phone; the tooltip text stays */
   .h2h .h2h-side .h2h-c-slot{display:none;}
   .h2h .h2h-side .h2h-slot-inline{display:inline-flex;}
   .h2h .h2h-side{padding:8px 8px 4px;}
@@ -5207,27 +5209,41 @@ html{font-stretch:82%;}
 .h2h-side.opp .h2h-side-title{text-align:right;}
 .h2h-row{
   display:grid; align-items:center; gap:10px; min-height:52px; padding:6px 4px;
-  grid-template-columns:72px minmax(0,1fr) 46px 56px; grid-template-areas:"slot player proj pts";
+  grid-template-columns:72px minmax(0,1fr) 184px; grid-template-areas:"slot player curve";
   border-top:1px solid rgba(var(--star-dot-rgb),.07);
 }
-.h2h-side.opp .h2h-row{grid-template-columns:56px 46px minmax(0,1fr) 72px; grid-template-areas:"pts proj player slot";}
+.h2h-side.opp .h2h-row{grid-template-columns:184px minmax(0,1fr) 72px; grid-template-areas:"curve player slot";}
 .h2h-row.h2h-head{min-height:0; padding-top:2px; padding-bottom:6px; border-top:0; font-family:var(--font-mono), monospace; font-size:10px; text-transform:uppercase; letter-spacing:.07em; color:var(--star-dim);}
 .h2h-c-slot{grid-area:slot;}
 .h2h-c-player{grid-area:player; min-width:0; display:flex; flex-direction:column; gap:4px;}
-.h2h-c-proj{grid-area:proj; text-align:right; font-size:12.5px;}
-/* Projection as a stack -- ceiling over median over floor -- the median larger and bright, the ends small and dim. */
-.h2h-range{display:inline-flex; flex-direction:column; align-items:inherit; line-height:1.15;}
-.h2h-range-hi, .h2h-range-lo{font-size:10px; color:var(--star-dim);}
-.h2h-range-mid{font-size:13px; font-weight:700; color:var(--star);}
-.h2h-c-proj.h2h-muted .h2h-range-mid{color:var(--star-dim); font-weight:400;}
-.h2h-side .h2h-c-proj{display:flex; flex-direction:column; align-items:flex-end; justify-content:center;}
-.h2h-side.opp .h2h-c-proj{align-items:flex-start;}
-@media (max-width:900px){ .h2h-side.opp .h2h-c-proj{align-items:flex-end;} }
-@container h2h (max-width:900px){ .h2h-side.opp .h2h-c-proj{align-items:flex-end;} }
-.h2h-c-pts{grid-area:pts; text-align:right; font-size:15px; font-weight:700;}
+/* The outcome curve cell (ScoreCurve.js): floor / median / ceiling under the hump, the scored points as a marker on it. */
+.h2h-c-curve{grid-area:curve; display:flex; align-items:center; justify-content:center; min-width:0;}
+.h2h-row.h2h-head .h2h-c-curve{justify-content:center; text-align:center; white-space:nowrap;}
+.h2h-c-curve.h2h-muted .score-curve{opacity:.7;}
+.score-curve{display:block; width:184px; max-width:100%; height:auto; overflow:visible;}
+.sc-label{font-family:var(--font-mono), monospace; font-size:10px; fill:var(--star-dim);}
+.sc-floor{fill:var(--down);}
+.sc-ceiling{fill:var(--neon-blue);}
+.sc-median{font-size:11px; font-weight:700; fill:var(--star);}
+.score-curve-peak{fill:var(--horizon-gold);}
+.score-curve-marker line{stroke:var(--star); stroke-width:1.4; stroke-linecap:round;}
+.score-curve-dot{fill:var(--star); stroke:var(--void-panel); stroke-width:1.5;}
+.score-curve-halo{fill:rgba(var(--star-dot-rgb),.18);}
+.sc-points{font-family:var(--font-mono), monospace; font-size:13px; font-weight:700; fill:var(--star);}
+.score-curve.is-beat .score-curve-marker line{stroke:var(--horizon-gold);}
+.score-curve.is-beat .score-curve-dot{fill:var(--horizon-gold);}
+.score-curve.is-beat .score-curve-halo{fill:rgba(var(--horizon-gold-rgb),.28);}
+.score-curve.is-beat .sc-points{fill:var(--horizon-gold);}
+.score-curve.is-live .score-curve-halo{animation:sc-pulse 1.8s ease-out infinite; transform-box:fill-box; transform-origin:center;}
+@keyframes sc-pulse{0%{transform:scale(.7); opacity:1;} 100%{transform:scale(1.7); opacity:0;}}
+@media (prefers-reduced-motion:reduce){ .score-curve.is-live .score-curve-halo{animation:none;} }
+/* No curve (out, bye, no range): the plain median and points. */
+.h2h-curve-text{display:inline-flex; align-items:baseline; gap:14px; font-size:13px; color:var(--star-dim);}
+.h2h-curve-pts{font-size:15px; font-weight:700; color:var(--star);}
+.h2h-curve-pts.beat{color:var(--horizon-gold);}
 .h2h-side.opp .h2h-c-slot{text-align:right;}
 .h2h-side.opp .h2h-c-player{align-items:flex-end; text-align:right;}
-.h2h-side.opp .h2h-c-proj, .h2h-side.opp .h2h-c-pts{text-align:left;}
+
 .h2h-player-name{font-size:14.5px; color:var(--star); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;}
 .h2h-player-sub{display:flex; align-items:center; gap:6px; flex-wrap:nowrap; min-width:0; overflow:hidden;}
 .h2h-player-sub .h2h-game{overflow:hidden; text-overflow:ellipsis; min-width:0;}
@@ -5241,21 +5257,21 @@ html{font-stretch:82%;}
 .h2h-note{margin:0; font-size:11.5px; line-height:1.5; color:var(--star-dim);}
 @media (max-width:900px){
   .h2h-lineups{grid-template-columns:minmax(0,1fr);}
-  .h2h-side.opp .h2h-row{grid-template-columns:72px minmax(0,1fr) 46px 56px; grid-template-areas:"slot player proj pts";}
+  .h2h-side.opp .h2h-row{grid-template-columns:72px minmax(0,1fr) 184px; grid-template-areas:"slot player curve";}
   .h2h-side.opp .h2h-side-title, .h2h-side.opp .h2h-c-slot{text-align:left;}
   .h2h-side.opp .h2h-c-player{align-items:flex-start; text-align:left;}
   .h2h-side.opp .h2h-player-sub{justify-content:flex-start;}
-  .h2h-side.opp .h2h-c-proj, .h2h-side.opp .h2h-c-pts{text-align:right;}
+  
 }
 /* Same stacking whenever the panel itself is too narrow for two lineups side by side (e.g. beside the Sunday board's
    live panel), whatever the window width. */
 @container h2h (max-width:900px){
   .h2h-lineups{grid-template-columns:minmax(0,1fr);}
-  .h2h-side.opp .h2h-row{grid-template-columns:72px minmax(0,1fr) 46px 56px; grid-template-areas:"slot player proj pts";}
+  .h2h-side.opp .h2h-row{grid-template-columns:72px minmax(0,1fr) 184px; grid-template-areas:"slot player curve";}
   .h2h-side.opp .h2h-side-title, .h2h-side.opp .h2h-c-slot{text-align:left;}
   .h2h-side.opp .h2h-c-player{align-items:flex-start; text-align:left;}
   .h2h-side.opp .h2h-player-sub{justify-content:flex-start;}
-  .h2h-side.opp .h2h-c-proj, .h2h-side.opp .h2h-c-pts{text-align:right;}
+  
 }
 
 /* ===== My Team Sunday board (my-team/SundayBoard.js): the full-screen game-day layout =====
