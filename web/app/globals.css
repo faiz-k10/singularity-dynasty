@@ -4628,12 +4628,12 @@ a.mine-empty-note{color:var(--horizon-gold);}
 }
 
 /* Tier 2: cards nested inside glass -- translucent fill + rim light, no blur of their own. */
-.stat-panel, .shape-finder-entry, .week-card, .filter-accordion, .pctile-card, .h2h-board, .h2h-side{
+.stat-panel, .shape-finder-entry, .week-card, .filter-accordion, .pctile-card, .h2h-board, .h2h-side, .sb-card{
   background:linear-gradient(180deg, rgba(255,255,255,calc(var(--glass-spec) * .5)), rgba(255,255,255,0) 60%), rgba(var(--scrim-rgb), calc(.5 + var(--glass-alpha) * .45));
   border:1px solid rgba(var(--star-dot-rgb),.1);
   box-shadow:inset 0 1px 0 var(--glass-rim), inset 0 0 12px -6px var(--glass-edge);
 }
-.stat-panel, .shape-finder-entry, .week-card, .pctile-card, .h2h-board, .h2h-side{border-radius:var(--r-md);}
+.stat-panel, .shape-finder-entry, .week-card, .pctile-card, .h2h-board, .h2h-side, .sb-card{border-radius:var(--r-md);}
 .filter-accordion{border-radius:var(--r-lg);}
 
 /* Segmented controls: a recessed glass track with a raised, lit thumb (the brand gold stays). */
@@ -4731,7 +4731,7 @@ svg text, .pctile-vbar-label, .pctile-vbar-value, .pctile-hero-label{font-family
 }
 /* names and sentences stay in the serif */
 .compare-radar-card-name, .my-team-saved-name, .league-dash-team, .week-feed-headline, .compare-table thead th, .quiz-prompt,
-.h2h-team-name, .h2h-side-title, .h2h-player-name{
+.h2h-team-name, .h2h-side-title, .h2h-player-name, .sb-card-team, .sb-feed-name{
   font-family:var(--font-body), Georgia, serif; font-weight:700;
 }
 /* stat-name labels down the left of the stat tables are data labels */
@@ -5199,4 +5199,77 @@ html{font-stretch:82%;}
   .h2h-side.opp .h2h-c-player{align-items:flex-start; text-align:left;}
   .h2h-side.opp .h2h-player-sub{justify-content:flex-start;}
   .h2h-side.opp .h2h-c-range, .h2h-side.opp .h2h-c-proj, .h2h-side.opp .h2h-c-pts{text-align:right;}
+}
+
+/* ===== My Team Sunday board (my-team/SundayBoard.js): the full-screen game-day layout =====
+   A top strip (title, counts, layout switch), then league cards filling the left and "My players live" pinned on the
+   right; each side scrolls on its own so a second monitor shows everything without the page moving. A card opens the
+   league's matchup in a drawer over the board. Cards are tier-2 Golden Gate cards; the feed is a tier-1 panel. */
+.my-team-theater .sb{flex:1; min-height:0;}
+.sb{display:flex; flex-direction:column; gap:12px;}
+.sb-top{display:flex; flex-wrap:wrap; align-items:center; gap:10px 20px;}
+.sb-title{margin:0; font-family:var(--font-display), sans-serif; font-weight:800; font-size:24px; text-transform:uppercase; letter-spacing:.06em; color:var(--star);}
+.sb-week{font-size:13px; font-weight:400; letter-spacing:.04em; color:var(--star-dim); text-transform:none;}
+.sb-stats{display:flex; flex-wrap:wrap; gap:4px 16px; font-size:12px; color:var(--star-dim);}
+.sb-stats strong{color:var(--star); font-weight:700;}
+.sb-stats .up strong{color:var(--up);} .sb-stats .down strong{color:var(--down);}
+.sb-muted{color:var(--star-dim);}
+.sb-body{flex:1; min-height:0; display:grid; grid-template-columns:minmax(0,1fr) minmax(320px,400px); gap:16px;}
+.sb-grid{min-height:0; overflow:auto; display:grid; grid-template-columns:repeat(auto-fill, minmax(290px,1fr)); align-content:start; gap:14px; padding:2px 4px 8px 2px;}
+.sb-card{
+  display:flex; flex-direction:column; gap:8px; padding:14px 16px 12px; cursor:pointer; text-align:left;
+  border-left:3px solid rgba(var(--star-dot-rgb),.18) !important; transition:transform .15s ease, border-color .15s ease;
+}
+.sb-card.is-ahead{border-left-color:var(--horizon-gold) !important;}
+.sb-card.is-behind{border-left-color:var(--neon-blue) !important;}
+.sb-card:hover{transform:translateY(-1px);}
+.sb-card:focus-visible{outline:2px solid var(--neon-blue); outline-offset:2px;}
+.sb-card-head{display:flex; align-items:center; gap:8px; min-height:30px;}
+.sb-card-league{font-family:var(--font-mono), monospace; font-size:11px; text-transform:uppercase; letter-spacing:.07em; color:var(--star-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0;}
+.sb-card-head .matchup-score-live-dot{width:6px; height:6px; flex:none;}
+.sb-card-sleeper{margin-left:auto; flex:none;}
+.sb-card-side{display:grid; grid-template-columns:minmax(0,1fr) auto auto; align-items:baseline; gap:10px;}
+.sb-card-team{font-size:15px; color:var(--star); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.sb-card-team.sb-muted{color:var(--star-dim);}
+.sb-card-left{font-size:10.5px; color:var(--star-dim); white-space:nowrap;}
+.sb-card-score{font-family:var(--font-display), sans-serif; font-weight:800; font-size:28px; line-height:1; min-width:64px; text-align:right; color:var(--star-dim);}
+.sb-card-score.lead{color:var(--star);}
+.sb-card-foot{display:flex; align-items:center; gap:10px; margin-top:2px;}
+.sb-card-win{font-size:15px; font-weight:700; min-width:40px;}
+.sb-card-win.up{color:var(--horizon-gold);} .sb-card-win.down{color:var(--neon-blue);}
+.sb-card-winbar{flex:1; height:5px; border-radius:3px; background:rgba(var(--neon-blue-rgb),.35); overflow:hidden;}
+.sb-card-winbar > span{display:block; height:100%; background:linear-gradient(90deg, var(--horizon), var(--horizon-gold));}
+.sb-card-alerts{display:inline-flex; align-items:center; gap:6px; font-size:11px; color:var(--down); white-space:nowrap;}
+.sb-card-alerts .status-dot{width:8px; height:8px;}
+.sb-card-bye{font-size:13px; color:var(--star-dim); padding:8px 0 4px;}
+.sb-feed{min-height:0; display:flex; flex-direction:column; padding:14px 0 6px;}
+.sb-feed-head{display:flex; align-items:baseline; justify-content:space-between; gap:12px; padding:0 16px 10px; border-bottom:1px solid rgba(var(--star-dot-rgb),.08);}
+.sb-feed-total{font-size:12px; color:var(--star-dim); white-space:nowrap;}
+.sb-feed-total strong{color:var(--horizon-gold); font-size:15px;}
+.sb-feed-empty{padding:14px 16px; margin:0; font-size:13px;}
+.sb-feed-list{list-style:none; margin:0; padding:0; overflow:auto; min-height:0; flex:1;}
+.sb-feed-row{display:flex; align-items:center; gap:12px; padding:10px 16px; border-top:1px solid rgba(var(--star-dot-rgb),.06); transition:background-color .6s ease;}
+.sb-feed-row:first-child{border-top:0;}
+.sb-feed-row.is-new{background:rgba(var(--horizon-gold-rgb),.09); box-shadow:inset 3px 0 0 var(--horizon-gold);}
+.sb-feed-row.is-final{opacity:.82;}
+.sb-feed-who{flex:1; min-width:0; display:flex; flex-direction:column; gap:4px;}
+.sb-feed-name{font-size:14.5px; color:var(--star); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.sb-feed-sub{display:flex; align-items:center; gap:6px; flex-wrap:wrap;}
+.sb-feed-leagues{font-size:11.5px; color:var(--star-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.sb-feed-mult{display:inline-block; margin-right:6px; padding:0 6px; border-radius:8px; font-size:10.5px; font-weight:700; color:var(--void); background:var(--neon-blue);}
+.sb-feed-nums{display:flex; flex-direction:column; align-items:flex-end; gap:2px; flex:none;}
+.sb-feed-pts{font-size:17px; font-weight:700;}
+.sb-feed-delta{font-size:11px; font-weight:700; color:var(--up);}
+.sb-feed-proj{font-size:10.5px; color:var(--star-dim);}
+.sb-drawer-backdrop{position:fixed; inset:0; z-index:210; background:rgba(var(--scrim-rgb),.7); display:flex; justify-content:flex-end;}
+/* Near-solid: a drawer over a busy board must not let the cards show through. */
+.sb-drawer.glass-panel{background:linear-gradient(180deg, rgba(255,255,255,var(--glass-spec)), rgba(255,255,255,0) 30%), var(--void-panel);}
+.sb-drawer{width:min(1180px, 94vw); height:100%; overflow:auto; border-radius:var(--r-lg) 0 0 var(--r-lg) !important; padding:16px 20px 20px; animation:sb-drawer-in .2s ease both;}
+.sb-drawer-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;}
+@keyframes sb-drawer-in{from{transform:translateX(24px); opacity:0;} to{transform:none; opacity:1;}}
+@media (prefers-reduced-motion:reduce){ .sb-drawer{animation:none;} .sb-card{transition:none;} }
+@media (max-width:999px){
+  .sb-body{grid-template-columns:minmax(0,1fr);}
+  .sb-grid, .sb-feed-list{overflow:visible;}
+  .my-team-theater .sb{flex:none;}
 }

@@ -15,8 +15,8 @@ function parseRecord(rec) {
 }
 
 // One row per saved team: the at-a-glance view Sleeper makes you click
-// league-by-league to assemble.
-function buildRow(t, injuries) {
+// league-by-league to assemble. Also used by the Sunday board's league cards.
+export function buildRow(t, injuries) {
   const s = t.settings || {};
   const proj = s.matchupProj;
   const live = s.matchupActual;

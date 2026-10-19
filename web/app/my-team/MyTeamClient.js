@@ -18,6 +18,8 @@ import { liveRosterNews, lineupChanged } from "@/lib/rosterAlerts";
 import { livePointsFor } from "@/lib/gameStatus";
 import SlotBadge from "./SlotBadge";
 import MatchupPanel from "./MatchupPanel";
+import SundayBoard from "./SundayBoard";
+import { isGameDay } from "@/lib/liveFeed";
 
 const POSITION_ORDER = ["QB", "RB", "WR", "TE", "K", "DEF"];
 
@@ -1216,6 +1218,24 @@ export default function MyTeamClient({
   // overlay (same idea as the Rankings / Player Sims theater button); the
   // normal page is the traditional scrolling layout with static panels.
   const [theater, setTheater] = useState(false);
+  // Full-screen layout: the Sunday board (SundayBoard.js) by default on game days, the panel board otherwise; a pick
+  // made with the switch holds for the rest of that day (localStorage, a convenience).
+  const [theaterPick, setTheaterPick] = useState(null);
+  useEffect(() => {
+    const t = setTimeout(() => {
+      try {
+        const saved = JSON.parse(localStorage.getItem("myteam.theaterLayout") || "null");
+        if (saved?.day === new Date().toDateString()) setTheaterPick(saved.layout);
+      } catch {}
+    }, 0);
+    return () => clearTimeout(t);
+  }, []);
+  function pickTheaterLayout(layout) {
+    setTheaterPick(layout);
+    try {
+      localStorage.setItem("myteam.theaterLayout", JSON.stringify({ layout, day: new Date().toDateString() }));
+    } catch {}
+  }
   useEffect(() => {
     if (!theater) return;
     const prevOverflow = document.body.style.overflow;
@@ -1665,11 +1685,33 @@ export default function MyTeamClient({
   const staticIds = new Set(["week", "teams", "news", "portfolio", "lookup"]);
   const staticPanels = panels.filter((p) => staticIds.has(p.id));
 
+  const theaterLayout = theaterPick || (isGameDay(gameStates) ? "board" : "panels");
+  const layoutSwitch = (
+    <div className="board-orient" role="group" aria-label="Full-screen layout">
+      <button type="button" aria-pressed={theaterLayout === "board"} onClick={() => pickTheaterLayout("board")} title="Every league + your players live">
+        Sunday board
+      </button>
+      <button type="button" aria-pressed={theaterLayout === "panels"} onClick={() => pickTheaterLayout("panels")} title="Customizable panels">
+        Panels
+      </button>
+    </div>
+  );
+
   return (
     <div className="my-team-wrap">
       {theater ? (
         <div className="my-team-theater">
-          <PanelBoard panels={panels} headerExtra={theaterBtn} />
+          {theaterLayout === "board" ? (
+            <SundayBoard
+              savedTeams={savedTeams}
+              gameStates={gameStates}
+              injuriesByTeam={liveNews?.byTeam}
+              updatedAt={updatedAt}
+              toolbar={<>{layoutSwitch}{theaterBtn}</>}
+            />
+          ) : (
+            <PanelBoard panels={panels} headerExtra={<>{layoutSwitch}{theaterBtn}</>} />
+          )}
         </div>
       ) : (
         <>
