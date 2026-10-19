@@ -62,6 +62,7 @@ function SideRow({ p, scoreboardKnown, uncertain, mounted }) {
         <span className="h2h-c-slot"><SlotBadge slot={p.slot} /></span>
         <span className="h2h-c-player h2h-player-name h2h-muted">Empty slot</span>
         <span className="h2h-c-curve mono h2h-curve-text">—</span>
+        <span className="h2h-c-pts mono">—</span>
       </div>
     );
   }
@@ -72,7 +73,7 @@ function SideRow({ p, scoreboardKnown, uncertain, mounted }) {
   const beat = pts != null && p.proj > 0 && pts >= p.proj;
   const showCurve = !p.out && o.state !== "bye" && p.proj > 0 && typeof p.floor === "number" && typeof p.ceiling === "number" && p.ceiling > p.floor;
   return (
-    <div className={`h2h-row${o.state === "in" ? " is-live" : ""}${done ? " is-done" : ""}`}>
+    <div className={`h2h-row${o.state === "in" ? " is-live" : ""}${done ? " is-done" : ""}${o.state === "pre" && !p.out ? " is-upcoming" : ""}`}>
       <span className="h2h-c-slot"><SlotBadge slot={p.slot} /></span>
       <span className="h2h-c-player">
         <span className="h2h-player-name">{p.name}</span>
@@ -94,12 +95,16 @@ function SideRow({ p, scoreboardKnown, uncertain, mounted }) {
         {showCurve ? (
           <ScoreCurve floor={p.floor} median={p.proj} ceiling={p.ceiling} pts={pts} state={o.state} est={p.est} />
         ) : (
-          // Nothing to draw a range from (out, bye, or no floor / ceiling): the plain numbers.
-          <span className="h2h-curve-text mono">
-            <span className="h2h-curve-proj">{p.out ? "Out" : fmt1(p.proj)}</span>
-            <span className={`h2h-curve-pts${beat ? " beat" : ""}`}>{fmt1(pts)}</span>
-          </span>
+          // Nothing to draw a range from (out, bye, or no floor / ceiling): just the median.
+          <span className="h2h-curve-text mono">{p.out ? "Out" : fmt1(p.proj)}</span>
         )}
+      </span>
+      <span
+        className={`h2h-c-pts mono live-pts-cell${o.state === "in" ? " is-live" : ""}${beat ? " beat" : ""}`}
+        title={o.state === "in" ? "Points so far · game in progress" : o.state === "post" ? "Final points" : "Not started"}
+      >
+        {o.state === "in" && <span className="matchup-score-live-dot" aria-hidden="true" />}
+        {fmt1(pts)}
       </span>
     </div>
   );
@@ -113,6 +118,7 @@ function Side({ title, side, opp = false, scoreboardKnown, uncertain, mounted })
         <span className="h2h-c-slot">Slot</span>
         <span className="h2h-c-player">Player</span>
         <span className="h2h-c-curve" title="The outcome curve: floor (red), median projection and ceiling (blue) under it, and the points scored so far as the marker on it">Floor · median · ceiling</span>
+        <span className="h2h-c-pts">Pts</span>
       </div>
       {side.players.map((p, i) => (
         <SideRow key={p.id || `empty-${i}`} p={p} scoreboardKnown={scoreboardKnown} uncertain={uncertain} mounted={mounted} />

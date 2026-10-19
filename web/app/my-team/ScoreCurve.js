@@ -1,14 +1,15 @@
 // A lineup row's projection and live score on one outcome curve (Matchup tab, MatchupPanel.js). The hump is the same
 // picture as Weekly Projection Rankings' Outcome Curve (app/tools/OutcomeCurve.js): a red wedge below the floor, the
 // gold floor-to-ceiling hump peaking at the median, a blue wedge above the ceiling. Floor, median and ceiling are
-// written under it; the points scored so far ride on the curve as a marker -- a line down to a dot sitting on the hump
-// -- with the number written above it. Gold once he has matched his median, plain before that, a pulse while his game
-// is on. No marker before kickoff.
+// written under it; the points scored so far ride on the curve as a marker -- a dot sitting on the hump with a line
+// down to the baseline. The number itself is NOT drawn here: it is the row's own big Pts cell, so the three small range
+// numbers can't be mistaken for it. Gold once he has matched his median, plain before that, a pulse while his game is
+// on. No marker before kickoff.
 //
 // Geometry is fixed (not scaled to the week's widest range like the table's curve) so every row lines up and the
 // three numbers always have room: the labels sit under the floor edge, the peak and the ceiling edge, and the peak is
 // kept off the edges for the same reason.
-import { W, H, MARGIN, PEAK_Y, BASE_Y, LABEL_Y, POINTS_Y, X_FLOOR, X_CEIL, hump, curveGeometry, fmt, f1 } from "@/lib/scoreCurve";
+import { W, H, MARGIN, PEAK_Y, BASE_Y, LABEL_Y, X_FLOOR, X_CEIL, hump, curveGeometry, fmt, f1 } from "@/lib/scoreCurve";
 
 // state: "pre" | "in" | "post" (bye / out count as no marker). est = typical range for someone we don't project.
 export default function ScoreCurve({ floor, median, ceiling, pts, state, est = false }) {
@@ -25,10 +26,6 @@ export default function ScoreCurve({ floor, median, ceiling, pts, state, est = f
   const x = scored ? Math.min(W - MARGIN - 2, Math.max(MARGIN + 2, xOf(pts))) : null;
   const y = scored ? yAt(x) : null;
   const beat = scored && pts >= median;
-  // Keep the number inside the box when the marker sits near an edge.
-  const anchor = scored ? (x < 20 ? "start" : x > W - 20 ? "end" : "middle") : "middle";
-  const labelX = scored ? (anchor === "start" ? Math.max(2, x - 6) : anchor === "end" ? Math.min(W - 2, x + 6) : x) : 0;
-
   const title = [
     `Floor ${f1(floor)} · median ${f1(median)} · ceiling ${f1(ceiling)}${est ? " (typical range for the position -- we don't project this player)" : ""}`,
     scored ? `Scored ${f1(pts)} so far${state === "in" ? " (game in progress)" : ""}` : null,
@@ -47,11 +44,11 @@ export default function ScoreCurve({ floor, median, ceiling, pts, state, est = f
       <text className="sc-label sc-median" x={xPeak} y={LABEL_Y} textAnchor="middle">{f1(median)}</text>
       <text className="sc-label sc-ceiling" x={X_CEIL} y={LABEL_Y} textAnchor="middle">{f1(ceiling)}</text>
       {scored && (
+        // The marker only: a drop line to the baseline and a dot sitting on the hump. The number is the row's Pts cell.
         <g className="score-curve-marker">
-          <line x1={x} y1={POINTS_Y + 4} x2={x} y2={BASE_Y} />
+          <line x1={x} y1={y} x2={x} y2={BASE_Y} />
           <circle className="score-curve-halo" cx={x} cy={y} r="6" />
           <circle className="score-curve-dot" cx={x} cy={y} r="3.4" />
-          <text className="sc-points" x={labelX} y={POINTS_Y} textAnchor={anchor}>{f1(pts)}</text>
         </g>
       )}
     </svg>

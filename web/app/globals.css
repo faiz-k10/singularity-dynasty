@@ -4368,9 +4368,9 @@ summary:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible{
   .h2h .h2h-board .h2h-center{grid-area:center; min-width:0;}
   .h2h .h2h-score{font-size:32px;}
   .h2h .h2h-word{font-size:28px;}
-  .h2h .h2h-side .h2h-row, .h2h .h2h-side.opp .h2h-row{grid-template-columns:minmax(0,1fr) 132px; grid-template-areas:"player curve"; gap:8px;}
-  .h2h .score-curve{width:132px;}
-  .h2h .h2h-row.h2h-head .h2h-c-curve{font-size:0;} /* the header label doesn't fit a phone; the tooltip text stays */
+  .h2h .h2h-side .h2h-row, .h2h .h2h-side.opp .h2h-row{grid-template-columns:minmax(0,1fr) 56px; grid-template-areas:"player pts" "curve curve"; gap:4px 8px;}
+  .h2h .h2h-side .h2h-c-pts, .h2h .h2h-side.opp .h2h-c-pts{text-align:right;}
+  .h2h .h2h-row.h2h-head{display:none;} /* the curve sits under the name on a phone; the tooltip text stays on the curve */
   .h2h .h2h-side .h2h-c-slot{display:none;}
   .h2h .h2h-side .h2h-slot-inline{display:inline-flex;}
   .h2h .h2h-side{padding:8px 8px 4px;}
@@ -5208,11 +5208,11 @@ html{font-stretch:82%;}
 .h2h-side-title{font-size:13px; color:var(--star-dim); padding:2px 4px 8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
 .h2h-side.opp .h2h-side-title{text-align:right;}
 .h2h-row{
-  display:grid; align-items:center; gap:10px; min-height:52px; padding:6px 4px;
-  grid-template-columns:72px minmax(0,1fr) 184px; grid-template-areas:"slot player curve";
+  display:grid; align-items:center; gap:8px; min-height:52px; padding:6px 4px;
+  grid-template-columns:64px minmax(0,1fr) 156px 46px; grid-template-areas:"slot player curve pts";
   border-top:1px solid rgba(var(--star-dot-rgb),.07);
 }
-.h2h-side.opp .h2h-row{grid-template-columns:184px minmax(0,1fr) 72px; grid-template-areas:"curve player slot";}
+.h2h-side.opp .h2h-row{grid-template-columns:46px 156px minmax(0,1fr) 64px; grid-template-areas:"pts curve player slot";}
 .h2h-row.h2h-head{min-height:0; padding-top:2px; padding-bottom:6px; border-top:0; font-family:var(--font-mono), monospace; font-size:10px; text-transform:uppercase; letter-spacing:.07em; color:var(--star-dim);}
 .h2h-c-slot{grid-area:slot;}
 .h2h-c-player{grid-area:player; min-width:0; display:flex; flex-direction:column; gap:4px;}
@@ -5220,7 +5220,7 @@ html{font-stretch:82%;}
 .h2h-c-curve{grid-area:curve; display:flex; align-items:center; justify-content:center; min-width:0;}
 .h2h-row.h2h-head .h2h-c-curve{justify-content:center; text-align:center; white-space:nowrap;}
 .h2h-c-curve.h2h-muted .score-curve{opacity:.7;}
-.score-curve{display:block; width:184px; max-width:100%; height:auto; overflow:visible;}
+.score-curve{display:block; width:156px; max-width:100%; height:auto; overflow:visible;}
 .sc-label{font-family:var(--font-mono), monospace; font-size:10px; fill:var(--star-dim);}
 .sc-floor{fill:var(--down);}
 .sc-ceiling{fill:var(--neon-blue);}
@@ -5229,25 +5229,32 @@ html{font-stretch:82%;}
 .score-curve-marker line{stroke:var(--star); stroke-width:1.4; stroke-linecap:round;}
 .score-curve-dot{fill:var(--star); stroke:var(--void-panel); stroke-width:1.5;}
 .score-curve-halo{fill:rgba(var(--star-dot-rgb),.18);}
-.sc-points{font-family:var(--font-mono), monospace; font-size:13px; font-weight:700; fill:var(--star);}
 .score-curve.is-beat .score-curve-marker line{stroke:var(--horizon-gold);}
 .score-curve.is-beat .score-curve-dot{fill:var(--horizon-gold);}
 .score-curve.is-beat .score-curve-halo{fill:rgba(var(--horizon-gold-rgb),.28);}
-.score-curve.is-beat .sc-points{fill:var(--horizon-gold);}
 .score-curve.is-live .score-curve-halo{animation:sc-pulse 1.8s ease-out infinite; transform-box:fill-box; transform-origin:center;}
 @keyframes sc-pulse{0%{transform:scale(.7); opacity:1;} 100%{transform:scale(1.7); opacity:0;}}
 @media (prefers-reduced-motion:reduce){ .score-curve.is-live .score-curve-halo{animation:none;} }
-/* No curve (out, bye, no range): the plain median and points. */
-.h2h-curve-text{display:inline-flex; align-items:baseline; gap:14px; font-size:13px; color:var(--star-dim);}
-.h2h-curve-pts{font-size:15px; font-weight:700; color:var(--star);}
-.h2h-curve-pts.beat{color:var(--horizon-gold);}
+/* No curve (out, bye, no range): just the median. */
+.h2h-curve-text{font-size:13px; color:var(--star-dim);}
+/* The scored points: their own big cell, outer edge of the row (right for your lineup, left for theirs), so they can't be
+   mistaken for the three small range numbers on the curve. */
+.h2h-c-pts{grid-area:pts; text-align:right; font-size:17px; font-weight:700; color:var(--star);}
+.h2h-side.opp .h2h-c-pts{text-align:left;}
+.h2h-row.h2h-head .h2h-c-pts{font-size:10px; font-weight:400;}
+.h2h-c-pts.is-live{color:var(--star);}
+.h2h-c-pts.beat{color:var(--horizon-gold);}
+/* Players who haven't played yet: the row is tinted in its side's colour (gold = yours, blue = your opponent's, the same
+   language as the live panel) with a rail on the outer edge, so what is still to come stands out from what is done. */
+.h2h-row.is-upcoming{background:linear-gradient(90deg, rgba(var(--horizon-gold-rgb),.09), rgba(var(--horizon-gold-rgb),.03)); box-shadow:inset 3px 0 0 rgba(var(--horizon-gold-rgb),.7); border-radius:6px;}
+.h2h-side.opp .h2h-row.is-upcoming{background:linear-gradient(270deg, rgba(var(--neon-blue-rgb),.09), rgba(var(--neon-blue-rgb),.03)); box-shadow:inset -3px 0 0 rgba(var(--neon-blue-rgb),.7);}
 .h2h-side.opp .h2h-c-slot{text-align:right;}
 .h2h-side.opp .h2h-c-player{align-items:flex-end; text-align:right;}
 
 .h2h-player-name{font-size:14.5px; color:var(--star); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;}
 .h2h-player-sub{display:flex; align-items:center; gap:6px; flex-wrap:nowrap; min-width:0; overflow:hidden;}
 .h2h-player-sub .h2h-game{overflow:hidden; text-overflow:ellipsis; min-width:0;}
-.h2h .slot-badge{min-width:0; padding:0 6px; font-size:9.5px;}
+.h2h .slot-badge{min-width:0; padding:0 5px; font-size:9px; letter-spacing:0;}
 .h2h-slot-inline{display:none;} /* the slot moves into this line on phones (Phone pass) */
 .h2h-side.opp .h2h-player-sub{justify-content:flex-end;}
 .h2h-game{font-size:10.5px; color:var(--star-dim); white-space:nowrap;}
@@ -5257,7 +5264,7 @@ html{font-stretch:82%;}
 .h2h-note{margin:0; font-size:11.5px; line-height:1.5; color:var(--star-dim);}
 @media (max-width:900px){
   .h2h-lineups{grid-template-columns:minmax(0,1fr);}
-  .h2h-side.opp .h2h-row{grid-template-columns:72px minmax(0,1fr) 184px; grid-template-areas:"slot player curve";}
+  .h2h-side.opp .h2h-row{grid-template-columns:64px minmax(0,1fr) 156px 46px; grid-template-areas:"slot player curve pts";}
   .h2h-side.opp .h2h-side-title, .h2h-side.opp .h2h-c-slot{text-align:left;}
   .h2h-side.opp .h2h-c-player{align-items:flex-start; text-align:left;}
   .h2h-side.opp .h2h-player-sub{justify-content:flex-start;}
@@ -5267,7 +5274,7 @@ html{font-stretch:82%;}
    live panel), whatever the window width. */
 @container h2h (max-width:900px){
   .h2h-lineups{grid-template-columns:minmax(0,1fr);}
-  .h2h-side.opp .h2h-row{grid-template-columns:72px minmax(0,1fr) 184px; grid-template-areas:"slot player curve";}
+  .h2h-side.opp .h2h-row{grid-template-columns:64px minmax(0,1fr) 156px 46px; grid-template-areas:"slot player curve pts";}
   .h2h-side.opp .h2h-side-title, .h2h-side.opp .h2h-c-slot{text-align:left;}
   .h2h-side.opp .h2h-c-player{align-items:flex-start; text-align:left;}
   .h2h-side.opp .h2h-player-sub{justify-content:flex-start;}

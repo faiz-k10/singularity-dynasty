@@ -1,15 +1,14 @@
 // Geometry for app/my-team/ScoreCurve.js's outcome curve (a lineup row's floor / median / ceiling hump with the scored
-// points as a marker on it). Pure -- no React -- so the maths is unit-tested (test/scoreCurve.test.mjs). Fixed
+// points as a marker on it; the number itself is written in the row's own Pts cell). Pure -- no React -- so the maths is unit-tested (test/scoreCurve.test.mjs). Fixed
 // (not scaled to the week's widest range like the table's curve) so every row lines up and the three numbers always
 // have room: the labels sit under the floor edge, the peak and the ceiling edge, and the peak is kept off the edges.
-export const W = 184;
-export const H = 62;
+export const W = 168;
+export const H = 48;
 export const MARGIN = 6;
-export const TAIL = 22;
-export const PEAK_Y = 24;
-export const BASE_Y = 44;
-export const LABEL_Y = 57; // floor / median / ceiling numbers
-export const POINTS_Y = 11; // the scored number, above the marker
+export const TAIL = 20;
+export const PEAK_Y = 7;
+export const BASE_Y = 29;
+export const LABEL_Y = 43; // floor / median / ceiling numbers
 export const TAIL_H = 0.32; // tail wedge height as a fraction of the hump's
 export const SAMPLES = 16;
 export const X_FLOOR = MARGIN + TAIL;
