@@ -5226,7 +5226,7 @@ html{font-stretch:82%;}
 .sc-ceiling{fill:var(--neon-blue);}
 .score-curve .outcome-curve-tail-ceiling{fill:var(--neon-blue); opacity:.55;}
 .score-curve .outcome-curve-tail-floor{opacity:.6;}
-.sc-median{font-size:11px; font-weight:700; fill:var(--star);}
+.sc-median{font-size:11px; font-weight:700; fill:var(--horizon-gold);} /* gold, like the hump it belongs to */
 .score-curve-peak{fill:var(--horizon-gold);}
 .score-curve-marker line{stroke:var(--star); stroke-width:1.4; stroke-linecap:round;}
 .score-curve-dot{fill:var(--star); stroke:var(--void-panel); stroke-width:1.5;}
@@ -5255,6 +5255,7 @@ html{font-stretch:82%;}
 .h2h-legend li{display:inline-flex; align-items:baseline; gap:7px;}
 .h2h-legend-swatch, .h2h-legend-dot{align-self:center;}
 .h2h-legend strong{color:var(--star); font-weight:700;}
+.h2h-legend li:nth-child(2) strong{color:var(--horizon-gold);}
 .h2h-legend-swatch{width:14px; height:9px; border-radius:2px 2px 0 0; flex:none;}
 .h2h-legend-swatch.is-low{background:var(--down); opacity:.7;}
 .h2h-legend-swatch.is-mid{background:var(--horizon-gold); opacity:.65;}
