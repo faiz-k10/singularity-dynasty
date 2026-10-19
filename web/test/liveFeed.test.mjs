@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { buildLiveFeed, trackScoring, sortFeed, isGameDay } from "../lib/liveFeed.js";
+import { buildLiveFeed, trackScoring, sortFeed, isGameDay, formatCountdown } from "../lib/liveFeed.js";
 
 const gs = {
   GB: { state: "in", detail: "4:43 - 1st", start: "2026-10-19T00:20Z" },
@@ -78,4 +78,12 @@ test("buildLiveFeed: nextUp names the next kickoff's games and counts your / the
   const done = buildLiveFeed([team("a", "A", [p("3", "GB")])], g);
   assert.equal(done.nextUp, null);
   assert.equal(done.anyLeft, false);
+});
+
+test("formatCountdown ticks down to the second, with days past 24 hours", () => {
+  assert.equal(formatCountdown(7 * 3600e3 - 1000), "6:59:59");
+  assert.equal(formatCountdown(3600e3 + 5 * 60e3 + 9e3), "1:05:09");
+  assert.equal(formatCountdown(59e3), "0:00:59");
+  assert.equal(formatCountdown(26 * 3600e3 + 2 * 60e3 + 3e3), "1d 02:02:03");
+  assert.equal(formatCountdown(-5000), "0:00:00");
 });

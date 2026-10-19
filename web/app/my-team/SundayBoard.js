@@ -8,7 +8,7 @@ import { formatOdds, oddsTone } from "./Standings";
 import PositionBadge from "../tools/PositionBadge";
 import TeamBadge from "../tools/TeamBadge";
 import { summarizeSide } from "@/lib/winChance";
-import { buildLiveFeed, trackScoring, sortFeed } from "@/lib/liveFeed";
+import { buildLiveFeed, trackScoring, sortFeed, formatCountdown } from "@/lib/liveFeed";
 import { getLivePlays } from "./actions";
 
 const fmt1 = (v) => (v == null ? "—" : v.toFixed(1));
@@ -277,18 +277,6 @@ function RecentPlays({ rows, updatedAt }) {
   );
 }
 
-// "in 20 hours", "in 2 hours 15 minutes", "in 12 minutes" -- no abbreviations in this UI.
-function untilText(ms) {
-  const m = Math.floor(ms / 60000);
-  if (m < 1) return "any minute now";
-  const plural = (n, w) => `${n} ${w}${n === 1 ? "" : "s"}`;
-  if (m < 60) return `in ${plural(m, "minute")}`;
-  const h = Math.floor(m / 60);
-  if (h >= 48) return `in ${plural(Math.floor(h / 24), "day")}`;
-  if (h < 3 && m % 60) return `in ${plural(h, "hour")} ${plural(m % 60, "minute")}`;
-  return `in ${plural(h, "hour")}`;
-}
-
 // What the live panel shows while nobody is on the field: one centred card in the board's language -- a small event
 // horizon ring, "Next kickoff", the time in the display font with a countdown, the game(s) as team badges, and how many
 // of your (gold) and your opponents' (blue) starters play in them. When nobody has a game left: "That's a wrap".
@@ -298,7 +286,7 @@ function BetweenGames({ feed, gameStates, oneLeague }) {
   useEffect(() => {
     const tick = () => setNow(Date.now());
     const first = setTimeout(tick, 0);
-    const id = setInterval(tick, 30 * 1000);
+    const id = setInterval(tick, 1000);
     return () => {
       clearTimeout(first);
       clearInterval(id);
@@ -313,7 +301,7 @@ function BetweenGames({ feed, gameStates, oneLeague }) {
   } else if (feed.nextStart) {
     eyebrow = "Next kickoff";
     title = mounted ? kickoff(feed.nextStart) : "\u00a0";
-    sub = now ? untilText(new Date(feed.nextStart).getTime() - now) : "\u00a0";
+    sub = now ? formatCountdown(new Date(feed.nextStart).getTime() - now) : "\u00a0";
   } else {
     eyebrow = "Nobody on the field";
     title = "That's a wrap";
@@ -327,7 +315,7 @@ function BetweenGames({ feed, gameStates, oneLeague }) {
       </div>
       <span className="sb-wait-eyebrow mono">{eyebrow}</span>
       <span className="sb-wait-title">{title}</span>
-      <span className="sb-wait-sub mono">{sub}</span>
+      <span className={`sb-wait-sub mono${feed.nextStart ? " is-clock" : ""}`}>{sub}</span>
       {games.length > 0 && (
         <ul className="sb-wait-games">
           {games.slice(0, 3).map((g) => (

@@ -96,3 +96,15 @@ export function isGameDay(gameStates, now = new Date()) {
   const today = now.toDateString();
   return games.some((g) => g.state === "in" || (g.start && new Date(g.start).toDateString() === today));
 }
+
+// A ticking countdown for the between-games card: "6:58:12", or "1d 02:15:09" past 24 hours. Down to the second.
+// Zero or negative (kickoff passed, the scoreboard hasn't caught up) -> "0:00:00".
+export function formatCountdown(ms) {
+  const total = Math.max(0, Math.floor(ms / 1000));
+  const d = Math.floor(total / 86400);
+  const h = Math.floor((total % 86400) / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const sec = total % 60;
+  const two = (n) => String(n).padStart(2, "0");
+  return d > 0 ? `${d}d ${two(h)}:${two(m)}:${two(sec)}` : `${h}:${two(m)}:${two(sec)}`;
+}
