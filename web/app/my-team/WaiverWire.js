@@ -14,7 +14,7 @@ const adds = (n) => (n >= 1000 ? `${(n / 1000).toFixed(n >= 10000 ? 0 : 1)}k` : 
 // "Best available" under a league's standings: the QB / RB / WR / TE on no roster in that league, ranked by this week's
 // projection (lib/waivers.js via getWaiverWire), with a position filter and Sleeper's trending adds. Loaded when the
 // league is opened; free accounts see the available players inside the free top 50 and a count of the rest.
-export default function WaiverWire({ teamId }) {
+export default function WaiverWire({ teamId, bare = false }) {
   const [state, setState] = useState({ teamId: null, data: null });
   const [pos, setPos] = useState("All");
   const [more, setMore] = useState(false);
@@ -33,7 +33,7 @@ export default function WaiverWire({ teamId }) {
   return (
     <section className="standings waivers" aria-label="Best available players">
       <div className="standings-head">
-        <h3 className="board-panel-title">Best available</h3>
+        {!bare && <h3 className="board-panel-title">Best available</h3>}
         <span className="standings-note mono">On no roster in this league · ranked by this week&apos;s projection</span>
         <div className="board-toggle waivers-pos" role="tablist" aria-label="Position">
           {POSITIONS.map((p) => (

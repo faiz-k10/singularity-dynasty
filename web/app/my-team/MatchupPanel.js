@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import SlotBadge from "./SlotBadge";
 import PositionBadge from "../tools/PositionBadge";
 import TeamBadge from "../tools/TeamBadge";
@@ -147,15 +147,55 @@ function TeamScore({ name, record, score, proj, left, opp = false }) {
 // Head-to-head view for one saved league: this week's two lineups slot by slot with live points, our projection, the
 // range still to come and each game's status, under a scoreboard with the live score, projected finals, players left
 // and the win chance (lib/winChance.js, computed server-side and refreshed by the 30-second poll). The league's
-// best players still available in that league (WaiverWire.js) sit underneath, then the standings + playoff odds
-// (Standings.js, once a full refresh has gathered them).
+// standings + playoff odds (Standings.js, once a full refresh has gathered them) and the best players still available
+// in that league (WaiverWire.js) sit underneath as two tabs.
 export default function MatchupPanel({ team, gameStates }) {
   const s = team.settings || {};
   return (
     <div className="h2h-wrap">
       <MatchupBody team={team} gameStates={gameStates} />
-      <WaiverWire teamId={team.id} />
-      <Standings season={s.season} opponent={s.isBye ? null : s.opponent} />
+      <LeagueTabs team={team} />
+    </div>
+  );
+}
+
+// Under the matchup: Standings (with playoff odds) and Best available as two tabs, so the panel stays short. The
+// tab is remembered per browser; Best available only loads (and only asks Sleeper) once its tab is opened. Before a
+// full refresh has gathered the standings there is nothing to tab between, so Best available just shows on its own.
+function LeagueTabs({ team }) {
+  const s = team.settings || {};
+  const hasStandings = Boolean(s.season?.standings?.length);
+  const [saved, setSaved] = useState("standings");
+  useEffect(() => {
+    const t = setTimeout(() => {
+      try {
+        const v = localStorage.getItem("myteam.panelTab");
+        if (v === "standings" || v === "available") setSaved(v);
+      } catch {}
+    }, 0);
+    return () => clearTimeout(t);
+  }, []);
+  function pick(v) {
+    setSaved(v);
+    try {
+      localStorage.setItem("myteam.panelTab", v);
+    } catch {}
+  }
+  if (!hasStandings) return <WaiverWire teamId={team.id} />;
+  const tab = saved;
+  return (
+    <div className="h2h-tabs">
+      <div className="board-toggle league-dash-tabs" role="tablist" aria-label="Standings or best available">
+        {[
+          ["standings", "Standings"],
+          ["available", "Best available"],
+        ].map(([key, label]) => (
+          <button key={key} type="button" role="tab" aria-selected={tab === key} className={tab === key ? "active" : ""} onClick={() => pick(key)}>
+            {label}
+          </button>
+        ))}
+      </div>
+      {tab === "standings" ? <Standings season={s.season} opponent={s.isBye ? null : s.opponent} bare /> : <WaiverWire teamId={team.id} bare />}
     </div>
   );
 }

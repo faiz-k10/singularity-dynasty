@@ -19,7 +19,7 @@ export function oddsTone(p) {
 
 export { pct as formatOdds };
 
-export default function Standings({ season, opponent }) {
+export default function Standings({ season, opponent, bare = false }) {
   if (!season?.standings?.length) return null;
   const { standings, playoffTeams, weeksLeft, byPoints, medianGame } = season;
   const notes = [
@@ -31,7 +31,7 @@ export default function Standings({ season, opponent }) {
   return (
     <section className="standings" aria-label="Standings and playoff odds">
       <div className="standings-head">
-        <h3 className="board-panel-title">Standings &amp; playoff odds</h3>
+        {!bare && <h3 className="board-panel-title">Standings &amp; playoff odds</h3>}
         <span className="standings-note mono">{notes.join(" · ")}</span>
       </div>
       <div className="standings-wrap">

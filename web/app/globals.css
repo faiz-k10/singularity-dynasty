@@ -5459,6 +5459,8 @@ html{font-stretch:82%;}
 .standings-first{color:var(--star-dim);}
 /* Best available (WaiverWire.js): the standings table's look, a position filter on the right of the heading. */
 .waivers{margin:0;}
+.h2h-tabs{display:flex; flex-direction:column; gap:12px; align-items:stretch;}
+.h2h-tabs > .league-dash-tabs{align-self:flex-start;}
 .waivers .waivers-pos{margin:0 0 0 auto; padding:3px;}
 .waivers .waivers-pos button{padding:5px 13px; font-size:11.5px;}
 .waivers-player{display:inline-flex; align-items:center; gap:8px; min-width:0;}
