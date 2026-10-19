@@ -5357,11 +5357,9 @@ html{font-stretch:82%;}
 .sb-card-meter > span{display:block; height:100%; border-radius:2px; background:var(--tone); transition:width .8s ease;}
 
 .sb-card-scores{flex:1; display:flex; flex-direction:column; justify-content:center; gap:10px;}
-.sb-card-side{display:grid; grid-template-columns:34px minmax(0,1fr) auto; align-items:center; gap:8px;}
-.sb-card-you{font-size:9.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--void); background:var(--star-dim); border-radius:4px; padding:2px 0; text-align:center;}
-.sb-card-you:empty{background:none;}
-.sb-card-team{font-size:17px; color:var(--star); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-.sb-card-team.sb-muted{color:var(--star-dim);}
+.sb-card-side{display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:10px;}
+.sb-card-team{font-size:17px; font-weight:700; color:var(--star); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;} /* your team: bold and bright (no YOU tag) */
+.sb-card-team.sb-muted{font-weight:400; color:var(--star-dim);} /* the opponent: regular weight, dimmer */
 .sb-card-score{font-family:var(--font-display), sans-serif; font-weight:800; font-size:clamp(30px, 2.6vw, 42px); line-height:1; text-align:right; color:var(--star-dim); font-variant-numeric:tabular-nums;}
 .sb-card-score.is-lead{color:var(--up);}
 .sb-card-score.is-trail{color:var(--down);}

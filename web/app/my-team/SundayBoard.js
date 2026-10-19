@@ -137,12 +137,10 @@ function LeagueCard({ team, gameStates, injuries, onOpen }) {
 
           <div className="sb-card-scores">
             <div className="sb-card-side is-me">
-              <span className="sb-card-you mono">You</span>
-              <span className="sb-card-team">{row.team}</span>
+              <span className="sb-card-team" title="Your team">{row.team}</span>
               <Score value={myScore} state={leadState(myScore, oppScore)[0]} />
             </div>
             <div className="sb-card-side">
-              <span className="sb-card-you" aria-hidden="true" />
               <span className="sb-card-team sb-muted">{row.opponent}</span>
               <Score value={oppScore} state={leadState(myScore, oppScore)[1]} />
             </div>
