@@ -70,7 +70,8 @@ function SideRow({ p, scoreboardKnown, uncertain, mounted }) {
   // Before the scoreboard is read (a saved snapshot), fall back to the points Sleeper had on the board.
   const pts = o.pts ?? (!scoreboardKnown && p.pts ? p.pts : null);
   const done = o.state === "post" || o.state === "bye" || p.out;
-  const beat = pts != null && p.proj > 0 && pts >= p.proj;
+  // Same traffic-light reading as the curve: red under his floor, green at or above his median, plain between.
+  const tone = pts == null || o.state === "pre" ? null : typeof p.floor === "number" && pts < p.floor ? "low" : p.proj > 0 && pts >= p.proj ? "good" : "mid";
   const showCurve = !p.out && o.state !== "bye" && p.proj > 0 && typeof p.floor === "number" && typeof p.ceiling === "number" && p.ceiling > p.floor;
   return (
     <div className={`h2h-row${o.state === "in" ? " is-live" : ""}${done ? " is-done" : ""}${o.state === "pre" && !p.out ? " is-upcoming" : ""}`}>
@@ -100,7 +101,7 @@ function SideRow({ p, scoreboardKnown, uncertain, mounted }) {
         )}
       </span>
       <span
-        className={`h2h-c-pts mono live-pts-cell${o.state === "in" ? " is-live" : ""}${beat ? " beat" : ""}`}
+        className={`h2h-c-pts mono live-pts-cell${o.state === "in" ? " is-live" : ""}${tone ? ` tone-${tone}` : ""}`}
         title={o.state === "in" ? "Points so far · game in progress" : o.state === "post" ? "Final points" : "Not started"}
       >
         {o.state === "in" && <span className="matchup-score-live-dot" aria-hidden="true" />}
@@ -253,11 +254,29 @@ function MatchupBody({ team, gameStates }) {
         <Side title={myName} side={mine} scoreboardKnown={scoreboardKnown} uncertain={uncertain} mounted={mounted} />
         <Side title={s.opponent} side={opp} opp scoreboardKnown={scoreboardKnown} uncertain={uncertain} mounted={mounted} />
       </div>
+      <ul className="h2h-legend" aria-label="How to read the curves">
+        <li>
+          <span className="h2h-legend-swatch is-low" aria-hidden="true" />
+          <strong>Floor</strong> a bad game: red zone
+        </li>
+        <li>
+          <span className="h2h-legend-swatch is-mid" aria-hidden="true" />
+          <strong>Median</strong> his most likely score; 8 in 10 games land on the gold
+        </li>
+        <li>
+          <span className="h2h-legend-swatch is-good" aria-hidden="true" />
+          <strong>Ceiling</strong> a great game: green zone
+        </li>
+        <li>
+          <span className="h2h-legend-dot" aria-hidden="true" />
+          Points so far: <span className="tone-low-text">red</span> under his floor, <span className="tone-good-text">green</span> at or above his median
+        </li>
+      </ul>
       <p
         className="h2h-note"
         title="Points already scored are locked in; each starter still to play is simulated 5,000 times from his weekly projection, floor and ceiling (scaled to the time left in a live game). Projected final = points so far + the typical amount still to come."
       >
-        Updates every 30 seconds. Hover a projection to see the range still to come.
+        Updates every 30 seconds. Hover a curve to see the range still to come. Rows outlined are players still to play.
       </p>
     </div>
   );
