@@ -1,0 +1,201 @@
+"use client";
+
+import { useMemo } from "react";
+import SlotBadge from "./SlotBadge";
+import PositionBadge from "../tools/PositionBadge";
+import TeamBadge from "../tools/TeamBadge";
+import { summarizeSide } from "@/lib/winChance";
+
+// Sleeper's own page for this week's matchup in a league (opens in a new tab).
+export const sleeperMatchupUrl = (leagueId) => (leagueId ? `https://sleeper.com/leagues/${leagueId}/matchup` : null);
+
+const fmt1 = (v) => (v == null ? "—" : v.toFixed(1));
+
+export function formatWin(p) {
+  return p == null ? "—" : `${Math.round(p * 100)}%`;
+}
+
+// "Mon 8:15 PM" for a game not started yet, the clock while it's on, "Final" after.
+function gameLabel(p) {
+  const o = p.outlook;
+  if (p.out) return "Out";
+  if (o.state === "bye") return "Bye";
+  if (o.state === "post") return "Final";
+  if (o.state === "in") return o.detail || "Live";
+  if (o.state === "pre" && o.start) {
+    const d = new Date(o.start);
+    if (!Number.isNaN(d.getTime())) return d.toLocaleString([], { weekday: "short", hour: "numeric", minute: "2-digit" });
+  }
+  return "";
+}
+
+function leftLabel(s) {
+  if (s.yetToPlay + s.playing === 0) return "All games done";
+  const parts = [];
+  if (s.yetToPlay) parts.push(`${s.yetToPlay} to play`);
+  if (s.playing) parts.push(`${s.playing} playing`);
+  return parts.join(" · ");
+}
+
+// uncertain: points are on the board but the scoreboard couldn't be read, so we can't tell who is still to play --
+// the "to come" range, projected final and players-left counts are hidden rather than guessed.
+function SideRow({ p, scoreboardKnown, uncertain }) {
+  if (!p.id) {
+    return (
+      <div className="h2h-row is-empty">
+        <span className="h2h-c-slot"><SlotBadge slot={p.slot} /></span>
+        <span className="h2h-c-player h2h-player-name h2h-muted">Empty slot</span>
+        <span className="h2h-c-range mono">—</span>
+        <span className="h2h-c-proj mono">—</span>
+        <span className="h2h-c-pts mono">—</span>
+      </div>
+    );
+  }
+  const o = p.outlook;
+  // Before the scoreboard is read (a saved snapshot), fall back to the points Sleeper had on the board.
+  const pts = o.pts ?? (!scoreboardKnown && p.pts ? p.pts : null);
+  const done = o.state === "post" || o.state === "bye" || p.out;
+  const beat = pts != null && p.proj > 0 && pts >= p.proj;
+  return (
+    <div className={`h2h-row${o.state === "in" ? " is-live" : ""}${done ? " is-done" : ""}`}>
+      <span className="h2h-c-slot"><SlotBadge slot={p.slot} /></span>
+      <span className="h2h-c-player">
+        <span className="h2h-player-name">{p.name}</span>
+        <span className="h2h-player-sub">
+          <span className="h2h-slot-inline"><SlotBadge slot={p.slot} /></span>
+          <PositionBadge position={p.pos} />
+          <TeamBadge team={p.team} />
+          <span className="h2h-game mono">{gameLabel(p)}</span>
+        </span>
+      </span>
+      <span className="h2h-c-range mono" title="Points still to come: 80% range">
+        {done || uncertain || o.hi <= 0 ? "—" : `${Math.round(o.lo)}–${Math.round(o.hi)}`}
+      </span>
+      <span
+        className={`h2h-c-proj mono${p.est ? " h2h-muted" : ""}`}
+        title={p.est ? "Typical range for the position (our model doesn't project this player)" : "Singularity weekly projection"}
+      >
+        {fmt1(p.proj)}
+      </span>
+      <span
+        className={`h2h-c-pts mono live-pts-cell${o.state === "in" ? " is-live" : ""}${beat ? " beat" : ""}`}
+        title={o.state === "in" ? "In progress" : o.state === "post" ? "Final" : "Not started"}
+      >
+        {o.state === "in" && <span className="matchup-score-live-dot" aria-hidden="true" />}
+        {fmt1(pts)}
+      </span>
+    </div>
+  );
+}
+
+function Side({ title, side, opp = false, scoreboardKnown, uncertain }) {
+  return (
+    <div className={`h2h-side${opp ? " opp" : ""}`}>
+      <div className="h2h-side-title">{title}</div>
+      <div className="h2h-row h2h-head" aria-hidden="true">
+        <span className="h2h-c-slot">Slot</span>
+        <span className="h2h-c-player">Player</span>
+        <span className="h2h-c-range">To come</span>
+        <span className="h2h-c-proj">Proj</span>
+        <span className="h2h-c-pts">Pts</span>
+      </div>
+      {side.players.map((p, i) => (
+        <SideRow key={p.id || `empty-${i}`} p={p} scoreboardKnown={scoreboardKnown} uncertain={uncertain} />
+      ))}
+    </div>
+  );
+}
+
+function TeamScore({ name, record, score, proj, left, opp = false }) {
+  return (
+    <div className={`h2h-team${opp ? " opp" : ""}`}>
+      <div className="h2h-team-name">{name}</div>
+      {record && <div className="h2h-team-rec mono">{record}</div>}
+      <div className="h2h-score mono">{fmt1(score)}</div>
+      <div className="h2h-meta mono">
+        {proj != null && <span>Proj {fmt1(proj)}</span>}
+        {left && <span>{left}</span>}
+      </div>
+    </div>
+  );
+}
+
+// Head-to-head view for one saved league: this week's two lineups slot by slot with live points, our projection, the
+// range still to come and each game's status, under a scoreboard with the live score, projected finals, players left
+// and the win chance (lib/winChance.js, computed server-side and refreshed by the 30-second poll).
+export default function MatchupPanel({ team, gameStates }) {
+  const s = team.settings || {};
+  const scoreboardKnown = Boolean(gameStates && Object.keys(gameStates).length);
+  const mine = useMemo(() => (s.h2h ? summarizeSide(s.h2h.mine, gameStates) : null), [s.h2h, gameStates]);
+  const opp = useMemo(() => (s.h2h ? summarizeSide(s.h2h.opp, gameStates) : null), [s.h2h, gameStates]);
+  const url = sleeperMatchupUrl(team.platform_league_id);
+  const sleeperLink = url && (
+    <a className="h2h-sleeper mono" href={url} target="_blank" rel="noopener noreferrer">
+      Open in Sleeper <span aria-hidden="true">↗</span>
+    </a>
+  );
+
+  if (s.isBye) {
+    return <div className="h2h h2h-empty"><p>Bye week: no opponent this week.</p>{sleeperLink}</div>;
+  }
+  if (!s.opponent) {
+    return <div className="h2h h2h-empty"><p>This week&apos;s matchup isn&apos;t posted yet.</p>{sleeperLink}</div>;
+  }
+
+  const live = s.matchupActual;
+  const myName = team.team_name || "Your team";
+  const pct = s.winChance;
+  const center = (
+    <div className="h2h-center">
+      <div className={`h2h-win mono${pct == null ? "" : pct >= 0.5 ? " up" : " down"}`}>{formatWin(pct)}</div>
+      <div className="h2h-win-label mono">Win chance</div>
+      {pct != null && (
+        <div className="h2h-win-bar" role="img" aria-label={`${formatWin(pct)} chance to win`}>
+          <span style={{ width: `${pct * 100}%` }} />
+        </div>
+      )}
+      {sleeperLink}
+    </div>
+  );
+
+  // Best ball: no set lineup to compare slot by slot, just the totals.
+  if (s.bestBall || !mine || !opp) {
+    return (
+      <div className="h2h">
+        <div className="h2h-board">
+          <TeamScore name={myName} record={s.record} score={live?.mine ?? null} proj={s.matchupProj?.mine ?? null} />
+          {center}
+          <TeamScore name={s.opponent} record={s.opponentRecord} score={live?.opp ?? null} proj={s.matchupProj?.opp ?? null} opp />
+        </div>
+        <p className="h2h-note">
+          {s.bestBall
+            ? "Best ball: Sleeper starts your top scorers automatically, so there's no lineup to compare slot by slot and no win chance."
+            : "Refresh to load both lineups."}
+        </p>
+      </div>
+    );
+  }
+
+  // Sleeper's own totals once games start (they include anything our per-player copy can't, e.g. stat corrections).
+  const myScore = live ? live.mine : mine.pts;
+  const oppScore = live ? live.opp : opp.pts;
+  const uncertain = !scoreboardKnown && [...s.h2h.mine, ...s.h2h.opp].some((p) => p.pts);
+  return (
+    <div className="h2h">
+      <div className="h2h-board">
+        <TeamScore name={myName} record={s.record} score={myScore} proj={uncertain ? null : myScore + mine.projFinal - mine.pts} left={uncertain ? null : leftLabel(mine)} />
+        {center}
+        <TeamScore name={s.opponent} record={s.opponentRecord} score={oppScore} proj={uncertain ? null : oppScore + opp.projFinal - opp.pts} left={uncertain ? null : leftLabel(opp)} opp />
+      </div>
+      <div className="h2h-lineups">
+        <Side title={myName} side={mine} scoreboardKnown={scoreboardKnown} uncertain={uncertain} />
+        <Side title={s.opponent} side={opp} opp scoreboardKnown={scoreboardKnown} uncertain={uncertain} />
+      </div>
+      <p className="h2h-note">
+        Win chance: points already scored are locked in; each starter still to play is simulated from his weekly
+        projection, floor and ceiling (scaled to the time left in a live game), 5,000 times. Projected final = points so
+        far + the median still to come.
+      </p>
+    </div>
+  );
+}

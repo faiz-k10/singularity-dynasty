@@ -16,41 +16,8 @@ import { sortRows, sortArrow } from "@/lib/sortLink";
 import { buildPortfolio, aggregateGames, PORTFOLIO_COLUMN_TYPES } from "@/lib/portfolio";
 import { liveRosterNews, lineupChanged } from "@/lib/rosterAlerts";
 import { livePointsFor } from "@/lib/gameStatus";
-
-// Display-only relabel -- Sleeper's own roster_positions/starters value is
-// the literal string "SUPER_FLEX"; sorting/matching still uses that raw
-// value everywhere, this just renders it without the underscore.
-function formatSlot(slot) {
-  if (!slot) return "BN";
-  return slot === "SUPER_FLEX" ? "SUPERFLEX" : slot;
-}
-
-// Deliberately an OUTLINE pill (transparent fill, colored border+text via
-// currentColor) rather than PositionBadge's solid fill -- Slot and
-// Position are genuinely different facts (a FLEX slot says nothing about
-// which position fills it) that happened to look like duplicated color
-// coding when Slot was a plain-text first column sitting right next to
-// the position-stripe every .rankings-table already draws on its own
-// first cell. Single-position slots borrow that position's color; FLEX/
-// SUPERFLEX (not tied to one position) get their own accent instead.
-const SLOT_COLOR_VAR = {
-  QB: "--pos-qb",
-  RB: "--pos-rb",
-  WR: "--pos-wr",
-  TE: "--pos-te",
-  FLEX: "--neon-blue",
-  SUPER_FLEX: "--horizon-gold",
-};
-
-function SlotBadge({ slot }) {
-  if (!slot) return <span className="mono">BN</span>;
-  const colorVar = SLOT_COLOR_VAR[slot];
-  return (
-    <span className="slot-badge" style={colorVar ? { color: `var(${colorVar})` } : undefined}>
-      {formatSlot(slot)}
-    </span>
-  );
-}
+import SlotBadge from "./SlotBadge";
+import MatchupPanel from "./MatchupPanel";
 
 const POSITION_ORDER = ["QB", "RB", "WR", "TE", "K", "DEF"];
 
@@ -289,6 +256,36 @@ function RosterTable({ players: rawPlayers, bestBall = false, playerPoints = nul
           </tbody>
         </table>
       </div>
+    </div>
+  );
+}
+
+// One opened league on the dashboard: Matchup (head-to-head with this week's opponent, MatchupPanel.js) or Roster
+// (the lineup / full roster table). Opens on the matchup whenever this week's schedule is posted. `children` are the
+// league's badges + buy-in + remove controls, shown in the header row beside the toggle.
+function LeagueDetail({ team, gameStates, children }) {
+  const s = team.settings || {};
+  const [tab, setTab] = useState(s.opponent || s.isBye ? "matchup" : "roster");
+  return (
+    <div className="league-dash-detail">
+      <div className="league-dash-detail-head">
+        <div className="board-toggle league-dash-tabs" role="tablist" aria-label="League view">
+          {[
+            ["matchup", "Matchup"],
+            ["roster", "Roster"],
+          ].map(([key, label]) => (
+            <button key={key} type="button" role="tab" aria-selected={tab === key} className={tab === key ? "active" : ""} onClick={() => setTab(key)}>
+              {label}
+            </button>
+          ))}
+        </div>
+        {children}
+      </div>
+      {tab === "matchup" ? (
+        <MatchupPanel team={team} gameStates={gameStates} />
+      ) : (
+        <RosterTable players={team.players || []} bestBall={s.bestBall} playerPoints={s.playerPoints} gameStates={gameStates} />
+      )}
     </div>
   );
 }
@@ -1444,8 +1441,7 @@ export default function MyTeamClient({
             injuriesByTeam={liveNews?.byTeam}
             refreshing={refreshing}
             renderExpanded={(t) => (
-              <div className="league-dash-detail">
-                <div className="league-dash-detail-head">
+              <LeagueDetail key={t.id} team={t} gameStates={gameStates}>
                   <LeagueBadges settings={t.settings} />
                   <BuyInField
                     teamId={t.id}
@@ -1461,9 +1457,7 @@ export default function MyTeamClient({
                   >
                     {pending && deletingId === t.id ? "Removing…" : "Remove"}
                   </button>
-                </div>
-                <RosterTable players={t.players || []} bestBall={t.settings?.bestBall} playerPoints={t.settings?.playerPoints} gameStates={gameStates} />
-              </div>
+              </LeagueDetail>
             )}
           />
         </div>

@@ -14,8 +14,8 @@ test("parseScoreboard maps ESPN codes to Sleeper's", () => {
   const s = parseScoreboard(board);
   assert.equal(s.ATL.state, "in");
   assert.equal(s.WAS.state, "pre");
-  assert.equal(s.LA.state, "post");
-  assert.equal(teamCode("LAR"), "LA");
+  assert.equal(s.LAR.state, "post"); // Sleeper also uses LAR for the Rams
+  assert.equal(teamCode("WSH"), "WAS");
 });
 
 test("livePointsFor: dash before kickoff, 0 once playing with no points, value otherwise", () => {

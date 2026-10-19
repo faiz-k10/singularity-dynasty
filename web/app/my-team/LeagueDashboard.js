@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useMemo, useState } from "react";
+import { sleeperMatchupUrl, formatWin } from "./MatchupPanel";
 
 // "Rico Dowdle" -> "R. Dowdle" (first initial, full remaining name incl. suffixes).
 function shortName(name) {
@@ -43,6 +44,9 @@ function buildRow(t, injuries) {
     liveMine: live?.mine ?? null,
     liveOpp: live?.opp ?? null,
     liveMargin: live ? live.mine - live.opp : null,
+    // Live win chance (lib/winChance.js via actions.js); none on a bye or in best ball.
+    winPct: s.isBye || s.bestBall ? null : s.winChance ?? null,
+    sleeperUrl: sleeperMatchupUrl(t.platform_league_id),
     outStarters,
     bestBall: !!s.bestBall,
   };
@@ -70,6 +74,7 @@ const COLS = [
   { key: "opponent", label: "Opponent", align: "left", sort: (r) => r.opponent.toLowerCase() },
   { key: "projMine", label: "Proj", sort: (r) => r.projMine ?? -1 },
   { key: "liveMargin", label: "Live", sort: (r) => r.liveMargin ?? -999 },
+  { key: "winPct", label: "Win %", sort: (r) => r.winPct ?? -1 },
   { key: "alerts", label: "Alerts", align: "left", sort: (r) => r.outStarters.length },
 ];
 
@@ -132,6 +137,7 @@ export default function LeagueDashboard({ savedTeams, renderExpanded, injuriesBy
                   {sortKey === c.key && <span className="league-dash-sort">{dir === "asc" ? "▲" : "▼"}</span>}
                 </th>
               ))}
+              <th className="league-dash-th-link" aria-label="Open in Sleeper" />
             </tr>
           </thead>
           <tbody>
@@ -171,6 +177,16 @@ export default function LeagueDashboard({ savedTeams, renderExpanded, injuriesBy
                     <span className="league-dash-muted">—</span>
                   )}
                 </td>
+                <td className="mono league-dash-win">
+                  {r.winPct != null ? (
+                    <span className={r.winPct >= 0.5 ? "up" : "down"}>
+                      {formatWin(r.winPct)}
+                      <span className="league-dash-winbar" aria-hidden="true"><span style={{ width: `${r.winPct * 100}%` }} /></span>
+                    </span>
+                  ) : (
+                    <span className="league-dash-muted">—</span>
+                  )}
+                </td>
                 <td className="align-left">
                   {r.outStarters.length > 0 ? (
                     <div className="league-dash-alerts">
@@ -186,10 +202,27 @@ export default function LeagueDashboard({ savedTeams, renderExpanded, injuriesBy
                     <span className="league-dash-muted">—</span>
                   )}
                 </td>
+                <td className="league-dash-link-cell">
+                  {r.sleeperUrl && (
+                    <a
+                      className="league-dash-sleeper"
+                      href={r.sleeperUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="Open this matchup in Sleeper"
+                      aria-label={`Open ${r.league} in Sleeper`}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true">
+                        <path d="M9 2h5v5M14 2 7.5 8.5M12 9.5V13a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h3.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </a>
+                  )}
+                </td>
               </tr>
               {open.has(r.id) && (
                 <tr className="league-dash-expanded">
-                  <td colSpan={COLS.length}>{renderExpanded(r.team_obj)}</td>
+                  <td colSpan={COLS.length + 1}>{renderExpanded(r.team_obj)}</td>
                 </tr>
               )}
               </Fragment>

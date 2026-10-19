@@ -3,11 +3,14 @@
 // game hasn't started shows "—" instead of a misleading 0.0. Cached 30 seconds in module memory, matching the poll.
 const URL = "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard";
 
-// ESPN and Sleeper spell a few teams differently; compare on one code.
-const ALIAS = { WSH: "WAS", LAR: "LA", JAC: "JAX" };
+// ESPN and Sleeper spell Washington differently; compare on Sleeper's code. (Both use LAR for the Rams -- checked
+// against Sleeper's player dictionary and ESPN's team list, Oct 2026.)
+const ALIAS = { WSH: "WAS", JAC: "JAX" };
 export const teamCode = (t) => (t ? ALIAS[t] || t : t);
 
-// { TEAM: { state: "pre" | "in" | "post", detail } } for every team in this week's scoreboard.
+// { TEAM: { state: "pre" | "in" | "post", detail, period, clock, start } } for every team in this week's scoreboard.
+// period + clock (seconds left in the period) let lib/winChance.js tell how much of a live game is left; start is the
+// kickoff time (ISO) for games not started yet.
 export function parseScoreboard(json) {
   const out = {};
   for (const e of json?.events || []) {
@@ -16,7 +19,15 @@ export function parseScoreboard(json) {
     if (!c || !st) continue;
     for (const comp of c.competitors || []) {
       const code = teamCode(comp.team?.abbreviation);
-      if (code) out[code] = { state: st.state, detail: st.shortDetail || st.detail || null };
+      if (code) {
+        out[code] = {
+          state: st.state,
+          detail: st.shortDetail || st.detail || null,
+          period: typeof c.status.period === "number" ? c.status.period : null,
+          clock: typeof c.status.clock === "number" ? c.status.clock : null,
+          start: c.date || e.date || null,
+        };
+      }
     }
   }
   return out;

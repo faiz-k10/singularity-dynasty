@@ -11,6 +11,7 @@ const TEAM_COLORS = {
   MIN: "#4F2683", NE: "#002244", NO: "#D3BC8D", NYG: "#0B2265",
   NYJ: "#125740", PHI: "#004C54", PIT: "#FFB612", SEA: "#002244",
   SF: "#AA0000", TB: "#D50A0A", TEN: "#4B92DB", WAS: "#5A1414",
+  LAR: "#003594", // Sleeper's code for the Rams (My Team rosters come from Sleeper)
 };
 
 export default TEAM_COLORS;
