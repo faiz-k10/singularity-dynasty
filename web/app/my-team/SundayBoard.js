@@ -70,7 +70,10 @@ function LeagueCard({ team, gameStates, injuries, onOpen }) {
   // The card's border is its win chance: the card's width is the bar. The top and bottom borders fill from the left edge by the
   // same share -- the chance to win -- and the left edge is always drawn; all the way across (locked in / won) closes the box.
   // A settled game uses the final score; a loss keeps a short stub so its colour still shows.
-  const ringPct = pct == null ? null : done ? (myScore > oppScore ? 1 : myScore < oppScore ? 0 : 0.5) : pct;
+  // With no win chance to show (best ball has no head-to-head), the border is the chance to make the playoffs instead, in the same
+  // green / gold / red as the "Playoffs N%" text.
+  const oddsRing = pct == null && row.playoffOdds != null;
+  const ringPct = oddsRing ? row.playoffOdds : pct == null ? null : done ? (myScore > oppScore ? 1 : myScore < oppScore ? 0 : 0.5) : pct;
   const ringStyle = ringPct == null ? undefined : { "--win": ringPct >= 0.995 ? 1 : Math.max(0.02, ringPct) };
   const alerts = row.outStarters.length;
   const myLeft = mine ? mine.players.filter((p) => p.outlook.state === "pre" || p.outlook.state === "in" || p.outlook.state === null) : [];
@@ -81,7 +84,7 @@ function LeagueCard({ team, gameStates, injuries, onOpen }) {
 
   return (
     <div
-      className={`sb-card is-${st.key}${sealedClass(st.label)}${ringStyle ? " has-ring" : ""}`}
+      className={`sb-card is-${st.key}${sealedClass(st.label)}${ringStyle ? " has-ring" : ""}${oddsRing ? ` ring-${oddsTone(row.playoffOdds)}` : ""}`}
       style={ringStyle}
       role="button"
       tabIndex={0}
@@ -154,7 +157,7 @@ function LeagueCard({ team, gameStates, injuries, onOpen }) {
           <div className="sb-card-foot">
             {done ? (
               <span className="sb-card-final sb-muted">All games final</span>
-            ) : (
+            ) : !s.h2h ? null : ( // best ball has no lineups to say who is left; the card leans on its totals and playoff odds
               // Who is still to play, as two aligned rows: yours as name chips (a red dot on anyone playing right now),
               // theirs as a count.
               <div className="sb-card-todo" title="Starters still to play or playing now">

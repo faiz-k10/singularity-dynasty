@@ -5357,6 +5357,8 @@ html{font-stretch:82%;}
    the top and bottom borders fill left to right by the same amount -- the chance to win (--win, 0-1) -- so a locked-in or won
    card is boxed all the way round and a long shot is a short bracket on the left. Animates as the chance moves; the card's
    own faint border is the unfilled track. */
+.sb-card[class*="ring-odds"] .sb-card-word{color:var(--star-dim);} /* the word stays quiet; only the border carries the colour */
+.sb-card.ring-odds-high{--tone:var(--up);} .sb-card.ring-odds-mid{--tone:var(--horizon-gold);} .sb-card.ring-odds-low{--tone:var(--down);} /* best ball: the ring is the playoff odds, coloured like the Playoffs text */
 @property --win{syntax:"<number>"; inherits:true; initial-value:0;}
 .sb-card.has-ring::after{
   content:""; position:absolute; inset:0; padding:2.5px; border-radius:inherit; pointer-events:none;
