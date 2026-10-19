@@ -519,7 +519,7 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
         )}
         {toolbar}
       </div>
-      <div className="sb-body">
+      <div className={`sb-body${openTeam ? " has-drawer" : ""}`}>
         {openTeam ? (
           // The league's matchup slides in from the left over the cards; the live panel stays beside it, narrowed to
           // this league's two lineups.
