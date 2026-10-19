@@ -149,12 +149,12 @@ function TeamScore({ name, record, score, proj, left, opp = false }) {
 // and the win chance (lib/winChance.js, computed server-side and refreshed by the 30-second poll). The league's
 // standings + playoff odds (Standings.js, once a full refresh has gathered them) and the best players still available
 // in that league (WaiverWire.js) sit underneath as two tabs.
-export default function MatchupPanel({ team, gameStates }) {
+export default function MatchupPanel({ team, gameStates, panelTab }) {
   const s = team.settings || {};
   return (
     <div className="h2h-wrap">
       <MatchupBody team={team} gameStates={gameStates} />
-      <LeagueTabs team={team} />
+      <LeagueTabs team={team} tab={panelTab} />
     </div>
   );
 }
@@ -162,39 +162,53 @@ export default function MatchupPanel({ team, gameStates }) {
 // Under the matchup: Standings (with playoff odds) and Best available as two tabs, so the panel stays short. The
 // tab is remembered per browser; Best available only loads (and only asks Sleeper) once its tab is opened. Before a
 // full refresh has gathered the standings there is nothing to tab between, so Best available just shows on its own.
-function LeagueTabs({ team }) {
-  const s = team.settings || {};
-  const hasStandings = Boolean(s.season?.standings?.length);
-  const [saved, setSaved] = useState("standings");
+// The Sunday board puts the tab switch in its header row instead (it owns the state through usePanelTab and passes
+// `tab` down); anywhere else the switch sits right above the content.
+export function usePanelTab() {
+  const [tab, setTab] = useState("standings");
   useEffect(() => {
     const t = setTimeout(() => {
       try {
         const v = localStorage.getItem("myteam.panelTab");
-        if (v === "standings" || v === "available") setSaved(v);
+        if (v === "standings" || v === "available") setTab(v);
       } catch {}
     }, 0);
     return () => clearTimeout(t);
   }, []);
   function pick(v) {
-    setSaved(v);
+    setTab(v);
     try {
       localStorage.setItem("myteam.panelTab", v);
     } catch {}
   }
-  if (!hasStandings) return <WaiverWire teamId={team.id} />;
-  const tab = saved;
+  return [tab, pick];
+}
+
+export function PanelTabs({ value, onChange }) {
+  return (
+    <div className="board-toggle league-dash-tabs" role="tablist" aria-label="Standings or best available">
+      {[
+        ["standings", "Standings"],
+        ["available", "Best available"],
+      ].map(([key, label]) => (
+        <button key={key} type="button" role="tab" aria-selected={value === key} className={value === key ? "active" : ""} onClick={() => onChange(key)}>
+          {label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+export const hasStandings = (team) => Boolean(team?.settings?.season?.standings?.length);
+
+function LeagueTabs({ team, tab: outerTab }) {
+  const s = team.settings || {};
+  const [ownTab, pick] = usePanelTab();
+  if (!hasStandings(team)) return <WaiverWire teamId={team.id} />;
+  const tab = outerTab || ownTab;
   return (
     <div className="h2h-tabs">
-      <div className="board-toggle league-dash-tabs" role="tablist" aria-label="Standings or best available">
-        {[
-          ["standings", "Standings"],
-          ["available", "Best available"],
-        ].map(([key, label]) => (
-          <button key={key} type="button" role="tab" aria-selected={tab === key} className={tab === key ? "active" : ""} onClick={() => pick(key)}>
-            {label}
-          </button>
-        ))}
-      </div>
+      {!outerTab && <PanelTabs value={tab} onChange={pick} />}
       {tab === "standings" ? <Standings season={s.season} opponent={s.isBye ? null : s.opponent} bare /> : <WaiverWire teamId={team.id} bare />}
     </div>
   );

@@ -5427,6 +5427,7 @@ html{font-stretch:82%;}
 .sb-drawer.glass-panel{background:linear-gradient(180deg, rgba(255,255,255,var(--glass-spec)), rgba(255,255,255,0) 30%), var(--void-panel);}
 .sb-drawer{min-height:0; overflow:auto; margin:0; padding:14px 18px 18px; animation:sb-drawer-in .22s ease both;}
 .sb-drawer-head{display:flex; align-items:center; gap:16px; margin-bottom:12px;}
+.sb-drawer-tabs{margin-left:auto;}
 .sb-drawer-back{all:unset; cursor:pointer; display:inline-flex; align-items:center; gap:7px; font-size:12px; color:var(--star-dim); padding:6px 12px; border-radius:999px; border:1px solid rgba(var(--star-dot-rgb),.14); transition:color .15s ease, border-color .15s ease;}
 .sb-drawer-back:hover{color:var(--star); border-color:rgba(var(--star-dot-rgb),.3);}
 .sb-drawer-back:focus-visible{outline:2px solid var(--neon-blue); outline-offset:2px;}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import MatchupPanel, { sleeperMatchupUrl, formatWin, standing } from "./MatchupPanel";
+import MatchupPanel, { sleeperMatchupUrl, formatWin, standing, usePanelTab, PanelTabs, hasStandings } from "./MatchupPanel";
 import { useMounted } from "./useMounted";
 import { buildRow, isTyping, moveFocus } from "./LeagueDashboard";
 import { formatOdds, oddsTone } from "./Standings";
@@ -429,6 +429,7 @@ function LiveFeed({ savedTeams, gameStates, updatedAt, teamId = null, league = n
 export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, updatedAt, toolbar }) {
   const mounted = useMounted();
   const [openId, setOpenIdState] = useState(null);
+  const [panelTab, setPanelTab] = usePanelTab();
   const openTeam = openId ? savedTeams.find((t) => t.id === openId) : null;
   const gridRef = useRef(null);
   const lastCard = useRef(null);
@@ -529,8 +530,13 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
                 <span aria-hidden="true">←</span> All leagues
               </button>
               <h2 className="board-panel-title">{openTeam.league_name}</h2>
+              {hasStandings(openTeam) && (
+                <span className="sb-drawer-tabs">
+                  <PanelTabs value={panelTab} onChange={setPanelTab} />
+                </span>
+              )}
             </div>
-            <MatchupPanel team={openTeam} gameStates={gameStates} />
+            <MatchupPanel team={openTeam} gameStates={gameStates} panelTab={panelTab} />
           </section>
         ) : (
           <div className="sb-grid" ref={gridRef}>
