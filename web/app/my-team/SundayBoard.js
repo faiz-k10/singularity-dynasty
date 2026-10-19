@@ -67,11 +67,11 @@ function LeagueCard({ team, gameStates, injuries, onOpen }) {
   const mounted = useMounted();
   const { s, row, mine, opp, myScore, oppScore, pct, playing, done, st } = useMemo(() => matchupState(team, gameStates, injuries), [team, gameStates, injuries]);
   const url = sleeperMatchupUrl(team.platform_league_id);
-  // The card's border is its win chance: a line in the card's colour drawn clockwise from the middle of the left edge, as
-  // long as the share of the perimeter equal to the chance to win (all the way round = locked in / won). A settled game
-  // uses the final score; a loss keeps a short stub so its colour still shows.
+  // The card's border is its win chance: the card's width is the bar. The top and bottom borders fill from the left edge by the
+  // same share -- the chance to win -- and the left edge is always drawn; all the way across (locked in / won) closes the box.
+  // A settled game uses the final score; a loss keeps a short stub so its colour still shows.
   const ringPct = pct == null ? null : done ? (myScore > oppScore ? 1 : myScore < oppScore ? 0 : 0.5) : pct;
-  const ringStyle = ringPct == null ? undefined : { "--win": Math.min(1, Math.max(0.02, ringPct)) };
+  const ringStyle = ringPct == null ? undefined : { "--win": ringPct >= 0.995 ? 1 : Math.max(0.02, ringPct) };
   const alerts = row.outStarters.length;
   const myLeft = mine ? mine.players.filter((p) => p.outlook.state === "pre" || p.outlook.state === "in" || p.outlook.state === null) : [];
   // Earliest kickoff still to come on either side.

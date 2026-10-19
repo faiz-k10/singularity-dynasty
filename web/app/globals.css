@@ -5353,13 +5353,14 @@ html{font-stretch:82%;}
   position:relative; display:flex; flex-direction:column; gap:12px; padding:16px 18px 14px; cursor:pointer; text-align:left;
   transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
 }
-/* The border IS the win chance: a ring in the card's colour from the middle of the left edge, clockwise, covering the share of
-   the way round equal to the chance to win (--win, 0-1; all the way round when locked in or won). It animates as the chance
-   moves. The card's own faint border is the unfilled track. */
+/* The border IS the win chance: the card's width is the bar. The left edge is the start (always drawn, middle outwards), and
+   the top and bottom borders fill left to right by the same amount -- the chance to win (--win, 0-1) -- so a locked-in or won
+   card is boxed all the way round and a long shot is a short bracket on the left. Animates as the chance moves; the card's
+   own faint border is the unfilled track. */
 @property --win{syntax:"<number>"; inherits:true; initial-value:0;}
 .sb-card.has-ring::after{
   content:""; position:absolute; inset:0; padding:2.5px; border-radius:inherit; pointer-events:none;
-  background:conic-gradient(from 270deg, var(--tone) 0, var(--tone) calc(var(--win) * 360deg), transparent calc(var(--win) * 360deg));
+  background:linear-gradient(90deg, var(--tone) 0, var(--tone) calc(var(--win) * 100%), transparent calc(var(--win) * 100%));
   -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite:xor;
           mask:linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
   transition:--win .8s ease;
