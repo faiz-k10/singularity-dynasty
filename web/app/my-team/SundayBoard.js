@@ -152,31 +152,47 @@ function LeagueCard({ team, gameStates, injuries, onOpen }) {
           </div>
 
           <div className="sb-card-foot">
-            {myLeft.length > 0 ? (
-              <span className="sb-card-todo" title="Your starters still to play or playing now">
-                <span className="sb-card-label">Still to play</span>
-                {myLeft.map((p) => (
-                  <span key={p.id} className={p.outlook.state === "in" ? "is-live" : ""}>
-                    {shortName(p.name)}
-                  </span>
-                ))}
-                {oppLeft > 0 && <span className="sb-muted">· them {oppLeft}</span>}
-              </span>
+            {done ? (
+              <span className="sb-card-final sb-muted">All games final</span>
             ) : (
-              <span className="sb-card-todo sb-muted">{done ? "All games final" : oppLeft > 0 ? `All yours done · them ${oppLeft} to play` : "All yours done"}</span>
+              // Who is still to play, as two aligned rows: yours as name chips (a red dot on anyone playing right now),
+              // theirs as a count.
+              <div className="sb-card-todo" title="Starters still to play or playing now">
+                <span className="sb-card-label sb-card-todo-head">Still to play</span>
+                <span className="sb-card-who mono">Yours</span>
+                <span className="sb-card-chips">
+                  {myLeft.length > 0 ? (
+                    myLeft.map((p) => (
+                      <span key={p.id} className={`sb-card-chip${p.outlook.state === "in" ? " is-live" : ""}`}>
+                        {shortName(p.name)}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="sb-muted">All done</span>
+                  )}
+                </span>
+                <span className="sb-card-who mono">Theirs</span>
+                <span className="sb-card-chips">
+                  <span className="sb-muted">{oppLeft > 0 ? `${oppLeft} ${oppLeft === 1 ? "player" : "players"}` : "All done"}</span>
+                </span>
+              </div>
             )}
-            <span className="sb-card-extras">
-              {row.playoffOdds != null && (
-                <span className={`sb-card-odds mono ${oddsTone(row.playoffOdds)}`} title="Chance to make the playoffs">
-                  Playoffs {formatOdds(row.playoffOdds, row.playoffSettled)}
-                </span>
-              )}
-              {alerts > 0 && (
-                <span className="sb-card-alerts mono" title={row.outStarters.map((p) => `${p.name}: ${p.status}`).join("\n")}>
-                  {alerts} {alerts === 1 ? "alert" : "alerts"}
-                </span>
-              )}
-            </span>
+            {(row.playoffOdds != null || alerts > 0) && (
+              <span className="sb-card-extras">
+                {row.playoffOdds != null ? (
+                  <span className={`sb-card-odds mono ${oddsTone(row.playoffOdds)}`} title="Chance to make the playoffs">
+                    Playoffs {formatOdds(row.playoffOdds, row.playoffSettled)}
+                  </span>
+                ) : (
+                  <span />
+                )}
+                {alerts > 0 && (
+                  <span className="sb-card-alerts mono" title={row.outStarters.map((p) => `${p.name}: ${p.status}`).join("\n")}>
+                    {alerts} {alerts === 1 ? "alert" : "alerts"}
+                  </span>
+                )}
+              </span>
+            )}
           </div>
         </>
       )}

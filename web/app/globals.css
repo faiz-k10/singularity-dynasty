@@ -5405,12 +5405,17 @@ html{font-stretch:82%;}
 .sb-card-score.bumped{animation:sb-bump 1.4s ease-out;}
 @keyframes sb-bump{0%{color:var(--horizon-gold); text-shadow:0 0 16px rgba(var(--horizon-gold-rgb),.7);} 100%{text-shadow:none;}}
 
-.sb-card-foot{display:flex; align-items:flex-end; justify-content:space-between; gap:8px 14px; flex-wrap:wrap; padding-top:10px; border-top:1px solid rgba(var(--star-dot-rgb),.07);}
-.sb-card-todo{display:flex; flex-wrap:wrap; align-items:baseline; gap:3px 9px; font-size:12.5px; color:var(--star-dim); min-width:0;}
+.sb-card-foot{display:flex; flex-direction:column; gap:10px; padding-top:10px; border-top:1px solid rgba(var(--star-dot-rgb),.07);}
+/* Who is still to play: a small two-row table -- a label column (Yours / Theirs) beside name chips / a count. */
+.sb-card-todo{display:grid; grid-template-columns:auto minmax(0,1fr); gap:6px 12px; align-items:center; font-size:12.5px; color:var(--star-dim); min-width:0;}
 .sb-card-label{font-family:var(--font-mono), monospace; font-size:9.5px; text-transform:uppercase; letter-spacing:.08em; opacity:.8;}
-.sb-card-todo .is-live{color:var(--star);}
-.sb-card-todo .is-live::after{content:""; display:inline-block; width:5px; height:5px; margin-left:5px; border-radius:50%; background:var(--down); vertical-align:middle;}
-.sb-card-extras{display:inline-flex; align-items:center; gap:12px; margin-left:auto; white-space:nowrap;}
+.sb-card-todo-head{grid-column:1 / -1;}
+.sb-card-who{font-size:10.5px; letter-spacing:.04em; color:var(--star-dim);}
+.sb-card-chips{display:flex; flex-wrap:wrap; gap:5px; min-width:0;}
+.sb-card-chip{padding:2px 9px; border-radius:999px; background:rgba(var(--star-dot-rgb),.07); border:1px solid rgba(var(--star-dot-rgb),.12); color:var(--star); font-size:12px; line-height:1.4; white-space:nowrap;}
+.sb-card-chip.is-live::before{content:""; display:inline-block; width:5px; height:5px; margin-right:6px; border-radius:50%; background:var(--down); vertical-align:middle;}
+.sb-card-final{font-size:12.5px;}
+.sb-card-extras{display:flex; align-items:center; justify-content:space-between; gap:12px; white-space:nowrap;}
 .sb-card-odds{font-size:11px;}
 .sb-card-alerts{font-size:11px; font-weight:700; color:var(--void); background:var(--horizon); border-radius:999px; padding:2px 9px;}
 .sb-card-empty{font-size:14px; color:var(--star-dim); padding:10px 0 4px;}
