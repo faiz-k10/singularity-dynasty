@@ -241,3 +241,26 @@ test("buildPlayFeed: a lost fumble on a run is two entries for the runner (Run, 
     ["Denver Broncos", "Fumble recovery", 2],
   ]);
 });
+
+test("a catch that ends in a lost fumble: the receiver gets his Catch AND his Fumble lost, the passer his Completion (McCaffrey, Oct 19)", () => {
+  const text = "B.Purdy pass short right to C.McCaffrey to WAS 21 for 12 yards (K.Chaisson; S.Styles). FUMBLES (K.Chaisson), RECOVERED by WAS-F.Luvu at WAS 19.";
+  assert.equal(roleLabel("Fumble Recovery (Opponent)", ["receiver", "fumbler"], text), "Catch");
+  assert.equal(roleLabel("Fumble Recovery (Opponent)", ["passer"], text), "Completion");
+  assert.deepEqual(roleLabels("Fumble Recovery (Opponent)", ["receiver", "fumbler", "assistedBy"], text), ["Catch", "Fumble lost"]);
+  // Not a catch: an incomplete pass on the same kind of play, or a sack that fumbles.
+  assert.equal(roleLabel("Fumble Recovery (Own)", ["receiver"], "L.Wattenberg to DEN 36 for -5 yards. FUMBLES, recovered by DEN-B.Nix. B.Nix pass incomplete short right to M.Mims."), null);
+  assert.equal(roleLabel("Sack Opp Fumble Recovery", ["passer", "fumbler"], "M.Penix sacked at ATL 14 for -8 yards (K.Gordon). FUMBLES (K.Gordon), RECOVERED by CHI-D.Bush"), null);
+  const plays = parsePlays([raw("c1", 1, "Fumble Recovery (Opponent)", text, [["4361741", "passer"], ["3117251", "receiver"], ["3117251", "fumbler"], ["3127273", "recoverer"]])], { 6: "SF", 9: "WAS" }).map((p) => ({ ...p, teams: ["SF", "WAS"], offense: "SF" }));
+  const feed = buildPlayFeed(
+    [
+      { playerId: "q", name: "Brock Purdy", pos: "QB", team: "SF", side: "mine", espnId: "4361741" },
+      { playerId: "m", name: "Christian McCaffrey", pos: "RB", team: "SF", side: "mine", espnId: "3117251" },
+    ],
+    plays,
+  );
+  assert.deepEqual(feed.map((e) => [e.who[0].name, e.label, e.yards, e.points]), [
+    ["Brock Purdy", "Completion", "12 yds", 0.5],
+    ["Christian McCaffrey", "Catch", "12 yds", 2.2],
+    ["Christian McCaffrey", "Fumble lost", null, -2],
+  ]);
+});

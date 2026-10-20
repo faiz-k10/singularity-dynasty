@@ -83,6 +83,11 @@ export function parsePlays(items, codeById = {}) {
 const INT = /Interception/;
 const FUMBLE_LOST = /Fumble Recovery \(Opponent\)|Fumble Return Touchdown|Opp Fumble Recovery/;
 
+// A pass that was caught before the fumble: ESPN files "pass short right to C.McCaffrey to WAS 21 for 12 yards. FUMBLES ..." under the
+// fumble's play type, so the catch (and the passer's completion) is read from the text instead -- a pass "to" someone "for N yards",
+// not incomplete or intercepted.
+const caughtPass = (text) => /\bpass\b.*?\bto\b.*?\bfor -?\d+ yards?/i.test(text) && !/incomplete|INTERCEPT/i.test(text);
+
 // What one of our players did on a play, from his role(s) in it. Only plays that move fantasy points are kept --
 // catches, runs, completions, scores, kicks, returns, turnovers -- so incompletions, sacks taken, recovered fumbles,
 // blocks and tackles stay off (null) and the list reads as "what just changed my score". Yards are added separately.
@@ -93,11 +98,13 @@ export function roleLabel(type, roles, text = "") {
   if (has("receiver") && !has("passer")) {
     if (td && /Pass/.test(type)) return "Touchdown catch";
     if (/Reception/.test(type)) return "Catch";
+    if (/Fumble/.test(type) && caughtPass(text)) return "Catch"; // caught it, then fumbled (the Fumble is its own line)
   }
   if (has("passer")) {
     if (INT.test(type)) return "Interception thrown";
     if (td && /Pass/.test(type)) return "Touchdown pass";
     if (/Reception/.test(type)) return "Completion";
+    if (/Fumble/.test(type) && caughtPass(text)) return "Completion"; // his pass was caught before the receiver fumbled
   }
   if (has("rusher")) {
     if (td && /Rush/.test(type)) return "Touchdown run";
