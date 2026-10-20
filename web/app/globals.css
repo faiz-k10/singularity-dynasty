@@ -2696,6 +2696,9 @@ a.export-csv-btn{text-decoration:none;}
 .weekly-detail-grid .weekly-stats-next{display:flex; flex-direction:column; gap:10px; padding:14px 16px; min-width:0;}
 .weekly-stats-eyebrow{font-family:var(--font-mono), monospace; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--star-dim); white-space:nowrap;}
 .weekly-stats-eyebrow-next{color:var(--horizon-gold); font-weight:700;}
+.weekly-stats-eyebrow-next{display:flex; flex-wrap:wrap; align-items:center; justify-content:center; column-gap:6px; row-gap:2px; letter-spacing:0.07em;} /* in a narrow panel the opponent drops to its own line instead of spilling into the next panel */
+.weekly-stats-eyebrow .weekly-stats-opp{display:inline-flex; align-items:center; gap:4px;}
+.weekly-stats-eyebrow .weekly-stats-opp .team-badge img{width:20px; height:20px;}
 /* One line, always: even a three-digit position rank ("TE103") and a median fit beside each other, so the numbers
    shrink and the labels tighten instead of wrapping onto a second row. */
 .weekly-stats-pair{display:flex; flex-wrap:nowrap; justify-content:space-between; gap:14px;}

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import OutcomeCurveDetail from "./OutcomeCurveDetail";
 import TeamBadge from "./TeamBadge";
+import { isBye, BYE_LABEL } from "@/lib/bye";
 import PositionBadge from "./PositionBadge";
 import ConfidenceBadge from "./ConfidenceBadge";
 import { getAchievements } from "./achievements";
@@ -528,7 +529,16 @@ export function PlayerStatsRow({ row }) {
   return (
     <div className="weekly-stats-split">
       <div className="stat-panel weekly-stats-next">
-        <span className="weekly-stats-eyebrow weekly-stats-eyebrow-next">This week · {row.playedThisWeek != null ? "Already played" : "Projected"}</span>
+        <span className="weekly-stats-eyebrow weekly-stats-eyebrow-next">
+          This week · {row.playedThisWeek != null ? "Already played" : "Projected"}
+          {row.opponent && !isBye(row.opponent) && (
+            <span className="weekly-stats-opp">
+              {row.is_home === true ? "vs" : row.is_home === false ? "@" : null}
+              <TeamBadge team={row.opponent} />
+            </span>
+          )}
+          {row.opponent && isBye(row.opponent) && <span className="weekly-stats-opp">· {BYE_LABEL}</span>}
+        </span>
         <div className="weekly-stats-pair">
           <div className="weekly-stats-item">
             <span className="weekly-player-stat-label">Position rank</span>
