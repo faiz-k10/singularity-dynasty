@@ -2483,6 +2483,9 @@ a.export-csv-btn{text-decoration:none;}
 /* When the selected week was one he missed, the dot goes the same gray as that week's stretch. */
 .stat-panel-pace-scrub-handle.missed{background:var(--missed-gray); box-shadow:0 0 0 1px var(--missed-gray);}
 .stat-panel-pace-progress-fill{position:absolute; left:0; top:0; bottom:0; background:var(--down); border-radius:3px;}
+/* Bye weeks read white (founder, Oct 20 2026), like the gray for weeks he missed; a hairline keeps the white visible on a light panel. */
+.stat-panel-pace-seg-bye{position:absolute; top:0; bottom:0; background:#fff; box-shadow:inset 0 0 0 1px rgba(var(--star-dot-rgb), .3);}
+.stat-panel-pace-scrub-handle.bye{background:#fff; box-shadow:0 0 0 1px rgba(var(--star-dot-rgb), .45);}
 
 /* Weekly Projection Rankings' own click-to-expand row (WeeklyDetailRow.js)
    -- same .stat-detail-row/.stat-panel/.row-expandable chrome as Player

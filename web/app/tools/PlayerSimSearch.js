@@ -401,9 +401,18 @@ function StatDetailRow({ row, colSpan, shapePeers, wrTePool, tagsByName, maxCeil
                           title="Games missed"
                         />
                       ))}
+                      {/* His team's bye weeks read white. */}
+                      {missedSegments(row.byeWeeks, pv.week, latestWeek).map((seg) => (
+                        <div
+                          key={`bye-${seg.start}`}
+                          className="stat-panel-pace-seg-bye"
+                          style={{ left: `${seg.start}%`, width: `${seg.end - seg.start}%` }}
+                          title="Bye week"
+                        />
+                      ))}
                     </div>
                     <span
-                      className={`stat-panel-pace-scrub-handle${(row.missedWeeks || []).includes(pv.week) ? " missed" : ""}`}
+                      className={`stat-panel-pace-scrub-handle${(row.missedWeeks || []).includes(pv.week) ? " missed" : (row.byeWeeks || []).includes(pv.week) ? " bye" : ""}`}
                       style={{ left: `calc(6px + (100% - 12px) * ${progress / 100})` }}
                     />
                   </div>

@@ -57,6 +57,17 @@ export function missedWeeks({ gamesByName, teamWeeks, lastGameWeek }, name) {
   return out;
 }
 
+// Weeks (through `lastGameWeek`) in which the player's team had no game at all -- its bye. The week bar paints these white
+// (founder, Oct 20 2026), next to the gray weeks he missed, so a bye reads as a rest week, not a red week he played.
+export function byeWeeks({ gamesByName, teamWeeks, lastGameWeek }, name) {
+  const out = [];
+  for (let w = 1; w <= lastGameWeek; w++) {
+    const team = teamAt(gamesByName, name, w);
+    if (team && teamWeeks[team] && !teamWeeks[team].has(w)) out.push(w);
+  }
+  return out;
+}
+
 // Stretches of the week bar (percent of its width) to paint gray: the weeks
 // his team played and he didn't. The dots are evenly spaced -- W1 at the left
 // end, the latest week at the right end -- and each week's stretch is the

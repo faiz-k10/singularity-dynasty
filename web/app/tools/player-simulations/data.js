@@ -7,7 +7,7 @@ import { computeOutcomePercentile } from "@/lib/outcomePercentile";
 import { normalizePlayerName } from "@/lib/portfolio";
 import { fetchAllRows } from "@/lib/fetchAllRows";
 import { ARCHETYPE_NEAR_CONFIDENCE } from "@/lib/archetypes";
-import { indexGameLog, missedWeeks, teamGamesThrough } from "@/lib/teamGames";
+import { byeWeeks, indexGameLog, missedWeeks, teamGamesThrough } from "@/lib/teamGames";
 
 // Data layer of Player Season Simulations, split out of page.js so the Compare Player Sims tool reads the same rows.
 export const TEASER_LIMIT = 10;
@@ -139,6 +139,7 @@ export const getCachedWeekData = unstable_cache(
     const recentByName = {};
     const teamGamesByName = {};
     const missedWeeksByName = {};
+    const byeWeeksByName = {};
     for (const [name, games] of Object.entries(gameIndex.gamesByName)) {
       recentByName[name] = games
         .slice(-3)
@@ -154,9 +155,11 @@ export const getCachedWeekData = unstable_cache(
       if (n != null) teamGamesByName[name] = n;
       const missed = missedWeeks(gameIndex, name);
       if (missed.length) missedWeeksByName[name] = missed;
+      const byes = byeWeeks(gameIndex, name);
+      if (byes.length) byeWeeksByName[name] = byes;
     }
 
-    return { latest, rows: data || [], totalCount: count || 0, actualProductionByName, recentByName, lastGameWeek, teamGamesByName, missedWeeksByName, archetypeByName, groupsByName };
+    return { latest, rows: data || [], totalCount: count || 0, actualProductionByName, recentByName, lastGameWeek, teamGamesByName, missedWeeksByName, byeWeeksByName, archetypeByName, groupsByName };
   },
   ["player-simulations-latest-week"],
   { revalidate: 60 }
@@ -167,7 +170,7 @@ export const getCachedWeekData = unstable_cache(
 // `hasFullAccess` false = the free teaser slice only. Returns the full pool too (heat, ranges and percentiles always mean
 // the whole league, never the teaser slice).
 export function buildSimRows({ cached, hasFullAccess, bioByNamePos, leagueTeams = 12, superflex = false }) {
-  const { latest, rows, totalCount: fetchedCount, actualProductionByName, recentByName, teamGamesByName, missedWeeksByName, archetypeByName, groupsByName } = cached;
+  const { latest, rows, totalCount: fetchedCount, actualProductionByName, recentByName, teamGamesByName, missedWeeksByName, byeWeeksByName, archetypeByName, groupsByName } = cached;
   let sims = [];
   let poolRows = [];
   let totalCount = 0;
@@ -274,6 +277,7 @@ export function buildSimRows({ cached, hasFullAccess, bioByNamePos, leagueTeams 
     const regression = regressionByName[row.player_name];
     const outcome = outcomeByName[row.player_name];
     const missed = missedWeeksByName?.[row.player_name];
+    const byes = byeWeeksByName?.[row.player_name];
     const role = archetypeByName?.[row.player_name];
     const grp = groupsByName?.[row.player_name];
     return {
@@ -291,6 +295,7 @@ export function buildSimRows({ cached, hasFullAccess, bioByNamePos, leagueTeams 
       gamesPlayed: regression?.gamesPlayed ?? 0,
       recentGames: recentByName[row.player_name] || [],
       ...(missed ? { missedWeeks: missed } : {}),
+      ...(byes ? { byeWeeks: byes } : {}),
       outcomePercentile: round(outcome?.percentile ?? null, 2),
       // Same units as floor/median/ceiling (season-total scale), so it
       // can be positioned on the Range bar with the exact same maxCeiling

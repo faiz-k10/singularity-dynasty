@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { buildTeamWeeks, indexGameLog, missedSegments, missedWeeks, teamGamesThrough } from "../lib/teamGames.js";
+import { buildTeamWeeks, byeWeeks, indexGameLog, missedSegments, missedWeeks, teamGamesThrough } from "../lib/teamGames.js";
 
 const row = (player_name, team, week) => ({ player_name, team, week });
 
@@ -90,4 +90,17 @@ test("missedSegments: separate misses stay separate; nothing at Week 1; no misse
   assert.deepEqual(missedSegments([], 4, 4), []);
   assert.deepEqual(missedSegments(undefined, 4, 4), []);
   assert.deepEqual(missedSegments([2], 1, 1), []);
+});
+
+test("byeWeeks: the weeks his team had no game, not the weeks he sat out", () => {
+  const idx = indexGameLog([
+    row("A", "KC", 1), row("B", "KC", 1),
+    row("A", "KC", 2), row("B", "KC", 2),
+    row("B", "KC", 4), // week 3 is KC's bye; A also misses week 4 (a real missed game)
+    row("A", "KC", 5), row("B", "KC", 5),
+    row("C", "DAL", 1), row("C", "DAL", 2), row("C", "DAL", 3), row("C", "DAL", 4), row("C", "DAL", 5),
+  ]);
+  assert.deepEqual(byeWeeks(idx, "A"), [3]);
+  assert.deepEqual(missedWeeks(idx, "A"), [4]);
+  assert.deepEqual(byeWeeks(idx, "C"), []);
 });

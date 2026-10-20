@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { unstable_cache } from "next/cache";
+import { createPublicClient } from "@/lib/supabase/public";
 import { getUserTier } from "@/lib/tier";
 import { resolveSort, sortRows } from "@/lib/sortLink";
 import SiteHeader from "../../SiteHeader";
@@ -35,27 +37,34 @@ async function fetchPosition(supabase, draftClass, position, hasFullAccess) {
   return { rows: data || [], total: count || 0 };
 }
 
-export default async function ProspectRankingsPage({ searchParams }) {
-  const params = await searchParams;
-  const { supabase, tier } = await getUserTier();
-  const hasFullAccess = PAID_TIERS.includes(tier);
-
-  const { data: latest } = await supabase
-    .from("prospect_rankings")
-    .select("draft_class")
-    .order("draft_class", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  let wrs = { rows: [], total: 0 };
-  let qbs = { rows: [], total: 0 };
-
-  if (latest) {
-    [wrs, qbs] = await Promise.all([
+// The board is public-read (RLS) and changes by hand a few times a month, so the reads are cached for a minute per
+// access level instead of three round trips to Supabase on every visit (the page used to take ~450ms every time).
+const getCachedProspects = unstable_cache(
+  async (hasFullAccess) => {
+    const supabase = createPublicClient();
+    const { data: latest } = await supabase
+      .from("prospect_rankings")
+      .select("draft_class")
+      .order("draft_class", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (!latest) return { latest: null, wrs: { rows: [], total: 0 }, qbs: { rows: [], total: 0 } };
+    const [wrs, qbs] = await Promise.all([
       fetchPosition(supabase, latest.draft_class, "WR", hasFullAccess),
       fetchPosition(supabase, latest.draft_class, "QB", hasFullAccess),
     ]);
-  }
+    return { latest, wrs, qbs };
+  },
+  ["prospect-rankings-board"],
+  { revalidate: 60 }
+);
+
+export default async function ProspectRankingsPage({ searchParams }) {
+  const params = await searchParams;
+  const { tier } = await getUserTier();
+  const hasFullAccess = PAID_TIERS.includes(tier);
+
+  const { latest, wrs, qbs } = await getCachedProspects(hasFullAccess);
 
   const totalRows = wrs.rows.length + qbs.rows.length;
   const totalCount = wrs.total + qbs.total;

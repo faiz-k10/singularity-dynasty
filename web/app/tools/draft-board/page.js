@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { unstable_cache } from "next/cache";
+import { createPublicClient } from "@/lib/supabase/public";
 import { getUserTier } from "@/lib/tier";
 import { resolveSort, sortRows } from "@/lib/sortLink";
 import SiteHeader from "../../SiteHeader";
@@ -19,50 +21,55 @@ const COLUMN_TYPES = {
   team: "string",
 };
 
-export default async function DraftBoardPage({ searchParams }) {
-  const params = await searchParams;
-  const boardType = params?.type === "rookie" ? "rookie" : "startup";
-
-  const { supabase, tier } = await getUserTier();
-  const hasFullAccess = PAID_TIERS.includes(tier);
-
-  const { data: latest } = await supabase
-    .from("draft_board")
-    .select("season")
-    .eq("board_type", boardType)
-    .order("season", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  let picks = [];
-  let totalRounds = 0;
-
-  if (latest) {
-    const { data: roundStats } = await supabase
+// Public-read table that changes by hand a few times a month: cached for a minute per board and access level instead of
+// three sequential round trips to Supabase on every visit.
+const getCachedBoard = unstable_cache(
+  async (boardType, hasFullAccess) => {
+    const supabase = createPublicClient();
+    const { data: latest } = await supabase
       .from("draft_board")
-      .select("round")
+      .select("season")
       .eq("board_type", boardType)
-      .eq("season", latest.season)
-      .order("round", { ascending: false })
+      .order("season", { ascending: false })
       .limit(1)
       .maybeSingle();
-    totalRounds = roundStats?.round || 0;
+    if (!latest) return { latest: null, picks: [], totalRounds: 0 };
 
-    let query = supabase
+    let picksQuery = supabase
       .from("draft_board")
       .select("round, pick, player_name, position, team, is_stack, stack_note")
       .eq("board_type", boardType)
       .eq("season", latest.season)
       .order("round", { ascending: true })
       .order("pick", { ascending: true });
+    if (!hasFullAccess) picksQuery = picksQuery.lte("round", 1);
 
-    if (!hasFullAccess) {
-      query = query.lte("round", 1);
-    }
+    // The round count and the picks don't depend on each other, so they run together.
+    const [{ data: roundStats }, { data }] = await Promise.all([
+      supabase
+        .from("draft_board")
+        .select("round")
+        .eq("board_type", boardType)
+        .eq("season", latest.season)
+        .order("round", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      picksQuery,
+    ]);
+    return { latest, picks: data || [], totalRounds: roundStats?.round || 0 };
+  },
+  ["draft-board-picks"],
+  { revalidate: 60 }
+);
 
-    const { data } = await query;
-    picks = data || [];
-  }
+export default async function DraftBoardPage({ searchParams }) {
+  const params = await searchParams;
+  const boardType = params?.type === "rookie" ? "rookie" : "startup";
+
+  const { tier } = await getUserTier();
+  const hasFullAccess = PAID_TIERS.includes(tier);
+
+  const { latest, picks, totalRounds } = await getCachedBoard(boardType, hasFullAccess);
 
   const rounds = {};
   picks.forEach((p) => {
