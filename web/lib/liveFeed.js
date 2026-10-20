@@ -105,13 +105,16 @@ export function applyPending(rows, totals) {
 // prev: { last: {id: pts}, changedAt: {id: ms}, delta: {id: +pts} } (or null on first load). On the first load nothing
 // counts as "new" -- we don't know the order things happened in, only what's on the board now.
 export function trackScoring(prev, rows, now) {
-  const last = {};
+  // Rows that drop out of the list (the board's scope narrowed to one league) keep their last-known points, so a player who
+  // comes back with the same number is not "new"; a row seen for the FIRST time is never new either -- appearing is not
+  // scoring (it used to flash with his whole total as the "+" amount).
+  const last = { ...(prev?.last || {}) };
   const changedAt = { ...(prev?.changedAt || {}) };
   const delta = { ...(prev?.delta || {}) };
   for (const r of rows) {
     last[r.id] = r.pts;
     const before = prev?.last?.[r.id];
-    if (prev && r.pts !== before) {
+    if (prev && before !== undefined && r.pts !== before) {
       changedAt[r.id] = now;
       delta[r.id] = Math.round((r.pts - (before ?? 0)) * 100) / 100;
     }

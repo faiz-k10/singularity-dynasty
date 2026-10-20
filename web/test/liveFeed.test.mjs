@@ -55,6 +55,21 @@ test("trackScoring + sortFeed: newest scoring first, nothing 'new' on the first 
   assert.equal(t3.changedAt["mine:6804"], 2000);
 });
 
+test("trackScoring: a player who newly appears (or comes back after the list narrowed) is not 'new'", () => {
+  const row = (id, pts) => ({ id: `mine:${id}`, pts });
+  const t1 = trackScoring(null, [row("a", 12), row("b", 3.8)], 1000);
+  // The board narrows to one league: only b is listed. Then it widens again with a (unchanged) and c (appearing with points).
+  const t2 = trackScoring(t1, [row("b", 3.8)], 2000);
+  const t3 = trackScoring(t2, [row("a", 12), row("b", 3.8), row("c", 4.4)], 3000);
+  assert.deepEqual(t3.changedAt, {}); // nobody flashes
+  assert.deepEqual(t3.delta, {});
+  // A real change after that still flashes, with the right amount.
+  const t4 = trackScoring(t3, [row("a", 12), row("b", 5.0), row("c", 4.4)], 4000);
+  assert.equal(t4.changedAt["mine:b"], 4000);
+  assert.equal(t4.delta["mine:b"], 1.2);
+  assert.equal(t4.changedAt["mine:a"], undefined);
+});
+
 test("isGameDay: a live game, a kickoff today, or Thu/Sun/Mon without a scoreboard", () => {
   assert.equal(isGameDay(gs, new Date("2026-10-21T12:00:00")), true); // GB in progress
   const quiet = { JAX: { state: "post", start: "2026-10-18T17:00:00" } };

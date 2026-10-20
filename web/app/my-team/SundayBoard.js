@@ -441,7 +441,14 @@ function LiveFeed({ savedTeams, gameStates, updatedAt, teamId = null, league = n
     setTrack({ key, t: trackScoring(track.t, all, stamp), stamp });
   }
   const t = track.t || { changedAt: {}, delta: {} };
-  const isNew = (r) => Boolean(t.changedAt[r.id] && t.changedAt[r.id] === track.stamp);
+  // The "just scored" flash lasts ~10 seconds, then the row goes back to normal (it used to stay lit until anyone's points changed).
+  const [flashDone, setFlashDone] = useState(0);
+  useEffect(() => {
+    if (!track.stamp) return undefined;
+    const id = setTimeout(() => setFlashDone(track.stamp), 10000);
+    return () => clearTimeout(id);
+  }, [track.stamp]);
+  const isNew = (r) => Boolean(t.changedAt[r.id] && t.changedAt[r.id] === track.stamp && flashDone !== track.stamp);
   const showLeagues = teamId == null;
   // One player picked by clicking his name (here or in the plays): the plays list narrows to him. Dropped when he leaves the field.
   const [pickedPlayer, setPickedPlayer] = useState(null);
