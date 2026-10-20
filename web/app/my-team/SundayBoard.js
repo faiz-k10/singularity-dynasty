@@ -149,7 +149,7 @@ function LeagueCard({ team, gameStates, injuries, onOpen, playTotals }) {
           ) : (
             <div className="sb-card-verdict">
               <span className="sb-card-word sb-muted">{s.bestBall ? "Best ball" : "—"}</span>
-              {s.bestBall && <span className="sb-card-pct mono">Best lineup from every player's points</span>}
+              {s.bestBall && <span className="sb-card-pct mono">Best lineup from every player&apos;s points</span>}
             </div>
           )}
 
