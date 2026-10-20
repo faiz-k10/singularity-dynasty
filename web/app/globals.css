@@ -5890,3 +5890,32 @@ html{font-stretch:82%;}
   .h2h .h2h-row:not(.h2h-head) .h2h-player-name, .h2h .h2h-row:not(.h2h-head) .h2h-player-sub{grid-area:auto; align-self:stretch; justify-self:auto; width:auto;}
   .h2h .h2h-row:not(.h2h-head) .h2h-player-sub{justify-content:flex-start;}
 }
+
+/* Lineup rows, third touch (founder, Oct 19): the slot badge hugs the player (it sits against the name's side of its column instead of floating in the
+   middle of it), and a faint vertical rule separates the scores from the outcome curves. The points column is a little wider to hold the rule
+   and its padding. */
+.h2h-row:not(.h2h-head) .h2h-c-slot{justify-self:end; text-align:right;}
+.h2h-side.opp .h2h-row:not(.h2h-head) .h2h-c-slot{justify-self:start; text-align:left;}
+.h2h-row{grid-template-columns:64px auto minmax(0,1fr) 68px;}
+.h2h-side.opp .h2h-row{grid-template-columns:68px minmax(0,1fr) auto 64px;}
+.h2h-row.h2h-head{grid-template-columns:64px minmax(0,1fr) 68px;}
+.h2h-side.opp .h2h-row.h2h-head{grid-template-columns:68px minmax(0,1fr) 64px;}
+.h2h-row:not(.h2h-head) .h2h-c-pts{align-self:stretch; display:flex; align-items:center; justify-content:flex-end; border-left:1px solid rgba(var(--star-dot-rgb), .12); padding-left:8px;}
+.h2h-side.opp .h2h-row:not(.h2h-head) .h2h-c-pts{justify-content:flex-start; border-left:0; border-right:1px solid rgba(var(--star-dot-rgb), .12); padding-left:0; padding-right:8px;}
+@container h2h (max-width:900px){
+  .h2h-side.opp .h2h-row:not(.h2h-head){grid-template-columns:64px auto minmax(0,1fr) 68px;}
+  .h2h-side.opp .h2h-row.h2h-head{grid-template-columns:64px minmax(0,1fr) 68px;}
+  .h2h-side.opp .h2h-row:not(.h2h-head) .h2h-c-slot{justify-self:end; text-align:right;}
+  .h2h-side.opp .h2h-row:not(.h2h-head) .h2h-c-pts{justify-content:flex-end; border-right:0; border-left:1px solid rgba(var(--star-dot-rgb), .12); padding-right:0; padding-left:8px;}
+}
+@media (max-width:900px){
+  .h2h-side.opp .h2h-row:not(.h2h-head){grid-template-columns:64px auto minmax(0,1fr) 68px;}
+  .h2h-side.opp .h2h-row.h2h-head{grid-template-columns:64px minmax(0,1fr) 68px;}
+  .h2h-side.opp .h2h-row:not(.h2h-head) .h2h-c-slot{justify-self:end; text-align:right;}
+  .h2h-side.opp .h2h-row:not(.h2h-head) .h2h-c-pts{justify-content:flex-end; border-right:0; border-left:1px solid rgba(var(--star-dot-rgb), .12); padding-right:0; padding-left:8px;}
+}
+@media (max-width:640px){
+  .h2h .h2h-side .h2h-row, .h2h .h2h-side.opp .h2h-row{grid-template-columns:minmax(0,1fr) 56px;}
+  .h2h .h2h-row:not(.h2h-head) .h2h-c-pts, .h2h .h2h-side.opp .h2h-row:not(.h2h-head) .h2h-c-pts{border:0; padding:0; align-self:auto; display:block;}
+  .h2h .h2h-row:not(.h2h-head) .h2h-c-slot{justify-self:auto;}
+}
