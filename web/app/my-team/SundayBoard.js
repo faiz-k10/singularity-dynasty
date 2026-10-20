@@ -349,7 +349,7 @@ function RecentPlays({ rows, updatedAt, focus, onPick, onTotals }) {
 // The live panel beside the cards: only players on the field right now -- yours, then your opponents' -- across every
 // league, or just the open league's two lineups (teamId). Newest scoring first within each side; a row flashes gold
 // with "+6.4" when he scores. Finished and not-started players stay off it so it never fills with noise.
-function LiveFeed({ savedTeams, gameStates, updatedAt, teamId = null, league = null, playTotals, onTotals }) {
+function LiveFeed({ savedTeams, gameStates, updatedAt, teamId = null, league = null, playTotals, onTotals, injuriesByTeam, weekFeed }) {
   const mounted = useMounted();
   const baseFeed = useMemo(() => buildLiveFeed(savedTeams, gameStates, { onlyTeamId: teamId }), [savedTeams, gameStates, teamId]);
   // Each player's running points play by play (from the plays request below): Sleeper trails the game by a minute or two, so the
@@ -410,7 +410,7 @@ function LiveFeed({ savedTeams, gameStates, updatedAt, teamId = null, league = n
         {nobody && league && <span className="sb-feed-scope mono">{league}</span>}
       </div>
       {mode === "companion" ? (
-        <Companion savedTeams={savedTeams} gameStates={gameStates} teamId={teamId} />
+        <Companion savedTeams={savedTeams} gameStates={gameStates} teamId={teamId} injuriesByTeam={injuriesByTeam} weekFeed={weekFeed} />
       ) : (
         // Split lengthwise: who is on the field (left) beside what they just did (right), each scrolling on its own.
         <div className="sb-feed-split">
@@ -430,7 +430,7 @@ function LiveFeed({ savedTeams, gameStates, updatedAt, teamId = null, league = n
 // cards, and the live panel narrows to that league. Keyboard: j / k or the arrow keys move between cards, Enter opens
 // one, Esc goes back to all leagues (a second Esc leaves full screen). The open league is remembered per browser, so a
 // reload lands back on the same matchup.
-export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, updatedAt, toolbar }) {
+export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, updatedAt, toolbar, weekFeed = null }) {
   const mounted = useMounted();
   const [openId, setOpenIdState] = useState(null);
   // Each player's running points play by play (from the plays request in the live panel): shared by the live list and the open matchup.
@@ -613,6 +613,8 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
           league={openTeam ? openTeam.league_name : null}
           playTotals={playTotals}
           onTotals={mergeTotals}
+          injuriesByTeam={injuriesByTeam}
+          weekFeed={weekFeed}
         />
       </div>
     </div>

@@ -1771,6 +1771,7 @@ export default function MyTeamClient({
               gameStates={gameStates}
               injuriesByTeam={liveNews?.byTeam}
               updatedAt={updatedAt}
+              weekFeed={feed}
               toolbar={<>{alertsToggle}{layoutSwitch}{theaterBtn}</>}
             />
           ) : (

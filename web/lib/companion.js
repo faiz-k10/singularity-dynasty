@@ -409,6 +409,139 @@ function tidbits(ls) {
   return cards;
 }
 
+
+// ---- all week: what changed, injuries, standings, and a card for today ------------------------------------------------------------
+
+// "Since last week": the players on the viewer's teams whose projections, status or role moved between the two latest published
+// weeks (lib/myFeed.js buildFeed, built on the server). Starters first; at most three cards so one busy week doesn't crowd the pane.
+function changes(feed, teamIndex) {
+  if (!feed?.ready) return [];
+  const data = teamIndex == null ? feed.all : feed.byTeam?.[teamIndex];
+  const cards = [];
+  for (const it of (data?.items || []).slice(0, 3)) {
+    const [main, ...rest] = it.lines;
+    const where = it.teams?.length ? ` ${it.starter ? "Starting" : "On your bench"} in ${it.teams.map((t) => t.label).join(", ")}.` : "";
+    cards.push({
+      id: `change:${it.name}`,
+      kind: "change",
+      label: feed.prevWeek ? `Since week ${feed.prevWeek}` : "Since last week",
+      tone: main.dir === "up" ? "mine" : main.dir === "down" ? "theirs" : "neutral",
+      title: it.name,
+      body: `${[main, ...rest.slice(0, 1)].map((l) => l.text).join(". ")}.${where}`,
+      player: { name: it.name, pos: it.position, team: null },
+      priority: 68 - cards.length,
+    });
+  }
+  return cards;
+}
+
+const TAGS = { 1: "Questionable", 2: "Doubtful", 3: "Out" };
+function injuryCard(ls, injuriesByTeam) {
+  if (!injuriesByTeam) return null;
+  const hurt = new Map();
+  for (const l of ls) {
+    for (const i of injuriesByTeam[l.id] || []) {
+      const p = l.mine.find((x) => x.name === i.name);
+      if (!p || p.st === "post" || p.st === "in") continue;
+      const prev = hurt.get(i.name);
+      if (!prev || i.severity > prev.severity) hurt.set(i.name, { name: i.name, status: i.status || TAGS[i.severity] || "Questionable", severity: i.severity, leagues: new Set() });
+      hurt.get(i.name).leagues.add(l.name);
+    }
+  }
+  if (!hurt.size) return null;
+  const list = [...hurt.values()].sort((a, b) => b.severity - a.severity);
+  const worst = list[0];
+  return {
+    id: "injuries",
+    kind: "injury",
+    label: "Injury report",
+    tone: worst.severity >= 2 ? "alert" : "neutral",
+    title: `${list.length} of your starters ${list.length === 1 ? "carries" : "carry"} an injury tag`,
+    body: list.slice(0, 4).map((h) => `${h.name} (${h.status}${h.leagues.size > 1 ? `, ${h.leagues.size} leagues` : ""})`).join("; ") + (list.length > 4 ? `; and ${list.length - 4} more` : "") + ".",
+    priority: worst.severity >= 2 ? 96 : 74,
+  };
+}
+
+function standingsCard(savedTeams) {
+  const rows = [];
+  for (const t of savedTeams || []) {
+    const me = t.settings?.season?.standings?.find((r) => r.isMe);
+    const n = t.settings?.season?.standings?.length;
+    if (me && n) rows.push({ t, me, n });
+  }
+  if (!rows.length) return null;
+  rows.sort((a, b) => a.me.rank / a.n - b.me.rank / b.n);
+  const best = rows[0];
+  const worst = rows[rows.length - 1];
+  const ord = (k) => `${k}${["th", "st", "nd", "rd"][k % 100 > 10 && k % 100 < 14 ? 0 : k % 10 < 4 ? k % 10 : 0]}`;
+  const rec = (m) => `${m.wins}-${m.losses}${m.ties ? `-${m.ties}` : ""}`;
+  return {
+    id: "standings",
+    kind: "season",
+    label: "Standings",
+    tone: best.me.rank / best.n <= 0.34 ? "mine" : "neutral",
+    title: `Best spot: ${ord(best.me.rank)} of ${best.n} in ${leagueOf(best.t)}`,
+    body: `${rec(best.me)}, ${Math.round(best.me.pf)} points scored.${rows.length > 1 ? ` Hardest: ${ord(worst.me.rank)} of ${worst.n} in ${leagueOf(worst.t)} (${rec(worst.me)}).` : ""}`,
+    league: null,
+    priority: 48,
+  };
+}
+
+const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+const sameDay = (a, b) => a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+const clock = (d) => d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+
+// One card for today, so the pane has something fitting every day of the week: on game days who of yours (and theirs) is in action and
+// when; on the other days what that day is for (Tuesday new projections, Wednesday waivers, Friday / Saturday the injury report).
+function dayCard({ now, ls, gameStates, feed, waivers, injuryCount }) {
+  const day = DAYS[now.getDay()];
+  const label = `Today · ${day}`;
+  const todays = (rows) =>
+    rows.filter((p) => {
+      const g = p.id && p.team && gameStates?.[p.team];
+      return g && g.start && (p.st === "pre" || p.st === "in") && sameDay(new Date(g.start), now);
+    });
+  const mine = new Map();
+  const theirs = new Set();
+  for (const l of ls) {
+    for (const p of todays(l.mine)) mine.set(p.id, p);
+    for (const p of todays(l.opp)) theirs.add(p.id);
+  }
+  if (mine.size + theirs.size > 0) {
+    const starts = [...mine.values(), ...[].concat(...ls.map((l) => todays(l.opp)))].map((p) => new Date(gameStates[p.team].start).getTime());
+    const first = new Date(Math.min(...starts));
+    const windows = new Map();
+    for (const p of mine.values()) {
+      const k = clock(new Date(gameStates[p.team].start));
+      windows.set(k, (windows.get(k) || 0) + 1);
+    }
+    const top = [...mine.values()].sort((a, b) => (b.proj || 0) - (a.proj || 0))[0];
+    return {
+      id: "today",
+      kind: "today",
+      label,
+      tone: "mine",
+      title: mine.size ? `${mine.size} of your starters ${mine.size === 1 ? "plays" : "play"} today` : `${theirs.size} of your opponents' starters play today`,
+      body: `First kickoff ${clock(first)}.${windows.size > 1 ? ` By kickoff: ${[...windows].map(([k, n]) => `${k} (${n})`).join(", ")}.` : ""}${theirs.size ? ` ${theirs.size} of your opponents' starters ${theirs.size === 1 ? "is" : "are"} in action too.` : ""}${top ? ` Biggest name of yours: ${top.name}.` : ""}`,
+      player: top ? chip(top) : null,
+      priority: 94,
+    };
+  }
+  const base = { id: "today", kind: "today", label, tone: "neutral", priority: 85 };
+  if (day === "Tuesday")
+    return { ...base, tone: "mine", title: "New week, new projections", body: feed?.ready ? `Week ${feed.week} projections publish today. ${feed.all?.starters ?? 0} of your starters have moved since week ${feed.prevWeek}; the changes are listed below.` : "The projections for the new week publish today. Your swing players and lineup checks fill in as they land." };
+  if (day === "Wednesday") {
+    let best = null;
+    for (const l of ls) for (const w of waivers?.[l.id] || []) if (!best || w.proj > best.w.proj) best = { w, l };
+    return { ...base, tone: "mine", title: "Waiver day", body: best ? `Best available across your leagues: ${best.w.name} (${best.w.pos}), projected ${r1(best.w.proj)} in ${best.l.name}. Waivers usually clear overnight, so claim before then.` : "Waivers usually clear overnight. The Best available tab in each league shows who is worth a claim.", player: best ? chip(best.w) : null };
+  }
+  if (day === "Thursday") return { ...base, title: "First game of the week is tonight", body: "Set your lineup before kickoff: Thursday's slot locks the moment its game starts." };
+  if (day === "Friday" || day === "Saturday")
+    return { ...base, tone: injuryCount ? "alert" : "neutral", title: injuryCount ? `${injuryCount} starter${injuryCount === 1 ? "" : "s"} to check before Sunday` : "No injury flags on your starters", body: injuryCount ? "The final injury designations come out by Saturday. Have a replacement picked for anyone listed Questionable or worse." : "Nothing to fix right now. Final designations come out by Saturday, so check once more tomorrow." };
+  if (day === "Monday") return { ...base, title: "Week is wrapping up", body: "Whatever is still to play shows in the swing cards. Next week's projections land Tuesday." };
+  return { ...base, title: "Sunday", body: "Kickoffs and your players in each window appear here as the schedule loads." };
+}
+
 // Overall state of the week across the viewer's lineups.
 export function weekPhase(savedTeams, gameStates) {
   if (!gameStates) return "unknown";
@@ -430,7 +563,7 @@ export function weekPhase(savedTeams, gameStates) {
 }
 
 // All cards for the viewer's leagues, best first for the current phase.
-export function buildInsights({ savedTeams, gameStates, waivers = null }) {
+export function buildInsights({ savedTeams, gameStates, waivers = null, injuriesByTeam = null, feed = null, teamIndex = null, now = null }) {
   const phase = weekPhase(savedTeams, gameStates);
   const ls = leagues(savedTeams, gameStates);
   const cards = [];
@@ -444,6 +577,11 @@ export function buildInsights({ savedTeams, gameStates, waivers = null }) {
   add(recaps(ls));
   add(season(savedTeams));
   add(tidbits(ls));
+  add(changes(feed, teamIndex));
+  const inj = injuryCard(ls, injuriesByTeam);
+  add(inj);
+  add(standingsCard(savedTeams));
+  if (now) add(dayCard({ now, ls, gameStates, feed, waivers, injuryCount: inj ? Number(inj.title.split(" ")[0]) : 0 }));
   // Once the games are over, the recap leads; before them, the previews do.
   if (phase === "recap" || phase === "off") for (const c of cards) if (c.kind === "recap") c.priority += 15;
   if (phase === "preview") for (const c of cards) if (c.kind === "alert" || c.kind === "waiver") c.priority += 6;

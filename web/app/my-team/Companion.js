@@ -136,10 +136,29 @@ function Card({ c, spot, fresh }) {
   );
 }
 
-export default function Companion({ savedTeams, gameStates, teamId = null }) {
+export default function Companion({ savedTeams, gameStates, teamId = null, injuriesByTeam = null, weekFeed = null }) {
   const teams = useMemo(() => (teamId ? savedTeams.filter((t) => t.id === teamId) : savedTeams), [savedTeams, teamId]);
   const waivers = useWaivers(teams);
-  const { phase, cards } = useMemo(() => buildInsights({ savedTeams: teams, gameStates, waivers }), [teams, gameStates, waivers]);
+  // Today's card needs the viewer's clock, so it appears after mount (the server's clock would mismatch) and moves on at midnight.
+  const [today, setToday] = useState(null);
+  useEffect(() => {
+    const tick = () => setToday((d) => {
+      const n = new Date();
+      return d && d.toDateString() === n.toDateString() ? d : n;
+    });
+    const first = setTimeout(tick, 0);
+    const id = setInterval(tick, 60000);
+    return () => {
+      clearTimeout(first);
+      clearInterval(id);
+    };
+  }, []);
+  // The week's moves are built for the viewer's saved teams in the order they were saved; one open league uses its own slice.
+  const teamIndex = teamId ? savedTeams.findIndex((t) => t.id === teamId) : null;
+  const { phase, cards } = useMemo(
+    () => buildInsights({ savedTeams: teams, gameStates, waivers, injuriesByTeam, feed: weekFeed, teamIndex: teamIndex >= 0 ? teamIndex : null, now: today }),
+    [teams, gameStates, waivers, injuriesByTeam, weekFeed, teamIndex, today],
+  );
   const feed = useMemo(() => buildLiveFeed(teams, gameStates), [teams, gameStates]);
   const week = teams.find((t) => t.settings?.week)?.settings.week;
 
@@ -161,7 +180,7 @@ export default function Companion({ savedTeams, gameStates, teamId = null }) {
   useEffect(() => {
     const now = new Set(cards.map((c) => c.id));
     if (seen.current) {
-      const added = [...now].filter((id) => !seen.current.has(id));
+      const added = [...now].filter((id) => id !== "today" && !seen.current.has(id)); // today's card joins after mount, not news
       if (added.length) {
         setFreshIds(new Set(added));
         const t = setTimeout(() => setFreshIds(new Set()), 15000);

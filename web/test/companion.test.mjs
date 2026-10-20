@@ -62,3 +62,32 @@ test("phase: live beats everything", () => {
   assert.equal(weekPhase([t], { SF: { state: "in" }, KC: { state: "post" } }), "live");
   assert.equal(weekPhase([t], { SF: { state: "pre" }, KC: { state: "post" } }), "between");
 });
+
+test("every day has a card: Wednesday is waiver day, Tuesday names the moved starters", () => {
+  const t = league("a", [P("1", "Meh", "WR", "SF", 7, 3, 14)], [P("9", "Foe", "QB", "KC", 20, 12, 30)]);
+  const wed = buildInsights({ savedTeams: [t], gameStates: {}, now: new Date(2026, 9, 21, 9), waivers: { a: [{ name: "Big", pos: "WR", team: "NYJ", proj: 12, adds: 0 }] } });
+  const c = wed.cards.find((x) => x.id === "today");
+  assert.equal(c.title, "Waiver day");
+  assert.match(c.body, /Big/);
+  const tue = buildInsights({ savedTeams: [t], gameStates: {}, now: new Date(2026, 9, 20, 9), feed: { ready: true, week: 7, prevWeek: 6, all: { starters: 3, items: [] } } });
+  assert.match(tue.cards.find((x) => x.id === "today").body, /3 of your starters/);
+});
+
+test("game day: counts today's starters and the first kickoff", () => {
+  const now = new Date(2026, 9, 25, 9);
+  const at = (h) => new Date(2026, 9, 25, h).toISOString();
+  const t = league("a", [P("1", "Early", "RB", "SF", 12, 6, 20), P("2", "Late", "WR", "DAL", 11, 4, 22)], [P("9", "Foe", "QB", "KC", 20, 12, 30)]);
+  const gs = { SF: { state: "pre", start: at(13) }, DAL: { state: "pre", start: at(16) }, KC: { state: "pre", start: at(13) } };
+  const c = buildInsights({ savedTeams: [t], gameStates: gs, now }).cards.find((x) => x.id === "today");
+  assert.match(c.title, /2 of your starters play today/);
+  assert.match(c.body, /opponents' starters is in action/);
+});
+
+test("since-last-week cards, injury report and standings", () => {
+  const t = { ...league("a", [P("1", "Hurt", "RB", "SF", 12, 6, 20)], [P("9", "Foe", "QB", "KC", 20, 12, 30)]), settings: { ...league("a", [P("1", "Hurt", "RB", "SF", 12, 6, 20)], [P("9", "Foe", "QB", "KC", 20, 12, 30)]).settings, season: { standings: [{ isMe: true, rank: 2, wins: 5, losses: 1, pf: 701 }, { rank: 1 }, { rank: 3 }] } } };
+  const feed = { ready: true, prevWeek: 6, all: { items: [{ name: "Mover", position: "WR", starter: true, teams: [{ label: "L" }], lines: [{ dir: "up", text: "Season median +9 pts" }] }] }, byTeam: [] };
+  const { cards } = buildInsights({ savedTeams: [t], gameStates: { SF: { state: "pre" }, KC: { state: "pre" } }, feed, injuriesByTeam: { a: [{ name: "Hurt", status: "Doubtful", severity: 2 }] } });
+  assert.equal(cards.find((c) => c.id === "change:Mover").tone, "mine");
+  assert.match(cards.find((c) => c.id === "injuries").body, /Hurt \(Doubtful\)/);
+  assert.match(cards.find((c) => c.id === "standings").title, /2nd of 3/);
+});
