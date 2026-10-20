@@ -459,20 +459,26 @@ export async function refreshSavedTeams() {
 // only touched when a starter we haven't seen appears. Returns only the fields
 // that change by the minute; the client merges them over the saved settings.
 export async function pollLiveScores() {
+  const t0 = Date.now();
   const supabase = await createClient();
   const user = await getAuthUser(supabase); // read path: local JWT check, no round trip to Supabase Auth
   if (!user) return { error: "Sign in required." };
+  const tAuth = Date.now() - t0;
 
+  // The league rows, the NFL week and the ESPN scoreboard + projections are independent, so they start together.
+  const gameStatesP = fetchGameStates();
+  const projP = getWeekProjections(supabase, new Date().getFullYear()).catch(() => ({ byName: {} }));
+  const stateP = fetchSleeperState();
+  stateP.catch(() => {}); // no unhandled rejection if we return early below; the await further down still throws
   const { data: rows } = await supabase
     .from("saved_teams")
     .select("id, platform_league_id, platform_roster_id, settings")
     .eq("user_id", user.id)
     .eq("platform", "sleeper");
   if (!rows?.length) return { live: {} };
-
-  const gameStatesP = fetchGameStates();
-  const projP = getWeekProjections(supabase, new Date().getFullYear()).catch(() => ({ byName: {} }));
-  const state = await fetchSleeperState();
+  const tRows = Date.now() - t0;
+  const state = await stateP;
+  const tState = Date.now() - t0;
   const inSeason = state.season_type === "regular";
   const week = inSeason ? state.display_week || state.week || 1 : null;
 
@@ -527,7 +533,10 @@ export async function pollLiveScores() {
       };
     })
   );
-  return { live, lineups, gameStates: await gameStatesP, updatedAt: Date.now() };
+  const gameStates = await gameStatesP;
+  // Timing of each stage (ms since the poll started), in the runtime logs, to see where a slow poll spends its time.
+  console.info("[poll]", JSON.stringify({ leagues: rows.length, auth: tAuth, rows: tRows, state: tState, total: Date.now() - t0 }));
+  return { live, lineups, gameStates, updatedAt: Date.now() };
 }
 
 // Recent plays for the players on the field right now (the Sunday board's "Playing now" panel, lib/playByPlay.js).
