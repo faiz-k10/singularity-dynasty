@@ -6014,3 +6014,45 @@ html{font-stretch:82%;}
 
 /* Weekly rankings: rows a filter leaves out stay mounted (so filtering is instant) and are simply not shown. */
 .rankings-table tbody tr.row-filtered{display:none;}
+
+/* Companion pane (Companion.js): status strip, a spotlight card that turns over, then every card. Flat cards, hairline box,
+   a coloured left edge by tone (gold = going your way, blue = against you, red = fix it, plain = neutral). */
+.sb-feed-tabs .league-dash-tabs{transform:scale(.92); transform-origin:right center;}
+.cp{flex:1; min-height:0; display:flex; flex-direction:column;}
+.cp-strip{display:flex; align-items:center; gap:14px; padding:12px 16px; border-bottom:1px solid rgba(var(--star-dot-rgb),.08);}
+.cp-orbit .sb-wait-orbit{width:46px; height:46px; margin:0;}
+.cp-strip-text{display:flex; flex-direction:column; gap:3px; min-width:0; flex:1;}
+.cp-strip-eyebrow{font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.14em; color:var(--horizon-gold);}
+.cp-strip-main{display:flex; align-items:baseline; flex-wrap:wrap; gap:4px 12px;}
+.cp-strip-time{font-family:var(--font-display); font-weight:800; font-size:24px; line-height:1.1; text-transform:uppercase; letter-spacing:.03em; color:var(--star);}
+.cp-strip-label{font-size:10.5px; text-transform:uppercase; letter-spacing:.1em; color:var(--star-dim);}
+.cp-strip-clock{font-size:18px; font-weight:700; color:var(--horizon-gold); font-variant-numeric:tabular-nums;}
+.cp-strip-games{display:flex; flex-wrap:wrap; gap:6px; margin-top:4px;}
+.cp-strip-games .sb-wait-game{padding:4px 9px;}
+.cp-scroll{overflow:auto; min-height:0; flex:1; padding:12px 16px 16px;}
+.cp-list{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px;}
+.cp-card{position:relative; display:flex; flex-direction:column; gap:5px; padding:11px 14px 11px 16px; border:1px solid rgba(var(--star-dot-rgb),.12); background:rgba(var(--star-dot-rgb),.03); box-shadow:inset 3px 0 0 rgba(var(--star-dot-rgb),.35);}
+.cp-card.is-mine{box-shadow:inset 3px 0 0 var(--horizon-gold);}
+.cp-card.is-theirs{box-shadow:inset 3px 0 0 var(--neon-blue);}
+.cp-card.is-alert{box-shadow:inset 3px 0 0 var(--down); background:rgba(var(--star-dot-rgb),.05);}
+.cp-card.is-fresh{background:rgba(var(--horizon-gold-rgb),.09);}
+.cp-label{font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--star-dim);}
+.cp-card.is-mine .cp-label{color:var(--horizon-gold);}
+.cp-card.is-theirs .cp-label{color:var(--neon-blue);}
+.cp-card.is-alert .cp-label{color:var(--down);}
+.cp-league{font-weight:400; text-transform:none; letter-spacing:.02em; color:var(--star-dim);}
+.cp-new{color:var(--horizon-gold);}
+.cp-title{margin:0; font-family:var(--font-body); font-weight:700; font-size:15px; line-height:1.25; color:var(--star);}
+.cp-body{margin:0; font-size:13px; line-height:1.45; color:var(--star-dim);}
+.cp-player{display:flex; align-items:center; gap:6px; margin-top:2px;}
+.cp-spotlight{margin-bottom:14px; animation:cp-in .5s ease both;}
+.cp-spotlight .cp-card{padding:16px 18px 16px 20px; background:rgba(var(--star-dot-rgb),.06);}
+.cp-spotlight .cp-title{font-family:var(--font-display); font-weight:800; font-size:26px; line-height:1.1; text-transform:uppercase; letter-spacing:.03em;}
+.cp-spotlight .cp-body{font-size:14px; color:var(--star);}
+.cp-dots{display:flex; gap:5px; justify-content:center; margin-top:10px;}
+.cp-dots span{width:14px; height:2px; background:rgba(var(--star-dot-rgb),.2);}
+.cp-dots span.on{background:var(--horizon-gold);}
+.cp-more{margin:0 0 8px; font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.14em; color:var(--star-dim);}
+.cp-empty{padding:24px 18px; margin:0; font-size:14px; line-height:1.5; color:var(--star-dim);}
+@keyframes cp-in{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;}}
+@media (prefers-reduced-motion:reduce){ .cp-spotlight{animation:none;} }

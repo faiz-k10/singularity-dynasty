@@ -8,13 +8,14 @@ import { formatOdds, oddsTone } from "./Standings";
 import PositionBadge from "../tools/PositionBadge";
 import TeamBadge from "../tools/TeamBadge";
 import { summarizeSide } from "@/lib/winChance";
-import { buildLiveFeed, trackScoring, sortFeed, formatCountdown, applyPending } from "@/lib/liveFeed";
+import { buildLiveFeed, trackScoring, sortFeed, applyPending } from "@/lib/liveFeed";
 import { adjustedMatchup } from "@/lib/adjustedMatchup";
 import { lockIn } from "@/lib/standing";
 import { getLivePlays } from "./actions";
 import { leadState } from "@/lib/leadState";
 import { leagueFacts, matchesFilters, emptyFilters, filterCount } from "@/lib/boardFilters";
 import BoardFilters from "./BoardFilters";
+import Companion from "./Companion";
 
 const fmt1 = (v) => (v == null ? "—" : v.toFixed(1));
 // Scores (points actually scored) show two decimals, like Sleeper's; projections stay at one.
@@ -23,12 +24,6 @@ const fmt2 = (v) => (v == null ? "—" : v.toFixed(2));
 const shortName = (name) => {
   const [first, ...rest] = String(name || "").split(" ");
   return rest.length ? `${first[0]}. ${rest.join(" ")}` : first;
-};
-
-const kickoff = (iso) => {
-  if (!iso) return null;
-  const d = new Date(iso);
-  return d.toLocaleString([], { weekday: "short", hour: "numeric", minute: "2-digit" });
 };
 
 // The number briefly glows when it changes between polls (not on first paint); green while leading, red while trailing.
@@ -351,86 +346,6 @@ function RecentPlays({ rows, updatedAt, focus, onPick, onTotals }) {
   );
 }
 
-// What the live panel shows while nobody is on the field: one centred card in the board's language -- a small event
-// horizon ring, "Next kickoff", the time in the display font with a countdown, the game(s) as team badges, and how many
-// of your (gold) and your opponents' (blue) starters play in them. When nobody has a game left: "Week N is a wrap!".
-function BetweenGames({ feed, gameStates, oneLeague, week }) {
-  const mounted = useMounted();
-  const [now, setNow] = useState(null);
-  useEffect(() => {
-    const tick = () => setNow(Date.now());
-    const first = setTimeout(tick, 0);
-    const id = setInterval(tick, 1000);
-    return () => {
-      clearTimeout(first);
-      clearInterval(id);
-    };
-  }, []);
-  const next = feed.nextUp;
-  let eyebrow, title, sub;
-  if (!gameStates) {
-    eyebrow = "Live scoreboard";
-    title = "Connecting";
-    sub = "Scores refresh every 30 seconds.";
-  } else if (feed.nextStart) {
-    eyebrow = "Next kickoff";
-    title = mounted ? kickoff(feed.nextStart) : "\u00a0";
-    sub = now ? formatCountdown(new Date(feed.nextStart).getTime() - now) : "\u00a0";
-  } else {
-    eyebrow = "Nobody on the field";
-    title = week ? `Week ${week} is a wrap!` : "That's a wrap!";
-    sub = oneLeague ? "Everyone in this matchup has played." : "All your players and your opponents' have played this week.";
-  }
-  const games = next?.games || [];
-  return (
-    <div className="sb-wait">
-      <div className={`sb-wait-orbit${feed.nextStart ? "" : " is-still"}`} aria-hidden="true">
-        <span className="sb-wait-core" />
-      </div>
-      <span className="sb-wait-eyebrow mono">{eyebrow}</span>
-      <span className="sb-wait-title">{title}</span>
-      {feed.nextStart ? (
-        <div className="sb-wait-count">
-          <span className="sb-wait-count-label">Countdown</span>
-          <span className="sb-wait-sub mono is-clock">{sub}</span>
-        </div>
-      ) : (
-        <span className="sb-wait-sub mono">{sub}</span>
-      )}
-      {games.length > 0 && (
-        <ul className="sb-wait-games">
-          {games.slice(0, 3).map((g) => (
-            <li key={g.join("-")} className="sb-wait-game">
-              {g.map((t, i) => (
-                <span key={t} className="sb-wait-team">
-                  {i > 0 && <span className="sb-wait-vs mono">at</span>}
-                  <TeamBadge team={t} />
-                </span>
-              ))}
-            </li>
-          ))}
-          {games.length > 3 && <li className="sb-wait-more mono">+{games.length - 3} more games</li>}
-        </ul>
-      )}
-      {next && next.mine + next.theirs > 0 && (
-        <p className="sb-wait-who mono">
-          {next.mine > 0 && (
-            <span className="is-mine">
-              <strong>{next.mine}</strong> of yours
-            </span>
-          )}
-          {next.mine > 0 && next.theirs > 0 && <span className="sb-wait-dot"> · </span>}
-          {next.theirs > 0 && (
-            <span className="is-theirs">
-              <strong>{next.theirs}</strong> of {oneLeague ? "theirs" : "your opponents'"}
-            </span>
-          )}
-        </p>
-      )}
-    </div>
-  );
-}
-
 // The live panel beside the cards: only players on the field right now -- yours, then your opponents' -- across every
 // league, or just the open league's two lineups (teamId). Newest scoring first within each side; a row flashes gold
 // with "+6.4" when he scores. Finished and not-started players stay off it so it never fills with noise.
@@ -476,17 +391,26 @@ function LiveFeed({ savedTeams, gameStates, updatedAt, teamId = null, league = n
       </section>
     );
   const nobody = feed.mine.length + feed.theirs.length === 0;
+  // The pane is the board's companion: the live list while games are on (with a Companion tab beside it), the companion's cards
+  // the rest of the week. A tab picked by hand holds until nobody is on the field any more.
+  const [picked, setPicked] = useState(null);
+  const mode = nobody ? "companion" : picked || "live";
   return (
-    <aside className="sb-feed glass-panel" aria-label="Playing now">
+    <aside className="sb-feed glass-panel" aria-label="Companion">
       <div className="sb-feed-head">
         <h2 className="board-panel-title">
           {all.length > 0 && <span className="sb-live-dot" aria-hidden="true" />}
-          Playing now
+          {mode === "live" ? "Playing now" : "Companion"}
         </h2>
-        {league && <span className="sb-feed-scope mono">{league}</span>}
+        {!nobody && (
+          <span className="sb-feed-tabs">
+            <PanelTabs tabs={[["live", "Live"], ["companion", "Companion"]]} value={mode} onChange={setPicked} />
+          </span>
+        )}
+        {nobody && league && <span className="sb-feed-scope mono">{league}</span>}
       </div>
-      {nobody ? (
-        <BetweenGames feed={feed} gameStates={gameStates} oneLeague={teamId != null} week={savedTeams.find((t) => t.settings?.week)?.settings.week} />
+      {mode === "companion" ? (
+        <Companion savedTeams={savedTeams} gameStates={gameStates} teamId={teamId} />
       ) : (
         // Split lengthwise: who is on the field (left) beside what they just did (right), each scrolling on its own.
         <div className="sb-feed-split">
