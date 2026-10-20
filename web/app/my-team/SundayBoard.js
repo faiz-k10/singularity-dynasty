@@ -425,12 +425,11 @@ function BetweenGames({ feed, gameStates, oneLeague }) {
 // The live panel beside the cards: only players on the field right now -- yours, then your opponents' -- across every
 // league, or just the open league's two lineups (teamId). Newest scoring first within each side; a row flashes gold
 // with "+6.4" when he scores. Finished and not-started players stay off it so it never fills with noise.
-function LiveFeed({ savedTeams, gameStates, updatedAt, teamId = null, league = null }) {
+function LiveFeed({ savedTeams, gameStates, updatedAt, teamId = null, league = null, playTotals, onTotals }) {
   const mounted = useMounted();
   const baseFeed = useMemo(() => buildLiveFeed(savedTeams, gameStates, { onlyTeamId: teamId }), [savedTeams, gameStates, teamId]);
   // Each player's running points play by play (from the plays request below): Sleeper trails the game by a minute or two, so the
   // plays it hasn't posted yet are added to his number (lib/liveFeed.js pendingFor / applyPending).
-  const [playTotals, setPlayTotals] = useState(null);
   const feed = useMemo(() => ({ ...baseFeed, mine: applyPending(baseFeed.mine, playTotals), theirs: applyPending(baseFeed.theirs, playTotals) }), [baseFeed, playTotals]);
   const all = useMemo(() => [...feed.mine, ...feed.theirs], [feed]);
   const key = all.map((r) => `${r.id}:${r.pts}`).join(",");
@@ -486,7 +485,7 @@ function LiveFeed({ savedTeams, gameStates, updatedAt, teamId = null, league = n
             {section(feed.mine, "mine", "Yours", feed.mineTotal)}
             {section(feed.theirs, "theirs", teamId ? "Theirs" : "Your opponents'", feed.theirsTotal)}
           </div>
-          <RecentPlays rows={all} updatedAt={updatedAt} focus={focus} onPick={pick} onTotals={setPlayTotals} />
+          <RecentPlays rows={all} updatedAt={updatedAt} focus={focus} onPick={pick} onTotals={onTotals} />
         </div>
       )}
     </aside>
@@ -501,6 +500,8 @@ function LiveFeed({ savedTeams, gameStates, updatedAt, teamId = null, league = n
 export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, updatedAt, toolbar }) {
   const mounted = useMounted();
   const [openId, setOpenIdState] = useState(null);
+  // Each player's running points play by play (from the plays request in the live panel): shared by the live list and the open matchup.
+  const [playTotals, setPlayTotals] = useState(null);
   // Which of the open league's views is showing (Matchup / Standings / Best available); opening a league starts on Matchup.
   const [panelTab, setPanelTab] = useState("matchup");
   // League filters (BoardFilters.js): league type / win chance / score / playoff odds. Not remembered between visits, so the
@@ -636,7 +637,7 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
                 <PanelTabs tabs={leagueTabs(openTeam)} value={panelTab} onChange={setPanelTab} />
               </span>
             </div>
-            <MatchupPanel team={openTeam} gameStates={gameStates} tab={panelTab} />
+            <MatchupPanel team={openTeam} gameStates={gameStates} tab={panelTab} playTotals={playTotals} />
           </section>
         ) : (
           <div className="sb-main">
@@ -661,6 +662,8 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
           updatedAt={updatedAt}
           teamId={openTeam ? openTeam.id : null}
           league={openTeam ? openTeam.league_name : null}
+          playTotals={playTotals}
+          onTotals={setPlayTotals}
         />
       </div>
     </div>

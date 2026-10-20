@@ -101,6 +101,21 @@ export function applyPending(rows, totals) {
   });
 }
 
+// The same estimate for a matchup lineup (settings.h2h.mine / .opp, one league): each player's `pts` gets his pending points, and
+// `added` is the lineup's total of them, for the scoreboard. Players without a total, or whose number doesn't line up, are untouched.
+export function applyPendingToLineup(list, totals) {
+  if (!totals || !list) return { list, added: 0 };
+  let added = 0;
+  const out = list.map((p) => {
+    if (!p?.id || typeof p.pts !== "number") return p;
+    const pending = pendingFor([{ pts: p.pts }], totals[p.id]);
+    if (!pending) return p;
+    added += pending;
+    return { ...p, pts: r2(p.pts + pending), pending };
+  });
+  return { list: out, added: r2(added) };
+}
+
 // Remembers when each player's points last went up, so the list can put the newest scoring first.
 // prev: { last: {id: pts}, changedAt: {id: ms}, delta: {id: +pts} } (or null on first load). On the first load nothing
 // counts as "new" -- we don't know the order things happened in, only what's on the board now.

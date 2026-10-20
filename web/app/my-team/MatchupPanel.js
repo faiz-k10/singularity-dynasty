@@ -9,6 +9,7 @@ import Standings from "./Standings";
 import WaiverWire from "./WaiverWire";
 import ScoreCurve from "./ScoreCurve";
 import { leadState } from "@/lib/leadState";
+import { applyPendingToLineup } from "@/lib/liveFeed";
 import { useMounted } from "./useMounted";
 
 // Sleeper's own page for this week's matchup in a league (opens in a new tab).
@@ -165,7 +166,7 @@ export function PanelTabs({ tabs, value, onChange }) {
 // and the win chance (lib/winChance.js, computed server-side and refreshed by the 30-second poll). `tab` picks the
 // view: "matchup" (default), "standings" (Standings.js) or "available" (WaiverWire.js -- it only loads, and only asks
 // Sleeper, once its tab is opened).
-export default function MatchupPanel({ team, gameStates, tab = "matchup" }) {
+export default function MatchupPanel({ team, gameStates, tab = "matchup", playTotals = null }) {
   const s = team.settings || {};
   return (
     <div className="h2h-wrap">
@@ -174,18 +175,23 @@ export default function MatchupPanel({ team, gameStates, tab = "matchup" }) {
       ) : tab === "available" ? (
         <WaiverWire teamId={team.id} bare />
       ) : (
-        <MatchupBody team={team} gameStates={gameStates} />
+        <MatchupBody team={team} gameStates={gameStates} playTotals={playTotals} />
       )}
     </div>
   );
 }
 
-function MatchupBody({ team, gameStates }) {
+function MatchupBody({ team, gameStates, playTotals }) {
   const mounted = useMounted();
   const s = team.settings || {};
   const scoreboardKnown = Boolean(gameStates && Object.keys(gameStates).length);
-  const mine = useMemo(() => (s.h2h ? summarizeSide(s.h2h.mine, gameStates) : null), [s.h2h, gameStates]);
-  const opp = useMemo(() => (s.h2h ? summarizeSide(s.h2h.opp, gameStates) : null), [s.h2h, gameStates]);
+  // Sleeper trails the game by a minute or two, so plays it hasn't posted yet are added to each player's points (and to the team
+  // totals) when the play-by-play knows them (lib/liveFeed.js pendingFor) -- the same number as in the Playing now list.
+  const adjMine = useMemo(() => (s.h2h ? applyPendingToLineup(s.h2h.mine, playTotals) : null), [s.h2h, playTotals]);
+  const adjOpp = useMemo(() => (s.h2h ? applyPendingToLineup(s.h2h.opp, playTotals) : null), [s.h2h, playTotals]);
+  const mine = useMemo(() => (adjMine ? summarizeSide(adjMine.list, gameStates) : null), [adjMine, gameStates]);
+  const opp = useMemo(() => (adjOpp ? summarizeSide(adjOpp.list, gameStates) : null), [adjOpp, gameStates]);
+  const live = s.matchupActual ? { mine: Math.round((s.matchupActual.mine + (adjMine?.added || 0)) * 10) / 10, opp: Math.round((s.matchupActual.opp + (adjOpp?.added || 0)) * 10) / 10 } : null;
   const url = sleeperMatchupUrl(team.platform_league_id);
   const sleeperLink = url && (
     <a className="h2h-sleeper mono" href={url} target="_blank" rel="noopener noreferrer">
@@ -200,7 +206,6 @@ function MatchupBody({ team, gameStates }) {
     return <div className="h2h h2h-empty"><p>This week&apos;s matchup isn&apos;t posted yet.</p>{sleeperLink}</div>;
   }
 
-  const live = s.matchupActual;
   const myName = team.team_name || "Your team";
   const pct = s.winChance;
   const allDone =

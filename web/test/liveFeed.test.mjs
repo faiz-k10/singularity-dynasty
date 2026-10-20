@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { buildLiveFeed, trackScoring, sortFeed, isGameDay, formatCountdown, pendingFor, applyPending } from "../lib/liveFeed.js";
+import { buildLiveFeed, trackScoring, sortFeed, isGameDay, formatCountdown, pendingFor, applyPending, applyPendingToLineup } from "../lib/liveFeed.js";
 
 const gs = {
   GB: { state: "in", detail: "4:43 - 1st", start: "2026-10-19T00:20Z" },
@@ -133,4 +133,22 @@ test("applyPending: adds the pending points to the row's numbers and marks it", 
   assert.deepEqual(out[0].starts.map((x) => x.pts), [3.3, 3.3]);
   assert.equal(out[1], rows[1]); // b's 5 matches nothing: untouched
   assert.equal(applyPending(rows, null), rows);
+});
+
+test("applyPendingToLineup: each lineup player gets his pending points and the lineup total says how many were added", () => {
+  const lineup = [
+    { id: "a", name: "Christian McCaffrey", pts: 18.1, slot: "RB" },
+    { id: "b", name: "Jayden Daniels", pts: 4.2, slot: "QB" },
+    { id: "c", name: "Nobody", pts: 3, slot: "WR" },
+    { id: null, slot: "FLEX" },
+  ];
+  // McCaffrey: plays total 24.2, Sleeper 18.1 = the first 3 plays, so 6.1 pending. Daniels: caught up. Nobody: no plays known.
+  const totals = { a: [10, 5, 3.1, 6.1], b: [1.1, 3.1] };
+  const out = applyPendingToLineup(lineup, totals);
+  assert.equal(out.list[0].pts, 24.2);
+  assert.equal(out.list[0].pending, 6.1);
+  assert.equal(out.list[1], lineup[1]);
+  assert.equal(out.list[2], lineup[2]);
+  assert.equal(out.added, 6.1);
+  assert.equal(applyPendingToLineup(lineup, null).list, lineup);
 });
