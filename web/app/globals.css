@@ -5964,3 +5964,15 @@ html{font-stretch:82%;}
   .h2h .h2h-side .h2h-row, .h2h .h2h-side.opp .h2h-row{height:auto; grid-template-columns:minmax(0,1fr) 56px;}
   .score-curve{max-width:100%;}
 }
+
+/* Lineup rows, sixth touch (founder, Oct 19): a bigger team logo, and the badge order mirrors on your opponent's side -- yours reads position then logo
+   going left to right, theirs logo then position, so the position badge sits next to the slot on both sides. */
+.h2h-row:not(.h2h-head) .h2h-player-sub .team-logo img{width:30px; height:30px;}
+.h2h-row:not(.h2h-head) .h2h-player-sub .team-badge.team-logo{padding:0;}
+.h2h-side.opp .h2h-row:not(.h2h-head) .h2h-player-sub{flex-direction:row-reverse; justify-content:flex-start; text-align:right;}
+@container h2h (max-width:900px){
+  .h2h-side.opp .h2h-row:not(.h2h-head) .h2h-player-sub{flex-direction:row; justify-content:flex-start; text-align:left;}
+}
+@media (max-width:900px){
+  .h2h-side.opp .h2h-row:not(.h2h-head) .h2h-player-sub{flex-direction:row; justify-content:flex-start; text-align:left;}
+}
