@@ -291,12 +291,13 @@ function RecentPlays({ rows, updatedAt }) {
       </h3>
       <div className="sb-plays-filter" role="group" aria-label="Whose plays">
         {[
-          ["mine", "My players"],
-          ["theirs", "Opponents"],
-          ["both", "Both"],
-        ].map(([k, label]) => (
-          <button key={k} type="button" className={`is-${k}`} aria-pressed={whose === k} onClick={() => setWhose(k)}>
-            {label}
+          ["mine", "My players", "Mine"],
+          ["theirs", "Opponents", "Theirs"],
+          ["both", "Both", "Both"],
+        ].map(([k, label, short]) => (
+          <button key={k} type="button" className={`is-${k}`} aria-pressed={whose === k} aria-label={label} onClick={() => setWhose(k)}>
+            <span className="long">{label}</span>
+            <span className="short">{short}</span>
           </button>
         ))}
       </div>
