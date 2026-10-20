@@ -227,8 +227,8 @@ function FeedRow({ r, isNew, delta, showLeagues, focused, onPick }) {
         {isNew && delta > 0 ? (
           <span className="sb-feed-delta mono">+{fmt1(delta)}</span>
         ) : r.pending ? (
-          <span className="sb-feed-live mono" title="Includes points from plays Sleeper has not posted yet (standard scoring, matched to Sleeper's own number). It settles when Sleeper catches up.">
-            incl. {r.pending > 0 ? "+" : "−"}{fmt1(Math.abs(r.pending))} live
+          <span className="sb-feed-delta mono" title="Points from plays Sleeper has not posted yet (already included in the score). It goes away when Sleeper catches up.">
+            {r.pending > 0 ? "+" : "−"}{fmt1(Math.abs(r.pending))}
           </span>
         ) : (
           <span className="sb-feed-proj mono">proj {fmt1(r.proj)}</span>

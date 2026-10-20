@@ -5829,5 +5829,3 @@ html{font-stretch:82%;}
 /* Play labels in Title Case: "Touchdown Run", "Touchdown Catch", "Touchdown Pass", "Field Goal". */
 .sb-play-what strong{text-transform:capitalize;}
 
-/* Playing now: points added from plays Sleeper hasn't posted yet, instead of the projection line while they are pending. */
-.sb-feed-live{font-size:11px; color:var(--horizon-gold); letter-spacing:.02em; cursor:help;}
