@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import MatchupPanel, { sleeperMatchupUrl, formatWin, standing, sealedClass, PanelTabs, leagueTabs } from "./MatchupPanel";
 import { useMounted } from "./useMounted";
 import { buildRow, isTyping, moveFocus } from "./LeagueDashboard";
@@ -9,6 +9,7 @@ import PositionBadge from "../tools/PositionBadge";
 import TeamBadge from "../tools/TeamBadge";
 import { summarizeSide } from "@/lib/winChance";
 import { buildLiveFeed, trackScoring, sortFeed, formatCountdown, applyPending } from "@/lib/liveFeed";
+import { adjustedMatchup } from "@/lib/adjustedMatchup";
 import { getLivePlays } from "./actions";
 import { leadState } from "@/lib/leadState";
 import { leagueFacts, matchesFilters, emptyFilters, filterCount } from "@/lib/boardFilters";
@@ -45,15 +46,18 @@ function Score({ value, state }) {
 }
 
 // Everything a league card (and the filters) need to know about this week's matchup, computed once.
-function matchupState(team, gameStates, injuries) {
+function matchupState(team, gameStates, injuries, playTotals = null) {
   const s = team.settings || {};
   const row = buildRow(team, injuries);
-  const mine = s.h2h ? summarizeSide(s.h2h.mine, gameStates) : null;
-  const opp = s.h2h ? summarizeSide(s.h2h.opp, gameStates) : null;
-  const live = s.matchupActual;
+  // The plays Sleeper hasn't posted yet are added to the lineups, the totals and the win chance (lib/adjustedMatchup.js), so a
+  // card is on the same clock as the live list and the open matchup.
+  const adj = adjustedMatchup(s, gameStates, playTotals);
+  const mine = adj ? adj.mine : s.h2h ? summarizeSide(s.h2h.mine, gameStates) : null;
+  const opp = adj ? adj.opp : s.h2h ? summarizeSide(s.h2h.opp, gameStates) : null;
+  const live = adj ? adj.live : s.matchupActual;
   const myScore = live ? live.mine : mine?.pts ?? null;
   const oppScore = live ? live.opp : opp?.pts ?? null;
-  const pct = row.winPct;
+  const pct = adj ? adj.winChance : row.winPct;
   const playing = (mine?.playing || 0) + (opp?.playing || 0);
   const toPlay = (mine?.yetToPlay || 0) + (opp?.yetToPlay || 0);
   const started = myScore > 0 || oppScore > 0 || playing > 0;
@@ -65,9 +69,9 @@ function matchupState(team, gameStates, injuries) {
 // One league at a glance, built to answer "am I winning?" in one look: the standing (Favored / Toss-up / Underdog,
 // Won / Lost once every game is over) with the win chance, the two scores (green leading, red trailing), who of yours is still to
 // play, then playoffs and alerts in plain words. Colour means one thing everywhere: gold = going your way, blue = not.
-function LeagueCard({ team, gameStates, injuries, onOpen }) {
+function LeagueCard({ team, gameStates, injuries, onOpen, playTotals }) {
   const mounted = useMounted();
-  const { s, row, mine, opp, myScore, oppScore, pct, playing, done, st } = useMemo(() => matchupState(team, gameStates, injuries), [team, gameStates, injuries]);
+  const { s, row, mine, opp, myScore, oppScore, pct, playing, done, st } = useMemo(() => matchupState(team, gameStates, injuries, playTotals), [team, gameStates, injuries, playTotals]);
   const url = sleeperMatchupUrl(team.platform_league_id);
   // The card's border is its win chance: the card's width is the bar. The top and bottom borders fill from the left edge by the
   // same share -- the chance to win -- and the left edge is always drawn; all the way across (locked in / won) closes the box.
@@ -503,6 +507,10 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
   const [openId, setOpenIdState] = useState(null);
   // Each player's running points play by play (from the plays request in the live panel): shared by the live list and the open matchup.
   const [playTotals, setPlayTotals] = useState(null);
+  // New totals are merged into what is already known: opening one league narrows the plays request to its players, and the other leagues' cards
+  // must not lose their adjustment (and flicker back to Sleeper's older number) when the board widens again. A stale entry is harmless:
+  // lib/liveFeed.js pendingFor only uses it when Sleeper's number still lines up with it.
+  const mergeTotals = useCallback((t) => setPlayTotals((prev) => ({ ...(prev || {}), ...t })), []);
   // Which of the open league's views is showing (Matchup / Standings / Best available); opening a league starts on Matchup.
   const [panelTab, setPanelTab] = useState("matchup");
   // League filters (BoardFilters.js): league type / win chance / score / playoff odds. Not remembered between visits, so the
@@ -511,11 +519,11 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
   const factsById = useMemo(() => {
     const m = {};
     for (const t of savedTeams) {
-      const ms = matchupState(t, gameStates, injuriesByTeam?.[t.id]);
+      const ms = matchupState(t, gameStates, injuriesByTeam?.[t.id], playTotals);
       m[t.id] = leagueFacts({ settings: ms.s, standingLabel: ms.st.label, myScore: ms.myScore, oppScore: ms.oppScore, odds: ms.s.playoffOdds ?? null, settled: Boolean(ms.s.playoffSettled) });
     }
     return m;
-  }, [savedTeams, gameStates, injuriesByTeam]);
+  }, [savedTeams, gameStates, injuriesByTeam, playTotals]);
   const visibleTeams = useMemo(() => savedTeams.filter((t) => matchesFilters(filters, factsById[t.id])), [savedTeams, filters, factsById]);
   const filtered = filterCount(filters) > 0;
   const openTeam = openId ? savedTeams.find((t) => t.id === openId) : null;
@@ -579,7 +587,7 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
   let alerts = 0;
   let live = 0; // leagues where one of my players is on the field right now (the "Live" label beside the clock)
   for (const t of visibleTeams) {
-    const ms = matchupState(t, gameStates, injuriesByTeam?.[t.id]);
+    const ms = matchupState(t, gameStates, injuriesByTeam?.[t.id], playTotals);
     const label = ms.st.label;
     if (label === "Won") tally.won++;
     else if (label === "You win") tally.winning++;
@@ -656,7 +664,7 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
           <div className="sb-main">
             <div className="sb-grid" ref={gridRef}>
               {visibleTeams.map((t) => (
-                <LeagueCard key={t.id} team={t} gameStates={gameStates} injuries={injuriesByTeam?.[t.id]} onOpen={setOpenId} />
+                <LeagueCard key={t.id} team={t} gameStates={gameStates} injuries={injuriesByTeam?.[t.id]} onOpen={setOpenId} playTotals={playTotals} />
               ))}
               {visibleTeams.length === 0 && (
                 <div className="sb-grid-empty">
@@ -676,7 +684,7 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
           teamId={openTeam ? openTeam.id : null}
           league={openTeam ? openTeam.league_name : null}
           playTotals={playTotals}
-          onTotals={setPlayTotals}
+          onTotals={mergeTotals}
         />
       </div>
     </div>

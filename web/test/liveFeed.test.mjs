@@ -1,5 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { adjustedMatchup } from "../lib/adjustedMatchup.js";
 import { buildLiveFeed, trackScoring, sortFeed, isGameDay, formatCountdown, pendingFor, applyPending, applyPendingToLineup } from "../lib/liveFeed.js";
 
 const gs = {
@@ -151,4 +152,26 @@ test("applyPendingToLineup: each lineup player gets his pending points and the l
   assert.equal(out.list[2], lineup[2]);
   assert.equal(out.added, 6.1);
   assert.equal(applyPendingToLineup(lineup, null).list, lineup);
+});
+
+test("adjustedMatchup: pending plays move the lineups, the totals and the win chance together; nothing pending hands back the server's numbers", () => {
+  const gs = { SF: { state: "in", period: 3, clock: "0:15", detail: "0:15 - 3rd" }, GB: { state: "post", detail: "Final" } };
+  const p = (id, name, team, pts, proj = 20) => ({ id, name, pos: "RB", team, slot: "RB", proj, floor: 8, ceiling: 36, pts });
+  const settings = {
+    winChance: 0.58,
+    matchupActual: { mine: 87.52, opp: 96.68 },
+    h2h: { mine: [p("a", "Christian McCaffrey", "SF", 27.1), p("b", "Done Guy", "GB", 60.42, 10)], opp: [p("z", "Opp Guy", "GB", 96.68, 10)] },
+  };
+  // Nothing pending: the server's win chance and Sleeper's totals come back as they are.
+  const plain = adjustedMatchup(settings, gs, { a: [10, 5, 7.1, 5] });
+  assert.equal(plain.winChance, 0.58);
+  assert.deepEqual(plain.live, { mine: 87.52, opp: 96.68 });
+  assert.deepEqual(plain.added, { mine: 0, opp: 0 });
+  // McCaffrey's plays total 29.1 but Sleeper has 27.1: +2.0 pending -> totals, lineup and win chance move.
+  const adj = adjustedMatchup(settings, gs, { a: [10, 5, 7.1, 5, 2] });
+  assert.deepEqual(adj.added, { mine: 2, opp: 0 });
+  assert.deepEqual(adj.live, { mine: 89.52, opp: 96.68 });
+  assert.equal(adj.mine.pts, 89.52);
+  assert.ok(adj.winChance > 0.58, "a higher score cannot lower the win chance");
+  assert.equal(adjustedMatchup({ bestBall: true, winChance: null }, gs, null), null);
 });

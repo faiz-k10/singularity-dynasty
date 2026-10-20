@@ -9,7 +9,7 @@ import Standings from "./Standings";
 import WaiverWire from "./WaiverWire";
 import ScoreCurve from "./ScoreCurve";
 import { leadState } from "@/lib/leadState";
-import { applyPendingToLineup } from "@/lib/liveFeed";
+import { adjustedMatchup } from "@/lib/adjustedMatchup";
 import { useMounted } from "./useMounted";
 
 // Sleeper's own page for this week's matchup in a league (opens in a new tab).
@@ -186,13 +186,12 @@ function MatchupBody({ team, gameStates, playTotals }) {
   const mounted = useMounted();
   const s = team.settings || {};
   const scoreboardKnown = Boolean(gameStates && Object.keys(gameStates).length);
-  // Sleeper trails the game by a minute or two, so plays it hasn't posted yet are added to each player's points (and to the team
-  // totals) when the play-by-play knows them (lib/liveFeed.js pendingFor) -- the same number as in the Playing now list.
-  const adjMine = useMemo(() => (s.h2h ? applyPendingToLineup(s.h2h.mine, playTotals) : null), [s.h2h, playTotals]);
-  const adjOpp = useMemo(() => (s.h2h ? applyPendingToLineup(s.h2h.opp, playTotals) : null), [s.h2h, playTotals]);
-  const mine = useMemo(() => (adjMine ? summarizeSide(adjMine.list, gameStates) : null), [adjMine, gameStates]);
-  const opp = useMemo(() => (adjOpp ? summarizeSide(adjOpp.list, gameStates) : null), [adjOpp, gameStates]);
-  const live = s.matchupActual ? { mine: Math.round((s.matchupActual.mine + (adjMine?.added || 0)) * 100) / 100, opp: Math.round((s.matchupActual.opp + (adjOpp?.added || 0)) * 100) / 100 } : null;
+  // Sleeper trails the game by a minute or two, so plays it hasn't posted yet are added to each player's points, to the team totals
+  // and to the win chance when the play-by-play knows them (lib/adjustedMatchup.js) -- the same numbers as the cards and the live list.
+  const adj = useMemo(() => adjustedMatchup(team.settings, gameStates, playTotals), [team.settings, gameStates, playTotals]);
+  const mine = adj ? adj.mine : s.h2h ? summarizeSide(s.h2h.mine, gameStates) : null;
+  const opp = adj ? adj.opp : s.h2h ? summarizeSide(s.h2h.opp, gameStates) : null;
+  const live = adj ? adj.live : s.matchupActual || null;
   const url = sleeperMatchupUrl(team.platform_league_id);
   const sleeperLink = url && (
     <a className="h2h-sleeper mono" href={url} target="_blank" rel="noopener noreferrer">
@@ -208,7 +207,7 @@ function MatchupBody({ team, gameStates, playTotals }) {
   }
 
   const myName = team.team_name || "Your team";
-  const pct = s.winChance;
+  const pct = adj ? adj.winChance : s.winChance;
   const allDone =
     mine && opp && mine.yetToPlay + mine.playing + opp.yetToPlay + opp.playing === 0 && (mine.pts > 0 || opp.pts > 0);
   const [leadMine] = leadState(live ? live.mine : mine?.pts ?? null, live ? live.opp : opp?.pts ?? null);
