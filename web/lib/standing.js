@@ -1,15 +1,55 @@
-// One word for where a matchup stands, from the win chance -- shared by the Sunday board cards and this panel so the
-// colour and the headline mean the same thing everywhere (gold = going your way, blue = not, plain = too close).
-export function standing(pct, done, ahead = null) {
+// One word for where a matchup stands, shared by the Sunday board cards and the matchup panel so the colour and the headline mean
+// the same thing everywhere (gold = going your way, blue = not, plain = too close).
+//
+// "YOU WIN" and "Out of reach" are CERTAINTIES, not predictions (founder's rule, Oct 19 2026: once YOU WIN is up there must be no
+// chance, under any circumstances, that the matchup is decided the other way). So they never come from the win-chance
+// percentage -- not even from 99.9% -- only from `lockIn`, which asks whether the trailing side could catch up even if every
+// player it has left scored far more than anyone realistically can while the leader's own players still playing lost points.
+// Anything short of that is "Favored" / "Underdog" with its percentage, however high.
+
+// The most one player can still add in a game, whatever the league's scoring (all-time single-game outliers with room to spare;
+// 6-point passing touchdowns and bonuses included). Scaled by the share of the game left, but never below a quarter of it:
+// scoring is lumpy, and a quarter is longer than any realistic burst.
+const GAIN_CAP = { QB: 90, RB: 75, WR: 75, TE: 60, K: 40, DEF: 50 };
+const OTHER_GAIN_CAP = 75;
+// The most a player who hasn't finished can still LOSE (turnovers, lost yards), and the cushion for the stat corrections Sleeper
+// applies after a game (a lead has to clear it too).
+const LOSS_CAP = 12;
+const CORRECTION_BUFFER = 3;
+const MIN_FRACTION = 0.25;
+
+// What one lineup could still gain / lose. `side` = lib/winChance.js summarizeSide() (players with their outlook).
+function exposure(side) {
+  let gain = 0;
+  let loss = 0;
+  for (const p of side?.players || []) {
+    const o = p.outlook;
+    if (!o || o.state === "empty" || o.state === "post" || o.state === "bye") continue; // finished, or never playing
+    if (p.out) continue; // inactive / IR: not playing
+    const f = o.frac == null ? 1 : Math.max(o.frac, MIN_FRACTION); // unknown scoreboard: assume the whole game is left
+    gain += (GAIN_CAP[p.pos] ?? OTHER_GAIN_CAP) * f;
+    loss += LOSS_CAP * f;
+  }
+  return { gain, loss };
+}
+
+// "win" | "loss" | null. Locked only when the lead survives the worst case on both sides plus the correction cushion.
+export function lockIn(mine, opp, myScore, oppScore) {
+  if (!mine || !opp || typeof myScore !== "number" || typeof oppScore !== "number") return null;
+  const m = exposure(mine);
+  const o = exposure(opp);
+  if (myScore - m.loss - CORRECTION_BUFFER > oppScore + o.gain) return "win";
+  if (oppScore - o.loss - CORRECTION_BUFFER > myScore + m.gain) return "loss";
+  return null;
+}
+
+// pct: win chance (0-1) or null; done: every game over; lock: lockIn()'s answer.
+export function standing(pct, done, lock = null) {
   if (pct == null) return { key: "none", label: null };
   if (done) return pct >= 0.5 ? { key: "won", label: "Won" } : { key: "lost", label: "Lost" };
-  // "You win" (it was "Locked in") / "Out of reach" are claims that it is over, so they need the score to agree: a team that is still BEHIND on the
-  // board is at most "Favored" however high the simulation says (an injury or a bust can still happen), and the mirror for
-  // "Out of reach". `ahead`: true = currently leading, false = trailing, null = level or unknown.
-  if (pct >= 0.995 && ahead !== false) return { key: "ahead", label: "You win" };
-  if (pct <= 0.005 && ahead !== true) return { key: "behind", label: "Out of reach" };
+  if (lock === "win") return { key: "ahead", label: "You win" };
+  if (lock === "loss") return { key: "behind", label: "Out of reach" };
   if (pct >= 0.6) return { key: "ahead", label: "Favored" };
   if (pct <= 0.4) return { key: "behind", label: "Underdog" };
   return { key: "close", label: "Toss-up" };
 }
-

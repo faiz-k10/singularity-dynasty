@@ -19,10 +19,11 @@ const fmt1 = (v) => (v == null ? "—" : v.toFixed(1));
 const fmt2 = (v) => (v == null ? "—" : v.toFixed(2)); // points actually scored: two decimals, like Sleeper
 
 export function formatWin(p) {
-  return p == null ? "—" : `${Math.round(p * 100)}%`;
+  // Near-certain is still not certain: only a locked result says YOU WIN, so the extremes read ">99%" / "<1%", never "100%" / "0%".
+  return p == null ? "—" : p >= 0.995 ? ">99%" : p < 0.005 ? "<1%" : `${Math.round(p * 100)}%`;
 }
 
-import { standing } from "@/lib/standing";
+import { standing, lockIn } from "@/lib/standing";
 export { standing };
 
 // Settled results get a settled colour (green: You win / Won, red: Out of reach / Lost) on the word and its bar.
@@ -210,12 +211,12 @@ function MatchupBody({ team, gameStates, playTotals }) {
   const pct = adj ? adj.winChance : s.winChance;
   const allDone =
     mine && opp && mine.yetToPlay + mine.playing + opp.yetToPlay + opp.playing === 0 && (mine.pts > 0 || opp.pts > 0);
-  const [leadMine] = leadState(live ? live.mine : mine?.pts ?? null, live ? live.opp : opp?.pts ?? null);
-  const st = standing(s.bestBall ? null : pct, allDone, leadMine === "lead" ? true : leadMine === "trail" ? false : null);
+  const lock = s.bestBall ? null : lockIn(mine, opp, live ? live.mine : mine?.pts ?? null, live ? live.opp : opp?.pts ?? null);
+  const st = standing(s.bestBall ? null : pct, allDone, lock);
   const center = (
     <div className={`h2h-center is-${st.key}${sealedClass(st.label)}`}>
       {st.label && <div className="h2h-word">{st.label}</div>}
-      {pct != null && !allDone && pct > 0.005 && pct < 0.995 && <div className="h2h-win-label mono">{formatWin(pct)} to win</div>}
+      {pct != null && !allDone && !lock && <div className="h2h-win-label mono">{formatWin(pct)} to win</div>}
       {pct != null && !allDone && (
         <div className="h2h-win-bar" role="img" aria-label={`${formatWin(pct)} chance to win`}>
           <span style={{ width: `${Math.max(2, pct * 100)}%` }} />

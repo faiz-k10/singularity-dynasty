@@ -10,6 +10,7 @@ import TeamBadge from "../tools/TeamBadge";
 import { summarizeSide } from "@/lib/winChance";
 import { buildLiveFeed, trackScoring, sortFeed, formatCountdown, applyPending } from "@/lib/liveFeed";
 import { adjustedMatchup } from "@/lib/adjustedMatchup";
+import { lockIn } from "@/lib/standing";
 import { getLivePlays } from "./actions";
 import { leadState } from "@/lib/leadState";
 import { leagueFacts, matchesFilters, emptyFilters, filterCount } from "@/lib/boardFilters";
@@ -62,8 +63,10 @@ function matchupState(team, gameStates, injuries, playTotals = null) {
   const toPlay = (mine?.yetToPlay || 0) + (opp?.yetToPlay || 0);
   const started = myScore > 0 || oppScore > 0 || playing > 0;
   const done = Boolean(mine && opp && started && playing === 0 && toPlay === 0);
-  const st = standing(pct, done, myScore > oppScore ? true : myScore < oppScore ? false : null);
-  return { s, row, mine, opp, myScore, oppScore, pct, playing, toPlay, done, st };
+  // YOU WIN / Out of reach only when the result is locked (lib/standing.js lockIn), never from the percentage alone.
+  const lock = lockIn(mine, opp, myScore, oppScore);
+  const st = standing(pct, done, lock);
+  return { s, row, mine, opp, myScore, oppScore, pct, playing, toPlay, done, st, lock };
 }
 
 // One league at a glance, built to answer "am I winning?" in one look: the standing (Favored / Toss-up / Underdog,
@@ -71,7 +74,7 @@ function matchupState(team, gameStates, injuries, playTotals = null) {
 // play, then playoffs and alerts in plain words. Colour means one thing everywhere: gold = going your way, blue = not.
 function LeagueCard({ team, gameStates, injuries, onOpen, playTotals }) {
   const mounted = useMounted();
-  const { s, row, mine, opp, myScore, oppScore, pct, playing, done, st } = useMemo(() => matchupState(team, gameStates, injuries, playTotals), [team, gameStates, injuries, playTotals]);
+  const { s, row, mine, opp, myScore, oppScore, pct, playing, done, st, lock } = useMemo(() => matchupState(team, gameStates, injuries, playTotals), [team, gameStates, injuries, playTotals]);
   const url = sleeperMatchupUrl(team.platform_league_id);
   // The card's border is its win chance: the card's width is the bar. The top and bottom borders fill from the left edge by the
   // same share -- the chance to win -- and the left edge is always drawn; all the way across (locked in / won) closes the box.
@@ -80,7 +83,8 @@ function LeagueCard({ team, gameStates, injuries, onOpen, playTotals }) {
   // green / gold / red as the "Playoffs N%" text.
   const oddsRing = pct == null && row.playoffOdds != null;
   const ringPct = oddsRing ? row.playoffOdds : pct == null ? null : done ? (myScore > oppScore ? 1 : myScore < oppScore ? 0 : 0.5) : pct;
-  const ringStyle = ringPct == null ? undefined : { "--win": ringPct >= 0.995 ? 1 : Math.max(0.02, ringPct) };
+  // The ring closes all the way only for a result that is certain (won, or YOU WIN = locked in); a near-certain percentage stops just short.
+  const ringStyle = ringPct == null ? undefined : { "--win": ringPct >= 0.995 ? (done || lock === "win" || oddsRing ? 1 : 0.985) : Math.max(0.02, ringPct) };
   const alerts = row.outStarters.length;
   const myLeft = mine ? mine.players.filter((p) => p.outlook.state === "pre" || p.outlook.state === "in" || p.outlook.state === null) : [];
   const oppLeft = opp ? opp.yetToPlay + opp.playing : 0;
@@ -140,7 +144,7 @@ function LeagueCard({ team, gameStates, injuries, onOpen, playTotals }) {
           {st.label ? (
             <div className="sb-card-verdict">
               <span className="sb-card-word">{st.label}</span>
-              {!done && pct > 0.005 && pct < 0.995 && <span className="sb-card-pct mono">{formatWin(pct)} to win</span>}
+              {pct != null && !done && !lock && <span className="sb-card-pct mono">{formatWin(pct)} to win</span>}
             </div>
           ) : (
             <div className="sb-card-verdict">
