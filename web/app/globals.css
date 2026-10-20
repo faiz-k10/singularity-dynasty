@@ -5414,7 +5414,7 @@ html{font-stretch:82%;}
 .sb-feed-row.is-new{background:rgba(var(--horizon-gold-rgb),.1); box-shadow:inset 3px 0 0 var(--horizon-gold);}
 .sb-feed-row.is-theirs.is-new{background:rgba(var(--neon-blue-rgb),.1); box-shadow:inset 3px 0 0 var(--neon-blue);}
 .sb-feed-who{flex:1; min-width:0; display:flex; flex-direction:column; gap:4px;}
-.sb-feed-name{font-size:14.5px; color:var(--star); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.sb-feed-name{font-size:14.5px; line-height:1.2; color:var(--star); white-space:normal; overflow-wrap:break-word; text-align:left; align-self:flex-start;} /* names wrap onto a second line instead of being cut with an ellipsis */
 .sb-feed-row.is-theirs .sb-feed-name{color:color-mix(in srgb, var(--star) 80%, transparent);}
 .sb-feed-sub{display:flex; align-items:center; gap:6px; flex-wrap:wrap;}
 .sb-feed-sub .h2h-game{color:var(--down);}
@@ -5829,3 +5829,6 @@ html{font-stretch:82%;}
 /* Play labels in Title Case: "Touchdown Run", "Touchdown Catch", "Touchdown Pass", "Field Goal". */
 .sb-play-what strong{text-transform:capitalize;}
 
+
+/* With a matchup open the live panel is narrow: the players half gets a bit more of it so most names fit on one line (the plays half is mostly short lines). */
+.sb-body.has-drawer .sb-feed-split > .sb-feed-scroll{flex:1.4 1 0;}
