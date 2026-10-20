@@ -88,7 +88,7 @@ test("defenseLabel and yardsFor", () => {
   assert.equal(yardsFor("Sack", -7), null);
 });
 
-test("buildPlayFeed: one entry per play, newest first, both ends of a pass named, sides kept", () => {
+test("buildPlayFeed: one entry per player per play, newest first, passer before receiver, sides kept", () => {
   const codeById = { 6: "DAL", 9: "GB" };
   const plays = parsePlays(
     [
@@ -109,23 +109,27 @@ test("buildPlayFeed: one entry per play, newest first, both ends of a pass named
     { playerId: "GB", name: "Green Bay Packers", pos: "DEF", team: "GB", side: "mine" },
   ];
   const feed = buildPlayFeed(players, plays);
-  // Every play that moves a fantasy score, newest first: both runs, the catch, the touchdown pass and the sack (it scores
-  // for the GB defense on the board). The incompletion moves nobody's points and is left off.
-  assert.deepEqual(feed.map((e) => e.id), ["p6", "p5", "p4", "p2", "p1"]);
+  // Every play that moves a fantasy score, newest first, one entry per player: the 19-yard run, the sack (it scores for the GB
+  // defense on the board), the touchdown pass as TWO entries (passer, then receiver), the 24-yard catch (only Lamb is on the
+  // board, so only his entry) and the 20-yard run. The incompletion moves nobody's points and is left off.
+  assert.deepEqual(feed.map((e) => e.id), ["p6:a", "p5:GB", "p4:c", "p4:d", "p2:b", "p1:a"]);
   assert.equal(feed[1].label, "Sack");
   assert.equal(feed[1].side, "mine");
-  const [, , td, catchPlay, run] = feed;
-  assert.equal(td.pair, true);
-  assert.deepEqual(td.who.map((w) => w.name), ["Jordan Love", "Matthew Golden"]);
-  assert.equal(td.label, "Touchdown pass");
-  assert.equal(td.td, true);
+  const [, , tdPass, tdCatch, catchPlay, run] = feed;
+  assert.deepEqual(tdPass.who.map((w) => w.name), ["Jordan Love"]);
+  assert.equal(tdPass.label, "Touchdown pass");
+  assert.equal(tdPass.td, true);
+  assert.equal(tdPass.points, 4.4); // 4 + 9 yards x 0.04
+  assert.deepEqual(tdCatch.who.map((w) => w.name), ["Matthew Golden"]);
+  assert.equal(tdCatch.label, "Touchdown catch");
+  assert.equal(tdCatch.td, true);
+  assert.equal(tdCatch.points, 7.9); // 6 + 1 for the catch + 9 yards x 0.1
   assert.equal(catchPlay.label, "Catch");
   assert.equal(catchPlay.yards, "24 yds");
   assert.equal(catchPlay.big, true); // 24 yards
   assert.equal(run.big, true); // 20 yards
   assert.equal(feed[0].big, false); // the 19-yard run
   assert.equal(catchPlay.points, 3.4); // 1 per catch + 24 yards x 0.1
-  assert.equal(td.points, 12.3); // pass TD: 4 + 9 x 0.04 = 4.36 for the passer, 6 + 1 + 9 x 0.1 = 7.9 for the receiver
   assert.equal(catchPlay.side, "theirs");
   assert.equal(run.when, "3:01 - 4th");
 });
@@ -144,7 +148,7 @@ test("buildPlayFeed: a player who is yours in one league and theirs in another i
   assert.equal(feed[0].side, "both");
 });
 
-test("buildPlayFeed: the kicker's extra point rides on the touchdown row as a note, not as part of the pass", () => {
+test("buildPlayFeed: the kicker's extra point is its own entry, after the passer and the receiver", () => {
   const plays = parsePlays(
     [raw("p1", 1, "Passing Touchdown", "J.Love pass to M.Golden for 9 yards, TOUCHDOWN. T.Smack extra point is GOOD", [["500", "passer"], ["600", "receiver"], ["600", "scorer"], ["700", "kicker"], ["700", "patScorer"]])],
     { 9: "GB" },
@@ -157,12 +161,10 @@ test("buildPlayFeed: the kicker's extra point rides on the touchdown row as a no
     ],
     plays,
   );
-  const [e] = feed;
-  assert.equal(e.label, "Touchdown pass");
-  assert.deepEqual(e.who.map((w) => [w.name, w.arrow, w.note]), [
-    ["Jordan Love", false, null],
-    ["Matthew Golden", true, null],
-    ["Trey Smack", false, "extra point"],
+  assert.deepEqual(feed.map((e) => [e.who[0].name, e.label, e.points]), [
+    ["Jordan Love", "Touchdown pass", 4.4],
+    ["Matthew Golden", "Touchdown catch", 7.9],
+    ["Trey Smack", "Extra point", 1],
   ]);
 });
 

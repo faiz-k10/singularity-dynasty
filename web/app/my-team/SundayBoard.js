@@ -236,14 +236,12 @@ function PlayRow({ e, isNew, focusId, onPick }) {
     <li className={`sb-play is-${e.side}${e.td ? " is-td" : ""}${e.td || e.big ? " is-hot" : ""}${isNew ? " is-new" : ""}`}>
       <div className="sb-play-main">
         <span className="sb-play-who">
-          {e.who.map((w, i) => (
+          {e.who.map((w) => (
             <span key={w.playerId} className="sb-play-player">
-              {i > 0 && <span className="sb-play-join">{w.arrow ? "→" : "·"}</span>}
               <TeamBadge team={w.team} />
               <button type="button" className={`sb-play-name sb-name-btn is-${w.side}${w.playerId === focusId ? " is-focus" : ""}`} aria-pressed={w.playerId === focusId} title={w.playerId === focusId ? "Showing only his plays -- click to show everyone's" : "Show only his plays"} onClick={() => onPick(w.playerId, w.name)}>
                 {w.name}
               </button>
-              {w.note && <span className="sb-play-note">({w.note})</span>}
             </span>
           ))}
         </span>
