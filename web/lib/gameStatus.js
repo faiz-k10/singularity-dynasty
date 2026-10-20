@@ -40,7 +40,9 @@ export function parseScoreboard(json) {
 let cached = null;
 let cachedAt = 0;
 export async function fetchGameStates() {
-  if (cached && Date.now() - cachedAt < 30 * 1000) return cached;
+  // 10s while any game is on (the clock and live scores are polled every 15s), 30s otherwise.
+  const live = cached && Object.values(cached).some((g) => g?.state === "in");
+  if (cached && Date.now() - cachedAt < (live ? 10 : 30) * 1000) return cached;
   try {
     const res = await fetch(URL, { cache: "no-store" });
     if (!res.ok) return cached;

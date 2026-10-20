@@ -1168,6 +1168,10 @@ export default function MyTeamClient({
   const [news, setNews] = useState(null);
   // Which games have kicked off (lib/gameStatus.js), from the refresh and the 30s live poll.
   const [gameStates, setGameStates] = useState(initialGameStates);
+  const gameStatesRef = useRef(gameStates);
+  useEffect(() => {
+    gameStatesRef.current = gameStates;
+  }, [gameStates]);
   const [newsFilter, setNewsFilter] = useState({ starters: false, injuries: false });
   // Desktop alerts (DesktopAlerts.js, Explorer and up): while they're on, the news + live polls keep running in a
   // background tab so the alerts still arrive.
@@ -1241,12 +1245,22 @@ export default function MyTeamClient({
       // Lineup changed in Sleeper since our copy -> full refresh (lineup, alerts, projections).
       if (lineupChanged(savedTeamsRef.current, res?.lineups)) runFullRefresh();
     };
-    timer = setInterval(tick, 30000);
+    // Every 15s while a game is on, every 30s otherwise (scores lag Sleeper's own feed by its refresh plus ours).
+    const anyLive = () => Object.values(gameStatesRef.current || {}).some((g) => g?.state === "in");
+    let stopped = false;
+    const loop = () => {
+      timer = setTimeout(async () => {
+        await tick();
+        if (!stopped) loop();
+      }, anyLive() ? 15000 : 30000);
+    };
+    loop();
     const onVisible = () => { if (!document.hidden) tick(); };
     document.addEventListener("visibilitychange", onVisible);
     return () => {
+      stopped = true;
       clearTimeout(first);
-      clearInterval(timer);
+      clearTimeout(timer);
       document.removeEventListener("visibilitychange", onVisible);
     };
   }, [hasSaved, autoRefresh]);
