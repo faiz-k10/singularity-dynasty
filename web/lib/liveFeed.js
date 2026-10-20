@@ -65,6 +65,42 @@ export function buildLiveFeed(savedTeams, gameStates, { onlyTeamId = null } = {}
   return { mine, theirs, mineTotal: sum(mine), theirsTotal: sum(theirs), nextStart, nextUp, anyLeft: waiting.length > 0 };
 }
 
+// Sleeper posts a player's points about a minute and a half after the play; ESPN's play list is ~25 seconds behind. So the panel adds
+// the plays Sleeper hasn't counted yet: `plays` is his running points play by play (standard PPR, oldest first, from
+// lib/playByPlay.js playerPlayTotals). If Sleeper's number in every league he starts in equals the running total after some play
+// k (it does in a standard-PPR league, exactly), the plays after k are the pending ones. If any league's number matches no point
+// of the running total (half-PPR, bonuses, a play we don't list) we say nothing rather than guess.
+const PEND_TOL = 0.02; // Sleeper posts exact two-decimal points (a 6-yard pass is 0.24)
+const r2 = (v) => Math.round(v * 100) / 100;
+export function pendingFor(starts, plays) {
+  if (!plays?.length || !starts?.length) return 0;
+  const prefix = [0];
+  for (const v of plays) prefix.push(prefix[prefix.length - 1] + v);
+  const total = prefix[prefix.length - 1];
+  let pending = null;
+  for (const st of starts) {
+    let best = -1;
+    prefix.forEach((sum, k) => {
+      if (Math.abs(sum - st.pts) < PEND_TOL) best = k; // the latest play that fits
+    });
+    if (best < 0) return 0;
+    const p = r2(total - prefix[best]);
+    if (pending !== null && Math.abs(p - pending) > PEND_TOL) return 0;
+    pending = p;
+  }
+  return Math.abs(pending) < PEND_TOL || Math.abs(pending) > 30 ? 0 : pending;
+}
+
+// Rows with those pending points added to their numbers (pts, ptsMin, each start) and `pending` set for the label.
+export function applyPending(rows, totals) {
+  if (!totals) return rows;
+  return rows.map((r) => {
+    const pending = pendingFor(r.starts, totals[r.playerId]);
+    if (!pending) return r;
+    return { ...r, pts: r2(r.pts + pending), ptsMin: r2(r.ptsMin + pending), total: r2(r.total + pending * r.starts.length), starts: r.starts.map((x) => ({ ...x, pts: r2(x.pts + pending) })), pending };
+  });
+}
+
 // Remembers when each player's points last went up, so the list can put the newest scoring first.
 // prev: { last: {id: pts}, changedAt: {id: ms}, delta: {id: +pts} } (or null on first load). On the first load nothing
 // counts as "new" -- we don't know the order things happened in, only what's on the board now.

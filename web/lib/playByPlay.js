@@ -178,6 +178,11 @@ const ord = (n) => (n == null ? "" : n > 4 ? "OT" : ["1st", "2nd", "3rd", "4th"]
 // turnovers -- see roleLabel) involving any of them, one entry per player per play (a pass is two entries: the passer's and the
 // receiver's).
 export function buildPlayFeed(players, plays, { limit = 80 } = {}) {
+  return buildAllPlayEntries(players, plays).slice(0, limit);
+}
+
+// Every entry, newest first, no cap (the live panel's per-player running totals need a player's whole game).
+export function buildAllPlayEntries(players, plays) {
   const byAthlete = new Map();
   const defenses = [];
   for (const p of players || []) {
@@ -223,6 +228,7 @@ export function buildPlayFeed(players, plays, { limit = 80 } = {}) {
         big: BIG_PLAY.test(w.label) && play.yards >= BIG_YARDS,
         // Standard-PPR points this play added for him.
         points: Math.round(playPoints(w.label, play.yards) * 10) / 10,
+        exact: playPoints(w.label, play.yards), // unrounded, for matching Sleeper's two-decimal numbers
         td: play.scoring && /Touchdown|Interception touchdown|Fumble return touchdown|Return touchdown/.test(w.label),
         side: w.side,
         who: [{ playerId: w.playerId, name: w.name, pos: w.pos, team: w.team, side: w.side }],
@@ -230,7 +236,19 @@ export function buildPlayFeed(players, plays, { limit = 80 } = {}) {
     }
   }
   out.sort((a, b) => String(b.wall || "").localeCompare(String(a.wall || "")) || b.seq - a.seq);
-  return out.slice(0, limit);
+  return out;
+}
+
+// { playerId: [points of each of his plays, oldest first] } from the entries above, for the live panel's "plays Sleeper hasn't posted
+// yet" estimate (lib/liveFeed.js pendingFor). Team defenses are left out: their scoring includes points allowed, which plays don't show.
+export function playerPlayTotals(entries) {
+  const out = {};
+  for (const e of [...(entries || [])].reverse()) {
+    const w = e.who?.[0];
+    if (!w || w.pos === "DEF") continue;
+    (out[w.playerId] ||= []).push(e.exact ?? e.points);
+  }
+  return out;
 }
 
 // ---- fetchers (server only) ----
@@ -291,9 +309,9 @@ export async function fetchRoster(espnTeamId) {
 
 // The panel's players + the scoreboard (lib/gameStatus.js) -> the play feed. Only games in progress are read.
 export async function loadLivePlays(players, gameStates, opts) {
-  if (!gameStates) return [];
+  if (!gameStates) return { plays: [], totals: {} };
   const live = (players || []).filter((p) => gameStates[p.team]?.state === "in" && gameStates[p.team].eventId);
-  if (!live.length) return [];
+  if (!live.length) return { plays: [], totals: {} };
   const codeById = {};
   const teamsByEvent = {};
   for (const [code, g] of Object.entries(gameStates)) {
@@ -308,5 +326,6 @@ export async function loadLivePlays(players, gameStates, opts) {
   ]);
   const rosterByTeam = Object.fromEntries(teams.map((t, i) => [t, rosterLists[i]]));
   const withIds = live.map((p) => (p.pos === "DEF" ? p : { ...p, espnId: matchAthlete(p, rosterByTeam[p.team] || []) }));
-  return buildPlayFeed(withIds, lists.flat(), opts);
+  const entries = buildAllPlayEntries(withIds, lists.flat());
+  return { plays: entries.slice(0, opts?.limit ?? 80), totals: playerPlayTotals(entries) };
 }

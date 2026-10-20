@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { buildLiveFeed, trackScoring, sortFeed, isGameDay, formatCountdown } from "../lib/liveFeed.js";
+import { buildLiveFeed, trackScoring, sortFeed, isGameDay, formatCountdown, pendingFor, applyPending } from "../lib/liveFeed.js";
 
 const gs = {
   GB: { state: "in", detail: "4:43 - 1st", start: "2026-10-19T00:20Z" },
@@ -86,4 +86,36 @@ test("formatCountdown ticks down to the second, with days past 24 hours", () => 
   assert.equal(formatCountdown(59e3), "0:00:59");
   assert.equal(formatCountdown(26 * 3600e3 + 2 * 60e3 + 3e3), "1d 02:02:03");
   assert.equal(formatCountdown(-5000), "0:00:00");
+});
+
+test("pendingFor: the plays Sleeper has not posted yet are the ones after the play its number matches", () => {
+  // Daniels' plays, oldest first: +0.3 +0.3 +0.4 +1.1 +1.2. Sleeper has 2.1 = the first four, so +1.2 is pending.
+  const plays = [0.3, 0.3, 0.4, 1.1, 1.2];
+  assert.equal(pendingFor([{ pts: 2.1 }], plays), 1.2);
+  // Sleeper caught up -> nothing pending. Sleeper at 0 and no plays counted yet -> everything is pending.
+  assert.equal(pendingFor([{ pts: 3.3 }], plays), 0);
+  assert.equal(pendingFor([{ pts: 0 }], plays), 3.3);
+  // A number that matches no point of the running total (half-PPR, a bonus, a play we don't list) -> no guess.
+  assert.equal(pendingFor([{ pts: 2.6 }], plays), 0);
+  // Several leagues must agree on the pending amount; scoring that differs in one of them -> no guess.
+  assert.equal(pendingFor([{ pts: 2.1 }, { pts: 2.1 }], plays), 1.2);
+  assert.equal(pendingFor([{ pts: 2.1 }, { pts: 1.0 }], plays), 0);
+  // No plays at all.
+  assert.equal(pendingFor([{ pts: 2.1 }], []), 0);
+  assert.equal(pendingFor([{ pts: 2.1 }], undefined), 0);
+});
+
+test("applyPending: adds the pending points to the row's numbers and marks it", () => {
+  const rows = [
+    { id: "mine:a", playerId: "a", pts: 2.1, ptsMin: 2.1, total: 4.2, starts: [{ pts: 2.1 }, { pts: 2.1 }] },
+    { id: "mine:b", playerId: "b", pts: 5, ptsMin: 5, total: 5, starts: [{ pts: 5 }] },
+  ];
+  const out = applyPending(rows, { a: [0.3, 0.3, 0.4, 1.1, 1.2], b: [1, 2, 3] });
+  assert.equal(out[0].pts, 3.3);
+  assert.equal(out[0].ptsMin, 3.3);
+  assert.equal(out[0].total, 6.6);
+  assert.equal(out[0].pending, 1.2);
+  assert.deepEqual(out[0].starts.map((x) => x.pts), [3.3, 3.3]);
+  assert.equal(out[1], rows[1]); // b's 5 matches nothing: untouched
+  assert.equal(applyPending(rows, null), rows);
 });

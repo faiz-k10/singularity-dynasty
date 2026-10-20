@@ -557,9 +557,9 @@ export async function getLivePlays(players) {
     }))
     .filter((p) => p.playerId && p.name && p.team);
   try {
-    return { plays: await loadLivePlays(clean, await fetchGameStates()) };
+    return await loadLivePlays(clean, await fetchGameStates()); // { plays, totals }
   } catch {
-    return { plays: [] };
+    return { plays: [], totals: {} };
   }
 }
 

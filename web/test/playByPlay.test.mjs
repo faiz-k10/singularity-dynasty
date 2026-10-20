@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { normName, parseRoster, matchAthlete, parsePlays, playYards, roleLabel, defenseLabel, yardsFor, playPoints, buildPlayFeed } from "../lib/playByPlay.js";
+import { normName, parseRoster, matchAthlete, parsePlays, playYards, roleLabel, defenseLabel, yardsFor, playPoints, buildPlayFeed, buildAllPlayEntries, playerPlayTotals } from "../lib/playByPlay.js";
 
 const ath = (id) => ({ athlete: { $ref: `http://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/2026/athletes/${id}?lang=en` } });
 const team = (id) => ({ $ref: `http://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/2026/teams/${id}?lang=en` });
@@ -178,4 +178,20 @@ test("playPoints: standard PPR rates", () => {
   assert.equal(playPoints("Extra point", 0), 1);
   assert.equal(playPoints("Sack", null), 1);
   assert.equal(playPoints("Return", 30), 0);
+});
+
+test("playerPlayTotals: each player's play points, oldest first; defenses left out", () => {
+  const plays = parsePlays(
+    [
+      raw("p1", 1, "Rush", "J.Williams right tackle for 20 yards", [["200", "rusher"]]),
+      raw("p2", 2, "Rush", "J.Williams left guard for 5 yards", [["200", "rusher"]]),
+      raw("p3", 3, "Sack", "D.Prescott sacked at GB 16 for -3 yards", [["100", "passer"], ["901", "sackedBy"]]),
+    ],
+    { 6: "DAL", 9: "GB" },
+  ).map((p) => ({ ...p, teams: ["DAL", "GB"] }));
+  const players = [
+    { playerId: "a", name: "Javonte Williams", pos: "RB", team: "DAL", side: "theirs", espnId: "200" },
+    { playerId: "GB", name: "Green Bay Packers", pos: "DEF", team: "GB", side: "mine" },
+  ];
+  assert.deepEqual(playerPlayTotals(buildAllPlayEntries(players, plays)), { a: [2, 0.5] });
 });

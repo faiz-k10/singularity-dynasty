@@ -8,7 +8,7 @@ import { formatOdds, oddsTone } from "./Standings";
 import PositionBadge from "../tools/PositionBadge";
 import TeamBadge from "../tools/TeamBadge";
 import { summarizeSide } from "@/lib/winChance";
-import { buildLiveFeed, trackScoring, sortFeed, formatCountdown } from "@/lib/liveFeed";
+import { buildLiveFeed, trackScoring, sortFeed, formatCountdown, applyPending } from "@/lib/liveFeed";
 import { getLivePlays } from "./actions";
 import { leadState } from "@/lib/leadState";
 import { leagueFacts, matchesFilters, emptyFilters, filterCount } from "@/lib/boardFilters";
@@ -224,7 +224,15 @@ function FeedRow({ r, isNew, delta, showLeagues, focused, onPick }) {
       </div>
       <div className="sb-feed-nums">
         <span className={`sb-feed-pts mono${beat ? " beat" : ""}`}>{fmt1(r.pts)}</span>
-        {isNew && delta > 0 ? <span className="sb-feed-delta mono">+{fmt1(delta)}</span> : <span className="sb-feed-proj mono">proj {fmt1(r.proj)}</span>}
+        {isNew && delta > 0 ? (
+          <span className="sb-feed-delta mono">+{fmt1(delta)}</span>
+        ) : r.pending ? (
+          <span className="sb-feed-live mono" title="Includes points from plays Sleeper has not posted yet (standard scoring, matched to Sleeper's own number). It settles when Sleeper catches up.">
+            incl. {r.pending > 0 ? "+" : "−"}{fmt1(Math.abs(r.pending))} live
+          </span>
+        ) : (
+          <span className="sb-feed-proj mono">proj {fmt1(r.proj)}</span>
+        )}
       </div>
     </li>
   );
@@ -265,7 +273,7 @@ function PlayRow({ e, isNew, focusId, onPick }) {
 
 // The panel's right half: every play that moves a fantasy score by the players listed beside it (yours, your opponents', or both -- the buttons under the title), newest first (lib/playByPlay.js via the
 // getLivePlays action), refreshed with every 30-second poll. Plays new since the last refresh flash once.
-function RecentPlays({ rows, updatedAt, focus, onPick }) {
+function RecentPlays({ rows, updatedAt, focus, onPick, onTotals }) {
   // The request is keyed on who is listed (and the poll time), so it re-runs exactly when either changes.
   const req = JSON.stringify(
     rows.map((r) => ({ playerId: r.playerId, name: r.name, pos: r.pos, team: r.team, side: r.side })).sort((a, b) => `${a.side}${a.playerId}`.localeCompare(`${b.side}${b.playerId}`)),
@@ -276,6 +284,7 @@ function RecentPlays({ rows, updatedAt, focus, onPick }) {
     getLivePlays(JSON.parse(req))
       .then((res) => {
         if (cancelled || !res?.plays) return;
+        onTotals?.(res.totals || {});
         setState((prev) => {
           const before = new Set(prev.list.map((e) => e.id));
           return { list: res.plays, fresh: prev.loaded ? new Set(res.plays.filter((e) => !before.has(e.id)).map((e) => e.id)) : new Set(), loaded: true };
@@ -285,7 +294,7 @@ function RecentPlays({ rows, updatedAt, focus, onPick }) {
     return () => {
       cancelled = true;
     };
-  }, [req, updatedAt]);
+  }, [req, updatedAt, onTotals]);
   // Until a new answer arrives (e.g. right after opening one league), only show plays by players still listed.
   const listed = new Set(rows.map((r) => `${r.side}:${r.playerId}`));
   const everyPlay = state.list.filter((e) => e.who.some((w) => listed.has(`mine:${w.playerId}`) || listed.has(`theirs:${w.playerId}`)));
@@ -418,7 +427,11 @@ function BetweenGames({ feed, gameStates, oneLeague }) {
 // with "+6.4" when he scores. Finished and not-started players stay off it so it never fills with noise.
 function LiveFeed({ savedTeams, gameStates, updatedAt, teamId = null, league = null }) {
   const mounted = useMounted();
-  const feed = useMemo(() => buildLiveFeed(savedTeams, gameStates, { onlyTeamId: teamId }), [savedTeams, gameStates, teamId]);
+  const baseFeed = useMemo(() => buildLiveFeed(savedTeams, gameStates, { onlyTeamId: teamId }), [savedTeams, gameStates, teamId]);
+  // Each player's running points play by play (from the plays request below): Sleeper trails the game by a minute or two, so the
+  // plays it hasn't posted yet are added to his number (lib/liveFeed.js pendingFor / applyPending).
+  const [playTotals, setPlayTotals] = useState(null);
+  const feed = useMemo(() => ({ ...baseFeed, mine: applyPending(baseFeed.mine, playTotals), theirs: applyPending(baseFeed.theirs, playTotals) }), [baseFeed, playTotals]);
   const all = useMemo(() => [...feed.mine, ...feed.theirs], [feed]);
   const key = all.map((r) => `${r.id}:${r.pts}`).join(",");
   // Points history across polls (React's "adjust state while rendering" pattern: only runs when the points change).
@@ -466,7 +479,7 @@ function LiveFeed({ savedTeams, gameStates, updatedAt, teamId = null, league = n
             {section(feed.mine, "mine", "Yours", feed.mineTotal)}
             {section(feed.theirs, "theirs", teamId ? "Theirs" : "Your opponents'", feed.theirsTotal)}
           </div>
-          <RecentPlays rows={all} updatedAt={updatedAt} focus={focus} onPick={pick} />
+          <RecentPlays rows={all} updatedAt={updatedAt} focus={focus} onPick={pick} onTotals={setPlayTotals} />
         </div>
       )}
     </aside>
