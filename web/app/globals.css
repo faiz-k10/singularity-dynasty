@@ -5988,3 +5988,10 @@ html{font-stretch:82%;}
   .h2h .h2h-side .h2h-row, .h2h .h2h-side.opp .h2h-row{height:auto; row-gap:4px;}
   .score-curve{max-width:100%;}
 }
+
+/* Points column centred (founder, Oct 19): the PTS heading and every score sit in the middle of their cell, between the divider and the column's edge, on both
+   sides. (Phones keep the right-aligned score of the Phone pass.) */
+@media (min-width:641px){
+  .h2h-row .h2h-c-pts, .h2h-side.opp .h2h-row .h2h-c-pts{text-align:center;}
+  .h2h-row:not(.h2h-head) .h2h-c-pts, .h2h-side.opp .h2h-row:not(.h2h-head) .h2h-c-pts{justify-content:center; padding-left:0; padding-right:0;}
+}
