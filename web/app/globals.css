@@ -5844,3 +5844,10 @@ html{font-stretch:82%;}
 .sb-feed-row{grid-template-areas:"name name" "sub nums" "leagues leagues";}
 .sb-feed-sub .h2h-game{flex-basis:100%;}
 .sb-feed-nums{align-self:stretch; justify-content:space-between;}
+
+/* Lineup rows: the game status / clock ("Halftime", "9:49 - 2nd", "Final", "Mon 8:15 PM", "Out") sits on its own line under the position badge and team logo,
+   so a row is name / badges / clock -- 88px, still the same for every row so the two lineups stay aligned. */
+.h2h-player-sub{flex-wrap:wrap; row-gap:2px;}
+.h2h-player-sub .h2h-game{flex-basis:100%;}
+.h2h-row{height:88px;}
+@media (max-width:640px){ .h2h .h2h-row{height:auto; min-height:64px;} }
