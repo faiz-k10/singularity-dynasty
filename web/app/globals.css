@@ -5850,31 +5850,43 @@ html{font-stretch:82%;}
 .h2h-row{height:88px;}
 @media (max-width:640px){ .h2h .h2h-row{height:auto; min-height:64px;} }
 
-/* Lineup rows, curve underneath (founder, Oct 19): the name gets the whole width beside the slot and the points, and the outcome curve sits on its own
-   band at the bottom of the row. Row = name / badges / clock, then the curve; every row the same height so the two lineups stay aligned. */
+/* Lineup rows (founder, Oct 19, second pass): the name runs across the top beside the slot and the points; underneath, the badges + logo + game
+   clock sit on the left and the outcome curve is nestled in the free space to their right. Short rows, every one the same height so the two
+   lineups stay aligned. (The player block's children are laid straight onto the row's grid with display:contents.) */
+.h2h-row:not(.h2h-head) .h2h-c-player{display:contents;}
 .h2h-row{
-  height:136px; padding:6px 4px;
-  grid-template-columns:64px minmax(0,1fr) 58px;
-  grid-template-areas:"slot player pts" "slot curve curve";
-  row-gap:4px; align-items:center;
+  height:88px; padding:6px 4px; row-gap:4px; column-gap:10px; align-items:center;
+  grid-template-columns:64px auto minmax(0,1fr) 60px;
+  grid-template-areas:"slot name name pts" "slot info curve pts";
 }
+.h2h-row:not(.h2h-head) .h2h-player-name{grid-area:name; align-self:end;}
+.h2h-row:not(.h2h-head) .h2h-player-sub{grid-area:info; align-self:start; flex-wrap:wrap; row-gap:2px; width:max-content; max-width:100%;}
+.h2h-row:not(.h2h-head) .h2h-c-curve{justify-content:center; align-self:center;}
+.score-curve{width:170px;}
 .h2h-side.opp .h2h-row{
-  grid-template-columns:58px minmax(0,1fr) 64px;
-  grid-template-areas:"pts player slot" "curve curve slot";
+  grid-template-columns:60px minmax(0,1fr) auto 64px;
+  grid-template-areas:"pts name name slot" "pts curve info slot";
 }
-.h2h-c-curve{justify-content:flex-start;}
-.h2h-side.opp .h2h-c-curve{justify-content:flex-end;}
-.score-curve{width:190px;}
-.h2h-row.h2h-head{height:auto; grid-template-areas:"slot player pts";}
-.h2h-side.opp .h2h-row.h2h-head{grid-template-areas:"pts player slot";}
+.h2h-side.opp .h2h-row:not(.h2h-head) .h2h-player-name{justify-self:end;}
+.h2h-side.opp .h2h-row:not(.h2h-head) .h2h-player-sub{justify-self:end; justify-content:flex-end;}
+.h2h-row.h2h-head{height:auto; grid-template-columns:64px minmax(0,1fr) 60px; grid-template-areas:"slot player pts";}
+.h2h-side.opp .h2h-row.h2h-head{grid-template-columns:60px minmax(0,1fr) 64px; grid-template-areas:"pts player slot";}
 .h2h-row.h2h-head .h2h-c-curve{display:none;}
+/* Stacked layouts (a narrow panel / small window): the opponent's side reads like yours, left to right. */
 @container h2h (max-width:900px){
-  .h2h-side.opp .h2h-row{grid-template-columns:64px minmax(0,1fr) 58px; grid-template-areas:"slot player pts" "slot curve curve";}
-  .h2h-side.opp .h2h-c-curve{justify-content:flex-start;}
-  .h2h-side.opp .h2h-row.h2h-head{grid-template-areas:"slot player pts";}
+  .h2h-side.opp .h2h-row:not(.h2h-head){grid-template-columns:64px auto minmax(0,1fr) 60px; grid-template-areas:"slot name name pts" "slot info curve pts";}
+  .h2h-side.opp .h2h-row:not(.h2h-head) .h2h-player-name, .h2h-side.opp .h2h-row:not(.h2h-head) .h2h-player-sub{justify-self:start; justify-content:flex-start;}
+  .h2h-side.opp .h2h-row.h2h-head{grid-template-columns:64px minmax(0,1fr) 60px; grid-template-areas:"slot player pts";}
 }
 @media (max-width:900px){
-  .h2h-side.opp .h2h-row{grid-template-columns:64px minmax(0,1fr) 58px; grid-template-areas:"slot player pts" "slot curve curve";}
-  .h2h-side.opp .h2h-c-curve{justify-content:flex-start;}
-  .h2h-side.opp .h2h-row.h2h-head{grid-template-areas:"slot player pts";}
+  .h2h-side.opp .h2h-row:not(.h2h-head){grid-template-columns:64px auto minmax(0,1fr) 60px; grid-template-areas:"slot name name pts" "slot info curve pts";}
+  .h2h-side.opp .h2h-row:not(.h2h-head) .h2h-player-name, .h2h-side.opp .h2h-row:not(.h2h-head) .h2h-player-sub{justify-self:start; justify-content:flex-start;}
+  .h2h-side.opp .h2h-row.h2h-head{grid-template-columns:64px minmax(0,1fr) 60px; grid-template-areas:"slot player pts";}
+}
+/* Phones keep their own layout (the Phone pass: name + points, the curve under the name). */
+@media (max-width:640px){
+  .h2h .h2h-side .h2h-row, .h2h .h2h-side.opp .h2h-row{height:auto; min-height:64px; grid-template-columns:minmax(0,1fr) 56px; grid-template-areas:"player pts" "curve curve"; gap:4px 8px;}
+  .h2h .h2h-row:not(.h2h-head) .h2h-c-player{display:flex;}
+  .h2h .h2h-row:not(.h2h-head) .h2h-player-name, .h2h .h2h-row:not(.h2h-head) .h2h-player-sub{grid-area:auto; align-self:stretch; justify-self:auto; width:auto;}
+  .h2h .h2h-row:not(.h2h-head) .h2h-player-sub{justify-content:flex-start;}
 }
