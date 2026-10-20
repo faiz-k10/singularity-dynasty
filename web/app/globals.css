@@ -5995,3 +5995,12 @@ html{font-stretch:82%;}
   .h2h-row .h2h-c-pts, .h2h-side.opp .h2h-row .h2h-c-pts{text-align:center;}
   .h2h-row:not(.h2h-head) .h2h-c-pts, .h2h-side.opp .h2h-row:not(.h2h-head) .h2h-c-pts{justify-content:center; padding-left:0; padding-right:0;}
 }
+
+/* Lineup rows, ninth touch (founder, Oct 20): the scores read as off-centre because the points cell stopped one side-pad short of the card's edge, so the number sat left of the middle of the space between the divider and the card. The cell now runs out to the card edge (rows that are shaded already reach it). */
+@media (min-width:641px){
+  .h2h-row:not(.is-upcoming) .h2h-c-pts{margin-right:calc(-1 * var(--side-pad));}
+  .h2h-side.opp .h2h-row:not(.is-upcoming) .h2h-c-pts{margin-right:0; margin-left:calc(-1 * var(--side-pad));}
+}
+@media (min-width:641px) and (max-width:900px){
+  .h2h-side.opp .h2h-row:not(.is-upcoming) .h2h-c-pts{margin-left:0; margin-right:calc(-1 * var(--side-pad));}
+}
