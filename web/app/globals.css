@@ -5941,3 +5941,26 @@ html{font-stretch:82%;}
 @media (max-width:640px){
   .h2h .h2h-side .h2h-row, .h2h .h2h-side.opp .h2h-row{grid-template-columns:minmax(0,1fr) 56px;}
 }
+
+/* Lineup rows, fifth touch (founder, Oct 19): a bigger outcome curve that still never reaches the name. The name line is the only part of the row
+   that can't give width, so the room comes from the gutters: tighter column gaps and padding, a slimmer position badge, and a 64px points cell. The
+   curve fills whatever column is left (up to 200px) and the row is 92px to hold its larger height. */
+.h2h-row{height:92px; padding:6px 2px; column-gap:6px; grid-template-columns:40px auto minmax(0,1fr) 64px;}
+.h2h-side.opp .h2h-row{grid-template-columns:64px minmax(0,1fr) auto 40px;}
+.h2h-row.h2h-head{grid-template-columns:40px minmax(0,1fr) 64px;}
+.h2h-side.opp .h2h-row.h2h-head{grid-template-columns:64px minmax(0,1fr) 40px;}
+.h2h-row:not(.h2h-head) .h2h-player-sub .position-badge{min-width:0; padding-left:7px; padding-right:7px;}
+.h2h-row:not(.h2h-head) .h2h-c-curve{justify-content:stretch;}
+.score-curve{width:100%; max-width:200px;}
+@container h2h (max-width:900px){
+  .h2h-side.opp .h2h-row:not(.h2h-head){grid-template-columns:40px auto minmax(0,1fr) 64px;}
+  .h2h-side.opp .h2h-row.h2h-head{grid-template-columns:40px minmax(0,1fr) 64px;}
+}
+@media (max-width:900px){
+  .h2h-side.opp .h2h-row:not(.h2h-head){grid-template-columns:40px auto minmax(0,1fr) 64px;}
+  .h2h-side.opp .h2h-row.h2h-head{grid-template-columns:40px minmax(0,1fr) 64px;}
+}
+@media (max-width:640px){
+  .h2h .h2h-side .h2h-row, .h2h .h2h-side.opp .h2h-row{height:auto; grid-template-columns:minmax(0,1fr) 56px;}
+  .score-curve{max-width:100%;}
+}
