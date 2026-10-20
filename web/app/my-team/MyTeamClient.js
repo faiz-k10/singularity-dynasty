@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore
 import Link from "next/link";
 import { UpgradeMoment, BuyInPrompt, startExplorerCheckout } from "./UpgradeMoment";
 import EmailDigestToggle from "./EmailDigestToggle";
+import { startBackgroundTimer } from "@/lib/backgroundTimer";
 import { lookupSleeperTeams, saveTeam, deleteTeam, setBuyIn, refreshSavedTeams, pollLiveScores, getRosterNews, getMyGameLogs } from "./actions";
 import TeamBadge from "../tools/TeamBadge";
 import LeagueDashboard, { summarizeLeagues } from "./LeagueDashboard";
@@ -1177,6 +1178,7 @@ export default function MyTeamClient({
   // background tab so the alerts still arrive.
   const [alertsOn, setAlertsOn] = useDesktopAlertsSetting();
   const alertsOnRef = useRef(false);
+  const keepLiveRef = useRef(false); // full screen open: keep the live poll running even when the tab is hidden
   useEffect(() => {
     alertsOnRef.current = alertsOn && tier !== "stargazer";
   }, [alertsOn, tier]);
@@ -1233,9 +1235,10 @@ export default function MyTeamClient({
   useEffect(() => {
     if (!hasSaved || !autoRefresh) return;
     const first = setTimeout(runFullRefresh, 0);
-    let timer = null;
     const tick = async () => {
-      if (document.hidden && !alertsOnRef.current) return;
+      // A hidden tab only keeps polling when something needs it: desktop alerts, or the full-screen board (a second monitor
+      // left on the Sunday board is "hidden" whenever another window covers it).
+      if (document.hidden && !alertsOnRef.current && !keepLiveRef.current) return;
       const res = await pollLiveScores().catch(() => null);
       if (res?.live) {
         setLiveScores(res.live);
@@ -1245,22 +1248,15 @@ export default function MyTeamClient({
       // Lineup changed in Sleeper since our copy -> full refresh (lineup, alerts, projections).
       if (lineupChanged(savedTeamsRef.current, res?.lineups)) runFullRefresh();
     };
-    // Every 15s while a game is on, every 30s otherwise (scores lag Sleeper's own feed by its refresh plus ours).
+    // Every 15s while a game is on, every 30s otherwise (scores lag Sleeper's own feed by its refresh plus ours). The timer
+    // lives in a worker so a hidden or covered tab keeps its rhythm (lib/backgroundTimer.js).
     const anyLive = () => Object.values(gameStatesRef.current || {}).some((g) => g?.state === "in");
-    let stopped = false;
-    const loop = () => {
-      timer = setTimeout(async () => {
-        await tick();
-        if (!stopped) loop();
-      }, anyLive() ? 15000 : 30000);
-    };
-    loop();
+    const stopTimer = startBackgroundTimer(tick, () => (anyLive() ? 15000 : 30000));
     const onVisible = () => { if (!document.hidden) tick(); };
     document.addEventListener("visibilitychange", onVisible);
     return () => {
-      stopped = true;
       clearTimeout(first);
-      clearTimeout(timer);
+      stopTimer();
       document.removeEventListener("visibilitychange", onVisible);
     };
   }, [hasSaved, autoRefresh]);
@@ -1269,6 +1265,9 @@ export default function MyTeamClient({
   // overlay (same idea as the Rankings / Player Sims theater button); the
   // normal page is the traditional scrolling layout with static panels.
   const [theater, setTheater] = useState(false);
+  useEffect(() => {
+    keepLiveRef.current = theater;
+  }, [theater]);
   // Full-screen layout: the Sunday board (SundayBoard.js) by default on game days, the panel board otherwise; a pick
   // made with the switch holds for the rest of that day (localStorage, a convenience).
   const [theaterPick, setTheaterPick] = useState(null);
