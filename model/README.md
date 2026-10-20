@@ -129,7 +129,7 @@ Founder asked for consistent 10th / 90th percentile floors and ceilings; the wee
 | WR | 8,939 | 0.975 -> 0.930 | 6.2% -> 9.9% | +13.5 -> +10.2 | 22.61 -> **21.27** |
 | TE | 4,513 | 0.995 -> 0.945 | 5.3% -> 10.0% | +12.6 -> +8.6 | 19.24 -> **17.16** |
 
-Read as the 80% range the site calls it (the My Team curve legend says 8 in 10 games land inside), floor-to-ceiling at 10% is the better range in every position (6-12% lower interval score); the current ceiling is the better 96th-percentile estimate (pinball loss at tau 0.96) but nothing on the site presents it that way. Out of sample (q fit on 2022-25, applied to 2026 weeks 1-6): 10.9% QB, 11.5% RB, 11.3% WR, 8.7% TE above the ceiling. Floors are already ~9-10% below (live 2026: 8.8-13%). **Not applied yet** -- changing it moves the win-chance spread (`lib/winChance.js` `CEIL_Q`), the curves and the badge thresholds that read floor / ceiling.
+Read as the 80% range the site calls it (the My Team curve legend says 8 in 10 games land inside), floor-to-ceiling at 10% is the better range in every position (6-12% lower interval score); the current ceiling is the better 96th-percentile estimate (pinball loss at tau 0.96) but nothing on the site presents it that way. Out of sample (q fit on 2022-25, applied to 2026 weeks 1-6): 10.9% QB, 11.5% RB, 11.3% WR, 8.7% TE above the ceiling. Floors are already ~9-10% below (live 2026: 8.8-13%). **Applied Oct 20 2026** (QB 0.92, RB 0.94, WR 0.93, TE 0.945), together with the win-chance z and the Steady Eddy / Risky Icarus cutoffs that read floor / ceiling.
 
 ## Rookie accuracy once they qualify (Oct 2026, `backtest_rookie_accuracy.R`)
 

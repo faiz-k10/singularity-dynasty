@@ -51,7 +51,12 @@ QB_SHORT_MIN_GAMES <- 3  # a top-2 depth-chart QB needs only this many games
 
 MED_DECAY   <- c(RB = 0.87, QB = 0.90, WR = 0.89, TE = 0.92)  # Redraft Rankings
 CEIL_DECAY  <- c(RB = 0.89, QB = 0.98, WR = 0.93, TE = 0.91)  # Best Ball Rankings
-CEIL_Q      <- c(RB = 0.995, QB = 0.985, WR = 0.975, TE = 0.995)  # calibrated internal quantile for "ceiling" --
+# Oct 20 2026 (founder: floors and ceilings consistently the 10th / 90th percentile of real outcomes): re-swept to a 10% real
+# exceed rate by backtest_weekly_ceiling_10pct.R (walk-forward 2022-25 + live 2026 weeks 1-6, pooled): QB 0.92, RB 0.94,
+# WR 0.93, TE 0.945 -> 10.0-10.2% of real games above the ceiling (out of sample on 2026: 8.7-11.5%), and a better 80%
+# floor-to-ceiling range than the old values in every position. The block below is the HISTORY of the old 4%/6% target
+# (0.995 / 0.985 / 0.975 / 0.995), which came from an unvalidated 0.94-0.96 original.
+CEIL_Q      <- c(RB = 0.94, QB = 0.92, WR = 0.93, TE = 0.945)  # calibrated internal quantile for "ceiling" --
                   # re-swept via backtest_ceiling_calibration.R after real 2026
                   # Weeks 1-3 data showed the old values (0.94-0.96) were never
                   # actually validated by any backtest and produced a real

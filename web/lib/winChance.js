@@ -6,9 +6,9 @@
 // finished, and both lineups are summed a few thousand times. P(win) = share of draws my lineup comes out ahead
 // (a tie counts half).
 // - A player's full-game outcome is a split normal around his weekly projection (median): the left half reaches his
-//   weekly floor at the 10th percentile, the right half his weekly ceiling at the percentile the model calibrated it
-//   to (redraft_rankings' ceiling is beaten ~4% of the time at QB/RB/TE and ~6% at WR -- model/projection_engine.R
-//   CEIL_Q), so the ceiling is not mistaken for a 90th percentile.
+//   weekly floor at the 10th percentile, the right half his weekly ceiling at the 90th (since Oct 20 2026 the model's
+//   weekly ceiling is calibrated so ~10% of real games beat it, like the floor -- model/projection_engine.R CEIL_Q;
+//   before that it was beaten only ~4% of the time at QB/RB/TE and ~6% at WR and was read as the 96th / 94th).
 // - A game in progress leaves only part of that outcome to come: with f = share of the 60 game minutes left (ESPN
 //   period + clock), the remaining points are centred on f x median with a spread of sqrt(f) x the full-game spread
 //   (scoring treated as spread evenly over the game, so variance shrinks in proportion to the time left).
@@ -18,8 +18,8 @@
 // - The random stream is seeded, so the same inputs always give the same answer (no flicker between polls).
 
 export const Z10 = 1.2816; // standard-normal z of the 10th / 90th percentile
-const CEIL_Z = { QB: 1.751, RB: 1.751, TE: 1.751, WR: 1.555 }; // 96th / 94th percentile (see above)
-export const ceilZ = (pos) => CEIL_Z[pos] || Z10;
+// The ceiling is a 90th percentile at every position (see above); kept as a function so a position can differ again.
+export const ceilZ = () => Z10;
 
 // Typical weekly range (median / floor / ceiling) for a starter our model doesn't project.
 export const DEFAULT_RANGES = {

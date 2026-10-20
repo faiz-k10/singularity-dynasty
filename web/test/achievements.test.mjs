@@ -12,10 +12,10 @@ test("spreadFlag keeps the base rule: ratio over projection, volatile on top, lo
 });
 
 test("spreadFlag cutoffs are per position: the same ratio can be volatile for a QB but ordinary for a TE", () => {
-  assert.equal(flag(2.0, "QB"), "volatile");
-  assert.equal(flag(2.0, "TE"), null);
-  assert.equal(flag(1.3, "QB"), null);
-  assert.equal(flag(1.3, "TE"), "locked");
+  assert.equal(flag(1.8, "QB"), "volatile");
+  assert.equal(flag(1.8, "TE"), null);
+  assert.equal(flag(1.1, "QB"), null);
+  assert.equal(flag(1.1, "TE"), "locked");
 });
 
 test("spreadFlag eligibility is unchanged: below PROJECTION_FLOOR or missing data never earns either badge", () => {

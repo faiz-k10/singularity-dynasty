@@ -124,14 +124,20 @@ export const PROJECTION_FLOOR = 8;
 // so it is a small sample (19-53 players per position; realized rates land
 // between ~5% and ~11% per badge per position). Re-derive from
 // redraft_rankings as more post-recalibration weeks accumulate.
+// RE-DERIVED Oct 20 2026 after the weekly ceiling moved from a ~4-6% to a 10% exceed rate (CEIL_Q in projection_engine.R):
+// every floor-to-ceiling range got ~4-5 points narrower, so the old cutoffs would have flagged 43% of eligible QBs as
+// Steady Eddy and almost nobody as Risky Icarus. Same rule as before (10th / 90th percentile of the ratio over eligible
+// rows, rounded to 0.05), fit on 2026 WEEK 7, the first week published with the new ceiling (19-41 players per position, a
+// small sample -- re-derive as more weeks accumulate). Previous values, fit on week 4 under the old ceiling:
+// QB 1.2 / 1.95, RB 1.3 / 2.55, WR 1.25 / 2.6, TE 1.6 / 2.9.
 export const SPREAD_CUTOFFS = {
-  QB: { locked: 1.2, volatile: 1.95 },
-  RB: { locked: 1.3, volatile: 2.55 },
-  WR: { locked: 1.25, volatile: 2.6 },
-  TE: { locked: 1.6, volatile: 2.9 },
+  QB: { locked: 0.95, volatile: 1.6 },
+  RB: { locked: 1.05, volatile: 2.25 },
+  WR: { locked: 1.15, volatile: 2.2 },
+  TE: { locked: 1.25, volatile: 2.5 },
 };
 // Unknown position: roughly the pooled all-position p10 / p90.
-const DEFAULT_SPREAD_CUTOFFS = { locked: 1.3, volatile: 2.5 };
+const DEFAULT_SPREAD_CUTOFFS = { locked: 1.1, volatile: 2.2 };
 export function spreadFlag(floor, ceiling, projection, position) {
   if (floor == null || ceiling == null || projection == null || projection < PROJECTION_FLOOR) return null;
   const ratio = (ceiling - floor) / Math.max(projection, 1);
