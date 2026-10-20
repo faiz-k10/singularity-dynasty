@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { normName, parseRoster, matchAthlete, parsePlays, playYards, roleLabel, defenseLabel, yardsFor, playPoints, buildPlayFeed, buildAllPlayEntries, playerPlayTotals } from "../lib/playByPlay.js";
+import { normName, parseRoster, matchAthlete, parsePlays, playYards, roleLabel, roleLabels, fumbleLabel, defenseLabel, yardsFor, playPoints, buildPlayFeed, buildAllPlayEntries, playerPlayTotals } from "../lib/playByPlay.js";
 
 const ath = (id) => ({ athlete: { $ref: `http://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/2026/athletes/${id}?lang=en` } });
 const team = (id) => ({ $ref: `http://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/2026/teams/${id}?lang=en` });
@@ -58,7 +58,7 @@ test("roleLabel keeps only plays that move fantasy points", () => {
   assert.equal(roleLabel("Rushing Touchdown", ["rusher", "scorer"]), "Touchdown run");
   assert.equal(roleLabel("Rush", ["rusher"]), "Run");
   assert.equal(roleLabel("Pass Interception Return", ["passer"]), "Interception thrown");
-  assert.equal(roleLabel("Fumble Recovery (Opponent)", ["receiver", "fumbler"]), "Fumble lost");
+  assert.equal(roleLabel("Fumble Recovery (Opponent)", ["receiver", "fumbler"]), null); // the fumble is its own line now (roleLabels)
   assert.equal(roleLabel("Field Goal Good", ["kicker", "scorer"]), "Field goal");
   assert.equal(roleLabel("Field Goal Missed", ["kicker"]), "Missed field goal");
   assert.equal(roleLabel("Passing Touchdown", ["kicker", "patScorer"], "(T.Smack kick is good)"), "Extra point");
@@ -71,6 +71,9 @@ test("roleLabel keeps only plays that move fantasy points", () => {
   assert.equal(roleLabel("Pass Incompletion", ["passer"]), null);
   assert.equal(roleLabel("Sack", ["passer"]), null);
   assert.equal(roleLabel("Fumble Recovery (Own)", ["fumbler"]), null);
+  // A carry before a fumble keeps its Run; an aborted snap has no carry.
+  assert.equal(roleLabel("Fumble Recovery (Opponent)", ["rusher", "fumbler"], "R.Shaheed left end for 5 yards. FUMBLES, RECOVERED by DEN-J.Strnad"), "Run");
+  assert.equal(roleLabel("Fumble Recovery (Own)", ["rusher", "fumbler"], "C.Williams FUMBLES (Aborted) at CHI 37, and recovers at CHI 34."), null);
   assert.equal(roleLabel("Penalty", ["receiver"]), null);
   assert.equal(roleLabel("Kickoff", ["kicker"]), null);
 });
@@ -112,7 +115,7 @@ test("buildPlayFeed: one entry per player per play, newest first, passer before 
   // Every play that moves a fantasy score, newest first, one entry per player: the 19-yard run, the sack (it scores for the GB
   // defense on the board), the touchdown pass as TWO entries (passer, then receiver), the 24-yard catch (only Lamb is on the
   // board, so only his entry) and the 20-yard run. The incompletion moves nobody's points and is left off.
-  assert.deepEqual(feed.map((e) => e.id), ["p6:a", "p5:GB", "p4:c", "p4:d", "p2:b", "p1:a"]);
+  assert.deepEqual(feed.map((e) => e.id), ["p6:a:Run", "p5:GB:Sack", "p4:c:Touchdown pass", "p4:d:Touchdown catch", "p2:b:Catch", "p1:a:Run"]);
   assert.equal(feed[1].label, "Sack");
   assert.equal(feed[1].side, "mine");
   const [, , tdPass, tdCatch, catchPlay, run] = feed;
@@ -194,4 +197,47 @@ test("playerPlayTotals: each player's play points, oldest first; defenses left o
     { playerId: "GB", name: "Green Bay Packers", pos: "DEF", team: "GB", side: "mine" },
   ];
   assert.deepEqual(playerPlayTotals(buildAllPlayEntries(players, plays)), { a: [2, 0.5] });
+});
+
+test("fumbles and interceptions: fumble, fumble lost, interception thrown, sack with a lost fumble, defense turnovers", () => {
+  // ESPN's wording: lower-case "recovered by" = his own team, upper-case "RECOVERED by" = the other team.
+  assert.equal(fumbleLabel("Fumble Recovery (Own)", ["rusher", "recoverer", "fumbler"], "C.Williams FUMBLES, recovered by CHI-C.Williams"), "Fumble");
+  assert.equal(fumbleLabel("Fumble Recovery (Opponent)", ["rusher", "fumbler", "recoverer"], "R.Johnson FUMBLES (J.Bates), RECOVERED by ATL-H.Perkins"), "Fumble lost");
+  assert.equal(fumbleLabel("Sack Opp Fumble Recovery", ["passer", "fumbler", "recoverer"], "M.Penix sacked. FUMBLES (K.Gordon), RECOVERED by CHI-D.Bush"), "Fumble lost");
+  // A catch he fumbled out of bounds: the Catch stays and the Fumble (no points) is added.
+  assert.deepEqual(roleLabels("Pass Reception", ["receiver", "fumbler"], "B.Young pass short right to J.Coker for 9 yards. FUMBLES (T.Woolen), ball out of bounds"), ["Catch", "Fumble"]);
+  // A run that ends in a lost fumble: the Run and the Fumble lost.
+  assert.deepEqual(roleLabels("Fumble Recovery (Opponent)", ["rusher", "fumbler", "forcedBy"], "D.Henry left tackle for 5 yards. FUMBLES (C.Schwesinger), RECOVERED by CLV-T.Campbell"), ["Run", "Fumble lost"]);
+  // Interception thrown, and no fumble line for the defender who forced one.
+  assert.deepEqual(roleLabels("Pass Interception Return", ["passer"], "S.Darnold pass short left INTERCEPTED by K.Abrams-Draine"), ["Interception thrown"]);
+  assert.deepEqual(roleLabels("Fumble Recovery (Opponent)", ["forcedBy", "recoverer"], "R.Shaheed FUMBLES (N.Bonitto), RECOVERED by DEN-J.Strnad"), []);
+  // A team defense: interception, fumble recovery, and a sack that also won a fumble.
+  assert.equal(defenseLabel("Pass Interception Return"), "Interception");
+  assert.equal(defenseLabel("Fumble Recovery (Opponent)"), "Fumble recovery");
+  assert.equal(defenseLabel("Sack Opp Fumble Recovery"), "Sack and fumble recovery");
+  // Points: lost fumble -2, a plain fumble nothing, interception thrown -2, defense 2 / 3.
+  assert.equal(playPoints("Fumble lost", 0), -2);
+  assert.equal(playPoints("Fumble", 0), 0);
+  assert.equal(playPoints("Interception thrown", 0), -2);
+  assert.equal(playPoints("Interception", 0), 2);
+  assert.equal(playPoints("Sack and fumble recovery", 0), 3);
+});
+
+test("buildPlayFeed: a lost fumble on a run is two entries for the runner (Run, then Fumble lost) and the defense gets the recovery", () => {
+  const plays = parsePlays(
+    [raw("f1", 1, "Fumble Recovery (Opponent)", "R.Shaheed left end for 5 yards (N.Bonitto). FUMBLES (N.Bonitto), RECOVERED by DEN-J.Strnad at DEN 34.", [["200", "rusher"], ["200", "fumbler"], ["900", "forcedBy"], ["901", "recoverer"]])],
+    { 6: "SEA", 9: "DEN" },
+  ).map((p) => ({ ...p, teams: ["SEA", "DEN"], offense: "SEA" }));
+  const feed = buildPlayFeed(
+    [
+      { playerId: "r", name: "Rashid Shaheed", pos: "WR", team: "SEA", side: "mine", espnId: "200" },
+      { playerId: "DEN", name: "Denver Broncos", pos: "DEF", team: "DEN", side: "theirs" },
+    ],
+    plays,
+  );
+  assert.deepEqual(feed.map((e) => [e.who[0].name, e.label, e.points]), [
+    ["Rashid Shaheed", "Run", 0.5],
+    ["Rashid Shaheed", "Fumble lost", -2],
+    ["Denver Broncos", "Fumble recovery", 2],
+  ]);
 });

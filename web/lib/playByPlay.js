@@ -81,7 +81,7 @@ export function parsePlays(items, codeById = {}) {
 }
 
 const INT = /Interception/;
-const FUMBLE_LOST = /Fumble Recovery \(Opponent\)|Fumble Return Touchdown/;
+const FUMBLE_LOST = /Fumble Recovery \(Opponent\)|Fumble Return Touchdown|Opp Fumble Recovery/;
 
 // What one of our players did on a play, from his role(s) in it. Only plays that move fantasy points are kept --
 // catches, runs, completions, scores, kicks, returns, turnovers -- so incompletions, sacks taken, recovered fumbles,
@@ -99,10 +99,11 @@ export function roleLabel(type, roles, text = "") {
     if (td && /Pass/.test(type)) return "Touchdown pass";
     if (/Reception/.test(type)) return "Completion";
   }
-  if (has("fumbler") && FUMBLE_LOST.test(type)) return "Fumble lost";
   if (has("rusher")) {
     if (td && /Rush/.test(type)) return "Touchdown run";
     if (type === "Rush") return "Run";
+    // The carry before a fumble: his yards still count (an aborted snap has no carry).
+    if (/Fumble Recovery/.test(type) && !/Aborted/i.test(text)) return "Run";
   }
   if (has("returner") && /Kickoff|Punt/.test(type)) return td ? "Return touchdown" : "Return";
   // After a touchdown: the two-point try's target is listed as "patScorer" (no kicker role) -- a failed try is no play.
@@ -116,12 +117,31 @@ export function roleLabel(type, roles, text = "") {
   return null;
 }
 
+// The fumble itself, for the player who fumbled: "Fumble lost" when the other team recovered it (ESPN's type says so, or the text has
+// an upper-case "RECOVERED by", their wording for an opponent's recovery), plain "Fumble" otherwise (recovered by his own team, or
+// out of bounds -- no points, but it is a play worth seeing).
+export function fumbleLabel(type, roles, text = "") {
+  if (!roles.includes("fumbler")) return null;
+  return FUMBLE_LOST.test(type) || /RECOVERED by/.test(text) ? "Fumble lost" : "Fumble";
+}
+
+// Everything one of our players did on a play: his main line (roleLabel) and, when he also fumbled, the fumble as its own line.
+export function roleLabels(type, roles, text = "") {
+  const out = [];
+  const main = roleLabel(type, roles, text);
+  if (main) out.push(main);
+  const fum = type === "Penalty" || /No Play/i.test(text) ? null : fumbleLabel(type, roles, text);
+  if (fum) out.push(fum);
+  return out;
+}
+
 // A team defense (DEF) starter: the plays that score for it, when the other team has the ball.
 export function defenseLabel(type) {
+  if (/Sack/.test(type) && /Opp Fumble Recovery/.test(type)) return "Sack and fumble recovery";
   if (/Sack/.test(type)) return "Sack";
   if (INT.test(type)) return /Touchdown/.test(type) ? "Interception touchdown" : "Interception";
   if (/Fumble Return Touchdown/.test(type)) return "Fumble return touchdown";
-  if (/Fumble Recovery \(Opponent\)/.test(type)) return "Fumble recovery";
+  if (/Fumble Recovery \(Opponent\)|Opp Fumble Recovery/.test(type)) return "Fumble recovery";
   if (/Safety/.test(type)) return "Safety";
   if (/Blocked/.test(type)) return "Blocked kick";
   return null;
@@ -157,6 +177,7 @@ export function playPoints(label, yards) {
     case "Touchdown":
     case "Return touchdown": return 6;
     case "Sack": return 1;
+    case "Sack and fumble recovery": return 3;
     case "Interception":
     case "Fumble recovery":
     case "Safety":
@@ -194,17 +215,18 @@ export function buildAllPlayEntries(players, plays) {
     if (play.type === "Penalty") continue;
     const roles = new Map();
     for (const x of play.people) roles.set(x.id, [...(roles.get(x.id) || []), x.role]);
-    // One line per player (a player who is yours in one league and theirs in another is one line, side "both").
+    // One line per player per thing he did (a player who is yours in one league and theirs in another is one line, side
+    // "both"; a runner who fumbles gets his Run and his Fumble as two lines).
     const who = new Map();
     const add = (p, label, r = []) => {
-      const w = who.get(p.playerId);
+      const key = `${p.playerId}|${label}`;
+      const w = who.get(key);
       if (w) w.side = w.side === p.side ? w.side : "both";
-      else who.set(p.playerId, { playerId: p.playerId, name: p.name, pos: p.pos, team: p.team, side: p.side, label, roles: r });
+      else who.set(key, { playerId: p.playerId, name: p.name, pos: p.pos, team: p.team, side: p.side, label, roles: r });
     };
     for (const [aid, r] of roles) {
       for (const p of byAthlete.get(aid) || []) {
-        const label = roleLabel(play.type, r, play.text);
-        if (label) add(p, label, r);
+        for (const label of roleLabels(play.type, r, play.text)) add(p, label, r);
       }
     }
     for (const d of defenses) {
@@ -213,13 +235,12 @@ export function buildAllPlayEntries(players, plays) {
       if (label) add(d, label);
     }
     if (!who.size) continue;
-    // One entry per player on the play (the passer and the receiver of one pass are two lines), passer first, then
-    // receiver, then anyone else (a kicker's extra point on the same play). Each carries his own wording, yards and points.
+    // One entry per player per label: passer first, then receiver, then anyone else (a kicker's extra point on the same play).
     const rank = (w) => (w.roles.includes("passer") ? 0 : w.roles.includes("receiver") ? 1 : 2);
     const when = play.clock && play.period ? `${play.clock} - ${ord(play.period)}` : ord(play.period);
     for (const w of [...who.values()].sort((a, b) => rank(a) - rank(b))) {
       out.push({
-        id: `${play.id}:${w.playerId}`,
+        id: `${play.id}:${w.playerId}:${w.label}`,
         wall: play.wall,
         seq: play.seq,
         when,
