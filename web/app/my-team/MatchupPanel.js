@@ -100,8 +100,10 @@ function SideRow({ p, scoreboardKnown, uncertain, mounted }) {
         className={`h2h-c-pts mono live-pts-cell${o.state === "in" ? " is-live" : ""}${tone ? ` tone-${tone}` : ""}`}
         title={o.state === "in" ? "Points so far · game in progress" : o.state === "post" ? "Final points" : "Not started"}
       >
-        {o.state === "in" && <span className="matchup-score-live-dot" aria-hidden="true" />}
-        {fmt1(pts)}
+        <span className="h2h-pts-num">
+          {o.state === "in" && <span className="matchup-score-live-dot" aria-hidden="true" />}
+          {fmt1(pts)}
+        </span>
       </span>
     </div>
   );

@@ -5760,3 +5760,8 @@ html{font-stretch:82%;}
 @media (max-width:999px){
   .sb-top-side{flex-wrap:wrap;}
 }
+
+/* Lineup rows: the pulsing live dot sits centred just above the player's points, not beside them (the number never shifts). */
+.h2h-pts-num{position:relative; display:inline-block;}
+.h2h-c-pts .h2h-pts-num .matchup-score-live-dot{position:absolute; left:50%; right:auto; top:-9px; margin:0 0 0 -3px;}
+.h2h-side.opp .h2h-c-pts .h2h-pts-num .matchup-score-live-dot{left:50%; right:auto;}
