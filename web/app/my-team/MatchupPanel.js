@@ -16,6 +16,7 @@ import { useMounted } from "./useMounted";
 export const sleeperMatchupUrl = (leagueId) => (leagueId ? `https://sleeper.com/leagues/${leagueId}/matchup` : null);
 
 const fmt1 = (v) => (v == null ? "—" : v.toFixed(1));
+const fmt2 = (v) => (v == null ? "—" : v.toFixed(2)); // points actually scored: two decimals, like Sleeper
 
 export function formatWin(p) {
   return p == null ? "—" : `${Math.round(p * 100)}%`;
@@ -103,7 +104,7 @@ function SideRow({ p, scoreboardKnown, uncertain, mounted }) {
       >
         <span className="h2h-pts-num">
           {o.state === "in" && <span className="matchup-score-live-dot" aria-hidden="true" />}
-          {fmt1(pts)}
+          {fmt2(pts)}
         </span>
       </span>
     </div>
@@ -132,7 +133,7 @@ function TeamScore({ name, record, score, proj, left, state = null, opp = false 
     <div className={`h2h-team${opp ? " opp" : ""}`}>
       <div className="h2h-team-name">{name}</div>
       {record && <div className="h2h-team-rec mono">{record}</div>}
-      <div className={`h2h-score mono${state ? ` is-${state}` : ""}`}>{fmt1(score)}</div>
+      <div className={`h2h-score mono${state ? ` is-${state}` : ""}`}>{fmt2(score)}</div>
       <div className="h2h-meta mono">
         {proj != null && <span>Proj {fmt1(proj)}</span>}
         {left && <span>{left}</span>}
@@ -191,7 +192,7 @@ function MatchupBody({ team, gameStates, playTotals }) {
   const adjOpp = useMemo(() => (s.h2h ? applyPendingToLineup(s.h2h.opp, playTotals) : null), [s.h2h, playTotals]);
   const mine = useMemo(() => (adjMine ? summarizeSide(adjMine.list, gameStates) : null), [adjMine, gameStates]);
   const opp = useMemo(() => (adjOpp ? summarizeSide(adjOpp.list, gameStates) : null), [adjOpp, gameStates]);
-  const live = s.matchupActual ? { mine: Math.round((s.matchupActual.mine + (adjMine?.added || 0)) * 10) / 10, opp: Math.round((s.matchupActual.opp + (adjOpp?.added || 0)) * 10) / 10 } : null;
+  const live = s.matchupActual ? { mine: Math.round((s.matchupActual.mine + (adjMine?.added || 0)) * 100) / 100, opp: Math.round((s.matchupActual.opp + (adjOpp?.added || 0)) * 100) / 100 } : null;
   const url = sleeperMatchupUrl(team.platform_league_id);
   const sleeperLink = url && (
     <a className="h2h-sleeper mono" href={url} target="_blank" rel="noopener noreferrer">

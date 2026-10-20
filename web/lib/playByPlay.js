@@ -258,7 +258,7 @@ export function buildAllPlayEntries(players, plays) {
         yards: yardsFor(w.label, play.yards),
         big: BIG_PLAY.test(w.label) && play.yards >= BIG_YARDS,
         // Standard-PPR points this play added for him.
-        points: Math.round(playPoints(w.label, play.yards) * 10) / 10,
+        points: Math.round(playPoints(w.label, play.yards) * 100) / 100,
         exact: playPoints(w.label, play.yards), // unrounded, for matching Sleeper's two-decimal numbers
         td: play.scoring && /Touchdown|Interception touchdown|Fumble return touchdown|Return touchdown/.test(w.label),
         side: w.side,

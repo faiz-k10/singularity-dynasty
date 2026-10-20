@@ -87,6 +87,7 @@ export function buildSide(starterIds, slots, infoFor, projFor, points) {
 }
 
 const round1 = (v) => Math.round(v * 10) / 10;
+const round2 = (v) => Math.round(v * 100) / 100;
 
 // Spread of a full game around the median (missing floor/ceiling -> half the median either way).
 function fullSpread(p) {
@@ -151,7 +152,7 @@ export function summarizeSide(side, gameStates) {
     if (o.state === "pre" || o.state === null) yetToPlay++;
     else if (o.state === "in") playing++;
   }
-  return { players, pts: round1(pts), projFinal: round1(pts + toCome), yetToPlay, playing };
+  return { players, pts: round2(pts), projFinal: round1(pts + toCome), yetToPlay, playing };
 }
 
 // Seeded uniform PRNG (mulberry32) + Box-Muller normals.

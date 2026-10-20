@@ -15,6 +15,8 @@ import { leagueFacts, matchesFilters, emptyFilters, filterCount } from "@/lib/bo
 import BoardFilters from "./BoardFilters";
 
 const fmt1 = (v) => (v == null ? "—" : v.toFixed(1));
+// Scores (points actually scored) show two decimals, like Sleeper's; projections stay at one.
+const fmt2 = (v) => (v == null ? "—" : v.toFixed(2));
 // "Christian McCaffrey" -> "C. McCaffrey"
 const shortName = (name) => {
   const [first, ...rest] = String(name || "").split(" ");
@@ -37,7 +39,7 @@ function Score({ value, state }) {
   }, [value]);
   return (
     <span key={bump} className={`sb-card-score mono${state ? ` is-${state}` : ""}${bump ? " bumped" : ""}`}>
-      {fmt1(value)}
+      {fmt2(value)}
     </span>
   );
 }
@@ -207,7 +209,7 @@ function FeedRow({ r, isNew, delta, showLeagues, focused, onPick }) {
   const where =
     r.side === "theirs"
       ? r.starts.map((x) => (showLeagues ? x.league : null)).filter(Boolean)
-      : r.starts.map((x) => (r.pts === r.ptsMin ? x.league : `${x.league} ${fmt1(x.pts)}`));
+      : r.starts.map((x) => (r.pts === r.ptsMin ? x.league : `${x.league} ${fmt2(x.pts)}`));
   return (
     <li className={`sb-feed-row is-${r.side}${isNew ? " is-new" : ""}${focused ? " is-focus" : ""}`}>
       <div className="sb-feed-who">
@@ -222,12 +224,12 @@ function FeedRow({ r, isNew, delta, showLeagues, focused, onPick }) {
         {showLeagues && where.length > 0 && <span className="sb-feed-leagues">{where.join(" · ")}</span>}
       </div>
       <div className="sb-feed-nums">
-        <span className="sb-feed-pts mono">{fmt1(r.pts)}</span>
+        <span className="sb-feed-pts mono">{fmt2(r.pts)}</span>
         {isNew && delta > 0 ? (
-          <span className="sb-feed-delta mono">+{fmt1(delta)}</span>
+          <span className="sb-feed-delta mono">+{fmt2(delta)}</span>
         ) : r.pending ? (
           <span className="sb-feed-delta mono" title="Points from plays Sleeper has not posted yet (already included in the score). It goes away when Sleeper catches up.">
-            {r.pending > 0 ? "+" : "−"}{fmt1(Math.abs(r.pending))}
+            {r.pending > 0 ? "+" : "−"}{fmt2(Math.abs(r.pending))}
           </span>
         ) : (
           <span className="sb-feed-proj mono">proj {fmt1(r.proj)}</span>
@@ -261,7 +263,7 @@ function PlayRow({ e, isNew, focusId, onPick }) {
         {e.points !== 0 && (
           <span className={`sb-play-pts mono${e.points < 0 ? " neg" : ""}`} title="Fantasy points this play added (standard PPR rates; your league's own scoring can differ a little)">
             {e.points > 0 ? "+" : "−"}
-            {Math.abs(e.points).toFixed(1)}
+            {Math.abs(e.points).toFixed(2)}
           </span>
         )}
         <span className="sb-play-when mono">{e.when}</span>

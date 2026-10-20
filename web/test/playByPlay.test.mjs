@@ -122,7 +122,7 @@ test("buildPlayFeed: one entry per player per play, newest first, passer before 
   assert.deepEqual(tdPass.who.map((w) => w.name), ["Jordan Love"]);
   assert.equal(tdPass.label, "Touchdown pass");
   assert.equal(tdPass.td, true);
-  assert.equal(tdPass.points, 4.4); // 4 + 9 yards x 0.04
+  assert.equal(tdPass.points, 4.36); // 4 + 9 yards x 0.04
   assert.deepEqual(tdCatch.who.map((w) => w.name), ["Matthew Golden"]);
   assert.equal(tdCatch.label, "Touchdown catch");
   assert.equal(tdCatch.td, true);
@@ -167,7 +167,7 @@ test("buildPlayFeed: the kicker's extra point is its own entry, above the catch 
   assert.deepEqual(feed.map((e) => [e.who[0].name, e.label, e.points]), [
     ["Trey Smack", "Extra point", 1],
     ["Matthew Golden", "Touchdown catch", 7.9],
-    ["Jordan Love", "Touchdown pass", 4.4],
+    ["Jordan Love", "Touchdown pass", 4.36],
   ]);
 });
 
@@ -262,6 +262,6 @@ test("a catch that ends in a lost fumble: the receiver gets his Catch AND his Fu
   assert.deepEqual(feed.map((e) => [e.who[0].name, e.label, e.yards, e.points]), [
     ["Christian McCaffrey", "Fumble lost", null, -2],
     ["Christian McCaffrey", "Catch", "12 yds", 2.2],
-    ["Brock Purdy", "Completion", "12 yds", 0.5],
+    ["Brock Purdy", "Completion", "12 yds", 0.48],
   ]);
 });

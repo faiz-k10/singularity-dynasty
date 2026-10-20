@@ -248,7 +248,7 @@ function RosterTable({ players: rawPlayers, bestBall = false, playerPoints = nul
                       title={p.liveState === "in" ? "In progress" : p.liveState === "post" ? "Final" : "Not started"}
                     >
                       {p.liveState === "in" && <span className="matchup-score-live-dot" aria-hidden="true" />}
-                      {formatPts(p.livePts)}
+                      {p.livePts == null ? "—" : p.livePts.toFixed(2)}
                     </td>
                   )}
                   <td className="mono">{formatPts(p.myProjPts)}</td>
