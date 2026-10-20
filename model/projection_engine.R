@@ -609,7 +609,7 @@ NGS_MIN_GAMES <- 8  # matches the backtest's own eligibility floor
 TARGET_SHARE_DECAY <- c(WR = 0.94, TE = 0.94)
 TARGET_SHARE_FLOOR_Q <- c(WR = 0.00001, TE = 0.00013)
 TARGET_SHARE_CEIL_Q  <- c(WR = 0.993,   TE = 0.992)
-TARGET_SHARE_MIN_GAMES <- 8  # matches the backtest's own eligibility floor
+TARGET_SHARE_MIN_GAMES <- 8  # matches the backtest's own eligibility floor (counted within the this-season-and-last window)
 
 # The season we're publishing rankings/projections FOR. Fixed -- does NOT
 # shift automatically when the calendar rolls over; bump it by hand once
@@ -1417,7 +1417,9 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
       # as percentage POINTS (0-100), not a 0-1 fraction, so it reads as
       # "31.4" rather than an easy-to-misread "0.314" next to the site's
       # other plain-number stats.
-      ts_vals <- d$target_share[!is.na(d$target_share)]
+      # Only this season and last (founder, Oct 20 2026): a target share older than that says little about the role he
+      # has now, so the 3-year history the other stats use is cut to target_season - 1 onward for this one.
+      ts_vals <- d$target_share[!is.na(d$target_share) & d$season >= target_season - 1]
       n_ts <- length(ts_vals)
       if (n_ts >= TARGET_SHARE_MIN_GAMES) {
         w_ts <- recency_weights(n_ts, TARGET_SHARE_DECAY[[pos]])
