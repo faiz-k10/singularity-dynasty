@@ -57,7 +57,7 @@ function SideRow({ p, scoreboardKnown, uncertain, mounted }) {
   if (!p.id) {
     return (
       <div className="h2h-row is-empty">
-        <span className="h2h-c-slot"><SlotBadge slot={p.slot} /></span>
+        <span className="h2h-c-slot"><SlotBadge slot={p.slot} compact /></span>
         <span className="h2h-c-player h2h-player-name h2h-muted">Empty slot</span>
         <span className="h2h-c-curve mono h2h-curve-text">—</span>
         <span className="h2h-c-pts mono">—</span>
@@ -74,11 +74,11 @@ function SideRow({ p, scoreboardKnown, uncertain, mounted }) {
   const showCurve = !p.out && o.state !== "bye" && p.proj > 0 && typeof p.floor === "number" && typeof p.ceiling === "number" && p.ceiling > p.floor;
   return (
     <div className={`h2h-row${o.state === "in" ? " is-live" : ""}${done ? " is-done" : ""}${o.state === "pre" && !p.out ? " is-upcoming" : ""}`}>
-      <span className="h2h-c-slot"><SlotBadge slot={p.slot} /></span>
+      <span className="h2h-c-slot"><SlotBadge slot={p.slot} compact /></span>
       <span className="h2h-c-player">
         <span className="h2h-player-name">{p.name}</span>
         <span className="h2h-player-sub">
-          <span className="h2h-slot-inline"><SlotBadge slot={p.slot} /></span>
+          <span className="h2h-slot-inline"><SlotBadge slot={p.slot} compact /></span>
           <PositionBadge position={p.pos} />
           <TeamBadge team={p.team} />
           <span className="h2h-game mono">{gameLabel(p, mounted)}</span>

@@ -3,9 +3,10 @@
 // Display-only relabel -- Sleeper's own roster_positions/starters value is
 // the literal string "SUPER_FLEX"; sorting/matching still uses that raw
 // value everywhere, this just renders it without the underscore.
-function formatSlot(slot) {
+function formatSlot(slot, compact = false) {
   if (!slot) return "BN";
-  return slot === "SUPER_FLEX" ? "SUPERFLEX" : slot;
+  if (slot === "SUPER_FLEX") return compact ? "SFLX" : "SUPERFLEX"; // compact: the matchup rows, where the slot column is only as wide as a short badge
+  return slot;
 }
 
 // Deliberately an OUTLINE pill (transparent fill, colored border+text via
@@ -25,12 +26,12 @@ const SLOT_COLOR_VAR = {
   SUPER_FLEX: "--horizon-gold",
 };
 
-export default function SlotBadge({ slot }) {
+export default function SlotBadge({ slot, compact = false }) {
   if (!slot) return <span className="mono">BN</span>;
   const colorVar = SLOT_COLOR_VAR[slot];
   return (
     <span className="slot-badge" style={colorVar ? { color: `var(${colorVar})` } : undefined}>
-      {formatSlot(slot)}
+      {formatSlot(slot, compact)}
     </span>
   );
 }

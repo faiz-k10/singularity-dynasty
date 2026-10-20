@@ -5919,3 +5919,25 @@ html{font-stretch:82%;}
   .h2h .h2h-row:not(.h2h-head) .h2h-c-pts, .h2h .h2h-side.opp .h2h-row:not(.h2h-head) .h2h-c-pts{border:0; padding:0; align-self:auto; display:block;}
   .h2h .h2h-row:not(.h2h-head) .h2h-c-slot{justify-self:auto;}
 }
+
+/* Lineup rows, fourth touch (founder, Oct 19): no empty strip on the left. The slot column is only as wide as a short badge (SUPER_FLEX reads "SFLX" in
+   these rows) and the badge sits at the outer edge, so the player block starts right after it; your opponent's side mirrors that. */
+.h2h-row{grid-template-columns:40px auto minmax(0,1fr) 68px;}
+.h2h-side.opp .h2h-row{grid-template-columns:68px minmax(0,1fr) auto 40px;}
+.h2h-row.h2h-head{grid-template-columns:40px minmax(0,1fr) 68px;}
+.h2h-side.opp .h2h-row.h2h-head{grid-template-columns:68px minmax(0,1fr) 40px;}
+.h2h-row:not(.h2h-head) .h2h-c-slot{justify-self:start; text-align:left;}
+.h2h-side.opp .h2h-row:not(.h2h-head) .h2h-c-slot{justify-self:end; text-align:right;}
+@container h2h (max-width:900px){
+  .h2h-side.opp .h2h-row:not(.h2h-head){grid-template-columns:40px auto minmax(0,1fr) 68px;}
+  .h2h-side.opp .h2h-row.h2h-head{grid-template-columns:40px minmax(0,1fr) 68px;}
+  .h2h-side.opp .h2h-row:not(.h2h-head) .h2h-c-slot{justify-self:start; text-align:left;}
+}
+@media (max-width:900px){
+  .h2h-side.opp .h2h-row:not(.h2h-head){grid-template-columns:40px auto minmax(0,1fr) 68px;}
+  .h2h-side.opp .h2h-row.h2h-head{grid-template-columns:40px minmax(0,1fr) 68px;}
+  .h2h-side.opp .h2h-row:not(.h2h-head) .h2h-c-slot{justify-self:start; text-align:left;}
+}
+@media (max-width:640px){
+  .h2h .h2h-side .h2h-row, .h2h .h2h-side.opp .h2h-row{grid-template-columns:minmax(0,1fr) 56px;}
+}
