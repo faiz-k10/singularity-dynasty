@@ -5476,7 +5476,10 @@ html{font-stretch:82%;}
 .sb-feed-list .sb-play:first-child{border-top-color:transparent;}
 .sb-play.is-mine{border-left-color:rgba(var(--horizon-gold-rgb),.55);}
 .sb-play.is-theirs{border-left-color:rgba(var(--neon-blue-rgb),.55);}
-.sb-play.is-both{border-image:linear-gradient(180deg, var(--horizon-gold), var(--neon-blue)) 1;}
+/* A play involving a player who is yours in one league and theirs in another: a gold-to-blue strip on the LEFT edge only (a border-image would also paint the top edge). */
+.sb-play{position:relative;}
+.sb-play.is-both{border-left-color:transparent;}
+.sb-play.is-both::before{content:''; position:absolute; left:-3px; top:0; bottom:0; width:3px; background:linear-gradient(180deg, var(--horizon-gold), var(--neon-blue));}
 .sb-play.is-new{background:rgba(var(--horizon-gold-rgb),.1);}
 .sb-play.is-theirs.is-new{background:rgba(var(--neon-blue-rgb),.1);}
 .sb-play-main{flex:1; min-width:0; display:flex; flex-direction:column; gap:2px;}
