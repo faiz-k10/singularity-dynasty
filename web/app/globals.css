@@ -5825,3 +5825,6 @@ html{font-stretch:82%;}
 }
 .sb-focus-chip:hover{filter:brightness(1.08);}
 .sb-body.has-drawer .sb-focus-chip{margin:0 12px 10px 13px; max-width:calc(100% - 25px); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+
+/* Play labels in Title Case: "Touchdown Run", "Touchdown Catch", "Touchdown Pass", "Field Goal". */
+.sb-play-what strong{text-transform:capitalize;}
