@@ -5812,3 +5812,16 @@ html{font-stretch:82%;}
 .sb-play-player{display:inline-flex; align-items:center; gap:6px; min-width:0;}
 .sb-play-player .team-badge.team-logo{padding:0; flex:none;}
 .sb-play-player .team-logo img{width:18px; height:18px;}
+
+/* Click a player's name (in the live list or in a play) to see only his plays. The names are plain-looking buttons. */
+.sb-name-btn{background:none; border:0; padding:0; margin:0; font:inherit; color:inherit; text-align:inherit; letter-spacing:inherit; cursor:pointer; box-sizing:border-box;}
+.sb-name-btn:hover{text-decoration:underline; text-decoration-color:rgba(var(--star-dot-rgb), .45); text-underline-offset:3px;}
+.sb-name-btn:focus-visible{outline:2px solid var(--neon-blue); outline-offset:2px;}
+.sb-feed-row.is-focus{box-shadow:inset 0 0 0 1px rgba(var(--horizon-gold-rgb), .55);}
+.sb-play-name.is-focus, .sb-feed-name.sb-name-btn[aria-pressed="true"]{text-decoration:underline; text-decoration-color:var(--horizon-gold); text-underline-offset:3px;}
+.sb-focus-chip{
+  all:unset; cursor:pointer; box-sizing:border-box; align-self:flex-start; margin:0 0 10px; padding:5px 11px; font-size:11px; letter-spacing:.04em;
+  color:#1A0D05; background:var(--horizon-gold); border-radius:2px; font-weight:700;
+}
+.sb-focus-chip:hover{filter:brightness(1.08);}
+.sb-body.has-drawer .sb-focus-chip{margin:0 12px 10px 13px; max-width:calc(100% - 25px); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}

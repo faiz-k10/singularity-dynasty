@@ -203,16 +203,18 @@ function LeagueCard({ team, gameStates, injuries, onOpen }) {
   );
 }
 
-function FeedRow({ r, isNew, delta, showLeagues }) {
+function FeedRow({ r, isNew, delta, showLeagues, focused, onPick }) {
   const beat = r.proj > 0 && r.pts >= r.proj;
   const where =
     r.side === "theirs"
       ? r.starts.map((x) => (showLeagues ? x.league : null)).filter(Boolean)
       : r.starts.map((x) => (r.pts === r.ptsMin ? x.league : `${x.league} ${fmt1(x.pts)}`));
   return (
-    <li className={`sb-feed-row is-${r.side}${isNew ? " is-new" : ""}`}>
+    <li className={`sb-feed-row is-${r.side}${isNew ? " is-new" : ""}${focused ? " is-focus" : ""}`}>
       <div className="sb-feed-who">
-        <span className="sb-feed-name">{r.name}</span>
+        <button type="button" className="sb-feed-name sb-name-btn" aria-pressed={focused} title={focused ? "Showing only his plays -- click to show everyone's" : "Show only his plays"} onClick={() => onPick(r.playerId, r.name)}>
+          {r.name}
+        </button>
         <span className="sb-feed-sub">
           <PositionBadge position={r.pos} />
           <TeamBadge team={r.team} />
@@ -229,7 +231,7 @@ function FeedRow({ r, isNew, delta, showLeagues }) {
 }
 
 // One play: who (gold = yours, blue = your opponents'), what happened in plain words, and when. Touchdowns stand out.
-function PlayRow({ e, isNew }) {
+function PlayRow({ e, isNew, focusId, onPick }) {
   return (
     <li className={`sb-play is-${e.side}${e.td ? " is-td" : ""}${e.td || e.big ? " is-hot" : ""}${isNew ? " is-new" : ""}`}>
       <div className="sb-play-main">
@@ -238,7 +240,9 @@ function PlayRow({ e, isNew }) {
             <span key={w.playerId} className="sb-play-player">
               {i > 0 && <span className="sb-play-join">{w.arrow ? "→" : "·"}</span>}
               <TeamBadge team={w.team} />
-              <span className={`sb-play-name is-${w.side}`}>{w.name}</span>
+              <button type="button" className={`sb-play-name sb-name-btn is-${w.side}${w.playerId === focusId ? " is-focus" : ""}`} aria-pressed={w.playerId === focusId} title={w.playerId === focusId ? "Showing only his plays -- click to show everyone's" : "Show only his plays"} onClick={() => onPick(w.playerId, w.name)}>
+                {w.name}
+              </button>
               {w.note && <span className="sb-play-note">({w.note})</span>}
             </span>
           ))}
@@ -263,7 +267,7 @@ function PlayRow({ e, isNew }) {
 
 // The panel's right half: every play that moves a fantasy score by the players listed beside it (yours, your opponents', or both -- the buttons under the title), newest first (lib/playByPlay.js via the
 // getLivePlays action), refreshed with every 30-second poll. Plays new since the last refresh flash once.
-function RecentPlays({ rows, updatedAt }) {
+function RecentPlays({ rows, updatedAt, focus, onPick }) {
   // The request is keyed on who is listed (and the poll time), so it re-runs exactly when either changes.
   const req = JSON.stringify(
     rows.map((r) => ({ playerId: r.playerId, name: r.name, pos: r.pos, team: r.team, side: r.side })).sort((a, b) => `${a.side}${a.playerId}`.localeCompare(`${b.side}${b.playerId}`)),
@@ -290,7 +294,9 @@ function RecentPlays({ rows, updatedAt }) {
   // Whose plays: yours, your opponents', or both. A play with a player who is yours in one league and theirs in another
   // (side "both") counts for either.
   const [whose, setWhose] = useState("both");
-  const list = whose === "both" ? everyPlay : everyPlay.filter((e) => e.side === whose || e.side === "both");
+  const bySide = whose === "both" ? everyPlay : everyPlay.filter((e) => e.side === whose || e.side === "both");
+  // Clicking a name (here or in the list beside it) narrows the plays to that player; clicking him again, or the chip, clears it.
+  const list = focus ? bySide.filter((e) => e.who.some((w) => w.playerId === focus.playerId)) : bySide;
   return (
     <section className="sb-plays" aria-label="Recent plays">
       <h3 className="sb-feed-label sb-plays-label mono">
@@ -309,15 +315,20 @@ function RecentPlays({ rows, updatedAt }) {
           </button>
         ))}
       </div>
+      {focus && (
+        <button type="button" className="sb-focus-chip mono" onClick={() => onPick(focus.playerId, focus.name)} title="Show everyone's plays again">
+          Only {focus.name} <span aria-hidden="true">✕</span>
+        </button>
+      )}
       <div className="sb-plays-scroll">
         {list.length > 0 ? (
           <ol className="sb-feed-list">
             {list.map((e) => (
-              <PlayRow key={e.id} e={e} isNew={state.fresh.has(e.id)} />
+              <PlayRow key={e.id} e={e} isNew={state.fresh.has(e.id)} focusId={focus?.playerId} onPick={onPick} />
             ))}
           </ol>
         ) : (
-          <p className="sb-muted sb-feed-empty">{state.loaded ? "No plays from these players yet." : "Loading plays…"}</p>
+          <p className="sb-muted sb-feed-empty">{state.loaded ? (focus ? `No plays from ${focus.name} yet.` : "No plays from these players yet.") : "Loading plays…"}</p>
         )}
       </div>
     </section>
@@ -421,6 +432,10 @@ function LiveFeed({ savedTeams, gameStates, updatedAt, teamId = null, league = n
   const t = track.t || { changedAt: {}, delta: {} };
   const isNew = (r) => Boolean(t.changedAt[r.id] && t.changedAt[r.id] === track.stamp);
   const showLeagues = teamId == null;
+  // One player picked by clicking his name (here or in the plays): the plays list narrows to him. Dropped when he leaves the field.
+  const [pickedPlayer, setPickedPlayer] = useState(null);
+  const focus = pickedPlayer && all.some((r) => r.playerId === pickedPlayer.playerId) ? pickedPlayer : null;
+  const pick = (playerId, name) => setPickedPlayer((f) => (f?.playerId === playerId ? null : { playerId, name }));
   const section = (rows, side, label, total) =>
     rows.length > 0 && (
       <section className={`sb-feed-section is-${side}`}>
@@ -429,7 +444,7 @@ function LiveFeed({ savedTeams, gameStates, updatedAt, teamId = null, league = n
         </h3>
         <ol className="sb-feed-list">
           {sortFeed(rows, t.changedAt).map((r) => (
-            <FeedRow key={r.id} r={r} isNew={isNew(r)} delta={t.delta[r.id]} showLeagues={showLeagues} />
+            <FeedRow key={r.id} r={r} isNew={isNew(r)} delta={t.delta[r.id]} showLeagues={showLeagues} focused={focus?.playerId === r.playerId} onPick={pick} />
           ))}
         </ol>
       </section>
@@ -453,7 +468,7 @@ function LiveFeed({ savedTeams, gameStates, updatedAt, teamId = null, league = n
             {section(feed.mine, "mine", "Yours", feed.mineTotal)}
             {section(feed.theirs, "theirs", teamId ? "Theirs" : "Your opponents'", feed.theirsTotal)}
           </div>
-          <RecentPlays rows={all} updatedAt={updatedAt} />
+          <RecentPlays rows={all} updatedAt={updatedAt} focus={focus} onPick={pick} />
         </div>
       )}
     </aside>
