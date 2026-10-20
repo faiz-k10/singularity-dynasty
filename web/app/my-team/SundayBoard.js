@@ -573,24 +573,36 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
     return () => window.removeEventListener("keydown", onKey);
   }, [openId]);
 
-  let ahead = 0;
-  let close = 0;
-  let behind = 0;
+  // The week's one sentence, built from the SAME words the cards use (lib/standing.js) so the two always agree: how many leagues
+  // are won / being won, favored, a toss-up, underdog or lost, plus best-ball leagues (no head-to-head) and lineup alerts.
+  const tally = { won: 0, winning: 0, favored: 0, tossup: 0, underdog: 0, losing: 0, lost: 0, bestBall: 0 };
   let alerts = 0;
-  let live = 0;
+  let live = 0; // leagues where one of my players is on the field right now (the "Live" label beside the clock)
   for (const t of visibleTeams) {
-    const r = buildRow(t, injuriesByTeam?.[t.id]);
-    if (r.winPct != null) r.winPct >= 0.6 ? ahead++ : r.winPct <= 0.4 ? behind++ : close++;
-    alerts += r.outStarters.length;
+    const ms = matchupState(t, gameStates, injuriesByTeam?.[t.id]);
+    const label = ms.st.label;
+    if (label === "Won") tally.won++;
+    else if (label === "You win") tally.winning++;
+    else if (label === "Favored") tally.favored++;
+    else if (label === "Toss-up") tally.tossup++;
+    else if (label === "Underdog") tally.underdog++;
+    else if (label === "Out of reach") tally.losing++;
+    else if (label === "Lost") tally.lost++;
+    else if (t.settings?.bestBall) tally.bestBall++;
+    alerts += ms.row.outStarters.length;
     for (const p of t.settings?.h2h?.mine || []) if (gameStates?.[p.team]?.state === "in") { live++; break; }
   }
   const week = savedTeams.find((t) => t.settings?.week)?.settings.week;
   const time = updatedAt && mounted ? new Date(updatedAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) : null;
-  const counted = ahead + close + behind;
-  // One plain sentence instead of a row of counters.
   const parts = [];
-  if (counted) parts.push(`Favored in ${ahead} of ${counted}`);
-  if (close) parts.push(`${close} too close to call`);
+  if (tally.won) parts.push(`${tally.won} won`);
+  if (tally.winning) parts.push(`${tally.winning} winning`);
+  if (tally.favored) parts.push(`${tally.favored} favored`);
+  if (tally.tossup) parts.push(`${tally.tossup} toss-up`);
+  if (tally.underdog) parts.push(`${tally.underdog} underdog`);
+  if (tally.losing) parts.push(`${tally.losing} losing`);
+  if (tally.lost) parts.push(`${tally.lost} lost`);
+  if (tally.bestBall) parts.push(`${tally.bestBall} best ball`);
   if (alerts) parts.push(`${alerts} lineup ${alerts === 1 ? "alert" : "alerts"}`);
 
   return (
