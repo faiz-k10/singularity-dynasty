@@ -977,6 +977,11 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
                          bank_season_totals = BANK_SEASON_TOTALS) {
   set.seed(seed)
   reg <- load_history(seasons)
+  # A run only ever sees games BEFORE the week it publishes for (Oct 20 2026). Re-running on a Monday after the
+  # weekend's games, or on the Thursday / Sunday refresh, used to bank that week's games into the table still labelled
+  # for that week, overwriting the real pre-week snapshot (the week scrubber then showed week 5's games next to a
+  # projection that already knew week 6). Tuesday's run is unaffected: by then the week it publishes for is the next one.
+  reg <- reg[!(reg$season == target_season & reg$week >= current_nfl_week(target_season)), ]
   # Position-relevant EPA as a single column, computed up front so every
   # per-stat column below (WOPR/EPA included) gets the identical
   # recency-weighted treatment as the rest of the model's projections,
