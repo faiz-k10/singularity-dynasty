@@ -317,7 +317,7 @@ function RecentPlays({ rows, updatedAt, focus, onPick }) {
       </div>
       {focus && (
         <button type="button" className="sb-focus-chip mono" onClick={() => onPick(focus.playerId, focus.name)} title="Show everyone's plays again">
-          Only {focus.name} <span aria-hidden="true">✕</span>
+          {focus.name} <span aria-hidden="true">✕</span>
         </button>
       )}
       <div className="sb-plays-scroll">
