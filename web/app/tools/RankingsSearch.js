@@ -1,10 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useDeferredValue, useMemo, useState } from "react";
 import RankingsTable from "./RankingsTable";
 import RankingsToolbar from "./RankingsToolbar";
 import { matchesBadgeFilters } from "./badgeFilters";
-import { getAchievements } from "./achievements";
+import { getAchievementsCached } from "./achievements";
 import { MyPlayersFilter, MyPlayersNote, useMyView } from "./MyPlayers";
 
 // The Weekly Projection Rankings page's top block and table: title row (title left, Compare Players / Export CSV
@@ -56,7 +56,7 @@ export default function RankingsSearch({
     let out = rows;
     if (badgeIds.size > 0) {
       out = out.filter((row) => {
-        const ach = showCurve && row.floor != null && row.ceiling != null ? getAchievements(row) : [];
+        const ach = showCurve && row.floor != null && row.ceiling != null ? getAchievementsCached(row) : [];
         return matchesBadgeFilters(ach, badgeIds, badgeMatch);
       });
     }
@@ -76,6 +76,9 @@ export default function RankingsSearch({
     }
     return out;
   }, [rows, selected, query, showPositionFilter, myView.on, myView.ownedByName, badgeIds, badgeMatch, showCurve, teamIds]);
+
+  // The chips, pills and search box answer instantly; the (heavy) table catches up right behind them.
+  const tableRows = useDeferredValue(filteredRows);
 
   const filtering = query.trim() !== "" || (showPositionFilter && selected.length > 0 && selected.length < positions.length) || badgeIds.size > 0 || teamIds.size > 0;
   const note = <MyPlayersNote mine={mine} view={myView} gated={gated} />;
@@ -122,7 +125,7 @@ export default function RankingsSearch({
       )}
 
       <RankingsTable
-        rows={filteredRows}
+        rows={tableRows}
         showPosition
         showOpponent
         showRange

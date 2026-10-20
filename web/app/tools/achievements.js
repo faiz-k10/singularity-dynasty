@@ -214,6 +214,18 @@ export const HERO_MAX_TIER = 7;
 // {key, variant, label, ...} metadata -- no JSX/icons here, since the
 // two consumers render the same flag very differently (a full badge vs.
 // a bare dot).
+// getAchievements is pure in the row, and the same row objects are looked at by the badge filter, the table and the
+// dots on every keystroke / click -- remember the answer per row object instead of recomputing hundreds of them.
+const achievementCache = new WeakMap();
+export function getAchievementsCached(row) {
+  let v = achievementCache.get(row);
+  if (!v) {
+    v = getAchievements(row);
+    achievementCache.set(row, v);
+  }
+  return v;
+}
+
 export function getAchievements(row) {
   // A player projected for zero points (listed OUT, or otherwise not expected to play) earns no badges at all --
   // there is nothing to flag about someone who is not on the field. (Bye weeks never reach the badges either.)

@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { Fragment, memo, useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import SortableTh from "./SortableTh";
 import TrendTag from "./TrendTag";
@@ -11,7 +11,7 @@ import { isBye, BYE_LABEL } from "@/lib/bye";
 import { MyBadge } from "./MyPlayers";
 import { matchupTint } from "./MatchupBadge";
 import { STAT_COLUMNS } from "./statColumns";
-import { getAchievements } from "./achievements";
+import { getAchievementsCached } from "./achievements";
 import AchievementDots from "./AchievementDots";
 
 // Weekly floor/ceiling formatting -- null for rows published before
@@ -96,6 +96,132 @@ function PlayerCell({ row, withPopover, owned }) {
   );
 }
 
+// One table row (plus its opened panel). Memoised so a filter change -- which only adds or removes rows -- doesn't
+// re-render the hundreds of rows that are unchanged (each carries an inline SVG curve and team logos); that
+// re-render was what made the badge / team / position filters feel slow.
+const RankingRow = memo(function RankingRow({
+  row, achievements, isExpanded0, onToggle, showPosition, showTeam, showOpponent, showRange, showCurve, showNotes,
+  showStatColumns, popoverOnName, maxSpread, owned, mineStatus, colCount,
+}) {
+  const rowKey = `${row.position}-${row.rank}`;
+  // A team on its bye has no game, so nothing about this week is shown for him (no rank, projection range,
+  // stat line or opened panel) -- just who he is and "BYE WEEK" in the Matchup column.
+  const bye = isBye(row.opponent);
+  const hasDetail = !bye && showCurve && row.floor != null && row.ceiling != null;
+  const isExpanded = hasDetail && isExpanded0;
+  return (
+    <Fragment key={rowKey}>
+      <tr
+        data-pos={row.position}
+        className={hasDetail ? "row-expandable" : undefined}
+        onClick={hasDetail ? () => onToggle(rowKey) : undefined}
+        role={hasDetail ? "button" : undefined}
+        tabIndex={hasDetail ? 0 : undefined}
+        aria-expanded={hasDetail ? isExpanded : undefined}
+        onKeyDown={
+          hasDetail
+            ? (e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  onToggle(rowKey);
+                }
+              }
+            : undefined
+        }
+      >
+        <td className="mono rank-cell">
+          {bye ? (
+            "—"
+          ) : (
+            <>
+              <AchievementDots achievements={achievements} vertical />
+              {row.displayRank}
+            </>
+          )}
+        </td>
+        <PlayerCell row={row} withPopover={popoverOnName && !bye} owned={owned} />
+        {showPosition && (
+          <td className="mono align-left">
+            {row.position}
+            {!bye && row.positionLabel && row.positionLabel !== row.position && (
+              <span className="pos-rank">{row.positionLabel.slice(row.position.length)}</span>
+            )}
+          </td>
+        )}
+        {showRange && (
+          <td className="mono median-cell" title={bye ? undefined : "Median projection for this week"}>
+            {bye || row.projection == null ? "—" : Number(row.projection).toFixed(1)}
+          </td>
+        )}
+        {showTeam && showOpponent ? (
+          (() => {
+            const tint = bye ? null : matchupTint(row.matchup_mult);
+            // is_home is null for rows published before migration
+            // 0032 (or when the schedule lookup failed) -- a
+            // neutral "·" rather than guessing vs/@ in that case.
+            const sep = row.is_home === true ? "vs" : row.is_home === false ? "@" : "·";
+            return (
+              <td
+                className={`mono${tint ? ` matchup-cell ${tint.cls}` : ""}`}
+                style={tint ? { "--heat": tint.heat } : undefined}
+                title={tint ? tint.label : undefined}
+              >
+                <span className="matchup-combined-cell">
+                  <TeamBadge team={row.team} />
+                  {isBye(row.opponent) ? (
+                    <span className="matchup-bye">{BYE_LABEL}</span>
+                  ) : (
+                    <>
+                      <span className="matchup-sep">{sep}</span>
+                      <TeamBadge team={row.opponent} />
+                    </>
+                  )}
+                </span>
+              </td>
+            );
+          })()
+        ) : (
+          showTeam && (
+            <td className="mono align-left">
+              <TeamBadge team={row.team} />
+            </td>
+          )
+        )}
+        {showRange && (
+          <td className="mono heat-cell-floor" style={{ "--heat": bye ? 0 : row.floorHeat || 0 }}>
+            {bye ? "—" : formatRange(row.floor)}
+          </td>
+        )}
+        {showCurve && (
+          <td>
+            {!bye && (
+              <OutcomeCurve
+                floor={row.floor}
+                median={row.projection}
+                ceiling={row.ceiling}
+                maxSpread={maxSpread}
+              />
+            )}
+          </td>
+        )}
+        {showRange && (
+          <td className="mono heat-cell-ceiling" style={{ "--heat": bye ? 0 : row.ceilingHeat || 0 }}>
+            {bye ? "—" : formatRange(row.ceiling)}
+          </td>
+        )}
+        {showStatColumns &&
+          STAT_COLUMNS.map((c) => (
+            <td key={c.key} className="mono">
+              {bye ? "—" : formatStat(row[c.key])}
+            </td>
+          ))}
+        {showNotes && <td className="tool-notes">{row.notes || ""}</td>}
+      </tr>
+      {isExpanded && <WeeklyDetailRow row={row} colSpan={colCount} maxSpread={maxSpread} owned={owned} mineStatus={mineStatus} />}
+    </Fragment>
+  );
+});
+
 export default function RankingsTable({
   rows,
   showPosition,
@@ -130,14 +256,14 @@ export default function RankingsTable({
   // published before migration 0029 with no floor/ceiling yet just
   // aren't clickable.
   const [expanded, setExpanded] = useState(() => new Set());
-  function toggleExpanded(key) {
+  const toggleExpanded = useCallback((key) => {
     setExpanded((prev) => {
       const next = new Set(prev);
       if (next.has(key)) next.delete(key);
       else next.add(key);
       return next;
     });
-  }
+  }, []);
 
   // Theater mode: the table wrap goes position:fixed edge-to-edge over the whole viewport (globals.css
   // .rankings-table-wrap.theater) -- a wide table with many stat columns is exactly the case page margins cost the
@@ -164,7 +290,7 @@ export default function RankingsTable({
     () =>
       rows.map((row) => ({
         row,
-        achievements: showCurve && row.floor != null && row.ceiling != null ? getAchievements(row) : [],
+        achievements: showCurve && row.floor != null && row.ceiling != null ? getAchievementsCached(row) : [],
       })),
     [rows, showCurve]
   );
@@ -230,121 +356,26 @@ export default function RankingsTable({
         <tbody>
           {displayRows.map(({ row, achievements }) => {
             const rowKey = `${row.position}-${row.rank}`;
-            // A team on its bye has no game, so nothing about this week is shown for him (no rank, projection range,
-            // stat line or opened panel) -- just who he is and "BYE WEEK" in the Matchup column.
-            const bye = isBye(row.opponent);
-            const hasDetail = !bye && showCurve && row.floor != null && row.ceiling != null;
-            const isExpanded = hasDetail && expanded.has(rowKey);
             return (
-              <Fragment key={rowKey}>
-                <tr
-                  data-pos={row.position}
-                  className={hasDetail ? "row-expandable" : undefined}
-                  onClick={hasDetail ? () => toggleExpanded(rowKey) : undefined}
-                  role={hasDetail ? "button" : undefined}
-                  tabIndex={hasDetail ? 0 : undefined}
-                  aria-expanded={hasDetail ? isExpanded : undefined}
-                  onKeyDown={
-                    hasDetail
-                      ? (e) => {
-                          if (e.key === "Enter" || e.key === " ") {
-                            e.preventDefault();
-                            toggleExpanded(rowKey);
-                          }
-                        }
-                      : undefined
-                  }
-                >
-                  <td className="mono rank-cell">
-                    {bye ? (
-                      "—"
-                    ) : (
-                      <>
-                        <AchievementDots achievements={achievements} vertical />
-                        {row.displayRank}
-                      </>
-                    )}
-                  </td>
-                  <PlayerCell row={row} withPopover={popoverOnName && !bye} owned={ownedByName?.get(row.player_name)} />
-                  {showPosition && (
-                    <td className="mono align-left">
-                      {row.position}
-                      {!bye && row.positionLabel && row.positionLabel !== row.position && (
-                        <span className="pos-rank">{row.positionLabel.slice(row.position.length)}</span>
-                      )}
-                    </td>
-                  )}
-                  {showRange && (
-                    <td className="mono median-cell" title={bye ? undefined : "Median projection for this week"}>
-                      {bye || row.projection == null ? "—" : Number(row.projection).toFixed(1)}
-                    </td>
-                  )}
-                  {showTeam && showOpponent ? (
-                    (() => {
-                      const tint = bye ? null : matchupTint(row.matchup_mult);
-                      // is_home is null for rows published before migration
-                      // 0032 (or when the schedule lookup failed) -- a
-                      // neutral "·" rather than guessing vs/@ in that case.
-                      const sep = row.is_home === true ? "vs" : row.is_home === false ? "@" : "·";
-                      return (
-                        <td
-                          className={`mono${tint ? ` matchup-cell ${tint.cls}` : ""}`}
-                          style={tint ? { "--heat": tint.heat } : undefined}
-                          title={tint ? tint.label : undefined}
-                        >
-                          <span className="matchup-combined-cell">
-                            <TeamBadge team={row.team} />
-                            {isBye(row.opponent) ? (
-                              <span className="matchup-bye">{BYE_LABEL}</span>
-                            ) : (
-                              <>
-                                <span className="matchup-sep">{sep}</span>
-                                <TeamBadge team={row.opponent} />
-                              </>
-                            )}
-                          </span>
-                        </td>
-                      );
-                    })()
-                  ) : (
-                    showTeam && (
-                      <td className="mono align-left">
-                        <TeamBadge team={row.team} />
-                      </td>
-                    )
-                  )}
-                  {showRange && (
-                    <td className="mono heat-cell-floor" style={{ "--heat": bye ? 0 : row.floorHeat || 0 }}>
-                      {bye ? "—" : formatRange(row.floor)}
-                    </td>
-                  )}
-                  {showCurve && (
-                    <td>
-                      {!bye && (
-                        <OutcomeCurve
-                          floor={row.floor}
-                          median={row.projection}
-                          ceiling={row.ceiling}
-                          maxSpread={maxSpread}
-                        />
-                      )}
-                    </td>
-                  )}
-                  {showRange && (
-                    <td className="mono heat-cell-ceiling" style={{ "--heat": bye ? 0 : row.ceilingHeat || 0 }}>
-                      {bye ? "—" : formatRange(row.ceiling)}
-                    </td>
-                  )}
-                  {showStatColumns &&
-                    STAT_COLUMNS.map((c) => (
-                      <td key={c.key} className="mono">
-                        {bye ? "—" : formatStat(row[c.key])}
-                      </td>
-                    ))}
-                  {showNotes && <td className="tool-notes">{row.notes || ""}</td>}
-                </tr>
-                {isExpanded && <WeeklyDetailRow row={row} colSpan={colCount} maxSpread={maxSpread} owned={ownedByName?.get(row.player_name)} mineStatus={mineStatus} />}
-              </Fragment>
+              <RankingRow
+                key={rowKey}
+                row={row}
+                achievements={achievements}
+                isExpanded0={expanded.has(rowKey)}
+                onToggle={toggleExpanded}
+                showPosition={showPosition}
+                showTeam={showTeam}
+                showOpponent={showOpponent}
+                showRange={showRange}
+                showCurve={showCurve}
+                showNotes={showNotes}
+                showStatColumns={showStatColumns}
+                popoverOnName={popoverOnName}
+                maxSpread={maxSpread}
+                owned={ownedByName?.get(row.player_name)}
+                mineStatus={mineStatus}
+                colCount={colCount}
+              />
             );
           })}
           {displayRows.length === 0 && myViewOn && (
