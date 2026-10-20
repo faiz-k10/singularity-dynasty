@@ -121,6 +121,9 @@ test("buildPlayFeed: one entry per play, newest first, both ends of a pass named
   assert.equal(td.td, true);
   assert.equal(catchPlay.label, "Catch");
   assert.equal(catchPlay.yards, "24 yds");
+  assert.equal(catchPlay.big, true); // 24 yards
+  assert.equal(run.big, true); // 20 yards
+  assert.equal(feed[0].big, false); // the 19-yard run
   assert.equal(catchPlay.points, 3.4); // 1 per catch + 24 yards x 0.1
   assert.equal(td.points, 12.3); // pass TD: 4 + 9 x 0.04 = 4.36 for the passer, 6 + 1 + 9 x 0.1 = 7.9 for the receiver
   assert.equal(catchPlay.side, "theirs");

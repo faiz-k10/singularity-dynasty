@@ -167,6 +167,10 @@ export function playPoints(label, yards) {
   }
 }
 
+// A play worth flagging in the list: a gain of BIG_YARDS or more by the offense (touchdowns are flagged separately by `td`).
+export const BIG_YARDS = 20;
+const BIG_PLAY = /^(Catch|Completion|Run|Return|Touchdown catch|Touchdown pass|Touchdown run)$/;
+
 const ord = (n) => (n == null ? "" : n > 4 ? "OT" : ["1st", "2nd", "3rd", "4th"][n - 1]);
 
 // players: [{ playerId, name, pos, team, side: "mine" | "theirs", espnId? }] -- the panel's rows, espnId resolved by
@@ -217,6 +221,7 @@ export function buildPlayFeed(players, plays, { limit = 60 } = {}) {
       when: play.clock && play.period ? `${play.clock} - ${ord(play.period)}` : ord(play.period),
       label: lead.label,
       yards: yardsFor(lead.label, play.yards),
+      big: BIG_PLAY.test(lead.label) && play.yards >= BIG_YARDS,
       // Standard-PPR points the play added, summed over the players shown on the row.
       points: Math.round(list.reduce((t, w) => t + playPoints(w.label, play.yards), 0) * 10) / 10,
       td: play.scoring && /Touchdown|Interception touchdown|Fumble return touchdown|Return touchdown/.test(lead.label),

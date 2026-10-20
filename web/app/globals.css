@@ -5794,3 +5794,12 @@ html{font-stretch:82%;}
 .sb-play-side .sb-play-when{padding-top:0;}
 .sb-body.has-drawer .sb-play-side{flex-direction:row; align-items:baseline; gap:8px; flex:1 1 100%; justify-content:space-between; order:3;}
 .sb-body.has-drawer .sb-play-side .sb-play-pts{order:2;}
+
+/* Recent plays: touchdowns and gains of 20+ yards stand out -- a flat tint across the row in the side's colour (gold = yours, blue = theirs), a heavier edge, a bold name and a bigger points figure. */
+.sb-play.is-hot{background:rgba(var(--horizon-gold-rgb), .13); border-left-color:var(--horizon-gold); border-top-color:rgba(var(--horizon-gold-rgb), .35); box-shadow:inset 0 -1px 0 rgba(var(--horizon-gold-rgb), .35);}
+.sb-play.is-hot.is-theirs{background:rgba(var(--neon-blue-rgb), .12); border-left-color:var(--neon-blue); border-top-color:rgba(var(--neon-blue-rgb), .35); box-shadow:inset 0 -1px 0 rgba(var(--neon-blue-rgb), .35);}
+.sb-play.is-hot .sb-play-name{font-weight:700;}
+.sb-play.is-hot .sb-play-what strong{color:var(--horizon-gold);}
+.sb-play.is-hot.is-theirs .sb-play-what strong{color:var(--neon-blue);}
+.sb-play.is-hot .sb-play-pts{font-size:17px;}
+.sb-play.is-hot.is-theirs .sb-play-pts{color:var(--neon-blue);}
