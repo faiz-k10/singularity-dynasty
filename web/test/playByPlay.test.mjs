@@ -113,12 +113,12 @@ test("buildPlayFeed: one entry per player per play, newest first, passer before 
   ];
   const feed = buildPlayFeed(players, plays);
   // Every play that moves a fantasy score, newest first, one entry per player: the 19-yard run, the sack (it scores for the GB
-  // defense on the board), the touchdown pass as TWO entries (passer, then receiver), the 24-yard catch (only Lamb is on the
+  // defense on the board), the touchdown pass as TWO entries (the receiver's catch above the passer's throw: newest first, even inside one play), the 24-yard catch (only Lamb is on the
   // board, so only his entry) and the 20-yard run. The incompletion moves nobody's points and is left off.
-  assert.deepEqual(feed.map((e) => e.id), ["p6:a:Run", "p5:GB:Sack", "p4:c:Touchdown pass", "p4:d:Touchdown catch", "p2:b:Catch", "p1:a:Run"]);
+  assert.deepEqual(feed.map((e) => e.id), ["p6:a:Run", "p5:GB:Sack", "p4:d:Touchdown catch", "p4:c:Touchdown pass", "p2:b:Catch", "p1:a:Run"]);
   assert.equal(feed[1].label, "Sack");
   assert.equal(feed[1].side, "mine");
-  const [, , tdPass, tdCatch, catchPlay, run] = feed;
+  const [, , tdCatch, tdPass, catchPlay, run] = feed;
   assert.deepEqual(tdPass.who.map((w) => w.name), ["Jordan Love"]);
   assert.equal(tdPass.label, "Touchdown pass");
   assert.equal(tdPass.td, true);
@@ -151,7 +151,7 @@ test("buildPlayFeed: a player who is yours in one league and theirs in another i
   assert.equal(feed[0].side, "both");
 });
 
-test("buildPlayFeed: the kicker's extra point is its own entry, after the passer and the receiver", () => {
+test("buildPlayFeed: the kicker's extra point is its own entry, above the catch and the throw (newest first)", () => {
   const plays = parsePlays(
     [raw("p1", 1, "Passing Touchdown", "J.Love pass to M.Golden for 9 yards, TOUCHDOWN. T.Smack extra point is GOOD", [["500", "passer"], ["600", "receiver"], ["600", "scorer"], ["700", "kicker"], ["700", "patScorer"]])],
     { 9: "GB" },
@@ -165,9 +165,9 @@ test("buildPlayFeed: the kicker's extra point is its own entry, after the passer
     plays,
   );
   assert.deepEqual(feed.map((e) => [e.who[0].name, e.label, e.points]), [
-    ["Jordan Love", "Touchdown pass", 4.4],
-    ["Matthew Golden", "Touchdown catch", 7.9],
     ["Trey Smack", "Extra point", 1],
+    ["Matthew Golden", "Touchdown catch", 7.9],
+    ["Jordan Love", "Touchdown pass", 4.4],
   ]);
 });
 
@@ -223,7 +223,7 @@ test("fumbles and interceptions: fumble, fumble lost, interception thrown, sack 
   assert.equal(playPoints("Sack and fumble recovery", 0), 3);
 });
 
-test("buildPlayFeed: a lost fumble on a run is two entries for the runner (Run, then Fumble lost) and the defense gets the recovery", () => {
+test("buildPlayFeed: a lost fumble on a run is entries for the runner (Fumble lost above Run) and the defense's recovery on top", () => {
   const plays = parsePlays(
     [raw("f1", 1, "Fumble Recovery (Opponent)", "R.Shaheed left end for 5 yards (N.Bonitto). FUMBLES (N.Bonitto), RECOVERED by DEN-J.Strnad at DEN 34.", [["200", "rusher"], ["200", "fumbler"], ["900", "forcedBy"], ["901", "recoverer"]])],
     { 6: "SEA", 9: "DEN" },
@@ -236,9 +236,9 @@ test("buildPlayFeed: a lost fumble on a run is two entries for the runner (Run, 
     plays,
   );
   assert.deepEqual(feed.map((e) => [e.who[0].name, e.label, e.points]), [
-    ["Rashid Shaheed", "Run", 0.5],
-    ["Rashid Shaheed", "Fumble lost", -2],
     ["Denver Broncos", "Fumble recovery", 2],
+    ["Rashid Shaheed", "Fumble lost", -2],
+    ["Rashid Shaheed", "Run", 0.5],
   ]);
 });
 
@@ -258,9 +258,10 @@ test("a catch that ends in a lost fumble: the receiver gets his Catch AND his Fu
     ],
     plays,
   );
+  // Newest first, inside the play too: the fumble, then the catch and run, then the pass that started it.
   assert.deepEqual(feed.map((e) => [e.who[0].name, e.label, e.yards, e.points]), [
-    ["Brock Purdy", "Completion", "12 yds", 0.5],
-    ["Christian McCaffrey", "Catch", "12 yds", 2.2],
     ["Christian McCaffrey", "Fumble lost", null, -2],
+    ["Christian McCaffrey", "Catch", "12 yds", 2.2],
+    ["Brock Purdy", "Completion", "12 yds", 0.5],
   ]);
 });

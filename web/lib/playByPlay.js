@@ -242,10 +242,13 @@ export function buildAllPlayEntries(players, plays) {
       if (label) add(d, label);
     }
     if (!who.size) continue;
-    // One entry per player per label: passer first, then receiver, then anyone else (a kicker's extra point on the same play).
+    // One entry per player per label, in play order: passer, then receiver, then anyone else (a kicker's extra point), each player's
+    // main line before his fumble.
     const rank = (w) => (w.roles.includes("passer") ? 0 : w.roles.includes("receiver") ? 1 : 2);
     const when = play.clock && play.period ? `${play.clock} - ${ord(play.period)}` : ord(play.period);
-    for (const w of [...who.values()].sort((a, b) => rank(a) - rank(b))) {
+    // The list runs newest first, so inside one play the LAST thing that happened goes on top: the fumble above the catch and run,
+    // the catch above the throw (read the list bottom-up and it is the play as it happened).
+    for (const w of [...who.values()].sort((a, b) => rank(a) - rank(b)).reverse()) {
       out.push({
         id: `${play.id}:${w.playerId}:${w.label}`,
         wall: play.wall,
