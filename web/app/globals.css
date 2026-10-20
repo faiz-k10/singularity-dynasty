@@ -5837,3 +5837,10 @@ html{font-stretch:82%;}
 .sb-feed-sub{grid-area:sub; min-width:0;}
 .sb-feed-leagues{grid-area:leagues; min-width:0;}
 .sb-feed-nums{grid-area:nums; align-self:center;}
+
+/* Playing now rows, one shape for every row: badges + team logo on one line, the game clock ALWAYS on its own line under them (it used to wrap or not
+   depending on how wide that row's score column was), the score at the right spanning both lines (score level with the badges, projection or
+   "+" amount level with the clock), league names full width underneath. */
+.sb-feed-row{grid-template-areas:"name name" "sub nums" "leagues leagues";}
+.sb-feed-sub .h2h-game{flex-basis:100%;}
+.sb-feed-nums{align-self:stretch; justify-content:space-between;}
