@@ -237,7 +237,7 @@ function MatchupBody({ team, gameStates, playTotals }) {
         </div>
         <p className="h2h-note">
           {s.bestBall
-            ? "Best ball: Sleeper starts your top scorers automatically, so there's no lineup to compare slot by slot and no win chance."
+            ? "Best ball: each score is the best possible lineup from every player's points so far, which is what the week is finally scored on (Sleeper fills in its own lineup late, so its number can look far lower early on). There's no set lineup to compare slot by slot and no win chance."
             : "Refresh to load both lineups."}
         </p>
       </div>

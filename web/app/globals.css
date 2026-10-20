@@ -5849,3 +5849,32 @@ html{font-stretch:82%;}
 .h2h-player-sub .h2h-game{flex-basis:100%;}
 .h2h-row{height:88px;}
 @media (max-width:640px){ .h2h .h2h-row{height:auto; min-height:64px;} }
+
+/* Lineup rows, curve underneath (founder, Oct 19): the name gets the whole width beside the slot and the points, and the outcome curve sits on its own
+   band at the bottom of the row. Row = name / badges / clock, then the curve; every row the same height so the two lineups stay aligned. */
+.h2h-row{
+  height:136px; padding:6px 4px;
+  grid-template-columns:64px minmax(0,1fr) 58px;
+  grid-template-areas:"slot player pts" "slot curve curve";
+  row-gap:4px; align-items:center;
+}
+.h2h-side.opp .h2h-row{
+  grid-template-columns:58px minmax(0,1fr) 64px;
+  grid-template-areas:"pts player slot" "curve curve slot";
+}
+.h2h-c-curve{justify-content:flex-start;}
+.h2h-side.opp .h2h-c-curve{justify-content:flex-end;}
+.score-curve{width:190px;}
+.h2h-row.h2h-head{height:auto; grid-template-areas:"slot player pts";}
+.h2h-side.opp .h2h-row.h2h-head{grid-template-areas:"pts player slot";}
+.h2h-row.h2h-head .h2h-c-curve{display:none;}
+@container h2h (max-width:900px){
+  .h2h-side.opp .h2h-row{grid-template-columns:64px minmax(0,1fr) 58px; grid-template-areas:"slot player pts" "slot curve curve";}
+  .h2h-side.opp .h2h-c-curve{justify-content:flex-start;}
+  .h2h-side.opp .h2h-row.h2h-head{grid-template-areas:"slot player pts";}
+}
+@media (max-width:900px){
+  .h2h-side.opp .h2h-row{grid-template-columns:64px minmax(0,1fr) 58px; grid-template-areas:"slot player pts" "slot curve curve";}
+  .h2h-side.opp .h2h-c-curve{justify-content:flex-start;}
+  .h2h-side.opp .h2h-row.h2h-head{grid-template-areas:"slot player pts";}
+}
