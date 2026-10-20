@@ -1729,8 +1729,8 @@ export default function MyTeamClient({
       type="button"
       className="rankings-theater-btn"
       onClick={() => setTheater((v) => !v)}
-      aria-label={theater ? "Exit full screen" : "Open full screen (Sunday board and panels)"}
-      title={theater ? "Exit full screen (Esc)" : "Full screen — Sunday board and customizable panels"}
+      aria-label={theater ? "Exit full screen" : "Open full screen (Game Board and panels)"}
+      title={theater ? "Exit full screen (Esc)" : "Full screen — Game Board and customizable panels"}
     >
       {theater ? (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -1753,7 +1753,7 @@ export default function MyTeamClient({
   const layoutSwitch = (
     <div className="board-orient" role="group" aria-label="Full-screen layout">
       <button type="button" aria-pressed={theaterLayout === "board"} onClick={() => pickTheaterLayout("board")} title="Every league + your players live">
-        Sunday board
+        Game Board
       </button>
       <button type="button" aria-pressed={theaterLayout === "panels"} onClick={() => pickTheaterLayout("panels")} title="Customizable panels">
         Panels
