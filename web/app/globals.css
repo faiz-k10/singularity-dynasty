@@ -5806,3 +5806,9 @@ html{font-stretch:82%;}
 .sb-play.is-hot.is-theirs .sb-play-what strong{color:var(--neon-blue);}
 .sb-play.is-hot .sb-play-pts{font-size:17px;}
 .sb-play.is-hot.is-theirs .sb-play-pts{color:var(--neon-blue);}
+
+/* Recent plays: each player's team logo sits just before his name. */
+.sb-play-who{display:flex; flex-wrap:wrap; align-items:center; gap:1px 8px;}
+.sb-play-player{display:inline-flex; align-items:center; gap:6px; min-width:0;}
+.sb-play-player .team-badge.team-logo{padding:0; flex:none;}
+.sb-play-player .team-logo img{width:18px; height:18px;}

@@ -235,10 +235,11 @@ function PlayRow({ e, isNew }) {
       <div className="sb-play-main">
         <span className="sb-play-who">
           {e.who.map((w, i) => (
-            <span key={w.playerId}>
-              {i > 0 && <span className="sb-play-join">{w.arrow ? " → " : " · "}</span>}
+            <span key={w.playerId} className="sb-play-player">
+              {i > 0 && <span className="sb-play-join">{w.arrow ? "→" : "·"}</span>}
+              <TeamBadge team={w.team} />
               <span className={`sb-play-name is-${w.side}`}>{w.name}</span>
-              {w.note && <span className="sb-play-note"> ({w.note})</span>}
+              {w.note && <span className="sb-play-note">({w.note})</span>}
             </span>
           ))}
         </span>
