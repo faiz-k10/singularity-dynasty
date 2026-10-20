@@ -5738,3 +5738,11 @@ html{font-stretch:82%;}
   .hub-console{grid-template-columns:1fr;}
   .hub-main{position:static;}
 }
+
+/* Sunday board: the league cards' scroll bar gets its own lane (16px of air) instead of hugging the card borders; the filter pill in the header strip keeps lining up with the cards' right edge. Stacked layouts don't scroll the grid, so they keep the slim padding. */
+.sb-grid{padding-right:16px;}
+.sb-top-main{padding-right:12px;}
+@media (max-width:999px){
+  .sb-grid{padding-right:4px;}
+  .sb-top-main{padding-right:0;}
+}
