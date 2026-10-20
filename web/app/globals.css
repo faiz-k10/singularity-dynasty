@@ -5829,6 +5829,11 @@ html{font-stretch:82%;}
 /* Play labels in Title Case: "Touchdown Run", "Touchdown Catch", "Touchdown Pass", "Field Goal". */
 .sb-play-what strong{text-transform:capitalize;}
 
-
-/* With a matchup open the live panel is narrow: the players half gets a bit more of it so most names fit on one line (the plays half is mostly short lines). */
-.sb-body.has-drawer .sb-feed-split > .sb-feed-scroll{flex:1.4 1 0;}
+/* Playing now rows: the name has the whole row to itself (so it never needs an ellipsis, even in the narrow half), and the score sits
+   on the line below it, level with the position / team / clock, at the right edge. The two halves of the panel stay equal width. */
+.sb-feed-row{display:grid; grid-template-columns:minmax(0, 1fr) auto; grid-template-areas:"name name" "sub nums" "leagues nums"; column-gap:12px; row-gap:4px; align-items:center;}
+.sb-feed-who{display:contents;}
+.sb-feed-name{grid-area:name; justify-self:start;}
+.sb-feed-sub{grid-area:sub; min-width:0;}
+.sb-feed-leagues{grid-area:leagues; min-width:0;}
+.sb-feed-nums{grid-area:nums; align-self:center;}
