@@ -5421,8 +5421,6 @@ html{font-stretch:82%;}
 .sb-feed-leagues{font-size:11.5px; color:var(--star-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
 .sb-feed-nums{display:flex; flex-direction:column; align-items:flex-end; gap:2px; flex:none;}
 .sb-feed-pts{font-size:18px; font-weight:700; color:var(--star);}
-.sb-feed-pts.beat{color:var(--horizon-gold);}
-.sb-feed-row.is-theirs .sb-feed-pts.beat{color:var(--neon-blue);}
 .sb-feed-delta{font-size:11px; font-weight:700; color:var(--horizon-gold);}
 .sb-feed-row.is-theirs .sb-feed-delta{color:var(--neon-blue);}
 .sb-feed-proj{font-size:10.5px; color:var(--star-dim);}

@@ -204,7 +204,6 @@ function LeagueCard({ team, gameStates, injuries, onOpen }) {
 }
 
 function FeedRow({ r, isNew, delta, showLeagues, focused, onPick }) {
-  const beat = r.proj > 0 && r.pts >= r.proj;
   const where =
     r.side === "theirs"
       ? r.starts.map((x) => (showLeagues ? x.league : null)).filter(Boolean)
@@ -223,7 +222,7 @@ function FeedRow({ r, isNew, delta, showLeagues, focused, onPick }) {
         {showLeagues && where.length > 0 && <span className="sb-feed-leagues">{where.join(" · ")}</span>}
       </div>
       <div className="sb-feed-nums">
-        <span className={`sb-feed-pts mono${beat ? " beat" : ""}`}>{fmt1(r.pts)}</span>
+        <span className="sb-feed-pts mono">{fmt1(r.pts)}</span>
         {isNew && delta > 0 ? (
           <span className="sb-feed-delta mono">+{fmt1(delta)}</span>
         ) : r.pending ? (
