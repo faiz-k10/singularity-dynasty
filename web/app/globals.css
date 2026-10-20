@@ -2691,12 +2691,13 @@ a.export-csv-btn{text-decoration:none;}
 .weekly-detail-col .weekly-detail-pct-panel{flex:1 1 auto; max-width:none;}
 .weekly-detail-mine-panel{flex:0 0 150px; align-self:stretch; max-width:176px;}
 /* This week (emphasised) | Last week (muted). */
-.weekly-stats-split{display:grid; grid-template-columns:1.45fr 1fr; gap:12px;}
+.weekly-stats-split{display:grid; grid-template-columns:1.6fr 1fr; gap:12px;}
 .weekly-detail-grid .weekly-stats-last,
-.weekly-detail-grid .weekly-stats-next{display:flex; flex-direction:column; gap:10px; padding:14px 16px; min-width:0;}
+.weekly-detail-grid .weekly-stats-next{display:flex; flex-direction:column; gap:10px; padding:14px 14px; min-width:0;}
 .weekly-stats-eyebrow{font-family:var(--font-mono), monospace; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--star-dim); white-space:nowrap;}
 .weekly-stats-eyebrow-next{color:var(--horizon-gold); font-weight:700;}
-.weekly-stats-eyebrow-next{display:flex; flex-wrap:wrap; align-items:center; justify-content:center; column-gap:6px; row-gap:2px; letter-spacing:0.07em;} /* in a narrow panel the opponent drops to its own line instead of spilling into the next panel */
+.weekly-stats-eyebrow-next{display:flex; flex-wrap:nowrap; align-items:center; justify-content:center; column-gap:4px; letter-spacing:0.03em;} /* the opponent always stays on the heading's line (founder, Oct 20): the panel is given the room instead (grid below) */
+.weekly-stats-last .weekly-stats-eyebrow{letter-spacing:0.06em;}
 .weekly-stats-eyebrow .weekly-stats-opp{display:inline-flex; align-items:center; gap:4px;}
 .weekly-stats-eyebrow .weekly-stats-opp .team-badge img{width:20px; height:20px;}
 /* One line, always: even a three-digit position rank ("TE103") and a median fit beside each other, so the numbers
@@ -4870,7 +4871,7 @@ html{font-stretch:82%;}
 .compare-panels .weekly-detail-curve-panel, .compare-panels .weekly-detail-pct-panel{max-width:none; padding:16px;}
 .compare-panels .weekly-gamelog-panel{padding:16px;}
 @media (min-width:1250px){
-  .compare-panels .weekly-stats-split{grid-template-columns:1.45fr 1fr;}
+  .compare-panels .weekly-stats-split{grid-template-columns:1.6fr 1fr;}
 }
 .compare-panels .weekly-player-header{margin-bottom:0; padding:12px 14px; gap:12px; justify-content:flex-start;}
 .compare-panels .weekly-player-id{justify-content:flex-start; gap:12px;}
