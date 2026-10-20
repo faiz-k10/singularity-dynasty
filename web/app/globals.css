@@ -5746,3 +5746,17 @@ html{font-stretch:82%;}
   .sb-grid{padding-right:4px;}
   .sb-top-main{padding-right:0;}
 }
+
+/* Sunday board header, right side: the updated time, Desktop alerts, the Sunday board / Panels switch and the exit button stay on ONE line. The row measures its own width: under 540px the "Updated" time drops out, under 400px (the drawer is open, or a small window) the alerts button shortens to the bell and its state. */
+.sb-top-side{flex-wrap:nowrap; gap:10px 12px; white-space:nowrap; container-type:inline-size; container-name:sbside;}
+.sb-top-side > *{flex:none;}
+@container sbside (max-width:540px){
+  .sb-top-side .sb-updated{display:none;}
+}
+@container sbside (max-width:400px){
+  .sb-top-side .desk-alerts-label{display:none;}
+  .sb-top-side .board-orient button{padding-left:10px; padding-right:10px;}
+}
+@media (max-width:999px){
+  .sb-top-side{flex-wrap:wrap;}
+}

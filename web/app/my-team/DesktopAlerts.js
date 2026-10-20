@@ -88,7 +88,7 @@ export default function DesktopAlertsToggle({ on, setOn, allowed }) {
         onClick={toggle}
         title="Browser alerts while this tab is open: a starter ruled Out / Doubtful, an empty or bye slot near kickoff, and a late swing in a close game"
       >
-        <BellIcon /> Desktop alerts {on ? "on" : "off"}
+        <BellIcon /> <span className="desk-alerts-label">Desktop alerts</span> {on ? "on" : "off"}
       </button>
       {note && <span className="desk-alerts-note">{note}</span>}
     </span>
