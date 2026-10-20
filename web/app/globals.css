@@ -5786,3 +5786,11 @@ html{font-stretch:82%;}
 .sb-body.has-drawer .sb-plays-filter button{padding:4px 8px; font-size:10.5px;}
 .sb-body.has-drawer .sb-plays-filter .long{display:none;}
 .sb-body.has-drawer .sb-plays-filter .short{display:inline;}
+
+/* Recent plays: fantasy points the play added (gold, a red minus for turnovers), stacked over the clock on the right of the row. */
+.sb-play-side{flex:none; display:flex; flex-direction:column; align-items:flex-end; gap:2px;}
+.sb-play-pts{font-size:14px; font-weight:700; color:var(--horizon-gold); line-height:1;}
+.sb-play-pts.neg{color:var(--down);}
+.sb-play-side .sb-play-when{padding-top:0;}
+.sb-body.has-drawer .sb-play-side{flex-direction:row; align-items:baseline; gap:8px; flex:1 1 100%; justify-content:space-between; order:3;}
+.sb-body.has-drawer .sb-play-side .sb-play-pts{order:2;}

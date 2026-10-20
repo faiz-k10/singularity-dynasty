@@ -245,10 +245,17 @@ function PlayRow({ e, isNew }) {
         <span className="sb-play-what">
           <strong>{e.label}</strong>
           {e.yards && <> · {e.yards}</>}
-          {e.partner && <span className="sb-play-partner"> · {e.partner}</span>}
         </span>
       </div>
-      <span className="sb-play-when mono">{e.when}</span>
+      <span className="sb-play-side">
+        {e.points !== 0 && (
+          <span className={`sb-play-pts mono${e.points < 0 ? " neg" : ""}`} title="Fantasy points this play added (standard PPR rates; your league's own scoring can differ a little)">
+            {e.points > 0 ? "+" : "−"}
+            {Math.abs(e.points).toFixed(1)}
+          </span>
+        )}
+        <span className="sb-play-when mono">{e.when}</span>
+      </span>
     </li>
   );
 }

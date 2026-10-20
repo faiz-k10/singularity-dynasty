@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { normName, parseRoster, matchAthlete, parsePlays, playYards, roleLabel, defenseLabel, yardsFor, buildPlayFeed } from "../lib/playByPlay.js";
+import { normName, parseRoster, matchAthlete, parsePlays, playYards, roleLabel, defenseLabel, yardsFor, playPoints, buildPlayFeed } from "../lib/playByPlay.js";
 
 const ath = (id) => ({ athlete: { $ref: `http://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/2026/athletes/${id}?lang=en` } });
 const team = (id) => ({ $ref: `http://sports.core.api.espn.com/v2/sports/football/leagues/nfl/seasons/2026/teams/${id}?lang=en` });
@@ -108,7 +108,7 @@ test("buildPlayFeed: one entry per play, newest first, both ends of a pass named
     { playerId: "d", name: "Matthew Golden", pos: "WR", team: "GB", side: "mine", espnId: "600" },
     { playerId: "GB", name: "Green Bay Packers", pos: "DEF", team: "GB", side: "mine" },
   ];
-  const feed = buildPlayFeed(players, plays, { names: { 100: "Dak Prescott" } });
+  const feed = buildPlayFeed(players, plays);
   // Every play that moves a fantasy score, newest first: both runs, the catch, the touchdown pass and the sack (it scores
   // for the GB defense on the board). The incompletion moves nobody's points and is left off.
   assert.deepEqual(feed.map((e) => e.id), ["p6", "p5", "p4", "p2", "p1"]);
@@ -121,7 +121,8 @@ test("buildPlayFeed: one entry per play, newest first, both ends of a pass named
   assert.equal(td.td, true);
   assert.equal(catchPlay.label, "Catch");
   assert.equal(catchPlay.yards, "24 yds");
-  assert.equal(catchPlay.partner, "from D. Prescott");
+  assert.equal(catchPlay.points, 3.4); // 1 per catch + 24 yards x 0.1
+  assert.equal(td.points, 12.3); // pass TD: 4 + 9 x 0.04 = 4.36 for the passer, 6 + 1 + 9 x 0.1 = 7.9 for the receiver
   assert.equal(catchPlay.side, "theirs");
   assert.equal(run.when, "3:01 - 4th");
 });
@@ -160,4 +161,16 @@ test("buildPlayFeed: the kicker's extra point rides on the touchdown row as a no
     ["Matthew Golden", true, null],
     ["Trey Smack", false, "extra point"],
   ]);
+});
+
+test("playPoints: standard PPR rates", () => {
+  assert.equal(playPoints("Catch", 6), 1.6);
+  assert.equal(playPoints("Run", 8), 0.8);
+  assert.equal(playPoints("Touchdown run", 1), 6.1);
+  assert.equal(playPoints("Completion", 25), 1);
+  assert.equal(playPoints("Interception thrown", 0), -2);
+  assert.equal(playPoints("Field goal", 44), 3);
+  assert.equal(playPoints("Extra point", 0), 1);
+  assert.equal(playPoints("Sack", null), 1);
+  assert.equal(playPoints("Return", 30), 0);
 });

@@ -25,12 +25,6 @@ const lastName = (s) => {
   const parts = String(s || "").replace(SUFFIX, "").trim().split(/\s+/);
   return normName(parts[parts.length - 1]);
 };
-// "Christian McCaffrey" -> "C. McCaffrey"
-const initialed = (name) => {
-  const [first, ...rest] = String(name || "").replace(SUFFIX, "").split(" ");
-  return rest.length ? `${first[0]}. ${rest.join(" ")}` : first;
-};
-
 // ESPN team roster -> [{ id, name, norm, last, pos }].
 export function parseRoster(json) {
   const out = [];
@@ -141,13 +135,44 @@ export function yardsFor(label, yards) {
   return `${yards < 0 ? "−" : ""}${n} ${n === 1 ? "yd" : "yds"}`;
 }
 
+// Fantasy points one play is worth to the player with this label: the site's fixed standard PPR rates (1 per catch, 0.1 per rushing /
+// receiving yard, 0.04 per passing yard, 6 per touchdown run or catch, 4 per touchdown pass, -2 per interception thrown or
+// fumble lost, 3 per field goal, 1 per extra point, 2 per two-point conversion; defense: 1 per sack, 2 per turnover or safety,
+// 6 per score). A league's own scoring can differ a little, so this is "about"; kick-return yards and field-goal distance
+// bonuses are not counted.
+export function playPoints(label, yards) {
+  const y = typeof yards === "number" ? yards : 0;
+  switch (label) {
+    case "Catch": return 1 + 0.1 * y;
+    case "Touchdown catch": return 7 + 0.1 * y;
+    case "Run": return 0.1 * y;
+    case "Touchdown run": return 6 + 0.1 * y;
+    case "Completion": return 0.04 * y;
+    case "Touchdown pass": return 4 + 0.04 * y;
+    case "Interception thrown":
+    case "Fumble lost": return -2;
+    case "Field goal": return 3;
+    case "Extra point": return 1;
+    case "Two-point conversion": return 2;
+    case "Touchdown":
+    case "Return touchdown": return 6;
+    case "Sack": return 1;
+    case "Interception":
+    case "Fumble recovery":
+    case "Safety":
+    case "Blocked kick": return 2;
+    case "Interception touchdown":
+    case "Fumble return touchdown": return 8;
+    default: return 0;
+  }
+}
+
 const ord = (n) => (n == null ? "" : n > 4 ? "OT" : ["1st", "2nd", "3rd", "4th"][n - 1]);
 
 // players: [{ playerId, name, pos, team, side: "mine" | "theirs", espnId? }] -- the panel's rows, espnId resolved by
-// matchAthlete. plays: parsed plays, each with `teams` (the two team codes in its game). names: { espnAthleteId: full
-// name } for the other end of a pass. Returns the newest `limit` plays that move a fantasy score (catches, runs, completions, scores, kicks, returns,
+// matchAthlete. plays: parsed plays, each with `teams` (the two team codes in its game). Returns the newest `limit` plays that move a fantasy score (catches, runs, completions, scores, kicks, returns,
 // turnovers -- see roleLabel) involving any of them, one entry per play.
-export function buildPlayFeed(players, plays, { names = {}, limit = 60 } = {}) {
+export function buildPlayFeed(players, plays, { limit = 60 } = {}) {
   const byAthlete = new Map();
   const defenses = [];
   for (const p of players || []) {
@@ -184,12 +209,6 @@ export function buildPlayFeed(players, plays, { names = {}, limit = 60 } = {}) {
     // Both ends of a pass are ours -> "Jordan Love → Matthew Golden" with the passer's wording.
     const pair = list.length > 1 && list[0].roles.includes("passer") && list.some((w) => w.roles.includes("receiver"));
     const lead = pair ? list[0] : list.find((w) => !w.roles.includes("passer")) || list[0];
-    let partner = null;
-    if (list.length === 1 && lead.roles.length) {
-      const other = lead.roles.includes("passer") ? "receiver" : lead.roles.includes("receiver") ? "passer" : null;
-      const aid = other && play.people.find((x) => x.role === other)?.id;
-      if (aid && names[aid]) partner = `${other === "passer" ? "from" : "to"} ${initialed(names[aid])}`;
-    }
     const sides = new Set(list.map((w) => w.side));
     out.push({
       id: play.id,
@@ -198,7 +217,8 @@ export function buildPlayFeed(players, plays, { names = {}, limit = 60 } = {}) {
       when: play.clock && play.period ? `${play.clock} - ${ord(play.period)}` : ord(play.period),
       label: lead.label,
       yards: yardsFor(lead.label, play.yards),
-      partner,
+      // Standard-PPR points the play added, summed over the players shown on the row.
+      points: Math.round(list.reduce((t, w) => t + playPoints(w.label, play.yards), 0) * 10) / 10,
       td: play.scoring && /Touchdown|Interception touchdown|Fumble return touchdown|Return touchdown/.test(lead.label),
       pair,
       side: sides.size === 1 ? [...sides][0] : "both",
@@ -288,8 +308,6 @@ export async function loadLivePlays(players, gameStates, opts) {
     Promise.all(teams.map((t) => (gameStates[t].espnId ? fetchRoster(gameStates[t].espnId) : []))),
   ]);
   const rosterByTeam = Object.fromEntries(teams.map((t, i) => [t, rosterLists[i]]));
-  const names = {};
-  for (const list of rosterLists) for (const a of list) names[a.id] = a.name;
   const withIds = live.map((p) => (p.pos === "DEF" ? p : { ...p, espnId: matchAthlete(p, rosterByTeam[p.team] || []) }));
-  return buildPlayFeed(withIds, lists.flat(), { names, ...opts });
+  return buildPlayFeed(withIds, lists.flat(), opts);
 }
