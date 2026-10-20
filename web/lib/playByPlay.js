@@ -143,16 +143,11 @@ export function yardsFor(label, yards) {
 
 const ord = (n) => (n == null ? "" : n > 4 ? "OT" : ["1st", "2nd", "3rd", "4th"][n - 1]);
 
-// The panel lists scoring plays (touchdowns, field goals, extra points, two-point conversions, defensive scores,
-// safeties) and offensive gains of BIG_YARDS or more; everything else is left off.
-export const BIG_YARDS = 20;
-const BIG_PLAY = /^(Catch|Completion|Run|Return)$/;
-
 // players: [{ playerId, name, pos, team, side: "mine" | "theirs", espnId? }] -- the panel's rows, espnId resolved by
 // matchAthlete. plays: parsed plays, each with `teams` (the two team codes in its game). names: { espnAthleteId: full
-// name } for the other end of a pass. Returns the newest `limit` scoring / big plays involving any of them, one entry
-// per play.
-export function buildPlayFeed(players, plays, { names = {}, limit = 40 } = {}) {
+// name } for the other end of a pass. Returns the newest `limit` plays that move a fantasy score (catches, runs, completions, scores, kicks, returns,
+// turnovers -- see roleLabel) involving any of them, one entry per play.
+export function buildPlayFeed(players, plays, { names = {}, limit = 60 } = {}) {
   const byAthlete = new Map();
   const defenses = [];
   for (const p of players || []) {
@@ -195,8 +190,6 @@ export function buildPlayFeed(players, plays, { names = {}, limit = 40 } = {}) {
       const aid = other && play.people.find((x) => x.role === other)?.id;
       if (aid && names[aid]) partner = `${other === "passer" ? "from" : "to"} ${initialed(names[aid])}`;
     }
-    // Only the plays that matter (founder's rule): scoring plays, and offensive plays of 20+ yards.
-    if (!play.scoring && !(BIG_PLAY.test(lead.label) && play.yards >= BIG_YARDS)) continue;
     const sides = new Set(list.map((w) => w.side));
     out.push({
       id: play.id,

@@ -253,7 +253,7 @@ function PlayRow({ e, isNew }) {
   );
 }
 
-// The panel's right half: the latest scoring plays and 20+ yard gains by the players listed beside it, newest first (lib/playByPlay.js via the
+// The panel's right half: every play that moves a fantasy score by the players listed beside it (yours, your opponents', or both -- the buttons under the title), newest first (lib/playByPlay.js via the
 // getLivePlays action), refreshed with every 30-second poll. Plays new since the last refresh flash once.
 function RecentPlays({ rows, updatedAt }) {
   // The request is keyed on who is listed (and the poll time), so it re-runs exactly when either changes.
@@ -278,13 +278,28 @@ function RecentPlays({ rows, updatedAt }) {
   }, [req, updatedAt]);
   // Until a new answer arrives (e.g. right after opening one league), only show plays by players still listed.
   const listed = new Set(rows.map((r) => `${r.side}:${r.playerId}`));
-  const list = state.list.filter((e) => e.who.some((w) => listed.has(`mine:${w.playerId}`) || listed.has(`theirs:${w.playerId}`)));
+  const everyPlay = state.list.filter((e) => e.who.some((w) => listed.has(`mine:${w.playerId}`) || listed.has(`theirs:${w.playerId}`)));
+  // Whose plays: yours, your opponents', or both. A play with a player who is yours in one league and theirs in another
+  // (side "both") counts for either.
+  const [whose, setWhose] = useState("both");
+  const list = whose === "both" ? everyPlay : everyPlay.filter((e) => e.side === whose || e.side === "both");
   return (
     <section className="sb-plays" aria-label="Recent plays">
       <h3 className="sb-feed-label sb-plays-label mono">
         <span>Recent plays</span>
-        <span className="sb-feed-sum">scores · 20+ yards</span>
+        <span className="sb-feed-sum">every play that moves a score</span>
       </h3>
+      <div className="sb-plays-filter" role="group" aria-label="Whose plays">
+        {[
+          ["mine", "My players"],
+          ["theirs", "Opponents"],
+          ["both", "Both"],
+        ].map(([k, label]) => (
+          <button key={k} type="button" className={`is-${k}`} aria-pressed={whose === k} onClick={() => setWhose(k)}>
+            {label}
+          </button>
+        ))}
+      </div>
       <div className="sb-plays-scroll">
         {list.length > 0 ? (
           <ol className="sb-feed-list">
@@ -293,7 +308,7 @@ function RecentPlays({ rows, updatedAt }) {
             ))}
           </ol>
         ) : (
-          <p className="sb-muted sb-feed-empty">{state.loaded ? "No scores or 20+ yard plays from these players yet." : "Loading plays…"}</p>
+          <p className="sb-muted sb-feed-empty">{state.loaded ? "No plays from these players yet." : "Loading plays…"}</p>
         )}
       </div>
     </section>

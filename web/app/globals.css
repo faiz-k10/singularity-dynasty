@@ -5765,3 +5765,14 @@ html{font-stretch:82%;}
 .h2h-pts-num{position:relative; display:inline-block;}
 .h2h-c-pts .h2h-pts-num .matchup-score-live-dot{position:absolute; left:50%; right:auto; top:-9px; margin:0 0 0 -3px;}
 .h2h-side.opp .h2h-c-pts .h2h-pts-num .matchup-score-live-dot{left:50%; right:auto;}
+
+/* Recent plays: whose plays to show -- My players (gold), Opponents (blue) or Both. */
+.sb-plays-filter{display:flex; gap:6px; padding:0 0 10px; flex-wrap:wrap;}
+.sb-plays-filter button{
+  font-family:var(--font-mono), monospace; font-size:11px; letter-spacing:.04em; padding:5px 11px; cursor:pointer;
+  color:var(--star-dim); background:transparent; border:1px solid var(--rule); border-radius:2px;
+}
+.sb-plays-filter button:hover{color:var(--star); border-color:var(--rule-strong);}
+.sb-plays-filter button[aria-pressed="true"]{color:#1A0D05; background:var(--horizon-gold); border-color:var(--horizon-gold); font-weight:700;}
+.sb-plays-filter button.is-theirs[aria-pressed="true"]{color:#04141A; background:var(--neon-blue); border-color:var(--neon-blue);}
+.sb-plays-filter button.is-both[aria-pressed="true"]{color:var(--void); background:var(--star); border-color:var(--star);}

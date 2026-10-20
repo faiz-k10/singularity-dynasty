@@ -109,9 +109,12 @@ test("buildPlayFeed: one entry per play, newest first, both ends of a pass named
     { playerId: "GB", name: "Green Bay Packers", pos: "DEF", team: "GB", side: "mine" },
   ];
   const feed = buildPlayFeed(players, plays, { names: { 100: "Dak Prescott" } });
-  // Only scoring plays and 20+ yard gains: the incompletion, the sack and the 19-yard run are left off.
-  assert.deepEqual(feed.map((e) => e.id), ["p4", "p2", "p1"]);
-  const [td, catchPlay, run] = feed;
+  // Every play that moves a fantasy score, newest first: both runs, the catch, the touchdown pass and the sack (it scores
+  // for the GB defense on the board). The incompletion moves nobody's points and is left off.
+  assert.deepEqual(feed.map((e) => e.id), ["p6", "p5", "p4", "p2", "p1"]);
+  assert.equal(feed[1].label, "Sack");
+  assert.equal(feed[1].side, "mine");
+  const [, , td, catchPlay, run] = feed;
   assert.equal(td.pair, true);
   assert.deepEqual(td.who.map((w) => w.name), ["Jordan Love", "Matthew Golden"]);
   assert.equal(td.label, "Touchdown pass");
