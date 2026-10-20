@@ -607,8 +607,12 @@ NGS_MIN_GAMES <- 8  # matches the backtest's own eligibility floor
 # stat season-average bootstrap, backtested via
 # backtest_target_share_decay.R + calibrate_target_share_quantiles.R.
 TARGET_SHARE_DECAY <- c(WR = 0.94, TE = 0.94)
-TARGET_SHARE_FLOOR_Q <- c(WR = 0.00001, TE = 0.00013)
-TARGET_SHARE_CEIL_Q  <- c(WR = 0.993,   TE = 0.992)
+# Re-fit Oct 20 2026 for the this-season-and-last window by calibrate_target_share_window.R (2022-25, as-of weeks 4/6/8
+# pooled, n = 1595 WR / 884 TE): ~10% of real season averages fall below the floor and ~10% above the ceiling (as of
+# week 6: WR 10.3% / 9.1%, TE 10.5% / 11.2%; a bit wider early in the season, a bit narrower later). The old values
+# (WR 0.00001 / 0.993, TE 0.00013 / 0.992) were fit on the 3-year history and put only 3-4% below the floor on this window.
+TARGET_SHARE_FLOOR_Q <- c(WR = 0.004,  TE = 0.0075)
+TARGET_SHARE_CEIL_Q  <- c(WR = 0.99,   TE = 0.98)
 TARGET_SHARE_MIN_GAMES <- 8  # matches the backtest's own eligibility floor (counted within the this-season-and-last window)
 
 # The season we're publishing rankings/projections FOR. Fixed -- does NOT
