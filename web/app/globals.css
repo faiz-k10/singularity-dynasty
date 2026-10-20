@@ -6004,3 +6004,6 @@ html{font-stretch:82%;}
 @media (min-width:641px) and (max-width:900px){
   .h2h-side.opp .h2h-row:not(.is-upcoming) .h2h-c-pts{margin-left:0; margin-right:calc(-1 * var(--side-pad));}
 }
+
+/* Weekly rankings: rows a filter leaves out stay mounted (so filtering is instant) and are simply not shown. */
+.rankings-table tbody tr.row-filtered{display:none;}

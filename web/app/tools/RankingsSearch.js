@@ -1,6 +1,6 @@
 "use client";
 
-import { useDeferredValue, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import RankingsTable from "./RankingsTable";
 import RankingsToolbar from "./RankingsToolbar";
 import { matchesBadgeFilters } from "./badgeFilters";
@@ -77,8 +77,9 @@ export default function RankingsSearch({
     return out;
   }, [rows, selected, query, showPositionFilter, myView.on, myView.ownedByName, badgeIds, badgeMatch, showCurve, teamIds]);
 
-  // The chips, pills and search box answer instantly; the (heavy) table catches up right behind them.
-  const tableRows = useDeferredValue(filteredRows);
+  // The table keeps every row mounted and just hides the filtered-out ones, so changing a filter -- in either
+  // direction -- is a cheap show / hide, never a rebuild of hundreds of rows, and never shows a stale list.
+  const visibleRows = useMemo(() => new Set(filteredRows), [filteredRows]);
 
   const filtering = query.trim() !== "" || (showPositionFilter && selected.length > 0 && selected.length < positions.length) || badgeIds.size > 0 || teamIds.size > 0;
   const note = <MyPlayersNote mine={mine} view={myView} gated={gated} />;
@@ -125,7 +126,8 @@ export default function RankingsSearch({
       )}
 
       <RankingsTable
-        rows={tableRows}
+        rows={rows}
+        visibleRows={visibleRows}
         showPosition
         showOpponent
         showRange

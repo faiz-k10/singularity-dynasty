@@ -96,11 +96,110 @@ function PlayerCell({ row, withPopover, owned }) {
   );
 }
 
+// The cells of a row, memoised on their own so showing / hiding a row (RankingRow below just flips a class)
+// doesn't re-render the curve, logos and numbers inside it.
+const RowCells = memo(function RowCells({
+  row, achievements, bye, showPosition, showTeam, showOpponent, showRange, showCurve, showNotes, showStatColumns,
+  popoverOnName, maxSpread, owned,
+}) {
+  return (
+    <>
+    <td className="mono rank-cell">
+      {bye ? (
+        "—"
+      ) : (
+        <>
+          <AchievementDots achievements={achievements} vertical />
+          {row.displayRank}
+        </>
+      )}
+    </td>
+    <PlayerCell row={row} withPopover={popoverOnName && !bye} owned={owned} />
+    {showPosition && (
+      <td className="mono align-left">
+        {row.position}
+        {!bye && row.positionLabel && row.positionLabel !== row.position && (
+          <span className="pos-rank">{row.positionLabel.slice(row.position.length)}</span>
+        )}
+      </td>
+    )}
+    {showRange && (
+      <td className="mono median-cell" title={bye ? undefined : "Median projection for this week"}>
+        {bye || row.projection == null ? "—" : Number(row.projection).toFixed(1)}
+      </td>
+    )}
+    {showTeam && showOpponent ? (
+      (() => {
+        const tint = bye ? null : matchupTint(row.matchup_mult);
+        // is_home is null for rows published before migration
+        // 0032 (or when the schedule lookup failed) -- a
+        // neutral "·" rather than guessing vs/@ in that case.
+        const sep = row.is_home === true ? "vs" : row.is_home === false ? "@" : "·";
+        return (
+          <td
+            className={`mono${tint ? ` matchup-cell ${tint.cls}` : ""}`}
+            style={tint ? { "--heat": tint.heat } : undefined}
+            title={tint ? tint.label : undefined}
+          >
+            <span className="matchup-combined-cell">
+              <TeamBadge team={row.team} />
+              {isBye(row.opponent) ? (
+                <span className="matchup-bye">{BYE_LABEL}</span>
+              ) : (
+                <>
+                  <span className="matchup-sep">{sep}</span>
+                  <TeamBadge team={row.opponent} />
+                </>
+              )}
+            </span>
+          </td>
+        );
+      })()
+    ) : (
+      showTeam && (
+        <td className="mono align-left">
+          <TeamBadge team={row.team} />
+        </td>
+      )
+    )}
+    {showRange && (
+      <td className="mono heat-cell-floor" style={{ "--heat": bye ? 0 : row.floorHeat || 0 }}>
+        {bye ? "—" : formatRange(row.floor)}
+      </td>
+    )}
+    {showCurve && (
+      <td>
+        {!bye && (
+          <OutcomeCurve
+            floor={row.floor}
+            median={row.projection}
+            ceiling={row.ceiling}
+            maxSpread={maxSpread}
+          />
+        )}
+      </td>
+    )}
+    {showRange && (
+      <td className="mono heat-cell-ceiling" style={{ "--heat": bye ? 0 : row.ceilingHeat || 0 }}>
+        {bye ? "—" : formatRange(row.ceiling)}
+      </td>
+    )}
+    {showStatColumns &&
+      STAT_COLUMNS.map((c) => (
+        <td key={c.key} className="mono">
+          {bye ? "—" : formatStat(row[c.key])}
+        </td>
+      ))}
+    {showNotes && <td className="tool-notes">{row.notes || ""}</td>}
+    </>
+  );
+});
+
 // One table row (plus its opened panel). Memoised so a filter change -- which only adds or removes rows -- doesn't
 // re-render the hundreds of rows that are unchanged (each carries an inline SVG curve and team logos); that
 // re-render was what made the badge / team / position filters feel slow.
 const RankingRow = memo(function RankingRow({
-  row, achievements, isExpanded0, onToggle, showPosition, showTeam, showOpponent, showRange, showCurve, showNotes,
+  row, achievements, hidden, isExpanded0, onToggle, showPosition, showTeam, showOpponent, showRange, showCurve, showNotes,
   showStatColumns, popoverOnName, maxSpread, owned, mineStatus, colCount,
 }) {
   const rowKey = `${row.position}-${row.rank}`;
@@ -108,12 +207,12 @@ const RankingRow = memo(function RankingRow({
   // stat line or opened panel) -- just who he is and "BYE WEEK" in the Matchup column.
   const bye = isBye(row.opponent);
   const hasDetail = !bye && showCurve && row.floor != null && row.ceiling != null;
-  const isExpanded = hasDetail && isExpanded0;
+  const isExpanded = hasDetail && isExpanded0 && !hidden;
   return (
     <Fragment key={rowKey}>
       <tr
         data-pos={row.position}
-        className={hasDetail ? "row-expandable" : undefined}
+        className={`${hasDetail ? "row-expandable" : ""}${hidden ? " row-filtered" : ""}` || undefined}
         onClick={hasDetail ? () => onToggle(rowKey) : undefined}
         role={hasDetail ? "button" : undefined}
         tabIndex={hasDetail ? 0 : undefined}
@@ -129,93 +228,11 @@ const RankingRow = memo(function RankingRow({
             : undefined
         }
       >
-        <td className="mono rank-cell">
-          {bye ? (
-            "—"
-          ) : (
-            <>
-              <AchievementDots achievements={achievements} vertical />
-              {row.displayRank}
-            </>
-          )}
-        </td>
-        <PlayerCell row={row} withPopover={popoverOnName && !bye} owned={owned} />
-        {showPosition && (
-          <td className="mono align-left">
-            {row.position}
-            {!bye && row.positionLabel && row.positionLabel !== row.position && (
-              <span className="pos-rank">{row.positionLabel.slice(row.position.length)}</span>
-            )}
-          </td>
-        )}
-        {showRange && (
-          <td className="mono median-cell" title={bye ? undefined : "Median projection for this week"}>
-            {bye || row.projection == null ? "—" : Number(row.projection).toFixed(1)}
-          </td>
-        )}
-        {showTeam && showOpponent ? (
-          (() => {
-            const tint = bye ? null : matchupTint(row.matchup_mult);
-            // is_home is null for rows published before migration
-            // 0032 (or when the schedule lookup failed) -- a
-            // neutral "·" rather than guessing vs/@ in that case.
-            const sep = row.is_home === true ? "vs" : row.is_home === false ? "@" : "·";
-            return (
-              <td
-                className={`mono${tint ? ` matchup-cell ${tint.cls}` : ""}`}
-                style={tint ? { "--heat": tint.heat } : undefined}
-                title={tint ? tint.label : undefined}
-              >
-                <span className="matchup-combined-cell">
-                  <TeamBadge team={row.team} />
-                  {isBye(row.opponent) ? (
-                    <span className="matchup-bye">{BYE_LABEL}</span>
-                  ) : (
-                    <>
-                      <span className="matchup-sep">{sep}</span>
-                      <TeamBadge team={row.opponent} />
-                    </>
-                  )}
-                </span>
-              </td>
-            );
-          })()
-        ) : (
-          showTeam && (
-            <td className="mono align-left">
-              <TeamBadge team={row.team} />
-            </td>
-          )
-        )}
-        {showRange && (
-          <td className="mono heat-cell-floor" style={{ "--heat": bye ? 0 : row.floorHeat || 0 }}>
-            {bye ? "—" : formatRange(row.floor)}
-          </td>
-        )}
-        {showCurve && (
-          <td>
-            {!bye && (
-              <OutcomeCurve
-                floor={row.floor}
-                median={row.projection}
-                ceiling={row.ceiling}
-                maxSpread={maxSpread}
-              />
-            )}
-          </td>
-        )}
-        {showRange && (
-          <td className="mono heat-cell-ceiling" style={{ "--heat": bye ? 0 : row.ceilingHeat || 0 }}>
-            {bye ? "—" : formatRange(row.ceiling)}
-          </td>
-        )}
-        {showStatColumns &&
-          STAT_COLUMNS.map((c) => (
-            <td key={c.key} className="mono">
-              {bye ? "—" : formatStat(row[c.key])}
-            </td>
-          ))}
-        {showNotes && <td className="tool-notes">{row.notes || ""}</td>}
+        <RowCells
+          row={row} achievements={achievements} bye={bye} showPosition={showPosition} showTeam={showTeam}
+          showOpponent={showOpponent} showRange={showRange} showCurve={showCurve} showNotes={showNotes}
+          showStatColumns={showStatColumns} popoverOnName={popoverOnName} maxSpread={maxSpread} owned={owned}
+        />
       </tr>
       {isExpanded && <WeeklyDetailRow row={row} colSpan={colCount} maxSpread={maxSpread} owned={owned} mineStatus={mineStatus} />}
     </Fragment>
@@ -239,6 +256,7 @@ export default function RankingsTable({
   sortParam = "sort",
   dirParam = "dir",
   tableClassName = "",
+  visibleRows, // optional Set of the row objects to show; the rest stay mounted but hidden (cheap filtering). Omit to show all
   toolbar, // the shared filter toolbar (RankingsToolbar), rendered in the full-screen bar so both views look identical
   badgeFilterOn, // a badge filter is active (only changes the empty-state message)
   mineStatus, // "signedOut" | "noTeams" | "ready" -- what the far-right Your player panel says for a player who isn't on any of the viewer's teams
@@ -294,6 +312,8 @@ export default function RankingsTable({
       })),
     [rows, showCurve]
   );
+
+  const shownCount = visibleRows ? visibleRows.size : displayRows.length;
 
   const colCount =
     2 + // Rank, Player
@@ -361,6 +381,7 @@ export default function RankingsTable({
                 key={rowKey}
                 row={row}
                 achievements={achievements}
+                hidden={!!visibleRows && !visibleRows.has(row)}
                 isExpanded0={expanded.has(rowKey)}
                 onToggle={toggleExpanded}
                 showPosition={showPosition}
@@ -378,7 +399,7 @@ export default function RankingsTable({
               />
             );
           })}
-          {displayRows.length === 0 && myViewOn && (
+          {shownCount === 0 && myViewOn && (
             <tr>
               <td colSpan={colCount} className="rankings-table-empty">
                 {gated
@@ -387,7 +408,7 @@ export default function RankingsTable({
               </td>
             </tr>
           )}
-          {displayRows.length === 0 && badgeFilterOn && (
+          {shownCount === 0 && badgeFilterOn && (
             <tr>
               <td colSpan={colCount} className="rankings-table-empty">
                 No players match the selected badges this week.
