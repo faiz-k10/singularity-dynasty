@@ -5976,3 +5976,15 @@ html{font-stretch:82%;}
 @media (max-width:900px){
   .h2h-side.opp .h2h-row:not(.h2h-head) .h2h-player-sub{flex-direction:row; justify-content:flex-start; text-align:left;}
 }
+
+/* Lineup rows, seventh touch (founder, Oct 19): as short as the elements allow. Name line (tight leading) over the badges + clock and the curve, with no
+   gap and 3px of padding; the curve is 182 x 52 (a touch smaller than before) and every row is 74px. Rows that haven't played yet carry a 1.5px
+   border, so their padding gives up the same amount to keep their contents on the same lines. */
+.h2h-row{height:74px; padding:3px 2px; row-gap:0;}
+.h2h-row:not(.h2h-head) .h2h-player-name{line-height:1.1;}
+.score-curve{max-width:182px;}
+.h2h-row.is-upcoming{padding:1.5px calc(var(--side-pad) + 2px);}
+@media (max-width:640px){
+  .h2h .h2h-side .h2h-row, .h2h .h2h-side.opp .h2h-row{height:auto; row-gap:4px;}
+  .score-curve{max-width:100%;}
+}
