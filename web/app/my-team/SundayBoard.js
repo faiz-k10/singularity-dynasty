@@ -353,8 +353,8 @@ function RecentPlays({ rows, updatedAt, focus, onPick, onTotals }) {
 
 // What the live panel shows while nobody is on the field: one centred card in the board's language -- a small event
 // horizon ring, "Next kickoff", the time in the display font with a countdown, the game(s) as team badges, and how many
-// of your (gold) and your opponents' (blue) starters play in them. When nobody has a game left: "That's a wrap".
-function BetweenGames({ feed, gameStates, oneLeague }) {
+// of your (gold) and your opponents' (blue) starters play in them. When nobody has a game left: "Week N is a wrap!".
+function BetweenGames({ feed, gameStates, oneLeague, week }) {
   const mounted = useMounted();
   const [now, setNow] = useState(null);
   useEffect(() => {
@@ -378,7 +378,7 @@ function BetweenGames({ feed, gameStates, oneLeague }) {
     sub = now ? formatCountdown(new Date(feed.nextStart).getTime() - now) : "\u00a0";
   } else {
     eyebrow = "Nobody on the field";
-    title = "That's a wrap";
+    title = week ? `Week ${week} is a wrap!` : "That's a wrap!";
     sub = oneLeague ? "Everyone in this matchup has played." : "All your players and your opponents' have played this week.";
   }
   const games = next?.games || [];
@@ -486,7 +486,7 @@ function LiveFeed({ savedTeams, gameStates, updatedAt, teamId = null, league = n
         {league && <span className="sb-feed-scope mono">{league}</span>}
       </div>
       {nobody ? (
-        <BetweenGames feed={feed} gameStates={gameStates} oneLeague={teamId != null} />
+        <BetweenGames feed={feed} gameStates={gameStates} oneLeague={teamId != null} week={savedTeams.find((t) => t.settings?.week)?.settings.week} />
       ) : (
         // Split lengthwise: who is on the field (left) beside what they just did (right), each scrolling on its own.
         <div className="sb-feed-split">
