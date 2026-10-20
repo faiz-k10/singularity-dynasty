@@ -425,9 +425,6 @@ function LiveFeed({ savedTeams, gameStates, updatedAt, teamId = null, league = n
       <section className={`sb-feed-section is-${side}`}>
         <h3 className="sb-feed-label mono">
           <span>{label}</span>
-          <span className="sb-feed-sum">
-            {rows.length} on the field · <strong>{fmt1(total)}</strong> pts
-          </span>
         </h3>
         <ol className="sb-feed-list">
           {sortFeed(rows, t.changedAt).map((r) => (
