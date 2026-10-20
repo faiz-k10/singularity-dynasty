@@ -118,6 +118,19 @@ data supports and overshoots the target. Live 2026 weeks 1-5 (players projected 
 RBs, 7.8% of TEs and 4.2% of QBs, so this season's ceilings, if anything, run a little LOW. A single player rarely reaching his ceiling
 (Gadsden's best is 9.8 against 27.5) is expected for a ~4% outcome and says nothing about accuracy. Not changed.
 
+## Weekly ceiling at 10% vs the current 4-6% (Oct 20 2026, `backtest_weekly_ceiling_10pct.R`)
+
+Founder asked for consistent 10th / 90th percentile floors and ceilings; the weekly points ceiling is the one output calibrated tighter (real exceed ~4% QB/RB/TE, ~6% WR -- the implied rate of an unvalidated 0.94-0.96 original, see `backtest_ceiling_calibration.R`). Walk-forward next-game test, 2022-2025 plus live 2026 weeks 1-6, floor and median as live:
+
+| Pos | n | Ceiling q now -> for 10% | Real exceed now -> 10%-q | Ceiling over median now -> 10%-q | 80% interval score (lower is better) now -> 10%-q |
+|---|---|---|---|---|---|
+| QB | 2,392 | 0.985 -> 0.920 | 4.1% -> 10.2% | +15.8 -> +11.3 | 29.87 -> **27.92** |
+| RB | 5,585 | 0.995 -> 0.940 | 4.9% -> 10.2% | +15.6 -> +10.3 | 24.07 -> **21.31** |
+| WR | 8,939 | 0.975 -> 0.930 | 6.2% -> 9.9% | +13.5 -> +10.2 | 22.61 -> **21.27** |
+| TE | 4,513 | 0.995 -> 0.945 | 5.3% -> 10.0% | +12.6 -> +8.6 | 19.24 -> **17.16** |
+
+Read as the 80% range the site calls it (the My Team curve legend says 8 in 10 games land inside), floor-to-ceiling at 10% is the better range in every position (6-12% lower interval score); the current ceiling is the better 96th-percentile estimate (pinball loss at tau 0.96) but nothing on the site presents it that way. Out of sample (q fit on 2022-25, applied to 2026 weeks 1-6): 10.9% QB, 11.5% RB, 11.3% WR, 8.7% TE above the ceiling. Floors are already ~9-10% below (live 2026: 8.8-13%). **Not applied yet** -- changing it moves the win-chance spread (`lib/winChance.js` `CEIL_Q`), the curves and the badge thresholds that read floor / ceiling.
+
 ## Rookie accuracy once they qualify (Oct 2026, `backtest_rookie_accuracy.R`)
 
 Walk-forward 2022-2025, next-game, live weekly method (without the 15% mean and Sleeper blends, so absolute numbers run a
