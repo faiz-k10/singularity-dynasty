@@ -43,11 +43,11 @@ test("recap: star, letdown, and the player who flipped the result", () => {
 test("waiver card needs a real gain over the lowest starter at that position", () => {
   const t = league("a", [P("1", "Meh", "WR", "SF", 7, 3, 14)], [P("9", "Foe", "QB", "KC", 20, 12, 30)]);
   const gs = { SF: { state: "pre" }, KC: { state: "pre" } };
-  const w = { a: [{ name: "Small", pos: "WR", team: "LV", proj: 8, adds: 0 }, { name: "Big", pos: "WR", team: "NYJ", proj: 12, adds: 4000 }] };
+  const w = { a: [{ name: "Small", pos: "WR", team: "LV", proj: 8 }, { name: "Big", pos: "WR", team: "NYJ", proj: 12 }] };
   const card = buildInsights({ savedTeams: [t], gameStates: gs, waivers: w }).cards.find((c) => c.kind === "waiver");
   assert.equal(card.player.name, "Big");
-  assert.match(card.body, /4k/);
-  assert.equal(buildInsights({ savedTeams: [t], gameStates: gs, waivers: { a: [{ name: "Small", pos: "WR", team: "LV", proj: 8, adds: 0 }] } }).cards.some((c) => c.kind === "waiver"), false);
+  assert.match(card.body, /5\.0 more/);
+  assert.equal(buildInsights({ savedTeams: [t], gameStates: gs, waivers: { a: [{ name: "Small", pos: "WR", team: "LV", proj: 8 }] } }).cards.some((c) => c.kind === "waiver"), false);
 });
 
 test("something to say with no games at all (playoff picture)", () => {
@@ -65,7 +65,7 @@ test("phase: live beats everything", () => {
 
 test("every day has a card: Wednesday is waiver day, Tuesday names the moved starters", () => {
   const t = league("a", [P("1", "Meh", "WR", "SF", 7, 3, 14)], [P("9", "Foe", "QB", "KC", 20, 12, 30)]);
-  const wed = buildInsights({ savedTeams: [t], gameStates: {}, now: new Date(2026, 9, 21, 9), waivers: { a: [{ name: "Big", pos: "WR", team: "NYJ", proj: 12, adds: 0 }] } });
+  const wed = buildInsights({ savedTeams: [t], gameStates: {}, now: new Date(2026, 9, 21, 9), waivers: { a: [{ name: "Big", pos: "WR", team: "NYJ", proj: 12 }] } });
   const c = wed.cards.find((x) => x.id === "today");
   assert.equal(c.title, "Waiver day");
   assert.match(c.body, /Big/);

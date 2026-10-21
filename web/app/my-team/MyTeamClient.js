@@ -105,8 +105,6 @@ const ROSTER_COLUMN_TYPES = {
   team: "string",
   myProjPts: "number",
   livePts: "number",
-  startPct: "number",
-  rosterPct: "number",
 };
 
 // Reuses lib/sortLink's own comparator/arrow so this matches every other
@@ -219,8 +217,6 @@ function RosterTable({ players: rawPlayers, bestBall = false, playerPoints = nul
               <Th label="Team" sortKeyName="team" {...thProps} />
               {showLive && <Th label="Points" sortKeyName="livePts" {...thProps} />}
               <Th label="Singularity Proj" sortKeyName="myProjPts" {...thProps} />
-              {view === "full" && <Th label="Start %" sortKeyName="startPct" {...thProps} />}
-              {view === "full" && <Th label="Roster %" sortKeyName="rosterPct" {...thProps} />}
             </tr>
           </thead>
           <tbody>
@@ -252,8 +248,6 @@ function RosterTable({ players: rawPlayers, bestBall = false, playerPoints = nul
                     </td>
                   )}
                   <td className="mono">{formatPts(p.myProjPts)}</td>
-                  {view === "full" && <td className="mono">{formatPct(p.startPct)}</td>}
-                  {view === "full" && <td className="mono">{formatPct(p.rosterPct)}</td>}
                 </tr>
               );
             })}
@@ -329,8 +323,6 @@ const ANALYSIS_METRICS = [
   { key: "simFloor", label: "Sim Floor", fmt: n0 },
   { key: "wopr", label: "WOPR", fmt: (v) => v.toFixed(2) },
   { key: "epa", label: "EPA", fmt: signed },
-  { key: "startPct", label: "Start %", fmt: pct0 },
-  { key: "rosterPct", label: "Roster %", fmt: pct0 },
   { key: "exposurePct", label: "Exposure %", fmt: pct0 },
 ];
 

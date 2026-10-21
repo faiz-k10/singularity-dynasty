@@ -14,10 +14,6 @@ export function normalizePlayerName(name) {
 // by actions.js at lookup time) -- first non-null value seen wins.
 const SNAPSHOT_PLAYER_FIELDS = [
   "myProjPts",
-  "sleeperProjPts",
-  "diffProj",
-  "startPct",
-  "rosterPct",
 ];
 
 // Rolls every player across every saved team up into one row per player:
@@ -161,10 +157,6 @@ export const PORTFOLIO_COLUMN_TYPES = {
   invested: "number",
   weightPct: "number",
   myProjPts: "number",
-  sleeperProjPts: "number",
-  diffProj: "number",
-  startPct: "number",
-  rosterPct: "number",
   simFloor: "number",
   simMedian: "number",
   simCeiling: "number",

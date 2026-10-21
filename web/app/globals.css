@@ -5236,7 +5236,6 @@ html{font-stretch:82%;}
 .waivers-name{display:inline-block; max-width:200px; vertical-align:middle;}
 .waivers-proj{font-weight:700; color:var(--star);}
 .waivers-dim{color:var(--star-dim);}
-.waivers-trend{color:var(--up); font-weight:600;}
 .waivers-foot{display:flex; flex-wrap:wrap; align-items:center; gap:10px 16px;}
 .waivers-foot .h2h-sleeper{margin-top:0;}
 .odds-high, td.standings-odds.odds-high{color:var(--up);} .odds-mid, td.standings-odds.odds-mid{color:var(--horizon-gold);} .odds-low, td.standings-odds.odds-low{color:var(--down);}

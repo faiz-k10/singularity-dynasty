@@ -34,7 +34,7 @@ function useWaivers(savedTeams) {
         const res = await getWaiverWire(id).catch(() => null);
         if (!alive) return;
         if (res && !res.error) {
-          waiverCache.set(id, res.players.slice(0, WAIVER_KEEP).map((p) => ({ name: p.name, pos: p.pos, team: p.team, proj: p.proj, adds: p.adds })));
+          waiverCache.set(id, res.players.slice(0, WAIVER_KEEP).map((p) => ({ name: p.name, pos: p.pos, team: p.team, proj: p.proj })));
           waiverCache.set(`at:${id}`, Date.now());
           setWaivers(Object.fromEntries([...waiverCache].filter(([k]) => !k.startsWith("at:"))));
         }

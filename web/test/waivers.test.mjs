@@ -22,11 +22,10 @@ const rows = [
   row(95, "Old Timer", "WR", "MIA", 6),
 ];
 
-test("buildWaiverList: only players on no roster, ranked by projection, with position rank and trending adds", () => {
-  const { players, hidden } = buildWaiverList({ rows, rostered: new Set(["3"]), idx: sleeperIndex(dict), trending: [{ player_id: "2", count: 41000 }] });
+test("buildWaiverList: only players on no roster, ranked by projection, with position rank", () => {
+  const { players, hidden } = buildWaiverList({ rows, rostered: new Set(["3"]), idx: sleeperIndex(dict) });
   // Waddle is rostered; the bye-week and unmatched players are left out; the suffix ("Jr.") still matches.
   assert.deepEqual(players.map((p) => p.name), ["Tanner McKee", "Rico Dowdle", "Mike Williams", "Marvin Harrison Jr."]);
-  assert.equal(players[0].adds, 41000);
   assert.equal(players[2].id, "5"); // two Mike Williams at WR: the team decides
   assert.equal(players[2].posRank, 2); // WR rank among everyone projected (Waddle is WR 1)
   assert.equal(hidden, 0);

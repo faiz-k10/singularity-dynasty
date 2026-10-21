@@ -21,9 +21,7 @@ import {
   fetchSleeperLeagueUsers,
   fetchSleeperMatchups,
   fetchSleeperState,
-  fetchSleeperResearch,
   getSleeperPlayers,
-  fetchSleeperTrending,
 } from "@/lib/sleeper";
 import { fetchGameStates } from "@/lib/gameStatus";
 import { loadLivePlays } from "@/lib/playByPlay";
@@ -165,21 +163,14 @@ export async function lookupSleeperTeams(username, opts = {}) {
 
   const players = await getSleeperPlayers().catch(() => ({}));
 
-  // Platform-wide roster%/start% is the same for a given player
-  // regardless of which of the user's leagues we're looking at, so this
-  // is fetched once up front, not per-league. During preseason the
-  // upcoming regular season's week 1 is the only week with real research
-  // data yet (later weeks 404/return null) -- see fetchSleeperResearch.
   const state = await fetchSleeperState();
-  const researchWeek = state.season_type === "regular" ? state.week : 1;
   // Which week's head-to-head matchup to surface -- in-season, Sleeper's
   // own display_week (the week its app is showing, which rolls to the
   // next matchup once the current week's games finish), falling back to
   // the raw week; else week 1 (the upcoming opener), same preseason
-  // fallback as researchWeek above.
+  // fallback (week 1, the upcoming opener).
   const matchupWeek =
     state.season_type === "regular" ? state.display_week || state.week || 1 : 1;
-  const research = await fetchSleeperResearch(season, researchWeek);
 
   // Our own model's week 1 projection, alongside Sleeper's -- same
   // redraft_rankings table /tools/redraft-rankings reads from (public
@@ -380,7 +371,6 @@ export async function lookupSleeperTeams(username, opts = {}) {
 
       const rosterPlayers = (myRoster.players || []).map((playerId) => {
         const p = players[playerId];
-        const r = research[playerId];
         const name = p ? `${p.first_name || ""} ${p.last_name || ""}`.trim() || playerId : playerId;
         const normName = normalizeName(name);
         const myProjPts = myProjByName[normName] ?? null;
@@ -410,8 +400,6 @@ export async function lookupSleeperTeams(username, opts = {}) {
           // This week's weekly range (the lineup optimizer's ceiling / floor tilt, lib/lineupOptimizer.js).
           myFloor: wk?.floor ?? null,
           myCeiling: wk?.ceiling ?? null,
-          rosterPct: typeof r?.owned === "number" ? r.owned : null,
-          startPct: typeof r?.started === "number" ? r.started : null,
         };
       });
 
@@ -591,7 +579,7 @@ export async function getLivePlays(players) {
 }
 
 // "Best available" for one saved league (app/my-team/WaiverWire.js): QB / RB / WR / TE on no roster in that league,
-// ranked by this week's projection, with Sleeper's trending-add counts (lib/waivers.js). Depth follows the weekly
+// ranked by this week's projection, (lib/waivers.js). Depth follows the weekly
 // rankings gate: Explorer and up see everyone; free accounts see available players inside the free top 50 plus a
 // count of the rest. Read fresh from Sleeper each time the panel opens; nothing is stored.
 let waiverIdx = { dict: null, idx: null };
@@ -607,18 +595,17 @@ export async function getWaiverWire(teamId) {
     .eq("platform", "sleeper")
     .maybeSingle();
   if (!row?.platform_league_id) return { error: "League not found." };
-  const [rosters, dict, week, trending] = await Promise.all([
+  const [rosters, dict, week] = await Promise.all([
     fetchSleeperRosters(row.platform_league_id).catch(() => null),
     getSleeperPlayers().catch(() => null),
     getWeekRankRows(supabase, new Date().getFullYear()),
-    fetchSleeperTrending().catch(() => []),
   ]);
   if (!rosters?.length || !dict) return { error: "Couldn't read this league from Sleeper right now." };
   if (waiverIdx.dict !== dict) waiverIdx = { dict, idx: sleeperIndex(dict) };
   const rostered = new Set();
   for (const r of rosters) for (const id of [...(r.players || []), ...(r.reserve || []), ...(r.taxi || [])]) rostered.add(String(id));
   const full = tier === "explorer" || tier === "singularity";
-  const { players, hidden } = buildWaiverList({ rows: week.rows, rostered, idx: waiverIdx.idx, trending, maxRank: full ? Infinity : 50 });
+  const { players, hidden } = buildWaiverList({ rows: week.rows, rostered, idx: waiverIdx.idx, maxRank: full ? Infinity : 50 });
   return { players, hidden, full, week: week.week };
 }
 

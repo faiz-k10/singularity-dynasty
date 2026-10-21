@@ -33,8 +33,7 @@ function sleeperIdFor(row, idx) {
 // [{ player_id, count }] from Sleeper. maxRank: the viewer's weekly-rankings depth (50 for free accounts, so this
 // shows nothing the rankings page itself doesn't). Returns { players, hidden } -- hidden = available players past
 // maxRank, for the upgrade line.
-export function buildWaiverList({ rows, rostered, idx, trending = [], maxRank = Infinity, perPosition = PER_POSITION }) {
-  const adds = new Map(trending.map((t) => [String(t.player_id), t.count]));
+export function buildWaiverList({ rows, rostered, idx, maxRank = Infinity, perPosition = PER_POSITION }) {
   // Position rank among everyone we project, so "WR 34" means the same as on Weekly Projection Rankings.
   const byPos = {};
   for (const r of rows || []) if (WAIVER_POSITIONS.includes(r.position)) (byPos[r.position] ||= []).push(r);
@@ -65,7 +64,6 @@ export function buildWaiverList({ rows, rostered, idx, trending = [], maxRank = 
       ceiling: r.ceiling == null ? null : Number(r.ceiling),
       rank: r.rank,
       posRank: posRank.get(r) ?? null,
-      adds: adds.get(id) || 0,
     });
   }
   out.sort((a, b) => b.proj - a.proj || a.rank - b.rank);

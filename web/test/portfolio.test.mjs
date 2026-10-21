@@ -59,7 +59,7 @@ const projP = (id, name, pos, extra) => ({
   player_id: id, name, position: pos, team: "X", isStarter: true, ...extra,
 });
 const withProj = [
-  team("A", [projP("1", "Josh Allen", "QB", { myProjPts: 22.5, sleeperProjPts: 21, diffProj: 1.5, startPct: 99, rosterPct: 100 })], 100),
+  team("A", [projP("1", "Josh Allen", "QB", { myProjPts: 22.5 })], 100),
   team("B", [projP("1", "Josh Allen", "QB", { myProjPts: 22.5 })], 100),
 ];
 const sims = { "josh allen": { floor: 260, median: 340, ceiling: 420, wopr: 0, epa: 8.4 } };
@@ -67,7 +67,6 @@ const sims = { "josh allen": { floor: 260, median: 340, ceiling: 420, wopr: 0, e
 test("buildPortfolio: snapshot projection fields + sim merge", () => {
   const enriched = buildPortfolio(withProj, {}, sims).rows[0];
   assert.equal(enriched.myProjPts, 22.5, "first non-null wins");
-  assert.equal(enriched.startPct, 99, "carried from team A");
   assert.equal(enriched.simCeiling, 420);
   assert.equal(enriched.epa, 8.4);
 

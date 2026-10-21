@@ -9,10 +9,9 @@ import { getWaiverWire } from "./actions";
 const POSITIONS = ["All", "QB", "RB", "WR", "TE"];
 const SHOWN = 10;
 const fmt1 = (v) => (v == null ? "—" : v.toFixed(1));
-const adds = (n) => (n >= 1000 ? `${(n / 1000).toFixed(n >= 10000 ? 0 : 1)}k` : String(n));
 
 // "Best available" under a league's standings: the QB / RB / WR / TE on no roster in that league, ranked by this week's
-// projection (lib/waivers.js via getWaiverWire), with a position filter and Sleeper's trending adds. Loaded when the
+// projection (lib/waivers.js via getWaiverWire), with a position filter. Loaded when the
 // league is opened; free accounts see the available players inside the free top 50 and a count of the rest.
 export default function WaiverWire({ teamId, bare = false }) {
   const [state, setState] = useState({ teamId: null, data: null });
@@ -62,7 +61,6 @@ export default function WaiverWire({ teamId, bare = false }) {
                 <th title="Our median projection this week">Proj</th>
                 <th title="Weekly floor to ceiling">Range</th>
                 <th title="Rank at his position in this week's projections">Pos rank</th>
-                <th title="Times added on Sleeper in the last 24 hours">Trending</th>
               </tr>
             </thead>
             <tbody>
@@ -80,7 +78,6 @@ export default function WaiverWire({ teamId, bare = false }) {
                   <td className="mono waivers-proj">{fmt1(p.proj)}</td>
                   <td className="mono waivers-dim">{p.floor != null && p.ceiling != null ? `${fmt1(p.floor)}–${fmt1(p.ceiling)}` : "—"}</td>
                   <td className="mono">{p.posRank ? `${p.pos} ${p.posRank}` : "—"}</td>
-                  <td className="mono">{p.adds > 0 ? <span className="waivers-trend">▲ {adds(p.adds)}</span> : <span className="waivers-dim">—</span>}</td>
                 </tr>
               ))}
             </tbody>

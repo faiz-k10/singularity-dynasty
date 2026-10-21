@@ -7,7 +7,7 @@
 //
 // savedTeams: saved_teams rows (settings.h2h.mine / .opp = { id, slot, name, pos, team, proj, floor, ceiling, pts, out }).
 // gameStates: lib/gameStatus.js (team -> { state: "pre" | "in" | "post" }).
-// waivers: { [teamId]: [{ name, pos, team, proj, adds }] } best available per league, optional.
+// waivers: { [teamId]: [{ name, pos, team, proj }] } best available per league, optional.
 
 import { lineupAdvice } from "./lineupOptimizer.js";
 
@@ -277,7 +277,7 @@ function waiverCards(ls, waivers) {
       label: "Best on the wire",
       tone: "mine",
       title: `Add ${best.w.name} in ${l.name}`,
-      body: `Projected ${r1(best.w.proj)}, ${r1(best.gain)} more than ${best.weakest.name} (${r1(best.weakest.proj)}), your lowest ${best.w.pos} starter.${best.w.adds > 500 ? ` Trending: added ${best.w.adds >= 1000 ? `${Math.round(best.w.adds / 1000)}k` : best.w.adds} times in 24 hours.` : ""}`,
+      body: `Projected ${r1(best.w.proj)}, ${r1(best.gain)} more than ${best.weakest.name} (${r1(best.weakest.proj)}), your lowest ${best.w.pos} starter.`,
       player: chip(best.w),
       league: l.name,
       priority: 58 + Math.min(10, Math.round(best.gain)),

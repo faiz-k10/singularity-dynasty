@@ -54,31 +54,8 @@ export async function fetchSleeperMatchups(leagueId, week) {
 // preseason, only week 1's regular-season research is populated yet).
 // Sleeper's most-added players over the last 24 hours ([{ player_id, count }]), for My Team's "Best available"
 // panel. Cached 30 minutes in module memory -- it moves slowly and is the same for everyone.
-let trendingCache = null;
-let trendingAt = 0;
-export async function fetchSleeperTrending() {
-  if (trendingCache && Date.now() - trendingAt < 30 * 60 * 1000) return trendingCache;
-  const data = await sleeperGet(`/players/nfl/trending/add?lookback_hours=24&limit=200`);
-  if (Array.isArray(data)) {
-    trendingCache = data;
-    trendingAt = Date.now();
-  }
-  return trendingCache || [];
-}
-
 export async function fetchSleeperState() {
   return (await sleeperGet(`/state/nfl`)) || {};
-}
-
-// Platform-wide roster%/start% for every player, for one week -- real
-// Sleeper research data (confirmed live: {"11533":{"owned":99.1,
-// "started":98.0}, ...}), not something this codebase computes. Small
-// (~30KB) unlike the player dictionary, so fetched fresh each lookup
-// rather than cached. A week with no data yet (e.g. asking for regular
-// season week 3 while still in preseason) returns null, not an error.
-export async function fetchSleeperResearch(season, week) {
-  const data = await sleeperGet(`/players/nfl/research/regular/${season}/${week}`, SLEEPER_ROOT);
-  return data || {};
 }
 
 // The full NFL player dictionary is ~16MB of raw JSON (thousands of
