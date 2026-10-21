@@ -18,8 +18,6 @@ function bestIndexes(values, best = "high") {
   return new Set(values.map((v, i) => (v === target ? i : -1)).filter((i) => i >= 0));
 }
 
-const photoUrl = (id) => (id ? `https://sleepercdn.com/content/nfl/players/thumb/${id}.jpg` : "");
-
 function SimRow({ r, players }) {
   return (
     <tr>
@@ -82,9 +80,9 @@ export default function CompareSims({ players, maxCeiling }) {
               {players.map((p) => (
                 <th key={p.player_name}>
                   <span className="compare-sims-head">
-                    {p.sleeperId && (
+                    {p.headshot && (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img className="compare-sims-photo" src={photoUrl(p.sleeperId)} alt="" />
+                      <img className="compare-sims-photo" src={p.headshot} alt="" />
                     )}
                     {p.player_name}
                   </span>

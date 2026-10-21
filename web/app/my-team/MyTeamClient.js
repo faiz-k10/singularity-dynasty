@@ -400,18 +400,19 @@ function PlayerProfileCard({ row, bio, xMetric, yMetric }) {
   return (
     <div className="my-analysis-profile">
       <div className="my-analysis-profile-head">
-        {/* Sleeper's own headshot CDN, keyed by the Sleeper player id.
-            Hidden on 404 (not every player has one). */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          key={row.player_id}
-          className="my-analysis-profile-photo"
-          src={`https://sleepercdn.com/content/nfl/players/thumb/${row.player_id}.jpg`}
-          alt=""
-          onError={(e) => {
-            e.currentTarget.style.display = "none";
-          }}
-        />
+        {/* Headshot link from our own player directory (lib/sleeper.js); hidden on 404 (not every player has one). */}
+        {b.headshot && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            key={row.player_id}
+            className="my-analysis-profile-photo"
+            src={b.headshot}
+            alt=""
+            onError={(e) => {
+              e.currentTarget.style.display = "none";
+            }}
+          />
+        )}
         <div className="my-analysis-profile-headtext">
           <span className="my-analysis-profile-name">{row.name}</span>
           <div className="my-analysis-profile-badges">

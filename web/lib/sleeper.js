@@ -5,14 +5,13 @@
 // roadmap in CLAUDE.md).
 import { unstable_cache } from "next/cache";
 import { normalizePlayerName } from "./portfolio";
+import { createPublicClient } from "./supabase/public";
+import { fetchAllRows } from "./fetchAllRows";
 
 const SLEEPER_BASE = "https://api.sleeper.app/v1";
-// The ownership-research endpoint below lives outside /v1 for whatever
-// reason on Sleeper's end -- confirmed by hand, not just assumed.
-const SLEEPER_ROOT = "https://api.sleeper.app";
 
-async function sleeperGet(path, root = SLEEPER_BASE) {
-  const res = await fetch(`${root}${path}`, { cache: "no-store" });
+async function sleeperGet(path) {
+  const res = await fetch(`${SLEEPER_BASE}${path}`, { cache: "no-store" });
   if (!res.ok) return null;
   return res.json();
 }
@@ -58,33 +57,30 @@ export async function fetchSleeperState() {
   return (await sleeperGet(`/state/nfl`)) || {};
 }
 
-// The full NFL player dictionary is ~16MB of raw JSON (thousands of
-// players, every field Sleeper tracks per player) -- Sleeper's own docs
-// ask integrators not to hit this more than once a day since it barely
-// changes, so it's cached rather than fetched fresh per request. Can't
-// use unstable_cache for this one like the rest of the codebase does
-// (e.g. player-simulations/page.js) -- Next's data cache hard-rejects
-// any single entry over 2MB, which this blows past by 8x even before
-// trimming. A plain module-level cache has no such ceiling, at the cost
-// of being per-server-instance rather than shared/persistent -- a cold
-// serverless instance just re-fetches once, which is still far better
-// than the request failing outright. Only the fields actually used are
-// kept -- name parts / position / team for the roster view, plus the
-// basic demographics (jersey, height, weight, age, birth date,
-// experience, college, status) the My Analysis player card shows --
-// still a tiny fraction of every raw Sleeper field for every player.
+// The player list (names, positions, teams, bios, headshot links) used to be Sleeper's 16MB /players/nfl dictionary. It now comes
+// from our own player_directory table (migration 0039; model/player_directory.R -> scripts/publish-player-directory.mjs, built from
+// nflverse and keyed by the Sleeper id My Team's rosters use), so the only thing we read from Sleeper is a user's own leagues. Same
+// shape as before, so every caller is unchanged: { [sleeperId]: { first_name, last_name, position, team, number, height, weight,
+// age, birth_date, years_exp, college, status, headshot } }. A player missing from the directory (a deep practice-squad name the
+// nflverse crosswalk doesn't have yet) is simply unknown to the site until the next weekly publish. Cached per server instance
+// for 6 hours; the table is public read.
 let cachedPlayers = null;
 let cachedAt = 0;
-const PLAYERS_CACHE_MS = 24 * 60 * 60 * 1000;
+const PLAYERS_CACHE_MS = 6 * 60 * 60 * 1000;
 
 export async function getSleeperPlayers() {
   if (cachedPlayers && Date.now() - cachedAt < PLAYERS_CACHE_MS) {
     return cachedPlayers;
   }
-  const data = await sleeperGet(`/players/nfl`);
+  const rows = await fetchAllRows(
+    createPublicClient(),
+    "player_directory",
+    "sleeper_id, first_name, last_name, position, team, number, height, weight, age, birth_date, years_exp, college, status, headshot_url",
+    (q) => q.order("sleeper_id", { ascending: true })
+  );
   const trimmed = {};
-  for (const [id, p] of Object.entries(data || {})) {
-    trimmed[id] = {
+  for (const p of rows) {
+    trimmed[p.sleeper_id] = {
       first_name: p.first_name,
       last_name: p.last_name,
       position: p.position,
@@ -92,21 +88,22 @@ export async function getSleeperPlayers() {
       number: p.number ?? null,
       height: p.height ?? null,
       weight: p.weight ?? null,
-      age: typeof p.age === "number" ? p.age : null,
+      age: typeof p.age === "number" ? p.age : p.age != null ? Number(p.age) : null,
       birth_date: p.birth_date ?? null,
-      years_exp: typeof p.years_exp === "number" ? p.years_exp : null,
+      years_exp: p.years_exp ?? null,
       college: p.college ?? null,
       status: p.status ?? null,
+      headshot: p.headshot_url ?? null,
     };
   }
-  // A failed download (Sleeper returned nothing) must not be remembered for a day as "no players".
-  if (!Object.keys(trimmed).length) throw new Error("Sleeper player dictionary unavailable");
+  // A failed read (or an unpublished table) must not be remembered as "no players".
+  if (!Object.keys(trimmed).length) throw new Error("Player directory unavailable");
   cachedPlayers = trimmed;
   cachedAt = Date.now();
   return cachedPlayers;
 }
 
-// Height/weight + Sleeper's own headshot id, keyed by normalized name +
+// Height/weight + the headshot link, keyed by normalized name +
 // POSITION rather than name alone -- name collisions are real (confirmed
 // live: Lamar Jackson the Ravens QB and Lamar Jackson a DB are both in
 // Sleeper's dict), and a name-only key just has the second one processed
@@ -127,12 +124,12 @@ const cachedBiosByNamePos = unstable_cache(
     for (const [id, p] of Object.entries(dict)) {
       const name = normalizePlayerName(`${p.first_name || ""} ${p.last_name || ""}`);
       if (!name || !p.position) continue;
-      byNamePos[`${name}|${p.position}`] = { sleeperId: id, height: p.height ?? null, weight: p.weight ?? null, yearsExp: p.years_exp ?? null };
+      byNamePos[`${name}|${p.position}`] = { sleeperId: id, headshot: p.headshot ?? null, height: p.height ?? null, weight: p.weight ?? null, yearsExp: p.years_exp ?? null };
     }
     if (!Object.keys(byNamePos).length) throw new Error("Sleeper player dictionary unavailable"); // never cache an empty answer
     return byNamePos;
   },
-  ["sleeper-bios-by-name-pos-v1"],
+  ["sleeper-bios-by-name-pos-v3"],
   { revalidate: 86400 }
 );
 

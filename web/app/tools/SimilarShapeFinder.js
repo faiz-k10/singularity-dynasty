@@ -318,12 +318,12 @@ export default function SimilarShapeFinder({
                 </div>
                 <div className="shape-finder-score">
                   <div className="stat-radar-label">Match</div>
-                  {p.sleeperId &&
+                  {p.headshot &&
                     (() => {
                       const portrait = (
                         <img
                           className="shape-finder-portrait"
-                          src={`https://sleepercdn.com/content/nfl/players/thumb/${p.sleeperId}.jpg`}
+                          src={p.headshot}
                           alt=""
                           loading="lazy"
                         />

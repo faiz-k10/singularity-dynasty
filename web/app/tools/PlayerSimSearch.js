@@ -234,11 +234,11 @@ function StatDetailRow({ row, colSpan, shapePeers, wrTePool, tagsByName, maxCeil
             <div className="stat-panel stat-panel-pace">
               <div className="stat-panel-pace-top">
                 <div className="stat-panel-pace-info">
-                  {pv.sleeperId && (
+                  {pv.headshot && (
                     <div className="stat-panel-pace-portrait-slot">
                       <img
                         className="stat-panel-pace-portrait"
-                        src={`https://sleepercdn.com/content/nfl/players/thumb/${pv.sleeperId}.jpg`}
+                        src={pv.headshot}
                         alt=""
                         loading="lazy"
                       />
@@ -781,7 +781,7 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
         name: row.player_name,
         position: row.position,
         positionRank: row.positionRank ?? null,
-        sleeperId: row.sleeperId ?? null,
+        headshot: row.headshot ?? null,
         statPercentiles: row.statPercentiles,
         statFloorPercentiles: row.statFloorPercentiles,
         statCeilingPercentiles: row.statCeilingPercentiles,

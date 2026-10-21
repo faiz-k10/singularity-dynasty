@@ -583,9 +583,9 @@ export function PlayerHeaderPanel({ row }) {
       <div className="weekly-player-id">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          key={bio.sleeperId || row.player_name}
+          key={bio.headshot || row.player_name}
           className="weekly-player-photo"
-          src={bio.sleeperId ? `https://sleepercdn.com/content/nfl/players/thumb/${bio.sleeperId}.jpg` : ""}
+          src={bio.headshot || ""}
           alt=""
           onError={(e) => {
             e.currentTarget.style.display = "none";

@@ -173,7 +173,7 @@ export function buildPeersByWeek(ctx, visibleNames, bioByNamePos) {
         name: r.player_name,
         position: r.position,
         positionRank: ctx.rankByWeek[wk]?.[r.player_name] ?? null,
-        sleeperId: bioByNamePos[`${normalizePlayerName(r.player_name)}|${r.position}`]?.sleeperId || null,
+        headshot: bioByNamePos[`${normalizePlayerName(r.player_name)}|${r.position}`]?.headshot || null,
         ...ctx.percByWeek[wk][r.player_name],
         stat_ranges: r.stat_ranges,
       });

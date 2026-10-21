@@ -11,6 +11,7 @@
 //              then (never fatal) model/player_archetypes.R -> publish-player-archetypes.mjs
 //              then (never fatal) model/player_groups.R -> publish-player-groups.mjs
 //              then (never fatal) model/defense_impact.R -> publish-defense-leans.mjs  (matchup flags, display only)
+//              then (never fatal) model/player_directory.R -> publish-player-directory.mjs  (names, teams, bios, headshots; Sleeper ids)
 //
 // Exits non-zero (and prints why) when a check fails, so a scheduled run can
 // report it instead of silently publishing something wrong.
@@ -118,6 +119,11 @@ async function projections() {
   } catch (e) {
     log(`SKIPPED: defense leans threw -- ${e.message}`);
   }
+  try {
+    playerDirectory();
+  } catch (e) {
+    log(`SKIPPED: player directory threw -- ${e.message}`);
+  }
   return { week: after.week };
 }
 
@@ -130,6 +136,17 @@ function defenseLeans() {
   const p = spawnSync(process.execPath, ["--env-file=.env.local", "scripts/publish-defense-leans.mjs"], { cwd: WEB, encoding: "utf8" });
   const tail = ((p.stdout || "") + (p.stderr || "")).trim().split("\n").slice(-4).join("\n");
   log(p.status === 0 ? tail : `SKIPPED: defense leans publish failed (exit ${p.status}) -- ${tail}`);
+}
+
+// The site's own player list (replaces Sleeper's dictionary): rosters, teams and statuses change every week, so it is refreshed with
+// the projections. Never fatal -- the last published directory stays in place.
+function playerDirectory() {
+  log("\n--- Player directory (optional) ---");
+  const r = spawnSync("Rscript", ["player_directory.R"], { cwd: MODEL, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
+  if (r.status !== 0) return log(`SKIPPED: player directory failed -- ${(r.stderr || "").trim().split("\n").slice(-3).join(" ")}`);
+  const p = spawnSync(process.execPath, ["--env-file=.env.local", "scripts/publish-player-directory.mjs"], { cwd: WEB, encoding: "utf8" });
+  const tail = ((p.stdout || "") + (p.stderr || "")).trim().split("\n").slice(-3).join("\n");
+  log(p.status === 0 ? tail : `SKIPPED: player directory publish failed (exit ${p.status}) -- ${tail}`);
 }
 
 // Extra groupings (sustainability, career stage) -- same never-fatal treatment as archetypes below.
