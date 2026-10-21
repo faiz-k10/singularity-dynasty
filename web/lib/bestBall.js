@@ -3,7 +3,7 @@
 // player's points so far, which is also what a best-ball week is finally scored on. Pure, tested in test/bestBall.test.mjs.
 
 // Which positions can fill each lineup slot (Sleeper's roster_positions names). Slots we don't know (IDP and the like) are skipped.
-const ELIGIBLE = {
+export const ELIGIBLE = {
   QB: ["QB"],
   RB: ["RB"],
   WR: ["WR"],
@@ -17,7 +17,7 @@ const ELIGIBLE = {
 };
 // Fill the most restrictive slots first, each with the best player left who can play it (the usual lineups -- fixed positions, then
 // FLEX, then SUPER_FLEX -- come out optimal this way).
-const FILL_ORDER = ["QB", "RB", "WR", "TE", "K", "DEF", "WRRB_FLEX", "REC_FLEX", "FLEX", "SUPER_FLEX"];
+export const FILL_ORDER = ["QB", "RB", "WR", "TE", "K", "DEF", "WRRB_FLEX", "REC_FLEX", "FLEX", "SUPER_FLEX"];
 
 // points: { sleeperPlayerId: pointsSoFar } (a matchup entry's players_points); posOf(id) -> "QB" | "RB" | ... | undefined;
 // slots: the league's non-bench roster_positions. Returns { total, picks: [{ id, slot, pts }] }.

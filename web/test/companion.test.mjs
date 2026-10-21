@@ -91,3 +91,16 @@ test("since-last-week cards, injury report and standings", () => {
   assert.match(cards.find((c) => c.id === "injuries").body, /Hurt \(Doubtful\)/);
   assert.match(cards.find((c) => c.id === "standings").title, /2nd of 3/);
 });
+
+test("lineup upgrade card names the swap and the gain", () => {
+  const P2 = (id, name, pos, team, proj, x = {}) => ({ player_id: id, name, position: pos, team, myProjPts: proj, isStarter: false, slotIndex: 999, ...x });
+  const t = {
+    id: "a",
+    league_name: "L",
+    settings: { slots: ["RB", "FLEX"], h2h: { mine: [], opp: [] } },
+    players: [P2("1", "Starter", "RB", "SF", 12, { isStarter: true, slotIndex: 0 }), P2("2", "Weak", "WR", "DAL", 4, { isStarter: true, slotIndex: 1 }), P2("3", "Bench", "WR", "KC", 11)],
+  };
+  const c = buildInsights({ savedTeams: [t], gameStates: { SF: { state: "pre" }, DAL: { state: "pre" }, KC: { state: "pre" } } }).cards.find((x) => x.kind === "lineup");
+  assert.match(c.title, /Start Bench over Weak/);
+  assert.match(c.body, /7\.0 more/);
+});

@@ -9,6 +9,8 @@
 // gameStates: lib/gameStatus.js (team -> { state: "pre" | "in" | "post" }).
 // waivers: { [teamId]: [{ name, pos, team, proj, adds }] } best available per league, optional.
 
+import { lineupAdvice } from "./lineupOptimizer.js";
+
 const r1 = (v) => (Math.round(v * 10) / 10).toFixed(1);
 const sgn = (v) => `${v >= 0 ? "+" : "−"}${r1(Math.abs(v))}`;
 const num = (v) => (typeof v === "number" && Number.isFinite(v) ? v : null);
@@ -58,6 +60,46 @@ function leagues(savedTeams, gameStates) {
     });
   }
   return out;
+}
+
+
+// Lineup upgrades: the biggest projection gain per league from the optimizer (lib/lineupOptimizer.js), and the ceiling / floor tilt
+// when the win chance is lopsided. Only while someone in the lineup can still move.
+function lineupCards(savedTeams, gameStates) {
+  const cards = [];
+  for (const t of savedTeams || []) {
+    const a = lineupAdvice(t, gameStates);
+    if (!a || !a.swaps.length) continue;
+    const top = a.swaps[0];
+    if (a.gain >= 1) {
+      cards.push({
+        id: `lineup:${t.id}`,
+        kind: "lineup",
+        label: "Lineup upgrade",
+        tone: "mine",
+        title: `Start ${top.in.name}${top.out ? ` over ${top.out.name}` : ""} in ${leagueOf(t)}`,
+        body: `Your best lineup projects ${r1(a.best)}, ${r1(a.gain)} more than the one set now${a.swaps.length > 1 ? `, across ${a.swaps.length} changes` : ""}. ${top.in.name} is ${r1(top.in.myProjPts)}${top.out ? `, ${top.out.name} ${r1(top.out.myProjPts)}` : ""}.`,
+        player: chip({ name: top.in.name, pos: top.in.position, team: top.in.team }),
+        league: leagueOf(t),
+        priority: 92 + Math.min(5, Math.round(a.gain / 3)),
+      });
+    }
+    if (a.tilt) {
+      const x = a.tilt.swaps[0];
+      cards.push({
+        id: `tilt:${t.id}`,
+        kind: "lineup",
+        label: a.tilt.mode === "ceiling" ? "Swing for the ceiling" : "Protect the floor",
+        tone: a.tilt.mode === "ceiling" ? "theirs" : "mine",
+        title: `${a.tilt.mode === "ceiling" ? "Underdog" : "Favorite"} in ${leagueOf(t)}: start ${x.in.name}${x.out ? ` over ${x.out.name}` : ""}`,
+        body: `At ${Math.round(a.tilt.win * 100)}% to win, this adds ${r1(a.tilt.gain)} to your ${a.tilt.mode} and moves your projection ${a.tilt.medianChange >= 0 ? "+" : "−"}${r1(Math.abs(a.tilt.medianChange))}.`,
+        player: chip({ name: x.in.name, pos: x.in.position, team: x.in.team }),
+        league: leagueOf(t),
+        priority: 78,
+      });
+    }
+  }
+  return cards.sort((a, b) => b.priority - a.priority).slice(0, 4);
 }
 
 // ---- before and during games ------------------------------------------------------------------------------------------------
@@ -569,6 +611,7 @@ export function buildInsights({ savedTeams, gameStates, waivers = null, injuries
   const cards = [];
   const add = (c) => (Array.isArray(c) ? cards.push(...c) : c && cards.push(c));
   add(holes(ls));
+  add(lineupCards(savedTeams, gameStates));
   add(outlook(ls));
   add(swings(ls));
   add(threats(ls));

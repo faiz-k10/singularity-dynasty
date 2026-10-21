@@ -384,6 +384,7 @@ export async function lookupSleeperTeams(username, opts = {}) {
         const name = p ? `${p.first_name || ""} ${p.last_name || ""}`.trim() || playerId : playerId;
         const normName = normalizeName(name);
         const myProjPts = myProjByName[normName] ?? null;
+        const wk = weekProj.byName[normName];
         const achievements = getAchievements(
           buildAchievementRow(normName, p?.position || null, {
             recentGamesByName: recentGamesByNormName,
@@ -406,6 +407,9 @@ export async function lookupSleeperTeams(username, opts = {}) {
           // Sleeper's actual lineup order instead of an arbitrary one.
           slotIndex: slotIndexByPlayerId[playerId] ?? 999,
           myProjPts,
+          // This week's weekly range (the lineup optimizer's ceiling / floor tilt, lib/lineupOptimizer.js).
+          myFloor: wk?.floor ?? null,
+          myCeiling: wk?.ceiling ?? null,
           rosterPct: typeof r?.owned === "number" ? r.owned : null,
           startPct: typeof r?.started === "number" ? r.started : null,
         };

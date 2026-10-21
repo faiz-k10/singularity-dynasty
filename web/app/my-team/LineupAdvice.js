@@ -1,0 +1,98 @@
+"use client";
+
+import { useMemo } from "react";
+import PositionBadge from "../tools/PositionBadge";
+import TeamBadge from "../tools/TeamBadge";
+import { lineupAdvice } from "@/lib/lineupOptimizer";
+
+const fmt1 = (v) => (v == null ? "—" : v.toFixed(1));
+const slotName = (s) => (s === "SUPER_FLEX" ? "SUPERFLEX" : s);
+
+function Who({ p }) {
+  return (
+    <span className="lu-who">
+      <PositionBadge position={p.position} />
+      {p.team && <TeamBadge team={p.team} />}
+      <span className="lu-name">{p.name}</span>
+    </span>
+  );
+}
+
+function SwapList({ swaps, moves, key1 = "myProjPts" }) {
+  return (
+    <>
+      <ul className="lu-swaps">
+        {swaps.map((x) => (
+          <li key={x.in.player_id} className="lu-swap">
+            <span className="lu-verb mono">Start</span>
+            <Who p={x.in} />
+            <span className="lu-pts mono">{fmt1(x.in[key1])}</span>
+            {x.out && (
+              <>
+                <span className="lu-verb mono">over</span>
+                <Who p={x.out} />
+                <span className="lu-pts mono">{fmt1(x.out[key1])}</span>
+              </>
+            )}
+            <span className="lu-gain mono">+{fmt1(x.gain)}</span>
+          </li>
+        ))}
+      </ul>
+      {moves.length > 0 && (
+        <p className="lu-moves mono">
+          Also move {moves.map((m) => `${m.player.name} from ${slotName(m.from)} to ${slotName(m.to)}`).join(", ")}.
+        </p>
+      )}
+    </>
+  );
+}
+
+// The "Lineup" tab of a league: the best starters from the roster by this week's projection, who to start over whom and what it
+// adds, plus (when the win chance is lopsided) a version that plays for the ceiling or the floor. lib/lineupOptimizer.js does the
+// work; players whose game has started are locked and left where they are.
+export default function LineupAdvice({ team, gameStates }) {
+  const advice = useMemo(() => lineupAdvice(team, gameStates), [team, gameStates]);
+  const url = team.platform_league_id ? `https://sleeper.com/leagues/${team.platform_league_id}/matchup` : null;
+  if (!advice) return <p className="h2h-note">No lineup to optimize for this league this week.</p>;
+  const better = advice.swaps.length > 0 && advice.gain >= 0.1;
+  const t = advice.tilt;
+  return (
+    <section className="standings lineup-advice" aria-label="Lineup optimizer">
+      <div className="standings-head">
+        <span className="standings-note mono">Best lineup by this week&apos;s projection · locked players stay put</span>
+      </div>
+      <div className="lu-summary">
+        <div className="lu-total">
+          <span className="lu-big">{better ? `+${fmt1(advice.gain)}` : "Set"}</span>
+          <span className="lu-cap mono">{better ? "projected points available" : "your lineup is already the best we project"}</span>
+        </div>
+        <div className="lu-line mono">
+          Now {fmt1(advice.current)} <span aria-hidden="true">→</span> best {fmt1(advice.best)}
+          {advice.lockedStarters > 0 && <span className="lu-locked"> · {advice.lockedStarters} locked</span>}
+        </div>
+      </div>
+      {better && <SwapList swaps={advice.swaps} moves={advice.moves} />}
+      {t && (
+        <div className={`lu-tilt is-${t.mode}`}>
+          <h4 className="lu-tilt-title mono">
+            {t.mode === "ceiling" ? `You're a ${Math.round(t.win * 100)}% underdog: swing for the ceiling` : `You're a ${Math.round(t.win * 100)}% favorite: protect the floor`}
+          </h4>
+          <p className="lu-tilt-body">
+            {t.mode === "ceiling"
+              ? `This version adds ${fmt1(t.gain)} to your ceiling lineup and moves your projection ${t.medianChange >= 0 ? "+" : "−"}${fmt1(Math.abs(t.medianChange))}. A bigger spread is what an underdog needs.`
+              : `This version adds ${fmt1(t.gain)} to your floor lineup and moves your projection ${t.medianChange >= 0 ? "+" : "−"}${fmt1(Math.abs(t.medianChange))}. A narrower spread is what a favorite wants.`}
+          </p>
+          <SwapList swaps={t.swaps} moves={t.moves} key1={t.mode === "ceiling" ? "myCeiling" : "myFloor"} />
+        </div>
+      )}
+      <div className="waivers-foot">
+        {url && (
+          <a className="h2h-sleeper mono" href={url} target="_blank" rel="noopener noreferrer">
+            Set it in Sleeper <span aria-hidden="true">↗</span>
+          </a>
+        )}
+        <span className="standings-note mono">K, DEF and IDP slots aren&apos;t optimized.</span>
+      </div>
+    </section>
+  );
+}

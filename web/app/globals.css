@@ -5746,3 +5746,27 @@ html{font-stretch:82%;}
 .cp-empty{padding:24px 18px; margin:0; font-size:14px; line-height:1.5; color:var(--star-dim);}
 @keyframes cp-in{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;}}
 @media (prefers-reduced-motion:reduce){ .cp-spotlight{animation:none;} }
+
+/* Lineup tab (LineupAdvice.js): a big gain figure, "Start X over Y" rows, an optional ceiling / floor tilt block. */
+.lineup-advice{margin:0;}
+.lu-summary{display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap:6px 18px; margin:6px 0 14px;}
+.lu-total{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap;}
+.lu-big{font-family:var(--font-display); font-weight:800; font-size:48px; line-height:1; letter-spacing:.02em; color:var(--horizon-gold);}
+.lu-cap{font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:var(--star-dim);}
+.lu-line{font-size:12.5px; color:var(--star);}
+.lu-locked{color:var(--star-dim);}
+.lu-swaps{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:6px;}
+.lu-swap{display:flex; flex-wrap:wrap; align-items:center; gap:8px 10px; padding:9px 12px; border:1px solid rgba(var(--star-dot-rgb),.12); background:rgba(var(--star-dot-rgb),.03); box-shadow:inset 3px 0 0 var(--horizon-gold);}
+.lu-verb{font-size:10.5px; text-transform:uppercase; letter-spacing:.1em; color:var(--star-dim);}
+.lu-who{display:inline-flex; align-items:center; gap:6px; min-width:0;}
+.lu-who .team-logo img{width:20px; height:20px;}
+.lu-name{font-size:14.5px; color:var(--star);}
+.lu-pts{font-size:12px; color:var(--star-dim);}
+.lu-gain{margin-left:auto; font-size:15px; font-weight:700; color:var(--horizon-gold);}
+.lu-moves{margin:8px 0 0; font-size:11.5px; color:var(--star-dim);}
+.lu-tilt{margin-top:16px; padding-top:12px; border-top:1px solid rgba(var(--star-dot-rgb),.1);}
+.lu-tilt-title{margin:0 0 4px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--neon-blue);}
+.lu-tilt.is-floor .lu-tilt-title{color:var(--horizon-gold);}
+.lu-tilt-body{margin:0 0 8px; font-size:13px; line-height:1.45; color:var(--star-dim);}
+.lu-tilt.is-ceiling .lu-swap{box-shadow:inset 3px 0 0 var(--neon-blue);}
+.lu-tilt.is-ceiling .lu-gain{color:var(--neon-blue);}

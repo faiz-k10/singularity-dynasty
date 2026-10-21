@@ -7,6 +7,7 @@ import TeamBadge from "../tools/TeamBadge";
 import { summarizeSide } from "@/lib/winChance";
 import Standings from "./Standings";
 import WaiverWire from "./WaiverWire";
+import LineupAdvice from "./LineupAdvice";
 import ScoreCurve from "./ScoreCurve";
 import { leadState } from "@/lib/leadState";
 import { adjustedMatchup } from "@/lib/adjustedMatchup";
@@ -143,12 +144,13 @@ function TeamScore({ name, record, score, proj, left, state = null, opp = false 
   );
 }
 
-// The views a league opens on, as tabs: Matchup (this week's scoreboard + both lineups), Standings (with playoff odds,
+// The views a league opens on, as tabs: Matchup (this week's scoreboard + both lineups), Lineup (the optimizer), Standings (with playoff odds,
 // once a full refresh has gathered them) and Best available. The switch itself (PanelTabs) lives in the header of
 // whoever hosts the panel: the Sunday board's drawer, and the dashboard's opened row (which adds Roster).
 export const hasStandings = (team) => Boolean(team?.settings?.season?.standings?.length);
 export function leagueTabs(team) {
-  return [["matchup", "Matchup"], ...(hasStandings(team) ? [["standings", "Standings"]] : []), ["available", "Best available"]];
+  const lineup = !team?.settings?.bestBall && !team?.settings?.isBye && team?.settings?.slots?.length ? [["lineup", "Lineup"]] : [];
+  return [["matchup", "Matchup"], ...lineup, ...(hasStandings(team) ? [["standings", "Standings"]] : []), ["available", "Best available"]];
 }
 
 export function PanelTabs({ tabs, value, onChange }) {
@@ -174,6 +176,8 @@ export default function MatchupPanel({ team, gameStates, tab = "matchup", playTo
     <div className="h2h-wrap">
       {tab === "standings" && hasStandings(team) ? (
         <Standings season={s.season} opponent={s.isBye ? null : s.opponent} bare />
+      ) : tab === "lineup" ? (
+        <LineupAdvice team={team} gameStates={gameStates} />
       ) : tab === "available" ? (
         <WaiverWire teamId={team.id} bare />
       ) : (
