@@ -45,8 +45,8 @@ out <- data.frame(
   years_exp = suppressWarnings(as.integer(m$years_of_experience)),
   college = m$college_name,
   status = ifelse(st %in% names(status_label), status_label[st], "Inactive"),
-  # nfl.com's originals are multi-megabyte PNGs (3400px); ask its image server for a 240px version (~10KB).
-  headshot_url = sub("f_auto,q_auto", "f_auto,q_auto,w_240,c_limit", m$headshot, fixed = TRUE),
+  # Photos are Sleeper's own thumbnails, built from the Sleeper id on the site (lib/sleeper.js) -- the founder's call; nothing stored here.
+  headshot_url = NA_character_,
   stringsAsFactors = FALSE
 )
 out$last_name <- trimws(out$last_name)

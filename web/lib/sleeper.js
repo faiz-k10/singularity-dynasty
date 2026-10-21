@@ -64,6 +64,10 @@ export async function fetchSleeperState() {
 // age, birth_date, years_exp, college, status, headshot } }. A player missing from the directory (a deep practice-squad name the
 // nflverse crosswalk doesn't have yet) is simply unknown to the site until the next weekly publish. Cached per server instance
 // for 6 hours; the table is public read.
+// Photos are Sleeper's own thumbnails by Sleeper id (the founder's decision, Oct 20 2026; the NFL's rights in the images are a question for
+// the attorney, see CLAUDE.md).
+const sleeperPhoto = (id) => `https://sleepercdn.com/content/nfl/players/thumb/${id}.jpg`;
+
 let cachedPlayers = null;
 let cachedAt = 0;
 const PLAYERS_CACHE_MS = 6 * 60 * 60 * 1000;
@@ -75,7 +79,7 @@ export async function getSleeperPlayers() {
   const rows = await fetchAllRows(
     createPublicClient(),
     "player_directory",
-    "sleeper_id, first_name, last_name, position, team, number, height, weight, age, birth_date, years_exp, college, status, headshot_url",
+    "sleeper_id, first_name, last_name, position, team, number, height, weight, age, birth_date, years_exp, college, status",
     (q) => q.order("sleeper_id", { ascending: true })
   );
   const trimmed = {};
@@ -93,7 +97,7 @@ export async function getSleeperPlayers() {
       years_exp: p.years_exp ?? null,
       college: p.college ?? null,
       status: p.status ?? null,
-      headshot: p.headshot_url ?? null,
+      headshot: p.position === "DEF" ? null : sleeperPhoto(p.sleeper_id),
     };
   }
   // A failed read (or an unpublished table) must not be remembered as "no players".
@@ -129,7 +133,7 @@ const cachedBiosByNamePos = unstable_cache(
     if (!Object.keys(byNamePos).length) throw new Error("Sleeper player dictionary unavailable"); // never cache an empty answer
     return byNamePos;
   },
-  ["sleeper-bios-by-name-pos-v3"],
+  ["sleeper-bios-by-name-pos-v4"],
   { revalidate: 86400 }
 );
 
