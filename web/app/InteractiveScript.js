@@ -487,63 +487,6 @@ export default function InteractiveScript({ tickerItems } = {}) {
       );
     });
 
-    /* ---- pricing card tilt + spotlight ---- */
-    if (isFinePointer && !reducedMotion) {
-      document.querySelectorAll(".round-card").forEach((card) => {
-        card.addEventListener(
-          "mousemove",
-          (e) => {
-            const rect = card.getBoundingClientRect();
-            const px = (e.clientX - rect.left) / rect.width;
-            const py = (e.clientY - rect.top) / rect.height;
-            const rx = (py - 0.5) * -7;
-            const ry = (px - 0.5) * 7;
-            card.style.setProperty("--mx", px * 100 + "%");
-            card.style.setProperty("--my", py * 100 + "%");
-            card.style.transform = `perspective(800px) rotateX(${rx}deg) rotateY(${ry}deg)`;
-          },
-          { signal }
-        );
-        card.addEventListener(
-          "mouseleave",
-          () => {
-            card.style.transform = "";
-            card.style.removeProperty("--mx");
-            card.style.removeProperty("--my");
-          },
-          { signal }
-        );
-      });
-    }
-
-    /* ---- magnetic buttons ---- */
-    function magnetize(el, strength) {
-      el.addEventListener(
-        "mousemove",
-        (e) => {
-          const r = el.getBoundingClientRect();
-          const x = e.clientX - r.left - r.width / 2;
-          const y = e.clientY - r.top - r.height / 2;
-          el.style.transform = `translate(${(x / r.width) * strength}px,${
-            (y / r.height) * strength
-          }px)`;
-        },
-        { signal }
-      );
-      el.addEventListener(
-        "mouseleave",
-        () => {
-          el.style.transform = "";
-        },
-        { signal }
-      );
-    }
-    if (isFinePointer && !reducedMotion) {
-      document
-        .querySelectorAll(".btn-primary, .btn-ghost")
-        .forEach((el) => magnetize(el, 10));
-    }
-
     /* ---- starfield parallax ---- */
     if (isFinePointer && !reducedMotion) {
       document.addEventListener(
@@ -558,85 +501,12 @@ export default function InteractiveScript({ tickerItems } = {}) {
       );
     }
 
-    /* ---- click burst: small radial spark burst at any click point ---- */
-    function clickBurst(x, y) {
-      if (reducedMotion) return;
-      const wrap = document.createElement("div");
-      wrap.className = "click-burst";
-      wrap.style.transform = `translate(${x}px,${y}px)`;
-      for (let i = 0; i < 6; i++) {
-        const s = document.createElement("span");
-        s.style.setProperty("--a", i * 60 + "deg");
-        s.style.background =
-          i % 2 === 0 ? "var(--horizon-gold)" : "var(--neon-blue)";
-        wrap.appendChild(s);
-      }
-      document.body.appendChild(wrap);
-      setTimeout(() => wrap.remove(), 520);
-    }
-    document
-      .querySelectorAll(".btn-primary, .btn-ghost, .round-btn, .node, .orbit-dot")
-      .forEach((el) => {
-        el.addEventListener(
-          "click",
-          (e) => clickBurst(e.clientX, e.clientY),
-          { signal }
-        );
-      });
-
-    /* ---- draggable hero signal ring ---- */
-    const chipsLayer = document.getElementById("osChipsLayer");
-    if (chipsLayer) {
-      let dragging = false;
-      let startAngle = 0;
-      let currentRot = 0;
-      let startRot = 0;
-      function ringAngle(cx, cy, px, py) {
-        return (Math.atan2(py - cy, px - cx) * 180) / Math.PI;
-      }
-      function ringCenter() {
-        const r = chipsLayer.getBoundingClientRect();
-        return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
-      }
-      chipsLayer.addEventListener(
-        "pointerdown",
-        (e) => {
-          dragging = true;
-          chipsLayer.setPointerCapture(e.pointerId);
-          const c = ringCenter();
-          startAngle = ringAngle(c.x, c.y, e.clientX, e.clientY);
-          startRot = currentRot;
-        },
-        { signal }
-      );
-      chipsLayer.addEventListener(
-        "pointermove",
-        (e) => {
-          if (!dragging) return;
-          const c = ringCenter();
-          const ang = ringAngle(c.x, c.y, e.clientX, e.clientY);
-          currentRot = startRot + (ang - startAngle);
-          chipsLayer.style.setProperty("--drag-rot", currentRot + "deg");
-        },
-        { signal }
-      );
-      ["pointerup", "pointercancel"].forEach((evt) => {
-        chipsLayer.addEventListener(
-          evt,
-          () => {
-            dragging = false;
-          },
-          { signal }
-        );
-      });
-    }
-
     /* ---- click-and-drag horizontal scroll for wide data tables ---- */
     // The scroll-affordance problem isn't that these tables can't scroll
     // (overflow-x:auto already works) -- it's that nothing signals a
     // desktop mouse user they should try. Trackpad/touch users already
     // discover it naturally via a horizontal swipe; this adds the same
-    // grab-and-drag interaction the hero ring above already uses, so a
+    // grab-and-drag interaction, so a
     // plain mouse can pull the table sideways too, plus a visible custom
     // scrollbar (globals.css) as the passive cue.
     document.querySelectorAll(".rankings-table-wrap").forEach((wrap) => {
