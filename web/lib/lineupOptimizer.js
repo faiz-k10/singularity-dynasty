@@ -85,7 +85,8 @@ export function optimizeLineup(team, gameStates, mode = "proj") {
     best: r1(best),
     gain: r1(best - current),
     swaps,
-    moves: moves.map((m) => ({ player: m.player, to: m.to, from: byIndexSlot(slots, byIndex, m.player) })),
+    // A player shuffled between two slots of the same kind (FLEX to FLEX) isn't a move anyone has to make.
+    moves: moves.map((m) => ({ player: m.player, to: m.to, from: byIndexSlot(slots, byIndex, m.player) })).filter((m) => m.from !== m.to),
     optimizedSlots: open.length,
     lockedStarters: slots.length - open.length,
   };
@@ -114,4 +115,41 @@ export function lineupAdvice(team, gameStates) {
     }
   }
   return { ...base, tilt };
+}
+
+// What needs fixing in the current lineup, most urgent first: an empty slot, a starter on a bye, one the model projects out / inactive,
+// or one carrying an injury tag (injuries: [{ name, status, severity }] from the injury feed). Each gets the best bench player who
+// can fill that slot, when there is one. Starters whose game has started are left out (nothing to fix).
+export function lineupAlerts(team, gameStates, injuries = []) {
+  const s = team?.settings || {};
+  const slots = s.slots;
+  if (!slots?.length || s.bestBall || s.isBye) return [];
+  const known = gameStates && Object.keys(gameStates).length > 0;
+  const started = (p) => known && p.team && gameStates[p.team] && gameStates[p.team].state !== "pre";
+  const tags = new Map();
+  for (const i of injuries || []) if (!tags.has(i.name) || i.severity > tags.get(i.name).severity) tags.set(i.name, i);
+  const starters = new Map();
+  for (const p of team.players || []) if (p.isStarter && p.slotIndex < slots.length) starters.set(p.slotIndex, p);
+  const bench = (team.players || []).filter((p) => !p.isStarter && PROJECTED.has(p.position) && num(p.myProjPts) > 0 && !started(p));
+  const used = new Set();
+  const replacementFor = (kind) => {
+    const pick = bench.filter((p) => !used.has(p.player_id) && ELIGIBLE[kind]?.includes(p.position)).sort((a, b) => b.myProjPts - a.myProjPts)[0];
+    if (pick) used.add(pick.player_id);
+    return pick || null;
+  };
+  const out = [];
+  slots.forEach((kind, i) => {
+    const cur = starters.get(i);
+    const h = s.h2h?.mine?.[i];
+    if (!cur) {
+      if (!(h && h.id)) out.push({ type: "empty", severity: 3, slot: kind, player: null, status: "Empty slot", replacement: replacementFor(kind) });
+      return;
+    }
+    if (started(cur)) return;
+    const tag = tags.get(cur.name);
+    if (known && cur.team && !gameStates[cur.team] && cur.position !== "DEF") out.push({ type: "bye", severity: 3, slot: kind, player: cur, status: "Bye week", replacement: replacementFor(kind) });
+    else if (h?.out || (tag && tag.severity >= 3)) out.push({ type: "out", severity: 3, slot: kind, player: cur, status: tag?.status || "Out", replacement: replacementFor(kind) });
+    else if (tag && tag.severity > 0) out.push({ type: "injury", severity: tag.severity, slot: kind, player: cur, status: tag.status, replacement: replacementFor(kind) });
+  });
+  return out.sort((a, b) => b.severity - a.severity);
 }

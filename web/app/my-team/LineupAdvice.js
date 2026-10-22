@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import PositionBadge from "../tools/PositionBadge";
 import TeamBadge from "../tools/TeamBadge";
-import { lineupAdvice } from "@/lib/lineupOptimizer";
+import { lineupAdvice, lineupAlerts } from "@/lib/lineupOptimizer";
 
 const fmt1 = (v) => (v == null ? "—" : v.toFixed(1));
 const slotName = (s) => (s === "SUPER_FLEX" ? "SUPERFLEX" : s);
@@ -50,8 +50,9 @@ function SwapList({ swaps, moves, key1 = "myProjPts" }) {
 // The "Lineup" tab of a league: the best starters from the roster by this week's projection, who to start over whom and what it
 // adds, plus (when the win chance is lopsided) a version that plays for the ceiling or the floor. lib/lineupOptimizer.js does the
 // work; players whose game has started are locked and left where they are.
-export default function LineupAdvice({ team, gameStates }) {
+export default function LineupAdvice({ team, gameStates, injuries = [] }) {
   const advice = useMemo(() => lineupAdvice(team, gameStates), [team, gameStates]);
+  const alerts = useMemo(() => lineupAlerts(team, gameStates, injuries), [team, gameStates, injuries]);
   const url = team.platform_league_id ? `https://sleeper.com/leagues/${team.platform_league_id}/matchup` : null;
   if (!advice) return <p className="h2h-note">No lineup to optimize for this league this week.</p>;
   const better = advice.swaps.length > 0 && advice.gain >= 0.1;
@@ -60,6 +61,36 @@ export default function LineupAdvice({ team, gameStates }) {
     <section className="standings lineup-advice" aria-label="Lineup optimizer">
       <div className="standings-head">
         <span className="standings-note mono">Best lineup by this week&apos;s projection · locked players stay put</span>
+      </div>
+      <div className="lu-alerts">
+        <h4 className="lu-alerts-title mono">
+          Lineup alerts{alerts.length > 0 && <span className="lu-alerts-count"> {alerts.length}</span>}
+        </h4>
+        {alerts.length === 0 ? (
+          <p className="lu-alerts-none mono">No alerts: every starter is healthy and in a game this week.</p>
+        ) : (
+          <ul className="lu-alert-list">
+            {alerts.map((a) => (
+              <li key={`${a.type}:${a.slot}:${a.player?.player_id || "none"}`} className="lu-alert">
+                <span className={`status-dot status-dot-${a.severity}`} aria-hidden="true" />
+                <span className="lu-alert-who">
+                  {a.player ? <Who p={a.player} /> : <span className="lu-name">Nobody starting</span>}
+                  <span className={`status-text status-text-${a.severity}`}>{a.status}</span>
+                  <span className="lu-verb mono">in {slotName(a.slot)}</span>
+                </span>
+                <span className="lu-alert-fix mono">
+                  {a.replacement ? (
+                    <>
+                      Swap in <strong>{a.replacement.name}</strong> ({fmt1(a.replacement.myProjPts)})
+                    </>
+                  ) : (
+                    "No bench option"
+                  )}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
       <div className="lu-summary">
         <div className="lu-total">

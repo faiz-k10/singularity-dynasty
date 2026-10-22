@@ -96,8 +96,8 @@ function SideRow({ p, scoreboardKnown, uncertain, mounted }) {
         {showCurve ? (
           <ScoreCurve floor={p.floor} median={p.proj} ceiling={p.ceiling} pts={pts} state={o.state} est={p.est} />
         ) : (
-          // Nothing to draw a range from (out, bye, or no floor / ceiling): just the median.
-          <span className="h2h-curve-text mono">{p.out ? "Out" : fmt1(p.proj)}</span>
+          // Nothing to draw a range from (out, or no floor / ceiling): just the median. A bye shows nothing (its "0.0" was noise).
+          o.state !== "bye" && <span className="h2h-curve-text mono">{p.out ? "Out" : fmt1(p.proj)}</span>
         )}
       </span>
       <span
@@ -170,14 +170,14 @@ export function PanelTabs({ tabs, value, onChange }) {
 // and the win chance (lib/winChance.js, computed server-side and refreshed by the 30-second poll). `tab` picks the
 // view: "matchup" (default), "standings" (Standings.js) or "available" (WaiverWire.js -- it only loads, and only asks
 // Sleeper, once its tab is opened).
-export default function MatchupPanel({ team, gameStates, tab = "matchup", playTotals = null }) {
+export default function MatchupPanel({ team, gameStates, tab = "matchup", playTotals = null, injuries = [] }) {
   const s = team.settings || {};
   return (
     <div className="h2h-wrap">
       {tab === "standings" && hasStandings(team) ? (
         <Standings season={s.season} opponent={s.isBye ? null : s.opponent} bare />
       ) : tab === "lineup" ? (
-        <LineupAdvice team={team} gameStates={gameStates} />
+        <LineupAdvice team={team} gameStates={gameStates} injuries={injuries} />
       ) : tab === "available" ? (
         <WaiverWire teamId={team.id} bare />
       ) : (

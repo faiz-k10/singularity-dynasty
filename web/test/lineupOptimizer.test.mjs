@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { optimizeLineup, lineupAdvice } from "../lib/lineupOptimizer.js";
+import { optimizeLineup, lineupAdvice, lineupAlerts } from "../lib/lineupOptimizer.js";
 
 const P = (id, name, position, team, proj, extra = {}) => ({ player_id: id, name, position, team, myProjPts: proj, isStarter: false, slotIndex: 999, ...extra });
 const team = (players, slots = ["QB", "RB", "WR", "FLEX"], settings = {}) => ({ settings: { slots, ...settings }, players });
@@ -84,4 +84,38 @@ test("underdog tilt: a ceiling swap that costs little median is offered", () => 
 test("best ball, byes and teams without slots return null", () => {
   assert.equal(optimizeLineup(team([], ["QB"], { bestBall: true }), {}), null);
   assert.equal(optimizeLineup({ settings: {}, players: [] }, {}), null);
+});
+
+test("no FLEX-to-FLEX 'moves': a player shuffled between slots of the same kind isn't reported", () => {
+  const t = team(
+    [
+      P("1", "A", "WR", "A", 9, { isStarter: true, slotIndex: 0 }),
+      P("2", "B", "WR", "B", 12, { isStarter: true, slotIndex: 1 }),
+      P("3", "Bench", "WR", "C", 15),
+    ],
+    ["FLEX", "FLEX"]
+  );
+  const r = optimizeLineup(t, {});
+  assert.equal(r.moves.length, 0);
+  assert.equal(r.swaps[0].in.name, "Bench");
+});
+
+test("lineup alerts: empty slot, bye, out and injury tags, each with the best bench fill; started games skipped", () => {
+  const t = team(
+    [
+      P("1", "Hurt", "RB", "A", 12, { isStarter: true, slotIndex: 0 }),
+      P("2", "OnBye", "WR", "BYE", 10, { isStarter: true, slotIndex: 1 }),
+      P("3", "Played", "WR", "C", 8, { isStarter: true, slotIndex: 2 }),
+      P("4", "BenchRb", "RB", "D", 7),
+      P("5", "BenchWr", "WR", "E", 9),
+    ],
+    ["RB", "WR", "WR", "TE"]
+  );
+  const gs = { A: { state: "pre" }, C: { state: "post" }, D: { state: "pre" }, E: { state: "pre" } };
+  const a = lineupAlerts(t, gs, [{ name: "Hurt", status: "Questionable", severity: 1 }, { name: "Played", status: "Out", severity: 3 }]);
+  assert.deepEqual(a.map((x) => x.type).sort(), ["bye", "empty", "injury"]);
+  assert.equal(a.find((x) => x.type === "injury").replacement.name, "BenchRb");
+  assert.equal(a.find((x) => x.type === "bye").replacement.name, "BenchWr");
+  assert.equal(a.find((x) => x.type === "empty").slot, "TE");
+  assert.equal(lineupAlerts(team([], ["QB"], { bestBall: true }), {}, []).length, 0);
 });

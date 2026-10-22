@@ -262,7 +262,7 @@ function RosterTable({ players: rawPlayers, bestBall = false, playerPoints = nul
 // Standings (with playoff odds), Best available, and Roster (the lineup / full roster table). Opens on the matchup
 // whenever this week's schedule is posted. `children` are the league's badges + buy-in + remove controls, shown in the
 // header row beside the tabs.
-function LeagueDetail({ team, gameStates, children }) {
+function LeagueDetail({ team, gameStates, injuries, children }) {
   const s = team.settings || {};
   const [tab, setTabState] = useState(s.opponent || s.isBye ? "matchup" : "roster");
   const tabs = [...leagueTabs(team), ["roster", "Roster"]];
@@ -271,7 +271,7 @@ function LeagueDetail({ team, gameStates, children }) {
     const t = setTimeout(() => {
       try {
         const saved = JSON.parse(localStorage.getItem("myteam.leagueTabs") || "{}")[team.id];
-        if (["matchup", "standings", "available", "roster"].includes(saved)) setTabState(saved); // a view this league lacks falls back to Matchup below
+        if (["matchup", "lineup", "standings", "available", "roster"].includes(saved)) setTabState(saved); // a view this league lacks falls back to Matchup below
       } catch {}
     }, 0);
     return () => clearTimeout(t);
@@ -292,7 +292,7 @@ function LeagueDetail({ team, gameStates, children }) {
       {tab === "roster" ? (
         <RosterTable players={team.players || []} bestBall={s.bestBall} playerPoints={s.playerPoints} gameStates={gameStates} />
       ) : (
-        <MatchupPanel team={team} gameStates={gameStates} tab={tabs.some(([key]) => key === tab) ? tab : "matchup"} />
+        <MatchupPanel team={team} gameStates={gameStates} injuries={injuries} tab={tabs.some(([key]) => key === tab) ? tab : "matchup"} />
       )}
     </div>
   );
@@ -1516,7 +1516,7 @@ export default function MyTeamClient({
             injuriesByTeam={liveNews?.byTeam}
             refreshing={refreshing}
             renderExpanded={(t) => (
-              <LeagueDetail key={t.id} team={t} gameStates={gameStates}>
+              <LeagueDetail key={t.id} team={t} gameStates={gameStates} injuries={liveNews?.byTeam?.[t.id]}>
                   <LeagueBadges settings={t.settings} />
                   <BuyInField
                     teamId={t.id}
