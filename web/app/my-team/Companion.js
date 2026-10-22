@@ -84,33 +84,42 @@ function Strip({ phase, feed, week, oneLeague }) {
       </div>
       <div className="cp-strip-text">
         <span className="cp-strip-eyebrow mono">{week ? `Week ${week} · ` : ""}{PHASE_LINE[phase] || ""}</span>
-        {feed.nextStart ? (
-          <span className="cp-strip-main">
-            <span className="cp-strip-label mono">Next kickoff</span>
-            <span className="cp-strip-time">{mounted ? kickoffLabel(feed.nextStart) : " "}</span>
-            <span className="cp-strip-clock mono">{now ? formatCountdown(new Date(feed.nextStart).getTime() - now) : " "}</span>
-          </span>
-        ) : (
-          <span className="cp-strip-main">
-            <span className="cp-strip-time">{phase === "live" ? "Games in progress" : phase === "recap" ? "That's a wrap" : "Nothing on the field"}</span>
-            <span className="cp-strip-label mono">{oneLeague ? "Everyone in this matchup" : "Everyone"} {phase === "recap" ? "has played" : "is waiting"}</span>
-          </span>
-        )}
-        {games.length > 0 && (
-          <span className="cp-strip-games">
-            {games.slice(0, 3).map((g) => (
-              <span key={g.join("-")} className="sb-wait-game">
-                {g.map((t, i) => (
-                  <span key={t} className="sb-wait-team">
-                    {i > 0 && <span className="sb-wait-vs mono">at</span>}
-                    <TeamBadge team={t} />
-                  </span>
-                ))}
+        <div className="cp-strip-grid">
+          {feed.nextStart ? (
+            <>
+              <div className="cp-stat">
+                <span className="cp-strip-label mono">Next kickoff</span>
+                <span className="cp-strip-time">{mounted ? kickoffLabel(feed.nextStart) : "\u00a0"}</span>
+              </div>
+              <div className="cp-stat is-clock">
+                <span className="cp-strip-label mono">Kickoff in</span>
+                <span className="cp-strip-clock mono">{now ? formatCountdown(new Date(feed.nextStart).getTime() - now) : "\u00a0"}</span>
+              </div>
+            </>
+          ) : (
+            <div className="cp-stat">
+              <span className="cp-strip-label mono">
+                {oneLeague ? "Everyone in this matchup" : "Everyone"} {phase === "recap" ? "has played" : phase === "live" ? "is in action" : "is waiting"}
               </span>
-            ))}
-            {games.length > 3 && <span className="sb-wait-more mono">+{games.length - 3}</span>}
-          </span>
-        )}
+              <span className="cp-strip-time">{phase === "live" ? "Games in progress" : phase === "recap" ? "That's a wrap" : "Nothing on the field"}</span>
+            </div>
+          )}
+          {games.length > 0 && (
+            <div className="cp-strip-games">
+              {games.slice(0, 3).map((g) => (
+                <span key={g.join("-")} className="sb-wait-game">
+                  {g.map((t, i) => (
+                    <span key={t} className="sb-wait-team">
+                      {i > 0 && <span className="sb-wait-vs mono">at</span>}
+                      <TeamBadge team={t} />
+                    </span>
+                  ))}
+                </span>
+              ))}
+              {games.length > 3 && <span className="sb-wait-more mono">+{games.length - 3} more</span>}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

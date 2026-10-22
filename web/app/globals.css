@@ -5708,15 +5708,17 @@ html{font-stretch:82%;}
    a coloured left edge by tone (gold = going your way, blue = against you, red = fix it, plain = neutral). */
 .sb-feed-tabs .league-dash-tabs{transform:scale(.92); transform-origin:right center;}
 .cp{flex:1; min-height:0; display:flex; flex-direction:column;}
-.cp-strip{display:flex; align-items:center; gap:14px; padding:12px 16px; border-bottom:1px solid rgba(var(--star-dot-rgb),.08);}
+.cp-strip{display:flex; align-items:flex-start; gap:14px; padding:14px 16px; border-bottom:1px solid rgba(var(--star-dot-rgb),.08);}
 .cp-orbit .sb-wait-orbit{width:46px; height:46px; margin:0;}
 .cp-strip-text{display:flex; flex-direction:column; gap:3px; min-width:0; flex:1;}
 .cp-strip-eyebrow{font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.14em; color:var(--horizon-gold);}
-.cp-strip-main{display:flex; align-items:baseline; flex-wrap:wrap; gap:4px 12px;}
+.cp-strip-grid{display:grid; grid-template-columns:1fr auto; align-items:end; gap:10px 18px; margin-top:4px;}
+.cp-stat{display:flex; flex-direction:column; gap:3px; min-width:0;}
+.cp-stat.is-clock{align-items:flex-end; text-align:right;}
 .cp-strip-time{font-family:var(--font-display); font-weight:800; font-size:24px; line-height:1.1; text-transform:uppercase; letter-spacing:.03em; color:var(--star);}
 .cp-strip-label{font-size:10.5px; text-transform:uppercase; letter-spacing:.1em; color:var(--star-dim);}
-.cp-strip-clock{font-size:18px; font-weight:700; color:var(--horizon-gold); font-variant-numeric:tabular-nums;}
-.cp-strip-games{display:flex; flex-wrap:wrap; gap:6px; margin-top:4px;}
+.cp-strip-clock{font-size:24px; line-height:1.1; font-weight:700; color:var(--horizon-gold); font-variant-numeric:tabular-nums;}
+.cp-strip-games{grid-column:1 / -1; display:flex; flex-wrap:wrap; align-items:center; gap:6px; padding-top:10px; border-top:1px solid rgba(var(--star-dot-rgb),.08);}
 .cp-strip-games .sb-wait-game{padding:4px 9px;}
 .cp-scroll{overflow:auto; min-height:0; flex:1; padding:12px 16px 16px;}
 .cp-list{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px;}
