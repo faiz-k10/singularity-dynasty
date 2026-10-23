@@ -228,3 +228,34 @@ export function matchupOutlook(h2h, gameStates, opts) {
   const winChance = !known && anyPoints ? null : Math.round(simulateWinChance(mine, opp, opts) * 1000) / 1000;
   return { mine, opp, winChance };
 }
+
+// How much ONE player's game decides a matchup: the win chance with the rest of the matchup left to chance and this player's
+// full-game result pinned at his floor / median / ceiling (the 10th / 50th / 90th percentile of what is still to come, plus the
+// points he already has). Same seeded draws for every run, so the three numbers differ only because of him. side is "mine" or
+// "opp" (his ceiling is good for me on my side, bad on theirs). null when he has nothing left to play.
+export function playerLeverage(h2h, gameStates, side, id, opts) {
+  if (!h2h?.mine?.length || !h2h?.opp?.length) return null;
+  const mine = summarizeSide(h2h.mine, gameStates);
+  const opp = summarizeSide(h2h.opp, gameStates);
+  const target = side === "mine" ? mine : opp;
+  const idx = target.players.findIndex((p) => p.id === id);
+  if (idx < 0) return null;
+  const o = target.players[idx].outlook;
+  if (o.state !== "pre" && o.state !== "in") return null;
+  const have = o.pts ?? 0;
+  const run = (toCome) => {
+    const pinned = {
+      ...target,
+      pts: target.pts + toCome, // his points so far are already in target.pts
+      players: target.players.map((p, i) => (i === idx ? { ...p, outlook: { ...p.outlook, mid: 0, sdLo: 0, sdHi: 0 } } : p)),
+    };
+    return simulateWinChance(...(side === "mine" ? [pinned, opp] : [mine, pinned]), opts);
+  };
+  const atFloor = run(o.lo);
+  const atMedian = run(o.mid);
+  const atCeiling = run(o.hi);
+  const base = simulateWinChance(mine, opp, opts);
+  const lo = side === "mine" ? atFloor : atCeiling;
+  const hi = side === "mine" ? atCeiling : atFloor;
+  return { base, atFloor, atMedian, atCeiling, swing: Math.abs(atCeiling - atFloor), final: { floor: have + o.lo, median: have + o.mid, ceiling: have + o.hi }, lo, hi };
+}

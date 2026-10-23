@@ -104,3 +104,20 @@ test("lineup upgrade card names the swap and the gain", () => {
   assert.match(c.title, /Start Bench over Weak in L/);
   assert.match(c.body, /FLEX: 11\.0 against 4\.0, 7\.0 more/);
 });
+
+test("swing and threat cards quantify the win chance, exposure cards the expected wins", () => {
+  const gs = { SF: { state: "pre" }, DAL: { state: "pre" }, KC: { state: "pre" }, BUF: { state: "pre" } };
+  const mk = (id, opp) => league(id, [P("1", "Boom", "WR", "DAL", 14, 3, 31), P("2", "Steady", "RB", "SF", 12, 8, 17)], opp, { winChance: 0.4 });
+  const a = mk("a", [P("9", "Foe", "QB", "KC", 20, 12, 30)]);
+  const b = mk("b", [P("8", "Other", "TE", "BUF", 9, 4, 16)]);
+  const { cards } = buildInsights({ savedTeams: [a, b], gameStates: gs });
+  const swing = cards.find((c) => c.kind === "swing");
+  assert.match(swing.title, /points of win chance/);
+  assert.match(swing.body, /if he hits his ceiling, \d+% at his median, \d+% at his floor/);
+  const m = swing.body.match(/(\d+)% if he hits his ceiling, (\d+)% at his median, (\d+)% at his floor/);
+  assert.ok(+m[1] > +m[2] && +m[2] > +m[3], "ceiling > median > floor");
+  const threat = cards.find((c) => c.kind === "threat");
+  assert.match(threat.body, /a ceiling game \(30\.0\) drops that/);
+  const exp = cards.find((c) => c.id === "exposure:1");
+  assert.match(exp.body, /expect \d\.\d\d wins now; his ceiling takes that to \d\.\d\d/);
+});

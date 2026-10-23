@@ -10,11 +10,13 @@
 // waivers: { [teamId]: [{ name, pos, team, proj }] } best available per league, optional.
 
 import { lineupAdvice, slotLabel } from "./lineupOptimizer.js";
+import { playerLeverage } from "./winChance.js";
 
 const r1 = (v) => (Math.round(v * 10) / 10).toFixed(1);
 const sgn = (v) => `${v >= 0 ? "+" : "−"}${r1(Math.abs(v))}`;
 const num = (v) => (typeof v === "number" && Number.isFinite(v) ? v : null);
 const leagueOf = (t) => t.league_name || t.team_name || "your league";
+const pc = (v) => `${Math.round(v * 100)}%`;
 const chip = (p) => (p ? { name: p.name, pos: p.pos, team: p.team } : null);
 
 const stateOf = (p, gameStates) => {
@@ -50,6 +52,7 @@ function leagues(savedTeams, gameStates) {
       id: t.id,
       name: leagueOf(t),
       opponent: s.opponent || "your opponent",
+      h2h: s.h2h,
       mine,
       opp,
       margin: total(mine) - total(opp), // projected (played games at their points)
@@ -122,39 +125,50 @@ function outlook(ls) {
   };
 }
 
-function swings(ls) {
+// Win-chance leverage (lib/winChance.js playerLeverage): the matchup simulated with one player's game pinned at his floor / median /
+// ceiling, so a card can say what HIS game does to the win chance, not just how wide his range is.
+// 1,500 draws a run (the default 5,000 would make a refresh of the pane take seconds): every run uses the same random numbers, so the
+// differences between floor / median / ceiling are exact even though each percentage carries about a point of noise.
+const lev = (l, side, p, gameStates) => playerLeverage(l.h2h, gameStates, side, p.id, { draws: 1500 });
+const ptsOfWin = (v) => `${v >= 0 ? "+" : "−"}${Math.round(Math.abs(v) * 100)}`;
+
+function swings(ls, gameStates) {
   const open = ls
     .filter((l) => l.win != null && !l.done)
     .sort((a, b) => Math.abs(a.win - 0.5) - Math.abs(b.win - 0.5))
     .slice(0, 3);
   const cards = [];
   for (const l of open) {
+    // The swing player is the one whose game moves THIS matchup's win chance the most -- not just the widest range.
+    // Only the three widest-ranged players are simulated (the leverage run is the expensive part).
     const cand = [];
-    for (const [side, rows] of [["mine", l.mine], ["opp", l.opp]]) {
+    for (const [side, rows] of [["mine", l.mine], ["opp", l.opp]])
       for (const p of rows) {
-        if (!p.id || p.out || (p.st !== "pre" && p.st !== "in")) continue;
-        const proj = num(p.proj);
-        const ceil = num(p.ceiling);
-        const floor = num(p.floor);
-        if (proj == null || ceil == null || floor == null) continue;
-        cand.push({ p, side, up: ceil - proj, down: proj - floor, spread: ceil - floor });
+        if (!p.id || p.out || (p.st !== "pre" && p.st !== "in") || num(p.ceiling) == null || num(p.floor) == null) continue;
+        cand.push({ p, side, spread: p.ceiling - p.floor });
       }
+    let top = null;
+    for (const c of cand.sort((a, b) => b.spread - a.spread).slice(0, 3)) {
+      const v = lev(l, c.side, c.p, gameStates);
+      if (v && (!top || v.swing > top.v.swing)) top = { p: c.p, side: c.side, v };
     }
-    if (!cand.length) continue;
-    const top = cand.sort((a, b) => b.spread - a.spread)[0];
+    if (!top) continue;
+    const { v } = top;
     const mineSide = top.side === "mine";
+    const proj = num(top.p.proj);
     const gap = Math.abs(l.margin);
     const leading = l.margin >= 0;
-    const verb = mineSide
-      ? `A ceiling game adds ${r1(top.up)} to your side; a floor game takes ${r1(top.down)} away.`
-      : `If he hits his ceiling he adds ${r1(top.up)} for them; if he busts you gain ${r1(top.down)}.`;
+    const need = !leading && v.hi < 0.5 ? "Even his best game leaves you the underdog." : !leading && v.lo >= 0.5 ? "Even his worst game keeps you ahead." : "";
     cards.push({
       id: `swing:${l.id}`,
       kind: "swing",
       label: "Swing player",
       tone: mineSide ? "mine" : "theirs",
-      title: `${top.p.name} could decide ${l.name}`,
-      body: `${mineSide ? "Yours" : `${l.opponent}'s`}, still to play, range ${r1(top.p.floor)}–${r1(top.p.ceiling)}. ${verb} The projected gap is ${r1(gap)} points ${leading ? "in your favor" : "against you"}.`,
+      title: `${top.p.name} is worth ${Math.round(v.swing * 100)} points of win chance in ${l.name}`,
+      body:
+        `${mineSide ? "Yours" : `${l.opponent}'s`}, still to play (projected ${proj != null ? r1(proj) : "—"}, 80% range ${r1(v.final.floor)}–${r1(v.final.ceiling)}). ` +
+        `Your win chance is ${pc(v.base)} now: ${pc(v.atCeiling)} if he hits his ceiling, ${pc(v.atMedian)} at his median, ${pc(v.atFloor)} at his floor. ` +
+        `The biggest single-player swing in this matchup; the projected gap is ${r1(gap)} ${leading ? "in your favor" : "against you"}. ${need}`.trim(),
       player: chip(top.p),
       league: l.name,
       priority: 90 - Math.round(Math.abs(l.win - 0.5) * 40),
@@ -163,7 +177,7 @@ function swings(ls) {
   return cards;
 }
 
-function threats(ls) {
+function threats(ls, gameStates) {
   const cards = [];
   for (const l of ls) {
     if (l.done || l.win == null || l.win >= 0.5) continue;
@@ -171,13 +185,16 @@ function threats(ls) {
       .filter((p) => p.id && !p.out && p.st === "pre" && num(p.proj) != null)
       .sort((a, b) => b.proj - a.proj)[0];
     if (!best) continue;
+    const v = lev(l, "opp", best, gameStates);
     cards.push({
       id: `threat:${l.id}`,
       kind: "threat",
       label: "Their best card",
       tone: "theirs",
       title: `${best.name} is ${l.opponent}'s biggest threat`,
-      body: `Projected ${r1(best.proj)} in ${l.name}, where you're ${Math.round(l.win * 100)}% to win. A quiet game from him is your way back.`,
+      body: v
+        ? `Projected ${r1(best.proj)} in ${l.name}. You're ${pc(v.base)} to win; a ceiling game (${r1(v.final.ceiling)}) drops that to ${pc(v.atCeiling)}, a floor game (${r1(v.final.floor)}) lifts it to ${pc(v.atFloor)}. His game alone moves your odds ${Math.round(v.swing * 100)} points.`
+        : `Projected ${r1(best.proj)} in ${l.name}, where you're ${pc(l.win)} to win. A quiet game from him is your way back.`,
       player: chip(best),
       league: l.name,
       priority: 66,
@@ -212,12 +229,30 @@ function holes(ls) {
   return cards.slice(0, 3);
 }
 
-function exposure(ls) {
+// Expected wins across leagues if one player's game lands at his floor / median / ceiling (sum of each league's win chance with him
+// pinned; `entries` = [{ l, p, side }]). The change from `base` is the player's whole effect on the week.
+function expectedWins(entries, gameStates) {
+  const out = { base: 0, floor: 0, median: 0, ceiling: 0, rows: [] };
+  for (const { l, p, side } of entries) {
+    const v = lev(l, side, p, gameStates);
+    if (!v) continue;
+    out.base += v.base;
+    out.floor += v.atFloor;
+    out.median += v.atMedian;
+    out.ceiling += v.atCeiling;
+    out.rows.push({ l, side, v });
+  }
+  return out;
+}
+const ew = (v) => (Math.round(v * 100) / 100).toFixed(2);
+const dw = (v) => `${v >= 0 ? "+" : "−"}${ew(Math.abs(v))}`;
+
+function exposure(ls, gameStates) {
   const mine = new Map();
   const against = new Map();
   for (const l of ls) {
-    for (const p of l.mine) if (p.id) mine.set(p.id, [...(mine.get(p.id) || []), { l, p }]);
-    for (const p of l.opp) if (p.id) against.set(p.id, [...(against.get(p.id) || []), { l, p }]);
+    for (const p of l.mine) if (p.id) mine.set(p.id, [...(mine.get(p.id) || []), { l, p, side: "mine" }]);
+    for (const p of l.opp) if (p.id) against.set(p.id, [...(against.get(p.id) || []), { l, p, side: "opp" }]);
   }
   const cards = [];
   const multi = [...mine.values()]
@@ -225,13 +260,17 @@ function exposure(ls) {
     .sort((a, b) => b.length - a.length || (b[0].p.proj || 0) - (a[0].p.proj || 0))[0];
   if (multi) {
     const p = multi[0].p;
+    const x = expectedWins(multi, gameStates);
+    const worst = [...x.rows].sort((a, b) => b.v.swing - a.v.swing)[0];
     cards.push({
       id: `exposure:${p.id}`,
       kind: "exposure",
       label: "Big exposure",
       tone: "mine",
       title: `${p.name} starts in ${multi.length} of your leagues`,
-      body: `A big game moves ${multi.length} matchups at once, and a dud costs you in all of them. Projected ${r1(p.proj || 0)}.`,
+      body: x.rows.length
+        ? `Projected ${r1(p.proj || 0)}. Across the ${x.rows.length} matchups you expect ${ew(x.base)} wins now; his ceiling takes that to ${ew(x.ceiling)} (${dw(x.ceiling - x.base)}), his floor to ${ew(x.floor)} (${dw(x.floor - x.base)}). He is a ${x.rows.length}x position, so one game moves ${ew(x.ceiling - x.floor)} wins either way.${worst ? ` Most sensitive: ${worst.l.name} (${pc(worst.v.atFloor)} to ${pc(worst.v.atCeiling)}).` : ""}`
+        : `A big game moves ${multi.length} matchups at once, and a dud costs you in all of them. Projected ${r1(p.proj || 0)}.`,
       player: chip(p),
       priority: 62,
     });
@@ -241,13 +280,17 @@ function exposure(ls) {
     if (!foes) continue;
     const p = own[0].p;
     if (p.st === "post") continue;
+    const x = expectedWins([...own, ...foes], gameStates);
+    const hedged = x.rows.length ? Math.abs(x.ceiling - x.floor) : null;
     cards.push({
       id: `hedge:${id}`,
       kind: "exposure",
       label: "Both sides",
       tone: "neutral",
       title: `${p.name} is on both sides of your week`,
-      body: `You start him in ${own.map((o) => o.l.name).join(", ")}; he plays against you in ${foes.map((o) => o.l.name).join(", ")}. A big game is good in some matchups and bad in others.`,
+      body: x.rows.length
+        ? `You start him in ${own.map((o) => o.l.name).join(", ")}; he plays against you in ${foes.map((o) => o.l.name).join(", ")}. At his ceiling your expected wins move ${dw(x.ceiling - x.base)} net, at his floor ${dw(x.floor - x.base)}, so the hedge ${hedged < 0.15 ? "cancels almost all of his effect" : hedged < 0.4 ? "absorbs part of his effect" : "leaves you mostly exposed one way"}.`
+        : `You start him in ${own.map((o) => o.l.name).join(", ")}; he plays against you in ${foes.map((o) => o.l.name).join(", ")}. A big game is good in some matchups and bad in others.`,
       player: chip(p),
       priority: 64,
     });
@@ -613,9 +656,9 @@ export function buildInsights({ savedTeams, gameStates, waivers = null, injuries
   add(holes(ls));
   add(lineupCards(savedTeams, gameStates));
   add(outlook(ls));
-  add(swings(ls));
-  add(threats(ls));
-  add(exposure(ls));
+  add(swings(ls, gameStates));
+  add(threats(ls, gameStates));
+  add(exposure(ls, gameStates));
   add(waiverCards(ls, waivers));
   add(recaps(ls));
   add(season(savedTeams));
