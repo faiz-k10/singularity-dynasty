@@ -5778,3 +5778,5 @@ html{font-stretch:82%;}
 .lu-alert-who{display:inline-flex; flex-wrap:wrap; align-items:center; gap:6px 10px; min-width:0; flex:1;}
 .lu-alert-fix{font-size:12px; color:var(--star-dim); margin-left:auto;}
 .lu-alert-fix strong{color:var(--star); font-weight:700;}
+
+.sb-plays-note{margin:0; padding:8px 16px 4px; font-size:10.5px; line-height:1.4; color:var(--star-dim); border-top:1px solid rgba(var(--star-dot-rgb),.08);}
