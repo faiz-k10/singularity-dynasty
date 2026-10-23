@@ -283,6 +283,15 @@ function RecentPlays({ rows, updatedAt, focus, onPick, onTotals }) {
     rows.map((r) => ({ playerId: r.playerId, name: r.name, pos: r.pos, team: r.team, side: r.side })).sort((a, b) => `${a.side}${a.playerId}`.localeCompare(`${b.side}${b.playerId}`)),
   );
   const [state, setState] = useState({ list: [], fresh: new Set(), loaded: false });
+  // The plays are re-read every 10 seconds while someone is on the field (the 15-second score poll alone made the totals trail the play list);
+  // each read is one small cached request, and the plays also drive the 'ahead of Sleeper' points on every number on the board.
+  const [tick, setTick] = useState(0);
+  const anyone = rows.length > 0;
+  useEffect(() => {
+    if (!anyone) return undefined;
+    const id = setInterval(() => setTick((t) => t + 1), 10000);
+    return () => clearInterval(id);
+  }, [anyone]);
   useEffect(() => {
     let cancelled = false;
     getLivePlays(JSON.parse(req))
@@ -298,7 +307,7 @@ function RecentPlays({ rows, updatedAt, focus, onPick, onTotals }) {
     return () => {
       cancelled = true;
     };
-  }, [req, updatedAt, onTotals]);
+  }, [req, updatedAt, tick, onTotals]);
   // Until a new answer arrives (e.g. right after opening one league), only show plays by players still listed.
   const listed = new Set(rows.map((r) => `${r.side}:${r.playerId}`));
   const everyPlay = state.list.filter((e) => e.who.some((w) => listed.has(`mine:${w.playerId}`) || listed.has(`theirs:${w.playerId}`)));

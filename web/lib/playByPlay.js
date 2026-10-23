@@ -301,7 +301,7 @@ export async function fetchEventPlays(eventId, codeById) {
     games.set(eventId, g);
   }
   g.used = Date.now();
-  if (Date.now() - g.at < 20 * 1000) return [...g.plays.values()];
+  if (Date.now() - g.at < 8 * 1000) return [...g.plays.values()]; // ESPN itself runs ~25s behind the field, so every second of our own cache counts
   if (g.pending) return g.pending;
   g.pending = (async () => {
     try {

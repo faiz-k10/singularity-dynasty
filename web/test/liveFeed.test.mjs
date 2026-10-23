@@ -113,6 +113,11 @@ test("pendingFor: the plays Sleeper has not posted yet are the ones after the pl
   assert.equal(pendingFor([{ pts: 0 }], plays), 3.3);
   // A number that matches no point of the running total (half-PPR, a bonus, a play we don't list) -> no guess.
   assert.equal(pendingFor([{ pts: 2.6 }], plays), 0);
+  // Sleeper's number is a yard or two off our running total (ESPN's text vs the official stat): the nearest total within 0.35 is used.
+  // Swift, live: runs 0.3 + 0.3 + 0, then a 1.0 catch; Sleeper showed 0.70 (running totals 0.6 and 1.6) -> the catch is pending.
+  assert.equal(pendingFor([{ pts: 0.7 }], [0.3, 0.3, 0, 1]), 1);
+  assert.equal(pendingFor([{ pts: 0.95 }], [0.3, 0.3, 0, 1]), 1); // 0.35 from the 0.6 total, 0.65 from 1.6: nearest wins
+  assert.equal(pendingFor([{ pts: 1.2 }], [0.3, 0.3, 0, 1]), 0); // 0.4 from the nearest total: too far to trust
   // Several leagues must agree on the pending amount; scoring that differs in one of them -> no guess.
   assert.equal(pendingFor([{ pts: 2.1 }, { pts: 2.1 }], plays), 1.2);
   assert.equal(pendingFor([{ pts: 2.1 }, { pts: 1.0 }], plays), 0);

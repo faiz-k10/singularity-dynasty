@@ -71,7 +71,27 @@ export function buildLiveFeed(savedTeams, gameStates, { onlyTeamId = null } = {}
 // k (it does in a standard-PPR league, exactly), the plays after k are the pending ones. If any league's number matches no point
 // of the running total (half-PPR, bonuses, a play we don't list) we say nothing rather than guess.
 const PEND_TOL = 0.02; // Sleeper posts exact two-decimal points (a 6-yard pass is 0.24)
+// The play list takes its yardage from ESPN's play text, which can differ from the official stat by a yard or two (Swift's Sleeper 0.70 sat
+// between our running totals 0.60 and 1.60: a one-yard difference), so when no running total matches exactly the nearest one within this
+// distance (about three yards of rushing / receiving) is taken instead of giving up and leaving the score on Sleeper's older number.
+const NEAR_TOL = 0.35;
 const r2 = (v) => Math.round(v * 100) / 100;
+// The index into `prefix` (running totals, prefix[0] = 0) that Sleeper's number `pts` has counted up to, or -1 when nothing is close.
+function matchedPrefix(prefix, pts) {
+  let exact = -1;
+  let near = -1;
+  let nearDiff = Infinity;
+  prefix.forEach((sum, k) => {
+    const d = Math.abs(sum - pts);
+    if (d < PEND_TOL) exact = k; // the latest play that fits exactly
+    if (d <= nearDiff + 1e-9) {
+      near = k; // nearest; on a tie the latest
+      nearDiff = Math.min(nearDiff, d);
+    }
+  });
+  if (exact >= 0) return exact;
+  return nearDiff <= NEAR_TOL ? near : -1;
+}
 export function pendingFor(starts, plays) {
   if (!plays?.length || !starts?.length) return 0;
   const prefix = [0];
@@ -79,10 +99,7 @@ export function pendingFor(starts, plays) {
   const total = prefix[prefix.length - 1];
   let pending = null;
   for (const st of starts) {
-    let best = -1;
-    prefix.forEach((sum, k) => {
-      if (Math.abs(sum - st.pts) < PEND_TOL) best = k; // the latest play that fits
-    });
+    const best = matchedPrefix(prefix, st.pts);
     if (best < 0) return 0;
     const p = r2(total - prefix[best]);
     if (pending !== null && Math.abs(p - pending) > PEND_TOL) return 0;
