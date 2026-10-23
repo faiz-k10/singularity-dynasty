@@ -138,3 +138,18 @@ test("every recommended swap is legal for its slot and the gains add up (QB can'
   assert.ok(r.swaps.every((x) => x.slot !== "FLEX" || x.in.position !== "QB"));
   assert.ok(Math.abs(r.swaps.reduce((a, x) => a + x.gain, 0) - r.gain) < 0.11);
 });
+
+test("the plain-language lists: who starts and where, who sits, who just changes slot (no negative 'over' rows)", () => {
+  const t = team(
+    [
+      P("1", "Love", "QB", "A", 18.3, { isStarter: true, slotIndex: 1 }),
+      P("2", "Weak", "QB", "B", 5, { isStarter: true, slotIndex: 0 }),
+      P("3", "Rodgers", "QB", "C", 16.9),
+    ],
+    ["QB", "SUPER_FLEX"]
+  );
+  const r = optimizeLineup(t, {});
+  assert.deepEqual(r.starts.map((x) => [x.player.name, x.slot]), [["Rodgers", "SUPER_FLEX"]]);
+  assert.deepEqual(r.benches.map((p) => p.name), ["Weak"]);
+  assert.deepEqual(r.moves.map((m) => [m.player.name, m.from, m.to]), [["Love", "SUPER_FLEX", "QB"]]);
+});

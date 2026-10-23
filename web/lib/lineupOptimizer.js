@@ -62,21 +62,36 @@ export function optimizeLineup(team, gameStates, mode = "proj") {
   const val = (p) => (p && p.val != null ? p.val : 0);
   let current = 0;
   let best = 0;
-  const swaps = []; // one per slot whose starter changes, so every row is a legal move for THAT slot and the gains add up to the total
+  const startingNow = new Set(open.map((o) => o.cur?.player_id).filter(Boolean));
+  const picked = new Set();
+  const swaps = []; // one per slot whose starter changes (only used to total things up: a row's own gain can be negative inside a chain)
+  const starts = []; // bench players who come into the lineup, and the slot they take
+  const moves = []; // players who keep a starting spot but change slot
   for (const o of open) {
     const pick = chosen.get(o.i) || o.cur || null;
     current += val(o.cur);
     best += val(pick);
-    if (pick && (!o.cur || pick.player_id !== o.cur.player_id)) {
+    if (!pick) continue;
+    picked.add(pick.player_id);
+    if (!o.cur || pick.player_id !== o.cur.player_id) {
       swaps.push({ slot: o.kind, in: pick, out: o.cur || null, gain: r1(val(pick) - val(o.cur)), fromSlot: byIndexSlot(slots, byIndex, pick) });
+      const from = byIndexSlot(slots, byIndex, pick);
+      if (!startingNow.has(pick.player_id)) starts.push({ player: pick, slot: o.kind });
+      else if (from !== o.kind) moves.push({ player: pick, from, to: o.kind }); // FLEX to FLEX isn't a move anyone has to make
     }
   }
+  // Who leaves the lineup altogether.
+  const benches = open.map((o) => o.cur).filter((p) => p && !picked.has(p.player_id)).sort((a, b) => val(b) - val(a));
+  starts.sort((a, b) => val(b.player) - val(a.player));
   swaps.sort((a, b) => b.gain - a.gain);
   return {
     mode,
     current: r1(current),
     best: r1(best),
     gain: r1(best - current),
+    starts,
+    benches,
+    moves,
     swaps,
     optimizedSlots: open.length,
     lockedStarters: slots.length - open.length,

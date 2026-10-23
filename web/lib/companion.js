@@ -71,30 +71,44 @@ function lineupCards(savedTeams, gameStates) {
   for (const t of savedTeams || []) {
     const a = lineupAdvice(t, gameStates);
     if (!a || !a.swaps.length) continue;
-    const top = a.swaps[0];
-    if (a.gain >= 1) {
+    // In words: who starts (and where), who sits, who just changes slot. No "X over Y" pairing -- see LineupAdvice.js.
+    const say = (x) => {
+      const start = x.starts[0];
+      const lead = start ? `start ${start.player.name} at ${slotLabel(start.slot)}` : `move ${x.moves[0].player.name} from ${slotLabel(x.moves[0].from)} to ${slotLabel(x.moves[0].to)}`;
+      const more = [
+        x.starts.length > 1 ? `start ${x.starts.slice(1).map((s) => s.player.name).join(", ")}` : null,
+        x.benches.length ? `bench ${x.benches.map((p) => p.name).join(", ")}` : null,
+        x.moves.length && start ? `move ${x.moves.map((m) => `${m.player.name} to ${slotLabel(m.to)}`).join(", ")}` : null,
+      ].filter(Boolean);
+      return { lead, more };
+    };
+    const first = a.starts[0]?.player || a.moves[0]?.player;
+    if (a.gain >= 1 && first) {
+      const w = say(a);
       cards.push({
         id: `lineup:${t.id}`,
         kind: "lineup",
         label: "Lineup upgrade",
         tone: "mine",
-        title: `Start ${top.in.name} at ${slotLabel(top.slot)}${top.out ? ` over ${top.out.name}` : ""} in ${leagueOf(t)}`,
-        body: `Your best lineup projects ${r1(a.best)}, ${r1(a.gain)} more than the one set now${a.swaps.length > 1 ? `, across ${a.swaps.length} changes` : ""}. ${top.in.name} is ${r1(top.in.myProjPts)}${top.out ? `, ${top.out.name} ${r1(top.out.myProjPts)}` : ""}.`,
-        player: chip({ name: top.in.name, pos: top.in.position, team: top.in.team }),
+        title: `${w.lead[0].toUpperCase()}${w.lead.slice(1)} in ${leagueOf(t)}`,
+        body: `Your best lineup projects ${r1(a.best)}, ${r1(a.gain)} more than the one set now.${w.more.length ? ` Also ${w.more.join("; ")}.` : ""}`,
+        player: chip({ name: first.name, pos: first.position, team: first.team }),
         league: leagueOf(t),
         priority: 92 + Math.min(5, Math.round(a.gain / 3)),
       });
     }
-    if (a.tilt) {
-      const x = a.tilt.swaps[0];
+    if (a.tilt && (a.tilt.starts[0] || a.tilt.moves[0])) {
+      const x = a.tilt;
+      const w = say(x);
+      const f = x.starts[0]?.player || x.moves[0].player;
       cards.push({
         id: `tilt:${t.id}`,
         kind: "lineup",
-        label: a.tilt.mode === "ceiling" ? "Swing for the ceiling" : "Protect the floor",
-        tone: a.tilt.mode === "ceiling" ? "theirs" : "mine",
-        title: `${a.tilt.mode === "ceiling" ? "Underdog" : "Favorite"} in ${leagueOf(t)}: start ${x.in.name} at ${slotLabel(x.slot)}${x.out ? ` over ${x.out.name}` : ""}`,
-        body: `At ${Math.round(a.tilt.win * 100)}% to win, this adds ${r1(a.tilt.gain)} to your ${a.tilt.mode} and moves your projection ${a.tilt.medianChange >= 0 ? "+" : "−"}${r1(Math.abs(a.tilt.medianChange))}.`,
-        player: chip({ name: x.in.name, pos: x.in.position, team: x.in.team }),
+        label: x.mode === "ceiling" ? "Swing for the ceiling" : "Protect the floor",
+        tone: x.mode === "ceiling" ? "theirs" : "mine",
+        title: `${x.mode === "ceiling" ? "Underdog" : "Favorite"} in ${leagueOf(t)}: ${w.lead}`,
+        body: `At ${Math.round(x.win * 100)}% to win, this adds ${r1(x.gain)} to your ${x.mode} and moves your projection ${x.medianChange >= 0 ? "+" : "−"}${r1(Math.abs(x.medianChange))}.${w.more.length ? ` Also ${w.more.join("; ")}.` : ""}`,
+        player: chip({ name: f.name, pos: f.position, team: f.team }),
         league: leagueOf(t),
         priority: 78,
       });
