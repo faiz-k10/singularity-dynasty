@@ -139,6 +139,7 @@ function LeagueCard({ team, gameStates, injuries, onOpen, playTotals }) {
           {st.label ? (
             <div className="sb-card-verdict">
               <span className="sb-card-word">{st.label}</span>
+              {pct != null && !done && !lock && <span className="sb-card-pct mono">{formatWin(pct)} to win</span>}
             </div>
           ) : (
             <div className="sb-card-verdict">
@@ -150,10 +151,7 @@ function LeagueCard({ team, gameStates, injuries, onOpen, playTotals }) {
           <div className="sb-card-scores">
             <div className="sb-card-side is-me">
               <span className="sb-card-team" title="Your team">{row.team}</span>
-              <span className="sb-card-scorecol">
-                {pct != null && !done && !lock && st.label && <span className="sb-card-pct mono">{formatWin(pct)} to win</span>}
-                <Score value={myScore} state={leadState(myScore, oppScore)[0]} />
-              </span>
+              <Score value={myScore} state={leadState(myScore, oppScore)[0]} />
             </div>
             <div className="sb-card-side">
               <span className="sb-card-team sb-muted">{row.opponent}</span>
