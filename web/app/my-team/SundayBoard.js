@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import MatchupPanel, { sleeperMatchupUrl, formatWin, standing, sealedClass, PanelTabs, leagueTabs } from "./MatchupPanel";
 import { useMounted } from "./useMounted";
 import { buildRow, isTyping, moveFocus } from "./LeagueDashboard";
@@ -571,15 +571,17 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
   }
   const week = savedTeams.find((t) => t.settings?.week)?.settings.week;
   const time = updatedAt && mounted ? new Date(updatedAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) : null;
-  const parts = [];
-  if (tally.won) parts.push(`${tally.won} won`);
-  if (tally.winning) parts.push(`${tally.winning} winning`);
-  if (tally.favored) parts.push(`${tally.favored} favored`);
-  if (tally.tossup) parts.push(`${tally.tossup} toss-up`);
-  if (tally.underdog) parts.push(`${tally.underdog} underdog`);
-  if (tally.losing) parts.push(`${tally.losing} losing`);
-  if (tally.lost) parts.push(`${tally.lost} lost`);
-  if (alerts) parts.push(`${alerts} lineup ${alerts === 1 ? "alert" : "alerts"}`);
+  // "favored" reads in the favored colour and "underdog" in the underdog colour, the same as the cards' one-word readings.
+  const parts = [
+    [tally.won, "won"],
+    [tally.winning, "winning"],
+    [tally.favored, "favored", "is-ahead"],
+    [tally.tossup, "toss-up"],
+    [tally.underdog, "underdog", "is-behind"],
+    [tally.losing, "losing"],
+    [tally.lost, "lost"],
+    [alerts, alerts === 1 ? "lineup alert" : "lineup alerts"],
+  ].filter(([n]) => n);
 
   return (
     <div className="sb">
@@ -599,7 +601,16 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
                 )}
               </div>
             )}
-            <p className="sb-summary">{parts.join(" · ") || `${savedTeams.length} leagues`}</p>
+            <p className="sb-summary">
+              {parts.length
+                ? parts.map(([n, word, tone], i) => (
+                    <Fragment key={word}>
+                      {i > 0 && " · "}
+                      <span className={tone}>{`${n} ${word}`}</span>
+                    </Fragment>
+                  ))
+                : `${savedTeams.length} leagues`}
+            </p>
           </div>
         </div>
         <div className="sb-top-side">
