@@ -77,11 +77,6 @@ function Strip({ phase, feed, week, oneLeague }) {
   const games = feed.nextUp?.games || [];
   return (
     <div className="cp-strip">
-      <div className="cp-orbit" aria-hidden="true">
-        <div className={`sb-wait-orbit${feed.nextStart || phase === "live" ? "" : " is-still"}`}>
-          <span className="sb-wait-core" />
-        </div>
-      </div>
       <div className="cp-strip-text">
         <span className="cp-strip-eyebrow mono">{week ? `Week ${week} · ` : ""}{PHASE_LINE[phase] || ""}</span>
         <div className="cp-strip-grid">
@@ -108,7 +103,7 @@ function Strip({ phase, feed, week, oneLeague }) {
         {games.length > 0 && (
           <div className="cp-strip-games">
             <span className="cp-strip-label mono">{games.length === 1 ? "Matchup" : "Games"}</span>
-            {games.slice(0, 3).map((g) => (
+            {games.slice(0, 2).map((g) => (
               <span key={g.join("-")} className="sb-wait-game">
                 {g.map((t, i) => (
                   <span key={t} className="sb-wait-team">
@@ -118,7 +113,7 @@ function Strip({ phase, feed, week, oneLeague }) {
                 ))}
               </span>
             ))}
-            {games.length > 3 && <span className="sb-wait-more mono">+{games.length - 3} more</span>}
+            {games.length > 2 && <span className="sb-wait-more mono">+{games.length - 2} more</span>}
           </div>
         )}
       </div>
