@@ -4922,7 +4922,7 @@ html{font-stretch:82%;}
   border-top:1px solid rgba(var(--star-dot-rgb),.07);
 }
 .h2h-side.opp .h2h-row{grid-template-columns:58px 156px minmax(0,1fr) 64px; grid-template-areas:"pts curve player slot";}
-.h2h-row.h2h-head{height:auto; min-height:0; padding-top:2px; padding-bottom:6px; border-top:0; font-family:var(--font-mono), monospace; font-size:10px; text-transform:uppercase; letter-spacing:.07em; color:var(--star-dim);}
+.h2h-row.h2h-head{height:auto; min-height:0; padding-top:0; padding-bottom:3px; line-height:1.2; border-top:0; font-family:var(--font-mono), monospace; font-size:10px; text-transform:uppercase; letter-spacing:.07em; color:var(--star-dim);}
 .h2h-c-slot{grid-area:slot;}
 .h2h-c-player{grid-area:player; min-width:0; display:flex; flex-direction:column; gap:4px;}
 /* The outcome curve cell (ScoreCurve.js): floor / median / ceiling under the hump, the scored points as a marker on it. */
