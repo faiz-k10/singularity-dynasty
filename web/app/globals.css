@@ -5818,7 +5818,7 @@ html{font-stretch:82%;}
 /* Collapse the right-hand pane to a rail (founder, Oct 22 2026): a chevron at the end of the pane's header folds it to a thin strip at the right edge (live dot,
    a left chevron and the pane's name set vertically); clicking the strip opens it again. The grid gives the freed width to the cards / matchup. Stacked layouts
    (under 1000px) have no pane to fold. */
-.sb-feed-collapse{all:unset; box-sizing:border-box; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; width:30px; height:30px; margin-left:10px; flex:none; font-size:20px; line-height:1; color:var(--star-dim); border:1px solid var(--rule); border-radius:var(--r-sm);}
+.sb-feed-collapse{all:unset; box-sizing:border-box; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; width:30px; height:30px; flex:none; font-size:20px; line-height:1; color:var(--star-dim); border:1px solid var(--rule); border-radius:var(--r-sm);}
 .sb-feed-collapse:hover, .sb-feed-collapse:focus-visible{color:var(--star); border-color:var(--rule-strong);}
 .sb-feed-rail{display:none;}
 .sb-feed-rail-arrow{font-size:22px; line-height:1;}
@@ -5836,3 +5836,6 @@ html{font-stretch:82%;}
 @media (max-width:999px){
   .sb-feed-collapse{display:none;}
 }
+
+/* The collapse button sits at the far left of the pane's header, right beside the pane's name; the Live / Companion switch stays at the right. */
+.sb-feed-headleft{display:flex; align-items:center; gap:12px; min-width:0;}

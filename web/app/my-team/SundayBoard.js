@@ -414,19 +414,21 @@ function LiveFeed({ savedTeams, gameStates, updatedAt, teamId = null, league = n
         <span className="sb-feed-rail-label mono">{mode === "live" ? "Playing now" : "Companion"}</span>
       </button>
       <div className="sb-feed-head">
-        <h2 className="board-panel-title">
-          {all.length > 0 && <span className="sb-live-dot" aria-hidden="true" />}
-          {mode === "live" ? "Playing now" : "Companion"}
-        </h2>
+        <div className="sb-feed-headleft">
+          <button type="button" className="sb-feed-collapse" onClick={onToggle} aria-label="Collapse this pane to the right" title="Collapse to the right">
+            <span aria-hidden="true">›</span>
+          </button>
+          <h2 className="board-panel-title">
+            {all.length > 0 && <span className="sb-live-dot" aria-hidden="true" />}
+            {mode === "live" ? "Playing now" : "Companion"}
+          </h2>
+        </div>
         {!nobody && (
           <span className="sb-feed-tabs">
             <PanelTabs tabs={[["live", "Live"], ["companion", "Companion"]]} value={mode} onChange={setPicked} />
           </span>
         )}
         {nobody && league && <span className="sb-feed-scope mono">{league}</span>}
-        <button type="button" className="sb-feed-collapse" onClick={onToggle} aria-label="Collapse this pane to the right" title="Collapse to the right">
-          <span aria-hidden="true">›</span>
-        </button>
       </div>
       {mode === "companion" ? (
         <Companion savedTeams={savedTeams} gameStates={gameStates} teamId={teamId} injuriesByTeam={injuriesByTeam} weekFeed={weekFeed} />
