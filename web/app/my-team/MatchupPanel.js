@@ -8,6 +8,7 @@ import { summarizeSide } from "@/lib/winChance";
 import Standings from "./Standings";
 import WaiverWire from "./WaiverWire";
 import LineupAdvice from "./LineupAdvice";
+import { useStatsSlide, StatsPanel } from "./GameStats";
 import ScoreCurve from "./ScoreCurve";
 import { leadState } from "@/lib/leadState";
 import { adjustedMatchup } from "@/lib/adjustedMatchup";
@@ -55,6 +56,8 @@ function leftLabel(s) {
 // uncertain: points are on the board but the scoreboard couldn't be read, so we can't tell who is still to play --
 // the "to come" range, projected final and players-left counts are hidden rather than guessed.
 function SideRow({ p, scoreboardKnown, uncertain, mounted }) {
+  // Hooks first (the empty-slot return below can't come before them): clicking his score slides his stats for this game in.
+  const slide = useStatsSlide(p, p.outlook?.state === "in" || p.outlook?.state === "post");
   if (!p.id) {
     return (
       <div className="h2h-row is-empty">
@@ -74,7 +77,7 @@ function SideRow({ p, scoreboardKnown, uncertain, mounted }) {
   const tone = pts == null || o.state === "pre" || typeof p.floor !== "number" || typeof p.ceiling !== "number" ? null : pts <= p.floor ? "low" : pts >= p.ceiling ? "good" : "mid";
   const showCurve = !p.out && o.state !== "bye" && p.proj > 0 && typeof p.floor === "number" && typeof p.ceiling === "number" && p.ceiling > p.floor;
   return (
-    <div className={`h2h-row${o.state === "in" ? " is-live" : ""}${done ? " is-done" : ""}${o.state === "pre" && !p.out ? " is-upcoming" : ""}`}>
+    <div className={`h2h-row${o.state === "in" ? " is-live" : ""}${done ? " is-done" : ""}${o.state === "pre" && !p.out ? " is-upcoming" : ""}${slide.phase === "open" ? " is-stats" : slide.phase === "closing" ? " is-closing" : ""}`} style={slide.rowStyle}>
       <span className="h2h-c-slot"><SlotBadge slot={p.slot} compact /></span>
       <span className="h2h-c-player">
         <span className="h2h-player-name">{p.name}</span>
@@ -101,14 +104,16 @@ function SideRow({ p, scoreboardKnown, uncertain, mounted }) {
         )}
       </span>
       <span
-        className={`h2h-c-pts mono live-pts-cell${o.state === "in" ? " is-live" : ""}${tone ? ` tone-${tone}` : ""}`}
-        title={o.state === "in" ? "Points so far · game in progress" : o.state === "post" ? "Final points" : "Not started"}
+        className={`h2h-c-pts mono live-pts-cell${o.state === "in" ? " is-live" : ""}${tone ? ` tone-${tone}` : ""}${slide.enabled ? " is-clickable" : ""}`}
+        title={slide.enabled ? "Click for his stats this game" : "Not started"}
+        {...(slide.enabled ? { role: "button", tabIndex: 0, "aria-expanded": slide.open, onClick: slide.toggle, onKeyDown: (e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), slide.toggle(e)) } : {})}
       >
         <span className="h2h-pts-num">
           {o.state === "in" && <span className="matchup-score-live-dot" aria-hidden="true" />}
           {fmt2(pts)}
         </span>
       </span>
+      <StatsPanel p={p} slide={slide} />
     </div>
   );
 }

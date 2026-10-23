@@ -4919,7 +4919,7 @@ html{font-stretch:82%;}
 .h2h-side-title{font-size:13px; color:var(--star-dim); padding:2px 4px 8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
 .h2h-side.opp .h2h-side-title{text-align:right;}
 .h2h-row{
-  display:grid; align-items:center; gap:8px; height:68px; box-sizing:border-box; padding:6px 4px;
+  position:relative; display:grid; align-items:center; gap:8px; height:68px; box-sizing:border-box; padding:6px 4px;
   grid-template-columns:64px minmax(0,1fr) 156px 58px; grid-template-areas:"slot player curve pts";
   border-top:1px solid rgba(var(--star-dot-rgb),.07);
 }
@@ -4965,6 +4965,25 @@ html{font-stretch:82%;}
 .h2h-c-pts.is-live{color:var(--star);}
 .h2h-c-pts.tone-good, .tone-good-text{color:var(--down);}
 .h2h-c-pts.tone-low, .tone-low-text{color:var(--neon-blue);}
+/* Click a score and the rest of the row drifts away from it (--away is +1 / -1, measured on click) while his box-score line for this game slides in over that
+   area from the other side (GameStats.js); clicking the score again slides it all back. */
+.h2h-c-pts.is-clickable{cursor:pointer;}
+.h2h-c-pts.is-clickable:hover .h2h-pts-num{text-decoration:underline; text-decoration-color:var(--rule-strong); text-underline-offset:4px;}
+/* Both directions slide the same way: opening, the row drifts away from the score while the stats come in from the other side; closing, the stats drift out
+   the way the row went while the row comes back in from the other side. --away is +1 / -1 (measured on click), --slide the distance. */
+@keyframes h2h-away{to{transform:translateX(calc(var(--away) * var(--slide))); opacity:0;}}
+@keyframes h2h-from{from{transform:translateX(calc(var(--away) * var(--slide) * -1)); opacity:0;}}
+.h2h-row.is-stats .h2h-c-slot, .h2h-row.is-stats .h2h-player-name, .h2h-row.is-stats .h2h-player-sub, .h2h-row.is-stats .h2h-c-curve{animation:h2h-away .38s cubic-bezier(.22,.8,.3,1) forwards; pointer-events:none;}
+.h2h-row.is-closing .h2h-c-slot, .h2h-row.is-closing .h2h-player-name, .h2h-row.is-closing .h2h-player-sub, .h2h-row.is-closing .h2h-c-curve{animation:h2h-from .38s cubic-bezier(.22,.8,.3,1) both;}
+.h2h-statsbox{position:absolute; top:0; bottom:0; z-index:1; display:flex; flex-direction:column; justify-content:center; padding:0 4px; opacity:0; pointer-events:none;}
+.h2h-statsbox.is-in{opacity:1; pointer-events:auto; animation:h2h-from .38s cubic-bezier(.22,.8,.3,1) both;}
+.h2h-statsbox.is-out{opacity:1; animation:h2h-away .38s cubic-bezier(.22,.8,.3,1) forwards;}
+.h2h-statsbox-note{font-size:12px; color:var(--star-dim);}
+.h2h-stat-chips{display:flex; flex-wrap:wrap; gap:6px 0; width:100%;} /* every number gets an equal share of the whole width; they only wrap if the full list can't fit on one line */
+.h2h-stat{flex:1 1 0; min-width:max-content; display:flex; flex-direction:column; align-items:center; gap:3px; padding:0 4px;}
+.h2h-stat-label{font-size:9px; text-transform:uppercase; letter-spacing:.04em; color:var(--star-dim); white-space:nowrap;}
+.h2h-stat-value{font-size:20px; line-height:1.1; font-weight:700; color:var(--star); font-variant-numeric:tabular-nums;}
+@media (prefers-reduced-motion:reduce){ .h2h-row .h2h-c-slot, .h2h-row .h2h-player-name, .h2h-row .h2h-player-sub, .h2h-row .h2h-c-curve, .h2h-statsbox{animation-duration:.01s !important;} }
 /* How to read the curves: a one-line legend under the lineups. */
 .h2h-legend{list-style:none; margin:2px 0 0; padding:0; display:flex; flex-wrap:wrap; gap:6px 18px; font-size:11.5px; line-height:1.4; color:var(--star-dim);}
 .h2h-legend li{display:inline-flex; align-items:baseline; gap:7px;}

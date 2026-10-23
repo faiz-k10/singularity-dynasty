@@ -24,6 +24,7 @@ import {
   getSleeperPlayers,
 } from "@/lib/sleeper";
 import { fetchGameStates } from "@/lib/gameStatus";
+import { loadGameStats } from "@/lib/gameStats";
 import { loadLivePlays } from "@/lib/playByPlay";
 import { getWeekProjections, getWeekRankRows } from "@/lib/weekProjections";
 import { buildWaiverList, sleeperIndex } from "@/lib/waivers";
@@ -575,6 +576,22 @@ export async function getLivePlays(players) {
     return await loadLivePlays(clean, await fetchGameStates()); // { plays, totals }
   } catch {
     return { plays: [], totals: {} };
+  }
+}
+
+// One player's box-score line for this game (the matchup rows' click-the-score slide, app/my-team/GameStats.js, lib/gameStats.js).
+export async function getGameStats(players) {
+  const supabase = await createClient();
+  const user = await getAuthUser(supabase);
+  if (!user) return { error: "Sign in required." };
+  const clean = (Array.isArray(players) ? players : [])
+    .slice(0, 4)
+    .map((p) => ({ name: String(p?.name ?? "").slice(0, 60), team: String(p?.team ?? "").slice(0, 4), pos: String(p?.pos ?? "").slice(0, 4) }))
+    .filter((p) => p.name && p.team);
+  try {
+    return { stats: await loadGameStats(clean, await fetchGameStates()) };
+  } catch {
+    return { stats: {} };
   }
 }
 
