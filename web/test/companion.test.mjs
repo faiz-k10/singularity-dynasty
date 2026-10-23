@@ -101,6 +101,6 @@ test("lineup upgrade card names the swap and the gain", () => {
     players: [P2("1", "Starter", "RB", "SF", 12, { isStarter: true, slotIndex: 0 }), P2("2", "Weak", "WR", "DAL", 4, { isStarter: true, slotIndex: 1 }), P2("3", "Bench", "WR", "KC", 11)],
   };
   const c = buildInsights({ savedTeams: [t], gameStates: { SF: { state: "pre" }, DAL: { state: "pre" }, KC: { state: "pre" } } }).cards.find((x) => x.kind === "lineup");
-  assert.match(c.title, /Start Bench over Weak/);
+  assert.match(c.title, /Start Bench at FLEX over Weak/);
   assert.match(c.body, /7\.0 more/);
 });

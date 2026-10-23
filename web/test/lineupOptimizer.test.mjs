@@ -15,10 +15,9 @@ test("swaps a bench player who projects higher into the slot", () => {
   ]);
   const r = optimizeLineup(t, {});
   assert.equal(r.gain, 8);
-  assert.equal(r.swaps[0].in.name, "BenchRb");
-  assert.equal(r.swaps[0].out.name, "Flex");
-  assert.equal(r.swaps[0].gain, 8);
-  assert.deepEqual(r.moves.map((m) => [m.player.name, m.from, m.to]), [["Rb", "RB", "FLEX"]]);
+  // One row per slot that changes, each legal for that slot, gains adding up to the total: BenchRb takes the RB slot, Rb moves to FLEX.
+  assert.deepEqual(r.swaps.map((x) => [x.slot, x.in.name, x.out.name, x.gain, x.fromSlot]), [["FLEX", "Rb", "Flex", 6, "RB"], ["RB", "BenchRb", "Rb", 2, null]]);
+  assert.equal(r.swaps.reduce((a, x) => a + x.gain, 0), r.gain);
 });
 
 test("already optimal: no swaps; ties keep the current starter", () => {
@@ -59,6 +58,7 @@ test("SUPER_FLEX / FLEX are filled after the fixed slots", () => {
     ["QB", "RB", "SUPER_FLEX"]
   );
   const r = optimizeLineup(t, {});
+  assert.equal(r.swaps[0].slot, "SUPER_FLEX");
   assert.equal(r.swaps[0].in.name, "Qb2");
   assert.equal(r.swaps[0].out.name, "Junk");
 });
@@ -96,7 +96,7 @@ test("no FLEX-to-FLEX 'moves': a player shuffled between slots of the same kind 
     ["FLEX", "FLEX"]
   );
   const r = optimizeLineup(t, {});
-  assert.equal(r.moves.length, 0);
+  assert.equal(r.swaps.length, 1);
   assert.equal(r.swaps[0].in.name, "Bench");
 });
 
@@ -118,4 +118,23 @@ test("lineup alerts: empty slot, bye, out and injury tags, each with the best be
   assert.equal(a.find((x) => x.type === "bye").replacement.name, "BenchWr");
   assert.equal(a.find((x) => x.type === "empty").slot, "TE");
   assert.equal(lineupAlerts(team([], ["QB"], { bestBall: true }), {}, []).length, 0);
+});
+
+test("every recommended swap is legal for its slot and the gains add up (QB can't take a plain FLEX)", () => {
+  const t = team(
+    [
+      P("1", "Geno", "QB", "A", 14.6, { isStarter: true, slotIndex: 0 }),
+      P("2", "Back", "RB", "B", 9, { isStarter: true, slotIndex: 1 }),
+      P("3", "Kelce", "TE", "C", 11, { isStarter: true, slotIndex: 2 }),
+      P("4", "Wide", "WR", "D", 10, { isStarter: true, slotIndex: 3 }),
+      P("5", "Rodgers", "QB", "E", 16.9),
+      P("6", "Saquon", "RB", "F", 12.9),
+    ],
+    ["QB", "RB", "FLEX", "SUPER_FLEX"]
+  );
+  const r = optimizeLineup(t, {});
+  const ELIGIBLE = { QB: ["QB"], RB: ["RB"], FLEX: ["RB", "WR", "TE"], SUPER_FLEX: ["QB", "RB", "WR", "TE"] };
+  for (const x of r.swaps) assert.ok(ELIGIBLE[x.slot].includes(x.in.position), `${x.in.name} can't play ${x.slot}`);
+  assert.ok(r.swaps.every((x) => x.slot !== "FLEX" || x.in.position !== "QB"));
+  assert.ok(Math.abs(r.swaps.reduce((a, x) => a + x.gain, 0) - r.gain) < 0.11);
 });

@@ -18,32 +18,27 @@ function Who({ p }) {
   );
 }
 
-function SwapList({ swaps, moves, key1 = "myProjPts" }) {
+function SwapList({ swaps, key1 = "myProjPts" }) {
   return (
-    <>
-      <ul className="lu-swaps">
-        {swaps.map((x) => (
-          <li key={x.in.player_id} className="lu-swap">
-            <span className="lu-verb mono">Start</span>
-            <Who p={x.in} />
-            <span className="lu-pts mono">{fmt1(x.in[key1])}</span>
-            {x.out && (
-              <>
-                <span className="lu-verb mono">over</span>
-                <Who p={x.out} />
-                <span className="lu-pts mono">{fmt1(x.out[key1])}</span>
-              </>
-            )}
-            <span className="lu-gain mono">+{fmt1(x.gain)}</span>
-          </li>
-        ))}
-      </ul>
-      {moves.length > 0 && (
-        <p className="lu-moves mono">
-          Also move {moves.map((m) => `${m.player.name} from ${slotName(m.from)} to ${slotName(m.to)}`).join(", ")}.
-        </p>
-      )}
-    </>
+    <ul className="lu-swaps">
+      {swaps.map((x) => (
+        <li key={`${x.slot}:${x.in.player_id}`} className="lu-swap">
+          <span className="lu-slot mono">{slotName(x.slot)}</span>
+          <span className="lu-verb mono">Start</span>
+          <Who p={x.in} />
+          <span className="lu-pts mono">{fmt1(x.in[key1])}</span>
+          {x.fromSlot && <span className="lu-from mono">from {slotName(x.fromSlot)}</span>}
+          {x.out && (
+            <>
+              <span className="lu-verb mono">over</span>
+              <Who p={x.out} />
+              <span className="lu-pts mono">{fmt1(x.out[key1])}</span>
+            </>
+          )}
+          <span className={`lu-gain mono${x.gain < 0 ? " is-neg" : ""}`}>{x.gain >= 0 ? "+" : "−"}{fmt1(Math.abs(x.gain))}</span>
+        </li>
+      ))}
+    </ul>
   );
 }
 
@@ -102,7 +97,7 @@ export default function LineupAdvice({ team, gameStates, injuries = [] }) {
           {advice.lockedStarters > 0 && <span className="lu-locked"> · {advice.lockedStarters} locked</span>}
         </div>
       </div>
-      {better && <SwapList swaps={advice.swaps} moves={advice.moves} />}
+      {better && <SwapList swaps={advice.swaps} />}
       {t && (
         <div className={`lu-tilt is-${t.mode}`}>
           <h4 className="lu-tilt-title mono">
@@ -113,7 +108,7 @@ export default function LineupAdvice({ team, gameStates, injuries = [] }) {
               ? `This version adds ${fmt1(t.gain)} to your ceiling lineup and moves your projection ${t.medianChange >= 0 ? "+" : "−"}${fmt1(Math.abs(t.medianChange))}. A bigger spread is what an underdog needs.`
               : `This version adds ${fmt1(t.gain)} to your floor lineup and moves your projection ${t.medianChange >= 0 ? "+" : "−"}${fmt1(Math.abs(t.medianChange))}. A narrower spread is what a favorite wants.`}
           </p>
-          <SwapList swaps={t.swaps} moves={t.moves} key1={t.mode === "ceiling" ? "myCeiling" : "myFloor"} />
+          <SwapList swaps={t.swaps} key1={t.mode === "ceiling" ? "myCeiling" : "myFloor"} />
         </div>
       )}
       <div className="waivers-foot">

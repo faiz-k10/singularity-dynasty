@@ -62,31 +62,22 @@ export function optimizeLineup(team, gameStates, mode = "proj") {
   const val = (p) => (p && p.val != null ? p.val : 0);
   let current = 0;
   let best = 0;
-  const startingNow = new Set();
-  const picked = new Set();
-  const moves = []; // a player who keeps a starting spot but changes slot
+  const swaps = []; // one per slot whose starter changes, so every row is a legal move for THAT slot and the gains add up to the total
   for (const o of open) {
     const pick = chosen.get(o.i) || o.cur || null;
     current += val(o.cur);
     best += val(pick);
-    if (o.cur) startingNow.add(o.cur.player_id);
-    if (pick) {
-      picked.add(pick.player_id);
-      if (o.cur && pick.player_id !== o.cur.player_id && startingNow.has(pick.player_id)) moves.push({ player: pick, to: o.kind });
+    if (pick && (!o.cur || pick.player_id !== o.cur.player_id)) {
+      swaps.push({ slot: o.kind, in: pick, out: o.cur || null, gain: r1(val(pick) - val(o.cur)), fromSlot: byIndexSlot(slots, byIndex, pick) });
     }
   }
-  // As people would say it: who comes in from the bench, who goes out, paired best-in with worst-out.
-  const ins = open.map((o) => chosen.get(o.i) || o.cur).filter((p) => p && !startingNow.has(p.player_id)).sort((a, b) => val(b) - val(a));
-  const outs = open.map((o) => o.cur).filter((p) => p && !picked.has(p.player_id)).sort((a, b) => val(a) - val(b));
-  const swaps = ins.map((inn, i) => ({ in: inn, out: outs[i] || null, gain: r1(val(inn) - val(outs[i]))}));
+  swaps.sort((a, b) => b.gain - a.gain);
   return {
     mode,
     current: r1(current),
     best: r1(best),
     gain: r1(best - current),
     swaps,
-    // A player shuffled between two slots of the same kind (FLEX to FLEX) isn't a move anyone has to make.
-    moves: moves.map((m) => ({ player: m.player, to: m.to, from: byIndexSlot(slots, byIndex, m.player) })).filter((m) => m.from !== m.to),
     optimizedSlots: open.length,
     lockedStarters: slots.length - open.length,
   };
