@@ -61,7 +61,7 @@ export default function LineupAdvice({ team, gameStates, injuries = [] }) {
       </div>
       <div className="lu-alerts">
         <h4 className="lu-alerts-title mono">
-          Lineup alerts{alerts.length + swapCount > 0 && <span className="lu-alerts-count"> {alerts.length + swapCount}</span>}
+          Lineup alerts{alerts.length + swapCount > 0 && <span className="lu-alerts-count">{alerts.length + swapCount}</span>}
         </h4>
         {alerts.length === 0 ? (
           <p className="lu-alerts-none mono">No injury or bye alerts: every starter is healthy and in a game this week.</p>
