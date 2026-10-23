@@ -358,7 +358,7 @@ function RecentPlays({ rows, updatedAt, focus, onPick, onTotals }) {
 // The live panel beside the cards: only players on the field right now -- yours, then your opponents' -- across every
 // league, or just the open league's two lineups (teamId). Newest scoring first within each side; a row flashes gold
 // with "+6.4" when he scores. Finished and not-started players stay off it so it never fills with noise.
-function LiveFeed({ savedTeams, gameStates, updatedAt, teamId = null, league = null, playTotals, onTotals, injuriesByTeam, weekFeed }) {
+function LiveFeed({ savedTeams, gameStates, updatedAt, teamId = null, league = null, playTotals, onTotals, injuriesByTeam, weekFeed, collapsed = false, onToggle }) {
   const mounted = useMounted();
   const baseFeed = useMemo(() => buildLiveFeed(savedTeams, gameStates, { onlyTeamId: teamId }), [savedTeams, gameStates, teamId]);
   // Each player's running points play by play (from the plays request below): Sleeper trails the game by a minute or two, so the
@@ -405,7 +405,14 @@ function LiveFeed({ savedTeams, gameStates, updatedAt, teamId = null, league = n
   const [picked, setPicked] = useState(null);
   const mode = nobody ? "companion" : picked || "live";
   return (
-    <aside className="sb-feed glass-panel" aria-label="Companion">
+    <aside className={`sb-feed glass-panel${collapsed ? " is-collapsed" : ""}`} aria-label="Companion">
+      {/* The pane folds to a thin rail at the right edge. Everything else stays mounted (just hidden), so the plays keep loading and the
+          scores on the cards keep their "ahead of Sleeper" adjustment while it is folded. */}
+      <button type="button" className="sb-feed-rail" onClick={onToggle} aria-label="Open the Companion pane" title="Open the Companion pane" tabIndex={collapsed ? 0 : -1}>
+        {all.length > 0 && <span className="sb-live-dot" aria-hidden="true" />}
+        <span className="sb-feed-rail-arrow" aria-hidden="true">‹</span>
+        <span className="sb-feed-rail-label mono">{mode === "live" ? "Playing now" : "Companion"}</span>
+      </button>
       <div className="sb-feed-head">
         <h2 className="board-panel-title">
           {all.length > 0 && <span className="sb-live-dot" aria-hidden="true" />}
@@ -417,6 +424,9 @@ function LiveFeed({ savedTeams, gameStates, updatedAt, teamId = null, league = n
           </span>
         )}
         {nobody && league && <span className="sb-feed-scope mono">{league}</span>}
+        <button type="button" className="sb-feed-collapse" onClick={onToggle} aria-label="Collapse this pane to the right" title="Collapse to the right">
+          <span aria-hidden="true">›</span>
+        </button>
       </div>
       {mode === "companion" ? (
         <Companion savedTeams={savedTeams} gameStates={gameStates} teamId={teamId} injuriesByTeam={injuriesByTeam} weekFeed={weekFeed} />
@@ -453,6 +463,24 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
   // League filters (BoardFilters.js): league type / win chance / score / playoff odds. Not remembered between visits, so the
   // board always opens showing every league; the pill and the "Showing N of M" line say when something is filtered.
   const [filters, setFilters] = useState(emptyFilters);
+  // The right-hand pane can fold to a thin rail (remembered per browser).
+  const [feedCollapsed, setFeedCollapsed] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => {
+      try {
+        if (localStorage.getItem("myteam.feedCollapsed") === "1") setFeedCollapsed(true);
+      } catch {}
+    }, 0);
+    return () => clearTimeout(t);
+  }, []);
+  const toggleFeed = useCallback(() => {
+    setFeedCollapsed((c) => {
+      try {
+        localStorage.setItem("myteam.feedCollapsed", c ? "0" : "1");
+      } catch {}
+      return !c;
+    });
+  }, []);
   const factsById = useMemo(() => {
     const m = {};
     for (const t of savedTeams) {
@@ -552,7 +580,7 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
 
   return (
     <div className="sb">
-      <div className={`sb-top${openTeam ? " has-drawer" : ""}`}>
+      <div className={`sb-top${openTeam ? " has-drawer" : ""}${feedCollapsed ? " feed-collapsed" : ""}`}>
         {/* Same two columns as the body below: the week and its summary with the Filter at the right end of the cards'
             column, then the clock and board controls over the live panel. */}
         <div className="sb-top-main">
@@ -581,7 +609,7 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
           {toolbar}
         </div>
       </div>
-      <div className={`sb-body${openTeam ? " has-drawer" : ""}`}>
+      <div className={`sb-body${openTeam ? " has-drawer" : ""}${feedCollapsed ? " feed-collapsed" : ""}`}>
         {openTeam ? (
           // The league's matchup slides in from the left over the cards; the live panel stays beside it, narrowed to
           // this league's two lineups.
@@ -624,6 +652,8 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
           onTotals={mergeTotals}
           injuriesByTeam={injuriesByTeam}
           weekFeed={weekFeed}
+          collapsed={feedCollapsed}
+          onToggle={toggleFeed}
         />
       </div>
     </div>
