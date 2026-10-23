@@ -4011,7 +4011,7 @@ summary:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible{
 
 /* Side-by-side / Stacked arrangement toggle (segmented control) */
 .board-orient{display:inline-flex; height:36px; box-sizing:border-box; border:1px solid rgba(var(--star-dot-rgb),.13); border-radius:2px; overflow:hidden; background:rgba(var(--scrim-rgb),.6);}
-.board-orient button{display:flex; align-items:center; gap:7px; height:100%; font:inherit; font-size:12.5px; color:var(--star-dim); background:transparent; border:0; padding:0 14px; cursor:pointer;}
+.board-orient button{display:flex; align-items:center; gap:7px; height:100%; font-family:var(--font-mono), monospace; font-size:12.5px; color:var(--star-dim); background:transparent; border:0; padding:0 14px; cursor:pointer;}
 .board-orient button:hover{color:var(--star);}
 .board-orient button[aria-pressed="true"]{color:var(--void); background:var(--horizon-gold);}
 .board-orient-icon{width:14px; height:11px; border:1.5px solid currentColor; border-radius:2px; position:relative; display:inline-block;}
