@@ -5021,7 +5021,7 @@ html{font-stretch:82%;}
 .sb-top.has-drawer{grid-template-columns:minmax(0,1fr) 440px;}
 .sb-top-main{display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px 14px; min-width:0;}
 .sb-top-side{display:flex; flex-wrap:wrap; align-items:center; justify-content:flex-end; gap:10px 16px; min-width:0;}
-.sb-heading{display:flex; align-items:center; gap:14px; flex-wrap:wrap; min-width:0;}
+.sb-heading{display:flex; align-items:center; gap:14px; flex-wrap:wrap; flex:1 1 0; min-width:0;} /* takes the room left beside the Filter pill and wraps its summary inside itself, so the pill stays on this row */
 .sb-title{margin:0; padding:7px 16px 6px; font-family:var(--font-display), sans-serif; font-weight:800; font-size:28px; line-height:1; text-transform:uppercase; letter-spacing:.06em; color:var(--star); background:rgba(var(--scrim-rgb), var(--glass-alpha)); border:1px solid var(--rule); border-top:2px solid var(--rule-strong); border-radius:var(--r-sm);} /* boxed like a top-level panel */
 .sb-summary{margin:0; font-size:15px; color:var(--star-dim);}
 .sb-updated{display:inline-flex; align-items:center; gap:7px; font-size:12px; color:var(--star-dim); white-space:nowrap;}
