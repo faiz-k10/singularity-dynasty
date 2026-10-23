@@ -3,6 +3,7 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { sleeperMatchupUrl, formatWin } from "./MatchupPanel";
 import { formatOdds, oddsTone } from "./Standings";
+import { lineupAlertCount } from "@/lib/lineupOptimizer";
 
 // "Rico Dowdle" -> "R. Dowdle" (first initial, full remaining name incl. suffixes).
 function shortName(name) {
@@ -17,7 +18,7 @@ function parseRecord(rec) {
 
 // One row per saved team: the at-a-glance view Sleeper makes you click
 // league-by-league to assemble. Also used by the Sunday board's league cards.
-export function buildRow(t, injuries) {
+export function buildRow(t, injuries, gameStates = null) {
   const s = t.settings || {};
   const proj = s.matchupProj;
   const live = s.matchupActual;
@@ -52,6 +53,8 @@ export function buildRow(t, injuries) {
     playoffSettled: Boolean(s.playoffSettled),
     sleeperUrl: sleeperMatchupUrl(t.platform_league_id),
     outStarters,
+    // The one lineup-alert number (urgent alerts + start / sit swaps), same as the Lineup tab's badge.
+    alertCount: lineupAlertCount(t, gameStates, injuries),
     bestBall: !!s.bestBall,
   };
 }
@@ -59,15 +62,15 @@ export function buildRow(t, injuries) {
 // Headline counts for the Saved Teams panel header: leagues, how many are
 // leading / trailing (live score once games start, else projection) and
 // total lineup alerts. Same rows the table renders, so they always agree.
-export function summarizeLeagues(savedTeams, injuriesByTeam) {
+export function summarizeLeagues(savedTeams, injuriesByTeam, gameStates = null) {
   let leading = 0;
   let trailing = 0;
   let alerts = 0;
   for (const t of savedTeams) {
-    const r = buildRow(t, injuriesByTeam?.[t.id]);
+    const r = buildRow(t, injuriesByTeam?.[t.id], gameStates);
     if (r.liveMargin != null) r.liveMargin >= 0 ? leading++ : trailing++;
     else if (r.projMine != null && r.projOpp != null) r.projMine >= r.projOpp ? leading++ : trailing++;
-    alerts += r.outStarters.length;
+    alerts += r.alertCount.total;
   }
   return { leagues: savedTeams.length, leading, trailing, alerts };
 }
@@ -80,7 +83,7 @@ const COLS = [
   { key: "projMine", label: "Proj", sort: (r) => r.projMine ?? -1 },
   { key: "liveMargin", label: "Live", sort: (r) => r.liveMargin ?? -999 },
   { key: "winPct", label: "Win %", sort: (r) => r.winPct ?? -1 },
-  { key: "alerts", label: "Alerts", align: "left", sort: (r) => r.outStarters.length },
+  { key: "alerts", label: "Alerts", align: "left", sort: (r) => r.alertCount.total },
 ];
 
 // Keys typed into a field are never shortcuts.
@@ -107,7 +110,7 @@ const STORE_KEY = "myteam.dashboard";
 // with lineup alerts to the top.
 // Keyboard: j / k (anywhere) or the arrow keys (on a row) move between leagues, Enter opens or closes one, Esc closes
 // it. Which leagues are open and the sort are remembered per browser (localStorage, a convenience).
-export default function LeagueDashboard({ savedTeams, renderExpanded, injuriesByTeam, refreshing = false }) {
+export default function LeagueDashboard({ savedTeams, renderExpanded, injuriesByTeam, gameStates = null, refreshing = false }) {
   const [sortKey, setSortKey] = useState("alerts");
   const [dir, setDir] = useState("desc");
   const [open, setOpen] = useState(() => new Set());
@@ -160,7 +163,7 @@ export default function LeagueDashboard({ savedTeams, renderExpanded, injuriesBy
   }
 
   const rows = useMemo(() => {
-    const built = savedTeams.map((t) => ({ ...buildRow(t, injuriesByTeam?.[t.id]), team_obj: t }));
+    const built = savedTeams.map((t) => ({ ...buildRow(t, injuriesByTeam?.[t.id], gameStates), team_obj: t }));
     const col = COLS.find((c) => c.key === sortKey) || COLS[0];
     const mult = dir === "asc" ? 1 : -1;
     return built.sort((a, b) => {
@@ -168,7 +171,7 @@ export default function LeagueDashboard({ savedTeams, renderExpanded, injuriesBy
       const y = col.sort(b);
       return (x > y ? 1 : x < y ? -1 : 0) * mult;
     });
-  }, [savedTeams, injuriesByTeam, sortKey, dir]);
+  }, [savedTeams, injuriesByTeam, gameStates, sortKey, dir]);
 
   function clickSort(key) {
     if (key === sortKey) setDir((d) => (d === "asc" ? "desc" : "asc"));

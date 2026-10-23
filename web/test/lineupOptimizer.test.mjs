@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { optimizeLineup, lineupAdvice, lineupAlerts } from "../lib/lineupOptimizer.js";
+import { optimizeLineup, lineupAdvice, lineupAlerts, lineupAlertCount } from "../lib/lineupOptimizer.js";
 
 const P = (id, name, position, team, proj, extra = {}) => ({ player_id: id, name, position, team, myProjPts: proj, isStarter: false, slotIndex: 999, ...extra });
 const team = (players, slots = ["QB", "RB", "WR", "FLEX"], settings = {}) => ({ settings: { slots, ...settings }, players });
@@ -153,4 +153,23 @@ test("an already-better starter is never swapped out (a starter at 18.3 stays ov
   );
   const r = optimizeLineup(t, {});
   assert.deepEqual(r.swaps.map((x) => [x.slot, x.in.name, x.out.name, x.gain]), [["QB", "Rodgers", "Weak", 11.9]]);
+});
+
+test("lineupAlertCount is the one number: urgent alerts + start / sit swaps (3 injury tags + 2 swaps = 5)", () => {
+  const t = team(
+    [
+      P("1", "Hurt1", "WR", "A", 9, { isStarter: true, slotIndex: 0 }),
+      P("2", "Hurt2", "TE", "B", 7, { isStarter: true, slotIndex: 1 }),
+      P("3", "Hurt3", "RB", "C", 6, { isStarter: true, slotIndex: 2 }),
+      P("4", "BenchRb", "RB", "D", 12),
+      P("5", "BenchTe", "TE", "E", 8.5),
+    ],
+    ["WR", "TE", "FLEX"]
+  );
+  const inj = [1, 2, 3].map((i) => ({ name: `Hurt${i}`, status: "Questionable", severity: 1 }));
+  const c = lineupAlertCount(t, {}, inj);
+  assert.equal(c.alerts.length, 3);
+  assert.equal(c.swaps.length, 2);
+  assert.equal(c.total, 5);
+  assert.equal(lineupAlertCount({ settings: {}, players: [] }, {}, []).total, 0);
 });

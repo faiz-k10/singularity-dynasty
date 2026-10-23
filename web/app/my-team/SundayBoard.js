@@ -44,7 +44,7 @@ function Score({ value, state }) {
 // Everything a league card (and the filters) need to know about this week's matchup, computed once.
 function matchupState(team, gameStates, injuries, playTotals = null) {
   const s = team.settings || {};
-  const row = buildRow(team, injuries);
+  const row = buildRow(team, injuries, gameStates);
   // The plays Sleeper hasn't posted yet are added to the lineups, the totals and the win chance (lib/adjustedMatchup.js), so a
   // card is on the same clock as the live list and the open matchup.
   const adj = adjustedMatchup(s, gameStates, playTotals);
@@ -80,7 +80,7 @@ function LeagueCard({ team, gameStates, injuries, onOpen, playTotals }) {
   const ringPct = oddsRing ? row.playoffOdds : pct == null ? null : done ? (myScore > oppScore ? 1 : myScore < oppScore ? 0 : 0.5) : pct;
   // The ring closes all the way only for a result that is certain (won, or YOU WIN = locked in); a near-certain percentage stops just short.
   const ringStyle = ringPct == null ? undefined : { "--win": ringPct >= 0.995 ? (done || lock === "win" || oddsRing ? 1 : 0.985) : Math.max(0.02, ringPct) };
-  const alerts = row.outStarters.length;
+  const alerts = row.alertCount.total;
   const myLeft = mine ? mine.players.filter((p) => p.outlook.state === "pre" || p.outlook.state === "in" || p.outlook.state === null) : [];
   const oppLeft = opp ? opp.yetToPlay + opp.playing : 0;
   // Only "Live" and "Final" -- the next kickoff is on the Playing now panel's countdown, not repeated on every card.
@@ -195,7 +195,7 @@ function LeagueCard({ team, gameStates, injuries, onOpen, playTotals }) {
                   <span />
                 )}
                 {alerts > 0 && (
-                  <span className="sb-card-alerts mono" title={row.outStarters.map((p) => `${p.name}: ${p.status}`).join("\n")}>
+                  <span className="sb-card-alerts mono" title={[...row.alertCount.alerts.map((a) => `${a.player?.name || "Empty slot"}: ${a.status}`), ...row.alertCount.swaps.map((x) => `Start ${x.in.name}${x.out ? ` over ${x.out.name}` : ""} (+${x.gain.toFixed(1)})`)].join("\n")}>
                     {alerts} {alerts === 1 ? "alert" : "alerts"}
                   </span>
                 )}
@@ -568,7 +568,7 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
     else if (label === "Out of reach") tally.losing++;
     else if (label === "Lost") tally.lost++;
     else if (t.settings?.bestBall) tally.bestBall++;
-    alerts += ms.row.outStarters.length;
+    alerts += ms.row.alertCount.total;
     for (const p of t.settings?.h2h?.mine || []) if (gameStates?.[p.team]?.state === "in") { live++; break; }
   }
   const week = savedTeams.find((t) => t.settings?.week)?.settings.week;

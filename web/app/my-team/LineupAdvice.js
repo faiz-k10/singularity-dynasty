@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import PositionBadge from "../tools/PositionBadge";
 import TeamBadge from "../tools/TeamBadge";
-import { lineupAdvice, lineupAlerts } from "@/lib/lineupOptimizer";
+import { lineupAdvice, lineupAlertCount } from "@/lib/lineupOptimizer";
 
 const fmt1 = (v) => (v == null ? "—" : v.toFixed(1));
 const slotName = (s) => (s === "SUPER_FLEX" ? "SUPERFLEX" : s);
@@ -47,9 +47,8 @@ function SwapList({ swaps, key1 = "myProjPts" }) {
 // work; players whose game has started are locked and left where they are.
 export default function LineupAdvice({ team, gameStates, injuries = [] }) {
   const advice = useMemo(() => lineupAdvice(team, gameStates), [team, gameStates]);
-  const alerts = useMemo(() => lineupAlerts(team, gameStates, injuries), [team, gameStates, injuries]);
-  // The badge counts the urgent alerts AND the start / sit swaps (the swaps are listed separately, under the headline number).
-  const swapCount = advice?.swaps?.length || 0;
+  const count = useMemo(() => lineupAlertCount(team, gameStates, injuries), [team, gameStates, injuries]);
+  const alerts = count.alerts;
   const url = team.platform_league_id ? `https://sleeper.com/leagues/${team.platform_league_id}/matchup` : null;
   if (!advice) return <p className="h2h-note">No lineup to optimize for this league this week.</p>;
   const better = advice.swaps.length > 0 && advice.gain >= 0.1;
@@ -61,7 +60,7 @@ export default function LineupAdvice({ team, gameStates, injuries = [] }) {
       </div>
       <div className="lu-alerts">
         <h4 className="lu-alerts-title mono">
-          Lineup alerts{alerts.length + swapCount > 0 && <span className="lu-alerts-count">{alerts.length + swapCount}</span>}
+          Lineup alerts{count.total > 0 && <span className="lu-alerts-count">{count.total}</span>}
         </h4>
         {alerts.length === 0 ? (
           <p className="lu-alerts-none mono">No injury or bye alerts: every starter is healthy and in a game this week.</p>

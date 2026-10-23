@@ -128,3 +128,11 @@ export function lineupAlerts(team, gameStates, injuries = []) {
   });
   return out.sort((a, b) => b.severity - a.severity);
 }
+
+// THE lineup-alert number, used everywhere a count is shown (the Lineup tab's badge, the Game Board header, the league cards, the dashboard):
+// the urgent alerts (empty slot, bye, out, injury tag) plus the start / sit swaps. One function so the screens can never disagree.
+export function lineupAlertCount(team, gameStates, injuries = []) {
+  const alerts = lineupAlerts(team, gameStates, injuries);
+  const swaps = lineupAdvice(team, gameStates)?.swaps || [];
+  return { alerts, swaps, total: alerts.length + swaps.length };
+}

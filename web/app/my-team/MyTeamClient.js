@@ -1484,7 +1484,7 @@ export default function MyTeamClient({
     </>
   );
 
-  const sum = summarizeLeagues(savedTeams, liveNews?.byTeam);
+  const sum = summarizeLeagues(savedTeams, liveNews?.byTeam, gameStates);
   const teamsSub = (
     <>
       <span><strong>{sum.leagues}</strong> {sum.leagues === 1 ? "league" : "leagues"}</span>
@@ -1514,6 +1514,7 @@ export default function MyTeamClient({
           <LeagueDashboard
             savedTeams={savedTeams}
             injuriesByTeam={liveNews?.byTeam}
+            gameStates={gameStates}
             refreshing={refreshing}
             renderExpanded={(t) => (
               <LeagueDetail key={t.id} team={t} gameStates={gameStates} injuries={liveNews?.byTeam?.[t.id]}>
