@@ -351,7 +351,6 @@ function RecentPlays({ rows, updatedAt, focus, onPick, onTotals }) {
           <p className="sb-muted sb-feed-empty">{state.loaded ? (focus ? `No plays from ${focus.name} yet.` : "No plays from these players yet.") : "Loading plays…"}</p>
         )}
       </div>
-      <p className="sb-plays-note mono">Plays are ESPN&apos;s, scores are Sleeper&apos;s. A play ESPN credits to another player is missing here but counted in the score.</p>
     </section>
   );
 }
