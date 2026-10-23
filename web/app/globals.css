@@ -5798,3 +5798,15 @@ html{font-stretch:82%;}
 .lu-slot{min-width:72px; font-size:10.5px; font-weight:700; letter-spacing:.08em; color:var(--horizon-gold);}
 .lu-from{font-size:10.5px; color:var(--star-dim);}
 .lu-gain.is-neg{color:var(--star-dim);}
+
+/* Playing now rows have ONE fixed shape (founder, Oct 22 2026, "make it fixed"): the score column is the same width in every row (it used to hug
+   "4.30" in one row and "23.70" in the next, which left some rows enough room for the clock beside the logo and pushed it under the badges in
+   others), and badge + logo + clock never wrap. Beside an open matchup everything in the line shrinks a little so the clock still fits. */
+.sb-feed-row{grid-template-columns:minmax(0, 1fr) 80px;}
+.sb-feed-nums{width:80px; align-items:flex-end;}
+.sb-feed-sub{flex-wrap:nowrap; min-width:0; overflow:hidden;}
+.sb-body.has-drawer .sb-feed-row{grid-template-columns:minmax(0, 1fr) 62px; column-gap:8px;}
+.sb-body.has-drawer .sb-feed-nums{width:62px;}
+.sb-body.has-drawer .sb-feed-sub{gap:5px;}
+.sb-body.has-drawer .sb-feed-sub .team-logo img{width:18px; height:18px;}
+.sb-body.has-drawer .sb-feed-sub .h2h-game{font-size:10.5px;}
