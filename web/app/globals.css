@@ -5697,6 +5697,7 @@ html{font-stretch:82%;}
 .h2h-row{height:74px; padding:3px 2px; row-gap:0;}
 .h2h-row:not(.h2h-head) .h2h-player-name{line-height:1.1;}
 .score-curve{max-width:182px;}
+.sb-body.feed-collapsed .score-curve{max-width:none;} /* the right pane is folded: the curve fills the rest of its cell (the drawing stretches, the height stays) */
 .h2h-row.is-upcoming{padding:1.5px calc(var(--side-pad) + 2px);}
 @media (max-width:640px){
   .h2h .h2h-side .h2h-row, .h2h .h2h-side.opp .h2h-row{height:auto; row-gap:4px;}

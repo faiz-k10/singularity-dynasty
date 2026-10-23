@@ -11,10 +11,9 @@ export const BASE_Y = 29;
 export const LABEL_Y = 43; // floor / median / ceiling numbers
 export const TAIL_H = 0.32; // tail wedge height as a fraction of the hump's
 export const SAMPLES = 16;
+// W is the width at the usual size; a wider row (the board with its right pane folded) draws a wider curve of the SAME height by passing a bigger w to
+// curveGeometry, so the hump stretches while the labels, marker and wedges keep their size.
 export const X_FLOOR = MARGIN + TAIL;
-export const X_CEIL = W - MARGIN - TAIL;
-export const MID = X_CEIL - X_FLOOR;
-
 
 export function peakFraction(floor, median, ceiling) {
   const span = ceiling - floor;
@@ -33,8 +32,9 @@ export function hump(x0, x1) {
 }
 
 // The geometry for one player's range -- exported so the marker maths can be tested.
-export function curveGeometry(floor, median, ceiling) {
-  const xPeak = X_FLOOR + peakFraction(floor, median, ceiling) * MID;
+export function curveGeometry(floor, median, ceiling, w = W) {
+  const X_CEIL = w - MARGIN - TAIL;
+  const xPeak = X_FLOOR + peakFraction(floor, median, ceiling) * (X_CEIL - X_FLOOR);
   const tailY = BASE_Y - TAIL_H * (BASE_Y - PEAK_Y);
   // x for a score: linear across the floor-to-ceiling hump (bent at the median so the peak sits at the median), then
   // across the tails -- below the floor the whole way down to 0 points fills the red wedge, above the ceiling the
@@ -59,9 +59,14 @@ export function curveGeometry(floor, median, ceiling) {
     const t = x <= xPeak ? (xPeak - x) / Math.max(xPeak - a, 0.01) : (x - xPeak) / Math.max(b - xPeak, 0.01);
     return BASE_Y - (0.5 + 0.5 * Math.cos(Math.PI * Math.min(1, Math.max(0, t)))) * (BASE_Y - PEAK_Y);
   };
-  return { xPeak, tailY, xOf, yAt };
+  return { xPeak, tailY, xOf, yAt, xCeil: X_CEIL };
 }
 
 
 export const fmt = (x, y) => `${x.toFixed(1)},${y.toFixed(1)}`;
 export const f1 = (v) => v.toFixed(1);
+
+// The curve's drawn width in viewBox units for a rendered width in px: the usual W until the curve is wider than its usual maximum (182px), then it
+// grows in step with the width -- so the rendered height stays the same (52px) and only the hump gets wider.
+export const USUAL_PX = 182;
+export const viewWidth = (px) => Math.max(W, Math.round((px * W) / USUAL_PX));

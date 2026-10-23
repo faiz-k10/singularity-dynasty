@@ -9,21 +9,35 @@
 // Geometry is fixed (not scaled to the week's widest range like the table's curve) so every row lines up and the
 // three numbers always have room: the labels sit under the floor edge, the peak and the ceiling edge, and the peak is
 // kept off the edges for the same reason.
-import { W, H, MARGIN, PEAK_Y, BASE_Y, LABEL_Y, X_FLOOR, X_CEIL, hump, curveGeometry, fmt, f1 } from "@/lib/scoreCurve";
+import { useEffect, useRef, useState } from "react";
+import { W, H, MARGIN, PEAK_Y, BASE_Y, LABEL_Y, X_FLOOR, hump, curveGeometry, viewWidth, fmt, f1 } from "@/lib/scoreCurve";
 
 // state: "pre" | "in" | "post" (bye / out count as no marker). est = typical range for someone we don't project.
 export default function ScoreCurve({ floor, median, ceiling, pts, state, est = false }) {
+  // The CSS decides how wide the curve is (up to 182px, or the whole cell when the board's right pane is folded); the drawing follows that width.
+  const ref = useRef(null);
+  const [px, setPx] = useState(0);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return undefined;
+    const read = () => setPx(el.getBoundingClientRect().width);
+    read();
+    const ro = new ResizeObserver(read);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  const w = viewWidth(px);
   if (![floor, median, ceiling].every((v) => typeof v === "number" && Number.isFinite(v)) || !(ceiling > floor)) return null;
-  const { xPeak, tailY, xOf, yAt } = curveGeometry(floor, median, ceiling);
+  const { xPeak, tailY, xOf, yAt, xCeil } = curveGeometry(floor, median, ceiling, w);
   const left = hump(xPeak, X_FLOOR).reverse();
-  const right = hump(xPeak, X_CEIL);
+  const right = hump(xPeak, xCeil);
   const mid = [...left, ...right.slice(1)];
   const middlePath = `M${fmt(mid[0][0], BASE_Y)} L${mid.map(([x, y]) => fmt(x, y)).join(" L")} L${fmt(mid[mid.length - 1][0], BASE_Y)} Z`;
   const leftTail = `M${fmt(X_FLOOR, BASE_Y)} L${fmt(X_FLOOR, tailY)} L${fmt(MARGIN, BASE_Y)} Z`;
-  const rightTail = `M${fmt(X_CEIL, BASE_Y)} L${fmt(X_CEIL, tailY)} L${fmt(W - MARGIN, BASE_Y)} Z`;
+  const rightTail = `M${fmt(xCeil, BASE_Y)} L${fmt(xCeil, tailY)} L${fmt(w - MARGIN, BASE_Y)} Z`;
 
   const scored = typeof pts === "number" && state !== "pre" && state != null;
-  const x = scored ? Math.min(W - MARGIN - 2, Math.max(MARGIN + 2, xOf(pts))) : null;
+  const x = scored ? Math.min(w - MARGIN - 2, Math.max(MARGIN + 2, xOf(pts))) : null;
   const y = scored ? yAt(x) : null;
   // Where the score landed, in the colour of the zone it sits in: the blue wedge (at or under his floor), the gold hump (his
   // normal range -- plain), or the red wedge (at or over his ceiling).
@@ -37,7 +51,7 @@ export default function ScoreCurve({ floor, median, ceiling, pts, state, est = f
     .join("\n");
 
   return (
-    <svg className={`score-curve${est ? " is-est" : ""}${state === "in" ? " is-live" : ""}${zone ? ` zone-${zone}` : ""}`} viewBox={`0 0 ${W} ${H}`} role="img" aria-label={title.replace(/\n/g, ". ")}>
+    <svg className={`score-curve${est ? " is-est" : ""}${state === "in" ? " is-live" : ""}${zone ? ` zone-${zone}` : ""}`} ref={ref} viewBox={`0 0 ${w} ${H}`} role="img" aria-label={title.replace(/\n/g, ". ")}>
       <title>{title}</title>
       <path className="outcome-curve-tail-floor" d={leftTail} />
       <path className="outcome-curve-tail-ceiling" d={rightTail} />
@@ -45,7 +59,7 @@ export default function ScoreCurve({ floor, median, ceiling, pts, state, est = f
       <circle className="score-curve-peak" cx={xPeak} cy={PEAK_Y} r="2" />
       <text className="sc-label sc-floor" x={X_FLOOR} y={LABEL_Y} textAnchor="middle">{f1(floor)}</text>
       <text className="sc-label sc-median" x={xPeak} y={LABEL_Y} textAnchor="middle">{f1(median)}</text>
-      <text className="sc-label sc-ceiling" x={X_CEIL} y={LABEL_Y} textAnchor="middle">{f1(ceiling)}</text>
+      <text className="sc-label sc-ceiling" x={xCeil} y={LABEL_Y} textAnchor="middle">{f1(ceiling)}</text>
       {scored && (
         // The marker only: a drop line to the baseline and a dot sitting on the hump. The number is the row's Pts cell.
         <g className="score-curve-marker">
