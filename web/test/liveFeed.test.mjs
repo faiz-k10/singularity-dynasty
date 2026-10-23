@@ -96,11 +96,12 @@ test("buildLiveFeed: nextUp names the next kickoff's games and counts your / the
   assert.equal(done.anyLeft, false);
 });
 
-test("formatCountdown ticks down to the second, with days past 24 hours", () => {
+test("formatCountdown ticks down to the second as hours:minutes:seconds, never days", () => {
   assert.equal(formatCountdown(7 * 3600e3 - 1000), "6:59:59");
   assert.equal(formatCountdown(3600e3 + 5 * 60e3 + 9e3), "1:05:09");
   assert.equal(formatCountdown(59e3), "0:00:59");
-  assert.equal(formatCountdown(26 * 3600e3 + 2 * 60e3 + 3e3), "1d 02:02:03");
+  assert.equal(formatCountdown(26 * 3600e3 + 2 * 60e3 + 3e3), "26:02:03");
+  assert.equal(formatCountdown(61 * 3600e3 + 9 * 60e3 + 28e3), "61:09:28");
   assert.equal(formatCountdown(-5000), "0:00:00");
 });
 
