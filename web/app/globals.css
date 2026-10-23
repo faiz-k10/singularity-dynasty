@@ -4478,7 +4478,7 @@ svg text, .pctile-vbar-label, .pctile-vbar-value{font-family:var(--font-mono), m
   font-family:var(--font-mono), monospace; text-transform:uppercase; font-size:12px; font-weight:600; letter-spacing:0.06em; line-height:1.25;
 }
 /* names and sentences stay in the serif */
-.compare-radar-card-name, .league-dash-team, .week-feed-headline, .compare-table thead th, .quiz-prompt, .h2h-team-name, .h2h-side-title, .h2h-player-name, .sb-card-team, .sb-feed-name, .standings-team{
+.compare-radar-card-name, .league-dash-team, .week-feed-headline, .compare-table thead th, .quiz-prompt, .h2h-team-name, .h2h-player-name, .sb-card-team, .sb-feed-name, .standings-team{
   font-family:var(--font-body), Georgia, serif; font-weight:700;
 }
 /* stat-name labels down the left of the stat tables are data labels */
@@ -4916,8 +4916,6 @@ html{font-stretch:82%;}
 
 .h2h-lineups{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:14px;}
 .h2h-side{--side-pad:12px; padding:10px var(--side-pad) 0; min-width:0; overflow:hidden;} /* no bottom padding: a highlighted last row runs to the card's bottom edge */
-.h2h-side-title{font-size:13px; color:var(--star-dim); padding:2px 4px 8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-.h2h-side.opp .h2h-side-title{text-align:right;}
 .h2h-row{
   position:relative; display:grid; align-items:center; gap:8px; height:68px; box-sizing:border-box; padding:6px 4px;
   grid-template-columns:64px minmax(0,1fr) 156px 58px; grid-template-areas:"slot player curve pts";
@@ -5019,7 +5017,7 @@ html{font-stretch:82%;}
 @media (max-width:900px){
   .h2h-lineups{grid-template-columns:minmax(0,1fr);}
   .h2h-side.opp .h2h-row{grid-template-columns:64px minmax(0,1fr) 156px 58px; grid-template-areas:"slot player curve pts";}
-  .h2h-side.opp .h2h-side-title, .h2h-side.opp .h2h-c-slot{text-align:left;}
+  .h2h-side.opp .h2h-c-slot{text-align:left;}
   .h2h-side.opp .h2h-c-player{align-items:flex-start; text-align:left;}
   .h2h-side.opp .h2h-player-sub{justify-content:flex-start;}
   
@@ -5029,7 +5027,7 @@ html{font-stretch:82%;}
 @container h2h (max-width:900px){
   .h2h-lineups{grid-template-columns:minmax(0,1fr);}
   .h2h-side.opp .h2h-row{grid-template-columns:64px minmax(0,1fr) 156px 58px; grid-template-areas:"slot player curve pts";}
-  .h2h-side.opp .h2h-side-title, .h2h-side.opp .h2h-c-slot{text-align:left;}
+  .h2h-side.opp .h2h-c-slot{text-align:left;}
   .h2h-side.opp .h2h-c-player{align-items:flex-start; text-align:left;}
   .h2h-side.opp .h2h-player-sub{justify-content:flex-start;}
   

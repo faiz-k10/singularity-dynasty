@@ -118,10 +118,9 @@ function SideRow({ p, scoreboardKnown, uncertain, mounted }) {
   );
 }
 
-function Side({ title, side, opp = false, scoreboardKnown, uncertain, mounted }) {
+function Side({ side, opp = false, scoreboardKnown, uncertain, mounted }) {
   return (
     <div className={`h2h-side${opp ? " opp" : ""}`}>
-      <div className="h2h-side-title">{title}</div>
       <div className="h2h-row h2h-head" aria-hidden="true">
         <span className="h2h-c-slot">Slot</span>
         <span className="h2h-c-player">Player</span>
@@ -277,8 +276,8 @@ function MatchupBody({ team, gameStates, playTotals }) {
         <TeamScore state={leadState(myScore, oppScore)[1]} name={s.opponent} record={s.opponentRecord} score={oppScore} proj={uncertain ? null : oppScore + opp.projFinal - opp.pts} left={uncertain ? null : leftLabel(opp)} opp />
       </div>
       <div className="h2h-lineups" ref={lineupsRef}>
-        <Side title={myName} side={mine} scoreboardKnown={scoreboardKnown} uncertain={uncertain} mounted={mounted} />
-        <Side title={s.opponent} side={opp} opp scoreboardKnown={scoreboardKnown} uncertain={uncertain} mounted={mounted} />
+        <Side side={mine} scoreboardKnown={scoreboardKnown} uncertain={uncertain} mounted={mounted} />
+        <Side side={opp} opp scoreboardKnown={scoreboardKnown} uncertain={uncertain} mounted={mounted} />
       </div>
       <ul className="h2h-legend" aria-label="How to read the curves">
         <li>
