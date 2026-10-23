@@ -5532,12 +5532,11 @@ html{font-stretch:82%;}
 .sb-feed-leagues{grid-area:leagues; min-width:0;}
 .sb-feed-nums{grid-area:nums; align-self:center;}
 
-/* Playing now rows, one shape for every row: badges + team logo on one line, the game clock ALWAYS on its own line under them (it used to wrap or not
-   depending on how wide that row's score column was), the score at the right spanning both lines (score level with the badges, projection or
-   "+" amount level with the clock), league names full width underneath. */
-.sb-feed-row{grid-template-areas:"name name" "sub nums" "leagues leagues";}
-.sb-feed-sub .h2h-game{flex-basis:100%;}
-.sb-feed-nums{align-self:stretch; justify-content:space-between;}
+/* Playing now rows (Oct 22 2026, founder: clock beside the logo, shorter rows): name, then position badge + team logo + the game clock on ONE line, the
+   score and its projection / "+" amount at the right spanning those two lines, league names full width underneath. */
+.sb-feed-row{grid-template-areas:"name nums" "sub nums" "leagues leagues"; padding-top:7px; padding-bottom:7px; row-gap:3px;}
+.sb-feed-sub .h2h-game{white-space:nowrap;} /* the clock sits right beside the team logo; it only drops to its own line when the half is very narrow */
+.sb-feed-nums{align-self:center; justify-content:center;}
 
 /* Lineup rows: the game status / clock ("Halftime", "9:49 - 2nd", "Final", "Mon 8:15 PM", "Out") sits on its own line under the position badge and team logo,
    so a row is name / badges / clock -- 88px, still the same for every row so the two lineups stay aligned. */
