@@ -1,6 +1,7 @@
 "use server";
 
 import { bestLineup } from "@/lib/bestBall";
+import { leagueName } from "@/lib/format";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { resolveTier, savedTeamLimit } from "@/lib/tier";
@@ -678,7 +679,7 @@ export async function getRosterNews() {
         items.set(key, { ...f, key, team: p.team, starts: [], rosters: [] });
       }
       const it = items.get(key);
-      const label = t.league_name || t.team_name;
+      const label = leagueName(t);
       it.rosters.push(label);
       if (p.isStarter) it.starts.push(label);
       // Dashboard alert: a STARTER carrying a designation (Questionable /

@@ -6,13 +6,12 @@
 // What it will NOT touch: a player whose game has started (Sleeper locks him) stays where he is and can't be moved in or out;
 // slots our model has no projection for (K, DEF, IDP) and players with no projection keep whoever is there now.
 import { ELIGIBLE } from "./bestBall.js";
+import { num, round1 as r1 } from "./format.js";
 
 // "SUPER_FLEX" -> "SUPERFLEX": how a slot is named on screen (the one place that maps it).
 export const slotLabel = (slot) => (slot === "SUPER_FLEX" ? "SUPERFLEX" : slot);
 
 const PROJECTED = new Set(["QB", "RB", "WR", "TE"]);
-const r1 = (v) => Math.round(v * 10) / 10;
-const num = (v) => (typeof v === "number" && Number.isFinite(v) ? v : null);
 
 // How a player counts in each mode; a missing floor / ceiling falls back to the median so old snapshots still work.
 const valueOf = (p, mode) => {
@@ -134,8 +133,10 @@ export function lineupAlerts(team, gameStates, injuries = []) {
 
 // THE lineup-alert number, used everywhere a count is shown (the Lineup tab's badge, the Game Board header, the league cards, the dashboard):
 // the urgent alerts (empty slot, bye, out, injury tag) plus the start / sit swaps. One function so the screens can never disagree.
+// `advice` (the full lineupAdvice result, or null) rides along so a caller that needs the swaps and the tilt too (the Lineup tab, the Companion) reuses it.
 export function lineupAlertCount(team, gameStates, injuries = []) {
   const alerts = lineupAlerts(team, gameStates, injuries);
-  const swaps = lineupAdvice(team, gameStates)?.swaps || [];
-  return { alerts, swaps, total: alerts.length + swaps.length };
+  const advice = lineupAdvice(team, gameStates);
+  const swaps = advice?.swaps || [];
+  return { alerts, swaps, advice, total: alerts.length + swaps.length };
 }

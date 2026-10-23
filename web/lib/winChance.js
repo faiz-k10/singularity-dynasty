@@ -17,6 +17,8 @@
 //   the site's fixed scoring while live points are the league's own, the same mix the Proj column already uses.
 // - The random stream is seeded, so the same inputs always give the same answer (no flicker between polls).
 
+import { round1, round2 } from "./format.js";
+
 export const Z10 = 1.2816; // standard-normal z of the 10th / 90th percentile
 // The ceiling is a 90th percentile at every position (see above); kept as a function so a position can differ again.
 export const ceilZ = () => Z10;
@@ -86,8 +88,6 @@ export function buildSide(starterIds, slots, infoFor, projFor, points) {
   });
 }
 
-const round1 = (v) => Math.round(v * 10) / 10;
-const round2 = (v) => Math.round(v * 100) / 100;
 
 // Spread of a full game around the median (missing floor/ceiling -> half the median either way).
 function fullSpread(p) {

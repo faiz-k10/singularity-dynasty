@@ -3,30 +3,25 @@
 import { useLayoutEffect, useMemo, useRef } from "react";
 import SlotBadge from "./SlotBadge";
 import PositionBadge from "../tools/PositionBadge";
+import { fmt1, fmt2 } from "@/lib/format";
 import TeamBadge from "../tools/TeamBadge";
-import { summarizeSide } from "@/lib/winChance";
 import Standings from "./Standings";
 import WaiverWire from "./WaiverWire";
 import LineupAdvice from "./LineupAdvice";
 import { useStatsSlide, StatsPanel } from "./GameStats";
 import ScoreCurve from "./ScoreCurve";
 import { leadState } from "@/lib/leadState";
-import { adjustedMatchup } from "@/lib/adjustedMatchup";
+import { matchupState } from "@/lib/matchupState";
 import { useMounted } from "./useMounted";
 
 // Sleeper's own page for this week's matchup in a league (opens in a new tab).
 export const sleeperMatchupUrl = (leagueId) => (leagueId ? `https://sleeper.com/leagues/${leagueId}/matchup` : null);
 
-const fmt1 = (v) => (v == null ? "—" : v.toFixed(1));
-const fmt2 = (v) => (v == null ? "—" : v.toFixed(2)); // points actually scored: two decimals, like Sleeper
 
 export function formatWin(p) {
   // Near-certain is still not certain: only a locked result says YOU WIN, so the extremes read ">99%" / "<1%", never "100%" / "0%".
   return p == null ? "—" : p >= 0.995 ? ">99%" : p < 0.005 ? "<1%" : `${Math.round(p * 100)}%`;
 }
-
-import { standing, lockIn } from "@/lib/standing";
-export { standing };
 
 // Settled results get a settled colour (green: You win / Won, red: Out of reach / Lost) on the word and its bar.
 export const sealedClass = (label) => (label === "You win" || label === "Won" ? " is-sealed-win" : label === "Out of reach" || label === "Lost" ? " is-sealed-loss" : "");
@@ -196,11 +191,8 @@ function MatchupBody({ team, gameStates, playTotals }) {
   const s = team.settings || {};
   const scoreboardKnown = Boolean(gameStates && Object.keys(gameStates).length);
   // Sleeper trails the game by a minute or two, so plays it hasn't posted yet are added to each player's points, to the team totals
-  // and to the win chance when the play-by-play knows them (lib/adjustedMatchup.js) -- the same numbers as the cards and the live list.
-  const adj = useMemo(() => adjustedMatchup(team.settings, gameStates, playTotals), [team.settings, gameStates, playTotals]);
-  const mine = adj ? adj.mine : s.h2h ? summarizeSide(s.h2h.mine, gameStates) : null;
-  const opp = adj ? adj.opp : s.h2h ? summarizeSide(s.h2h.opp, gameStates) : null;
-  const live = adj ? adj.live : s.matchupActual || null;
+  // and to the win chance when the play-by-play knows them -- the same numbers (lib/matchupState.js) as the cards and the live list.
+  const { mine, opp, live, pct, done: allDone, lock, st } = useMemo(() => matchupState(team.settings || {}, gameStates, playTotals), [team.settings, gameStates, playTotals]);
   // Every row's info column (badges + game time) takes the width of the widest one, so the outcome curve beside it is the same size in every row
   // (otherwise "Sun 4:05 PM" under the badges squeezed an unplayed player's curve while "Final" left a finished player's wide). Measured after each render;
   // the variable is cleared first so a shorter label can shrink the column again.
@@ -228,11 +220,6 @@ function MatchupBody({ team, gameStates, playTotals }) {
   }
 
   const myName = team.team_name || "Your team";
-  const pct = adj ? adj.winChance : s.winChance;
-  const allDone =
-    mine && opp && mine.yetToPlay + mine.playing + opp.yetToPlay + opp.playing === 0 && (mine.pts > 0 || opp.pts > 0);
-  const lock = s.bestBall ? null : lockIn(mine, opp, live ? live.mine : mine?.pts ?? null, live ? live.opp : opp?.pts ?? null);
-  const st = standing(s.bestBall ? null : pct, allDone, lock);
   const center = (
     <div className={`h2h-center is-${st.key}${sealedClass(st.label)}`}>
       {st.label && <div className="h2h-word">{st.label}</div>}

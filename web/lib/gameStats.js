@@ -33,14 +33,16 @@ export function statChips(pos, line) {
 }
 
 // ---- server only ----
-const cache = new Map(); // eventId -> { at, value }
+const cache = new Map(); // eventId -> { at, value: Promise } -- the PROMISE is cached, so rows opened at the same moment share one ESPN request
 const TTL_MS = 8 * 1000;
-export async function fetchBoxscore(eventId) {
+export function fetchBoxscore(eventId) {
   const hit = cache.get(eventId);
   if (hit && Date.now() - hit.at < TTL_MS) return hit.value;
-  const res = await fetch(`https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=${eventId}`, { cache: "no-store" });
-  if (!res.ok) throw new Error(`ESPN ${res.status}`);
-  const value = parseBoxscore(await res.json());
+  const value = fetch(`https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=${eventId}`, { cache: "no-store" }).then(async (res) => {
+    if (!res.ok) throw new Error(`ESPN ${res.status}`);
+    return parseBoxscore(await res.json());
+  });
+  value.catch(() => cache.delete(eventId)); // a failure is not remembered
   cache.set(eventId, { at: Date.now(), value });
   return value;
 }

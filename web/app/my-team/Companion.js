@@ -6,7 +6,7 @@ import TeamBadge from "../tools/TeamBadge";
 import { useMounted } from "./useMounted";
 import { getWaiverWire } from "./actions";
 import { buildInsights } from "@/lib/companion";
-import { buildLiveFeed, formatCountdown } from "@/lib/liveFeed";
+import { formatCountdown } from "@/lib/liveFeed";
 
 // The Game Board's right-hand pane when nobody is on the field (and its "Companion" tab while games are on): a status strip
 // (next kickoff with a countdown, or what state the week is in), one spotlight card that turns over every few seconds, and the
@@ -141,7 +141,9 @@ function Card({ c, spot, fresh }) {
   );
 }
 
-export default function Companion({ savedTeams, gameStates, teamId = null, injuriesByTeam = null, weekFeed = null }) {
+// `feed` = the board's own buildLiveFeed() result (next kickoff and games) and `adjusted` = its per-league matchup states, so the pane never
+// recomputes what the cards already hold.
+export default function Companion({ savedTeams, gameStates, feed, adjusted = null, teamId = null, injuriesByTeam = null, weekFeed = null }) {
   const teams = useMemo(() => (teamId ? savedTeams.filter((t) => t.id === teamId) : savedTeams), [savedTeams, teamId]);
   const waivers = useWaivers(teams);
   // Today's card needs the viewer's clock, so it appears after mount (the server's clock would mismatch) and moves on at midnight.
@@ -161,10 +163,9 @@ export default function Companion({ savedTeams, gameStates, teamId = null, injur
   // The week's moves are built for the viewer's saved teams in the order they were saved; one open league uses its own slice.
   const teamIndex = teamId ? savedTeams.findIndex((t) => t.id === teamId) : null;
   const { phase, cards } = useMemo(
-    () => buildInsights({ savedTeams: teams, gameStates, waivers, injuriesByTeam, feed: weekFeed, teamIndex: teamIndex >= 0 ? teamIndex : null, now: today }),
-    [teams, gameStates, waivers, injuriesByTeam, weekFeed, teamIndex, today],
+    () => buildInsights({ savedTeams: teams, gameStates, waivers, injuriesByTeam, feed: weekFeed, teamIndex: teamIndex >= 0 ? teamIndex : null, now: today, adjusted }),
+    [teams, gameStates, waivers, injuriesByTeam, weekFeed, teamIndex, today, adjusted],
   );
-  const feed = useMemo(() => buildLiveFeed(teams, gameStates), [teams, gameStates]);
   const week = teams.find((t) => t.settings?.week)?.settings.week;
 
   // Spotlight: turns over the strongest few cards; hovering the pane holds it.

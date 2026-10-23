@@ -9,6 +9,8 @@
 // each side. Each side's total adds every start's points in that league's own scoring.
 
 // gameStates: lib/gameStatus.js parseScoreboard() output.
+import { leagueName, round2 as r2 } from "./format.js";
+
 export function buildLiveFeed(savedTeams, gameStates, { onlyTeamId = null } = {}) {
   const empty = { mine: [], theirs: [], mineTotal: 0, theirsTotal: 0, nextStart: null, nextUp: null, anyLeft: false };
   if (!gameStates) return empty;
@@ -19,7 +21,7 @@ export function buildLiveFeed(savedTeams, gameStates, { onlyTeamId = null } = {}
     const s = t.settings || {};
     if (s.bestBall || s.isBye) continue;
     if (onlyTeamId != null && t.id !== onlyTeamId) continue;
-    const league = t.league_name || t.team_name || "League";
+    const league = leagueName(t, "League");
     for (const [side, list] of [["mine", s.h2h?.mine], ["theirs", s.h2h?.opp]]) {
       for (const p of list || []) {
         if (!p.id || !p.team) continue;
@@ -75,7 +77,6 @@ const PEND_TOL = 0.02; // Sleeper posts exact two-decimal points (a 6-yard pass 
 // between our running totals 0.60 and 1.60: a one-yard difference), so when no running total matches exactly the nearest one within this
 // distance (about three yards of rushing / receiving) is taken instead of giving up and leaving the score on Sleeper's older number.
 const NEAR_TOL = 0.35;
-const r2 = (v) => Math.round(v * 100) / 100;
 // The index into `prefix` (running totals, prefix[0] = 0) that Sleeper's number `pts` has counted up to, or -1 when nothing is close.
 function matchedPrefix(prefix, pts) {
   let exact = -1;

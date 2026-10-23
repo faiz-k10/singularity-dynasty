@@ -6,6 +6,7 @@
 // news: getRosterNews()'s result -- items (each with its roster `key`), statusByKey ({key: {status, severity}} for every
 // rostered player carrying a designation), byTeam (the server's own version, used only when statusByKey is missing).
 import { normalizePlayerName } from "./portfolio.js";
+import { leagueName } from "./format.js";
 
 export const rosterKey = (name, position) => `${normalizePlayerName(name)}|${position}`;
 
@@ -15,7 +16,7 @@ export function liveRosterNews(savedTeams, news) {
   const starts = new Map();
   const rosters = new Map();
   for (const t of savedTeams || []) {
-    const label = t.league_name || t.team_name;
+    const label = leagueName(t);
     for (const p of t.players || []) {
       const key = rosterKey(p.name, p.position);
       if (!rosters.has(key)) rosters.set(key, []);

@@ -4129,9 +4129,6 @@ summary:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible{
   .h2h .h2h-board .h2h-center{grid-area:center; min-width:0;}
   .h2h .h2h-score{font-size:32px;}
   .h2h .h2h-word{font-size:28px;}
-  .h2h .h2h-side .h2h-row, .h2h .h2h-side.opp .h2h-row{grid-template-columns:minmax(0,1fr) 58px; grid-template-areas:"player pts" "curve curve"; gap:4px 8px;}
-  .h2h .h2h-side .h2h-c-pts, .h2h .h2h-side.opp .h2h-c-pts{text-align:right;}
-  .h2h .h2h-row{height:auto; min-height:64px;}
   .h2h .h2h-row.h2h-head{display:none;} /* the curve sits under the name on a phone; the tooltip text stays on the curve */
   .h2h .h2h-side .h2h-c-slot{display:none;}
   .h2h .h2h-side .h2h-slot-inline{display:inline-flex;}
@@ -4916,19 +4913,28 @@ html{font-stretch:82%;}
 
 .h2h-lineups{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:14px;}
 .h2h-side{--side-pad:12px; padding:10px var(--side-pad) 0; min-width:0; overflow:hidden;} /* no bottom padding: a highlighted last row runs to the card's bottom edge */
+/* A lineup row is 77px, the same for every row so the two lineups stay aligned: the NAME runs across the top beside the slot and the points, and underneath the
+   position badge + team logo + game clock sit on the left with the outcome curve nestled in the space to their right. --info-w (set by MatchupPanel.js) is the
+   width of the widest badges + game-time block among ALL rows, so the info column -- and the curve beside it -- is the same size in every row. */
 .h2h-row{
-  position:relative; display:grid; align-items:center; gap:8px; height:68px; box-sizing:border-box; padding:6px 4px;
-  grid-template-columns:64px minmax(0,1fr) 156px 58px; grid-template-areas:"slot player curve pts";
+  position:relative; display:grid; align-items:center; gap:0 6px; height:77px; box-sizing:border-box; padding:3px 2px;
+  grid-template-columns:40px var(--info-w, auto) minmax(0,1fr) 64px; grid-template-areas:"slot name name pts" "slot info curve pts";
   border-top:1px solid rgba(var(--star-dot-rgb),.07);
 }
-.h2h-side.opp .h2h-row{grid-template-columns:58px 156px minmax(0,1fr) 64px; grid-template-areas:"pts curve player slot";}
-.h2h-row.h2h-head{height:auto; min-height:0; padding-top:0; padding-bottom:3px; line-height:1.2; border-top:0; font-family:var(--font-mono), monospace; font-size:10px; text-transform:uppercase; letter-spacing:.07em; color:var(--star-dim);}
+.h2h-side.opp .h2h-row{grid-template-columns:64px minmax(0,1fr) var(--info-w, auto) 40px; grid-template-areas:"pts name name slot" "pts curve info slot";}
+.h2h-row.h2h-head{height:auto; min-height:0; padding-top:0; padding-bottom:3px; line-height:1.2; border-top:0; font-family:var(--font-mono), monospace; font-size:10px; text-transform:uppercase; letter-spacing:.07em; color:var(--star-dim); grid-template-columns:40px minmax(0,1fr) 64px; grid-template-areas:"slot player pts";}
+.h2h-side.opp .h2h-row.h2h-head{grid-template-columns:64px minmax(0,1fr) 40px; grid-template-areas:"pts player slot";}
+.h2h-row.h2h-head .h2h-c-curve{display:none;}
 .h2h-c-slot{grid-area:slot;}
 .h2h-c-player{grid-area:player; min-width:0; display:flex; flex-direction:column; gap:4px;}
+/* In a lineup row the player block's children (name, badges + clock) sit straight on the row's grid. */
+.h2h-row:not(.h2h-head) .h2h-c-player{display:contents;}
+.h2h-row:not(.h2h-head) .h2h-c-slot{justify-self:start; text-align:left;}
+.h2h-side.opp .h2h-row:not(.h2h-head) .h2h-c-slot{justify-self:end; text-align:right;}
 /* The outcome curve cell (ScoreCurve.js): floor / median / ceiling under the hump, the scored points as a marker on it. */
-.h2h-c-curve{grid-area:curve; display:flex; align-items:center; justify-content:center; min-width:0;}
-.h2h-row.h2h-head .h2h-c-curve{justify-content:center; text-align:center; white-space:nowrap;}
-.score-curve{display:block; width:156px; max-width:100%; height:auto; overflow:visible;}
+.h2h-c-curve{grid-area:curve; display:flex; align-items:center; justify-content:stretch; align-self:center; min-width:0;}
+.score-curve{display:block; width:100%; max-width:182px; height:auto; overflow:visible;}
+.sb-body.feed-collapsed .score-curve{max-width:none;} /* the right pane is folded: the curve fills the rest of its cell (the drawing stretches, the height stays) */
 .sc-label{font-family:var(--font-mono), monospace; font-size:10px; fill:var(--star-dim);}
 .sc-floor{fill:var(--neon-blue);}
 .sc-ceiling{fill:var(--down);}
@@ -4953,13 +4959,17 @@ html{font-stretch:82%;}
 .h2h-curve-text{font-size:13px; color:var(--star-dim);}
 /* The scored points: their own big cell, outer edge of the row (right for your lineup, left for theirs), so they can't be
    mistaken for the three small range numbers on the curve. */
-.h2h-c-pts{grid-area:pts; text-align:right; font-size:17px; font-weight:700; color:var(--star);}
+.h2h-c-pts{grid-area:pts; text-align:center; font-size:17px; font-weight:700; color:var(--star);}
 .h2h-c-pts{position:relative; white-space:nowrap; font-variant-numeric:tabular-nums;}
 /* The pulsing "game on" dot sits just outside the number, on the row's outer edge, instead of pushing the number sideways, so every row's number
    lands in exactly the same place whether his game is live or not. */
 .h2h-c-pts .matchup-score-live-dot{position:absolute; right:-9px; left:auto; top:50%; margin:-3px 0 0;}
 .h2h-side.opp .h2h-c-pts .matchup-score-live-dot{right:auto; left:-9px;}
-.h2h-side.opp .h2h-c-pts{text-align:left;}
+/* The points cell: a faint rule on its curve side, the number centred between the rule and the card's edge (the cell runs out to the edge; shaded rows already do). */
+.h2h-row:not(.h2h-head) .h2h-c-pts{align-self:stretch; display:flex; align-items:center; justify-content:center; border-left:1px solid rgba(var(--star-dot-rgb), .12);}
+.h2h-side.opp .h2h-row:not(.h2h-head) .h2h-c-pts{border-left:0; border-right:1px solid rgba(var(--star-dot-rgb), .12);}
+.h2h-row:not(.is-upcoming) .h2h-c-pts{margin-right:calc(-1 * var(--side-pad));}
+.h2h-side.opp .h2h-row:not(.is-upcoming) .h2h-c-pts{margin-right:0; margin-left:calc(-1 * var(--side-pad));}
 .h2h-row.h2h-head .h2h-c-pts{font-size:10px; font-weight:400;}
 .h2h-c-pts.is-live{color:var(--star);}
 .h2h-c-pts.tone-good, .tone-good-text{color:var(--down);}
@@ -4998,17 +5008,24 @@ html{font-stretch:82%;}
    boxed with a clear border in its side's colour (gold = yours, blue = your opponent's, the same language as the live
    panel), so what is still to come stands out from what is done. A flat tint, no gradient. The row bleeds out over the
    card's side padding and pads itself back in, so its content stays aligned with the other rows. */
-.h2h-row.is-upcoming{background:rgba(var(--horizon-gold-rgb),.14); border:1.5px solid rgba(var(--horizon-gold-rgb),.7); border-left-width:0; border-right-width:0; border-radius:0; margin:0 calc(-1 * var(--side-pad)); padding:4.5px calc(var(--side-pad) + 4px);}
+.h2h-row.is-upcoming{background:rgba(var(--horizon-gold-rgb),.14); border:1.5px solid rgba(var(--horizon-gold-rgb),.7); border-left-width:0; border-right-width:0; border-radius:0; margin:0 calc(-1 * var(--side-pad)); padding:1.5px calc(var(--side-pad) + 2px);} /* its 1.5px border takes the same from the padding, so its contents stay on the same lines */
 .h2h-side.opp .h2h-row.is-upcoming{background:rgba(var(--neon-blue-rgb),.14); border-color:rgba(var(--neon-blue-rgb),.7);}
 .h2h-side.opp .h2h-c-slot{text-align:right;}
 .h2h-side.opp .h2h-c-player{align-items:flex-end; text-align:right;}
 
 .h2h-player-name{font-size:14.5px; color:var(--star); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;}
-.h2h-player-sub{display:flex; align-items:center; gap:6px; flex-wrap:nowrap; min-width:0; overflow:hidden;}
-.h2h-player-sub .h2h-game{overflow:hidden; text-overflow:ellipsis; min-width:0;}
+.h2h-player-sub{display:flex; align-items:center; gap:6px; flex-wrap:wrap; row-gap:2px; min-width:0; overflow:hidden;}
+.h2h-player-sub .h2h-game{flex-basis:100%; overflow:hidden; text-overflow:ellipsis; min-width:0;}
+.h2h-row:not(.h2h-head) .h2h-player-name{grid-area:name; align-self:end; line-height:1.35;} /* tall enough that the name's box (overflow:hidden) doesn't shave the letters' tops and tails */
+.h2h-row:not(.h2h-head) .h2h-player-sub{grid-area:info; align-self:start; width:max-content; max-width:100%;}
+.h2h-row:not(.h2h-head) .h2h-player-sub .position-badge{min-width:0; padding-left:7px; padding-right:7px;}
+.h2h-row:not(.h2h-head) .h2h-player-sub .team-logo img{width:30px; height:30px;}
+.h2h-row:not(.h2h-head) .h2h-player-sub .team-badge.team-logo{padding:0;}
+/* Your opponent's side mirrors yours: name and badges at the right, the badge order reversed (logo then position) so the position badge sits beside the slot on both sides. */
+.h2h-side.opp .h2h-row:not(.h2h-head) .h2h-player-name{justify-self:end;}
+.h2h-side.opp .h2h-row:not(.h2h-head) .h2h-player-sub{justify-self:end; flex-direction:row-reverse; justify-content:flex-start; text-align:right;}
 .h2h .slot-badge{min-width:0; padding:0 5px; font-size:9px; letter-spacing:0;}
 .h2h-slot-inline{display:none;} /* the slot moves into this line on phones (Phone pass) */
-.h2h-side.opp .h2h-player-sub{justify-content:flex-end;}
 .h2h-game{font-size:10.5px; color:var(--star-dim); white-space:nowrap;}
 .h2h-row.is-live .h2h-game{color:var(--down);}
 .h2h-row.is-done .h2h-player-name{color:color-mix(in srgb, var(--star) 82%, transparent);}
@@ -5016,21 +5033,28 @@ html{font-stretch:82%;}
 .h2h-note{margin:0; font-size:11.5px; line-height:1.5; color:var(--star-dim);}
 @media (max-width:900px){
   .h2h-lineups{grid-template-columns:minmax(0,1fr);}
-  .h2h-side.opp .h2h-row{grid-template-columns:64px minmax(0,1fr) 156px 58px; grid-template-areas:"slot player curve pts";}
+  .h2h-side.opp .h2h-row:not(.h2h-head){grid-template-columns:40px var(--info-w, auto) minmax(0,1fr) 64px; grid-template-areas:"slot name name pts" "slot info curve pts";}
+  .h2h-side.opp .h2h-row.h2h-head{grid-template-columns:40px minmax(0,1fr) 64px; grid-template-areas:"slot player pts";}
   .h2h-side.opp .h2h-c-slot{text-align:left;}
+  .h2h-side.opp .h2h-row:not(.h2h-head) .h2h-c-slot{justify-self:start; text-align:left;}
+  .h2h-side.opp .h2h-row:not(.h2h-head) .h2h-player-name{justify-self:start;}
   .h2h-side.opp .h2h-c-player{align-items:flex-start; text-align:left;}
-  .h2h-side.opp .h2h-player-sub{justify-content:flex-start;}
-  
+  .h2h-side.opp .h2h-row:not(.h2h-head) .h2h-player-sub{justify-self:start; flex-direction:row; justify-content:flex-start; text-align:left;}
+  .h2h-side.opp .h2h-row:not(.h2h-head) .h2h-c-pts{border-right:0; border-left:1px solid rgba(var(--star-dot-rgb), .12);}
+  .h2h-side.opp .h2h-row:not(.is-upcoming) .h2h-c-pts{margin-left:0; margin-right:calc(-1 * var(--side-pad));}
 }
-/* Same stacking whenever the panel itself is too narrow for two lineups side by side (e.g. beside the Sunday board's
-   live panel), whatever the window width. */
+/* Same stacking whenever the panel itself is too narrow for two lineups side by side (e.g. beside the Game Board's live panel), whatever the window width. */
 @container h2h (max-width:900px){
   .h2h-lineups{grid-template-columns:minmax(0,1fr);}
-  .h2h-side.opp .h2h-row{grid-template-columns:64px minmax(0,1fr) 156px 58px; grid-template-areas:"slot player curve pts";}
+  .h2h-side.opp .h2h-row:not(.h2h-head){grid-template-columns:40px var(--info-w, auto) minmax(0,1fr) 64px; grid-template-areas:"slot name name pts" "slot info curve pts";}
+  .h2h-side.opp .h2h-row.h2h-head{grid-template-columns:40px minmax(0,1fr) 64px; grid-template-areas:"slot player pts";}
   .h2h-side.opp .h2h-c-slot{text-align:left;}
+  .h2h-side.opp .h2h-row:not(.h2h-head) .h2h-c-slot{justify-self:start; text-align:left;}
+  .h2h-side.opp .h2h-row:not(.h2h-head) .h2h-player-name{justify-self:start;}
   .h2h-side.opp .h2h-c-player{align-items:flex-start; text-align:left;}
-  .h2h-side.opp .h2h-player-sub{justify-content:flex-start;}
-  
+  .h2h-side.opp .h2h-row:not(.h2h-head) .h2h-player-sub{justify-self:start; flex-direction:row; justify-content:flex-start; text-align:left;}
+  .h2h-side.opp .h2h-row:not(.h2h-head) .h2h-c-pts{border-right:0; border-left:1px solid rgba(var(--star-dot-rgb), .12);}
+  .h2h-side.opp .h2h-row:not(.is-upcoming) .h2h-c-pts{margin-left:0; margin-right:calc(-1 * var(--side-pad));}
 }
 
 /* ===== My Team Sunday board (my-team/SundayBoard.js): the full-screen game-day layout =====
@@ -5555,168 +5579,16 @@ html{font-stretch:82%;}
 /* Play labels in Title Case: "Touchdown Run", "Touchdown Catch", "Touchdown Pass", "Field Goal". */
 .sb-play-what strong{text-transform:capitalize;}
 
-/* Lineup rows: the game status / clock ("Halftime", "9:49 - 2nd", "Final", "Mon 8:15 PM", "Out") sits on its own line under the position badge and team logo,
-   so a row is name / badges / clock -- 88px, still the same for every row so the two lineups stay aligned. */
-.h2h-player-sub{flex-wrap:wrap; row-gap:2px;}
-.h2h-player-sub .h2h-game{flex-basis:100%;}
-.h2h-row{height:88px;}
-@media (max-width:640px){ .h2h .h2h-row{height:auto; min-height:64px;} }
-
-/* Lineup rows (founder, Oct 19, second pass): the name runs across the top beside the slot and the points; underneath, the badges + logo + game
-   clock sit on the left and the outcome curve is nestled in the free space to their right. Short rows, every one the same height so the two
-   lineups stay aligned. (The player block's children are laid straight onto the row's grid with display:contents.) */
-.h2h-row:not(.h2h-head) .h2h-c-player{display:contents;}
-.h2h-row{
-  height:88px; padding:6px 4px; row-gap:4px; column-gap:10px; align-items:center;
-  grid-template-columns:64px auto minmax(0,1fr) 60px;
-  grid-template-areas:"slot name name pts" "slot info curve pts";
-}
-.h2h-row:not(.h2h-head) .h2h-player-name{grid-area:name; align-self:end;}
-.h2h-row:not(.h2h-head) .h2h-player-sub{grid-area:info; align-self:start; flex-wrap:wrap; row-gap:2px; width:max-content; max-width:100%;}
-.h2h-row:not(.h2h-head) .h2h-c-curve{justify-content:center; align-self:center;}
-.score-curve{width:170px;}
-.h2h-side.opp .h2h-row{
-  grid-template-columns:60px minmax(0,1fr) auto 64px;
-  grid-template-areas:"pts name name slot" "pts curve info slot";
-}
-.h2h-side.opp .h2h-row:not(.h2h-head) .h2h-player-name{justify-self:end;}
-.h2h-side.opp .h2h-row:not(.h2h-head) .h2h-player-sub{justify-self:end; justify-content:flex-end;}
-.h2h-row.h2h-head{height:auto; grid-template-columns:64px minmax(0,1fr) 60px; grid-template-areas:"slot player pts";}
-.h2h-side.opp .h2h-row.h2h-head{grid-template-columns:60px minmax(0,1fr) 64px; grid-template-areas:"pts player slot";}
-.h2h-row.h2h-head .h2h-c-curve{display:none;}
-/* Stacked layouts (a narrow panel / small window): the opponent's side reads like yours, left to right. */
-@container h2h (max-width:900px){
-  .h2h-side.opp .h2h-row:not(.h2h-head){grid-template-columns:64px auto minmax(0,1fr) 60px; grid-template-areas:"slot name name pts" "slot info curve pts";}
-  .h2h-side.opp .h2h-row:not(.h2h-head) .h2h-player-name, .h2h-side.opp .h2h-row:not(.h2h-head) .h2h-player-sub{justify-self:start; justify-content:flex-start;}
-  .h2h-side.opp .h2h-row.h2h-head{grid-template-columns:64px minmax(0,1fr) 60px; grid-template-areas:"slot player pts";}
-}
-@media (max-width:900px){
-  .h2h-side.opp .h2h-row:not(.h2h-head){grid-template-columns:64px auto minmax(0,1fr) 60px; grid-template-areas:"slot name name pts" "slot info curve pts";}
-  .h2h-side.opp .h2h-row:not(.h2h-head) .h2h-player-name, .h2h-side.opp .h2h-row:not(.h2h-head) .h2h-player-sub{justify-self:start; justify-content:flex-start;}
-  .h2h-side.opp .h2h-row.h2h-head{grid-template-columns:64px minmax(0,1fr) 60px; grid-template-areas:"slot player pts";}
-}
-/* Phones keep their own layout (the Phone pass: name + points, the curve under the name). */
+/* Phones keep their own layout: name + points, the outcome curve under the name, the slot moved into the name's line. */
 @media (max-width:640px){
   .h2h .h2h-side .h2h-row, .h2h .h2h-side.opp .h2h-row{height:auto; min-height:64px; grid-template-columns:minmax(0,1fr) 56px; grid-template-areas:"player pts" "curve curve"; gap:4px 8px;}
+  .h2h .h2h-side .h2h-c-pts, .h2h .h2h-side.opp .h2h-c-pts{text-align:right;}
   .h2h .h2h-row:not(.h2h-head) .h2h-c-player{display:flex;}
   .h2h .h2h-row:not(.h2h-head) .h2h-player-name, .h2h .h2h-row:not(.h2h-head) .h2h-player-sub{grid-area:auto; align-self:stretch; justify-self:auto; width:auto;}
   .h2h .h2h-row:not(.h2h-head) .h2h-player-sub{justify-content:flex-start;}
-}
-
-/* Lineup rows, third touch (founder, Oct 19): the slot badge hugs the player (it sits against the name's side of its column instead of floating in the
-   middle of it), and a faint vertical rule separates the scores from the outcome curves. The points column is a little wider to hold the rule
-   and its padding. */
-.h2h-row:not(.h2h-head) .h2h-c-slot{justify-self:end; text-align:right;}
-.h2h-side.opp .h2h-row:not(.h2h-head) .h2h-c-slot{justify-self:start; text-align:left;}
-.h2h-row{grid-template-columns:64px auto minmax(0,1fr) 68px;}
-.h2h-side.opp .h2h-row{grid-template-columns:68px minmax(0,1fr) auto 64px;}
-.h2h-row.h2h-head{grid-template-columns:64px minmax(0,1fr) 68px;}
-.h2h-side.opp .h2h-row.h2h-head{grid-template-columns:68px minmax(0,1fr) 64px;}
-.h2h-row:not(.h2h-head) .h2h-c-pts{align-self:stretch; display:flex; align-items:center; justify-content:flex-end; border-left:1px solid rgba(var(--star-dot-rgb), .12); padding-left:8px;}
-.h2h-side.opp .h2h-row:not(.h2h-head) .h2h-c-pts{justify-content:flex-start; border-left:0; border-right:1px solid rgba(var(--star-dot-rgb), .12); padding-left:0; padding-right:8px;}
-@container h2h (max-width:900px){
-  .h2h-side.opp .h2h-row:not(.h2h-head){grid-template-columns:64px auto minmax(0,1fr) 68px;}
-  .h2h-side.opp .h2h-row.h2h-head{grid-template-columns:64px minmax(0,1fr) 68px;}
-  .h2h-side.opp .h2h-row:not(.h2h-head) .h2h-c-slot{justify-self:end; text-align:right;}
-  .h2h-side.opp .h2h-row:not(.h2h-head) .h2h-c-pts{justify-content:flex-end; border-right:0; border-left:1px solid rgba(var(--star-dot-rgb), .12); padding-right:0; padding-left:8px;}
-}
-@media (max-width:900px){
-  .h2h-side.opp .h2h-row:not(.h2h-head){grid-template-columns:64px auto minmax(0,1fr) 68px;}
-  .h2h-side.opp .h2h-row.h2h-head{grid-template-columns:64px minmax(0,1fr) 68px;}
-  .h2h-side.opp .h2h-row:not(.h2h-head) .h2h-c-slot{justify-self:end; text-align:right;}
-  .h2h-side.opp .h2h-row:not(.h2h-head) .h2h-c-pts{justify-content:flex-end; border-right:0; border-left:1px solid rgba(var(--star-dot-rgb), .12); padding-right:0; padding-left:8px;}
-}
-@media (max-width:640px){
-  .h2h .h2h-side .h2h-row, .h2h .h2h-side.opp .h2h-row{grid-template-columns:minmax(0,1fr) 56px;}
-  .h2h .h2h-row:not(.h2h-head) .h2h-c-pts, .h2h .h2h-side.opp .h2h-row:not(.h2h-head) .h2h-c-pts{border:0; padding:0; align-self:auto; display:block;}
+  .h2h .h2h-row:not(.h2h-head) .h2h-c-pts, .h2h .h2h-side.opp .h2h-row:not(.h2h-head) .h2h-c-pts{border:0; padding:0; margin:0; align-self:auto; display:block;}
   .h2h .h2h-row:not(.h2h-head) .h2h-c-slot{justify-self:auto;}
-}
-
-/* Lineup rows, fourth touch (founder, Oct 19): no empty strip on the left. The slot column is only as wide as a short badge (SUPER_FLEX reads "SFLX" in
-   these rows) and the badge sits at the outer edge, so the player block starts right after it; your opponent's side mirrors that. */
-.h2h-row{grid-template-columns:40px auto minmax(0,1fr) 68px;}
-.h2h-side.opp .h2h-row{grid-template-columns:68px minmax(0,1fr) auto 40px;}
-.h2h-row.h2h-head{grid-template-columns:40px minmax(0,1fr) 68px;}
-.h2h-side.opp .h2h-row.h2h-head{grid-template-columns:68px minmax(0,1fr) 40px;}
-.h2h-row:not(.h2h-head) .h2h-c-slot{justify-self:start; text-align:left;}
-.h2h-side.opp .h2h-row:not(.h2h-head) .h2h-c-slot{justify-self:end; text-align:right;}
-@container h2h (max-width:900px){
-  .h2h-side.opp .h2h-row:not(.h2h-head){grid-template-columns:40px auto minmax(0,1fr) 68px;}
-  .h2h-side.opp .h2h-row.h2h-head{grid-template-columns:40px minmax(0,1fr) 68px;}
-  .h2h-side.opp .h2h-row:not(.h2h-head) .h2h-c-slot{justify-self:start; text-align:left;}
-}
-@media (max-width:900px){
-  .h2h-side.opp .h2h-row:not(.h2h-head){grid-template-columns:40px auto minmax(0,1fr) 68px;}
-  .h2h-side.opp .h2h-row.h2h-head{grid-template-columns:40px minmax(0,1fr) 68px;}
-  .h2h-side.opp .h2h-row:not(.h2h-head) .h2h-c-slot{justify-self:start; text-align:left;}
-}
-@media (max-width:640px){
-  .h2h .h2h-side .h2h-row, .h2h .h2h-side.opp .h2h-row{grid-template-columns:minmax(0,1fr) 56px;}
-}
-
-/* Lineup rows, fifth touch (founder, Oct 19): a bigger outcome curve that still never reaches the name. The name line is the only part of the row
-   that can't give width, so the room comes from the gutters: tighter column gaps and padding, a slimmer position badge, and a 64px points cell. The
-   curve fills whatever column is left (up to 200px) and the row is 92px to hold its larger height. */
-/* --info-w (set by MatchupPanel.js) is the width of the widest badges + game-time block among ALL rows, so the info column -- and therefore the outcome curve beside it -- is the same size in every row. */
-.h2h-row{height:92px; padding:6px 2px; column-gap:6px; grid-template-columns:40px var(--info-w, auto) minmax(0,1fr) 64px;}
-.h2h-side.opp .h2h-row{grid-template-columns:64px minmax(0,1fr) var(--info-w, auto) 40px;}
-.h2h-row.h2h-head{grid-template-columns:40px minmax(0,1fr) 64px;}
-.h2h-side.opp .h2h-row.h2h-head{grid-template-columns:64px minmax(0,1fr) 40px;}
-.h2h-row:not(.h2h-head) .h2h-player-sub .position-badge{min-width:0; padding-left:7px; padding-right:7px;}
-.h2h-row:not(.h2h-head) .h2h-c-curve{justify-content:stretch;}
-.score-curve{width:100%; max-width:200px;}
-@container h2h (max-width:900px){
-  .h2h-side.opp .h2h-row:not(.h2h-head){grid-template-columns:40px var(--info-w, auto) minmax(0,1fr) 64px;}
-  .h2h-side.opp .h2h-row.h2h-head{grid-template-columns:40px minmax(0,1fr) 64px;}
-}
-@media (max-width:900px){
-  .h2h-side.opp .h2h-row:not(.h2h-head){grid-template-columns:40px var(--info-w, auto) minmax(0,1fr) 64px;}
-  .h2h-side.opp .h2h-row.h2h-head{grid-template-columns:40px minmax(0,1fr) 64px;}
-}
-@media (max-width:640px){
-  .h2h .h2h-side .h2h-row, .h2h .h2h-side.opp .h2h-row{height:auto; grid-template-columns:minmax(0,1fr) 56px;}
   .score-curve{max-width:100%;}
-}
-
-/* Lineup rows, sixth touch (founder, Oct 19): a bigger team logo, and the badge order mirrors on your opponent's side -- yours reads position then logo
-   going left to right, theirs logo then position, so the position badge sits next to the slot on both sides. */
-.h2h-row:not(.h2h-head) .h2h-player-sub .team-logo img{width:30px; height:30px;}
-.h2h-row:not(.h2h-head) .h2h-player-sub .team-badge.team-logo{padding:0;}
-.h2h-side.opp .h2h-row:not(.h2h-head) .h2h-player-sub{flex-direction:row-reverse; justify-content:flex-start; text-align:right;}
-@container h2h (max-width:900px){
-  .h2h-side.opp .h2h-row:not(.h2h-head) .h2h-player-sub{flex-direction:row; justify-content:flex-start; text-align:left;}
-}
-@media (max-width:900px){
-  .h2h-side.opp .h2h-row:not(.h2h-head) .h2h-player-sub{flex-direction:row; justify-content:flex-start; text-align:left;}
-}
-
-/* Lineup rows, seventh touch (founder, Oct 19): as short as the elements allow. Name line (tight leading) over the badges + clock and the curve, with no
-   gap and 3px of padding; the curve is 182 x 52 (a touch smaller than before) and every row is 74px. Rows that haven't played yet carry a 1.5px
-   border, so their padding gives up the same amount to keep their contents on the same lines. */
-.h2h-row{height:77px; padding:3px 2px; row-gap:0;}
-.h2h-row:not(.h2h-head) .h2h-player-name{line-height:1.35;} /* tall enough that the name's box (overflow:hidden) doesn't shave the letters' tops and tails */
-.score-curve{max-width:182px;}
-.sb-body.feed-collapsed .score-curve{max-width:none;} /* the right pane is folded: the curve fills the rest of its cell (the drawing stretches, the height stays) */
-.h2h-row.is-upcoming{padding:1.5px calc(var(--side-pad) + 2px);}
-@media (max-width:640px){
-  .h2h .h2h-side .h2h-row, .h2h .h2h-side.opp .h2h-row{height:auto; row-gap:4px;}
-  .score-curve{max-width:100%;}
-}
-
-/* Points column centred (founder, Oct 19): the PTS heading and every score sit in the middle of their cell, between the divider and the column's edge, on both
-   sides. (Phones keep the right-aligned score of the Phone pass.) */
-@media (min-width:641px){
-  .h2h-row .h2h-c-pts, .h2h-side.opp .h2h-row .h2h-c-pts{text-align:center;}
-  .h2h-row:not(.h2h-head) .h2h-c-pts, .h2h-side.opp .h2h-row:not(.h2h-head) .h2h-c-pts{justify-content:center; padding-left:0; padding-right:0;}
-}
-
-/* Lineup rows, ninth touch (founder, Oct 20): the scores read as off-centre because the points cell stopped one side-pad short of the card's edge, so the number sat left of the middle of the space between the divider and the card. The cell now runs out to the card edge (rows that are shaded already reach it). */
-@media (min-width:641px){
-  .h2h-row:not(.is-upcoming) .h2h-c-pts{margin-right:calc(-1 * var(--side-pad));}
-  .h2h-side.opp .h2h-row:not(.is-upcoming) .h2h-c-pts{margin-right:0; margin-left:calc(-1 * var(--side-pad));}
-}
-@media (min-width:641px) and (max-width:900px){
-  .h2h-side.opp .h2h-row:not(.is-upcoming) .h2h-c-pts{margin-left:0; margin-right:calc(-1 * var(--side-pad));}
 }
 
 /* Weekly rankings: rows a filter leaves out stay mounted (so filtering is instant) and are simply not shown. */

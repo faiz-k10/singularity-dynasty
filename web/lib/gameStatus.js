@@ -39,19 +39,26 @@ export function parseScoreboard(json) {
 
 let cached = null;
 let cachedAt = 0;
+let inflight = null; // callers that arrive while ESPN is being read wait for that one request instead of sending their own
 export async function fetchGameStates() {
   // 10s while any game is on (the clock and live scores are polled every 15s), 30s otherwise.
   const live = cached && Object.values(cached).some((g) => g?.state === "in");
   if (cached && Date.now() - cachedAt < (live ? 10 : 30) * 1000) return cached;
-  try {
-    const res = await fetch(URL, { cache: "no-store" });
-    if (!res.ok) return cached;
-    cached = parseScoreboard(await res.json());
-    cachedAt = Date.now();
+  inflight ||= (async () => {
+    try {
+      const res = await fetch(URL, { cache: "no-store" });
+      if (res.ok) {
+        cached = parseScoreboard(await res.json());
+        cachedAt = Date.now();
+      }
+    } catch {
+      // keep the last good copy
+    }
     return cached;
-  } catch {
-    return cached;
-  }
+  })().finally(() => {
+    inflight = null;
+  });
+  return inflight;
 }
 
 // The Points cell for one player: null = not started / no game (shown as "—").

@@ -11,11 +11,11 @@
 
 import { lineupAdvice, slotLabel } from "./lineupOptimizer.js";
 import { playerLeverage } from "./winChance.js";
+import { num, leagueName } from "./format.js";
 
 const r1 = (v) => (Math.round(v * 10) / 10).toFixed(1);
 const sgn = (v) => `${v >= 0 ? "+" : "−"}${r1(Math.abs(v))}`;
-const num = (v) => (typeof v === "number" && Number.isFinite(v) ? v : null);
-const leagueOf = (t) => t.league_name || t.team_name || "your league";
+const leagueOf = (t) => leagueName(t, "your league");
 const pc = (v) => `${Math.round(v * 100)}%`;
 const chip = (p) => (p ? { name: p.name, pos: p.pos, team: p.team } : null);
 
@@ -36,13 +36,17 @@ function worth(p, st) {
   return proj;
 }
 
-function leagues(savedTeams, gameStates) {
+// `adjusted` (optional): { [teamId]: matchupState() result } from the Game Board, so the lineups, the live totals and the win chance here
+// are the very same numbers the league cards show (the plays Sleeper hasn't posted yet included); without it, the saved snapshot.
+function leagues(savedTeams, gameStates, adjusted = null) {
   const out = [];
   for (const t of savedTeams || []) {
     const s = t.settings || {};
     if (s.bestBall || s.isBye || !s.h2h?.mine?.length || !s.h2h?.opp?.length) continue;
-    const mine = s.h2h.mine.map((p) => ({ ...p, st: stateOf(p, gameStates) }));
-    const opp = s.h2h.opp.map((p) => ({ ...p, st: stateOf(p, gameStates) }));
+    const adj = adjusted?.[t.id]?.adj || null;
+    const h2h = adj ? adj.lists : s.h2h;
+    const mine = h2h.mine.map((p) => ({ ...p, st: stateOf(p, gameStates) }));
+    const opp = h2h.opp.map((p) => ({ ...p, st: stateOf(p, gameStates) }));
     const total = (rows) => rows.reduce((a, p) => a + worth(p, p.st), 0);
     const all = [...mine, ...opp];
     const done = all.every((p) => p.st === "post" || p.st === "none" || !p.id);
@@ -52,12 +56,12 @@ function leagues(savedTeams, gameStates) {
       id: t.id,
       name: leagueOf(t),
       opponent: s.opponent || "your opponent",
-      h2h: s.h2h,
+      h2h,
       mine,
       opp,
       margin: total(mine) - total(opp), // projected (played games at their points)
-      win: num(s.winChance),
-      live: s.matchupActual || null,
+      win: num(adj ? adj.winChance : s.winChance),
+      live: (adj ? adj.live : s.matchupActual) || null,
       done: done && anyPlayed,
       anyPlayed,
     });
@@ -68,10 +72,11 @@ function leagues(savedTeams, gameStates) {
 
 // Lineup upgrades: the biggest projection gain per league from the optimizer (lib/lineupOptimizer.js), and the ceiling / floor tilt
 // when the win chance is lopsided. Only while someone in the lineup can still move.
-function lineupCards(savedTeams, gameStates) {
+function lineupCards(savedTeams, gameStates, adjusted) {
   const cards = [];
   for (const t of savedTeams || []) {
-    const a = lineupAdvice(t, gameStates);
+    // The board already worked the advice out for its alert counts (row.alertCount.advice); only compute it when running without the board.
+    const a = adjusted?.[t.id]?.row ? adjusted[t.id].row.alertCount.advice : lineupAdvice(t, gameStates);
     if (!a || !a.swaps.length) continue;
     const top = a.swaps[0];
     if (a.gain >= 1) {
@@ -129,7 +134,16 @@ function outlook(ls) {
 // ceiling, so a card can say what HIS game does to the win chance, not just how wide his range is.
 // 1,500 draws a run (the default 5,000 would make a refresh of the pane take seconds): every run uses the same random numbers, so the
 // differences between floor / median / ceiling are exact even though each percentage carries about a point of noise.
-const lev = (l, side, p, gameStates) => playerLeverage(l.h2h, gameStates, side, p.id, { draws: 1500 });
+// The percentages are shifted so "now" is exactly the win chance the league card shows (l.win, from the full-size run); the shift
+// moves all three outcomes together, so the gaps between them stay as the simulation found them.
+const lev = (l, side, p, gameStates) => {
+  const v = playerLeverage(l.h2h, gameStates, side, p.id, { draws: 1500 });
+  if (!v || l.win == null) return v;
+  const d = l.win - v.base;
+  const c = (x) => Math.min(1, Math.max(0, x + d));
+  const [atFloor, atMedian, atCeiling] = [c(v.atFloor), c(v.atMedian), c(v.atCeiling)];
+  return { ...v, base: l.win, atFloor, atMedian, atCeiling, swing: Math.abs(atCeiling - atFloor), lo: Math.min(atFloor, atCeiling), hi: Math.max(atFloor, atCeiling) };
+};
 const ptsOfWin = (v) => `${v >= 0 ? "+" : "−"}${Math.round(Math.abs(v) * 100)}`;
 
 function swings(ls, gameStates) {
@@ -628,12 +642,12 @@ function dayCard({ now, ls, gameStates, feed, waivers, injuryCount }) {
 }
 
 // Overall state of the week across the viewer's lineups.
-export function weekPhase(savedTeams, gameStates) {
+const phaseOf = (ls, gameStates) => {
   if (!gameStates) return "unknown";
   let pre = 0;
   let live = 0;
   let post = 0;
-  for (const l of leagues(savedTeams, gameStates)) {
+  for (const l of ls) {
     for (const p of [...l.mine, ...l.opp]) {
       if (p.st === "pre") pre++;
       else if (p.st === "in") live++;
@@ -645,16 +659,17 @@ export function weekPhase(savedTeams, gameStates) {
   if (pre > 0) return "preview";
   if (post > 0) return "recap";
   return "off";
-}
+};
+export const weekPhase = (savedTeams, gameStates) => phaseOf(leagues(savedTeams, gameStates), gameStates);
 
 // All cards for the viewer's leagues, best first for the current phase.
-export function buildInsights({ savedTeams, gameStates, waivers = null, injuriesByTeam = null, feed = null, teamIndex = null, now = null }) {
-  const phase = weekPhase(savedTeams, gameStates);
-  const ls = leagues(savedTeams, gameStates);
+export function buildInsights({ savedTeams, gameStates, waivers = null, injuriesByTeam = null, feed = null, teamIndex = null, now = null, adjusted = null }) {
+  const ls = leagues(savedTeams, gameStates, adjusted);
+  const phase = phaseOf(ls, gameStates);
   const cards = [];
   const add = (c) => (Array.isArray(c) ? cards.push(...c) : c && cards.push(c));
   add(holes(ls));
-  add(lineupCards(savedTeams, gameStates));
+  add(lineupCards(savedTeams, gameStates, adjusted));
   add(outlook(ls));
   add(swings(ls, gameStates));
   add(threats(ls, gameStates));

@@ -1,25 +1,21 @@
 "use client";
 
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import MatchupPanel, { sleeperMatchupUrl, formatWin, standing, sealedClass, PanelTabs, leagueTabs } from "./MatchupPanel";
+import MatchupPanel, { sleeperMatchupUrl, formatWin, sealedClass, PanelTabs, leagueTabs } from "./MatchupPanel";
 import { useMounted } from "./useMounted";
+import { fmt1, fmt2 } from "@/lib/format";
 import { buildRow, isTyping, moveFocus } from "./LeagueDashboard";
 import { formatOdds, oddsTone } from "./Standings";
 import PositionBadge from "../tools/PositionBadge";
 import TeamBadge from "../tools/TeamBadge";
-import { summarizeSide } from "@/lib/winChance";
 import { buildLiveFeed, trackScoring, sortFeed, applyPending } from "@/lib/liveFeed";
-import { adjustedMatchup } from "@/lib/adjustedMatchup";
-import { lockIn } from "@/lib/standing";
+import { matchupState } from "@/lib/matchupState";
 import { getLivePlays } from "./actions";
 import { leadState } from "@/lib/leadState";
 import { leagueFacts, matchesFilters, emptyFilters, filterCount } from "@/lib/boardFilters";
 import BoardFilters from "./BoardFilters";
 import Companion from "./Companion";
 
-const fmt1 = (v) => (v == null ? "—" : v.toFixed(1));
-// Scores (points actually scored) show two decimals, like Sleeper's; projections stay at one.
-const fmt2 = (v) => (v == null ? "—" : v.toFixed(2));
 // "Christian McCaffrey" -> "C. McCaffrey"
 const shortName = (name) => {
   const [first, ...rest] = String(name || "").split(" ");
@@ -41,35 +37,12 @@ function Score({ value, state }) {
   );
 }
 
-// Everything a league card (and the filters) need to know about this week's matchup, computed once.
-function matchupState(team, gameStates, injuries, playTotals = null) {
-  const s = team.settings || {};
-  const row = buildRow(team, injuries, gameStates);
-  // The plays Sleeper hasn't posted yet are added to the lineups, the totals and the win chance (lib/adjustedMatchup.js), so a
-  // card is on the same clock as the live list and the open matchup.
-  const adj = adjustedMatchup(s, gameStates, playTotals);
-  const mine = adj ? adj.mine : s.h2h ? summarizeSide(s.h2h.mine, gameStates) : null;
-  const opp = adj ? adj.opp : s.h2h ? summarizeSide(s.h2h.opp, gameStates) : null;
-  const live = adj ? adj.live : s.matchupActual;
-  const myScore = live ? live.mine : mine?.pts ?? null;
-  const oppScore = live ? live.opp : opp?.pts ?? null;
-  const pct = adj ? adj.winChance : row.winPct;
-  const playing = (mine?.playing || 0) + (opp?.playing || 0);
-  const toPlay = (mine?.yetToPlay || 0) + (opp?.yetToPlay || 0);
-  const started = myScore > 0 || oppScore > 0 || playing > 0;
-  const done = Boolean(mine && opp && started && playing === 0 && toPlay === 0);
-  // YOU WIN / Out of reach only when the result is locked (lib/standing.js lockIn), never from the percentage alone.
-  const lock = lockIn(mine, opp, myScore, oppScore);
-  const st = standing(pct, done, lock);
-  return { s, row, mine, opp, myScore, oppScore, pct, playing, toPlay, done, st, lock };
-}
-
 // One league at a glance, built to answer "am I winning?" in one look: the standing (Favored / Toss-up / Underdog,
 // Won / Lost once every game is over) with the win chance, the two scores (green leading, red trailing), who of yours is still to
 // play, then playoffs and alerts in plain words. Colour means one thing everywhere: gold = going your way, blue = not.
-function LeagueCard({ team, gameStates, injuries, onOpen, playTotals }) {
+function LeagueCard({ team, ms, onOpen }) {
   const mounted = useMounted();
-  const { s, row, mine, opp, myScore, oppScore, pct, playing, done, st, lock } = useMemo(() => matchupState(team, gameStates, injuries, playTotals), [team, gameStates, injuries, playTotals]);
+  const { s, row, mine, opp, myScore, oppScore, pct, playing, done, st, lock } = ms;
   const url = sleeperMatchupUrl(team.platform_league_id);
   // The card's border is its win chance: the card's width is the bar. The top and bottom borders fill from the left edge by the
   // same share -- the chance to win -- and the left edge is always drawn; all the way across (locked in / won) closes the box.
@@ -357,7 +330,7 @@ function RecentPlays({ rows, updatedAt, focus, onPick, onTotals }) {
 // The live panel beside the cards: only players on the field right now -- yours, then your opponents' -- across every
 // league, or just the open league's two lineups (teamId). Newest scoring first within each side; a row flashes gold
 // with "+6.4" when he scores. Finished and not-started players stay off it so it never fills with noise.
-function LiveFeed({ savedTeams, gameStates, updatedAt, teamId = null, league = null, playTotals, onTotals, injuriesByTeam, weekFeed, collapsed = false, onToggle }) {
+function LiveFeed({ savedTeams, gameStates, updatedAt, teamId = null, league = null, playTotals, onTotals, injuriesByTeam, adjusted, weekFeed, collapsed = false, onToggle }) {
   const mounted = useMounted();
   const baseFeed = useMemo(() => buildLiveFeed(savedTeams, gameStates, { onlyTeamId: teamId }), [savedTeams, gameStates, teamId]);
   // Each player's running points play by play (from the plays request below): Sleeper trails the game by a minute or two, so the
@@ -434,7 +407,7 @@ function LiveFeed({ savedTeams, gameStates, updatedAt, teamId = null, league = n
         {nobody && league && <span className="sb-feed-scope mono">{league}</span>}
       </div>
       {mode === "companion" ? (
-        <Companion savedTeams={savedTeams} gameStates={gameStates} teamId={teamId} injuriesByTeam={injuriesByTeam} weekFeed={weekFeed} />
+        <Companion savedTeams={savedTeams} gameStates={gameStates} teamId={teamId} injuriesByTeam={injuriesByTeam} adjusted={adjusted} feed={baseFeed} weekFeed={weekFeed} />
       ) : (
         // Split lengthwise: who is on the field (left) beside what they just did (right), each scrolling on its own.
         <div className="sb-feed-split">
@@ -486,14 +459,23 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
       return !c;
     });
   }, []);
-  const factsById = useMemo(() => {
+  // Every league's state, worked out ONCE per change (the cards, the filters, the header sentence and the Companion all read it).
+  const states = useMemo(() => {
     const m = {};
     for (const t of savedTeams) {
-      const ms = matchupState(t, gameStates, injuriesByTeam?.[t.id], playTotals);
-      m[t.id] = leagueFacts({ settings: ms.s, standingLabel: ms.st.label, myScore: ms.myScore, oppScore: ms.oppScore, odds: ms.s.playoffOdds ?? null, settled: Boolean(ms.s.playoffSettled) });
+      const s = t.settings || {};
+      m[t.id] = { s, row: buildRow(t, injuriesByTeam?.[t.id], gameStates), ...matchupState(s, gameStates, playTotals) };
     }
     return m;
   }, [savedTeams, gameStates, injuriesByTeam, playTotals]);
+  const factsById = useMemo(() => {
+    const m = {};
+    for (const t of savedTeams) {
+      const ms = states[t.id];
+      m[t.id] = leagueFacts({ settings: ms.s, standingLabel: ms.st.label, myScore: ms.myScore, oppScore: ms.oppScore, odds: ms.s.playoffOdds ?? null, settled: Boolean(ms.s.playoffSettled) });
+    }
+    return m;
+  }, [savedTeams, states]);
   const visibleTeams = useMemo(() => savedTeams.filter((t) => matchesFilters(filters, factsById[t.id])), [savedTeams, filters, factsById]);
   const filtered = filterCount(filters) > 0;
   const openTeam = openId ? savedTeams.find((t) => t.id === openId) : null;
@@ -557,7 +539,7 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
   let alerts = 0;
   let live = 0; // leagues where one of my players is on the field right now (the "Live" label beside the clock)
   for (const t of visibleTeams) {
-    const ms = matchupState(t, gameStates, injuriesByTeam?.[t.id], playTotals);
+    const ms = states[t.id];
     const label = ms.st.label;
     if (label === "Won") tally.won++;
     else if (label === "You win") tally.winning++;
@@ -643,7 +625,7 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
           <div className="sb-main">
             <div className="sb-grid" ref={gridRef}>
               {visibleTeams.map((t) => (
-                <LeagueCard key={t.id} team={t} gameStates={gameStates} injuries={injuriesByTeam?.[t.id]} onOpen={setOpenId} playTotals={playTotals} />
+                <LeagueCard key={t.id} team={t} ms={states[t.id]} onOpen={setOpenId} />
               ))}
               {visibleTeams.length === 0 && (
                 <div className="sb-grid-empty">
@@ -665,6 +647,7 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
           playTotals={playTotals}
           onTotals={mergeTotals}
           injuriesByTeam={injuriesByTeam}
+          adjusted={states}
           weekFeed={weekFeed}
           collapsed={feedCollapsed}
           onToggle={toggleFeed}

@@ -5,8 +5,8 @@
 // matchup panel, so every number on the board is on the same clock.
 import { applyPendingToLineup } from "./liveFeed.js";
 import { summarizeSide, matchupOutlook } from "./winChance.js";
+import { round2 as r2 } from "./format.js";
 
-const r2 = (v) => Math.round(v * 100) / 100;
 
 // s: a saved team's settings ({ h2h, matchupActual, winChance }). Returns null for best ball / no lineups.
 export function adjustedMatchup(s, gameStates, playTotals) {
@@ -22,6 +22,7 @@ export function adjustedMatchup(s, gameStates, playTotals) {
     mine,
     opp,
     live,
+    lists: { mine: am.list, opp: ao.list }, // the lineup rows with the pending points added
     winChance: recomputed !== undefined ? recomputed : s.winChance ?? null,
     added: { mine: am.added, opp: ao.added },
   };

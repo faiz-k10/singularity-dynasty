@@ -3,9 +3,9 @@
 import { useMemo } from "react";
 import PositionBadge from "../tools/PositionBadge";
 import TeamBadge from "../tools/TeamBadge";
-import { lineupAdvice, lineupAlertCount, slotLabel } from "@/lib/lineupOptimizer";
+import { fmt1 } from "@/lib/format";
+import { lineupAlertCount, slotLabel } from "@/lib/lineupOptimizer";
 
-const fmt1 = (v) => (v == null ? "—" : v.toFixed(1));
 
 function Who({ p }) {
   return (
@@ -45,9 +45,8 @@ function SwapList({ swaps, key1 = "myProjPts" }) {
 // adds, plus (when the win chance is lopsided) a version that plays for the ceiling or the floor. lib/lineupOptimizer.js does the
 // work; players whose game has started are locked and left where they are.
 export default function LineupAdvice({ team, gameStates, injuries = [] }) {
-  const advice = useMemo(() => lineupAdvice(team, gameStates), [team, gameStates]);
   const count = useMemo(() => lineupAlertCount(team, gameStates, injuries), [team, gameStates, injuries]);
-  const alerts = count.alerts;
+  const { alerts, advice } = count;
   const url = team.platform_league_id ? `https://sleeper.com/leagues/${team.platform_league_id}/matchup` : null;
   if (!advice) return <p className="h2h-note">No lineup to optimize for this league this week.</p>;
   const better = advice.swaps.length > 0 && advice.gain >= 0.1;

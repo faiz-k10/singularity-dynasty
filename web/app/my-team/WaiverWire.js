@@ -3,12 +3,12 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import PositionBadge from "../tools/PositionBadge";
+import { fmt1 } from "@/lib/format";
 import TeamBadge from "../tools/TeamBadge";
 import { getWaiverWire } from "./actions";
 
 const POSITIONS = ["All", "QB", "RB", "WR", "TE"];
 const SHOWN = 10;
-const fmt1 = (v) => (v == null ? "—" : v.toFixed(1));
 
 // "Best available" under a league's standings: the QB / RB / WR / TE on no roster in that league, ranked by this week's
 // projection (lib/waivers.js via getWaiverWire), with a position filter. Loaded when the

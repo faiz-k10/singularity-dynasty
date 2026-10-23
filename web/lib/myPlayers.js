@@ -5,13 +5,14 @@
 // Shape (kept small -- it is serialized into the page):
 //   { signedIn, teams: ["League A", ...], byName: { "josh allen": [[teamIndex, isStarter 0|1], ...] } }
 import { normalizePlayerName } from "./portfolio.js";
+import { leagueName } from "./format.js";
 
 // Same lookup from saved-team rows already in hand (the My Team page has them).
 export function mineFromTeams(rows) {
   const teams = [];
   const byName = {};
   (rows || []).forEach((t, i) => {
-    teams.push(t.league_name || t.team_name || `Team ${i + 1}`);
+    teams.push(leagueName(t, `Team ${i + 1}`));
     for (const p of t.players || []) {
       if (!p?.name) continue;
       const key = normalizePlayerName(p.name);

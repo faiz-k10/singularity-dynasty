@@ -11,6 +11,8 @@
 // - swing: a league's win chance crossed 50% since the last poll while a game in that matchup is in the 4th quarter or
 //   overtime -- one per direction per league per week.
 
+import { leagueName } from "./format.js";
+
 const KICKOFF_WINDOW_MS = 3 * 60 * 60 * 1000;
 
 function nextKickoff(gameStates) {
@@ -23,7 +25,7 @@ function nextKickoff(gameStates) {
   return next;
 }
 
-const leagueOf = (t) => t.league_name || t.team_name || "a league";
+const leagueOf = (t) => leagueName(t, "a league");
 
 export function findAlerts({ savedTeams, injuriesByTeam, gameStates, prevWin = {}, now = Date.now() }) {
   const out = [];
