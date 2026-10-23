@@ -5797,7 +5797,6 @@ html{font-stretch:82%;}
 .sb-card-verdict .sb-card-word + .sb-card-pct{white-space:nowrap;}
 .lu-slot{min-width:72px; font-size:10.5px; font-weight:700; letter-spacing:.08em; color:var(--horizon-gold);}
 .lu-from{font-size:10.5px; color:var(--star-dim);}
-.lu-gain.is-neg{color:var(--star-dim);}
 
 /* Playing now rows have ONE fixed shape (founder, Oct 22 2026, "make it fixed"): the score column is the same width in every row (it used to hug
    "4.30" in one row and "23.70" in the next, which left some rows enough room for the clock beside the logo and pushed it under the badges in

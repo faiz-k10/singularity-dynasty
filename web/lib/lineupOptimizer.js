@@ -1,11 +1,11 @@
-// Lineup optimizer for one saved league (app/my-team/LineupAdvice.js, the Companion's "Lineup upgrade" cards): the best
-// set of starters from the roster by this week's projection, who to swap, and -- when the win chance says the matchup is
+// Lineup optimizer for one saved league (app/my-team/LineupAdvice.js, the Companion's "Lineup upgrade" cards): who to start over whom
+// by this week's projection, and -- when the win chance says the matchup is
 // lopsided -- a variation that plays for the ceiling (underdog) or the floor (heavy favorite). Pure, no imports of its own;
 // tested in test/lineupOptimizer.test.mjs.
 //
 // What it will NOT touch: a player whose game has started (Sleeper locks him) stays where he is and can't be moved in or out;
 // slots our model has no projection for (K, DEF, IDP) and players with no projection keep whoever is there now.
-import { ELIGIBLE, FILL_ORDER } from "./bestBall.js";
+import { ELIGIBLE } from "./bestBall.js";
 
 const PROJECTED = new Set(["QB", "RB", "WR", "TE"]);
 const r1 = (v) => Math.round(v * 10) / 10;
@@ -20,8 +20,14 @@ const valueOf = (p, mode) => {
   return proj;
 };
 
-// team: saved_teams row (players[] with position, team, slot, slotIndex, isStarter, myProjPts / myFloor / myCeiling, and
-// settings.slots). gameStates: team -> { state }. Returns null when there is nothing to optimize.
+// Simple one-for-one swaps, best first: start a bench player in place of a starter whose slot he is eligible for, only when it GAINS points
+// (by the measure in use). After each swap the bench player is a starter and the benched one is done -- nobody is used twice -- and the
+// next best swap is taken from what is left. Every recommendation is legal for its slot and positive, which is the point: the earlier
+// "best possible lineup" version reshuffled whole chains (a QB to SUPERFLEX, a TE up from FLEX ...), and a single row of a chain can lose
+// points even though the chain gains, which read as nonsense. This can miss a gain that only a chain finds; it never recommends a loss.
+// team: saved_teams row (players[] with position, team, slot, slotIndex, isStarter, myProjPts / myFloor / myCeiling, and settings.slots).
+// gameStates: team -> { state }. Returns null when there is nothing to optimize.
+const MIN_GAIN = 0.1;
 export function optimizeLineup(team, gameStates, mode = "proj") {
   const s = team?.settings || {};
   const slots = s.slots;
@@ -32,76 +38,39 @@ export function optimizeLineup(team, gameStates, mode = "proj") {
   const roster = (team.players || []).map((p) => ({ ...p, val: valueOf(p, mode), locked: Boolean(locked(p)) }));
   const byIndex = new Map();
   for (const p of roster) if (p.isStarter && p.slotIndex < slots.length) byIndex.set(p.slotIndex, p);
+  const val = (p) => (p && p.val != null ? p.val : 0);
 
   // Slots we can move people in and out of: a kind we project, whose current starter isn't locked.
   const open = [];
   slots.forEach((kind, i) => {
-    const cur = byIndex.get(i);
     if (!ELIGIBLE[kind] || !ELIGIBLE[kind].some((pos) => PROJECTED.has(pos))) return;
+    const cur = byIndex.get(i);
     if (cur?.locked) return;
-    open.push({ i, kind, cur });
+    open.push({ i, kind, cur: cur || null });
   });
-  const pool = roster.filter((p) => PROJECTED.has(p.position) && p.val != null && !p.locked);
-  // Players who stay put are never re-offered: locked starters hold their slots, so they aren't in the pool at all.
+  const bench = roster.filter((p) => !p.isStarter && PROJECTED.has(p.position) && p.val != null && !p.locked);
+  const current = open.reduce((t, o) => t + val(o.cur), 0);
 
-  const used = new Set();
-  const chosen = new Map(); // slot index -> player
-  for (const kind of FILL_ORDER) {
-    for (const slot of open.filter((o) => o.kind === kind)) {
-      const best = pool
-        .filter((p) => !used.has(p.player_id) && ELIGIBLE[kind].includes(p.position))
-        // best value first; on a tie the player already starting there keeps the slot, then any current starter keeps priority over the bench
-        .sort((a, b) => b.val - a.val || Number(b === slot.cur) - Number(a === slot.cur) || Number(b.isStarter) - Number(a.isStarter))[0];
-      if (best) {
-        used.add(best.player_id);
-        chosen.set(slot.i, best);
+  const swaps = [];
+  const done = new Set(); // anyone already swapped in or out
+  for (;;) {
+    let best = null;
+    for (const o of open) {
+      if (o.cur && done.has(o.cur.player_id)) continue;
+      for (const b of bench) {
+        if (done.has(b.player_id) || !ELIGIBLE[o.kind].includes(b.position)) continue;
+        const gain = val(b) - val(o.cur);
+        if (gain >= MIN_GAIN && (!best || gain > best.gain)) best = { o, b, gain };
       }
     }
+    if (!best) break;
+    done.add(best.b.player_id);
+    if (best.o.cur) done.add(best.o.cur.player_id);
+    swaps.push({ slot: best.o.kind, in: best.b, out: best.o.cur, gain: r1(best.gain) });
   }
-
-  const val = (p) => (p && p.val != null ? p.val : 0);
-  let current = 0;
-  let best = 0;
-  const startingNow = new Set(open.map((o) => o.cur?.player_id).filter(Boolean));
-  const picked = new Set();
-  const swaps = []; // one per slot whose starter changes (only used to total things up: a row's own gain can be negative inside a chain)
-  const starts = []; // bench players who come into the lineup, and the slot they take
-  const moves = []; // players who keep a starting spot but change slot
-  for (const o of open) {
-    const pick = chosen.get(o.i) || o.cur || null;
-    current += val(o.cur);
-    best += val(pick);
-    if (!pick) continue;
-    picked.add(pick.player_id);
-    if (!o.cur || pick.player_id !== o.cur.player_id) {
-      swaps.push({ slot: o.kind, in: pick, out: o.cur || null, gain: r1(val(pick) - val(o.cur)), fromSlot: byIndexSlot(slots, byIndex, pick) });
-      const from = byIndexSlot(slots, byIndex, pick);
-      if (!startingNow.has(pick.player_id)) starts.push({ player: pick, slot: o.kind });
-      else if (from !== o.kind) moves.push({ player: pick, from, to: o.kind }); // FLEX to FLEX isn't a move anyone has to make
-    }
-  }
-  // Who leaves the lineup altogether.
-  const benches = open.map((o) => o.cur).filter((p) => p && !picked.has(p.player_id)).sort((a, b) => val(b) - val(a));
-  starts.sort((a, b) => val(b.player) - val(a.player));
-  swaps.sort((a, b) => b.gain - a.gain);
-  return {
-    mode,
-    current: r1(current),
-    best: r1(best),
-    gain: r1(best - current),
-    starts,
-    benches,
-    moves,
-    swaps,
-    optimizedSlots: open.length,
-    lockedStarters: slots.length - open.length,
-  };
+  const gain = swaps.reduce((t, x) => t + x.gain, 0);
+  return { mode, current: r1(current), best: r1(current + gain), gain: r1(gain), swaps, optimizedSlots: open.length, lockedStarters: slots.length - open.length };
 }
-
-const byIndexSlot = (slots, byIndex, player) => {
-  for (const [i, p] of byIndex) if (p.player_id === player.player_id) return slots[i];
-  return null;
-};
 
 // The advice for a league: the best lineup by projection, plus the risk-tilted version when the win chance is lopsided and the tilt
 // buys a real gain for a small cost to the median (underdog: ceiling; heavy favorite: floor).

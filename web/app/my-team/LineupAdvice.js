@@ -18,35 +18,24 @@ function Who({ p }) {
   );
 }
 
-// Who to start, who to bench, who to move -- as three plain lists. No "X over Y" pairing and no per-row gain: in a chain of changes (a bench
-// QB starts, the old QB drops to SUPERFLEX, ...) a single slot's own difference can be negative even though the lineup as a whole gains,
-// and pairing players across slots read as nonsense. The total gain is the headline above.
-function SwapList({ advice, key1 = "myProjPts" }) {
-  const { starts, benches, moves } = advice;
+// "Start X over Y" rows, one per swap, each legal for the slot named at the left and each a gain (lib/lineupOptimizer.js never recommends a loss).
+function SwapList({ swaps, key1 = "myProjPts" }) {
   return (
     <ul className="lu-swaps">
-      {starts.map((x) => (
-        <li key={`s:${x.player.player_id}`} className="lu-swap">
-          <span className="lu-slot mono is-start">Start</span>
-          <Who p={x.player} />
-          <span className="lu-pts mono">{fmt1(x.player[key1])}</span>
-          <span className="lu-from mono">at {slotName(x.slot)}</span>
-        </li>
-      ))}
-      {benches.map((p) => (
-        <li key={`b:${p.player_id}`} className="lu-swap is-bench">
-          <span className="lu-slot mono is-bench">Bench</span>
-          <Who p={p} />
-          <span className="lu-pts mono">{fmt1(p[key1])}</span>
-        </li>
-      ))}
-      {moves.map((m) => (
-        <li key={`m:${m.player.player_id}`} className="lu-swap is-move">
-          <span className="lu-slot mono is-move">Move</span>
-          <Who p={m.player} />
-          <span className="lu-from mono">
-            {slotName(m.from)} → {slotName(m.to)}
-          </span>
+      {swaps.map((x) => (
+        <li key={`${x.slot}:${x.in.player_id}`} className="lu-swap">
+          <span className="lu-slot mono">{slotName(x.slot)}</span>
+          <span className="lu-verb mono">Start</span>
+          <Who p={x.in} />
+          <span className="lu-pts mono">{fmt1(x.in[key1])}</span>
+          {x.out && (
+            <>
+              <span className="lu-verb mono">over</span>
+              <Who p={x.out} />
+              <span className="lu-pts mono">{fmt1(x.out[key1])}</span>
+            </>
+          )}
+          <span className="lu-gain mono">+{fmt1(x.gain)}</span>
         </li>
       ))}
     </ul>
@@ -108,7 +97,7 @@ export default function LineupAdvice({ team, gameStates, injuries = [] }) {
           {advice.lockedStarters > 0 && <span className="lu-locked"> · {advice.lockedStarters} locked</span>}
         </div>
       </div>
-      {better && <SwapList advice={advice} />}
+      {better && <SwapList swaps={advice.swaps} />}
       {t && (
         <div className={`lu-tilt is-${t.mode}`}>
           <h4 className="lu-tilt-title mono">
@@ -119,7 +108,7 @@ export default function LineupAdvice({ team, gameStates, injuries = [] }) {
               ? `This version adds ${fmt1(t.gain)} to your ceiling lineup and moves your projection ${t.medianChange >= 0 ? "+" : "−"}${fmt1(Math.abs(t.medianChange))}. A bigger spread is what an underdog needs.`
               : `This version adds ${fmt1(t.gain)} to your floor lineup and moves your projection ${t.medianChange >= 0 ? "+" : "−"}${fmt1(Math.abs(t.medianChange))}. A narrower spread is what a favorite wants.`}
           </p>
-          <SwapList advice={t} key1={t.mode === "ceiling" ? "myCeiling" : "myFloor"} />
+          <SwapList swaps={t.swaps} key1={t.mode === "ceiling" ? "myCeiling" : "myFloor"} />
         </div>
       )}
       <div className="waivers-foot">
