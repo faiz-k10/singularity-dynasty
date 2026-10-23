@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useLayoutEffect, useMemo, useRef } from "react";
 import SlotBadge from "./SlotBadge";
 import PositionBadge from "../tools/PositionBadge";
 import TeamBadge from "../tools/TeamBadge";
@@ -202,6 +202,18 @@ function MatchupBody({ team, gameStates, playTotals }) {
   const mine = adj ? adj.mine : s.h2h ? summarizeSide(s.h2h.mine, gameStates) : null;
   const opp = adj ? adj.opp : s.h2h ? summarizeSide(s.h2h.opp, gameStates) : null;
   const live = adj ? adj.live : s.matchupActual || null;
+  // Every row's info column (badges + game time) takes the width of the widest one, so the outcome curve beside it is the same size in every row
+  // (otherwise "Sun 4:05 PM" under the badges squeezed an unplayed player's curve while "Final" left a finished player's wide). Measured after each render;
+  // the variable is cleared first so a shorter label can shrink the column again.
+  const lineupsRef = useRef(null);
+  useLayoutEffect(() => {
+    const el = lineupsRef.current;
+    if (!el) return;
+    el.style.removeProperty("--info-w");
+    let widest = 0;
+    for (const sub of el.querySelectorAll(".h2h-row:not(.h2h-head) .h2h-player-sub")) widest = Math.max(widest, sub.getBoundingClientRect().width);
+    if (widest) el.style.setProperty("--info-w", `${Math.ceil(widest)}px`);
+  });
   const url = sleeperMatchupUrl(team.platform_league_id);
   const sleeperLink = url && (
     <a className="h2h-sleeper mono" href={url} target="_blank" rel="noopener noreferrer">
@@ -264,7 +276,7 @@ function MatchupBody({ team, gameStates, playTotals }) {
         {center}
         <TeamScore state={leadState(myScore, oppScore)[1]} name={s.opponent} record={s.opponentRecord} score={oppScore} proj={uncertain ? null : oppScore + opp.projFinal - opp.pts} left={uncertain ? null : leftLabel(opp)} opp />
       </div>
-      <div className="h2h-lineups">
+      <div className="h2h-lineups" ref={lineupsRef}>
         <Side title={myName} side={mine} scoreboardKnown={scoreboardKnown} uncertain={uncertain} mounted={mounted} />
         <Side title={s.opponent} side={opp} opp scoreboardKnown={scoreboardKnown} uncertain={uncertain} mounted={mounted} />
       </div>
