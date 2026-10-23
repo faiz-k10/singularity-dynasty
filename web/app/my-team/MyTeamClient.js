@@ -1765,7 +1765,7 @@ export default function MyTeamClient({
               injuriesByTeam={liveNews?.byTeam}
               updatedAt={updatedAt}
               weekFeed={feed}
-              toolbar={<>{alertsToggle}{layoutSwitch}{theaterBtn}</>}
+              toolbar={<>{layoutSwitch}{alertsToggle}{theaterBtn}</>}
             />
           ) : (
             <PanelBoard panels={panels} headerExtra={<>{layoutSwitch}{theaterBtn}</>} />
