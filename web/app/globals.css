@@ -5846,3 +5846,13 @@ html{font-stretch:82%;}
 .desk-alerts-btn{padding-top:0; padding-bottom:0; font-size:12.5px;}
 .board-orient button{height:100%; padding-top:0; padding-bottom:0;}
 .my-team-wrap .rankings-theater-btn, .my-team-theater .rankings-theater-btn{width:36px;}
+
+/* One edge for all three board toolbar controls (founder, Oct 22 2026): the same 1px hairline box with the same 2px corners; where a control is "on" the gold
+   block sits INSIDE that box (background-clip), exactly like the active segment of Game Board | Panels, instead of the pill carrying its own gold border. */
+.desk-alerts-btn, .my-team-wrap .rankings-theater-btn, .my-team-theater .rankings-theater-btn{
+  border:1px solid var(--rule); border-radius:var(--r-sm); background-clip:padding-box;
+}
+.desk-alerts-btn{background-color:transparent;}
+.desk-alerts-btn.on, .desk-alerts-btn.on:hover{background-color:var(--horizon-gold); background-clip:padding-box; border-color:var(--rule); color:var(--void);}
+.my-team-wrap .rankings-theater-btn, .my-team-theater .rankings-theater-btn{background-color:transparent;}
+.desk-alerts-btn:hover, .my-team-wrap .rankings-theater-btn:hover, .my-team-theater .rankings-theater-btn:hover{border-color:var(--rule-strong);}
