@@ -5803,7 +5803,6 @@ html{font-stretch:82%;}
 }
 @media (min-width:1000px){
   .sb-body.feed-collapsed, .sb-body.feed-collapsed.has-drawer{grid-template-columns:minmax(0,1fr) 52px;}
-  .sb-top.feed-collapsed, .sb-top.feed-collapsed.has-drawer{grid-template-columns:minmax(0,1fr) auto;}
 }
 @media (max-width:999px){
   .sb-feed-collapse{display:none;}

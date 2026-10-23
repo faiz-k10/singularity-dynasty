@@ -583,7 +583,7 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
 
   return (
     <div className="sb">
-      <div className={`sb-top${openTeam ? " has-drawer" : ""}${feedCollapsed ? " feed-collapsed" : ""}`}>
+      <div className={`sb-top${openTeam ? " has-drawer" : ""}`}>
         {/* Same two columns as the body below: the week and its summary with the Filter at the right end of the cards'
             column, then the clock and board controls over the live panel. */}
         <div className="sb-top-main">
