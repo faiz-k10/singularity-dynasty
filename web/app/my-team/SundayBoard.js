@@ -322,13 +322,12 @@ function RecentPlays({ rows, updatedAt, focus, onPick, onTotals }) {
     <section className="sb-plays" aria-label="Recent plays">
       <h3 className="sb-feed-label sb-plays-label mono">
         <span>Recent plays</span>
-        <span className="sb-feed-sum">every play that moves a score</span>
       </h3>
       <div className="sb-plays-filter" role="group" aria-label="Whose plays">
         {[
           ["mine", "My players", "Mine"],
-          ["theirs", "Opponents", "Theirs"],
           ["both", "Both", "Both"],
+          ["theirs", "Opponents", "Theirs"],
         ].map(([k, label, short]) => (
           <button key={k} type="button" className={`is-${k}`} aria-pressed={whose === k} aria-label={label} onClick={() => setWhose(k)}>
             <span className="long">{label}</span>
