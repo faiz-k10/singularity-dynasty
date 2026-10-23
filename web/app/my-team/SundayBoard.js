@@ -410,13 +410,17 @@ function LiveFeed({ savedTeams, gameStates, updatedAt, teamId = null, league = n
           scores on the cards keep their "ahead of Sleeper" adjustment while it is folded. */}
       <button type="button" className="sb-feed-rail" onClick={onToggle} aria-label="Open the Companion pane" title="Open the Companion pane" tabIndex={collapsed ? 0 : -1}>
         {all.length > 0 && <span className="sb-live-dot" aria-hidden="true" />}
-        <span className="sb-feed-rail-arrow" aria-hidden="true">‹</span>
+        <svg className="sb-feed-rail-arrow" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+          <path d="M10 3L5 8l5 5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
         <span className="sb-feed-rail-label mono">{mode === "live" ? "Playing now" : "Companion"}</span>
       </button>
       <div className="sb-feed-head">
         <div className="sb-feed-headleft">
           <button type="button" className="sb-feed-collapse" onClick={onToggle} aria-label="Collapse this pane to the right" title="Collapse to the right">
-            <span aria-hidden="true">›</span>
+            <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+              <path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
           </button>
           <h2 className="board-panel-title">
             {all.length > 0 && <span className="sb-live-dot" aria-hidden="true" />}

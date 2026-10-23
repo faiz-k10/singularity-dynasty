@@ -5818,10 +5818,11 @@ html{font-stretch:82%;}
 /* Collapse the right-hand pane to a rail (founder, Oct 22 2026): a chevron at the end of the pane's header folds it to a thin strip at the right edge (live dot,
    a left chevron and the pane's name set vertically); clicking the strip opens it again. The grid gives the freed width to the cards / matchup. Stacked layouts
    (under 1000px) have no pane to fold. */
-.sb-feed-collapse{all:unset; box-sizing:border-box; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; width:30px; height:30px; flex:none; font-size:20px; line-height:1; color:var(--star-dim); border:1px solid var(--rule); border-radius:var(--r-sm);}
-.sb-feed-collapse:hover, .sb-feed-collapse:focus-visible{color:var(--star); border-color:var(--rule-strong);}
+.sb-feed-collapse{all:unset; box-sizing:border-box; cursor:pointer; display:grid; place-items:center; width:32px; height:32px; flex:none; color:var(--star-dim); background:rgba(var(--star-dot-rgb), .04); border:1px solid var(--rule); border-radius:var(--r-sm); transition:color .15s ease, border-color .15s ease, background-color .15s ease;}
+.sb-feed-collapse:hover, .sb-feed-collapse:focus-visible{color:var(--horizon-gold); border-color:var(--horizon-gold); background:rgba(var(--horizon-gold-rgb), .08);}
+.sb-feed-collapse svg{display:block;}
 .sb-feed-rail{display:none;}
-.sb-feed-rail-arrow{font-size:22px; line-height:1;}
+.sb-feed-rail-arrow{display:block; width:14px; height:14px;}
 .sb-feed-rail-label{writing-mode:vertical-rl; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.16em;}
 @media (min-width:1000px){
   .sb-feed.is-collapsed{padding:0; overflow:hidden;}
