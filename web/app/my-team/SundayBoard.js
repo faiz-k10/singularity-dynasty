@@ -553,8 +553,8 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
   }, [openId]);
 
   // The week's one sentence, built from the SAME words the cards use (lib/standing.js) so the two always agree: how many leagues
-  // are won / being won, favored, a toss-up, underdog or lost, plus best-ball leagues (no head-to-head) and lineup alerts.
-  const tally = { won: 0, winning: 0, favored: 0, tossup: 0, underdog: 0, losing: 0, lost: 0, bestBall: 0 };
+  // are won / being won, favored, a toss-up, underdog or lost, plus lineup alerts.
+  const tally = { won: 0, winning: 0, favored: 0, tossup: 0, underdog: 0, losing: 0, lost: 0 };
   let alerts = 0;
   let live = 0; // leagues where one of my players is on the field right now (the "Live" label beside the clock)
   for (const t of visibleTeams) {
@@ -567,7 +567,6 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
     else if (label === "Underdog") tally.underdog++;
     else if (label === "Out of reach") tally.losing++;
     else if (label === "Lost") tally.lost++;
-    else if (t.settings?.bestBall) tally.bestBall++;
     alerts += ms.row.alertCount.total;
     for (const p of t.settings?.h2h?.mine || []) if (gameStates?.[p.team]?.state === "in") { live++; break; }
   }
@@ -581,7 +580,6 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
   if (tally.underdog) parts.push(`${tally.underdog} underdog`);
   if (tally.losing) parts.push(`${tally.losing} losing`);
   if (tally.lost) parts.push(`${tally.lost} lost`);
-  if (tally.bestBall) parts.push(`${tally.bestBall} best ball`);
   if (alerts) parts.push(`${alerts} lineup ${alerts === 1 ? "alert" : "alerts"}`);
 
   return (
