@@ -5779,3 +5779,10 @@ html{font-stretch:82%;}
 .lu-alert-fix{font-size:12px; color:var(--star-dim); margin-left:auto;}
 .lu-alert-fix strong{color:var(--star); font-weight:700;}
 
+
+/* Playing now names stay on ONE line (founder, Oct 22 2026): the score shares the name's row, so in the narrow half beside an open matchup the
+   name is shortened ("T. Henderson"); a name that still doesn't fit is cut with an ellipsis rather than wrapping to a second line. */
+.sb-feed-name{white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; min-width:0;}
+.sb-feed-name .fn-short{display:none;}
+.sb-body.has-drawer .sb-feed-name .fn-long{display:none;}
+.sb-body.has-drawer .sb-feed-name .fn-short{display:inline;}

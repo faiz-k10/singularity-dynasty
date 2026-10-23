@@ -217,7 +217,8 @@ function FeedRow({ r, isNew, delta, showLeagues, focused, onPick }) {
     <li className={`sb-feed-row is-${r.side}${isNew ? " is-new" : ""}${focused ? " is-focus" : ""}`}>
       <div className="sb-feed-who">
         <button type="button" className="sb-feed-name sb-name-btn" aria-pressed={focused} title={focused ? "Showing only his plays -- click to show everyone's" : "Show only his plays"} onClick={() => onPick(r.playerId, r.name)}>
-          {r.name}
+          <span className="fn-long">{r.name}</span>
+          <span className="fn-short" aria-hidden="true">{shortName(r.name)}</span>
         </button>
         <span className="sb-feed-sub">
           <PositionBadge position={r.pos} />
