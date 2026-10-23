@@ -5728,14 +5728,14 @@ html{font-stretch:82%;}
 .sb-feed-tabs .league-dash-tabs{transform:scale(.92); transform-origin:right center;}
 .cp{flex:1; min-height:0; display:flex; flex-direction:column;}
 .cp-strip{display:flex; align-items:flex-start; gap:12px; padding:14px 16px; border-bottom:1px solid rgba(var(--star-dot-rgb),.08);}
-.cp-strip-text{display:flex; flex-direction:column; gap:3px; min-width:0; flex:1;}
+.cp-strip-text{display:flex; flex-direction:column; align-items:center; text-align:center; gap:3px; min-width:0; flex:1;} /* the whole strip is centred (founder, Oct 23 2026) */
 .cp-strip-eyebrow{font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.14em; color:var(--horizon-gold);}
-.cp-strip-grid{display:flex; flex-wrap:wrap; align-items:flex-end; gap:8px 26px; margin-top:6px;}
-.cp-stat{display:flex; flex-direction:column; gap:4px; min-width:0;}
+.cp-strip-grid{display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:center; gap:8px 26px; margin-top:6px;}
+.cp-stat{display:flex; flex-direction:column; align-items:center; gap:4px; min-width:0;}
 .cp-strip-time{font-family:var(--font-display); font-weight:800; font-size:22px; line-height:1.1; text-transform:uppercase; letter-spacing:.03em; color:var(--star);}
 .cp-strip-label{font-size:10.5px; text-transform:uppercase; letter-spacing:.1em; color:var(--star-dim);}
 .cp-strip-clock{font-size:22px; line-height:1.1; font-weight:700; color:var(--horizon-gold); font-variant-numeric:tabular-nums; white-space:nowrap;}
-.cp-strip-games{display:flex; flex-wrap:wrap; align-items:center; gap:6px 8px; margin-top:8px;}
+.cp-strip-games{display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:6px 8px; margin-top:8px;}
 .cp-strip-games .sb-wait-game{padding:2px 8px; gap:5px;}
 .cp-strip-games .team-logo img{width:20px; height:20px;}
 .cp-scroll{overflow:auto; min-height:0; flex:1; padding:12px 16px 16px;}
