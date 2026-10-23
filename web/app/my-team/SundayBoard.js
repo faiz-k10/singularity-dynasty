@@ -589,18 +589,18 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
         <div className="sb-top-main">
           <div className="sb-heading">
             <h2 className="sb-title">Week {week ?? "—"}</h2>
+            {!openTeam && savedTeams.length > 1 && (
+              <div className="sb-filterbar">
+                <BoardFilters filters={filters} onChange={setFilters} factsList={Object.values(factsById)} shown={visibleTeams.length} total={savedTeams.length} />
+                {filtered && (
+                  <span className="sb-filterbar-note mono">
+                    Showing {visibleTeams.length} of {savedTeams.length} leagues
+                  </span>
+                )}
+              </div>
+            )}
             <p className="sb-summary">{parts.join(" · ") || `${savedTeams.length} leagues`}</p>
           </div>
-          {!openTeam && savedTeams.length > 1 && (
-            <div className="sb-filterbar">
-              {filtered && (
-                <span className="sb-filterbar-note mono">
-                  Showing {visibleTeams.length} of {savedTeams.length} leagues
-                </span>
-              )}
-              <BoardFilters filters={filters} onChange={setFilters} factsList={Object.values(factsById)} shown={visibleTeams.length} total={savedTeams.length} />
-            </div>
-          )}
         </div>
         <div className="sb-top-side">
           {time && (
