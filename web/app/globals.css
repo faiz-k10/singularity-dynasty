@@ -4006,8 +4006,8 @@ summary:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible{
 .board-panel-actions .my-team-remove{padding:4px 12px; font-size:12px;}
 
 /* Side-by-side / Stacked arrangement toggle (segmented control) */
-.board-orient{display:inline-flex; border:1px solid rgba(var(--star-dot-rgb),.13); border-radius:2px; overflow:hidden; background:rgba(var(--scrim-rgb),.6);}
-.board-orient button{display:flex; align-items:center; gap:7px; font:inherit; font-size:12.5px; color:var(--star-dim); background:transparent; border:0; padding:7px 14px; cursor:pointer;}
+.board-orient{display:inline-flex; height:36px; box-sizing:border-box; border:1px solid rgba(var(--star-dot-rgb),.13); border-radius:2px; overflow:hidden; background:rgba(var(--scrim-rgb),.6);}
+.board-orient button{display:flex; align-items:center; gap:7px; height:100%; font:inherit; font-size:12.5px; color:var(--star-dim); background:transparent; border:0; padding:0 14px; cursor:pointer;}
 .board-orient button:hover{color:var(--star);}
 .board-orient button[aria-pressed="true"]{color:var(--void); background:var(--horizon-gold);}
 .board-orient-icon{width:14px; height:11px; border:1.5px solid currentColor; border-radius:2px; position:relative; display:inline-block;}
@@ -5021,8 +5021,8 @@ html{font-stretch:82%;}
 .sb-top.has-drawer{grid-template-columns:minmax(0,1fr) 440px;}
 .sb-top-main{display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px 14px; min-width:0;}
 .sb-top-side{display:flex; flex-wrap:wrap; align-items:center; justify-content:flex-end; gap:10px 16px; min-width:0;}
-.sb-heading{display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; min-width:0;}
-.sb-title{margin:0; font-family:var(--font-display), sans-serif; font-weight:800; font-size:28px; line-height:1; text-transform:uppercase; letter-spacing:.06em; color:var(--star);}
+.sb-heading{display:flex; align-items:center; gap:14px; flex-wrap:wrap; min-width:0;}
+.sb-title{margin:0; padding:7px 16px 6px; font-family:var(--font-display), sans-serif; font-weight:800; font-size:28px; line-height:1; text-transform:uppercase; letter-spacing:.06em; color:var(--star); background:rgba(var(--scrim-rgb), var(--glass-alpha)); border:1px solid var(--rule); border-top:2px solid var(--rule-strong); border-radius:var(--r-sm);} /* boxed like a top-level panel */
 .sb-summary{margin:0; font-size:15px; color:var(--star-dim);}
 .sb-updated{display:inline-flex; align-items:center; gap:7px; font-size:12px; color:var(--star-dim); white-space:nowrap;}
 .sb-updated.is-live{color:var(--star);}
@@ -5072,10 +5072,11 @@ html{font-stretch:82%;}
 .sb-card:hover .sb-card-sleeper, .sb-card-sleeper:focus-visible{opacity:1;}
 .sb-card-sleeper:hover{color:var(--neon-blue);}
 
-.sb-card-verdict{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap;}
+.sb-card-verdict{display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap;}
 .sb-card-word{font-family:var(--font-display), sans-serif; font-weight:800; font-size:30px; line-height:1; letter-spacing:.03em; text-transform:uppercase; color:var(--tone);}
 .sb-card.is-close .sb-card-word{color:var(--star);}
-.sb-card-pct{font-size:13px; color:var(--star-dim);}
+.sb-card-pct{font-size:13px; color:var(--star-dim); margin-left:auto; text-align:right;} /* the odds end the one-word reading's row, right above your score */
+.sb-card-word + .sb-card-pct{white-space:nowrap;}
 /* A result that is settled reads in a settled colour: green for a win that is in the bag (Locked in, or Won once the games
    are over), red for a loss that can't be undone (Out of reach, or Lost) -- the word and its bar, on the Sunday board card
    and on the matchup scoreboard. Everything else keeps the gold / blue / plain language. */
@@ -5122,20 +5123,23 @@ html{font-stretch:82%;}
 .sb-feed-label{position:sticky; top:0; z-index:1; display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin:0; padding:10px 16px 6px; font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; background:var(--void-panel);}
 .sb-feed-section.is-mine .sb-feed-label{color:var(--horizon-gold);}
 .sb-feed-section.is-theirs .sb-feed-label{color:var(--neon-blue);}
-.sb-feed-sum{font-weight:400; text-transform:none; letter-spacing:.02em; color:var(--star-dim);}
-.sb-feed-sum strong{color:var(--star);}
 .sb-feed-list{list-style:none; margin:0; padding:0;}
-.sb-feed-row{display:flex; align-items:center; gap:12px; padding:9px 16px; border-top:1px solid rgba(var(--star-dot-rgb),.06); transition:background-color .6s ease;}
+/* Playing now rows: ONE fixed shape (founder, Oct 22 2026). A grid -- name on top, then position badge + team logo + game clock on one line that never wraps,
+   league names full width underneath -- with the score and its projection / "+" amount in a fixed-width column at the right spanning the name and badge
+   lines, so every row is laid out identically whatever its score reads. The name stays on one line: a short form beside an open matchup (.fn-short),
+   an ellipsis if it still doesn't fit. */
+.sb-feed-row{display:grid; grid-template-columns:minmax(0,1fr) 80px; grid-template-areas:"name nums" "sub nums" "leagues leagues"; column-gap:12px; row-gap:3px; align-items:center; padding:7px 16px; border-top:1px solid rgba(var(--star-dot-rgb),.06); transition:background-color .6s ease;}
 .sb-feed-list .sb-feed-row:first-child{border-top:0;}
 .sb-feed-row.is-new{background:rgba(var(--horizon-gold-rgb),.1); box-shadow:inset 3px 0 0 var(--horizon-gold);}
 .sb-feed-row.is-theirs.is-new{background:rgba(var(--neon-blue-rgb),.1); box-shadow:inset 3px 0 0 var(--neon-blue);}
-.sb-feed-who{flex:1; min-width:0; display:flex; flex-direction:column; gap:4px;}
-.sb-feed-name{font-size:14.5px; line-height:1.2; color:var(--star); white-space:normal; overflow-wrap:break-word; text-align:left; align-self:flex-start;} /* names wrap onto a second line instead of being cut with an ellipsis */
+.sb-feed-who{display:contents;}
+.sb-feed-name{grid-area:name; justify-self:start; min-width:0; max-width:100%; font-size:14.5px; line-height:1.2; color:var(--star); text-align:left; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.sb-feed-name .fn-short{display:none;}
 .sb-feed-row.is-theirs .sb-feed-name{color:color-mix(in srgb, var(--star) 80%, transparent);}
-.sb-feed-sub{display:flex; align-items:center; gap:6px; flex-wrap:wrap;}
-.sb-feed-sub .h2h-game{color:var(--down);}
-.sb-feed-leagues{font-size:11.5px; color:var(--star-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-.sb-feed-nums{display:flex; flex-direction:column; align-items:flex-end; gap:2px; flex:none;}
+.sb-feed-sub{grid-area:sub; display:flex; align-items:center; gap:6px; flex-wrap:nowrap; min-width:0; overflow:hidden;}
+.sb-feed-sub .h2h-game{color:var(--down); white-space:nowrap;}
+.sb-feed-leagues{grid-area:leagues; min-width:0; font-size:11.5px; color:var(--star-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.sb-feed-nums{grid-area:nums; width:80px; align-self:center; display:flex; flex-direction:column; align-items:flex-end; justify-content:center; gap:2px;}
 .sb-feed-pts{font-size:18px; font-weight:700; color:var(--star);}
 .sb-feed-delta{font-size:11px; font-weight:700; color:var(--horizon-gold);}
 .sb-feed-row.is-theirs .sb-feed-delta{color:var(--neon-blue);}
@@ -5244,9 +5248,9 @@ html{font-stretch:82%;}
 .desk-alerts{display:inline-flex; align-items:center; gap:8px; font-family:var(--font-mono), monospace; font-size:11.5px; color:var(--star-dim);}
 .desk-alerts svg{flex:none;}
 .desk-alerts-locked a{color:var(--neon-blue);}
-.desk-alerts-btn{white-space:nowrap; display:inline-flex; align-items:center; gap:6px; font:inherit; font-size:11.5px; color:var(--star-dim); background:rgba(var(--scrim-rgb),.5); border:1px solid rgba(var(--star-dot-rgb),.14); border-radius:2px; padding:5px 11px; cursor:pointer; transition:color .15s ease, border-color .15s ease, background-color .15s ease;}
-.desk-alerts-btn:hover{color:var(--star); border-color:var(--neon-blue);}
-.desk-alerts-btn.on{color:var(--void); background:var(--horizon-gold); border-color:var(--horizon-gold);}
+.desk-alerts-btn{white-space:nowrap; display:inline-flex; align-items:center; gap:6px; height:36px; box-sizing:border-box; font:inherit; font-size:12.5px; color:var(--star-dim); background-color:transparent; background-clip:padding-box; border:1px solid var(--rule); border-radius:var(--r-sm); padding:0 11px; cursor:pointer; transition:color .15s ease, border-color .15s ease, background-color .15s ease;} /* same 36px height and hairline edge as Game Board | Panels; when on, the gold sits INSIDE the box */
+.desk-alerts-btn:hover{color:var(--star); border-color:var(--rule-strong);}
+.desk-alerts-btn.on, .desk-alerts-btn.on:hover{color:var(--void); background-color:var(--horizon-gold); border-color:var(--rule);}
 .desk-alerts-note{font-size:11px; color:var(--down);}
 
 /* ---------- EVENT HORIZON BAND + SECTION INDEXES (Oct 19 2026) ----------
@@ -5476,8 +5480,13 @@ html{font-stretch:82%;}
 .sb-body.has-drawer .sb-play{flex-wrap:wrap; row-gap:0; padding-right:12px;}
 .sb-body.has-drawer .sb-play-main{flex:1 1 100%;}
 .sb-body.has-drawer .sb-play-when{padding-top:2px;}
-.sb-body.has-drawer .sb-feed-row{padding-left:12px; padding-right:12px;}
-.sb-body.has-drawer .sb-plays .sb-feed-sum{display:none;}
+.sb-body.has-drawer .sb-feed-row{padding-left:12px; padding-right:12px; grid-template-columns:minmax(0,1fr) 62px; column-gap:8px;}
+.sb-body.has-drawer .sb-feed-nums{width:62px;}
+.sb-body.has-drawer .sb-feed-sub{gap:5px;}
+.sb-body.has-drawer .sb-feed-sub .team-logo img{width:18px; height:18px;}
+.sb-body.has-drawer .sb-feed-sub .h2h-game{font-size:10.5px;}
+.sb-body.has-drawer .sb-feed-name .fn-long{display:none;}
+.sb-body.has-drawer .sb-feed-name .fn-short{display:inline;}
 .sb-plays-filter .short{display:none;}
 .sb-body.has-drawer .sb-plays-filter{padding:0 12px 10px 13px; gap:4px;}
 .sb-body.has-drawer .sb-plays-filter button{padding:4px 8px; font-size:10.5px;}
@@ -5522,21 +5531,6 @@ html{font-stretch:82%;}
 
 /* Play labels in Title Case: "Touchdown Run", "Touchdown Catch", "Touchdown Pass", "Field Goal". */
 .sb-play-what strong{text-transform:capitalize;}
-
-/* Playing now rows: the name has the whole row to itself (so it never needs an ellipsis, even in the narrow half), and the score sits
-   on the line below it, level with the position / team / clock, at the right edge. The two halves of the panel stay equal width. */
-.sb-feed-row{display:grid; grid-template-columns:minmax(0, 1fr) auto; grid-template-areas:"name name" "sub nums" "leagues nums"; column-gap:12px; row-gap:4px; align-items:center;}
-.sb-feed-who{display:contents;}
-.sb-feed-name{grid-area:name; justify-self:start;}
-.sb-feed-sub{grid-area:sub; min-width:0;}
-.sb-feed-leagues{grid-area:leagues; min-width:0;}
-.sb-feed-nums{grid-area:nums; align-self:center;}
-
-/* Playing now rows (Oct 22 2026, founder: clock beside the logo, shorter rows): name, then position badge + team logo + the game clock on ONE line, the
-   score and its projection / "+" amount at the right spanning those two lines, league names full width underneath. */
-.sb-feed-row{grid-template-areas:"name nums" "sub nums" "leagues leagues"; padding-top:7px; padding-bottom:7px; row-gap:3px;}
-.sb-feed-sub .h2h-game{white-space:nowrap;} /* the clock sits right beside the team logo; it only drops to its own line when the half is very narrow */
-.sb-feed-nums{align-self:center; justify-content:center;}
 
 /* Lineup rows: the game status / clock ("Halftime", "9:49 - 2nd", "Final", "Mon 8:15 PM", "Out") sits on its own line under the position badge and team logo,
    so a row is name / badges / clock -- 88px, still the same for every row so the two lineups stay aligned. */
@@ -5762,7 +5756,6 @@ html{font-stretch:82%;}
 .lu-name{font-size:14.5px; color:var(--star);}
 .lu-pts{font-size:12px; color:var(--star-dim);}
 .lu-gain{margin-left:auto; font-size:15px; font-weight:700; color:var(--horizon-gold);}
-.lu-moves{margin:8px 0 0; font-size:11.5px; color:var(--star-dim);}
 .lu-tilt{margin-top:16px; padding-top:12px; border-top:1px solid rgba(var(--star-dot-rgb),.1);}
 .lu-tilt-title{margin:0 0 4px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--neon-blue);}
 .lu-tilt.is-floor .lu-tilt-title{color:var(--horizon-gold);}
@@ -5780,35 +5773,9 @@ html{font-stretch:82%;}
 .lu-alert-fix strong{color:var(--star); font-weight:700;}
 
 
-/* Playing now names stay on ONE line (founder, Oct 22 2026): the score shares the name's row, so in the narrow half beside an open matchup the
-   name is shortened ("T. Henderson"); a name that still doesn't fit is cut with an ellipsis rather than wrapping to a second line. */
-.sb-feed-name{white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; min-width:0;}
-.sb-feed-name .fn-short{display:none;}
-.sb-body.has-drawer .sb-feed-name .fn-long{display:none;}
-.sb-body.has-drawer .sb-feed-name .fn-short{display:inline;}
 
-/* "Week N" on the Game Board is boxed like a top-level panel: a hairline box with the heavy rule across the top (founder, Oct 22 2026). */
-.sb-heading{align-items:center;}
-.sb-title{padding:7px 16px 6px; background:rgba(var(--scrim-rgb), var(--glass-alpha)); border:1px solid var(--rule); border-top:2px solid var(--rule-strong); border-radius:var(--r-sm);}
-
-/* The odds share the one-word reading's row, pushed to its right edge so they end right above your score (founder, Oct 22 2026). */
-.sb-card-verdict{justify-content:space-between;}
-.sb-card-verdict .sb-card-pct{margin-left:auto; text-align:right;}
-.sb-card-verdict .sb-card-word + .sb-card-pct{white-space:nowrap;}
 .lu-slot{min-width:72px; font-size:10.5px; font-weight:700; letter-spacing:.08em; color:var(--horizon-gold);}
-.lu-from{font-size:10.5px; color:var(--star-dim);}
 
-/* Playing now rows have ONE fixed shape (founder, Oct 22 2026, "make it fixed"): the score column is the same width in every row (it used to hug
-   "4.30" in one row and "23.70" in the next, which left some rows enough room for the clock beside the logo and pushed it under the badges in
-   others), and badge + logo + clock never wrap. Beside an open matchup everything in the line shrinks a little so the clock still fits. */
-.sb-feed-row{grid-template-columns:minmax(0, 1fr) 80px;}
-.sb-feed-nums{width:80px; align-items:flex-end;}
-.sb-feed-sub{flex-wrap:nowrap; min-width:0; overflow:hidden;}
-.sb-body.has-drawer .sb-feed-row{grid-template-columns:minmax(0, 1fr) 62px; column-gap:8px;}
-.sb-body.has-drawer .sb-feed-nums{width:62px;}
-.sb-body.has-drawer .sb-feed-sub{gap:5px;}
-.sb-body.has-drawer .sb-feed-sub .team-logo img{width:18px; height:18px;}
-.sb-body.has-drawer .sb-feed-sub .h2h-game{font-size:10.5px;}
 
 /* Recent plays header (founder, Oct 22 2026): no caption, the three buttons ordered Mine / Both / Theirs, and the title, buttons and focus chip centred. */
 .sb-plays-label{justify-content:center;}
@@ -5841,18 +5808,6 @@ html{font-stretch:82%;}
 /* The collapse button sits at the far left of the pane's header, right beside the pane's name; the Live / Companion switch stays at the right. */
 .sb-feed-headleft{display:flex; align-items:center; gap:12px; min-width:0;}
 
-/* The board's toolbar controls -- Alerts pill, Game Board | Panels switch, full-screen button -- are all the same height (founder, Oct 22 2026). */
-.desk-alerts-btn, .board-orient, .my-team-wrap .rankings-theater-btn, .my-team-theater .rankings-theater-btn{height:36px; box-sizing:border-box;}
-.desk-alerts-btn{padding-top:0; padding-bottom:0; font-size:12.5px;}
-.board-orient button{height:100%; padding-top:0; padding-bottom:0;}
-.my-team-wrap .rankings-theater-btn, .my-team-theater .rankings-theater-btn{width:36px;}
-
-/* One edge for all three board toolbar controls (founder, Oct 22 2026): the same 1px hairline box with the same 2px corners; where a control is "on" the gold
-   block sits INSIDE that box (background-clip), exactly like the active segment of Game Board | Panels, instead of the pill carrying its own gold border. */
-.desk-alerts-btn, .my-team-wrap .rankings-theater-btn, .my-team-theater .rankings-theater-btn{
-  border:1px solid var(--rule); border-radius:var(--r-sm); background-clip:padding-box;
-}
-.desk-alerts-btn{background-color:transparent;}
-.desk-alerts-btn.on, .desk-alerts-btn.on:hover{background-color:var(--horizon-gold); background-clip:padding-box; border-color:var(--rule); color:var(--void);}
-.my-team-wrap .rankings-theater-btn, .my-team-theater .rankings-theater-btn{background-color:transparent;}
-.desk-alerts-btn:hover, .my-team-wrap .rankings-theater-btn:hover, .my-team-theater .rankings-theater-btn:hover{border-color:var(--rule-strong);}
+/* The full-screen button inside My Team matches the other two board controls (36px, hairline edge, 2px corners); elsewhere it keeps its own 34px look. */
+.my-team-wrap .rankings-theater-btn, .my-team-theater .rankings-theater-btn{width:36px; height:36px; box-sizing:border-box; border:1px solid var(--rule); border-radius:var(--r-sm); background-color:transparent; background-clip:padding-box;}
+.my-team-wrap .rankings-theater-btn:hover, .my-team-theater .rankings-theater-btn:hover{border-color:var(--rule-strong);}

@@ -7,6 +7,9 @@
 // slots our model has no projection for (K, DEF, IDP) and players with no projection keep whoever is there now.
 import { ELIGIBLE } from "./bestBall.js";
 
+// "SUPER_FLEX" -> "SUPERFLEX": how a slot is named on screen (the one place that maps it).
+export const slotLabel = (slot) => (slot === "SUPER_FLEX" ? "SUPERFLEX" : slot);
+
 const PROJECTED = new Set(["QB", "RB", "WR", "TE"]);
 const r1 = (v) => Math.round(v * 10) / 10;
 const num = (v) => (typeof v === "number" && Number.isFinite(v) ? v : null);

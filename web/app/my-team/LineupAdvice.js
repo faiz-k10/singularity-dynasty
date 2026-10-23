@@ -3,10 +3,9 @@
 import { useMemo } from "react";
 import PositionBadge from "../tools/PositionBadge";
 import TeamBadge from "../tools/TeamBadge";
-import { lineupAdvice, lineupAlertCount } from "@/lib/lineupOptimizer";
+import { lineupAdvice, lineupAlertCount, slotLabel } from "@/lib/lineupOptimizer";
 
 const fmt1 = (v) => (v == null ? "—" : v.toFixed(1));
-const slotName = (s) => (s === "SUPER_FLEX" ? "SUPERFLEX" : s);
 
 function Who({ p }) {
   return (
@@ -24,7 +23,7 @@ function SwapList({ swaps, key1 = "myProjPts" }) {
     <ul className="lu-swaps">
       {swaps.map((x) => (
         <li key={`${x.slot}:${x.in.player_id}`} className="lu-swap">
-          <span className="lu-slot mono">{slotName(x.slot)}</span>
+          <span className="lu-slot mono">{slotLabel(x.slot)}</span>
           <span className="lu-verb mono">Start</span>
           <Who p={x.in} />
           <span className="lu-pts mono">{fmt1(x.in[key1])}</span>
@@ -72,7 +71,7 @@ export default function LineupAdvice({ team, gameStates, injuries = [] }) {
                 <span className="lu-alert-who">
                   {a.player ? <Who p={a.player} /> : <span className="lu-name">Nobody starting</span>}
                   <span className={`status-text status-text-${a.severity}`}>{a.status}</span>
-                  <span className="lu-verb mono">in {slotName(a.slot)}</span>
+                  <span className="lu-verb mono">in {slotLabel(a.slot)}</span>
                 </span>
                 <span className="lu-alert-fix mono">
                   {a.replacement ? (

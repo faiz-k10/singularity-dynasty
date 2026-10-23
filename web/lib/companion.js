@@ -9,13 +9,12 @@
 // gameStates: lib/gameStatus.js (team -> { state: "pre" | "in" | "post" }).
 // waivers: { [teamId]: [{ name, pos, team, proj }] } best available per league, optional.
 
-import { lineupAdvice } from "./lineupOptimizer.js";
+import { lineupAdvice, slotLabel } from "./lineupOptimizer.js";
 
 const r1 = (v) => (Math.round(v * 10) / 10).toFixed(1);
 const sgn = (v) => `${v >= 0 ? "+" : "−"}${r1(Math.abs(v))}`;
 const num = (v) => (typeof v === "number" && Number.isFinite(v) ? v : null);
 const leagueOf = (t) => t.league_name || t.team_name || "your league";
-const slotLabel = (s) => (s === "SUPER_FLEX" ? "SUPERFLEX" : s);
 const chip = (p) => (p ? { name: p.name, pos: p.pos, team: p.team } : null);
 
 const stateOf = (p, gameStates) => {
