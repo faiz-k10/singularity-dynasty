@@ -5790,3 +5790,8 @@ html{font-stretch:82%;}
 /* "Week N" on the Game Board is boxed like a top-level panel: a hairline box with the heavy rule across the top (founder, Oct 22 2026). */
 .sb-heading{align-items:center;}
 .sb-title{padding:7px 16px 6px; background:rgba(var(--scrim-rgb), var(--glass-alpha)); border:1px solid var(--rule); border-top:2px solid var(--rule-strong); border-radius:var(--r-sm);}
+
+/* The odds sit right above your score, at its right edge (founder, Oct 22 2026), instead of beside the one-word reading. */
+.sb-card-scorecol{display:flex; flex-direction:column; align-items:flex-end; gap:3px;}
+.sb-card-scorecol .sb-card-pct{line-height:1;}
+.sb-card-side.is-me{align-items:end;}
