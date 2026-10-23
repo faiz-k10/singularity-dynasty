@@ -48,9 +48,8 @@ function SwapList({ swaps, key1 = "myProjPts" }) {
 export default function LineupAdvice({ team, gameStates, injuries = [] }) {
   const advice = useMemo(() => lineupAdvice(team, gameStates), [team, gameStates]);
   const alerts = useMemo(() => lineupAlerts(team, gameStates, injuries), [team, gameStates, injuries]);
-  // The start-over-sit swaps are alerts too ("Upgrade"), after the urgent ones; a swap that only replaces a player an alert already covers is left out.
-  const flagged = new Set(alerts.map((a) => a.player?.player_id).filter(Boolean));
-  const upgrades = (advice?.swaps || []).filter((x) => !(x.out && flagged.has(x.out.player_id)));
+  // The badge counts the urgent alerts AND the start / sit swaps (the swaps are listed separately, under the headline number).
+  const swapCount = advice?.swaps?.length || 0;
   const url = team.platform_league_id ? `https://sleeper.com/leagues/${team.platform_league_id}/matchup` : null;
   if (!advice) return <p className="h2h-note">No lineup to optimize for this league this week.</p>;
   const better = advice.swaps.length > 0 && advice.gain >= 0.1;
@@ -62,10 +61,10 @@ export default function LineupAdvice({ team, gameStates, injuries = [] }) {
       </div>
       <div className="lu-alerts">
         <h4 className="lu-alerts-title mono">
-          Lineup alerts{alerts.length + upgrades.length > 0 && <span className="lu-alerts-count"> {alerts.length + upgrades.length}</span>}
+          Lineup alerts{alerts.length + swapCount > 0 && <span className="lu-alerts-count"> {alerts.length + swapCount}</span>}
         </h4>
-        {alerts.length + upgrades.length === 0 ? (
-          <p className="lu-alerts-none mono">No alerts: every starter is healthy and in a game this week, and no bench player projects higher.</p>
+        {alerts.length === 0 ? (
+          <p className="lu-alerts-none mono">No injury or bye alerts: every starter is healthy and in a game this week.</p>
         ) : (
           <ul className="lu-alert-list">
             {alerts.map((a) => (
@@ -87,25 +86,6 @@ export default function LineupAdvice({ team, gameStates, injuries = [] }) {
                 </span>
               </li>
             ))}
-            {upgrades.map((x) => (
-              <li key={`up:${x.slot}:${x.in.player_id}`} className="lu-alert is-upgrade">
-                <span className="status-dot status-dot-1" aria-hidden="true" />
-                <span className="lu-alert-who">
-                  <span className="lu-slot mono">{slotName(x.slot)}</span>
-                  <span className="lu-verb mono">Start</span>
-                  <Who p={x.in} />
-                  <span className="lu-pts mono">{fmt1(x.in.myProjPts)}</span>
-                  {x.out && (
-                    <>
-                      <span className="lu-verb mono">over</span>
-                      <Who p={x.out} />
-                      <span className="lu-pts mono">{fmt1(x.out.myProjPts)}</span>
-                    </>
-                  )}
-                </span>
-                <span className="lu-gain mono">+{fmt1(x.gain)}</span>
-              </li>
-            ))}
           </ul>
         )}
       </div>
@@ -119,6 +99,7 @@ export default function LineupAdvice({ team, gameStates, injuries = [] }) {
           {advice.lockedStarters > 0 && <span className="lu-locked"> · {advice.lockedStarters} locked</span>}
         </div>
       </div>
+      {better && <SwapList swaps={advice.swaps} />}
       {t && (
         <div className={`lu-tilt is-${t.mode}`}>
           <h4 className="lu-tilt-title mono">
