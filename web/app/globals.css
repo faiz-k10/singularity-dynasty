@@ -5840,3 +5840,9 @@ html{font-stretch:82%;}
 
 /* The collapse button sits at the far left of the pane's header, right beside the pane's name; the Live / Companion switch stays at the right. */
 .sb-feed-headleft{display:flex; align-items:center; gap:12px; min-width:0;}
+
+/* The board's toolbar controls -- Alerts pill, Game Board | Panels switch, full-screen button -- are all the same height (founder, Oct 22 2026). */
+.desk-alerts-btn, .board-orient, .my-team-wrap .rankings-theater-btn, .my-team-theater .rankings-theater-btn{height:36px; box-sizing:border-box;}
+.desk-alerts-btn{padding-top:0; padding-bottom:0; font-size:12.5px;}
+.board-orient button{height:100%; padding-top:0; padding-bottom:0;}
+.my-team-wrap .rankings-theater-btn, .my-team-theater .rankings-theater-btn{width:36px;}
