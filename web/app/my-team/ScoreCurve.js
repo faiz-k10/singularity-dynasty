@@ -63,9 +63,10 @@ export default function ScoreCurve({ floor, median, ceiling, pts, state, est = f
       {scored && (
         // The marker only: a drop line to the baseline and a dot sitting on the hump. The number is the row's Pts cell.
         <g className="score-curve-marker">
+          <line className="score-curve-drop-edge" x1={x} y1={y} x2={x} y2={BASE_Y} />
           <line x1={x} y1={y} x2={x} y2={BASE_Y} />
-          <circle className="score-curve-halo" cx={x} cy={y} r="6" />
-          <circle className="score-curve-dot" cx={x} cy={y} r="3.4" />
+          <circle className="score-curve-halo" cx={x} cy={y} r="8.5" />
+          <circle className="score-curve-dot" cx={x} cy={y} r="4.8" />
         </g>
       )}
     </svg>

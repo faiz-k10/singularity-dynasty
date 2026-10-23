@@ -4938,15 +4938,16 @@ html{font-stretch:82%;}
 .score-curve .outcome-curve-tail-floor{fill:var(--neon-blue); opacity:.55;}
 .sc-median{font-size:11px; font-weight:700; fill:var(--horizon-gold);} /* gold, like the hump it belongs to */
 .score-curve-peak{fill:var(--horizon-gold);}
-.score-curve-marker line{stroke:var(--star); stroke-width:1.4; stroke-linecap:round;}
-.score-curve-dot{fill:var(--star); stroke:var(--void-panel); stroke-width:1.5;}
-.score-curve-halo{fill:rgba(var(--star-dot-rgb),.18);}
+.score-curve-marker line{stroke:var(--star); stroke-width:2.4; stroke-linecap:round;}
+.score-curve-marker .score-curve-drop-edge{stroke:var(--void-panel); stroke-width:5;} /* a halo of the panel colour under the drop line, so it reads against the gold hump in both themes */
+.score-curve-dot{fill:var(--star); stroke:var(--void-panel); stroke-width:2.6;}
+.score-curve-halo{fill:rgba(var(--star-dot-rgb),.3);}
 .score-curve.zone-low .score-curve-marker line{stroke:var(--neon-blue);}
 .score-curve.zone-low .score-curve-dot{fill:var(--neon-blue);}
-.score-curve.zone-low .score-curve-halo{fill:rgba(var(--neon-blue-rgb),.3);}
+.score-curve.zone-low .score-curve-halo{fill:rgba(var(--neon-blue-rgb),.4);}
 .score-curve.zone-good .score-curve-marker line{stroke:var(--down);}
 .score-curve.zone-good .score-curve-dot{fill:var(--down);}
-.score-curve.zone-good .score-curve-halo{fill:rgba(255,107,107,.3);}
+.score-curve.zone-good .score-curve-halo{fill:color-mix(in srgb, var(--down) 40%, transparent);}
 .score-curve.is-live .score-curve-halo{animation:sc-pulse 1.8s ease-out infinite; transform-box:fill-box; transform-origin:center;}
 @keyframes sc-pulse{0%{transform:scale(.7); opacity:1;} 100%{transform:scale(1.7); opacity:0;}}
 @media (prefers-reduced-motion:reduce){ .score-curve.is-live .score-curve-halo{animation:none;} }
@@ -5694,8 +5695,8 @@ html{font-stretch:82%;}
 /* Lineup rows, seventh touch (founder, Oct 19): as short as the elements allow. Name line (tight leading) over the badges + clock and the curve, with no
    gap and 3px of padding; the curve is 182 x 52 (a touch smaller than before) and every row is 74px. Rows that haven't played yet carry a 1.5px
    border, so their padding gives up the same amount to keep their contents on the same lines. */
-.h2h-row{height:74px; padding:3px 2px; row-gap:0;}
-.h2h-row:not(.h2h-head) .h2h-player-name{line-height:1.1;}
+.h2h-row{height:77px; padding:3px 2px; row-gap:0;}
+.h2h-row:not(.h2h-head) .h2h-player-name{line-height:1.35;} /* tall enough that the name's box (overflow:hidden) doesn't shave the letters' tops and tails */
 .score-curve{max-width:182px;}
 .sb-body.feed-collapsed .score-curve{max-width:none;} /* the right pane is folded: the curve fills the rest of its cell (the drawing stretches, the height stays) */
 .h2h-row.is-upcoming{padding:1.5px calc(var(--side-pad) + 2px);}
