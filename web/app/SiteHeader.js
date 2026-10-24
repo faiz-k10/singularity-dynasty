@@ -8,6 +8,7 @@ import { fetchAllRows } from "@/lib/fetchAllRows";
 import ThemeToggle from "./ThemeToggle";
 import InteractiveScript from "./InteractiveScript";
 import { getAchievements } from "./tools/achievements";
+import { getCachedRedraftData, getCachedTdProfile, getCachedUsageProfile, computeRanks } from "./tools/redraft-rankings/data";
 import { computeRegressionScore } from "@/lib/regressionScore";
 import { buildTeamWeeks, indexGameLog, teamGamesThrough } from "@/lib/teamGames";
 import {
@@ -39,9 +40,9 @@ const getCachedTickerInputs = unstable_cache(
       .order("week", { ascending: false })
       .limit(1)
       .maybeSingle();
-    if (!latestRedraft) return { topRows: [], paceByName: {}, achievementInputs: null, redraftFieldsByName: {}, woprPercentileByName: {} };
+    if (!latestRedraft) return { topRows: [], paceByName: {}, achievementInputs: null, redraftFieldsByName: {}, woprPercentileByName: {}, groupRankByName: {} };
 
-    const [{ data: topRows }, achievementInputs, redraftFieldsByName, woprPercentileByName] = await Promise.all([
+    const [{ data: topRows }, achievementInputs, redraftFieldsByName, woprPercentileByName, rankingData, tdProfile, usageProfile] = await Promise.all([
       publicSupabase
         .from("redraft_rankings")
         .select("player_name, position")
@@ -52,7 +53,14 @@ const getCachedTickerInputs = unstable_cache(
       fetchAchievementInputs(publicSupabase, latestRedraft.season),
       fetchLatestRedraftFieldsByName(publicSupabase),
       fetchWoprPercentileByName(publicSupabase),
+      // For the Elite Role / Elite Player badges: where each ticker player stands in his position's Role and Player groups (the same ranking the
+      // opened-player panel uses, over the whole ranked pool).
+      getCachedRedraftData(),
+      getCachedTdProfile(),
+      getCachedUsageProfile(),
     ]);
+    const allGroupRanks = rankingData?.rows?.length ? computeRanks({ cached: rankingData, tdProfile, usageProfile }).groupRank : {};
+    const groupRankByName = Object.fromEntries((topRows || []).filter((r) => allGroupRanks[r.player_name]).map((r) => [r.player_name, allGroupRanks[r.player_name]]));
 
     // "vs. pace" per player: points scored so far minus what the latest
     // season projection implied through his team's games so far (same
@@ -106,7 +114,7 @@ const getCachedTickerInputs = unstable_cache(
         }
       }
     }
-    return { topRows: topRows || [], paceByName, achievementInputs, redraftFieldsByName, woprPercentileByName };
+    return { topRows: topRows || [], paceByName, achievementInputs, redraftFieldsByName, woprPercentileByName, groupRankByName };
   },
   ["site-header-ticker-inputs"],
   // 10 minutes: the picks are re-rolled on every request anyway, and the data underneath only changes when a week is published.
@@ -135,15 +143,16 @@ export default async function SiteHeader() {
   // against whatever that cache last returned, so "re-rolled on every
   // site refresh" still holds for the actual picks shown.
   let tickerItems = [];
-  const { topRows, paceByName, achievementInputs, redraftFieldsByName, woprPercentileByName } = await getCachedTickerInputs();
+  const { topRows, paceByName, achievementInputs, redraftFieldsByName, woprPercentileByName, groupRankByName } = await getCachedTickerInputs();
   if (achievementInputs) {
     // One ticker item per player: his name followed by ALL his badge icons (no text labels), so the strip reads as
     // "who, and what they have earned" at a glance. Players with no badge are skipped.
     const pool = (topRows || [])
       .map((r) => {
-        const badges = getAchievements(
-          buildAchievementRow(r.player_name, r.position, { ...achievementInputs, redraftFieldsByName, woprPercentileByName })
-        )
+        const badges = getAchievements({
+          ...buildAchievementRow(r.player_name, r.position, { ...achievementInputs, redraftFieldsByName, woprPercentileByName }),
+          groupRank: groupRankByName?.[r.player_name],
+        })
           .filter((a) => a.key !== "confidence")
           .map((a) => ({ key: a.key, variant: a.variant, ...(a.tier ? { tier: a.tier } : {}) }));
         return badges.length ? { name: r.player_name, badges } : null;

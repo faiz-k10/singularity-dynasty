@@ -538,17 +538,22 @@ export function usageProfileRanks(rows, profile) {
 // Everything the opened-player dashboard needs, attached to each ranked row (usage/TD metrics and their ranks, recent
 // games, last week's finish, badges' inputs, bio, matchup flag, percentiles vs the pool). Shared by the rankings page
 // and the Compare Players tool so both read the exact same numbers. `hasFullAccess` false = only the top 50 rows.
+// Every rank the opened-player panel shows, over the WHOLE ranked pool (so a rank means the same on every tier): each player's rank on every number
+// (`ranksByName`) and where he stands in his position's Role and Player groups (`groupRank`, lowest average rank = #1, lib/statPanel.js).
+export function computeRanks({ cached, tdProfile, usageProfile = {} }) {
+  const tdRanks = tdRanksByName(cached.rows, tdProfile);
+  const usageRanks = usageRanksByName(cached.rows, cached.simsByName, cached.avgXfpByName);
+  const profileRanks = usageProfileRanks(cached.rows, usageProfile);
+  const ranksByName = {};
+  for (const r of cached.rows) ranksByName[r.player_name] = { ...(usageRanks[r.player_name] || {}), ...(tdRanks[r.player_name] || {}), ...(profileRanks[r.player_name] || {}) };
+  return { ranksByName, groupRank: groupRanks(cached.rows, ranksByName) };
+}
+
 export function enrichRankings({ cached, hasFullAccess = true, tdProfile, usageProfile = {}, leanRows, bioByNamePos }) {
   let rankings = [];
   const data = hasFullAccess ? cached.rows : cached.rows.slice(0, 50);
-  const { simsByName, avgXfpByName, recentGamesByName, lastWeekRankByName, heroWinsByName } = cached;
-  const tdRanks = tdRanksByName(cached.rows, tdProfile);
-  const usageRanks = usageRanksByName(cached.rows, simsByName, avgXfpByName);
-  const profileRanks = usageProfileRanks(cached.rows, usageProfile);
-  // Where each player stands in his position's Role and Player groups (lowest average rank = #1), over EVERYONE ranked so it means the same on every tier.
-  const ranksByName = {};
-  for (const r of cached.rows) ranksByName[r.player_name] = { ...(usageRanks[r.player_name] || {}), ...(tdRanks[r.player_name] || {}), ...(profileRanks[r.player_name] || {}) };
-  const groupRank = groupRanks(cached.rows, ranksByName);
+  const { recentGamesByName, lastWeekRankByName, heroWinsByName, simsByName, avgXfpByName } = cached;
+  const { ranksByName, groupRank } = computeRanks({ cached, tdProfile, usageProfile });
 
   // Position-relative rank (RB1, WR23, ...) computed once from the
   // natural rank order -- stays fixed on each row even if the table is

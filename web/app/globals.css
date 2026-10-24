@@ -255,6 +255,9 @@ body::before{
    evenly and ends up looking a pixel off-center on one side). */
 .ticker-badge svg{width:14px; height:14px; display:block;}
 .ticker-badge.gold{background:var(--horizon-gold); color:var(--void); box-shadow:0 0 5px rgba(var(--horizon-gold-rgb),0.5);}
+.ticker-badge.eliteRole{background:var(--elite-role-fill); box-shadow:0 0 5px rgba(var(--elite-role-rgb),0.55);}
+.ticker-badge.elitePlayer{background:var(--elite-player-fill); box-shadow:0 0 5px rgba(var(--elite-player-rgb),0.55);}
+.ticker-badge.eliteRole svg, .ticker-badge.elitePlayer svg{width:16px; height:16px;}
 .ticker-badge.silver{background:var(--silver); color:var(--void); box-shadow:0 0 4px rgba(var(--silver-rgb),0.4);}
 .ticker-badge.icarus{background:var(--icarus); color:var(--void); box-shadow:0 0 5px rgba(var(--icarus-rgb),0.5);}
 .ticker-badge.eddy{background:var(--eddy); color:var(--void); box-shadow:0 0 5px rgba(var(--eddy-rgb),0.5);}
