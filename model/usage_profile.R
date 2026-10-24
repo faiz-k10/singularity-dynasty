@@ -13,11 +13,13 @@
 #       sack_rate  sacks / dropbacks, %    rush_ypg  rushing yards a game
 #   RB  carries_pg  carries a game       rush_ypg   rushing yards a game  ypc  yards per carry
 #       rush_epa  rushing EPA per carry  tgt_pg  targets a game           rec_ypg  receiving yards a game   touches_pg  carries + catches
+#       i5_tpg  touches inside the opponent's 5-yard line a game (carries + catches, from play-by-play)
+#       i5_share  share of his touches that came inside the 5, %
 #   WR / TE  tgt_pg  targets a game      tgt_share  share of team targets, %   air_share  share of team air yards, %
 #       rec_ypg  receiving yards a game  ypt  yards per target            yac_rec  yards after the catch per catch   epa_tgt  EPA per target
 #
 # Rate numbers need real volume to mean anything (a backup with 3 carries): they are left out (NA -> the site shows no row) below
-# QB 15 attempts a game, RB 5 carries a game, WR / TE 3 targets a game. Players with fewer than UP_MIN_GAMES games get no profile.
+# QB 15 attempts a game, RB 5 carries a game (in-5 share only), WR / TE 3 targets a game. Players with fewer than UP_MIN_GAMES games get no profile.
 #
 # Called from player_groups.R (weekly, after projection_engine.R); also runs on its own: `Rscript usage_profile.R` replaces just the
 # usage_profile rows in upload_player_groups.csv. Needs the current season's rankings for the pool.
@@ -60,6 +62,8 @@ up_metrics <- function(x, pos) {
     out$tgt_pg <- r(per_game(x$targets), 1)
     out$rec_ypg <- r(per_game(x$receiving_yards), 1)
     out$touches_pg <- r(per_game(num(x$carries) + num(x$receptions)), 1)
+    out$i5_tpg <- r(per_game(x$i5), 2)
+    if (car >= UP_GATE[["RB"]]) out$i5_share <- r(100 * ratio(x$i5, num(x$carries) + num(x$receptions)), 1)
   } else {
     tgt <- per_game(x$targets)
     out$tgt_pg <- r(tgt, 1)
@@ -81,6 +85,16 @@ usage_profile_rows <- function(pool, season, week) {
   st <- as.data.frame(load_player_stats((season - 2):season))
   st <- st[st$season_type == "REG" & st$position %in% c("QB", "RB", "WR", "TE"), ]
   st$k <- up_name_key(st$player_display_name)
+
+  # Touches inside the opponent's 5-yard line per player-game (play-by-play: runs and completed passes, no two-point tries or kneels).
+  pb <- as.data.frame(load_pbp((season - 2):season))
+  pb <- pb[which(pb$season_type == "REG" & pb$yardline_100 <= 5 & pb$two_point_attempt == 0 & (is.na(pb$qb_kneel) | pb$qb_kneel == 0)), ]
+  runs <- pb[which(pb$rush_attempt == 1 & !is.na(pb$rusher_player_id)), c("rusher_player_id", "season", "week")]
+  catches <- pb[which(pb$complete_pass == 1 & !is.na(pb$receiver_player_id)), c("receiver_player_id", "season", "week")]
+  names(runs) <- names(catches) <- c("player_id", "season", "week")
+  i5 <- rbind(runs, catches); i5$one <- 1
+  i5 <- aggregate(one ~ player_id + season + week, i5, sum); names(i5)[4] <- "i5"
+  st <- merge(st, i5, by = c("player_id", "season", "week"), all.x = TRUE); st$i5[is.na(st$i5)] <- 0
   st <- st[order(st$player_id, st$season, st$week), ]
 
   out <- list()

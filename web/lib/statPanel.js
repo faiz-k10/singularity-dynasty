@@ -8,7 +8,7 @@ export const PANEL_KEYS = {
     player: ["u_ypa", "u_cpoe", "u_epa_db", "u_sack_rate"],
   },
   RB: {
-    role: ["avgXfp", "wopr", "u_touches_pg", "u_carries_pg", "u_tgt_pg"],
+    role: ["avgXfp", "wopr", "u_touches_pg", "u_carries_pg", "u_tgt_pg", "u_i5_tpg", "u_i5_share"],
     player: ["u_rush_ypg", "u_ypc", "u_rush_epa", "u_rec_ypg", "ryoe"],
   },
   WR: {
