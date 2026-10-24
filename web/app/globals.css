@@ -5310,6 +5310,8 @@ html{font-stretch:82%;}
 .waivers-dim{color:var(--star-dim);}
 .waivers-foot{display:flex; flex-wrap:wrap; align-items:center; gap:10px 16px;}
 .waivers-foot .h2h-sleeper{margin-top:0;}
+.lu-sleeper{margin:0 0 0 auto;}
+.lineup-advice > .standings-note{margin:14px 0 0;}
 .odds-high, td.standings-odds.odds-high{color:var(--up);} .odds-mid, td.standings-odds.odds-mid{color:var(--horizon-gold);} .odds-low, td.standings-odds.odds-low{color:var(--down);}
 
 /* My Team "Desktop alerts" switch (my-team/DesktopAlerts.js): a small mono pill, gold when on. */

@@ -55,6 +55,11 @@ export default function LineupAdvice({ team, gameStates, injuries = [] }) {
     <section className="standings lineup-advice" aria-label="Lineup optimizer">
       <div className="standings-head">
         <span className="standings-note mono">Best lineup by this week&apos;s projection · locked players stay put</span>
+        {url && (
+          <a className="h2h-sleeper lu-sleeper mono" href={url} target="_blank" rel="noopener noreferrer">
+            Set it in Sleeper <span aria-hidden="true">↗</span>
+          </a>
+        )}
       </div>
       <div className="lu-alerts">
         <h4 className="lu-alerts-title mono">
@@ -110,14 +115,7 @@ export default function LineupAdvice({ team, gameStates, injuries = [] }) {
           <SwapList swaps={t.swaps} key1={t.mode === "ceiling" ? "myCeiling" : "myFloor"} />
         </div>
       )}
-      <div className="waivers-foot">
-        {url && (
-          <a className="h2h-sleeper mono" href={url} target="_blank" rel="noopener noreferrer">
-            Set it in Sleeper <span aria-hidden="true">↗</span>
-          </a>
-        )}
-        <span className="standings-note mono">K, DEF and IDP slots aren&apos;t optimized.</span>
-      </div>
+      <p className="standings-note mono">K, DEF and IDP slots aren&apos;t optimized.</p>
     </section>
   );
 }
