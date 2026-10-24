@@ -700,6 +700,11 @@ export function UsageTdPanel({ row }) {
   const entries = (keys) =>
     keys.map((k) => ({ k, ...METRICS[k] })).filter((m) => row[m.k] != null && (row.metricRank?.[m.k] || m.unrankedHint));
   const sections = [["Role", entries(groups.role)], ["Player", entries(groups.player)]].filter(([, list]) => list.length);
+  // A section's average rank: the mean of his ranks on the numbers shown in it (needs two or more).
+  const avgRank = (list) => {
+    const ranks = list.map((m) => row.metricRank?.[m.k]?.rank).filter((r) => r != null);
+    return ranks.length >= 2 ? Math.round(ranks.reduce((a, b) => a + b, 0) / ranks.length) : null;
+  };
   return (
     <div className="stat-panel weekly-detail-pct-panel">
       <div className="weekly-pct-head">
@@ -710,7 +715,10 @@ export function UsageTdPanel({ row }) {
           <RankTable>
             {sections.map(([name, list]) => (
               <Fragment key={name}>
-                <div className="weekly-rank-section" role="row">{name}</div>
+                <div className="weekly-rank-section" role="row">
+                  <span>{name}</span>
+                  {avgRank(list) != null && <span className="weekly-rank-avg" title={`Average of his ranks on the ${name.toLowerCase()} numbers below`}>avg #{avgRank(list)}</span>}
+                </div>
                 {list.map((m) => (
                   <RankRow key={m.k} label={m.label} value={row[m.k]} format={m.format} rank={row.metricRank?.[m.k]} hint={m.hint} unrankedHint={m.unrankedHint} />
                 ))}

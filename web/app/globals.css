@@ -2626,7 +2626,8 @@ a.export-csv-btn{text-decoration:none;}
 .weekly-rank-head span:nth-child(3){text-align:right;}
 .weekly-rank-row{padding:4px 4px; border-bottom:1px solid rgba(var(--shadow-rgb),0.5);}
 .weekly-rank-row:last-child{border-bottom:none; padding-bottom:2px;}
-.weekly-rank-section{padding:9px 4px 3px; font-family:var(--font-mono), monospace; font-size:9.5px; letter-spacing:0.12em; text-transform:uppercase; color:var(--horizon-gold);}
+.weekly-rank-section{display:flex; align-items:baseline; justify-content:center; gap:10px; padding:9px 4px 3px; font-family:var(--font-mono), monospace; font-size:9.5px; letter-spacing:0.12em; text-transform:uppercase; color:var(--horizon-gold);}
+.weekly-rank-avg{font-size:10.5px; font-weight:700; letter-spacing:0.06em; color:var(--star);}
 .weekly-rank-label{font-size:12.5px; color:var(--star); text-align:left; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:default;}
 .weekly-rank-cell{display:flex; align-items:center; gap:8px; cursor:default;}
 .weekly-rank-n{flex:0 0 28px; text-align:right; font-family:var(--font-mono), monospace; font-size:12px; font-weight:700; color:var(--horizon-gold);}
