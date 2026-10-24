@@ -586,7 +586,7 @@ export function PlayerStatsRow({ row }) {
     <div className="weekly-stats-split">
       <div className="stat-panel weekly-stats-next">
         <span className="weekly-stats-eyebrow weekly-stats-eyebrow-next">
-          This week{!bye && ` · ${row.playedThisWeek != null ? "Already played" : "Projected"}`}
+          This week{!bye && ` · ${row.playedThisWeek != null ? "Played" : "Projected"}`}
           {row.opponent && !isBye(row.opponent) && (
             <span className="weekly-stats-opp">
               {row.is_home === true ? "vs" : row.is_home === false ? "@" : null}
