@@ -2537,17 +2537,16 @@ a.export-csv-btn{text-decoration:none;}
 .weekly-detail-curve-panel{flex:0 1 auto; max-width:400px; display:flex; flex-direction:column;}
 .weekly-detail-pct-panel{flex:0 1 auto; max-width:320px; display:flex; flex-direction:column;}
 .weekly-pct-head{margin-bottom:7px; flex-shrink:0;}
-/* Opened-player grid: left column = quick-read stats panel over the Outcome Curve; middle column = touchdown /
-   usage panel over Recent Games; far right (only for a player the viewer owns) = the vertical "Your player" panel. */
+/* Opened-player grid: left column = quick-read stats panel over the Outcome Curve; middle column = the "Your player" panel over
+   Recent Games; far right = the touchdown / usage panel (without a "Your player" panel the usage panel takes the middle column). */
 .weekly-detail-col{display:flex; flex-direction:column; gap:12px; min-width:0;}
-/* Small flex-basis on purpose: all three columns (stats+curve | touchdown+games | Your player) fit on one row even
-   in a fairly narrow window, then grow up to their max widths -- the Your player panel stays at the far right
-   instead of wrapping under the others. Phones stack them (max-width:640px block below). */
+/* Small flex-basis on purpose: all three columns (stats+curve | Your player+games | touchdown / usage) fit on one row even
+   in a fairly narrow window, then grow up to their max widths. Phones stack them (max-width:640px block below). */
 .weekly-detail-col-left{flex:1 1 230px; max-width:400px;}
-.weekly-detail-col-mid{flex:1 1 200px; max-width:320px;}
+.weekly-detail-col-mid, .weekly-detail-col-right{flex:1 1 200px; max-width:320px;}
 .weekly-detail-col .weekly-detail-curve-panel,
 .weekly-detail-col .weekly-detail-pct-panel{flex:1 1 auto; max-width:none;}
-.weekly-detail-mine-panel{flex:0 0 150px; align-self:stretch; max-width:176px;}
+.weekly-detail-mine-panel{flex:0 0 auto;} /* the top of the middle column, over Recent Games */
 /* This week (emphasised) | Last week (muted). */
 .weekly-stats-split{display:grid; grid-template-columns:1.6fr 1fr; gap:12px;}
 .weekly-detail-grid .weekly-stats-last,
@@ -4286,7 +4285,7 @@ summary:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible{
 .mine-strip-chip{display:inline-flex; align-items:center; gap:6px; color:var(--star); background:var(--void-panel-2); border:1px solid var(--line); border-radius:2px; padding:3px 10px;}
 .mine-strip-role{font-family:var(--font-mono), monospace; font-size:10px; color:var(--star-dim);}
 .mine-strip-role.starter{color:var(--up);}
-/* Vertical variant: the "Your player" panel on the far right of the opened-player view. */
+/* Vertical variant: the "Your player" panel at the top of the opened-player view's middle column. */
 .mine-strip-vertical{flex-direction:column; align-items:flex-start; flex-wrap:nowrap; padding:0; border:0; background:none; gap:10px;}
 .mine-empty-note{font-size:12px; color:var(--star-dim); line-height:1.4;}
 a.mine-empty-note{color:var(--horizon-gold);}

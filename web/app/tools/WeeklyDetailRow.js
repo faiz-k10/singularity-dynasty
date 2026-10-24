@@ -705,6 +705,13 @@ export function UsageTdPanel({ row }) {
 // giving each its own full-width slot keeps the row from running wider
 // than it needs to.
 export default function WeeklyDetailRow({ row, colSpan, maxSpread, owned, mineStatus }) {
+  // Middle column: the "Your player" panel over Recent Games; far right: the usage / touchdown profile (these two swapped places on request,
+  // Oct 24 2026). Without a "Your player" panel the profile keeps the middle column, as before.
+  const mine = (owned || mineStatus) && (
+    <div className="stat-panel weekly-detail-mine-panel">
+      {owned ? <MyStrip owned={owned} vertical /> : <MyEmpty status={mineStatus} />}
+    </div>
+  );
   return (
     <tr className="stat-detail-row weekly-detail-row">
       <td colSpan={colSpan}>
@@ -716,12 +723,12 @@ export default function WeeklyDetailRow({ row, colSpan, maxSpread, owned, mineSt
               <OutcomeCurvePanel row={row} maxSpread={maxSpread} />
             </div>
             <div className="weekly-detail-col weekly-detail-col-mid">
-              <UsageTdPanel row={row} />
+              {mine || <UsageTdPanel row={row} />}
               <GameLogPanel games={row.recentGames} />
             </div>
-            {(owned || mineStatus) && (
-              <div className="stat-panel weekly-detail-mine-panel">
-                {owned ? <MyStrip owned={owned} vertical /> : <MyEmpty status={mineStatus} />}
+            {mine && (
+              <div className="weekly-detail-col weekly-detail-col-right">
+                <UsageTdPanel row={row} />
               </div>
             )}
           </div>
