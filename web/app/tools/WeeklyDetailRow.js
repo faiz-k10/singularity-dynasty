@@ -36,9 +36,10 @@ import { MyStrip, MyEmpty } from "./MyPlayers";
 // this comment for whoever touches the number next, not the UI.
 // Every number the usage panel can show, by the key it has on the row. The panel groups them per position into ROLE (how the offense uses him:
 // volume, share, scheme) and PLAYER (how well he does with it: efficiency and output) -- PANEL below. Order inside a group is the order shown.
-// Sources: avgXfp / wopr / ryoe / scrambleRate / playActionRate from the sims + game log (see the comment above); p2Td / i10Pg / i10Share from
-// model/td_profile.R (kind "td_profile"; no touchdown-conversion rate: tested, it carries no signal once role is known); every u_ key from
-// model/usage_profile.R (kind "usage_profile", nflreadr player stats, recency-weighted over his last 17 games (a full season), rate numbers only past a volume gate).
+// Sources: avgXfp / wopr / ryoe from the sims + game log (see the comment above); every u_ key from model/usage_profile.R (kind "usage_profile",
+// nflreadr player stats, recency-weighted over his last 17 games (a full season), rate numbers only past a volume gate). The touchdown profile
+// (2+ TD chance, in-10 targets / share, model/td_profile.R) and scramble / play-action rate are still published and read by the Compare page,
+// but are not in this panel (Oct 24 2026: Role is the four numbers that describe it best); add a definition here and a key in PANEL to bring one back.
 // Short labels because the label column is ~110px; the full explanation is in the hover tip.
 const f1 = (v) => v.toFixed(1);
 const f2 = (v) => v.toFixed(2);
@@ -50,13 +51,6 @@ const METRICS = {
   avgXfp: { label: "xFP", format: f1, hint: "Expected fantasy points a game from his opportunities (ffopportunity), this season." },
   wopr: { label: "WOPR", format: f2, hint: "Weighted opportunity rating: how much of his offense's passing game runs through him (target share and air-yards share together). 0.70+ is a true No. 1 receiver. The same number the Buy Low badge reads." },
   ryoe: { label: "RYOE/Att", format: signed2, hint: "Rushing yards over expected per carry (NGS)." },
-  scrambleRate: { label: "Scramble Rate", format: pc1, hint: "Share of his dropbacks that turn into a scramble." },
-  playActionRate: { label: "Play-Action Rate", format: pc1, hint: "Share of his dropbacks that are play-action." },
-  p2Td: { label: "2+ TD Chance", format: pc1, hint: "Chance of scoring 2 or more touchdowns in a single game, from his expected touchdowns. Treat the order as more reliable than the exact percentage at the very top." },
-  i10Pg: { label: "In-10 Tgts/G", format: f2, hint: "Targets per game from inside the opponent's 10-yard line (last 17 games, recent weighted most). Targets there score 30-47% of the time." },
-  i10Share: { label: "In-10 Share", format: pc1,
-    hint: "Share of his targets that came from inside the opponent's 10-yard line. Ranked only among players averaging 4+ targets a game (6+ games) since the start of last season.",
-    unrankedHint: "Not ranked: needs an average of 4+ targets a game (and 6+ games) since the start of last season." },
   u_att_pg: { label: "Pass Att/G", format: f1, hint: "Pass attempts a game (last 17 games, recent weighted most)." },
   u_ypa: { label: "Yds/Att", format: f2, hint: "Passing yards per attempt." },
   u_aypa: { label: "Air Yds/Att", format: f2, hint: "Air yards per attempt: how far downfield he throws. A style number as much as a skill one." },
@@ -76,18 +70,18 @@ const METRICS = {
   u_yac_rec: { label: "YAC/Rec", format: f2, hint: "Yards after the catch per reception." },
   u_epa_tgt: { label: "EPA/Target", format: signed3, hint: "Expected points added per target." },
 };
-// ROLE = how the offense uses him; PLAYER = what he does with it. A number he doesn't have (below the volume gate, or not published) is just left out.
+// ROLE = how the offense uses him (the four that describe it best for the position); PLAYER = what he does with it. A number he doesn't have (below the volume gate, or not published) is just left out.
 const PANEL = {
   QB: {
-    role: ["avgXfp", "u_att_pg", "u_aypa", "u_rush_ypg", "scrambleRate", "playActionRate"],
+    role: ["avgXfp", "u_att_pg", "u_aypa", "u_rush_ypg"],
     player: ["u_ypa", "u_cpoe", "u_epa_db", "u_sack_rate"],
   },
   RB: {
-    role: ["avgXfp", "wopr", "u_touches_pg", "u_carries_pg", "u_tgt_pg"],
+    role: ["avgXfp", "u_touches_pg", "u_carries_pg", "u_tgt_pg"],
     player: ["u_rush_ypg", "u_ypc", "u_rush_epa", "u_rec_ypg", "ryoe"],
   },
   WR: {
-    role: ["wopr", "u_tgt_pg", "u_tgt_share", "u_air_share", "i10Pg", "i10Share", "p2Td"],
+    role: ["wopr", "u_tgt_pg", "u_tgt_share", "u_air_share"],
     player: ["u_rec_ypg", "u_ypt", "u_yac_rec", "u_epa_tgt"],
   },
 };
@@ -700,11 +694,10 @@ export function UsageTdPanel({ row }) {
   const entries = (keys) =>
     keys.map((k) => ({ k, ...METRICS[k] })).filter((m) => row[m.k] != null && (row.metricRank?.[m.k] || m.unrankedHint));
   const sections = [["Role", entries(groups.role)], ["Player", entries(groups.player)]].filter(([, list]) => list.length);
-  // A section's average standing: each rank as a share of its own pool (#16 of 50 = top 32%, #16 of 98 = top 16%), averaged, so pools of different
-  // sizes weigh the same (needs two or more ranked numbers).
-  const avgTop = (list) => {
-    const shares = list.map((m) => row.metricRank?.[m.k]).filter(Boolean).map((r) => r.rank / r.of);
-    return shares.length >= 2 ? Math.round((100 * shares.reduce((a, b) => a + b, 0)) / shares.length) : null;
+  // A section's average rank: the mean of his ranks on the numbers shown in it (needs two or more).
+  const avgRank = (list) => {
+    const ranks = list.map((m) => row.metricRank?.[m.k]?.rank).filter((r) => r != null);
+    return ranks.length >= 2 ? Math.round(ranks.reduce((a, b) => a + b, 0) / ranks.length) : null;
   };
   return (
     <div className="stat-panel weekly-detail-pct-panel">
@@ -718,7 +711,7 @@ export function UsageTdPanel({ row }) {
               <Fragment key={name}>
                 <div className="weekly-rank-section" role="row">
                   <span>{name}</span>
-                  {avgTop(list) != null && <span className="weekly-rank-avg" title={`Average of where he ranks on the ${name.toLowerCase()} numbers below, each as a share of its own pool (top 10% = among the best tenth)`}>avg top {avgTop(list)}%</span>}
+                  {avgRank(list) != null && <span className="weekly-rank-avg" title={`Average of his ranks on the ${name.toLowerCase()} numbers below`}>avg #{avgRank(list)}</span>}
                 </div>
                 {list.map((m) => (
                   <RankRow key={m.k} label={m.label} value={row[m.k]} format={m.format} rank={row.metricRank?.[m.k]} hint={m.hint} unrankedHint={m.unrankedHint} />
