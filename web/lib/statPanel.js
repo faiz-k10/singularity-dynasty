@@ -4,7 +4,7 @@
 // "Player" headings. Pure; tested in test/statPanel.test.mjs. The keys are the ones on a ranked row's `metricRank`; labels and formats live with the panel.
 export const PANEL_KEYS = {
   QB: {
-    role: ["avgXfp", "u_att_pg", "u_aypa", "u_rush_ypg", "scrambleRate", "playActionRate"],
+    role: ["avgXfp", "u_att_pg", "u_aypa", "u_rush_ypg", "u_i5_cpg", "scrambleRate", "playActionRate"],
     player: ["u_ypa", "u_cpoe", "u_epa_db", "u_sack_rate"],
   },
   RB: {

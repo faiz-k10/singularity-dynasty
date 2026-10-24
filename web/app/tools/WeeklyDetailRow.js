@@ -67,6 +67,7 @@ const METRICS = {
   u_rush_ypg: { label: "Rush Yds/G", format: f1, hint: "Rushing yards a game." },
   u_carries_pg: { label: "Carries/G", format: f1, hint: "Carries a game (last 17 games, recent weighted most)." },
   u_touches_pg: { label: "Touches/G", format: f1, hint: "Carries plus catches a game." },
+  u_i5_cpg: { label: "In-5 Carries/G", format: f2, hint: "Carries a game from inside the opponent's 5-yard line (sneaks and goal-line runs), last 17 games, recent weighted most. A rushing-touchdown role most passers don't have." },
   u_i5_tpg: { label: "In-5 Touches/G", format: f2, hint: "Touches (carries plus catches) a game from inside the opponent's 5-yard line, last 17 games, recent weighted most. The goal-line role: where backfield touchdowns come from." },
   u_i5_share: { label: "In-5 Share", format: pc1, hint: "Share of his touches (carries plus catches) that came inside the opponent's 5-yard line. Ranked only among backs averaging 5+ carries a game." },
   u_ypc: { label: "Yds/Carry", format: f2, hint: "Rushing yards per carry." },

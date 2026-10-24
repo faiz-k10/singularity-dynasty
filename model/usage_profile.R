@@ -10,7 +10,7 @@
 #
 #   QB  att_pg  pass attempts a game      ypa     yards per attempt      aypa    air yards per attempt
 #       cpoe    completion % over expected (attempt-weighted)           epa_db  EPA per dropback (attempts + sacks)
-#       sack_rate  sacks / dropbacks, %    rush_ypg  rushing yards a game
+#       sack_rate  sacks / dropbacks, %    rush_ypg  rushing yards a game    i5_cpg  carries inside the opponent's 5-yard line a game
 #   RB  carries_pg  carries a game       rush_ypg   rushing yards a game  ypc  yards per carry
 #       rush_epa  rushing EPA per carry  tgt_pg  targets a game           rec_ypg  receiving yards a game   touches_pg  carries + catches
 #       i5_tpg  touches inside the opponent's 5-yard line a game (carries + catches, from play-by-play)
@@ -51,6 +51,7 @@ up_metrics <- function(x, pos) {
       out$sack_rate <- r(100 * ratio(x$sacks_suffered, num(x$attempts) + num(x$sacks_suffered)), 1)
     }
     out$rush_ypg <- r(per_game(x$rushing_yards), 1)
+    out$i5_cpg <- r(per_game(x$i5c), 2)
   } else if (pos == "RB") {
     car <- per_game(x$carries)
     out$carries_pg <- r(car, 1)
@@ -92,9 +93,10 @@ usage_profile_rows <- function(pool, season, week) {
   runs <- pb[which(pb$rush_attempt == 1 & !is.na(pb$rusher_player_id)), c("rusher_player_id", "season", "week")]
   catches <- pb[which(pb$complete_pass == 1 & !is.na(pb$receiver_player_id)), c("receiver_player_id", "season", "week")]
   names(runs) <- names(catches) <- c("player_id", "season", "week")
-  i5 <- rbind(runs, catches); i5$one <- 1
-  i5 <- aggregate(one ~ player_id + season + week, i5, sum); names(i5)[4] <- "i5"
-  st <- merge(st, i5, by = c("player_id", "season", "week"), all.x = TRUE); st$i5[is.na(st$i5)] <- 0
+  count_by <- function(d, nm) { d$one <- 1; d <- aggregate(one ~ player_id + season + week, d, sum); names(d)[4] <- nm; d }
+  st <- merge(st, count_by(rbind(runs, catches), "i5"), by = c("player_id", "season", "week"), all.x = TRUE)  # carries + catches (RBs, WR / TE)
+  st <- merge(st, count_by(runs, "i5c"), by = c("player_id", "season", "week"), all.x = TRUE)               # carries only (QBs)
+  st$i5[is.na(st$i5)] <- 0; st$i5c[is.na(st$i5c)] <- 0
   st <- st[order(st$player_id, st$season, st$week), ]
 
   out <- list()
