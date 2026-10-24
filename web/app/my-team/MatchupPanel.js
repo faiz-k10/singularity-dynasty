@@ -149,7 +149,7 @@ function TeamScore({ name, record, score, proj, left, state = null, opp = false 
 export const hasStandings = (team) => Boolean(team?.settings?.season?.standings?.length);
 export function leagueTabs(team) {
   const lineup = !team?.settings?.bestBall && !team?.settings?.isBye && team?.settings?.slots?.length ? [["lineup", "Lineup"]] : [];
-  return [["matchup", "Matchup"], ...lineup, ...(hasStandings(team) ? [["standings", "Standings"]] : []), ["available", "Best available"]];
+  return [["matchup", "Matchup"], ...lineup, ["available", "Best available"], ...(hasStandings(team) ? [["standings", "Standings"]] : [])];
 }
 
 export function PanelTabs({ tabs, value, onChange }) {
