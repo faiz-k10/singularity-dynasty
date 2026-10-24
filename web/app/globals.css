@@ -2669,6 +2669,11 @@ a.export-csv-btn{text-decoration:none;}
    of bare bold text, so the one number that matters in each row reads as
    a distinct stat chip rather than blending into the row's other text. */
 .weekly-gamelog-panel{display:flex; flex-direction:column; justify-content:flex-start;}
+/* In the opened-player grid the Recent Games panel grows to the bottom of its column (so all three columns end on the same line) and its rows share the
+   extra height evenly, instead of leaving an empty strip under the list. */
+.weekly-detail-col .weekly-gamelog-panel{flex:1 1 auto;}
+.weekly-detail-col .weekly-gamelog-rows{flex:1 1 auto; display:flex; flex-direction:column;}
+.weekly-detail-col .weekly-gamelog-row{flex:1 1 auto;}
 .weekly-gamelog-row{
   display:grid; grid-template-columns:1fr 20px auto 46px 44px; align-items:center; gap:8px;
   padding:5px 0; border-bottom:1px solid rgba(var(--shadow-rgb),0.5); font-size:12px;

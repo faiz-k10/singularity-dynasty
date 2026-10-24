@@ -792,11 +792,11 @@ export default function WeeklyDetailRow({ row, colSpan, maxSpread, owned, mineSt
           <div className="weekly-detail-grid">
             <div className="weekly-detail-col weekly-detail-col-left">
               <PlayerStatsRow row={row} />
-              <OutcomeCurvePanel row={row} maxSpread={maxSpread} />
+              <GameLogPanel games={row.recentGames} />
             </div>
             <div className="weekly-detail-col weekly-detail-col-mid">
               {mine || <UsageTdPanel row={row} />}
-              <GameLogPanel games={row.recentGames} />
+              <OutcomeCurvePanel row={row} maxSpread={maxSpread} />
             </div>
             {mine && (
               <div className="weekly-detail-col weekly-detail-col-right">
