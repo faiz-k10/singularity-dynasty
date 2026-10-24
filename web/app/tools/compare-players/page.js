@@ -9,7 +9,7 @@ import {
   PAID_TIERS,
   getCachedRedraftData,
   getCachedLeans,
-  getCachedTdProfile,
+  getCachedTdProfile, getCachedUsageProfile,
   enrichRankings,
 } from "../redraft-rankings/data";
 
@@ -29,17 +29,18 @@ const TEASER_LIMIT = 50;
 export default async function ComparePlayersPage({ searchParams }) {
   const params = await searchParams;
   const supabase = await createClient();
-  const [{ tier }, cached, bioByNamePos, leanRows, tdProfile] = await Promise.all([
+  const [{ tier }, cached, bioByNamePos, leanRows, tdProfile, usageProfile] = await Promise.all([
     resolveTier(supabase),
     getCachedRedraftData(),
     getPlayerBiosByNamePos(),
     getCachedLeans(),
     getCachedTdProfile(),
+    getCachedUsageProfile(),
   ]);
   const hasFullAccess = PAID_TIERS.includes(tier);
   const { latest } = cached;
 
-  const pool = latest ? enrichRankings({ cached, hasFullAccess, tdProfile, leanRows, bioByNamePos }) : [];
+  const pool = latest ? enrichRankings({ cached, hasFullAccess, tdProfile, usageProfile, leanRows, bioByNamePos }) : [];
   const byName = new Map(pool.map((r) => [r.player_name, r]));
   const maxPlayers = MAX_COMPARE[tier] ?? 3;
   const selected = SLOTS.slice(0, maxPlayers).map((slot) => byName.get(params?.[slot])).filter(Boolean);

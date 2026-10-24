@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import OutcomeCurveDetail from "./OutcomeCurveDetail";
 import TeamBadge from "./TeamBadge";
 import { isBye, BYE_LABEL } from "@/lib/bye";
@@ -34,34 +34,64 @@ import { MyStrip, MyEmpty } from "./MyPlayers";
 // raw stat columns are, so spelling that out ("xFP/G (this season)")
 // read as more machinery than the row needed; the exact scope is in
 // this comment for whoever touches the number next, not the UI.
-const ADVANCED_METRICS = [
-  // xFP always leads the list (by request), for every position that shows this panel.
-  { key: "avgXfp", label: "xFP", format: (v) => v.toFixed(1) },
-  { key: "wopr", label: "WOPR", format: (v) => v.toFixed(2) },
-  { key: "targetShare", label: "Target Share", format: (v) => `${v.toFixed(1)}%` },
-  { key: "yacAboveExp", label: "YAC Above Exp", format: (v) => v.toFixed(2) },
-  { key: "ryoe", label: "RYOE/Att", format: (v) => `${v >= 0 ? "+" : ""}${v.toFixed(2)}` },
-  { key: "scrambleRate", label: "Scramble Rate", format: (v) => `${v.toFixed(1)}%` },
-  { key: "playActionRate", label: "Play-Action Rate", format: (v) => `${v.toFixed(1)}%` },
-];
-
-// WR/TE touchdown profile (model/td_profile.R -> player_groups kind "td_profile", attached in page.js). Replaces
-// the usage rows above for those two positions. Display only. No separate "Expected TDs/G" row: the 2+ TD chance is
-// a direct function of it, so it was redundant (removed by request; the number is still in the published detail). Short labels because the label column is 100px;
-// the full explanation is in the hover tip. Deliberately no touchdown-conversion rate: tested, it carries no
-// predictive signal once a player's role is known.
-const TD_METRICS = [
-  { key: "wopr", label: "WOPR", format: (v) => v.toFixed(2),
-    hint: "Weighted opportunity rating: how much of his offense's passing game runs through him (target share and air-yards share together). 0.70+ is a true No. 1 receiver. Ranked among WRs / TEs this week; the same number the Buy Low badge reads." },
-  { key: "p2Td", label: "2+ TD Chance", format: (v) => `${v.toFixed(1)}%`,
-    hint: "Chance of scoring 2 or more touchdowns in a single game, from his expected touchdowns. Treat the order as more reliable than the exact percentage at the very top." },
-  { key: "i10Pg", label: "In-10 Tgts/G", format: (v) => v.toFixed(2),
-    hint: "Targets per game from inside the opponent's 10-yard line (last 24 games, recent weighted most). Targets there score 30-47% of the time." },
-  { key: "i10Share", label: "In-10 Share", format: (v) => `${v.toFixed(1)}%`,
+// Every number the usage panel can show, by the key it has on the row. The panel groups them per position into ROLE (how the offense uses him:
+// volume, share, scheme) and PLAYER (how well he does with it: efficiency and output) -- PANEL below. Order inside a group is the order shown.
+// Sources: avgXfp / wopr / ryoe / scrambleRate / playActionRate from the sims + game log (see the comment above); p2Td / i10Pg / i10Share from
+// model/td_profile.R (kind "td_profile"; no touchdown-conversion rate: tested, it carries no signal once role is known); every u_ key from
+// model/usage_profile.R (kind "usage_profile", nflreadr player stats, recency-weighted over his last 24 games, rate numbers only past a volume gate).
+// Short labels because the label column is ~110px; the full explanation is in the hover tip.
+const f1 = (v) => v.toFixed(1);
+const f2 = (v) => v.toFixed(2);
+const f3 = (v) => v.toFixed(3);
+const pc1 = (v) => `${v.toFixed(1)}%`;
+const signed2 = (v) => `${v >= 0 ? "+" : ""}${v.toFixed(2)}`;
+const signed3 = (v) => `${v >= 0 ? "+" : ""}${v.toFixed(3)}`;
+const METRICS = {
+  avgXfp: { label: "xFP", format: f1, hint: "Expected fantasy points a game from his opportunities (ffopportunity), this season." },
+  wopr: { label: "WOPR", format: f2, hint: "Weighted opportunity rating: how much of his offense's passing game runs through him (target share and air-yards share together). 0.70+ is a true No. 1 receiver. The same number the Buy Low badge reads." },
+  ryoe: { label: "RYOE/Att", format: signed2, hint: "Rushing yards over expected per carry (NGS)." },
+  scrambleRate: { label: "Scramble Rate", format: pc1, hint: "Share of his dropbacks that turn into a scramble." },
+  playActionRate: { label: "Play-Action Rate", format: pc1, hint: "Share of his dropbacks that are play-action." },
+  p2Td: { label: "2+ TD Chance", format: pc1, hint: "Chance of scoring 2 or more touchdowns in a single game, from his expected touchdowns. Treat the order as more reliable than the exact percentage at the very top." },
+  i10Pg: { label: "In-10 Tgts/G", format: f2, hint: "Targets per game from inside the opponent's 10-yard line (last 24 games, recent weighted most). Targets there score 30-47% of the time." },
+  i10Share: { label: "In-10 Share", format: pc1,
     hint: "Share of his targets that came from inside the opponent's 10-yard line. Ranked only among players averaging 4+ targets a game (6+ games) since the start of last season.",
     unrankedHint: "Not ranked: needs an average of 4+ targets a game (and 6+ games) since the start of last season." },
-];
-const TD_POSITIONS = new Set(["WR", "TE"]);
+  u_att_pg: { label: "Pass Att/G", format: f1, hint: "Pass attempts a game (last 24 games, recent weighted most)." },
+  u_ypa: { label: "Yds/Att", format: f2, hint: "Passing yards per attempt." },
+  u_aypa: { label: "Air Yds/Att", format: f2, hint: "Air yards per attempt: how far downfield he throws. A style number as much as a skill one." },
+  u_cpoe: { label: "CPOE", format: signed2, hint: "Completion percentage over expected: how much better (or worse) than the throws' difficulty predicts he completes them." },
+  u_epa_db: { label: "EPA/Dropback", format: signed3, hint: "Expected points added per dropback (attempts plus sacks): how much each snap he drops back helps his offense." },
+  u_sack_rate: { label: "Sack Rate", format: pc1, hint: "Sacks as a share of his dropbacks. Ranked with the LOWEST first: a fuller bar is fewer sacks." },
+  u_rush_ypg: { label: "Rush Yds/G", format: f1, hint: "Rushing yards a game." },
+  u_carries_pg: { label: "Carries/G", format: f1, hint: "Carries a game (last 24 games, recent weighted most)." },
+  u_touches_pg: { label: "Touches/G", format: f1, hint: "Carries plus catches a game." },
+  u_ypc: { label: "Yds/Carry", format: f2, hint: "Rushing yards per carry." },
+  u_rush_epa: { label: "Rush EPA/Carry", format: signed3, hint: "Expected points added per carry." },
+  u_tgt_pg: { label: "Targets/G", format: f1, hint: "Targets a game (last 24 games, recent weighted most)." },
+  u_tgt_share: { label: "Target Share", format: pc1, hint: "Share of his team's targets." },
+  u_air_share: { label: "Air Yds Share", format: pc1, hint: "Share of his team's air yards: how much of the deep passing game is his." },
+  u_rec_ypg: { label: "Rec Yds/G", format: f1, hint: "Receiving yards a game." },
+  u_ypt: { label: "Yds/Target", format: f2, hint: "Receiving yards per target." },
+  u_yac_rec: { label: "YAC/Rec", format: f2, hint: "Yards after the catch per reception." },
+  u_epa_tgt: { label: "EPA/Target", format: signed3, hint: "Expected points added per target." },
+};
+// ROLE = how the offense uses him; PLAYER = what he does with it. A number he doesn't have (below the volume gate, or not published) is just left out.
+const PANEL = {
+  QB: {
+    role: ["avgXfp", "u_att_pg", "u_aypa", "u_rush_ypg", "scrambleRate", "playActionRate"],
+    player: ["u_ypa", "u_cpoe", "u_epa_db", "u_sack_rate"],
+  },
+  RB: {
+    role: ["avgXfp", "wopr", "u_touches_pg", "u_carries_pg", "u_tgt_pg"],
+    player: ["u_rush_ypg", "u_ypc", "u_rush_epa", "u_rec_ypg", "ryoe"],
+  },
+  WR: {
+    role: ["wopr", "u_tgt_pg", "u_tgt_share", "u_air_share", "i10Pg", "i10Share", "p2Td"],
+    player: ["u_rec_ypg", "u_ypt", "u_yac_rec", "u_epa_tgt"],
+  },
+};
+PANEL.TE = PANEL.WR;
 
 // One line of the touchdown profile / usage panel: the metric, its value, and where he ranks at his position (#1 = highest).
 function RankRow({ label, value, format, rank, hint, unrankedHint }) {
@@ -88,7 +118,7 @@ function RankRow({ label, value, format, rank, hint, unrankedHint }) {
   );
 }
 
-// Header + rows of the usage / touchdown panel: Metric | Rank | Value.
+// Header + rows of the usage panel: Metric | Rank | Value.
 function RankTable({ children }) {
   return (
     <div className="weekly-rank-table" role="table">
@@ -666,26 +696,29 @@ export function OutcomeCurvePanel({ row, maxSpread }) {
 
 // Touchdown profile (WR/TE) or usage (RB/QB) ranked against the same-position pool.
 export function UsageTdPanel({ row }) {
-  const showTd = TD_POSITIONS.has(row.position);
-  const advancedEntries = (showTd ? TD_METRICS : ADVANCED_METRICS).filter(
-    (m) => row[m.key] != null && (row.metricRank?.[m.key] || m.unrankedHint)
-  );
+  const groups = PANEL[row.position] || { role: [], player: [] };
+  const entries = (keys) =>
+    keys.map((k) => ({ k, ...METRICS[k] })).filter((m) => row[m.k] != null && (row.metricRank?.[m.k] || m.unrankedHint));
+  const sections = [["Role", entries(groups.role)], ["Player", entries(groups.player)]].filter(([, list]) => list.length);
   return (
     <div className="stat-panel weekly-detail-pct-panel">
       <div className="weekly-pct-head">
-        <span className="weekly-panel-title">{showTd ? "Touchdown profile" : "Usage"} vs. the {row.position} pool</span>
+        <span className="weekly-panel-title">Stats vs. the {row.position} pool</span>
       </div>
       <div className="weekly-panel-body">
-        {advancedEntries.length > 0 ? (
+        {sections.length > 0 ? (
           <RankTable>
-            {advancedEntries.map((m) => (
-              <RankRow key={m.key} label={m.label} value={row[m.key]} format={m.format} rank={row.metricRank?.[m.key]} hint={m.hint} unrankedHint={m.unrankedHint} />
+            {sections.map(([name, list]) => (
+              <Fragment key={name}>
+                <div className="weekly-rank-section" role="row">{name}</div>
+                {list.map((m) => (
+                  <RankRow key={m.k} label={m.label} value={row[m.k]} format={m.format} rank={row.metricRank?.[m.k]} hint={m.hint} unrankedHint={m.unrankedHint} />
+                ))}
+              </Fragment>
             ))}
           </RankTable>
         ) : (
-          <p className="weekly-opp-caption">
-            {showTd ? "Not enough games yet for a touchdown profile." : "No usage metrics published for this player yet."}
-          </p>
+          <p className="weekly-opp-caption">No usage numbers for this player yet.</p>
         )}
       </div>
     </div>

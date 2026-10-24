@@ -10,13 +10,16 @@
 #   career_stage    Ascending / Prime / Decline Watch / Late Career (QB: Ascending / Prime / Veteran), from
 #                   age as of Sept 1 with per-position cutoffs taken from the longitudinal age curves in the
 #                   README ("Age curves -- longitudinal").
+#   usage_profile   QB, RB, WR and TE ranked this week (usage_profile.R): volume, share and efficiency numbers from nflreadr player stats
+#                   (attempts / carries / targets a game, yards per attempt / carry / target, EPA, CPOE, sack rate, target and air-yards
+#                   share ...), recency-weighted; ranked against the position on the site. Display only.
 #   td_profile      WR and TE only, for everyone ranked on Weekly Projection Rankings (td_profile.R): expected TDs per
 #                   game, chance of 2+ TD in a game, inside-10 targets per game and share. Display only.
 #
 # Run: Rscript player_groups.R   (after projection_engine.R; reads upload_player_simulations.csv for the pool and
 # season/week, and upload_player_game_log.csv for actual vs expected points). Writes upload_player_groups.csv.
 # Publish with: node --env-file=.env.local scripts/publish-player-groups.mjs
-suppressMessages({ library(jsonlite); source("player_meta.R"); source("td_profile.R") })
+suppressMessages({ library(jsonlite); source("player_meta.R"); source("td_profile.R"); source("usage_profile.R") })
 
 SUSTAIN_MIN_GAMES <- 8       # games with expected-points data
 SUSTAIN_MIN_GAP   <- 1.0     # points per game, vs the position baseline
@@ -72,6 +75,9 @@ if (sys.nframe() == 0) {
   if (!is.null(rk)) {
     td <- tryCatch(td_profile_rows(unique(rk[, c("player_name", "position")]), rk$season[1], rk$week[1]), error = function(e) { cat("td_profile skipped:", conditionMessage(e), "\n"); NULL })
     if (!is.null(td) && nrow(td)) out <- rbind(out, td)
+    # usage_profile: usage / efficiency numbers for every QB, RB, WR and TE ranked (usage_profile.R); never fatal either
+    up <- tryCatch(usage_profile_rows(unique(rk[, c("player_name", "position")]), rk$season[1], rk$week[1]), error = function(e) { cat("usage_profile skipped:", conditionMessage(e), "\n"); NULL })
+    if (!is.null(up) && nrow(up)) out <- rbind(out, up)
   }
   write.csv(out, "upload_player_groups.csv", row.names = FALSE)
   cat(sprintf("Wrote upload_player_groups.csv: %d rows (season %s, week %s)\n", nrow(out), season, week))

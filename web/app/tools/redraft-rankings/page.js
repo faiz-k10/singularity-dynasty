@@ -7,7 +7,7 @@ import { getPlayerBiosByNamePos } from "@/lib/sleeper";
 import SiteHeader from "../../SiteHeader";
 import ExportCsvButton from "../ExportCsvButton";
 import RedraftRankingsClient from "./RedraftRankingsClient";
-import { PAID_TIERS, OVERALL_COLUMN_TYPES, sortPositions, getCachedRedraftData, getCachedLeans, getCachedTdProfile, enrichRankings } from "./data";
+import { PAID_TIERS, OVERALL_COLUMN_TYPES, sortPositions, getCachedRedraftData, getCachedLeans, getCachedTdProfile, getCachedUsageProfile, enrichRankings } from "./data";
 
 export const metadata = {
   title: "Weekly Projection Rankings (PPR) — Singularity Dynasty",
@@ -24,13 +24,14 @@ export default async function RedraftRankingsPage({ searchParams }) {
   // Tier (auth + profile) is per-visitor, the cached bundle and the Sleeper
   // bios aren't -- all three run at once.
   const supabase = await createClient();
-  const [{ tier, mine }, cached, bioByNamePos, leanRows, tdProfile] = await Promise.all([
+  const [{ tier, mine }, cached, bioByNamePos, leanRows, tdProfile, usageProfile] = await Promise.all([
     // Per-visitor like the tier: their saved teams (own rows only) for the My players view.
     resolveTier(supabase).then(async (r) => ({ ...r, mine: await loadMyPlayers(supabase, r.user) })),
     getCachedRedraftData(),
     getPlayerBiosByNamePos(),
     getCachedLeans(),
     getCachedTdProfile(),
+    getCachedUsageProfile(),
   ]);
   const hasFullAccess = PAID_TIERS.includes(tier);
   const { latest } = cached;
@@ -40,7 +41,7 @@ export default async function RedraftRankingsPage({ searchParams }) {
 
   if (latest) {
     totalCount = cached.rows.length;
-    rankings = enrichRankings({ cached, hasFullAccess, tdProfile, leanRows, bioByNamePos });
+    rankings = enrichRankings({ cached, hasFullAccess, tdProfile, usageProfile, leanRows, bioByNamePos });
   }
 
   // Widest floor-to-ceiling range this week -- the Outcome Curve column

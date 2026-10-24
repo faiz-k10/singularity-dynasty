@@ -407,37 +407,44 @@ export const getCachedLeans = unstable_cache(
   { revalidate: 60 }
 );
 
-// Touchdown profile for WRs and TEs (model/td_profile.R -> player_groups, kind "td_profile"): expected TDs per
-// game, chance of 2+ TDs in a game, inside-10 targets per game and share of targets. Display only. Optional by
-// design: nothing published (or an error) just leaves the panel's "not enough games" note.
-export const getCachedTdProfile = unstable_cache(
-  async () => {
-    try {
-      const pub = createPublicClient();
-      const { data: latest } = await pub
-        .from("player_groups")
-        .select("season, week")
-        .eq("kind", "td_profile")
-        .order("season", { ascending: false })
-        .order("week", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      if (!latest) return {};
-      const { data } = await pub
-        .from("player_groups")
-        .select("player_name, detail")
-        .eq("kind", "td_profile")
-        .eq("season", latest.season)
-        .eq("week", latest.week)
-        .limit(1000);
-      return Object.fromEntries((data || []).filter((r) => r.detail).map((r) => [r.player_name, r.detail]));
-    } catch {
-      return {};
-    }
-  },
-  ["td-profile-latest-v2"],
-  { revalidate: 60 }
-);
+// The latest published player_groups rows of one kind, as { [player_name]: detail }. Display-only profiles are optional by design:
+// nothing published (or an error) just leaves the panel without them.
+const groupProfileLoader = (kind, cacheKey) =>
+  unstable_cache(
+    async () => {
+      try {
+        const pub = createPublicClient();
+        const { data: latest } = await pub
+          .from("player_groups")
+          .select("season, week")
+          .eq("kind", kind)
+          .order("season", { ascending: false })
+          .order("week", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (!latest) return {};
+        const { data } = await pub
+          .from("player_groups")
+          .select("player_name, detail")
+          .eq("kind", kind)
+          .eq("season", latest.season)
+          .eq("week", latest.week)
+          .limit(1000);
+        return Object.fromEntries((data || []).filter((r) => r.detail).map((r) => [r.player_name, r.detail]));
+      } catch {
+        return {};
+      }
+    },
+    [cacheKey],
+    { revalidate: 60 }
+  );
+
+// Touchdown profile for WRs and TEs (model/td_profile.R, kind "td_profile"): expected TDs per game, chance of 2+ TDs in a game,
+// inside-10 targets per game and share of targets.
+export const getCachedTdProfile = groupProfileLoader("td_profile", "td-profile-latest-v2");
+// Usage / efficiency profile for QB, RB, WR and TE (model/usage_profile.R, kind "usage_profile"): attempts / carries / targets a game,
+// yards per attempt / carry / target, EPA, CPOE, sack rate, target and air-yards share ... from nflreadr player stats.
+export const getCachedUsageProfile = groupProfileLoader("usage_profile", "usage-profile-latest-v1");
 
 // Where each WR/TE ranks on the four touchdown-profile numbers (1 = highest), among EVERY ranked player at his
 // position that has a profile -- not just the rows a free visitor can see, so a rank means the same thing on every
@@ -500,15 +507,43 @@ export function usageRanksByName(rows, simsByName, avgXfpByName) {
   return out;
 }
 
+// Where each player ranks at his position on the usage_profile numbers (model/usage_profile.R), among EVERY ranked player at the position that
+// has the number (the model leaves rate numbers out below a volume gate, so backups don't crowd the pool). 1 = best: the highest value, except
+// sack rate where the LOWEST is best. Row keys are the profile's keys with a "u_" prefix.
+const LOWER_IS_BETTER = new Set(["sack_rate"]);
+export function usageProfileRanks(rows, profile) {
+  const pools = {};
+  for (const r of rows) {
+    const d = profile[r.player_name];
+    if (!d) continue;
+    for (const [k, v] of Object.entries(d)) if (k !== "games" && typeof v === "number") ((pools[r.position] ??= {})[k] ??= []).push(v);
+  }
+  const out = {};
+  for (const r of rows) {
+    const d = profile[r.player_name];
+    if (!d) continue;
+    const ranks = {};
+    for (const [k, v] of Object.entries(d)) {
+      const pool = pools[r.position]?.[k];
+      if (k === "games" || typeof v !== "number" || !pool) continue;
+      const better = LOWER_IS_BETTER.has(k) ? (x) => x < v : (x) => x > v;
+      ranks[`u_${k}`] = { rank: 1 + pool.filter(better).length, of: pool.length };
+    }
+    out[r.player_name] = ranks;
+  }
+  return out;
+}
+
 // Everything the opened-player dashboard needs, attached to each ranked row (usage/TD metrics and their ranks, recent
 // games, last week's finish, badges' inputs, bio, matchup flag, percentiles vs the pool). Shared by the rankings page
 // and the Compare Players tool so both read the exact same numbers. `hasFullAccess` false = only the top 50 rows.
-export function enrichRankings({ cached, hasFullAccess = true, tdProfile, leanRows, bioByNamePos }) {
+export function enrichRankings({ cached, hasFullAccess = true, tdProfile, usageProfile = {}, leanRows, bioByNamePos }) {
   let rankings = [];
   const data = hasFullAccess ? cached.rows : cached.rows.slice(0, 50);
   const { simsByName, avgXfpByName, recentGamesByName, lastWeekRankByName, heroWinsByName } = cached;
   const tdRanks = tdRanksByName(cached.rows, tdProfile);
   const usageRanks = usageRanksByName(cached.rows, simsByName, avgXfpByName);
+  const profileRanks = usageProfileRanks(cached.rows, usageProfile);
 
   // Position-relative rank (RB1, WR23, ...) computed once from the
   // natural rank order -- stays fixed on each row even if the table is
@@ -534,7 +569,9 @@ export function enrichRankings({ cached, hasFullAccess = true, tdProfile, leanRo
       p2Td: tdProfile[r.player_name]?.p2 ?? null,
       i10Pg: tdProfile[r.player_name]?.i10_pg ?? null,
       i10Share: tdProfile[r.player_name]?.i10_share ?? null,
-      metricRank: { ...(usageRanks[r.player_name] || {}), ...(tdRanks[r.player_name] || {}) },
+      // The usage_profile numbers, flat on the row as u_<key> (u_att_pg, u_ypc, ...), ranked like the others.
+      ...Object.fromEntries(Object.entries(usageProfile[r.player_name] || {}).filter(([k]) => k !== "games").map(([k, v]) => [`u_${k}`, v])),
+      metricRank: { ...(usageRanks[r.player_name] || {}), ...(tdRanks[r.player_name] || {}), ...(profileRanks[r.player_name] || {}) },
       recentGames: recentGamesByName[r.player_name] || [],
       // He has already played this week's game (Thursday / Friday / Saturday): his real points so far this week.
       playedThisWeek: (() => {
