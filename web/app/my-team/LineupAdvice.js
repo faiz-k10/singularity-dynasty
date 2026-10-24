@@ -71,18 +71,18 @@ export default function LineupAdvice({ team, gameStates, injuries = [] }) {
   const t = advice.tilt;
   return (
     <section className="standings lineup-advice" aria-label="Lineup optimizer">
-      <div className="standings-head">
-        {url && (
-          <a className="h2h-sleeper lu-sleeper mono" href={url} target="_blank" rel="noopener noreferrer" title="Best lineup by this week's projection; locked players stay put">
-            <img src="/sleeper-logo.png" alt="" width="22" height="22" className="lu-sleeper-logo" />
-            Set it in Sleeper <span aria-hidden="true">↗</span>
-          </a>
-        )}
-      </div>
       <div className="lu-alerts">
-        <h4 className="lu-alerts-title mono">
-          Lineup Alerts{count.total > 0 && <span className="lu-alerts-count">{count.total}</span>}
-        </h4>
+        <div className="lu-alerts-head">
+          <h4 className="lu-alerts-title mono">
+            Lineup Alerts{count.total > 0 && <span className="lu-alerts-count">{count.total}</span>}
+          </h4>
+          {url && (
+            <a className="h2h-sleeper lu-sleeper mono" href={url} target="_blank" rel="noopener noreferrer" title="Best lineup by this week's projection; locked players stay put">
+              <img src="/sleeper-logo.png" alt="" width="22" height="22" className="lu-sleeper-logo" />
+              Set it in Sleeper <span aria-hidden="true">↗</span>
+            </a>
+          )}
+        </div>
         {alerts.length === 0 ? (
           <p className="lu-alerts-none mono">No injury or bye alerts: every starter is healthy and in a game this week.</p>
         ) : (
