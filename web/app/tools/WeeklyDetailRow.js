@@ -526,11 +526,12 @@ function achievementNode(a, row) {
 // muted, it is history). Moved out of the identity strip by request.
 export function PlayerStatsRow({ row }) {
   const lastWeek = row.lastWeekRank;
+  const bye = isBye(row.opponent);
   return (
     <div className="weekly-stats-split">
       <div className="stat-panel weekly-stats-next">
         <span className="weekly-stats-eyebrow weekly-stats-eyebrow-next">
-          This week · {row.playedThisWeek != null ? "Already played" : "Projected"}
+          This week{!bye && ` · ${row.playedThisWeek != null ? "Already played" : "Projected"}`}
           {row.opponent && !isBye(row.opponent) && (
             <span className="weekly-stats-opp">
               {row.is_home === true ? "vs" : row.is_home === false ? "@" : null}
@@ -542,11 +543,11 @@ export function PlayerStatsRow({ row }) {
         <div className="weekly-stats-pair">
           <div className="weekly-stats-item">
             <span className="weekly-player-stat-label">Position rank</span>
-            <span className="weekly-stats-value-big weekly-stats-value-gold">{row.positionLabel || "—"}</span>
+            <span className="weekly-stats-value-big weekly-stats-value-gold">{bye ? "—" : row.positionLabel || "—"}</span>
           </div>
           <div className="weekly-stats-item">
             <span className="weekly-player-stat-label">Median proj</span>
-            <span className="weekly-stats-value-big">{row.projection != null ? row.projection.toFixed(1) : "—"}</span>
+            <span className="weekly-stats-value-big">{!bye && row.projection != null ? row.projection.toFixed(1) : "—"}</span>
           </div>
         </div>
       </div>
@@ -623,6 +624,18 @@ export function PlayerHeaderPanel({ row }) {
 // player row and the Compare Players tool.
 export function OutcomeCurvePanel({ row, maxSpread }) {
   const pct = row.statPct || {};
+  if (isBye(row.opponent)) {
+    return (
+      <div className="stat-panel weekly-detail-curve-panel">
+        <div className="weekly-pct-head">
+          <span className="weekly-panel-title">Outcome Curve</span>
+        </div>
+        <div className="weekly-panel-body">
+          <p className="weekly-opp-caption">{row.team} is on its bye this week, so there is no projected range. He is back in next week&apos;s rankings.</p>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="stat-panel weekly-detail-curve-panel">
       <div className="weekly-pct-head">

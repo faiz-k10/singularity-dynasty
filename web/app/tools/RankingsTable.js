@@ -203,10 +203,11 @@ const RankingRow = memo(function RankingRow({
   showStatColumns, popoverOnName, maxSpread, owned, mineStatus, colCount,
 }) {
   const rowKey = `${row.position}-${row.rank}`;
-  // A team on its bye has no game, so nothing about this week is shown for him (no rank, projection range,
-  // stat line or opened panel) -- just who he is and "BYE WEEK" in the Matchup column.
+  // A team on its bye has no game, so nothing about this week is projected for him (no rank, projection range or stat line in the
+  // row) -- just who he is and "BYE WEEK" in the Matchup column. His row still opens to his profile: identity, last week, usage /
+  // touchdown profile and recent games (WeeklyDetailRow swaps the outcome curve for a bye note).
   const bye = isBye(row.opponent);
-  const hasDetail = !bye && showCurve && row.floor != null && row.ceiling != null;
+  const hasDetail = showCurve && (bye || (row.floor != null && row.ceiling != null));
   const isExpanded = hasDetail && isExpanded0 && !hidden;
   return (
     <Fragment key={rowKey}>
