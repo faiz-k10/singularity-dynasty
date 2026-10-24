@@ -700,10 +700,11 @@ export function UsageTdPanel({ row }) {
   const entries = (keys) =>
     keys.map((k) => ({ k, ...METRICS[k] })).filter((m) => row[m.k] != null && (row.metricRank?.[m.k] || m.unrankedHint));
   const sections = [["Role", entries(groups.role)], ["Player", entries(groups.player)]].filter(([, list]) => list.length);
-  // A section's average rank: the mean of his ranks on the numbers shown in it (needs two or more).
-  const avgRank = (list) => {
-    const ranks = list.map((m) => row.metricRank?.[m.k]?.rank).filter((r) => r != null);
-    return ranks.length >= 2 ? Math.round(ranks.reduce((a, b) => a + b, 0) / ranks.length) : null;
+  // A section's average standing: each rank as a share of its own pool (#16 of 50 = top 32%, #16 of 98 = top 16%), averaged, so pools of different
+  // sizes weigh the same (needs two or more ranked numbers).
+  const avgTop = (list) => {
+    const shares = list.map((m) => row.metricRank?.[m.k]).filter(Boolean).map((r) => r.rank / r.of);
+    return shares.length >= 2 ? Math.round((100 * shares.reduce((a, b) => a + b, 0)) / shares.length) : null;
   };
   return (
     <div className="stat-panel weekly-detail-pct-panel">
@@ -717,7 +718,7 @@ export function UsageTdPanel({ row }) {
               <Fragment key={name}>
                 <div className="weekly-rank-section" role="row">
                   <span>{name}</span>
-                  {avgRank(list) != null && <span className="weekly-rank-avg" title={`Average of his ranks on the ${name.toLowerCase()} numbers below`}>avg #{avgRank(list)}</span>}
+                  {avgTop(list) != null && <span className="weekly-rank-avg" title={`Average of where he ranks on the ${name.toLowerCase()} numbers below, each as a share of its own pool (top 10% = among the best tenth)`}>avg top {avgTop(list)}%</span>}
                 </div>
                 {list.map((m) => (
                   <RankRow key={m.k} label={m.label} value={row[m.k]} format={m.format} rank={row.metricRank?.[m.k]} hint={m.hint} unrankedHint={m.unrankedHint} />
