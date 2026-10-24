@@ -145,7 +145,7 @@ export function MyBadge({ owned }) {
 export function MyEmpty({ status }) {
   return (
     <div className="mine-strip mine-strip-vertical">
-      <span className="mine-strip-star">★ Your player</span>
+      <span className="weekly-panel-title">Your player</span>
       {status === "signedOut" ? (
         <Link href="/login" prefetch={false} className="mine-empty-note">Sign in to see which of your teams he is on</Link>
       ) : status === "noTeams" ? (
@@ -161,8 +161,8 @@ export function MyStrip({ owned, vertical = false }) {
   if (!owned) return null;
   return (
     <div className={`mine-strip${vertical ? " mine-strip-vertical" : ""}`}>
-      <span className="mine-strip-star">★ Your player</span>
-      {/* Vertical (the opened-player panel, a fixed size): the leagues scroll under the heading. */}
+      {/* Vertical (the opened-player panel, a fixed size) heads itself like every other panel there (dash + dim title); the leagues scroll under it. */}
+      <span className={vertical ? "weekly-panel-title" : "mine-strip-star"}>{vertical ? "Your player" : "★ Your player"}</span>
       <div className={vertical ? "mine-strip-list" : "mine-strip-leagues"}>
         {owned.leagues.map((l, i) => (
           <span key={i} className="mine-strip-chip">
