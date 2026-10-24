@@ -4,6 +4,7 @@ import { loadMyPlayers } from "@/lib/myPlayers";
 import { createClient } from "@/lib/supabase/server";
 import { resolveSort, sortRows } from "@/lib/sortLink";
 import { getPlayerBiosByNamePos } from "@/lib/sleeper";
+import { stageTimer } from "@/lib/stageTimer";
 import InteractiveScript from "../../InteractiveScript";
 import ExportCsvButton from "../ExportCsvButton";
 import PlayerSimSearch from "../PlayerSimSearch";
@@ -86,13 +87,14 @@ export default async function PlayerSimulationsPage({ searchParams }) {
   // there's no real caching benefit to bundling it into the 60s payload,
   // and keeping it separate mirrors how redraft-rankings' own expanded
   // row already does this same lookup.
+  const st = stageTimer("player-simulations");
   const [{ tier, mine }, weekData, bioByNamePos] =
     await Promise.all([
       // Who the viewer is and what teams they've saved (their own rows only) -- per-visitor,
       // so it sits outside the cached week data, in parallel with it.
-      resolveTier(supabase).then(async (r) => ({ ...r, mine: await loadMyPlayers(supabase, r.user) })),
-      getCachedWeekData(),
-      getPlayerBiosByNamePos(),
+      st.time("tier+mine", resolveTier(supabase).then(async (r) => ({ ...r, mine: await loadMyPlayers(supabase, r.user) }))),
+      st.time("data", getCachedWeekData()),
+      st.time("bios", getPlayerBiosByNamePos()),
     ]);
   const { latest, lastGameWeek } = weekData;
   const hasFullAccess = PAID_TIERS.includes(tier);
@@ -109,7 +111,8 @@ export default async function PlayerSimulationsPage({ searchParams }) {
   const canExport = tier === "singularity" && sims.length > 0;
   const positions = sortPositions([...new Set(sims.map((r) => r.position))]);
 
-  const weeklyBadges = await loadWeeklyBadges(tier, bioByNamePos);
+  const weeklyBadges = await st.time("badges", loadWeeklyBadges(tier, bioByNamePos));
+  st.done();
   const simsWithHeat = sortRows(simsWithComputed, sortKey, sortDir, COLUMN_TYPES).map((r) =>
     weeklyBadges[r.player_name] ? { ...r, weeklyBadges: weeklyBadges[r.player_name] } : r,
   );

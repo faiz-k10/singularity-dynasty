@@ -4,6 +4,7 @@ import { loadMyPlayers } from "@/lib/myPlayers";
 import { createClient } from "@/lib/supabase/server";
 import { resolveSort, sortRows } from "@/lib/sortLink";
 import { getPlayerBiosByNamePos } from "@/lib/sleeper";
+import { stageTimer } from "@/lib/stageTimer";
 import InteractiveScript from "../../InteractiveScript";
 import ExportCsvButton from "../ExportCsvButton";
 import RedraftRankingsClient from "./RedraftRankingsClient";
@@ -23,15 +24,16 @@ export default async function RedraftRankingsPage({ searchParams }) {
 
   // Tier (auth + profile) is per-visitor, the cached bundle and the Sleeper
   // bios aren't -- all three run at once.
-  const supabase = await createClient();
+  const st = stageTimer("redraft-rankings");
+  const supabase = await st.time("client", createClient());
   const [{ tier, mine }, cached, bioByNamePos, leanRows, tdProfile, usageProfile] = await Promise.all([
     // Per-visitor like the tier: their saved teams (own rows only) for the My players view.
-    resolveTier(supabase).then(async (r) => ({ ...r, mine: await loadMyPlayers(supabase, r.user) })),
-    getCachedRedraftData(),
-    getPlayerBiosByNamePos(),
-    getCachedLeans(),
-    getCachedTdProfile(),
-    getCachedUsageProfile(),
+    st.time("tier+mine", resolveTier(supabase).then(async (r) => ({ ...r, mine: await loadMyPlayers(supabase, r.user) }))),
+    st.time("data", getCachedRedraftData()),
+    st.time("bios", getPlayerBiosByNamePos()),
+    st.time("leans", getCachedLeans()),
+    st.time("td", getCachedTdProfile()),
+    st.time("usage", getCachedUsageProfile()),
   ]);
   const hasFullAccess = PAID_TIERS.includes(tier);
   const { latest } = cached;
@@ -41,8 +43,9 @@ export default async function RedraftRankingsPage({ searchParams }) {
 
   if (latest) {
     totalCount = cached.rows.length;
-    rankings = enrichRankings({ cached, hasFullAccess, tdProfile, usageProfile, leanRows, bioByNamePos });
+    rankings = st.run("enrich", () => enrichRankings({ cached, hasFullAccess, tdProfile, usageProfile, leanRows, bioByNamePos }));
   }
+  st.done();
 
   // Widest floor-to-ceiling range this week -- the Outcome Curve column
   // scales each row's middle zone against this, so range width is
