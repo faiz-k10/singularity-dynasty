@@ -2588,11 +2588,6 @@ a.export-csv-btn{text-decoration:none;}
 .weekly-stats-value-dim, .weekly-stats-value-big{display:flex; align-items:center; height:28px; white-space:nowrap; font-family:var(--font-mono), monospace; line-height:1;}
 .weekly-stats-value-dim{font-size:17px; font-weight:600; color:var(--star-dim);}
 .weekly-stats-value-big{font-size:26px; font-weight:700; color:var(--star);}
-.weekly-stats-actual{display:flex; align-items:baseline; gap:10px; margin-top:2px; padding-top:9px; border-top:1px solid rgba(var(--horizon-gold-rgb),0.28);}
-.weekly-stats-actual-pts{font-family:var(--font-mono), monospace; font-size:22px; font-weight:700; line-height:1; color:var(--star);}
-.weekly-stats-actual-delta{margin-left:auto; font-family:var(--font-mono), monospace; font-size:11px; font-weight:700; white-space:nowrap;}
-.weekly-stats-actual-delta.up{color:var(--up);}
-.weekly-stats-actual-delta.down{color:var(--down);}
 .weekly-stats-value-gold{color:var(--horizon-gold); text-shadow:0 0 18px rgba(var(--horizon-gold-rgb),0.45);}
 .weekly-detail-grid .weekly-stats-next{
   border-color:rgba(var(--horizon-gold-rgb),0.6);
