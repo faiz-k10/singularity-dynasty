@@ -148,8 +148,8 @@ function TeamScore({ name, record, score, proj, left, state = null, opp = false 
 // whoever hosts the panel: the Sunday board's drawer, and the dashboard's opened row (which adds Roster).
 export const hasStandings = (team) => Boolean(team?.settings?.season?.standings?.length);
 export function leagueTabs(team) {
-  const lineup = !team?.settings?.bestBall && !team?.settings?.isBye && team?.settings?.slots?.length ? [["lineup", "Lineup alerts"]] : [];
-  return [["matchup", "Matchup"], ...lineup, ["available", "Best available"], ...(hasStandings(team) ? [["standings", "Standings"]] : [])];
+  const lineup = !team?.settings?.bestBall && !team?.settings?.isBye && team?.settings?.slots?.length ? [["lineup", "Lineup Alerts"]] : [];
+  return [["matchup", "Matchup"], ...lineup, ["available", "Best Available"], ...(hasStandings(team) ? [["standings", "Standings"]] : [])];
 }
 
 export function PanelTabs({ tabs, value, onChange }) {

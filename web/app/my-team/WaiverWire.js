@@ -32,7 +32,7 @@ export default function WaiverWire({ teamId, bare = false }) {
   return (
     <section className="standings waivers" aria-label="Best available players">
       <div className="standings-head">
-        {!bare && <h3 className="board-panel-title">Best available</h3>}
+        {!bare && <h3 className="board-panel-title">Best Available</h3>}
         <span className="standings-note mono">On no roster in this league · ranked by this week&apos;s projection</span>
         <div className="board-toggle waivers-pos" role="tablist" aria-label="Position">
           {POSITIONS.map((p) => (
