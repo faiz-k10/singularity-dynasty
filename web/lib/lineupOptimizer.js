@@ -13,14 +13,34 @@ export const slotLabel = (slot) => (slot === "SUPER_FLEX" ? "SUPERFLEX" : slot);
 
 const PROJECTED = new Set(["QB", "RB", "WR", "TE"]);
 
-// How a player counts in each mode; a missing floor / ceiling falls back to the median so old snapshots still work.
-const valueOf = (p, mode) => {
+// How a player counts for start / sit. Uses everything the site publishes about his week, not just the median:
+//   proj    expected points = Swanson's rule over his weekly range, 30% floor (10th pct) + 40% median + 30% ceiling (90th pct) -- the standard
+//           three-point estimate of a mean, so a player with a long upside tail is worth more than his median and a boom-or-bust one isn't
+//           oversold; plus the matchup nudge below.
+//   ceiling / floor   the 90th / 10th percentile alone (the underdog / favorite versions), plus the same matchup nudge.
+// Matchup nudge: when the opponent is a Smash Spot or Tough Spot for his position (lib/defenseLeans.js, saved as p.myLean = { call, effect }
+// where effect is points a game against an average defense), add MATCHUP_WEIGHT of that effect, capped. The leans are ridge-shrunk trends
+// (defense terms improve prediction only 0.2-1.7%), so they are a nudge and never beat a clear gap in the player's own numbers; a judgement
+// call, not backtested. A missing floor / ceiling (old snapshots) falls back to the median, a missing lean to no nudge.
+export const SWANSON = { floor: 0.3, median: 0.4, ceiling: 0.3 };
+export const MATCHUP_WEIGHT = 0.5;
+export const MATCHUP_CAP = 2;
+export const matchupNudge = (p) => {
+  const e = num(p.myLean?.effect);
+  return e == null ? 0 : Math.max(-MATCHUP_CAP, Math.min(MATCHUP_CAP, e * MATCHUP_WEIGHT));
+};
+export const startValue = (p, mode = "proj") => {
   const proj = num(p.myProjPts);
   if (proj == null) return null;
-  if (mode === "ceiling") return num(p.myCeiling) ?? proj;
-  if (mode === "floor") return num(p.myFloor) ?? proj;
-  return proj;
+  const floor = num(p.myFloor);
+  const ceil = num(p.myCeiling);
+  let base = proj;
+  if (mode === "ceiling") base = ceil ?? proj;
+  else if (mode === "floor") base = floor ?? proj;
+  else if (floor != null && ceil != null) base = SWANSON.floor * floor + SWANSON.median * proj + SWANSON.ceiling * ceil;
+  return base + matchupNudge(p);
 };
+const valueOf = startValue;
 
 // Simple one-for-one swaps, best first: start a bench player in place of a starter whose slot he is eligible for, only when it GAINS points
 // (by the measure in use). After each swap the bench player is a starter and the benched one is done -- nobody is used twice -- and the
@@ -45,7 +65,7 @@ export function optimizeLineup(team, gameStates, mode = "proj", injuries = []) {
   // An Out player scores 0 everywhere (the rows show 0.0, the gains add up), whatever the model's pregame projection says.
   const roster = (team.players || []).map((p0) => {
     const unavailable = outs.has(p0.name);
-    const p = unavailable ? { ...p0, myProjPts: 0, myFloor: 0, myCeiling: 0 } : p0;
+    const p = unavailable ? { ...p0, myProjPts: 0, myFloor: 0, myCeiling: 0, myLean: null } : p0;
     return { ...p, val: valueOf(p, mode), locked: Boolean(locked(p)), unavailable };
   });
   const byIndex = new Map();
@@ -96,7 +116,7 @@ export function lineupAdvice(team, gameStates, injuries = []) {
     const alt = optimizeLineup(team, gameStates, mode, injuries);
     if (alt && alt.swaps.length) {
       // What the tilted lineup scores on the median, and what it gains on the tilted measure over the projection-best lineup.
-      const medianCost = r1(alt.swaps.reduce((t, x) => t + (num(x.in.myProjPts) ?? 0) - (num(x.out?.myProjPts) ?? 0), 0));
+      const medianCost = r1(alt.swaps.reduce((t, x) => t + (startValue(x.in) ?? 0) - (startValue(x.out || {}) ?? 0), 0));
       const tiltGain = alt.gain;
       if (tiltGain >= 2 && medianCost >= -4) tilt = { mode, win, ...alt, medianChange: medianCost };
     }
@@ -121,7 +141,7 @@ export function lineupAlerts(team, gameStates, injuries = []) {
   const bench = (team.players || []).filter((p) => !p.isStarter && PROJECTED.has(p.position) && num(p.myProjPts) > 0 && !started(p) && !outs.has(p.name));
   const used = new Set();
   const replacementFor = (kind) => {
-    const pick = bench.filter((p) => !used.has(p.player_id) && ELIGIBLE[kind]?.includes(p.position)).sort((a, b) => b.myProjPts - a.myProjPts)[0];
+    const pick = bench.filter((p) => !used.has(p.player_id) && ELIGIBLE[kind]?.includes(p.position)).sort((a, b) => startValue(b) - startValue(a))[0];
     if (pick) used.add(pick.player_id);
     return pick || null;
   };

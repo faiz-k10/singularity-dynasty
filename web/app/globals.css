@@ -5311,6 +5311,9 @@ html{font-stretch:82%;}
 .waivers-foot{display:flex; flex-wrap:wrap; align-items:center; gap:10px 16px;}
 .waivers-foot .h2h-sleeper{margin-top:0;}
 .lu-sleeper{display:inline-flex; align-items:center; gap:10px; margin:0; padding:7px 16px 7px 10px; font-size:13px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; border:1px solid var(--neon-blue); border-radius:var(--r-sm); background:rgba(var(--neon-blue-rgb), .1);}
+.lu-lean{font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; padding:1px 6px; border:1px solid currentColor; border-radius:var(--r-sm);}
+.lu-lean.is-smash{color:var(--horizon);}
+.lu-lean.is-tough{color:var(--neon-blue);}
 .lu-sleeper-logo{width:22px; height:22px; border-radius:4px; display:block;}
 .lu-sleeper:hover{text-decoration:none; background:rgba(var(--neon-blue-rgb), .2);}
 .lineup-advice > .standings-note{margin:14px 0 0;}

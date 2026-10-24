@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import PositionBadge from "../tools/PositionBadge";
 import TeamBadge from "../tools/TeamBadge";
 import { fmt1 } from "@/lib/format";
-import { lineupAlertCount, slotLabel } from "@/lib/lineupOptimizer";
+import { lineupAlertCount, matchupNudge, slotLabel } from "@/lib/lineupOptimizer";
 
 
 function Who({ p }) {
@@ -17,8 +17,26 @@ function Who({ p }) {
   );
 }
 
+// What a swap row's number is made of, for the hover tip: his weekly range and any Smash / Tough Spot nudge.
+const rangeTip = (p) => {
+  const range = p.myFloor != null && p.myCeiling != null ? `${fmt1(p.myFloor)} floor · ${fmt1(p.myProjPts)} median · ${fmt1(p.myCeiling)} ceiling` : `${fmt1(p.myProjPts)} median`;
+  const lean = p.myLean ? ` · ${p.myLean.call === "SMASH" ? "Smash" : "Tough"} spot (${p.myLean.effect > 0 ? "+" : "−"}${fmt1(Math.abs(matchupNudge(p)))} nudge)` : "";
+  return `${range}${lean}`;
+};
+
+// A player's start score plus a Smash / Tough Spot tag when the matchup nudged it (the score is lib/lineupOptimizer.js startValue; the
+// tip shows what it was made of).
+function Score({ p }) {
+  return (
+    <>
+      <span className="lu-pts mono" title={rangeTip(p)}>{fmt1(p.val)}</span>
+      {p.myLean && <span className={`lu-lean mono ${p.myLean.call === "SMASH" ? "is-smash" : "is-tough"}`}>{p.myLean.call === "SMASH" ? "Smash" : "Tough"}</span>}
+    </>
+  );
+}
+
 // "Start X over Y" rows, one per swap, each legal for the slot named at the left and each a gain (lib/lineupOptimizer.js never recommends a loss).
-function SwapList({ swaps, key1 = "myProjPts" }) {
+function SwapList({ swaps }) {
   return (
     <ul className="lu-swaps">
       {swaps.map((x) => (
@@ -26,12 +44,12 @@ function SwapList({ swaps, key1 = "myProjPts" }) {
           <span className="lu-slot mono">{slotLabel(x.slot)}</span>
           <span className="lu-verb mono">Start</span>
           <Who p={x.in} />
-          <span className="lu-pts mono">{fmt1(x.in[key1])}</span>
+          <Score p={x.in} />
           {x.out && (
             <>
               <span className="lu-verb mono">over</span>
               <Who p={x.out} />
-              <span className="lu-pts mono">{fmt1(x.out[key1])}</span>
+              <Score p={x.out} />
             </>
           )}
           <span className="lu-gain mono">+{fmt1(x.gain)}</span>
@@ -94,7 +112,7 @@ export default function LineupAdvice({ team, gameStates, injuries = [] }) {
       <div className="lu-summary">
         <div className="lu-total">
           <span className="lu-big">{better ? `+${fmt1(advice.gain)}` : "Set"}</span>
-          <span className="lu-cap mono">{better ? "projected points available" : "your lineup is already the best we project"}</span>
+          <span className="lu-cap mono">{better ? "expected points available" : "your lineup is already the best we project"}</span>
         </div>
         <div className="lu-line mono">
           Now {fmt1(advice.current)} <span aria-hidden="true">→</span> best {fmt1(advice.best)}
@@ -109,13 +127,15 @@ export default function LineupAdvice({ team, gameStates, injuries = [] }) {
           </h4>
           <p className="lu-tilt-body">
             {t.mode === "ceiling"
-              ? `This version adds ${fmt1(t.gain)} to your ceiling lineup and moves your projection ${t.medianChange >= 0 ? "+" : "−"}${fmt1(Math.abs(t.medianChange))}. A bigger spread is what an underdog needs.`
-              : `This version adds ${fmt1(t.gain)} to your floor lineup and moves your projection ${t.medianChange >= 0 ? "+" : "−"}${fmt1(Math.abs(t.medianChange))}. A narrower spread is what a favorite wants.`}
+              ? `This version adds ${fmt1(t.gain)} to your ceiling lineup and moves your expected points ${t.medianChange >= 0 ? "+" : "−"}${fmt1(Math.abs(t.medianChange))}. A bigger spread is what an underdog needs.`
+              : `This version adds ${fmt1(t.gain)} to your floor lineup and moves your expected points ${t.medianChange >= 0 ? "+" : "−"}${fmt1(Math.abs(t.medianChange))}. A narrower spread is what a favorite wants.`}
           </p>
-          <SwapList swaps={t.swaps} key1={t.mode === "ceiling" ? "myCeiling" : "myFloor"} />
+          <SwapList swaps={t.swaps} />
         </div>
       )}
-      <p className="standings-note mono">K, DEF and IDP slots aren&apos;t optimized.</p>
+      <p className="standings-note mono">
+        Start / sit weighs each player&apos;s floor, median and ceiling (30 / 40 / 30), nudged by Smash and Tough Spots. K, DEF and IDP slots aren&apos;t optimized.
+      </p>
     </section>
   );
 }

@@ -407,9 +407,11 @@ export async function lookupSleeperTeams(username, opts = {}) {
           // Sleeper's actual lineup order instead of an arbitrary one.
           slotIndex: slotIndexByPlayerId[playerId] ?? 999,
           myProjPts,
-          // This week's weekly range (the lineup optimizer's ceiling / floor tilt, lib/lineupOptimizer.js).
+          // This week's weekly range (the lineup optimizer's start score and ceiling / floor tilt, lib/lineupOptimizer.js).
           myFloor: wk?.floor ?? null,
           myCeiling: wk?.ceiling ?? null,
+          // This week's Smash / Tough Spot trend for his opponent ({ call, effect } or null): a nudge in the start / sit score (lib/lineupOptimizer.js).
+          myLean: wk?.lean ?? null,
         };
       });
 

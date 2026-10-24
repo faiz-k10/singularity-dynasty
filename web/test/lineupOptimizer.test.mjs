@@ -194,3 +194,38 @@ test("a bench player the injury feed lists Out is never recommended, and an Out 
   const r2 = optimizeLineup(t, {}, "proj", inj2);
   assert.equal(r2.swaps[0].out.name, "Flex Guy");
 });
+
+import { startValue, matchupNudge, SWANSON, MATCHUP_CAP } from "../lib/lineupOptimizer.js";
+
+test("start value is Swanson's 30 / 40 / 30 over floor, median and ceiling; no range falls back to the median", () => {
+  assert.equal(SWANSON.floor + SWANSON.median + SWANSON.ceiling, 1);
+  const p = { myProjPts: 10, myFloor: 4, myCeiling: 22 };
+  assert.ok(Math.abs(startValue(p) - (0.3 * 4 + 0.4 * 10 + 0.3 * 22)) < 1e-9); // 11.8: the long upside tail is worth more than the median
+  assert.equal(startValue({ myProjPts: 10 }), 10);
+  assert.equal(startValue({ myProjPts: 10, myFloor: 4, myCeiling: 22 }, "ceiling"), 22);
+  assert.equal(startValue({ myProjPts: 10, myFloor: 4, myCeiling: 22 }, "floor"), 4);
+  assert.equal(startValue({}), null);
+});
+
+test("a Smash / Tough Spot nudges the score by half its points effect, capped", () => {
+  const base = { myProjPts: 10, myFloor: 5, myCeiling: 15 };
+  assert.ok(Math.abs(startValue({ ...base, myLean: { call: "SMASH", effect: 2 } }) - (10 + 1)) < 1e-9);
+  assert.ok(Math.abs(startValue({ ...base, myLean: { call: "AVOID", effect: -1.2 } }) - (10 - 0.6)) < 1e-9);
+  assert.equal(matchupNudge({ myLean: { call: "SMASH", effect: 99 } }), MATCHUP_CAP);
+  assert.equal(matchupNudge({}), 0);
+});
+
+test("a wider range beats a slightly higher median, and a Smash Spot breaks a tie", () => {
+  const t = {
+    settings: { slots: ["WR", "FLEX"] },
+    players: [
+      { player_id: "1", name: "Starter", position: "WR", team: "A", isStarter: true, slot: "WR", slotIndex: 0, myProjPts: 15, myFloor: 9, myCeiling: 21 },
+      { player_id: "2", name: "Steady", position: "WR", team: "B", isStarter: true, slot: "FLEX", slotIndex: 1, myProjPts: 10.8, myFloor: 9.5, myCeiling: 12.5 },
+      { player_id: "3", name: "Boom", position: "WR", team: "C", isStarter: false, myProjPts: 10.6, myFloor: 3, myCeiling: 22 },
+    ],
+  };
+  const r = optimizeLineup(t, {});
+  assert.equal(r.swaps[0].in.name, "Boom"); // 10.6 median < 10.8, but a 3-22 range is worth more in expectation
+  const tough = { ...t, players: t.players.map((p) => (p.name === "Boom" ? { ...p, myLean: { call: "AVOID", effect: -4 } } : p)) };
+  assert.equal(optimizeLineup(tough, {}).swaps.length, 0); // a Tough Spot (-2 nudge) takes the edge back
+});
