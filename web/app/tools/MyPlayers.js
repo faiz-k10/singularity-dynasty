@@ -162,12 +162,15 @@ export function MyStrip({ owned, vertical = false }) {
   return (
     <div className={`mine-strip${vertical ? " mine-strip-vertical" : ""}`}>
       <span className="mine-strip-star">★ Your player</span>
-      {owned.leagues.map((l, i) => (
-        <span key={i} className="mine-strip-chip">
-          {l.label}
-          <span className={l.starter ? "mine-strip-role starter" : "mine-strip-role"}>{l.starter ? "starter" : "bench"}</span>
-        </span>
-      ))}
+      {/* Vertical (the opened-player panel, a fixed size): the leagues scroll under the heading. */}
+      <div className={vertical ? "mine-strip-list" : "mine-strip-leagues"}>
+        {owned.leagues.map((l, i) => (
+          <span key={i} className="mine-strip-chip">
+            {l.label}
+            <span className={l.starter ? "mine-strip-role starter" : "mine-strip-role"}>{l.starter ? "starter" : "bench"}</span>
+          </span>
+        ))}
+      </div>
     </div>
   );
 }

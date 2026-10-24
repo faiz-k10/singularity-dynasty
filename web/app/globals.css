@@ -2546,14 +2546,19 @@ a.export-csv-btn{text-decoration:none;}
 .weekly-detail-col-mid, .weekly-detail-col-right{flex:1 1 200px; max-width:320px;}
 .weekly-detail-col .weekly-detail-curve-panel,
 .weekly-detail-col .weekly-detail-pct-panel{flex:1 1 auto; max-width:none;}
-.weekly-detail-mine-panel{flex:0 0 auto;} /* the top of the middle column, over Recent Games */
+/* The top of the middle column, over Recent Games: a FIXED size (the panels of the opened player are heading toward one static size each), and the leagues scroll under the heading. */
+.weekly-detail-mine-panel{flex:0 0 208px; display:flex; flex-direction:column; min-height:0;}
+.weekly-detail-mine-panel .mine-strip-vertical{flex:1 1 auto; min-height:0;}
+.mine-strip-list{display:flex; flex-direction:column; gap:10px; flex:1 1 auto; min-height:0; width:100%; overflow-y:auto; padding-right:4px;}
 /* This week (emphasised) | Last week (muted). */
 .weekly-stats-split{display:grid; grid-template-columns:1.6fr 1fr; gap:12px;}
 .weekly-detail-grid .weekly-stats-last,
 .weekly-detail-grid .weekly-stats-next{display:flex; flex-direction:column; gap:10px; padding:14px 14px; min-width:0;}
-.weekly-stats-eyebrow{font-family:var(--font-mono), monospace; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--star-dim); white-space:nowrap;}
+/* This week and Last week share one set of lines: the same heading row (tall enough for the opponent's logo), the same label row and the same value row, so
+   the text lines up across the two boxes whatever its size. */
+.weekly-stats-eyebrow{display:flex; align-items:center; justify-content:center; height:22px; font-family:var(--font-mono), monospace; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--star-dim); white-space:nowrap;}
 .weekly-stats-eyebrow-next{color:var(--horizon-gold); font-weight:700;}
-.weekly-stats-eyebrow-next{display:flex; flex-wrap:nowrap; align-items:center; justify-content:center; column-gap:4px; letter-spacing:0.03em;} /* the opponent always stays on the heading's line (founder, Oct 20): the panel is given the room instead (grid below) */
+.weekly-stats-eyebrow-next{flex-wrap:nowrap; column-gap:4px; letter-spacing:0.03em;} /* the opponent always stays on the heading's line (founder, Oct 20): the panel is given the room instead (grid below) */
 .weekly-stats-last .weekly-stats-eyebrow{letter-spacing:0.06em;}
 .weekly-stats-eyebrow .weekly-stats-opp{display:inline-flex; align-items:center; gap:4px;}
 .weekly-stats-eyebrow .weekly-stats-opp .team-badge img{width:20px; height:20px;}
@@ -2562,8 +2567,9 @@ a.export-csv-btn{text-decoration:none;}
 .weekly-stats-pair{display:flex; flex-wrap:nowrap; justify-content:space-between; gap:14px;}
 .weekly-stats-item{display:flex; flex-direction:column; gap:3px; min-width:0;}
 .weekly-stats-split .weekly-player-stat-label{font-size:9.5px; letter-spacing:0.06em; white-space:nowrap;}
-.weekly-stats-value-dim{white-space:nowrap; font-family:var(--font-mono), monospace; font-size:17px; font-weight:600; color:var(--star-dim);}
-.weekly-stats-value-big{font-family:var(--font-mono), monospace; font-size:26px; white-space:nowrap; font-weight:700; line-height:1.05; color:var(--star);}
+.weekly-stats-value-dim, .weekly-stats-value-big{display:flex; align-items:center; height:28px; white-space:nowrap; font-family:var(--font-mono), monospace; line-height:1;}
+.weekly-stats-value-dim{font-size:17px; font-weight:600; color:var(--star-dim);}
+.weekly-stats-value-big{font-size:26px; font-weight:700; color:var(--star);}
 .weekly-stats-value-gold{color:var(--horizon-gold); text-shadow:0 0 18px rgba(var(--horizon-gold-rgb),0.45);}
 .weekly-detail-grid .weekly-stats-next{
   border-color:rgba(var(--horizon-gold-rgb),0.6);
@@ -2611,7 +2617,7 @@ a.export-csv-btn{text-decoration:none;}
 .weekly-detail-pct-panel .weekly-panel-body{justify-content:flex-start;}
 .weekly-rank-table{display:flex; flex-direction:column; width:100%;}
 .weekly-rank-head,
-.weekly-rank-row{display:grid; grid-template-columns:minmax(0,1fr) 92px 60px; align-items:center; column-gap:10px;}
+.weekly-rank-row{display:grid; grid-template-columns:minmax(0,1fr) 100px 52px; align-items:center; column-gap:10px;}
 .weekly-rank-head{
   padding:0 4px 5px; margin-bottom:0; border-bottom:1px solid var(--line);
   font-family:var(--font-mono), monospace; font-size:9.5px; letter-spacing:0.1em; text-transform:uppercase; color:var(--star-dim);
@@ -2621,7 +2627,9 @@ a.export-csv-btn{text-decoration:none;}
 .weekly-rank-row{padding:4px 4px; border-bottom:1px solid rgba(var(--shadow-rgb),0.5);}
 .weekly-rank-row:last-child{border-bottom:none; padding-bottom:2px;}
 .weekly-rank-label{font-size:12.5px; color:var(--star); text-align:left; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:default;}
-.weekly-rank-bar{display:block; height:8px; border-radius:2px; overflow:hidden; background:rgba(var(--star-dot-rgb),.12); cursor:default;}
+.weekly-rank-cell{display:flex; align-items:center; gap:8px; cursor:default;}
+.weekly-rank-n{flex:0 0 28px; text-align:right; font-family:var(--font-mono), monospace; font-size:12px; font-weight:700; color:var(--horizon-gold);}
+.weekly-rank-bar{flex:1 1 auto; display:block; height:8px; border-radius:2px; overflow:hidden; background:rgba(var(--star-dot-rgb),.12); cursor:default;}
 .weekly-rank-bar > span{display:block; height:100%; border-radius:2px; background:var(--horizon-gold);}
 .weekly-rank-bar.is-none{background:none; border:1px dashed var(--line);} /* not ranked (In-10 Share under the target minimum): an empty dashed track */
 .weekly-rank-row .weekly-pct-value{font-size:12.5px; text-align:right;}

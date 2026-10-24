@@ -70,12 +70,18 @@ function RankRow({ label, value, format, rank, hint, unrankedHint }) {
     <div className="weekly-rank-row" role="row">
       <span className="weekly-rank-label" title={hint} role="rowheader">{label}</span>
       {rank ? (
-        // The bar is the rank: full for #1, empty for last at his position (the exact place is in the hover tip).
-        <span className="weekly-rank-bar" title={`${ordinal(rank.rank)} of ${rank.of}`} role="cell">
-          <span style={{ width: `${rank.of > 1 ? ((rank.of - rank.rank) / (rank.of - 1)) * 100 : 100}%` }} />
+        // The number, then a bar that shows the same rank: full for #1, empty for last at his position (the pool size is in the hover tip).
+        <span className="weekly-rank-cell" title={`${ordinal(rank.rank)} of ${rank.of}`} role="cell">
+          <span className="weekly-rank-n">#{rank.rank}</span>
+          <span className="weekly-rank-bar">
+            <span style={{ width: `${rank.of > 1 ? ((rank.of - rank.rank) / (rank.of - 1)) * 100 : 100}%` }} />
+          </span>
         </span>
       ) : (
-        <span className="weekly-rank-bar is-none" title={unrankedHint} role="cell" />
+        <span className="weekly-rank-cell" title={unrankedHint} role="cell">
+          <span className="weekly-rank-n">—</span>
+          <span className="weekly-rank-bar is-none" />
+        </span>
       )}
       <span className="weekly-pct-value" role="cell">{value == null ? "—" : format(value)}</span>
     </div>
