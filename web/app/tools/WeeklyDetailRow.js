@@ -38,7 +38,7 @@ import { MyStrip, MyEmpty } from "./MyPlayers";
 // volume, share, scheme) and PLAYER (how well he does with it: efficiency and output) -- PANEL below. Order inside a group is the order shown.
 // Sources: avgXfp / wopr / ryoe / scrambleRate / playActionRate from the sims + game log (see the comment above); p2Td / i10Pg / i10Share from
 // model/td_profile.R (kind "td_profile"; no touchdown-conversion rate: tested, it carries no signal once role is known); every u_ key from
-// model/usage_profile.R (kind "usage_profile", nflreadr player stats, recency-weighted over his last 24 games, rate numbers only past a volume gate).
+// model/usage_profile.R (kind "usage_profile", nflreadr player stats, recency-weighted over his last 17 games (a full season), rate numbers only past a volume gate).
 // Short labels because the label column is ~110px; the full explanation is in the hover tip.
 const f1 = (v) => v.toFixed(1);
 const f2 = (v) => v.toFixed(2);
@@ -57,18 +57,18 @@ const METRICS = {
   i10Share: { label: "In-10 Share", format: pc1,
     hint: "Share of his targets that came from inside the opponent's 10-yard line. Ranked only among players averaging 4+ targets a game (6+ games) since the start of last season.",
     unrankedHint: "Not ranked: needs an average of 4+ targets a game (and 6+ games) since the start of last season." },
-  u_att_pg: { label: "Pass Att/G", format: f1, hint: "Pass attempts a game (last 24 games, recent weighted most)." },
+  u_att_pg: { label: "Pass Att/G", format: f1, hint: "Pass attempts a game (last 17 games, recent weighted most)." },
   u_ypa: { label: "Yds/Att", format: f2, hint: "Passing yards per attempt." },
   u_aypa: { label: "Air Yds/Att", format: f2, hint: "Air yards per attempt: how far downfield he throws. A style number as much as a skill one." },
   u_cpoe: { label: "CPOE", format: signed2, hint: "Completion percentage over expected: how much better (or worse) than the throws' difficulty predicts he completes them." },
   u_epa_db: { label: "EPA/Dropback", format: signed3, hint: "Expected points added per dropback (attempts plus sacks): how much each snap he drops back helps his offense." },
   u_sack_rate: { label: "Sack Rate", format: pc1, hint: "Sacks as a share of his dropbacks. Ranked with the LOWEST first: a fuller bar is fewer sacks." },
   u_rush_ypg: { label: "Rush Yds/G", format: f1, hint: "Rushing yards a game." },
-  u_carries_pg: { label: "Carries/G", format: f1, hint: "Carries a game (last 24 games, recent weighted most)." },
+  u_carries_pg: { label: "Carries/G", format: f1, hint: "Carries a game (last 17 games, recent weighted most)." },
   u_touches_pg: { label: "Touches/G", format: f1, hint: "Carries plus catches a game." },
   u_ypc: { label: "Yds/Carry", format: f2, hint: "Rushing yards per carry." },
   u_rush_epa: { label: "Rush EPA/Carry", format: signed3, hint: "Expected points added per carry." },
-  u_tgt_pg: { label: "Targets/G", format: f1, hint: "Targets a game (last 24 games, recent weighted most)." },
+  u_tgt_pg: { label: "Targets/G", format: f1, hint: "Targets a game (last 17 games, recent weighted most)." },
   u_tgt_share: { label: "Target Share", format: pc1, hint: "Share of his team's targets." },
   u_air_share: { label: "Air Yds Share", format: pc1, hint: "Share of his team's air yards: how much of the deep passing game is his." },
   u_rec_ypg: { label: "Rec Yds/G", format: f1, hint: "Receiving yards a game." },

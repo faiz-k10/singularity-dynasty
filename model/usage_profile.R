@@ -4,7 +4,7 @@
 # table + publisher as the other groupings (no new table).
 #
 # Source: nflreadr::load_player_stats() (nflverse weekly player stats: passing / rushing / receiving volume, EPA, CPOE, air yards,
-# target and air-yards share). Every number is recency-weighted over the player's last UP_WIN regular-season games (half-life
+# target and air-yards share). Every number is recency-weighted over the player's last UP_WIN (17, a full season) regular-season games (half-life
 # UP_HL games, the same weighting td_profile.R uses): per-game numbers are weighted means, rates are weighted sums over weighted sums
 # (yards per attempt = sum(w * yards) / sum(w * attempts)), so a big game doesn't distort a rate.
 #
@@ -23,7 +23,7 @@
 # usage_profile rows in upload_player_groups.csv. Needs the current season's rankings for the pool.
 suppressMessages(library(nflreadr))
 
-UP_WIN <- 24
+UP_WIN <- 17
 UP_HL  <- 8
 UP_MIN_GAMES <- 6
 UP_GATE <- c(QB = 15, RB = 5, WR = 3, TE = 3)   # volume a game below which the rate numbers are left out
