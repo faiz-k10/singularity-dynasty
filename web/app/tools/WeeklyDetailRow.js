@@ -697,11 +697,16 @@ export function UsageTdPanel({ row }) {
               <Fragment key={name}>
                 <div className="weekly-rank-section" role="row">
                   <span>{name}</span>
-                  {row.groupRank?.[name.toLowerCase()] && (
-                    <span className="weekly-rank-avg" title={`${ordinal(row.groupRank[name.toLowerCase()].rank)} of ${row.groupRank[name.toLowerCase()].of} ${row.position}s on the ${name.toLowerCase()} numbers below (by his average rank on them)`}>
-                      #{row.groupRank[name.toLowerCase()].rank}
-                    </span>
-                  )}
+                  <span
+                    className="weekly-rank-avg"
+                    title={
+                      row.groupRank?.[name.toLowerCase()]
+                        ? `${ordinal(row.groupRank[name.toLowerCase()].rank)} of ${row.groupRank[name.toLowerCase()].of} ${row.position}s on the ${name.toLowerCase()} numbers below (by his average rank on them)`
+                        : `Not ranked: he needs at least half of the ${name.toLowerCase()} numbers to be placed`
+                    }
+                  >
+                    #{row.groupRank?.[name.toLowerCase()]?.rank ?? "-"}
+                  </span>
                 </div>
                 {list.map((m) => (
                   <RankRow key={m.k} label={m.label} value={row[m.k]} format={m.format} rank={row.metricRank?.[m.k]} hint={m.hint} unrankedHint={m.unrankedHint} />
