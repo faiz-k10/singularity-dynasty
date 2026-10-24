@@ -4,6 +4,7 @@ import { createPublicClient } from "@/lib/supabase/public";
 import { fetchAllRows } from "@/lib/fetchAllRows";
 import { percentileRank, INVERTED_STATS } from "@/lib/statPercentiles";
 import { normalizePlayerName } from "@/lib/portfolio";
+import { roleLeaders } from "@/lib/statPanel";
 
 // Data layer of Weekly Projection Rankings, split out of page.js so the Compare Players tool reads the same rows.
 
@@ -537,13 +538,35 @@ export function usageProfileRanks(rows, profile) {
 // Everything the opened-player dashboard needs, attached to each ranked row (usage/TD metrics and their ranks, recent
 // games, last week's finish, badges' inputs, bio, matchup flag, percentiles vs the pool). Shared by the rankings page
 // and the Compare Players tool so both read the exact same numbers. `hasFullAccess` false = only the top 50 rows.
+// The three rank tables (usage, touchdown profile, usage_profile) over the WHOLE ranked pool, worked out once per request and shared by
+// enrichRankings and roleLeaders below (both are called by a page with the same `cached`).
+const rankMapsCache = new WeakMap();
+function rankMaps(cached, tdProfile, usageProfile) {
+  const hit = rankMapsCache.get(cached);
+  if (hit && hit.tdProfile === tdProfile && hit.usageProfile === usageProfile) return hit.maps;
+  const maps = {
+    td: tdRanksByName(cached.rows, tdProfile),
+    usage: usageRanksByName(cached.rows, cached.simsByName, cached.avgXfpByName),
+    profile: usageProfileRanks(cached.rows, usageProfile),
+  };
+  rankMapsCache.set(cached, { tdProfile, usageProfile, maps });
+  return maps;
+}
+
+// The four best role players at each position -- lowest average rank over the position's ROLE numbers (lib/statPanel.js) -- over everyone ranked,
+// so the list means the same on every tier. Shown at the foot of the opened player's stats panel.
+export function getRoleLeaders({ cached, tdProfile, usageProfile = {} }) {
+  const { td, usage, profile } = rankMaps(cached, tdProfile, usageProfile);
+  const ranksByName = {};
+  for (const r of cached.rows) ranksByName[r.player_name] = { ...(usage[r.player_name] || {}), ...(td[r.player_name] || {}), ...(profile[r.player_name] || {}) };
+  return roleLeaders(cached.rows, ranksByName);
+}
+
 export function enrichRankings({ cached, hasFullAccess = true, tdProfile, usageProfile = {}, leanRows, bioByNamePos }) {
   let rankings = [];
   const data = hasFullAccess ? cached.rows : cached.rows.slice(0, 50);
   const { simsByName, avgXfpByName, recentGamesByName, lastWeekRankByName, heroWinsByName } = cached;
-  const tdRanks = tdRanksByName(cached.rows, tdProfile);
-  const usageRanks = usageRanksByName(cached.rows, simsByName, avgXfpByName);
-  const profileRanks = usageProfileRanks(cached.rows, usageProfile);
+  const { td: tdRanks, usage: usageRanks, profile: profileRanks } = rankMaps(cached, tdProfile, usageProfile);
 
   // Position-relative rank (RB1, WR23, ...) computed once from the
   // natural rank order -- stays fixed on each row even if the table is

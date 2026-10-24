@@ -7,7 +7,8 @@ import { getPlayerBiosByNamePos } from "@/lib/sleeper";
 import SiteHeader from "../../SiteHeader";
 import ExportCsvButton from "../ExportCsvButton";
 import RedraftRankingsClient from "./RedraftRankingsClient";
-import { PAID_TIERS, OVERALL_COLUMN_TYPES, sortPositions, getCachedRedraftData, getCachedLeans, getCachedTdProfile, getCachedUsageProfile, enrichRankings } from "./data";
+import { PAID_TIERS, OVERALL_COLUMN_TYPES, sortPositions, getCachedRedraftData, getCachedLeans, getCachedTdProfile, getCachedUsageProfile, enrichRankings, getRoleLeaders } from "./data";
+import { RoleLeadersProvider } from "../RoleLeaders";
 
 export const metadata = {
   title: "Weekly Projection Rankings (PPR) — Singularity Dynasty",
@@ -38,10 +39,12 @@ export default async function RedraftRankingsPage({ searchParams }) {
 
   let rankings = [];
   let totalCount = 0;
+  let leaders = null;
 
   if (latest) {
     totalCount = cached.rows.length;
     rankings = enrichRankings({ cached, hasFullAccess, tdProfile, usageProfile, leanRows, bioByNamePos });
+    leaders = getRoleLeaders({ cached, tdProfile, usageProfile });
   }
 
   // Widest floor-to-ceiling range this week -- the Outcome Curve column
@@ -68,6 +71,7 @@ export default async function RedraftRankingsPage({ searchParams }) {
     <div className="tool-page">
       <SiteHeader />
 
+      <RoleLeadersProvider value={leaders}>
       <main className="wrap tool-wrap redraft-wrap">
         {rankings.length === 0 ? (
           <>
@@ -134,6 +138,7 @@ export default async function RedraftRankingsPage({ searchParams }) {
           </>
         )}
       </main>
+      </RoleLeadersProvider>
     </div>
   );
 }
