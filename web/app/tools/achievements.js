@@ -215,9 +215,9 @@ export function sellHighFlag(woprPercentile, games) {
 // label text still states the real count (e.g. "9x Super Hero"), only
 // the illustration stops getting busier past a 7-time winner.
 export const HERO_MAX_TIER = 7;
-// Elite Role / Elite Player: top 10 at his position in the opened-player panel's Role / Player group (row.groupRank, lib/statPanel.js) -- the ranking
+// Elite Role / Elite Player: top 5 at his position in the opened-player panel's Role / Player group (row.groupRank, lib/statPanel.js) -- the ranking
 // by average rank over the group's numbers, NOT the weekly projection ranking.
-export const ELITE_RANK = 10;
+export const ELITE_RANK = 5;
 
 // Ordered list of whichever of the flags apply to this row, as plain
 // {key, variant, label, ...} metadata -- no JSX/icons here, since the
