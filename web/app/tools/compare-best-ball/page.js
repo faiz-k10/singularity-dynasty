@@ -9,7 +9,7 @@ export const metadata = {
 // note.
 export default function CompareBestBallPage() {
   return (
-    <div className="tool-page">
+    <>
       <InteractiveScript />
 
       <main className="wrap tool-wrap">
@@ -19,6 +19,6 @@ export default function CompareBestBallPage() {
           <p>This tool is paused for now — check back soon.</p>
         </div>
       </main>
-    </div>
+    </>
   );
 }

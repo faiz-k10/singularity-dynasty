@@ -117,7 +117,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
     weeklyBadges[r.player_name] ? { ...r, weeklyBadges: weeklyBadges[r.player_name] } : r,
   );
   return (
-    <div className="tool-page">
+    <>
       <InteractiveScript />
 
       <main className="wrap tool-wrap player-sims-wrap">
@@ -191,6 +191,6 @@ export default async function PlayerSimulationsPage({ searchParams }) {
           </>
         )}
       </main>
-    </div>
+    </>
   );
 }

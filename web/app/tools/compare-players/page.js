@@ -49,7 +49,7 @@ export default async function ComparePlayersPage({ searchParams }) {
   const gated = !hasFullAccess && cached.rows.length > TEASER_LIMIT;
 
   return (
-    <div className="tool-page">
+    <>
       <InteractiveScript />
 
       <main className="wrap tool-wrap compare-wrap">
@@ -94,6 +94,6 @@ export default async function ComparePlayersPage({ searchParams }) {
           </>
         )}
       </main>
-    </div>
+    </>
   );
 }

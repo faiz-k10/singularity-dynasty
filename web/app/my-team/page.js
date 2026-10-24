@@ -154,7 +154,7 @@ export default async function MyTeamPage() {
   const sleeperName = savedTeams.find((t) => t.platform_username)?.platform_username || null;
 
   return (
-    <div className="tool-page">
+    <>
       <InteractiveScript />
 
       <main className="wrap tool-wrap my-team-page-wrap">
@@ -177,7 +177,7 @@ export default async function MyTeamPage() {
           }
         />
       </main>
-    </div>
+    </>
   );
 }
 

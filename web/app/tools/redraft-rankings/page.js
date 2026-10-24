@@ -68,7 +68,7 @@ export default async function RedraftRankingsPage({ searchParams }) {
   const isTeaser = !hasFullAccess && totalCount > 50;
 
   return (
-    <div className="tool-page">
+    <>
       <InteractiveScript />
 
       <main className="wrap tool-wrap redraft-wrap">
@@ -137,6 +137,6 @@ export default async function RedraftRankingsPage({ searchParams }) {
           </>
         )}
       </main>
-    </div>
+    </>
   );
 }

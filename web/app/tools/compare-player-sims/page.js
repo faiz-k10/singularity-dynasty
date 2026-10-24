@@ -63,7 +63,7 @@ export default async function ComparePlayerSimsPage({ searchParams }) {
   });
 
   return (
-    <div className="tool-page">
+    <>
       <InteractiveScript />
 
       <main className="wrap tool-wrap compare-wrap">
@@ -112,6 +112,6 @@ export default async function ComparePlayerSimsPage({ searchParams }) {
           </>
         )}
       </main>
-    </div>
+    </>
   );
 }

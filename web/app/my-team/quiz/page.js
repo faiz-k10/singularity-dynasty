@@ -28,7 +28,7 @@ export default async function GmArchetypeQuizPage() {
   }
 
   return (
-    <div className="tool-page">
+    <>
       <InteractiveScript />
       <main className="wrap tool-wrap quiz-wrap">
         <div className="eyebrow">My Team</div>
@@ -48,6 +48,6 @@ export default async function GmArchetypeQuizPage() {
           <QuizClient questions={GM_ARCHETYPE_QUESTIONS} initialResult={existingResult} />
         )}
       </main>
-    </div>
+    </>
   );
 }

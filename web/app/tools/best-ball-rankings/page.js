@@ -9,7 +9,7 @@ export const metadata = {
 // while paused. Swap this back for the live version to bring it back.
 export default function BestBallRankingsPage() {
   return (
-    <div className="tool-page">
+    <>
       <InteractiveScript />
 
       <main className="wrap tool-wrap">
@@ -19,6 +19,6 @@ export default function BestBallRankingsPage() {
           <p>This tool is paused for now — check back soon.</p>
         </div>
       </main>
-    </div>
+    </>
   );
 }

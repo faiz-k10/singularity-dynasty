@@ -83,7 +83,7 @@ export default async function DraftBoardPage({ searchParams }) {
   const canExport = tier === "singularity" && picks.length > 0;
 
   return (
-    <div className="tool-page">
+    <>
       <InteractiveScript />
 
       <main className="wrap tool-wrap">
@@ -203,6 +203,6 @@ export default async function DraftBoardPage({ searchParams }) {
           </>
         )}
       </main>
-    </div>
+    </>
   );
 }

@@ -119,7 +119,7 @@ export default async function ProspectRankingsPage({ searchParams }) {
   };
 
   return (
-    <div className="tool-page">
+    <>
       <InteractiveScript />
 
       <main className="wrap tool-wrap">
@@ -165,6 +165,6 @@ export default async function ProspectRankingsPage({ searchParams }) {
           </>
         )}
       </main>
-    </div>
+    </>
   );
 }
