@@ -30,9 +30,10 @@ test("Super Hero is always the last badge in the row", () => {
   assert.equal(keys[keys.length - 1], "hero");
 });
 
-test("a player projected for 0 points gets no badges at all, even with earned ones", () => {
-  const base = { heroWins: 3, sample_confidence: "established", defLean: { call: "SMASH", text: "x" } };
-  assert.ok(getAchievements({ ...base, projection: 5 }).length > 0);
-  assert.deepEqual(getAchievements({ ...base, projection: 0 }), []);
-  assert.ok(getAchievements(base).length > 0); // no projection on the row -> unchanged
+test("a player projected for 0 points keeps his past-games badges but not the ones that read this week (range, matchup)", () => {
+  const base = { heroWins: 3, sample_confidence: "established", defLean: { call: "SMASH", text: "x" }, floor: 0, ceiling: 0 };
+  const keys = (row) => getAchievements(row).map((a) => a.key);
+  assert.ok(keys({ ...base, projection: 5 }).includes("matchup"));
+  assert.deepEqual(keys({ ...base, projection: 0 }), ["confidence", "hero"]); // no Smash / Tough Spot, no range badge
+  assert.ok(keys(base).length > 0); // no projection on the row -> unchanged
 });

@@ -105,14 +105,8 @@ const RowCells = memo(function RowCells({
   return (
     <>
     <td className="mono rank-cell">
-      {bye ? (
-        "—"
-      ) : (
-        <>
-          <AchievementDots achievements={achievements} vertical />
-          {row.displayRank}
-        </>
-      )}
+      <AchievementDots achievements={achievements} vertical />
+      {bye ? "—" : row.displayRank}
     </td>
     <PlayerCell row={row} withPopover={popoverOnName && !bye} owned={owned} />
     {showPosition && (

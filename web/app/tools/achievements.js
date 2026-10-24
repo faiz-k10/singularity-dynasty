@@ -233,15 +233,16 @@ export function getAchievementsCached(row) {
 }
 
 export function getAchievements(row) {
-  // A player projected for zero points (listed OUT, or otherwise not expected to play) earns no badges at all --
-  // there is nothing to flag about someone who is not on the field. (Bye weeks never reach the badges either.)
-  // Rows without a `projection` (pages that don't carry one) are unaffected.
-  if (row.projection != null && row.projection <= 0) return [];
+  // A player projected for zero points (listed OUT, or on a bye) keeps the badges that describe HIM -- Established / Building, On Fire / On Thin
+  // Ice, Buy Low / Sell High, Honorable / Con Artist, Super Hero (all from his past games) -- but not the two that read THIS week: the range
+  // (Steady Eddy / Risky Icarus, there is no projected range) and the matchup (Smash / Tough Spot, there is no game). Rows without a
+  // `projection` (pages that don't carry one) are unaffected.
+  const playing = !(row.projection != null && row.projection <= 0);
   const isEstablished = row.sample_confidence === "established";
   const isBuilding = row.sample_confidence === "building";
   const onFire = onFireFlag(row.recentGames);
   const onIce = onThinIceFlag(row.recentGames);
-  const spread = spreadFlag(row.floor, row.ceiling, row.projection, row.position);
+  const spread = playing ? spreadFlag(row.floor, row.ceiling, row.projection, row.position) : null;
   const xfpFlag = xfpTrend2(row.recentGames);
   const heroWins = Math.max(0, row.heroWins || 0);
   const buyLow = buyLowFlag(row.woprPercentile, row.recentGames);
@@ -249,7 +250,7 @@ export function getAchievements(row) {
   // Matchup badge: just the ▲ / ▼ beside the opponent (lib/defenseLeans.js flagFor, attached as row.defLean by
   // Weekly Projection Rankings), shown as a badge too. Display only -- never a projection input. Rows without a
   // defLean (every page that doesn't load the leans, bye weeks, defenses with no strong trend) just don't get it.
-  const matchup = row.defLean || null;
+  const matchup = playing ? row.defLean || null : null;
 
   return [
     (isEstablished || isBuilding) && {
