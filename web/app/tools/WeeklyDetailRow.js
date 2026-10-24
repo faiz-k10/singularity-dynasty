@@ -720,7 +720,7 @@ export function UsageTdPanel({ row }) {
   const groups = PANEL[row.position] || { role: [], player: [] };
   const entries = (keys) =>
     keys.map((k) => ({ k, ...METRICS[k] })).filter((m) => row[m.k] != null && (row.metricRank?.[m.k] || m.unrankedHint));
-  const sections = [["Role", entries(groups.role)], ["Player", entries(groups.player)]].filter(([, list]) => list.length);
+  const sections = [["Player", entries(groups.player)], ["Role", entries(groups.role)]].filter(([, list]) => list.length); // Player first, then Role (Oct 24 2026)
   return (
     <div className="stat-panel weekly-detail-pct-panel">
       <div className="weekly-pct-head">
