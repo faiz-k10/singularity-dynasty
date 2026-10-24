@@ -106,15 +106,10 @@ function RankRow({ label, value, format, rank, hint, unrankedHint }) {
   );
 }
 
-// Header + rows of the usage panel: Metric | Rank | Value.
+// The rows of the usage panel: metric | rank (number + bar) | value. No column header row (removed on request, Oct 24 2026).
 function RankTable({ children }) {
   return (
     <div className="weekly-rank-table" role="table">
-      <div className="weekly-rank-head" role="row">
-        <span role="columnheader">Metric</span>
-        <span role="columnheader">Rank</span>
-        <span role="columnheader">Value</span>
-      </div>
       {children}
     </div>
   );
