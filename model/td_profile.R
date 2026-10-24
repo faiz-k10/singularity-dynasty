@@ -3,7 +3,7 @@
 # player_groups table + publisher as the other groupings (no new table).
 #
 #   xtd_pg     expected touchdowns per game: ffopportunity's expected TDs (how likely each touch was to score, from
-#              its field position), recency-weighted over his last 24 games (half-life 8 games)
+#              its field position), recency-weighted over his last 17 games (half-life 8 games)
 #   p2         chance of 2+ touchdowns in a game: a Poisson-shaped curve of xtd_pg (1 - e^-L (1+L), L = a*xtd^b) fitted per
 #              position on 2018 through last season (the same weighting, using only games before each one). Leave-
 #              one-season-out: AUC ~0.76 for WR and TE and calibrated across the range (e.g. WR predicted 7.5% /
@@ -21,7 +21,7 @@
 # Called from player_groups.R (weekly, after projection_engine.R). Needs the current season's rankings for the pool.
 suppressMessages(library(nflreadr))
 
-TD_WIN <- 24         # games looked back
+TD_WIN <- 17         # games looked back (a full season; was 24 until Oct 24 2026)
 TD_HL  <- 8          # half-life in games
 TD_MIN_GAMES <- 6    # fewer games than this -> no profile (the panel says so)
 
@@ -40,7 +40,7 @@ td_profile_rows <- function(pool, season, week) {
   # expected TDs per player-game, 2018 on
   ffo <- as.data.frame(load_ff_opportunity(2018:season, stat_type = "weekly"))
   # Regular season only (weeks 1-18): the feed also carries playoff games, which only some teams play and which would
-  # make one player's 24-game window reach further back than another's.
+  # make one player's 17-game window reach further back than another's.
   ffo <- ffo[ffo$position %in% c("WR", "TE") & !is.na(ffo$week) & ffo$week <= 18, ]
   ffo <- ffo[order(ffo$player_id, ffo$season, ffo$week), ]
   ffo$td <- ffo$rush_touchdown + ffo$rec_touchdown

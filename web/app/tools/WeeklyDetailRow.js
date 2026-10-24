@@ -53,7 +53,7 @@ const METRICS = {
   scrambleRate: { label: "Scramble Rate", format: pc1, hint: "Share of his dropbacks that turn into a scramble." },
   playActionRate: { label: "Play-Action Rate", format: pc1, hint: "Share of his dropbacks that are play-action." },
   p2Td: { label: "2+ TD Chance", format: pc1, hint: "Chance of scoring 2 or more touchdowns in a single game, from his expected touchdowns. Treat the order as more reliable than the exact percentage at the very top." },
-  i10Pg: { label: "In-10 Tgts/G", format: f2, hint: "Targets per game from inside the opponent's 10-yard line (last 24 games, recent weighted most). Targets there score 30-47% of the time." },
+  i10Pg: { label: "In-10 Tgts/G", format: f2, hint: "Targets per game from inside the opponent's 10-yard line (last 17 games, recent weighted most). Targets there score 30-47% of the time." },
   i10Share: { label: "In-10 Share", format: pc1,
     hint: "Share of his targets that came from inside the opponent's 10-yard line. Ranked only among players averaging 4+ targets a game (6+ games) since the start of last season.",
     unrankedHint: "Not ranked: needs an average of 4+ targets a game (and 6+ games) since the start of last season." },
@@ -420,7 +420,7 @@ function SproutIcon() {
 function MatchupIcon({ up }) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d={up ? "M12 5.5 20 18.5H4Z" : "M12 18.5 4 5.5h16Z"} />
+      <path d={up ? "M12 4 19 11.5h-4.5V20h-5v-8.5H5Z" : "M12 20 19 12.5h-4.5V4h-5v8.5H5Z"} />
     </svg>
   );
 }
