@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { sampleWithReplacement } from "@/lib/sample";
 import { unstable_cache } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
@@ -7,6 +8,7 @@ import { createPublicClient } from "@/lib/supabase/public";
 import { fetchAllRows } from "@/lib/fetchAllRows";
 import ThemeToggle from "./ThemeToggle";
 import InteractiveScript from "./InteractiveScript";
+import TickerTrack from "./TickerTrack";
 import { getAchievements } from "./tools/achievements";
 import { getCachedRedraftData, getCachedTdProfile, getCachedUsageProfile, computeRanks } from "./tools/redraft-rankings/data";
 import { computeRegressionScore } from "@/lib/regressionScore";
@@ -121,15 +123,10 @@ const getCachedTickerInputs = unstable_cache(
   { revalidate: 600 }
 );
 
-// Shared by every page: the fixed telemetry ticker + full-width site banner
-// (brand, section nav, Get Started/Account, hamburger + radial-menu mobile
-// fallback). Nav links use /#section so they work whether the visitor is
-// already on the homepage (smooth-scroll, see InteractiveScript) or on a
-// tool/auth/legal page (full navigation back to the homepage section).
-export default async function SiteHeader() {
-  const supabase = await createClient();
-  const user = await getAuthUser(supabase);
-
+// The ticker's picks, worked out from getCachedTickerInputs and handed to TickerTrack. A SEPARATE async component inside a Suspense boundary (SiteHeader below),
+// so the heaviest data on every page (the whole season's game log and the ranking data) never holds the page's first byte back: the nav and the page render
+// at once and the strip fills in a moment later (right away when the cache is warm; after a deploy the first visitor used to wait for all of it).
+async function TickerFeed() {
   // Ticker: a random assortment of 50 achievement badges -- the FULL set
   // (On Fire/On Thin Ice/Risky Icarus/Steady Eddy/Buy Low/Sell High/
   // Super Hero/Honorable/Con Artist; Confidence excluded, see below) drawn from the top 20
@@ -179,6 +176,17 @@ export default async function SiteHeader() {
     ];
     if (picks.length > 0) tickerItems = picks;
   }
+  return <TickerTrack items={tickerItems} />;
+}
+
+// Shared by every page: the fixed telemetry ticker + full-width site banner
+// (brand, section nav, Get Started/Account, hamburger + radial-menu mobile
+// fallback). Nav links use /#section so they work whether the visitor is
+// already on the homepage (smooth-scroll, see InteractiveScript) or on a
+// tool/auth/legal page (full navigation back to the homepage section).
+export default async function SiteHeader() {
+  const supabase = await createClient();
+  const user = await getAuthUser(supabase);
 
   return (
     <>
@@ -289,7 +297,10 @@ export default async function SiteHeader() {
         </nav>
       </div>
 
-      <InteractiveScript tickerItems={tickerItems} />
+      <Suspense fallback={null}>
+        <TickerFeed />
+      </Suspense>
+      <InteractiveScript />
     </>
   );
 }

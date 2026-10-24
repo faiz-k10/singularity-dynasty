@@ -56,3 +56,47 @@ test("computeStatPercentiles: row with no stat_ranges -> empty maps", () => {
   const { statPercentiles } = computeStatPercentiles({ position: "QB" }, {});
   assert.deepEqual(statPercentiles, {});
 });
+
+// The cached / binary-search version must give exactly the numbers the original sort-and-filter version did.
+function referencePercentileRank(value, pool, invert = false) {
+  if (!pool || pool.length <= 1) return null;
+  const dir = invert ? -1 : 1;
+  const sorted = pool.map((v) => v * dir).sort((a, b) => a - b);
+  const v = value * dir;
+  const n = sorted.length;
+  const below = sorted.filter((x) => x < v).length;
+  const above = sorted.filter((x) => x > v).length;
+  const tied = n - below - above;
+  let rank;
+  if (tied > 0) rank = below;
+  else {
+    const loIdx = below - 1;
+    const hiIdx = below;
+    if (loIdx < 0) {
+      const gap = sorted[1] - sorted[0];
+      rank = gap > 0 ? Math.max(0, (v - sorted[0]) / gap) : 0;
+    } else if (hiIdx >= n) {
+      const gap = sorted[n - 1] - sorted[n - 2];
+      rank = gap > 0 ? Math.min(n - 1, n - 2 + (v - sorted[n - 2]) / gap) : n - 1;
+    } else {
+      const gap = sorted[hiIdx] - sorted[loIdx];
+      rank = gap > 0 ? loIdx + (v - sorted[loIdx]) / gap : loIdx;
+    }
+  }
+  return Math.round((rank / (n - 1)) * 100);
+}
+
+test("percentileRank: identical to the original implementation on random pools, with ties, extremes, inversion and a pool that grows", () => {
+  let seed = 12345;
+  const rnd = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
+  for (let round = 0; round < 300; round++) {
+    const n = 2 + Math.floor(rnd() * 60);
+    const pool = Array.from({ length: n }, () => Math.round(rnd() * 40) / (rnd() < 0.5 ? 1 : 4)); // plenty of ties
+    for (let k = 0; k < 20; k++) {
+      const v = k % 3 === 0 ? pool[Math.floor(rnd() * n)] : Math.round((rnd() * 50 - 5) * 10) / 10; // members, in-gap values, outside the range
+      for (const invert of [false, true]) assert.equal(percentileRank(v, pool, invert), referencePercentileRank(v, pool, invert));
+    }
+    pool.push(Math.round(rnd() * 40)); // the remembered sort must notice the pool changed
+    assert.equal(percentileRank(10, pool), referencePercentileRank(10, pool));
+  }
+});

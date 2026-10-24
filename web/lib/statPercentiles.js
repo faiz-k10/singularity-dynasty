@@ -23,14 +23,38 @@ export const INVERTED_STATS = new Set(["passing_interceptions"]);
 // 100th unless the max is unique to them, only "beats everyone who isn't
 // also at the max" -- accurate to what the number is supposed to mean,
 // just less flattering than crediting a tie as if it were a win.
+// A pool is ranked against many times (every row x every stat), so each pool's sorted copy is made ONCE and remembered (keyed by the array itself and
+// rebuilt if its length changes), and the "how many are below / above" counts are binary searches -- it used to re-sort the whole pool on every call,
+// which made a page of a few hundred rows spend most of its server time sorting.
+const sortedPools = new WeakMap();
+function sortedPool(pool, invert) {
+  let entry = sortedPools.get(pool);
+  if (!entry || entry.len !== pool.length) {
+    entry = { len: pool.length };
+    sortedPools.set(pool, entry);
+  }
+  const key = invert ? "inv" : "asc";
+  return (entry[key] ??= pool.map((v) => (invert ? -v : v)).sort((a, b) => a - b));
+}
+// Number of elements strictly below v (lower bound) / at or below v (upper bound) in an ascending array.
+function boundIndex(sorted, v, inclusive) {
+  let lo = 0;
+  let hi = sorted.length;
+  while (lo < hi) {
+    const mid = (lo + hi) >>> 1;
+    if (inclusive ? sorted[mid] <= v : sorted[mid] < v) lo = mid + 1;
+    else hi = mid;
+  }
+  return lo;
+}
+
 export function percentileRank(value, pool, invert = false) {
   if (!pool || pool.length <= 1) return null;
-  const dir = invert ? -1 : 1;
-  const sorted = pool.map((v) => v * dir).sort((a, b) => a - b);
-  const v = value * dir;
+  const sorted = sortedPool(pool, invert);
+  const v = invert ? -value : value;
   const n = sorted.length;
-  const below = sorted.filter((x) => x < v).length;
-  const above = sorted.filter((x) => x > v).length;
+  const below = boundIndex(sorted, v, false);
+  const above = n - boundIndex(sorted, v, true);
   const tied = n - below - above;
 
   let rank;

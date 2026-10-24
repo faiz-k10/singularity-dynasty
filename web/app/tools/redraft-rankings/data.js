@@ -5,6 +5,7 @@ import { fetchAllRows } from "@/lib/fetchAllRows";
 import { percentileRank, INVERTED_STATS } from "@/lib/statPercentiles";
 import { normalizePlayerName } from "@/lib/portfolio";
 import { groupRanks } from "@/lib/statPanel";
+import { rankIn } from "@/lib/rank";
 
 // Data layer of Weekly Projection Rankings, split out of page.js so the Compare Players tool reads the same rows.
 
@@ -475,7 +476,7 @@ export function tdRanksByName(rows, tdProfile) {
     for (const [k, src] of Object.entries(TD_RANK_KEYS)) {
       const pool = pools[r.position]?.[k];
       if (d[src] == null || !pool || !rankedOn(k, d)) continue;
-      ranks[k] = { rank: 1 + pool.filter((v) => v > d[src]).length, of: pool.length };
+      ranks[k] = { rank: rankIn(pool, d[src]), of: pool.length };
     }
     out[r.player_name] = ranks;
   }
@@ -501,7 +502,7 @@ export function usageRanksByName(rows, simsByName, avgXfpByName) {
       const v = valueOf(r, k);
       const pool = pools[r.position]?.[k];
       if (v == null || !pool) continue;
-      ranks[k] = { rank: 1 + pool.filter((x) => x > v).length, of: pool.length };
+      ranks[k] = { rank: rankIn(pool, v), of: pool.length };
     }
     out[r.player_name] = ranks;
   }
@@ -527,8 +528,7 @@ export function usageProfileRanks(rows, profile) {
     for (const [k, v] of Object.entries(d)) {
       const pool = pools[r.position]?.[k];
       if (k === "games" || typeof v !== "number" || !pool) continue;
-      const better = LOWER_IS_BETTER.has(k) ? (x) => x < v : (x) => x > v;
-      ranks[`u_${k}`] = { rank: 1 + pool.filter(better).length, of: pool.length };
+      ranks[`u_${k}`] = { rank: rankIn(pool, v, LOWER_IS_BETTER.has(k)), of: pool.length };
     }
     out[r.player_name] = ranks;
   }

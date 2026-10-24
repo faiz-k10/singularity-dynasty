@@ -22,10 +22,11 @@ const body = localFont({
   display: "swap",
   fallback: ["Georgia", "serif"],
   src: [
-    { path: "./fonts/Libron-Regular.woff2", weight: "400", style: "normal" },
-    { path: "./fonts/Libron-Italic.woff2", weight: "400", style: "italic" },
-    { path: "./fonts/Libron-Bold.woff2", weight: "700", style: "normal" },
-    { path: "./fonts/Libron-BoldItalic.woff2", weight: "700", style: "italic" },
+    // Libron's Regular and Bold, SUBSET to Latin (+ punctuation, arrows, math) and renamed "SD Serif" (the OFL reserves the name Libron for the unmodified
+    // font): 84KB each -> 42KB. The two italic files are gone -- nothing on the site renders italic (every <i> / <em> is reset to normal in globals.css),
+    // and they were preloaded on every page for nothing (172KB). If italics are ever wanted, add them back from git history and subset them the same way.
+    { path: "./fonts/SDSerif-Regular.woff2", weight: "400", style: "normal" },
+    { path: "./fonts/SDSerif-Bold.woff2", weight: "700", style: "normal" },
   ],
 });
 

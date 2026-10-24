@@ -2,6 +2,8 @@
 // and PLAYER (what he does with it). This module holds which numbers go in which group and ranks every player at a position BY GROUP: his average
 // rank over the group's numbers, then where that average sits among everyone at the position (lowest average = #1). Shown beside the "Role" and
 // "Player" headings. Pure; tested in test/statPanel.test.mjs. The keys are the ones on a ranked row's `metricRank`; labels and formats live with the panel.
+import { rankIn } from "./rank.js";
+
 export const PANEL_KEYS = {
   QB: {
     role: ["avgXfp", "u_att_pg", "u_ypa", "u_i5_cpg", "playActionRate"],
@@ -35,8 +37,9 @@ export function groupRanks(rows, ranksByName) {
       const keys = groups[group];
       const min = Math.ceil(keys.length / 2);
       const scored = inPos.map((r) => ({ name: r.player_name, avg: meanRank(ranksByName[r.player_name], keys, min) })).filter((s) => s.avg != null);
+      const avgs = scored.map((s) => s.avg);
       for (const s of scored) {
-        (out[s.name] ??= {})[group] = { rank: 1 + scored.filter((o) => o.avg < s.avg).length, of: scored.length };
+        (out[s.name] ??= {})[group] = { rank: rankIn(avgs, s.avg, true), of: scored.length };
       }
     }
   }
