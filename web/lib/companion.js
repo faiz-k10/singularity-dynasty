@@ -72,11 +72,11 @@ function leagues(savedTeams, gameStates, adjusted = null) {
 
 // Lineup upgrades: the biggest projection gain per league from the optimizer (lib/lineupOptimizer.js), and the ceiling / floor tilt
 // when the win chance is lopsided. Only while someone in the lineup can still move.
-function lineupCards(savedTeams, gameStates, adjusted) {
+function lineupCards(savedTeams, gameStates, adjusted, injuriesByTeam) {
   const cards = [];
   for (const t of savedTeams || []) {
     // The board already worked the advice out for its alert counts (row.alertCount.advice); only compute it when running without the board.
-    const a = adjusted?.[t.id]?.row ? adjusted[t.id].row.alertCount.advice : lineupAdvice(t, gameStates);
+    const a = adjusted?.[t.id]?.row ? adjusted[t.id].row.alertCount.advice : lineupAdvice(t, gameStates, injuriesByTeam?.[t.id]);
     if (!a || !a.swaps.length) continue;
     const top = a.swaps[0];
     if (a.gain >= 1) {
@@ -669,7 +669,7 @@ export function buildInsights({ savedTeams, gameStates, waivers = null, injuries
   const cards = [];
   const add = (c) => (Array.isArray(c) ? cards.push(...c) : c && cards.push(c));
   add(holes(ls));
-  add(lineupCards(savedTeams, gameStates, adjusted));
+  add(lineupCards(savedTeams, gameStates, adjusted, injuriesByTeam));
   add(outlook(ls));
   add(swings(ls, gameStates));
   add(threats(ls, gameStates));

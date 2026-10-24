@@ -5310,7 +5310,8 @@ html{font-stretch:82%;}
 .waivers-dim{color:var(--star-dim);}
 .waivers-foot{display:flex; flex-wrap:wrap; align-items:center; gap:10px 16px;}
 .waivers-foot .h2h-sleeper{margin-top:0;}
-.lu-sleeper{margin:0; padding:9px 16px; font-size:13px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; border:1px solid var(--neon-blue); border-radius:var(--r-sm); background:rgba(var(--neon-blue-rgb), .1);}
+.lu-sleeper{display:inline-flex; align-items:center; gap:10px; margin:0; padding:7px 16px 7px 10px; font-size:13px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; border:1px solid var(--neon-blue); border-radius:var(--r-sm); background:rgba(var(--neon-blue-rgb), .1);}
+.lu-sleeper-logo{width:22px; height:22px; border-radius:4px; display:block;}
 .lu-sleeper:hover{text-decoration:none; background:rgba(var(--neon-blue-rgb), .2);}
 .lineup-advice > .standings-note{margin:14px 0 0;}
 .odds-high, td.standings-odds.odds-high{color:var(--up);} .odds-mid, td.standings-odds.odds-mid{color:var(--horizon-gold);} .odds-low, td.standings-odds.odds-low{color:var(--down);}

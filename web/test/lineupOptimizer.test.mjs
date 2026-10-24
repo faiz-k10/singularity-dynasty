@@ -173,3 +173,24 @@ test("lineupAlertCount is the one number: urgent alerts + start / sit swaps (3 i
   assert.equal(c.total, 5);
   assert.equal(lineupAlertCount({ settings: {}, players: [] }, {}, []).total, 0);
 });
+
+test("a bench player the injury feed lists Out is never recommended, and an Out starter counts 0", () => {
+  const t = {
+    settings: { slots: ["WR", "FLEX"] },
+    players: [
+      { player_id: "1", name: "Starter WR", position: "WR", team: "A", isStarter: true, slot: "WR", slotIndex: 0, myProjPts: 15 },
+      { player_id: "2", name: "Flex Guy", position: "RB", team: "B", isStarter: true, slot: "FLEX", slotIndex: 1, myProjPts: 8 },
+      { player_id: "3", name: "Hurt Star", position: "WR", team: "C", isStarter: false, myProjPts: 13 },
+      { player_id: "4", name: "Healthy Backup", position: "WR", team: "D", isStarter: false, myProjPts: 9 },
+    ],
+  };
+  const injuries = [{ name: "Hurt Star", status: "Out", severity: 4 }];
+  assert.equal(optimizeLineup(t, {}).swaps[0].in.name, "Hurt Star");
+  const r = optimizeLineup(t, {}, "proj", injuries);
+  assert.equal(r.swaps.length, 1);
+  assert.equal(r.swaps[0].in.name, "Healthy Backup");
+  // an Out starter is worth 0, so the healthy bench player replaces him
+  const inj2 = [{ name: "Flex Guy", status: "Out", severity: 4 }];
+  const r2 = optimizeLineup(t, {}, "proj", inj2);
+  assert.equal(r2.swaps[0].out.name, "Flex Guy");
+});

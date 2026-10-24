@@ -30,14 +30,24 @@ const valueOf = (p, mode) => {
 // team: saved_teams row (players[] with position, team, slot, slotIndex, isStarter, myProjPts / myFloor / myCeiling, and settings.slots).
 // gameStates: team -> { state }. Returns null when there is nothing to optimize.
 const MIN_GAIN = 0.1;
-export function optimizeLineup(team, gameStates, mode = "proj") {
+// A player the injury feed lists Doubtful or worse (severity 3+): he is not a lineup option, and a starter like that is worth 0 in the lineup.
+const OUT_SEVERITY = 3;
+const outNames = (injuries) => new Set((injuries || []).filter((i) => i.severity >= OUT_SEVERITY).map((i) => i.name));
+// injuries: [{ name, status, severity }] from the injury feed (optional).
+export function optimizeLineup(team, gameStates, mode = "proj", injuries = []) {
   const s = team?.settings || {};
   const slots = s.slots;
   if (!slots?.length || s.bestBall || s.isBye) return null;
   const known = gameStates && Object.keys(gameStates).length > 0;
   const locked = (p) => known && p.team && gameStates[p.team] && gameStates[p.team].state !== "pre";
 
-  const roster = (team.players || []).map((p) => ({ ...p, val: valueOf(p, mode), locked: Boolean(locked(p)) }));
+  const outs = outNames(injuries);
+  // An Out player scores 0 everywhere (the rows show 0.0, the gains add up), whatever the model's pregame projection says.
+  const roster = (team.players || []).map((p0) => {
+    const unavailable = outs.has(p0.name);
+    const p = unavailable ? { ...p0, myProjPts: 0, myFloor: 0, myCeiling: 0 } : p0;
+    return { ...p, val: valueOf(p, mode), locked: Boolean(locked(p)), unavailable };
+  });
   const byIndex = new Map();
   for (const p of roster) if (p.isStarter && p.slotIndex < slots.length) byIndex.set(p.slotIndex, p);
   const val = (p) => (p && p.val != null ? p.val : 0);
@@ -50,7 +60,7 @@ export function optimizeLineup(team, gameStates, mode = "proj") {
     if (cur?.locked) return;
     open.push({ i, kind, cur: cur || null });
   });
-  const bench = roster.filter((p) => !p.isStarter && PROJECTED.has(p.position) && p.val != null && !p.locked);
+  const bench = roster.filter((p) => !p.isStarter && PROJECTED.has(p.position) && p.val != null && !p.locked && !p.unavailable);
   const current = open.reduce((t, o) => t + val(o.cur), 0);
 
   const swaps = [];
@@ -76,14 +86,14 @@ export function optimizeLineup(team, gameStates, mode = "proj") {
 
 // The advice for a league: the best lineup by projection, plus the risk-tilted version when the win chance is lopsided and the tilt
 // buys a real gain for a small cost to the median (underdog: ceiling; heavy favorite: floor).
-export function lineupAdvice(team, gameStates) {
-  const base = optimizeLineup(team, gameStates, "proj");
+export function lineupAdvice(team, gameStates, injuries = []) {
+  const base = optimizeLineup(team, gameStates, "proj", injuries);
   if (!base) return null;
   const win = num(team.settings?.winChance);
   let tilt = null;
   const mode = win == null ? null : win <= 0.4 ? "ceiling" : win >= 0.75 ? "floor" : null;
   if (mode) {
-    const alt = optimizeLineup(team, gameStates, mode);
+    const alt = optimizeLineup(team, gameStates, mode, injuries);
     if (alt && alt.swaps.length) {
       // What the tilted lineup scores on the median, and what it gains on the tilted measure over the projection-best lineup.
       const medianCost = r1(alt.swaps.reduce((t, x) => t + (num(x.in.myProjPts) ?? 0) - (num(x.out?.myProjPts) ?? 0), 0));
@@ -107,7 +117,8 @@ export function lineupAlerts(team, gameStates, injuries = []) {
   for (const i of injuries || []) if (!tags.has(i.name) || i.severity > tags.get(i.name).severity) tags.set(i.name, i);
   const starters = new Map();
   for (const p of team.players || []) if (p.isStarter && p.slotIndex < slots.length) starters.set(p.slotIndex, p);
-  const bench = (team.players || []).filter((p) => !p.isStarter && PROJECTED.has(p.position) && num(p.myProjPts) > 0 && !started(p));
+  const outs = outNames(injuries);
+  const bench = (team.players || []).filter((p) => !p.isStarter && PROJECTED.has(p.position) && num(p.myProjPts) > 0 && !started(p) && !outs.has(p.name));
   const used = new Set();
   const replacementFor = (kind) => {
     const pick = bench.filter((p) => !used.has(p.player_id) && ELIGIBLE[kind]?.includes(p.position)).sort((a, b) => b.myProjPts - a.myProjPts)[0];
@@ -136,7 +147,7 @@ export function lineupAlerts(team, gameStates, injuries = []) {
 // `advice` (the full lineupAdvice result, or null) rides along so a caller that needs the swaps and the tilt too (the Lineup tab, the Companion) reuses it.
 export function lineupAlertCount(team, gameStates, injuries = []) {
   const alerts = lineupAlerts(team, gameStates, injuries);
-  const advice = lineupAdvice(team, gameStates);
+  const advice = lineupAdvice(team, gameStates, injuries);
   const swaps = advice?.swaps || [];
   return { alerts, swaps, advice, total: alerts.length + swaps.length };
 }
