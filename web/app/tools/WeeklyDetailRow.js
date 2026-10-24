@@ -9,6 +9,7 @@ import ConfidenceBadge from "./ConfidenceBadge";
 import { getAchievements } from "./achievements";
 import DragonBall from "./DragonBall";
 import { MyStrip, MyEmpty } from "./MyPlayers";
+import { PANEL_KEYS } from "@/lib/statPanel";
 
 // Season-level usage/efficiency metrics, not weekly stats -- attached
 // server-side in page.js's fetchSimsMetrics()/fetchSeasonXfp() (joined
@@ -76,22 +77,9 @@ const METRICS = {
   u_yac_rec: { label: "YAC/Rec", format: f2, hint: "Yards after the catch per reception." },
   u_epa_tgt: { label: "EPA/Target", format: signed3, hint: "Expected points added per target." },
 };
-// ROLE = how the offense uses him; PLAYER = what he does with it. A number he doesn't have (below the volume gate, or not published) is just left out.
-const PANEL = {
-  QB: {
-    role: ["avgXfp", "u_att_pg", "u_aypa", "u_rush_ypg", "scrambleRate", "playActionRate"],
-    player: ["u_ypa", "u_cpoe", "u_epa_db", "u_sack_rate"],
-  },
-  RB: {
-    role: ["avgXfp", "wopr", "u_touches_pg", "u_carries_pg", "u_tgt_pg"],
-    player: ["u_rush_ypg", "u_ypc", "u_rush_epa", "u_rec_ypg", "ryoe"],
-  },
-  WR: {
-    role: ["wopr", "u_tgt_pg", "u_tgt_share", "u_air_share", "i10Pg", "i10Share", "p2Td"],
-    player: ["u_rec_ypg", "u_ypt", "u_yac_rec", "u_epa_tgt"],
-  },
-};
-PANEL.TE = PANEL.WR;
+// ROLE = how the offense uses him; PLAYER = what he does with it (which numbers go where: lib/statPanel.js, which also ranks players by group).
+// A number he doesn't have (below the volume gate, or not published) is just left out.
+const PANEL = PANEL_KEYS;
 
 // One line of the touchdown profile / usage panel: the metric, its value, and where he ranks at his position (#1 = highest).
 function RankRow({ label, value, format, rank, hint, unrankedHint }) {
@@ -700,11 +688,6 @@ export function UsageTdPanel({ row }) {
   const entries = (keys) =>
     keys.map((k) => ({ k, ...METRICS[k] })).filter((m) => row[m.k] != null && (row.metricRank?.[m.k] || m.unrankedHint));
   const sections = [["Role", entries(groups.role)], ["Player", entries(groups.player)]].filter(([, list]) => list.length);
-  // A section's average rank: the mean of his ranks on the numbers shown in it (needs two or more).
-  const avgRank = (list) => {
-    const ranks = list.map((m) => row.metricRank?.[m.k]?.rank).filter((r) => r != null);
-    return ranks.length >= 2 ? Math.round(ranks.reduce((a, b) => a + b, 0) / ranks.length) : null;
-  };
   return (
     <div className="stat-panel weekly-detail-pct-panel">
       <div className="weekly-pct-head">
@@ -717,7 +700,11 @@ export function UsageTdPanel({ row }) {
               <Fragment key={name}>
                 <div className="weekly-rank-section" role="row">
                   <span>{name}</span>
-                  {avgRank(list) != null && <span className="weekly-rank-avg" title={`Average of his ranks on the ${name.toLowerCase()} numbers below`}>avg #{avgRank(list)}</span>}
+                  {row.groupRank?.[name.toLowerCase()] && (
+                    <span className="weekly-rank-avg" title={`${ordinal(row.groupRank[name.toLowerCase()].rank)} of ${row.groupRank[name.toLowerCase()].of} ${row.position}s on the ${name.toLowerCase()} numbers below (by his average rank on them)`}>
+                      #{row.groupRank[name.toLowerCase()].rank}
+                    </span>
+                  )}
                 </div>
                 {list.map((m) => (
                   <RankRow key={m.k} label={m.label} value={row[m.k]} format={m.format} rank={row.metricRank?.[m.k]} hint={m.hint} unrankedHint={m.unrankedHint} />

@@ -4,6 +4,7 @@ import { createPublicClient } from "@/lib/supabase/public";
 import { fetchAllRows } from "@/lib/fetchAllRows";
 import { percentileRank, INVERTED_STATS } from "@/lib/statPercentiles";
 import { normalizePlayerName } from "@/lib/portfolio";
+import { groupRanks } from "@/lib/statPanel";
 
 // Data layer of Weekly Projection Rankings, split out of page.js so the Compare Players tool reads the same rows.
 
@@ -544,6 +545,10 @@ export function enrichRankings({ cached, hasFullAccess = true, tdProfile, usageP
   const tdRanks = tdRanksByName(cached.rows, tdProfile);
   const usageRanks = usageRanksByName(cached.rows, simsByName, avgXfpByName);
   const profileRanks = usageProfileRanks(cached.rows, usageProfile);
+  // Where each player stands in his position's Role and Player groups (lowest average rank = #1), over EVERYONE ranked so it means the same on every tier.
+  const ranksByName = {};
+  for (const r of cached.rows) ranksByName[r.player_name] = { ...(usageRanks[r.player_name] || {}), ...(tdRanks[r.player_name] || {}), ...(profileRanks[r.player_name] || {}) };
+  const groupRank = groupRanks(cached.rows, ranksByName);
 
   // Position-relative rank (RB1, WR23, ...) computed once from the
   // natural rank order -- stays fixed on each row even if the table is
@@ -571,7 +576,8 @@ export function enrichRankings({ cached, hasFullAccess = true, tdProfile, usageP
       i10Share: tdProfile[r.player_name]?.i10_share ?? null,
       // The usage_profile numbers, flat on the row as u_<key> (u_att_pg, u_ypc, ...), ranked like the others.
       ...Object.fromEntries(Object.entries(usageProfile[r.player_name] || {}).filter(([k]) => k !== "games").map(([k, v]) => [`u_${k}`, v])),
-      metricRank: { ...(usageRanks[r.player_name] || {}), ...(tdRanks[r.player_name] || {}), ...(profileRanks[r.player_name] || {}) },
+      metricRank: ranksByName[r.player_name] || {},
+      groupRank: groupRank[r.player_name] || null,
       recentGames: recentGamesByName[r.player_name] || [],
       // He has already played this week's game (Thursday / Friday / Saturday): his real points so far this week.
       playedThisWeek: (() => {
