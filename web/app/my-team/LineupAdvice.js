@@ -41,7 +41,7 @@ function SwapList({ swaps, key1 = "myProjPts" }) {
   );
 }
 
-// The "Lineup" tab of a league: the best starters from the roster by this week's projection, who to start over whom and what it
+// The "Lineup alerts" tab of a league: the best starters from the roster by this week's projection, who to start over whom and what it
 // adds, plus (when the win chance is lopsided) a version that plays for the ceiling or the floor. lib/lineupOptimizer.js does the
 // work; players whose game has started are locked and left where they are.
 export default function LineupAdvice({ team, gameStates, injuries = [] }) {
