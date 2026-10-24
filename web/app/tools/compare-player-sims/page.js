@@ -2,7 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { resolveTier } from "@/lib/tier";
 import { getPlayerBiosByNamePos } from "@/lib/sleeper";
-import SiteHeader from "../../SiteHeader";
+import InteractiveScript from "../../InteractiveScript";
 import STAT_LABELS from "../statLabels";
 import ComparePlayerPickers from "../ComparePlayerPickers";
 import CompareSims from "../CompareSims";
@@ -64,7 +64,7 @@ export default async function ComparePlayerSimsPage({ searchParams }) {
 
   return (
     <div className="tool-page">
-      <SiteHeader />
+      <InteractiveScript />
 
       <main className="wrap tool-wrap compare-wrap">
         <div className="eyebrow">{latest ? `${latest.season} Season · Week ${latest.week}` : "Compare"}</div>

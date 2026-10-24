@@ -4,7 +4,7 @@ import { loadMyPlayers } from "@/lib/myPlayers";
 import { createClient } from "@/lib/supabase/server";
 import { resolveSort, sortRows } from "@/lib/sortLink";
 import { getPlayerBiosByNamePos } from "@/lib/sleeper";
-import SiteHeader from "../../SiteHeader";
+import InteractiveScript from "../../InteractiveScript";
 import ExportCsvButton from "../ExportCsvButton";
 import RedraftRankingsClient from "./RedraftRankingsClient";
 import { PAID_TIERS, OVERALL_COLUMN_TYPES, sortPositions, getCachedRedraftData, getCachedLeans, getCachedTdProfile, getCachedUsageProfile, enrichRankings } from "./data";
@@ -66,7 +66,7 @@ export default async function RedraftRankingsPage({ searchParams }) {
 
   return (
     <div className="tool-page">
-      <SiteHeader />
+      <InteractiveScript />
 
       <main className="wrap tool-wrap redraft-wrap">
         {rankings.length === 0 ? (

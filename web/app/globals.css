@@ -5729,3 +5729,13 @@ html{font-stretch:82%;}
 /* The full-screen button inside My Team matches the other two board controls (36px, hairline edge, 2px corners); elsewhere it keeps its own 34px look. */
 .my-team-wrap .rankings-theater-btn, .my-team-theater .rankings-theater-btn{width:36px; height:36px; box-sizing:border-box; border:1px solid var(--rule); border-radius:var(--r-sm); background-color:transparent; background-clip:padding-box;}
 .my-team-wrap .rankings-theater-btn:hover, .my-team-theater .rankings-theater-btn:hover{border-color:var(--rule-strong);}
+
+/* Loading skeleton (PageSkeleton.js): flat hairline blocks with a slow sweep, shown while a tool page's data streams in. */
+.page-skel{background:var(--void-panel); border:1px solid var(--rule); border-radius:var(--r-sm); position:relative; overflow:hidden;}
+.page-skel::after{content:""; position:absolute; inset:0; background:linear-gradient(90deg, transparent, rgba(var(--star-rgb, 255,255,255), .06), transparent); transform:translateX(-100%); animation:page-skel-sweep 1.4s ease-in-out infinite;}
+.page-skel-title{height:44px; width:min(420px, 70%); margin-bottom:14px;}
+.page-skel-bar{height:36px; margin-bottom:18px;}
+.page-skel-rows{display:grid; gap:6px;}
+.page-skel-row{height:44px;}
+@keyframes page-skel-sweep{to{transform:translateX(100%);}}
+@media (prefers-reduced-motion: reduce){.page-skel::after{animation:none;}}

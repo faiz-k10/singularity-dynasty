@@ -1,4 +1,4 @@
-import SiteHeader from "../SiteHeader";
+import InteractiveScript from "../InteractiveScript";
 import { createClient } from "@/lib/supabase/server";
 import { createPublicClient } from "@/lib/supabase/public";
 import { resolveTier, savedTeamLimit } from "@/lib/tier";
@@ -155,7 +155,7 @@ export default async function MyTeamPage() {
 
   return (
     <div className="tool-page">
-      <SiteHeader />
+      <InteractiveScript />
 
       <main className="wrap tool-wrap my-team-page-wrap">
         <MyTeamClient

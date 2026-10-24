@@ -2,7 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { resolveTier } from "@/lib/tier";
 import { getPlayerBiosByNamePos } from "@/lib/sleeper";
-import SiteHeader from "../../SiteHeader";
+import InteractiveScript from "../../InteractiveScript";
 import ComparePlayerPickers from "../ComparePlayerPickers";
 import CompareWeekly from "../CompareWeekly";
 import {
@@ -50,7 +50,7 @@ export default async function ComparePlayersPage({ searchParams }) {
 
   return (
     <div className="tool-page">
-      <SiteHeader />
+      <InteractiveScript />
 
       <main className="wrap tool-wrap compare-wrap">
         <div className="eyebrow">{latest ? `Week ${latest.week} · ${latest.season}` : "Compare"}</div>

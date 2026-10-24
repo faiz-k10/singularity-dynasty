@@ -184,7 +184,7 @@ async function TickerFeed() {
 // fallback). Nav links use /#section so they work whether the visitor is
 // already on the homepage (smooth-scroll, see InteractiveScript) or on a
 // tool/auth/legal page (full navigation back to the homepage section).
-export default async function SiteHeader() {
+export default async function SiteHeader({ scripts = true }) {
   const supabase = await createClient();
   const user = await getAuthUser(supabase);
 
@@ -300,7 +300,7 @@ export default async function SiteHeader() {
       <Suspense fallback={null}>
         <TickerFeed />
       </Suspense>
-      <InteractiveScript />
+      {scripts && <InteractiveScript />}
     </>
   );
 }

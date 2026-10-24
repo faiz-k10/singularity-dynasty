@@ -3,7 +3,7 @@ import { unstable_cache } from "next/cache";
 import { createPublicClient } from "@/lib/supabase/public";
 import { getUserTier } from "@/lib/tier";
 import { resolveSort, sortRows } from "@/lib/sortLink";
-import SiteHeader from "../../SiteHeader";
+import InteractiveScript from "../../InteractiveScript";
 import SortableTh from "../SortableTh";
 import ExportCsvButton from "../ExportCsvButton";
 
@@ -84,7 +84,7 @@ export default async function DraftBoardPage({ searchParams }) {
 
   return (
     <div className="tool-page">
-      <SiteHeader />
+      <InteractiveScript />
 
       <main className="wrap tool-wrap">
         <div className="tool-header-split">

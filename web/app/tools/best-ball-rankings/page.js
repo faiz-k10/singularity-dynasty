@@ -1,4 +1,4 @@
-import SiteHeader from "../../SiteHeader";
+import InteractiveScript from "../../InteractiveScript";
 
 export const metadata = {
   title: "Best Ball Rankings — Singularity Dynasty",
@@ -10,7 +10,7 @@ export const metadata = {
 export default function BestBallRankingsPage() {
   return (
     <div className="tool-page">
-      <SiteHeader />
+      <InteractiveScript />
 
       <main className="wrap tool-wrap">
         <div className="eyebrow">Best Ball</div>

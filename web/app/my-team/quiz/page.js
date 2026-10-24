@@ -1,5 +1,5 @@
 import Link from "next/link";
-import SiteHeader from "../../SiteHeader";
+import InteractiveScript from "../../InteractiveScript";
 import { createClient } from "@/lib/supabase/server";
 import { loadInsight, GM_ARCHETYPE_QUESTIONS } from "@/lib/insights";
 import QuizClient from "./QuizClient";
@@ -29,7 +29,7 @@ export default async function GmArchetypeQuizPage() {
 
   return (
     <div className="tool-page">
-      <SiteHeader />
+      <InteractiveScript />
       <main className="wrap tool-wrap quiz-wrap">
         <div className="eyebrow">My Team</div>
         <h1>What Kind of GM Are You?</h1>

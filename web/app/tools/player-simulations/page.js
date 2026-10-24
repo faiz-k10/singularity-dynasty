@@ -4,7 +4,7 @@ import { loadMyPlayers } from "@/lib/myPlayers";
 import { createClient } from "@/lib/supabase/server";
 import { resolveSort, sortRows } from "@/lib/sortLink";
 import { getPlayerBiosByNamePos } from "@/lib/sleeper";
-import SiteHeader from "../../SiteHeader";
+import InteractiveScript from "../../InteractiveScript";
 import ExportCsvButton from "../ExportCsvButton";
 import PlayerSimSearch from "../PlayerSimSearch";
 import { TEASER_LIMIT, PAID_TIERS, getCachedWeekData, buildSimRows } from "./data";
@@ -115,7 +115,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
   );
   return (
     <div className="tool-page">
-      <SiteHeader />
+      <InteractiveScript />
 
       <main className="wrap tool-wrap player-sims-wrap">
         {sims.length === 0 ? (
