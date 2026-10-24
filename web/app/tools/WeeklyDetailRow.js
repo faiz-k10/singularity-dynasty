@@ -51,6 +51,8 @@ const ADVANCED_METRICS = [
 // the full explanation is in the hover tip. Deliberately no touchdown-conversion rate: tested, it carries no
 // predictive signal once a player's role is known.
 const TD_METRICS = [
+  { key: "wopr", label: "WOPR", format: (v) => v.toFixed(2),
+    hint: "Weighted opportunity rating: how much of his offense's passing game runs through him (target share and air-yards share together). 0.70+ is a true No. 1 receiver. Ranked among WRs / TEs this week; the same number the Buy Low badge reads." },
   { key: "p2Td", label: "2+ TD Chance", format: (v) => `${v.toFixed(1)}%`,
     hint: "Chance of scoring 2 or more touchdowns in a single game, from his expected touchdowns. Treat the order as more reliable than the exact percentage at the very top." },
   { key: "i10Pg", label: "In-10 Tgts/G", format: (v) => v.toFixed(2),
