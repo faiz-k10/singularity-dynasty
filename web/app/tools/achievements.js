@@ -215,6 +215,9 @@ export function sellHighFlag(woprPercentile, games) {
 // label text still states the real count (e.g. "9x Super Hero"), only
 // the illustration stops getting busier past a 7-time winner.
 export const HERO_MAX_TIER = 7;
+// Elite Role / Elite Player: top 10 at his position in the opened-player panel's Role / Player group (row.groupRank, lib/statPanel.js) -- the ranking
+// by average rank over the group's numbers, NOT the weekly projection ranking.
+export const ELITE_RANK = 10;
 
 // Ordered list of whichever of the flags apply to this row, as plain
 // {key, variant, label, ...} metadata -- no JSX/icons here, since the
@@ -251,6 +254,8 @@ export function getAchievements(row) {
   // Weekly Projection Rankings), shown as a badge too. Display only -- never a projection input. Rows without a
   // defLean (every page that doesn't load the leans, bye weeks, defenses with no strong trend) just don't get it.
   const matchup = playing ? row.defLean || null : null;
+  const eliteRole = row.groupRank?.role?.rank <= ELITE_RANK;
+  const elitePlayer = row.groupRank?.player?.rank <= ELITE_RANK;
 
   return [
     (isEstablished || isBuilding) && {
@@ -272,6 +277,8 @@ export function getAchievements(row) {
     },
     xfpFlag === "honorable" && { key: "honorable", variant: "honorable", label: "Honorable" },
     xfpFlag === "conArtist" && { key: "conArtist", variant: "menace", label: "Con Artist" },
+    eliteRole && { key: "eliteRole", variant: "eliteRole", label: "Elite Role", rank: row.groupRank.role.rank },
+    elitePlayer && { key: "elitePlayer", variant: "elitePlayer", label: "Elite Player", rank: row.groupRank.player.rank },
     // Always last: the ball badge closes the row.
     heroWins > 0 && {
       key: "hero",

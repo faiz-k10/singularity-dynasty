@@ -64,6 +64,8 @@
   --eddy-rgb:74,222,128;
   --icarus:#A78BFA;
   --icarus-rgb:167,139,250;
+  --elite-role:#E0749B; --elite-role-fill:#7A1F3D; --elite-role-rgb:224,116,155;
+  --elite-player:#8E9CF0; --elite-player-fill:#1D2A63; --elite-player-rgb:142,156,240;
   --matchup-neutral-rgb:240,196,61;
   --star-dim-rgb:153,151,168;
   --orbit-alpha:0.3;
@@ -122,6 +124,8 @@
     --eddy-rgb:22,163,74;
     --icarus:#7C3AED;
     --icarus-rgb:124,58,237;
+    --elite-role:#9B2750; --elite-role-fill:#7A1F3D; --elite-role-rgb:155,39,80;
+    --elite-player:#2E3F9E; --elite-player-fill:#1D2A63; --elite-player-rgb:46,63,158;
     --matchup-neutral-rgb:168,123,0;
     --star-dim-rgb:104,99,111;
     --orbit-alpha:0.8;
@@ -175,6 +179,8 @@
   --eddy-rgb:22,163,74;
   --icarus:#7C3AED;
   --icarus-rgb:124,58,237;
+  --elite-role:#9B2750; --elite-role-fill:#7A1F3D; --elite-role-rgb:155,39,80;
+  --elite-player:#2E3F9E; --elite-player-fill:#1D2A63; --elite-player-rgb:46,63,158;
   --matchup-neutral-rgb:168,123,0;
   --orbit-alpha:0.8;
 }
@@ -2017,6 +2023,8 @@ a.export-csv-btn{text-decoration:none;}
 /* Super Hero's dot is white everywhere (the star colour, so it also shows in light mode). */
 .player-achv-dot.ball{background:var(--star); box-shadow:0 0 4px rgba(var(--star-dot-rgb),0.6);}
 .player-achv-dot.honorable{background:var(--scholar); box-shadow:0 0 4px rgba(var(--scholar-rgb),0.7);}
+.player-achv-dot.eliteRole{background:var(--elite-role); box-shadow:0 0 4px rgba(var(--elite-role-rgb),0.7);}
+.player-achv-dot.elitePlayer{background:var(--elite-player); box-shadow:0 0 4px rgba(var(--elite-player-rgb),0.7);}
 .player-achv-dot.menace{background:var(--menace); box-shadow:0 0 4px rgba(var(--menace-rgb),0.85);}
 
 /* Explicit text-align (and white-space below) throughout -- this table is
@@ -2410,13 +2418,13 @@ a.export-csv-btn{text-decoration:none;}
    (confidence null) doesn't leave a stray gap in the flex row. */
 .weekly-player-achievements{display:contents;}
 .weekly-player-achievements .confidence-badge{
-  width:24px; height:24px; border-width:0;
+  width:30px; height:30px; border-width:0;
 }
 /* 20px icon in a 24px circle -- 2px margin each side, a clean pixel
    grid (see .confidence-badge svg's own comment for why that matters).
    Matches .weekly-glyph-badge svg's identical 20-in-24 ratio right
    below, so every badge in this row sizes its own art the same way. */
-.weekly-player-achievements .confidence-badge svg{width:20px; height:20px;}
+.weekly-player-achievements .confidence-badge svg{width:25px; height:25px;}
 .weekly-player-achievements .confidence-badge.gold{
   background:var(--horizon-gold); color:var(--void);
   box-shadow:0 0 8px rgba(var(--horizon-gold-rgb),0.55);
@@ -2454,6 +2462,8 @@ a.export-csv-btn{text-decoration:none;}
 .weekly-achievement-badge.ball .weekly-achievement-label{color:var(--horizon);}
 .weekly-achievement-badge.honorable .weekly-achievement-label{color:var(--scholar);}
 .weekly-achievement-badge.menace .weekly-achievement-label{color:var(--menace);}
+.weekly-achievement-badge.eliteRole .weekly-achievement-label{color:var(--elite-role);}
+.weekly-achievement-badge.elitePlayer .weekly-achievement-label{color:var(--elite-player);}
 
 /* On Fire (FlameIcon) / On Ice (SnowflakeIcon) / Risky Icarus
    (NightSkyIcon) / Steady Eddy (LockIcon) / Super Hero (HeroIcon) /
@@ -2471,10 +2481,10 @@ a.export-csv-btn{text-decoration:none;}
    --purple is the same "ceiling chaser" color My Team's Analytics tab
    already uses for boom-or-bust upside, reused here for the same idea. */
 .weekly-glyph-badge{
-  display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px;
+  display:inline-flex; align-items:center; justify-content:center; width:30px; height:30px;
   border-radius:50%; font-size:17px; line-height:1; flex-shrink:0; cursor:pointer; vertical-align:middle;
 }
-.weekly-glyph-badge svg{width:20px; height:20px; display:block;}
+.weekly-glyph-badge svg{width:25px; height:25px; display:block;}
 .weekly-glyph-badge.heat{background:var(--fire); color:var(--void); box-shadow:0 0 8px rgba(var(--fire-rgb),0.55);}
 .weekly-glyph-badge.ice{background:var(--frost); color:var(--void); box-shadow:0 0 8px rgba(var(--frost-rgb),0.55);}
 .weekly-glyph-badge.icarus{background:var(--icarus); color:var(--void); box-shadow:0 0 8px rgba(var(--icarus-rgb),0.55);}
@@ -2486,8 +2496,12 @@ a.export-csv-btn{text-decoration:none;}
 .weekly-glyph-badge.tough{background:var(--neon-blue); color:var(--void); box-shadow:0 0 8px rgba(var(--neon-blue-rgb),0.55);}
 .weekly-glyph-badge.ball{background:none; box-shadow:none;}
 .weekly-glyph-badge.ball .dragon-ball{display:flex;}
-.weekly-glyph-badge.ball svg{width:24px; height:24px; overflow:visible;}
+.weekly-glyph-badge.ball svg{width:30px; height:30px; overflow:visible;}
 .weekly-glyph-badge.honorable{background:var(--scholar); color:var(--void); box-shadow:0 0 8px rgba(var(--scholar-rgb),0.55);}
+/* Elite Role (framed landscape painting, wine) and Elite Player (Olympic podium, midnight): multicolour art that fills the whole 30px medallion. */
+.weekly-glyph-badge.eliteRole{background:var(--elite-role-fill); box-shadow:0 0 8px rgba(var(--elite-role-rgb),0.6);}
+.weekly-glyph-badge.elitePlayer{background:var(--elite-player-fill); box-shadow:0 0 8px rgba(var(--elite-player-rgb),0.6);}
+.weekly-glyph-badge.eliteRole svg, .weekly-glyph-badge.elitePlayer svg{width:30px; height:30px;}
 .weekly-glyph-badge.menace{background:var(--menace); color:var(--void); box-shadow:0 0 10px rgba(var(--menace-rgb),0.75);}
 /* Four stats, each its own little label-over-value stack -- same
    eyebrow-adjacent mono-uppercase label language as .weekly-panel-title

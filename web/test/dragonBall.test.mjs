@@ -37,3 +37,15 @@ test("a player projected for 0 points keeps his past-games badges but not the on
   assert.deepEqual(keys({ ...base, projection: 0 }), ["confidence", "hero"]); // no Smash / Tough Spot, no range badge
   assert.ok(keys(base).length > 0); // no projection on the row -> unchanged
 });
+
+test("Elite Role / Elite Player: top 10 in the position's Role / Player group, from groupRank (not the weekly ranking), even on a bye", () => {
+  const keys = (row) => getAchievements(row).map((a) => a.key);
+  assert.ok(keys({ groupRank: { role: { rank: 10, of: 34 }, player: { rank: 11, of: 34 } } }).includes("eliteRole"));
+  assert.ok(!keys({ groupRank: { role: { rank: 10, of: 34 }, player: { rank: 11, of: 34 } } }).includes("elitePlayer"));
+  assert.ok(keys({ groupRank: { role: { rank: 11, of: 34 }, player: { rank: 1, of: 34 } } }).includes("elitePlayer"));
+  assert.ok(keys({ rank: 1, groupRank: { role: { rank: 30, of: 34 } } }).indexOf("eliteRole") === -1, "a #1 weekly rank earns nothing");
+  assert.deepEqual(keys({ projection: 0, groupRank: { role: { rank: 2, of: 34 }, player: { rank: 3, of: 34 } } }), ["eliteRole", "elitePlayer"]);
+  const row = { heroWins: 2, groupRank: { role: { rank: 1, of: 30 }, player: { rank: 1, of: 30 } } };
+  assert.equal(keys(row).at(-1), "hero", "the ball is still last");
+  assert.equal(keys({}).length, 0, "no groupRank, no elite badges");
+});

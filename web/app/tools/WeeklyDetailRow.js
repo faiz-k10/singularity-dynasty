@@ -453,8 +453,41 @@ function MoneyBagIcon() {
 // The icon each achievement key renders as in the full banner badge --
 // keyed by achievements.js's own `key` field so this can't fall out of
 // sync with which flags actually exist.
+// Elite Role: a gold-framed landscape painting (sky, sun, two mountains, a hill). Elite Player: an Olympic podium, 2 / 1 / 3 in silver, gold and bronze with
+// the numbers in the badge colour. Both fill the whole medallion (the badge's own background is the wine / midnight behind them).
+function EliteRoleIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <rect x="4.2" y="6" width="15.6" height="12" rx="1" fill="#E3B341" />
+      <rect x="5.7" y="7.5" width="12.6" height="9" fill="#F7D9A8" />
+      <circle cx="14.9" cy="10.3" r="1.5" fill="#D9480F" />
+      <path d="M5.7 16.5 9.6 10.6 12.6 14.4 14.4 12.6 18.3 16.5Z" fill="#6B3A5B" />
+      <path d="M5.7 16.5C8 14.2 10.6 14.6 12.4 15.6 14.6 14.4 16.6 14.8 18.3 16.5Z" fill="#3F6B4A" />
+    </svg>
+  );
+}
+
+function ElitePlayerIcon() {
+  const digit = { textAnchor: "middle", fontWeight: 700, fontFamily: "Arial, Helvetica, sans-serif", fill: "#1D2A63" };
+  return (
+    <svg viewBox="0 0 30 30" aria-hidden="true">
+      <rect x="11" y="9.5" width="8" height="12.5" fill="#F5C542" />
+      <rect x="3.5" y="13" width="7.5" height="9" fill="#C9D1DC" />
+      <rect x="19" y="15.5" width="7.5" height="6.5" fill="#CD7F32" />
+      <text x="15" y="18.6" fontSize="7" {...digit}>1</text>
+      <text x="7.25" y="19.6" fontSize="6.5" {...digit}>2</text>
+      <text x="22.75" y="20.6" fontSize="6" {...digit}>3</text>
+      <rect x="3.5" y="22" width="23" height="1.2" fill="#E8E6E1" />
+    </svg>
+  );
+}
+
 function achievementNode(a, row) {
   switch (a.key) {
+    case "eliteRole":
+      return <GlyphBadge variant="eliteRole" glyph={<EliteRoleIcon />} title={`Elite Role: #${a.rank} among ${row.position}s on how much his offense uses him (the Role numbers in the stats panel)`} />;
+    case "elitePlayer":
+      return <GlyphBadge variant="elitePlayer" glyph={<ElitePlayerIcon />} title={`Elite Player: #${a.rank} among ${row.position}s on what he does with his usage (the Player numbers in the stats panel)`} />;
     case "confidence":
       return <ConfidenceBadge confidence={row.sample_confidence} />;
     case "onFire":

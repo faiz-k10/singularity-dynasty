@@ -15,6 +15,8 @@ export const BADGE_FILTERS = [
   { id: "smash", variant: "smash", label: "Smash Spot", match: (a) => a.key === "matchup" && a.variant === "smash" },
   { id: "tough", variant: "tough", label: "Tough Spot", match: (a) => a.key === "matchup" && a.variant === "tough" },
   { id: "hero", variant: "ball", label: "Super Hero", match: (a) => a.key === "hero" },
+  { id: "eliteRole", variant: "eliteRole", label: "Elite Role", match: (a) => a.key === "eliteRole" },
+  { id: "elitePlayer", variant: "elitePlayer", label: "Elite Player", match: (a) => a.key === "elitePlayer" },
   { id: "honorable", variant: "honorable", label: "Honorable", match: (a) => a.key === "honorable" },
   { id: "conArtist", variant: "menace", label: "Con Artist", match: (a) => a.key === "conArtist" },
 ];
@@ -27,6 +29,7 @@ export const BADGE_GROUPS = [
   { label: "Value", ids: ["buyLow", "sellHigh"] },
   { label: "Matchup", ids: ["smash", "tough"] },
   { label: "Track record", ids: ["hero"] },
+  { label: "Elite at his position", ids: ["eliteRole", "elitePlayer"] },
 ];
 
 // Does a row's badge list satisfy the selected filters? "or": any selected badge; "and": every selected badge.
