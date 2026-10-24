@@ -106,6 +106,14 @@ function resolveMatchup(matchups, myRoster, rosters, leagueUsers, bestBall = nul
   return out;
 }
 
+// My starting lineup (player ids in slot order). Sleeper's matchup entry is the source of truth: it reflects a lineup change at once, while the
+// roster endpoint's `starters` can lag it by minutes (a QB swap showed in the matchup but not in the roster). Everything that reads "who is
+// starting" -- the saved players' isStarter / slot, the poll's change detector, the matchup lineups -- uses this one list, so they never disagree.
+// Falls back to the roster when there is no matchup (bye, offseason) and in best ball (no set lineup).
+function myStarters(myRoster, mine, bestBall) {
+  return (!bestBall && mine?.starters?.length ? mine.starters : myRoster.starters) || [];
+}
+
 // Both lineups of this week's matchup, slot by slot, for the head-to-head view and the win chance
 // (lib/winChance.js): starters + their points so far from the Sleeper matchup entries, names from infoFor, and our
 // weekly projection / floor / ceiling by normalized name. Null on a bye, in best ball (no set lineup) or before the
@@ -360,7 +368,7 @@ export async function lookupSleeperTeams(username, opts = {}) {
 
       const slotByPlayerId = {};
       const slotIndexByPlayerId = {};
-      (myRoster.starters || []).forEach((playerId, i) => {
+      myStarters(myRoster, mine, bestBall).forEach((playerId, i) => {
         if (playerId && playerId !== "0") {
           slotByPlayerId[playerId] = nonBenchSlots[i] || null;
           slotIndexByPlayerId[playerId] = i;
@@ -519,8 +527,6 @@ export async function pollLiveScores() {
       ]);
       const myRoster = rosters.find((r) => String(r.roster_id) === String(row.platform_roster_id));
       if (!myRoster) return;
-      // Current starting lineup, so the client can tell when it changed in Sleeper and refresh (lib/rosterAlerts.js).
-      lineups[row.id] = (myRoster.starters || []).filter((id) => id && id !== "0").map(String);
       let bestBall = null;
       if (row.settings?.bestBall && row.settings?.slots?.length) {
         bbDictP ??= getSleeperPlayers().catch(() => ({}));
@@ -528,6 +534,8 @@ export async function pollLiveScores() {
         bestBall = { posOf: (id) => dict[id]?.position, slots: row.settings.slots };
       }
       const m = resolveMatchup(matchups, myRoster, rosters, leagueUsers, bestBall);
+      // Current starting lineup, so the client can tell when it changed in Sleeper and refresh (lib/rosterAlerts.js).
+      lineups[row.id] = myStarters(myRoster, m.mine, Boolean(row.settings?.bestBall)).filter((id) => id && id !== "0").map(String);
       let h2h = null;
       let winChance = null;
       if (m.mine && m.oppEntry && !row.settings?.bestBall) {
