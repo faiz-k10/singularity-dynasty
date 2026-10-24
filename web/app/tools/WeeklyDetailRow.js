@@ -10,6 +10,7 @@ import { getAchievements } from "./achievements";
 import DragonBall from "./DragonBall";
 import { MyStrip, MyEmpty } from "./MyPlayers";
 import { PANEL_KEYS } from "@/lib/statPanel";
+import { ageOn } from "@/lib/format";
 
 // Season-level usage/efficiency metrics, not weekly stats -- attached
 // server-side in page.js's fetchSimsMetrics()/fetchSeasonXfp() (joined
@@ -628,7 +629,8 @@ export function PlayerStatsRow({ row }) {
 export function PlayerHeaderPanel({ row }) {
   const bio = row.bio || {};
   const ht = formatHeight(bio.height);
-  const sizeText = [ht, bio.weight ? `${bio.weight} lbs` : null].filter(Boolean).join(" · ");
+  const age = ageOn(bio.birthDate);
+  const sizeText = [ht, bio.weight ? `${bio.weight} lbs` : null, age ? `${age} yrs` : null].filter(Boolean).join(" · ");
 
   // getAchievements (achievements.js) is the one source of truth for
   // which flags apply -- RankingsTable's collapsed-row dot preview calls

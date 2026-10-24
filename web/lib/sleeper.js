@@ -128,12 +128,12 @@ const cachedBiosByNamePos = unstable_cache(
     for (const [id, p] of Object.entries(dict)) {
       const name = normalizePlayerName(`${p.first_name || ""} ${p.last_name || ""}`);
       if (!name || !p.position) continue;
-      byNamePos[`${name}|${p.position}`] = { sleeperId: id, headshot: p.headshot ?? null, height: p.height ?? null, weight: p.weight ?? null, yearsExp: p.years_exp ?? null };
+      byNamePos[`${name}|${p.position}`] = { sleeperId: id, headshot: p.headshot ?? null, height: p.height ?? null, weight: p.weight ?? null, yearsExp: p.years_exp ?? null, birthDate: p.birth_date ?? null };
     }
     if (!Object.keys(byNamePos).length) throw new Error("Sleeper player dictionary unavailable"); // never cache an empty answer
     return byNamePos;
   },
-  ["sleeper-bios-by-name-pos-v4"],
+  ["sleeper-bios-by-name-pos-v5"],
   { revalidate: 86400 }
 );
 
