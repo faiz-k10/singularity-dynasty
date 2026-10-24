@@ -2607,11 +2607,11 @@ a.export-csv-btn{text-decoration:none;}
    ellipsis-truncating "YAC Above Exp"/"Play-Action Rate"/etc. A short
    fixed-width bar is still plenty legible for a percentile read; the
    label text is the part that actually needs the room. */
-/* Usage / touchdown panel as a small table: Metric | Rank | Value. Rank sits before the value, as a pill. */
+/* Usage / touchdown panel as a small table: Metric | Rank | Value. Rank is a bar before the value: the higher he ranks at his position, the fuller it is. */
 .weekly-detail-pct-panel .weekly-panel-body{justify-content:flex-start;}
 .weekly-rank-table{display:flex; flex-direction:column; width:100%;}
 .weekly-rank-head,
-.weekly-rank-row{display:grid; grid-template-columns:minmax(0,1fr) 84px 60px; align-items:center; column-gap:8px;}
+.weekly-rank-row{display:grid; grid-template-columns:minmax(0,1fr) 92px 60px; align-items:center; column-gap:10px;}
 .weekly-rank-head{
   padding:0 4px 5px; margin-bottom:0; border-bottom:1px solid var(--line);
   font-family:var(--font-mono), monospace; font-size:9.5px; letter-spacing:0.1em; text-transform:uppercase; color:var(--star-dim);
@@ -2621,13 +2621,9 @@ a.export-csv-btn{text-decoration:none;}
 .weekly-rank-row{padding:4px 4px; border-bottom:1px solid rgba(var(--shadow-rgb),0.5);}
 .weekly-rank-row:last-child{border-bottom:none; padding-bottom:2px;}
 .weekly-rank-label{font-size:12.5px; color:var(--star); text-align:left; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:default;}
-.weekly-rank-num{
-  justify-self:center; display:inline-flex; align-items:baseline; gap:2px; width:66px; justify-content:center; box-sizing:border-box;
-  padding:1px 8px; border-radius:2px; font-family:var(--font-mono), monospace; font-size:12px; line-height:1.35; font-weight:700; color:var(--horizon-gold);
-  background:rgba(var(--horizon-gold-rgb),0.10); border:1px solid rgba(var(--horizon-gold-rgb),0.32); cursor:default;
-}
-.weekly-rank-of{font-size:9.5px; font-weight:400; color:var(--star-dim);}
-.weekly-rank-num.weekly-rank-none{color:var(--star-dim); font-weight:400; background:none; border-color:var(--line);}
+.weekly-rank-bar{display:block; height:8px; border-radius:2px; overflow:hidden; background:rgba(var(--star-dot-rgb),.12); cursor:default;}
+.weekly-rank-bar > span{display:block; height:100%; border-radius:2px; background:var(--horizon-gold);}
+.weekly-rank-bar.is-none{background:none; border:1px dashed var(--line);} /* not ranked (In-10 Share under the target minimum): an empty dashed track */
 .weekly-rank-row .weekly-pct-value{font-size:12.5px; text-align:right;}
 .weekly-pct-value{font-family:var(--font-mono), monospace; font-size:12px; color:var(--star); text-align:right;}
 
