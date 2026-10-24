@@ -1,9 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { groupRanks, meanRank } from "../lib/statPanel.js";
+import { groupRanks, meanRank, PANEL_KEYS } from "../lib/statPanel.js";
 
 const R = (rank) => ({ rank, of: 30 });
-const ROLE = ["avgXfp", "u_att_pg", "u_aypa", "u_rush_ypg", "scrambleRate", "playActionRate"];
+const ROLE = PANEL_KEYS.QB.role;
 const all = (n) => Object.fromEntries(ROLE.map((k) => [k, R(n)]));
 
 test("meanRank needs the minimum number of ranks", () => {
