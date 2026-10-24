@@ -64,8 +64,8 @@
   --eddy-rgb:74,222,128;
   --icarus:#A78BFA;
   --icarus-rgb:167,139,250;
-  --elite-role:#E0749B; --elite-role-fill:#7A1F3D; --elite-role-rgb:224,116,155;
-  --elite-player:#8E9CF0; --elite-player-fill:#1D2A63; --elite-player-rgb:142,156,240;
+  --elite-role:#B8346A; --elite-role-rgb:184,52,106;
+  --elite-player:#4B5BD1; --elite-player-rgb:75,91,209;
   --matchup-neutral-rgb:240,196,61;
   --star-dim-rgb:153,151,168;
   --orbit-alpha:0.3;
@@ -124,8 +124,8 @@
     --eddy-rgb:22,163,74;
     --icarus:#7C3AED;
     --icarus-rgb:124,58,237;
-    --elite-role:#9B2750; --elite-role-fill:#7A1F3D; --elite-role-rgb:155,39,80;
-    --elite-player:#2E3F9E; --elite-player-fill:#1D2A63; --elite-player-rgb:46,63,158;
+    --elite-role:#B8346A; --elite-role-rgb:184,52,106;
+    --elite-player:#4B5BD1; --elite-player-rgb:75,91,209;
     --matchup-neutral-rgb:168,123,0;
     --star-dim-rgb:104,99,111;
     --orbit-alpha:0.8;
@@ -179,8 +179,8 @@
   --eddy-rgb:22,163,74;
   --icarus:#7C3AED;
   --icarus-rgb:124,58,237;
-  --elite-role:#9B2750; --elite-role-fill:#7A1F3D; --elite-role-rgb:155,39,80;
-  --elite-player:#2E3F9E; --elite-player-fill:#1D2A63; --elite-player-rgb:46,63,158;
+  --elite-role:#B8346A; --elite-role-rgb:184,52,106;
+  --elite-player:#4B5BD1; --elite-player-rgb:75,91,209;
   --matchup-neutral-rgb:168,123,0;
   --orbit-alpha:0.8;
 }
@@ -255,9 +255,8 @@ body::before{
    evenly and ends up looking a pixel off-center on one side). */
 .ticker-badge svg{width:14px; height:14px; display:block;}
 .ticker-badge.gold{background:var(--horizon-gold); color:var(--void); box-shadow:0 0 5px rgba(var(--horizon-gold-rgb),0.5);}
-.ticker-badge.eliteRole{background:var(--elite-role-fill); box-shadow:0 0 5px rgba(var(--elite-role-rgb),0.55);}
-.ticker-badge.elitePlayer{background:var(--elite-player-fill); box-shadow:0 0 5px rgba(var(--elite-player-rgb),0.55);}
-.ticker-badge.eliteRole svg, .ticker-badge.elitePlayer svg{width:16px; height:16px;}
+.ticker-badge.eliteRole{background:var(--elite-role); color:var(--void); box-shadow:0 0 5px rgba(var(--elite-role-rgb),0.55);}
+.ticker-badge.elitePlayer{background:var(--elite-player); color:var(--void); box-shadow:0 0 5px rgba(var(--elite-player-rgb),0.55);}
 .ticker-badge.silver{background:var(--silver); color:var(--void); box-shadow:0 0 4px rgba(var(--silver-rgb),0.4);}
 .ticker-badge.icarus{background:var(--icarus); color:var(--void); box-shadow:0 0 5px rgba(var(--icarus-rgb),0.5);}
 .ticker-badge.eddy{background:var(--eddy); color:var(--void); box-shadow:0 0 5px rgba(var(--eddy-rgb),0.5);}
@@ -2501,10 +2500,12 @@ a.export-csv-btn{text-decoration:none;}
 .weekly-glyph-badge.ball .dragon-ball{display:flex;}
 .weekly-glyph-badge.ball svg{width:30px; height:30px; overflow:visible;}
 .weekly-glyph-badge.honorable{background:var(--scholar); color:var(--void); box-shadow:0 0 8px rgba(var(--scholar-rgb),0.55);}
-/* Elite Role (framed landscape painting, wine) and Elite Player (Olympic podium, midnight): multicolour art that fills the whole 30px medallion. */
-.weekly-glyph-badge.eliteRole{background:var(--elite-role-fill); box-shadow:0 0 8px rgba(var(--elite-role-rgb),0.6);}
-.weekly-glyph-badge.elitePlayer{background:var(--elite-player-fill); box-shadow:0 0 8px rgba(var(--elite-player-rgb),0.6);}
-.weekly-glyph-badge.eliteRole svg, .weekly-glyph-badge.elitePlayer svg{width:30px; height:30px;}
+/* Elite Role (a framed landscape painting, rose-wine) and Elite Player (an Olympic podium, periwinkle): the same language as every badge -- a dark one-colour subject on a
+   solid colour. The podium's 1 / 2 / 3 are cut out of the blocks in the badge's own colour. */
+.weekly-glyph-badge.eliteRole{background:var(--elite-role); color:var(--void); box-shadow:0 0 8px rgba(var(--elite-role-rgb),0.6);}
+.weekly-glyph-badge.elitePlayer{background:var(--elite-player); color:var(--void); box-shadow:0 0 8px rgba(var(--elite-player-rgb),0.6);}
+.weekly-glyph-badge.elitePlayer svg{width:27px; height:27px;}
+.weekly-glyph-badge.elitePlayer svg text{fill:var(--elite-player);}
 .weekly-glyph-badge.menace{background:var(--menace); color:var(--void); box-shadow:0 0 10px rgba(var(--menace-rgb),0.75);}
 /* Four stats, each its own little label-over-value stack -- same
    eyebrow-adjacent mono-uppercase label language as .weekly-panel-title

@@ -454,31 +454,28 @@ function MoneyBagIcon() {
 // The icon each achievement key renders as in the full banner badge --
 // keyed by achievements.js's own `key` field so this can't fall out of
 // sync with which flags actually exist.
-// Elite Role: a gold-framed landscape painting (sky, sun, two mountains, a hill). Elite Player: an Olympic podium, 2 / 1 / 3 in silver, gold and bronze with
-// the numbers in the badge colour. Both fill the whole medallion (the badge's own background is the wine / midnight behind them).
+// Elite Role: a framed landscape painting (sun, two mountains, a hill). Elite Player: an Olympic podium, 2 / 1 / 3, with the numbers cut out of the blocks in the badge's
+// colour (CSS: `.weekly-glyph-badge.elitePlayer svg text`). One-colour art in currentColor on the badge's solid colour, like every other badge.
 function EliteRoleIcon() {
   return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <rect x="4.2" y="6" width="15.6" height="12" rx="1" fill="#E3B341" />
-      <rect x="5.7" y="7.5" width="12.6" height="9" fill="#F7D9A8" />
-      <circle cx="14.9" cy="10.3" r="1.5" fill="#D9480F" />
-      <path d="M5.7 16.5 9.6 10.6 12.6 14.4 14.4 12.6 18.3 16.5Z" fill="#6B3A5B" />
-      <path d="M5.7 16.5C8 14.2 10.6 14.6 12.4 15.6 14.6 14.4 16.6 14.8 18.3 16.5Z" fill="#3F6B4A" />
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <rect x="3.6" y="5.6" width="16.8" height="12.8" rx="1.2" fill="none" stroke="currentColor" strokeWidth="1.8" />
+      <circle cx="15.6" cy="10.2" r="1.7" />
+      <path d="M6 16.6 10 10.4 13 14.5 14.8 12.7 18 16.6Z" />
     </svg>
   );
 }
 
 function ElitePlayerIcon() {
-  const digit = { textAnchor: "middle", fontWeight: 700, fontFamily: "Arial, Helvetica, sans-serif", fill: "#1D2A63" };
+  const digit = { textAnchor: "middle", fontWeight: 700, fontFamily: "Arial, Helvetica, sans-serif" };
   return (
-    <svg viewBox="0 0 30 30" aria-hidden="true">
-      <rect x="11" y="9.5" width="8" height="12.5" fill="#F5C542" />
-      <rect x="3.5" y="13" width="7.5" height="9" fill="#C9D1DC" />
-      <rect x="19" y="15.5" width="7.5" height="6.5" fill="#CD7F32" />
-      <text x="15" y="18.6" fontSize="7" {...digit}>1</text>
-      <text x="7.25" y="19.6" fontSize="6.5" {...digit}>2</text>
-      <text x="22.75" y="20.6" fontSize="6" {...digit}>3</text>
-      <rect x="3.5" y="22" width="23" height="1.2" fill="#E8E6E1" />
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <rect x="8.7" y="6.3" width="6.6" height="13.2" />
+      <rect x="2" y="10.3" width="6.7" height="9.2" />
+      <rect x="15.3" y="13.5" width="6.7" height="6" />
+      <text x="12" y="13.4" fontSize="6.6" {...digit}>1</text>
+      <text x="5.35" y="16.6" fontSize="6.2" {...digit}>2</text>
+      <text x="18.65" y="18.7" fontSize="5.4" {...digit}>3</text>
     </svg>
   );
 }
