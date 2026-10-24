@@ -62,24 +62,6 @@ test("SUPER_FLEX / FLEX are filled after the fixed slots", () => {
   assert.equal(r.swaps[0].out.name, "Junk");
 });
 
-test("underdog tilt: a ceiling swap that costs little median is offered", () => {
-  const t = team(
-    [
-      P("1", "Qb", "QB", "A", 18, { isStarter: true, slotIndex: 0, myCeiling: 28 }),
-      P("2", "Rb", "RB", "B", 12, { isStarter: true, slotIndex: 1, myCeiling: 18 }),
-      P("3", "Wr", "WR", "C", 11, { isStarter: true, slotIndex: 2, myCeiling: 17 }),
-      P("4", "Steady", "WR", "D", 10, { isStarter: true, slotIndex: 3, myCeiling: 13 }),
-      P("5", "Boom", "WR", "E", 9.5, { myCeiling: 27 }),
-    ],
-    ["QB", "RB", "WR", "FLEX"],
-    { winChance: 0.25 }
-  );
-  const a = lineupAdvice(t, {});
-  assert.equal(a.gain, 0, "by projection he's already set");
-  assert.equal(a.tilt.mode, "ceiling");
-  assert.equal(a.tilt.swaps[0].in.name, "Boom");
-});
-
 test("best ball, byes and teams without slots return null", () => {
   assert.equal(optimizeLineup(team([], ["QB"], { bestBall: true }), {}), null);
   assert.equal(optimizeLineup({ settings: {}, players: [] }, {}), null);
@@ -186,46 +168,87 @@ test("a bench player the injury feed lists Out is never recommended, and an Out 
   };
   const injuries = [{ name: "Hurt Star", status: "Out", severity: 4 }];
   assert.equal(optimizeLineup(t, {}).swaps[0].in.name, "Hurt Star");
-  const r = optimizeLineup(t, {}, "proj", injuries);
+  const r = optimizeLineup(t, {}, injuries);
   assert.equal(r.swaps.length, 1);
   assert.equal(r.swaps[0].in.name, "Healthy Backup");
   // an Out starter is worth 0, so the healthy bench player replaces him
   const inj2 = [{ name: "Flex Guy", status: "Out", severity: 4 }];
-  const r2 = optimizeLineup(t, {}, "proj", inj2);
+  const r2 = optimizeLineup(t, {}, inj2);
   assert.equal(r2.swaps[0].out.name, "Flex Guy");
 });
 
-import { startValue, matchupNudge, SWANSON, MATCHUP_CAP } from "../lib/lineupOptimizer.js";
+// ---- win-chance start / sit ------------------------------------------------------------------------------------------------
+import { rangeText } from "../lib/lineupOptimizer.js";
 
-test("start value is Swanson's 30 / 40 / 30 over floor, median and ceiling; no range falls back to the median", () => {
-  assert.equal(SWANSON.floor + SWANSON.median + SWANSON.ceiling, 1);
-  const p = { myProjPts: 10, myFloor: 4, myCeiling: 22 };
-  assert.ok(Math.abs(startValue(p) - (0.3 * 4 + 0.4 * 10 + 0.3 * 22)) < 1e-9); // 11.8: the long upside tail is worth more than the median
-  assert.equal(startValue({ myProjPts: 10 }), 10);
-  assert.equal(startValue({ myProjPts: 10, myFloor: 4, myCeiling: 22 }, "ceiling"), 22);
-  assert.equal(startValue({ myProjPts: 10, myFloor: 4, myCeiling: 22 }, "floor"), 4);
-  assert.equal(startValue({}), null);
-});
-
-test("a Smash / Tough Spot nudges the score by half its points effect, capped", () => {
-  const base = { myProjPts: 10, myFloor: 5, myCeiling: 15 };
-  assert.ok(Math.abs(startValue({ ...base, myLean: { call: "SMASH", effect: 2 } }) - (10 + 1)) < 1e-9);
-  assert.ok(Math.abs(startValue({ ...base, myLean: { call: "AVOID", effect: -1.2 } }) - (10 - 0.6)) < 1e-9);
-  assert.equal(matchupNudge({ myLean: { call: "SMASH", effect: 99 } }), MATCHUP_CAP);
-  assert.equal(matchupNudge({}), 0);
-});
-
-test("a wider range beats a slightly higher median, and a Smash Spot breaks a tie", () => {
-  const t = {
-    settings: { slots: ["WR", "FLEX"] },
+const E = (id, proj, floor, ceiling, team = "A", x = {}) => ({ id, slot: "X", name: id, pos: "WR", team, proj, floor, ceiling, pts: null, ...x });
+const PL = (id, name, pos, team, proj, floor, ceiling, x = {}) => ({ player_id: id, name, position: pos, team, myProjPts: proj, myFloor: floor, myCeiling: ceiling, isStarter: false, slotIndex: 999, ...x });
+const PRE = { A: { state: "pre" }, B: { state: "pre" }, C: { state: "pre" }, D: { state: "pre" } };
+// slots WR / FLEX; opp is one lineup whose total we choose to make us an underdog or a favorite
+function league(oppProj, oppFloor, oppCeil, bench = [], extra = {}) {
+  return {
+    settings: {
+      slots: ["WR", "FLEX"],
+      winChance: extra.winChance,
+      h2h: {
+        mine: [E("1", 15, 9, 21, "A", { slot: "WR" }), E("2", 10.8, 9.5, 12.5, "B", { slot: "FLEX" })],
+        opp: [E("9", oppProj, oppFloor, oppCeil, "C")],
+      },
+    },
     players: [
-      { player_id: "1", name: "Starter", position: "WR", team: "A", isStarter: true, slot: "WR", slotIndex: 0, myProjPts: 15, myFloor: 9, myCeiling: 21 },
-      { player_id: "2", name: "Steady", position: "WR", team: "B", isStarter: true, slot: "FLEX", slotIndex: 1, myProjPts: 10.8, myFloor: 9.5, myCeiling: 12.5 },
-      { player_id: "3", name: "Boom", position: "WR", team: "C", isStarter: false, myProjPts: 10.6, myFloor: 3, myCeiling: 22 },
+      PL("1", "Starter", "WR", "A", 15, 9, 21, { isStarter: true, slotIndex: 0 }),
+      PL("2", "Steady", "WR", "B", 10.8, 9.5, 12.5, { isStarter: true, slotIndex: 1 }),
+      ...bench,
     ],
   };
-  const r = optimizeLineup(t, {});
-  assert.equal(r.swaps[0].in.name, "Boom"); // 10.6 median < 10.8, but a 3-22 range is worth more in expectation
-  const tough = { ...t, players: t.players.map((p) => (p.name === "Boom" ? { ...p, myLean: { call: "AVOID", effect: -4 } } : p)) };
-  assert.equal(optimizeLineup(tough, {}).swaps.length, 0); // a Tough Spot (-2 nudge) takes the edge back
+}
+const BOOM = () => PL("3", "Boom", "WR", "D", 10.6, 3, 22);
+
+test("win-chance start / sit: an underdog is steered to the higher-ceiling player even with the lower median", () => {
+  const t = league(27, 18, 36, [BOOM()], { winChance: 0.35 });
+  const a = lineupAdvice(t, PRE);
+  assert.equal(a.basis, "win");
+  assert.equal(a.swaps[0].in.name, "Boom");
+  assert.ok(a.swaps[0].gain >= 0.5);
+  assert.match(a.swaps[0].why, /Higher ceiling \(22\.0 vs 12\.5\), which an underdog needs/);
+});
+
+test("win-chance start / sit: a favorite is NOT swapped into the boom-or-bust player", () => {
+  const t = league(20, 14, 26, [BOOM()], { winChance: 0.77 });
+  const a = lineupAdvice(t, PRE);
+  assert.equal(a.basis, "win");
+  assert.equal(a.swaps.length, 0);
+});
+
+test("win-chance start / sit: a Smash Spot moves the range by its published points effect and can tip a close call", () => {
+  const near = PL("3", "Near", "WR", "D", 10.2, 8.5, 12.0);
+  const plain = league(18, 11, 25, [near], { winChance: 0.5 });
+  assert.equal(lineupAdvice(plain, PRE).swaps.length, 0);
+  const smash = league(18, 11, 25, [{ ...near, myLean: { call: "SMASH", effect: 2.5 } }], { winChance: 0.5 });
+  const a = lineupAdvice(smash, PRE);
+  assert.equal(a.swaps[0].in.name, "Near");
+  assert.match(a.swaps[0].why, /Smash Spot/);
+});
+
+test("win-chance start / sit: an Out starter is replaced, an Out bench player never chosen", () => {
+  const t = league(20, 14, 26, [PL("3", "Hurt Star", "WR", "D", 13, 5, 25), PL("4", "Fine", "WR", "D", 9, 5, 13)], { winChance: 0.5 });
+  const a = lineupAdvice(t, PRE, [{ name: "Hurt Star", status: "Out", severity: 4 }]);
+  assert.ok(a.swaps.every((x) => x.in.name !== "Hurt Star"));
+  const b = lineupAdvice(t, PRE, [{ name: "Steady", status: "Out", severity: 4 }]);
+  assert.equal(b.swaps[0].out.name, "Steady");
+});
+
+test("without a saved matchup it falls back to the median and says so; rangeText prints the rankings' numbers", () => {
+  const t = league(20, 14, 26, [PL("3", "Better", "WR", "D", 13, 5, 25)]);
+  delete t.settings.h2h;
+  const a = lineupAdvice(t, PRE);
+  assert.equal(a.basis, "median");
+  assert.equal(a.swaps[0].in.name, "Better");
+  assert.equal(rangeText(PL("x", "X", "WR", "A", 10.8, 3, 22)), "10.8 (3.0–22.0)");
+  assert.equal(rangeText({ myProjPts: 6 }), "6.0");
+});
+
+test("a stale matchup snapshot (lineup differs from the roster) falls back to the median", () => {
+  const t = league(20, 14, 26, [PL("3", "Better", "WR", "D", 13, 5, 25)]);
+  t.settings.h2h.mine[1] = E("77", 8, 2, 14, "B", { slot: "FLEX" });
+  assert.equal(lineupAdvice(t, PRE).basis, "median");
 });

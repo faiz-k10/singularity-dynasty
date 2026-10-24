@@ -9,7 +9,7 @@
 // gameStates: lib/gameStatus.js (team -> { state: "pre" | "in" | "post" }).
 // waivers: { [teamId]: [{ name, pos, team, proj }] } best available per league, optional.
 
-import { lineupAdvice, slotLabel } from "./lineupOptimizer.js";
+import { lineupAdvice, rangeText, slotLabel } from "./lineupOptimizer.js";
 import { playerLeverage } from "./winChance.js";
 import { num, leagueName } from "./format.js";
 
@@ -70,42 +70,30 @@ function leagues(savedTeams, gameStates, adjusted = null) {
 }
 
 
-// Lineup upgrades: the biggest projection gain per league from the optimizer (lib/lineupOptimizer.js), and the ceiling / floor tilt
-// when the win chance is lopsided. Only while someone in the lineup can still move.
+// Lineup upgrades: the biggest swap per league from the optimizer (lib/lineupOptimizer.js: judged by win chance when the matchup is saved, by
+// median otherwise). Only while someone in the lineup can still move.
 function lineupCards(savedTeams, gameStates, adjusted, injuriesByTeam) {
   const cards = [];
   for (const t of savedTeams || []) {
     // The board already worked the advice out for its alert counts (row.alertCount.advice); only compute it when running without the board.
     const a = adjusted?.[t.id]?.row ? adjusted[t.id].row.alertCount.advice : lineupAdvice(t, gameStates, injuriesByTeam?.[t.id]);
-    if (!a || !a.swaps.length) continue;
+    if (!a || !a.swaps.length || a.gain < 1) continue;
     const top = a.swaps[0];
-    if (a.gain >= 1) {
-      cards.push({
-        id: `lineup:${t.id}`,
-        kind: "lineup",
-        label: "Lineup upgrade",
-        tone: "mine",
-        title: `Start ${top.in.name}${top.out ? ` over ${top.out.name}` : ""} in ${leagueOf(t)}`,
-        body: `At ${slotLabel(top.slot)}: ${r1(top.in.val)} expected points against ${top.out ? r1(top.out.val) : "an empty slot"}, ${r1(top.gain)} more.${a.swaps.length > 1 ? ` ${a.swaps.length - 1} more ${a.swaps.length === 2 ? "swap" : "swaps"} on the Lineup tab, ${r1(a.gain)} in all.` : ""}`,
-        player: chip({ name: top.in.name, pos: top.in.position, team: top.in.team }),
-        league: leagueOf(t),
-        priority: 92 + Math.min(5, Math.round(a.gain / 3)),
-      });
-    }
-    if (a.tilt) {
-      const x = a.tilt.swaps[0];
-      cards.push({
-        id: `tilt:${t.id}`,
-        kind: "lineup",
-        label: a.tilt.mode === "ceiling" ? "Swing for the ceiling" : "Protect the floor",
-        tone: a.tilt.mode === "ceiling" ? "theirs" : "mine",
-        title: `${a.tilt.mode === "ceiling" ? "Underdog" : "Favorite"} in ${leagueOf(t)}: start ${x.in.name}${x.out ? ` over ${x.out.name}` : ""}`,
-        body: `At ${Math.round(a.tilt.win * 100)}% to win, this adds ${r1(a.tilt.gain)} to your ${a.tilt.mode} and moves your expected points ${a.tilt.medianChange >= 0 ? "+" : "−"}${r1(Math.abs(a.tilt.medianChange))}.`,
-        player: chip({ name: x.in.name, pos: x.in.position, team: x.in.team }),
-        league: leagueOf(t),
-        priority: 78,
-      });
-    }
+    const byWin = a.basis === "win";
+    const more = a.swaps.length > 1 ? ` ${a.swaps.length - 1} more ${a.swaps.length === 2 ? "swap" : "swaps"} on the Lineup Alerts tab, ${r1(a.gain)}${byWin ? " points of win chance" : ""} in all.` : "";
+    cards.push({
+      id: `lineup:${t.id}`,
+      kind: "lineup",
+      label: "Lineup upgrade",
+      tone: "mine",
+      title: `Start ${top.in.name}${top.out ? ` over ${top.out.name}` : ""} in ${leagueOf(t)}`,
+      body: byWin
+        ? `${top.why}: ${rangeText(top.in)} against ${top.out ? rangeText(top.out) : "an empty slot"} at ${slotLabel(top.slot)}. Your win chance goes up ${r1(top.gain)} points.${more}`
+        : `At ${slotLabel(top.slot)}: ${rangeText(top.in)} against ${top.out ? rangeText(top.out) : "an empty slot"}, ${r1(top.gain)} more.${more}`,
+      player: chip({ name: top.in.name, pos: top.in.position, team: top.in.team }),
+      league: leagueOf(t),
+      priority: 92 + Math.min(5, Math.round(a.gain / 3)),
+    });
   }
   return cards.sort((a, b) => b.priority - a.priority).slice(0, 4);
 }

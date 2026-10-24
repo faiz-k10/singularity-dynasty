@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import PositionBadge from "../tools/PositionBadge";
 import TeamBadge from "../tools/TeamBadge";
 import { fmt1 } from "@/lib/format";
-import { lineupAlertCount, matchupNudge, slotLabel } from "@/lib/lineupOptimizer";
+import { lineupAlertCount, rangeText, slotLabel } from "@/lib/lineupOptimizer";
 
 
 function Who({ p }) {
@@ -17,26 +17,24 @@ function Who({ p }) {
   );
 }
 
-// What a swap row's number is made of, for the hover tip: his weekly range and any Smash / Tough Spot nudge.
-const rangeTip = (p) => {
-  const range = p.myFloor != null && p.myCeiling != null ? `${fmt1(p.myFloor)} floor · ${fmt1(p.myProjPts)} median · ${fmt1(p.myCeiling)} ceiling` : `${fmt1(p.myProjPts)} median`;
-  const lean = p.myLean ? ` · ${p.myLean.call === "SMASH" ? "Smash" : "Tough"} spot (${p.myLean.effect > 0 ? "+" : "−"}${fmt1(Math.abs(matchupNudge(p)))} nudge)` : "";
-  return `${range}${lean}`;
-};
-
-// A player's start score plus a Smash / Tough Spot tag when the matchup nudged it (the score is lib/lineupOptimizer.js startValue; the
-// tip shows what it was made of).
-function Score({ p }) {
+// A player's median and floor-ceiling range, as the rankings publish them, plus a Smash / Tough Spot tag when his matchup is flagged.
+function Range({ p }) {
+  const lean = p.myLean ? (p.myLean.call === "SMASH" ? "Smash" : "Tough") : null;
   return (
     <>
-      <span className="lu-pts mono" title={rangeTip(p)}>{fmt1(p.val)}</span>
-      {p.myLean && <span className={`lu-lean mono ${p.myLean.call === "SMASH" ? "is-smash" : "is-tough"}`}>{p.myLean.call === "SMASH" ? "Smash" : "Tough"}</span>}
+      <span className="lu-pts mono" title="Median (floor–ceiling), as in the weekly rankings">{rangeText(p)}</span>
+      {lean && (
+        <span className={`lu-lean mono ${lean === "Smash" ? "is-smash" : "is-tough"}`} title={`${lean} spot: ${p.myLean.effect > 0 ? "+" : "−"}${fmt1(Math.abs(p.myLean.effect))} pts/game vs. an average defense; his range is moved by that`}>
+          {lean}
+        </span>
+      )}
     </>
   );
 }
 
 // "Start X over Y" rows, one per swap, each legal for the slot named at the left and each a gain (lib/lineupOptimizer.js never recommends a loss).
-function SwapList({ swaps }) {
+// By win chance the gain is points of win probability; on the median fallback it is points.
+function SwapList({ swaps, basis }) {
   return (
     <ul className="lu-swaps">
       {swaps.map((x) => (
@@ -44,15 +42,19 @@ function SwapList({ swaps }) {
           <span className="lu-slot mono">{slotLabel(x.slot)}</span>
           <span className="lu-verb mono">Start</span>
           <Who p={x.in} />
-          <Score p={x.in} />
+          <Range p={x.in} />
           {x.out && (
             <>
               <span className="lu-verb mono">over</span>
               <Who p={x.out} />
-              <Score p={x.out} />
+              <Range p={x.out} />
             </>
           )}
-          <span className="lu-gain mono">+{fmt1(x.gain)}</span>
+          <span className="lu-gain mono" title={basis === "win" ? "Change in your chance to win" : "Median points gained"}>
+            +{fmt1(x.gain)}
+            {basis === "win" ? "%" : ""}
+          </span>
+          {x.why && <span className="lu-why">{x.why}</span>}
         </li>
       ))}
     </ul>
@@ -67,8 +69,10 @@ export default function LineupAdvice({ team, gameStates, injuries = [] }) {
   const { alerts, advice } = count;
   const url = team.platform_league_id ? `https://sleeper.com/leagues/${team.platform_league_id}/matchup` : null;
   if (!advice) return <p className="h2h-note">No lineup to optimize for this league this week.</p>;
-  const better = advice.swaps.length > 0 && advice.gain >= 0.1;
-  const t = advice.tilt;
+  const better = advice.swaps.length > 0 && advice.gain >= (advice.basis === "win" ? 0.5 : 0.1);
+  const byWin = advice.basis === "win";
+  const pct = advice.chance == null ? null : Math.round(advice.chance * 100);
+  const context = pct == null ? null : pct <= 40 ? `You're a ${pct}% underdog, so upside counts for more.` : pct >= 75 ? `You're a ${pct}% favorite, so a safe floor counts for more.` : null;
   return (
     <section className="standings lineup-advice" aria-label="Lineup optimizer">
       <div className="lu-alerts">
@@ -111,30 +115,19 @@ export default function LineupAdvice({ team, gameStates, injuries = [] }) {
       </div>
       <div className="lu-summary">
         <div className="lu-total">
-          <span className="lu-big">{better ? `+${fmt1(advice.gain)}` : "Set"}</span>
-          <span className="lu-cap mono">{better ? "expected points available" : "your lineup is already the best we project"}</span>
+          <span className="lu-big">{better ? `+${fmt1(advice.gain)}${byWin ? "%" : ""}` : "Set"}</span>
+          <span className="lu-cap mono">
+            {better ? (byWin ? "win chance available" : "projected points available") : byWin ? "your lineup already gives you the best chance" : "your lineup is already the best we project"}
+          </span>
         </div>
-        <div className="lu-line mono">
-          Now {fmt1(advice.current)} <span aria-hidden="true">→</span> best {fmt1(advice.best)}
-          {advice.lockedStarters > 0 && <span className="lu-locked"> · {advice.lockedStarters} locked</span>}
-        </div>
+        {advice.lockedStarters > 0 && <div className="lu-line mono"><span className="lu-locked">{advice.lockedStarters} locked</span></div>}
       </div>
-      {better && <SwapList swaps={advice.swaps} />}
-      {t && (
-        <div className={`lu-tilt is-${t.mode}`}>
-          <h4 className="lu-tilt-title mono">
-            {t.mode === "ceiling" ? `You're a ${Math.round(t.win * 100)}% underdog: swing for the ceiling` : `You're a ${Math.round(t.win * 100)}% favorite: protect the floor`}
-          </h4>
-          <p className="lu-tilt-body">
-            {t.mode === "ceiling"
-              ? `This version adds ${fmt1(t.gain)} to your ceiling lineup and moves your expected points ${t.medianChange >= 0 ? "+" : "−"}${fmt1(Math.abs(t.medianChange))}. A bigger spread is what an underdog needs.`
-              : `This version adds ${fmt1(t.gain)} to your floor lineup and moves your expected points ${t.medianChange >= 0 ? "+" : "−"}${fmt1(Math.abs(t.medianChange))}. A narrower spread is what a favorite wants.`}
-          </p>
-          <SwapList swaps={t.swaps} />
-        </div>
-      )}
+      {byWin && context && <p className="lu-context">{context}</p>}
+      {better && <SwapList swaps={advice.swaps} basis={advice.basis} />}
       <p className="standings-note mono">
-        Start / sit weighs each player&apos;s floor, median and ceiling (30 / 40 / 30), nudged by Smash and Tough Spots. K, DEF and IDP slots aren&apos;t optimized.
+        {byWin
+          ? "Judged by your chance to beat this week's opponent, from each player's floor, median and ceiling and his Smash / Tough Spot. K, DEF and IDP slots aren't optimized."
+          : "Judged by median only: refresh this league to load this week's opponent for win-chance advice. K, DEF and IDP slots aren't optimized."}
       </p>
     </section>
   );

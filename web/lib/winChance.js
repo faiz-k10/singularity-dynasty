@@ -259,3 +259,63 @@ export function playerLeverage(h2h, gameStates, side, id, opts) {
   const hi = side === "mine" ? atCeiling : atFloor;
   return { base, atFloor, atMedian, atCeiling, swing: Math.abs(atCeiling - atFloor), final: { floor: have + o.lo, median: have + o.mid, ceiling: have + o.hi }, lo, hi };
 }
+
+// Compare lineup changes by what they do to the win chance, with common random numbers: every player draws from his OWN seeded
+// stream (keyed by his id), so a swap changes the result only because of the two players involved, and the same lineup always scores
+// the same. mine / opp are summarizeSide() results (players carry their outlook). Returns the current win chance plus
+// winWith(out, inn) -> the win chance if `out` (a player of mine, or null for an empty slot) gives way to `inn`, and apply(out, inn) to
+// commit a swap before the next comparison. Drawn exactly like simulateWinChance (split normal, late-scratch allowance, floored at 0).
+const streamCache = new Map(); // `${seed}:${draws}:${id}` -> { z, u }
+function streamsFor(id, draws, seed) {
+  const key = `${seed}:${draws}:${id}`;
+  let s = streamCache.get(key);
+  if (!s) {
+    let h = 2166136261;
+    for (let i = 0; i < String(id).length; i++) h = Math.imul(h ^ String(id).charCodeAt(i), 16777619);
+    const z = normals((seed + (h >>> 0)) >>> 0);
+    const u = rng((seed + (h >>> 0) + 7919) >>> 0);
+    s = { z: Float32Array.from({ length: draws }, z), u: Float32Array.from({ length: draws }, u) };
+    if (streamCache.size > 3000) streamCache.clear();
+    streamCache.set(key, s);
+  }
+  return s;
+}
+
+export function lineupSwapSim(mine, opp, { draws = 6000, seed = 20261018 } = {}) {
+  const sample = (p) => {
+    const o = p.outlook;
+    const out = new Float64Array(draws);
+    if (!p.id || !(o.sdLo > 0 || o.sdHi > 0 || o.mid > 0)) return out;
+    const risk = o.state === "pre" || o.state === null ? SCRATCH_PRE : o.state === "in" ? SCRATCH_LIVE : 0;
+    const { z, u } = streamsFor(p.id, draws, seed);
+    for (let n = 0; n < draws; n++) out[n] = risk && u[n] < risk ? 0 : Math.max(0, o.mid + z[n] * (z[n] < 0 ? o.sdLo : o.sdHi));
+    return out;
+  };
+  const samples = new Map(); // id -> draws (mine and theirs)
+  const get = (p) => {
+    if (!samples.has(p.id)) samples.set(p.id, sample(p));
+    return samples.get(p.id);
+  };
+  // lead[n] = my total minus theirs in draw n, points already on the board included
+  const lead = new Float64Array(draws).fill(mine.pts - opp.pts);
+  for (const p of mine.players) if (p.id) { const s = get(p); for (let n = 0; n < draws; n++) lead[n] += s[n]; }
+  for (const p of opp.players) if (p.id) { const s = get(p); for (let n = 0; n < draws; n++) lead[n] -= s[n]; }
+  const rate = (arr) => {
+    let w = 0;
+    for (let n = 0; n < draws; n++) w += arr[n] > 0 ? 1 : arr[n] === 0 ? 0.5 : 0;
+    return w / draws;
+  };
+  const withSwap = (out, inn) => {
+    const a = out?.id ? get(out) : null;
+    const b = get(inn);
+    const next = new Float64Array(draws);
+    for (let n = 0; n < draws; n++) next[n] = lead[n] - (a ? a[n] : 0) + b[n];
+    return next;
+  };
+  return {
+    base: rate(lead),
+    winWith: (out, inn) => rate(withSwap(out, inn)),
+    apply: (out, inn) => lead.set(withSwap(out, inn)),
+    now: () => rate(lead),
+  };
+}
