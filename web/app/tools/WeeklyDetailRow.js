@@ -605,6 +605,21 @@ export function PlayerStatsRow({ row }) {
             <span className="weekly-stats-value-big">{!bye && row.projection != null ? row.projection.toFixed(1) : "—"}</span>
           </div>
         </div>
+        {/* A player who has already played this week: his actual points, and how far they landed from his median projection. */}
+        {!bye && row.playedThisWeek != null && (
+          <div className="weekly-stats-actual">
+            <span className="weekly-player-stat-label">Actual</span>
+            <span className="weekly-stats-actual-pts">{row.playedThisWeek.toFixed(1)}</span>
+            {row.projection != null && row.projection > 0 && (
+              <span
+                className={`weekly-stats-actual-delta ${row.playedThisWeek >= row.projection ? "up" : "down"}`}
+                title={`${Math.abs(row.playedThisWeek - row.projection).toFixed(1)} ${row.playedThisWeek >= row.projection ? "above" : "below"} his ${row.projection.toFixed(1)} median projection`}
+              >
+                {row.playedThisWeek >= row.projection ? "+" : "−"}{Math.abs(row.playedThisWeek - row.projection).toFixed(1)}
+              </span>
+            )}
+          </div>
+        )}
       </div>
       <div className="stat-panel weekly-stats-last">
         <span className="weekly-stats-eyebrow">Last week{lastWeek ? ` · W${lastWeek.week}` : ""}</span>
