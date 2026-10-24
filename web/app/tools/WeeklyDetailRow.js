@@ -9,8 +9,6 @@ import ConfidenceBadge from "./ConfidenceBadge";
 import { getAchievements } from "./achievements";
 import DragonBall from "./DragonBall";
 import { MyStrip, MyEmpty } from "./MyPlayers";
-import { PANEL_KEYS } from "@/lib/statPanel";
-import { useRoleLeaders } from "./RoleLeaders";
 
 // Season-level usage/efficiency metrics, not weekly stats -- attached
 // server-side in page.js's fetchSimsMetrics()/fetchSeasonXfp() (joined
@@ -78,9 +76,22 @@ const METRICS = {
   u_yac_rec: { label: "YAC/Rec", format: f2, hint: "Yards after the catch per reception." },
   u_epa_tgt: { label: "EPA/Target", format: signed3, hint: "Expected points added per target." },
 };
-// ROLE = how the offense uses him; PLAYER = what he does with it (which numbers go where: lib/statPanel.js, shared with the best-role-players list).
-// A number he doesn't have (below the volume gate, or not published) is just left out.
-const PANEL = PANEL_KEYS;
+// ROLE = how the offense uses him; PLAYER = what he does with it. A number he doesn't have (below the volume gate, or not published) is just left out.
+const PANEL = {
+  QB: {
+    role: ["avgXfp", "u_att_pg", "u_aypa", "u_rush_ypg", "scrambleRate", "playActionRate"],
+    player: ["u_ypa", "u_cpoe", "u_epa_db", "u_sack_rate"],
+  },
+  RB: {
+    role: ["avgXfp", "wopr", "u_touches_pg", "u_carries_pg", "u_tgt_pg"],
+    player: ["u_rush_ypg", "u_ypc", "u_rush_epa", "u_rec_ypg", "ryoe"],
+  },
+  WR: {
+    role: ["wopr", "u_tgt_pg", "u_tgt_share", "u_air_share", "i10Pg", "i10Share", "p2Td"],
+    player: ["u_rec_ypg", "u_ypt", "u_yac_rec", "u_epa_tgt"],
+  },
+};
+PANEL.TE = PANEL.WR;
 
 // One line of the touchdown profile / usage panel: the metric, its value, and where he ranks at his position (#1 = highest).
 function RankRow({ label, value, format, rank, hint, unrankedHint }) {
@@ -685,7 +696,6 @@ export function OutcomeCurvePanel({ row, maxSpread }) {
 
 // Touchdown profile (WR/TE) or usage (RB/QB) ranked against the same-position pool.
 export function UsageTdPanel({ row }) {
-  const leaders = useRoleLeaders()?.[row.position] || [];
   const groups = PANEL[row.position] || { role: [], player: [] };
   const entries = (keys) =>
     keys.map((k) => ({ k, ...METRICS[k] })).filter((m) => row[m.k] != null && (row.metricRank?.[m.k] || m.unrankedHint));
@@ -717,20 +727,6 @@ export function UsageTdPanel({ row }) {
           </RankTable>
         ) : (
           <p className="weekly-opp-caption">No usage numbers for this player yet.</p>
-        )}
-        {leaders.length > 0 && (
-          <div className="weekly-leaders" role="table" aria-label={`Best ${row.position} role players`}>
-            <div className="weekly-rank-section" role="row">
-              <span>Top {leaders.length} {row.position} by role</span>
-            </div>
-            {leaders.map((l, i) => (
-              <div key={l.name} className={`weekly-leader-row${l.name === row.player_name ? " is-you" : ""}`} role="row" title={`Average rank ${l.avg} over the role numbers above`}>
-                <span className="weekly-leader-n">{i + 1}</span>
-                <span className="weekly-leader-name">{l.name}</span>
-                <span className="weekly-leader-avg">avg #{l.avg}</span>
-              </div>
-            ))}
-          </div>
         )}
       </div>
     </div>

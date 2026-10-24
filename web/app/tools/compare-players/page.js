@@ -5,12 +5,11 @@ import { getPlayerBiosByNamePos } from "@/lib/sleeper";
 import SiteHeader from "../../SiteHeader";
 import ComparePlayerPickers from "../ComparePlayerPickers";
 import CompareWeekly from "../CompareWeekly";
-import { RoleLeadersProvider } from "../RoleLeaders";
 import {
   PAID_TIERS,
   getCachedRedraftData,
   getCachedLeans,
-  getCachedTdProfile, getCachedUsageProfile, getRoleLeaders,
+  getCachedTdProfile, getCachedUsageProfile,
   enrichRankings,
 } from "../redraft-rankings/data";
 
@@ -42,7 +41,6 @@ export default async function ComparePlayersPage({ searchParams }) {
   const { latest } = cached;
 
   const pool = latest ? enrichRankings({ cached, hasFullAccess, tdProfile, usageProfile, leanRows, bioByNamePos }) : [];
-  const leaders = latest ? getRoleLeaders({ cached, tdProfile, usageProfile }) : null;
   const byName = new Map(pool.map((r) => [r.player_name, r]));
   const maxPlayers = MAX_COMPARE[tier] ?? 3;
   const selected = SLOTS.slice(0, maxPlayers).map((slot) => byName.get(params?.[slot])).filter(Boolean);
@@ -54,7 +52,6 @@ export default async function ComparePlayersPage({ searchParams }) {
     <div className="tool-page">
       <SiteHeader />
 
-      <RoleLeadersProvider value={leaders}>
       <main className="wrap tool-wrap compare-wrap">
         <div className="eyebrow">{latest ? `Week ${latest.week} · ${latest.season}` : "Compare"}</div>
         <h1>Compare Players</h1>
@@ -97,7 +94,6 @@ export default async function ComparePlayersPage({ searchParams }) {
           </>
         )}
       </main>
-      </RoleLeadersProvider>
     </div>
   );
 }
