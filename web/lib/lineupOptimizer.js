@@ -25,13 +25,6 @@ export const slotLabel = (slot) => (slot === "SUPER_FLEX" ? "SUPERFLEX" : slot);
 
 const PROJECTED = new Set(["QB", "RB", "WR", "TE"]);
 
-// "10.8 (3.0–22.0)": a player's median and his floor-ceiling range the way the rankings show them; just the median when there is no range.
-export const rangeText = (p) => {
-  const f = num(p?.myFloor);
-  const c = num(p?.myCeiling);
-  return f != null && c != null ? `${fmt1(p.myProjPts)} (${fmt1(f)}–${fmt1(c)})` : fmt1(p?.myProjPts ?? 0);
-};
-
 const MIN_GAIN = 0.1;
 // A player the injury feed lists Doubtful or worse (severity 3+): he is not a lineup option, and a starter like that is worth 0 in the lineup.
 const OUT_SEVERITY = 3;
@@ -101,11 +94,11 @@ export function optimizeLineup(team, gameStates, injuries = []) {
   return { current: r1(current), best: r1(current + gain), gain: r1(gain), swaps, optimizedSlots: open.length, lockedStarters: slots.length - open.length };
 }
 
-// What besides the medians moved a swap, in the numbers the site publishes: a Smash / Tough Spot on either side ("" when there is none; the rows
-// already show both players' medians). Out players and empty slots say so.
+// What besides the medians moved a swap, in the numbers the site publishes: a Smash / Tough Spot on either side, or that the starter is listed Out
+// ("" otherwise -- an empty slot needs no caption).
 const leanText = (p) => (p.myLean ? `${p.myLean.call === "SMASH" ? "Smash" : "Tough"} Spot ${p.myLean.effect > 0 ? "+" : "−"}${fmt1(Math.abs(p.myLean.effect))}` : null);
 function whyFor(inn, out) {
-  if (!out) return "Fills an empty slot";
+  if (!out) return "";
   if (out.unavailable) return `${out.name} is listed Out`;
   return [inn.myLean && `${leanText(inn)} for him`, out.myLean && `${leanText(out)} for ${out.name}`].filter(Boolean).join(" · ");
 }

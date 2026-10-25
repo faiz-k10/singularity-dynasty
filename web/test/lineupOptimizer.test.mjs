@@ -178,7 +178,6 @@ test("a bench player the injury feed lists Out is never recommended, and an Out 
 });
 
 // ---- median + Smash / Tough Spot (the backtested rule) ------------------------------------------------------------------------
-import { rangeText } from "../lib/lineupOptimizer.js";
 
 const PL = (id, name, pos, team, proj, floor, ceiling, x = {}) => ({ player_id: id, name, position: pos, team, myProjPts: proj, myFloor: floor, myCeiling: ceiling, isStarter: false, slotIndex: 999, ...x });
 const PRE = { A: { state: "pre" }, B: { state: "pre" }, D: { state: "pre" } };
@@ -223,15 +222,13 @@ test("a Smash Spot adds its full published effect and can flip a close call; a T
   assert.match(b.swaps[0].why, /Tough Spot −2\.2 for Steady/);
 });
 
-test("an Out starter is replaced, an Out bench player never chosen; rangeText prints the rankings' numbers", () => {
+test("an Out starter is replaced, an Out bench player never chosen", () => {
   const t = league([PL("3", "Hurt Star", "WR", "D", 13, 5, 25), PL("4", "Fine", "WR", "D", 9, 5, 13)]);
   const a = lineupAdvice(t, PRE, [{ name: "Hurt Star", status: "Out", severity: 4 }]);
   assert.ok(a.swaps.every((x) => x.in.name !== "Hurt Star"));
   const b = lineupAdvice(t, PRE, [{ name: "Steady", status: "Out", severity: 4 }]);
   assert.equal(b.swaps[0].out.name, "Steady");
   assert.match(b.swaps[0].why, /Steady is listed Out/);
-  assert.equal(rangeText(PL("x", "X", "WR", "A", 10.8, 3, 22)), "10.8 (3.0–22.0)");
-  assert.equal(rangeText({ myProjPts: 6 }), "6.0");
 });
 
 test("an empty slot is filled once: two empty RB slots and a WR slot take the two best RBs and the WR, nothing more (Fantasy Degenerates)", () => {

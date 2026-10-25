@@ -4,12 +4,15 @@ import { useMemo } from "react";
 import PositionBadge from "../tools/PositionBadge";
 import TeamBadge from "../tools/TeamBadge";
 import { fmt1 } from "@/lib/format";
-import { lineupAlertCount, rangeText, slotLabel } from "@/lib/lineupOptimizer";
+import { lineupAlertCount, slotLabel } from "@/lib/lineupOptimizer";
 
+
+// The hover tip carries what the row no longer prints: his median and floor-ceiling range, as in the weekly rankings.
+const rangeTip = (p) => (p.myFloor != null && p.myCeiling != null ? `${fmt1(p.myProjPts)} median · ${fmt1(p.myFloor)} floor · ${fmt1(p.myCeiling)} ceiling` : `${fmt1(p.myProjPts)} median`);
 
 function Who({ p }) {
   return (
-    <span className="lu-who">
+    <span className="lu-who" title={p.myProjPts != null ? rangeTip(p) : undefined}>
       <PositionBadge position={p.position} />
       {p.team && <TeamBadge team={p.team} />}
       <span className="lu-name">{p.name}</span>
@@ -17,23 +20,19 @@ function Who({ p }) {
   );
 }
 
-// A player's median and floor-ceiling range, as the rankings publish them, plus a Smash / Tough Spot tag when his matchup is flagged.
-function Range({ p }) {
-  const lean = p.myLean ? (p.myLean.call === "SMASH" ? "Smash" : "Tough") : null;
+// A Smash / Tough Spot tag when his matchup is flagged (it moves his number in the decision).
+function LeanTag({ p }) {
+  if (!p.myLean) return null;
+  const lean = p.myLean.call === "SMASH" ? "Smash" : "Tough";
   return (
-    <>
-      <span className="lu-pts mono" title="Median (floor–ceiling), as in the weekly rankings. The decision uses the median and the matchup trend; the range is for context.">{rangeText(p)}</span>
-      {lean && (
-        <span className={`lu-lean mono ${lean === "Smash" ? "is-smash" : "is-tough"}`} title={`${lean} spot: ${p.myLean.effect > 0 ? "+" : "−"}${fmt1(Math.abs(p.myLean.effect))} pts/game vs. an average defense; his range is moved by that`}>
-          {lean}
-        </span>
-      )}
-    </>
+    <span className={`lu-lean mono ${lean === "Smash" ? "is-smash" : "is-tough"}`} title={`${lean} spot: ${p.myLean.effect > 0 ? "+" : "−"}${fmt1(Math.abs(p.myLean.effect))} pts/game vs. an average defense; his projection is moved by that`}>
+      {lean}
+    </span>
   );
 }
 
 // "Start X over Y" rows, one per swap, each legal for the slot named at the left and each a gain (lib/lineupOptimizer.js never recommends a loss).
-// The gain is points of median + matchup trend; the floor-ceiling range is context only (it is not part of the decision).
+// The gain is projected points: the median plus the matchup trend (the range is only in the hover tip, it is not part of the decision).
 function SwapList({ swaps }) {
   return (
     <ul className="lu-swaps">
@@ -42,15 +41,15 @@ function SwapList({ swaps }) {
           <span className="lu-slot mono">{slotLabel(x.slot)}</span>
           <span className="lu-verb mono">Start</span>
           <Who p={x.in} />
-          <Range p={x.in} />
+          <LeanTag p={x.in} />
           {x.out && (
             <>
               <span className="lu-verb mono">over</span>
               <Who p={x.out} />
-              <Range p={x.out} />
+              <LeanTag p={x.out} />
             </>
           )}
-          <span className="lu-gain mono" title="Median points gained, counting each player's Smash / Tough Spot">+{fmt1(x.gain)}</span>
+          <span className="lu-gain mono" title="Projected points gained: median, counting each player's Smash / Tough Spot"><span className="lu-gain-label">proj.</span> +{fmt1(x.gain)}</span>
           {x.why && <span className="lu-why">{x.why}</span>}
         </li>
       ))}
