@@ -272,9 +272,9 @@ body::before{
 .ticker-badge.ball svg{width:16px; height:16px; overflow:visible;}
 .ticker-badge.honorable{background:var(--scholar); color:var(--void); box-shadow:0 0 5px rgba(var(--scholar-rgb),0.5);}
 .ticker-badge.menace{background:var(--menace); color:var(--void); box-shadow:0 0 6px rgba(var(--menace-rgb),0.65);}
-.ticker-pace{font-weight:600;}
-.ticker-pace.hot{color:var(--up);}
-.ticker-pace.cold{color:var(--down);}
+.ticker-pace{font-weight:600; padding:1px 7px; border:1px solid currentColor; border-radius:2px; line-height:1.35;} /* a box: green (hot) or red (cold) */
+.ticker-pace.hot{color:var(--up); background:color-mix(in srgb, var(--up) 16%, transparent); border-color:color-mix(in srgb, var(--up) 55%, transparent);}
+.ticker-pace.cold{color:var(--down); background:color-mix(in srgb, var(--down) 16%, transparent); border-color:color-mix(in srgb, var(--down) 55%, transparent);}
 
 /* ---------- BRAND MARK ---------- */
 .brandmark{
