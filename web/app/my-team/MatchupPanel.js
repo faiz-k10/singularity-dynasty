@@ -147,7 +147,7 @@ function TeamScore({ name, record, score, proj, left, state = null, opp = false 
 // once a full refresh has gathered them) and Best available. The switch itself (PanelTabs) lives in the header of
 // whoever hosts the panel: the Sunday board's drawer, and the dashboard's opened row (which adds Roster).
 export const hasStandings = (team) => Boolean(team?.settings?.season?.standings?.length);
-// alerts: the league's lineup-alert count (row.alertCount.total, the one number made by lineupAlertCount) -- the Lineup Alerts tab gets a small mark while it is above 0.
+// alerts: the league's lineup-alert count (row.alertCount.total, the one number made by lineupAlertCount) -- the Lineup Alerts tab gets an inner border while it is above 0.
 export function leagueTabs(team, alerts = 0) {
   const lineup = !team?.settings?.bestBall && !team?.settings?.isBye && team?.settings?.slots?.length ? [["lineup", "Lineup Alerts", alerts]] : [];
   return [["matchup", "Matchup"], ...lineup, ["available", "Best Available"], ...(hasStandings(team) ? [["standings", "Standings"]] : [])];
@@ -157,9 +157,16 @@ export function PanelTabs({ tabs, value, onChange }) {
   return (
     <div className="board-toggle league-dash-tabs" role="tablist" aria-label="League view">
       {tabs.map(([key, label, alerts]) => (
-        <button key={key} type="button" role="tab" aria-selected={value === key} className={value === key ? "active" : ""} onClick={() => onChange(key)}>
+        <button
+          key={key}
+          type="button"
+          role="tab"
+          aria-selected={value === key}
+          className={`${value === key ? "active" : ""}${alerts > 0 ? " has-alerts" : ""}`.trim()}
+          title={alerts > 0 ? `${alerts} lineup ${alerts === 1 ? "alert" : "alerts"} active` : undefined}
+          onClick={() => onChange(key)}
+        >
           {label}
-          {alerts > 0 && <span className="tab-alert" role="img" aria-label={`${alerts} lineup ${alerts === 1 ? "alert" : "alerts"}`} title={`${alerts} lineup ${alerts === 1 ? "alert" : "alerts"} active`}>!</span>}
         </button>
       ))}
     </div>
