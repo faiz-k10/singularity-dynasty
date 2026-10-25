@@ -1,8 +1,8 @@
 // The Game Board's companion pane (app/my-team/Companion.js): short, plain-English cards that always have something to say about
-// the viewer's leagues -- before kickoff (swing players, closest matchups, lineup holes, best on the waiver wire), during games
+// the viewer's leagues -- before kickoff (widest-range players, closest matchups, lineup holes, best on the waiver wire, matchup trends and form), during games
 // (the same swing watch, on live numbers), after them (best and worst performers, who decided each matchup) and all week
 // (playoff picture, exposure across leagues). Pure, no imports; tested in test/companion.test.mjs. It is rules over the numbers
-// the board already holds (lineups with projection / floor / ceiling / points, win chances, standings, the waiver list) -- not a
+// the board already holds (lineups with projection / floor / ceiling / points, standings, the waiver list, each player's matchup trend and badges) -- not a
 // language model, and nothing here is stored.
 //
 // savedTeams: saved_teams rows (settings.h2h.mine / .opp = { id, slot, name, pos, team, proj, floor, ceiling, pts, out }).
@@ -10,13 +10,11 @@
 // waivers: { [teamId]: [{ name, pos, team, proj }] } best available per league, optional.
 
 import { lineupAdvice, slotLabel } from "./lineupOptimizer.js";
-import { playerLeverage } from "./winChance.js";
 import { num, leagueName, fmt1 } from "./format.js";
 
 const r1 = (v) => (Math.round(v * 10) / 10).toFixed(1);
 const sgn = (v) => `${v >= 0 ? "+" : "−"}${r1(Math.abs(v))}`;
 const leagueOf = (t) => leagueName(t, "your league");
-const pc = (v) => `${Math.round(v * 100)}%`;
 const chip = (p) => (p ? { name: p.name, pos: p.pos, team: p.team } : null);
 
 const stateOf = (p, gameStates) => {
@@ -36,7 +34,7 @@ function worth(p, st) {
   return proj;
 }
 
-// `adjusted` (optional): { [teamId]: matchupState() result } from the Game Board, so the lineups, the live totals and the win chance here
+// `adjusted` (optional): { [teamId]: matchupState() result } from the Game Board, so the lineups and the live totals here
 // are the very same numbers the league cards show (the plays Sleeper hasn't posted yet included); without it, the saved snapshot.
 function leagues(savedTeams, gameStates, adjusted = null) {
   const out = [];
@@ -60,7 +58,6 @@ function leagues(savedTeams, gameStates, adjusted = null) {
       mine,
       opp,
       margin: total(mine) - total(opp), // projected (played games at their points)
-      win: num(adj ? adj.winChance : s.winChance),
       live: (adj ? adj.live : s.matchupActual) || null,
       done: done && anyPlayed,
       anyPlayed,
@@ -96,103 +93,84 @@ function lineupCards(savedTeams, gameStates, adjusted, injuriesByTeam) {
 
 // ---- before and during games ------------------------------------------------------------------------------------------------
 
+// ---- the week, in points (published projections, not win probabilities: a win-chance model has not been backtested, so no card uses one) ----
+
+const gapText = (v) => `${v >= 0 ? "+" : "−"}${r1(Math.abs(v))}`;
+
+// The week across your leagues by projected points (lineups at their projections; games already played at their points).
 function outlook(ls) {
-  const withWin = ls.filter((l) => l.win != null && !l.done);
-  if (withWin.length < 2) return null;
-  const fav = withWin.filter((l) => l.win >= 0.5).length;
-  const expected = withWin.reduce((a, l) => a + l.win, 0);
-  const closest = [...withWin].sort((a, b) => Math.abs(a.win - 0.5) - Math.abs(b.win - 0.5))[0];
-  const safest = [...withWin].sort((a, b) => b.win - a.win)[0];
+  const open = ls.filter((l) => !l.done);
+  if (open.length < 2) return null;
+  const ahead = open.filter((l) => l.margin >= 0).length;
+  const closest = [...open].sort((a, b) => Math.abs(a.margin) - Math.abs(b.margin))[0];
+  const widest = [...open].sort((a, b) => Math.abs(b.margin) - Math.abs(a.margin))[0];
   return {
     id: "outlook",
     kind: "outlook",
     label: "The week so far",
-    tone: fav * 2 >= withWin.length ? "mine" : "theirs",
-    title: `Favored in ${fav} of ${withWin.length} matchups`,
-    body: `That's about ${expected.toFixed(1)} wins expected. Closest: ${closest.name} (${Math.round(closest.win * 100)}%). Safest: ${safest.name} (${Math.round(safest.win * 100)}%).`,
+    tone: ahead * 2 >= open.length ? "mine" : "theirs",
+    title: `Ahead on projections in ${ahead} of ${open.length} matchups`,
+    body: `Closest: ${closest.name} (${gapText(closest.margin)}). Widest: ${widest.name} (${gapText(widest.margin)}). Gaps are projected points: your lineup's medians against theirs, games already played at their points.`,
     priority: 70,
   };
 }
 
-// Win-chance leverage (lib/winChance.js playerLeverage): the matchup simulated with one player's game pinned at his floor / median /
-// ceiling, so a card can say what HIS game does to the win chance, not just how wide his range is.
-// 1,500 draws a run (the default 5,000 would make a refresh of the pane take seconds): every run uses the same random numbers, so the
-// differences between floor / median / ceiling are exact even though each percentage carries about a point of noise.
-// The percentages are shifted so "now" is exactly the win chance the league card shows (l.win, from the full-size run); the shift
-// moves all three outcomes together, so the gaps between them stay as the simulation found them.
-const lev = (l, side, p, gameStates) => {
-  const v = playerLeverage(l.h2h, gameStates, side, p.id, { draws: 1500 });
-  if (!v || l.win == null) return v;
-  const d = l.win - v.base;
-  const c = (x) => Math.min(1, Math.max(0, x + d));
-  const [atFloor, atMedian, atCeiling] = [c(v.atFloor), c(v.atMedian), c(v.atCeiling)];
-  return { ...v, base: l.win, atFloor, atMedian, atCeiling, swing: Math.abs(atCeiling - atFloor), lo: Math.min(atFloor, atCeiling), hi: Math.max(atFloor, atCeiling) };
-};
-const ptsOfWin = (v) => `${v >= 0 ? "+" : "−"}${Math.round(Math.abs(v) * 100)}`;
-
-function swings(ls, gameStates) {
+// The widest-range player still to play in your closest matchups (by projected gap), either side. His floor-to-ceiling range against the gap
+// says whether his game alone can decide it -- in points, with no probability attached.
+function swings(ls) {
   const open = ls
-    .filter((l) => l.win != null && !l.done)
-    .sort((a, b) => Math.abs(a.win - 0.5) - Math.abs(b.win - 0.5))
+    .filter((l) => !l.done)
+    .sort((a, b) => Math.abs(a.margin) - Math.abs(b.margin))
     .slice(0, 3);
   const cards = [];
   for (const l of open) {
-    // The swing player is the one whose game moves THIS matchup's win chance the most -- not just the widest range.
-    // Only the three widest-ranged players are simulated (the leverage run is the expensive part).
-    const cand = [];
+    let top = null;
     for (const [side, rows] of [["mine", l.mine], ["opp", l.opp]])
       for (const p of rows) {
-        if (!p.id || p.out || (p.st !== "pre" && p.st !== "in") || num(p.ceiling) == null || num(p.floor) == null) continue;
-        cand.push({ p, side, spread: p.ceiling - p.floor });
+        if (!p.id || p.out || (p.st !== "pre" && p.st !== "in") || num(p.ceiling) == null || num(p.floor) == null || num(p.proj) == null) continue;
+        const spread = p.ceiling - p.floor;
+        if (!top || spread > top.spread) top = { p, side, spread };
       }
-    let top = null;
-    for (const c of cand.sort((a, b) => b.spread - a.spread).slice(0, 3)) {
-      const v = lev(l, c.side, c.p, gameStates);
-      if (v && (!top || v.swing > top.v.swing)) top = { p: c.p, side: c.side, v };
-    }
     if (!top) continue;
-    const { v } = top;
+    const { p } = top;
     const mineSide = top.side === "mine";
-    const proj = num(top.p.proj);
     const gap = Math.abs(l.margin);
-    const leading = l.margin >= 0;
-    const need = !leading && v.hi < 0.5 ? "Even his best game leaves you the underdog." : !leading && v.lo >= 0.5 ? "Even his worst game keeps you ahead." : "";
+    const up = p.ceiling - p.proj;
+    const down = p.proj - p.floor;
+    const decides = Math.min(up, down) > gap ? "Either end of his range is bigger than the gap, so his game alone can decide this matchup." : Math.max(up, down) > gap ? "One end of his range is bigger than the gap." : "The gap is bigger than either end of his range.";
     cards.push({
       id: `swing:${l.id}`,
       kind: "swing",
       label: "Swing player",
       tone: mineSide ? "mine" : "theirs",
-      title: `${top.p.name} is worth ${Math.round(v.swing * 100)} points of win chance in ${l.name}`,
-      body:
-        `${mineSide ? "Yours" : `${l.opponent}'s`}, still to play (projected ${proj != null ? r1(proj) : "—"}, 80% range ${r1(v.final.floor)}–${r1(v.final.ceiling)}). ` +
-        `Your win chance is ${pc(v.base)} now: ${pc(v.atCeiling)} if he hits his ceiling, ${pc(v.atMedian)} at his median, ${pc(v.atFloor)} at his floor. ` +
-        `The biggest single-player swing in this matchup; the projected gap is ${r1(gap)} ${leading ? "in your favor" : "against you"}. ${need}`.trim(),
-      player: chip(top.p),
+      title: `${p.name} has the widest range in ${l.name}`,
+      body: `${mineSide ? "Yours" : `${l.opponent}'s`}, still to play: projected ${r1(p.proj)}, floor ${r1(p.floor)}, ceiling ${r1(p.ceiling)} (${gapText(-down)} / ${gapText(up)} from his projection). The projected gap in this matchup is ${r1(gap)} ${l.margin >= 0 ? "in your favor" : "against you"}. ${decides}`,
+      player: chip(p),
       league: l.name,
-      priority: 90 - Math.round(Math.abs(l.win - 0.5) * 40),
+      priority: 90 - Math.min(30, Math.round(gap)),
     });
   }
   return cards;
 }
 
-function threats(ls, gameStates) {
+// Where you trail on projections: the opponent's best player still to play.
+function threats(ls) {
   const cards = [];
   for (const l of ls) {
-    if (l.done || l.win == null || l.win >= 0.5) continue;
+    if (l.done || l.margin >= 0) continue;
     const best = l.opp
       .filter((p) => p.id && !p.out && p.st === "pre" && num(p.proj) != null)
       .sort((a, b) => b.proj - a.proj)[0];
     if (!best) continue;
-    const v = lev(l, "opp", best, gameStates);
     cards.push({
       id: `threat:${l.id}`,
       kind: "threat",
       label: "Their best card",
       tone: "theirs",
       title: `${best.name} is ${l.opponent}'s biggest threat`,
-      body: v
-        ? `Projected ${r1(best.proj)} in ${l.name}. You're ${pc(v.base)} to win; a ceiling game (${r1(v.final.ceiling)}) drops that to ${pc(v.atCeiling)}, a floor game (${r1(v.final.floor)}) lifts it to ${pc(v.atFloor)}. His game alone moves your odds ${Math.round(v.swing * 100)} points.`
-        : `Projected ${r1(best.proj)} in ${l.name}, where you're ${pc(l.win)} to win. A quiet game from him is your way back.`,
+      body:
+        `Projected ${r1(best.proj)} in ${l.name}, where you trail by ${r1(-l.margin)} on projections.` +
+        (num(best.ceiling) != null && num(best.floor) != null ? ` His range is ${r1(best.floor)} to ${r1(best.ceiling)}: a game at his floor is ${r1(best.proj - best.floor)} under projection, your way back.` : ""),
       player: chip(best),
       league: l.name,
       priority: 66,
@@ -227,48 +205,32 @@ function holes(ls) {
   return cards.slice(0, 3);
 }
 
-// Expected wins across leagues if one player's game lands at his floor / median / ceiling (sum of each league's win chance with him
-// pinned; `entries` = [{ l, p, side }]). The change from `base` is the player's whole effect on the week.
-function expectedWins(entries, gameStates) {
-  const out = { base: 0, floor: 0, median: 0, ceiling: 0, rows: [] };
-  for (const { l, p, side } of entries) {
-    const v = lev(l, side, p, gameStates);
-    if (!v) continue;
-    out.base += v.base;
-    out.floor += v.atFloor;
-    out.median += v.atMedian;
-    out.ceiling += v.atCeiling;
-    out.rows.push({ l, side, v });
-  }
-  return out;
-}
-const ew = (v) => (Math.round(v * 100) / 100).toFixed(2);
-const dw = (v) => `${v >= 0 ? "+" : "−"}${ew(Math.abs(v))}`;
-
-function exposure(ls, gameStates) {
+// A player in several of your lineups: what his projection and range add up to across them, and where it matters most (the closest matchup).
+// And a player who is on your side in some leagues and against you in others: the net, in points.
+function exposure(ls) {
   const mine = new Map();
   const against = new Map();
   for (const l of ls) {
-    for (const p of l.mine) if (p.id) mine.set(p.id, [...(mine.get(p.id) || []), { l, p, side: "mine" }]);
-    for (const p of l.opp) if (p.id) against.set(p.id, [...(against.get(p.id) || []), { l, p, side: "opp" }]);
+    for (const p of l.mine) if (p.id) mine.set(p.id, [...(mine.get(p.id) || []), { l, p }]);
+    for (const p of l.opp) if (p.id) against.set(p.id, [...(against.get(p.id) || []), { l, p }]);
   }
+  const live = (p) => p.st === "pre" || p.st === "in";
   const cards = [];
   const multi = [...mine.values()]
-    .filter((v) => v.length >= 2 && v.some(({ p }) => p.st === "pre" || p.st === "in"))
+    .filter((v) => v.length >= 2 && v.some(({ p }) => live(p)) && num(v[0].p.proj) != null)
     .sort((a, b) => b.length - a.length || (b[0].p.proj || 0) - (a[0].p.proj || 0))[0];
   if (multi) {
     const p = multi[0].p;
-    const x = expectedWins(multi, gameStates);
-    const worst = [...x.rows].sort((a, b) => b.v.swing - a.v.swing)[0];
+    const n = multi.length;
+    const closest = [...multi].sort((a, b) => Math.abs(a.l.margin) - Math.abs(b.l.margin))[0];
+    const range = num(p.floor) != null && num(p.ceiling) != null ? ` His range is ${r1(p.floor)} to ${r1(p.ceiling)}, so across the ${n} leagues the same game is ${r1(n * p.floor)} to ${r1(n * p.ceiling)} points.` : "";
     cards.push({
       id: `exposure:${p.id}`,
       kind: "exposure",
       label: "Big exposure",
       tone: "mine",
-      title: `${p.name} starts in ${multi.length} of your leagues`,
-      body: x.rows.length
-        ? `Projected ${r1(p.proj || 0)}. Across the ${x.rows.length} matchups you expect ${ew(x.base)} wins now; his ceiling takes that to ${ew(x.ceiling)} (${dw(x.ceiling - x.base)}), his floor to ${ew(x.floor)} (${dw(x.floor - x.base)}). He is a ${x.rows.length}x position, so one game moves ${ew(x.ceiling - x.floor)} wins either way.${worst ? ` Most sensitive: ${worst.l.name} (${pc(worst.v.atFloor)} to ${pc(worst.v.atCeiling)}).` : ""}`
-        : `A big game moves ${multi.length} matchups at once, and a dud costs you in all of them. Projected ${r1(p.proj || 0)}.`,
+      title: `${p.name} starts in ${n} of your leagues`,
+      body: `Projected ${r1(p.proj)} in each.${range} The closest of those matchups is ${closest.l.name} (projected gap ${gapText(closest.l.margin)}).`,
       player: chip(p),
       priority: 62,
     });
@@ -277,22 +239,163 @@ function exposure(ls, gameStates) {
     const foes = against.get(id);
     if (!foes) continue;
     const p = own[0].p;
-    if (p.st === "post") continue;
-    const x = expectedWins([...own, ...foes], gameStates);
-    const hedged = x.rows.length ? Math.abs(x.ceiling - x.floor) : null;
+    if (p.st === "post" || num(p.proj) == null) continue;
+    const net = own.length - foes.length;
     cards.push({
       id: `hedge:${id}`,
       kind: "exposure",
       label: "Both sides",
       tone: "neutral",
       title: `${p.name} is on both sides of your week`,
-      body: x.rows.length
-        ? `You start him in ${own.map((o) => o.l.name).join(", ")}; he plays against you in ${foes.map((o) => o.l.name).join(", ")}. At his ceiling your expected wins move ${dw(x.ceiling - x.base)} net, at his floor ${dw(x.floor - x.base)}, so the hedge ${hedged < 0.15 ? "cancels almost all of his effect" : hedged < 0.4 ? "absorbs part of his effect" : "leaves you mostly exposed one way"}.`
-        : `You start him in ${own.map((o) => o.l.name).join(", ")}; he plays against you in ${foes.map((o) => o.l.name).join(", ")}. A big game is good in some matchups and bad in others.`,
+      body:
+        `You start him in ${own.map((o) => o.l.name).join(", ")}; he plays against you in ${foes.map((o) => o.l.name).join(", ")}. Projected ${r1(p.proj)}` +
+        (num(p.ceiling) != null ? `, ceiling ${r1(p.ceiling)}` : "") +
+        `. ${net === 0 ? "A big game helps you as often as it hurts: it nets out." : net > 0 ? `You're on his side in ${net} more matchup${net === 1 ? "" : "s"} than you're against him.` : `You face him in ${-net} more matchup${net === -1 ? "" : "s"} than you start him.`}`,
       player: chip(p),
       priority: 64,
     });
     break;
+  }
+  return cards;
+}
+
+// ---- cards built from the rest of the site's data (matchup trends, form badges, range badges, position-by-position gaps) ----
+
+const hasBadge = (p, key) => (p.achievements || []).some((a) => a.key === key);
+const startersToPlay = (t, gameStates) =>
+  (t.players || []).filter((p) => p.isStarter && !(p.team && gameStates?.[p.team] && gameStates[p.team].state !== "pre"));
+
+// Smash Spots and Tough Spots among your starters this week (Weekly Projection Rankings' matchup trends, saved with each player as myLean):
+// the points are what that defense gives up to his position a game compared with an average defense.
+function matchupTrends(savedTeams, gameStates) {
+  const byId = new Map();
+  for (const t of savedTeams || []) {
+    if (t.settings?.bestBall || t.settings?.isBye) continue;
+    for (const p of startersToPlay(t, gameStates)) {
+      const e = num(p.myLean?.effect);
+      if (e == null) continue;
+      const cur = byId.get(p.player_id) || { p, leagues: 0 };
+      cur.leagues++;
+      byId.set(p.player_id, cur);
+    }
+  }
+  const all = [...byId.values()];
+  const smash = all.filter((x) => x.p.myLean.effect > 0).sort((a, b) => b.p.myLean.effect - a.p.myLean.effect);
+  const tough = all.filter((x) => x.p.myLean.effect < 0).sort((a, b) => a.p.myLean.effect - b.p.myLean.effect);
+  if (!smash.length && !tough.length) return null;
+  const list = (xs) => xs.map((x) => `${x.p.name} ${gapText(x.p.myLean.effect)}${x.leagues > 1 ? ` (${x.leagues} leagues)` : ""}`).join(", ");
+  const lead = smash[0] || tough[0];
+  return {
+    id: "matchup-trends",
+    kind: "trend",
+    label: "Matchup trends",
+    tone: smash.length >= tough.length ? "mine" : "theirs",
+    title: `${smash.length} starter${smash.length === 1 ? "" : "s"} in a Smash Spot, ${tough.length} in a Tough Spot`,
+    body: `${smash.length ? `Smash: ${list(smash)}. ` : ""}${tough.length ? `Tough: ${list(tough)}. ` : ""}The points are what that defense gives up to his position a game against an average defense.`,
+    player: chip({ name: lead.p.name, pos: lead.p.position, team: lead.p.team }),
+    priority: 80,
+  };
+}
+
+// Form among your starters: On Fire / On Thin Ice (recent points against expected points) and Buy Low / Sell High (opportunity against production).
+function formWatch(savedTeams, gameStates) {
+  const seen = new Map();
+  for (const t of savedTeams || []) {
+    if (t.settings?.bestBall || t.settings?.isBye) continue;
+    for (const p of t.players || []) {
+      const flags = ["onFire", "onIce", "buyLow", "sellHigh"].filter((k) => hasBadge(p, k));
+      if (!flags.length) continue;
+      const cur = seen.get(p.player_id) || { p, flags, started: 0, leagues: 0, locked: false };
+      cur.leagues++;
+      if (p.isStarter) cur.started++;
+      seen.set(p.player_id, cur);
+    }
+  }
+  const all = [...seen.values()];
+  const names = (key, onlyStarters) =>
+    all.filter((x) => x.flags.includes(key) && (!onlyStarters || x.started > 0)).map((x) => `${x.p.name}${x.leagues > 1 ? ` (${x.leagues} leagues)` : ""}`);
+  const fire = names("onFire", true);
+  const ice = names("onIce", true);
+  const cards = [];
+  if (fire.length || ice.length) {
+    const lead = all.find((x) => x.flags.includes(fire.length ? "onFire" : "onIce") && x.started > 0);
+    cards.push({
+      id: "form",
+      kind: "trend",
+      label: "Form check",
+      tone: fire.length >= ice.length ? "mine" : "theirs",
+      title: `${fire.length} of your starters on fire, ${ice.length} on thin ice`,
+      body: `${fire.length ? `On Fire: ${fire.join(", ")}. ` : ""}${ice.length ? `On Thin Ice: ${ice.join(", ")}. ` : ""}The badges compare his recent games with what his usage said he should score.`,
+      player: lead ? chip({ name: lead.p.name, pos: lead.p.position, team: lead.p.team }) : null,
+      priority: 72,
+    });
+  }
+  const buy = names("buyLow", false);
+  const sell = names("sellHigh", false);
+  if (buy.length || sell.length) {
+    const lead = all.find((x) => x.flags.includes(buy.length ? "buyLow" : "sellHigh"));
+    cards.push({
+      id: "value",
+      kind: "trend",
+      label: "Value watch",
+      tone: "neutral",
+      title: `${buy.length} Buy Low, ${sell.length} Sell High on your rosters`,
+      body: `${buy.length ? `Buy Low (heavy opportunity, light production): ${buy.join(", ")}. ` : ""}${sell.length ? `Sell High (production running ahead of opportunity): ${sell.join(", ")}.` : ""}`.trim(),
+      player: lead ? chip({ name: lead.p.name, pos: lead.p.position, team: lead.p.team }) : null,
+      priority: 52,
+    });
+  }
+  return cards;
+}
+
+// Range profile of your lineups: how many starters carry a Steady Eddy (narrow range for his position) or Risky Icarus (wide range) badge.
+function rangeProfile(savedTeams, gameStates) {
+  const rows = [];
+  for (const t of savedTeams || []) {
+    if (t.settings?.bestBall || t.settings?.isBye) continue;
+    const st = startersToPlay(t, gameStates);
+    const steady = st.filter((p) => hasBadge(p, "locked"));
+    const risky = st.filter((p) => hasBadge(p, "volatile"));
+    if (steady.length + risky.length >= 2) rows.push({ t, steady, risky });
+  }
+  if (!rows.length) return null;
+  rows.sort((a, b) => Math.abs(b.risky.length - b.steady.length) - Math.abs(a.risky.length - a.steady.length));
+  const top = rows[0];
+  const lean = top.risky.length > top.steady.length ? "leans volatile" : top.steady.length > top.risky.length ? "leans steady" : "is balanced";
+  const lead = (top.risky[0] || top.steady[0]);
+  return {
+    id: "range-profile",
+    kind: "trend",
+    label: "Range profile",
+    tone: "neutral",
+    title: `Your ${leagueOf(top.t)} lineup ${lean}`,
+    body: `${top.steady.length} Steady Eddy${top.steady.length ? ` (${top.steady.map((p) => p.name).join(", ")})` : ""}, ${top.risky.length} Risky Icarus${top.risky.length ? ` (${top.risky.map((p) => p.name).join(", ")})` : ""} among the starters still to play. Steady Eddy marks a narrower floor-to-ceiling range than his position's norm; Risky Icarus a wider one.`,
+    player: lead ? chip({ name: lead.name, pos: lead.position, team: lead.team }) : null,
+    priority: 58,
+  };
+}
+
+// Position by position in your closest matchups: projected points of each position group, yours against theirs (flex slots counted at the player's own position).
+function positionGaps(ls) {
+  const groups = ["QB", "RB", "WR", "TE"];
+  const sum = (rows, pos) => rows.filter((p) => p.id && !p.out && p.pos === pos).reduce((a, p) => a + (num(p.proj) ?? 0), 0);
+  const cards = [];
+  for (const l of [...ls].filter((x) => !x.done).sort((a, b) => Math.abs(a.margin) - Math.abs(b.margin)).slice(0, 2)) {
+    const diffs = groups.map((g) => ({ g, d: sum(l.mine, g) - sum(l.opp, g) })).filter((x) => Math.abs(x.d) >= 0.5);
+    if (diffs.length < 2) continue;
+    const best = [...diffs].sort((a, b) => b.d - a.d)[0];
+    const worst = [...diffs].sort((a, b) => a.d - b.d)[0];
+    if (best.d <= 0 || worst.d >= 0) continue;
+    cards.push({
+      id: `gaps:${l.id}`,
+      kind: "trend",
+      label: "Position by position",
+      tone: "neutral",
+      title: `In ${l.name}: your edge is ${best.g}, your hole is ${worst.g}`,
+      body: `Projected points of each position group, yours minus ${l.opponent}'s: ${diffs.map((x) => `${x.g} ${gapText(x.d)}`).join(", ")}. Overall ${gapText(l.margin)}.`,
+      league: l.name,
+      priority: 74,
+    });
   }
   return cards;
 }
@@ -655,9 +758,13 @@ export function buildInsights({ savedTeams, gameStates, waivers = null, injuries
   add(holes(ls));
   add(lineupCards(savedTeams, gameStates, adjusted, injuriesByTeam));
   add(outlook(ls));
-  add(swings(ls, gameStates));
-  add(threats(ls, gameStates));
-  add(exposure(ls, gameStates));
+  add(swings(ls));
+  add(threats(ls));
+  add(exposure(ls));
+  add(matchupTrends(savedTeams, gameStates));
+  add(formWatch(savedTeams, gameStates));
+  add(positionGaps(ls));
+  add(rangeProfile(savedTeams, gameStates));
   add(waiverCards(ls, waivers));
   add(recaps(ls));
   add(season(savedTeams));

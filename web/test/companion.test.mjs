@@ -16,7 +16,8 @@ test("preview: swing player is the widest-range player still to play in the clos
   assert.equal(phase, "preview");
   const swing = cards.find((c) => c.kind === "swing");
   assert.equal(swing.player.name, "Boom");
-  assert.match(swing.body, /3\.0–31\.0/);
+  assert.match(swing.body, /floor 3\.0, ceiling 31\.0/);
+  assert.doesNotMatch(JSON.stringify(cards), /win chance|% to win|expect \d\.\d\d wins/i, "no card talks about win chance");
 });
 
 test("lineup holes lead the list", () => {
@@ -105,19 +106,58 @@ test("lineup upgrade card names the swap and the gain", () => {
   assert.match(c.body, /FLEX: 11\.0 against 4\.0, 7\.0 more/);
 });
 
-test("swing and threat cards quantify the win chance, exposure cards the expected wins", () => {
+test("swing, threat and exposure cards speak in projected points, never win chance", () => {
   const gs = { SF: { state: "pre" }, DAL: { state: "pre" }, KC: { state: "pre" }, BUF: { state: "pre" } };
-  const mk = (id, opp) => league(id, [P("1", "Boom", "WR", "DAL", 14, 3, 31), P("2", "Steady", "RB", "SF", 12, 8, 17)], opp, { winChance: 0.4 });
-  const a = mk("a", [P("9", "Foe", "QB", "KC", 20, 12, 30)]);
+  const mk = (id, opp) => league(id, [P("1", "Boom", "WR", "DAL", 14, 3, 31), P("2", "Steady", "RB", "SF", 12, 8, 17)], opp);
+  const a = mk("a", [P("9", "Foe", "QB", "KC", 40, 30, 50)]);
   const b = mk("b", [P("8", "Other", "TE", "BUF", 9, 4, 16)]);
   const { cards } = buildInsights({ savedTeams: [a, b], gameStates: gs });
   const swing = cards.find((c) => c.kind === "swing");
-  assert.match(swing.title, /points of win chance/);
-  assert.match(swing.body, /if he hits his ceiling, \d+% at his median, \d+% at his floor/);
-  const m = swing.body.match(/(\d+)% if he hits his ceiling, (\d+)% at his median, (\d+)% at his floor/);
-  assert.ok(+m[1] > +m[2] && +m[2] > +m[3], "ceiling > median > floor");
+  assert.match(swing.title, /widest range/);
+  assert.match(swing.body, /projected gap in this matchup is \d+\.\d (in your favor|against you)/);
   const threat = cards.find((c) => c.kind === "threat");
-  assert.match(threat.body, /a ceiling game \(30\.0\) drops that/);
+  assert.match(threat.body, /Projected 40\.0 in League a, where you trail by 14\.0 on projections/);
+  assert.match(threat.body, /His range is 30\.0 to 50\.0/);
   const exp = cards.find((c) => c.id === "exposure:1");
-  assert.match(exp.body, /expect \d\.\d\d wins now; his ceiling takes that to \d\.\d\d/);
+  assert.match(exp.body, /Projected 14\.0 in each/);
+  assert.match(exp.body, /same game is 6\.0 to 62\.0 points/);
+  assert.doesNotMatch(JSON.stringify(cards), /win chance|% to win|expect \d\.\d\d wins/i);
+});
+
+test("matchup trends, form, range profile and position gaps come from the site's own data", () => {
+  const S = (id, name, pos, team, proj, extra = {}) => ({ player_id: id, name, position: pos, team, isStarter: true, myProjPts: proj, achievements: [], ...extra });
+  const t = {
+    id: "a",
+    league_name: "League a",
+    settings: {
+      week: 7,
+      opponent: "Rival",
+      h2h: {
+        mine: [P("1", "Smasher", "WR", "DAL", 14, 5, 24), P("2", "Toughie", "RB", "SF", 12, 8, 17), P("3", "Wobbly", "TE", "KC", 6, 1, 18)],
+        opp: [P("9", "Foe", "QB", "BUF", 20, 12, 30), P("8", "Rb2", "RB", "BUF", 5, 2, 10), P("7", "Wr2", "WR", "BUF", 5, 2, 10)],
+      },
+    },
+    players: [
+      S("1", "Smasher", "WR", "DAL", 14, { myLean: { call: "SMASH", effect: 2.4 }, achievements: [{ key: "onFire" }] }),
+      S("2", "Toughie", "RB", "SF", 12, { myLean: { call: "AVOID", effect: -2.2 }, achievements: [{ key: "locked" }] }),
+      S("3", "Wobbly", "TE", "KC", 6, { achievements: [{ key: "volatile" }, { key: "sellHigh" }] }),
+      { ...S("4", "Cheap", "WR", "NYG", 3, { isStarter: false, achievements: [{ key: "buyLow" }] }) },
+    ],
+  };
+  const gs = { SF: { state: "pre" }, DAL: { state: "pre" }, KC: { state: "pre" }, BUF: { state: "pre" }, NYG: { state: "pre" } };
+  const { cards } = buildInsights({ savedTeams: [t], gameStates: gs });
+  const trend = cards.find((c) => c.id === "matchup-trends");
+  assert.match(trend.title, /1 starter in a Smash Spot, 1 in a Tough Spot/);
+  assert.match(trend.body, /Smash: Smasher \+2\.4/);
+  assert.match(trend.body, /Tough: Toughie −2\.2/);
+  const form = cards.find((c) => c.id === "form");
+  assert.match(form.body, /On Fire: Smasher/);
+  const value = cards.find((c) => c.id === "value");
+  assert.match(value.body, /Buy Low .*: Cheap/);
+  assert.match(value.body, /Sell High .*: Wobbly/);
+  const range = cards.find((c) => c.id === "range-profile");
+  assert.match(range.body, /1 Steady Eddy \(Toughie\), 1 Risky Icarus \(Wobbly\)/);
+  const gaps = cards.find((c) => c.id === "gaps:a");
+  assert.match(gaps.title, /your edge is WR|your edge is RB|your edge is TE/);
+  assert.match(gaps.body, /QB −20\.0/);
 });
