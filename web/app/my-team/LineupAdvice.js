@@ -80,9 +80,7 @@ export default function LineupAdvice({ team, gameStates, injuries = [] }) {
             </a>
           )}
         </div>
-        {alerts.length === 0 ? (
-          <p className="lu-alerts-none mono">No injury or bye alerts: every starter is healthy and in a game this week.</p>
-        ) : (
+        {alerts.length > 0 && (
           <ul className="lu-alert-list">
             {alerts.map((a) => (
               <li key={`${a.type}:${a.slot}:${a.player?.player_id || "none"}`} className="lu-alert">
@@ -114,10 +112,6 @@ export default function LineupAdvice({ team, gameStates, injuries = [] }) {
         {advice.lockedStarters > 0 && <div className="lu-line mono"><span className="lu-locked">{advice.lockedStarters} locked</span></div>}
       </div>
       {better && <SwapList swaps={advice.swaps} />}
-      <p className="standings-note mono">
-        Start / sit goes by each player&apos;s median plus his Smash / Tough Spot, the two inputs that held up in a backtest; floor and ceiling are shown for context.
-        K, DEF and IDP slots aren&apos;t optimized.
-      </p>
     </section>
   );
 }
