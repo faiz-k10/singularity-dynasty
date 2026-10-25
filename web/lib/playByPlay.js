@@ -361,7 +361,8 @@ export async function fetchRoster(espnTeamId) {
 // The panel's players + the scoreboard (lib/gameStatus.js) -> the play feed. Only games in progress are read.
 export async function loadLivePlays(players, gameStates, opts) {
   if (!gameStates) return { plays: [], totals: {} };
-  const live = (players || []).filter((p) => gameStates[p.team]?.state === "in" && gameStates[p.team].eventId);
+  // Finished games too: Sleeper posts a player's last plays a minute or two after the final whistle, and the board keeps adding the plays it hasn't posted.
+  const live = (players || []).filter((p) => ["in", "post"].includes(gameStates[p.team]?.state) && gameStates[p.team].eventId);
   if (!live.length) return { plays: [], totals: {} };
   const codeById = {};
   const teamsByEvent = {};

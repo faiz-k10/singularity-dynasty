@@ -9,7 +9,7 @@ import { buildRow, isTyping, moveFocus } from "./LeagueDashboard";
 import { formatOdds, oddsTone } from "./Standings";
 import PositionBadge from "../tools/PositionBadge";
 import TeamBadge from "../tools/TeamBadge";
-import { buildLiveFeed, trackScoring, sortFeed, applyPending } from "@/lib/liveFeed";
+import { buildLiveFeed, trackScoring, sortFeed, applyPending, catchUpPlayers } from "@/lib/liveFeed";
 import { matchupState } from "@/lib/matchupState";
 import { getLivePlays } from "./actions";
 import { leadState } from "@/lib/leadState";
@@ -435,6 +435,29 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
   // must not lose their adjustment (and flicker back to Sleeper's older number) when the board widens again. A stale entry is harmless:
   // lib/liveFeed.js pendingFor only uses it when Sleeper's number still lines up with it.
   const mergeTotals = useCallback((t) => setPlayTotals((prev) => ({ ...(prev || {}), ...t })), []);
+  // A game that has just ended keeps its plays coming for a few minutes (the player has left the live list, but Sleeper still trails
+  // his last plays, and the scores on the board add the ones it hasn't posted): lib/liveFeed.js catchUpPlayers.
+  const finalSeen = useRef({});
+  const catchUp = useMemo(() => JSON.stringify(catchUpPlayers(savedTeams, gameStates, finalSeen.current, Date.now())), [savedTeams, gameStates, updatedAt]);
+  const [catchTick, setCatchTick] = useState(0);
+  const catching = catchUp !== "[]";
+  useEffect(() => {
+    if (!catching) return undefined;
+    const id = setInterval(() => setCatchTick((t) => t + 1), 10000);
+    return () => clearInterval(id);
+  }, [catching]);
+  useEffect(() => {
+    if (!catching) return undefined;
+    let cancelled = false;
+    getLivePlays(JSON.parse(catchUp))
+      .then((res) => {
+        if (!cancelled && res?.totals) mergeTotals(res.totals);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [catchUp, catching, catchTick, mergeTotals]);
   // Which of the open league's views is showing (Matchup / Standings / Best available); opening a league starts on Matchup.
   const [panelTab, setPanelTab] = useState("matchup");
   // League filters (BoardFilters.js): league type / win chance / score / playoff odds. Not remembered between visits, so the

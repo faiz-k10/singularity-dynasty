@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { adjustedMatchup } from "../lib/adjustedMatchup.js";
-import { buildLiveFeed, trackScoring, sortFeed, isGameDay, formatCountdown, pendingFor, applyPending, applyPendingToLineup } from "../lib/liveFeed.js";
+import { buildLiveFeed, trackScoring, sortFeed, isGameDay, formatCountdown, pendingFor, applyPending, applyPendingToLineup, catchUpPlayers, CATCH_UP_MS } from "../lib/liveFeed.js";
 
 const gs = {
   GB: { state: "in", detail: "4:43 - 1st", start: "2026-10-19T00:20Z" },
@@ -180,4 +180,15 @@ test("adjustedMatchup: pending plays move the lineups, the totals and the win ch
   assert.equal(adj.mine.pts, 89.52);
   assert.ok(adj.winChance > 0.58, "a higher score cannot lower the win chance");
   assert.equal(adjustedMatchup({ bestBall: true, winChance: null }, gs, null), null);
+});
+
+test("catchUpPlayers: finished games keep their starters for ten minutes after first seen final", () => {
+  const teams = [{ settings: { h2h: { mine: [{ id: "1", name: "A", pos: "TE", team: "CLE", pts: 8.5 }, { id: "2", name: "B", pos: "WR", team: "DEN", pts: 1 }], opp: [{ id: "3", name: "C", pos: "RB", team: "TEN", pts: 3 }] } } }];
+  const gs = { CLE: { state: "post" }, TEN: { state: "post" }, DEN: { state: "in" } };
+  const seen = {};
+  const first = catchUpPlayers(teams, gs, seen, 1000);
+  assert.deepEqual(first.map((p) => `${p.side}:${p.playerId}`).sort(), ["mine:1", "theirs:3"]);
+  assert.equal(catchUpPlayers(teams, gs, seen, 1000 + CATCH_UP_MS).length, 2);
+  assert.equal(catchUpPlayers(teams, gs, seen, 1001 + CATCH_UP_MS).length, 0);
+  assert.deepEqual(catchUpPlayers(teams, null, {}, 0), []);
 });

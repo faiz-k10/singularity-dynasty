@@ -109,6 +109,30 @@ export function pendingFor(starts, plays) {
   return Math.abs(pending) < PEND_TOL || Math.abs(pending) > 30 ? 0 : pending;
 }
 
+// Starters whose game has just ended: Sleeper posts the last plays a minute or two after the final whistle, so for CATCH_UP_MS after the
+// board first sees a game final we keep reading its plays (the board's "ahead of Sleeper" numbers need them), even though the player has
+// left the live list. `seen` is { TEAM: ms the board first saw that game final } and is filled in here; a team already final when the page
+// opens counts from that moment. Returns the request rows ({ playerId, name, pos, team, side }) for the plays action.
+export const CATCH_UP_MS = 10 * 60 * 1000;
+export function catchUpPlayers(savedTeams, gameStates, seen, now) {
+  if (!gameStates) return [];
+  const out = new Map();
+  for (const t of savedTeams || []) {
+    const s = t.settings || {};
+    if (s.bestBall || s.isBye) continue;
+    for (const [side, list] of [["mine", s.h2h?.mine], ["theirs", s.h2h?.opp]]) {
+      for (const p of list || []) {
+        const g = p.id && p.team ? gameStates[p.team] : null;
+        if (g?.state !== "post") continue;
+        seen[p.team] ??= now;
+        if (now - seen[p.team] > CATCH_UP_MS) continue;
+        out.set(`${side}:${p.id}`, { playerId: p.id, name: p.name, pos: p.pos, team: p.team, side });
+      }
+    }
+  }
+  return [...out.values()];
+}
+
 // Rows with those pending points added to their numbers (pts, ptsMin, each start) and `pending` set for the label.
 export function applyPending(rows, totals) {
   if (!totals) return rows;
