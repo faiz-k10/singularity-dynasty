@@ -104,7 +104,11 @@ export default function CompareWeekly({ players, maxSpread }) {
                   <th>Position</th>
                   {players.map((p) => (
                     <td className="mono" key={p.player_name}>
-                      {p.positionLabel || p.position} · <TeamBadge team={p.team} />
+                      <span className="compare-pos">
+                    {p.positionLabel || p.position}
+                    <span aria-hidden="true">·</span>
+                    <TeamBadge team={p.team} />
+                  </span>
                     </td>
                   ))}
                 </tr>
