@@ -30,6 +30,7 @@ import { loadLivePlays } from "@/lib/playByPlay";
 import { getWeekProjections, getWeekRankRows } from "@/lib/weekProjections";
 import { buildWaiverList, sleeperIndex } from "@/lib/waivers";
 import { buildSide, matchupOutlook } from "@/lib/winChance";
+import { buildBench } from "@/lib/h2hBench";
 import { getLeagueSeason } from "@/lib/leagueSeason";
 import { fetchInjuryFeed } from "@/lib/injuryFeed";
 
@@ -124,6 +125,9 @@ function buildH2H(mine, oppEntry, slots, infoFor, projByName) {
   return {
     mine: buildSide(mine.starters, slots, infoFor, projFor, mine.players_points),
     opp: buildSide(oppEntry.starters, slots, infoFor, projFor, oppEntry.players_points),
+    // The benches (lib/h2hBench.js): shown under the starters, never part of the win chance or the totals.
+    mineBench: buildBench(mine, infoFor, projFor),
+    oppBench: buildBench(oppEntry, infoFor, projFor),
   };
 }
 
@@ -505,7 +509,7 @@ export async function pollLiveScores() {
   // Names for the lineups: everyone already in a saved head-to-head, else the dictionary (loaded at most once).
   const known = {};
   for (const r of rows) {
-    for (const p of [...(r.settings?.h2h?.mine || []), ...(r.settings?.h2h?.opp || [])]) {
+    for (const p of [...(r.settings?.h2h?.mine || []), ...(r.settings?.h2h?.opp || []), ...(r.settings?.h2h?.mineBench || []), ...(r.settings?.h2h?.oppBench || [])]) {
       // A saved entry with no position and no team is a player our directory didn't know (shown as "Player <id>"); don't carry him forward -- and above
       // all not his old "out" flag, which the poll would keep copying back -- but look him up again, so he turns up as soon as the directory has him.
       if (p.id && (p.team || p.pos)) known[p.id] = { name: p.name, pos: p.pos, team: p.team, active: !p.out };
@@ -543,7 +547,7 @@ export async function pollLiveScores() {
       let h2h = null;
       let winChance = null;
       if (m.mine && m.oppEntry && !row.settings?.bestBall) {
-        await fillInfo([...(m.mine.starters || []), ...(m.oppEntry.starters || [])]);
+        await fillInfo([...(m.mine.starters || []), ...(m.oppEntry.starters || []), ...(m.mine.players || []), ...(m.oppEntry.players || [])]);
         const [proj, gameStates] = await Promise.all([projP, gameStatesP]);
         h2h = buildH2H(m.mine, m.oppEntry, row.settings?.slots, (id) => known[id], proj.byName);
         winChance = matchupOutlook(h2h, gameStates)?.winChance ?? null;

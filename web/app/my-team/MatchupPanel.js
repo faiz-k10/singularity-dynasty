@@ -12,6 +12,8 @@ import { useStatsSlide, StatsPanel } from "./GameStats";
 import ScoreCurve from "./ScoreCurve";
 import { leadState } from "@/lib/leadState";
 import { matchupState } from "@/lib/matchupState";
+import { summarizeSide } from "@/lib/winChance";
+import { benchFromRoster } from "@/lib/h2hBench";
 import { useMounted } from "./useMounted";
 
 // Sleeper's own page for this week's matchup in a league (opens in a new tab).
@@ -50,7 +52,7 @@ function leftLabel(s) {
 
 // uncertain: points are on the board but the scoreboard couldn't be read, so we can't tell who is still to play --
 // the "to come" range, projected final and players-left counts are hidden rather than guessed.
-function SideRow({ p, scoreboardKnown, uncertain, mounted }) {
+function SideRow({ p, scoreboardKnown, uncertain, mounted, bench = false }) {
   // Hooks first (the empty-slot return below can't come before them): clicking his score slides his stats for this game in.
   const slide = useStatsSlide(p, p.outlook?.state === "in" || p.outlook?.state === "post");
   if (!p.id) {
@@ -72,7 +74,7 @@ function SideRow({ p, scoreboardKnown, uncertain, mounted }) {
   const tone = pts == null || o.state === "pre" || typeof p.floor !== "number" || typeof p.ceiling !== "number" ? null : pts <= p.floor ? "low" : pts >= p.ceiling ? "good" : "mid";
   const showCurve = !p.out && o.state !== "bye" && p.proj > 0 && typeof p.floor === "number" && typeof p.ceiling === "number" && p.ceiling > p.floor;
   return (
-    <div className={`h2h-row${o.state === "in" ? " is-live" : ""}${done ? " is-done" : ""}${o.state === "pre" && !p.out ? " is-upcoming" : ""}${slide.phase === "open" ? " is-stats" : slide.phase === "closing" ? " is-closing" : ""}`} style={slide.rowStyle}>
+    <div className={`h2h-row${o.state === "in" ? " is-live" : ""}${done ? " is-done" : ""}${o.state === "pre" && !p.out && !bench ? " is-upcoming" : ""}${bench ? " is-bench" : ""}${slide.phase === "open" ? " is-stats" : slide.phase === "closing" ? " is-closing" : ""}`} style={slide.rowStyle}>
       <span className="h2h-c-slot"><SlotBadge slot={p.slot} compact /></span>
       <span className="h2h-c-player">
         <span className="h2h-player-name">{p.name}</span>
@@ -113,7 +115,7 @@ function SideRow({ p, scoreboardKnown, uncertain, mounted }) {
   );
 }
 
-function Side({ side, opp = false, scoreboardKnown, uncertain, mounted }) {
+function Side({ side, bench = [], opp = false, scoreboardKnown, uncertain, mounted }) {
   return (
     <div className={`h2h-side${opp ? " opp" : ""}`}>
       <div className="h2h-row h2h-head" aria-hidden="true">
@@ -125,6 +127,17 @@ function Side({ side, opp = false, scoreboardKnown, uncertain, mounted }) {
       {side.players.map((p, i) => (
         <SideRow key={p.id || `empty-${i}`} p={p} scoreboardKnown={scoreboardKnown} uncertain={uncertain} mounted={mounted} />
       ))}
+      {bench.length > 0 && (
+        // The bench: under its own heading and tint, never part of the totals.
+        <div className="h2h-bench" role="group" aria-label="Bench">
+          <div className="h2h-bench-head mono">
+            Bench <span>{bench.length}</span>
+          </div>
+          {bench.map((p) => (
+            <SideRow key={p.id} p={p} bench scoreboardKnown={scoreboardKnown} uncertain={uncertain} mounted={mounted} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -185,6 +198,10 @@ function MatchupBody({ team, gameStates, playTotals }) {
   // Every row's info column (badges + game time) takes the width of the widest one, so the outcome curve beside it is the same size in every row
   // (otherwise "Sun 4:05 PM" under the badges squeezed an unplayed player's curve while "Final" left a finished player's wide). Measured after each render;
   // the variable is cleared first so a shorter label can shrink the column again.
+  // The benches under the starters: from the saved head-to-head (both sides), or -- for a snapshot from before benches were saved -- my own from the
+  // saved roster. Each row gets its game state like a starter (summarizeSide); none of it enters the totals above.
+  const benchMine = useMemo(() => summarizeSide(s.h2h?.mineBench || benchFromRoster(team.players, s.playerPoints), gameStates).players, [s.h2h, s.playerPoints, team.players, gameStates]);
+  const benchOpp = useMemo(() => summarizeSide(s.h2h?.oppBench || [], gameStates).players, [s.h2h, gameStates]);
   const lineupsRef = useRef(null);
   useLayoutEffect(() => {
     const el = lineupsRef.current;
@@ -252,8 +269,8 @@ function MatchupBody({ team, gameStates, playTotals }) {
         <TeamScore state={leadState(myScore, oppScore)[1]} name={s.opponent} record={s.opponentRecord} score={oppScore} proj={uncertain ? null : oppScore + opp.projFinal - opp.pts} left={uncertain ? null : leftLabel(opp)} opp />
       </div>
       <div className="h2h-lineups" ref={lineupsRef}>
-        <Side side={mine} scoreboardKnown={scoreboardKnown} uncertain={uncertain} mounted={mounted} />
-        <Side side={opp} opp scoreboardKnown={scoreboardKnown} uncertain={uncertain} mounted={mounted} />
+        <Side side={mine} bench={benchMine} scoreboardKnown={scoreboardKnown} uncertain={uncertain} mounted={mounted} />
+        <Side side={opp} bench={benchOpp} opp scoreboardKnown={scoreboardKnown} uncertain={uncertain} mounted={mounted} />
       </div>
       <ul className="h2h-legend" aria-label="How to read the curves">
         <li>
