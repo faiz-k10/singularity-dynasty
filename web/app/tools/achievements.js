@@ -243,13 +243,15 @@ export function getAchievements(row) {
   const playing = !(row.projection != null && row.projection <= 0);
   const isEstablished = row.sample_confidence === "established";
   const isBuilding = row.sample_confidence === "building";
-  const onFire = onFireFlag(row.recentGames);
-  const onIce = onThinIceFlag(row.recentGames);
+  // The badges read his last 5 games only (the list can carry more for the Recent Games panel).
+  const lastFive = (row.recentGames || []).slice(0, 5);
+  const onFire = onFireFlag(lastFive);
+  const onIce = onThinIceFlag(lastFive);
   const spread = playing ? spreadFlag(row.floor, row.ceiling, row.projection, row.position) : null;
-  const xfpFlag = xfpTrend2(row.recentGames);
+  const xfpFlag = xfpTrend2(lastFive);
   const heroWins = Math.max(0, row.heroWins || 0);
-  const buyLow = buyLowFlag(row.woprPercentile, row.recentGames);
-  const sellHigh = sellHighFlag(row.woprPercentile, row.recentGames);
+  const buyLow = buyLowFlag(row.woprPercentile, lastFive);
+  const sellHigh = sellHighFlag(row.woprPercentile, lastFive);
   // Matchup badge: just the ▲ / ▼ beside the opponent (lib/defenseLeans.js flagFor, attached as row.defLean by
   // Weekly Projection Rankings), shown as a badge too. Display only -- never a projection input. Rows without a
   // defLean (every page that doesn't load the leans, bye weeks, defenses with no strong trend) just don't get it.
