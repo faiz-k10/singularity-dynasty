@@ -5139,11 +5139,11 @@ html{font-stretch:82%;}
 .sb-card-status{display:inline-flex; align-items:center; gap:6px; margin-left:auto; font-size:10.5px; letter-spacing:.04em; color:var(--star-dim); white-space:nowrap;}
 .sb-card-status.is-live{color:var(--star);}
 .sb-card-status .sb-live-dot{width:6px; height:6px;}
-.sb-card-sleeper{flex:none; display:inline-flex; color:var(--star-dim); opacity:.55; transition:opacity .15s ease, color .15s ease;}
+.sb-card-sleeper{flex:none; display:inline-flex; opacity:.7; transition:opacity .15s ease;}
+.sb-card-sleeper-logo{width:18px; height:18px; border-radius:4px; display:block;}
 .sb-card-head .sb-card-status + .sb-card-sleeper{margin-left:4px;}
 .sb-card-head .sb-card-league + .sb-card-sleeper{margin-left:auto;}
 .sb-card:hover .sb-card-sleeper, .sb-card-sleeper:focus-visible{opacity:1;}
-.sb-card-sleeper:hover{color:var(--neon-blue);}
 
 .sb-card-verdict{display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap;}
 .sb-card-word{font-family:var(--font-display), sans-serif; font-weight:800; font-size:30px; line-height:1; letter-spacing:.03em; text-transform:uppercase; color:var(--tone);}
