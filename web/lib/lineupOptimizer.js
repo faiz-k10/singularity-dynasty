@@ -1,20 +1,24 @@
 // Start / sit for one saved league (app/my-team/LineupAdvice.js, the Companion's "Lineup upgrade" cards): who to start over whom.
 // Pure; tested in test/lineupOptimizer.test.mjs.
 //
-// THE DECISION is the win chance, not a score of our own: every swap is judged by what it does to your chance of beating this week's
-// opponent, using the same model that draws the "% to win" on the cards (lib/winChance.js). Each player is the split normal his
-// published floor / median / ceiling describe, so an underdog is steered to upside and a favorite to a safe floor automatically, and
-// a long-shot ceiling isn't mistaken for an average. A Smash Spot / Tough Spot (his opponent's trend against his position, saved as
-// myLean = { call, effect }) moves his whole range by the points effect the Weekly Projection Rankings page quotes for it -- the
-// published number, no weighting of our own. Every number shown on a swap is one the site publishes (median, floor, ceiling).
-// Without this week's opponent (a snapshot from before the matchup was saved, a bye) it falls back to the median, and says so.
+// THE DECISION uses only what held up in a backtest (model/backtest_start_sit_rules.py: 2026 weeks 1-6 as published, ~43,000 same-position
+// pairs, "which rule picks the player who actually scored more"):
+//   - the weekly median (projection) -- the baseline;
+//   - plus his Smash Spot / Tough Spot, the FULL points-per-game effect the rankings page quotes for it (saved as myLean = { call, effect }).
+//     Among close calls (medians within 4 points) with a flagged player, picking by median alone was right 57.2% of the time, adding
+//     0.5x the effect 63.5%, the full effect 65.5%, 1.5x 65.2%; flagged Smash players beat their median by +2.5 on average (quoted effect
+//     +2.4), Tough players fell short by -2.3 (quoted -2.2), unflagged players by 0.0.
+// NOT used: the floor and the ceiling. As tie-breakers or blended in (30/40/30, ceiling alone, mean of floor and ceiling) they picked the
+// higher scorer LESS often than the median in close calls (ceiling alone 48.1% vs 54.4%, 30/40/30 50.2%), and the ranges aren't equally
+// reliable: the widest-range quartile beat its ceiling 4.5% of the time (the narrowest 16.1%), and players whose ceiling is over 3x their
+// median beat it 3.8%. Likewise no win-chance simulation decides anything: that idea has NOT been backtested. A swap's gain is in points of
+// median + matchup trend; the floor and ceiling are shown for context only.
 //
 // What it will NOT touch: a player whose game has started (Sleeper locks him) stays where he is and can't be moved in or out;
 // slots our model has no projection for (K, DEF, IDP) and players with no projection keep whoever is there now. A player the injury
 // feed lists Doubtful or worse is never a start (and a starter like that scores 0).
 import { ELIGIBLE } from "./bestBall.js";
 import { num, round1 as r1, fmt1 } from "./format.js";
-import { summarizeSide, playerOutlook, lineupSwapSim } from "./winChance.js";
 
 // "SUPER_FLEX" -> "SUPERFLEX": how a slot is named on screen (the one place that maps it).
 export const slotLabel = (slot) => (slot === "SUPER_FLEX" ? "SUPERFLEX" : slot);
@@ -28,11 +32,16 @@ export const rangeText = (p) => {
   return f != null && c != null ? `${fmt1(p.myProjPts)} (${fmt1(f)}–${fmt1(c)})` : fmt1(p?.myProjPts ?? 0);
 };
 
-const MIN_GAIN = 0.1; // median fallback: points
-const MIN_WIN_GAIN = 0.005; // win chance: half a point of win probability
+const MIN_GAIN = 0.1;
 // A player the injury feed lists Doubtful or worse (severity 3+): he is not a lineup option, and a starter like that is worth 0 in the lineup.
 const OUT_SEVERITY = 3;
 const outNames = (injuries) => new Set((injuries || []).filter((i) => i.severity >= OUT_SEVERITY).map((i) => i.name));
+
+// What a player is worth for start / sit: his median plus the full points effect of a Smash / Tough Spot (see the header for the evidence).
+const value = (p) => {
+  const m = num(p.myProjPts);
+  return m == null ? null : m + (num(p.myLean?.effect) || 0);
+};
 
 // Roster with locks, Out players zeroed, the slots that can change and the bench players who can move in. null when there is nothing to optimize.
 function prepare(team, gameStates, injuries) {
@@ -46,7 +55,7 @@ function prepare(team, gameStates, injuries) {
   const roster = (team.players || []).map((p0) => {
     const unavailable = outs.has(p0.name);
     const p = unavailable ? { ...p0, myProjPts: 0, myFloor: 0, myCeiling: 0, myLean: null } : p0;
-    return { ...p, val: num(p.myProjPts), locked: Boolean(locked(p)), unavailable };
+    return { ...p, val: value(p), locked: Boolean(locked(p)), unavailable };
   });
   const byIndex = new Map();
   for (const p of roster) if (p.isStarter && p.slotIndex < slots.length) byIndex.set(p.slotIndex, p);
@@ -62,7 +71,7 @@ function prepare(team, gameStates, injuries) {
   return { slots, roster, open, bench };
 }
 
-// Median fallback: simple one-for-one swaps, best first, only when they GAIN median points (nobody used twice; legal for the slot).
+// Simple one-for-one swaps, best first, only when they GAIN median points (nobody used twice; legal for the slot).
 export function optimizeLineup(team, gameStates, injuries = []) {
   const prep = prepare(team, gameStates, injuries);
   if (!prep) return null;
@@ -87,88 +96,24 @@ export function optimizeLineup(team, gameStates, injuries = []) {
     swaps.push({ slot: best.o.kind, in: best.b, out: best.o.cur, gain: r1(best.gain) });
   }
   const gain = swaps.reduce((t, x) => t + x.gain, 0);
-  return { basis: "median", current: r1(current), best: r1(current + gain), gain: r1(gain), swaps, optimizedSlots: open.length, lockedStarters: slots.length - open.length };
+  return { current: r1(current), best: r1(current + gain), gain: r1(gain), swaps, optimizedSlots: open.length, lockedStarters: slots.length - open.length };
 }
 
-// A player's range as the win-chance model reads it: Out = nothing; a Smash / Tough Spot shifts the whole range by its published points effect.
-function simEntry(p, slot) {
-  const lean = p.myLean ? num(p.myLean.effect) || 0 : 0;
-  const shift = (v) => (v == null ? null : Math.max(0, v + lean));
-  return {
-    id: p.player_id, slot, name: p.name, pos: p.position, team: p.team,
-    proj: shift(num(p.myProjPts)), floor: shift(num(p.myFloor)), ceiling: shift(num(p.myCeiling)),
-    pts: null, ...(p.unavailable ? { out: true } : {}),
-  };
-}
-
-// Why a swap: one plain sentence from the published numbers and the matchup's state.
-function whyFor(inn, out, win) {
+// Why a swap, in the numbers the site publishes: the medians and the matchup trends that moved either side.
+const leanText = (p) => (p.myLean ? `${p.myLean.call === "SMASH" ? "Smash" : "Tough"} Spot ${p.myLean.effect > 0 ? "+" : "−"}${fmt1(Math.abs(p.myLean.effect))}` : null);
+function whyFor(inn, out) {
   if (!out) return "Fills an empty slot";
   if (out.unavailable) return `${out.name} is listed Out`;
-  const f = (p) => num(p.myFloor);
-  const c = (p) => num(p.myCeiling);
-  const lean = inn.myLean?.call === "SMASH" ? " · Smash Spot" : out.myLean?.call === "AVOID" ? " · avoids a Tough Spot" : "";
-  if (win != null && win <= 0.4 && c(inn) != null && c(out) != null && c(inn) - c(out) >= 1) return `Higher ceiling (${fmt1(c(inn))} vs ${fmt1(c(out))}), which an underdog needs${lean}`;
-  if (win != null && win >= 0.75 && f(inn) != null && f(out) != null && f(inn) - f(out) >= 1) return `Higher floor (${fmt1(f(inn))} vs ${fmt1(f(out))}), which protects a favorite${lean}`;
-  if (inn.myProjPts - out.myProjPts >= 0.5) return `Higher median (${fmt1(inn.myProjPts)} vs ${fmt1(out.myProjPts)})${lean}`;
-  if (f(inn) != null && f(out) != null && c(inn) != null && c(out) != null && f(inn) >= f(out) && c(inn) >= c(out)) return `Higher floor and ceiling${lean}`;
-  return `Better odds against this week's opponent${lean}`;
+  const parts = [`Median ${fmt1(inn.myProjPts)} vs ${fmt1(out.myProjPts)}`];
+  if (inn.myLean) parts.push(`${leanText(inn)} for him`);
+  if (out.myLean) parts.push(`${leanText(out)} for ${out.name}`);
+  return parts.join(" · ");
 }
 
-// The win-chance version: the same greedy one-for-one swaps, each judged by its effect on P(win), best first. Needs the saved matchup
-// (settings.h2h, both lineups with their ranges and live points); null when it isn't there or doesn't line up with the roster.
-function winAdvice(team, gameStates, injuries, prep) {
-  const h2h = team.settings?.h2h;
-  const { slots, roster, open, bench } = prep;
-  if (!h2h?.mine || h2h.mine.length !== slots.length || !h2h.opp?.length) return null;
-  const byId = new Map(roster.map((p) => [p.player_id, p]));
-  for (const o of open) if (o.cur && h2h.mine[o.i]?.id !== o.cur.player_id) return null; // a stale matchup snapshot
-  const entries = h2h.mine.map((e, i) => {
-    const p = e?.id ? byId.get(e.id) : null;
-    if (!p) return e || { id: null, slot: slots[i] };
-    if (p.unavailable) return { ...e, proj: 0, floor: 0, ceiling: 0, out: true };
-    const lean = !e.est && p.myLean ? num(p.myLean.effect) || 0 : 0;
-    const shift = (v) => (typeof v === "number" ? Math.max(0, v + lean) : v);
-    return { ...e, proj: shift(e.proj), floor: shift(e.floor), ceiling: shift(e.ceiling) };
-  });
-  const mine = summarizeSide(entries, gameStates);
-  const sim = lineupSwapSim(mine, summarizeSide(h2h.opp, gameStates));
-  const now = sim.now();
-  const asPlayer = (p, slot) => {
-    const e = simEntry(p, slot);
-    return { ...e, outlook: playerOutlook(e, gameStates) };
-  };
-  const chance = num(team.settings?.winChance);
-  const swaps = [];
-  const done = new Set();
-  for (;;) {
-    let best = null;
-    for (const o of open) {
-      if (o.cur && done.has(o.cur.player_id)) continue;
-      const outP = o.cur ? mine.players[o.i] : null;
-      for (const b of bench) {
-        if (done.has(b.player_id) || !ELIGIBLE[o.kind].includes(b.position)) continue;
-        const gain = sim.winWith(outP, asPlayer(b, o.kind)) - sim.now();
-        if (gain >= MIN_WIN_GAIN && (!best || gain > best.gain)) best = { o, b, outP, gain };
-      }
-    }
-    if (!best) break;
-    sim.apply(best.outP, asPlayer(best.b, best.o.kind));
-    done.add(best.b.player_id);
-    if (best.o.cur) done.add(best.o.cur.player_id);
-    swaps.push({ slot: best.o.kind, in: best.b, out: best.o.cur, gain: r1(best.gain * 100), why: whyFor(best.b, best.o.cur, chance) });
-  }
-  const gain = swaps.reduce((t, x) => t + x.gain, 0);
-  return { basis: "win", now, best: sim.now(), gain: r1(gain), swaps, optimizedSlots: open.length, lockedStarters: slots.length - open.length };
-}
-
-// The advice for a league: swaps by win chance when this week's matchup is there (gains are points of win chance), else by median
-// (gains are points). `chance` is the saved win chance (the card's number) for the underdog / favorite wording.
+// The advice for a league: the same greedy one-for-one swaps, valued by median + matchup trend.
 export function lineupAdvice(team, gameStates, injuries = []) {
-  const prep = prepare(team, gameStates, injuries);
-  if (!prep) return null;
-  const win = winAdvice(team, gameStates, injuries, prep);
-  return { ...(win || optimizeLineup(team, gameStates, injuries)), chance: num(team.settings?.winChance) };
+  const r = optimizeLineup(team, gameStates, injuries);
+  return r && { ...r, swaps: r.swaps.map((x) => ({ ...x, why: whyFor(x.in, x.out) })) };
 }
 
 // What needs fixing in the current lineup, most urgent first: an empty slot, a starter on a bye, one the model projects out / inactive,

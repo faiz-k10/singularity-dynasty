@@ -9,7 +9,7 @@
 // gameStates: lib/gameStatus.js (team -> { state: "pre" | "in" | "post" }).
 // waivers: { [teamId]: [{ name, pos, team, proj }] } best available per league, optional.
 
-import { lineupAdvice, rangeText, slotLabel } from "./lineupOptimizer.js";
+import { lineupAdvice, slotLabel } from "./lineupOptimizer.js";
 import { playerLeverage } from "./winChance.js";
 import { num, leagueName } from "./format.js";
 
@@ -70,8 +70,8 @@ function leagues(savedTeams, gameStates, adjusted = null) {
 }
 
 
-// Lineup upgrades: the biggest swap per league from the optimizer (lib/lineupOptimizer.js: judged by win chance when the matchup is saved, by
-// median otherwise). Only while someone in the lineup can still move.
+// Lineup upgrades: the biggest swap per league from the optimizer (lib/lineupOptimizer.js: median + Smash / Tough Spot). Only while someone in the
+// lineup can still move.
 function lineupCards(savedTeams, gameStates, adjusted, injuriesByTeam) {
   const cards = [];
   for (const t of savedTeams || []) {
@@ -79,17 +79,13 @@ function lineupCards(savedTeams, gameStates, adjusted, injuriesByTeam) {
     const a = adjusted?.[t.id]?.row ? adjusted[t.id].row.alertCount.advice : lineupAdvice(t, gameStates, injuriesByTeam?.[t.id]);
     if (!a || !a.swaps.length || a.gain < 1) continue;
     const top = a.swaps[0];
-    const byWin = a.basis === "win";
-    const more = a.swaps.length > 1 ? ` ${a.swaps.length - 1} more ${a.swaps.length === 2 ? "swap" : "swaps"} on the Lineup Alerts tab, ${r1(a.gain)}${byWin ? " points of win chance" : ""} in all.` : "";
     cards.push({
       id: `lineup:${t.id}`,
       kind: "lineup",
       label: "Lineup upgrade",
       tone: "mine",
       title: `Start ${top.in.name}${top.out ? ` over ${top.out.name}` : ""} in ${leagueOf(t)}`,
-      body: byWin
-        ? `${top.why}: ${rangeText(top.in)} against ${top.out ? rangeText(top.out) : "an empty slot"} at ${slotLabel(top.slot)}. Your win chance goes up ${r1(top.gain)} points.${more}`
-        : `At ${slotLabel(top.slot)}: ${rangeText(top.in)} against ${top.out ? rangeText(top.out) : "an empty slot"}, ${r1(top.gain)} more.${more}`,
+      body: `At ${slotLabel(top.slot)}: ${top.why}, ${r1(top.gain)} more.${a.swaps.length > 1 ? ` ${a.swaps.length - 1} more ${a.swaps.length === 2 ? "swap" : "swaps"} on the Lineup Alerts tab, ${r1(a.gain)} in all.` : ""}`,
       player: chip({ name: top.in.name, pos: top.in.position, team: top.in.team }),
       league: leagueOf(t),
       priority: 92 + Math.min(5, Math.round(a.gain / 3)),

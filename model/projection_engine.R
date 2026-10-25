@@ -688,7 +688,43 @@ load_history <- function(seasons = history_seasons()) {
   reg$attempts[is.na(reg$attempts)] <- 0
   for (col in STAT_COLS) reg[[col]][is.na(reg[[col]])] <- 0
   reg$touches <- reg$carries + reg$targets
+  if (INCLUDE_ZERO_SNAP_GAMES) reg <- add_zero_snap_games(reg, seasons)
   reg[order(reg$player_display_name, reg$season, reg$week), ]
+}
+
+# Games a player was ON THE FIELD for but has no stat line in. nflverse's weekly stats only carry players with a recorded stat, so a
+# player who got snaps and no touches (Cam Skattebo, 2026 week 6: benched after a fumble, 6 offense snaps, no carries or targets)
+# has NO row -- the game was invisible to every recency-weighted number, and his week 7 median came out ~10 instead of reflecting a
+# benching. nflreadr::load_snap_counts() says who was on the field (offense snaps >= 1, NO snap-share threshold), so each such
+# (player, season, week) is added as a real 0.0 game (every stat and usage metric 0). A player with no snaps (inactive, injured,
+# scratch) gets no row -- he did not play. Only for players who already have a stat game in these seasons, so nobody enters the pool
+# on zero games alone. Backtested (backtest_zero_snap_games.R, 2022-25, same target games either way, MAE of the weekly median):
+# QB -0.3%, RB -0.5%, WR -2.1%, TE -6.7%; where a player had a zero game in his last 3, -6% / -10% / -15% / -23%. Fails safe: if the snap
+# data can't be loaded the history is left as it was. Set INCLUDE_ZERO_SNAP_GAMES to FALSE to disable.
+INCLUDE_ZERO_SNAP_GAMES <- TRUE
+add_zero_snap_games <- function(reg, seasons) {
+  tryCatch({
+    sn <- as.data.frame(load_snap_counts(seasons = seasons))
+    sn <- sn[sn$game_type == "REG" & sn$position %in% c("QB", "RB", "WR", "TE") & !is.na(sn$offense_snaps) & sn$offense_snaps > 0 &
+               !(sn$week %in% EXCLUDE_WEEKS), ]
+    pl <- as.data.frame(load_players())
+    pl <- pl[!is.na(pl$pfr_id) & !is.na(pl$gsis_id), c("pfr_id", "gsis_id")]
+    pl <- pl[!duplicated(pl$pfr_id), ]
+    sn <- merge(sn, pl, by.x = "pfr_player_id", by.y = "pfr_id")
+    sn <- sn[sn$gsis_id %in% reg$player_id, ]
+    sn <- sn[!(paste(sn$gsis_id, sn$season, sn$week) %in% paste(reg$player_id, reg$season, reg$week)), ]
+    if (!nrow(sn)) return(reg)
+    last <- reg[!duplicated(reg$player_id, fromLast = TRUE), c("player_id", "player_display_name", "position")]
+    sn <- merge(sn, last, by.x = "gsis_id", by.y = "player_id")
+    zero <- data.frame(player_id = sn$gsis_id, player_display_name = sn$player_display_name, position = sn$position.y,
+                       season = sn$season, week = sn$week, team = sn$team, stringsAsFactors = FALSE)
+    for (col in setdiff(names(reg), names(zero))) zero[[col]] <- 0
+    cat("History: added", nrow(zero), "zero-point games (on the field, no stat line)\n")
+    rbind(reg, zero[, names(reg)])
+  }, error = function(e) {
+    cat("Snap counts unavailable this run -- history left without zero-snap games:", conditionMessage(e), "\n")
+    reg
+  })
 }
 
 # ============================= CORE MATH =============================
