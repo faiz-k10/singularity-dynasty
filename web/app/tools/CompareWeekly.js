@@ -90,7 +90,7 @@ export default function CompareWeekly({ players, maxSpread }) {
           node: (
             <>
           <div className="compare-table-wrap compare-h2h">
-            <table className="compare-table">
+            <table className="compare-table" style={{ "--cmp-n": n }}>
               <thead>
                 <tr>
                   <th></th>

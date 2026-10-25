@@ -4590,6 +4590,9 @@ html{font-stretch:82%;}
    one grid row per panel type so the players line up. */
 .compare-wrap{max-width:calc(100vw - 48px); padding-left:24px; padding-right:24px;}
 .compare-h2h .compare-table th:first-child, .compare-h2h .compare-table tbody th{min-width:150px;}
+/* Fixed layout: the label column is 150px and every player gets the SAME share of the rest (auto layout sized each column by its widest content, so one player's column ran far wider than the other's). */
+.compare-h2h .compare-table{table-layout:fixed; min-width:calc(150px + var(--cmp-n, 3) * 170px);}
+.compare-h2h .compare-table th:first-child, .compare-h2h .compare-table tbody th{width:150px;}
 .compare-h2h .compare-table td{padding:10px 20px;}
 .compare-table td.compare-best{color:var(--horizon-gold); font-weight:700; background:rgba(var(--horizon-gold-rgb),0.08);}
 .compare-table td.compare-strong{font-size:16px;}
