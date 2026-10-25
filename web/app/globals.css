@@ -2251,7 +2251,7 @@ a.export-csv-btn{text-decoration:none;}
    against the week bar below it: the slot grows to fill the column (never below 48px), and the
    photo is the largest circle that fits it (capped at 220px so a very tall panel doesn't balloon). */
 .stat-panel-pace-portrait-slot{flex:1 1 48px; min-height:48px; width:100%; min-width:0; container-type:size; display:flex; align-items:center; justify-content:center;}
-.stat-panel-pace-portrait{--pp:min(100cqw, 100cqh, 220px); width:var(--pp); height:var(--pp); flex:none; border-radius:50%; object-fit:cover; background:var(--void-panel-2);}
+.stat-panel-pace-portrait{--pp:min(100cqw, 100cqh, 220px); width:var(--pp); height:var(--pp); flex:none; border-radius:var(--r-sm); object-fit:cover; background:var(--void-panel-2);}
 /* Player identity, where "This season" used to sit -- name can wrap
    (long names, narrow season column) while the position badge stays on
    its own line beneath it rather than forcing the row wider. */
@@ -2918,9 +2918,9 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .shape-finder-score > :nth-child(2){margin-top:auto;}
 .shape-finder-score > :last-child{margin-bottom:auto;}
 .shape-finder-score .shape-finder-score-value{margin-top:6px;}
-.shape-finder-portrait{width:48px; height:48px; border-radius:50%; object-fit:cover; background:var(--void-panel-2);}
+.shape-finder-portrait{width:48px; height:48px; border-radius:var(--r-sm); object-fit:cover; background:var(--void-panel-2);}
 /* The comp's photo is a button that takes you to his row in the table. */
-.shape-finder-portrait-btn{display:inline-flex; padding:0; border:0; background:none; border-radius:50%; cursor:pointer; transition:transform .15s ease, box-shadow .15s ease;}
+.shape-finder-portrait-btn{display:inline-flex; padding:0; border:0; background:none; border-radius:var(--r-sm); cursor:pointer; transition:transform .15s ease, box-shadow .15s ease;}
 .shape-finder-portrait-btn:hover{transform:scale(1.07); box-shadow:0 0 0 2px rgba(var(--neon-blue-rgb),.7);}
 .shape-finder-portrait-btn:focus-visible{outline:2px solid var(--neon-blue); outline-offset:2px;}
 .shape-finder-pos .pos-rank{font-size:inherit; margin-left:1px;}
@@ -4636,7 +4636,7 @@ html{font-stretch:82%;}
 .compare-wrap .tool-paywall p{margin:0; font-size:13.5px;}
 .compare-wrap .tool-paywall .btn-primary{padding:8px 18px; font-size:13px;}
 .compare-sims-head{display:inline-flex; align-items:center; gap:10px;}
-.compare-sims-photo{width:34px; height:34px; border-radius:50%; object-fit:cover; background:var(--void-panel-2); border:1px solid var(--line);}
+.compare-sims-photo{width:34px; height:34px; border-radius:var(--r-sm); object-fit:cover; background:var(--void-panel-2); border:1px solid var(--line);}
 .compare-stat{display:inline-flex; flex-direction:column; align-items:center; gap:2px; line-height:1.15;}
 .compare-stat strong{font-size:15px;}
 .compare-stat-range{font-size:10.5px; color:var(--star-dim); font-weight:400;}
