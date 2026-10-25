@@ -9,6 +9,7 @@ import { fetchAllRows } from "@/lib/fetchAllRows";
 import ThemeToggle from "./ThemeToggle";
 import InteractiveScript from "./InteractiveScript";
 import TickerTrack from "./TickerTrack";
+import ToolLink from "./ToolLink";
 import { getAchievements } from "./tools/achievements";
 import { getCachedRedraftData, getCachedTdProfile, getCachedUsageProfile, computeRanks } from "./tools/redraft-rankings/data";
 import { computeRegressionScore } from "@/lib/regressionScore";
@@ -215,7 +216,7 @@ export default async function SiteHeader({ scripts = true }) {
                 who it is for), plus quick links underneath. CSS-only (:hover / :focus-within), like the other menus. */}
             <div className="nav-foldout">
               <div className="nav-foldout-grid">
-                <Link href="/tools/player-simulations" className="nav-fold-card">
+                <ToolLink href="/tools/player-simulations" className="nav-fold-card">
                   <span className="nav-fold-icon" aria-hidden="true">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 20V13M9 20V6M14 20v-9M19 20V9" /><path d="M3 20h18" /></svg>
                   </span>
@@ -224,8 +225,8 @@ export default async function SiteHeader({ scripts = true }) {
                     <span className="nav-fold-desc">10,000 simulated seasons per player: floor, median and ceiling.</span>
                     <span className="nav-fold-chip nf-singularity">Singularity <i>Updated Tuesdays</i></span>
                   </span>
-                </Link>
-                <Link href="/tools/redraft-rankings" className="nav-fold-card">
+                </ToolLink>
+                <ToolLink href="/tools/redraft-rankings" className="nav-fold-card">
                   <span className="nav-fold-icon" aria-hidden="true">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9 6h12M9 12h12M9 18h12" /><path d="M3.5 6h.01M3.5 12h.01M3.5 18h.01" strokeWidth="3" /></svg>
                   </span>
@@ -234,8 +235,8 @@ export default async function SiteHeader({ scripts = true }) {
                     <span className="nav-fold-desc">This week&apos;s matchup-adjusted rankings, with floor and ceiling.</span>
                     <span className="nav-fold-chip nf-explorer">Explorer <i>Updated Tuesdays</i></span>
                   </span>
-                </Link>
-                <Link href="/tools/draft-board" className="nav-fold-card">
+                </ToolLink>
+                <ToolLink href="/tools/draft-board" className="nav-fold-card">
                   <span className="nav-fold-icon" aria-hidden="true">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="1.6" /><rect x="13.5" y="3.5" width="7" height="7" rx="1.6" /><rect x="3.5" y="13.5" width="7" height="7" rx="1.6" /><rect x="13.5" y="13.5" width="7" height="7" rx="1.6" /></svg>
                   </span>
@@ -244,8 +245,8 @@ export default async function SiteHeader({ scripts = true }) {
                     <span className="nav-fold-desc">Startup and rookie boards, round by round, with stacks flagged.</span>
                     <span className="nav-fold-chip nf-explorer">Explorer <i>Updated every 2 weeks</i></span>
                   </span>
-                </Link>
-                <Link href="/tools/prospect-rankings" className="nav-fold-card">
+                </ToolLink>
+                <ToolLink href="/tools/prospect-rankings" className="nav-fold-card">
                   <span className="nav-fold-icon" aria-hidden="true">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3.5 2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 17l-5.2 2.7 1-5.9-4.3-4.1 5.9-.8Z" /></svg>
                   </span>
@@ -254,17 +255,17 @@ export default async function SiteHeader({ scripts = true }) {
                     <span className="nav-fold-desc">WR and QB prospect boards with side-by-side comparisons.</span>
                     <span className="nav-fold-chip nf-free">Free <i>Updated every 2 weeks</i></span>
                   </span>
-                </Link>
+                </ToolLink>
               </div>
               <div className="nav-foldout-foot">
-                <Link href="/tools/compare-players">Compare players →</Link>
-                <Link href="/tools/compare-player-sims">Compare simulations →</Link>
+                <ToolLink href="/tools/compare-players">Compare players →</ToolLink>
+                <ToolLink href="/tools/compare-player-sims">Compare simulations →</ToolLink>
                 <Link href="/#tools">All tools →</Link>
               </div>
             </div>
           </div>
           <Link href="/#feed">Feed</Link>
-          <Link href="/my-team">My Team</Link>
+          <ToolLink href="/my-team">My Team</ToolLink>
           <Link href={user ? "/account" : "/login"} className="tn-account">
             {user ? "Account" : "Sign In"}
           </Link>
@@ -287,7 +288,7 @@ export default async function SiteHeader({ scripts = true }) {
           <Link href="/#tools">Tools</Link>
           <Link href="/#pricing">Pricing</Link>
           <Link href="/#feed">Feed</Link>
-          <Link href="/my-team">My Team</Link>
+          <ToolLink href="/my-team">My Team</ToolLink>
           <Link href={user ? "/account" : "/login"}>
             {user ? "Account" : "Sign In"}
           </Link>
