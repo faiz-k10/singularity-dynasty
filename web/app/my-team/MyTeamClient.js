@@ -16,6 +16,7 @@ import AchievementDots from "../tools/AchievementDots";
 import { sortRows, sortArrow } from "@/lib/sortLink";
 import { buildPortfolio, aggregateGames, PORTFOLIO_COLUMN_TYPES } from "@/lib/portfolio";
 import { liveRosterNews, lineupChanged } from "@/lib/rosterAlerts";
+import { lineupAlertCount } from "@/lib/lineupOptimizer";
 import { livePointsFor } from "@/lib/gameStatus";
 import SlotBadge from "./SlotBadge";
 import MatchupPanel, { PanelTabs, leagueTabs } from "./MatchupPanel";
@@ -265,7 +266,7 @@ function RosterTable({ players: rawPlayers, bestBall = false, playerPoints = nul
 function LeagueDetail({ team, gameStates, injuries, children }) {
   const s = team.settings || {};
   const [tab, setTabState] = useState(s.opponent || s.isBye ? "matchup" : "roster");
-  const tabs = [...leagueTabs(team), ["roster", "Roster"]];
+  const tabs = [...leagueTabs(team, lineupAlertCount(team, gameStates, injuries).total), ["roster", "Roster"]];
   // The tab picked per league is remembered per browser.
   useEffect(() => {
     const t = setTimeout(() => {

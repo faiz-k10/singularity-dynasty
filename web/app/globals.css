@@ -5314,6 +5314,7 @@ html{font-stretch:82%;}
 .lu-lean{font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; padding:1px 6px; border:1px solid currentColor; border-radius:var(--r-sm);}
 .lu-lean.is-smash{color:var(--horizon);}
 .lu-lean.is-tough{color:var(--neon-blue);}
+.tab-alert{display:inline-flex; align-items:center; justify-content:center; width:14px; height:14px; margin-left:7px; border-radius:50%; background:var(--horizon); color:#1A0D05; font-size:10px; font-weight:800; line-height:1; vertical-align:2px;}
 .lu-why{flex-basis:100%; font-size:12.5px; color:var(--star-dim);}
 .lu-context{margin:0 0 10px; font-size:13px; color:var(--star-dim);}
 .lu-sleeper-logo{width:22px; height:22px; border-radius:4px; display:block;}

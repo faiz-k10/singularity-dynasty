@@ -616,7 +616,7 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
               </button>
               <h2 className="board-panel-title">{openTeam.league_name}</h2>
               <span className="sb-drawer-tabs">
-                <PanelTabs tabs={leagueTabs(openTeam)} value={panelTab} onChange={setPanelTab} />
+                <PanelTabs tabs={leagueTabs(openTeam, states[openTeam.id]?.row.alertCount.total)} value={panelTab} onChange={setPanelTab} />
               </span>
             </div>
             <MatchupPanel team={openTeam} gameStates={gameStates} tab={panelTab} playTotals={playTotals} injuries={injuriesByTeam?.[openTeam.id]} />
