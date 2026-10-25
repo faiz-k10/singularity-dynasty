@@ -20,6 +20,21 @@ export function parseBoxscore(json) {
   return out;
 }
 
+// One player's line from his team's box score, by name. ESPN's displayName is often the nickname our player list doesn't use (Kenny / Kenneth
+// Gainwell, Josh / Joshua, Mike / Michael), so when the exact name isn't there, take the ONE athlete on that team whose last name matches and whose
+// first name starts with the same two letters. Several candidates (or none) -> null rather than a guess.
+const lastWord = (name) => String(name || "").replace(/[,.]?\s+(jr|sr|ii|iii|iv|v)\.?$/i, "").trim().split(/\s+/).pop();
+export function findLine(teamBox, name) {
+  if (!teamBox) return null;
+  const key = normName(name);
+  if (teamBox[key]) return teamBox[key];
+  const last = normName(lastWord(name));
+  if (!last || key.length <= last.length) return null;
+  const first2 = key.slice(0, 2);
+  const hits = Object.keys(teamBox).filter((k) => k.length > last.length && k.endsWith(last) && k.slice(0, 2) === first2);
+  return hits.length === 1 ? teamBox[hits[0]] : null;
+}
+
 // Which numbers to show for a position: [label, ESPN category, ESPN label]. A number the player has no line for is left out.
 const CHIPS = {
   QB: [["C/ATT", "passing", "C/ATT"], ["Pass yds", "passing", "YDS"], ["Pass TD", "passing", "TD"], ["INT", "passing", "INT"], ["Carries", "rushing", "CAR"], ["Rush yds", "rushing", "YDS"], ["Rush TD", "rushing", "TD"]],
@@ -54,7 +69,7 @@ export async function loadGameStats(players, gameStates) {
   const out = {};
   for (const p of players) {
     const g = gameStates?.[p.team];
-    out[`${p.team}|${normName(p.name)}`] = boxes[g?.eventId]?.[String(g?.espnId)]?.[normName(p.name)] || null;
+    out[`${p.team}|${normName(p.name)}`] = findLine(boxes[g?.eventId]?.[String(g?.espnId)], p.name);
   }
   return out;
 }

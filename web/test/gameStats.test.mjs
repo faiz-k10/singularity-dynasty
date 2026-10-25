@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { parseBoxscore, statChips } from "../lib/gameStats.js";
+import { parseBoxscore, statChips, findLine } from "../lib/gameStats.js";
 
 const json = {
   boxscore: {
@@ -31,4 +31,23 @@ test("statChips: the numbers that matter for the position, skipping what he has 
   assert.equal(statChips("QB", b.drakemaye)[0].value, "24/31");
   assert.deepEqual(statChips("K", b.drakemaye), []);
   assert.deepEqual(statChips("WR", null), []);
+});
+
+test("findLine: the nickname ESPN uses still finds him (Kenny / Kenneth Gainwell), an ambiguous or unrelated name finds nobody", () => {
+  const box = {
+    kennygainwell: { rushing: { CAR: "9" } },
+    baker: { rushing: { CAR: "1" } },
+    mikeevans: { receiving: { REC: "4" } },
+    tevans: { receiving: { REC: "1" } },
+    mitchevans: { receiving: { REC: "2" } },
+    joshjacobs: { rushing: { CAR: "20" } },
+  };
+  assert.equal(findLine(box, "Kenneth Gainwell").rushing.CAR, "9"); // nickname: same last name, first names start "ke"
+  assert.equal(findLine(box, "Joshua Jacobs").rushing.CAR, "20");
+  assert.equal(findLine(box, "Josh Jacobs").rushing.CAR, "20"); // exact
+  assert.equal(findLine(box, "Mike Evans").receiving.REC, "4"); // exact wins even though another Evans exists
+  assert.equal(findLine(box, "Michael Evans"), null); // Mike and Mitch Evans both start "mi": two candidates, no guess
+  assert.equal(findLine(box, "Terry Evans").receiving.REC, "1"); // the one Evans whose first name starts "te"
+  assert.equal(findLine(box, "Jaylen Gainwell"), null); // wrong first name
+  assert.equal(findLine(null, "Kenneth Gainwell"), null);
 });
