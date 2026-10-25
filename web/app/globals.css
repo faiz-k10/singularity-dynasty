@@ -4978,6 +4978,7 @@ html{font-stretch:82%;}
 @media (prefers-reduced-motion:reduce){ .score-curve.is-live .score-curve-halo{animation:none;} }
 /* No curve (out, bye, no range): just the median. */
 .h2h-curve-text{font-size:13px; color:var(--star-dim);}
+.h2h-c-curve > .h2h-curve-text{margin:auto;} /* a player with no range to draw (Out, no projection): his number sits in the middle of the curve's cell, both ways */
 /* The scored points: their own big cell, outer edge of the row (right for your lineup, left for theirs), so they can't be
    mistaken for the three small range numbers on the curve. */
 .h2h-c-pts{grid-area:pts; text-align:center; font-size:17px; font-weight:700; color:var(--star);}
