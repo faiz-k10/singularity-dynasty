@@ -643,18 +643,21 @@ export function PlayerHeaderPanel({ row }) {
   return (
     <div className="stat-panel weekly-player-header">
       <div className="weekly-player-id">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          key={bio.headshot || row.player_name}
-          className="weekly-player-photo"
-          src={bio.headshot || ""}
-          alt=""
-          onError={(e) => {
-            e.currentTarget.style.display = "none";
-          }}
-        />
         <div className="weekly-player-idtext">
-          <span className="weekly-player-name">{row.player_name}</span>
+          {/* The name stays centred over the badges row; the (square) photo hangs right beside it on the left. */}
+          <span className="weekly-player-namewrap">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              key={bio.headshot || row.player_name}
+              className="weekly-player-photo"
+              src={bio.headshot || ""}
+              alt=""
+              onError={(e) => {
+                e.currentTarget.style.display = "none";
+              }}
+            />
+            <span className="weekly-player-name">{row.player_name}</span>
+          </span>
           <div className="weekly-player-badges">
             <PositionBadge position={row.position} />
             <TeamBadge team={row.team} />
