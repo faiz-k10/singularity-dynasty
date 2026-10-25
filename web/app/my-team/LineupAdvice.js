@@ -76,7 +76,7 @@ export default function LineupAdvice({ team, gameStates, injuries = [] }) {
           {url && (
             <a className="h2h-sleeper lu-sleeper mono" href={url} target="_blank" rel="noopener noreferrer" title="Best lineup by this week's projection; locked players stay put">
               <img src="/sleeper-logo.png" alt="" width="22" height="22" className="lu-sleeper-logo" />
-              Set it in Sleeper <span aria-hidden="true">↗</span>
+              Set Lineup in Sleeper <span aria-hidden="true">↗</span>
             </a>
           )}
         </div>
