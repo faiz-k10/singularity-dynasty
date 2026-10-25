@@ -5346,7 +5346,6 @@ html{font-stretch:82%;}
 .compare-tabs{margin:0 0 18px; display:flex; justify-content:flex-end;} /* the tab switch sits at the right edge */
 .compare-pos{display:inline-flex; align-items:center; justify-content:center; gap:8px;} /* position label, dot and team logo on one centre line */
 .lu-gain-label{font-size:10.5px; font-weight:400; letter-spacing:.1em; text-transform:uppercase; color:var(--star-dim); margin-right:4px;}
-.lu-why{flex-basis:100%; font-size:12.5px; color:var(--star-dim);}
 .lu-context{margin:0 0 10px; font-size:13px; color:var(--star-dim);}
 .lu-sleeper-logo{width:22px; height:22px; border-radius:4px; display:block;}
 .lu-sleeper:hover{text-decoration:none; background:rgba(var(--neon-blue-rgb), .2);}

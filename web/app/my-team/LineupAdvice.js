@@ -50,7 +50,6 @@ function SwapList({ swaps }) {
             </>
           )}
           <span className="lu-gain mono" title="Projected points gained: median, counting each player's Smash / Tough Spot"><span className="lu-gain-label">proj.</span> +{fmt1(x.gain)}</span>
-          {x.why && <span className="lu-why">{x.why}</span>}
         </li>
       ))}
     </ul>
