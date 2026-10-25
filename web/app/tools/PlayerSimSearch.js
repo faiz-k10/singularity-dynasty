@@ -16,6 +16,7 @@ import { TAG_KINDS } from "@/lib/archetypes";
 import PercentileCard from "./PercentileCard";
 import { radarLayoutFor } from "./radarLayout";
 import { missedSegments } from "@/lib/teamGames";
+import useProgressiveCount from "./useProgressiveCount";
 
 // Week-scrubber data comes from /api/player-sim-history, fetched lazily and
 // remembered for the life of the page (one request per player, one for the
@@ -850,6 +851,7 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
   }, [rows, selected, deferredQuery, showPositionFilter, myView.on, myView.ownedByName, teamIds, badgeIds, badgeMatch]);
 
   const displayRows = filteredRows;
+  const mountedRows = useProgressiveCount(displayRows.length); // rows on the page right now: the first chunk at once, the rest in idle time
 
   const tableWrapRef = useRef(null);
 
@@ -1142,7 +1144,7 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                   </td>
                 </tr>
               )}
-              {displayRows.map((row) => (
+              {displayRows.slice(0, mountedRows).map((row) => (
                 <PlayerRow
                   key={row.player_name}
                   row={row}

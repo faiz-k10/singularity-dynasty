@@ -13,6 +13,7 @@ import { matchupTint } from "./MatchupBadge";
 import { STAT_COLUMNS } from "./statColumns";
 import { getAchievementsCached } from "./achievements";
 import AchievementDots from "./AchievementDots";
+import useProgressiveCount from "./useProgressiveCount";
 
 // Weekly floor/ceiling formatting -- null for rows published before
 // migration 0029 added these columns, until the next model re-run.
@@ -309,6 +310,7 @@ export default function RankingsTable({
   );
 
   const shownCount = visibleRows ? visibleRows.size : displayRows.length;
+  const mounted = useProgressiveCount(displayRows.length); // rows on the page right now: the first chunk at once, the rest in idle time
 
   const colCount =
     2 + // Rank, Player
@@ -369,7 +371,7 @@ export default function RankingsTable({
           </tr>
         </thead>
         <tbody>
-          {displayRows.map(({ row, achievements }) => {
+          {displayRows.slice(0, mounted).map(({ row, achievements }) => {
             const rowKey = `${row.position}-${row.rank}`;
             return (
               <RankingRow
