@@ -1399,6 +1399,7 @@ a.export-csv-btn{text-decoration:none;}
 .player-sims-table > tbody > tr:not(.stat-detail-row) td.align-left{
   text-align:center;
 }
+.player-sims-table > tbody > tr:not(.stat-detail-row) td{padding-top:6px; padding-bottom:6px;} /* shorter data rows (the generic .rankings-table td is 12px); content unchanged */
 .player-sims-table .sim-bar-track{margin:0 auto;}
 /* Floor/Median/Ceiling (columns 5-7) hold 2-3 digit numbers but were
    sized by their own header labels ("Median ▼", "Ceiling"), which are
