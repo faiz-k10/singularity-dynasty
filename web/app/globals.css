@@ -2650,6 +2650,14 @@ a.export-csv-btn{text-decoration:none;}
 .weekly-rank-bar > span{display:block; height:100%; border-radius:2px; background:var(--horizon-gold);}
 .weekly-rank-bar.is-none{background:none; border:1px dashed var(--line);} /* not ranked (In-10 Share under the target minimum): an empty dashed track */
 .weekly-rank-row .weekly-pct-value{font-size:12.5px; text-align:right;}
+/* The bar fills whatever is left of the row, so its length follows the panel's width (a compare of 2 players gets long bars, 3 shorter ones, the opened row
+   in between). The table is one grid -- label column as wide as the longest label, bar column takes the rest, value column -- and every row is a
+   subgrid of it, so the bars all start at the same x. (Without subgrid support the fixed-width columns above stay.) */
+@supports (grid-template-columns: subgrid){
+  .weekly-rank-table{display:grid; grid-template-columns:max-content minmax(0,1fr) minmax(52px,max-content); column-gap:10px;}
+  .weekly-rank-table > .weekly-rank-section{grid-column:1 / -1;}
+  .weekly-rank-table > .weekly-rank-row{grid-column:1 / -1; grid-template-columns:subgrid;}
+}
 .weekly-pct-value{font-family:var(--font-mono), monospace; font-size:12px; color:var(--star); text-align:right;}
 
 /* Recent Games -- plain record, no percentile bar (see GameLogPanel's
