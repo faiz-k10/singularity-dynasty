@@ -133,17 +133,32 @@ export function fumbleLabel(type, roles, text = "") {
 }
 
 // Everything one of our players did on a play: his main line (roleLabel) and, when he also fumbled, the fumble as its own line.
+// A successful two-point try on the touchdown play itself ("... TOUCHDOWN. TWO-POINT CONVERSION ATTEMPT. G.Smith pass to M.Taylor is complete.
+// ATTEMPT SUCCEEDS."): +2 to whoever got it (listed patScorer -- even when he also scored the touchdown, whose line comes first) and +2 to the passer
+// when the try was a pass. A failed try is no play.
+const TWO_POINT_TRY = /TWO-POINT CONVERSION ATTEMPT\.([^]*)/i;
+function twoPointLabel(roles, text, main) {
+  const m = TWO_POINT_TRY.exec(text);
+  if (!m || !/ATTEMPT SUCCEEDS/i.test(m[1])) return null;
+  if (roles.includes("patScorer") && !roles.includes("kicker") && main !== "Two-point conversion") return "Two-point conversion";
+  if (roles.includes("patPasser") || (roles.includes("passer") && /\bpass\b/i.test(m[1]))) return "Two-point conversion"; // ESPN tags the try's passer patPasser
+  return null;
+}
+
 export function roleLabels(type, roles, text = "") {
   const out = [];
   const main = roleLabel(type, roles, text);
   if (main) out.push(main);
+  const two = type === "Penalty" || /No Play/i.test(text) ? null : twoPointLabel(roles, text, main);
+  if (two) out.push(two);
   const fum = type === "Penalty" || /No Play/i.test(text) ? null : fumbleLabel(type, roles, text);
   if (fum) out.push(fum);
   return out;
 }
 
 // A team defense (DEF) starter: the plays that score for it, when the other team has the ball.
-export function defenseLabel(type) {
+export function defenseLabel(type, text = "") {
+  if (/defensive two-point conversion/i.test(text)) return "Two-point return"; // a blocked extra point returned the other way for two
   if (/Sack/.test(type) && /Opp Fumble Recovery/.test(type)) return "Sack and fumble recovery";
   if (/Sack/.test(type)) return "Sack";
   if (INT.test(type)) return /Touchdown/.test(type) ? "Interception touchdown" : "Interception";
@@ -180,7 +195,8 @@ export function playPoints(label, yards) {
     case "Fumble lost": return -2;
     case "Field goal": return 3;
     case "Extra point": return 1;
-    case "Two-point conversion": return 2;
+    case "Two-point conversion":
+    case "Two-point return": return 2;
     case "Touchdown":
     case "Return touchdown": return 6;
     case "Sack": return 1;
@@ -238,7 +254,7 @@ export function buildAllPlayEntries(players, plays) {
     }
     for (const d of defenses) {
       if (!play.teams?.includes(d.team) || !play.offense || play.offense === d.team) continue;
-      const label = defenseLabel(play.type);
+      const label = defenseLabel(play.type, play.text);
       if (label) add(d, label);
     }
     if (!who.size) continue;
@@ -259,6 +275,8 @@ export function buildAllPlayEntries(players, plays) {
         big: BIG_PLAY.test(w.label) && play.yards >= BIG_YARDS,
         // Interceptions and fumbles of any kind (thrown, lost, recovered, returned): the plays that turn the ball over, highlighted in the list.
         turnover: /Interception|Fumble/.test(w.label),
+        // A successful two-point try, or a defense's two-point return: highlighted like a score.
+        twoPoint: /^Two-point/.test(w.label),
         // Standard-PPR points this play added for him.
         points: Math.round(playPoints(w.label, play.yards) * 100) / 100,
         exact: playPoints(w.label, play.yards), // unrounded, for matching Sleeper's two-decimal numbers

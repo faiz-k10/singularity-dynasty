@@ -280,3 +280,44 @@ test("a catch that ends in a lost fumble: the receiver gets his Catch AND his Fu
     ["Brock Purdy", "Completion", "12 yds", 0.48],
   ]);
 });
+
+test("two-point conversions: the passer AND the target get +2 on the touchdown play, even when the target also scored; a failed try adds nothing", () => {
+  const ok = "(Shotgun) G.Smith pass short left to M.Taylor for 12 yards, TOUCHDOWN. TWO-POINT CONVERSION ATTEMPT. G.Smith pass to M.Taylor is complete. ATTEMPT SUCCEEDS.";
+  assert.deepEqual(roleLabels("Passing Touchdown", ["passer"], ok), ["Touchdown pass", "Two-point conversion"]);
+  assert.deepEqual(roleLabels("Passing Touchdown", ["receiver", "scorer", "patScorer"], ok), ["Touchdown catch", "Two-point conversion"]); // Mason Taylor: both
+  // a different target for the try (Stroud to Harrison for the TD, the try to Stover): Stover gets only the conversion, Harrison only the TD
+  const other = "(Shotgun) C.Stroud pass short middle to M.Harrison for 6 yards, TOUCHDOWN. TWO-POINT CONVERSION ATTEMPT. C.Stroud pass to C.Stover is complete. ATTEMPT SUCCEEDS.";
+  assert.deepEqual(roleLabels("Passing Touchdown", ["patScorer"], other), ["Two-point conversion"]);
+  assert.deepEqual(roleLabels("Passing Touchdown", ["receiver", "scorer"], other), ["Touchdown catch"]);
+  assert.deepEqual(roleLabels("Passing Touchdown", ["passer"], other), ["Touchdown pass", "Two-point conversion"]);
+  // a failed try
+  const fail = "M.Taylor 12 yard pass from G.Smith, TOUCHDOWN. TWO-POINT CONVERSION ATTEMPT. G.Smith pass to M.Taylor is incomplete. ATTEMPT FAILS.";
+  assert.deepEqual(roleLabels("Passing Touchdown", ["passer"], fail), ["Touchdown pass"]);
+  assert.deepEqual(roleLabels("Passing Touchdown", ["receiver", "patScorer"], fail), ["Touchdown catch"]);
+  // a run for the try is the runner's alone (no passer)
+  assert.deepEqual(roleLabels("Rushing Touchdown", ["rusher", "scorer", "patScorer"], "A.Kamara 2 yard rush, TOUCHDOWN. TWO-POINT CONVERSION ATTEMPT. A.Kamara rushes. ATTEMPT SUCCEEDS."), ["Touchdown run", "Two-point conversion"]);
+  assert.equal(playPoints("Two-point conversion", 0), 2);
+});
+
+test("a defense that returns a blocked extra point for two scores a Two-point return; highlighted entries are flagged twoPoint", () => {
+  assert.equal(defenseLabel("Passing Touchdown", "Darren Waller 50 Yd pass from Bryce Young. Zyon McCollum returned blocked extra point for defensive two-point conversion"), "Two-point return");
+  assert.equal(defenseLabel("Passing Touchdown", "ordinary touchdown"), null);
+  assert.equal(playPoints("Two-point return", 0), 2);
+  const plays = parsePlays(
+    [raw("t1", 1, "Passing Touchdown", "(Shotgun) G.Smith pass short left to M.Taylor for 12 yards, TOUCHDOWN. TWO-POINT CONVERSION ATTEMPT. G.Smith pass to M.Taylor is complete. ATTEMPT SUCCEEDS.", [["500", "passer"], ["600", "receiver"], ["600", "scorer"], ["600", "patScorer"]])],
+    { 6: "NYJ" },
+  ).map((p) => ({ ...p, teams: ["MIA", "NYJ"], offense: "NYJ" }));
+  const feed = buildPlayFeed(
+    [
+      { playerId: "g", name: "Geno Smith", pos: "QB", team: "NYJ", side: "mine", espnId: "500" },
+      { playerId: "m", name: "Mason Taylor", pos: "TE", team: "NYJ", side: "mine", espnId: "600" },
+    ],
+    plays,
+  );
+  assert.deepEqual(feed.map((e) => [e.who[0].name, e.label, e.points, e.twoPoint]), [
+    ["Mason Taylor", "Two-point conversion", 2, true],
+    ["Mason Taylor", "Touchdown catch", 8.2, false],
+    ["Geno Smith", "Two-point conversion", 2, true],
+    ["Geno Smith", "Touchdown pass", 4.48, false],
+  ]);
+});
