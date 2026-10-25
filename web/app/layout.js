@@ -4,6 +4,7 @@ import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import Tooltip from "./Tooltip";
+import NavTiming from "./NavTiming";
 
 // Display: Big Shoulders (condensed, scoreboard / jersey-number feel) for headings, the brand name and
 // buttons. Body: Libron (a free OFL serif made for reading; files + license in app/fonts/) for paragraphs and
@@ -99,6 +100,7 @@ export default function RootLayout({ children }) {
       <body>
         {children}
         <Tooltip />
+        <NavTiming />
         <Analytics />
       </body>
     </html>
