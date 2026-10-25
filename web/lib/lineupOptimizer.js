@@ -80,10 +80,11 @@ export function optimizeLineup(team, gameStates, injuries = []) {
   const current = open.reduce((t, o) => t + val(o.cur), 0);
   const swaps = [];
   const done = new Set(); // anyone already swapped in or out
+  const filled = new Set(); // slots already given a recommendation (an EMPTY slot has no starter to mark as done, so it must be tracked itself)
   for (;;) {
     let best = null;
     for (const o of open) {
-      if (o.cur && done.has(o.cur.player_id)) continue;
+      if (filled.has(o.i) || (o.cur && done.has(o.cur.player_id))) continue;
       for (const b of bench) {
         if (done.has(b.player_id) || !ELIGIBLE[o.kind].includes(b.position)) continue;
         const gain = val(b) - val(o.cur);
@@ -92,6 +93,7 @@ export function optimizeLineup(team, gameStates, injuries = []) {
     }
     if (!best) break;
     done.add(best.b.player_id);
+    filled.add(best.o.i);
     if (best.o.cur) done.add(best.o.cur.player_id);
     swaps.push({ slot: best.o.kind, in: best.b, out: best.o.cur, gain: r1(best.gain) });
   }

@@ -233,3 +233,19 @@ test("an Out starter is replaced, an Out bench player never chosen; rangeText pr
   assert.equal(rangeText(PL("x", "X", "WR", "A", 10.8, 3, 22)), "10.8 (3.0–22.0)");
   assert.equal(rangeText({ myProjPts: 6 }), "6.0");
 });
+
+test("an empty slot is filled once: two empty RB slots and a WR slot take the two best RBs and the WR, nothing more (Fantasy Degenerates)", () => {
+  const P3 = (id, name, pos, team, proj, x = {}) => ({ player_id: id, name, position: pos, team, myProjPts: proj, isStarter: false, slotIndex: 999, ...x });
+  const t = {
+    settings: { slots: ["QB", "RB", "RB", "WR", "FLEX"] },
+    players: [
+      P3("1", "QB1", "QB", "A", 20, { isStarter: true, slotIndex: 0, slot: "QB" }),
+      P3("2", "Flex", "WR", "A", 9, { isStarter: true, slotIndex: 4, slot: "FLEX" }),
+      P3("3", "Bijan", "RB", "A", 23.9), P3("4", "CMC", "RB", "A", 21.2), P3("5", "Dowdle", "RB", "A", 8.8), P3("6", "Perine", "RB", "A", 5.6), P3("7", "Golden", "WR", "A", 13.9),
+    ],
+  };
+  const r = optimizeLineup(t, { A: { state: "pre" } });
+  const empties = r.swaps.filter((x) => !x.out);
+  assert.deepEqual(empties.map((x) => `${x.slot}:${x.in.name}`).sort(), ["RB:Bijan", "RB:CMC", "WR:Golden"]);
+  assert.equal(new Set(r.swaps.map((x) => x.in.name)).size, r.swaps.length); // nobody twice
+});
