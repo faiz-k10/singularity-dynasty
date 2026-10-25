@@ -49,14 +49,15 @@ export function gameFractionLeft(game) {
 }
 
 // One lineup slot from a Sleeper matchup entry: starterIds/slots line up 1:1 (the league's non-bench
-// roster_positions), infoFor(id) -> {name, pos, team, active} | null, projFor(name) -> {proj, floor, ceiling} | null,
+// roster_positions), infoFor(id) -> {name, pos, team, active} | null (null = not in our player directory yet: a typical range, NOT out), projFor(name) -> {proj, floor, ceiling} | null,
 // points = the entry's players_points. Empty slots ("0") stay in place so both sides line up slot by slot.
 export function buildSide(starterIds, slots, infoFor, projFor, points) {
   return (starterIds || []).map((rawId, i) => {
     const slot = slots?.[i] || null;
     const id = rawId && rawId !== "0" ? String(rawId) : null;
     if (!id) return { id: null, slot };
-    const info = infoFor(id) || {};
+    const found = infoFor(id);
+    const info = found || {};
     const pos = info.pos || null;
     const p = projFor(info.name || "");
     let range;
@@ -64,7 +65,7 @@ export function buildSide(starterIds, slots, infoFor, projFor, points) {
     let out = false;
     if (p && typeof p.proj === "number") {
       range = { proj: p.proj, floor: p.floor ?? null, ceiling: p.ceiling ?? null };
-    } else if (info.active === false || !info.team) {
+    } else if (found && (info.active === false || !info.team)) {
       range = { proj: 0, floor: 0, ceiling: 0 }; // inactive / IR / free agent: not playing
       out = true;
     } else {
@@ -75,7 +76,7 @@ export function buildSide(starterIds, slots, infoFor, projFor, points) {
     return {
       id,
       slot,
-      name: info.name || id,
+      name: info.name || `Player ${id}`,
       pos,
       team: info.team || null,
       proj: range.proj,

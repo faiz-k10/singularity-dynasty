@@ -138,3 +138,11 @@ test("a late-scratch allowance: a team behind with two starters still to play is
   const p = _sim(mine, opp, { draws: 40000 });
   assert.ok(p > 0.95 && p < 0.995, `expected a high but not locked-in chance, got ${p}`);
 });
+
+test("a starter missing from the player directory is a typical-range unknown, not Out (CJ Daniels, a rookie the crosswalk hadn't linked)", () => {
+  const side = buildSide(["13270"], ["WR"], () => null, () => null, {});
+  assert.equal(side[0].out, undefined);
+  assert.equal(side[0].est, true);
+  assert.equal(side[0].name, "Player 13270");
+  assert.equal(side[0].proj, 6); // the typical range when the position is unknown (OTHER_RANGE)
+});
