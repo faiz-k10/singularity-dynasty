@@ -2912,11 +2912,10 @@ tr.stat-row-selected td{background:var(--void-panel);}
   grid-area:score; display:flex; flex-direction:column; align-items:center;
   gap:0; text-align:center; padding-top:2px; align-self:stretch;
 }
-/* The area is as tall as the stat table beside it: "MATCH" stays on top and the photo + percentage are centred in
-   the space under it (auto margins), sized up to use that space (the 52px column width itself is unchanged). */
+/* The area is as tall as the stat table beside it; "MATCH", the photo and the percentage are stacked together at the TOP of it (the photo sits
+   right under the label), not spread through the height. */
 .shape-finder-score > .stat-radar-label{margin-bottom:0;}
-.shape-finder-score > :nth-child(2){margin-top:auto;}
-.shape-finder-score > :last-child{margin-bottom:auto;}
+.shape-finder-score > :nth-child(2){margin-top:6px;}
 .shape-finder-score .shape-finder-score-value{margin-top:6px;}
 .shape-finder-portrait{width:48px; height:48px; border-radius:var(--r-sm); object-fit:cover; background:var(--void-panel-2);}
 /* The comp's photo is a button that takes you to his row in the table. */
