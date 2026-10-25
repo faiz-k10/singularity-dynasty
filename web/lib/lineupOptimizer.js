@@ -99,15 +99,13 @@ export function optimizeLineup(team, gameStates, injuries = []) {
   return { current: r1(current), best: r1(current + gain), gain: r1(gain), swaps, optimizedSlots: open.length, lockedStarters: slots.length - open.length };
 }
 
-// Why a swap, in the numbers the site publishes: the medians and the matchup trends that moved either side.
+// What besides the medians moved a swap, in the numbers the site publishes: a Smash / Tough Spot on either side ("" when there is none; the rows
+// already show both players' medians). Out players and empty slots say so.
 const leanText = (p) => (p.myLean ? `${p.myLean.call === "SMASH" ? "Smash" : "Tough"} Spot ${p.myLean.effect > 0 ? "+" : "−"}${fmt1(Math.abs(p.myLean.effect))}` : null);
 function whyFor(inn, out) {
   if (!out) return "Fills an empty slot";
   if (out.unavailable) return `${out.name} is listed Out`;
-  const parts = [`Median ${fmt1(inn.myProjPts)} vs ${fmt1(out.myProjPts)}`];
-  if (inn.myLean) parts.push(`${leanText(inn)} for him`);
-  if (out.myLean) parts.push(`${leanText(out)} for ${out.name}`);
-  return parts.join(" · ");
+  return [inn.myLean && `${leanText(inn)} for him`, out.myLean && `${leanText(out)} for ${out.name}`].filter(Boolean).join(" · ");
 }
 
 // The advice for a league: the same greedy one-for-one swaps, valued by median + matchup trend.

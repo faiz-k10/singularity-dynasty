@@ -102,7 +102,7 @@ test("lineup upgrade card names the swap and the gain", () => {
   };
   const c = buildInsights({ savedTeams: [t], gameStates: { SF: { state: "pre" }, DAL: { state: "pre" }, KC: { state: "pre" } } }).cards.find((x) => x.kind === "lineup");
   assert.match(c.title, /Start Bench over Weak in L/);
-  assert.match(c.body, /FLEX: Median 11\.0 vs 4\.0, 7\.0 more/);
+  assert.match(c.body, /FLEX: 11\.0 against 4\.0, 7\.0 more/);
 });
 
 test("swing and threat cards quantify the win chance, exposure cards the expected wins", () => {

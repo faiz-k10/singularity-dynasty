@@ -11,7 +11,7 @@
 
 import { lineupAdvice, slotLabel } from "./lineupOptimizer.js";
 import { playerLeverage } from "./winChance.js";
-import { num, leagueName } from "./format.js";
+import { num, leagueName, fmt1 } from "./format.js";
 
 const r1 = (v) => (Math.round(v * 10) / 10).toFixed(1);
 const sgn = (v) => `${v >= 0 ? "+" : "−"}${r1(Math.abs(v))}`;
@@ -85,7 +85,7 @@ function lineupCards(savedTeams, gameStates, adjusted, injuriesByTeam) {
       label: "Lineup upgrade",
       tone: "mine",
       title: `Start ${top.in.name}${top.out ? ` over ${top.out.name}` : ""} in ${leagueOf(t)}`,
-      body: `At ${slotLabel(top.slot)}: ${top.why}, ${r1(top.gain)} more.${a.swaps.length > 1 ? ` ${a.swaps.length - 1} more ${a.swaps.length === 2 ? "swap" : "swaps"} on the Lineup Alerts tab, ${r1(a.gain)} in all.` : ""}`,
+      body: `At ${slotLabel(top.slot)}: ${fmt1(top.in.myProjPts)} against ${top.out ? fmt1(top.out.myProjPts) : "an empty slot"}${top.why ? ` (${top.why})` : ""}, ${r1(top.gain)} more.${a.swaps.length > 1 ? ` ${a.swaps.length - 1} more ${a.swaps.length === 2 ? "swap" : "swaps"} on the Lineup Alerts tab, ${r1(a.gain)} in all.` : ""}`,
       player: chip({ name: top.in.name, pos: top.in.position, team: top.in.team }),
       league: leagueOf(t),
       priority: 92 + Math.min(5, Math.round(a.gain / 3)),

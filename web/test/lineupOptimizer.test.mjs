@@ -204,7 +204,7 @@ test("a higher median wins even when the range is tight", () => {
   const a = lineupAdvice(t, PRE);
   assert.equal(a.swaps[0].in.name, "Better");
   assert.equal(a.swaps[0].gain, 1.3);
-  assert.match(a.swaps[0].why, /^Median 12\.1 vs 10\.8$/);
+  assert.equal(a.swaps[0].why, ""); // the rows show both medians; nothing else moved it
 });
 
 test("a Smash Spot adds its full published effect and can flip a close call; a Tough Spot subtracts it", () => {
@@ -214,7 +214,7 @@ test("a Smash Spot adds its full published effect and can flip a close call; a T
   const a = lineupAdvice(league([smash]), PRE);
   assert.equal(a.swaps[0].in.name, "Near");
   assert.equal(a.swaps[0].gain, 1.8); // 10.2 + 2.4 - 10.8
-  assert.match(a.swaps[0].why, /Median 10\.2 vs 10\.8 · Smash Spot \+2\.4 for him/);
+  assert.match(a.swaps[0].why, /^Smash Spot \+2\.4 for him$/);
   const tough = league([PL("3", "Better", "WR", "D", 11.5, 9, 14)]);
   tough.players[1] = { ...tough.players[1], myLean: { call: "AVOID", effect: -2.2 } }; // the starter's Tough Spot
   const b = lineupAdvice(tough, PRE);
