@@ -2394,7 +2394,7 @@ a.export-csv-btn{text-decoration:none;}
   width:64px; height:64px; border-radius:50%; object-fit:cover; flex-shrink:0;
   background:var(--void-panel-2); border:1px solid var(--line);
 }
-.weekly-player-idtext{display:flex; flex-direction:column; gap:8px; min-width:0;}
+.weekly-player-idtext{display:flex; flex-direction:column; align-items:flex-start; gap:8px; min-width:0; text-align:left;} /* the name starts right beside the photo, over the badges row */
 /* The opened player's name is the card's headline: display font, heavy, uppercase, wide-spaced like the brand name. */
 .weekly-player-name{
   font-family:var(--font-display), sans-serif; font-size:30px; font-weight:800; letter-spacing:0.07em; line-height:1.1;
