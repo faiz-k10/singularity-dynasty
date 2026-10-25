@@ -217,7 +217,7 @@ function FeedRow({ r, isNew, delta, showLeagues, focused, onPick }) {
 // One play: who (gold = yours, blue = your opponents'), what happened in plain words, and when. Touchdowns stand out.
 function PlayRow({ e, isNew, focusId, onPick }) {
   return (
-    <li className={`sb-play is-${e.side}${e.td ? " is-td" : ""}${e.td || e.big ? " is-hot" : ""}${isNew ? " is-new" : ""}`}>
+    <li className={`sb-play is-${e.side}${e.td ? " is-td" : ""}${e.td || e.big ? " is-hot" : ""}${e.turnover ? " is-turnover" : ""}${isNew ? " is-new" : ""}`}>
       <div className="sb-play-main">
         <span className="sb-play-who">
           {e.who.map((w) => (

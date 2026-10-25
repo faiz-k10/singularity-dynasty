@@ -241,6 +241,21 @@ test("buildPlayFeed: a lost fumble on a run is entries for the runner (Fumble lo
     ["Rashid Shaheed", "Run", 0.5],
   ]);
 });
+// (the feed above, again: which entries are flagged as turnovers)
+test("buildPlayFeed: interceptions and fumbles of every kind carry turnover = true, ordinary plays don't", () => {
+  const plays = parsePlays(
+    [raw("f1", 1, "Fumble Recovery (Opponent)", "R.Shaheed left end for 5 yards (N.Bonitto). FUMBLES (N.Bonitto), RECOVERED by DEN-J.Strnad at DEN 34.", [["200", "rusher"], ["200", "fumbler"], ["900", "recoverer"]])],
+    { 6: "SEA", 9: "DEN" },
+  ).map((p) => ({ ...p, teams: ["SEA", "DEN"], offense: "SEA" }));
+  const feed = buildPlayFeed(
+    [
+      { playerId: "r", name: "Rashid Shaheed", pos: "WR", team: "SEA", side: "mine", espnId: "200" },
+      { playerId: "DEN", name: "Denver Broncos", pos: "DEF", team: "DEN", side: "theirs" },
+    ],
+    plays,
+  );
+  assert.deepEqual(feed.map((e) => [e.label, e.turnover]), [["Fumble recovery", true], ["Fumble lost", true], ["Run", false]]);
+});
 
 test("a catch that ends in a lost fumble: the receiver gets his Catch AND his Fumble lost, the passer his Completion (McCaffrey, Oct 19)", () => {
   const text = "B.Purdy pass short right to C.McCaffrey to WAS 21 for 12 yards (K.Chaisson; S.Styles). FUMBLES (K.Chaisson), RECOVERED by WAS-F.Luvu at WAS 19.";

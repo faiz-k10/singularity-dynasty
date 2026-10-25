@@ -5615,6 +5615,11 @@ html{font-stretch:82%;}
 .sb-play.is-hot .sb-play-name{font-weight:700;}
 .sb-play.is-hot .sb-play-what strong{color:var(--horizon-gold);}
 .sb-play.is-hot.is-theirs .sb-play-what strong{color:var(--neon-blue);}
+/* Turnovers (interceptions and fumbles, whoever has the ball): a flat red tint, a red edge and a red label, whichever side the play belongs to. */
+.sb-play.is-turnover, .sb-play.is-turnover.is-theirs{background:color-mix(in srgb, var(--down) 14%, transparent); border-left-color:var(--down); border-top-color:color-mix(in srgb, var(--down) 40%, transparent); box-shadow:inset 0 -1px 0 color-mix(in srgb, var(--down) 40%, transparent);}
+.sb-play.is-turnover .sb-play-name{font-weight:700;}
+.sb-play.is-turnover .sb-play-what strong, .sb-play.is-turnover.is-theirs .sb-play-what strong{color:var(--down);}
+.sb-play.is-turnover .sb-play-pts{font-size:17px;}
 .sb-play.is-hot .sb-play-pts{font-size:17px;}
 .sb-play.is-hot.is-theirs .sb-play-pts{color:var(--neon-blue);}
 
