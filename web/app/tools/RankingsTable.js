@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, memo, useCallback, useEffect, useMemo, useState } from "react";
+import { Fragment, memo, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import SortableTh from "./SortableTh";
 import TrendTag from "./TrendTag";
@@ -299,15 +299,8 @@ export default function RankingsTable({
     };
   }, [theater]);
 
-  // Achievements computed once per row (not inline in the render loop below) for the dots/badges.
-  const displayRows = useMemo(
-    () =>
-      rows.map((row) => ({
-        row,
-        achievements: showCurve && row.floor != null && row.ceiling != null ? getAchievementsCached(row) : [],
-      })),
-    [rows, showCurve]
-  );
+  // Badges are worked out per MOUNTED row (cached per row object, achievements.js), so the first paint never pays for all ~480 rows.
+  const displayRows = rows;
 
   const shownCount = visibleRows ? visibleRows.size : displayRows.length;
   const mounted = useProgressiveCount(displayRows.length); // rows on the page right now: the first chunk at once, the rest in idle time
@@ -371,7 +364,8 @@ export default function RankingsTable({
           </tr>
         </thead>
         <tbody>
-          {displayRows.slice(0, mounted).map(({ row, achievements }) => {
+          {displayRows.slice(0, mounted).map((row) => {
+            const achievements = showCurve && row.floor != null && row.ceiling != null ? getAchievementsCached(row) : [];
             const rowKey = `${row.position}-${row.rank}`;
             return (
               <RankingRow

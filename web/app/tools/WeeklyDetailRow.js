@@ -175,6 +175,8 @@ export function GameLogPanel({ games }) {
                 <span className={`weekly-gamelog-dot ${dotCls}`} title={dotTitle} />
                 {g.season} W{g.week}
               </span>
+              {/* the team he played FOR that game (players change teams), then vs / @ and the opponent */}
+              {g.team ? <TeamBadge team={g.team} /> : <span />}
               <span className="weekly-gamelog-sep mono">{sep}</span>
               <TeamBadge team={g.opponent} />
               <span className="weekly-gamelog-pts mono">

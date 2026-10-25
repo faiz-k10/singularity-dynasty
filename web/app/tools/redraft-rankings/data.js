@@ -189,7 +189,7 @@ function fetchGameLogRows(supabase) {
   return fetchAllRows(
     supabase,
     "player_game_log",
-    "player_name, position, season, week, opponent, is_home, fantasy_points_ppr, exp_points_ppr",
+    "player_name, position, team, season, week, opponent, is_home, fantasy_points_ppr, exp_points_ppr",
     (q) => q.order("season", { ascending: false }).order("week", { ascending: false }).order("player_name", { ascending: true })
   );
 }

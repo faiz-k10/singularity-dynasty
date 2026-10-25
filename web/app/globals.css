@@ -2675,7 +2675,7 @@ a.export-csv-btn{text-decoration:none;}
 .weekly-detail-col .weekly-gamelog-rows{flex:1 1 auto; display:flex; flex-direction:column;}
 .weekly-detail-col .weekly-gamelog-row{flex:1 1 auto;}
 .weekly-gamelog-row{
-  display:grid; grid-template-columns:1fr 20px auto 46px 44px; align-items:center; gap:8px;
+  display:grid; grid-template-columns:1fr auto 20px auto 46px 44px; align-items:center; gap:8px;
   padding:5px 0; border-bottom:1px solid rgba(var(--shadow-rgb),0.5); font-size:12px;
 }
 .weekly-gamelog-row:last-child{border-bottom:none;}
