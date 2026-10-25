@@ -4616,13 +4616,16 @@ html{font-stretch:82%;}
 @media (min-width:1250px){
   .compare-panels .weekly-stats-split{grid-template-columns:1.6fr 1fr;}
 }
-.compare-panels .weekly-player-header{margin-bottom:0; padding:12px 14px; gap:12px; justify-content:flex-start;}
-.compare-panels .weekly-player-id{justify-content:flex-start; gap:12px;}
-.compare-panels .weekly-player-idtext{align-items:flex-start; text-align:left;}
-.compare-panels .weekly-player-namewrap{display:flex; align-items:center; gap:10px;}
+.compare-panels .weekly-player-header{margin-bottom:0; padding:12px 14px; gap:12px; justify-content:center;}
+.compare-panels .weekly-player-id{justify-content:center; gap:12px;}
+/* Compare profiles: everything centred -- photo + name, then position / team / size, then the badges on a line of their own. */
+.compare-panels .weekly-player-idtext{align-items:center; text-align:center;}
+.compare-panels .weekly-player-namewrap{display:flex; align-items:center; justify-content:center; gap:10px;}
 .compare-panels .weekly-player-photo{position:static; transform:none; margin:0; width:40px; height:40px;}
 .compare-panels .weekly-player-name{font-size:22px; letter-spacing:0.05em;}
-.compare-panels .weekly-player-badges{flex-wrap:wrap;}
+.compare-panels .weekly-player-badges{flex-wrap:wrap; justify-content:center;}
+.compare-panels .weekly-player-dot{display:none;}
+.compare-panels .weekly-player-achievements{display:flex; flex:0 0 100%; flex-wrap:wrap; justify-content:center; gap:8px;}
 @media (max-width:900px){
   .compare-panel-row{grid-template-columns:1fr;}
 }
@@ -5327,6 +5330,7 @@ html{font-stretch:82%;}
 .lu-lean.is-tough{color:var(--neon-blue);}
 .league-dash-tabs button.has-alerts{box-shadow:inset 0 0 0 2px var(--horizon);}
 .league-dash-tabs button.has-alerts.active{box-shadow:inset 0 0 0 2px rgba(26,13,5,.6);}
+.compare-tabs{margin:0 0 18px;}
 .lu-gain-label{font-size:10.5px; font-weight:400; letter-spacing:.1em; text-transform:uppercase; color:var(--star-dim); margin-right:4px;}
 .lu-why{flex-basis:100%; font-size:12.5px; color:var(--star-dim);}
 .lu-context{margin:0 0 10px; font-size:13px; color:var(--star-dim);}

@@ -1,7 +1,8 @@
 import TeamBadge from "./TeamBadge";
+import CompareTabs from "./CompareTabs";
 import { PlayerHeaderPanel, PlayerStatsRow, OutcomeCurvePanel, UsageTdPanel, GameLogPanel } from "./WeeklyDetailRow";
 
-// Compare Players (Weekly Projection Rankings): a head-to-head table of the numbers that matter, then the same
+// Compare Players (Weekly Projection Rankings), as two tabs: HEAD TO HEAD (a table of the numbers that matter) and PLAYER PROFILES (the same
 // dashboard panels the opened-player row shows (identity + badges, this week / last week, outcome curve, usage or
 // touchdown profile, recent games), laid out in one grid row per panel so the players line up side by side.
 
@@ -81,85 +82,100 @@ export default function CompareWeekly({ players, maxSpread }) {
   const shown = rows.filter((r, i) => !r.group || (rows[i + 1] && !rows[i + 1].group));
 
   return (
-    <>
-      <div className="compare-table-wrap compare-h2h">
-        <table className="compare-table">
-          <thead>
-            <tr>
-              <th></th>
-              {players.map((p) => (
-                <th key={p.player_name}>{p.player_name}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <th>Position</th>
-              {players.map((p) => (
-                <td className="mono" key={p.player_name}>
-                  {p.positionLabel || p.position} · <TeamBadge team={p.team} />
-                </td>
-              ))}
-            </tr>
-            <tr>
-              <th>Matchup</th>
-              {players.map((p) => (
-                <td key={p.player_name}>
-                  <MatchupCell row={p} />
-                </td>
-              ))}
-            </tr>
-            {shown.map((r) =>
-              r.group ? (
-                <tr className="compare-group-row" key={r.group}>
-                  <th colSpan={n + 1}>{r.group}</th>
+    <CompareTabs
+      tabs={[
+        {
+          key: "h2h",
+          label: "Head to Head",
+          node: (
+            <>
+          <div className="compare-table-wrap compare-h2h">
+            <table className="compare-table">
+              <thead>
+                <tr>
+                  <th></th>
+                  {players.map((p) => (
+                    <th key={p.player_name}>{p.player_name}</th>
+                  ))}
                 </tr>
-              ) : (
-                <tr key={r.def.label}>
-                  <th>{r.def.label}</th>
-                  {r.values.map((v, i) => (
-                    <td
-                      key={players[i].player_name}
-                      className={`mono${r.best.has(i) ? " compare-best" : ""}${r.def.strong ? " compare-strong" : ""}`}
-                    >
-                      {v == null ? "—" : r.def.fmt(v)}
+              </thead>
+              <tbody>
+                <tr>
+                  <th>Position</th>
+                  {players.map((p) => (
+                    <td className="mono" key={p.player_name}>
+                      {p.positionLabel || p.position} · <TeamBadge team={p.team} />
                     </td>
                   ))}
                 </tr>
-              )
-            )}
-          </tbody>
-        </table>
-      </div>
-      <p className="compare-legend">Gold marks the leader in each row. Projected stats are per-game averages.</p>
-
-      <div className="compare-panels" style={{ "--cmp-n": n }}>
-        <div className="compare-panel-row">
-          {players.map((p) => (
-            <PlayerHeaderPanel key={p.player_name} row={p} />
-          ))}
-        </div>
-        <div className="compare-panel-row">
-          {players.map((p) => (
-            <PlayerStatsRow key={p.player_name} row={p} />
-          ))}
-        </div>
-        <div className="compare-panel-row">
-          {players.map((p) => (
-            <OutcomeCurvePanel key={p.player_name} row={p} maxSpread={maxSpread} />
-          ))}
-        </div>
-        <div className="compare-panel-row">
-          {players.map((p) => (
-            <UsageTdPanel key={p.player_name} row={p} />
-          ))}
-        </div>
-        <div className="compare-panel-row">
-          {players.map((p) => (
-            <GameLogPanel key={p.player_name} games={p.recentGames} />
-          ))}
-        </div>
-      </div>
-    </>
+                <tr>
+                  <th>Matchup</th>
+                  {players.map((p) => (
+                    <td key={p.player_name}>
+                      <MatchupCell row={p} />
+                    </td>
+                  ))}
+                </tr>
+                {shown.map((r) =>
+                  r.group ? (
+                    <tr className="compare-group-row" key={r.group}>
+                      <th colSpan={n + 1}>{r.group}</th>
+                    </tr>
+                  ) : (
+                    <tr key={r.def.label}>
+                      <th>{r.def.label}</th>
+                      {r.values.map((v, i) => (
+                        <td
+                          key={players[i].player_name}
+                          className={`mono${r.best.has(i) ? " compare-best" : ""}${r.def.strong ? " compare-strong" : ""}`}
+                        >
+                          {v == null ? "—" : r.def.fmt(v)}
+                        </td>
+                      ))}
+                    </tr>
+                  )
+                )}
+              </tbody>
+            </table>
+          </div>
+          <p className="compare-legend">Gold marks the leader in each row. Projected stats are per-game averages.</p>
+            </>
+          ),
+        },
+        {
+          key: "profiles",
+          label: "Player Profiles",
+          node: (
+            <div className="compare-panels" style={{ "--cmp-n": n }}>
+              <div className="compare-panel-row">
+                {players.map((p) => (
+                  <PlayerHeaderPanel key={p.player_name} row={p} />
+                ))}
+              </div>
+              <div className="compare-panel-row">
+                {players.map((p) => (
+                  <PlayerStatsRow key={p.player_name} row={p} />
+                ))}
+              </div>
+              <div className="compare-panel-row">
+                {players.map((p) => (
+                  <OutcomeCurvePanel key={p.player_name} row={p} maxSpread={maxSpread} />
+                ))}
+              </div>
+              <div className="compare-panel-row">
+                {players.map((p) => (
+                  <UsageTdPanel key={p.player_name} row={p} />
+                ))}
+              </div>
+              <div className="compare-panel-row">
+                {players.map((p) => (
+                  <GameLogPanel key={p.player_name} games={p.recentGames} />
+                ))}
+              </div>
+            </div>
+          ),
+        },
+      ]}
+    />
   );
 }

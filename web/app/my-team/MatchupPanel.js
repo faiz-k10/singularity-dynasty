@@ -153,26 +153,6 @@ export function leagueTabs(team, alerts = 0) {
   return [["matchup", "Matchup"], ...lineup, ["available", "Best Available"], ...(hasStandings(team) ? [["standings", "Standings"]] : [])];
 }
 
-export function PanelTabs({ tabs, value, onChange }) {
-  return (
-    <div className="board-toggle league-dash-tabs" role="tablist" aria-label="League view">
-      {tabs.map(([key, label, alerts]) => (
-        <button
-          key={key}
-          type="button"
-          role="tab"
-          aria-selected={value === key}
-          className={`${value === key ? "active" : ""}${alerts > 0 ? " has-alerts" : ""}`.trim()}
-          title={alerts > 0 ? `${alerts} lineup ${alerts === 1 ? "alert" : "alerts"} active` : undefined}
-          onClick={() => onChange(key)}
-        >
-          {label}
-        </button>
-      ))}
-    </div>
-  );
-}
-
 // Head-to-head view for one saved league: this week's two lineups slot by slot with live points, our projection, the
 // range still to come and each game's status, under a scoreboard with the live score, projected finals, players left
 // and the win chance (lib/winChance.js, computed server-side and refreshed by the 30-second poll). `tab` picks the

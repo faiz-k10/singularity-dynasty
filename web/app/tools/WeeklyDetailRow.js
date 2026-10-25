@@ -661,7 +661,12 @@ export function PlayerHeaderPanel({ row }) {
           <div className="weekly-player-badges">
             <PositionBadge position={row.position} />
             <TeamBadge team={row.team} />
-            {sizeText && <span className="weekly-player-size mono">{sizeText}{achievements.length > 0 ? " ·" : ""}</span>}
+            {sizeText && (
+              <span className="weekly-player-size mono">
+                {sizeText}
+                <span className="weekly-player-dot">{achievements.length > 0 ? " ·" : ""}</span>
+              </span>
+            )}
             {/* Confidence/streak/spread flags, all as one row
                 of flat-fill "achievement" pills -- these used to be plain
                 glyphs next to the name in the collapsed table row, but

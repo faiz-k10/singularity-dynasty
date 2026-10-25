@@ -19,7 +19,8 @@ import { liveRosterNews, lineupChanged } from "@/lib/rosterAlerts";
 import { lineupAlertCount } from "@/lib/lineupOptimizer";
 import { livePointsFor } from "@/lib/gameStatus";
 import SlotBadge from "./SlotBadge";
-import MatchupPanel, { PanelTabs, leagueTabs } from "./MatchupPanel";
+import MatchupPanel, { leagueTabs } from "./MatchupPanel";
+import PanelTabs from "../PanelTabs";
 import SundayBoard from "./SundayBoard";
 import { isGameDay } from "@/lib/liveFeed";
 import DesktopAlertsToggle, { useDesktopAlerts, useDesktopAlertsSetting } from "./DesktopAlerts";
@@ -287,7 +288,7 @@ function LeagueDetail({ team, gameStates, injuries, children }) {
   return (
     <div className="league-dash-detail">
       <div className="league-dash-detail-head">
-        <PanelTabs tabs={tabs} value={tab} onChange={setTab} />
+        <PanelTabs tabs={tabs} value={tab} onChange={setTab} label="League view" />
         {children}
       </div>
       {tab === "roster" ? (
