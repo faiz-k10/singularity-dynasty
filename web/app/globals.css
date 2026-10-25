@@ -5343,7 +5343,7 @@ html{font-stretch:82%;}
 .lu-lean.is-tough{color:var(--neon-blue);}
 .league-dash-tabs button.has-alerts{box-shadow:inset 0 0 0 2px var(--horizon);}
 .league-dash-tabs button.has-alerts.active{box-shadow:inset 0 0 0 2px rgba(26,13,5,.6);}
-.compare-tabs{margin:0 0 18px;}
+.compare-tabs{margin:0 0 18px; display:flex; justify-content:flex-end;} /* the tab switch sits at the right edge */
 .compare-pos{display:inline-flex; align-items:center; justify-content:center; gap:8px;} /* position label, dot and team logo on one centre line */
 .lu-gain-label{font-size:10.5px; font-weight:400; letter-spacing:.1em; text-transform:uppercase; color:var(--star-dim); margin-right:4px;}
 .lu-why{flex-basis:100%; font-size:12.5px; color:var(--star-dim);}
