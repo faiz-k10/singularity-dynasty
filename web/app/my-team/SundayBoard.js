@@ -80,6 +80,11 @@ function LeagueCard({ team, ms, onOpen }) {
     >
       <div className="sb-card-head">
         <span className="sb-card-league">{row.league}</span>
+        {row.record !== "—" && (
+          <span className="sb-card-record mono" title="Your win-loss record this season">
+            {row.record}
+          </span>
+        )}
         {status && hasMatchup && (
           <span className={`sb-card-status mono${playing ? " is-live" : ""}`}>
             {playing > 0 && <span className="sb-live-dot" aria-hidden="true" />}
