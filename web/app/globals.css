@@ -5011,8 +5011,8 @@ html{font-stretch:82%;}
 /* The points cell: a faint rule on its curve side, the number centred between the rule and the card's edge (the cell runs out to the edge; shaded rows already do). */
 .h2h-row:not(.h2h-head) .h2h-c-pts{align-self:stretch; display:flex; align-items:center; justify-content:center; border-left:1px solid rgba(var(--star-dot-rgb), .12);}
 .h2h-side.opp .h2h-row:not(.h2h-head) .h2h-c-pts{border-left:0; border-right:1px solid rgba(var(--star-dot-rgb), .12);}
-.h2h-row:not(.is-upcoming) .h2h-c-pts{margin-right:calc(-1 * var(--side-pad));}
-.h2h-side.opp .h2h-row:not(.is-upcoming) .h2h-c-pts{margin-right:0; margin-left:calc(-1 * var(--side-pad));}
+.h2h-row .h2h-c-pts{margin-right:calc(-1 * var(--side-pad));}
+.h2h-side.opp .h2h-row .h2h-c-pts{margin-right:0; margin-left:calc(-1 * var(--side-pad));}
 .h2h-row.h2h-head .h2h-c-pts{font-size:10px; font-weight:400;}
 .h2h-c-pts.is-live{color:var(--star);}
 .h2h-c-pts.tone-good, .tone-good-text{color:var(--down);}
@@ -5094,7 +5094,7 @@ html{font-stretch:82%;}
   .h2h-side.opp .h2h-c-player{align-items:flex-start; text-align:left;}
   .h2h-side.opp .h2h-row:not(.h2h-head) .h2h-player-sub{justify-self:start; flex-direction:row; justify-content:flex-start; text-align:left;}
   .h2h-side.opp .h2h-row:not(.h2h-head) .h2h-c-pts{border-right:0; border-left:1px solid rgba(var(--star-dot-rgb), .12);}
-  .h2h-side.opp .h2h-row:not(.is-upcoming) .h2h-c-pts{margin-left:0; margin-right:calc(-1 * var(--side-pad));}
+  .h2h-side.opp .h2h-row .h2h-c-pts{margin-left:0; margin-right:calc(-1 * var(--side-pad));}
 }
 /* Same stacking whenever the panel itself is too narrow for two lineups side by side (e.g. beside the Game Board's live panel), whatever the window width. */
 @container h2h (max-width:900px){
@@ -5107,7 +5107,7 @@ html{font-stretch:82%;}
   .h2h-side.opp .h2h-c-player{align-items:flex-start; text-align:left;}
   .h2h-side.opp .h2h-row:not(.h2h-head) .h2h-player-sub{justify-self:start; flex-direction:row; justify-content:flex-start; text-align:left;}
   .h2h-side.opp .h2h-row:not(.h2h-head) .h2h-c-pts{border-right:0; border-left:1px solid rgba(var(--star-dot-rgb), .12);}
-  .h2h-side.opp .h2h-row:not(.is-upcoming) .h2h-c-pts{margin-left:0; margin-right:calc(-1 * var(--side-pad));}
+  .h2h-side.opp .h2h-row .h2h-c-pts{margin-left:0; margin-right:calc(-1 * var(--side-pad));}
 }
 
 /* ===== My Team Sunday board (my-team/SundayBoard.js): the full-screen game-day layout =====
