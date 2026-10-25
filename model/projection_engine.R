@@ -720,6 +720,8 @@ add_zero_snap_games <- function(reg, seasons) {
                        season = sn$season, week = sn$week, team = sn$team, stringsAsFactors = FALSE)
     for (col in setdiff(names(reg), names(zero))) zero[[col]] <- 0
     cat("History: added", nrow(zero), "zero-point games (on the field, no stat line)\n")
+    reg$zero_snap <- FALSE   # flags the added games: they shape a player's numbers but never make him ELIGIBLE (see project_all)
+    zero$zero_snap <- TRUE
     rbind(reg, zero[, names(reg)])
   }, error = function(e) {
     cat("Snap counts unavailable this run -- history left without zero-snap games:", conditionMessage(e), "\n")
@@ -1036,7 +1038,10 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
   reg$epa_component <- ifelse(reg$position == "QB", reg$passing_epa + reg$rushing_epa,
                         ifelse(reg$position == "RB", reg$rushing_epa + reg$receiving_epa,
                                reg$receiving_epa))
-  counts <- table(reg$player_display_name)
+  # Eligibility counts REAL stat-line games only: zero-snap games (add_zero_snap_games) shape a player's numbers, but a fringe player must
+  # not reach MIN_GAMES on blocking snaps alone (33 practice-squad-level TE / WR rows would have been published).
+  real <- if ("zero_snap" %in% names(reg)) !reg$zero_snap else rep(TRUE, nrow(reg))
+  counts <- table(reg$player_display_name[real])
   eligible <- names(counts[counts >= MIN_GAMES])
 
   # Recency weighting only knows "games ago" within a player's own log --
@@ -1059,7 +1064,7 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
   # ...or games THIS season: a player who sat out all of last year but is
   # back and playing now (Deshaun Watson: 0 games in 2025, CLE's starter in
   # 2026) is current, not stale. Without this he was dropped every week.
-  played_recently <- unique(reg$player_display_name[reg$season %in% c(last_completed_season, target_season)])
+  played_recently <- unique(reg$player_display_name[real & reg$season %in% c(last_completed_season, target_season)])
   eligible <- intersect(eligible, played_recently)
 
   # A team's top-2 QB with a short history (QB_SHORT_MIN_GAMES..MIN_GAMES-1
