@@ -47,6 +47,30 @@ ps <- ps[ps$season_type == "REG" &
            ps$position %in% POSITIONS &
            !is.na(ps$fantasy_points_ppr), keep]
 
+# Games he was ON THE FIELD for but has no stat line in: nflverse's weekly stats only carry players with a recorded stat, so a player
+# who got snaps and no touches (a healthy player benched after a fumble, a blocking TE, a QB2 on a kneel-down) has NO row there -- the
+# game just disappeared from Recent Games, "Last week" and the badge inputs (Cam Skattebo, 2026 week 6: 6 offensive snaps, no carries,
+# no target, nothing in the log). Snap counts (nflreadr::load_snap_counts, keyed on the PFR id) say who was on the field, so each
+# (player, season, week) with offense snaps and no stats row is added as a real 0.0 game. A player with NO snaps (inactive, injured,
+# healthy scratch) gets no row: he did not play. Joined to GSIS ids through load_players().
+cat("Adding zero-point games for players who had offense snaps but no stat line...\n")
+sn <- as.data.frame(load_snap_counts(seasons = SEASONS))
+sn <- sn[sn$game_type == "REG" & sn$position %in% POSITIONS & !is.na(sn$offense_snaps) & sn$offense_snaps > 0, ]
+pl <- as.data.frame(load_players())
+pl <- pl[!is.na(pl$pfr_id) & !is.na(pl$gsis_id), c("pfr_id", "gsis_id", "display_name")]
+pl <- pl[!duplicated(pl$pfr_id), ]
+sn <- merge(sn, pl, by.x = "pfr_player_id", by.y = "pfr_id")
+have <- paste(ps$player_id, ps$season, ps$week)
+sn <- sn[!(paste(sn$gsis_id, sn$season, sn$week) %in% have), ]
+if (nrow(sn)) {
+  zero <- data.frame(player_id = sn$gsis_id, player_display_name = sn$display_name, position = sn$position,
+                     team = sn$team, opponent_team = sn$opponent, season = sn$season, week = sn$week,
+                     fantasy_points_ppr = 0, stringsAsFactors = FALSE)
+  for (col in setdiff(names(ps), names(zero))) zero[[col]] <- NA
+  ps <- rbind(ps, zero[, names(ps)])
+}
+cat("  added", nrow(sn), "zero-point games\n")
+
 # ffopportunity expected PPR points (xFP), joined on GSIS player_id +
 # season + week. all.x -- a game with no xFP row keeps NA.
 cat("Loading ffopportunity expected fantasy points (weekly xFP)...\n")
