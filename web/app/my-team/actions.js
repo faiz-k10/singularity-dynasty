@@ -506,7 +506,9 @@ export async function pollLiveScores() {
   const known = {};
   for (const r of rows) {
     for (const p of [...(r.settings?.h2h?.mine || []), ...(r.settings?.h2h?.opp || [])]) {
-      if (p.id) known[p.id] = { name: p.name, pos: p.pos, team: p.team, active: !p.out };
+      // A saved entry with no position and no team is a player our directory didn't know (shown as "Player <id>"); don't carry him forward -- and above
+      // all not his old "out" flag, which the poll would keep copying back -- but look him up again, so he turns up as soon as the directory has him.
+      if (p.id && (p.team || p.pos)) known[p.id] = { name: p.name, pos: p.pos, team: p.team, active: !p.out };
     }
   }
   let dictP = null;
