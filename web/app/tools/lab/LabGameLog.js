@@ -5,7 +5,7 @@ import PositionBadge from "../PositionBadge";
 import TeamBadge from "../TeamBadge";
 import { formatMetric } from "@/lib/labMetrics";
 import { weeklySeries, niceTicks } from "@/lib/labCalc";
-import { useWidth, MetricNotes, tickLabel } from "./labUi";
+import { useWidth, MetricNotes, tickLabel, Signature } from "./labUi";
 
 const M = { l: 48, r: 18, t: 16, b: 40 };
 const KINDS = [
@@ -71,6 +71,7 @@ export default function LabGameLog({ picked, week, season }) {
       </div>
 
       <div className="lab-chart" ref={ref} style={{ height: H }}>
+        <Signature axis={M} />
         {width > 0 && any && (
           <svg
             className="lab-svg"

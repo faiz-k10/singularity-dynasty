@@ -88,6 +88,18 @@ export function MetricSelect({ label, value, onChange, available, simsAccess, id
   );
 }
 
+// The brand signature in an exported picture (hidden on the page; shown under `.is-exporting`). On a chart it sits just above the right end of
+// the x axis (`axis` = the chart's right and bottom margins), inside the picture's busiest part so no crop can lose it; views without an axis
+// (Leaderboard, Compare) put it under the view.
+export function Signature({ axis = null }) {
+  return (
+    <div className={`lab-export-foot${axis ? " is-on-axis" : ""}`} style={axis ? { right: axis.r, bottom: axis.b + 6 } : undefined} aria-hidden="true">
+      <span className="ring" />
+      Singularity Dynasty · The Lab
+    </div>
+  );
+}
+
 // "What these numbers are": the chosen metrics' hover text, written out under a chart for anyone researching with it.
 export function MetricNotes({ keys }) {
   const seen = [...new Set(keys)].map((k) => LAB_METRIC[k]).filter(Boolean);

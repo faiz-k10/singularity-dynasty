@@ -5,7 +5,7 @@ import PositionBadge from "../PositionBadge";
 import TeamBadge from "../TeamBadge";
 import { LAB_METRIC, formatMetric } from "@/lib/labMetrics";
 import { linearFit, corrWord, niceTicks, median } from "@/lib/labCalc";
-import { useWidth, MetricSelect, MetricNotes, POS_COLOR, shortName, tickLabel, placeLabels } from "./labUi";
+import { useWidth, MetricSelect, MetricNotes, POS_COLOR, shortName, tickLabel, placeLabels, Signature } from "./labUi";
 
 const M = { l: 58, r: 24, t: 16, b: 50 };
 const HIT = 22; // how close (px) the pointer must be to a dot to pick it
@@ -98,6 +98,7 @@ export default function LabScatter({ pool, available, simsAccess, colorOf, onTog
       </div>
 
       <div className="lab-chart" ref={ref} style={{ height: H }}>
+        <Signature axis={M} />
         {width > 0 && pts.length >= 2 && (
           <svg
             className="lab-svg"

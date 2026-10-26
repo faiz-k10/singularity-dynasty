@@ -5847,6 +5847,9 @@ html{font-stretch:82%;}
   display:flex; justify-content:flex-end; align-items:center; gap:8px; margin-top:16px; padding-top:10px; border-top:1px solid var(--rule);
   font-family:var(--font-display), sans-serif; font-size:13px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--star-dim);
 }
+/* On a chart the signature sits on the plot, just above the right end of the x axis, on a solid plate so the dots and lines behind it don't
+   blur it (labUi.js Signature). */
+.lab-stage.is-exporting .lab-export-foot.is-on-axis{position:absolute; z-index:4; margin:0; padding:5px 9px; border:1px solid var(--rule); border-radius:var(--r-sm); background:rgba(var(--scrim-rgb), .92);}
 /* The last menu item opens the Share to social pop-up (LabShare.js), set apart by a hairline. */
 .lab-export-menu .lab-export-social{border-top:1px solid var(--rule); border-radius:0 0 var(--r-sm) var(--r-sm); margin-top:2px; padding-top:11px;}
 .lab-export-menu .lab-export-social b{color:var(--horizon-gold);}

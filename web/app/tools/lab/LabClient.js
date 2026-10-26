@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import PanelTabs from "../../PanelTabs";
 import { LAB_METRIC, LAB_METRICS } from "@/lib/labMetrics";
-import { PICK_COLORS, MAX_PICKS } from "./labUi";
+import { PICK_COLORS, MAX_PICKS, Signature } from "./labUi";
 import LabPicker from "./LabPicker";
 import LabScatter from "./LabScatter";
 import LabBoard from "./LabBoard";
@@ -126,8 +126,8 @@ export default function LabClient({ rows, week, season, simsAccess, initial }) {
           <span className="lab-export-title">{title}</span>
           <span className="lab-export-scope">{scope}</span>
         </div>
-        {/* The watermark, also only in an exported picture: a faint wordmark across the chart and the brand in the bottom corner (the
-            footer after the view), so a shared chart always carries where it came from. */}
+        {/* The watermark, also only in an exported picture: a faint wordmark across the chart, plus the brand signature (labUi Signature: on a
+            chart's x axis, under the view otherwise), so a shared chart always carries where it came from. */}
         <div className="lab-export-mark" aria-hidden="true">
           <span className="ring" />
           Singularity Dynasty
@@ -138,10 +138,7 @@ export default function LabClient({ rows, week, season, simsAccess, initial }) {
         {view === "leaders" && <LabBoard {...shared} metric={leadKey} onMetric={setLead} />}
         {view === "games" && <LabGameLog picked={picked} week={week} season={season} />}
         {view === "compare" && <LabCompare picked={picked} simsAccess={simsAccess} onToggle={toggle} />}
-        <div className="lab-export-foot" aria-hidden="true">
-          <span className="ring" />
-          Singularity Dynasty · The Lab
-        </div>
+        {(view === "leaders" || view === "compare") && <Signature />}
       </div>
     </section>
   );
