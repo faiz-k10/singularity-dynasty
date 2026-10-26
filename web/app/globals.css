@@ -5078,7 +5078,8 @@ html{font-stretch:82%;}
 .h2h-row.is-done .h2h-player-name{color:color-mix(in srgb, var(--star) 82%, transparent);}
 .h2h-row.is-empty{opacity:.6;}
 /* The bench: its own tinted block under the starters with a heavy rule and a "BENCH" heading, so it can't be read as part of the lineup. */
-.h2h-bench{margin-top:16px; border-top:2px solid var(--rule-strong, var(--line)); background:rgba(var(--star-dot-rgb), .04);}
+/* The bench block runs to the card's edges (like the points cells, which bleed over the side padding), so every number is centred in the box you see. */
+.h2h-bench{margin:16px calc(-1 * var(--side-pad)) 0; padding:0 var(--side-pad); border-top:2px solid var(--rule-strong, var(--line)); background:rgba(var(--star-dot-rgb), .04);}
 .h2h-bench-head{display:flex; align-items:center; justify-content:center; gap:8px; padding:6px 4px; font-size:11px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--star-dim); border-bottom:1px solid var(--rule, var(--line));}
 .h2h-bench-head span{padding:0 6px; border:1px solid var(--rule, var(--line)); border-radius:2px; font-weight:400; letter-spacing:.04em;}
 .h2h-row.is-bench{opacity:.92;}

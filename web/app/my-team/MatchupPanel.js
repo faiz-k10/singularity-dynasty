@@ -195,22 +195,42 @@ function MatchupBody({ team, gameStates, playTotals }) {
   // Sleeper trails the game by a minute or two, so plays it hasn't posted yet are added to each player's points, to the team totals
   // and to the win chance when the play-by-play knows them -- the same numbers (lib/matchupState.js) as the cards and the live list.
   const { mine, opp, live, pct, done: allDone, lock, st } = useMemo(() => matchupState(team.settings || {}, gameStates, playTotals), [team.settings, gameStates, playTotals]);
-  // Every row's info column (badges + game time) takes the width of the widest one, so the outcome curve beside it is the same size in every row
-  // (otherwise "Sun 4:05 PM" under the badges squeezed an unplayed player's curve while "Final" left a finished player's wide). Measured after each render;
-  // the variable is cleared first so a shorter label can shrink the column again.
   // The benches under the starters: from the saved head-to-head (both sides), or -- for a snapshot from before benches were saved -- my own from the
   // saved roster. Each row gets its game state like a starter (summarizeSide); none of it enters the totals above.
   const benchMine = useMemo(() => summarizeSide(s.h2h?.mineBench || benchFromRoster(team.players, s.playerPoints), gameStates).players, [s.h2h, s.playerPoints, team.players, gameStates]);
   const benchOpp = useMemo(() => summarizeSide(s.h2h?.oppBench || [], gameStates).players, [s.h2h, gameStates]);
   const lineupsRef = useRef(null);
-  useLayoutEffect(() => {
+  // Every row's info column (badges + game time) takes the width of the widest one, so the outcome curve beside it is the same size in every row
+  // (otherwise "Sun 4:05 PM" under the badges squeezed an unplayed player's curve while "Final" left a finished player's wide). Measured after each render;
+  // the variable is cleared first so a shorter label can shrink the column again.
+  // Each info block is sized to its content (width:max-content in the CSS), so its box is the width it needs.
+  const measureInfo = () => {
     const el = lineupsRef.current;
     if (!el) return;
     el.style.removeProperty("--info-w");
     let widest = 0;
     for (const sub of el.querySelectorAll(".h2h-row:not(.h2h-head) .h2h-player-sub")) widest = Math.max(widest, sub.getBoundingClientRect().width);
     if (widest) el.style.setProperty("--info-w", `${Math.ceil(widest)}px`);
+  };
+  const measureRef = useRef(measureInfo);
+  useLayoutEffect(() => {
+    measureRef.current = measureInfo;
+    measureInfo();
   });
+  // ...and again whenever the panel changes width (window resize, the right-hand pane folding, a drawer finishing its slide).
+  useLayoutEffect(() => {
+    const el = lineupsRef.current;
+    if (!el) return undefined;
+    let lastWidth = el.getBoundingClientRect().width;
+    const ro = new ResizeObserver(([entry]) => {
+      const w = entry.contentRect.width;
+      if (Math.abs(w - lastWidth) < 1) return;
+      lastWidth = w;
+      measureRef.current();
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
   const url = sleeperMatchupUrl(team.platform_league_id);
   const sleeperLink = url && (
     <a className="h2h-sleeper mono" href={url} target="_blank" rel="noopener noreferrer">
