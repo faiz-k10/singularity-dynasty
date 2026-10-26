@@ -298,32 +298,35 @@ body::before{
 }
 .menu-btn:hover{border-color:var(--horizon-gold); transform:scale(1.06);}
 
+/* The theme switch: a hairline box of two square cells (sun | moon), the one for the current theme a solid gold block like the active
+   segment of every other toggle on the site. Its centre line is the bar's (the menu button's, below 1180px). */
 .theme-toggle{
-  position:fixed; top:26px; right:78px; z-index:90;
-  width:44px; height:44px; border-radius:50%;
-  background:rgba(var(--scrim-rgb),0.7); border:1px solid var(--line); backdrop-filter:blur(8px);
-  color:var(--star); cursor:pointer;
-  display:flex; align-items:center; justify-content:center;
-  transition:border-color .2s ease, transform .2s var(--ease);
+  position:fixed; top:31px; right:78px; z-index:90;
+  display:flex; padding:0; height:34px;
+  background:rgba(var(--scrim-rgb), .98); border:1px solid var(--rule); border-radius:var(--r-sm);
+  color:var(--star-dim); cursor:pointer;
+  transition:border-color .2s ease;
 }
-.theme-toggle:hover{border-color:var(--neon-blue); transform:scale(1.06);}
-.theme-toggle svg{width:18px; height:18px;}
-/* The bar has a fixed height (48px with the menu buttons, 60px on the full-width layout) and the toggle is a circle centred
-   inside it with a 6px / 2px margin, so it can never poke out of the bar whatever the bar's content does. */
+.theme-toggle:hover{border-color:var(--neon-blue);}
+.tt-cell{width:32px; height:32px; display:flex; align-items:center; justify-content:center; transition:background .2s ease, color .2s ease;}
+.tt-cell svg{width:16px; height:16px;}
+/* Dark is the default: the moon cell is lit; light (system preference or the explicit choice) lights the sun cell. */
+.tt-moon{background:var(--horizon-gold); color:#1A0D05;}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]) .tt-moon{background:none; color:inherit;}
+  :root:not([data-theme="dark"]) .tt-sun{background:var(--horizon-gold); color:#1A0D05;}
+}
+:root[data-theme="light"] .tt-moon{background:none; color:inherit;}
+:root[data-theme="light"] .tt-sun{background:var(--horizon-gold); color:#1A0D05;}
+:root[data-theme="dark"] .tt-sun{background:none; color:inherit;}
+:root[data-theme="dark"] .tt-moon{background:var(--horizon-gold); color:#1A0D05;}
+/* The bar has a fixed height (48px with the menu buttons, 60px on the full-width layout, where the menu button is gone and the switch
+   moves to the right edge). */
 .site-header{height:48px;}
 @media (min-width:1180px){
   .site-header{height:60px;}
-  .theme-toggle{top:30px; width:48px; height:48px;}
-  .theme-toggle svg{width:20px; height:20px;}
+  .theme-toggle{top:37px; right:24px;}
 }
-.theme-toggle .icon-sun{display:none;}
-.theme-toggle .icon-moon{display:block;}
-@media (prefers-color-scheme: light){
-  :root:not([data-theme="dark"]) .theme-toggle .icon-sun{display:block;}
-  :root:not([data-theme="dark"]) .theme-toggle .icon-moon{display:none;}
-}
-:root[data-theme="light"] .theme-toggle .icon-sun{display:block;}
-:root[data-theme="light"] .theme-toggle .icon-moon{display:none;}
 
 /* ---------- SITE HEADER (full-width top bar — replaces the hamburger on
    wide viewports; the hamburger + radial-menu below remain as the
@@ -372,14 +375,12 @@ body::before{
 .top-nav-bar a:not(.tn-cta):not(.tn-box).active{color:var(--horizon-gold);}
 .top-nav-bar a:not(.tn-cta):not(.tn-box):hover::after,
 .top-nav-bar a:not(.tn-cta):not(.tn-box).active::after{transform:scaleX(1);}
-/* Boxed nav links: The Lab (in the bar's main run, with its flask glyph in gold) and Account (at the right end, after the pricing pill). */
+/* Boxed nav link: Account / Sign In, at the right end after the pricing pill. */
 .top-nav-bar a.tn-box{
   color:var(--star); border:1px solid var(--line); border-radius:2px; padding:5px 18px;
   transition:border-color .2s ease, color .2s ease;
 }
 .top-nav-bar a.tn-box:hover{border-color:var(--neon-blue); color:var(--neon-blue);}
-.top-nav-bar a.tn-lab{display:inline-flex; align-items:center; gap:8px; padding-left:14px;}
-.top-nav-bar a.tn-lab svg{width:15px; height:15px; flex:none; color:var(--horizon-gold);}
 .top-nav-bar a.tn-account{margin-left:clamp(0px, 0.6vw, 10px);}
 .top-nav-bar a.tn-cta{
   background:linear-gradient(225deg, var(--horizon-gold), var(--horizon));
@@ -4416,7 +4417,7 @@ a.mine-empty-note{color:var(--horizon-gold);}
 }
 
 /* Floating controls: square keys, not glass beads. */
-.menu-btn, .theme-toggle{
+.menu-btn{
   background:rgba(var(--scrim-rgb), .98);
   border:1px solid var(--rule);
   border-radius:var(--r-sm);

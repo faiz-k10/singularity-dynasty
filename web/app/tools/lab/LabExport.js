@@ -5,12 +5,21 @@ import LabShare from "./LabShare";
 
 let fontCss = null; // the page's fonts as embeddable CSS, worked out once per visit (the slow part of the first export)
 
+// The library and the font CSS are the heavy first-time costs (a chunk download + parse, then every font file fetched and base64'd). They are
+// fetched when the browser is idle after The Lab loads, so opening the menu never has to do them while the pointer is on it.
+const loadLib = () => import("html-to-image");
+async function warmFonts(stage) {
+  if (fontCss || !stage) return;
+  const { getFontEmbedCSS } = await loadLib();
+  fontCss ??= await getFontEmbedCSS(stage);
+}
+
 // The current view as a PNG: a COPY of the stage (`stage`) drawn off screen with its export header and watermark shown and the pickers, notes,
 // hover card and remove buttons hidden (all by `.is-exporting` in the CSS, so the layout closes up around what is left out), at twice the
 // screen's pixels, on the page's own background so it matches the theme. Drawing a copy means the page itself never flickers into its export
-// layout, which is also what lets the picture be drawn in the background before anyone asks for it. html-to-image is loaded only when needed.
+// layout, which is also what lets the picture be drawn in the background before anyone asks for it. html-to-image is loaded when the browser is idle.
 async function renderPng(stage) {
-  const { toBlob, getFontEmbedCSS } = await import("html-to-image");
+  const { toBlob, getFontEmbedCSS } = await loadLib();
   const holder = document.createElement("div");
   holder.setAttribute("aria-hidden", "true");
   holder.style.cssText = `position:fixed; left:-100000px; top:0; width:${stage.offsetWidth}px; pointer-events:none;`;
@@ -19,7 +28,6 @@ async function renderPng(stage) {
   holder.appendChild(copy);
   document.body.appendChild(holder);
   try {
-    await new Promise((r) => requestAnimationFrame(r));
     fontCss ??= await getFontEmbedCSS(copy);
     const blob = await toBlob(copy, {
       pixelRatio: 2,
@@ -35,8 +43,8 @@ async function renderPng(stage) {
   }
 }
 
-// One picture per view: it starts drawing the moment the Export menu opens (so it is usually done by the time Copy image / Save image / Share is
-// chosen) and is reused until something about the view changes -- the address (the Lab mirrors every choice into it), the theme or the window's
+// One picture per view: it starts drawing when the pointer reaches the Export button (see `warm` below), so it is usually done by the time Copy image /
+// Save image / Share is chosen, and is reused until something about the view changes -- the address (the Lab mirrors every choice into it), the theme or the window's
 // width. A failed draw is forgotten so the next try starts again.
 const pictureCache = { key: null, promise: null };
 function pictureKey(stage) {
@@ -65,6 +73,28 @@ export default function LabExport({ stageRef, fileName, title, caption }) {
   const renderStage = useCallback(() => getPicture(stageRef.current), [stageRef]);
   const closeShare = useCallback(() => setSharing(false), []);
   const canCopyImage = typeof window !== "undefined" && typeof window.ClipboardItem === "function" && Boolean(navigator.clipboard?.write);
+
+  // Idle after load: fetch the library and fonts so the first Export click finds them ready.
+  useEffect(() => {
+    const idle = window.requestIdleCallback || ((fn) => setTimeout(fn, 1500));
+    const cancel = window.cancelIdleCallback || clearTimeout;
+    const id = idle(() => warmFonts(stageRef.current).catch(() => {}), { timeout: 4000 });
+    return () => cancel(id);
+  }, [stageRef]);
+
+  // Drawing the picture blocks the page for about half a second (html-to-image copies the style of every node, a scatter has hundreds),
+  // so it starts when the pointer or keyboard reaches the Export button -- the cursor's trip to the button hides most of it -- and not in the
+  // click that opens the menu, where it froze hover and clicks. Without a pointer (touch) it starts shortly after the menu has painted.
+  // Either way one picture is kept per view (getPicture), so this is a no-op once it is drawn; Copy image / Save / Share draw it themselves
+  // when nothing has.
+  const warm = useCallback(() => {
+    if (stageRef.current) getPicture(stageRef.current).catch(() => {});
+  }, [stageRef]);
+  useEffect(() => {
+    if (!open) return undefined;
+    const id = setTimeout(warm, 350);
+    return () => clearTimeout(id);
+  }, [open, warm]);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -127,10 +157,9 @@ export default function LabExport({ stageRef, fileName, title, caption }) {
         aria-haspopup="menu"
         aria-expanded={open}
         disabled={busy}
-        onClick={() => {
-          if (!open && stageRef.current) getPicture(stageRef.current).catch(() => {}); // start drawing now
-          setOpen((v) => !v);
-        }}
+        onPointerEnter={warm}
+        onFocus={warm}
+        onClick={() => setOpen((v) => !v)}
       >
         {busy ? "Exporting…" : status ? status.text : "Export"}
         <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true">

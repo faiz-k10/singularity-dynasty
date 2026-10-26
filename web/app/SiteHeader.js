@@ -266,10 +266,7 @@ export default async function SiteHeader({ scripts = true }) {
           </div>
           <Link href="/#feed">Feed</Link>
           <ToolLink href="/my-team">My Team</ToolLink>
-          <ToolLink href="/tools/lab" className="tn-box tn-lab">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 3h6M10 3v6.2L4.6 18.4A1.7 1.7 0 0 0 6.1 21h11.8a1.7 1.7 0 0 0 1.5-2.6L14 9.2V3" /><path d="M7.2 14h9.6" /></svg>
-            The Lab
-          </ToolLink>
+          <ToolLink href="/tools/lab">The Lab</ToolLink>
           <Link
             href="/#pricing"
             className="tn-cta tn-cta-tiers"
