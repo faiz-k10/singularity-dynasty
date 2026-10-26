@@ -443,26 +443,24 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
   // A game that has just ended keeps its plays coming for a few minutes (the player has left the live list, but Sleeper still trails
   // his last plays, and the scores on the board add the ones it hasn't posted): lib/liveFeed.js catchUpPlayers.
   const finalSeen = useRef({});
-  const catchUp = useMemo(() => JSON.stringify(catchUpPlayers(savedTeams, gameStates, finalSeen.current, Date.now())), [savedTeams, gameStates, updatedAt]);
-  const [catchTick, setCatchTick] = useState(0);
-  const catching = catchUp !== "[]";
   useEffect(() => {
-    if (!catching) return undefined;
-    const id = setInterval(() => setCatchTick((t) => t + 1), 10000);
-    return () => clearInterval(id);
-  }, [catching]);
-  useEffect(() => {
-    if (!catching) return undefined;
     let cancelled = false;
-    getLivePlays(JSON.parse(catchUp))
-      .then((res) => {
-        if (!cancelled && res?.totals) mergeTotals(res.totals);
-      })
-      .catch(() => {});
+    const run = () => {
+      const list = catchUpPlayers(savedTeams, gameStates, finalSeen.current, Date.now());
+      if (!list.length) return;
+      getLivePlays(list)
+        .then((res) => {
+          if (!cancelled && res?.totals) mergeTotals(res.totals);
+        })
+        .catch(() => {});
+    };
+    run();
+    const id = setInterval(run, 10000); // nothing is requested once no game is within its catch-up window
     return () => {
       cancelled = true;
+      clearInterval(id);
     };
-  }, [catchUp, catching, catchTick, mergeTotals]);
+  }, [savedTeams, gameStates, mergeTotals]);
   // Which of the open league's views is showing (Matchup / Standings / Best available); opening a league starts on Matchup.
   const [panelTab, setPanelTab] = useState("matchup");
   // League filters (BoardFilters.js): league type / win chance / score / playoff odds. Not remembered between visits, so the

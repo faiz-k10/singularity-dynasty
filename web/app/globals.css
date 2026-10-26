@@ -363,20 +363,24 @@ body::before{
 }
 /* underline indicator (not the account/CTA buttons, which read as buttons
    already) — grows in on hover and stays put for the active section. */
-.top-nav-bar a:not(.tn-cta):not(.tn-account)::after{
+.top-nav-bar a:not(.tn-cta):not(.tn-box)::after{
   content:''; position:absolute; left:1px; right:1px; bottom:0; height:2px;
   background:var(--horizon-gold); border-radius:2px;
   transform:scaleX(0); transform-origin:left; transition:transform .25s var(--ease);
 }
-.top-nav-bar a:not(.tn-cta):not(.tn-account):hover,
-.top-nav-bar a:not(.tn-cta):not(.tn-account).active{color:var(--horizon-gold);}
-.top-nav-bar a:not(.tn-cta):not(.tn-account):hover::after,
-.top-nav-bar a:not(.tn-cta):not(.tn-account).active::after{transform:scaleX(1);}
-.top-nav-bar a.tn-account{
+.top-nav-bar a:not(.tn-cta):not(.tn-box):hover,
+.top-nav-bar a:not(.tn-cta):not(.tn-box).active{color:var(--horizon-gold);}
+.top-nav-bar a:not(.tn-cta):not(.tn-box):hover::after,
+.top-nav-bar a:not(.tn-cta):not(.tn-box).active::after{transform:scaleX(1);}
+/* Boxed nav links: The Lab (in the bar's main run, with its flask glyph in gold) and Account (at the right end, after the pricing pill). */
+.top-nav-bar a.tn-box{
   color:var(--star); border:1px solid var(--line); border-radius:2px; padding:5px 18px;
   transition:border-color .2s ease, color .2s ease;
 }
-.top-nav-bar a.tn-account:hover{border-color:var(--neon-blue); color:var(--neon-blue);}
+.top-nav-bar a.tn-box:hover{border-color:var(--neon-blue); color:var(--neon-blue);}
+.top-nav-bar a.tn-lab{display:inline-flex; align-items:center; gap:8px; padding-left:14px;}
+.top-nav-bar a.tn-lab svg{width:15px; height:15px; flex:none; color:var(--horizon-gold);}
+.top-nav-bar a.tn-account{margin-left:clamp(0px, 0.6vw, 10px);}
 .top-nav-bar a.tn-cta{
   background:linear-gradient(225deg, var(--horizon-gold), var(--horizon));
   color:#1A0D05; padding:7px 24px; border-radius:2px; font-weight:700;
@@ -526,7 +530,7 @@ body::before{
 .top-nav-bar .nav-dropdown:hover .nav-foldout a.nav-fold-card:nth-child(2), .top-nav-bar .nav-dropdown:focus-within .nav-foldout a.nav-fold-card:nth-child(2){transition-delay:.09s, .09s, 0s, 0s, 0s;}
 .top-nav-bar .nav-dropdown:hover .nav-foldout a.nav-fold-card:nth-child(3), .top-nav-bar .nav-dropdown:focus-within .nav-foldout a.nav-fold-card:nth-child(3){transition-delay:.14s, .14s, 0s, 0s, 0s;}
 .top-nav-bar .nav-dropdown:hover .nav-foldout a.nav-fold-card:nth-child(4), .top-nav-bar .nav-dropdown:focus-within .nav-foldout a.nav-fold-card:nth-child(4){transition-delay:.19s, .19s, 0s, 0s, 0s;}
-.top-nav-bar .nav-foldout a.nav-fold-card:not(.tn-cta):not(.tn-account)::after{content:none;}
+.top-nav-bar .nav-foldout a.nav-fold-card:not(.tn-cta):not(.tn-box)::after{content:none;}
 .top-nav-bar .nav-dropdown .nav-foldout a.nav-fold-card:hover, .top-nav-bar .nav-dropdown .nav-foldout a.nav-fold-card:focus-visible{
   color:var(--star); border-color:rgba(var(--neon-blue-rgb), 0.55); background:rgba(var(--neon-blue-rgb), 0.07);
   box-shadow:0 10px 26px -12px rgba(var(--neon-blue-rgb), 0.5); transform:translateY(-2px); outline:none;
@@ -3232,7 +3236,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
   all:unset; display:flex; justify-content:space-between; align-items:center; width:100%; box-sizing:border-box;
   padding:9px 12px; border-radius:2px; cursor:pointer; font-size:13.5px; color:var(--star);
 }
-.compare-picker-list li button:hover{background:rgba(var(--neon-blue-rgb),0.1); color:var(--neon-blue);}
+.compare-picker-list li button:hover, .compare-picker-list li button.is-active{background:rgba(var(--neon-blue-rgb),0.1); color:var(--neon-blue);}
 .compare-picker-pos{font-family:var(--font-mono), monospace; font-size:11px; color:var(--star-dim);}
 .compare-table-wrap{overflow-x:auto; background:var(--void-panel); border:1px solid var(--line); border-radius:2px; box-shadow:0 30px 70px rgba(var(--shadow-rgb),0.4);}
 .compare-table{width:100%; border-collapse:collapse; font-size:14px;}
@@ -4604,12 +4608,12 @@ html{font-stretch:82%;}
 .compare-h2h .compare-table td{padding:10px 20px;}
 .compare-table td.compare-best{color:var(--horizon-gold); font-weight:700; background:rgba(var(--horizon-gold-rgb),0.08);}
 .compare-table td.compare-strong{font-size:16px;}
-.compare-table .compare-group-row th{
+.compare-table .compare-group-row th, .lab-compare .compare-group-row th{
   padding:9px 20px; background:transparent; color:var(--horizon-gold); letter-spacing:0.1em; font-size:10.5px;
   border-bottom:1px solid var(--line); text-align:center;
   box-shadow:inset 0 0 0 1px var(--horizon-gold); /* a yellow border just inside the heading's box */
 }
-@media (max-width:640px){.compare-table .compare-group-row th{text-align:left;}} /* a phone scrolls the table sideways, so the heading stays at the left edge */
+@media (max-width:640px){.compare-table .compare-group-row th, .lab-compare .compare-group-row th{text-align:left;}} /* a phone scrolls the table sideways, so the heading stays at the left edge */
 .compare-matchup{display:inline-flex; align-items:center; gap:8px;}
 .compare-matchup-lean{display:inline-flex; align-items:center; gap:5px; font-family:var(--font-mono), monospace; font-size:11px; color:var(--star-dim); cursor:help;}
 .compare-matchup-lean .player-achv-dot{width:7px; height:7px;}
@@ -5790,3 +5794,166 @@ html{font-stretch:82%;}
 .page-skel-row{height:44px;}
 @keyframes page-skel-sweep{to{transform:translateX(100%);}}
 @media (prefers-reduced-motion: reduce){.page-skel::after{animation:none;}}
+
+/* ---------- THE LAB (app/tools/lab, Oct 25 2026) ----------
+   One tier-1 panel (.lab.glass-panel) holding the view tabs, the position pills, the picked players and the chart. Controls are mono, names
+   Libron, headline figures the display font (the type roles); flat hairline boxes and 2px corners (the scoreboard material). Picked players
+   carry their own colour as --c everywhere. */
+.lab-wrap{max-width:1280px;}
+.lab-paywall{margin-bottom:18px;}
+.lab{padding:18px 20px 22px; display:flex; flex-direction:column; gap:16px;}
+.lab-bar{display:flex; flex-wrap:wrap; align-items:center; gap:10px 14px;}
+.lab-copy, .lab-icon-btn{
+  all:unset; box-sizing:border-box; cursor:pointer; height:36px; display:inline-flex; align-items:center; justify-content:center;
+  font-family:var(--font-mono), monospace; font-size:12px; color:var(--star-dim);
+  border:1px solid var(--rule); border-radius:var(--r-sm); transition:color .15s ease, border-color .15s ease;
+}
+.lab-copy{margin-left:auto; padding:0 14px;}
+.lab-icon-btn{width:36px; font-size:15px;}
+.lab-copy:hover, .lab-copy:focus-visible, .lab-icon-btn:hover, .lab-icon-btn:focus-visible{color:var(--horizon-gold); border-color:var(--horizon-gold);}
+.lab-field{display:flex; flex-direction:column; gap:6px; min-width:0;}
+.lab-field-label{font-family:var(--font-mono), monospace; font-size:10.5px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--star-dim);}
+.lab-select{
+  height:36px; box-sizing:border-box; max-width:100%; padding:0 12px; outline:none;
+  background:var(--void-panel-2); border:1px solid var(--line); border-radius:var(--r-sm);
+  font-family:var(--font-mono), monospace; font-size:12.5px; color:var(--star); transition:border-color .15s ease;
+}
+select.lab-select{min-width:200px; padding-right:8px; cursor:pointer;}
+.lab-select:focus{border-color:var(--neon-blue);}
+.lab-check{display:inline-flex; align-items:center; gap:8px; height:36px; font-family:var(--font-mono), monospace; font-size:12px; color:var(--star-dim); cursor:pointer;}
+.lab-check input{accent-color:var(--horizon-gold); width:15px; height:15px; margin:0; cursor:pointer;}
+
+/* Picked players: a chip each, in his colour, and the type-ahead (its list reuses the compare pickers' dropdown). */
+.lab-picks{display:flex; flex-wrap:wrap; align-items:center; gap:8px 10px; padding:12px 0; border-top:1px solid var(--rule); border-bottom:1px solid var(--rule);}
+.lab-chips{display:contents;}
+.lab-chip{
+  list-style:none; display:inline-flex; align-items:center; gap:7px; height:34px; box-sizing:border-box; padding:0 4px 0 10px;
+  border:1px solid var(--rule); border-bottom:2px solid var(--c); border-radius:var(--r-sm); background:rgba(var(--star-dot-rgb), .03);
+}
+.lab-chip-dot{width:9px; height:9px; border-radius:50%; background:var(--c); flex:none;}
+.lab-chip-name{font-family:var(--font-body), Georgia, serif; font-size:14px; color:var(--star); white-space:nowrap;}
+.lab-chip-x{all:unset; box-sizing:border-box; cursor:pointer; width:24px; height:24px; display:grid; place-items:center; flex:none; border-radius:var(--r-sm); font-size:16px; line-height:1; color:var(--star-dim);}
+.lab-chip-x:hover, .lab-chip-x:focus-visible{color:var(--down); background:rgba(var(--down-rgb), .1);}
+.lab-picker{flex:0 1 240px; min-width:180px;}
+.lab-picker-input{width:100%;}
+.lab-picker-input:disabled{opacity:.55; cursor:not-allowed;}
+.lab-pick-meta{display:inline-flex; align-items:center; gap:6px;}
+
+.lab-view{display:flex; flex-direction:column; gap:14px; min-width:0;}
+.lab-controls{display:flex; flex-wrap:wrap; align-items:flex-end; gap:10px 14px;}
+
+/* Headline figures over a chart (n, correlation, medians / the leader, average). */
+/* Cells wrap onto as many rows as the width needs and grow to fill each row; the 1px gaps over the rule colour are the dividers. */
+.lab-strip{display:flex; flex-wrap:wrap; gap:1px; background:var(--rule); border:1px solid var(--rule); border-radius:var(--r-sm); overflow:hidden;}
+.lab-strip > div{flex:1 1 140px; display:flex; flex-direction:column; gap:5px; padding:10px 14px; min-width:0; background:rgb(var(--scrim-rgb));}
+.lab-strip b{font-family:var(--font-display), sans-serif; font-size:clamp(26px, 2.8vw, 36px); font-weight:800; line-height:1; color:var(--star);}
+.lab-strip > div:first-child b{color:var(--horizon-gold);}
+.lab-strip span{font-family:var(--font-mono), monospace; font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--star-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.lab-strip em{font-style:normal; font-family:var(--font-mono), monospace; font-size:10.5px; color:var(--horizon-gold);}
+
+/* Charts (SVG, drawn at the measured width). */
+.lab-chart{position:relative; width:100%;}
+.lab-svg{display:block; overflow:visible; font-family:var(--font-mono), monospace; touch-action:manipulation;}
+.lab-grid{stroke:rgba(var(--star-dot-rgb), .07);}
+.lab-grid.is-zero{stroke:rgba(var(--star-dot-rgb), .32);}
+.lab-axis{stroke:var(--rule-strong);}
+.lab-tick{fill:var(--star-dim); font-size:10.5px;}
+.lab-tick.is-now{fill:var(--horizon-gold); font-weight:700;}
+.lab-axis-label{fill:var(--star); font-size:11px; letter-spacing:.08em; text-transform:uppercase;}
+.lab-median{stroke:rgba(var(--star-dot-rgb), .35); stroke-dasharray:4 4;}
+.lab-trend{stroke:var(--horizon); stroke-width:1.6;}
+.lab-dot{fill:var(--star-dim); fill-opacity:.55;}
+.lab-dot.is-hover{fill-opacity:1; stroke:var(--star); stroke-width:1.5;}
+.lab-dot.is-picked{fill-opacity:1; stroke:var(--void-panel); stroke-width:2;}
+.lab-label{font-size:11.5px; font-weight:700; paint-order:stroke; stroke:var(--void-panel); stroke-width:3.5px; stroke-linejoin:round; pointer-events:none;}
+.lab-line{stroke:var(--c); stroke-width:2.2; stroke-linecap:round;}
+.lab-line.is-gap{stroke-dasharray:3 5; stroke-width:1.6; opacity:.7;}
+.lab-point{fill:var(--c); stroke:var(--void-panel); stroke-width:1.5;}
+.lab-proj{fill:var(--void-panel); stroke:var(--c); stroke-width:2;}
+.lab-guide{stroke:rgba(var(--star-dot-rgb), .25);}
+.lab-tip{
+  position:absolute; z-index:5; pointer-events:none; min-width:200px; max-width:260px; box-sizing:border-box; padding:8px 12px;
+  background:rgba(var(--scrim-rgb), .98); border:1px solid var(--rule); border-radius:var(--r-sm); color:var(--star);
+}
+.lab-tip::before{content:""; position:absolute; top:-1px; left:0; right:0; height:2px; background:linear-gradient(90deg, var(--neon-blue), var(--horizon-gold));}
+.lab-tip-head{display:flex; align-items:center; gap:7px; margin-bottom:6px;}
+.lab-tip-head b{font-family:var(--font-body), Georgia, serif; font-size:14px;}
+.lab-tip-row{display:flex; justify-content:space-between; gap:14px; padding:2px 0; font-family:var(--font-mono), monospace; font-size:11.5px; color:var(--star-dim);}
+.lab-tip-row b{color:var(--star); white-space:nowrap;}
+.lab-tip-player{font-family:var(--font-body), Georgia, serif; font-size:13px; color:var(--c, var(--star-dim));}
+.lab-tip-foot{margin-top:6px; font-family:var(--font-mono), monospace; font-size:10.5px; color:var(--neon-blue);}
+.lab-legend{display:flex; flex-wrap:wrap; gap:6px 16px; font-family:var(--font-mono), monospace; font-size:11px; color:var(--star-dim);}
+.lab-legend span{display:inline-flex; align-items:center; gap:6px;}
+.lab-legend i{display:inline-block; width:10px; height:10px; border-radius:50%;}
+.lab-legend i.lab-legend-median{width:16px; height:0; border-radius:0; border-top:1px dashed rgba(var(--star-dot-rgb), .55);}
+.lab-legend i.lab-legend-trend{width:16px; height:2px; border-radius:0; background:var(--horizon);}
+.lab-legend i.lab-legend-proj{box-sizing:border-box; border:2px solid var(--star-dim);}
+.lab-empty{margin:0; padding:40px 16px; text-align:center; color:var(--star-dim); font-size:14px;}
+.lab-chart .lab-empty{position:absolute; inset:0; display:grid; place-items:center;}
+.lab-caption{margin:10px 0 0; font-family:var(--font-mono), monospace; font-size:11px; color:var(--star-dim);}
+.lab-notes{display:grid; gap:6px; margin:0; padding-top:12px; border-top:1px solid var(--rule);}
+.lab-notes div{display:grid; grid-template-columns:minmax(120px, 190px) 1fr; gap:12px;}
+.lab-notes dt{padding-top:2px; font-family:var(--font-mono), monospace; font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--horizon-gold);}
+.lab-notes dd{margin:0; font-size:13px; line-height:1.45; color:var(--star-dim);}
+
+/* Leaderboard: rank, name, badges, a bar from zero (the average is the thin line), value. */
+.lab-board-list{list-style:none; margin:0; padding:0;}
+.lab-board-row{
+  display:grid; grid-template-columns:34px minmax(150px, 230px) 64px minmax(80px, 1fr) 72px; align-items:center; gap:10px;
+  padding:5px 8px; border-bottom:1px solid rgba(var(--star-dot-rgb), .06);
+}
+.lab-board-row.is-picked{background:color-mix(in srgb, var(--c) 10%, transparent); box-shadow:inset 3px 0 0 var(--c);}
+.lab-board-rank{text-align:right; font-family:var(--font-mono), monospace; font-size:12px; color:var(--star-dim);}
+.lab-board-name{all:unset; cursor:pointer; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-family:var(--font-body), Georgia, serif; font-size:14px; color:var(--star);}
+.lab-board-name:hover, .lab-board-name:focus-visible{color:var(--horizon-gold);}
+.lab-board-badges{display:inline-flex; align-items:center; gap:6px;}
+.lab-board-track{position:relative; height:14px; background:rgba(var(--star-dot-rgb), .04);}
+.lab-board-track::after{content:""; position:absolute; top:-3px; bottom:-3px; left:var(--avg); width:1px; background:rgba(var(--star-dot-rgb), .5);}
+.lab-board-bar{position:absolute; top:0; bottom:0; background:var(--horizon-gold); opacity:.45;}
+.lab-board-row.is-picked .lab-board-bar{background:var(--c); opacity:1;}
+.lab-board-zero{position:absolute; top:-3px; bottom:-3px; width:1px; background:var(--rule-strong);}
+.lab-board-val{text-align:right; font-family:var(--font-mono), monospace; font-size:13px; font-weight:700; color:var(--star);}
+.lab-board-split{margin:14px 0 4px; font-family:var(--font-mono), monospace; font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--star-dim);}
+
+/* Tables: the game log's season summary and Compare. */
+.lab-table-wrap{overflow-x:auto; border:1px solid var(--rule); border-radius:var(--r-sm);}
+.lab-table{width:100%; border-collapse:collapse;}
+.lab-table th, .lab-table td{padding:9px 14px; text-align:right; white-space:nowrap; border-bottom:1px solid rgba(var(--star-dot-rgb), .07); font-family:var(--font-mono), monospace; font-size:12.5px; color:var(--star);}
+.lab-table:not(.lab-compare) thead th{font-size:10.5px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--star-dim);}
+.lab-table tbody th, .lab-table thead th:first-child{text-align:left; font-weight:400;}
+.lab-table tr:last-child > *{border-bottom:0;}
+.lab-row-player{display:inline-flex; align-items:center; gap:8px; font-family:var(--font-body), Georgia, serif; font-size:14px;}
+.lab-row-player i{width:10px; height:10px; border-radius:50%; background:var(--c); flex:none;}
+.lab-compare{table-layout:fixed; min-width:calc(170px + var(--n, 2) * 170px);}
+.lab-compare thead th:first-child{width:170px;}
+.lab-compare th, .lab-compare td{text-align:left;}
+.lab-compare thead th{vertical-align:bottom; white-space:normal;}
+.lab-compare .lab-compare-corner{font-family:var(--font-body), Georgia, serif; font-size:12px; line-height:1.35; color:var(--star-dim);}
+.lab-compare-head{position:relative; border-top:3px solid var(--c);}
+.lab-compare-name{display:block; padding-right:24px; white-space:normal; font-family:var(--font-body), Georgia, serif; font-size:15px; font-weight:700; color:var(--star);}
+.lab-compare-meta{display:flex; align-items:center; gap:6px; margin-top:6px;}
+.lab-compare-opp{font-size:11px; color:var(--star-dim);}
+.lab-compare-head .lab-chip-x{position:absolute; top:5px; right:5px;}
+.lab-compare tbody tr:not(.compare-group-row) th{white-space:normal; font-size:11.5px; color:var(--star-dim); cursor:help;}
+.lab-cell{display:flex; flex-direction:column; gap:5px;}
+.lab-cell-val{font-size:13px;}
+.lab-cell-pct{display:block; height:4px; background:rgba(var(--star-dot-rgb), .08);}
+.lab-cell-bar{display:block; height:100%;}
+.lab-compare td.is-best{background:rgba(var(--horizon-gold-rgb), .07);}
+.lab-compare td.is-best .lab-cell-val{color:var(--horizon-gold); font-weight:700;}
+.lab-lock-link{color:var(--neon-blue); text-decoration:underline; text-underline-offset:3px;}
+
+@media (max-width:640px){
+  .lab{padding:14px 12px 16px;}
+  .lab-bar .board-toggle{display:grid; grid-template-columns:repeat(4, 1fr); width:100%; box-sizing:border-box;}
+  .lab-bar .board-toggle button{padding:7px 2px; text-align:center; white-space:nowrap; font-size:11.5px;}
+  .lab-bar .rk-positions{flex:1 1 auto;}
+  .lab-bar .rk-positions button{flex:1 1 0; min-width:0; padding:7px 4px;}
+  .lab-copy{margin-left:0;}
+  .lab-field{flex:1 1 150px;}
+  select.lab-select{min-width:0; width:100%;}
+  .lab-board-row{grid-template-columns:26px minmax(0,1fr) auto 58px; row-gap:4px;}
+  .lab-board-track{grid-column:2 / -1; grid-row:2;}
+  .lab-notes div{grid-template-columns:1fr; gap:2px;}
+  .lab-strip b{font-size:24px;}
+}

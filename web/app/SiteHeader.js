@@ -181,7 +181,7 @@ async function TickerFeed() {
 }
 
 // Shared by every page: the fixed telemetry ticker + full-width site banner
-// (brand, section nav, Get Started/Account, hamburger + radial-menu mobile
+// (brand, section nav with The Lab, the pricing pill, Account at the right end, hamburger + radial-menu mobile
 // fallback). Nav links use /#section so they work whether the visitor is
 // already on the homepage (smooth-scroll, see InteractiveScript) or on a
 // tool/auth/legal page (full navigation back to the homepage section).
@@ -266,9 +266,10 @@ export default async function SiteHeader({ scripts = true }) {
           </div>
           <Link href="/#feed">Feed</Link>
           <ToolLink href="/my-team">My Team</ToolLink>
-          <Link href={user ? "/account" : "/login"} className="tn-account">
-            {user ? "Account" : "Sign In"}
-          </Link>
+          <ToolLink href="/tools/lab" className="tn-box tn-lab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 3h6M10 3v6.2L4.6 18.4A1.7 1.7 0 0 0 6.1 21h11.8a1.7 1.7 0 0 0 1.5-2.6L14 9.2V3" /><path d="M7.2 14h9.6" /></svg>
+            The Lab
+          </ToolLink>
           <Link
             href="/#pricing"
             className="tn-cta tn-cta-tiers"
@@ -278,6 +279,9 @@ export default async function SiteHeader({ scripts = true }) {
             <span className="tn-tier"><b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5" /><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none" /></svg>Singularity</b><small>Everything · $25/mo</small></span>
             <span className="tn-tier"><b><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m15.5 8.5-2 5-5 2 2-5Z" fill="currentColor" /><circle cx="12" cy="12" r="9" /></svg>Explorer</b><small>Full lists · $9/mo</small></span>
             <span className="tn-tier"><b><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2.8 2.7 5.7 6.2.8-4.6 4.3 1.2 6.1L12 16.7 6.5 19.7l1.2-6.1L3.1 9.3l6.2-.8Z" /></svg>Stargazer</b><small>Top 50 · Free</small></span>
+          </Link>
+          <Link href={user ? "/account" : "/login"} className="tn-box tn-account">
+            {user ? "Account" : "Sign In"}
           </Link>
         </nav>
         <div className="site-header-spacer" aria-hidden="true"></div>
@@ -289,6 +293,7 @@ export default async function SiteHeader({ scripts = true }) {
           <Link href="/#pricing">Pricing</Link>
           <Link href="/#feed">Feed</Link>
           <ToolLink href="/my-team">My Team</ToolLink>
+          <ToolLink href="/tools/lab">The Lab</ToolLink>
           <Link href={user ? "/account" : "/login"}>
             {user ? "Account" : "Sign In"}
           </Link>

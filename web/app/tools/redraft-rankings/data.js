@@ -6,6 +6,7 @@ import { percentileRank, INVERTED_STATS } from "@/lib/statPercentiles";
 import { normalizePlayerName } from "@/lib/portfolio";
 import { groupRanks } from "@/lib/statPanel";
 import { rankIn } from "@/lib/rank";
+import { PROFILE_METRICS } from "@/lib/statMetrics";
 
 // Data layer of Weekly Projection Rankings, split out of page.js so the Compare Players tool reads the same rows.
 
@@ -512,7 +513,8 @@ export function usageRanksByName(rows, simsByName, avgXfpByName) {
 // Where each player ranks at his position on the usage_profile numbers (model/usage_profile.R), among EVERY ranked player at the position that
 // has the number (the model leaves rate numbers out below a volume gate, so backups don't crowd the pool). 1 = best: the highest value, except
 // sack rate where the LOWEST is best. Row keys are the profile's keys with a "u_" prefix.
-const LOWER_IS_BETTER = new Set(["sack_rate"]);
+// usage_profile keys (without their u_ prefix) where the lowest value ranks first -- marked `lower` in lib/statMetrics.js.
+const LOWER_IS_BETTER = new Set(Object.entries(PROFILE_METRICS).filter(([k, m]) => m.lower && k.startsWith("u_")).map(([k]) => k.slice(2)));
 export function usageProfileRanks(rows, profile) {
   const pools = {};
   for (const r of rows) {
