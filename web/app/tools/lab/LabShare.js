@@ -108,7 +108,6 @@ export default function LabShare({ render, title, caption, onClose }) {
     };
   }, [onClose]);
 
-  const open = (url) => window.open(url, "_blank", "noopener,noreferrer");
   const copy = async (value, done) => {
     try {
       await navigator.clipboard.writeText(value);
@@ -120,20 +119,24 @@ export default function LabShare({ render, title, caption, onClose }) {
     }
   };
 
-  const post = async (key) => {
-    if (!share) return;
-    if (COMPOSE.includes(key)) {
-      open(composeUrl(key, { url: share.url, text }));
-      setNote(`${NAMES[key]} is open with your post written and the chart as its preview. Just press Post.`);
-    } else if (key === "discord") {
-      const copied = await copy(`${text} ${share.url}`, "Caption and link copied. Paste them into any Discord channel: the chart shows right under the link.");
-      if (copied) open("https://discord.com/app");
-    } else if (sheet) {
-      try {
-        await navigator.share({ files: [new File([share.chart], "singularity-lab-chart.png", { type: "image/png" })], text: `${text} ${share.url}` });
-      } catch (e) {
-        if (e?.name !== "AbortError") setNote(`Couldn't open the share sheet. Copy the link below and post it on ${NAMES[key]}.`);
-      }
+  // X, Threads, Bluesky, Facebook, LinkedIn, Reddit and Discord are plain links that open in a new tab: a link the person clicks is never stopped
+  // by a pop-up blocker the way a script opening a window can be (the first version used window.open, and for some people nothing opened).
+  const hrefFor = (key) => {
+    if (!share) return null;
+    if (COMPOSE.includes(key)) return composeUrl(key, { url: share.url, text });
+    return key === "discord" ? "https://discord.com/app" : null;
+  };
+  const followed = (key) => {
+    if (key === "discord") copy(`${text} ${share.url}`, "Caption and link copied. Paste them into any Discord channel: the chart shows right under the link.");
+    else setNote(`${NAMES[key]} opened in a new tab with your post written and the chart as its preview. Just press Post.`);
+  };
+  // Instagram / TikTok on a phone: the share sheet hands the chart to the app.
+  const sendToApp = async (key) => {
+    if (!share || !sheet) return;
+    try {
+      await navigator.share({ files: [new File([share.chart], "singularity-lab-chart.png", { type: "image/png" })], text: `${text} ${share.url}` });
+    } catch (e) {
+      if (e?.name !== "AbortError") setNote(`Couldn't open the share sheet. Copy the link below and post it on ${NAMES[key]}.`);
     }
   };
 
@@ -164,15 +167,27 @@ export default function LabShare({ render, title, caption, onClose }) {
         </div>
 
         <div className="lab-share-grid">
-          {Object.keys(NAMES).map((key) => (
-            <button key={key} type="button" className={`lab-share-btn is-${key}`} disabled={!enabled(key)} onClick={() => post(key)}>
-              <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true">
-                {ICONS[key]}
-              </svg>
-              <b>{NAMES[key]}</b>
-              <span>{describe(key)}</span>
-            </button>
-          ))}
+          {Object.keys(NAMES).map((key) => {
+            const inner = (
+              <>
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true">
+                  {ICONS[key]}
+                </svg>
+                <b>{NAMES[key]}</b>
+                <span>{describe(key)}</span>
+              </>
+            );
+            const href = hrefFor(key);
+            return href ? (
+              <a key={key} className={`lab-share-btn is-${key}`} href={href} target="_blank" rel="noopener noreferrer" onClick={() => followed(key)}>
+                {inner}
+              </a>
+            ) : (
+              <button key={key} type="button" className={`lab-share-btn is-${key}`} disabled={!enabled(key)} onClick={() => sendToApp(key)}>
+                {inner}
+              </button>
+            );
+          })}
         </div>
         {note && (
           <p className="lab-share-note" role="status">
