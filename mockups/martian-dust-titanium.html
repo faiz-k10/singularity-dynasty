@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Martian Dust and Titanium — palette mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;800&family=Martian+Mono:wght@400;500;700&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0A0A0C; --panel:#111113; --tint:rgba(242,241,236,.035);
+  --text:#F2F1EC; --dim:#A19F96; --faint:#6E6C66;
+  --rule:rgba(242,241,236,.13); --rule-strong:rgba(242,241,236,.5);
+  --primary:#D95D39; --on-primary:#0A0A0C;
+  --secondary:#C29B38; --secondary-text:#C29B38;
+  --cold:#8C95A3;
+  --r:2px;
+  --display:'Big Shoulders Display','Arial Narrow',Impact,sans-serif;
+  --serif:'Source Serif 4',Georgia,serif;
+  --mono:'Martian Mono',ui-monospace,Menlo,monospace;
+}
+:root[data-theme="light"]{
+  --bg:#F4F4F2; --panel:#FBFBFA; --tint:rgba(24,24,28,.03);
+  --text:#18181C; --dim:#5C6370; --faint:#8B909A;
+  --rule:rgba(24,24,28,.14); --rule-strong:rgba(24,24,28,.6);
+  --primary:#B34A23; --on-primary:#F4F4F2;
+  --secondary:#B88E22; --secondary-text:#8A6A14;
+  --cold:#5C6370;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--text);font-family:var(--serif);font-size:15px;line-height:1.5;transition:background .2s,color .2s}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+.mono{font-family:var(--mono)}
+.disp{font-family:var(--display);text-transform:uppercase}
+
+/* mock controls (not part of the site) */
+.mock-bar{position:sticky;top:0;z-index:50;display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:10px 20px;background:var(--panel);border-bottom:1px solid var(--rule-strong);font-family:var(--mono);font-size:11.5px}
+.mock-tabs{display:flex;border:1px solid var(--rule)}
+.mock-tabs button{padding:7px 14px;color:var(--dim)}
+.mock-tabs button[aria-pressed="true"]{background:var(--secondary);color:#14110A}
+.swatches{display:flex;gap:6px;align-items:center;color:var(--dim)}
+.swatches i{width:16px;height:16px;border:1px solid var(--rule);display:inline-block}
+
+/* site header */
+.ticker{height:29px;border-bottom:1px solid var(--rule);display:flex;align-items:center;gap:34px;padding:0 18px;overflow:hidden;white-space:nowrap;font-family:var(--mono);font-size:11.5px;color:var(--dim);background:var(--bg)}
+.ticker b{font-weight:500;color:var(--text)}
+.pace{border:1px solid;padding:1px 6px}
+.pace.hot{color:var(--primary);border-color:var(--primary);background:color-mix(in srgb,var(--primary) 14%,transparent)}
+.pace.cold{color:var(--cold);border-color:var(--cold);background:color-mix(in srgb,var(--cold) 14%,transparent)}
+.hdr{height:60px;display:flex;align-items:center;gap:30px;padding:0 24px;border-bottom:1px solid var(--rule);background:var(--bg)}
+.brand{font-family:var(--display);font-weight:700;letter-spacing:.12em;font-size:26px;text-transform:uppercase;display:flex;align-items:center;gap:10px}
+.brand i{width:16px;height:16px;border-radius:50%;border:2px solid var(--primary);position:relative;display:inline-block}
+.brand i::after{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--secondary)}
+.nav{display:flex;gap:30px;align-items:center;flex:1;font-family:var(--display);text-transform:uppercase;letter-spacing:.09em;font-size:16px}
+.nav a{padding:8px 2px;border-bottom:2px solid transparent;color:var(--text)}
+.nav a.on{color:var(--secondary-text);border-color:var(--secondary)}
+.pill{display:flex;border:2px solid var(--secondary);height:42px;margin-left:auto;min-width:430px}
+.pill span{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:15px;line-height:1.05;border-right:1px solid rgba(0,0,0,.25);color:#120C07}
+.pill small{font-family:var(--mono);font-weight:400;font-size:9px;text-transform:none;letter-spacing:0}
+.pill span:nth-child(1){background:var(--primary);color:var(--on-primary)}
+.pill span:nth-child(2){background:color-mix(in srgb,var(--primary) 45%,var(--secondary))}
+.pill span:nth-child(3){background:var(--secondary);border:0}
+.acct{border:1px solid var(--rule);padding:6px 18px;font-family:var(--display);text-transform:uppercase;letter-spacing:.09em;font-size:16px}
+.tt{display:flex;border:1px solid var(--rule);height:34px}
+.tt span{width:32px;display:grid;place-items:center;color:var(--dim);font-size:15px}
+.tt span.on{background:var(--secondary);color:#14110A}
+
+/* shared panel material */
+.wrap{max-width:1280px;margin:0 auto;padding:34px 24px 60px}
+.panel{background:var(--panel);border:1px solid var(--rule);border-top:2px solid var(--rule-strong);border-radius:var(--r)}
+.eyebrow{display:inline-block;background:var(--secondary);color:#14110A;font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;padding:3px 9px;font-weight:500}
+h1.disp{font-weight:800;line-height:.92;letter-spacing:.01em}
+.btn{background:var(--primary);color:var(--on-primary);font-family:var(--display);font-weight:700;text-transform:uppercase;letter-spacing:.1em;font-size:17px;padding:10px 24px;border-radius:var(--r)}
+.btn.ghost{background:none;color:var(--text);border:1px solid var(--rule-strong)}
+.chip{font-family:var(--mono);font-size:11.5px;border:1px solid var(--rule);padding:6px 11px;color:var(--dim)}
+.chip.on{background:var(--secondary);color:#14110A;border-color:var(--secondary)}
+.chip.pos{padding:5px 10px}
+.page{display:none}.page.show{display:block}
+.sec{display:flex;align-items:center;gap:16px;margin:56px 0 22px}
+.sec .n{font-family:var(--display);font-weight:800;font-size:54px;line-height:1;color:transparent;-webkit-text-stroke:1.5px var(--secondary)}
+.sec b{font-family:var(--display);font-size:22px;letter-spacing:.14em;text-transform:uppercase;font-weight:700}
+.sec hr{flex:1;border:0;border-top:1px solid var(--rule)}
+.sec em{font-family:var(--mono);font-size:11px;color:var(--dim);font-style:normal}
+
+/* landing */
+.hero{display:grid;grid-template-columns:1.25fr 1fr;gap:44px;align-items:center;padding:30px 0 10px}
+.hero h1{font-size:clamp(54px,7.4vw,108px)}
+.hero h1 span{color:var(--primary)}
+.hero p{color:var(--dim);max-width:520px;margin:18px 0 22px;font-size:17px}
+.sleeper{display:flex;gap:0;max-width:520px}
+.sleeper input{flex:1;background:var(--panel);border:1px solid var(--rule-strong);border-right:0;color:var(--text);font-family:var(--mono);font-size:13px;padding:0 14px;height:48px;border-radius:2px 0 0 2px}
+.sleeper .btn{border-radius:0 2px 2px 0;height:48px;padding:0 22px}
+.orbit{aspect-ratio:1;max-width:420px;justify-self:center;width:100%;overflow:visible}
+@media(max-width:900px){.brand{font-size:19px;white-space:nowrap}.hdr{gap:12px;padding:0 14px}}
+.band{border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);margin-top:40px;position:relative;overflow:hidden;padding:30px 0 0}
+.band .big{font-family:var(--display);font-weight:800;font-size:clamp(120px,24vw,330px);line-height:.85;text-align:center;letter-spacing:-.01em;position:relative}
+.band .big span{color:var(--text)}
+.ruler{height:26px;margin:14px 0 0;background:repeating-linear-gradient(90deg,var(--rule-strong) 0 1px,transparent 1px 12px);-webkit-mask:linear-gradient(transparent 0,#000 0);opacity:.55}
+.cells{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--rule)}
+.cells div{padding:16px 20px;border-right:1px solid var(--rule)}.cells div:last-child{border:0}
+.cells b{display:block;font-family:var(--display);font-size:38px;font-weight:800;line-height:1}
+.cells small{font-family:var(--mono);font-size:10.5px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase}
+.ladder{display:flex;flex-direction:column;gap:14px}
+.rung{border:1px solid var(--rule);border-radius:var(--r);padding:20px 26px;display:grid;grid-template-columns:200px 1fr auto;gap:24px;align-items:center;background:var(--panel)}
+.rung h3{font-family:var(--display);font-size:28px;letter-spacing:.06em;text-transform:uppercase}
+.rung .price{font-family:var(--display);font-weight:800;font-size:56px;line-height:1}
+.rung ul{list-style:none;font-size:14px;color:var(--dim);columns:2;column-gap:28px}
+.rung li::before{content:"▸ ";color:var(--secondary-text)}
+.rung.r1{width:64%;border-left:4px solid var(--rule-strong)}
+.rung.r2{width:82%;border-left:4px solid var(--secondary)}
+.rung.r3{width:100%;border-left:4px solid var(--primary);padding:30px 30px}
+.rung.r3 .price{font-size:104px;color:var(--primary)}
+.rung.r3 h3{font-size:40px}
+
+/* rankings */
+.titlerow{display:flex;justify-content:space-between;align-items:end;margin-bottom:18px;gap:20px;flex-wrap:wrap}
+.titlerow h1{font-size:62px}
+.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.toolbar .search{margin-left:auto;border:1px solid var(--rule);padding:6px 12px;font-family:var(--mono);font-size:11.5px;color:var(--faint);min-width:200px}
+table{width:100%;border-collapse:collapse}
+th{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);text-align:left;font-weight:500;padding:11px 12px;border-bottom:1px solid var(--rule-strong)}
+td{padding:7px 12px;border-bottom:1px solid var(--rule);font-size:15px;vertical-align:middle}
+td.n,th.n{text-align:right;font-family:var(--mono);font-size:13px}
+td.proj{font-family:var(--mono);font-weight:700;color:var(--secondary-text);font-size:15px}
+td.fl{background:color-mix(in srgb,var(--cold) 13%,transparent)}
+td.ce{background:color-mix(in srgb,var(--primary) 13%,transparent)}
+.pos{font-family:var(--mono);font-size:10.5px;padding:2px 7px;border:1px solid var(--rule-strong);display:inline-block}
+.tm{width:26px;height:26px;border:1px solid var(--rule);display:inline-grid;place-items:center;font-family:var(--mono);font-size:9px;color:var(--dim);vertical-align:middle;margin-right:8px}
+.badges{display:flex;gap:4px}
+.bd{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-size:10px;font-weight:700;color:#14110A}
+.bd.a{background:var(--primary)}.bd.b{background:var(--secondary)}.bd.c{background:var(--cold)}.bd.d{background:var(--text);color:var(--bg)}
+.rank{font-family:var(--mono);color:var(--dim);width:36px}
+.detail{background:var(--tint);display:grid;grid-template-columns:1.1fr 1.1fr 1fr;gap:14px;padding:16px}
+.mini{border:1px solid var(--rule);padding:12px 14px;background:var(--panel)}
+.mini h4{font-family:var(--mono);font-size:10.5px;color:var(--dim);letter-spacing:.12em;text-transform:uppercase;font-weight:500;margin-bottom:8px}
+.mini h4::before{content:"— ";color:var(--secondary-text)}
+.mini .v{font-family:var(--display);font-weight:800;font-size:40px;line-height:1}
+.rk{display:grid;grid-template-columns:110px 1fr 40px;gap:10px;align-items:center;font-family:var(--mono);font-size:11px;padding:3px 0}
+.rk i{display:block;height:6px;background:var(--rule);position:relative}.rk i::after{content:"";position:absolute;left:0;top:0;bottom:0;width:var(--w);background:var(--secondary)}
+
+/* lab */
+.labbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:14px 18px;border-bottom:1px solid var(--rule)}
+.seg{display:flex;border:1px solid var(--rule)}
+.seg button{padding:7px 16px;font-family:var(--mono);font-size:11.5px;color:var(--dim)}
+.seg button.on{background:var(--secondary);color:#14110A}
+.picks{display:flex;gap:8px;padding:12px 18px;border-bottom:1px solid var(--rule);align-items:center;font-family:var(--mono);font-size:11.5px;flex-wrap:wrap}
+.pk{display:inline-flex;gap:8px;align-items:center;border:1px solid var(--rule-strong);padding:5px 10px}
+.pk i{width:10px;height:10px;border-radius:50%;display:inline-block}
+.headline{display:grid;grid-template-columns:repeat(5,1fr);border-bottom:1px solid var(--rule)}
+.headline div{padding:12px 18px;border-right:1px solid var(--rule)}.headline div:last-child{border:0}
+.headline b{display:block;font-family:var(--display);font-size:34px;font-weight:800;line-height:1.05}
+.headline small{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--dim);text-transform:uppercase}
+svg text{font-family:var(--mono);fill:var(--dim);font-size:11px}
+
+/* board */
+.boardtop{display:flex;align-items:center;gap:14px;margin-bottom:16px;flex-wrap:wrap}
+.weekbox{border:1px solid var(--rule-strong);padding:6px 16px;font-family:var(--display);font-weight:800;font-size:30px;letter-spacing:.06em;text-transform:uppercase;line-height:1}
+.board{display:grid;grid-template-columns:1.25fr 1fr;gap:18px}
+.cards{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;align-content:start}
+.lc{position:relative;border:1px solid var(--rule);background:var(--tint);padding:14px 16px;border-left:3px solid var(--tone)}
+.lc::before,.lc::after{content:"";position:absolute;left:-3px;height:2px;width:calc(var(--win)*100% + 3px);background:var(--tone)}
+.lc::before{top:-1px}.lc::after{bottom:-1px}
+.lc .name{display:flex;gap:8px;align-items:center;font-family:var(--mono);font-size:11.5px;letter-spacing:.05em;text-transform:uppercase}
+.lc .rec{border:1px solid var(--rule);padding:0 6px;color:var(--dim)}
+.word{display:flex;justify-content:space-between;align-items:baseline;margin:10px 0 8px}
+.word b{font-family:var(--display);font-weight:800;font-size:34px;text-transform:uppercase;letter-spacing:.02em;line-height:1;color:var(--tone)}
+.word span{font-family:var(--mono);font-size:11px;color:var(--dim)}
+.sc{display:flex;justify-content:space-between;font-family:var(--mono);font-size:14px;padding:3px 0}
+.sc b{font-weight:700}.sc.opp{color:var(--dim)}
+.foot{display:flex;justify-content:space-between;margin-top:10px;padding-top:9px;border-top:1px solid var(--rule);font-family:var(--mono);font-size:10.5px;color:var(--dim)}
+.live{width:8px;height:8px;border-radius:50%;background:var(--primary);display:inline-block;margin-right:6px}
+.feed{padding:0}
+.feed h3{padding:12px 16px;border-bottom:1px solid var(--rule);display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:500;color:var(--dim)}
+.fr{display:grid;grid-template-columns:1fr auto;gap:2px 14px;padding:9px 16px;border-bottom:1px solid var(--rule)}
+.fr b{font-weight:600;font-size:15px}.fr .sub{font-family:var(--mono);font-size:10.5px;color:var(--dim)}
+.fr .pts{grid-row:1/3;grid-column:2;text-align:right;font-family:var(--mono);font-weight:700;font-size:16px}
+.fr .pts small{display:block;color:var(--secondary-text);font-weight:500;font-size:11px}
+.play{padding:8px 16px;border-bottom:1px solid var(--rule);font-size:13.5px;display:flex;justify-content:space-between;gap:10px;border-left:3px solid var(--secondary)}
+.play.opp{border-left-color:var(--cold)}
+.play.hot{background:color-mix(in srgb,var(--secondary) 12%,transparent)}
+.play.to{background:color-mix(in srgb,var(--primary) 16%,transparent);border-left-color:var(--primary)}
+.play span:last-child{font-family:var(--mono);font-weight:700;white-space:nowrap}
+.note{font-family:var(--mono);font-size:11px;color:var(--faint);padding:30px 24px 0;text-align:center}
+@media(max-width:900px){.hero,.board{grid-template-columns:1fr}.pill{min-width:0}.nav{display:none}.rung{grid-template-columns:1fr}.rung.r1,.rung.r2{width:100%}.detail{grid-template-columns:1fr}.headline{grid-template-columns:repeat(2,1fr)}.cells{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+
+<div class="mock-bar">
+  <div class="mock-tabs" id="pageTabs">
+    <button aria-pressed="true" data-p="landing">Landing</button>
+    <button aria-pressed="false" data-p="rankings">Weekly rankings</button>
+    <button aria-pressed="false" data-p="lab">The Lab</button>
+    <button aria-pressed="false" data-p="board">Game board</button>
+  </div>
+  <div class="swatches" id="sw"></div>
+  <button class="chip on" id="themeBtn" style="font-family:var(--mono)">Showing: dark (Martian night side) — click for light</button>
+</div>
+
+<div class="ticker" aria-hidden="true">
+  <span><b>Christian McCaffrey</b> <span class="pace hot">+10.56</span></span>
+  <span><b>Brock Purdy</b> ◉ ◐ ★</span>
+  <span><b>Jared Goff</b> <span class="pace cold">−4.12</span></span>
+  <span><b>Chris Olave</b> <span class="pace hot">+5.19</span></span>
+  <span><b>Bijan Robinson</b> ◉ ◐</span>
+  <span><b>Jahmyr Gibbs</b> <span class="pace hot">+8.41</span></span>
+  <span><b>Tee Higgins</b> <span class="pace cold">−2.80</span></span>
+</div>
+<header class="hdr">
+  <div class="brand"><i></i>Singularity Dynasty</div>
+  <nav class="nav">
+    <a>Tools</a><a>Feed</a><a>My Team</a><a id="labLink">The Lab</a>
+    <div class="pill"><span>Singularity<small>Everything · $25/mo</small></span><span>Explorer<small>Full lists · $9/mo</small></span><span>Stargazer<small>Top 50 · Free</small></span></div>
+    <a class="acct">Sign in</a>
+  </nav>
+  <div class="tt" aria-hidden="true"><span id="ttSun">☀</span><span id="ttMoon" class="on">☾</span></div>
+</header>
+
+<!-- LANDING -->
+<main class="page show" id="landing"><div class="wrap">
+  <section class="hero">
+    <div>
+      <span class="eyebrow">Dynasty · Best ball · Data gravity</span>
+      <h1 class="disp" style="margin-top:18px">Know the range on every player, <span>in every league.</span></h1>
+      <p>Enter your Sleeper username. We project every matchup you play this week and show where your leagues overlap.</p>
+      <div class="sleeper"><input value="your_sleeper_name" aria-label="Sleeper username"><button class="btn">Check my leagues</button></div>
+    </div>
+    <svg class="orbit" viewBox="0 0 400 400" role="img" aria-label="orbit rings">
+      <g fill="none" stroke="var(--rule-strong)" stroke-width="1" opacity=".7"><circle cx="200" cy="200" r="190"/><circle cx="200" cy="200" r="150" stroke-dasharray="2 6"/><circle cx="200" cy="200" r="110"/></g>
+      <circle cx="200" cy="200" r="70" fill="none" stroke="var(--primary)" stroke-width="3"/>
+      <circle cx="200" cy="200" r="40" fill="var(--bg)" stroke="var(--secondary)" stroke-width="2"/>
+      <circle cx="200" cy="200" r="14" fill="var(--secondary)"/>
+      <g font-size="11"><circle cx="352" cy="120" r="5" fill="var(--primary)"/><circle cx="64" cy="270" r="5" fill="var(--cold)"/><circle cx="270" cy="352" r="5" fill="var(--secondary)"/>
+      <text x="300" y="106">McCaffrey 20.8</text><text x="8" y="296">Goff 17.4</text><text x="218" y="380">Gibbs 21.5</text></g>
+    </svg>
+  </section>
+  <section class="band">
+    <div class="big"><span>10,000</span></div>
+    <div class="ruler"></div>
+    <div class="cells"><div><b>Week 7</b><small>Published</small></div><div><b>487</b><small>Players ranked</small></div><div><b>10,000</b><small>Seasons simulated</small></div><div><b>10 · 50 · 90</b><small>Floor · median · ceiling</small></div></div>
+  </section>
+  <div class="sec"><span class="n">03</span><b>Titles</b><hr><em>03 / 04</em></div>
+  <div class="ladder">
+    <div class="rung r1"><h3>Stargazer</h3><ul><li>Top 50 weekly rankings</li><li>Save 1 league</li></ul><div class="price">Free</div></div>
+    <div class="rung r2"><h3>Explorer</h3><ul><li>Every ranked player</li><li>Up to 10 leagues</li><li>Auto-refresh</li><li>Weekly email</li></ul><div class="price">$7<small class="mono" style="font-size:12px;color:var(--dim)"> /mo yearly</small></div></div>
+    <div class="rung r3"><h3>Singularity</h3><ul><li>Unlimited leagues</li><li>Full season simulations</li><li>Pace and role tags</li><li>CSV exports</li></ul><div class="price">$20</div></div>
+  </div>
+</div></main>
+
+<!-- RANKINGS -->
+<main class="page" id="rankings"><div class="wrap">
+  <div class="titlerow"><div><span class="eyebrow">Week 7 · Redraft</span><h1 class="disp" style="margin-top:12px">Weekly projection rankings</h1></div><div style="display:flex;gap:10px"><button class="btn ghost" style="font-size:14px;padding:8px 16px">Compare players</button><button class="btn ghost" style="font-size:14px;padding:8px 16px">Export CSV</button></div></div>
+  <div class="toolbar"><span class="chip pos on">QB</span><span class="chip pos on">RB</span><span class="chip pos on">WR</span><span class="chip pos on">TE</span><span class="chip">Badges ▾</span><span class="chip">Teams ▾</span><span class="chip">★ My players</span><span class="search">Search players…</span></div>
+  <div class="panel"><table id="rt"><thead><tr><th>#</th><th>Player</th><th>Pos</th><th>Matchup</th><th class="n">Proj</th><th class="n">Floor</th><th class="n">Ceiling</th><th>Outcome curve</th><th>Badges</th></tr></thead><tbody></tbody></table>
+  <div class="detail">
+    <div class="mini"><h4>This week</h4><div style="display:flex;gap:28px"><div><div class="v" style="color:var(--secondary-text)">21.5</div><div class="mono" style="font-size:11px;color:var(--dim)">RB1 · median</div></div><div style="opacity:.7"><div class="v">18.2</div><div class="mono" style="font-size:11px;color:var(--dim)">Last week</div></div></div></div>
+    <div class="mini"><h4>Stats vs. the RB pool</h4><div class="rk"><span>Role  #2</span><i style="--w:92%"></i><span>#2</span></div><div class="rk"><span>Touches / G</span><i style="--w:88%"></i><span>#3</span></div><div class="rk"><span>In-5 share</span><i style="--w:64%"></i><span>#9</span></div><div class="rk"><span>Yds / carry</span><i style="--w:75%"></i><span>#6</span></div></div>
+    <div class="mini"><h4>Recent games</h4><div class="rk" style="grid-template-columns:70px 1fr 50px"><span>W6 vs DAL</span><i style="--w:80%"></i><span>24.1</span></div><div class="rk" style="grid-template-columns:70px 1fr 50px"><span>W5 @ CLE</span><i style="--w:55%"></i><span>16.4</span></div><div class="rk" style="grid-template-columns:70px 1fr 50px"><span>W4 vs MIN</span><i style="--w:70%"></i><span>19.8</span></div></div>
+  </div></div>
+</div></main>
+
+<!-- LAB -->
+<main class="page" id="lab"><div class="wrap">
+  <div class="titlerow"><div><span class="eyebrow">Research</span><h1 class="disp" style="margin-top:12px">The Lab</h1></div></div>
+  <div class="panel">
+    <div class="labbar"><div class="seg"><button class="on">Scatter</button><button>Leaderboard</button><button>Game log</button><button>Compare</button></div><div class="seg"><button>All</button><button class="on">RB</button><button>WR</button></div><span style="margin-left:auto" class="chip">Export ▾</span></div>
+    <div class="picks"><span style="color:var(--dim)">PICKED</span><span class="pk"><i style="background:var(--primary)"></i>Bijan Robinson</span><span class="pk"><i style="background:var(--secondary)"></i>Jahmyr Gibbs</span><span class="pk"><i style="background:var(--cold)"></i>Breece Hall</span><span class="chip">+ Add a player</span></div>
+    <div class="headline"><div><b>62</b><small>Players</small></div><div><b style="color:var(--secondary-text)">r +0.71</b><small>Strong</small></div><div><b>R² 0.50</b><small>Variance explained</small></div><div><b>14.2</b><small>Median touches / G</small></div><div><b>12.9</b><small>Median pts / G</small></div></div>
+    <svg id="sc" viewBox="0 0 1000 470" width="100%" role="img" aria-label="scatter chart" style="display:block"></svg>
+  </div>
+</div></main>
+
+<!-- BOARD -->
+<main class="page" id="board"><div class="wrap">
+  <div class="boardtop"><span class="weekbox">Week 7</span><span class="chip">Filter ▾</span><span class="mono" style="font-size:12px"><span style="color:var(--secondary-text)">2 favored</span> · <span style="color:var(--cold)">1 underdog</span> · <span style="color:var(--dim)">1 toss-up · 3 lineup alerts</span></span><span class="mono" style="margin-left:auto;font-size:11.5px;color:var(--dim)"><span class="live"></span>Live · 9:34 PM</span></div>
+  <div class="board">
+    <div class="cards">
+      <div class="lc" style="--tone:var(--secondary);--win:.78"><div class="name">Fantasy Degenerates <span class="rec">5-2</span></div><div class="word"><b>Favored</b><span>78% to win</span></div><div class="sc"><b>Fourth and Golden</b><b>91.56</b></div><div class="sc opp"><span>Olave Garden</span><span>96.68</span></div><div class="foot"><span>2 to play · <span class="live"></span>1 on</span><span>Playoffs 88%</span></div></div>
+      <div class="lc" style="--tone:var(--cold);--win:.35"><div class="name">Dynasty Dads <span class="rec">3-4</span></div><div class="word"><b>Underdog</b><span>35% to win</span></div><div class="sc"><b>Dad Bod Squad</b><b>74.20</b></div><div class="sc opp"><span>Gridiron Gang</span><span>81.90</span></div><div class="foot"><span>3 to play</span><span>Playoffs 31%</span></div></div>
+      <div class="lc" style="--tone:var(--text);--win:.5"><div class="name">Best Ball Mafia <span class="rec">—</span></div><div class="word"><b>Toss-up</b><span>51% to win</span></div><div class="sc"><b>Mafia Mike</b><b>105.4</b></div><div class="sc opp"><span>Don Corleone</span><span>103.8</span></div><div class="foot"><span>2 to play</span><span>Playoffs 54%</span></div></div>
+      <div class="lc" style="--tone:var(--secondary);--win:.995"><div class="name">Superflex Sundays <span class="rec">6-1</span></div><div class="word"><b style="color:var(--secondary-text)">You win</b><span>locked in</span></div><div class="sc"><b>Sunday Funday</b><b>132.10</b></div><div class="sc opp"><span>Backup QBs</span><span>88.45</span></div><div class="foot"><span>All done</span><span>Playoffs 97%</span></div></div>
+    </div>
+    <div class="panel feed">
+      <h3><span><span class="live"></span>Playing now</span><span>Live | Companion</span></h3>
+      <div class="fr"><b>C. McCaffrey</b><span class="pts">28.90<small>+1.8</small></span><span class="sub">RB · SF · 15:00 4th · 2 leagues</span></div>
+      <div class="fr"><b>J. Daniels</b><span class="pts">10.84</span><span class="sub">QB · WAS · 15:00 4th · 1 league</span></div>
+      <div class="fr"><b>C. Olave</b><span class="pts">12.40</span><span class="sub">WR · NO · Final · 1 league</span></div>
+      <h3 style="border-top:1px solid var(--rule)"><span>Recent plays</span><span>Mine | Both | Theirs</span></h3>
+      <div class="play hot"><span><b>C. McCaffrey</b> · Catch, 8 yards</span><span>+1.80</span></div>
+      <div class="play to"><span><b>G. Smith</b> · Interception thrown</span><span style="color:var(--primary)">−2.00</span></div>
+      <div class="play opp"><span><b>C. Olave</b> · Catch, 21 yards</span><span>+3.10</span></div>
+      <div class="play"><span><b>J. Daniels</b> · Completion, 14 yards</span><span>+0.56</span></div>
+    </div>
+  </div>
+</div></main>
+
+<p class="note">Mockup only: real site layouts and type roles (Big Shoulders · serif body · Martian Mono), recoloured. Floor = steel, median = brass, ceiling = rust.</p>
+
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+$$('#pageTabs button').forEach(b=>b.onclick=()=>{ $$('#pageTabs button').forEach(x=>x.setAttribute('aria-pressed',x===b)); $$('.page').forEach(p=>p.classList.toggle('show',p.id===b.dataset.p)); $('#labLink').className=b.dataset.p==='lab'?'on':''; });
+const sw=[['--bg','bg'],['--text','text'],['--primary','primary'],['--secondary','brass'],['--cold','steel']];
+function paintSw(){ $('#sw').innerHTML=sw.map(([v,n])=>`<i style="background:var(${v})"></i>${n} ${getComputedStyle(document.documentElement).getPropertyValue(v).trim().toUpperCase().slice(0,7)}`).join('&nbsp;&nbsp;'); }
+function setTheme(t){ document.documentElement.dataset.theme=t; $('#themeBtn').textContent= t==='dark'?'Showing: dark (Martian night side) — click for light':'Showing: light (Lunar laboratory) — click for dark'; $('#ttSun').className=t==='light'?'on':''; $('#ttMoon').className=t==='dark'?'on':''; paintSw(); }
+$('#themeBtn').onclick=()=>setTheme(document.documentElement.dataset.theme==='dark'?'light':'dark');
+$('.tt').onclick=$('#themeBtn').onclick;
+
+const rows=[['Jahmyr Gibbs','RB','DET','vs CHI',21.5,12.8,34.1,['a','b']],['Bijan Robinson','RB','ATL','@ TB',20.9,11.9,32.6,['b','d']],['Christian McCaffrey','RB','SF','vs WAS',20.8,10.7,33.9,['a','c','b']],['Ja’Marr Chase','WR','CIN','@ NYJ',19.4,8.2,34.0,['d']],['Josh Allen','QB','BUF','vs MIA',24.9,15.1,38.2,['a','b']],['Saquon Barkley','RB','PHI','@ MIN',19.1,9.6,31.8,['c']],['Amon-Ra St. Brown','WR','DET','vs CHI',18.3,9.9,29.0,['b','c']],['Brock Purdy','QB','SF','vs WAS',20.1,13.0,30.9,['a','c','b']]];
+function curve(f,m,c){ const W=150,H=34,min=0,max=40,x=v=>4+(v-min)/(max-min)*(W-8), xf=x(f),xm=x(m),xc=x(c); const pts=[];for(let i=0;i<=40;i++){const v=f+(c-f)*i/40,t=(v-m)/((v<m?m-f:c-m)/1.35);pts.push([x(v),H-3-(H-9)*Math.exp(-t*t/2)]);}
+ const mid='M'+xf+','+(H-3)+' L'+pts.map(p=>p.join(',')).join(' L')+' L'+xc+','+(H-3)+'Z';
+ return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><path d="M${xf},${H-3} L${xf},${H-9} L4,${H-3}Z" fill="var(--cold)"/><path d="M${xc},${H-3} L${xc},${H-9} L${W-4},${H-3}Z" fill="var(--primary)"/><path d="${mid}" fill="var(--secondary)"/></svg>`; }
+$('#rt tbody').innerHTML=rows.map((r,i)=>`<tr><td class="rank">${i+1}</td><td><span class="tm">${r[2]}</span>${r[0]}</td><td><span class="pos">${r[1]}</span></td><td class="mono" style="font-size:12px;color:var(--dim)">${r[3]}</td><td class="n proj">${r[4].toFixed(1)}</td><td class="n fl">${r[5].toFixed(1)}</td><td class="n ce">${r[6].toFixed(1)}</td><td>${curve(r[5],r[4],r[6])}</td><td><div class="badges">${r[7].map(b=>`<span class="bd ${b}">${{a:'▲',b:'★',c:'◆',d:'●'}[b]}</span>`).join('')}</div></td></tr>`).join('');
+
+(function(){ const svg=$('#sc'),W=1000,H=470,L=70,R=30,T=24,B=56; const X=v=>L+(v-4)/(26-4)*(W-L-R), Y=v=>H-B-(v-4)/(26-4)*(H-T-B); let s=7; const rnd=()=>(s=(s*16807)%2147483647)/2147483647; let h='';
+ for(let v=4;v<=26;v+=4){h+=`<line x1="${L}" x2="${W-R}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--rule)"/><text x="${L-10}" y="${Y(v)+4}" text-anchor="end">${v}</text><line y1="${T}" y2="${H-B}" x1="${X(v)}" x2="${X(v)}" stroke="var(--rule)"/><text x="${X(v)}" y="${H-B+20}" text-anchor="middle">${v}</text>`;}
+ h+=`<line x1="${X(14.2)}" x2="${X(14.2)}" y1="${T}" y2="${H-B}" stroke="var(--rule-strong)" stroke-dasharray="4 4"/><line x1="${L}" x2="${W-R}" y1="${Y(12.9)}" y2="${Y(12.9)}" stroke="var(--rule-strong)" stroke-dasharray="4 4"/>`;
+ h+=`<line x1="${X(5)}" y1="${Y(6.3)}" x2="${X(25.5)}" y2="${Y(22.6)}" stroke="var(--secondary)" stroke-width="2" opacity=".85"/>`;
+ for(let i=0;i<62;i++){const x=6+rnd()*19,y=Math.max(4.5,0.78*x+1.2+(rnd()-.5)*8);h+=`<circle cx="${X(x)}" cy="${Y(Math.min(y,26))}" r="4.2" fill="var(--faint)" opacity=".75"/>`;}
+ [[24.6,21.4,'Bijan Robinson','--primary'],[22.9,20.2,'Jahmyr Gibbs','--secondary'],[19.1,15.6,'Breece Hall','--cold']].forEach(p=>{h+=`<circle cx="${X(p[0])}" cy="${Y(p[1])}" r="8" fill="var(${p[3]})" stroke="var(--bg)" stroke-width="2.5"/><text x="${X(p[0])-14}" y="${Y(p[1])-12}" text-anchor="end" style="fill:var(--text);font-size:12px">${p[2]}</text>`;});
+ h+=`<rect x="${W-R-300}" y="${H-B-34}" width="300" height="24" fill="var(--panel)"/><text x="${W-R-8}" y="${H-B-17}" text-anchor="end" style="fill:var(--text);letter-spacing:.06em">SINGULARITY DYNASTY · THE LAB</text><text x="${(L+W-R)/2}" y="${H-12}" text-anchor="middle">Touches per game</text><text transform="translate(18 ${(T+H-B)/2}) rotate(-90)" text-anchor="middle">Points per game</text>`;
+ svg.innerHTML=h; })();
+setTheme('dark');
+</script>
+</body>
+</html>

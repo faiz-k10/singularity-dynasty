@@ -14,7 +14,7 @@ export default function OpengraphImage() {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          background: "#07070C",
+          background: "#030908",
           position: "relative",
         }}
       >
@@ -28,7 +28,7 @@ export default function OpengraphImage() {
             borderRadius: "50%",
             display: "flex",
             background:
-              "radial-gradient(circle, rgba(255,122,69,0.35) 0%, rgba(255,122,69,0.10) 40%, rgba(255,122,69,0) 70%)",
+              "radial-gradient(circle, rgba(45,212,191,0.30) 0%, rgba(45,212,191,0.09) 40%, rgba(45,212,191,0) 70%)",
           }}
         />
         <div
@@ -41,7 +41,7 @@ export default function OpengraphImage() {
             borderRadius: "50%",
             display: "flex",
             background:
-              "radial-gradient(circle, rgba(61,220,255,0.28) 0%, rgba(61,220,255,0.08) 40%, rgba(61,220,255,0) 70%)",
+              "radial-gradient(circle, rgba(140,149,163,0.24) 0%, rgba(140,149,163,0.07) 40%, rgba(140,149,163,0) 70%)",
           }}
         />
 
@@ -50,7 +50,7 @@ export default function OpengraphImage() {
             display: "flex",
             letterSpacing: 6,
             fontSize: 22,
-            color: "#FFC773",
+            color: "#2DD4BF",
             marginBottom: 28,
           }}
         >
@@ -65,7 +65,7 @@ export default function OpengraphImage() {
             borderRadius: "50%",
             marginBottom: 28,
             background:
-              "radial-gradient(circle at 35% 35%, #FFC773, #FF7A45 45%, #1F8FB0 85%)",
+              "radial-gradient(circle at 35% 35%, #5EEAD4, #2DD4BF 45%, #6B7480 85%)",
           }}
         />
 
@@ -74,7 +74,7 @@ export default function OpengraphImage() {
             display: "flex",
             fontSize: 76,
             fontWeight: 700,
-            color: "#F5F3EE",
+            color: "#E6F4F1",
             marginBottom: 22,
           }}
         >
@@ -85,7 +85,7 @@ export default function OpengraphImage() {
           style={{
             display: "flex",
             fontSize: 32,
-            color: "#9997A8",
+            color: "#8C95A3",
           }}
         >
           Where the data reaches its endpoint.

@@ -641,7 +641,7 @@ export default async function Home() {
             <a href="/terms">Terms</a>
             <a href="/disclaimer">Disclaimer</a>
           </div>
-          <div className="fcoord mono">VOID // #07070C</div>
+          <div className="fcoord mono">VOID // #030908</div>
           <div className="fsmall">
             © 2026 Singularity Dynasty. Not affiliated with the NFL or any
             fantasy football platform. Content is for informational and

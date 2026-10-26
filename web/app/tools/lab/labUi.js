@@ -8,7 +8,7 @@ import { LAB_GROUPS, LAB_METRICS, LAB_METRIC, formatMetric } from "@/lib/labMetr
 
 // One colour per picked player, in the order they were added (theme tokens, so both themes work). Gold and neon blue first: the site's
 // own two accents.
-export const PICK_COLORS = ["var(--horizon-gold)", "var(--neon-blue)", "var(--menace)", "var(--sprout)", "var(--scholar)"];
+export const PICK_COLORS = ["var(--horizon-gold)", "var(--neon-blue)", "var(--menace)", "var(--sprout)", "var(--frost)"];
 export const MAX_PICKS = PICK_COLORS.length;
 export const POS_COLOR = { QB: "var(--pos-qb)", RB: "var(--pos-rb)", WR: "var(--pos-wr)", TE: "var(--pos-te)" };
 

@@ -22,7 +22,7 @@ export default function Icon() {
             borderRadius: "50%",
             display: "flex",
             background:
-              "radial-gradient(circle at 35% 35%, #FFC773, #FF7A45 45%, #1F8FB0 85%)",
+              "radial-gradient(circle at 35% 35%, #5EEAD4, #2DD4BF 45%, #6B7480 85%)",
           }}
         />
       </div>
