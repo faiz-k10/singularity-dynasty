@@ -1,19 +1,53 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { SHARE_W, SHARE_H, composeUrl } from "@/lib/labShare";
 
-// The Share to social pop-up (opened from LabExport). No site can attach a picture to a post on X, Instagram, TikTok or Discord for you,
-// so each button does the most that a browser allows, in one click:
-//   X        copies the picture, opens a post with the caption and link filled in -- paste the picture in (Cmd / Ctrl + V)
-//   Discord  copies the picture and the caption, opens Discord -- paste into any channel
-//   Instagram / TikTok  save the picture and open their upload page (on a phone: the phone's share sheet, where both apps are)
-// The picture is drawn once when the pop-up opens (shown as a preview) and reused by every button.
+// The Share to social pop-up (opened from LabExport). When it opens, the chart is drawn (with the watermark), fitted into a link-preview card and
+// turned into a share link, /s/<id> (app/api/lab-share), whose preview IS the chart. Then each button opens that platform with the post already
+// written -- caption, link, and the chart showing as the link's preview -- so all that's left is to press Post:
+//   X, Threads, Bluesky, Facebook, LinkedIn, Reddit   their own "compose a post" pages
+//   Discord     copies the caption + link and opens Discord: pasted into any channel, the chart shows under it (Discord has no compose link)
+//   Instagram / TikTok   neither takes a post from a website at all; on a phone the button hands the chart to the app through the share sheet
+// The link is made once per opening and reused by every button. Nothing is downloaded.
 
-const IS_TOUCH = () => typeof window !== "undefined" && window.matchMedia?.("(pointer: coarse)").matches;
+const isTouch = () => typeof window !== "undefined" && Boolean(window.matchMedia?.("(pointer: coarse)").matches);
+
+// The chart centred on a 1.91 : 1 card in the page's own background colour: the shape every platform uses for a large link preview, so none of them
+// crops the chart.
+async function toCard(blob) {
+  const img = await createImageBitmap(blob);
+  const canvas = document.createElement("canvas");
+  canvas.width = SHARE_W;
+  canvas.height = SHARE_H;
+  const ctx = canvas.getContext("2d");
+  ctx.fillStyle = getComputedStyle(document.body).backgroundColor;
+  ctx.fillRect(0, 0, SHARE_W, SHARE_H);
+  const pad = 40;
+  const s = Math.min((SHARE_W - 2 * pad) / img.width, (SHARE_H - 2 * pad) / img.height);
+  const w = img.width * s;
+  const h = img.height * s;
+  ctx.drawImage(img, (SHARE_W - w) / 2, (SHARE_H - h) / 2, w, h);
+  return new Promise((resolve, reject) => canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("no card"))), "image/png"));
+}
 
 const ICONS = {
-  x: (
-    <path d="M17.8 3h3.1l-6.8 7.8L22 21h-6.2l-4.9-6.4L5.3 21H2.2l7.3-8.3L2 3h6.4l4.4 5.8L17.8 3Zm-1.1 16.2h1.7L7.4 4.7H5.6l11.1 14.5Z" fill="currentColor" />
+  x: <path d="M17.8 3h3.1l-6.8 7.8L22 21h-6.2l-4.9-6.4L5.3 21H2.2l7.3-8.3L2 3h6.4l4.4 5.8L17.8 3Zm-1.1 16.2h1.7L7.4 4.7H5.6l11.1 14.5Z" />,
+  threads: (
+    <path d="M12.2 2.5c-5.6 0-9.2 3.7-9.2 9.5s3.6 9.5 9.2 9.5c3.9 0 6.9-2 8.1-5.3l-2.3-.8c-.9 2.4-3 3.7-5.8 3.7-4.2 0-6.7-2.8-6.7-7.1s2.5-7.1 6.7-7.1c3.6 0 5.8 1.9 6.4 5.2-.9-.3-1.9-.4-3-.4-3.5 0-5.6 1.6-5.6 4 0 2.2 1.9 3.7 4.3 3.7 3 0 4.8-2 5-5.5l.1-1.3c-.3-4.5-3.2-7.4-7.2-7.4Zm2.2 13c-1.2 0-1.9-.6-1.9-1.4 0-1 1-1.6 3-1.6.6 0 1.2.1 1.8.2-.2 1.9-1.2 2.8-2.9 2.8Z" />
+  ),
+  bluesky: (
+    <path d="M6.3 4.2C8.6 5.9 11.1 9.4 12 11.3c.9-1.9 3.4-5.4 5.7-7.1 1.7-1.2 4.3-2.2 4.3.8 0 .6-.3 5-.5 5.7-.7 2.5-3.2 3.1-5.5 2.7 4 .7 5 2.9 2.8 5.2-4.2 4.3-6-1.1-6.5-2.5l-.3-.8-.3.8c-.5 1.4-2.3 6.8-6.5 2.5-2.2-2.3-1.2-4.5 2.8-5.2-2.3.4-4.8-.2-5.5-2.7C2.3 10 2 5.6 2 5c0-3 2.6-2 4.3-.8Z" />
+  ),
+  facebook: <path d="M14 8.5V6.8c0-.8.5-1.3 1.4-1.3H17V2.2h-2.6C11.7 2.2 10.3 4 10.3 6.6v1.9H8v3.3h2.3V22h3.7V11.8h2.6l.4-3.3H14Z" />,
+  linkedin: (
+    <path d="M4.5 8.5h3.4V20H4.5V8.5Zm1.7-5.3a2 2 0 1 1 0 4 2 2 0 0 1 0-4Zm3.8 5.3h3.3v1.6c.5-.9 1.6-1.9 3.4-1.9 3.6 0 4.3 2.4 4.3 5.4V20h-3.4v-5.6c0-1.3 0-3-1.9-3s-2.2 1.4-2.2 2.9V20H10V8.5Z" />
+  ),
+  reddit: (
+    <path d="M22 12.2a2.2 2.2 0 0 0-3.7-1.6 10.8 10.8 0 0 0-5.7-1.8l1-4.6 3.2.7a1.6 1.6 0 1 0 .2-1l-3.6-.8a.5.5 0 0 0-.6.4l-1.1 5.3a10.8 10.8 0 0 0-5.8 1.8 2.2 2.2 0 1 0-2.4 3.6v.6c0 3.3 3.9 6 8.6 6s8.6-2.7 8.6-6v-.6a2.2 2.2 0 0 0 1.3-2ZM7.6 13.8a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Zm8.3 4a5.4 5.4 0 0 1-3.9 1.2 5.4 5.4 0 0 1-3.9-1.2.4.4 0 0 1 .6-.6 4.7 4.7 0 0 0 3.3 1 4.7 4.7 0 0 0 3.3-1 .4.4 0 0 1 .6.6Zm-.3-2.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Z" />
+  ),
+  discord: (
+    <path d="M19.6 5.3A16.5 16.5 0 0 0 15.5 4l-.5 1a15.3 15.3 0 0 0-6 0l-.5-1a16.5 16.5 0 0 0-4.1 1.3C1.8 9.2 1.1 13 1.4 16.7a16.6 16.6 0 0 0 5 2.6l1.1-1.7a10.7 10.7 0 0 1-1.7-.8l.4-.3a11.8 11.8 0 0 0 11.6 0l.4.3a10.7 10.7 0 0 1-1.7.8l1.1 1.7a16.6 16.6 0 0 0 5-2.6c.4-4.3-.6-8.1-2.9-11.4ZM8.4 14.4c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2Zm7.2 0c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2Z" />
   ),
   instagram: (
     <g fill="none" stroke="currentColor" strokeWidth="1.9">
@@ -22,40 +56,43 @@ const ICONS = {
       <circle cx="17.4" cy="6.6" r="1" fill="currentColor" stroke="none" />
     </g>
   ),
-  tiktok: (
-    <path d="M16.6 2h-3.3v13.2a2.9 2.9 0 1 1-2.9-2.9c.3 0 .6 0 .9.1V9a6.3 6.3 0 1 0 5.3 6.2V8.6a7.9 7.9 0 0 0 4.4 1.3V6.6a4.5 4.5 0 0 1-4.4-4.6Z" fill="currentColor" />
-  ),
-  discord: (
-    <path d="M19.6 5.3A16.5 16.5 0 0 0 15.5 4l-.5 1a15.3 15.3 0 0 0-6 0l-.5-1a16.5 16.5 0 0 0-4.1 1.3C1.8 9.2 1.1 13 1.4 16.7a16.6 16.6 0 0 0 5 2.6l1.1-1.7a10.7 10.7 0 0 1-1.7-.8l.4-.3a11.8 11.8 0 0 0 11.6 0l.4.3a10.7 10.7 0 0 1-1.7.8l1.1 1.7a16.6 16.6 0 0 0 5-2.6c.4-4.3-.6-8.1-2.9-11.4ZM8.4 14.4c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2Zm7.2 0c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2Z" fill="currentColor" />
-  ),
+  tiktok: <path d="M16.6 2h-3.3v13.2a2.9 2.9 0 1 1-2.9-2.9c.3 0 .6 0 .9.1V9a6.3 6.3 0 1 0 5.3 6.2V8.6a7.9 7.9 0 0 0 4.4 1.3V6.6a4.5 4.5 0 0 1-4.4-4.6Z" />,
 };
+const NAMES = { x: "X", threads: "Threads", bluesky: "Bluesky", facebook: "Facebook", linkedin: "LinkedIn", reddit: "Reddit", discord: "Discord", instagram: "Instagram", tiktok: "TikTok" };
+const COMPOSE = ["x", "threads", "bluesky", "facebook", "linkedin", "reddit"];
 
-export default function LabShare({ render, fileName, caption, onClose }) {
-  const [blob, setBlob] = useState(null);
-  const [preview, setPreview] = useState(null);
-  const [failed, setFailed] = useState(false);
+export default function LabShare({ render, title, caption, onClose }) {
+  const [share, setShare] = useState(null); // { url, chart (Blob), preview (object URL) }
+  const [failed, setFailed] = useState(null);
   const [text, setText] = useState(caption);
-  const [note, setNote] = useState(null); // { platform, text }
+  const [note, setNote] = useState(null);
   const dialogRef = useRef(null);
-  const link = typeof window !== "undefined" ? window.location.href : "";
+  const sheet = isTouch() && typeof navigator.canShare === "function";
 
-  // Draw the picture once.
+  // Draw the chart, make its card and its share link -- once per opening.
   useEffect(() => {
     let alive = true;
-    let url = null;
-    render()
-      .then((b) => {
-        if (!alive) return;
-        url = URL.createObjectURL(b);
-        setBlob(b);
-        setPreview(url);
-      })
-      .catch(() => alive && setFailed(true));
+    let preview = null;
+    (async () => {
+      const chart = await render();
+      const card = await toCard(chart);
+      const form = new FormData();
+      form.append("image", card, "chart.png");
+      form.append("title", title);
+      form.append("caption", caption);
+      form.append("view", `${window.location.pathname}${window.location.search}`);
+      const res = await fetch("/api/lab-share", { method: "POST", body: form });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok || !body.url) throw new Error(body.error || "Couldn't create the share link.");
+      if (!alive) return;
+      preview = URL.createObjectURL(card);
+      setShare({ url: body.url, chart, preview });
+    })().catch((e) => alive && setFailed(e.message || "Couldn't prepare the post."));
     return () => {
       alive = false;
-      if (url) URL.revokeObjectURL(url);
+      if (preview) URL.revokeObjectURL(preview);
     };
-  }, [render]);
+  }, [render, title, caption]);
 
   // Escape closes; focus moves into the pop-up while it is open and back to the page after.
   useEffect(() => {
@@ -71,84 +108,41 @@ export default function LabShare({ render, fileName, caption, onClose }) {
     };
   }, [onClose]);
 
-  const file = () => new File([blob], `${fileName}.png`, { type: "image/png" });
-  const fullText = `${text}\n${link}`;
-  const canShareFile = () => Boolean(blob && navigator.canShare?.({ files: [file()] }));
-  const save = () => {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${fileName}.png`;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-  };
-  const copyPicture = async (withText) => {
-    const items = { "image/png": blob };
-    if (withText) items["text/plain"] = new Blob([fullText], { type: "text/plain" });
-    try {
-      await navigator.clipboard.write([new window.ClipboardItem(items)]);
-      return true;
-    } catch {
-      // Some browsers take only one kind at a time: the picture matters most.
-      if (!withText) return false;
-      return copyPicture(false);
-    }
-  };
   const open = (url) => window.open(url, "_blank", "noopener,noreferrer");
-  // Phones: the share sheet hands the picture and caption straight to the app.
-  const shareSheet = async () => {
+  const copy = async (value, done) => {
     try {
-      await navigator.share({ files: [file()], text: fullText });
+      await navigator.clipboard.writeText(value);
+      setNote(done);
       return true;
-    } catch (e) {
-      return e?.name === "AbortError"; // the viewer closed the sheet: nothing to fall back to
-    }
-  };
-
-  const actions = {
-    x: async () => {
-      const copied = await copyPicture(false);
-      open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(link)}`);
-      setNote({ platform: "x", text: copied ? "Picture copied. In the post that just opened, paste it in (⌘V / Ctrl+V)." : "Couldn't copy the picture here, so it was saved: add it to the post from your downloads." });
-      if (!copied) save();
-    },
-    discord: async () => {
-      const copied = await copyPicture(true);
-      open("https://discord.com/app");
-      setNote({ platform: "discord", text: copied ? "Picture copied. Paste it into any channel (⌘V / Ctrl+V) and add the caption." : "Couldn't copy the picture here, so it was saved: drag it into a channel." });
-      if (!copied) save();
-    },
-    instagram: async () => {
-      if (IS_TOUCH() && canShareFile() && (await shareSheet())) return;
-      save();
-      open("https://www.instagram.com/");
-      setNote({ platform: "instagram", text: "Picture saved. On Instagram choose Create (+), then pick it from your downloads. The caption is ready to copy below." });
-    },
-    tiktok: async () => {
-      if (IS_TOUCH() && canShareFile() && (await shareSheet())) return;
-      save();
-      open("https://www.tiktok.com/upload");
-      setNote({ platform: "tiktok", text: "Picture saved. TikTok's upload page is open: add it from your downloads as a photo post. The caption is ready to copy below." });
-    },
-  };
-
-  const copyCaption = async () => {
-    try {
-      await navigator.clipboard.writeText(fullText);
-      setNote({ platform: null, text: "Caption and link copied." });
     } catch {
-      setNote({ platform: null, text: "Couldn't copy: select the caption and copy it by hand." });
+      setNote("Couldn't copy here: select the link below and copy it by hand.");
+      return false;
     }
   };
 
-  // On a phone with a share sheet, Instagram and TikTok go through it (the pop-up only exists in the browser, so this can read the device).
-  const sheet = IS_TOUCH() && typeof navigator.canShare === "function";
-  const PLATFORMS = [
-    ["x", "X / Twitter", "Copies the picture, opens a post"],
-    ["instagram", "Instagram", sheet ? "Sends the picture to the Instagram app" : "Saves the picture, opens Instagram"],
-    ["tiktok", "TikTok", sheet ? "Sends the picture to the TikTok app" : "Saves the picture, opens TikTok upload"],
-    ["discord", "Discord", "Copies the picture, opens Discord"],
-  ];
+  const post = async (key) => {
+    if (!share) return;
+    if (COMPOSE.includes(key)) {
+      open(composeUrl(key, { url: share.url, text }));
+      setNote(`${NAMES[key]} is open with your post written and the chart as its preview. Just press Post.`);
+    } else if (key === "discord") {
+      const copied = await copy(`${text} ${share.url}`, "Caption and link copied. Paste them into any Discord channel: the chart shows right under the link.");
+      if (copied) open("https://discord.com/app");
+    } else if (sheet) {
+      try {
+        await navigator.share({ files: [new File([share.chart], "singularity-lab-chart.png", { type: "image/png" })], text: `${text} ${share.url}` });
+      } catch (e) {
+        if (e?.name !== "AbortError") setNote(`Couldn't open the share sheet. Copy the link below and post it on ${NAMES[key]}.`);
+      }
+    }
+  };
+
+  const describe = (key) => {
+    if (COMPOSE.includes(key)) return "Opens a ready post: just press Post";
+    if (key === "discord") return "Copies the post, opens Discord";
+    return sheet ? `Sends the chart to the ${NAMES[key]} app` : "On your phone: sends the chart to the app";
+  };
+  const enabled = (key) => Boolean(share) && (COMPOSE.includes(key) || key === "discord" || sheet);
 
   return (
     <div className="lab-share-backdrop" onPointerDown={(e) => e.target === e.currentTarget && onClose()}>
@@ -161,40 +155,40 @@ export default function LabShare({ render, fileName, caption, onClose }) {
         </div>
 
         <div className="lab-share-preview">
-          {preview ? (
-            /* eslint-disable-next-line @next/next/no-img-element -- a local object URL of the picture just drawn */
-            <img src={preview} alt="The chart as it will be shared" />
+          {share ? (
+            /* eslint-disable-next-line @next/next/no-img-element -- a local object URL of the card just drawn */
+            <img src={share.preview} alt="The chart as it will appear in the post" />
           ) : (
-            <span>{failed ? "Couldn't draw the picture. Try Save image in the Export menu." : "Drawing the picture…"}</span>
+            <span>{failed || "Preparing your post…"}</span>
           )}
         </div>
 
         <div className="lab-share-grid">
-          {PLATFORMS.map(([key, name, does]) => (
-            <button key={key} type="button" className={`lab-share-btn is-${key}`} disabled={!blob} onClick={actions[key]}>
-              <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+          {Object.keys(NAMES).map((key) => (
+            <button key={key} type="button" className={`lab-share-btn is-${key}`} disabled={!enabled(key)} onClick={() => post(key)}>
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true">
                 {ICONS[key]}
               </svg>
-              <b>{name}</b>
-              <span>{does}</span>
+              <b>{NAMES[key]}</b>
+              <span>{describe(key)}</span>
             </button>
           ))}
         </div>
         {note && (
           <p className="lab-share-note" role="status">
-            {note.text}
+            {note}
           </p>
         )}
 
         <label className="lab-field lab-share-caption">
           <span className="lab-field-label">Caption</span>
-          <textarea className="lab-select" rows={3} value={text} onChange={(e) => setText(e.target.value)} />
+          <textarea className="lab-select" rows={2} value={text} onChange={(e) => setText(e.target.value)} />
         </label>
         <div className="lab-share-foot">
-          <span className="lab-share-link" title={link}>
-            {link}
+          <span className="lab-share-link" title={share?.url}>
+            {share?.url || "The link is being made…"}
           </span>
-          <button type="button" className="lab-copy" onClick={copyCaption}>
+          <button type="button" className="lab-copy" disabled={!share} onClick={() => copy(`${text} ${share.url}`, "Caption and link copied.")}>
             Copy caption + link
           </button>
         </div>

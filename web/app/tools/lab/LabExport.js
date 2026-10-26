@@ -30,7 +30,7 @@ async function renderPng(stage) {
 
 // The Export menu in The Lab's top bar: copy a link to exactly this view, copy the view as an image, save it as a PNG, or share it to social
 // (the LabShare pop-up). Closes on an outside click or Escape; the button says what happened for a moment afterwards.
-export default function LabExport({ stageRef, fileName, caption }) {
+export default function LabExport({ stageRef, fileName, title, caption }) {
   const [open, setOpen] = useState(false);
   const [status, setStatus] = useState(null); // { text, tone }
   const [busy, setBusy] = useState(false);
@@ -132,11 +132,11 @@ export default function LabExport({ stageRef, fileName, caption }) {
             }}
           >
             <b>Share to social…</b>
-            <span>X, Instagram, TikTok or Discord</span>
+            <span>A ready post on X, Threads, Discord and more</span>
           </button>
         </div>
       )}
-      {sharing && <LabShare render={renderStage} fileName={fileName} caption={caption} onClose={closeShare} />}
+      {sharing && <LabShare render={renderStage} title={title} caption={caption} onClose={closeShare} />}
     </div>
   );
 }

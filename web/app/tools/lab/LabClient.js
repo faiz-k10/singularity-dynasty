@@ -111,7 +111,7 @@ export default function LabClient({ rows, week, season, simsAccess, initial }) {
             </button>
           ))}
         </div>
-        <LabExport stageRef={stageRef} fileName={fileName} caption={`${title} · ${scope}. Charted in The Lab by Singularity Dynasty.`} />
+        <LabExport stageRef={stageRef} fileName={fileName} title={title} caption={`${title} · ${scope}. Charted in The Lab by Singularity Dynasty.`} />
       </div>
 
       <LabPicker rows={rows} picked={picked} onToggle={toggle} full={picks.length >= MAX_PICKS} />
