@@ -282,7 +282,7 @@ body::before{
   font-family:var(--font-display), sans-serif; font-size:15px; font-weight:600; letter-spacing:0.01em;
   text-decoration:none; color:var(--star);
 }
-.brandmark .ring, .lab-export-brand .ring{
+.brandmark .ring, .lab-export-brand .ring, .lab-export-mark .ring, .lab-export-foot .ring{
   width:15px; height:15px; border-radius:50%;
   background:radial-gradient(circle at 35% 35%, var(--horizon-gold), var(--horizon) 45%, var(--neon-blue-dim) 80%);
   box-shadow:0 0 10px 1px rgba(255,122,69,0.5), 0 0 16px 3px rgba(61,220,255,0.25);
@@ -5833,6 +5833,53 @@ html{font-stretch:82%;}
 .lab-export-title{flex:1 1 auto; font-family:var(--font-display), sans-serif; font-size:24px; font-weight:800; color:var(--star);}
 .lab-export-scope{font-family:var(--font-mono), monospace; font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--star-dim);}
 .lab-stage.is-exporting .lab-table-wrap{overflow:visible;}
+.lab-stage.is-exporting :is(.lab-controls, .lab-notes, .lab-tip, .lab-chip-x){display:none;}
+/* The watermark (exported pictures only): a faint, tilted wordmark over the chart and the brand at the bottom right. */
+.lab-export-mark, .lab-export-foot{display:none;}
+.lab-stage.is-exporting{position:relative;}
+.lab-stage.is-exporting .lab-export-mark{
+  display:flex; position:absolute; inset:96px 0 48px; z-index:3; align-items:center; justify-content:center; gap:.28em; pointer-events:none;
+  font-family:var(--font-display), sans-serif; font-size:clamp(44px, 7vw, 104px); font-weight:800; letter-spacing:.08em; text-transform:uppercase; white-space:nowrap;
+  color:var(--star); opacity:.07; transform:rotate(-12deg);
+}
+.lab-stage .lab-export-mark .ring{width:.62em; height:.62em; box-shadow:none;}
+.lab-stage.is-exporting .lab-export-foot{
+  display:flex; justify-content:flex-end; align-items:center; gap:8px; margin-top:16px; padding-top:10px; border-top:1px solid var(--rule);
+  font-family:var(--font-display), sans-serif; font-size:13px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--star-dim);
+}
+/* The last menu item opens the Share to social pop-up (LabShare.js), set apart by a hairline. */
+.lab-export-menu .lab-export-social{border-top:1px solid var(--rule); border-radius:0 0 var(--r-sm) var(--r-sm); margin-top:2px; padding-top:11px;}
+.lab-export-menu .lab-export-social b{color:var(--horizon-gold);}
+.lab-share-backdrop{position:fixed; inset:0; z-index:400; display:grid; place-items:center; padding:16px; background:rgba(var(--shadow-rgb), .62);}
+.lab-share{box-sizing:border-box; width:min(580px, 100%); max-height:calc(100vh - 32px); overflow:auto; padding:18px 20px 20px; display:flex; flex-direction:column; gap:14px; outline:none;}
+.lab-share-head{display:flex; align-items:center; justify-content:space-between; gap:12px;}
+.lab-share-head h2{margin:0; font-family:var(--font-display), sans-serif; font-size:26px; font-weight:800; letter-spacing:.04em; text-transform:uppercase;}
+.lab-share-preview{display:grid; place-items:center; min-height:150px; overflow:hidden; border:1px solid var(--rule); border-radius:var(--r-sm); background:var(--void);}
+.lab-share-preview img{display:block; width:100%; height:auto; max-height:280px; object-fit:contain;}
+.lab-share-preview span{padding:30px 16px; font-family:var(--font-mono), monospace; font-size:12px; color:var(--star-dim); text-align:center;}
+.lab-share-grid{display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:8px;}
+.lab-share-btn{
+  all:unset; box-sizing:border-box; cursor:pointer; display:grid; grid-template-columns:26px minmax(0, 1fr); grid-template-areas:"icon name" "icon does"; column-gap:12px; row-gap:2px; align-items:center;
+  padding:12px 14px; border:1px solid var(--rule); border-radius:var(--r-sm); transition:border-color .15s ease, background-color .15s ease;
+}
+.lab-share-btn svg{grid-area:icon; color:var(--brand);}
+.lab-share-btn b{grid-area:name; font-family:var(--font-mono), monospace; font-size:13px; color:var(--star);}
+.lab-share-btn span{grid-area:does; font-family:var(--font-body), Georgia, serif; font-size:12px; color:var(--star-dim);}
+.lab-share-btn:hover:not(:disabled), .lab-share-btn:focus-visible{border-color:var(--brand); background:color-mix(in srgb, var(--brand) 10%, transparent);}
+.lab-share-btn:disabled{opacity:.45; cursor:progress;}
+/* Each platform in its own colour (its icon and the hover edge). */
+.lab-share-btn.is-x, .lab-share-btn.is-tiktok{--brand:var(--star);}
+.lab-share-btn.is-instagram{--brand:#E1306C;}
+.lab-share-btn.is-discord{--brand:#5865F2;}
+.lab-share-note{margin:0; padding:8px 12px; border-left:2px solid var(--horizon-gold); background:rgba(var(--horizon-gold-rgb), .08); font-size:13px; line-height:1.45; color:var(--star);}
+textarea.lab-select{height:auto; padding:8px 12px; resize:vertical; font-family:var(--font-body), Georgia, serif; font-size:13.5px; line-height:1.4;}
+.lab-share-foot{display:flex; align-items:center; gap:10px;}
+.lab-share-link{flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-family:var(--font-mono), monospace; font-size:11px; color:var(--star-dim);}
+.lab-share-foot .lab-copy{flex:none;}
+@media (max-width:640px){
+  .lab-share-grid{grid-template-columns:1fr;}
+  .lab-share-foot{flex-direction:column; align-items:stretch;}
+}
 .lab-icon-btn{width:36px; font-size:15px;}
 .lab-copy:hover, .lab-copy:focus-visible, .lab-icon-btn:hover, .lab-icon-btn:focus-visible{color:var(--horizon-gold); border-color:var(--horizon-gold);}
 .lab-field{display:flex; flex-direction:column; gap:6px; min-width:0;}

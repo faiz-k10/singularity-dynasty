@@ -111,7 +111,7 @@ export default function LabClient({ rows, week, season, simsAccess, initial }) {
             </button>
           ))}
         </div>
-        <LabExport stageRef={stageRef} fileName={fileName} />
+        <LabExport stageRef={stageRef} fileName={fileName} caption={`${title} · ${scope}. Charted in The Lab by Singularity Dynasty.`} />
       </div>
 
       <LabPicker rows={rows} picked={picked} onToggle={toggle} full={picks.length >= MAX_PICKS} />
@@ -126,12 +126,22 @@ export default function LabClient({ rows, week, season, simsAccess, initial }) {
           <span className="lab-export-title">{title}</span>
           <span className="lab-export-scope">{scope}</span>
         </div>
+        {/* The watermark, also only in an exported picture: a faint wordmark across the chart and the brand in the bottom corner (the
+            footer after the view), so a shared chart always carries where it came from. */}
+        <div className="lab-export-mark" aria-hidden="true">
+          <span className="ring" />
+          Singularity Dynasty
+        </div>
         {view === "scatter" && (
           <LabScatter {...shared} xKey={xKey} yKey={yKey} onX={setX} onY={setY} onSwap={() => (setX(yKey), setY(xKey))} />
         )}
         {view === "leaders" && <LabBoard {...shared} metric={leadKey} onMetric={setLead} />}
         {view === "games" && <LabGameLog picked={picked} week={week} season={season} />}
         {view === "compare" && <LabCompare picked={picked} simsAccess={simsAccess} onToggle={toggle} />}
+        <div className="lab-export-foot" aria-hidden="true">
+          <span className="ring" />
+          Singularity Dynasty · The Lab
+        </div>
       </div>
     </section>
   );

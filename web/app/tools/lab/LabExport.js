@@ -1,13 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import LabShare from "./LabShare";
 
-// What never goes into an exported picture: the pickers and checkboxes over a chart, the notes under it, the hover card and the
-// remove buttons.
-const LEAVE_OUT = ["lab-controls", "lab-notes", "lab-tip", "lab-chip-x"];
 let fontCss = null; // the page's fonts as embeddable CSS, worked out once per visit (the slow part of the first export)
 
-// The current view as a PNG: the stage (`stageRef`) with its export header shown (`.is-exporting`), at twice the screen's pixels, on
+// The current view as a PNG: the stage (`stageRef`) with its export header and watermark shown and the pickers, notes, hover card and remove
+// buttons hidden (all by `.is-exporting` in the CSS, so the layout closes up around what is left out), at twice the screen's pixels, on
 // the page's own background so it matches the theme. html-to-image is loaded only when someone exports.
 async function renderPng(stage) {
   const { toBlob, getFontEmbedCSS } = await import("html-to-image");
@@ -21,7 +20,6 @@ async function renderPng(stage) {
       fontEmbedCSS: fontCss,
       width: Math.max(stage.scrollWidth, stage.offsetWidth),
       style: { margin: "0" },
-      filter: (node) => !(node.classList && LEAVE_OUT.some((c) => node.classList.contains(c))),
     });
     if (!blob) throw new Error("no image");
     return blob;
@@ -30,13 +28,16 @@ async function renderPng(stage) {
   }
 }
 
-// The Export menu in The Lab's top bar: copy a link to exactly this view, copy the view as an image, or save it as a PNG. Closes on an
-// outside click or Escape; the button says what happened for a moment afterwards.
-export default function LabExport({ stageRef, fileName }) {
+// The Export menu in The Lab's top bar: copy a link to exactly this view, copy the view as an image, save it as a PNG, or share it to social
+// (the LabShare pop-up). Closes on an outside click or Escape; the button says what happened for a moment afterwards.
+export default function LabExport({ stageRef, fileName, caption }) {
   const [open, setOpen] = useState(false);
   const [status, setStatus] = useState(null); // { text, tone }
   const [busy, setBusy] = useState(false);
   const ref = useRef(null);
+  const [sharing, setSharing] = useState(false);
+  const renderStage = useCallback(() => renderPng(stageRef.current), [stageRef]);
+  const closeShare = useCallback(() => setSharing(false), []);
   const canCopyImage = typeof window !== "undefined" && typeof window.ClipboardItem === "function" && Boolean(navigator.clipboard?.write);
 
   useEffect(() => {
@@ -121,8 +122,21 @@ export default function LabExport({ stageRef, fileName }) {
             <b>Save image</b>
             <span>Download it as a PNG</span>
           </button>
+          <button
+            type="button"
+            role="menuitem"
+            className="lab-export-social"
+            onClick={() => {
+              setOpen(false);
+              setSharing(true);
+            }}
+          >
+            <b>Share to social…</b>
+            <span>X, Instagram, TikTok or Discord</span>
+          </button>
         </div>
       )}
+      {sharing && <LabShare render={renderStage} fileName={fileName} caption={caption} onClose={closeShare} />}
     </div>
   );
 }
