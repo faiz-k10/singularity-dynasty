@@ -298,10 +298,9 @@ body::before{
   font-family:var(--font-display), sans-serif; font-size:15px; font-weight:600; letter-spacing:0.01em;
   text-decoration:none; color:var(--star);
 }
-.brandmark .ring, .lab-export-brand .ring, .lab-export-mark .ring, .lab-export-foot .ring{
+.brandmark .ring, .lab-export-brand .ring, .lab-export-foot .ring{
   width:15px; height:15px; border-radius:50%;
   background:radial-gradient(circle at 35% 35%, var(--horizon-gold), var(--horizon) 45%, var(--down) 80%);
-  box-shadow:0 0 10px 1px rgba(var(--horizon-rgb),0.5), 0 0 16px 3px rgba(var(--neon-blue-rgb),0.25);
   flex-shrink:0;
 }
 .menu-btn{
@@ -5862,7 +5861,6 @@ html{font-stretch:82%;}
   font-family:var(--font-display), sans-serif; font-size:clamp(44px, 7vw, 104px); font-weight:800; letter-spacing:.08em; text-transform:uppercase; white-space:nowrap;
   color:var(--star); opacity:.07; transform:rotate(-12deg);
 }
-.lab-stage .lab-export-mark .ring{width:.62em; height:.62em; box-shadow:none;}
 .lab-stage.is-exporting .lab-export-foot{
   display:flex; justify-content:flex-end; align-items:center; gap:8px; margin-top:16px; padding-top:10px; border-top:1px solid var(--rule);
   font-family:var(--font-display), sans-serif; font-size:13px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--star-dim);
