@@ -5,27 +5,53 @@ import LabShare from "./LabShare";
 
 let fontCss = null; // the page's fonts as embeddable CSS, worked out once per visit (the slow part of the first export)
 
-// The current view as a PNG: the stage (`stageRef`) with its export header and watermark shown and the pickers, notes, hover card and remove
-// buttons hidden (all by `.is-exporting` in the CSS, so the layout closes up around what is left out), at twice the screen's pixels, on
-// the page's own background so it matches the theme. html-to-image is loaded only when someone exports.
+// The current view as a PNG: a COPY of the stage (`stage`) drawn off screen with its export header and watermark shown and the pickers, notes,
+// hover card and remove buttons hidden (all by `.is-exporting` in the CSS, so the layout closes up around what is left out), at twice the
+// screen's pixels, on the page's own background so it matches the theme. Drawing a copy means the page itself never flickers into its export
+// layout, which is also what lets the picture be drawn in the background before anyone asks for it. html-to-image is loaded only when needed.
 async function renderPng(stage) {
   const { toBlob, getFontEmbedCSS } = await import("html-to-image");
-  stage.classList.add("is-exporting");
+  const holder = document.createElement("div");
+  holder.setAttribute("aria-hidden", "true");
+  holder.style.cssText = `position:fixed; left:-100000px; top:0; width:${stage.offsetWidth}px; pointer-events:none;`;
+  const copy = stage.cloneNode(true);
+  copy.classList.add("is-exporting");
+  holder.appendChild(copy);
+  document.body.appendChild(holder);
   try {
-    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
-    fontCss ??= await getFontEmbedCSS(stage);
-    const blob = await toBlob(stage, {
+    await new Promise((r) => requestAnimationFrame(r));
+    fontCss ??= await getFontEmbedCSS(copy);
+    const blob = await toBlob(copy, {
       pixelRatio: 2,
       backgroundColor: getComputedStyle(document.body).backgroundColor,
       fontEmbedCSS: fontCss,
-      width: Math.max(stage.scrollWidth, stage.offsetWidth),
+      width: Math.max(copy.scrollWidth, copy.offsetWidth),
       style: { margin: "0" },
     });
     if (!blob) throw new Error("no image");
     return blob;
   } finally {
-    stage.classList.remove("is-exporting");
+    holder.remove();
   }
+}
+
+// One picture per view: it starts drawing the moment the Export menu opens (so it is usually done by the time Copy image / Save image / Share is
+// chosen) and is reused until something about the view changes -- the address (the Lab mirrors every choice into it), the theme or the window's
+// width. A failed draw is forgotten so the next try starts again.
+const pictureCache = { key: null, promise: null };
+function pictureKey(stage) {
+  return `${window.location.search}|${document.documentElement.getAttribute("data-theme") || ""}|${stage.offsetWidth}`;
+}
+function getPicture(stage) {
+  const key = pictureKey(stage);
+  if (pictureCache.key !== key || !pictureCache.promise) {
+    pictureCache.key = key;
+    pictureCache.promise = renderPng(stage).catch((e) => {
+      if (pictureCache.key === key) pictureCache.promise = null;
+      throw e;
+    });
+  }
+  return pictureCache.promise;
 }
 
 // The Export menu in The Lab's top bar: copy a link to exactly this view, copy the view as an image, save it as a PNG, or share it to social
@@ -36,7 +62,7 @@ export default function LabExport({ stageRef, fileName, title, caption }) {
   const [busy, setBusy] = useState(false);
   const ref = useRef(null);
   const [sharing, setSharing] = useState(false);
-  const renderStage = useCallback(() => renderPng(stageRef.current), [stageRef]);
+  const renderStage = useCallback(() => getPicture(stageRef.current), [stageRef]);
   const closeShare = useCallback(() => setSharing(false), []);
   const canCopyImage = typeof window !== "undefined" && typeof window.ClipboardItem === "function" && Boolean(navigator.clipboard?.write);
 
@@ -78,11 +104,11 @@ export default function LabExport({ stageRef, fileName, title, caption }) {
   // The clipboard item is created right away, inside the click, with the picture still being drawn: Safari only allows a clipboard write
   // that starts in the click itself.
   const copyImage = () =>
-    run(() => navigator.clipboard.write([new window.ClipboardItem({ "image/png": renderPng(stageRef.current) })]), "Image copied", "Couldn't copy: try Save image");
+    run(() => navigator.clipboard.write([new window.ClipboardItem({ "image/png": getPicture(stageRef.current) })]), "Image copied", "Couldn't copy: try Save image");
   const saveImage = () =>
     run(
       async () => {
-        const url = URL.createObjectURL(await renderPng(stageRef.current));
+        const url = URL.createObjectURL(await getPicture(stageRef.current));
         const a = document.createElement("a");
         a.href = url;
         a.download = `${fileName}.png`;
@@ -101,7 +127,10 @@ export default function LabExport({ stageRef, fileName, title, caption }) {
         aria-haspopup="menu"
         aria-expanded={open}
         disabled={busy}
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => {
+          if (!open && stageRef.current) getPicture(stageRef.current).catch(() => {}); // start drawing now
+          setOpen((v) => !v);
+        }}
       >
         {busy ? "Exporting…" : status ? status.text : "Export"}
         <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true">

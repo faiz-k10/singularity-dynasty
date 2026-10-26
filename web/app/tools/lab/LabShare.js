@@ -9,7 +9,8 @@ import { SHARE_W, SHARE_H, composeUrl } from "@/lib/labShare";
 //   X, Threads, Bluesky, Facebook, LinkedIn, Reddit   their own "compose a post" pages
 //   Discord     copies the caption + link and opens Discord: pasted into any channel, the chart shows under it (Discord has no compose link)
 //   Instagram / TikTok   neither takes a post from a website at all; on a phone the button hands the chart to the app through the share sheet
-// The link is made once per opening and reused by every button. Nothing is downloaded.
+// The link is made once per opening and reused by every button. Nothing is downloaded. The picture is usually already drawn (LabExport starts it when
+// the Export menu opens) and is previewed at once; the buttons wake up when the share link is ready (a second or so later).
 
 const isTouch = () => typeof window !== "undefined" && Boolean(window.matchMedia?.("(pointer: coarse)").matches);
 
@@ -69,13 +70,16 @@ export default function LabShare({ render, title, caption, onClose }) {
   const dialogRef = useRef(null);
   const sheet = isTouch() && typeof navigator.canShare === "function";
 
-  // Draw the chart, make its card and its share link -- once per opening.
+  // Draw the chart (or take the one LabExport already drew), make its card, show it, then make the share link -- once per opening.
   useEffect(() => {
     let alive = true;
     let preview = null;
     (async () => {
       const chart = await render();
       const card = await toCard(chart);
+      if (!alive) return;
+      preview = URL.createObjectURL(card);
+      setShare({ url: null, chart, preview }); // the preview shows now; the buttons wait for the link
       const form = new FormData();
       form.append("image", card, "chart.png");
       form.append("title", title);
@@ -84,10 +88,12 @@ export default function LabShare({ render, title, caption, onClose }) {
       const res = await fetch("/api/lab-share", { method: "POST", body: form });
       const body = await res.json().catch(() => ({}));
       if (!res.ok || !body.url) throw new Error(body.error || "Couldn't create the share link.");
+      if (alive) setShare((cur) => ({ ...cur, url: body.url }));
+    })().catch((e) => {
       if (!alive) return;
-      preview = URL.createObjectURL(card);
-      setShare({ url: body.url, chart, preview });
-    })().catch((e) => alive && setFailed(e.message || "Couldn't prepare the post."));
+      setFailed(e.message || "Couldn't prepare the post.");
+      setNote(`${e.message || "Couldn't prepare the post."} Close this and try again.`);
+    });
     return () => {
       alive = false;
       if (preview) URL.revokeObjectURL(preview);
@@ -108,31 +114,43 @@ export default function LabShare({ render, title, caption, onClose }) {
     };
   }, [onClose]);
 
-  const copy = async (value, done) => {
+  const copy = async (value, done, failed = "Couldn't copy here: select the link below and copy it by hand.") => {
     try {
       await navigator.clipboard.writeText(value);
       setNote(done);
       return true;
     } catch {
-      setNote("Couldn't copy here: select the link below and copy it by hand.");
+      setNote(failed);
       return false;
     }
   };
 
-  // X, Threads, Bluesky, Facebook, LinkedIn, Reddit and Discord are plain links that open in a new tab: a link the person clicks is never stopped
-  // by a pop-up blocker the way a script opening a window can be (the first version used window.open, and for some people nothing opened).
+  // X, Threads, Bluesky, Facebook, LinkedIn, Reddit and Discord are BUTTONS that open the page from the click itself. (They were links for a while,
+  // but ad / privacy blockers hide any link that points at a share page -- twitter.com/intent, facebook.com/sharer, ... -- so for some people the
+  // buttons simply weren't there; a button with no address in the page can't be matched.) The window is opened straight inside the click, before
+  // anything else happens, which is what pop-up blockers allow; if one blocks it anyway, the address is copied and the note says so.
   const hrefFor = (key) => {
-    if (!share) return null;
+    if (!share?.url) return null;
     if (COMPOSE.includes(key)) return composeUrl(key, { url: share.url, text });
     return key === "discord" ? "https://discord.com/app" : null;
   };
-  const followed = (key) => {
+  const openPost = (key) => {
+    const href = hrefFor(key);
+    if (!href) return;
+    const w = window.open(href, "_blank");
+    if (w) w.opener = null;
     if (key === "discord") copy(`${text} ${share.url}`, "Caption and link copied. Paste them into any Discord channel: the chart shows right under the link.");
-    else setNote(`${NAMES[key]} opened in a new tab with your post written and the chart as its preview. Just press Post.`);
+    else if (w) setNote(`${NAMES[key]} opened in a new tab with your post written and the chart as its preview. Just press Post.`);
+    else
+      copy(
+        href,
+        `Your browser blocked the new tab, so the ${NAMES[key]} post link was copied: paste it into the address bar.`,
+        `Your browser blocked the new tab. Allow pop-ups for this site (the icon in the address bar), then click ${NAMES[key]} again.`
+      );
   };
   // Instagram / TikTok on a phone: the share sheet hands the chart to the app.
   const sendToApp = async (key) => {
-    if (!share || !sheet) return;
+    if (!share?.url || !sheet) return;
     try {
       await navigator.share({ files: [new File([share.chart], "singularity-lab-chart.png", { type: "image/png" })], text: `${text} ${share.url}` });
     } catch (e) {
@@ -145,7 +163,7 @@ export default function LabShare({ render, title, caption, onClose }) {
     if (key === "discord") return "Copies the post, opens Discord";
     return sheet ? `Sends the chart to the ${NAMES[key]} app` : "On your phone: sends the chart to the app";
   };
-  const enabled = (key) => Boolean(share) && (COMPOSE.includes(key) || key === "discord" || sheet);
+  const enabled = (key) => Boolean(share?.url) && (COMPOSE.includes(key) || key === "discord" || sheet);
 
   return (
     <div className="lab-share-backdrop" onPointerDown={(e) => e.target === e.currentTarget && onClose()}>
@@ -167,27 +185,15 @@ export default function LabShare({ render, title, caption, onClose }) {
         </div>
 
         <div className="lab-share-grid">
-          {Object.keys(NAMES).map((key) => {
-            const inner = (
-              <>
-                <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true">
-                  {ICONS[key]}
-                </svg>
-                <b>{NAMES[key]}</b>
-                <span>{describe(key)}</span>
-              </>
-            );
-            const href = hrefFor(key);
-            return href ? (
-              <a key={key} className={`lab-share-btn is-${key}`} href={href} target="_blank" rel="noopener noreferrer" onClick={() => followed(key)}>
-                {inner}
-              </a>
-            ) : (
-              <button key={key} type="button" className={`lab-share-btn is-${key}`} disabled={!enabled(key)} onClick={() => sendToApp(key)}>
-                {inner}
-              </button>
-            );
-          })}
+          {Object.keys(NAMES).map((key) => (
+            <button key={key} type="button" className={`lab-share-btn is-${key}`} disabled={!enabled(key)} onClick={() => (hrefFor(key) ? openPost(key) : sendToApp(key))}>
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true">
+                {ICONS[key]}
+              </svg>
+              <b>{NAMES[key]}</b>
+              <span>{describe(key)}</span>
+            </button>
+          ))}
         </div>
         {note && (
           <p className="lab-share-note" role="status">
@@ -201,9 +207,9 @@ export default function LabShare({ render, title, caption, onClose }) {
         </label>
         <div className="lab-share-foot">
           <span className="lab-share-link" title={share?.url}>
-            {share?.url || "The link is being made…"}
+            {share?.url || (failed ? "" : "Making the link…")}
           </span>
-          <button type="button" className="lab-copy" disabled={!share} onClick={() => copy(`${text} ${share.url}`, "Caption and link copied.")}>
+          <button type="button" className="lab-copy" disabled={!share?.url} onClick={() => copy(`${text} ${share.url}`, "Caption and link copied.")}>
             Copy caption + link
           </button>
         </div>
