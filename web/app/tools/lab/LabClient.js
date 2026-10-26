@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import PanelTabs from "../../PanelTabs";
 import { LAB_METRIC, LAB_METRICS } from "@/lib/labMetrics";
 import { PICK_COLORS, MAX_PICKS } from "./labUi";
@@ -9,6 +9,7 @@ import LabScatter from "./LabScatter";
 import LabBoard from "./LabBoard";
 import LabGameLog from "./LabGameLog";
 import LabCompare from "./LabCompare";
+import LabExport from "./LabExport";
 
 const VIEWS = [
   ["scatter", "Scatter"],
@@ -87,16 +88,16 @@ export default function LabClient({ rows, week, season, simsAccess, initial }) {
     window.history.replaceState(window.history.state, "", `${window.location.pathname}?${q}`);
   }, [view, pos, xKey, yKey, leadKey, picks]);
 
-  const [copied, setCopied] = useState(false);
-  const copyLink = async () => {
-    try {
-      await navigator.clipboard.writeText(window.location.href);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1800);
-    } catch {
-      setCopied(false);
-    }
-  };
+  // The exported picture's heading: what the chart shows, for which players, which week.
+  const stageRef = useRef(null);
+  const title = {
+    scatter: `${LAB_METRIC[yKey]?.label} vs ${LAB_METRIC[xKey]?.label}`,
+    leaders: `${LAB_METRIC[leadKey]?.label} leaders`,
+    games: "Weekly scoring",
+    compare: "Side by side",
+  }[view];
+  const scope = `${pos === "ALL" ? "All positions" : pos} · Week ${week} · ${season}`;
+  const fileName = `singularity-lab-${view}-${pos.toLowerCase()}-w${week}`;
 
   const shared = { pool, available, simsAccess, colorOf, onToggle: toggle, pos };
   return (
@@ -110,14 +111,21 @@ export default function LabClient({ rows, week, season, simsAccess, initial }) {
             </button>
           ))}
         </div>
-        <button type="button" className="lab-copy" onClick={copyLink} title="Copy a link to exactly this view">
-          {copied ? "Link copied" : "Copy link"}
-        </button>
+        <LabExport stageRef={stageRef} fileName={fileName} />
       </div>
 
       <LabPicker rows={rows} picked={picked} onToggle={toggle} full={picks.length >= MAX_PICKS} />
 
-      <div className="lab-stage">
+      <div className="lab-stage" ref={stageRef}>
+        {/* Shown only in an exported picture (.is-exporting): the brand, what the chart is, and the week. */}
+        <div className="lab-export-head" aria-hidden="true">
+          <span className="lab-export-brand">
+            <span className="ring" />
+            Singularity Dynasty <i>The Lab</i>
+          </span>
+          <span className="lab-export-title">{title}</span>
+          <span className="lab-export-scope">{scope}</span>
+        </div>
         {view === "scatter" && (
           <LabScatter {...shared} xKey={xKey} yKey={yKey} onX={setX} onY={setY} onSwap={() => (setX(yKey), setY(xKey))} />
         )}
