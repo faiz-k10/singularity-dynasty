@@ -174,7 +174,6 @@ export default async function DraftBoardPage({ searchParams }) {
                               {p.is_stack && (
                                 <span
                                   className="stack-badge"
-                                  title={p.stack_note || "Correlated stack"}
                                 >
                                   STACK
                                 </span>

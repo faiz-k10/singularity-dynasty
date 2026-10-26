@@ -106,7 +106,7 @@ function RangeRow({ r, max, highlight = "hi" }) {
   return (
     <li className="hub-range-row">
       <Nm n={r.n} pos={r.pos} cls="hub-range-name" />
-      <span className="hub-range-track" title={`Floor ${int(r.lo)} · median ${int(r.mid)} · ceiling ${int(r.hi)}`}>
+      <span className="hub-range-track">
         <span className="hub-range-span" style={{ left: `${(r.lo / max) * 100}%`, width: `${((r.hi - r.lo) / max) * 100}%` }} />
         <span className="hub-range-median" style={{ left: `${(r.mid / max) * 100}%` }} />
       </span>
@@ -178,7 +178,6 @@ function Matchups({ data, pos, limit }) {
                   <span
                     key={l.pos}
                     className={`hub-lean ${smashSpot ? "smash" : "tough"}`}
-                    title={`${g.def} ${smashSpot ? "gives up" : "shuts down"} ${l.pos} scoring: ${l.effect > 0 ? "+" : "−"}${Math.abs(l.effect).toFixed(1)} pts a game vs an average defense`}
                   >
                     {smashSpot ? "▲" : "▼"} {l.pos} {l.effect > 0 ? "+" : "−"}
                     {Math.abs(l.effect).toFixed(1)}
@@ -202,7 +201,7 @@ function GapRow({ p }) {
   return (
     <li className="hub-gap-row">
       <Nm n={p.n} pos={p.pos} cls="hub-gap-name" />
-      <span className="hub-dumbbell" title={`Scoring ${fmt1(p.susFp)} a game vs ${fmt1(p.susXfp)} expected from his opportunity`}>
+      <span className="hub-dumbbell">
         <span className="hub-dumbbell-line" style={{ left: `${(lo / max) * 100}%`, width: `${((hi - lo) / max) * 100}%` }} />
         <span className="hub-dumbbell-exp" style={{ left: `${(p.susXfp / max) * 100}%` }} />
         <span className={`hub-dumbbell-act ${hot ? "hot" : "cold"}`} style={{ left: `${(p.susFp / max) * 100}%` }} />
@@ -270,7 +269,6 @@ function StageMap({ data, pos }) {
                   key={s.stage}
                   className="hub-stage-seg"
                   style={{ width: `${s.pct}%`, background: STAGE_COLOR[s.stage] }}
-                  title={`${s.count} ${b.pos}s · ${s.stage} (${Math.round(s.pct)}%)`}
                 />
               ))}
             </span>
@@ -323,9 +321,7 @@ function AgeCurve({ data, pos }) {
           Age
         </text>
         {c.pts.map((p) => (
-          <circle key={p.n} cx={sx(p.age)} cy={sy(p.proj)} r="5" className={`hub-dot hub-dot-${p.pos}`}>
-            <title>{`${p.n} (${p.pos}, ${p.age}) · ${fmt1(p.proj)} proj`}</title>
-          </circle>
+          <circle key={p.n} cx={sx(p.age)} cy={sy(p.proj)} r="5" className={`hub-dot hub-dot-${p.pos}`} />
         ))}
         {c.trend.length > 1 && <polyline className="hub-trend" points={c.trend.map((t) => `${sx(t.age)},${sy(t.avg)}`).join(" ")} />}
       </svg>

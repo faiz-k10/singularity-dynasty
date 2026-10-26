@@ -159,7 +159,7 @@ export default function PercentileCard({ stats, position, selection, onSelectCel
         <div className="pctile-cell">
           <div className="pctile-cell-hero">
             {pctile == null ? "—" : Math.round(pctile)}
-            {pctile != null && <span className="pctile-cell-hero-sym" title="percentile">%ile</span>}
+            {pctile != null && <span className="pctile-cell-hero-sym">%ile</span>}
           </div>
           <div className="pctile-cell-read">
             <span className="pctile-cell-value">

@@ -58,7 +58,7 @@ function MatchupCell({ row }) {
       <span className="matchup-sep">{sep}</span>
       <TeamBadge team={row.opponent} />
       {lean && (
-        <span className="compare-matchup-lean" title={lean.text}>
+        <span className="compare-matchup-lean">
           <span className={`player-achv-dot ${lean.call === "SMASH" ? "smash" : "tough"}`} />
           {lean.call === "SMASH" ? "Smash" : "Tough"}
         </span>

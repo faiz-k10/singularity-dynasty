@@ -37,7 +37,7 @@ export default function LabPicker({ rows, picked, onToggle, full }) {
             <span className="lab-chip-dot" aria-hidden="true" />
             <span className="lab-chip-name">{p.name}</span>
             <PositionBadge position={p.pos} />
-            <button type="button" className="lab-chip-x" onClick={() => onToggle(p.name)} aria-label={`Remove ${p.name}`} title={`Remove ${p.name}`}>
+            <button type="button" className="lab-chip-x" onClick={() => onToggle(p.name)} aria-label={`Remove ${p.name}`}>
               ×
             </button>
           </li>

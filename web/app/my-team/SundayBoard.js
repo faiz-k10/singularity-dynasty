@@ -81,7 +81,7 @@ function LeagueCard({ team, ms, onOpen }) {
       <div className="sb-card-head">
         <span className="sb-card-league">{row.league}</span>
         {row.record !== "—" && (
-          <span className="sb-card-record mono" title="Your win-loss record this season">
+          <span className="sb-card-record mono">
             {row.record}
           </span>
         )}
@@ -97,7 +97,6 @@ function LeagueCard({ team, ms, onOpen }) {
             href={url}
             target="_blank"
             rel="noopener noreferrer"
-            title="Open this matchup in Sleeper"
             aria-label={`Open ${row.league} in Sleeper`}
             onClick={(e) => e.stopPropagation()}
             onKeyDown={(e) => e.stopPropagation()}
@@ -126,7 +125,7 @@ function LeagueCard({ team, ms, onOpen }) {
 
           <div className="sb-card-scores">
             <div className="sb-card-side is-me">
-              <span className="sb-card-team" title="Your team">{row.team}</span>
+              <span className="sb-card-team">{row.team}</span>
               <Score value={myScore} state={leadState(myScore, oppScore)[0]} />
             </div>
             <div className="sb-card-side">
@@ -141,7 +140,7 @@ function LeagueCard({ team, ms, onOpen }) {
             ) : !s.h2h ? null : ( // best ball has no lineups to say who is left; the card leans on its totals and playoff odds
               // Who is still to play, as two aligned rows: yours as name chips (a red dot on anyone playing right now),
               // theirs as a count.
-              <div className="sb-card-todo" title="Starters still to play or playing now">
+              <div className="sb-card-todo">
                 <span className="sb-card-label sb-card-todo-head">Still to play</span>
                 <span className="sb-card-who mono">Yours</span>
                 <span className="sb-card-chips">
@@ -164,14 +163,14 @@ function LeagueCard({ team, ms, onOpen }) {
             {(row.playoffOdds != null || alerts > 0) && (
               <span className="sb-card-extras">
                 {row.playoffOdds != null ? (
-                  <span className={`sb-card-odds mono ${oddsTone(row.playoffOdds)}`} title="Chance to make the playoffs">
+                  <span className={`sb-card-odds mono ${oddsTone(row.playoffOdds)}`}>
                     Playoffs {formatOdds(row.playoffOdds, row.playoffSettled)}
                   </span>
                 ) : (
                   <span />
                 )}
                 {alerts > 0 && (
-                  <span className="sb-card-alerts mono" title={[...row.alertCount.alerts.map((a) => `${a.player?.name || "Empty slot"}: ${a.status}`), ...row.alertCount.swaps.map((x) => `Start ${x.in.name}${x.out ? ` over ${x.out.name}` : ""} (+${x.gain.toFixed(1)})`)].join("\n")}>
+                  <span className="sb-card-alerts mono">
                     {alerts} {alerts === 1 ? "alert" : "alerts"}
                   </span>
                 )}
@@ -192,7 +191,7 @@ function FeedRow({ r, isNew, delta, showLeagues, focused, onPick }) {
   return (
     <li className={`sb-feed-row is-${r.side}${isNew ? " is-new" : ""}${focused ? " is-focus" : ""}`}>
       <div className="sb-feed-who">
-        <button type="button" className="sb-feed-name sb-name-btn" aria-pressed={focused} title={focused ? "Showing only his plays -- click to show everyone's" : "Show only his plays"} onClick={() => onPick(r.playerId, r.name)}>
+        <button type="button" className="sb-feed-name sb-name-btn" aria-pressed={focused} onClick={() => onPick(r.playerId, r.name)}>
           <span className="fn-long">{r.name}</span>
           <span className="fn-short" aria-hidden="true">{shortName(r.name)}</span>
         </button>
@@ -208,7 +207,7 @@ function FeedRow({ r, isNew, delta, showLeagues, focused, onPick }) {
         {isNew && delta > 0 ? (
           <span className="sb-feed-delta mono">+{fmt2(delta)}</span>
         ) : r.pending ? (
-          <span className="sb-feed-delta mono" title="Points from plays Sleeper has not posted yet (already included in the score). It goes away when Sleeper catches up.">
+          <span className="sb-feed-delta mono">
             {r.pending > 0 ? "+" : "−"}{fmt2(Math.abs(r.pending))}
           </span>
         ) : (
@@ -228,7 +227,7 @@ function PlayRow({ e, isNew, focusId, onPick }) {
           {e.who.map((w) => (
             <span key={w.playerId} className="sb-play-player">
               <TeamBadge team={w.team} />
-              <button type="button" className={`sb-play-name sb-name-btn is-${w.side}${w.playerId === focusId ? " is-focus" : ""}`} aria-pressed={w.playerId === focusId} title={w.playerId === focusId ? "Showing only his plays -- click to show everyone's" : "Show only his plays"} onClick={() => onPick(w.playerId, w.name)}>
+              <button type="button" className={`sb-play-name sb-name-btn is-${w.side}${w.playerId === focusId ? " is-focus" : ""}`} aria-pressed={w.playerId === focusId} onClick={() => onPick(w.playerId, w.name)}>
                 {w.name}
               </button>
             </span>
@@ -241,7 +240,7 @@ function PlayRow({ e, isNew, focusId, onPick }) {
       </div>
       <span className="sb-play-side">
         {e.points !== 0 && (
-          <span className={`sb-play-pts mono${e.points < 0 ? " neg" : ""}`} title="Fantasy points this play added (standard PPR rates; your league's own scoring can differ a little)">
+          <span className={`sb-play-pts mono${e.points < 0 ? " neg" : ""}`}>
             {e.points > 0 ? "+" : "−"}
             {Math.abs(e.points).toFixed(2)}
           </span>
@@ -312,7 +311,7 @@ function RecentPlays({ rows, updatedAt, focus, onPick, onTotals }) {
         ))}
       </div>
       {focus && (
-        <button type="button" className="sb-focus-chip mono" onClick={() => onPick(focus.playerId, focus.name)} title="Show everyone's plays again">
+        <button type="button" className="sb-focus-chip mono" onClick={() => onPick(focus.playerId, focus.name)}>
           {focus.name} <span aria-hidden="true">✕</span>
         </button>
       )}
@@ -384,7 +383,7 @@ function LiveFeed({ savedTeams, gameStates, updatedAt, teamId = null, league = n
     <aside className={`sb-feed glass-panel${collapsed ? " is-collapsed" : ""}`} aria-label="Companion">
       {/* The pane folds to a thin rail at the right edge. Everything else stays mounted (just hidden), so the plays keep loading and the
           scores on the cards keep their "ahead of Sleeper" adjustment while it is folded. */}
-      <button type="button" className="sb-feed-rail" onClick={onToggle} aria-label="Open the Companion pane" title="Open the Companion pane" tabIndex={collapsed ? 0 : -1}>
+      <button type="button" className="sb-feed-rail" onClick={onToggle} aria-label="Open the Companion pane" tabIndex={collapsed ? 0 : -1}>
         {all.length > 0 && <span className="sb-live-dot" aria-hidden="true" />}
         <svg className="sb-feed-rail-arrow" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
           <path d="M10 3L5 8l5 5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
@@ -393,7 +392,7 @@ function LiveFeed({ savedTeams, gameStates, updatedAt, teamId = null, league = n
       </button>
       <div className="sb-feed-head">
         <div className="sb-feed-headleft">
-          <button type="button" className="sb-feed-collapse" onClick={onToggle} aria-label="Collapse this pane to the right" title="Collapse to the right">
+          <button type="button" className="sb-feed-collapse" onClick={onToggle} aria-label="Collapse this pane to the right">
             <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
               <path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
@@ -622,7 +621,7 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
         </div>
         <div className="sb-top-side">
           {time && (
-            <span className={`sb-updated mono${live ? " is-live" : ""}`} title="Scores refresh every 30 seconds">
+            <span className={`sb-updated mono${live ? " is-live" : ""}`}>
               {live > 0 && <span className="sb-live-dot" aria-hidden="true" />}
               {live > 0 ? "Live" : "Updated"} · {time}
             </span>
@@ -636,7 +635,7 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
           // this league's two lineups.
           <section className="sb-drawer glass-panel" aria-label={`${openTeam.league_name} matchup`}>
             <div className="sb-drawer-head">
-              <button type="button" className="sb-drawer-back mono" onClick={() => setOpenId(null)} title="Back to all leagues (Esc)">
+              <button type="button" className="sb-drawer-back mono" onClick={() => setOpenId(null)}>
                 <span aria-hidden="true">←</span> All leagues
               </button>
               <h2 className="board-panel-title">{openTeam.league_name}</h2>

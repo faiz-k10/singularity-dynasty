@@ -31,7 +31,7 @@ export default function RosterNews({ news, onlyStarters = false, onlyInjuries = 
           {items.map((i) => (
             <li key={`${i.norm}|${i.position}`} className="roster-news-item">
               <div className="roster-news-head">
-                <span className={`status-dot status-dot-${i.severity}`} title={i.status} aria-label={i.status} />
+                <span className={`status-dot status-dot-${i.severity}`} aria-label={i.status} />
                 <strong>{i.name}</strong>
                 <span className="league-dash-muted">{i.position}{i.team ? ` · ${i.team}` : ""}</span>
                 {i.severity > 0 && <span className={`status-text status-text-${i.severity}`}>{i.status}</span>}

@@ -335,7 +335,6 @@ export default function SimilarShapeFinder({
                           type="button"
                           className="shape-finder-portrait-btn"
                           onClick={() => onGoToPlayer(p.name)}
-                          title={`Go to ${p.name} in the table`}
                           aria-label={`Go to ${p.name} in the table`}
                         >
                           {portrait}

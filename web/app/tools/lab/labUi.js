@@ -65,7 +65,7 @@ export function MetricSelect({ label, value, onChange, available, simsAccess, id
   return (
     <label className="lab-field" htmlFor={id}>
       <span className="lab-field-label">{label}</span>
-      <select id={id} className="lab-select" value={value} onChange={(e) => onChange(e.target.value)} title={LAB_METRIC[value]?.hint}>
+      <select id={id} className="lab-select" value={value} onChange={(e) => onChange(e.target.value)}>
         {LAB_GROUPS.map((group) => {
           const items = LAB_METRICS.filter((m) => m.group === group && (available.has(m.key) || (m.tier === "singularity" && !simsAccess)));
           if (!items.length) return null;

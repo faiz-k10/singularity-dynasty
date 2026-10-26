@@ -29,7 +29,7 @@ export default function LabCompare({ picked, simsAccess, onToggle }) {
                     <TeamBadge team={p.team} />
                     <span className="lab-compare-opp">{p.bye ? "Bye" : p.opp ? `${p.home ? "vs" : "@"} ${p.opp}` : ""}</span>
                   </span>
-                  <button type="button" className="lab-chip-x" onClick={() => onToggle(p.name)} aria-label={`Remove ${p.name}`} title={`Remove ${p.name}`}>
+                  <button type="button" className="lab-chip-x" onClick={() => onToggle(p.name)} aria-label={`Remove ${p.name}`}>
                     ×
                   </button>
                 </th>
@@ -62,7 +62,7 @@ export default function LabCompare({ picked, simsAccess, onToggle }) {
                   const best = !m.neutral && vals.length > 1 ? (m.lower ? Math.min(...vals) : Math.max(...vals)) : null;
                   return (
                     <tr key={m.key}>
-                      <th scope="row" title={m.hint}>
+                      <th scope="row">
                         {m.label}
                       </th>
                       {picked.map((p) => {
@@ -73,7 +73,7 @@ export default function LabCompare({ picked, simsAccess, onToggle }) {
                             <span className="lab-cell">
                               <span className="lab-cell-val">{formatMetric(m.key, v)}</span>
                               {typeof pct === "number" && (
-                                <span className="lab-cell-pct" title={`${pct}th percentile among ${p.pos}s${m.lower ? " (lower is better)" : ""}`}>
+                                <span className="lab-cell-pct">
                                   <span className="lab-cell-bar" style={{ width: `${pct}%`, background: p.color }} />
                                 </span>
                               )}

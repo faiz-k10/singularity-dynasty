@@ -58,9 +58,9 @@ export default function WaiverWire({ teamId, bare = false }) {
                 <th>#</th>
                 <th className="align-left">Player</th>
                 <th className="align-left">Matchup</th>
-                <th title="Our median projection this week">Proj</th>
-                <th title="Weekly floor to ceiling">Range</th>
-                <th title="Rank at his position in this week's projections">Pos rank</th>
+                <th>Proj</th>
+                <th>Range</th>
+                <th>Pos rank</th>
               </tr>
             </thead>
             <tbody>

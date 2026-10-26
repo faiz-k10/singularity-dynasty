@@ -50,9 +50,7 @@ function leftLabel(s) {
   return parts.join(" · ");
 }
 
-// uncertain: points are on the board but the scoreboard couldn't be read, so we can't tell who is still to play --
-// the "to come" range, projected final and players-left counts are hidden rather than guessed.
-function SideRow({ p, scoreboardKnown, uncertain, mounted, bench = false }) {
+function SideRow({ p, scoreboardKnown, mounted, bench = false }) {
   // Hooks first (the empty-slot return below can't come before them): clicking his score slides his stats for this game in.
   const slide = useStatsSlide(p, p.outlook?.state === "in" || p.outlook?.state === "post");
   if (!p.id) {
@@ -87,11 +85,6 @@ function SideRow({ p, scoreboardKnown, uncertain, mounted, bench = false }) {
       </span>
       <span
         className="h2h-c-curve"
-        title={
-          done || uncertain || o.hi <= 0
-            ? undefined
-            : `Still to come: ${Math.round(o.lo)}–${Math.round(o.hi)} pts (8 in 10 outcomes)`
-        }
       >
         {showCurve ? (
           <ScoreCurve floor={p.floor} median={p.proj} ceiling={p.ceiling} pts={pts} state={o.state} est={p.est} />
@@ -102,7 +95,6 @@ function SideRow({ p, scoreboardKnown, uncertain, mounted, bench = false }) {
       </span>
       <span
         className={`h2h-c-pts mono live-pts-cell${o.state === "in" ? " is-live" : ""}${tone ? ` tone-${tone}` : ""}${slide.enabled ? " is-clickable" : ""}`}
-        title={slide.enabled ? "Click for his stats this game" : "Not started"}
         {...(slide.enabled ? { role: "button", tabIndex: 0, "aria-expanded": slide.open, onClick: slide.toggle, onKeyDown: (e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), slide.toggle(e)) } : {})}
       >
         <span className="h2h-pts-num">
@@ -115,17 +107,17 @@ function SideRow({ p, scoreboardKnown, uncertain, mounted, bench = false }) {
   );
 }
 
-function Side({ side, bench = [], opp = false, scoreboardKnown, uncertain, mounted }) {
+function Side({ side, bench = [], opp = false, scoreboardKnown, mounted }) {
   return (
     <div className={`h2h-side${opp ? " opp" : ""}`}>
       <div className="h2h-row h2h-head" aria-hidden="true">
         <span className="h2h-c-slot">Slot</span>
         <span className="h2h-c-player">Player</span>
-        <span className="h2h-c-curve" title="The outcome curve: floor (blue), median projection and ceiling (red) under it, and the points scored so far as the marker on it">Floor · median · ceiling</span>
+        <span className="h2h-c-curve">Floor · median · ceiling</span>
         <span className="h2h-c-pts">Pts</span>
       </div>
       {side.players.map((p, i) => (
-        <SideRow key={p.id || `empty-${i}`} p={p} scoreboardKnown={scoreboardKnown} uncertain={uncertain} mounted={mounted} />
+        <SideRow key={p.id || `empty-${i}`} p={p} scoreboardKnown={scoreboardKnown} mounted={mounted} />
       ))}
       {bench.length > 0 && (
         // The bench: under its own heading and tint, never part of the totals.
@@ -134,7 +126,7 @@ function Side({ side, bench = [], opp = false, scoreboardKnown, uncertain, mount
             Bench <span>{bench.length}</span>
           </div>
           {bench.map((p) => (
-            <SideRow key={p.id} p={p} bench scoreboardKnown={scoreboardKnown} uncertain={uncertain} mounted={mounted} />
+            <SideRow key={p.id} p={p} bench scoreboardKnown={scoreboardKnown} mounted={mounted} />
           ))}
         </div>
       )}
@@ -280,6 +272,8 @@ function MatchupBody({ team, gameStates, playTotals }) {
   // Sleeper's own totals once games start (they include anything our per-player copy can't, e.g. stat corrections).
   const myScore = live ? live.mine : mine.pts;
   const oppScore = live ? live.opp : opp.pts;
+  // uncertain: points are on the board but the scoreboard couldn't be read, so we can't tell who is still to play --
+  // the "to come" range, projected final and players-left counts are hidden rather than guessed.
   const uncertain = !scoreboardKnown && [...s.h2h.mine, ...s.h2h.opp].some((p) => p.pts);
   return (
     <div className="h2h">
@@ -289,8 +283,8 @@ function MatchupBody({ team, gameStates, playTotals }) {
         <TeamScore state={leadState(myScore, oppScore)[1]} name={s.opponent} record={s.opponentRecord} score={oppScore} proj={uncertain ? null : oppScore + opp.projFinal - opp.pts} left={uncertain ? null : leftLabel(opp)} opp />
       </div>
       <div className="h2h-lineups" ref={lineupsRef}>
-        <Side side={mine} bench={benchMine} scoreboardKnown={scoreboardKnown} uncertain={uncertain} mounted={mounted} />
-        <Side side={opp} bench={benchOpp} opp scoreboardKnown={scoreboardKnown} uncertain={uncertain} mounted={mounted} />
+        <Side side={mine} bench={benchMine} scoreboardKnown={scoreboardKnown} mounted={mounted} />
+        <Side side={opp} bench={benchOpp} opp scoreboardKnown={scoreboardKnown} mounted={mounted} />
       </div>
       <ul className="h2h-legend" aria-label="How to read the curves">
         <li>
@@ -314,7 +308,6 @@ function MatchupBody({ team, gameStates, playTotals }) {
       </ul>
       <p
         className="h2h-note"
-        title="Points already scored are locked in; each starter still to play is simulated 5,000 times from his weekly projection, floor and ceiling (scaled to the time left in a live game). Projected final = points so far + the typical amount still to come."
       >
         Updates every 30 seconds. Hover a curve to see the range still to come. Rows outlined are players still to play.
       </p>

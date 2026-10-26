@@ -9,10 +9,9 @@ export default function SortableTh({
   currentParams,
   sortParam = "sort",
   dirParam = "dir",
-  title,
 }) {
   return (
-    <th title={title}>
+    <th>
       <Link
         href={sortHref(currentParams, sortKey, activeSort, activeDir, sortParam, dirParam)}
         className={sortKey === activeSort ? "sort-active" : ""}

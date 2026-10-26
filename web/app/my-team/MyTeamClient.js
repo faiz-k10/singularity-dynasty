@@ -243,7 +243,6 @@ function RosterTable({ players: rawPlayers, bestBall = false, playerPoints = nul
                       className={`mono live-pts-cell${p.liveState === "in" ? " is-live" : ""}${
                         p.livePts != null && p.myProjPts != null && p.livePts >= p.myProjPts ? " beat" : ""
                       }`}
-                      title={p.liveState === "in" ? "In progress" : p.liveState === "post" ? "Final" : "Not started"}
                     >
                       {p.liveState === "in" && <span className="matchup-score-live-dot" aria-hidden="true" />}
                       {p.livePts == null ? "—" : p.livePts.toFixed(2)}
@@ -730,7 +729,6 @@ function MyAnalysisPanel({ rows, playerBios = {} }) {
                 >
                   {p.name}
                 </text>
-                <title>{`${p.name} — ${xM.label}: ${xM.fmt(p[xKey])}, ${yM.label}: ${yM.fmt(p[yKey])}`}</title>
               </g>
             );
           })}
@@ -1726,7 +1724,6 @@ export default function MyTeamClient({
       className="rankings-theater-btn"
       onClick={() => setTheater((v) => !v)}
       aria-label={theater ? "Exit full screen" : "Open full screen (Game Board and panels)"}
-      title={theater ? "Exit full screen (Esc)" : "Full screen — Game Board and customizable panels"}
     >
       {theater ? (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -1748,10 +1745,10 @@ export default function MyTeamClient({
   const theaterLayout = theaterPick || (isGameDay(gameStates) ? "board" : "panels");
   const layoutSwitch = (
     <div className="board-orient" role="group" aria-label="Full-screen layout">
-      <button type="button" aria-pressed={theaterLayout === "board"} onClick={() => pickTheaterLayout("board")} title="Every league + your players live">
+      <button type="button" aria-pressed={theaterLayout === "board"} onClick={() => pickTheaterLayout("board")}>
         Game Board
       </button>
-      <button type="button" aria-pressed={theaterLayout === "panels"} onClick={() => pickTheaterLayout("panels")} title="Customizable panels">
+      <button type="button" aria-pressed={theaterLayout === "panels"} onClick={() => pickTheaterLayout("panels")}>
         Panels
       </button>
     </div>

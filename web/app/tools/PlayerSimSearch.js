@@ -263,7 +263,7 @@ function StatDetailRow({ row, colSpan, shapePeers, wrTePool, tagsByName, maxCeil
                     {pv.currentPPG != null && <span className="stat-panel-pace-unit">pts</span>}
                   </div>
                   {pv.regressionScore != null && (
-                  <div className={`stat-panel-pace-delta ${pv.regressionScore >= 0 ? "pace-hot" : "pace-cold"}`} title="Points ahead of (+) or behind (−) the pace the season projection implied through his team's games so far; missed games count against it">
+                  <div className={`stat-panel-pace-delta ${pv.regressionScore >= 0 ? "pace-hot" : "pace-cold"}`}>
                     {pv.regressionScore >= 0 ? "+" : ""}
                     {pv.regressionScore.toFixed(2)}
                     <span className="stat-panel-pace-unit">pts</span>
@@ -275,7 +275,6 @@ function StatDetailRow({ row, colSpan, shapePeers, wrTePool, tagsByName, maxCeil
                         <div
                           key={`${g.season}-${g.week}`}
                           className={`pace-game-row${i === pv.recentGames.length - 1 ? " pace-game-row-last" : ""}`}
-                          title={`${g.season} Week ${g.week}`}
                         >
                           <span className="pace-game-week mono">W{g.week} {g.is_home === true ? "vs" : g.is_home === false ? "@" : "·"}</span>
                           <TeamBadge team={g.opponent} />
@@ -351,7 +350,6 @@ function StatDetailRow({ row, colSpan, shapePeers, wrTePool, tagsByName, maxCeil
                           <div
                             className={`stat-panel-pace-rangebar-marker ${pv.outcomePercentile >= 50 ? "pace-marker-hot" : "pace-marker-cold"}`}
                             style={{ bottom: `${Math.min(100, (pv.paceSeasonTotal / maxCeiling) * 100)}%` }}
-                            title={`Current pace: ${ordinal(pv.outcomePercentile)} percentile on this player's outcome curve`}
                           />
                           <div
                             className={`stat-panel-pace-rangebar-total ${pv.outcomePercentile >= 50 ? "pace-hot" : "pace-cold"}`}
@@ -399,7 +397,6 @@ function StatDetailRow({ row, colSpan, shapePeers, wrTePool, tagsByName, maxCeil
                           key={seg.start}
                           className="stat-panel-pace-seg-missed"
                           style={{ left: `${seg.start}%`, width: `${seg.end - seg.start}%` }}
-                          title="Games missed"
                         />
                       ))}
                       {/* His team's bye weeks read white. */}
@@ -408,7 +405,6 @@ function StatDetailRow({ row, colSpan, shapePeers, wrTePool, tagsByName, maxCeil
                           key={`bye-${seg.start}`}
                           className="stat-panel-pace-seg-bye"
                           style={{ left: `${seg.start}%`, width: `${seg.end - seg.start}%` }}
-                          title="Bye week"
                         />
                       ))}
                     </div>
@@ -665,7 +661,6 @@ const PlayerRow = memo(function PlayerRow({
               <div
                 className={`pace-marker ${row.outcomePercentile >= 50 ? "pace-marker-hot" : "pace-marker-cold"}`}
                 style={{ left: `${pct(Math.min(100, (row.paceSeasonTotal / maxCeiling) * 100))}%` }}
-                title={`Current pace: ${ordinal(row.outcomePercentile)} percentile on this player's outcome curve`}
               ></div>
             )}
           </div>
@@ -964,7 +959,6 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
             className="filter-row-header"
             onClick={() => toggleGroup("league")}
             aria-expanded={openGroups.league}
-            title="Changes POR's replacement-level baseline"
           >
             <span className={`filter-row-chevron${openGroups.league ? " filter-row-chevron-open" : ""}`}>▸</span>
             <span className="tier-toggle-label">League Size</span>
@@ -996,7 +990,6 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
             className="filter-row-header"
             onClick={() => toggleGroup("qb")}
             aria-expanded={openGroups.qb}
-            title="Changes POR's replacement-level baseline"
           >
             <span className={`filter-row-chevron${openGroups.qb ? " filter-row-chevron-open" : ""}`}>▸</span>
             <span className="tier-toggle-label">QB Format</span>
@@ -1074,7 +1067,6 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
               className="rankings-theater-btn"
               onClick={() => (theater ? exitTheater() : setTheater(true))}
               aria-label={theater ? "Exit full-screen view" : "Expand to full-screen view"}
-              title={theater ? "Exit full-screen view" : "Expand to full-screen view"}
             >
               {theater ? (
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -1105,7 +1097,6 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                 <SortableTh
                   label="vs Pace"
                   sortKey="regressionScore"
-                  title="Fantasy points scored so far this season minus the pace the season projection implied through his team's games so far (season median ÷ 17 × team games played), so missed games count against it. Positive = ahead of pace (hot starts tend to cool off toward projection); negative = behind pace (a cold start, or games missed)."
                   {...sortProps}
                 />
                 <SortableTh
@@ -1117,7 +1108,6 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                   <SortableTh
                     label="POR"
                     sortKey="por"
-                    title={`Points over Replacement — composite floor/median/ceiling score vs. the replacement-level baseline at this position (${leagueTeams}-team, ${superflex ? "Superflex" : "1QB"})`}
                     {...sortProps}
                   />
                 )}

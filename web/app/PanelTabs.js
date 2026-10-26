@@ -12,7 +12,6 @@ export default function PanelTabs({ tabs, value, onChange, label = "View" }) {
           role="tab"
           aria-selected={value === key}
           className={`${value === key ? "active" : ""}${alerts > 0 ? " has-alerts" : ""}`.trim()}
-          title={alerts > 0 ? `${alerts} lineup ${alerts === 1 ? "alert" : "alerts"} active` : undefined}
           onClick={() => onChange(key)}
         >
           {text}

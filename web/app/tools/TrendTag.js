@@ -15,7 +15,7 @@ export default function TrendTag({ trend }) {
   const t = TREND_MAP[trend];
   if (!t) return null;
   return (
-    <span className={`trend-tag ${t.cls}`} title={t.label}>
+    <span className={`trend-tag ${t.cls}`}>
       {t.cls === "steady" ? "—" : null}
     </span>
   );

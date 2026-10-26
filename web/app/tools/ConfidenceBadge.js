@@ -21,11 +21,6 @@ export default function ConfidenceBadge({ confidence }) {
   return (
     <span
       className={`confidence-badge ${isEstablished ? "gold" : "silver"}`}
-      title={
-        isEstablished
-          ? "Established — full trust in this player's own game log"
-          : "Building sample — under 20 career games, blended with a positional baseline"
-      }
     >
       <FlagIcon />
     </span>

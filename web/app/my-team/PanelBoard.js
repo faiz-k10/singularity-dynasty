@@ -144,7 +144,6 @@ export default function PanelBoard({ panels, headerExtra }) {
             onClick={() => toggle(p.id)}
             {...dragProps(p.id)}
             {...dropProps(p.id)}
-            title="Click to expand · drag to reorder"
           >
             <span aria-hidden="true">+</span> {p.title}
           </button>
@@ -152,10 +151,10 @@ export default function PanelBoard({ panels, headerExtra }) {
         <span className="board-dock-spacer" />
         {headerExtra}
         <div className="board-orient" role="group" aria-label="Panel arrangement">
-          <button type="button" aria-pressed={orientation === "side"} onClick={() => setOrientation("side")} title="Side by side">
+          <button type="button" aria-pressed={orientation === "side"} onClick={() => setOrientation("side")}>
             <span className="board-orient-icon board-orient-side" aria-hidden="true" /> Side by side
           </button>
-          <button type="button" aria-pressed={orientation === "stack"} onClick={() => setOrientation("stack")} title="Stacked top to bottom">
+          <button type="button" aria-pressed={orientation === "stack"} onClick={() => setOrientation("stack")}>
             <span className="board-orient-icon board-orient-stack" aria-hidden="true" /> Stacked
           </button>
         </div>
@@ -182,7 +181,6 @@ export default function PanelBoard({ panels, headerExtra }) {
                   className="board-collapse"
                   aria-pressed={focusId === p.id}
                   aria-label={focusId === p.id ? `Restore ${p.title} to the layout` : `Expand ${p.title} to fill the board`}
-                  title={focusId === p.id ? "Restore layout (Esc)" : "Expand to fill the board"}
                   onClick={() => setFocusId((cur) => (cur === p.id ? null : p.id))}
                 >
                   <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

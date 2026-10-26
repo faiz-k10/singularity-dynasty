@@ -90,7 +90,6 @@ export default function OutcomeCurve({ floor, median, ceiling, maxSpread }) {
 
   return (
     <svg className="outcome-curve" viewBox={`0 0 ${WIDTH} ${HEIGHT}`} role="img" aria-label={title}>
-      <title>{title}</title>
       <path className="outcome-curve-tail-floor" d={leftTailPath} />
       <path className="outcome-curve-tail-ceiling" d={rightTailPath} />
       <path className="outcome-curve-middle" d={middlePath} />

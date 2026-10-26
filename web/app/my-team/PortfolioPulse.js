@@ -59,7 +59,6 @@ export default function PortfolioPulse({ summary }) {
             key={b.key}
             className="portfolio-pulse-seg"
             style={{ width: `${b.pct}%`, background: COLOR[b.key] }}
-            title={`${b.label}: ${b.pct}%`}
           />
         ))}
       </div>

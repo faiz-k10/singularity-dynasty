@@ -26,7 +26,7 @@ export default function TeamBadge({ team }) {
   const file = (LOGO[team] || team).toLowerCase();
   if (LOGO_CODES.has(file)) {
     return (
-      <span className="team-badge team-logo" role="img" aria-label={team} title={team}>
+      <span className="team-badge team-logo" role="img" aria-label={team}>
         <img className="team-logo-light" src={`/team-logos/${file}.png`} alt="" width="22" height="22" loading="lazy" decoding="async" />
         <img className="team-logo-dark" src={`/team-logos/${file}-dark.png`} alt="" width="22" height="22" loading="lazy" decoding="async" />
       </span>

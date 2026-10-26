@@ -119,7 +119,7 @@ const RowCells = memo(function RowCells({
       </td>
     )}
     {showRange && (
-      <td className="mono median-cell" title={bye ? undefined : "Median projection for this week"}>
+      <td className="mono median-cell">
         {bye || row.projection == null ? "—" : Number(row.projection).toFixed(1)}
       </td>
     )}
@@ -134,7 +134,6 @@ const RowCells = memo(function RowCells({
           <td
             className={`mono${tint ? ` matchup-cell ${tint.cls}` : ""}`}
             style={tint ? { "--heat": tint.heat } : undefined}
-            title={tint ? tint.label : undefined}
           >
             <span className="matchup-combined-cell">
               <TeamBadge team={row.team} />
@@ -323,7 +322,6 @@ export default function RankingsTable({
           className="rankings-theater-btn"
           onClick={() => setTheater((v) => !v)}
           aria-label={theater ? "Exit full-screen view" : "Expand to full-screen view"}
-          title={theater ? "Exit full-screen view" : "Expand to full-screen view"}
         >
           {theater ? (
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -353,7 +351,7 @@ export default function RankingsTable({
             )}
             {showRange && <SortableTh label="Floor" sortKey="floor" {...sortProps} />}
             {showCurve && (
-              <th title="Outcome curve — this week's floor-to-ceiling range, colored apart from the tails beyond it. The range's width is drawn relative to the widest range in this week's pool, so a locked-in projection and a volatile one are easy to tell apart at a glance. Click a row to see a larger, fully-labeled version plus percentile context.">
+              <th>
                 Curve
               </th>
             )}

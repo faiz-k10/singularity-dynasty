@@ -293,7 +293,6 @@ export default function LeagueDashboard({ savedTeams, renderExpanded, injuriesBy
                       href={r.sleeperUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      title="Open this matchup in Sleeper"
                       aria-label={`Open ${r.league} in Sleeper`}
                       onClick={(e) => e.stopPropagation()}
                     >

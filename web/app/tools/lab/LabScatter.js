@@ -63,7 +63,7 @@ export default function LabScatter({ pool, available, simsAccess, colorOf, onTog
     <div className="lab-view">
       <div className="lab-controls">
         <MetricSelect id={`${id}-x`} label="X axis" value={xKey} onChange={onX} available={available} simsAccess={simsAccess} />
-        <button type="button" className="lab-icon-btn" onClick={onSwap} title="Swap the axes" aria-label="Swap the axes">
+        <button type="button" className="lab-icon-btn" onClick={onSwap} aria-label="Swap the axes">
           ⇄
         </button>
         <MetricSelect id={`${id}-y`} label="Y axis" value={yKey} onChange={onY} available={available} simsAccess={simsAccess} />
@@ -78,12 +78,12 @@ export default function LabScatter({ pool, available, simsAccess, colorOf, onTog
           <b>{pts.length}</b>
           <span>Players</span>
         </div>
-        <div title="Pearson's r: +1 = the dots sit on a rising line, −1 on a falling one, 0 = no straight-line link">
+        <div>
           <b>{fit ? fit.r.toFixed(2) : "—"}</b>
           <span>Correlation r</span>
           {fit && <em>{corrWord(fit.r)}</em>}
         </div>
-        <div title="R²: the share of the spread in the Y numbers that a straight line through X accounts for">
+        <div>
           <b>{fit ? `${Math.round(fit.r ** 2 * 100)}%` : "—"}</b>
           <span>Explained (R²)</span>
         </div>

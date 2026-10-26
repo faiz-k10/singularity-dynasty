@@ -206,7 +206,7 @@ export default function LabShare({ render, title, caption, onClose }) {
           <textarea className="lab-select" rows={2} value={text} onChange={(e) => setText(e.target.value)} />
         </label>
         <div className="lab-share-foot">
-          <span className="lab-share-link" title={share?.url}>
+          <span className="lab-share-link">
             {share?.url || (failed ? "" : "Making the link…")}
           </span>
           <button type="button" className="lab-copy" disabled={!share?.url} onClick={() => copy(`${text} ${share.url}`, "Caption and link copied.")}>

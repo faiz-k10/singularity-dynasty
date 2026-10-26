@@ -65,7 +65,7 @@ export default function DesktopAlertsToggle({ on, setOn, allowed }) {
   const [note, setNote] = useState(null);
   if (!allowed) {
     return (
-      <span className="desk-alerts desk-alerts-locked" title="Browser alerts for injuries, lineup holes and late swings">
+      <span className="desk-alerts desk-alerts-locked">
         <BellIcon /> Alerts: <Link href="/#pricing">Explorer</Link>
       </span>
     );
@@ -86,7 +86,6 @@ export default function DesktopAlertsToggle({ on, setOn, allowed }) {
         className={`desk-alerts-btn${on ? " on" : ""}`}
         aria-pressed={on}
         onClick={toggle}
-        title="Browser alerts while this tab is open: a starter ruled Out / Doubtful, an empty or bye slot near kickoff, and a late swing in a close game"
       >
         <BellIcon /> <span className="desk-alerts-label">Alerts</span> {on ? "On" : "Off"}
       </button>

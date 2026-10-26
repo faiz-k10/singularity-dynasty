@@ -172,7 +172,7 @@ export default function LabGameLog({ picked, week, season }) {
               <th scope="col">Pts/G</th>
               <th scope="col">Last 3</th>
               <th scope="col">Best</th>
-              <th scope="col" title="Standard deviation of his weekly points: low = steady, high = boom or bust">Spread</th>
+              <th scope="col">Spread</th>
               <th scope="col">xFP/G</th>
               <th scope="col">Pts − xFP/G</th>
               <th scope="col">W{week} Proj.</th>

@@ -52,7 +52,6 @@ export default function ScoreCurve({ floor, median, ceiling, pts, state, est = f
 
   return (
     <svg className={`score-curve${est ? " is-est" : ""}${state === "in" ? " is-live" : ""}${zone ? ` zone-${zone}` : ""}`} ref={ref} viewBox={`0 0 ${w} ${H}`} role="img" aria-label={title.replace(/\n/g, ". ")}>
-      <title>{title}</title>
       <path className="outcome-curve-tail-floor" d={leftTail} />
       <path className="outcome-curve-tail-ceiling" d={rightTail} />
       <path className="outcome-curve-middle" d={middlePath} />

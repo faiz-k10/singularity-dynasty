@@ -18,21 +18,21 @@ import { PROFILE_METRICS as METRICS } from "@/lib/statMetrics";
 const PANEL = PANEL_KEYS;
 
 // One line of the touchdown profile / usage panel: the metric, its value, and where he ranks at his position (#1 = highest).
-function RankRow({ label, value, format, rank, hint, unrankedHint }) {
+function RankRow({ label, value, format, rank, unrankedHint }) {
   if (!rank && !unrankedHint) return null;
   return (
     <div className="weekly-rank-row" role="row">
-      <span className="weekly-rank-label" title={hint} role="rowheader">{label}</span>
+      <span className="weekly-rank-label" role="rowheader">{label}</span>
       {rank ? (
-        // The number, then a bar that shows the same rank: full for #1, empty for last at his position (the pool size is in the hover tip).
-        <span className="weekly-rank-cell" title={`${ordinal(rank.rank)} of ${rank.of}`} role="cell">
+        // The number, then a bar that shows the same rank: full for #1, empty for last at his position.
+        <span className="weekly-rank-cell" role="cell">
           <span className="weekly-rank-n">#{rank.rank}</span>
           <span className="weekly-rank-bar">
             <span style={{ width: `${rank.of > 1 ? ((rank.of - rank.rank) / (rank.of - 1)) * 100 : 100}%` }} />
           </span>
         </span>
       ) : (
-        <span className="weekly-rank-cell" title={unrankedHint} role="cell">
+        <span className="weekly-rank-cell" role="cell">
           <span className="weekly-rank-n">—</span>
           <span className="weekly-rank-bar is-none" />
         </span>
@@ -49,18 +49,6 @@ function RankTable({ children }) {
       {children}
     </div>
   );
-}
-
-function ordinal(n) {
-  const rounded = Math.round(n);
-  const mod100 = rounded % 100;
-  if (mod100 >= 11 && mod100 <= 13) return `${rounded}th`;
-  switch (rounded % 10) {
-    case 1: return `${rounded}st`;
-    case 2: return `${rounded}nd`;
-    case 3: return `${rounded}rd`;
-    default: return `${rounded}th`;
-  }
 }
 
 // Last 5 logged games (player_game_log, via page.js's fetchGameLogData) --
@@ -98,13 +86,10 @@ export function GameLogPanel({ games }) {
           const isTie = hasXfp && g.fantasy_points_ppr === g.exp_points_ppr;
           const beatXfp = hasXfp && g.fantasy_points_ppr > g.exp_points_ppr;
           const dotCls = !hasXfp ? "neutral" : isTie ? "tie" : beatXfp ? "above" : "below";
-          const dotTitle = hasXfp
-            ? `${g.fantasy_points_ppr.toFixed(1)} actual vs. ${g.exp_points_ppr.toFixed(1)} expected (xFP) this game`
-            : "No xFP data for this game";
           return (
             <div key={`${g.season}-${g.week}`} className="weekly-gamelog-row">
               <span className="weekly-gamelog-week mono">
-                <span className={`weekly-gamelog-dot ${dotCls}`} title={dotTitle} />
+                <span className={`weekly-gamelog-dot ${dotCls}`} />
                 {g.season} W{g.week}
               </span>
               {/* the team he played FOR that game (players change teams), then vs / @ and the opponent */}
@@ -116,7 +101,6 @@ export function GameLogPanel({ games }) {
               </span>
               <span
                 className="weekly-gamelog-rank mono"
-                title={g.posRank != null ? `Finished ${g.position}${g.posRank} that week` : undefined}
               >
                 {g.posRank != null ? `${g.position}${g.posRank}` : "—"}
               </span>
@@ -171,9 +155,9 @@ function ExpandableBadge({ variant, label, children }) {
 // Plain colored medallion + a glyph -- unlike Confidence (its own
 // ConfidenceBadge component), every other achievement flag renders
 // through this one shared shell instead of having its own component.
-function GlyphBadge({ variant, glyph, title }) {
+function GlyphBadge({ variant, glyph }) {
   return (
-    <span className={`weekly-glyph-badge ${variant}`} title={title}>
+    <span className={`weekly-glyph-badge ${variant}`}>
       {glyph}
     </span>
   );
@@ -236,20 +220,6 @@ function LockIcon() {
       <path d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5zm-3 8V7a3 3 0 0 1 6 0v3H9zm3 4a1.6 1.6 0 0 1 1 2.85V18a1 1 0 1 1-2 0v-1.15A1.6 1.6 0 0 1 12 14z" />
     </svg>
   );
-}
-
-// Names the actual week(s) a Super Hero win happened -- a bare "top
-// scorer in 1 week" title next to THIS week's own (unrelated, often much
-// lower) positional rank reads as a bug at a glance; naming the real
-// past week it happened is what makes an old, real WR1 finish legible
-// instead of looking made up. Lists up to 3 most-recent wins by name
-// before falling back to "and N more" for a genuinely repeat hero.
-function heroTitle(position, weeks) {
-  if (!weeks || weeks.length === 0) return `Top 3 at ${position} at least once this season`;
-  const shown = weeks.slice(0, 3).map((w) => `${w.season} Wk${w.week}`);
-  const rest = weeks.length - shown.length;
-  const list = shown.join(", ") + (rest > 0 ? `, +${rest} more` : "");
-  return `Top 3 at ${position} in ${list}`;
 }
 
 // Honorable's own icon -- a graduation cap (mortarboard) with its
@@ -417,9 +387,9 @@ function ElitePlayerIcon() {
 function achievementNode(a, row) {
   switch (a.key) {
     case "eliteRole":
-      return <GlyphBadge variant="eliteRole" glyph={<EliteRoleIcon />} title={`Elite Role: #${a.rank} among ${row.position}s on how much his offense uses him (the Role numbers in the stats panel)`} />;
+      return <GlyphBadge variant="eliteRole" glyph={<EliteRoleIcon />} />;
     case "elitePlayer":
-      return <GlyphBadge variant="elitePlayer" glyph={<ElitePlayerIcon />} title={`Elite Player: #${a.rank} among ${row.position}s on what he does with his usage (the Player numbers in the stats panel)`} />;
+      return <GlyphBadge variant="elitePlayer" glyph={<ElitePlayerIcon />} />;
     case "confidence":
       return <ConfidenceBadge confidence={row.sample_confidence} />;
     case "onFire":
@@ -427,7 +397,6 @@ function achievementNode(a, row) {
         <GlyphBadge
           variant="heat"
           glyph={<FlameIcon />}
-          title="Hit that week's own ceiling most recently, or beat both xFP and median in each of the last 3 games"
         />
       );
     case "onIce":
@@ -435,7 +404,6 @@ function achievementNode(a, row) {
         <GlyphBadge
           variant="ice"
           glyph={<SnowflakeIcon />}
-          title="Hit that week's own floor most recently, or missed both xFP and median in each of the last 3 games"
         />
       );
     case "volatile":
@@ -443,7 +411,6 @@ function achievementNode(a, row) {
         <GlyphBadge
           variant="icarus"
           glyph={<NightSkyIcon />}
-          title="Wide floor-to-ceiling range this week -- boom-or-bust"
         />
       );
     case "locked":
@@ -451,17 +418,15 @@ function achievementNode(a, row) {
         <GlyphBadge
           variant="eddy"
           glyph={<LockIcon />}
-          title="Tight floor-to-ceiling range this week -- a safe, predictable floor"
         />
       );
     case "hero":
-      return <GlyphBadge variant="ball" glyph={<DragonBall stars={a.tier} />} title={heroTitle(row.position, a.weeks)} />;
+      return <GlyphBadge variant="ball" glyph={<DragonBall stars={a.tier} />} />;
     case "buyLow":
       return (
         <GlyphBadge
           variant="sprout"
           glyph={<SproutIcon />}
-          title="High usage (WOPR) that hasn't shown up in points the last 2 games, while still scoring at or above xFP in 2 of the last 3 -- volume tends to catch up"
         />
       );
     case "matchup":
@@ -469,7 +434,6 @@ function achievementNode(a, row) {
         <GlyphBadge
           variant={a.variant}
           glyph={<MatchupIcon up={a.variant === "smash"} />}
-          title={a.text}
         />
       );
     case "sellHigh":
@@ -477,7 +441,6 @@ function achievementNode(a, row) {
         <GlyphBadge
           variant="peak"
           glyph={<MoneyBagIcon />}
-          title="Low usage (WOPR) despite scoring above median the last 2 games -- results outrunning the opportunity"
         />
       );
     case "honorable":
@@ -485,7 +448,6 @@ function achievementNode(a, row) {
         <GlyphBadge
           variant="honorable"
           glyph={<GraduationCapIcon />}
-          title="Scored at or above xFP in each of the last 3 games"
         />
       );
     case "conArtist":
@@ -493,7 +455,6 @@ function achievementNode(a, row) {
         <GlyphBadge
           variant="menace"
           glyph={<ConArtistIcon />}
-          title="Scored below xFP in each of the last 3 games"
         />
       );
     default:
@@ -677,17 +638,12 @@ export function UsageTdPanel({ row }) {
                   <span>{name}</span>
                   <span
                     className="weekly-rank-avg"
-                    title={
-                      row.groupRank?.[name.toLowerCase()]
-                        ? `${ordinal(row.groupRank[name.toLowerCase()].rank)} of ${row.groupRank[name.toLowerCase()].of} ${row.position}s on the ${name.toLowerCase()} numbers below (by his average rank on them)`
-                        : `Not ranked: he needs at least half of the ${name.toLowerCase()} numbers to be placed`
-                    }
                   >
                     #{row.groupRank?.[name.toLowerCase()]?.rank ?? "-"}
                   </span>
                 </div>
                 {list.map((m) => (
-                  <RankRow key={m.k} label={m.label} value={row[m.k]} format={m.format} rank={row.metricRank?.[m.k]} hint={m.hint} unrankedHint={m.unrankedHint} />
+                  <RankRow key={m.k} label={m.label} value={row[m.k]} format={m.format} rank={row.metricRank?.[m.k]} unrankedHint={m.unrankedHint} />
                 ))}
               </Fragment>
             ))}

@@ -12,7 +12,6 @@ export default function AchievementDots({ achievements, vertical }) {
   return (
     <span
       className={`player-achv-dots${vertical ? " vertical" : ""}`}
-      title={achievements.map((a) => a.label).join(" · ")}
     >
       {achievements.map((a) => (
         <span key={a.key} className={`player-achv-dot ${a.variant}`} />

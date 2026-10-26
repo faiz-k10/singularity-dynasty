@@ -173,7 +173,7 @@ export default function RankingsToolbar({
                           {d.teams.map((t) => {
                             const on = teamIds.has(t);
                             return (
-                              <button key={t} type="button" className={`tf-team${on ? " on" : ""}`} onClick={() => onToggleTeam(t)} aria-pressed={on} title={t}>
+                              <button key={t} type="button" className={`tf-team${on ? " on" : ""}`} onClick={() => onToggleTeam(t)} aria-pressed={on}>
                                 <TeamBadge team={t} />
                               </button>
                             );

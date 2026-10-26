@@ -6,13 +6,9 @@ import TeamBadge from "../tools/TeamBadge";
 import { fmt1 } from "@/lib/format";
 import { lineupAlertCount, slotLabel } from "@/lib/lineupOptimizer";
 
-
-// The hover tip carries what the row no longer prints: his median and floor-ceiling range, as in the weekly rankings.
-const rangeTip = (p) => (p.myFloor != null && p.myCeiling != null ? `${fmt1(p.myProjPts)} median · ${fmt1(p.myFloor)} floor · ${fmt1(p.myCeiling)} ceiling` : `${fmt1(p.myProjPts)} median`);
-
 function Who({ p }) {
   return (
-    <span className="lu-who" title={p.myProjPts != null ? rangeTip(p) : undefined}>
+    <span className="lu-who">
       <PositionBadge position={p.position} />
       {p.team && <TeamBadge team={p.team} />}
       <span className="lu-name">{p.name}</span>
@@ -25,7 +21,7 @@ function LeanTag({ p }) {
   if (!p.myLean) return null;
   const lean = p.myLean.call === "SMASH" ? "Smash" : "Tough";
   return (
-    <span className={`lu-lean mono ${lean === "Smash" ? "is-smash" : "is-tough"}`} title={`${lean} spot: ${p.myLean.effect > 0 ? "+" : "−"}${fmt1(Math.abs(p.myLean.effect))} pts/game vs. an average defense; his projection is moved by that`}>
+    <span className={`lu-lean mono ${lean === "Smash" ? "is-smash" : "is-tough"}`}>
       {lean}
     </span>
   );
@@ -49,7 +45,7 @@ function SwapList({ swaps }) {
               <LeanTag p={x.out} />
             </>
           )}
-          <span className="lu-gain mono" title="Projected points gained: median, counting each player's Smash / Tough Spot"><span className="lu-gain-label">proj.</span> +{fmt1(x.gain)}</span>
+          <span className="lu-gain mono"><span className="lu-gain-label">proj.</span> +{fmt1(x.gain)}</span>
         </li>
       ))}
     </ul>
@@ -73,7 +69,7 @@ export default function LineupAdvice({ team, gameStates, injuries = [] }) {
             Lineup Alerts{count.total > 0 && <span className="lu-alerts-count">{count.total}</span>}
           </h4>
           {url && (
-            <a className="h2h-sleeper lu-sleeper mono" href={url} target="_blank" rel="noopener noreferrer" title="Best lineup by this week's projection; locked players stay put">
+            <a className="h2h-sleeper lu-sleeper mono" href={url} target="_blank" rel="noopener noreferrer">
               <img src="/sleeper-logo.png" alt="" width="22" height="22" className="lu-sleeper-logo" />
               Set Lineup in Sleeper <span aria-hidden="true">↗</span>
             </a>

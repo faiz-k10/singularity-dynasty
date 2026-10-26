@@ -131,7 +131,6 @@ export function MyBadge({ owned }) {
   return (
     <span
       className={`mine-badge${owned.starter ? "" : " mine-badge-bench"}`}
-      title={`On your roster: ${where}`}
       aria-label={`On your roster: ${where}`}
     >
       {owned.starter ? "★" : "☆"}

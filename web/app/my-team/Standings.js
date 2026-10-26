@@ -43,7 +43,7 @@ export default function Standings({ season, opponent, bare = false }) {
               <th>Record</th>
               <th>PF</th>
               <th>PA</th>
-              <th title="Average final wins across the simulated seasons">Proj W</th>
+              <th>Proj W</th>
               <th>Playoffs</th>
               <th>#1 seed</th>
             </tr>
