@@ -43,9 +43,12 @@ async function renderPng(stage) {
   }
 }
 
-// One picture per view: it starts drawing when the pointer reaches the Export button (see `warm` below), so it is usually done by the time Copy image /
-// Save image / Share is chosen, and is reused until something about the view changes -- the address (the Lab mirrors every choice into it), the theme or the window's
-// width. A failed draw is forgotten so the next try starts again.
+// One picture per view, drawn only when an action needs it (Copy image / Save image / Share) and reused until something about the view
+// changes -- the address (the Lab mirrors every choice into it), the theme or the window's width. A failed draw is forgotten so the next
+// try starts again. Drawing blocks the page for about half a second (html-to-image copies the style of every node; a scatter has
+// hundreds), so it never starts ahead of time -- an earlier version drew while the pointer approached the Export button or the menu
+// opened, and the first click then waited behind it -- and it first lets the page paint (menu closed, "Exporting…" showing) so the
+// block never lands on a control that looks dead.
 const pictureCache = { key: null, promise: null };
 function pictureKey(stage) {
   return `${window.location.search}|${document.documentElement.getAttribute("data-theme") || ""}|${stage.offsetWidth}`;
@@ -54,7 +57,7 @@ function getPicture(stage) {
   const key = pictureKey(stage);
   if (pictureCache.key !== key || !pictureCache.promise) {
     pictureCache.key = key;
-    pictureCache.promise = renderPng(stage).catch((e) => {
+    pictureCache.promise = new Promise((r) => setTimeout(r, 60)).then(() => renderPng(stage)).catch((e) => {
       if (pictureCache.key === key) pictureCache.promise = null;
       throw e;
     });
@@ -81,20 +84,6 @@ export default function LabExport({ stageRef, fileName, title, caption }) {
     const id = idle(() => warmFonts(stageRef.current).catch(() => {}), { timeout: 4000 });
     return () => cancel(id);
   }, [stageRef]);
-
-  // Drawing the picture blocks the page for about half a second (html-to-image copies the style of every node, a scatter has hundreds),
-  // so it starts when the pointer or keyboard reaches the Export button -- the cursor's trip to the button hides most of it -- and not in the
-  // click that opens the menu, where it froze hover and clicks. Without a pointer (touch) it starts shortly after the menu has painted.
-  // Either way one picture is kept per view (getPicture), so this is a no-op once it is drawn; Copy image / Save / Share draw it themselves
-  // when nothing has.
-  const warm = useCallback(() => {
-    if (stageRef.current) getPicture(stageRef.current).catch(() => {});
-  }, [stageRef]);
-  useEffect(() => {
-    if (!open) return undefined;
-    const id = setTimeout(warm, 350);
-    return () => clearTimeout(id);
-  }, [open, warm]);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -157,8 +146,6 @@ export default function LabExport({ stageRef, fileName, title, caption }) {
         aria-haspopup="menu"
         aria-expanded={open}
         disabled={busy}
-        onPointerEnter={warm}
-        onFocus={warm}
         onClick={() => setOpen((v) => !v)}
       >
         {busy ? "Exporting…" : status ? status.text : "Export"}
