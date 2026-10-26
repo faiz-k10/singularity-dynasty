@@ -300,7 +300,7 @@ body::before{
 }
 .brandmark .ring, .lab-export-brand .ring, .lab-export-mark .ring, .lab-export-foot .ring{
   width:15px; height:15px; border-radius:50%;
-  background:radial-gradient(circle at 35% 35%, var(--horizon-gold), var(--horizon) 45%, var(--neon-blue-dim) 80%);
+  background:radial-gradient(circle at 35% 35%, var(--horizon-gold), var(--horizon) 45%, var(--down) 80%);
   box-shadow:0 0 10px 1px rgba(var(--horizon-rgb),0.5), 0 0 16px 3px rgba(var(--neon-blue-rgb),0.25);
   flex-shrink:0;
 }
@@ -708,7 +708,7 @@ section{padding:96px 0 20px; position:relative;}
 @keyframes os-spin{to{transform:translate(-50%,-50%) rotate(360deg);}}
 .os-core{
   position:absolute; top:50%; left:50%; width:27%; height:27%; margin-left:-13.5%; margin-top:-13.5%;
-  border-radius:50%; background:radial-gradient(circle at 35% 35%, var(--horizon-gold), var(--horizon) 45%, var(--neon-blue-dim) 85%);
+  border-radius:50%; background:radial-gradient(circle at 35% 35%, var(--horizon-gold), var(--horizon) 45%, var(--down) 85%);
   box-shadow:0 0 50px 8px rgba(var(--horizon-rgb),0.35), 0 0 90px 26px rgba(var(--neon-blue-rgb),0.12);
   animation:os-pulse 6s ease-in-out infinite;
   display:flex; align-items:center; justify-content:center; text-align:center;
@@ -3503,7 +3503,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
 }
 .mac-logo-s0{stop-color:var(--horizon-gold);}
 .mac-logo-s1{stop-color:var(--horizon);}
-.mac-logo-s2{stop-color:var(--neon-blue-dim);}
+.mac-logo-s2{stop-color:var(--down);}
 .my-analysis-row{cursor:pointer;}
 .my-analysis-row.selected td{background:rgba(var(--neon-blue-rgb),0.12) !important;}
 /* Exposure cell: "3/5 · 60%" label with a share-bar under it. */

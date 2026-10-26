@@ -65,7 +65,7 @@ export default function OpengraphImage() {
             borderRadius: "50%",
             marginBottom: 28,
             background:
-              "radial-gradient(circle at 35% 35%, #5EEAD4, #2DD4BF 45%, #6B7480 85%)",
+              "radial-gradient(circle at 35% 35%, #5EEAD4, #2DD4BF 45%, #E11D48 85%)",
           }}
         />
 
