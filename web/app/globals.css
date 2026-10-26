@@ -2851,20 +2851,18 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .shape-finder{grid-area:finder;}
 /* Outer wrapper is transparent: just the title and the comp cards, no panel behind them. */
 .shape-finder.stat-panel{background:none; border:none; padding:0;}
-/* auto-fit at the card's own fixed width, not a flat repeat(3,1fr) --
-   now that each card is a hard pixel width rather than a flexible
-   "auto" column that could shrink to fit, forcing exactly 3 equal
-   columns would overflow (confirmed live: 84px past the container)
-   anywhere narrower than ~1550px. Cards wrap to as many columns as
-   actually fit instead, same 1-column stack below 900px as before.
-   justify-content:center (rather than the grid's default stretch/start)
-   so a row that doesn't exactly fill 2 or 3 cards centers the leftover
-   space evenly instead of hugging the left edge -- explicit ask. */
+/* Cards are 380-438px wide and as many fit per row as the room allows (three side by side from about 1,200px of room), so a
+   window a little narrower than the full 438px x 3 no longer drops the third comp onto a second row; the card's inner grid and
+   table are fluid inside it (see .shape-finder-grid). A flex row, not auto-fit columns: auto-fit counts columns with the MAX
+   track size, so minmax(380px, 438px) still wrapped at 438. justify-content:center centers a row that doesn't fill it.
+   Same 1-column stack below 900px. */
 .shape-finder-list{
-  display:grid; grid-template-columns:repeat(auto-fit, 438px); justify-content:center; gap:12px; align-items:start;
+  display:flex; flex-wrap:wrap; justify-content:center; gap:12px; align-items:flex-start;
 }
+.shape-finder-list > *{flex:1 1 380px; max-width:438px; min-width:0;}
 @media (max-width:900px){
-  .shape-finder-list{grid-template-columns:1fr;}
+  .shape-finder-list{flex-direction:column; align-items:stretch;}
+  .shape-finder-list > *{flex:none; max-width:none;}
 }
 /* One bordered card for the whole comp now (background/border/radius
    moved here from .shape-finder-item, which used to be its own separate
@@ -2903,14 +2901,13 @@ tr.stat-row-selected td{background:var(--void-panel);}
    comfortably wider than the portrait (36px) and "MATCH" label (34px)
    too. Shrinking this column (down from the 108px it needed back when
    the name shared it) is what actually gets 3 cards into one row at
-   normal desktop widths. Table column is 356px (up from 332px -- see
-   -table below for why). Fixed width (not max-width) on the grid
-   itself, so the whole card is the same 416px for every comp regardless
-   of content. */
+   normal desktop widths. The table column takes the rest of the card
+   (356px at the full 416px width), and the grid is 100% of the card so
+   every comp's card is the same width whatever its content. */
 .shape-finder-grid{
-  display:grid; grid-template-columns:52px 356px;
+  display:grid; grid-template-columns:52px minmax(0,1fr);
   grid-template-areas:". picker" "score table";
-  column-gap:8px; row-gap:8px; align-items:start; width:416px;
+  column-gap:8px; row-gap:8px; align-items:start; width:100%;
 }
 /* Floor/Median/Ceiling picker -- same three-way pattern as the main
    table's own column headers, spelled out in full now rather than
@@ -4232,8 +4229,8 @@ summary:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible{
   .stat-detail-row td{padding:10px 0;}
   .stat-detail-row > td > .stat-detail-grid{position:sticky; left:10px; width:calc(100vw - 26px - 20px); box-sizing:border-box;}
 
-  /* Similar Shape comp cards were a fixed 416px; let them fill the phone-width panel. */
-  .shape-finder-grid{width:100%; grid-template-columns:44px minmax(0,1fr);}
+  /* Similar Shape comp cards fill the phone-width panel (narrower score column). */
+  .shape-finder-grid{grid-template-columns:44px minmax(0,1fr);}
   .shape-finder-layers{grid-template-columns:92px repeat(3, 1fr);}
   .shape-finder-table td:first-child{width:92px; white-space:normal;}
   .shape-finder-score-value{font-size:18px;}
