@@ -54,8 +54,15 @@ export function matchAthlete(player, roster) {
 
 // The yards the play itself gained, from the text ("for 11 yards", "for no gain"): ESPN's statYardage folds in
 // penalty yards (an 11-yard catch with a 15-yard foul after it reads -19). Falls back to statYardage (field goals).
+// One exception: a play where the offense fumbles, gets the ball back itself (lower-case "recovered by" = his own team) and
+// someone carries on has several "for N yards" pieces -- "C.Humphrey for -4 yards. FUMBLES, recovered by KC-P.Mahomes. P.Mahomes for
+// -3 yards. Handoff to K.Walker for 8 yards" -- and the official stat credits the play's NET (+1, ESPN's box score and Sleeper both),
+// not the first piece. With no penalty in the play statYardage is exactly that net, so it is used there.
 export function playYards(text, statYardage) {
-  const m = String(text || "").match(/for (-?\d+) yards?|for no gain/i);
+  const t = String(text || "");
+  const pieces = t.match(/for (-?\d+) yards?|for no gain/gi) || [];
+  if (pieces.length > 1 && /recovered by/.test(t) && !/RECOVERED by|PENALTY/.test(t) && typeof statYardage === "number") return statYardage;
+  const m = t.match(/for (-?\d+) yards?|for no gain/i);
   if (m) return m[1] == null ? 0 : Number(m[1]);
   return typeof statYardage === "number" ? statYardage : null;
 }

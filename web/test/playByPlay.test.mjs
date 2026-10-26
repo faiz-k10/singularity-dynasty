@@ -48,6 +48,12 @@ test("playYards reads the play's own yards, not penalty-adjusted statYardage", (
   assert.equal(playYards("J.Williams up the middle for no gain", 0), 0);
   assert.equal(playYards("J.Love sacked at GB 4 for -10 yards", -10), -10);
   assert.equal(playYards("T.Smack 44 yard field goal is GOOD", 44), 44);
+  // The offense fumbles, recovers it itself and hands off: the official stat is the play's net (ESPN box score and Sleeper, KC @ SEA, Oct 25 2026).
+  const trick = "(Shotgun) C.Humphrey to KC 49 for -4 yards. FUMBLES, recovered by KC-P.Mahomes at KC 49. P.Mahomes to KC 46 for -3 yards. Handoff to K.Walker to SEA 46 for 8 yards (L.Williams; J.Jobe).";
+  assert.equal(playYards(trick, 1), 1);
+  // A fumble the defense recovers (upper case) keeps the carry's own yards, and a play with a penalty never takes statYardage.
+  assert.equal(playYards("J.Cook up the middle for 3 yards. FUMBLES, RECOVERED by MIA-J.Phillips at BUF 30. J.Phillips to BUF 10 for 20 yards", 23), 3);
+  assert.equal(playYards("A.Jones for 3 yards. FUMBLES, recovered by GB-B.Smith. B.Smith for 2 yards. PENALTY on GB-X, Holding, 10 yards", -5), 3);
 });
 
 test("roleLabel keeps only plays that move fantasy points", () => {
