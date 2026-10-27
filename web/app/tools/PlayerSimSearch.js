@@ -664,6 +664,7 @@ const PlayerRow = memo(function PlayerRow({
             )}
           </div>
         </td>
+        <td className="mono align-left">{row.outcomePercentile != null ? ordinal(row.outcomePercentile) : "—"}</td>
         <td
           className={`mono align-left ${row.regressionScore != null ? (row.regressionScore >= 0 ? "por-positive" : "por-negative") : ""}`}
         >
@@ -671,7 +672,6 @@ const PlayerRow = memo(function PlayerRow({
             ? `${row.regressionScore >= 0 ? "+" : ""}${row.regressionScore.toFixed(2)}`
             : "—"}
         </td>
-        <td className="mono align-left">{row.outcomePercentile != null ? ordinal(row.outcomePercentile) : "—"}</td>
         {SHOW_POR && (
           <td className={`mono por-cell ${row.por >= 0 ? "por-positive" : "por-negative"}`}>
             {row.por >= 0 ? "+" : ""}
@@ -1046,13 +1046,13 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
                 <SortableTh label="Ceiling" sortKey="ceiling" {...sortProps} />
                 <th>Range</th>
                 <SortableTh
-                  label="vs Pace"
-                  sortKey="regressionScore"
+                  label="Pace %ile"
+                  sortKey="outcomePercentile"
                   {...sortProps}
                 />
                 <SortableTh
-                  label="Pace %ile"
-                  sortKey="outcomePercentile"
+                  label="vs Pace"
+                  sortKey="regressionScore"
                   {...sortProps}
                 />
                 {SHOW_POR && (

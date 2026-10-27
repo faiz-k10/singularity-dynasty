@@ -4203,8 +4203,8 @@ summary:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible{
   .player-sims-table > thead > tr > th:nth-child(7){width:62px;}
   .player-sims-table > thead > tr > th:nth-child(6){width:76px;}
   .player-sims-table > thead > tr > th:nth-child(8){width:108px;}
-  .player-sims-table > thead > tr > th:nth-child(9){width:80px;}
-  .player-sims-table > thead > tr > th:nth-child(10){width:92px;}
+  .player-sims-table > thead > tr > th:nth-child(9){width:92px;}
+  .player-sims-table > thead > tr > th:nth-child(10){width:80px;}
   .player-sims-table > thead > tr > th:nth-child(11){width:60px;}
 
   /* The opened player's panels are one full-width cell of the 830px table. Pin them to the
