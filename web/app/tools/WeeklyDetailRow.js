@@ -8,6 +8,7 @@ import PositionBadge from "./PositionBadge";
 import ConfidenceBadge from "./ConfidenceBadge";
 import { getAchievements } from "./achievements";
 import DragonBall from "./DragonBall";
+import FitBox from "./FitBox";
 import { MyStrip, MyEmpty } from "./MyPlayers";
 import { PANEL_KEYS } from "@/lib/statPanel";
 import { ageOn } from "@/lib/format";
@@ -479,8 +480,8 @@ export function PlayerStatsRow({ row }) {
   const bye = isBye(row.opponent);
   return (
     <div className="weekly-stats-split">
-      <div className="stat-panel weekly-stats-next">
-        <span className="weekly-stats-eyebrow weekly-stats-eyebrow-next">
+      <FitBox className="stat-panel weekly-stats-next">
+        <span className="weekly-stats-eyebrow weekly-stats-eyebrow-next" data-fit>
           This week{!bye && ` · ${row.playedThisWeek != null ? "Played" : "Projected"}`}
           {row.opponent && !isBye(row.opponent) && (
             <span className="weekly-stats-opp">
@@ -491,32 +492,32 @@ export function PlayerStatsRow({ row }) {
           {row.opponent && isBye(row.opponent) && <span className="weekly-stats-opp">· {BYE_LABEL}</span>}
         </span>
         <div className="weekly-stats-pair">
-          <div className="weekly-stats-item">
+          <div className="weekly-stats-item" data-fit>
             <span className="weekly-player-stat-label">Position rank</span>
             <span className="weekly-stats-value-big weekly-stats-value-gold">{bye ? "—" : row.positionLabel || "—"}</span>
           </div>
           {/* A player who has played this week shows his ACTUAL points here instead of the median projection. */}
-          <div className="weekly-stats-item">
+          <div className="weekly-stats-item" data-fit>
             <span className="weekly-player-stat-label">{!bye && row.playedThisWeek != null ? "Actual" : "Median proj"}</span>
             <span className="weekly-stats-value-big">
               {bye ? "—" : row.playedThisWeek != null ? row.playedThisWeek.toFixed(1) : row.projection != null ? row.projection.toFixed(1) : "—"}
             </span>
           </div>
         </div>
-      </div>
-      <div className="stat-panel weekly-stats-last">
-        <span className="weekly-stats-eyebrow">Last week{lastWeek ? ` · W${lastWeek.week}` : ""}</span>
+      </FitBox>
+      <FitBox className="stat-panel weekly-stats-last">
+        <span className="weekly-stats-eyebrow" data-fit>Last week{lastWeek ? ` · W${lastWeek.week}` : ""}</span>
         <div className="weekly-stats-pair">
-          <div className="weekly-stats-item">
+          <div className="weekly-stats-item" data-fit>
             <span className="weekly-player-stat-label">Finish</span>
             <span className="weekly-stats-value-dim">{lastWeek ? `${row.position}${lastWeek.rank}` : "—"}</span>
           </div>
-          <div className="weekly-stats-item">
+          <div className="weekly-stats-item" data-fit>
             <span className="weekly-player-stat-label">Output</span>
             <span className="weekly-stats-value-dim">{lastWeek?.points != null ? lastWeek.points.toFixed(1) : "—"}</span>
           </div>
         </div>
-      </div>
+      </FitBox>
     </div>
   );
 }
