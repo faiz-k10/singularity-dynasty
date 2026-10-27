@@ -68,6 +68,7 @@
   --elite-player:#4B5BD1; --elite-player-rgb:75,91,209;
   --matchup-neutral-rgb:240,196,61;
   --star-dim-rgb:140,149,163;
+  --inj-ok:#22C55E; --inj-q:#FACC15; --inj-d:#FB923C; --inj-out:#EF4444;
   --on-brand:#021210;
   --on-cold:#021210;
   --tough:#3DDCFF; --tough-rgb:61,220,255;
@@ -82,6 +83,7 @@
   :root:not([data-theme="dark"]){
     --horizon:#0D7A70;
     --horizon-rgb:13,122,112;
+    --inj-ok:#16A34A; --inj-q:#A16207; --inj-d:#C2410C; --inj-out:#DC2626;
     --on-brand:#F2F8F7;
     --on-cold:#F4F4F2;
     --tough:#0A7F99;
@@ -144,6 +146,7 @@
   --star-dim-rgb:92,99,112;
   --horizon:#0D7A70;
   --horizon-rgb:13,122,112;
+  --inj-ok:#16A34A; --inj-q:#A16207; --inj-d:#C2410C; --inj-out:#DC2626;
   --on-brand:#F2F8F7;
   --on-cold:#F4F4F2;
   --tough:#0A7F99;
@@ -4076,12 +4079,13 @@ summary:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible{
 /* Injury & News status: a colored dot left of the player name (Out/IR red,
    Doubtful orange, Questionable gold, healthy-with-news neutral) plus the
    status word in the same color. */
-.status-dot{width:10px; height:10px; border-radius:50%; flex-shrink:0; background:color-mix(in srgb, var(--star-dim) 45%, transparent);}
-.status-dot-3{background:var(--down); box-shadow:0 0 8px color-mix(in srgb, var(--down) 60%, transparent);}
-.status-dot-2{background:var(--horizon); box-shadow:0 0 8px color-mix(in srgb, var(--horizon) 60%, transparent);}
-.status-dot-1{background:var(--horizon-gold); box-shadow:0 0 8px color-mix(in srgb, var(--horizon-gold) 60%, transparent);}
+/* Injury statuses use the conventional colours, not the site theme (--inj-* tokens): healthy green, Questionable yellow, Doubtful orange, Out / Injured Reserve red. */
+.status-dot{width:10px; height:10px; border-radius:50%; flex-shrink:0; background:var(--inj-ok);}
+.status-dot-3{background:var(--inj-out); box-shadow:0 0 8px color-mix(in srgb, var(--inj-out) 60%, transparent);}
+.status-dot-2{background:var(--inj-d); box-shadow:0 0 8px color-mix(in srgb, var(--inj-d) 60%, transparent);}
+.status-dot-1{background:var(--inj-q); box-shadow:0 0 8px color-mix(in srgb, var(--inj-q) 60%, transparent);}
 .status-text{font-size:12px; font-weight:600;}
-.status-text-3{color:var(--down);} .status-text-2{color:var(--horizon);} .status-text-1{color:var(--horizon-gold);}
+.status-text-3{color:var(--inj-out);} .status-text-2{color:var(--inj-d);} .status-text-1{color:var(--inj-q);}
 
 /* Headline stats beside a panel title (pinned in the header bar). */
 .board-spacer{flex:1;}
