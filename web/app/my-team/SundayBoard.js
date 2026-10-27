@@ -200,7 +200,13 @@ function FeedRow({ r, isNew, delta, showLeagues, focused, onPick }) {
           <TeamBadge team={r.team} />
           <span className="h2h-game mono">{r.detail || "Live"}</span>
         </span>
-        {showLeagues && where.length > 0 && <span className="sb-feed-leagues">{where.join(" · ")}</span>}
+        {((showLeagues && where.length > 0) || r.game) && (
+          <span className="sb-feed-foot">
+            <span className="sb-feed-leagues">{showLeagues ? where.join(" · ") : ""}</span>
+            {/* The NFL game's running score, own team first, at the right end of the league-names line. */}
+            {r.game && <span className="sb-feed-game mono">{r.game}</span>}
+          </span>
+        )}
       </div>
       <div className="sb-feed-nums">
         <span className="sb-feed-pts mono">{fmt2(r.pts)}</span>
@@ -213,7 +219,6 @@ function FeedRow({ r, isNew, delta, showLeagues, focused, onPick }) {
         ) : (
           <span className="sb-feed-proj mono">proj {fmt1(r.proj)}</span>
         )}
-        {r.game && <span className="sb-feed-game mono">{r.game}</span>}
       </div>
     </li>
   );
