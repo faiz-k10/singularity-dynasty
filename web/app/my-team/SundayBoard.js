@@ -370,7 +370,7 @@ function LiveFeed({ savedTeams, gameStates, updatedAt, teamId = null, league = n
   const mounted = useMounted();
   const baseFeed = useMemo(() => buildLiveFeed(savedTeams, gameStates, { onlyTeamId: teamId }), [savedTeams, gameStates, teamId]);
   // Each player's running points play by play (from the plays request below): Sleeper trails the game by a minute or two, so the
-  // plays it hasn't posted yet are added to his number (lib/liveFeed.js pendingFor / applyPending).
+  // plays it hasn't posted yet are added to his number (lib/liveFeed.js pendingEach / applyPending).
   const feed = useMemo(() => ({ ...baseFeed, mine: applyPending(baseFeed.mine, playTotals), theirs: applyPending(baseFeed.theirs, playTotals) }), [baseFeed, playTotals]);
   const all = useMemo(() => [...feed.mine, ...feed.theirs], [feed]);
   const key = all.map((r) => `${r.id}:${r.pts}`).join(",");
@@ -470,7 +470,7 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
   const [playTotals, setPlayTotals] = useState(null);
   // New totals are merged into what is already known: opening one league narrows the plays request to its players, and the other leagues' cards
   // must not lose their adjustment (and flicker back to Sleeper's older number) when the board widens again. A stale entry is harmless:
-  // lib/liveFeed.js pendingFor only uses it when Sleeper's number still lines up with it.
+  // lib/liveFeed.js pendingEach only uses it when Sleeper's number still lines up with it.
   const mergeTotals = useCallback((t) => setPlayTotals((prev) => ({ ...(prev || {}), ...t })), []);
   // A game that has just ended keeps its plays coming for a few minutes (the player has left the live list, but Sleeper still trails
   // his last plays, and the scores on the board add the ones it hasn't posted): lib/liveFeed.js catchUpPlayers.

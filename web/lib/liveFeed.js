@@ -10,6 +10,7 @@
 
 // gameStates: lib/gameStatus.js parseScoreboard() output.
 import { leagueName, round2 as r2 } from "./format.js";
+import { scorePlay } from "./playScoring.js";
 
 // "PHI 14–10": the game's score with the player's own team first (null before the score exists).
 export function gameScoreLabel(team, g) {
@@ -43,7 +44,7 @@ export function buildLiveFeed(savedTeams, gameStates, { onlyTeamId = null } = {}
           row = { id: `${side}:${p.id}`, playerId: p.id, side, name: p.name, pos: p.pos, team: p.team, proj: p.proj, est: !!p.est, detail: g.detail || null, game: gameScoreLabel(p.team, g), starts: [] };
           sides[side].set(p.id, row);
         }
-        row.starts.push({ teamId: t.id, league, opponent: side === "theirs" ? s.opponent || null : null, pts });
+        row.starts.push({ teamId: t.id, league, opponent: side === "theirs" ? s.opponent || null : null, pts, scoring: s.scoringSettings || null, pos: p.pos });
       }
     }
   }
@@ -73,10 +74,12 @@ export function buildLiveFeed(savedTeams, gameStates, { onlyTeamId = null } = {}
 }
 
 // Sleeper posts a player's points about a minute and a half after the play; ESPN's play list is ~25 seconds behind. So the panel adds
-// the plays Sleeper hasn't counted yet: `plays` is his running points play by play (standard PPR, oldest first, from
-// lib/playByPlay.js playerPlayTotals). If Sleeper's number in every league he starts in equals the running total after some play
-// k (it does in a standard-PPR league, exactly), the plays after k are the pending ones. If any league's number matches no point
-// of the running total (half-PPR, bonuses, a play we don't list) we say nothing rather than guess.
+// the plays Sleeper hasn't counted yet: `plays` is his plays oldest first (lib/playByPlay.js playerPlayTotals: { l: label, y: yards }),
+// scored here in EACH LEAGUE'S OWN scoring (lib/playScoring.js: Sleeper's number is in the league's scoring, a league that pays 0.25 a
+// carry drifts from a standard-PPR running total on the first play). If Sleeper's number in every league he starts in equals the running
+// total after some play k, the plays after k are the pending ones -- per league, since the same plays are worth different amounts in
+// different scoring. If any league's number matches no point of its running total (a yardage bonus, a play we don't list) we say
+// nothing rather than guess. (A plain number in `plays` is a play already scored, for tests and standard scoring.)
 const PEND_TOL = 0.02; // Sleeper posts exact two-decimal points (a 6-yard pass is 0.24)
 // The play list takes its yardage from ESPN's play text, which can differ from the official stat by a yard or two (Swift's Sleeper 0.70 sat
 // between our running totals 0.60 and 1.60: a one-yard difference), so when no running total matches exactly the nearest one within this
@@ -98,20 +101,20 @@ function matchedPrefix(prefix, pts) {
   if (exact >= 0) return exact;
   return nearDiff <= NEAR_TOL ? near : -1;
 }
-export function pendingFor(starts, plays) {
-  if (!plays?.length || !starts?.length) return 0;
-  const prefix = [0];
-  for (const v of plays) prefix.push(prefix[prefix.length - 1] + v);
-  const total = prefix[prefix.length - 1];
-  let pending = null;
+// What each of a player's starts still lacks: an array with one amount per start (each in its own league's scoring), or null when any
+// start's number matches no point of its running total (no estimate). starts: [{ pts, scoring?, pos? }].
+export function pendingEach(starts, plays) {
+  if (!plays?.length || !starts?.length) return null;
+  const out = [];
   for (const st of starts) {
+    const prefix = [0];
+    for (const p of plays) prefix.push(prefix[prefix.length - 1] + (typeof p === "number" ? p : scorePlay(p.l, p.y, st.scoring, st.pos)));
     const best = matchedPrefix(prefix, st.pts);
-    if (best < 0) return 0;
-    const p = r2(total - prefix[best]);
-    if (pending !== null && Math.abs(p - pending) > PEND_TOL) return 0;
-    pending = p;
+    if (best < 0) return null;
+    const pending = r2(prefix[prefix.length - 1] - prefix[best]);
+    out.push(Math.abs(pending) < PEND_TOL || Math.abs(pending) > 30 ? 0 : pending);
   }
-  return Math.abs(pending) < PEND_TOL || Math.abs(pending) > 30 ? 0 : pending;
+  return out.some(Boolean) ? out : null;
 }
 
 // Starters whose game has just ended: Sleeper posts the last plays a minute or two after the final whistle, so for CATCH_UP_MS after the
@@ -138,24 +141,27 @@ export function catchUpPlayers(savedTeams, gameStates, seen, now) {
   return [...out.values()];
 }
 
-// Rows with those pending points added to their numbers (pts, ptsMin, each start) and `pending` set for the label.
+// Rows with those pending points added to their numbers (each start in its own league's scoring; pts / ptsMin follow the starts) and
+// `pending` (the largest) set for the label.
 export function applyPending(rows, totals) {
   if (!totals) return rows;
   return rows.map((r) => {
-    const pending = pendingFor(r.starts, totals[r.playerId]);
-    if (!pending) return r;
-    return { ...r, pts: r2(r.pts + pending), ptsMin: r2(r.ptsMin + pending), total: r2(r.total + pending * r.starts.length), starts: r.starts.map((x) => ({ ...x, pts: r2(x.pts + pending) })), pending };
+    const each = pendingEach(r.starts, totals[r.playerId]);
+    if (!each) return r;
+    const starts = r.starts.map((x, i) => ({ ...x, pts: r2(x.pts + each[i]) }));
+    const pts = starts.map((x) => x.pts);
+    return { ...r, pts: Math.max(...pts), ptsMin: Math.min(...pts), total: r2(pts.reduce((a, b) => a + b, 0)), starts, pending: Math.max(...each) };
   });
 }
 
 // The same estimate for a matchup lineup (settings.h2h.mine / .opp, one league): each player's `pts` gets his pending points, and
 // `added` is the lineup's total of them, for the scoreboard. Players without a total, or whose number doesn't line up, are untouched.
-export function applyPendingToLineup(list, totals) {
+export function applyPendingToLineup(list, totals, scoring = null) {
   if (!totals || !list) return { list, added: 0 };
   let added = 0;
   const out = list.map((p) => {
     if (!p?.id || typeof p.pts !== "number") return p;
-    const pending = pendingFor([{ pts: p.pts }], totals[p.id]);
+    const pending = pendingEach([{ pts: p.pts, scoring, pos: p.pos }], totals[p.id])?.[0];
     if (!pending) return p;
     added += pending;
     return { ...p, pts: r2(p.pts + pending), pending };

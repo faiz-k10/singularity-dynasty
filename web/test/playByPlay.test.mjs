@@ -189,7 +189,7 @@ test("playPoints: standard PPR rates", () => {
   assert.equal(playPoints("Return", 30), 0);
 });
 
-test("playerPlayTotals: each player's play points, oldest first; defenses left out", () => {
+test("playerPlayTotals: each player's plays (label + yards, scored per league later), oldest first; defenses left out", () => {
   const plays = parsePlays(
     [
       raw("p1", 1, "Rush", "J.Williams right tackle for 20 yards", [["200", "rusher"]]),
@@ -202,7 +202,7 @@ test("playerPlayTotals: each player's play points, oldest first; defenses left o
     { playerId: "a", name: "Javonte Williams", pos: "RB", team: "DAL", side: "theirs", espnId: "200" },
     { playerId: "GB", name: "Green Bay Packers", pos: "DEF", team: "GB", side: "mine" },
   ];
-  assert.deepEqual(playerPlayTotals(buildAllPlayEntries(players, plays)), { a: [2, 0.5] });
+  assert.deepEqual(playerPlayTotals(buildAllPlayEntries(players, plays)), { a: [{ l: "Run", y: 20 }, { l: "Run", y: 5 }] });
 });
 
 test("fumbles and interceptions: fumble, fumble lost, interception thrown, sack with a lost fumble, defense turnovers", () => {

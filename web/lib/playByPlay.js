@@ -10,6 +10,8 @@
 //
 // The pure parts (parse, match, describe, build) are tested in test/playByPlay.test.mjs; the fetchers keep a small
 // module cache: a game's plays for 20 seconds (refreshing only the newest page), a team roster for 12 hours.
+import { scorePlay } from "./playScoring.js";
+
 
 const CORE = "https://sports.core.api.espn.com/v2/sports/football/leagues/nfl";
 const SITE = "https://site.api.espn.com/apis/site/v2/sports/football/nfl";
@@ -184,38 +186,13 @@ export function yardsFor(label, yards) {
   return `${yards < 0 ? "−" : ""}${n} ${n === 1 ? "yd" : "yds"}`;
 }
 
-// Fantasy points one play is worth to the player with this label: the site's fixed standard PPR rates (1 per catch, 0.1 per rushing /
-// receiving yard, 0.04 per passing yard, 6 per touchdown run or catch, 4 per touchdown pass, -2 per interception thrown or
-// fumble lost, 3 per field goal, 1 per extra point, 2 per two-point conversion; defense: 1 per sack, 2 per turnover or safety,
-// 6 per score). A league's own scoring can differ a little, so this is "about"; kick-return yards and field-goal distance
-// bonuses are not counted.
+// Fantasy points one play is worth to the player with this label under the site's fixed standard PPR rates (1 per catch, 0.1 per rushing /
+// receiving yard, 0.04 per passing yard, 6 per touchdown run or catch, 4 per touchdown pass, -2 per interception thrown or fumble lost,
+// 3 per field goal, 1 per extra point, 2 per two-point conversion; defense: 1 per sack, 2 per turnover or safety, 6 per score) -- the
+// numbers shown on the play list. A league's own scoring can differ, so the live totals are re-scored per league (lib/playScoring.js).
+// Kick-return yards and field-goal distance bonuses are not counted.
 export function playPoints(label, yards) {
-  const y = typeof yards === "number" ? yards : 0;
-  switch (label) {
-    case "Catch": return 1 + 0.1 * y;
-    case "Touchdown catch": return 7 + 0.1 * y;
-    case "Run": return 0.1 * y;
-    case "Touchdown run": return 6 + 0.1 * y;
-    case "Completion": return 0.04 * y;
-    case "Touchdown pass": return 4 + 0.04 * y;
-    case "Interception thrown":
-    case "Fumble lost": return -2;
-    case "Field goal": return 3;
-    case "Extra point": return 1;
-    case "Two-point conversion":
-    case "Two-point return": return 2;
-    case "Touchdown":
-    case "Return touchdown": return 6;
-    case "Sack": return 1;
-    case "Sack and fumble recovery": return 3;
-    case "Interception":
-    case "Fumble recovery":
-    case "Safety":
-    case "Blocked kick": return 2;
-    case "Interception touchdown":
-    case "Fumble return touchdown": return 8;
-    default: return 0;
-  }
+  return scorePlay(label, yards);
 }
 
 // A play worth flagging in the list: a gain of BIG_YARDS or more by the offense (touchdowns are flagged separately by `td`).
@@ -286,7 +263,7 @@ export function buildAllPlayEntries(players, plays) {
         twoPoint: /^Two-point/.test(w.label),
         // Standard-PPR points this play added for him.
         points: Math.round(playPoints(w.label, play.yards) * 100) / 100,
-        exact: playPoints(w.label, play.yards), // unrounded, for matching Sleeper's two-decimal numbers
+        rawYards: play.yards, // for re-scoring the play in a league's own scoring (playerPlayTotals)
         td: play.scoring && /Touchdown|Interception touchdown|Fumble return touchdown|Return touchdown/.test(w.label),
         side: w.side,
         who: [{ playerId: w.playerId, name: w.name, pos: w.pos, team: w.team, side: w.side }],
@@ -297,14 +274,15 @@ export function buildAllPlayEntries(players, plays) {
   return out;
 }
 
-// { playerId: [points of each of his plays, oldest first] } from the entries above, for the live panel's "plays Sleeper hasn't posted
-// yet" estimate (lib/liveFeed.js pendingFor). Team defenses are left out: their scoring includes points allowed, which plays don't show.
+// { playerId: [{ l: label, y: yards } for each of his plays, oldest first] } from the entries above, for the live panel's "plays Sleeper
+// hasn't posted yet" estimate (lib/liveFeed.js pendingEach): the client scores them in each league's own scoring (lib/playScoring.js).
+// Team defenses are left out: their scoring includes points allowed, which plays don't show.
 export function playerPlayTotals(entries) {
   const out = {};
   for (const e of [...(entries || [])].reverse()) {
     const w = e.who?.[0];
     if (!w || w.pos === "DEF") continue;
-    (out[w.playerId] ||= []).push(e.exact ?? e.points);
+    (out[w.playerId] ||= []).push({ l: e.label, y: e.rawYards });
   }
   return out;
 }

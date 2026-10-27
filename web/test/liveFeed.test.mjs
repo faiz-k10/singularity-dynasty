@@ -1,7 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { scoringFrom } from "../lib/playScoring.js";
 import { adjustedMatchup } from "../lib/adjustedMatchup.js";
-import { buildLiveFeed, trackScoring, sortFeed, isGameDay, formatCountdown, pendingFor, applyPending, applyPendingToLineup, catchUpPlayers, CATCH_UP_MS, gameScoreLabel } from "../lib/liveFeed.js";
+import { buildLiveFeed, trackScoring, sortFeed, isGameDay, formatCountdown, pendingEach, applyPending, applyPendingToLineup, catchUpPlayers, CATCH_UP_MS, gameScoreLabel } from "../lib/liveFeed.js";
 
 const gs = {
   GB: { state: "in", detail: "4:43 - 1st", start: "2026-10-19T00:20Z" },
@@ -104,7 +105,10 @@ test("formatCountdown ticks down to the second as hours:minutes:seconds, never d
   assert.equal(formatCountdown(-5000), "0:00:00");
 });
 
-test("pendingFor: the plays Sleeper has not posted yet are the ones after the play its number matches", () => {
+// One start in the common case: the pending amount, 0 when there is no estimate.
+const pendingFor = (starts, plays) => pendingEach(starts, plays)?.reduce((a, b) => Math.max(a, b), 0) ?? 0;
+
+test("pendingEach: the plays Sleeper has not posted yet are the ones after the play its number matches", () => {
   // Daniels' plays, oldest first: +0.3 +0.3 +0.4 +1.1 +1.2. Sleeper has 2.1 = the first four, so +1.2 is pending.
   const plays = [0.3, 0.3, 0.4, 1.1, 1.2];
   assert.equal(pendingFor([{ pts: 2.1 }], plays), 1.2);
@@ -118,9 +122,10 @@ test("pendingFor: the plays Sleeper has not posted yet are the ones after the pl
   assert.equal(pendingFor([{ pts: 0.7 }], [0.3, 0.3, 0, 1]), 1);
   assert.equal(pendingFor([{ pts: 0.95 }], [0.3, 0.3, 0, 1]), 1); // 0.35 from the 0.6 total, 0.65 from 1.6: nearest wins
   assert.equal(pendingFor([{ pts: 1.2 }], [0.3, 0.3, 0, 1]), 0); // 0.4 from the nearest total: too far to trust
-  // Several leagues must agree on the pending amount; scoring that differs in one of them -> no guess.
+  // Several leagues: each start is matched on its own number (and, for play descriptors, in its own scoring).
   assert.equal(pendingFor([{ pts: 2.1 }, { pts: 2.1 }], plays), 1.2);
-  assert.equal(pendingFor([{ pts: 2.1 }, { pts: 1.0 }], plays), 0);
+  assert.deepEqual(pendingEach([{ pts: 2.1 }, { pts: 1.0 }], plays), [1.2, 2.3]); // different leagues, different numbers: each is its own
+  assert.equal(pendingEach([{ pts: 2.1 }, { pts: 50 }], plays), null); // but if any league's number fits nowhere, no estimate at all
   // No plays at all.
   assert.equal(pendingFor([{ pts: 2.1 }], []), 0);
   assert.equal(pendingFor([{ pts: 2.1 }], undefined), 0);
@@ -197,4 +202,15 @@ test("gameScoreLabel: the game's running score, the player's own team first; nul
   assert.equal(gameScoreLabel("DAL", { score: 10, oppScore: 14 }), "DAL 10–14");
   assert.equal(gameScoreLabel("PHI", { score: null, oppScore: null }), null);
   assert.equal(gameScoreLabel("PHI", undefined), null);
+});
+
+test("pendingEach scores the plays in each league's own scoring: Javonte's league pays 0.25 a carry, so a standard running total never matched", () => {
+  const plays = [{ l: "Run", y: 3 }, { l: "Run", y: 9 }, { l: "Touchdown run", y: 2 }];
+  const league = scoringFrom({ rush_att: 0.25, pass_td: 6, bonus_rec_te: 0.75 });
+  // Sleeper has the two runs: 0.25 + 0.3 + 0.25 + 0.9 = 1.70; the touchdown run (0.25 + 6 + 0.2 = 6.45) is pending.
+  assert.deepEqual(pendingEach([{ pts: 1.7, scoring: league, pos: "RB" }], plays), [6.45]);
+  // Under the standard rates the same Sleeper number fits no running total (0.3, 1.2, 7.4): no estimate, the old behaviour.
+  assert.equal(pendingEach([{ pts: 1.7 }], plays), null);
+  // Two leagues, two scorings, one player: each gets its own amount.
+  assert.deepEqual(pendingEach([{ pts: 1.7, scoring: league, pos: "RB" }, { pts: 1.2 }], plays), [6.45, 6.2]);
 });

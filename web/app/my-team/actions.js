@@ -33,6 +33,7 @@ import { buildSide, matchupOutlook } from "@/lib/winChance";
 import { buildBench } from "@/lib/h2hBench";
 import { getLeagueSeason } from "@/lib/leagueSeason";
 import { getAcquisitions } from "@/lib/leagueAcquisition";
+import { scoringFrom } from "@/lib/playScoring";
 import { fetchInjuryFeed } from "@/lib/injuryFeed";
 
 // Sleeper's own player dictionary drops name suffixes ("Luther Burden"
@@ -347,6 +348,8 @@ export async function lookupSleeperTeams(username, opts = {}) {
           : {}),
         // Sleeper's league type: 0 redraft, 1 keeper, 2 dynasty (the Sunday board's league-type filter).
         leagueType: ["redraft", "keeper", "dynasty"][league.settings?.type] || null,
+        // The league's own point rates (per catch, per carry, passing TD, TE bonus, ...): the live totals score the plays in them (lib/playScoring.js).
+        scoringSettings: scoringFrom(league.scoring_settings),
         teams: league.total_rosters || null,
         rosterSpots: totalRosterSpots
           ? `${filledRosterSpots}/${totalRosterSpots}`
