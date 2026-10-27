@@ -388,7 +388,7 @@ export async function lookupSleeperTeams(username, opts = {}) {
       settings.starters = nonBenchSlots.length;
 
       const acquired = opts?.acquired
-        ? await getAcquisitions({ league, rosterId: myRoster.roster_id, ownerId: myRoster.owner_id, playerIds: myRoster.players }).catch(() => ({}))
+        ? await getAcquisitions({ league, rosterId: myRoster.roster_id, playerIds: myRoster.players }).catch(() => ({}))
         : {};
       const rosterPlayers = (myRoster.players || []).map((playerId) => {
         const p = players[playerId];
@@ -732,7 +732,7 @@ async function withAcquired(leagueId, rosterId, players) {
     const [league, rosters] = await Promise.all([fetchSleeperLeague(leagueId), fetchSleeperRosters(leagueId)]);
     const roster = rosters.find((r) => String(r.roster_id) === String(rosterId));
     if (!league || !roster) return players;
-    const acquired = await getAcquisitions({ league, rosterId: roster.roster_id, ownerId: roster.owner_id, playerIds: players.map((p) => p.player_id) });
+    const acquired = await getAcquisitions({ league, rosterId: roster.roster_id, playerIds: players.map((p) => p.player_id) });
     return players.map((p) => ({ ...p, acquired: acquired[p.player_id] ?? null }));
   } catch (e) {
     console.error("[saveTeam] acquisition lookup failed:", e.message);
