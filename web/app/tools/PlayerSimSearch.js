@@ -637,7 +637,7 @@ const PlayerRow = memo(function PlayerRow({
         <td className="mono heat-cell" style={{ "--heat": row.heat || 0 }}>
           <strong>{formatStat(row.median)}</strong>
         </td>
-        <td className="mono heat-cell-alt" style={{ "--heat": row.ceilingHeat || 0 }}>
+        <td className="mono heat-cell-ceiling" style={{ "--heat": row.ceilingHeat || 0 }}>
           {formatStat(row.ceiling)}
         </td>
         <td>
