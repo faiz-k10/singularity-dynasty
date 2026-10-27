@@ -89,8 +89,8 @@ function SideRow({ p, scoreboardKnown, mounted, bench = false }) {
         {showCurve ? (
           <ScoreCurve floor={p.floor} median={p.proj} ceiling={p.ceiling} pts={pts} state={o.state} est={p.est} />
         ) : (
-          // Nothing to draw a range from (out, or no floor / ceiling): just the median. A bye shows nothing (its "0.0" was noise).
-          o.state !== "bye" && <span className="h2h-curve-text mono">{p.out ? "Out" : fmt1(p.proj)}</span>
+          // Nothing to draw a range from (out, or no floor / ceiling): just the median. A bye, or a median of 0, shows nothing (its "0.0" was noise).
+          o.state !== "bye" && (p.out || p.proj > 0) && <span className="h2h-curve-text mono">{p.out ? "Out" : fmt1(p.proj)}</span>
         )}
       </span>
       <span
