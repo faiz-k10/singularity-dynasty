@@ -8,7 +8,7 @@ import TeamBadge from "./TeamBadge";
 import OutcomeCurve from "./OutcomeCurve";
 import WeeklyDetailRow from "./WeeklyDetailRow";
 import { isBye, BYE_LABEL } from "@/lib/bye";
-import { MyBadge } from "./MyPlayers";
+import { MyCount, mineClass } from "./MyPlayers";
 import { matchupTint } from "./MatchupBadge";
 import { STAT_COLUMNS } from "./statColumns";
 import { getAchievementsCached } from "./achievements";
@@ -51,15 +51,14 @@ function formatStat(value) {
 function PlayerCell({ row, withPopover, owned }) {
   if (!withPopover) {
     return (
-      <td className="player-cell">
-        <MyBadge owned={owned} />
+      <td className={`player-cell${mineClass(owned)}`}>
         {row.player_name}
+        <MyCount owned={owned} />
       </td>
     );
   }
   return (
-    <td className="player-cell">
-      <MyBadge owned={owned} />
+    <td className={`player-cell${mineClass(owned)}`}>
       <span className="player-hover" tabIndex={0}>
         {row.player_name}
         <div className="player-popover">
@@ -93,6 +92,7 @@ function PlayerCell({ row, withPopover, owned }) {
           </div>
         </div>
       </span>
+      <MyCount owned={owned} />
     </td>
   );
 }

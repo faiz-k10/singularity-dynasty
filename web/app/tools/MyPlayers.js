@@ -125,17 +125,15 @@ export function MyPlayersFilter({ mine, view, gated, compact }) {
   );
 }
 
-// The star before a name: filled when he starts for you, hollow when he is on your bench.
-export function MyBadge({ owned }) {
-  if (!owned) return null;
-  const where = owned.leagues.map((l) => `${l.label} (${l.starter ? "starter" : "bench"})`).join(", ");
+// How a player of yours is marked in the tables: his name is set in the brand colour (`mineClass`, on the name cell), and a small "x3" follows it
+// when he is on several of your teams (`MyCount`).
+export const mineClass = (owned) => (owned ? " is-mine" : "");
+export function MyCount({ owned }) {
+  if (!owned || owned.leagues.length < 2) return null;
+  const n = owned.leagues.length;
   return (
-    <span
-      className={`mine-badge${owned.starter ? "" : " mine-badge-bench"}`}
-      aria-label={`On your roster: ${where}`}
-    >
-      {owned.starter ? "★" : "☆"}
-      {owned.leagues.length > 1 && <span className="mine-badge-n">{owned.leagues.length}</span>}
+    <span className="mine-count" aria-label={`On ${n} of your teams`}>
+      ×{n}
     </span>
   );
 }
@@ -168,7 +166,6 @@ export function MyStrip({ owned, vertical = false }) {
           <div key={i} className="mine-strip-row">
             <span className="mine-strip-chip">
               <span className="mine-strip-league">{l.label}</span>
-              <span className={l.starter ? "mine-strip-role starter" : "mine-strip-role"}>{l.starter ? "starter" : "bench"}</span>
             </span>
             {/* How he got onto this team, to the right of the league box (shown once a refresh has looked it up). */}
             {l.how && <span className={`mine-strip-how is-${l.how}`}>{ACQUIRED_LABEL[l.how]}</span>}

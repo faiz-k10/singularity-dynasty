@@ -5,7 +5,9 @@
 // chance, under any circumstances, that the matchup is decided the other way). So they never come from the win-chance
 // percentage -- not even from 99.9% -- only from `lockIn`, which asks whether the trailing side could catch up even if every
 // player it has left scored far more than anyone realistically can while the leader's own players still playing lost points.
-// Anything short of that is "Favored" / "Underdog" with its percentage, however high.
+// Anything short of that is "Favored" / "Underdog" with its percentage, however high -- except that a chance that reads "<1%"
+// is a "Long shot": "Underdog" implies a real chance (founder, Oct 26 2026), and "Out of reach" would claim a certainty the math
+// doesn't have (a live tight end could in theory still score 60).
 
 // The most one player can still add in a game, whatever the league's scoring (all-time single-game outliers with room to spare;
 // 6-point passing touchdowns and bonuses included). Scaled by the share of the game left, but never below a quarter of it:
@@ -17,6 +19,8 @@ const OTHER_GAIN_CAP = 75;
 const LOSS_CAP = 12;
 const CORRECTION_BUFFER = 3;
 const MIN_FRACTION = 0.25;
+// Below this the percentage prints as "<1%" (MatchupPanel formatWin), so the word changes with it.
+const LONG_SHOT = 0.005;
 
 // What one lineup could still gain / lose. `side` = lib/winChance.js summarizeSide() (players with their outlook).
 function exposure(side) {
@@ -50,6 +54,7 @@ export function standing(pct, done, lock = null) {
   if (lock === "win") return { key: "ahead", label: "You win" };
   if (lock === "loss") return { key: "behind", label: "Out of reach" };
   if (pct >= 0.6) return { key: "ahead", label: "Favored" };
+  if (pct < LONG_SHOT) return { key: "behind", label: "Long shot" };
   if (pct <= 0.4) return { key: "behind", label: "Underdog" };
   return { key: "close", label: "Toss-up" };
 }

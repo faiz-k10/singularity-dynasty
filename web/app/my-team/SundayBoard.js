@@ -569,7 +569,7 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
     else if (label === "You win") tally.winning++;
     else if (label === "Favored") tally.favored++;
     else if (label === "Toss-up") tally.tossup++;
-    else if (label === "Underdog") tally.underdog++;
+    else if (label === "Underdog" || label === "Long shot") tally.underdog++;
     else if (label === "Out of reach") tally.losing++;
     else if (label === "Lost") tally.lost++;
     alerts += ms.row.alertCount.total;

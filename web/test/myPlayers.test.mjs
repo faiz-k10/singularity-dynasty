@@ -6,28 +6,26 @@ const mine = {
   signedIn: true,
   teams: ["Dynasty", "Redraft"],
   byName: {
-    "josh allen": [[0, 1]],
-    "bijan robinson": [[0, 1, "D"], [1, 0, "T"]],
-    "amon-ra st brown": [[1, 0, "P"]],
+    "josh allen": [[0, ""]],
+    "bijan robinson": [[0, "D"], [1, "T"]],
+    "amon-ra st brown": [[1, "P"]],
   },
 };
 
 test("ownedFor matches names the way the rest of the site does (case, dots, suffixes)", () => {
-  assert.equal(ownedFor(mine, "Josh Allen").starter, true);
+  assert.equal(ownedFor(mine, "Josh Allen").leagues.length, 1);
   assert.equal(ownedFor(mine, "Amon-Ra St. Brown").leagues[0].label, "Redraft");
   assert.equal(ownedFor(mine, "Nobody Here"), null);
 });
 
-test("ownedFor lists every team he is on and whether he starts anywhere", () => {
+test("ownedFor lists every team he is on", () => {
   const o = ownedFor(mine, "Bijan Robinson");
   assert.equal(o.leagues.length, 2);
-  assert.equal(o.starter, true);
 });
 
-test("ownedFor narrows to one team and reports bench-only", () => {
+test("ownedFor narrows to one team", () => {
   const o = ownedFor(mine, "Bijan Robinson", "1");
-  assert.deepEqual(o.leagues, [{ label: "Redraft", starter: false, how: "traded" }]);
-  assert.equal(o.starter, false);
+  assert.deepEqual(o.leagues, [{ label: "Redraft", how: "traded" }]);
   assert.equal(ownedFor(mine, "Josh Allen", "1"), null);
 });
 
@@ -36,7 +34,7 @@ test("how he was acquired travels with each league (null when unknown), from the
   assert.equal(ownedFor(mine, "Amon-Ra St. Brown").leagues[0].how, "pickup");
   assert.equal(ownedFor(mine, "Josh Allen").leagues[0].how, null);
   const built = mineFromTeams([{ league_name: "L", players: [{ name: "Josh Allen", isStarter: true, acquired: "drafted" }, { name: "Bijan Robinson" }] }]);
-  assert.deepEqual(built.byName, { "josh allen": [[0, 1, "D"]], "bijan robinson": [[0, 0, ""]] });
+  assert.deepEqual(built.byName, { "josh allen": [[0, "D"]], "bijan robinson": [[0, ""]] });
 });
 
 test("myPlayerCount counts distinct players, per team or overall", () => {

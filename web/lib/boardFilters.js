@@ -11,7 +11,7 @@ export const TYPE_OPTIONS = [
   { id: "superflex", label: "Superflex" },
 ];
 // The one-word standings, in the order they read from best to worst (labels come from MatchupPanel's standing()).
-export const STANDING_OPTIONS = ["You win", "Favored", "Toss-up", "Underdog", "Out of reach", "Won", "Lost"].map((l) => ({ id: l, label: l }));
+export const STANDING_OPTIONS = ["You win", "Favored", "Toss-up", "Underdog", "Long shot", "Out of reach", "Won", "Lost"].map((l) => ({ id: l, label: l }));
 export const SCORE_OPTIONS = [
   { id: "lead", label: "Leading" },
   { id: "trail", label: "Trailing" },

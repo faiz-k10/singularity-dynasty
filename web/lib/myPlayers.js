@@ -3,7 +3,7 @@
 // filter their own guys. Server side loads it; the pure helpers below also run in the browser.
 //
 // Shape (kept small -- it is serialized into the page):
-//   { signedIn, teams: ["League A", ...], byName: { "josh allen": [[teamIndex, isStarter 0|1, how "D"|"T"|"P"|""], ...] } }
+//   { signedIn, teams: ["League A", ...], byName: { "josh allen": [[teamIndex, how "D"|"T"|"P"|""], ...] } }
 // (how = Drafted / Traded / Picked up, from the saved roster's `acquired`, "" when unknown).
 import { normalizePlayerName } from "./portfolio.js";
 import { leagueName } from "./format.js";
@@ -18,7 +18,7 @@ export function mineFromTeams(rows) {
     for (const p of t.players || []) {
       if (!p?.name) continue;
       const key = normalizePlayerName(p.name);
-      (byName[key] ||= []).push([i, p.isStarter ? 1 : 0, ACQUIRED_CODE[p.acquired] || ""]);
+      (byName[key] ||= []).push([i, ACQUIRED_CODE[p.acquired] || ""]);
     }
   });
   return { signedIn: true, teams, byName };
@@ -35,16 +35,13 @@ export async function loadMyPlayers(supabase, user) {
 }
 
 // Where a player sits on the user's teams: null when he is on none (of the chosen league),
-// else { leagues: [{ label, starter }], starter } -- starter is true if he starts anywhere in it.
+// else { leagues: [{ label, how }] } -- how he got onto each ("drafted" | "traded" | "pickup" | null).
 export function ownedFor(mine, name, league = "all") {
   const hits = mine?.byName?.[normalizePlayerName(name)];
   if (!hits) return null;
   const sel = league === "all" ? hits : hits.filter((h) => h[0] === Number(league));
   if (!sel.length) return null;
-  return {
-    leagues: sel.map(([i, s, how]) => ({ label: mine.teams[i], starter: !!s, how: ACQUIRED_FROM_CODE[how] || null })),
-    starter: sel.some((h) => h[1]),
-  };
+  return { leagues: sel.map(([i, how]) => ({ label: mine.teams[i], how: ACQUIRED_FROM_CODE[how] || null })) };
 }
 
 // How many distinct players the user has (in the chosen league, or all).
