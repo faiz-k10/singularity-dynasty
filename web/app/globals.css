@@ -5063,7 +5063,13 @@ html{font-stretch:82%;}
 .h2h-stat{flex:1 1 auto; min-width:0; display:flex; flex-direction:column; align-items:center; gap:3px; padding:0 3px;}
 .h2h-stat-label{font-size:clamp(7px, 2.4cqw, 9px); text-transform:uppercase; letter-spacing:.04em; color:var(--star-dim); white-space:nowrap;}
 .h2h-stat-value{font-size:clamp(12px, 4.8cqw, 20px); line-height:1.1; font-weight:700; color:var(--star); font-variant-numeric:tabular-nums; white-space:nowrap;}
-@media (prefers-reduced-motion:reduce){ .h2h-row .h2h-c-slot, .h2h-row .h2h-player-name, .h2h-row .h2h-player-sub, .h2h-row .h2h-c-curve, .h2h-statsbox{animation-duration:.01s !important;} }
+/* The same slide on a Playing now row (SundayBoard FeedRow): click the points column and the name, badges and league line drift away while the box-score line slides in. */
+.sb-feed-row{position:relative;}
+.sb-feed-row.is-stats .sb-feed-name, .sb-feed-row.is-stats .sb-feed-sub, .sb-feed-row.is-stats .sb-feed-foot{animation:h2h-away .38s cubic-bezier(.22,.8,.3,1) forwards; pointer-events:none;}
+.sb-feed-row.is-closing .sb-feed-name, .sb-feed-row.is-closing .sb-feed-sub, .sb-feed-row.is-closing .sb-feed-foot{animation:h2h-from .38s cubic-bezier(.22,.8,.3,1) both;}
+.sb-feed-nums.is-clickable{cursor:pointer;}
+.sb-feed-nums.is-clickable:hover .sb-feed-pts{text-decoration:underline; text-decoration-color:var(--rule-strong); text-underline-offset:4px;}
+@media (prefers-reduced-motion:reduce){ .h2h-row .h2h-c-slot, .h2h-row .h2h-player-name, .h2h-row .h2h-player-sub, .h2h-row .h2h-c-curve, .sb-feed-row .sb-feed-name, .sb-feed-row .sb-feed-sub, .sb-feed-row .sb-feed-foot, .h2h-statsbox{animation-duration:.01s !important;} }
 /* How to read the curves: a one-line legend under the lineups. */
 .h2h-legend{list-style:none; margin:2px 0 0; padding:0; display:flex; flex-wrap:wrap; gap:6px 18px; font-size:11.5px; line-height:1.4; color:var(--star-dim);}
 .h2h-legend li{display:inline-flex; align-items:baseline; gap:7px;}

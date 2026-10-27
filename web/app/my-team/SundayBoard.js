@@ -16,6 +16,7 @@ import { leadState } from "@/lib/leadState";
 import { leagueFacts, matchesFilters, emptyFilters, filterCount } from "@/lib/boardFilters";
 import BoardFilters from "./BoardFilters";
 import Companion from "./Companion";
+import { useStatsSlide, StatsPanel } from "./GameStats";
 
 // "Christian McCaffrey" -> "C. McCaffrey"
 const shortName = (name) => {
@@ -184,12 +185,14 @@ function LeagueCard({ team, ms, onOpen }) {
 }
 
 function FeedRow({ r, isNew, delta, showLeagues, focused, onPick }) {
+  // Click the points and the rest of the row slides away while his box-score line for this game slides in (GameStats.js, the same as the matchup rows).
+  const slide = useStatsSlide(r, true);
   const where =
     r.side === "theirs"
       ? r.starts.map((x) => (showLeagues ? x.league : null)).filter(Boolean)
       : r.starts.map((x) => (r.pts === r.ptsMin ? x.league : `${x.league} ${fmt2(x.pts)}`));
   return (
-    <li className={`sb-feed-row is-${r.side}${isNew ? " is-new" : ""}${focused ? " is-focus" : ""}`}>
+    <li className={`sb-feed-row is-${r.side}${isNew ? " is-new" : ""}${focused ? " is-focus" : ""}${slide.phase === "open" ? " is-stats" : slide.phase === "closing" ? " is-closing" : ""}`} style={slide.rowStyle}>
       <div className="sb-feed-who">
         <button type="button" className="sb-feed-name sb-name-btn" aria-pressed={focused} onClick={() => onPick(r.playerId, r.name)}>
           <span className="fn-long">{r.name}</span>
@@ -208,7 +211,14 @@ function FeedRow({ r, isNew, delta, showLeagues, focused, onPick }) {
           </span>
         )}
       </div>
-      <div className="sb-feed-nums">
+      <div
+        className="sb-feed-nums is-clickable"
+        role="button"
+        tabIndex={0}
+        aria-expanded={slide.open}
+        onClick={slide.toggle}
+        onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), slide.toggle(e))}
+      >
         <span className="sb-feed-pts mono">{fmt2(r.pts)}</span>
         {isNew && delta > 0 ? (
           <span className="sb-feed-delta mono">+{fmt2(delta)}</span>
@@ -220,6 +230,7 @@ function FeedRow({ r, isNew, delta, showLeagues, focused, onPick }) {
           <span className="sb-feed-proj mono">proj {fmt1(r.proj)}</span>
         )}
       </div>
+      <StatsPanel p={r} slide={slide} />
     </li>
   );
 }

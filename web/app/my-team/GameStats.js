@@ -5,7 +5,7 @@ import { getGameStats } from "./actions";
 import { statChips } from "@/lib/gameStats";
 import { normName } from "@/lib/playByPlay";
 
-// Click a player's score in the matchup and the rest of his row (slot, name, badges, outcome curve) slides away from the score while his box-score line
+// Click a player's score in the matchup (or in the Game Board's Playing now list: .sb-feed-row) and the rest of his row (slot, name, badges, outcome curve) slides away from the score while his box-score line
 // for this game slides in (lib/gameStats.js, ESPN's box score); click the score again and the line slides out the SAME way while the row slides back in
 // from the opposite side -- everything keeps moving in one direction. The loader is a context so the real server action is the default and a preview can
 // hand in its own.
@@ -31,7 +31,7 @@ export function useStatsSlide(p, enabled) {
       timer.current = setTimeout(() => setPhase("idle"), CLOSE_MS);
       return;
     }
-    const row = e.currentTarget.closest(".h2h-row").getBoundingClientRect();
+    const row = e.currentTarget.closest(".h2h-row, .sb-feed-row").getBoundingClientRect();
     const cell = e.currentTarget.getBoundingClientRect();
     const scoreOnLeft = cell.left + cell.width / 2 < row.left + row.width / 2;
     // The panel covers the row except the score cell; the old content drifts away from the score.
