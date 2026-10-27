@@ -121,7 +121,16 @@ function Strip({ phase, feed, week, oneLeague }) {
   );
 }
 
-function Card({ c, spot, fresh }) {
+// A card's sentence with every fantasy team name in it (yours and your opponents', `names`) highlighted in mint.
+// The longest names are matched first so one name that contains another still reads whole.
+function WithTeamNames({ text, names }) {
+  if (!text || !names?.length) return text;
+  const esc = (n) => n.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const re = new RegExp(`(${[...names].sort((a, b) => b.length - a.length).map(esc).join("|")})`, "g");
+  return String(text).split(re).map((part, i) => (i % 2 ? <span key={i} className="cp-team">{part}</span> : part));
+}
+
+function Card({ c, spot, fresh, names }) {
   return (
     <li className={`cp-card is-${c.tone}${spot ? " is-spot" : ""}${fresh ? " is-fresh" : ""}`}>
       <span className="cp-label mono">
@@ -129,8 +138,8 @@ function Card({ c, spot, fresh }) {
         {c.league ? <span className="cp-league"> · {c.league}</span> : null}
         {fresh && <span className="cp-new"> New</span>}
       </span>
-      <h3 className="cp-title">{c.title}</h3>
-      <p className="cp-body">{c.body}</p>
+      <h3 className="cp-title"><WithTeamNames text={c.title} names={names} /></h3>
+      <p className="cp-body"><WithTeamNames text={c.body} names={names} /></p>
       {c.player && (
         <span className="cp-player">
           <PositionBadge position={c.player.pos} />
@@ -145,6 +154,8 @@ function Card({ c, spot, fresh }) {
 // recomputes what the cards already hold.
 export default function Companion({ savedTeams, gameStates, feed, adjusted = null, teamId = null, injuriesByTeam = null, weekFeed = null }) {
   const teams = useMemo(() => (teamId ? savedTeams.filter((t) => t.id === teamId) : savedTeams), [savedTeams, teamId]);
+  // Every fantasy team name on the board (yours and this week's opponents'), for underlining inside the cards' sentences.
+  const teamNames = useMemo(() => [...new Set(savedTeams.flatMap((t) => [t.team_name, t.settings?.opponent]).filter((n) => typeof n === "string" && n.length > 2))], [savedTeams]);
   const waivers = useWaivers(teams);
   // Today's card needs the viewer's clock, so it appears after mount (the server's clock would mismatch) and moves on at midnight.
   const [today, setToday] = useState(null);
@@ -206,7 +217,7 @@ export default function Companion({ savedTeams, gameStates, feed, adjusted = nul
         <div className="cp-scroll">
           <div className="cp-spotlight" key={current.id}>
             <ul className="cp-list">
-              <Card c={current} spot fresh={freshIds.has(current.id)} />
+              <Card c={current} spot fresh={freshIds.has(current.id)} names={teamNames} />
             </ul>
             {top.length > 1 && (
               <span className="cp-dots" aria-hidden="true">
@@ -219,7 +230,7 @@ export default function Companion({ savedTeams, gameStates, feed, adjusted = nul
           <h3 className="cp-more mono">Everything right now</h3>
           <ul className="cp-list">
             {cards.map((c) => (
-              <Card key={c.id} c={c} fresh={freshIds.has(c.id)} />
+              <Card key={c.id} c={c} fresh={freshIds.has(c.id)} names={teamNames} />
             ))}
           </ul>
         </div>

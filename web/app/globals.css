@@ -4964,8 +4964,6 @@ html{font-stretch:82%;}
 .h2h-team{min-width:0;}
 .h2h-team.opp{text-align:right;}
 .h2h-team-name{font-size:16px; color:var(--star); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-/* A fantasy team's name is underlined wherever it heads a league card or the matchup scoreboard (founder, Oct 26 2026). */
-.h2h-team-name, .sb-card-team{text-decoration:underline; text-decoration-thickness:1px; text-underline-offset:4px; text-decoration-color:var(--rule-strong);}
 .h2h-team-rec{font-size:11px; color:var(--star-dim); margin-top:2px;}
 .h2h-score{font-family:var(--font-display), sans-serif; font-weight:800; font-size:44px; line-height:1.05; color:var(--star); margin-top:6px; letter-spacing:.01em;}
 .h2h-score.is-lead{color:var(--up);}
@@ -5734,6 +5732,7 @@ html{font-stretch:82%;}
 .cp-card.is-alert .cp-label{color:var(--down);}
 .cp-league{font-weight:400; text-transform:none; letter-spacing:.02em; color:var(--star-dim);}
 .cp-new{color:var(--horizon-gold);}
+.cp-team{color:var(--horizon-gold);} /* a fantasy team name inside a card's sentence: highlighted in mint (no underline) */
 .cp-title{margin:0; font-family:var(--font-body); font-weight:700; font-size:15px; line-height:1.25; color:var(--star);}
 .cp-body{margin:0; font-size:13px; line-height:1.45; color:var(--star-dim);}
 .cp-player{display:flex; align-items:center; gap:6px; margin-top:2px;}
