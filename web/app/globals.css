@@ -5816,6 +5816,7 @@ html{font-stretch:82%;}
    Libron, headline figures the display font (the type roles); flat hairline boxes and 2px corners (the scoreboard material). Picked players
    carry their own colour as --c everywhere. */
 .lab-wrap{max-width:1280px;}
+.lab-wrap h1{margin-bottom:18px;} /* the panel follows the title directly (no caption), same gap as the rankings pages' title row */
 .lab-paywall{margin-bottom:18px;}
 .lab{padding:18px 20px 22px; display:flex; flex-direction:column; gap:16px;}
 .lab-bar{display:flex; flex-wrap:wrap; align-items:center; gap:10px 14px;}

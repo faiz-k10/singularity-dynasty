@@ -54,10 +54,6 @@ export default async function LabPage({ searchParams }) {
       <main className="wrap tool-wrap lab-wrap">
         <div className="eyebrow">{latest ? `Week ${latest.week} · ${latest.season}` : "Research"}</div>
         <h1>The Lab</h1>
-        <p className="tool-sub">
-          Research players with the numbers behind the rankings: plot two stats against each other, rank a position on one, follow weekly scoring,
-          or line players up side by side.
-        </p>
         {lab.rows.length === 0 ? (
           <div className="tool-empty">
             <p>The Lab reads this week&apos;s rankings, which publish weekly during the season. Check back soon.</p>
