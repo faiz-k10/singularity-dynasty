@@ -213,6 +213,7 @@ function FeedRow({ r, isNew, delta, showLeagues, focused, onPick }) {
         ) : (
           <span className="sb-feed-proj mono">proj {fmt1(r.proj)}</span>
         )}
+        {r.game && <span className="sb-feed-game mono">{r.game}</span>}
       </div>
     </li>
   );

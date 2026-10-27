@@ -11,6 +11,11 @@
 // gameStates: lib/gameStatus.js parseScoreboard() output.
 import { leagueName, round2 as r2 } from "./format.js";
 
+// "PHI 14–10": the game's score with the player's own team first (null before the score exists).
+export function gameScoreLabel(team, g) {
+  return Number.isFinite(g?.score) && Number.isFinite(g?.oppScore) ? `${team} ${g.score}–${g.oppScore}` : null;
+}
+
 export function buildLiveFeed(savedTeams, gameStates, { onlyTeamId = null } = {}) {
   const empty = { mine: [], theirs: [], mineTotal: 0, theirsTotal: 0, nextStart: null, nextUp: null, anyLeft: false };
   if (!gameStates) return empty;
@@ -35,7 +40,7 @@ export function buildLiveFeed(savedTeams, gameStates, { onlyTeamId = null } = {}
         const pts = typeof p.pts === "number" ? p.pts : 0;
         let row = sides[side].get(p.id);
         if (!row) {
-          row = { id: `${side}:${p.id}`, playerId: p.id, side, name: p.name, pos: p.pos, team: p.team, proj: p.proj, est: !!p.est, detail: g.detail || null, starts: [] };
+          row = { id: `${side}:${p.id}`, playerId: p.id, side, name: p.name, pos: p.pos, team: p.team, proj: p.proj, est: !!p.est, detail: g.detail || null, game: gameScoreLabel(p.team, g), starts: [] };
           sides[side].set(p.id, row);
         }
         row.starts.push({ teamId: t.id, league, opponent: side === "theirs" ? s.opponent || null : null, pts });

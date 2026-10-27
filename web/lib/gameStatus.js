@@ -18,10 +18,17 @@ export function parseScoreboard(json) {
     const c = e.competitions?.[0];
     const st = c?.status?.type;
     if (!c || !st) continue;
-    for (const comp of c.competitors || []) {
+    const comps = c.competitors || [];
+    const num = (v) => (v == null || v === "" || !Number.isFinite(Number(v)) ? null : Number(v));
+    for (const comp of comps) {
       const code = teamCode(comp.team?.abbreviation);
       if (code) {
+        const other = comps.find((x) => x !== comp);
         out[code] = {
+          // The game's running score: this team's points and the opponent's (null before kickoff / when ESPN doesn't give it).
+          score: num(comp.score),
+          opp: other ? teamCode(other.team?.abbreviation) : null,
+          oppScore: other ? num(other.score) : null,
           state: st.state,
           detail: st.shortDetail || st.detail || null,
           period: typeof c.status.period === "number" ? c.status.period : null,

@@ -27,3 +27,12 @@ test("livePointsFor: dash before kickoff, 0 once playing with no points, value o
   assert.equal(livePointsFor({ player_id: "1", team: "MIA" }, pts, s).pts, null); // bye: not on the board
   assert.equal(livePointsFor({ player_id: "1", team: "ATL" }, null, s).pts, null);
 });
+
+test("parseScoreboard carries the running score, own team's first, and the opponent", () => {
+  const s = parseScoreboard({
+    events: [{ competitions: [{ status: { type: { state: "in" } }, competitors: [{ team: { abbreviation: "PHI" }, score: "14" }, { team: { abbreviation: "DAL" }, score: "10" }] }] }],
+  });
+  assert.deepEqual([s.PHI.score, s.PHI.opp, s.PHI.oppScore], [14, "DAL", 10]);
+  assert.deepEqual([s.DAL.score, s.DAL.opp, s.DAL.oppScore], [10, "PHI", 14]);
+  assert.equal(parseScoreboard(board).ATL.score, null); // no score given
+});

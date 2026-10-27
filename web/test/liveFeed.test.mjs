@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { adjustedMatchup } from "../lib/adjustedMatchup.js";
-import { buildLiveFeed, trackScoring, sortFeed, isGameDay, formatCountdown, pendingFor, applyPending, applyPendingToLineup, catchUpPlayers, CATCH_UP_MS } from "../lib/liveFeed.js";
+import { buildLiveFeed, trackScoring, sortFeed, isGameDay, formatCountdown, pendingFor, applyPending, applyPendingToLineup, catchUpPlayers, CATCH_UP_MS, gameScoreLabel } from "../lib/liveFeed.js";
 
 const gs = {
   GB: { state: "in", detail: "4:43 - 1st", start: "2026-10-19T00:20Z" },
@@ -191,4 +191,11 @@ test("catchUpPlayers: finished games keep their starters for ten minutes after f
   assert.equal(catchUpPlayers(teams, gs, seen, 1000 + CATCH_UP_MS).length, 2);
   assert.equal(catchUpPlayers(teams, gs, seen, 1001 + CATCH_UP_MS).length, 0);
   assert.deepEqual(catchUpPlayers(teams, null, {}, 0), []);
+});
+
+test("gameScoreLabel: the game's running score, the player's own team first; null without a score", () => {
+  assert.equal(gameScoreLabel("PHI", { score: 14, oppScore: 10 }), "PHI 14–10");
+  assert.equal(gameScoreLabel("DAL", { score: 10, oppScore: 14 }), "DAL 10–14");
+  assert.equal(gameScoreLabel("PHI", { score: null, oppScore: null }), null);
+  assert.equal(gameScoreLabel("PHI", undefined), null);
 });
