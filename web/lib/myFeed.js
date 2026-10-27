@@ -3,6 +3,7 @@
 // test/myFeed.test.mjs. Every threshold is here so "what counts as a change" lives in one place.
 import { normalizePlayerName } from "./portfolio.js";
 import { isBye } from "./bye.js";
+import { publicNote } from "./format.js";
 
 export const FEED_RULES = {
   medianPct: 0.05, // season median must move by this share of last week's...
@@ -88,8 +89,8 @@ export function buildFeed({ mine, sims, ranks, roles, groups, teamIndex = null, 
     const rp = rankPrev.get(key);
     if (rc && rp) {
       const moved = rp.rank - rc.rank; // positive = climbed
-      const note = (rc.notes || "").trim();
-      const prevNote = (rp.notes || "").trim();
+      const note = publicNote(rc.notes);
+      const prevNote = publicNote(rp.notes);
       if (note && note !== prevNote) {
         // Listed out/doubtful etc.: the rank he lands on is a placeholder, so say the status instead.
         lines.push({ kind: "status", dir: "down", text: `Listed ${note.length <= 14 ? note.toUpperCase() : note} for week ${rc.week}`, score: 8 });

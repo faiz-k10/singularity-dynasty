@@ -21,3 +21,8 @@ export function ageOn(birthDate, now = Date.now()) {
   const years = (now - t) / (365.25 * 24 * 3600 * 1000);
   return years > 0 && years < 80 ? years.toFixed(1) : null;
 }
+
+// A redraft_rankings `notes` value as the site shows it. The model once published "BOUNCEBACK (informational only)" as a note on players
+// coming off a bad game; that wording is not shown anywhere on the site (founder, Oct 27 2026), and the published rows of earlier weeks
+// still carry it, so every reader of `notes` goes through here. What is left is real status ("OUT", ...), or "".
+export const publicNote = (n) => String(n ?? "").replace(/BOUNCEBACK(\s*\(informational only\))?/gi, "").trim();

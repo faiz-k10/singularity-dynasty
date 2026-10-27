@@ -1935,14 +1935,9 @@ export_for_supabase <- function(df, target_season = TARGET_SEASON, week = NULL) 
     trend = redraft$trend,
     sample_confidence = ifelse(redraft$shrunk, "building", "established"),
     scoring_stats = redraft_scoring_stats,
-    # OUT takes priority. BOUNCEBACK is informational only now (see the
-    # BOUNCEBACK_MED_Q comment above -- walk-forward validation showed
-    # acting on it makes the number worse, not better) -- flagged here so
-    # a human publishing/reviewing this week's numbers can see "this
-    # player just had a rough game" as real context, without it having
-    # changed the projection itself.
-    notes = ifelse(redraft$player_name %in% out_players, "OUT",
-             ifelse(redraft$bounceback, "BOUNCEBACK (informational only)", ""))
+    # OUT is the only note the site shows. The "BOUNCEBACK (informational only)" note this column used to carry was removed from the
+    # published data and from every page on Oct 27 2026 (the flag itself is still computed above, and unused).
+    notes = ifelse(redraft$player_name %in% out_players, "OUT", "")
   ), "upload_redraft_rankings.csv", row.names = FALSE)
 
   # ceiling_range_low / ceiling_probability are NOT written here -- they're

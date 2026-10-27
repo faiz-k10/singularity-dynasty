@@ -2,6 +2,7 @@ import { createPublicClient } from "@/lib/supabase/public";
 import { fetchAllRows } from "@/lib/fetchAllRows";
 import { csvResponse, requireSingularity } from "@/lib/csvDownload";
 import { isBye, BYE_LABEL } from "@/lib/bye";
+import { publicNote } from "@/lib/format";
 
 const COLUMNS = [
   { key: "rank", label: "Rank" },
@@ -44,7 +45,7 @@ export async function GET() {
     rows: rows.map((r) =>
       isBye(r.opponent)
         ? { player_name: r.player_name, position: r.position, team: r.team, opponent: BYE_LABEL }
-        : r
+        : { ...r, notes: publicNote(r.notes) }
     ),
   });
 }

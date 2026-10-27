@@ -121,13 +121,13 @@ function Strip({ phase, feed, week, oneLeague }) {
   );
 }
 
-// A card's sentence with every fantasy team name in it (yours and your opponents', `names`) highlighted in mint.
-// The longest names are matched first so one name that contains another still reads whole.
+// A card's sentence with every fantasy team name in it highlighted: yours in mint, an opponent's in red. `names` is a Map of name -> true when
+// the team is yours. The longest names are matched first so one name that contains another still reads whole.
 function WithTeamNames({ text, names }) {
-  if (!text || !names?.length) return text;
+  if (!text || !names?.size) return text;
   const esc = (n) => n.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const re = new RegExp(`(${[...names].sort((a, b) => b.length - a.length).map(esc).join("|")})`, "g");
-  return String(text).split(re).map((part, i) => (i % 2 ? <span key={i} className="cp-team">{part}</span> : part));
+  const re = new RegExp(`(${[...names.keys()].sort((a, b) => b.length - a.length).map(esc).join("|")})`, "g");
+  return String(text).split(re).map((part, i) => (i % 2 ? <span key={i} className={`cp-team${names.get(part) ? "" : " is-opp"}`}>{part}</span> : part));
 }
 
 function Card({ c, spot, fresh, names }) {
@@ -154,8 +154,14 @@ function Card({ c, spot, fresh, names }) {
 // recomputes what the cards already hold.
 export default function Companion({ savedTeams, gameStates, feed, adjusted = null, teamId = null, injuriesByTeam = null, weekFeed = null }) {
   const teams = useMemo(() => (teamId ? savedTeams.filter((t) => t.id === teamId) : savedTeams), [savedTeams, teamId]);
-  // Every fantasy team name on the board (yours and this week's opponents'), for underlining inside the cards' sentences.
-  const teamNames = useMemo(() => [...new Set(savedTeams.flatMap((t) => [t.team_name, t.settings?.opponent]).filter((n) => typeof n === "string" && n.length > 2))], [savedTeams]);
+  // Every fantasy team name on the board (yours, and this week's opponents'), for highlighting inside the cards' sentences; a name that is
+  // yours in any league counts as yours.
+  const teamNames = useMemo(() => {
+    const m = new Map();
+    const add = (n, mine) => { if (typeof n === "string" && n.length > 2) m.set(n, mine || m.get(n) || false); };
+    for (const t of savedTeams) { add(t.team_name, true); add(t.settings?.opponent, false); }
+    return m;
+  }, [savedTeams]);
   const waivers = useWaivers(teams);
   // Today's card needs the viewer's clock, so it appears after mount (the server's clock would mismatch) and moves on at midnight.
   const [today, setToday] = useState(null);

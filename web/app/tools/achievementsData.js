@@ -1,5 +1,6 @@
 import { percentileRank } from "@/lib/statPercentiles";
 import { fetchAllRows } from "@/lib/fetchAllRows";
+import { publicNote } from "@/lib/format";
 
 // Server-side data plumbing for getAchievements() (achievements.js),
 // shared by every tool page that wants to show the same badges Weekly
@@ -214,7 +215,7 @@ export function buildAchievementRow(playerName, position, inputs) {
     heroWins: hero?.count || 0,
     heroWinWeeks: hero?.weeks || [],
     sample_confidence: rf.sample_confidence ?? null,
-    notes: rf.notes ?? null,
+    notes: publicNote(rf.notes) || null,
     floor: rf.floor ?? null,
     ceiling: rf.ceiling ?? null,
     projection: rf.projection ?? null,

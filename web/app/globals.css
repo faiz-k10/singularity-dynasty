@@ -4964,6 +4964,7 @@ html{font-stretch:82%;}
 .h2h-team{min-width:0;}
 .h2h-team.opp{text-align:right;}
 .h2h-team-name{font-size:16px; color:var(--star); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.h2h-team.opp .h2h-team-name{color:var(--down);}
 .h2h-team-rec{font-size:11px; color:var(--star-dim); margin-top:2px;}
 .h2h-score{font-family:var(--font-display), sans-serif; font-weight:800; font-size:44px; line-height:1.05; color:var(--star); margin-top:6px; letter-spacing:.01em;}
 .h2h-score.is-lead{color:var(--up);}
@@ -5221,7 +5222,7 @@ html{font-stretch:82%;}
 .sb-card-scores{flex:1; display:flex; flex-direction:column; justify-content:center; gap:10px;}
 .sb-card-side{display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:10px;}
 .sb-card-team{font-size:17px; font-weight:700; color:var(--star); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;} /* your team: bold and bright (no YOU tag) */
-.sb-card-team.sb-muted{font-weight:400; color:var(--star-dim);} /* the opponent: regular weight, dimmer */
+.sb-card-team.sb-muted{font-weight:400; color:var(--down);} /* the opponent: regular weight, mission red */
 .sb-card-score{font-family:var(--font-display), sans-serif; font-weight:800; font-size:clamp(30px, 2.6vw, 42px); line-height:1; text-align:right; color:var(--star-dim); font-variant-numeric:tabular-nums;}
 .sb-card-score.is-lead{color:var(--up);}
 .sb-card-score.is-trail{color:var(--down);}
@@ -5732,7 +5733,8 @@ html{font-stretch:82%;}
 .cp-card.is-alert .cp-label{color:var(--down);}
 .cp-league{font-weight:400; text-transform:none; letter-spacing:.02em; color:var(--star-dim);}
 .cp-new{color:var(--horizon-gold);}
-.cp-team{color:var(--horizon-gold);} /* a fantasy team name inside a card's sentence: highlighted in mint (no underline) */
+.cp-team{color:var(--horizon-gold);} /* a fantasy team name inside a card's sentence: yours mint, an opponent's red (no underline) */
+.cp-team.is-opp{color:var(--down);}
 .cp-title{margin:0; font-family:var(--font-body); font-weight:700; font-size:15px; line-height:1.25; color:var(--star);}
 .cp-body{margin:0; font-size:13px; line-height:1.45; color:var(--star-dim);}
 .cp-player{display:flex; align-items:center; gap:6px; margin-top:2px;}

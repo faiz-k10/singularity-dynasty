@@ -7,6 +7,7 @@ import { normalizePlayerName } from "@/lib/portfolio";
 import { groupRanks } from "@/lib/statPanel";
 import { rankIn } from "@/lib/rank";
 import { PROFILE_METRICS } from "@/lib/statMetrics";
+import { publicNote } from "@/lib/format";
 
 // Data layer of Weekly Projection Rankings, split out of page.js so the Compare Players tool reads the same rows.
 
@@ -366,6 +367,7 @@ export const getCachedRedraftData = unstable_cache(
     ]);
     const gameLog = deriveGameLogData(gameLogRows, latest.season, floorCeilingByGame, latest.week);
 
+    for (const r of rows) r.notes = publicNote(r.notes);
     const ranked = new Set(rows.map((r) => r.player_name));
     const only = (byName) => Object.fromEntries(Object.entries(byName).filter(([name]) => ranked.has(name)));
     return {

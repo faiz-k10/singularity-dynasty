@@ -120,3 +120,11 @@ test("a player on a bye gets no rank-move line (his rank only drops because he h
   });
   assert.equal(f.items.length, 0);
 });
+
+test("publicNote: the old BOUNCEBACK note is never shown; real statuses stay", async () => {
+  const { publicNote } = await import("../lib/format.js");
+  assert.equal(publicNote("BOUNCEBACK (informational only)"), "");
+  assert.equal(publicNote("bounceback"), "");
+  assert.equal(publicNote("OUT"), "OUT");
+  assert.equal(publicNote(null), "");
+});
