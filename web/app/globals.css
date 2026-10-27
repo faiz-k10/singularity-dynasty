@@ -5238,7 +5238,7 @@ html{font-stretch:82%;}
 /* Section label: Yours in gold, theirs in blue -- the same colour language as the cards. */
 .sb-feed-label{position:sticky; top:0; z-index:1; display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin:0; padding:10px 16px 6px; font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; background:var(--void-panel);}
 .sb-feed-section.is-mine .sb-feed-label{color:var(--horizon-gold);}
-.sb-feed-section.is-theirs .sb-feed-label{color:var(--neon-blue);}
+.sb-feed-section.is-theirs .sb-feed-label{color:var(--down);}
 .sb-feed-list{list-style:none; margin:0; padding:0;}
 /* Playing now rows: ONE fixed shape (founder, Oct 22 2026). A grid -- name on top, then position badge + team logo + game clock on one line that never wraps,
    league names full width underneath -- with the score and its projection / "+" amount in a fixed-width column at the right spanning the name and badge
@@ -5247,7 +5247,7 @@ html{font-stretch:82%;}
 .sb-feed-row{display:grid; grid-template-columns:minmax(0,1fr) 80px; grid-template-areas:"name nums" "sub nums" "leagues leagues"; column-gap:12px; row-gap:3px; align-items:center; padding:7px 16px; border-top:1px solid rgba(var(--star-dot-rgb),.06); transition:background-color .6s ease;}
 .sb-feed-list .sb-feed-row:first-child{border-top:0;}
 .sb-feed-row.is-new{background:rgba(var(--horizon-gold-rgb),.1); box-shadow:inset 3px 0 0 var(--horizon-gold);}
-.sb-feed-row.is-theirs.is-new{background:rgba(var(--neon-blue-rgb),.1); box-shadow:inset 3px 0 0 var(--neon-blue);}
+.sb-feed-row.is-theirs.is-new{background:rgba(var(--down-rgb),.1); box-shadow:inset 3px 0 0 var(--down);}
 .sb-feed-who{display:contents;}
 .sb-feed-name{grid-area:name; justify-self:start; min-width:0; max-width:100%; font-size:14.5px; line-height:1.2; color:var(--star); text-align:left; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
 .sb-feed-name .fn-short{display:none;}
@@ -5258,7 +5258,7 @@ html{font-stretch:82%;}
 .sb-feed-nums{grid-area:nums; width:80px; align-self:center; display:flex; flex-direction:column; align-items:flex-end; justify-content:center; gap:2px;}
 .sb-feed-pts{font-size:18px; font-weight:700; color:var(--star);}
 .sb-feed-delta{font-size:11px; font-weight:700; color:var(--horizon-gold);}
-.sb-feed-row.is-theirs .sb-feed-delta{color:var(--neon-blue);}
+.sb-feed-row.is-theirs .sb-feed-delta{color:var(--down);}
 .sb-feed-proj{font-size:10.5px; color:var(--star-dim);}
 /* Between games: one centred card filling the panel -- a small event-horizon ring (gold-to-blue rim, a slow orbiting
    dot), a gold eyebrow, the kickoff time in the display font, a countdown, the next game(s) as glass pills, and the
@@ -5295,13 +5295,13 @@ html{font-stretch:82%;}
 .sb-play{display:flex; align-items:flex-start; gap:12px; padding:8px 16px 8px 13px; border-top:1px solid rgba(var(--star-dot-rgb),.06); border-left:3px solid transparent; transition:background-color .6s ease;}
 .sb-feed-list .sb-play:first-child{border-top-color:transparent;}
 .sb-play.is-mine{border-left-color:rgba(var(--horizon-gold-rgb),.55);}
-.sb-play.is-theirs{border-left-color:rgba(var(--neon-blue-rgb),.55);}
+.sb-play.is-theirs{border-left-color:rgba(var(--down-rgb),.55);}
 /* A play involving a player who is yours in one league and theirs in another: a gold-to-blue strip on the LEFT edge only (a border-image would also paint the top edge). */
 .sb-play{position:relative;}
 .sb-play.is-both{border-left-color:transparent;}
-.sb-play.is-both::before{content:''; position:absolute; left:-3px; top:0; bottom:0; width:3px; background:linear-gradient(180deg, var(--horizon-gold), var(--neon-blue));}
+.sb-play.is-both::before{content:''; position:absolute; left:-3px; top:0; bottom:0; width:3px; background:var(--star-dim);}
 .sb-play.is-new{background:rgba(var(--horizon-gold-rgb),.1);}
-.sb-play.is-theirs.is-new{background:rgba(var(--neon-blue-rgb),.1);}
+.sb-play.is-theirs.is-new{background:rgba(var(--down-rgb),.1);}
 .sb-play-main{flex:1; min-width:0; display:flex; flex-direction:column; gap:2px;}
 .sb-play-who{font-size:14px; line-height:1.3;}
 .sb-play-name.is-mine{color:var(--star);}
@@ -5309,7 +5309,7 @@ html{font-stretch:82%;}
 .sb-play-what{font-family:var(--font-mono); font-size:11.5px; color:var(--star-dim);}
 .sb-play-what strong{font-weight:700; color:var(--star);}
 .sb-play.is-td .sb-play-what strong{color:var(--horizon-gold);}
-.sb-play.is-td.is-theirs .sb-play-what strong{color:var(--neon-blue);}
+.sb-play.is-td.is-theirs .sb-play-what strong{color:var(--down);}
 .sb-play-when{flex:none; font-size:10.5px; color:var(--star-dim); padding-top:3px; white-space:nowrap;}
 
 /* The open league: takes the cards' column (sliding in from the left), the live panel stays on the right. */
@@ -5602,8 +5602,8 @@ html{font-stretch:82%;}
 }
 .sb-plays-filter button:hover{color:var(--star); border-color:var(--rule-strong);}
 .sb-plays-filter button[aria-pressed="true"]{color:var(--on-brand); background:var(--horizon-gold); border-color:var(--horizon-gold); font-weight:700;}
-.sb-plays-filter button.is-theirs[aria-pressed="true"]{color:var(--on-cold); background:var(--neon-blue); border-color:var(--neon-blue);}
-.sb-plays-filter button.is-both[aria-pressed="true"]{color:var(--void); background:var(--star); border-color:var(--star);}
+.sb-plays-filter button.is-theirs[aria-pressed="true"]{color:var(--on-brand); background:var(--down); border-color:var(--down);}
+.sb-plays-filter button.is-both[aria-pressed="true"]{color:var(--on-cold); background:var(--star-dim); border-color:var(--star-dim);}
 
 /* While a league's matchup is open the live panel is narrower, so its two halves (players | plays) tighten up: plays put their time under the line. */
 .sb-body.has-drawer .sb-play{flex-wrap:wrap; row-gap:0; padding-right:12px;}
@@ -5626,23 +5626,24 @@ html{font-stretch:82%;}
 .sb-play-side{flex:none; display:flex; flex-direction:column; align-items:flex-end; gap:2px;}
 .sb-play-pts{font-size:14px; font-weight:700; color:var(--horizon-gold); line-height:1;}
 .sb-play-pts.neg{color:var(--down);}
+.sb-play.is-theirs .sb-play-pts{color:var(--down);} /* the opponent's plays read red: edge, label and points */
 .sb-play-side .sb-play-when{padding-top:0;}
 .sb-body.has-drawer .sb-play-side{flex-direction:row; align-items:baseline; gap:8px; flex:1 1 100%; justify-content:space-between; order:3;}
 .sb-body.has-drawer .sb-play-side .sb-play-pts{order:2;}
 
 /* Recent plays: touchdowns and gains of 20+ yards stand out -- a flat tint across the row in the side's colour (gold = yours, blue = theirs), a heavier edge, a bold name and a bigger points figure. */
 .sb-play.is-hot{background:rgba(var(--horizon-gold-rgb), .13); border-left-color:var(--horizon-gold); border-top-color:rgba(var(--horizon-gold-rgb), .35); box-shadow:inset 0 -1px 0 rgba(var(--horizon-gold-rgb), .35);}
-.sb-play.is-hot.is-theirs{background:rgba(var(--neon-blue-rgb), .12); border-left-color:var(--neon-blue); border-top-color:rgba(var(--neon-blue-rgb), .35); box-shadow:inset 0 -1px 0 rgba(var(--neon-blue-rgb), .35);}
+.sb-play.is-hot.is-theirs{background:rgba(var(--down-rgb), .12); border-left-color:var(--down); border-top-color:rgba(var(--down-rgb), .35); box-shadow:inset 0 -1px 0 rgba(var(--down-rgb), .35);}
 .sb-play.is-hot .sb-play-name{font-weight:700;}
 .sb-play.is-hot .sb-play-what strong{color:var(--horizon-gold);}
-.sb-play.is-hot.is-theirs .sb-play-what strong{color:var(--neon-blue);}
+.sb-play.is-hot.is-theirs .sb-play-what strong{color:var(--down);}
 /* Turnovers (interceptions and fumbles, whoever has the ball): a flat red tint, a red edge and a red label, whichever side the play belongs to. */
 .sb-play.is-turnover, .sb-play.is-turnover.is-theirs{background:color-mix(in srgb, var(--down) 14%, transparent); border-left-color:var(--down); border-top-color:color-mix(in srgb, var(--down) 40%, transparent); box-shadow:inset 0 -1px 0 color-mix(in srgb, var(--down) 40%, transparent);}
 .sb-play.is-turnover .sb-play-name{font-weight:700;}
 .sb-play.is-turnover .sb-play-what strong, .sb-play.is-turnover.is-theirs .sb-play-what strong{color:var(--down);}
 .sb-play.is-turnover .sb-play-pts{font-size:17px;}
 .sb-play.is-hot .sb-play-pts{font-size:17px;}
-.sb-play.is-hot.is-theirs .sb-play-pts{color:var(--neon-blue);}
+.sb-play.is-hot.is-theirs .sb-play-pts{color:var(--down);}
 
 /* Recent plays: each player's team logo sits just before his name. */
 .sb-play-who{display:flex; flex-wrap:wrap; align-items:center; gap:1px 8px;}
@@ -5701,12 +5702,12 @@ html{font-stretch:82%;}
 .cp-list{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px;}
 .cp-card{position:relative; display:flex; flex-direction:column; gap:5px; padding:11px 14px 11px 16px; border:1px solid rgba(var(--star-dot-rgb),.12); background:rgba(var(--star-dot-rgb),.03); box-shadow:inset 3px 0 0 rgba(var(--star-dot-rgb),.35);}
 .cp-card.is-mine{box-shadow:inset 3px 0 0 var(--horizon-gold);}
-.cp-card.is-theirs{box-shadow:inset 3px 0 0 var(--neon-blue);}
+.cp-card.is-theirs{box-shadow:inset 3px 0 0 var(--down);}
 .cp-card.is-alert{box-shadow:inset 3px 0 0 var(--down); background:rgba(var(--star-dot-rgb),.05);}
 .cp-card.is-fresh{background:rgba(var(--horizon-gold-rgb),.09);}
 .cp-label{font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--star-dim);}
 .cp-card.is-mine .cp-label{color:var(--horizon-gold);}
-.cp-card.is-theirs .cp-label{color:var(--neon-blue);}
+.cp-card.is-theirs .cp-label{color:var(--down);}
 .cp-card.is-alert .cp-label{color:var(--down);}
 .cp-league{font-weight:400; text-transform:none; letter-spacing:.02em; color:var(--star-dim);}
 .cp-new{color:var(--horizon-gold);}
