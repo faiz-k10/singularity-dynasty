@@ -2581,7 +2581,14 @@ a.export-csv-btn{text-decoration:none;}
 .weekly-detail-grid .weekly-stats-next{display:flex; flex-direction:column; gap:10px; padding:14px 14px; min-width:0;}
 /* This week and Last week share one set of lines: the same heading row (tall enough for the opponent's logo), the same label row and the same value row, so
    the text lines up across the two boxes whatever its size. */
-.weekly-stats-eyebrow{display:flex; align-items:center; justify-content:center; height:22px; font-family:var(--font-mono), monospace; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--star-dim); white-space:nowrap;}
+/* NOTHING in these two boxes may leak out of them (a narrow opened-player column once pushed "Position rank" into "Median proj" and the heading
+   past the box edge). Each box is a size container: its heading, labels and numbers are sized from the box's own width (cqw) with a cap at the
+   usual size, using the rough character count of the text it holds (--ch-eb / --ch-lb / --ch-val), and overflow is clipped as a last resort.
+   Anything new that goes in these boxes must scale the same way instead of relying on white-space:nowrap alone. */
+.weekly-stats-next, .weekly-stats-last{container-type:inline-size; overflow:hidden;}
+.weekly-stats-next{--ch-eb:14; --eb-extra:29px; --ch-lb:16.5; --ch-val:6.4;}
+.weekly-stats-last{--ch-eb:9.6; --eb-extra:0px; --ch-lb:8.6; --ch-val:5.4;}
+.weekly-stats-eyebrow{display:flex; align-items:center; justify-content:center; height:22px; font-family:var(--font-mono), monospace; font-size:clamp(6px, calc((100cqw - var(--eb-extra, 0px)) / var(--ch-eb, 12)), 10px); letter-spacing:0.1em; text-transform:uppercase; color:var(--star-dim); white-space:nowrap; overflow:hidden;}
 .weekly-stats-eyebrow-next{color:var(--horizon-gold); font-weight:700;}
 .weekly-stats-eyebrow-next{flex-wrap:nowrap; column-gap:4px; letter-spacing:0.03em;} /* the opponent always stays on the heading's line (founder, Oct 20): the panel is given the room instead (grid below) */
 .weekly-stats-last .weekly-stats-eyebrow{letter-spacing:0.06em;}
@@ -2589,12 +2596,12 @@ a.export-csv-btn{text-decoration:none;}
 .weekly-stats-eyebrow .weekly-stats-opp .team-badge img{width:20px; height:20px;}
 /* One line, always: even a three-digit position rank ("TE103") and a median fit beside each other, so the numbers
    shrink and the labels tighten instead of wrapping onto a second row. */
-.weekly-stats-pair{display:flex; flex-wrap:nowrap; justify-content:space-between; gap:14px;}
+.weekly-stats-pair{display:flex; flex-wrap:nowrap; justify-content:space-between; gap:clamp(4px, 5cqw, 14px);}
 .weekly-stats-item{display:flex; flex-direction:column; gap:3px; min-width:0;}
-.weekly-stats-split .weekly-player-stat-label{font-size:9.5px; letter-spacing:0.06em; white-space:nowrap;}
+.weekly-stats-split .weekly-player-stat-label{font-size:clamp(6px, calc((100cqw - 10px) / var(--ch-lb, 16)), 9.5px); letter-spacing:0.06em; white-space:nowrap;}
 .weekly-stats-value-dim, .weekly-stats-value-big{display:flex; align-items:center; height:28px; white-space:nowrap; font-family:var(--font-mono), monospace; line-height:1;}
-.weekly-stats-value-dim{font-size:17px; font-weight:600; color:var(--star-dim);}
-.weekly-stats-value-big{font-size:26px; font-weight:700; color:var(--star);}
+.weekly-stats-value-dim{font-size:clamp(9px, calc((100cqw - 14px) / var(--ch-val, 6)), 17px); font-weight:600; color:var(--star-dim);}
+.weekly-stats-value-big{font-size:clamp(11px, calc((100cqw - 14px) / var(--ch-val, 6)), 26px); font-weight:700; color:var(--star);}
 .weekly-stats-value-gold{color:var(--horizon-gold); text-shadow:0 0 18px rgba(var(--horizon-gold-rgb),0.45);}
 .weekly-detail-grid .weekly-stats-next{
   border-color:rgba(var(--horizon-gold-rgb),0.6);
