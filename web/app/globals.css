@@ -21,6 +21,7 @@
   --menace:#E879F9;
   --sprout:#A3E635;
   --peak:#FACC15;
+  --established:#FFC773; /* the old gold, kept for the Established badge after the Europa theme moved --horizon-gold to mint */
   --matchup-neutral:#F0C43D;  /* deliberately distinct from --horizon-gold --
                                   that's already "established" confidence;
                                   reusing it here would conflate the two
@@ -54,6 +55,7 @@
   --menace-rgb:232,121,249;
   --sprout-rgb:163,230,53;
   --peak-rgb:250,204,21;
+  --established-rgb:255,199,115;
   --fire:#FF2400;
   --fire-rgb:255,36,0;
   --smash:#FF7A45;
@@ -107,6 +109,7 @@
     --menace:#C026D3;
     --sprout:#5A9A0A;
     --peak:#8F7F00;
+    --established:#B8720E;
     --matchup-neutral:#A87B00;
     --pos-qb:#D6005E;
     --pos-rb:#007A50;
@@ -126,6 +129,7 @@
     --menace-rgb:192,38,211;
     --sprout-rgb:90,154,10;
     --peak-rgb:143,127,0;
+    --established-rgb:184,114,14;
     --fire:#E11D0B;
     --fire-rgb:225,29,11;
     --smash:#EA6A0A;
@@ -170,6 +174,7 @@
   --menace:#C026D3;
   --sprout:#5A9A0A;
   --peak:#8F7F00;
+  --established:#B8720E;
   --matchup-neutral:#A87B00;
   --pos-qb:#D6005E;
   --pos-rb:#007A50;
@@ -189,6 +194,7 @@
   --menace-rgb:192,38,211;
   --sprout-rgb:90,154,10;
   --peak-rgb:143,127,0;
+  --established-rgb:184,114,14;
   --fire:#E11D0B;
   --fire-rgb:225,29,11;
   --smash:#EA6A0A;
@@ -274,7 +280,7 @@ body::before{
    reasoning as .confidence-badge svg above (an odd margin can't split
    evenly and ends up looking a pixel off-center on one side). */
 .ticker-badge svg{width:14px; height:14px; display:block;}
-.ticker-badge.gold{background:var(--horizon-gold); color:var(--void); box-shadow:0 0 5px rgba(var(--horizon-gold-rgb),0.5);}
+.ticker-badge.gold{background:var(--established); color:var(--void); box-shadow:0 0 5px rgba(var(--established-rgb),0.5);}
 .ticker-badge.eliteRole{background:var(--elite-role); color:var(--void); box-shadow:0 0 5px rgba(var(--elite-role-rgb),0.55);}
 .ticker-badge.elitePlayer{background:var(--elite-player); color:var(--void); box-shadow:0 0 5px rgba(var(--elite-player-rgb),0.55);}
 .ticker-badge.silver{background:var(--silver); color:var(--void); box-shadow:0 0 4px rgba(var(--silver-rgb),0.4);}
@@ -1603,7 +1609,7 @@ a.export-csv-btn{text-decoration:none;}
    themselves, confirmed by checking getBoundingClientRect, not just
    getBBox, before and after. */
 .confidence-badge svg{width:14px; height:14px; display:block;}
-.confidence-badge.gold{background:rgba(var(--horizon-gold-rgb),0.18); color:var(--horizon-gold); border:1px solid rgba(var(--horizon-gold-rgb),0.4);}
+.confidence-badge.gold{background:rgba(var(--established-rgb),0.18); color:var(--established); border:1px solid rgba(var(--established-rgb),0.4);}
 .confidence-badge.silver{background:rgba(var(--silver-rgb),0.15); color:var(--silver); border:1px solid rgba(var(--silver-rgb),0.35);}
 
 /* Best Ball Rankings — This Week ceiling range + hit-probability badge */
@@ -2009,7 +2015,7 @@ a.export-csv-btn{text-decoration:none;}
 .player-achv-dots.vertical .player-achv-dot{width:4px; height:4px;}
 .player-achv-dot{width:5px; height:5px; border-radius:50%; flex-shrink:0; transition:transform .15s var(--ease);}
 .rankings-table tr.row-expandable:hover .player-achv-dot{transform:scale(1.35);}
-.player-achv-dot.gold{background:var(--horizon-gold); box-shadow:0 0 4px rgba(var(--horizon-gold-rgb),0.7);}
+.player-achv-dot.gold{background:var(--established); box-shadow:0 0 4px rgba(var(--established-rgb),0.7);}
 .player-achv-dot.silver{background:var(--silver); box-shadow:0 0 3px rgba(var(--silver-rgb),0.6);}
 .player-achv-dot.heat{background:var(--fire); box-shadow:0 0 4px rgba(var(--fire-rgb),0.7);}
 .player-achv-dot.ice{background:var(--frost); box-shadow:0 0 4px rgba(var(--frost-rgb),0.7);}
@@ -2429,8 +2435,8 @@ a.export-csv-btn{text-decoration:none;}
    below, so every badge in this row sizes its own art the same way. */
 .weekly-player-achievements .confidence-badge svg{width:25px; height:25px;}
 .weekly-player-achievements .confidence-badge.gold{
-  background:var(--horizon-gold); color:var(--void);
-  box-shadow:0 0 8px rgba(var(--horizon-gold-rgb),0.55);
+  background:var(--established); color:var(--void);
+  box-shadow:0 0 8px rgba(var(--established-rgb),0.55);
 }
 .weekly-player-achievements .confidence-badge.silver{
   background:var(--silver); color:var(--void);
@@ -2451,7 +2457,7 @@ a.export-csv-btn{text-decoration:none;}
   transition:max-width .22s ease, margin-left .22s ease, opacity .16s ease;
 }
 .weekly-achievement-badge.open .weekly-achievement-label{max-width:130px; margin-left:6px; opacity:1;}
-.weekly-achievement-badge.gold .weekly-achievement-label{color:var(--horizon-gold);}
+.weekly-achievement-badge.gold .weekly-achievement-label{color:var(--established);}
 .weekly-achievement-badge.silver .weekly-achievement-label{color:var(--silver);}
 .weekly-achievement-badge.heat .weekly-achievement-label{color:var(--fire);}
 .weekly-achievement-badge.ice .weekly-achievement-label{color:var(--frost);}
