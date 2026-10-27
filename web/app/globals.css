@@ -4301,19 +4301,19 @@ summary:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible{
 .my-filter-cta:hover{border-style:solid; background:rgba(var(--horizon-gold-rgb),0.08);}
 /* A player of yours in a table: his name in the brand colour, and a small "x3" after it when he is on several of your teams. */
 td.player-cell.is-mine, td.player-cell.is-mine .player-hover{color:var(--horizon-gold);}
-.mine-count{display:inline-block; margin-left:7px; padding:0 4px; border:1px solid rgba(var(--horizon-gold-rgb),0.45); border-radius:2px; font-family:var(--font-mono), monospace; font-size:9.5px; font-weight:700; line-height:1.5; color:var(--horizon-gold); vertical-align:middle;}
 /* "Your player" strip at the top of an opened player. */
 .stat-detail-mine{margin-bottom:10px;}
 .weekly-detail-wrap > .stat-detail-mine{margin-bottom:12px;}
 .mine-strip{display:flex; flex-wrap:wrap; align-items:center; gap:6px 8px; padding:8px 12px; border:1px solid rgba(var(--horizon-gold-rgb),0.35); background:rgba(var(--horizon-gold-rgb),0.07); border-radius:2px; font-size:12px;}
 .mine-strip-star{font-family:var(--font-mono), monospace; font-size:10.5px; letter-spacing:0.08em; text-transform:uppercase; color:var(--horizon-gold); font-weight:700;}
 .mine-strip-chip{display:inline-flex; align-items:center; gap:6px; color:var(--star); background:var(--void-panel-2); border:1px solid var(--line); border-radius:2px; padding:3px 10px;}
-/* One league = a row: the league box, then how he got onto that team (Drafted / Traded / Picked up) at its right edge. */
+/* One league = a row: the league box, then how he got onto that team (Drafted / Traded / Picked up) in a tag at its right edge. The tag is
+   one fixed width and one colour, and in the opened-player panel the league box fills the rest of a two-column row, so every box is the same
+   size whatever the league's name or the tag's word (a tag not looked up yet leaves its column empty). */
 .mine-strip-row{display:flex; align-items:center; gap:6px; min-width:0; width:100%;}
+.mine-strip-vertical .mine-strip-row{display:grid; grid-template-columns:minmax(0,1fr) 78px;}
 .mine-strip-league{min-width:0; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
-.mine-strip-how{flex:0 0 auto; font-family:var(--font-mono), monospace; font-size:9.5px; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; padding:3px 6px; border:1px solid var(--line); border-radius:2px; color:var(--star-dim);}
-.mine-strip-how.is-drafted{color:var(--horizon-gold); border-color:rgba(var(--horizon-gold-rgb),0.4);}
-.mine-strip-how.is-traded{color:var(--star);}
+.mine-strip-how{flex:0 0 78px; box-sizing:border-box; width:78px; text-align:center; font-family:var(--font-mono), monospace; font-size:9.5px; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; padding:3px 0; border:1px solid var(--line); border-radius:2px; color:var(--star-dim); white-space:nowrap;}
 /* Vertical variant: the "Your player" panel at the top of the opened-player view's middle column. */
 .mine-strip-vertical{flex-direction:column; align-items:flex-start; flex-wrap:nowrap; padding:0; border:0; background:none; gap:10px;}
 .mine-empty-note{font-size:12px; color:var(--star-dim); line-height:1.4;}

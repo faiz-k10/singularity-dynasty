@@ -125,18 +125,8 @@ export function MyPlayersFilter({ mine, view, gated, compact }) {
   );
 }
 
-// How a player of yours is marked in the tables: his name is set in the brand colour (`mineClass`, on the name cell), and a small "x3" follows it
-// when he is on several of your teams (`MyCount`).
+// How a player of yours is marked in the tables: his name is set in the brand colour (`mineClass`, on the name cell) -- nothing else, no count of teams.
 export const mineClass = (owned) => (owned ? " is-mine" : "");
-export function MyCount({ owned }) {
-  if (!owned || owned.leagues.length < 2) return null;
-  const n = owned.leagues.length;
-  return (
-    <span className="mine-count" aria-label={`On ${n} of your teams`}>
-      ×{n}
-    </span>
-  );
-}
 
 // The far-right panel's empty state, for a player who is on none of the viewer's saved teams (or a viewer with no
 // saved teams / not signed in). `status`: "signedOut" | "noTeams" | "ready".
@@ -168,7 +158,7 @@ export function MyStrip({ owned, vertical = false }) {
               <span className="mine-strip-league">{l.label}</span>
             </span>
             {/* How he got onto this team, to the right of the league box (shown once a refresh has looked it up). */}
-            {l.how && <span className={`mine-strip-how is-${l.how}`}>{ACQUIRED_LABEL[l.how]}</span>}
+            {l.how && <span className="mine-strip-how">{ACQUIRED_LABEL[l.how]}</span>}
           </div>
         ))}
       </div>

@@ -3,7 +3,7 @@
 import { Fragment, memo, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import SortableTh from "./SortableTh";
-import { MyPlayersFilter, MyCount, mineClass, MyStrip, useMyView } from "./MyPlayers";
+import { MyPlayersFilter, mineClass, MyStrip, useMyView } from "./MyPlayers";
 import RankingsToolbar from "./RankingsToolbar";
 import { matchesBadgeFilters } from "./badgeFilters";
 import TeamBadge from "./TeamBadge";
@@ -623,7 +623,6 @@ const PlayerRow = memo(function PlayerRow({
         <td className="mono">{row.rank}</td>
         <td className={`player-cell${mineClass(owned)}`}>
           {row.player_name}
-          <MyCount owned={owned} />
         </td>
         <td className="mono align-left">
           {row.position}
