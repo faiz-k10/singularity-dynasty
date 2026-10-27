@@ -25,8 +25,8 @@ export function formatWin(p) {
   return p == null ? "—" : p >= 0.995 ? ">99%" : p < 0.005 ? "<1%" : `${Math.round(p * 100)}%`;
 }
 
-// Settled results get a settled colour (green: You win / Won, red: Out of reach / Lost) on the word and its bar.
-export const sealedClass = (label) => (label === "You win" || label === "Won" ? " is-sealed-win" : label === "Out of reach" || label === "Lost" ? " is-sealed-loss" : "");
+// The status colour class (mint | red | grey, from standing().tone) on a card or the scoreboard: the word, its bar and the card edge follow it.
+export const toneClass = (st) => (st?.tone ? ` is-tone-${st.tone}` : "");
 
 // "Mon 8:15 PM" for a game not started yet, the clock while it's on, "Final" after.
 function gameLabel(p, mounted) {
@@ -239,7 +239,7 @@ function MatchupBody({ team, gameStates, playTotals }) {
 
   const myName = team.team_name || "Your team";
   const center = (
-    <div className={`h2h-center is-${st.key}${sealedClass(st.label)}`}>
+    <div className={`h2h-center${toneClass(st)}`}>
       {st.label && <div className="h2h-word">{st.label}</div>}
       {pct != null && !allDone && !lock && <div className="h2h-win-label mono">{formatWin(pct)} to win</div>}
       {pct != null && !allDone && (

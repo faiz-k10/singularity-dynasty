@@ -55,3 +55,16 @@ test("lockIn: nobody left on the other side and a clear lead -> locked; any real
   assert.equal(lockIn(null, done, 100, 50), null);
   assert.equal(lockIn(done, done, null, 50), null);
 });
+
+test("standing: each word carries its colour (mint / red / grey)", () => {
+  const tone = (pct, done, lock) => standing(pct, done, lock).tone;
+  assert.equal(tone(1, true), "mint"); // Won
+  assert.equal(tone(0, true), "mint"); // Lost
+  assert.equal(tone(0.5, false, "win"), "mint"); // You win
+  assert.equal(tone(0.5, false, "loss"), "red"); // Out of reach
+  assert.equal(tone(0.7, false), "mint"); // Favored
+  assert.equal(tone(0.5, false), "grey"); // Toss-up
+  assert.equal(tone(0.3, false), "grey"); // Underdog
+  assert.equal(tone(0.1, false), "red"); // Long shot
+  assert.equal(standing(null, false).tone, null);
+});

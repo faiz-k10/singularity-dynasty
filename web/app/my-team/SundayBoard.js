@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import MatchupPanel, { sleeperMatchupUrl, formatWin, sealedClass, leagueTabs } from "./MatchupPanel";
+import MatchupPanel, { sleeperMatchupUrl, formatWin, toneClass, leagueTabs } from "./MatchupPanel";
 import PanelTabs from "../PanelTabs";
 import { useMounted } from "./useMounted";
 import { fmt1, fmt2 } from "@/lib/format";
@@ -63,7 +63,7 @@ function LeagueCard({ team, ms, onOpen }) {
 
   return (
     <div
-      className={`sb-card is-${st.key}${sealedClass(st.label)}${ringStyle ? " has-ring" : ""}${oddsRing ? ` ring-${oddsTone(row.playoffOdds)}` : ""}`}
+      className={`sb-card${toneClass(st)}${ringStyle ? " has-ring" : ""}${oddsRing ? ` ring-${oddsTone(row.playoffOdds)}` : ""}`}
       style={ringStyle}
       role="button"
       tabIndex={0}
@@ -559,7 +559,7 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
 
   // The week's one sentence, built from the SAME words the cards use (lib/standing.js) so the two always agree: how many leagues
   // are won / being won, favored, a toss-up, underdog or lost, plus lineup alerts.
-  const tally = { won: 0, winning: 0, favored: 0, tossup: 0, underdog: 0, losing: 0, lost: 0 };
+  const tally = { won: 0, winning: 0, favored: 0, tossup: 0, underdog: 0, longshot: 0, losing: 0, lost: 0 };
   let alerts = 0;
   let live = 0; // leagues where one of my players is on the field right now (the "Live" label beside the clock)
   for (const t of visibleTeams) {
@@ -569,7 +569,8 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
     else if (label === "You win") tally.winning++;
     else if (label === "Favored") tally.favored++;
     else if (label === "Toss-up") tally.tossup++;
-    else if (label === "Underdog" || label === "Long shot") tally.underdog++;
+    else if (label === "Underdog") tally.underdog++;
+    else if (label === "Long shot") tally.longshot++;
     else if (label === "Out of reach") tally.losing++;
     else if (label === "Lost") tally.lost++;
     alerts += ms.row.alertCount.total;
@@ -577,15 +578,16 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
   }
   const week = savedTeams.find((t) => t.settings?.week)?.settings.week;
   const time = updatedAt && mounted ? new Date(updatedAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) : null;
-  // "favored" reads in the favored colour and "underdog" in the underdog colour, the same as the cards' one-word readings.
+  // Each count reads in its status's colour, the same as the cards' one-word readings (lib/standing.js).
   const parts = [
-    [tally.won, "won"],
-    [tally.winning, "winning"],
-    [tally.favored, "favored", "is-ahead"],
-    [tally.tossup, "toss-up"],
-    [tally.underdog, "underdog", "is-behind"],
-    [tally.losing, "losing"],
-    [tally.lost, "lost"],
+    [tally.won, "won", "is-tone-mint"],
+    [tally.winning, "winning", "is-tone-mint"],
+    [tally.favored, "favored", "is-tone-mint"],
+    [tally.tossup, "toss-up", "is-tone-grey"],
+    [tally.underdog, "underdog", "is-tone-grey"],
+    [tally.longshot, "long shot", "is-tone-red"],
+    [tally.losing, "out of reach", "is-tone-red"],
+    [tally.lost, "lost", "is-tone-mint"],
     [alerts, alerts === 1 ? "lineup alert" : "lineup alerts"],
   ].filter(([n]) => n);
 

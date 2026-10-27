@@ -4969,9 +4969,11 @@ html{font-stretch:82%;}
 .h2h-team.opp .h2h-meta{justify-content:flex-end;}
 .h2h-center{display:flex; flex-direction:column; align-items:center; gap:6px; min-width:170px;}
 /* Same standing language as the Sunday board cards: the word (Favored / Toss-up / Underdog / Won / Lost) in the tone. */
+/* Status colours (standing().tone): the word, its bar and a card's edge all read --tone. */
+.sb-card.is-tone-mint, .h2h-center.is-tone-mint{--tone:var(--horizon-gold);}
+.sb-card.is-tone-red, .h2h-center.is-tone-red{--tone:var(--down);}
+.sb-card.is-tone-grey, .h2h-center.is-tone-grey{--tone:var(--star-dim);}
 .h2h-center{--tone:var(--star);}
-.h2h-center.is-ahead, .h2h-center.is-won{--tone:var(--horizon-gold);}
-.h2h-center.is-behind, .h2h-center.is-lost{--tone:var(--neon-blue);}
 .h2h-word{font-family:var(--font-display), sans-serif; font-weight:800; font-size:34px; line-height:1; letter-spacing:.03em; text-transform:uppercase; color:var(--tone);}
 .h2h-win-label{font-size:12px; color:var(--star-dim);}
 .h2h-win-bar{width:160px; height:4px; border-radius:2px; background:rgba(var(--star-dot-rgb),.1); overflow:hidden;}
@@ -5150,7 +5152,7 @@ html{font-stretch:82%;}
 .sb-heading{display:flex; align-items:center; gap:14px; flex:1 1 0; min-width:0;} /* one line -- the Week box, its summary and the Filter pill sit on the same row, centred on each other; a summary too long for the room is cut with an ellipsis */
 .sb-title{flex:none; margin:0; padding:7px 16px 6px; font-family:var(--font-display), sans-serif; font-weight:800; font-size:28px; line-height:1; text-transform:uppercase; letter-spacing:.06em; color:var(--star); background:rgba(var(--scrim-rgb), var(--glass-alpha)); border:1px solid var(--rule); border-top:2px solid var(--rule-strong); border-radius:var(--r-sm);} /* boxed like a top-level panel */
 .sb-summary{margin:0; min-width:0; font-size:15px; color:var(--star-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-.sb-summary .is-ahead{color:var(--horizon-gold);} .sb-summary .is-behind{color:var(--neon-blue);} /* same colours as a card's Favored / Underdog word */
+.sb-summary .is-tone-mint{color:var(--horizon-gold);} .sb-summary .is-tone-red{color:var(--down);} .sb-summary .is-tone-grey{color:var(--star-dim);}
 .sb-updated{display:inline-flex; align-items:center; gap:7px; font-size:12px; color:var(--star-dim); white-space:nowrap;}
 .sb-updated.is-live{color:var(--star);}
 .sb-live-dot{width:7px; height:7px; border-radius:50%; background:var(--down); flex:none; animation:live-pulse-ring 1.8s ease-out infinite;}
@@ -5183,9 +5185,6 @@ html{font-stretch:82%;}
           mask:linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
   transition:--win .8s ease;
 }
-.sb-card.is-ahead, .sb-card.is-won{--tone:var(--horizon-gold);}
-.sb-card.is-behind, .sb-card.is-lost{--tone:var(--neon-blue);}
-.sb-card.is-close{--tone:var(--star);}
 .sb-card:hover{transform:translateY(-2px); border-color:rgba(var(--star-dot-rgb),.2);}
 .sb-card:focus-visible{outline:2px solid var(--neon-blue); outline-offset:2px;}
 .sb-card-head{display:flex; align-items:center; gap:10px; min-height:22px;}
@@ -5202,19 +5201,8 @@ html{font-stretch:82%;}
 
 .sb-card-verdict{display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap;}
 .sb-card-word{font-family:var(--font-display), sans-serif; font-weight:800; font-size:30px; line-height:1; letter-spacing:.03em; text-transform:uppercase; color:var(--tone);}
-.sb-card.is-close .sb-card-word{color:var(--star);}
 .sb-card-pct{font-size:13px; color:var(--star-dim); margin-left:auto; text-align:right;} /* the odds end the one-word reading's row, right above your score */
 .sb-card-word + .sb-card-pct{white-space:nowrap;}
-/* A result that is settled reads in a settled colour: green for a win that is in the bag (Locked in, or Won once the games
-   are over), red for a loss that can't be undone (Out of reach, or Lost) -- the word and its bar, on the Sunday board card
-   and on the matchup scoreboard. Everything else keeps the gold / blue / plain language. */
-.sb-card.is-sealed-win, .h2h-center.is-sealed-win{--tone:var(--up);} /* the card's left edge follows too */
-.sb-card.is-sealed-loss, .h2h-center.is-sealed-loss{--tone:var(--down);}
-.sb-card.is-sealed-win .sb-card-word, .h2h-center.is-sealed-win .h2h-word{color:var(--up);}
-.h2h-center.is-sealed-win .h2h-win-bar > span{background:var(--up);}
-.sb-card.is-sealed-loss .sb-card-word, .h2h-center.is-sealed-loss .h2h-word{color:var(--down);}
-.h2h-center.is-sealed-loss .h2h-win-bar > span{background:var(--down);}
-
 .sb-card-scores{flex:1; display:flex; flex-direction:column; justify-content:center; gap:10px;}
 .sb-card-side{display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:10px;}
 .sb-card-team{font-size:17px; font-weight:700; color:var(--star); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;} /* your team: bold and bright (no YOU tag) */

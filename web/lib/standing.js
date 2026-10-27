@@ -47,14 +47,16 @@ export function lockIn(mine, opp, myScore, oppScore) {
   return null;
 }
 
+// Each word carries its colour (founder's table, Oct 26 2026): mint = Won, Lost, You win, Favored; red = Out of reach, Long shot;
+// grey (steel) = Toss-up, Underdog. The cards, the matchup scoreboard and the header sentence all read `tone` from here.
 // pct: win chance (0-1) or null; done: every game over; lock: lockIn()'s answer.
 export function standing(pct, done, lock = null) {
-  if (pct == null) return { key: "none", label: null };
-  if (done) return pct >= 0.5 ? { key: "won", label: "Won" } : { key: "lost", label: "Lost" };
-  if (lock === "win") return { key: "ahead", label: "You win" };
-  if (lock === "loss") return { key: "behind", label: "Out of reach" };
-  if (pct >= 0.6) return { key: "ahead", label: "Favored" };
-  if (pct < LONG_SHOT) return { key: "behind", label: "Long shot" };
-  if (pct < 0.4) return { key: "behind", label: "Underdog" };
-  return { key: "close", label: "Toss-up" };
+  if (pct == null) return { key: "none", label: null, tone: null };
+  if (done) return pct >= 0.5 ? { key: "won", label: "Won", tone: "mint" } : { key: "lost", label: "Lost", tone: "mint" };
+  if (lock === "win") return { key: "ahead", label: "You win", tone: "mint" };
+  if (lock === "loss") return { key: "behind", label: "Out of reach", tone: "red" };
+  if (pct >= 0.6) return { key: "ahead", label: "Favored", tone: "mint" };
+  if (pct < LONG_SHOT) return { key: "behind", label: "Long shot", tone: "red" };
+  if (pct < 0.4) return { key: "behind", label: "Underdog", tone: "grey" };
+  return { key: "close", label: "Toss-up", tone: "grey" };
 }
