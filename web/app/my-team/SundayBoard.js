@@ -593,7 +593,7 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
     [tally.underdog, "underdog", "is-tone-grey"],
     [tally.longshot, "long shot", "is-tone-red"],
     [tally.losing, "out of reach", "is-tone-red"],
-    [tally.lost, "lost", "is-tone-mint"],
+    [tally.lost, "lost", "is-tone-red"],
     [alerts, alerts === 1 ? "lineup alert" : "lineup alerts"],
   ].filter(([n]) => n);
 

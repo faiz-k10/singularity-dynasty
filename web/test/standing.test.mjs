@@ -59,7 +59,7 @@ test("lockIn: nobody left on the other side and a clear lead -> locked; any real
 test("standing: each word carries its colour (mint / red / grey)", () => {
   const tone = (pct, done, lock) => standing(pct, done, lock).tone;
   assert.equal(tone(1, true), "mint"); // Won
-  assert.equal(tone(0, true), "mint"); // Lost
+  assert.equal(tone(0, true), "red"); // Lost
   assert.equal(tone(0.5, false, "win"), "mint"); // You win
   assert.equal(tone(0.5, false, "loss"), "red"); // Out of reach
   assert.equal(tone(0.7, false), "mint"); // Favored
