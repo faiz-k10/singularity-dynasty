@@ -21,6 +21,27 @@ export async function fetchSleeperUser(username) {
   return data && data.user_id ? data : null;
 }
 
+// One league's own record (name, settings, previous_league_id for dynasty / keeper chains).
+export async function fetchSleeperLeague(leagueId) {
+  return sleeperGet(`/league/${leagueId}`);
+}
+
+// Completed and failed trades / waiver claims / free-agent moves for one week ("round"); week 1 also carries the preseason moves.
+export async function fetchSleeperTransactions(leagueId, round) {
+  const data = await sleeperGet(`/league/${leagueId}/transactions/${round}`);
+  return Array.isArray(data) ? data : [];
+}
+
+export async function fetchSleeperDrafts(leagueId) {
+  const data = await sleeperGet(`/league/${leagueId}/drafts`);
+  return Array.isArray(data) ? data : [];
+}
+
+export async function fetchSleeperDraftPicks(draftId) {
+  const data = await sleeperGet(`/draft/${draftId}/picks`);
+  return Array.isArray(data) ? data : [];
+}
+
 export async function fetchSleeperLeagues(sleeperUserId, season) {
   const data = await sleeperGet(`/user/${sleeperUserId}/leagues/nfl/${season}`);
   return data || [];

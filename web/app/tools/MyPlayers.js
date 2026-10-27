@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { ownedFor, myPlayerCount } from "@/lib/myPlayers";
+import { ACQUIRED_LABEL } from "@/lib/acquisition";
 
 // Shared "personal dimension" pieces for Player Season Simulations and Weekly Projection
 // Rankings: one hook that owns the My-players view state, the toggle row, the star next to
@@ -164,10 +165,14 @@ export function MyStrip({ owned, vertical = false }) {
       <span className={vertical ? "weekly-panel-title" : "mine-strip-star"}>{vertical ? "Your player" : "★ Your player"}</span>
       <div className={vertical ? "mine-strip-list" : "mine-strip-leagues"}>
         {owned.leagues.map((l, i) => (
-          <span key={i} className="mine-strip-chip">
-            {l.label}
-            <span className={l.starter ? "mine-strip-role starter" : "mine-strip-role"}>{l.starter ? "starter" : "bench"}</span>
-          </span>
+          <div key={i} className="mine-strip-row">
+            <span className="mine-strip-chip">
+              <span className="mine-strip-league">{l.label}</span>
+              <span className={l.starter ? "mine-strip-role starter" : "mine-strip-role"}>{l.starter ? "starter" : "bench"}</span>
+            </span>
+            {/* How he got onto this team, to the right of the league box (shown once a refresh has looked it up). */}
+            {l.how && <span className={`mine-strip-how is-${l.how}`}>{ACQUIRED_LABEL[l.how]}</span>}
+          </div>
         ))}
       </div>
     </div>

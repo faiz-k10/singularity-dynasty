@@ -3,9 +3,11 @@
 // filter their own guys. Server side loads it; the pure helpers below also run in the browser.
 //
 // Shape (kept small -- it is serialized into the page):
-//   { signedIn, teams: ["League A", ...], byName: { "josh allen": [[teamIndex, isStarter 0|1], ...] } }
+//   { signedIn, teams: ["League A", ...], byName: { "josh allen": [[teamIndex, isStarter 0|1, how "D"|"T"|"P"|""], ...] } }
+// (how = Drafted / Traded / Picked up, from the saved roster's `acquired`, "" when unknown).
 import { normalizePlayerName } from "./portfolio.js";
 import { leagueName } from "./format.js";
+import { ACQUIRED_CODE, ACQUIRED_FROM_CODE } from "./acquisition.js";
 
 // Same lookup from saved-team rows already in hand (the My Team page has them).
 export function mineFromTeams(rows) {
@@ -16,7 +18,7 @@ export function mineFromTeams(rows) {
     for (const p of t.players || []) {
       if (!p?.name) continue;
       const key = normalizePlayerName(p.name);
-      (byName[key] ||= []).push([i, p.isStarter ? 1 : 0]);
+      (byName[key] ||= []).push([i, p.isStarter ? 1 : 0, ACQUIRED_CODE[p.acquired] || ""]);
     }
   });
   return { signedIn: true, teams, byName };
@@ -40,7 +42,7 @@ export function ownedFor(mine, name, league = "all") {
   const sel = league === "all" ? hits : hits.filter((h) => h[0] === Number(league));
   if (!sel.length) return null;
   return {
-    leagues: sel.map(([i, s]) => ({ label: mine.teams[i], starter: !!s })),
+    leagues: sel.map(([i, s, how]) => ({ label: mine.teams[i], starter: !!s, how: ACQUIRED_FROM_CODE[how] || null })),
     starter: sel.some((h) => h[1]),
   };
 }

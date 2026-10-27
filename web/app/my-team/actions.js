@@ -17,6 +17,7 @@ import {
 } from "../tools/achievementsData";
 import {
   fetchSleeperUser,
+  fetchSleeperLeague,
   fetchSleeperLeagues,
   fetchSleeperRosters,
   fetchSleeperLeagueUsers,
@@ -32,6 +33,7 @@ import { buildWaiverList, sleeperIndex } from "@/lib/waivers";
 import { buildSide, matchupOutlook } from "@/lib/winChance";
 import { buildBench } from "@/lib/h2hBench";
 import { getLeagueSeason } from "@/lib/leagueSeason";
+import { getAcquisitions } from "@/lib/leagueAcquisition";
 import { fetchInjuryFeed } from "@/lib/injuryFeed";
 
 // Sleeper's own player dictionary drops name suffixes ("Luther Burden"
@@ -156,6 +158,8 @@ function formatRecord(settings) {
 // sign in and save it, same as the pure-Sleeper data.
 // opts.season: also gather standings + playoff odds per league (lib/leagueSeason.js, cached a day) -- only the saved
 // teams' full refresh asks for it; the landing page box and the lookup preview stay fast.
+// opts.acquired: also work out how each player got onto the roster (Drafted / Traded / Picked up, lib/leagueAcquisition.js,
+// cached) -- the same full refresh; a save does it for its one league in withAcquired below.
 export async function lookupSleeperTeams(username, opts = {}) {
   const trimmed = (username || "").trim();
   if (!trimmed) {
@@ -383,6 +387,9 @@ export async function lookupSleeperTeams(username, opts = {}) {
       // its own badge alongside Teams/Roster Spots/QB Format/Scoring.
       settings.starters = nonBenchSlots.length;
 
+      const acquired = opts?.acquired
+        ? await getAcquisitions({ league, rosterId: myRoster.roster_id, ownerId: myRoster.owner_id, playerIds: myRoster.players }).catch(() => ({}))
+        : {};
       const rosterPlayers = (myRoster.players || []).map((playerId) => {
         const p = players[playerId];
         const name = p ? `${p.first_name || ""} ${p.last_name || ""}`.trim() || playerId : playerId;
@@ -403,6 +410,8 @@ export async function lookupSleeperTeams(username, opts = {}) {
           achievements,
           position: p?.position || null,
           team: p?.team || null,
+          // How he got onto this roster: "drafted" | "traded" | "pickup" (null when unknown or not asked for).
+          acquired: acquired[playerId] ?? null,
           slot: slotByPlayerId[playerId] || null,
           isStarter: Boolean(slotByPlayerId[playerId]),
           // Index into the starting lineup's own slot order (QB, RB, RB,
@@ -453,7 +462,7 @@ export async function refreshSavedTeams() {
   if (!rows?.length) return { teams: {} };
 
   const usernames = [...new Set(rows.map((r) => r.platform_username).filter(Boolean))];
-  const looked = await Promise.all(usernames.map((u) => lookupSleeperTeams(u, { season: true })));
+  const looked = await Promise.all(usernames.map((u) => lookupSleeperTeams(u, { season: true, acquired: true })));
   const byLeague = {};
   for (const res of looked) {
     for (const t of res.teams || []) byLeague[t.league_id] = t;
@@ -717,7 +726,21 @@ export async function getRosterNews() {
 // lookup and saving again is how a stale roster gets refreshed (upsert on
 // user_id+platform+platform_league_id, see the migration's unique
 // constraint), not a live re-sync on every page view.
-export async function saveTeam({ sleeperUsername, leagueId, leagueName, teamName, rosterId, settings, players }) {
+// A save asks Sleeper how each rostered player was acquired, for that one league (best effort: a failure saves the roster without it).
+async function withAcquired(leagueId, rosterId, players) {
+  try {
+    const [league, rosters] = await Promise.all([fetchSleeperLeague(leagueId), fetchSleeperRosters(leagueId)]);
+    const roster = rosters.find((r) => String(r.roster_id) === String(rosterId));
+    if (!league || !roster) return players;
+    const acquired = await getAcquisitions({ league, rosterId: roster.roster_id, ownerId: roster.owner_id, playerIds: players.map((p) => p.player_id) });
+    return players.map((p) => ({ ...p, acquired: acquired[p.player_id] ?? null }));
+  } catch (e) {
+    console.error("[saveTeam] acquisition lookup failed:", e.message);
+    return players;
+  }
+}
+
+export async function saveTeam({ sleeperUsername, leagueId, leagueName, teamName, rosterId, settings, players: lookedUp }) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -758,6 +781,8 @@ export async function saveTeam({ sleeperUsername, leagueId, leagueName, teamName
       }
     }
   }
+
+  const players = await withAcquired(leagueId, rosterId, lookedUp || []);
 
   const { data: savedRow, error } = await supabase
     .from("saved_teams")
