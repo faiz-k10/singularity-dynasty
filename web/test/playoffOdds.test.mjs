@@ -4,10 +4,9 @@ import { rankStandings, seasonStrengths, simulatePlayoffOdds } from "../lib/play
 
 const T = (id, wins, losses, pf) => ({ id, name: id, wins, losses, ties: 0, pf, pa: 0 });
 
-test("rankStandings: wins then points for; best ball by points", () => {
+test("rankStandings: wins then points for", () => {
   const teams = [T("a", 3, 2, 600), T("b", 4, 1, 500), T("c", 3, 2, 650)];
   assert.deepEqual(rankStandings(teams).map((t) => t.id), ["b", "c", "a"]);
-  assert.deepEqual(rankStandings(teams, { byPoints: true }).map((t) => [t.id, t.rank]), [["c", 1], ["a", 2], ["b", 3]]);
   assert.equal(rankStandings([{ ...T("x", 3, 2, 1), ties: 1 }, T("y", 3, 3, 9)])[0].id, "x"); // a tie is half a win
 });
 

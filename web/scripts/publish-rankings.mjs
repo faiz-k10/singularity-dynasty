@@ -4,13 +4,6 @@
 // that's already live, just refreshed values (team-change shrinkage
 // applied, plus the no-current-team players already removed by hand).
 //
-// best_ball_rankings is intentionally NOT published here -- Best Ball
-// Rankings is sunset "for now" per CLAUDE.md, so there's no live page
-// reading that table and nothing to refresh. model/projection_engine.R
-// still writes upload_best_ball_rankings.csv every run (untouched, ready
-// to go); when Best Ball comes back, restore the second `tables` entry
-// from git history (this file, before this comment) rather than
-// reinventing it.
 // Run: node --env-file=.env.local scripts/publish-rankings.mjs
 import { createClient } from "@supabase/supabase-js";
 import { readFileSync } from "fs";

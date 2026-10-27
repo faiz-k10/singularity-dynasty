@@ -40,7 +40,7 @@ function leagues(savedTeams, gameStates, adjusted = null) {
   const out = [];
   for (const t of savedTeams || []) {
     const s = t.settings || {};
-    if (s.bestBall || s.isBye || !s.h2h?.mine?.length || !s.h2h?.opp?.length) continue;
+    if (s.isBye || !s.h2h?.mine?.length || !s.h2h?.opp?.length) continue;
     const adj = adjusted?.[t.id]?.adj || null;
     const h2h = adj ? adj.lists : s.h2h;
     const mine = h2h.mine.map((p) => ({ ...p, st: stateOf(p, gameStates) }));
@@ -270,7 +270,7 @@ const startersToPlay = (t, gameStates) =>
 function matchupTrends(savedTeams, gameStates) {
   const byId = new Map();
   for (const t of savedTeams || []) {
-    if (t.settings?.bestBall || t.settings?.isBye) continue;
+    if (t.settings?.isBye) continue;
     for (const p of startersToPlay(t, gameStates)) {
       const e = num(p.myLean?.effect);
       if (e == null) continue;
@@ -301,7 +301,7 @@ function matchupTrends(savedTeams, gameStates) {
 function formWatch(savedTeams, gameStates) {
   const seen = new Map();
   for (const t of savedTeams || []) {
-    if (t.settings?.bestBall || t.settings?.isBye) continue;
+    if (t.settings?.isBye) continue;
     for (const p of t.players || []) {
       const flags = ["onFire", "onIce", "buyLow", "sellHigh"].filter((k) => hasBadge(p, k));
       if (!flags.length) continue;
@@ -352,7 +352,7 @@ function formWatch(savedTeams, gameStates) {
 function rangeProfile(savedTeams, gameStates) {
   const rows = [];
   for (const t of savedTeams || []) {
-    if (t.settings?.bestBall || t.settings?.isBye) continue;
+    if (t.settings?.isBye) continue;
     const st = startersToPlay(t, gameStates);
     const steady = st.filter((p) => hasBadge(p, "locked"));
     const risky = st.filter((p) => hasBadge(p, "volatile"));
@@ -535,7 +535,7 @@ function recaps(ls) {
 
 function season(savedTeams) {
   const cards = [];
-  const withOdds = (savedTeams || []).filter((t) => num(t.settings?.playoffOdds) != null && !t.settings?.playoffSettled && !t.settings?.bestBall);
+  const withOdds = (savedTeams || []).filter((t) => num(t.settings?.playoffOdds) != null && !t.settings?.playoffSettled);
   const bubble = [...withOdds].sort((a, b) => Math.abs(a.settings.playoffOdds - 0.5) - Math.abs(b.settings.playoffOdds - 0.5))[0];
   if (bubble) {
     const s = bubble.settings;

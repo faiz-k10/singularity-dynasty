@@ -29,7 +29,7 @@ export function buildRow(t, injuries, gameStates = null) {
   // Doubtful / Out / IR) per the live feed -- computed server-side in
   // getRosterNews, which only flags players in the starting lineup.
   const flagged = new Map();
-  if (!s.bestBall) for (const i of injuries || []) {
+  for (const i of injuries || []) {
     const prev = flagged.get(i.name);
     if (!prev || i.severity > prev.severity) flagged.set(i.name, i);
   }
@@ -46,8 +46,8 @@ export function buildRow(t, injuries, gameStates = null) {
     liveMine: live?.mine ?? null,
     liveOpp: live?.opp ?? null,
     liveMargin: live ? live.mine - live.opp : null,
-    // Live win chance (lib/winChance.js via actions.js); none on a bye or in best ball.
-    winPct: s.isBye || s.bestBall ? null : s.winChance ?? null,
+    // Live win chance (lib/winChance.js via actions.js); none on a bye.
+    winPct: s.isBye ? null : s.winChance ?? null,
     // Chance to make the playoffs (lib/leagueSeason.js, refreshed once a day).
     playoffOdds: s.playoffOdds ?? null,
     playoffSettled: Boolean(s.playoffSettled),
@@ -55,7 +55,6 @@ export function buildRow(t, injuries, gameStates = null) {
     outStarters,
     // The one lineup-alert number (urgent alerts + start / sit swaps), same as the Lineup tab's badge.
     alertCount: lineupAlertCount(t, gameStates, injuries),
-    bestBall: !!s.bestBall,
   };
 }
 
@@ -282,7 +281,7 @@ export default function LeagueDashboard({ savedTeams, renderExpanded, injuriesBy
                         </span>
                       ))}
                     </div>
-                  ) : r.bestBall ? null : (
+                  ) : (
                     <span className="league-dash-muted">—</span>
                   )}
                 </td>

@@ -704,7 +704,7 @@ const PlayerRow = memo(function PlayerRow({
 const SHOW_POR = false;
 const COLS = SHOW_POR ? 11 : 10;
 
-// Same pattern as RankingsSearch (Redraft) / BestBallSearch: position-pill
+// Same pattern as RankingsSearch (Redraft): position-pill
 // filter + player name search, both client-side. Sorting stays
 // server-driven via the existing URL-param mechanism.
 export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams, positions, maxCeiling, wrTePool, lastWeek, simLatestWeek, leagueTeams, superflex, header, mine, gated }) {

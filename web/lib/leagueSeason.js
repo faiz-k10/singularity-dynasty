@@ -39,7 +39,6 @@ export async function getLeagueSeason({ league, rosters, users, myRosterId, curr
   const key = `${league.league_id}:${new Date().toDateString()}:${lastScored}`;
   if (cache.has(key)) return cache.get(key);
 
-  const byPoints = s.best_ball === 1;
   const medianGame = s.league_average_match === 1;
   const teams = rosters.map((r) => {
     const st = r.settings || {};
@@ -89,10 +88,7 @@ export async function getLeagueSeason({ league, rosters, users, myRosterId, curr
     if (live) {
       for (const m of feed) {
         const base = strength[m.roster_id];
-        if (byPoints || !base) {
-          if (base) dist[m.roster_id] = { mean: Math.max(m.points || 0, base.mean), sd: base.sd };
-          continue;
-        }
+        if (!base) continue;
         const side = summarizeSide(buildSide(m.starters, null, infoFor, projFor, m.players_points), gameStates);
         let rest = 0;
         let v = 0;
@@ -112,16 +108,16 @@ export async function getLeagueSeason({ league, rosters, users, myRosterId, curr
   });
 
   const playoffTeams = Number(s.playoff_teams) || 0;
-  const odds = simulatePlayoffOdds({ teams, weeks, playoffTeams, tau, byPoints, medianGame, sims: 3000 });
+  const odds = simulatePlayoffOdds({ teams, weeks, playoffTeams, tau, medianGame, sims: 3000 });
   // "settled": the number is a fact, not a simulation result -- the regular season is over, or the team can't reach
   // the current playoff cut's wins even by winning out (shown as 0% then; otherwise a 0 from the sims reads "<1%").
-  const ranked = rankStandings(teams, { byPoints });
+  const ranked = rankStandings(teams);
   const cutWins = playoffTeams && ranked[playoffTeams - 1] ? ranked[playoffTeams - 1].wins + 0.5 * (ranked[playoffTeams - 1].ties || 0) : null;
   const gamesLeft = weekNums.length * (medianGame ? 2 : 1);
   const standings = ranked.map((t) => ({
     ...t,
     ...odds[t.id],
-    settled: weekNums.length === 0 || (!byPoints && cutWins != null && t.wins + 0.5 * (t.ties || 0) + gamesLeft < cutWins),
+    settled: weekNums.length === 0 || (cutWins != null && t.wins + 0.5 * (t.ties || 0) + gamesLeft < cutWins),
     mean: strength[t.id]?.mean ?? null,
     isMe: String(t.id) === String(myRosterId),
   }));
@@ -130,7 +126,6 @@ export async function getLeagueSeason({ league, rosters, users, myRosterId, curr
     lastScoredWeek: lastScored,
     weeksLeft: weekNums.length,
     playoffTeams,
-    byPoints,
     medianGame,
     standings,
   };

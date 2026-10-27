@@ -4,9 +4,9 @@ import { emptyFilters, filterCount, leagueFacts, matchesFilters, optionCounts, o
 
 const F = (o = {}) => ({ ...emptyFilters(), ...o });
 
-test("leagueFacts: type tags combine (a dynasty best ball league is both), score and odds bands", () => {
-  const f = leagueFacts({ settings: { leagueType: "dynasty", bestBall: true, qbFormat: "Superflex" }, standingLabel: "Favored", myScore: 50, oppScore: 40, odds: 0.7 });
-  assert.deepEqual(f.types, ["dynasty", "bestball", "superflex"]);
+test("leagueFacts: type tags combine (dynasty + superflex), score and odds bands", () => {
+  const f = leagueFacts({ settings: { leagueType: "dynasty", qbFormat: "Superflex" }, standingLabel: "Favored", myScore: 50, oppScore: 40, odds: 0.7 });
+  assert.deepEqual(f.types, ["dynasty", "superflex"]);
   assert.equal(f.score, "lead");
   assert.equal(f.odds, "likely");
   assert.equal(leagueFacts({ myScore: 0, oppScore: 0 }).score, "even");
@@ -40,12 +40,11 @@ test("matchesFilters: OR within a row, AND across rows, unknown facts never matc
 
 test("optionCounts and filterCount", () => {
   const list = [
-    leagueFacts({ settings: { leagueType: "dynasty", bestBall: true }, standingLabel: "Favored", myScore: 2, oppScore: 1, odds: 0.7 }),
+    leagueFacts({ settings: { leagueType: "dynasty" }, standingLabel: "Favored", myScore: 2, oppScore: 1, odds: 0.7 }),
     leagueFacts({ settings: { leagueType: "dynasty" }, standingLabel: "Underdog", myScore: 1, oppScore: 2, odds: 0.1 }),
   ];
   const c = optionCounts(list);
   assert.equal(c.types.dynasty, 2);
-  assert.equal(c.types.bestball, 1);
   assert.equal(c.standing.Favored, 1);
   assert.equal(c.score.lead, 1);
   assert.equal(c.odds.longshot, 1);

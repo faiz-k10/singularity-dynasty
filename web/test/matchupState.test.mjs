@@ -16,8 +16,7 @@ test("matchupState: one place for scores, win chance, done and lock", () => {
   assert.equal(ms.st.label, "Favored");
 });
 
-test("matchupState: best ball has no win chance and no lock; a bye has no win chance", () => {
-  assert.equal(matchupState({ bestBall: true, winChance: 0.7, matchupActual: { mine: 100, opp: 90 } }, gs).pct, null);
+test("matchupState: a bye has no win chance", () => {
   assert.equal(matchupState({ isBye: true, winChance: 0.7 }, gs).pct, null);
 });
 

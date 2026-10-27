@@ -36,7 +36,7 @@ export function findAlerts({ savedTeams, injuriesByTeam, gameStates, prevWin = {
   const hurt = new Map();
   for (const t of savedTeams || []) {
     const week = t.settings?.week;
-    if (week == null || t.settings?.bestBall) continue;
+    if (week == null) continue;
     for (const i of injuriesByTeam?.[t.id] || []) {
       if (i.severity < 2) continue;
       const team = (t.players || []).find((p) => p.name === i.name)?.team || null;
@@ -61,7 +61,7 @@ export function findAlerts({ savedTeams, injuriesByTeam, gameStates, prevWin = {
   if (near) {
     for (const t of savedTeams || []) {
       const s = t.settings || {};
-      if (s.week == null || s.bestBall || s.isBye) continue;
+      if (s.week == null || s.isBye) continue;
       (s.h2h?.mine || []).forEach((p, i) => {
         let why = null;
         if (!p.id) why = "is empty";

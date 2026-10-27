@@ -23,7 +23,7 @@ const WAIVER_KEEP = 8;
 const waiverCache = new Map();
 function useWaivers(savedTeams) {
   const [waivers, setWaivers] = useState(() => Object.fromEntries([...waiverCache].filter(([k]) => !k.startsWith("at:"))));
-  const ids = savedTeams.filter((t) => !t.settings?.bestBall && !t.settings?.isBye).slice(0, 8).map((t) => t.id).join(",");
+  const ids = savedTeams.filter((t) => !t.settings?.isBye).slice(0, 8).map((t) => t.id).join(",");
   useEffect(() => {
     let alive = true;
     const load = async () => {

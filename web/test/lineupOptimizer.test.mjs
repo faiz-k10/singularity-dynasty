@@ -62,8 +62,8 @@ test("SUPER_FLEX / FLEX are filled after the fixed slots", () => {
   assert.equal(r.swaps[0].out.name, "Junk");
 });
 
-test("best ball, byes and teams without slots return null", () => {
-  assert.equal(optimizeLineup(team([], ["QB"], { bestBall: true }), {}), null);
+test("byes and teams without slots return null", () => {
+  assert.equal(optimizeLineup(team([], ["QB"], { isBye: true }), {}), null);
   assert.equal(optimizeLineup({ settings: {}, players: [] }, {}), null);
 });
 
@@ -97,7 +97,7 @@ test("lineup alerts: empty slot, bye, out and injury tags, each with the best be
   assert.equal(a.find((x) => x.type === "injury").replacement.name, "BenchRb");
   assert.equal(a.find((x) => x.type === "bye").replacement.name, "BenchWr");
   assert.equal(a.find((x) => x.type === "empty").slot, "TE");
-  assert.equal(lineupAlerts(team([], ["QB"], { bestBall: true }), {}, []).length, 0);
+  assert.equal(lineupAlerts(team([], ["QB"], { isBye: true }), {}, []).length, 0);
 });
 
 test("every swap is legal for its slot and a gain; Rodgers can't take a plain FLEX and nobody is swapped for a loss", () => {

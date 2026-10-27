@@ -154,7 +154,7 @@ function TeamScore({ name, record, score, proj, left, state = null, opp = false 
 export const hasStandings = (team) => Boolean(team?.settings?.season?.standings?.length);
 // alerts: the league's lineup-alert count (row.alertCount.total, the one number made by lineupAlertCount) -- the Lineup Alerts tab gets an inner border while it is above 0.
 export function leagueTabs(team, alerts = 0) {
-  const lineup = !team?.settings?.bestBall && !team?.settings?.isBye && team?.settings?.slots?.length ? [["lineup", "Lineup Alerts", alerts]] : [];
+  const lineup = !team?.settings?.isBye && team?.settings?.slots?.length ? [["lineup", "Lineup Alerts", alerts]] : [];
   return [["matchup", "Matchup"], ...lineup, ["available", "Best Available"], ...(hasStandings(team) ? [["standings", "Standings"]] : [])];
 }
 
@@ -251,8 +251,8 @@ function MatchupBody({ team, gameStates, playTotals }) {
     </div>
   );
 
-  // Best ball: no set lineup to compare slot by slot, just the totals.
-  if (s.bestBall || !mine || !opp) {
+  // No lineups to compare slot by slot yet (a snapshot from before they were saved): just the totals.
+  if (!mine || !opp) {
     return (
       <div className="h2h">
         <div className="h2h-board">
@@ -260,11 +260,7 @@ function MatchupBody({ team, gameStates, playTotals }) {
           {center}
           <TeamScore state={leadState(live?.mine, live?.opp)[1]} name={s.opponent} record={s.opponentRecord} score={live?.opp ?? null} proj={s.matchupProj?.opp ?? null} opp />
         </div>
-        <p className="h2h-note">
-          {s.bestBall
-            ? "Best ball: each score is the best possible lineup from every player's points so far, which is what the week is finally scored on (Sleeper fills in its own lineup late, so its number can look far lower early on). There's no set lineup to compare slot by slot and no win chance."
-            : "Refresh to load both lineups."}
-        </p>
+        <p className="h2h-note">Refresh to load both lineups.</p>
       </div>
     );
   }

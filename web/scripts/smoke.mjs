@@ -26,8 +26,6 @@ const ROUTES = [
   "/tools/draft-board",
   "/tools/player-simulations",
   "/tools/prospect-rankings",
-  "/tools/best-ball-rankings",
-  "/tools/compare-best-ball",
   "/tools/compare-players",
   "/tools/compare-player-sims",
   "/sitemap.xml",

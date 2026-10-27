@@ -24,7 +24,7 @@ export function buildLiveFeed(savedTeams, gameStates, { onlyTeamId = null } = {}
   const waiting = []; // starters whose game hasn't kicked off: { side, id, team, start }
   for (const t of savedTeams || []) {
     const s = t.settings || {};
-    if (s.bestBall || s.isBye) continue;
+    if (s.isBye) continue;
     if (onlyTeamId != null && t.id !== onlyTeamId) continue;
     const league = leagueName(t, "League");
     for (const [side, list] of [["mine", s.h2h?.mine], ["theirs", s.h2h?.opp]]) {
@@ -124,7 +124,7 @@ export function catchUpPlayers(savedTeams, gameStates, seen, now) {
   const out = new Map();
   for (const t of savedTeams || []) {
     const s = t.settings || {};
-    if (s.bestBall || s.isBye) continue;
+    if (s.isBye) continue;
     for (const [side, list] of [["mine", s.h2h?.mine], ["theirs", s.h2h?.opp]]) {
       for (const p of list || []) {
         const g = p.id && p.team ? gameStates[p.team] : null;

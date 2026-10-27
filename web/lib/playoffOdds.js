@@ -12,7 +12,7 @@
 // - Weekly noise = the league's own week-to-week spread (pooled across its teams so far).
 // - The week being played now starts from the points already scored plus what each team's starters have left
 //   (the same split as the matchup win chance), so a nearly-finished week is nearly settled.
-// - Ranking: wins (a tie is half), then points for -- Sleeper's default tiebreaker. Best ball ranks by points for.
+// - Ranking: wins (a tie is half), then points for -- Sleeper's default tiebreaker.
 //   Leagues with a weekly median game add a win for every team scoring above the week's median.
 // - Not modelled: divisions (division winners' guaranteed seeds).
 // Same inputs + seed -> same answer.
@@ -102,8 +102,8 @@ function normals(seed) {
 const winPts = (t) => t.wins + 0.5 * (t.ties || 0);
 
 // Current standings, ranked. teams: [{id, name, wins, losses, ties, pf, pa}].
-export function rankStandings(teams, { byPoints = false } = {}) {
-  const sorted = [...teams].sort((a, b) => (byPoints ? 0 : winPts(b) - winPts(a)) || b.pf - a.pf || String(a.name).localeCompare(String(b.name)));
+export function rankStandings(teams) {
+  const sorted = [...teams].sort((a, b) => winPts(b) - winPts(a) || b.pf - a.pf || String(a.name).localeCompare(String(b.name)));
   return sorted.map((t, i) => ({ ...t, rank: i + 1 }));
 }
 
@@ -112,7 +112,7 @@ export function rankStandings(teams, { byPoints = false } = {}) {
 // order. tau: { [id]: spread of each team's true strength } -- one draw per team per simulated season, added to every
 // week that isn't `live` (the week being played already has its own live distribution).
 // Returns { [id]: {playoffOdds, avgWins, avgRank, firstOdds} }.
-export function simulatePlayoffOdds({ teams, weeks, playoffTeams, tau = {}, byPoints = false, medianGame = false, sims = 3000, seed = 20261018 }) {
+export function simulatePlayoffOdds({ teams, weeks, playoffTeams, tau = {}, medianGame = false, sims = 3000, seed = 20261018 }) {
   const ids = teams.map((t) => t.id);
   const idx = new Map(ids.map((id, i) => [id, i]));
   const n = ids.length;
@@ -158,7 +158,7 @@ export function simulatePlayoffOdds({ teams, weeks, playoffTeams, tau = {}, byPo
         for (let i = 0; i < n; i++) if (score[i] > med) w[i] += 1;
       }
     }
-    order.sort((a, b) => (byPoints ? 0 : w[b] - w[a]) || pf[b] - pf[a] || a - b);
+    order.sort((a, b) => w[b] - w[a] || pf[b] - pf[a] || a - b);
     for (let r = 0; r < n; r++) {
       const i = order[r];
       rankSum[i] += r + 1;

@@ -14,7 +14,7 @@ development, so the Stripe/Supabase plumbing is exercised straight from Node.
 
 | Script | Writes to | Notes |
 |---|---|---|
-| `publish-rankings.mjs` | `redraft_rankings`, `best_ball_rankings` | Updates rows by `(player_name, season, week)`. Reads `model/upload_redraft_rankings.csv` / `upload_best_ball_rankings.csv`. |
+| `publish-rankings.mjs` | `redraft_rankings` | Updates rows by `(player_name, season, week)`. Reads `model/upload_redraft_rankings.csv`. |
 | `publish-player-simulations.mjs` | `player_simulations` | Updates rows by `(player_name, season, week)`. |
 | `publish-player-game-log.mjs` | `player_game_log` | Full delete + reinsert (~12k rows). Reads `model/upload_player_game_log.csv`. |
 

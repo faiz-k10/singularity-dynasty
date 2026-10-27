@@ -54,7 +54,7 @@ export default function OpengraphImage() {
             marginBottom: 28,
           }}
         >
-          DYNASTY · BEST BALL · DATA GRAVITY
+          DYNASTY · DATA GRAVITY
         </div>
 
         <div

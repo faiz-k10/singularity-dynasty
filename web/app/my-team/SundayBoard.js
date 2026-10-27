@@ -49,7 +49,7 @@ function LeagueCard({ team, ms, onOpen }) {
   // The card's border is its win chance: the card's width is the bar. The top and bottom borders fill from the left edge by the
   // same share -- the chance to win -- and the left edge is always drawn; all the way across (locked in / won) closes the box.
   // A settled game uses the final score; a loss keeps a short stub so its colour still shows.
-  // With no win chance to show (best ball has no head-to-head), the border is the chance to make the playoffs instead, in the same
+  // With no win chance to show (a bye, or no matchup posted yet), the border is the chance to make the playoffs instead, in the same
   // green / gold / red as the "Playoffs N%" text.
   const oddsRing = pct == null && row.playoffOdds != null;
   const ringPct = oddsRing ? row.playoffOdds : pct == null ? null : done ? (myScore > oppScore ? 1 : myScore < oppScore ? 0 : 0.5) : pct;
@@ -125,7 +125,7 @@ function LeagueCard({ team, ms, onOpen }) {
             </div>
           ) : (
             <div className="sb-card-verdict">
-              <span className="sb-card-word sb-muted">{s.bestBall ? "Best ball" : "—"}</span>
+              <span className="sb-card-word sb-muted">—</span>
             </div>
           )}
 
@@ -147,7 +147,7 @@ function LeagueCard({ team, ms, onOpen }) {
                 {odds}
               </div>
             ) : !s.h2h ? (
-              odds && <div className="sb-card-line">{odds}</div> // best ball has no lineups to say who is left; the card leans on its totals and playoff odds
+              odds && <div className="sb-card-line">{odds}</div> // no lineups to say who is left (a snapshot without them): just the playoff odds
             ) : (
               // Who is still to play, as two aligned rows: yours as name chips (a red dot on anyone playing right now),
               // theirs as a count.

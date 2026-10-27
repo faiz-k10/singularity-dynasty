@@ -29,10 +29,10 @@ test("old server result without statusByKey is passed through", () => {
   assert.equal(liveRosterNews([], old), old);
 });
 
-test("lineupChanged spots a swap, ignores best ball and missing teams", () => {
-  const teams = [team(1, [P("1", "A", "QB", true), P("2", "B", "WR", false)]), team(2, [P("9", "C", "RB", true)], { bestBall: true })];
+test("lineupChanged spots a swap and ignores missing teams", () => {
+  const teams = [team(1, [P("1", "A", "QB", true), P("2", "B", "WR", false)]), team(2, [P("9", "C", "RB", true)])];
   assert.equal(lineupChanged(teams, { 1: ["1"] }), false);
   assert.equal(lineupChanged(teams, { 1: ["2"] }), true);
-  assert.equal(lineupChanged(teams, { 2: ["5"] }), false);
+  assert.equal(lineupChanged(teams, { 2: ["5"] }), true);
   assert.equal(lineupChanged(teams, null), false);
 });

@@ -8,7 +8,7 @@ import { summarizeSide, matchupOutlook } from "./winChance.js";
 import { round2 as r2 } from "./format.js";
 
 
-// s: a saved team's settings ({ h2h, matchupActual, winChance }). Returns null for best ball / no lineups.
+// s: a saved team's settings ({ h2h, matchupActual, winChance }). Returns null when there are no lineups.
 export function adjustedMatchup(s, gameStates, playTotals) {
   if (!s?.h2h?.mine || !s?.h2h?.opp) return null;
   const am = applyPendingToLineup(s.h2h.mine, playTotals);

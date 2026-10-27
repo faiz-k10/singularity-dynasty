@@ -207,7 +207,7 @@ export default async function Home() {
       <header className="hero" id="hero">
         <div className="wrap">
           <div>
-            <div className="eyebrow">Dynasty · Best Ball · Data Gravity</div>
+            <div className="eyebrow">Dynasty · Data Gravity</div>
             <h1>
               Know the range
               <br />
@@ -577,7 +577,7 @@ export default async function Home() {
             <h2>Cutting-edge dynasty &amp; fantasy football, in your inbox.</h2>
             <p>
               Model notes, ranking shifts, and rookie-comp breakdowns —
-              written for dynasty and best ball players who want an edge
+              written for dynasty players who want an edge
               sharper than the mock consensus, delivered every Tuesday before
               waivers process.
             </p>

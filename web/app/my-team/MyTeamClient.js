@@ -138,7 +138,7 @@ function Th({ label, sortKeyName, sortKey, sortDir, onSort, className }) {
 // view it wasn't set on.
 // playerPoints (Sleeper's points so far this week, by player id, this league's scoring) + gameStates (lib/gameStatus.js)
 // drive the Points column: "—" until the player's game kicks off, then live (pulsing dot) and final.
-function RosterTable({ players: rawPlayers, bestBall = false, playerPoints = null, gameStates = null }) {
+function RosterTable({ players: rawPlayers, playerPoints = null, gameStates = null }) {
   const showLive = Boolean(playerPoints && gameStates && Object.keys(gameStates).length);
   const players = useMemo(
     () =>
@@ -150,7 +150,7 @@ function RosterTable({ players: rawPlayers, bestBall = false, playerPoints = nul
         : rawPlayers,
     [rawPlayers, playerPoints, gameStates, showLive]
   );
-  const hasStarters = !bestBall && players.some((p) => p.isStarter);
+  const hasStarters = players.some((p) => p.isStarter);
   const [view, setView] = useState(hasStarters ? "starters" : "full");
   const [sortKey, setSortKey] = useState(null);
   const [sortDir, setSortDir] = useState("desc");
@@ -185,12 +185,6 @@ function RosterTable({ players: rawPlayers, bestBall = false, playerPoints = nul
 
   return (
     <div>
-      {bestBall && (
-        <p className="my-team-hint my-team-bestball-note">
-          Best ball — the platform starts your top scorers each week, so there&apos;s
-          no set lineup. Showing your full roster.
-        </p>
-      )}
       {hasStarters && (
         <div className="board-toggle my-team-view-toggle">
           <button
@@ -291,7 +285,7 @@ function LeagueDetail({ team, gameStates, injuries, children }) {
         {children}
       </div>
       {tab === "roster" ? (
-        <RosterTable players={team.players || []} bestBall={s.bestBall} playerPoints={s.playerPoints} gameStates={gameStates} />
+        <RosterTable players={team.players || []} playerPoints={s.playerPoints} gameStates={gameStates} />
       ) : (
         <MatchupPanel team={team} gameStates={gameStates} injuries={injuries} tab={tabs.some(([key]) => key === tab) ? tab : "matchup"} />
       )}
@@ -1650,7 +1644,7 @@ export default function MyTeamClient({
                       </button>
                     )}
                   </summary>
-                  <RosterTable players={team.players} bestBall={team.settings?.bestBall} playerPoints={team.settings?.playerPoints} gameStates={gameStates} />
+                  <RosterTable players={team.players} playerPoints={team.settings?.playerPoints} gameStates={gameStates} />
                 </details>
               ))}
             </div>

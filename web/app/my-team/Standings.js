@@ -21,11 +21,11 @@ export { pct as formatOdds };
 
 export default function Standings({ season, opponent, bare = false }) {
   if (!season?.standings?.length) return null;
-  const { standings, playoffTeams, weeksLeft, byPoints, medianGame } = season;
+  const { standings, playoffTeams, weeksLeft, medianGame } = season;
   const notes = [
     playoffTeams ? `Top ${playoffTeams} make the playoffs` : null,
     weeksLeft ? `${weeksLeft} ${weeksLeft === 1 ? "week" : "weeks"} left` : "Regular season over",
-    byPoints ? "ranked by points (best ball)" : "ranked by wins, then points",
+    "ranked by wins, then points",
     medianGame ? "weekly median game" : null,
   ].filter(Boolean);
   return (

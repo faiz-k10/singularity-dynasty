@@ -1,6 +1,5 @@
 "use server";
 
-import { bestLineup } from "@/lib/bestBall";
 import { leagueName } from "@/lib/format";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
@@ -69,7 +68,7 @@ function normalizedIndex(byName) {
 // entry -- 0 before kickoff (left null), then live-updating, final once
 // games end. Opponent stays null when matchups aren't posted (offseason)
 // or on a bye. Shared by the full lookup and the lightweight live poll.
-function resolveMatchup(matchups, myRoster, rosters, leagueUsers, bestBall = null) {
+function resolveMatchup(matchups, myRoster, rosters, leagueUsers) {
   const out = {
     weekOpponent: null,
     weekOpponentRecord: null,
@@ -99,27 +98,20 @@ function resolveMatchup(matchups, myRoster, rosters, leagueUsers, bestBall = nul
   const myPts = typeof mine.points === "number" ? mine.points : 0;
   const oppPts = typeof oppEntry.points === "number" ? oppEntry.points : 0;
   if (myPts > 0 || oppPts > 0) out.matchupActual = { mine: myPts, opp: oppPts };
-  // Best ball: Sleeper's own points trail (it fills the lineup in late), so score each side's best possible lineup from every
-  // player's points so far (lib/bestBall.js) -- the figure the week is finally scored on.
-  if (bestBall && (mine.players_points || oppEntry.players_points)) {
-    const a = bestLineup(mine.players_points, bestBall.posOf, bestBall.slots).total;
-    const b = bestLineup(oppEntry.players_points, bestBall.posOf, bestBall.slots).total;
-    if (a > 0 || b > 0) out.matchupActual = { mine: a, opp: b, bestLineup: true };
-  }
   return out;
 }
 
 // My starting lineup (player ids in slot order). Sleeper's matchup entry is the source of truth: it reflects a lineup change at once, while the
 // roster endpoint's `starters` can lag it by minutes (a QB swap showed in the matchup but not in the roster). Everything that reads "who is
 // starting" -- the saved players' isStarter / slot, the poll's change detector, the matchup lineups -- uses this one list, so they never disagree.
-// Falls back to the roster when there is no matchup (bye, offseason) and in best ball (no set lineup).
-function myStarters(myRoster, mine, bestBall) {
-  return (!bestBall && mine?.starters?.length ? mine.starters : myRoster.starters) || [];
+// Falls back to the roster when there is no matchup (bye, offseason).
+function myStarters(myRoster, mine) {
+  return (mine?.starters?.length ? mine.starters : myRoster.starters) || [];
 }
 
 // Both lineups of this week's matchup, slot by slot, for the head-to-head view and the win chance
 // (lib/winChance.js): starters + their points so far from the Sleeper matchup entries, names from infoFor, and our
-// weekly projection / floor / ceiling by normalized name. Null on a bye, in best ball (no set lineup) or before the
+// weekly projection / floor / ceiling by normalized name. Null on a bye or before the
 // schedule is posted.
 function buildH2H(mine, oppEntry, slots, infoFor, projByName) {
   if (!mine || !oppEntry) return null;
@@ -172,7 +164,8 @@ export async function lookupSleeperTeams(username, opts = {}) {
   }
 
   const season = String(new Date().getFullYear());
-  const leagues = await fetchSleeperLeagues(sleeperUser.user_id, season);
+  // Best-ball leagues are not supported: they are left out of every lookup (no lineup to compare, no head-to-head).
+  const leagues = (await fetchSleeperLeagues(sleeperUser.user_id, season)).filter((l) => l.settings?.best_ball !== 1);
   if (!leagues.length) {
     return {
       error: `No ${season} Sleeper leagues found for "${trimmed}".`,
@@ -247,10 +240,7 @@ export async function lookupSleeperTeams(username, opts = {}) {
         matchups,
         myRoster,
         rosters,
-        leagueUsers,
-        league.settings?.best_ball === 1
-          ? { posOf: (id) => players[id]?.position, slots: (league.roster_positions || []).filter((p) => p !== "BN") }
-          : null
+        leagueUsers
       );
       // matchupProj stays null unless we projected at least 3 starters on
       // each side (both read from the feed's own `starters` arrays, so
@@ -317,9 +307,8 @@ export async function lookupSleeperTeams(username, opts = {}) {
       // recovers which SLOT ("QB", "FLEX", "SUPER_FLEX", ...) each
       // starter fills, not just who happens to be a starter.
       const nonBenchSlots = (league.roster_positions || []).filter((p) => p !== "BN");
-      const bestBall = league.settings?.best_ball === 1;
-      // Head-to-head lineups + live win chance (not in best ball: no set lineup).
-      const h2h = bestBall ? null : buildH2H(mine, oppEntry, nonBenchSlots, (id) => dictInfo(players[id]), weekProj.byName);
+      // Head-to-head lineups + live win chance.
+      const h2h = buildH2H(mine, oppEntry, nonBenchSlots, (id) => dictInfo(players[id]), weekProj.byName);
       const season = opts?.season
         ? await getLeagueSeason({
             league,
@@ -356,10 +345,6 @@ export async function lookupSleeperTeams(username, opts = {}) {
               playoffSettled: Boolean(season.standings.find((t) => t.isMe)?.settled),
             }
           : {}),
-        // Best ball leagues have no set lineup -- the platform auto-starts
-        // your top scorers -- so Sleeper's `starters` array is mostly "0"
-        // placeholders and the Starting Lineup view is meaningless.
-        bestBall,
         // Sleeper's league type: 0 redraft, 1 keeper, 2 dynasty (the Sunday board's league-type filter).
         leagueType: ["redraft", "keeper", "dynasty"][league.settings?.type] || null,
         teams: league.total_rosters || null,
@@ -376,7 +361,7 @@ export async function lookupSleeperTeams(username, opts = {}) {
 
       const slotByPlayerId = {};
       const slotIndexByPlayerId = {};
-      myStarters(myRoster, mine, bestBall).forEach((playerId, i) => {
+      myStarters(myRoster, mine).forEach((playerId, i) => {
         if (playerId && playerId !== "0") {
           slotByPlayerId[playerId] = nonBenchSlots[i] || null;
           slotIndexByPlayerId[playerId] = i;
@@ -525,7 +510,6 @@ export async function pollLiveScores() {
     }
   }
   let dictP = null;
-  let bbDictP = null; // the player dictionary, loaded only when a best-ball league needs positions
   const fillInfo = async (ids) => {
     if (ids.every((id) => !id || id === "0" || known[id])) return;
     dictP ??= getSleeperPlayers().catch(() => ({}));
@@ -544,18 +528,12 @@ export async function pollLiveScores() {
       ]);
       const myRoster = rosters.find((r) => String(r.roster_id) === String(row.platform_roster_id));
       if (!myRoster) return;
-      let bestBall = null;
-      if (row.settings?.bestBall && row.settings?.slots?.length) {
-        bbDictP ??= getSleeperPlayers().catch(() => ({}));
-        const dict = await bbDictP;
-        bestBall = { posOf: (id) => dict[id]?.position, slots: row.settings.slots };
-      }
-      const m = resolveMatchup(matchups, myRoster, rosters, leagueUsers, bestBall);
+      const m = resolveMatchup(matchups, myRoster, rosters, leagueUsers);
       // Current starting lineup, so the client can tell when it changed in Sleeper and refresh (lib/rosterAlerts.js).
-      lineups[row.id] = myStarters(myRoster, m.mine, Boolean(row.settings?.bestBall)).filter((id) => id && id !== "0").map(String);
+      lineups[row.id] = myStarters(myRoster, m.mine).filter((id) => id && id !== "0").map(String);
       let h2h = null;
       let winChance = null;
-      if (m.mine && m.oppEntry && !row.settings?.bestBall) {
+      if (m.mine && m.oppEntry) {
         await fillInfo([...(m.mine.starters || []), ...(m.oppEntry.starters || []), ...(m.mine.players || []), ...(m.oppEntry.players || [])]);
         const [proj, gameStates] = await Promise.all([projP, gameStatesP]);
         h2h = buildH2H(m.mine, m.oppEntry, row.settings?.slots, (id) => known[id], proj.byName);

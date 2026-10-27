@@ -7,7 +7,6 @@ export const TYPE_OPTIONS = [
   { id: "dynasty", label: "Dynasty" },
   { id: "keeper", label: "Keeper" },
   { id: "redraft", label: "Redraft" },
-  { id: "bestball", label: "Best ball" },
   { id: "superflex", label: "Superflex" },
 ];
 // The one-word standings, in the order they read from best to worst (labels come from MatchupPanel's standing()).
@@ -41,12 +40,11 @@ export function oddsBand(odds, settled = false) {
   return odds >= 0.9 ? "safe" : odds >= 0.65 ? "likely" : odds >= 0.35 ? "bubble" : "longshot";
 }
 
-// settings: the saved league settings (leagueType: "dynasty" | "keeper" | "redraft", bestBall, qbFormat); standingLabel:
+// settings: the saved league settings (leagueType: "dynasty" | "keeper" | "redraft", qbFormat); standingLabel:
 // the card's one-word reading or null; myScore / oppScore: the matchup's current points (null when unknown).
 export function leagueFacts({ settings = {}, standingLabel = null, myScore = null, oppScore = null, odds = null, settled = false }) {
   const types = [];
   if (settings.leagueType === "dynasty" || settings.leagueType === "keeper" || settings.leagueType === "redraft") types.push(settings.leagueType);
-  if (settings.bestBall) types.push("bestball");
   if (settings.qbFormat === "Superflex") types.push("superflex");
   let score = null;
   if (typeof myScore === "number" && typeof oppScore === "number") {

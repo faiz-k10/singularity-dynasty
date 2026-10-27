@@ -19,11 +19,10 @@ test("buildLiveFeed: only players on the field now, yours and theirs, starts cou
     [
       team("a", "League A", [love(10.36), lawrence, cmc, { id: null, slot: "FLEX" }], {}, [{ ...lawrence, pts: 30 }, { id: "9", name: "Bo Nix", pos: "QB", team: "GB", proj: 17, pts: 4.2 }]),
       team("b", "League B", [love(8.1)]),
-      team("c", "Best Ball", [love(9)], { bestBall: true }),
     ],
     gs
   );
-  assert.deepEqual(feed.mine.map((r) => r.playerId), ["6804"]); // Lawrence is final, CMC not started, best ball skipped
+  assert.deepEqual(feed.mine.map((r) => r.playerId), ["6804"]); // Lawrence is final, CMC not started
   const l = feed.mine[0];
   assert.equal(l.starts.length, 2);
   assert.equal(l.pts, 10.36);
@@ -179,7 +178,7 @@ test("adjustedMatchup: pending plays move the lineups, the totals and the win ch
   assert.deepEqual(adj.live, { mine: 89.52, opp: 96.68 });
   assert.equal(adj.mine.pts, 89.52);
   assert.ok(adj.winChance > 0.58, "a higher score cannot lower the win chance");
-  assert.equal(adjustedMatchup({ bestBall: true, winChance: null }, gs, null), null);
+  assert.equal(adjustedMatchup({ winChance: null }, gs, null), null); // no lineups saved
 });
 
 test("catchUpPlayers: finished games keep their starters for ten minutes after first seen final", () => {

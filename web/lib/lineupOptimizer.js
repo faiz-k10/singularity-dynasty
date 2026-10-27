@@ -17,7 +17,7 @@
 // What it will NOT touch: a player whose game has started (Sleeper locks him) stays where he is and can't be moved in or out;
 // slots our model has no projection for (K, DEF, IDP) and players with no projection keep whoever is there now. A player the injury
 // feed lists Doubtful or worse is never a start (and a starter like that scores 0).
-import { ELIGIBLE } from "./bestBall.js";
+import { ELIGIBLE } from "./lineupSlots.js";
 import { num, round1 as r1, fmt1 } from "./format.js";
 
 // "SUPER_FLEX" -> "SUPERFLEX": how a slot is named on screen (the one place that maps it).
@@ -40,7 +40,7 @@ const value = (p) => {
 function prepare(team, gameStates, injuries) {
   const s = team?.settings || {};
   const slots = s.slots;
-  if (!slots?.length || s.bestBall || s.isBye) return null;
+  if (!slots?.length || s.isBye) return null;
   const known = gameStates && Object.keys(gameStates).length > 0;
   const locked = (p) => known && p.team && gameStates[p.team] && gameStates[p.team].state !== "pre";
   const outs = outNames(injuries);
@@ -115,7 +115,7 @@ export function lineupAdvice(team, gameStates, injuries = []) {
 export function lineupAlerts(team, gameStates, injuries = []) {
   const s = team?.settings || {};
   const slots = s.slots;
-  if (!slots?.length || s.bestBall || s.isBye) return [];
+  if (!slots?.length || s.isBye) return [];
   const known = gameStates && Object.keys(gameStates).length > 0;
   const started = (p) => known && p.team && gameStates[p.team] && gameStates[p.team].state !== "pre";
   const tags = new Map();

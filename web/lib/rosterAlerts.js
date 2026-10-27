@@ -40,7 +40,7 @@ export function lineupChanged(savedTeams, lineups) {
   if (!lineups) return false;
   for (const t of savedTeams || []) {
     const ids = lineups[t.id];
-    if (!ids || t.settings?.bestBall) continue;
+    if (!ids) continue;
     const now = new Set(ids.map(String));
     const saved = new Set((t.players || []).filter((p) => p.isStarter).map((p) => String(p.player_id)));
     if (now.size !== saved.size) return true;

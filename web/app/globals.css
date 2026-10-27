@@ -3416,7 +3416,6 @@ tr.stat-row-selected td{background:var(--void-panel);}
   font-family:var(--font-mono), monospace; font-size:11.5px; color:var(--horizon-gold);
   margin-bottom:14px;
 }
-.my-team-bestball-note{margin:0 16px 14px;}
 /* chart on the left, tapped-player profile card on the right; stretch so
    the two cards line up. stack on narrow screens. */
 .my-analysis-main{
@@ -5188,7 +5187,7 @@ html{font-stretch:82%;}
    card is boxed all the way round and a long shot is a short bracket on the left. Animates as the chance moves; the card's
    own faint border is the unfilled track. */
 .sb-card[class*="ring-odds"] .sb-card-word{color:var(--star-dim);} /* the word stays quiet; only the border carries the colour */
-.sb-card.ring-odds-high{--tone:var(--up);} .sb-card.ring-odds-mid{--tone:var(--horizon-gold);} .sb-card.ring-odds-low{--tone:var(--down);} /* best ball: the ring is the playoff odds, coloured like the Playoffs text */
+.sb-card.ring-odds-high{--tone:var(--up);} .sb-card.ring-odds-mid{--tone:var(--horizon-gold);} .sb-card.ring-odds-low{--tone:var(--down);} /* no win chance (a bye): the ring is the playoff odds, coloured like the Playoffs text */
 @property --win{syntax:"<number>"; inherits:true; initial-value:0;}
 .sb-card.has-ring::after{
   content:""; position:absolute; inset:0; padding:2.5px; border-radius:inherit; pointer-events:none;
