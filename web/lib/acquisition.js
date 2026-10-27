@@ -5,7 +5,7 @@
 // draftee who was dropped and picked back up reads "pickup", and one acquired in a trade reads "traded" even if he was drafted by
 // someone else first. Commissioner moves are ignored (they say nothing about how the manager got him).
 
-export const ACQUIRED_LABEL = { drafted: "Drafted", traded: "Traded", pickup: "Picked up" };
+export const ACQUIRED_LABEL = { drafted: "Draft", traded: "Trade", pickup: "Waivers" };
 
 // Short codes for the "My players" lookup that is serialized into the tool pages.
 export const ACQUIRED_CODE = { drafted: "D", traded: "T", pickup: "P" };
