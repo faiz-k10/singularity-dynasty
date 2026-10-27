@@ -707,13 +707,12 @@ const COLS = SHOW_POR ? 11 : 10;
 // Same pattern as RankingsSearch (Redraft): position-pill
 // filter + player name search, both client-side. Sorting stays
 // server-driven via the existing URL-param mechanism.
-export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams, positions, maxCeiling, wrTePool, lastWeek, simLatestWeek, leagueTeams, superflex, header, mine, gated }) {
+export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams, positions, maxCeiling, wrTePool, lastWeek, simLatestWeek, leagueTeams, superflex, header, actions, mine, gated }) {
   const showPositionFilter = Array.isArray(positions) && positions.length > 0;
   const [selected, setSelected] = useState(positions || []);
   const [query, setQuery] = useState("");
   const myView = useMyView(mine, rows);
-  // Full-screen toolbar extras (the same RankingsToolbar Weekly Projection Rankings uses): teams and badges. They only
-  // exist in the full-screen view, so they reset when it closes (no invisible filter left on the normal page).
+  // Teams and Badges filters of the shared RankingsToolbar (the same one Weekly Projection Rankings uses).
   const [teamIds, setTeamIds] = useState(() => new Set());
   // Badges = this week's Weekly Projection Rankings badges (row.weeklyBadges, attached server-side).
   const [badgeIds, setBadgeIds] = useState(() => new Set());
@@ -741,7 +740,7 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
   // collapsed regardless of whether a non-default value is already active
   // (via URL params); the always-visible current-value text is what
   // surfaces that without needing to open anything.
-  const [openGroups, setOpenGroups] = useState({ position: false, league: false, qb: false });
+  const [openGroups, setOpenGroups] = useState({ league: false, qb: false });
   function toggleGroup(key) {
     setOpenGroups((g) => ({ ...g, [key]: !g[key] }));
   }
@@ -906,53 +905,44 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
     window.setTimeout(() => tr.classList.remove("row-flash"), 1600);
   });
 
+  const filtering = query.trim() !== "" || (showPositionFilter && selected.length > 0 && selected.length < positions.length) || badgeIds.size > 0 || teamIds.size > 0;
+  const toolbar = (
+    <RankingsToolbar
+      positions={showPositionFilter ? positions : null}
+      selected={selected}
+      onTogglePosition={toggle}
+      shownCount={filteredRows.length}
+      totalCount={rows.length}
+      query={query}
+      onQuery={setQuery}
+      view={<MyPlayersFilter mine={mine} view={myView} gated={gated} compact />}
+      badgeIds={badgeIds}
+      onToggleBadge={toggleBadge}
+      onClearBadges={() => setBadgeIds(new Set())}
+      badgeMatch={badgeMatch}
+      onBadgeMatch={setBadgeMatch}
+      teamIds={teamIds}
+      onToggleTeam={toggleTeam}
+      onClearTeams={() => setTeamIds(new Set())}
+    />
+  );
+
   return (
     <>
-      <div className="tool-header-split">
-      <div className="tool-header-left">
-        {header}
-        <div className="compare-link-row">
-          <Link href="/tools/compare-player-sims" className="hub-panel-link">
-            Player Comparison →
-          </Link>
-        </div>
+      <div className="rk-top">
+        <div className="rk-top-title">{header}</div>
+        {actions && <div className="rk-top-actions">{actions}</div>}
       </div>
-      <div className="tool-header-right">
-      <div className="filter-accordion">
-        {showPositionFilter && (
-          <div className="filter-row">
-            <button
-              type="button"
-              className="filter-row-header"
-              onClick={() => toggleGroup("position")}
-              aria-expanded={openGroups.position}
-            >
-              <span className={`filter-row-chevron${openGroups.position ? " filter-row-chevron-open" : ""}`}>▸</span>
-              <span className="tier-toggle-label">Position</span>
-              <span className={`filter-row-value${selected.length < positions.length ? " filter-row-value-active" : ""}`}>
-                {selected.length === positions.length || selected.length === 0 ? "All" : selected.join(", ")}
-              </span>
-            </button>
-            {openGroups.position && (
-              <div className="position-filter-row">
-                {positions.map((pos) => (
-                  <button
-                    key={pos}
-                    type="button"
-                    className={`position-pill ${selected.includes(pos) ? "active" : ""}`}
-                    onClick={() => toggle(pos)}
-                    aria-pressed={selected.includes(pos)}
-                  >
-                    {pos}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
 
-        {SHOW_POR && (
-          <>
+      <div className="rk-toolbar">{toolbar}</div>
+      {filtering && (
+        <p className="rk-status">
+          <span className="my-filter-note">
+            {filteredRows.length} of {rows.length} players
+          </span>
+        </p>
+      )}
+      {SHOW_POR && <div className="filter-accordion">
         <div className="filter-row">
           <button
             type="button"
@@ -1014,52 +1004,14 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
             </div>
           )}
         </div>
-          </>
-        )}
-      </div>
-
-      <div className="player-search-row">
-        <input
-          type="search"
-          className="player-search-input"
-          placeholder="Search a player's name…"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          aria-label="Search players"
-        />
-        {(query || (showPositionFilter && selected.length > 0 && selected.length < positions.length)) && (
-          <span className="player-search-count">
-            {filteredRows.length} of {rows.length}
-          </span>
-        )}
-      </div>
-      <MyPlayersFilter mine={mine} view={myView} gated={gated} />
-      </div>
-      </div>
+      </div>}
 
       {(
         <>
           <div className={`rankings-theater-bar${theater ? " theater" : ""}`}>
             {theater && (
               <div className="rankings-theater-controls">
-                <RankingsToolbar
-                  positions={showPositionFilter ? positions : null}
-                  selected={selected}
-                  onTogglePosition={toggle}
-                  shownCount={filteredRows.length}
-                  totalCount={rows.length}
-                  query={query}
-                  onQuery={setQuery}
-                  view={<MyPlayersFilter mine={mine} view={myView} gated={gated} compact />}
-                  badgeIds={badgeIds}
-                  onToggleBadge={toggleBadge}
-                  onClearBadges={() => setBadgeIds(new Set())}
-                  badgeMatch={badgeMatch}
-                  onBadgeMatch={setBadgeMatch}
-                  teamIds={teamIds}
-                  onToggleTeam={toggleTeam}
-                  onClearTeams={() => setTeamIds(new Set())}
-                />
+                {toolbar}
               </div>
             )}
             <button

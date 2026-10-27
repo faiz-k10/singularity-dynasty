@@ -158,20 +158,18 @@ export default async function PlayerSimulationsPage({ searchParams }) {
                     {latest ? `${latest.season} Season · Updated Week ${latest.week}` : "Simulations"}
                   </div>
                   <h1>Player Season Simulations</h1>
-                  <p className="tool-sub">
-                    Full-season Monte Carlo simulations run 10,000 times per player,
-                    distilled to a 10th / 50th / 90th percentile floor, median, and
-                    ceiling. Top 10 free for every Stargazer.
-                  </p>
+                </>
+              }
+              actions={
+                <>
+                  <Link href="/tools/compare-player-sims" className="hub-panel-link">
+                    Player Comparison →
+                  </Link>
                   {canExport && (
-                    <div className="toggle-row-flex">
-                      <div className="toggle-row-actions">
-                        <ExportCsvButton
-                          filename={`player-simulations-week${latest.week}-${latest.season}.csv`}
-                          href="/api/player-simulations/csv"
-                        />
-                      </div>
-                    </div>
+                    <ExportCsvButton
+                      filename={`player-simulations-week${latest.week}-${latest.season}.csv`}
+                      href="/api/player-simulations/csv"
+                    />
                   )}
                 </>
               }

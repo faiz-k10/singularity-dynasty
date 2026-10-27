@@ -780,29 +780,11 @@ section{padding:96px 0 20px; position:relative;}
 }
 .hub-panel-link:hover{color:var(--horizon-gold);}
 
-/* Player Season Simulations -- Player Comparison link sits right above the
-   position filter pills, directly under .tool-sub. This row's own
-   padding is the only spacing wanted above it, so .tool-sub's much
-   bigger standard margin-bottom (sized for the other tool pages, which
-   don't have a link in between) is collapsed here to avoid the two
-   stacking into an oversized gap. .hub-panel-link's own margin is
-   zeroed for the same reason. */
-.tool-sub:has(+ .compare-link-row){margin-bottom:0;}
-.compare-link-row{padding:8px 0;}
-.compare-link-row .hub-panel-link{margin:0;}
-
-/* Player Season Simulations: title/description on the left, the
-   Position/League Size/QB Format accordion + search box on the right,
-   level with each other instead of the filters stacking below the full
-   width of the title block. Scoped to PlayerSimSearch.js's own wrapper
-   (not a change to how any other tool page lays out its header) since
-   this is the only page whose header content was restructured to
-   support it (see the `header` prop threaded from page.js). */
+/* Title block on the left, controls on the right (Draft Board). */
 .tool-header-split{display:flex; justify-content:space-between; align-items:flex-start; gap:32px; flex-wrap:wrap;}
 .tool-header-left{flex:1 1 420px; min-width:0;}
 .tool-header-right{flex:0 0 auto; width:320px; padding-top:2px;}
 .tool-header-right .filter-accordion{width:100%; max-width:100%;}
-.tool-header-right .player-search-row{margin-top:16px;}
 @media (max-width:900px){
   .tool-header-right{width:100%;}
 }
@@ -958,7 +940,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 }
 
 /* ---------- AUTH (login / account pages) ---------- */
-/* top padding matches .hero/.tool-wrap -- clears the fixed ticker +
+/* top padding matches .hero -- clears the fixed ticker +
    site-header banner that SiteHeader now renders on every page. */
 .auth-page{position:relative; min-height:100vh; display:flex; align-items:center; justify-content:center; overflow:hidden; padding:150px 0 80px;}
 .auth-page::before{
@@ -1014,7 +996,8 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 
 /* ---------- TOOL PAGES (real gated data, e.g. /tools/redraft-rankings) ---------- */
 .tool-page{position:relative; min-height:100vh; overflow-x:hidden;}
-.tool-wrap{padding:150px 0 100px; max-width:1140px;}
+/* Tool pages start right under the fixed header (56px: the eyebrow sits ~10px below the brand bar); the 150px this used to be left an empty band. */
+.tool-wrap{padding:56px 0 100px; max-width:1140px;}
 /* .tool-wrap zeroes the .wrap side padding, so below the 1140px max width the content touched the screen edge. */
 @media (max-width:1188px){.tool-wrap{padding-left:24px; padding-right:24px;}}
 @media (max-width:640px){.tool-wrap{padding-left:16px; padding-right:16px;}}
@@ -1122,12 +1105,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
    .rankings-table-wrap.theater), making them unreachable without a copy
    in here too. Grouped in their own flex row (rather than as direct
    children of the space-between bar) so the exit button stays pinned to
-   the right regardless of how many controls sit on the left. Reuses
-   .player-search-input/.position-filter-row/.position-pill's exact look
-   from the normal-flow versions, just dropped into this bar's own flex
-   layout and with the position pills' own bottom margin zeroed (that
-   margin exists to separate it from the table below it in normal flow --
-   nothing below it in the fixed bar). */
+   the right regardless of how many controls sit on the left. */
 .rankings-theater-bar .rankings-theater-controls{display:flex; align-items:center; flex:1; min-width:0;}
 .rankings-theater-bar .rk-controls{flex-wrap:nowrap;}
 /* Narrower windows: the full-screen bar wraps its controls onto extra rows and grows to fit (the table below is offset by the same variable). */
@@ -1738,7 +1716,7 @@ a.export-csv-btn{text-decoration:none;}
 .filter-row-chevron-open{transform:rotate(90deg);}
 .filter-row-value{margin-left:auto; font-size:13px; color:var(--star-dim); font-family:var(--font-mono), monospace;}
 .filter-row-value-active{color:var(--horizon-gold); font-weight:600;}
-.filter-row .position-filter-row, .filter-row .tier-toggle{margin:0 20px 16px;}
+.filter-row .tier-toggle{margin:0 20px 16px;}
 .filter-row .tier-toggle{display:flex;}
 /* Position-colored left accent on every rankings row (Redraft, Best Ball,
    Player Simulations alike) -- QB/RB/WR/TE, so the eye can group by
@@ -1885,8 +1863,7 @@ a.export-csv-btn{text-decoration:none;}
 
 .tool-hint{font-size:12.5px; color:var(--star-dim); margin:-20px 0 20px;}
 
-/* Redraft Rankings — Overall view player name search */
-.player-search-row{display:flex; align-items:center; gap:12px; margin-bottom:16px;}
+/* Player name search input (My Team's lookup row). */
 .player-search-input{
   flex:0 1 320px; background:var(--void-panel-2); border:1px solid var(--line); border-radius:2px;
   padding:10px 14px; font-family:var(--font-mono), monospace; font-size:13px; color:var(--star);
@@ -1894,18 +1871,7 @@ a.export-csv-btn{text-decoration:none;}
 }
 .player-search-input::placeholder{color:var(--star-dim);}
 .player-search-input:focus{border-color:var(--neon-blue);}
-.player-search-count{font-family:var(--font-mono), monospace; font-size:11.5px; color:var(--star-dim);}
 @media (max-width:640px){.player-search-input{flex:1 1 auto;}}
-
-/* Redraft Rankings — By Position view: multi-select position pills */
-.position-filter-row{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;}
-.position-pill{
-  font-family:var(--font-mono), monospace; font-size:12.5px; font-weight:600; letter-spacing:0.03em;
-  padding:8px 18px; border-radius:2px; background:var(--void-panel-2); border:1px solid var(--line);
-  color:var(--star-dim); cursor:pointer; transition:border-color .2s ease, background .2s ease, color .2s ease;
-}
-.position-pill:hover{border-color:var(--neon-blue); color:var(--star);}
-.position-pill.active{background:var(--horizon-gold); border-color:var(--horizon-gold); color:var(--on-brand);}
 
 /* Redraft Rankings — custom scoring settings, now collapsible filter-rows
    inside .filter-accordion (see ScoringSettingsPanel.js) instead of an
@@ -4195,7 +4161,7 @@ summary:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible{
   /* Table pages: use the screen. The desktop gutter (24px margin + 24px padding
      each side) left a 279px table on a 375px phone. */
   .player-sims-wrap, .redraft-wrap{max-width:100%; padding-left:12px; padding-right:12px;}
-  .tool-wrap{padding-top:120px; padding-bottom:64px;}
+  .tool-wrap{padding-top:44px; padding-bottom:64px;}
 
   /* Player Sims: freeze only Rank + Player (the desktop freeze of Rank/Player/Pos is
      ~330px, i.e. the whole phone, so nothing could scroll). Pos scrolls with the rest. */
@@ -4250,8 +4216,7 @@ summary:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible{
   .tool-export-row{margin-bottom:10px;}
   .filter-accordion{width:100%; margin-bottom:12px;}
   .filter-row-header{padding:11px 14px;}
-  .filter-row .position-filter-row, .filter-row .tier-toggle{margin:0 14px 14px;}
-  .player-search-row{margin-bottom:12px;}
+  .filter-row .tier-toggle{margin:0 14px 14px;}
 
   /* Thumb-sized tap targets inside the player panels (they were 18-26px tall). */
   .stat-detail-grid .tag-btn{padding:7px 12px;}
@@ -4466,7 +4431,7 @@ a.mine-empty-note{color:var(--horizon-gold);}
 }
 .tier-toggle a.active, .tier-toggle button.active,
 .board-toggle a.active, .board-toggle button.active,
-.compare-radar-layer-toggle button.active, .position-pill.active{
+.compare-radar-layer-toggle button.active{
   box-shadow:none;
 }
 
@@ -4521,7 +4486,7 @@ a.mine-empty-note{color:var(--horizon-gold);}
      small captions, and every control (buttons, inputs, selects, toggles, filter headers). */
 button, input, select, textarea, summary, label,
 .filter-row-header, .filter-row-chevron, .tier-toggle-label, .tier-toggle a, .tier-toggle button,
-.my-filter-cta, .my-filter-note, .player-search-count, .feed-input, .compare-select, .my-analysis-week-input{
+.my-filter-cta, .my-filter-note, .feed-input, .compare-select, .my-analysis-week-input{
   font-family:var(--font-mono), monospace;
 }
 /* chart text (SVG) and chart labels */
