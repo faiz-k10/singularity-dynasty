@@ -61,7 +61,8 @@ export function useStatsSlide(p, enabled) {
   return { open, phase, ever, geo, line, toggle, enabled, rowStyle: geo ? { "--away": geo.away, "--slide": `${SLIDE_PX}px` } : undefined };
 }
 
-export function StatsPanel({ p, slide }) {
+// wrapAt: a list that is tight on room (the Playing now rows) asks for two rows of numbers once there are this many; the matchup rows keep one scaled line.
+export function StatsPanel({ p, slide, wrapAt = null }) {
   if (!slide.ever || !slide.geo) return null;
   const chips = statChips(p.pos, slide.line);
   return (
@@ -71,7 +72,7 @@ export function StatsPanel({ p, slide }) {
       ) : chips.length === 0 ? (
         <span className="h2h-statsbox-note mono">No box-score line yet.</span>
       ) : (
-        <div className="h2h-stat-chips">
+        <div className={`h2h-stat-chips${wrapAt && chips.length >= wrapAt ? " is-two-rows" : ""}`} style={wrapAt ? { "--cols": chips.length >= wrapAt ? Math.ceil(chips.length / 2) : chips.length } : undefined}>
           {chips.map((c) => (
             <span key={c.label} className="h2h-stat">
               <span className="h2h-stat-label mono">{c.label}</span>

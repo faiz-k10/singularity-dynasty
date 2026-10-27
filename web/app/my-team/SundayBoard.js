@@ -230,7 +230,7 @@ function FeedRow({ r, isNew, delta, showLeagues, focused, onPick }) {
           <span className="sb-feed-proj mono">proj {fmt1(r.proj)}</span>
         )}
       </div>
-      <StatsPanel p={r} slide={slide} />
+      <StatsPanel p={r} slide={slide} wrapAt={6} />
     </li>
   );
 }
