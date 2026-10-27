@@ -188,13 +188,13 @@ function LeagueCard({ team, ms, onOpen }) {
   );
 }
 
-function FeedRow({ r, isNew, delta, showLeagues, focused, onPick }) {
+function FeedRow({ r, isNew, delta, showLeagues, focused, onPick, onOpenLeague }) {
   // Click the points and the rest of the row slides away while his box-score line for this game slides in (GameStats.js, the same as the matchup rows).
   const slide = useStatsSlide(r, true);
   const where =
     r.side === "theirs"
-      ? r.starts.map((x) => (showLeagues ? x.league : null)).filter(Boolean)
-      : r.starts.map((x) => (r.pts === r.ptsMin ? x.league : `${x.league} ${fmt2(x.pts)}`));
+      ? r.starts.filter(() => showLeagues).map((x) => ({ teamId: x.teamId, text: x.league }))
+      : r.starts.map((x) => ({ teamId: x.teamId, text: r.pts === r.ptsMin ? x.league : `${x.league} ${fmt2(x.pts)}` }));
   return (
     <li className={`sb-feed-row is-${r.side}${isNew ? " is-new" : ""}${focused ? " is-focus" : ""}${slide.phase === "open" ? " is-stats" : slide.phase === "closing" ? " is-closing" : ""}`} style={slide.rowStyle}>
       <div className="sb-feed-who">
@@ -209,7 +209,19 @@ function FeedRow({ r, isNew, delta, showLeagues, focused, onPick }) {
         </span>
         {((showLeagues && where.length > 0) || r.game) && (
           <span className="sb-feed-foot">
-            <span className="sb-feed-leagues">{showLeagues ? where.join(" · ") : ""}</span>
+            {/* Each league name opens that league's matchup in the drawer, the same as clicking its card. */}
+            <span className="sb-feed-leagues">
+              {showLeagues
+                ? where.map((w, i) => (
+                    <Fragment key={`${w.teamId}-${i}`}>
+                      {i > 0 && " · "}
+                      <button type="button" className="sb-feed-league" onClick={() => onOpenLeague(w.teamId)}>
+                        {w.text}
+                      </button>
+                    </Fragment>
+                  ))
+                : ""}
+            </span>
             {/* The NFL game's running score, own team first, at the right end of the league-names line. */}
             {r.game && <span className="sb-feed-game mono">{r.game}</span>}
           </span>
@@ -354,7 +366,7 @@ function RecentPlays({ rows, updatedAt, focus, onPick, onTotals }) {
 // The live panel beside the cards: only players on the field right now -- yours, then your opponents' -- across every
 // league, or just the open league's two lineups (teamId). Newest scoring first within each side; a row flashes gold
 // with "+6.4" when he scores. Finished and not-started players stay off it so it never fills with noise.
-function LiveFeed({ savedTeams, gameStates, updatedAt, teamId = null, league = null, playTotals, onTotals, injuriesByTeam, adjusted, weekFeed, collapsed = false, onToggle }) {
+function LiveFeed({ savedTeams, gameStates, updatedAt, teamId = null, league = null, playTotals, onTotals, injuriesByTeam, adjusted, weekFeed, collapsed = false, onToggle, onOpenLeague }) {
   const mounted = useMounted();
   const baseFeed = useMemo(() => buildLiveFeed(savedTeams, gameStates, { onlyTeamId: teamId }), [savedTeams, gameStates, teamId]);
   // Each player's running points play by play (from the plays request below): Sleeper trails the game by a minute or two, so the
@@ -390,7 +402,7 @@ function LiveFeed({ savedTeams, gameStates, updatedAt, teamId = null, league = n
         </h3>
         <ol className="sb-feed-list">
           {sortFeed(rows, t.changedAt).map((r) => (
-            <FeedRow key={r.id} r={r} isNew={isNew(r)} delta={t.delta[r.id]} showLeagues={showLeagues} focused={focus?.playerId === r.playerId} onPick={pick} />
+            <FeedRow key={r.id} r={r} isNew={isNew(r)} delta={t.delta[r.id]} showLeagues={showLeagues} focused={focus?.playerId === r.playerId} onPick={pick} onOpenLeague={onOpenLeague} />
           ))}
         </ol>
       </section>
@@ -696,6 +708,7 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
           weekFeed={weekFeed}
           collapsed={feedCollapsed}
           onToggle={toggleFeed}
+          onOpenLeague={setOpenId}
         />
       </div>
     </div>

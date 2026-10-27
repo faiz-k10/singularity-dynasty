@@ -5272,6 +5272,8 @@ html{font-stretch:82%;}
 .sb-feed-sub{grid-area:sub; display:flex; align-items:center; gap:6px; flex-wrap:nowrap; min-width:0; overflow:hidden;}
 .sb-feed-sub .h2h-game{color:var(--down); white-space:nowrap;}
 .sb-feed-foot{grid-area:leagues; display:flex; align-items:baseline; justify-content:space-between; gap:12px; min-width:0;}
+.sb-feed-league{all:unset; cursor:pointer; color:inherit;}
+.sb-feed-league:hover, .sb-feed-league:focus-visible{color:var(--star); text-decoration:underline; text-decoration-color:var(--rule-strong); text-underline-offset:3px;}
 .sb-feed-leagues{min-width:0; font-size:11.5px; color:var(--star-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
 .sb-feed-nums{grid-area:nums; width:80px; align-self:center; display:flex; flex-direction:column; align-items:flex-end; justify-content:center; gap:2px;}
 .sb-feed-pts{font-size:18px; font-weight:700; color:var(--star);}
