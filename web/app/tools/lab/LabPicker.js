@@ -3,7 +3,6 @@
 import { useId, useMemo, useState } from "react";
 import PositionBadge from "../PositionBadge";
 import TeamBadge from "../TeamBadge";
-import { MAX_PICKS } from "./labUi";
 
 const MAX_SUGGESTIONS = 8;
 
@@ -43,12 +42,12 @@ export default function LabPicker({ rows, picked, onToggle, full }) {
           </li>
         ))}
       </ul>
+      {!full && (
       <div className="compare-picker lab-picker">
         <input
           type="text"
           className="lab-select lab-picker-input"
-          placeholder={full ? `${MAX_PICKS} players max` : "Add a player…"}
-          disabled={full}
+          placeholder="Add a player…"
           value={query}
           role="combobox"
           aria-expanded={open && matches.length > 0}
@@ -94,6 +93,7 @@ export default function LabPicker({ rows, picked, onToggle, full }) {
           </ul>
         )}
       </div>
+      )}
     </div>
   );
 }

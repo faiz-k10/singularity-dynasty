@@ -5931,7 +5931,6 @@ select.lab-select{min-width:200px; padding-right:8px; cursor:pointer;}
 .lab-chip-x:hover, .lab-chip-x:focus-visible{color:var(--down); background:rgba(var(--down-rgb), .1);}
 .lab-picker{flex:0 1 240px; min-width:180px;}
 .lab-picker-input{width:100%;}
-.lab-picker-input:disabled{opacity:.55; cursor:not-allowed;}
 .lab-pick-meta{display:inline-flex; align-items:center; gap:6px;}
 
 .lab-view{display:flex; flex-direction:column; gap:14px; min-width:0;}
