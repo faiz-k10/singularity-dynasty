@@ -56,6 +56,11 @@ function LeagueCard({ team, ms, onOpen }) {
   // The ring closes all the way only for a result that is certain (won, or YOU WIN = locked in); a near-certain percentage stops just short.
   const ringStyle = ringPct == null ? undefined : { "--win": ringPct >= 0.995 ? (done || lock === "win" || oddsRing ? 1 : 0.985) : Math.max(0.02, ringPct) };
   const alerts = row.alertCount.total;
+  // The chance to make the playoffs sits at the right end of the card footer's first line (no line of its own).
+  const odds =
+    row.playoffOdds != null ? (
+      <span className={`sb-card-odds mono ${oddsTone(row.playoffOdds)}`}>Playoffs {formatOdds(row.playoffOdds, row.playoffSettled)}</span>
+    ) : null;
   const myLeft = mine ? mine.players.filter((p) => p.outlook.state === "pre" || p.outlook.state === "in" || p.outlook.state === null) : [];
   const oppLeft = opp ? opp.yetToPlay + opp.playing : 0;
   // Only "Live" and "Final" -- the next kickoff is on the Playing now panel's countdown, not repeated on every card.
@@ -137,12 +142,20 @@ function LeagueCard({ team, ms, onOpen }) {
 
           <div className="sb-card-foot">
             {done ? (
-              <span className="sb-card-final sb-muted">All games final</span>
-            ) : !s.h2h ? null : ( // best ball has no lineups to say who is left; the card leans on its totals and playoff odds
+              <div className="sb-card-line">
+                <span className="sb-card-final sb-muted">All games final</span>
+                {odds}
+              </div>
+            ) : !s.h2h ? (
+              odds && <div className="sb-card-line">{odds}</div> // best ball has no lineups to say who is left; the card leans on its totals and playoff odds
+            ) : (
               // Who is still to play, as two aligned rows: yours as name chips (a red dot on anyone playing right now),
               // theirs as a count.
               <div className="sb-card-todo">
-                <span className="sb-card-label sb-card-todo-head">Still to play</span>
+                <span className="sb-card-todo-head">
+                  <span className="sb-card-label">Still to play</span>
+                  {odds}
+                </span>
                 <span className="sb-card-who mono">Yours</span>
                 <span className="sb-card-chips">
                   {myLeft.length > 0 ? (
@@ -161,20 +174,11 @@ function LeagueCard({ team, ms, onOpen }) {
                 </span>
               </div>
             )}
-            {(row.playoffOdds != null || alerts > 0) && (
+            {alerts > 0 && (
               <span className="sb-card-extras">
-                {row.playoffOdds != null ? (
-                  <span className={`sb-card-odds mono ${oddsTone(row.playoffOdds)}`}>
-                    Playoffs {formatOdds(row.playoffOdds, row.playoffSettled)}
-                  </span>
-                ) : (
-                  <span />
-                )}
-                {alerts > 0 && (
-                  <span className="sb-card-alerts mono">
-                    {alerts} {alerts === 1 ? "alert" : "alerts"}
-                  </span>
-                )}
+                <span className="sb-card-alerts mono">
+                  {alerts} {alerts === 1 ? "alert" : "alerts"}
+                </span>
               </span>
             )}
           </div>
