@@ -10,17 +10,21 @@ test("standing: the one-word reading from the win chance", () => {
   assert.equal(standing(0.7, false).label, "Favored");
   assert.equal(standing(0.5, false).label, "Toss-up");
   assert.equal(standing(0.3, false).label, "Underdog");
+  // Underdog is 15% up to (not including) 40%; Toss-up starts at 40%; below 15% is a Long shot.
+  assert.equal(standing(0.15, false).label, "Underdog");
+  assert.equal(standing(0.399, false).label, "Underdog");
+  assert.equal(standing(0.4, false).label, "Toss-up");
+  assert.equal(standing(0.149, false).label, "Long shot");
   assert.equal(standing(null, false).label, null);
   assert.equal(standing(1, true).label, "Won");
   assert.equal(standing(0, true).label, "Lost");
 });
 
 test("standing: YOU WIN / Out of reach come ONLY from a lock, never from the percentage", () => {
-  // Even 99.99% is just "Favored" without a lock, and a chance that prints as "<1%" is a "Long shot", never "Out of reach".
+  // Even 99.99% is just "Favored" without a lock, and 0.01% is a "Long shot", never "Out of reach".
   assert.equal(standing(0.9999, false, null).label, "Favored");
   assert.equal(standing(0.0001, false, null).label, "Long shot");
-  assert.equal(standing(0.004, false, null).label, "Long shot");
-  assert.equal(standing(0.006, false, null).label, "Underdog");
+  assert.equal(standing(0.1, false, null).label, "Long shot");
   assert.equal(standing(0.5, false, "win").label, "You win");
   assert.equal(standing(0.5, false, "loss").label, "Out of reach");
   // A finished game is Won / Lost whatever the lock says.
