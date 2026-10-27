@@ -1620,8 +1620,9 @@ a.export-csv-btn{text-decoration:none;}
    marks the median instead of a separate tick, so a glance shows both
    where a player usually lands and how much more is possible. */
 .sim-bar-track{position:relative; width:140px; height:8px; background:var(--void-panel-2); border-radius:2px;}
-.sim-bar-typical{position:absolute; top:0; bottom:0; background:var(--neon-blue-dim); border-radius:2px 0 0 4px; min-width:3px;}
-.sim-bar-upside{position:absolute; top:0; bottom:0; background:var(--horizon-gold); opacity:0.45; border-radius:0 4px 4px 0; min-width:2px;}
+/* Low end (floor to median) in mint, high end (median to ceiling) in mission red -- the same colours as Floor / Ceiling everywhere else (Oct 27 2026). */
+.sim-bar-typical{position:absolute; top:0; bottom:0; background:var(--horizon-gold); border-radius:2px 0 0 4px; min-width:3px;}
+.sim-bar-upside{position:absolute; top:0; bottom:0; background:var(--down); border-radius:0 4px 4px 0; min-width:2px;}
 /* Pace marker -- where a dummy/real in-season player's current pace
    (paceSeasonTotal) sits on the same floor/median/ceiling scale the
    typical/upside segments already use. A pin shape (stem + dot),
