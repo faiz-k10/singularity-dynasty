@@ -580,14 +580,13 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
 
   // The week's one sentence, built from the SAME words the cards use (lib/standing.js) so the two always agree: how many leagues
   // are won / being won, favored, a toss-up, underdog or lost, plus lineup alerts.
-  const tally = { won: 0, winning: 0, favored: 0, tossup: 0, underdog: 0, longshot: 0, losing: 0, lost: 0 };
+  const tally = { won: 0, favored: 0, tossup: 0, underdog: 0, longshot: 0, losing: 0, lost: 0 };
   let alerts = 0;
   let live = 0; // leagues where one of my players is on the field right now (the "Live" label beside the clock)
   for (const t of visibleTeams) {
     const ms = states[t.id];
     const label = ms.st.label;
-    if (label === "Won") tally.won++;
-    else if (label === "You win") tally.winning++;
+    if (label === "Won" || label === "You win") tally.won++; // a locked-in win reads as won, like a finished one
     else if (label === "Favored") tally.favored++;
     else if (label === "Toss-up") tally.tossup++;
     else if (label === "Underdog") tally.underdog++;
@@ -602,7 +601,6 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
   // Each count reads in its status's colour, the same as the cards' one-word readings (lib/standing.js).
   const parts = [
     [tally.won, "won", "is-tone-mint"],
-    [tally.winning, "winning", "is-tone-mint"],
     [tally.favored, "favored", "is-tone-mint"],
     [tally.tossup, "toss-up", "is-tone-grey"],
     [tally.underdog, "underdog", "is-tone-grey"],
