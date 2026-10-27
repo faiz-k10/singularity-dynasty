@@ -71,6 +71,7 @@
   --inj-ok:#22C55E; --inj-q:#FACC15; --inj-d:#FB923C; --inj-out:#EF4444;
   --on-brand:#021210;
   --on-cold:#021210;
+  --on-down:#FFF1F3; /* text on a mission-red fill (same in both themes) */
   --tough:#3DDCFF; --tough-rgb:61,220,255;
   --orbit-alpha:0.3;
 }
@@ -434,13 +435,14 @@ body::before{
 .site-header .top-nav-bar{flex:1 1 0; justify-content:flex-start; gap:clamp(14px, 1.7vw, 28px);}
 .top-nav-bar a.tn-cta.tn-cta-tiers{flex:1 1 auto; margin-left:clamp(0px, 1vw, 16px);}
 .tn-tier{flex:1 1 0;}
-/* The pill is ringed in the website red and its three tiers read as three solid blocks: mint, mint over steel, steel. */
+/* The pill is ringed in mint and its three tiers read as three solid blocks: red, red over steel, steel (the colours were mint / mint over
+   steel / steel with a red ring until Oct 27 2026, when the founder had them swapped). */
 .top-nav-bar a.tn-cta.tn-cta-tiers{
-  box-shadow:0 0 0 2px var(--down); background:none; color:var(--on-brand);
+  box-shadow:0 0 0 2px var(--horizon-gold); background:none; color:var(--on-down);
 }
-.top-nav-bar a.tn-cta.tn-cta-tiers:hover{box-shadow:0 0 0 2px var(--down); color:var(--on-brand);}
-.tn-tier:nth-child(1){background:var(--horizon-gold);}
-.tn-tier:nth-child(2){background:color-mix(in srgb, var(--horizon-gold) 50%, var(--neon-blue)); color:var(--on-cold);}
+.top-nav-bar a.tn-cta.tn-cta-tiers:hover{box-shadow:0 0 0 2px var(--horizon-gold); color:var(--on-down);}
+.tn-tier:nth-child(1){background:var(--down);}
+.tn-tier:nth-child(2){background:color-mix(in srgb, var(--down) 50%, var(--neon-blue)); color:var(--on-cold);}
 .tn-tier:nth-child(3){background:var(--neon-blue); color:var(--on-cold);}
 .site-header-spacer{flex:0 0 90px;}
 /* "Tools" dropdown -- CSS-only (:hover/:focus-within, no JS state needed)
