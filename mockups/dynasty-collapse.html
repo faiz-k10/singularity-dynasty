@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Collapse — dynasty mockup</title>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;800&family=Martian+Mono:wght@400;500;700&family=Source+Serif+4:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#030908; --panel:#09130F; --text:#E6F4F1; --dim:#8C95A3;
+  --rule:rgba(230,244,241,.13); --rule-strong:rgba(230,244,241,.55);
+  --mint:#2DD4BF; --steel:#8C95A3; --red:#E11D48; --amber:#C98B2B; --on-brand:#021210;
+  --display:'Big Shoulders Display','Arial Narrow',Impact,sans-serif;
+  --serif:'Source Serif 4',Georgia,serif;
+  --mono:'Martian Mono',ui-monospace,Menlo,monospace;
+}
+:root[data-theme="light"]{
+  --bg:#F4F4F2; --panel:#FBFCFB; --text:#0F1F1D; --dim:#5C6370;
+  --rule:rgba(15,31,29,.14); --rule-strong:rgba(15,31,29,.6);
+  --mint:#0D7A70; --steel:#5C6370; --red:#E11D48; --amber:#A8701A; --on-brand:#F2F8F7;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--serif);font-size:15px;line-height:1.45}
+button{font-family:var(--mono);font-size:12px;color:inherit;background:none;border:1px solid var(--rule);padding:7px 12px;cursor:pointer;border-radius:2px}
+button.on{background:var(--mint);color:var(--on-brand);border-color:var(--mint)}
+.bar{position:sticky;top:0;z-index:20;background:var(--panel);border-bottom:2px solid var(--rule-strong);display:flex;gap:10px;align-items:center;padding:10px 20px;flex-wrap:wrap}
+.bar .sp{flex:1}.bar .note{font-family:var(--mono);font-size:11px;color:var(--dim)}
+.grp{display:flex}.grp button{border-radius:0;margin-left:-1px}
+.morph{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+.morph input{width:180px;accent-color:var(--mint)}
+.wrap{max-width:1180px;margin:0 auto;padding:28px 20px 80px}
+.eyebrow{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;background:var(--mint);color:var(--on-brand);padding:3px 8px}
+h1{font-family:var(--display);text-transform:uppercase;font-weight:800;font-size:48px;line-height:1;margin:12px 0 6px}
+.sub{color:var(--dim);font-size:14.5px;margin-bottom:20px;max-width:74ch}
+.panel{background:var(--panel);border:1px solid var(--rule);border-top:2px solid var(--rule-strong)}
+#stage{position:relative;height:860px}
+canvas{display:block;width:100%;height:100%;touch-action:none}
+.hint{position:absolute;left:16px;bottom:12px;font-family:var(--mono);font-size:10.5px;color:var(--dim);pointer-events:none}
+.tip{position:absolute;pointer-events:none;background:var(--bg);border:1px solid var(--rule-strong);border-top:2px solid var(--mint);padding:9px 11px;font-size:13px;min-width:220px;display:none;z-index:5}
+.tip b{font-weight:600;display:block;margin-bottom:3px}
+.tip div{font-family:var(--mono);font-size:11px;color:var(--dim);display:flex;justify-content:space-between;gap:14px;line-height:1.7}
+.tip div span:last-child{color:var(--text)}
+.tip .r span:last-child{color:var(--red)}
+.notes{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--rule)}
+@media (max-width:900px){.notes{grid-template-columns:1fr}}
+.notes section{padding:18px 20px;border-left:1px solid var(--rule);font-size:13.5px;color:var(--dim)}
+.notes section:first-child{border-left:0}
+.notes h3{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--text);font-weight:500;margin-bottom:10px}
+.notes b{color:var(--text);font-weight:600}
+.rule{display:flex;gap:10px;align-items:baseline;padding:5px 0;border-bottom:1px solid var(--rule)}
+.rule em{font-style:normal;font-family:var(--display);font-weight:800;font-size:22px;color:var(--mint);min-width:62px}
+</style>
+</head>
+<body>
+<div class="bar">
+  <div class="grp" id="posf"><button class="on" data-p="ALL">All</button><button data-p="QB">QB</button><button data-p="RB">RB</button><button data-p="WR">WR</button><button data-p="TE">TE</button></div>
+  <div class="morph">
+    <button id="toCube" class="on">Cube</button>
+    <input type="range" id="slider" min="0" max="1000" value="0" aria-label="Cube to table">
+    <button id="toTable">Table</button>
+  </div>
+  <span class="sp"></span>
+  <span class="note">MOCKUP · names real, numbers illustrative · tiers computed live</span>
+  <button id="th">Light / dark</button>
+</div>
+
+<div class="wrap">
+  <span class="eyebrow">Dynasty rankings</span>
+  <h1>The Collapse</h1>
+  <p class="sub">One scene, two readings. As a cube, each player floats at his dynasty value, with age running left to right and win-now running front to back; each tier is a floor, and the empty space between floors is a cliff. Collapse it and the same floors fold flat into a ranked tier table, while each player's range bar swings from upright to sideways. Drag the slider to watch it happen.</p>
+
+  <div class="panel">
+    <div id="stage"><canvas id="cv"></canvas><div class="tip" id="tip"></div><div class="hint" id="hint">DRAG TO ROTATE · HOVER FOR DETAIL · CLICK TO PIN</div></div>
+    <div class="notes">
+      <section>
+        <h3>One rule, three boxes</h3>
+        <div class="rule"><em>70%</em><span><b>Tied:</b> nobody inside is 70%+ likely to beat anyone else inside.</span></div>
+        <div class="rule"><em>90%</em><span><b>Tier:</b> nobody inside is 90%+ likely to beat anyone else inside.</span></div>
+        <div class="rule"><em>99.9%</em><span><b>Group:</b> the same rule at 99.9%.</span></div>
+        <p style="margin-top:10px">The red % on a break is how often a player from the box above ends up worth more than a player from the box below (bold = a group break, comparing the two groups). Every box uses the fewest splits the rule allows, placed at the biggest drops.</p>
+      </section>
+      <section>
+        <h3>Why the cube and the table agree</h3>
+        <p>The table's top-to-bottom order is the cube's height, squeezed into even rows. Because the squeeze never changes order, <b>no two players can swap places at any point in the fold</b>, and floors can never overlap. Each player's 80% value range is the same bar in both views: upright in the cube, sideways in the table.</p>
+      </section>
+      <section>
+        <h3>Reading the cube</h3>
+        <p><b>Height</b> = dynasty value (5 seasons, age-adjusted, over replacement). <b>Left to right</b> = age. <b>Front to back</b> = win-now (this season). <b>Floors</b> = tiers, tinted by group. The more certain a break, the more space it gets in the table. Filter by position and the tiers are recomputed for just those players.</p>
+      </section>
+    </div>
+  </div>
+</div>
+
+<script>
+// ---------- illustrative inputs: name, pos, team, age, value median, value sd, win-now ----------
+const RAW=[
+["Ja'Marr Chase","WR","CIN",26,98,4.0,96],["Bijan Robinson","RB","ATL",24,97,4.5,93],["Jahmyr Gibbs","RB","DET",24,94.5,4.5,92],
+["Puka Nacua","WR","LAR",25,90,4.5,91],["Jaxon Smith-Njigba","WR","SEA",24,89.5,5,94],["Malik Nabers","WR","NYG",23,88.5,5.5,84],
+["Brock Bowers","TE","LV",23,86,5.5,82],["Josh Allen","QB","BUF",30,84.5,3.5,97],["Jayden Daniels","QB","WAS",25,84,5,88],
+["Justin Jefferson","WR","MIN",27,80.5,4,92],["Ashton Jeanty","RB","LV",22,79.5,7,74],["Amon-Ra St. Brown","WR","DET",26,77.5,4,86],
+["Brian Thomas Jr.","WR","JAX",23,76.5,6,76],["Drake London","WR","ATL",25,76,5,80],["Lamar Jackson","QB","BAL",29,75.5,4,95],
+["Trey McBride","TE","ARI",26,72,4.5,83],["De'Von Achane","RB","MIA",24,71.5,6,78],["Ladd McConkey","WR","LAC",24,70,5.5,72],
+["Tetairoa McMillan","WR","CAR",23,68.5,7,66],["Garrett Wilson","WR","NYJ",26,67.5,5,73],["Omarion Hampton","RB","LAC",22,64.5,7.5,64],
+["Drake Maye","QB","NE",23,63.5,6.5,70],["Caleb Williams","QB","CHI",24,61,7,66],["Tyler Warren","TE","IND",23,58,7,62],
+["Sam LaPorta","TE","DET",25,57,5,60],["Jonathan Taylor","RB","IND",27,54,4.5,85],["Bo Nix","QB","DEN",26,52.5,5,68],
+["Saquon Barkley","RB","PHI",29,51,4,88],["C.J. Stroud","QB","HOU",24,50,7,64]
+];
+
+// ---------- simulated draws (stand-in for the model's own simulations) ----------
+function mulberry32(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const rnd=mulberry32(20261027);
+const gauss=()=>{let u=0;while(!u)u=rnd();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*rnd())};
+const D=4000;
+const ALL=RAW.map(r=>{const d=new Float32Array(D);for(let i=0;i<D;i++)d[i]=r[4]+r[5]*gauss();
+  const s=Float32Array.from(d).sort();
+  return {name:r[0],pos:r[1],team:r[2],age:r[3],now:r[6],draws:d,med:s[D>>1],lo:s[Math.floor(D*.1)],hi:s[Math.floor(D*.9)]}})
+  .sort((a,b)=>b.med-a.med);
+ALL.forEach((p,i)=>p.gi=i);
+// PALL[i][j] = P(value_i > value_j), from paired draws
+const PALL=ALL.map(a=>ALL.map(b=>{if(a===b)return .5;let w=0;for(let k=0;k<D;k++)if(a.draws[k]>b.draws[k])w++;return w/D}));
+
+function qnorm(p){const a=[-39.69683028665376,220.9460984245205,-275.9285104469687,138.357751867269,-30.66479806614716,2.506628277459239],b=[-54.47609879822406,161.5858368580409,-155.6989798598866,66.80131188771972,-13.28068155288572],c=[-.007784894002430293,-.3223964580411365,-2.400758277161838,-2.549732539343734,4.374664141464968,2.938163982698783],d=[.007784695709041462,.3224671290700398,2.445134137142996,3.754408661907416],pl=.02425;let q,r;
+  if(p<pl){q=Math.sqrt(-2*Math.log(p));return(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1)}
+  if(p>1-pl){q=Math.sqrt(-2*Math.log(1-p));return-(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1)}
+  q=p-.5;r=q*q;return(((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q/(((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1)}
+
+// ---------- the tiering rule ----------
+// Split players lo..hi (already in value order) into the FEWEST contiguous boxes such that no pair inside a box
+// has P(above beats below) >= theta; among equally few, put the breaks where the drops are biggest (sum of probits).
+let L=[];const Pg=(i,j)=>PALL[L[i].gi][L[j].gi];
+const strength=(i,j)=>qnorm(Math.min(1-1/D,Math.max(.5,Pg(i,j))));
+function segment(lo,hi,theta){
+  const ok=(a,b)=>{for(let i=a;i<b;i++)for(let j=i+1;j<=b;j++)if(Pg(i,j)>=theta)return false;return true};
+  const best=[{c:0,s:0,cut:-1}];
+  for(let e=lo;e<=hi;e++){let bb=null;
+    for(let a=e;a>=lo;a--){if(!ok(a,e))break;const pv=best[a-lo],c=pv.c+1,s=pv.s+(a>lo?strength(a-1,a):0);
+      if(!bb||c<bb.c||(c===bb.c&&s>bb.s))bb={c,s,cut:a}}
+    best.push(bb)}
+  const out=[];let e=hi;while(e>=lo){const a=best[e-lo+1].cut;out.unshift([a,e]);e=a-1}return out}
+
+const GNAMES=["Cornerstones","Core","Depth","Fringe","Deep"];
+let groups=[],tiers=[],ties=[],bounds=[],rows=[],rowH=0,tableTop=0,tableBot=0;
+const VY=v=>(v-40)/60*2-1;                    // cube height for a value
+const VX=v=>-0.42+(Math.max(40,Math.min(100,v))-40)/60*0.9; // table value strip
+function build(pos){
+  L=ALL.filter(p=>pos==="ALL"||p.pos===pos);const n=L.length;
+  groups=[];tiers=[];ties=[];bounds=[];
+  segment(0,n-1,.999).forEach(([a,b],g)=>{groups.push({a,b,g});
+    segment(a,b,.90).forEach(([c,d])=>{tiers.push({a:c,b:d,g});segment(c,d,.70).forEach(([x,y])=>ties.push({a:x,b:y}))})});
+  L.forEach((p,i)=>{p.i=i;p.tier=tiers.findIndex(t=>i>=t.a&&i<=t.b);p.g=tiers[p.tier].g;p.vsNext=i<n-1?Pg(i,i+1):null});
+  // table rows: gaps grow with how certain the break is
+  let gapTot=0;const gap=[];
+  // a break is labelled with how often a player from the box above beats a player from the box below
+  // (probability of superiority, averaged over every cross pair) -- tier vs tier, or group vs group at a group break
+  const sup=(A,Bx)=>{let s=0,c=0;for(let i=A.a;i<=A.b;i++)for(let j=Bx.a;j<=Bx.b;j++){s+=Pg(i,j);c++}return s/c};
+  for(let t=1;t<tiers.length;t++){const gb=tiers[t].g!==tiers[t-1].g;
+    const p=gb?sup(groups[tiers[t-1].g],groups[tiers[t].g]):sup(tiers[t-1],tiers[t]),z=qnorm(Math.min(1-1/D,Math.max(.5,p)));
+    const g=.01+.012*Math.min(z,4)+(gb?.04:0);gap[t]=g;gapTot+=g;
+    bounds.push({t,p,z,gb})}
+  rowH=Math.min(.12,(2.25-gapTot)/n);
+  const H=n*rowH+gapTot;tableTop=H/2-.04;let y=tableTop;rows=[];
+  tiers.forEach((t,ti)=>{if(ti)y-=gap[ti];for(let i=t.a;i<=t.b;i++){rows[i]=y-rowH/2;y-=rowH}});
+  tableBot=y;
+  bounds.forEach(b=>{const t=tiers[b.t];b.yT=(rows[t.a]+rowH/2+rows[t.a-1]-rowH/2)/2})
+}
+
+// ---------- drawing ----------
+const cv=document.getElementById("cv"),ctx=cv.getContext("2d"),tip=document.getElementById("tip");
+let W,H,T=0,anim=null,cubeYaw=-0.72,cubePitch=0.32,auto=true,drag=null,hover=null,pinned=null,pos="ALL",shown=[];
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const lerp=(a,b,t)=>a+(b-a)*t;
+const GC=g=>[css("--mint"),css("--text"),css("--steel"),css("--dim"),css("--dim")][g];
+function size(){const dpr=devicePixelRatio||1,r=cv.getBoundingClientRect();W=r.width;H=r.height;cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0)}
+function cam(u){const yaw=lerp(cubeYaw,0,u),pitch=lerp(cubePitch,0,u);
+  return{cy:Math.cos(yaw),sy:Math.sin(yaw),cp:Math.cos(pitch),sp:Math.sin(pitch),k:lerp(.9,0,u),
+    s:lerp(Math.min(W,H)*.30,Math.min(W/3.36,H/2.42),u),oy:lerp(-4,6,u)}}
+function proj(C,x,y,z){const x1=x*C.cy+z*C.sy,z1=-x*C.sy+z*C.cy,y1=y*C.cp-z1*C.sp,z2=y*C.sp+z1*C.cp,f=3.4/(3.4+z2*C.k);
+  return{sx:W/2+x1*C.s*f,sy:H/2-y1*C.s*f+C.oy,d:z2,f}}
+function seg(a,b,col,w,al,dash){ctx.globalAlpha=al;ctx.beginPath();ctx.moveTo(a.sx,a.sy);ctx.lineTo(b.sx,b.sy);ctx.strokeStyle=col;ctx.lineWidth=w;ctx.setLineDash(dash||[]);ctx.stroke();ctx.setLineDash([])}
+function text(s,x,y,o){ctx.globalAlpha=o.a??1;ctx.font=`${o.w||400} ${o.size||11}px ${o.f==="d"?"'Big Shoulders Display'":o.f==="s"?"'Source Serif 4'":"'Martian Mono'"}`;
+  ctx.fillStyle=o.c;ctx.textAlign=o.al||"left";ctx.textBaseline=o.bl||"alphabetic";
+  if(o.rot){ctx.save();ctx.translate(x,y);ctx.rotate(-Math.PI/2);ctx.fillText(s,0,0);ctx.restore()}else ctx.fillText(s,x,y)}
+function hull(p){p=p.slice().sort((a,b)=>a[0]-b[0]||a[1]-b[1]);const cr=(o,a,b)=>(a[0]-o[0])*(b[1]-o[1])-(a[1]-o[1])*(b[0]-o[0]),lo=[],up=[];
+  for(const q of p){while(lo.length>1&&cr(lo[lo.length-2],lo[lo.length-1],q)<=0)lo.pop();lo.push(q)}
+  for(let i=p.length-1;i>=0;i--){const q=p[i];while(up.length>1&&cr(up[up.length-2],up[up.length-1],q)<=0)up.pop();up.push(q)}
+  up.pop();lo.pop();return lo.concat(up)}
+// a box whose 8 corners travel from a cube box to a flat table cell
+function box(C,u,cb,tb,col,fill,stroke,topW){
+  const c=[];for(let xi=0;xi<2;xi++)for(let yi=0;yi<2;yi++)for(let zi=0;zi<2;zi++)
+    c.push({q:proj(C,lerp(cb.x[xi],tb.x[xi],u),lerp(cb.y[yi],tb.y[yi],u),lerp(cb.z[zi],tb.z[zi],u)),yi});
+  const h=hull(c.map(o=>[o.q.sx,o.q.sy]));ctx.globalAlpha=fill;ctx.fillStyle=col;ctx.beginPath();h.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();ctx.fill();
+  for(let a=0;a<8;a++)for(let b=a+1;b<8;b++){const x=a^b;if(x&(x-1))continue;const top=c[a].yi===0&&c[b].yi===0;seg(c[a].q,c[b].q,col,top?topW:1,top?Math.min(1,stroke*1.6):stroke)}
+  return c}
+
+function draw(){
+  const u=T,C=cam(u),A=(1-u)*(1-u),B=u*u;
+  const tx=css("--text"),dim=css("--dim"),rule=css("--rule"),strong=css("--rule-strong"),red=css("--red"),mint=css("--mint");
+  ctx.clearRect(0,0,W,H);const n=L.length;
+  // cube chrome
+  if(A>.01){
+    for(let i=0;i<=6;i++){const t=-1+i/3;seg(proj(C,t,-1,-1),proj(C,t,-1,1),rule,1,A);seg(proj(C,-1,-1,t),proj(C,1,-1,t),rule,1,A)}
+    const o=proj(C,-1,-1,-1);seg(o,proj(C,1,-1,-1),strong,1.5,A);seg(o,proj(C,-1,1,-1),strong,1.5,A);seg(o,proj(C,-1,-1,1),strong,1.5,A);
+    for(let a=22;a<=34;a+=4){const q=proj(C,(a-21)/13*2-1,-1,1);text(a,q.sx,q.sy+16,{c:dim,al:"center",a:A})}
+    for(let v=40;v<=100;v+=20){const q=proj(C,-1,VY(v),-1);text(v,q.sx-10,q.sy+4,{c:dim,al:"right",a:A})}
+    for(let z=60;z<=100;z+=20){const q=proj(C,1,-1,(z-50)/50*2-1);text(z,q.sx+12,q.sy+12,{c:dim,a:A})}
+    let q=proj(C,0,-1,1);text("AGE →",q.sx,q.sy+40,{c:tx,al:"center",a:A,size:11.5});
+    q=proj(C,-1,1,-1);text("DYNASTY VALUE ↑",q.sx,q.sy-16,{c:tx,al:"center",a:A,size:11.5});
+    q=proj(C,1,-1,0);text("WIN-NOW →",q.sx+40,q.sy+30,{c:tx,a:A,size:11.5});
+  }
+  // table chrome
+  if(B>.01){
+    const hy=proj(C,0,tableTop+.105,0).sy,ty=proj(C,0,tableTop+.045,0).sy,bot=proj(C,0,tableBot,0).sy;
+    [["#",-1.62,"right"],["PLAYER",-1.36],["VALUE · 80% RANGE",-0.42],["TIED",0.66,"center"],["TIER",0.76],["GROUP",1.42,"center"]].forEach(h=>text(h[0],proj(C,h[1],0,0).sx,hy,{c:dim,a:B,al:h[2]||"left",size:10.5}));
+    seg(proj(C,-1.66,tableTop+.08,0),proj(C,1.6,tableTop+.08,0),strong,1,B);
+    for(let v=40;v<=100;v+=10){const x=proj(C,VX(v),0,0).sx;seg({sx:x,sy:ty+6},{sx:x,sy:bot},rule,1,B*.8);text(v,x,ty,{c:dim,a:B,al:"center",size:9.5})}
+    for(let i=0;i<n;i++){const y=proj(C,0,rows[i]-rowH/2,0).sy;seg({sx:proj(C,-1.66,0,0).sx,sy:y},{sx:proj(C,.5,0,0).sx,sy:y},rule,1,B)}
+    const hp=pinned&&L.includes(pinned)?pinned:hover;
+    if(hp){const a=proj(C,-1.66,rows[hp.i]+rowH/2,0),b=proj(C,1.6,rows[hp.i]-rowH/2,0);ctx.globalAlpha=B*.12;ctx.fillStyle=mint;ctx.fillRect(a.sx,a.sy,b.sx-a.sx,b.sy-a.sy)}
+    // tie cells
+    ties.forEach(t=>{if(t.b===t.a)return;const a=proj(C,.62,rows[t.a]+rowH/2-.006,0),b=proj(C,.70,rows[t.b]-rowH/2+.006,0);
+      ctx.globalAlpha=B;ctx.strokeStyle=dim;ctx.setLineDash([3,3]);ctx.strokeRect(a.sx,a.sy,b.sx-a.sx,b.sy-a.sy);ctx.setLineDash([]);
+      if(b.sy-a.sy>34)text("TIED",(a.sx+b.sx)/2+3,(a.sy+b.sy)/2,{c:dim,a:B,size:9,al:"center",rot:true})});
+  }
+  // group spines and tier floors (boxes that travel)
+  groups.forEach(G=>{const top=L[G.a].med,bt=L[G.b].med;
+    const c=box(C,u,{x:[1.12,1.18],y:[VY(top)+.03,VY(bt)-.03],z:[-1.06,-1]},{x:[1.26,1.58],y:[rows[G.a]+rowH/2+.004,rows[G.b]-rowH/2-.004],z:[0,0]},GC(G.g),.10+.05*u,.55,2.5);
+    const q=proj(C,lerp(1.15,1.42,u),lerp((VY(top)+VY(bt))/2,(rows[G.a]+rows[G.b])/2,u),lerp(-1.03,0,u));
+    text(GNAMES[G.g].toUpperCase(),q.sx,q.sy,{c:GC(G.g),a:B,f:"d",w:800,size:18,al:"center",bl:"middle",rot:true});
+    const qc=proj(C,1.15,VY(top)+.03,-1.03);text(GNAMES[G.g],qc.sx+10,qc.sy+4,{c:GC(G.g),a:A,size:10.5})});
+  tiers.forEach((t,ti)=>{const top=L[t.a].med,bt=L[t.b].med,b=bounds.find(x=>x.t===ti);
+    const prevGap=ti?(VY(L[t.a-1].med)-VY(top)):1,nextGap=ti<tiers.length-1?(VY(bt)-VY(L[t.b+1].med)):1;
+    const pt=Math.min(.02,prevGap/2.5),pb=Math.min(.02,nextGap/2.5),topW=b?1+Math.min(b.z,4)*.9:2.5;
+    box(C,u,{x:[-1,1],y:[VY(top)+pt,VY(bt)-pb],z:[-1,1]},{x:[.74,1.22],y:[rows[t.a]+rowH/2+.004,rows[t.b]-rowH/2-.004],z:[0,0]},GC(t.g),lerp(.035,.12,u),lerp(.28,.6,u),topW);
+    const nP=t.b-t.a+1,q=proj(C,lerp(-1,.765,u),lerp(VY(top)+pt,rows[t.a]+rowH/2,u),lerp(1,0,u)),cellPx=nP*rowH*C.s;
+    text(`T${ti+1}`,q.sx-8,q.sy+12,{c:GC(t.g),a:A,f:"d",w:800,size:15,al:"right"});
+    if(B>.01){text(`TIER ${ti+1}`,q.sx,q.sy+(cellPx>40?20:Math.min(16,cellPx/2+6)),{c:GC(t.g),a:B,f:"d",w:800,size:cellPx>40?19:14});
+      if(cellPx>40)text(`${nP} player${nP>1?"s":""}`,q.sx,q.sy+36,{c:dim,a:B,size:10})}});
+  // cliff labels travel with the gap
+  bounds.forEach(b=>{const t=tiers[b.t],ya=VY(L[t.a-1].med),yb=VY(L[t.a].med);
+    const lab=b.p>=.999?">99.9%":b.p>=.99?(b.p*100).toFixed(1)+"%":Math.round(b.p*100)+"%";
+    const q=proj(C,lerp(-1,.505,u),lerp((ya+yb)/2,b.yT,u),lerp(-1,0,u));
+    text(lab,q.sx+lerp(8,0,u),q.sy+4,{c:red,a:Math.max(A,B)*.95,size:lerp(10,10.5,u),w:b.gb?700:400,bl:"middle"})});
+  // points and their 80% range (upright in the cube, sideways in the table)
+  const P=L.map(p=>{const cx=(p.age-21)/13*2-1,cz=(p.now-50)/50*2-1,ty=rows[p.i];
+    return{p,q:proj(C,lerp(cx,VX(p.med),u),lerp(VY(p.med),ty,u),lerp(cz,0,u)),
+      lo:proj(C,lerp(cx,VX(p.lo),u),lerp(VY(p.lo),ty,u),lerp(cz,0,u)),hi:proj(C,lerp(cx,VX(p.hi),u),lerp(VY(p.hi),ty,u),lerp(cz,0,u))}}).sort((a,b)=>b.q.d-a.q.d);
+  shown=P;
+  if(A>.01)ties.forEach(t=>{for(let i=t.a;i<t.b;i++){const a=P.find(o=>o.p.i===i),b=P.find(o=>o.p.i===i+1);seg(a.q,b.q,GC(L[i].g),1,A*.5,[2,3])}});
+  P.forEach(o=>{const c=GC(o.p.g),hl=o.p===hover||o.p===pinned;
+    seg(o.lo,o.hi,c,lerp(1.5,3,u),.55);
+    const r=lerp((3.6+(o.p.med-40)/60*4.6)*o.q.f,4.6,u)*(hl?1.35:1);
+    ctx.globalAlpha=1;ctx.beginPath();ctx.arc(o.q.sx,o.q.sy,r,0,7);ctx.fillStyle=c;ctx.fill();ctx.lineWidth=1.5;ctx.strokeStyle=css("--bg");ctx.stroke();
+    if(hl){ctx.beginPath();ctx.arc(o.q.sx,o.q.sy,r+3.5,0,7);ctx.strokeStyle=c;ctx.lineWidth=1;ctx.stroke()}
+    if(A>.01&&(o.p.g===0||hl))text(o.p.name.split(" ").slice(-1)[0],o.q.sx,o.q.sy-r-6,{c:tx,a:A,al:"center",size:10.5})});
+  // table text
+  if(B>.01)L.forEach(p=>{const y=proj(C,0,rows[p.i],0).sy,fs=Math.min(14,rowH*C.s*.58);
+    text(p.i+1,proj(C,-1.62,0,0).sx,y,{c:dim,a:B,f:"d",w:800,size:fs+3,al:"right",bl:"middle"});
+    const px=proj(C,-1.55,0,0).sx;ctx.globalAlpha=B;ctx.fillStyle={QB:red,RB:mint,WR:css("--steel"),TE:css("--amber")}[p.pos];ctx.fillRect(px,y-7,26,14);
+    text(p.pos,px+13,y+.5,{c:css("--on-brand"),a:B,size:9,w:700,al:"center",bl:"middle"});
+    text(p.name,proj(C,-1.36,0,0).sx,y+.5,{c:tx,a:B,f:"s",w:600,size:fs,bl:"middle"});
+    text(`${p.team} · ${p.age}`,proj(C,-0.5,0,0).sx,y+.5,{c:dim,a:B,size:9.5,al:"right",bl:"middle"})});
+  ctx.globalAlpha=1;
+}
+
+// ---------- interaction ----------
+function pick(mx,my){
+  if(T>.5){const C=cam(T);const x0=proj(C,-1.66,0,0).sx,x1=proj(C,1.6,0,0).sx;if(mx<x0||mx>x1)return null;
+    let best=null,bd=Infinity;L.forEach(p=>{const d=Math.abs(proj(C,0,rows[p.i],0).sy-my);if(d<bd){bd=d;best=p}});return bd<=rowH*C.s/2+1?best:null}
+  let best=null,bd=16;shown.forEach(o=>{const d=Math.hypot(o.q.sx-mx,o.q.sy-my);if(d<bd){bd=d;best=o.p}});return best}
+const pct=v=>v>=.999?">99.9%":v>=.99?(v*100).toFixed(1)+"%":Math.round(v*100)+"%";
+function showTip(p,mx,my){if(!p){tip.style.display="none";return}
+  tip.innerHTML=`<b>${p.name}</b><div><span>${p.pos} · ${p.team}</span><span>age ${p.age}</span></div>
+  <div><span>Dynasty value</span><span>${p.med.toFixed(1)}</span></div><div><span>80% range</span><span>${p.lo.toFixed(0)}–${p.hi.toFixed(0)}</span></div>
+  <div><span>Win-now</span><span>${p.now}</span></div><div><span>Tier · group</span><span>T${p.tier+1} · ${GNAMES[p.g]}</span></div>
+  ${p.vsNext!=null?`<div class="r"><span>Beats next player</span><span>${pct(p.vsNext)}</span></div>`:""}`;
+  tip.style.display="block";tip.style.left=Math.min(mx+18,W-240)+"px";tip.style.top=Math.max(8,Math.min(my-10,H-170))+"px"}
+cv.addEventListener("pointerdown",e=>{if(T>.03)return;cv.setPointerCapture(e.pointerId);drag={x:e.clientX,y:e.clientY,m:0};auto=false});
+cv.addEventListener("pointermove",e=>{const r=cv.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top;
+  if(drag){const dx=e.clientX-drag.x,dy=e.clientY-drag.y;drag.m+=Math.abs(dx)+Math.abs(dy);drag.x=e.clientX;drag.y=e.clientY;
+    cubeYaw+=dx*.008;cubePitch=Math.max(-.2,Math.min(1.4,cubePitch+dy*.006));tip.style.display="none";return}
+  hover=pick(mx,my);showTip(hover,mx,my);cv.style.cursor=hover?"pointer":T<.03?"grab":"default"});
+cv.addEventListener("pointerup",e=>{const r=cv.getBoundingClientRect();if(!drag||drag.m<5){const p=pick(e.clientX-r.left,e.clientY-r.top);pinned=p===pinned?null:p}drag=null});
+cv.addEventListener("pointerleave",()=>{hover=null;tip.style.display="none"});
+
+const slider=document.getElementById("slider"),hint=document.getElementById("hint");
+const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+function norm(){cubeYaw=Math.atan2(Math.sin(cubeYaw),Math.cos(cubeYaw))}
+function go(to){norm();anim={from:T,to,t0:performance.now(),dur:1400*Math.abs(to-T)+200}}
+function setT(v){T=v;slider.value=Math.round(v*1000);document.getElementById("toCube").classList.toggle("on",T<.5);document.getElementById("toTable").classList.toggle("on",T>=.5);
+  hint.textContent=T<.03?"DRAG TO ROTATE · HOVER FOR DETAIL · CLICK TO PIN":T>.97?"HOVER A ROW FOR DETAIL · CLICK TO PIN":""}
+slider.addEventListener("input",()=>{anim=null;norm();setT(slider.value/1000)});
+document.getElementById("toCube").onclick=()=>go(0);
+document.getElementById("toTable").onclick=()=>go(1);
+document.querySelectorAll("#posf button").forEach(b=>b.onclick=()=>{pos=b.dataset.p;document.querySelectorAll("#posf button").forEach(x=>x.classList.toggle("on",x===b));build(pos);pinned=null;hover=null});
+document.getElementById("th").onclick=()=>{const d=document.documentElement;d.dataset.theme=d.dataset.theme==="dark"?"light":"dark"};
+function frame(now){
+  if(anim){const k=Math.min(1,(now-anim.t0)/anim.dur);setT(lerp(anim.from,anim.to,ease(k)));if(k>=1)anim=null}
+  else if(auto&&T===0&&!drag&&!hover)cubeYaw+=.0028;
+  draw();requestAnimationFrame(frame)}
+addEventListener("resize",size);size();build("ALL");requestAnimationFrame(frame);
+</script>
+</body>
+</html>

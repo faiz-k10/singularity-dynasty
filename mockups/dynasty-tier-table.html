@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dynasty tier table — mockup</title>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;800&family=Martian+Mono:wght@400;500;700&family=Source+Serif+4:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#030908; --panel:#09130F; --text:#E6F4F1; --dim:#8C95A3;
+  --rule:rgba(230,244,241,.13); --rule-strong:rgba(230,244,241,.55);
+  --mint:#2DD4BF; --steel:#8C95A3; --red:#E11D48; --on-brand:#021210;
+  --display:'Big Shoulders Display','Arial Narrow',Impact,sans-serif;
+  --serif:'Source Serif 4',Georgia,serif;
+  --mono:'Martian Mono',ui-monospace,Menlo,monospace;
+  --row:42px;
+}
+:root[data-theme="light"]{
+  --bg:#F4F4F2; --panel:#FBFCFB; --text:#0F1F1D; --dim:#5C6370;
+  --rule:rgba(15,31,29,.14); --rule-strong:rgba(15,31,29,.6);
+  --mint:#0D7A70; --steel:#5C6370; --red:#E11D48; --on-brand:#F2F8F7;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--serif);font-size:15px;line-height:1.4}
+button{font-family:var(--mono);font-size:12px;color:inherit;background:none;border:1px solid var(--rule);padding:7px 12px;cursor:pointer;border-radius:2px}
+button.on{background:var(--mint);color:var(--on-brand);border-color:var(--mint)}
+.bar{position:sticky;top:0;z-index:20;background:var(--panel);border-bottom:2px solid var(--rule-strong);display:flex;gap:8px;align-items:center;padding:10px 20px;flex-wrap:wrap}
+.bar .sp{flex:1}
+.bar .note{font-family:var(--mono);font-size:11px;color:var(--dim)}
+.wrap{max-width:1120px;margin:0 auto;padding:28px 20px 80px}
+.eyebrow{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;background:var(--mint);color:var(--on-brand);padding:3px 8px}
+h1{font-family:var(--display);text-transform:uppercase;font-weight:800;font-size:44px;line-height:1;margin:12px 0 6px}
+.sub{color:var(--dim);font-size:14px;margin-bottom:22px;max-width:62ch}
+
+.panel{background:var(--panel);border:1px solid var(--rule);border-top:2px solid var(--rule-strong);padding:0 0 4px}
+@media (max-width:900px){.panel{overflow-x:auto}.h,.span .in{position:static}}
+.grid{display:grid;grid-template-columns:44px minmax(190px,1fr) 44px 128px 76px 190px 116px;min-width:860px;
+  grid-auto-rows:var(--row)}
+.h{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);
+  display:flex;align-items:center;padding:0 10px;border-bottom:1px solid var(--rule-strong);background:var(--panel);position:sticky;top:57px;z-index:5}
+.h.c{justify-content:center}
+.cell{display:flex;align-items:center;padding:0 10px;border-bottom:1px solid var(--rule);min-width:0}
+.rank{font-family:var(--display);font-weight:800;font-size:20px;justify-content:center;color:var(--dim)}
+.name{gap:9px}
+.name b{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.name i{font-style:normal;font-family:var(--mono);font-size:10.5px;color:var(--dim)}
+.pos{font-family:var(--mono);font-size:10.5px;font-weight:700;padding:2px 5px;border-radius:2px;color:var(--on-brand)}
+.pos.QB{background:var(--red)} .pos.RB{background:var(--mint)} .pos.WR{background:var(--steel)} .pos.TE{background:#C98B2B}
+.age{font-family:var(--mono);font-size:12px;justify-content:center}
+.val{gap:8px;font-family:var(--mono);font-size:12px}
+.val .bar2{flex:1;height:6px;background:var(--rule)}
+.val .bar2 span{display:block;height:100%;background:var(--mint)}
+.val em{font-style:normal;width:30px;text-align:right}
+
+/* spanning cells = the recipe boxes */
+.span{border:1px solid var(--rule-strong);border-top-width:var(--bt,1px);border-left:0;position:relative;background:transparent;margin-bottom:-1px}
+.span.tie{border-top-width:1px;border-top-style:dashed;border-top-color:var(--dim)}
+.span .in{position:sticky;top:96px;padding:10px 12px;display:flex;flex-direction:column;gap:3px}
+.tie .in{padding:8px 4px;align-items:center;text-align:center}
+.tie .in span{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);writing-mode:vertical-rl;transform:rotate(180deg)}
+.tie.solo{border-top-color:transparent;border-top-width:0}
+.tier .t1{font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:24px;line-height:1}
+.tier .t2{font-family:var(--mono);font-size:10.5px;color:var(--dim)}
+.tier .t3{font-family:var(--mono);font-size:10.5px;color:var(--red)}
+.tier.g1{background:rgba(45,212,191,.13)} .tier.g1 .t1{color:var(--mint)}
+.tier.g2{background:rgba(140,149,163,.11)}
+.tier.g3{background:rgba(140,149,163,.04)} .tier.g3 .t1{color:var(--dim)}
+.group{border-left:2px solid var(--rule-strong)}
+.group .in{align-items:flex-start}
+.group .g1n{font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:20px;line-height:1.05;writing-mode:vertical-rl;transform:rotate(180deg);align-self:center;letter-spacing:.04em}
+.group .in{top:96px}
+.group.g1{color:var(--mint)} .group.g2{color:var(--text)} .group.g3{color:var(--dim)}
+.legend{display:flex;gap:22px;flex-wrap:wrap;margin-top:18px;font-size:13px;color:var(--dim)}
+.legend b{color:var(--text);font-weight:600}
+.k{display:inline-block;width:26px;height:0;vertical-align:middle;margin-right:7px}
+</style>
+</head>
+<body>
+<div class="bar">
+  <button class="on" data-pos="ALL">All</button><button data-pos="QB">QB</button><button data-pos="RB">RB</button><button data-pos="WR">WR</button><button data-pos="TE">TE</button>
+  <span class="sp"></span>
+  <span class="note">MOCKUP · names real, values + ages illustrative</span>
+  <button id="th">Light / dark</button>
+</div>
+
+<div class="wrap">
+  <span class="eyebrow">Dynasty rankings</span>
+  <h1>Tier table</h1>
+  <p class="sub">Read left to right: the player, whether he is tied with his neighbours, which tier he sits in, and which group of tiers that belongs to. A heavier line above a tier means a bigger drop from the tier before it. Filter by position and the boxes re-fit.</p>
+
+  <div class="panel"><div class="grid" id="grid"></div></div>
+
+  <div class="legend">
+    <span><b>Tied</b> — values inside each other's range; the order within is a coin flip.</span>
+    <span><b>Heavy line</b> — a real cliff (gap in value points shown in red).</span>
+    <span><b>Value</b> — projected points over replacement across 5 seasons, age-adjusted.</span>
+  </div>
+</div>
+
+<script>
+// group -> tier -> tie -> players [name, pos, team, age, value]
+const TIERS=[
+ {g:"Cornerstones",gc:"g1",t:"Tier 1",n:"Untouchable",gap:0,ties:[
+   [["Ja'Marr Chase","WR","CIN",26,98.2],["Bijan Robinson","RB","ATL",24,97.6]],
+   [["Jahmyr Gibbs","RB","DET",24,95.1]]]},
+ {g:"Cornerstones",gc:"g1",t:"Tier 2",n:"Franchise",gap:5.2,ties:[
+   [["Puka Nacua","WR","LAR",25,89.9],["Jaxon Smith-Njigba","WR","SEA",24,89.4],["Malik Nabers","WR","NYG",23,88.8]],
+   [["Brock Bowers","TE","LV",23,86.0]],
+   [["Josh Allen","QB","BUF",30,84.7],["Jayden Daniels","QB","WAS",25,84.3]]]},
+ {g:"Core",gc:"g2",t:"Tier 3",n:"Locked-in starters",gap:3.9,ties:[
+   [["Justin Jefferson","WR","MIN",27,80.4],["Ashton Jeanty","RB","LV",22,80.1]],
+   [["Amon-Ra St. Brown","WR","DET",26,77.3],["Brian Thomas Jr.","WR","JAX",23,77.0],["Drake London","WR","ATL",25,76.6]],
+   [["Lamar Jackson","QB","BAL",29,75.9]]]},
+ {g:"Core",gc:"g2",t:"Tier 4",n:"Reliable weekly",gap:2.8,ties:[
+   [["Trey McBride","TE","ARI",26,72.2],["De'Von Achane","RB","MIA",24,71.8]],
+   [["Ladd McConkey","WR","LAC",24,70.0]],
+   [["Tetairoa McMillan","WR","CAR",23,68.9],["Garrett Wilson","WR","NYJ",26,68.5]]]},
+ {g:"Core",gc:"g2",t:"Tier 5",n:"Upside bets",gap:2.1,ties:[
+   [["Omarion Hampton","RB","LAC",22,65.6],["Drake Maye","QB","NE",23,65.1]],
+   [["Caleb Williams","QB","CHI",24,62.4]]]},
+ {g:"Depth",gc:"g3",t:"Tier 6",n:"Flex-level",gap:3.3,ties:[
+   [["Tyler Warren","TE","IND",23,58.8],["Sam LaPorta","TE","DET",25,58.1]],
+   [["Jonathan Taylor","RB","IND",27,55.0]],
+   [["Bo Nix","QB","DEN",26,53.9],["C.J. Stroud","QB","HOU",24,53.2]]]},
+];
+const flat=[];
+TIERS.forEach((T,ti)=>T.ties.forEach((tie,ki)=>tie.forEach(p=>flat.push({name:p[0],pos:p[1],team:p[2],age:p[3],val:p[4],ti,tk:ti+"."+ki,gi:T.g}))));
+let filter="ALL";
+const el=document.getElementById("grid");
+const esc=s=>s.replace(/&/g,"&amp;");
+function runs(rows,key){const out=[];rows.forEach((r,i)=>{const k=key(r);const l=out[out.length-1];if(l&&l.k===k)l.n++;else out.push({k,s:i,n:1,r})});return out}
+function render(){
+  const rows=flat.filter(p=>filter==="ALL"||p.pos===filter);
+  const max=100;
+  let h=`<div class="h c">#</div><div class="h">Player</div><div class="h c">Age</div><div class="h">Value</div><div class="h c">Tied</div><div class="h">Tier</div><div class="h">Group</div>`;
+  rows.forEach((p,i)=>{
+    const r=i+2;
+    h+=`<div class="cell rank" style="grid-row:${r};grid-column:1">${i+1}</div>
+    <div class="cell name" style="grid-row:${r};grid-column:2"><span class="pos ${p.pos}">${p.pos}</span><b>${esc(p.name)}</b><i>${p.team}</i></div>
+    <div class="cell age" style="grid-row:${r};grid-column:3">${p.age}</div>
+    <div class="cell val" style="grid-row:${r};grid-column:4"><div class="bar2"><span style="width:${p.val/max*100}%"></span></div><em>${p.val.toFixed(0)}</em></div>`;
+  });
+  runs(rows,p=>p.tk).forEach(u=>{
+    const solo=u.n===1;
+    h+=`<div class="span tie ${solo?"solo":""}" style="grid-row:${u.s+2}/span ${u.n};grid-column:5"><div class="in">${solo?"":"<span>Tied</span>"}</div></div>`;
+  });
+  runs(rows,p=>p.ti).forEach(u=>{
+    const T=TIERS[u.r.ti], bt=T.gap>=5?4:T.gap>=3?3:T.gap>0?2:1;
+    h+=`<div class="span tier ${T.gc}" style="--bt:${bt}px;grid-row:${u.s+2}/span ${u.n};grid-column:6"><div class="in"><div class="t1">${T.t}</div><div class="t2">${T.n} · ${u.n} player${u.n>1?"s":""}</div>${T.gap?`<div class="t3">−${T.gap.toFixed(1)} from prior tier</div>`:""}</div></div>`;
+  });
+  runs(rows,p=>p.gi).forEach(u=>{
+    const T=TIERS.find(t=>t.g===u.k);
+    h+=`<div class="span group ${T.gc}" style="--bt:4px;grid-row:${u.s+2}/span ${u.n};grid-column:7"><div class="in"><div class="g1n">${u.k}</div></div></div>`;
+  });
+  el.innerHTML=h;
+}
+document.querySelectorAll("[data-pos]").forEach(b=>b.onclick=()=>{filter=b.dataset.pos;document.querySelectorAll("[data-pos]").forEach(x=>x.classList.toggle("on",x===b));render()});
+document.getElementById("th").onclick=()=>{const d=document.documentElement;d.dataset.theme=d.dataset.theme==="dark"?"light":"dark"};
+render();
+</script>
+</body>
+</html>

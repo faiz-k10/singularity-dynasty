@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dynasty 3-axis plot — mockup</title>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;800&family=Martian+Mono:wght@400;500;700&family=Source+Serif+4:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#030908; --panel:#09130F; --text:#E6F4F1; --dim:#8C95A3;
+  --rule:rgba(230,244,241,.13); --rule-strong:rgba(230,244,241,.55);
+  --mint:#2DD4BF; --steel:#8C95A3; --red:#E11D48; --amber:#C98B2B; --on-brand:#021210;
+  --display:'Big Shoulders Display','Arial Narrow',Impact,sans-serif;
+  --serif:'Source Serif 4',Georgia,serif;
+  --mono:'Martian Mono',ui-monospace,Menlo,monospace;
+}
+:root[data-theme="light"]{
+  --bg:#F4F4F2; --panel:#FBFCFB; --text:#0F1F1D; --dim:#5C6370;
+  --rule:rgba(15,31,29,.14); --rule-strong:rgba(15,31,29,.6);
+  --mint:#0D7A70; --steel:#5C6370; --red:#E11D48; --amber:#A8701A; --on-brand:#F2F8F7;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--serif);font-size:15px;line-height:1.4}
+button{font-family:var(--mono);font-size:12px;color:inherit;background:none;border:1px solid var(--rule);padding:7px 12px;cursor:pointer;border-radius:2px}
+button.on{background:var(--mint);color:var(--on-brand);border-color:var(--mint)}
+.bar{position:sticky;top:0;z-index:20;background:var(--panel);border-bottom:2px solid var(--rule-strong);display:flex;gap:8px;align-items:center;padding:10px 20px;flex-wrap:wrap}
+.bar .sp{flex:1}.bar .note{font-family:var(--mono);font-size:11px;color:var(--dim)}
+.grp{display:flex;gap:0}.grp button{border-radius:0;margin-left:-1px}
+.lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin:0 4px 0 12px}
+.wrap{max-width:1120px;margin:0 auto;padding:28px 20px 80px}
+.eyebrow{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;background:var(--mint);color:var(--on-brand);padding:3px 8px}
+h1{font-family:var(--display);text-transform:uppercase;font-weight:800;font-size:44px;line-height:1;margin:12px 0 6px}
+.sub{color:var(--dim);font-size:14px;margin-bottom:22px;max-width:70ch}
+.panel{background:var(--panel);border:1px solid var(--rule);border-top:2px solid var(--rule-strong);display:grid;grid-template-columns:1fr 280px}
+@media (max-width:860px){.panel{grid-template-columns:1fr}}
+#stage{position:relative;height:620px;min-width:0}
+canvas{display:block;width:100%;height:100%;cursor:grab;touch-action:none}
+canvas:active{cursor:grabbing}
+.hint{position:absolute;left:14px;bottom:12px;font-family:var(--mono);font-size:10.5px;color:var(--dim)}
+.tip{position:absolute;pointer-events:none;background:var(--bg);border:1px solid var(--rule-strong);border-top:2px solid var(--mint);padding:8px 10px;font-size:13px;min-width:170px;display:none;z-index:5}
+.tip b{font-weight:600;display:block}
+.tip div{font-family:var(--mono);font-size:11px;color:var(--dim);display:flex;justify-content:space-between;gap:14px}
+.tip div span:last-child{color:var(--text)}
+.side{border-left:1px solid var(--rule);padding:16px;display:flex;flex-direction:column;gap:16px;font-size:13px}
+@media (max-width:860px){.side{border-left:0;border-top:1px solid var(--rule)}}
+.side h3{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);font-weight:500;margin-bottom:6px}
+.ax{display:flex;gap:8px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--rule)}
+.ax b{font-family:var(--display);font-size:22px;width:20px;text-transform:uppercase}
+.ax span{color:var(--dim);font-size:12.5px}
+.key{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:2px 0}
+.key i{width:10px;height:10px;border-radius:50%;display:inline-block}
+.read{color:var(--dim);line-height:1.5}
+.read b{color:var(--text);font-weight:600}
+.sel{border-top:1px solid var(--rule);padding-top:12px;min-height:84px}
+.sel .n{font-family:var(--display);font-weight:800;font-size:24px;text-transform:uppercase;line-height:1}
+.sel .m{font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:6px;line-height:1.7}
+</style>
+</head>
+<body>
+<div class="bar">
+  <div class="grp" id="posf"><button class="on" data-p="ALL">All</button><button data-p="QB">QB</button><button data-p="RB">RB</button><button data-p="WR">WR</button><button data-p="TE">TE</button></div>
+  <span class="lbl">Colour</span>
+  <div class="grp" id="colf"><button class="on" data-c="tier">Tier group</button><button data-c="pos">Position</button></div>
+  <span class="lbl">View</span>
+  <div class="grp" id="viewf"><button class="on" data-v="free">Free spin</button><button data-v="side">Age × Value</button><button data-v="front">Win-now × Value</button><button data-v="top">Age × Win-now</button></div>
+  <span class="sp"></span>
+  <span class="note">MOCKUP · names real, numbers illustrative</span>
+  <button id="th">Light / dark</button>
+</div>
+
+<div class="wrap">
+  <span class="eyebrow">Dynasty rankings</span>
+  <h1>Value cube</h1>
+  <p class="sub">Every player is a point in space. Left to right is age, bottom to top is long-term dynasty value, front to back is how much he helps you win this season. The best assets float high; the ones that matter right now sit at the back.</p>
+
+  <div class="panel">
+    <div id="stage"><canvas id="cv"></canvas><div class="tip" id="tip"></div><div class="hint">DRAG TO ROTATE · HOVER FOR DETAIL · CLICK TO PIN</div></div>
+    <aside class="side">
+      <div>
+        <h3>Axes</h3>
+        <div class="ax"><b>X</b><span>Age, 21 → 34</span></div>
+        <div class="ax"><b>Y</b><span>Dynasty value, 5-year, over replacement</span></div>
+        <div class="ax"><b>Z</b><span>Win-now, this season's points over replacement</span></div>
+      </div>
+      <div><h3>Colour</h3><div id="keys"></div></div>
+      <div class="read">
+        <h3>How to read it</h3>
+        <b>High and left</b> = young stars. <b>High and back-right</b> = prime studs. <b>Low but at the back</b> = rentals for a title run. A stalk drops from each point to the floor so its position is unambiguous. Use the flat views for exact reading.
+      </div>
+      <div class="sel" id="sel"><h3>Selected</h3><div class="read">Click a point.</div></div>
+    </aside>
+  </div>
+</div>
+
+<script>
+// name, pos, team, age, dynasty value, win-now, tier group
+const P=[
+["Ja'Marr Chase","WR","CIN",26,98.2,96,0],["Bijan Robinson","RB","ATL",24,97.6,93,0],["Jahmyr Gibbs","RB","DET",24,95.1,92,0],
+["Puka Nacua","WR","LAR",25,89.9,91,1],["Jaxon Smith-Njigba","WR","SEA",24,89.4,94,1],["Malik Nabers","WR","NYG",23,88.8,84,1],
+["Brock Bowers","TE","LV",23,86.0,82,1],["Josh Allen","QB","BUF",30,84.7,97,1],["Jayden Daniels","QB","WAS",25,84.3,88,1],
+["Justin Jefferson","WR","MIN",27,80.4,92,2],["Ashton Jeanty","RB","LV",22,80.1,74,2],["Amon-Ra St. Brown","WR","DET",26,77.3,86,2],
+["Brian Thomas Jr.","WR","JAX",23,77.0,76,2],["Drake London","WR","ATL",25,76.6,80,2],["Lamar Jackson","QB","BAL",29,75.9,95,2],
+["Trey McBride","TE","ARI",26,72.2,83,2],["De'Von Achane","RB","MIA",24,71.8,78,2],["Ladd McConkey","WR","LAC",24,70.0,72,2],
+["Tetairoa McMillan","WR","CAR",23,68.9,66,2],["Garrett Wilson","WR","NYJ",26,68.5,73,2],["Omarion Hampton","RB","LAC",22,65.6,64,2],
+["Drake Maye","QB","NE",23,65.1,70,2],["Caleb Williams","QB","CHI",24,62.4,66,2],["Tyler Warren","TE","IND",23,58.8,62,3],
+["Sam LaPorta","TE","DET",25,58.1,60,3],["Jonathan Taylor","RB","IND",27,55.0,85,3],["Bo Nix","QB","DEN",26,53.9,68,3],
+["C.J. Stroud","QB","HOU",24,53.2,64,3],
+["Saquon Barkley","RB","PHI",29,52.0,88,3],["Davante Adams","WR","LAR",33,40.1,78,3]
+].map(a=>({name:a[0],pos:a[1],team:a[2],age:a[3],val:a[4],now:a[5],g:a[6]}));
+const GN=["Cornerstones","Core (top)","Core","Depth"];
+const AX={x:[21,34],y:[30,100],z:[50,100]};
+const norm=(v,r)=>(v-r[0])/(r[1]-r[0])*2-1;
+P.forEach(p=>{p.X=norm(p.age,AX.x);p.Y=norm(p.val,AX.y);p.Z=norm(p.now,AX.z)});
+
+const cv=document.getElementById("cv"),ctx=cv.getContext("2d"),tip=document.getElementById("tip");
+let W,H,dpr;
+let yaw=-0.7,pitch=0.3,target=null,auto=true,pos="ALL",colmode="tier",pinned=null,hover=null,drag=null;
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+function size(){dpr=window.devicePixelRatio||1;const r=cv.getBoundingClientRect();W=r.width;H=r.height;cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0)}
+function proj(x,y,z){ // rotate about Y then X, mild perspective
+  const cy=Math.cos(yaw),sy=Math.sin(yaw),cp=Math.cos(pitch),sp=Math.sin(pitch);
+  let x1=x*cy+z*sy, z1=-x*sy+z*cy;
+  let y1=y*cp-z1*sp, z2=y*sp+z1*cp;
+  const f=3.4/(3.4+z2*0.9), s=Math.min(W*0.95,H*1.25)*0.31;
+  return {sx:W/2+x1*s*f, sy:H/2-y1*s*f-6, d:z2, f};
+}
+function colour(p){
+  if(colmode==="pos")return {QB:css("--red"),RB:css("--mint"),WR:css("--steel"),TE:css("--amber")}[p.pos];
+  return [css("--mint"),css("--text"),css("--steel"),css("--dim")][p.g];
+}
+const live=p=>pos==="ALL"||p.pos===pos;
+function line(a,b,c,w,dash){ctx.beginPath();ctx.moveTo(a.sx,a.sy);ctx.lineTo(b.sx,b.sy);ctx.strokeStyle=c;ctx.lineWidth=w||1;ctx.setLineDash(dash||[]);ctx.stroke();ctx.setLineDash([])}
+function txt(t,x,y,c,al,sz){ctx.font=`${sz||10.5}px 'Martian Mono',monospace`;ctx.fillStyle=c;ctx.textAlign=al||"center";ctx.fillText(t,x,y)}
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  const rule=css("--rule"),strong=css("--rule-strong"),dim=css("--dim"),text=css("--text");
+  const L=-1,R=1;
+  // floor grid
+  for(let i=0;i<=6;i++){const t=-1+i/3;
+    line(proj(t,L,L),proj(t,L,R),rule);line(proj(L,L,t),proj(R,L,t),rule)}
+  // back walls (two that face away)
+  const back=proj(0,0,0).d; // choose walls by rotation
+  const cy=Math.cos(yaw),sy=Math.sin(yaw);
+  const zWall=(-sy*1+cy*1)>(-sy*1+cy*-1)?R:L; // wall at far z
+  const xWall=(1*cy+0)>(-1*cy+0)?L:R;          // wall at far x
+  for(let i=0;i<=5;i++){const t=-1+i*0.4;
+    line(proj(L,t,zWall),proj(R,t,zWall),rule);
+    line(proj(xWall,t,L),proj(xWall,t,R),rule)}
+  // axis frame
+  const o=[proj(L,L,L),proj(R,L,L),proj(L,R,L),proj(L,L,R)];
+  line(o[0],o[1],strong,1.5);line(o[0],o[2],strong,1.5);line(o[0],o[3],strong,1.5);
+  // ticks + labels
+  for(let a=22;a<=34;a+=2){const q=proj(norm(a,AX.x),L,R);txt(a,q.sx,q.sy+14,dim)}
+  for(let v=40;v<=100;v+=20){const q=proj(L,norm(v,AX.y),L);txt(v,q.sx-12,q.sy+4,dim,"right")}
+  for(let z=60;z<=100;z+=20){const q=proj(R,L,norm(z,AX.z));txt(z,q.sx+14,q.sy+14,dim)}
+  let q=proj(0,L,R);txt("AGE →",q.sx,q.sy+36,text,"center",11.5);
+  q=proj(L,R,L);txt("DYNASTY VALUE ↑",q.sx-6,q.sy-14,text,"left",11.5);
+  q=proj(R,L,0);txt("WIN-NOW →",q.sx+34,q.sy+30,text,"left",11.5);
+  // points, far to near
+  const pts=P.map(p=>({p,...proj(p.X,p.Y,p.Z),fl:proj(p.X,L,p.Z)})).sort((a,b)=>b.d-a.d);
+  window._pts=pts;
+  pts.forEach(o=>{
+    const on=live(o.p),c=colour(o.p);
+    ctx.globalAlpha=on?1:.12;
+    line(o,o.fl,c,1,[2,3]);                       // stalk to the floor
+    ctx.beginPath();ctx.ellipse(o.fl.sx,o.fl.sy,3.5*o.f,1.6*o.f,0,0,7);ctx.fillStyle=c;ctx.globalAlpha=on?.35:.05;ctx.fill();
+    ctx.globalAlpha=on?1:.12;
+    const r=(4.5+ (o.p.val-30)/70*5)*o.f*(o.p===hover||o.p===pinned?1.35:1);
+    ctx.beginPath();ctx.arc(o.sx,o.sy,r,0,7);ctx.fillStyle=c;ctx.fill();
+    ctx.lineWidth=1.5;ctx.strokeStyle=css("--bg");ctx.stroke();
+    ctx.globalAlpha=1;
+    if(on&&(o.p.g===0||o.p===hover||o.p===pinned)) txt(o.p.name.split(" ").slice(-1)[0],o.sx,o.sy-r-6,text,"center",10.5);
+  });
+}
+function frame(){
+  if(target){yaw+=(target.yaw-yaw)*.12;pitch+=(target.pitch-pitch)*.12;if(Math.abs(target.yaw-yaw)+Math.abs(target.pitch-pitch)<.002)target=null}
+  else if(auto&&!drag)yaw+=.0035;
+  draw();requestAnimationFrame(frame)
+}
+function pick(mx,my){let best=null,bd=18;(window._pts||[]).forEach(o=>{if(!live(o.p))return;const d=Math.hypot(o.sx-mx,o.sy-my);if(d<bd){bd=d;best=o.p}});return best}
+cv.addEventListener("pointerdown",e=>{cv.setPointerCapture(e.pointerId);drag={x:e.clientX,y:e.clientY,moved:0};auto=false;target=null;setView("free",true)});
+cv.addEventListener("pointermove",e=>{
+  const r=cv.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top;
+  if(drag){const dx=e.clientX-drag.x,dy=e.clientY-drag.y;drag.moved+=Math.abs(dx)+Math.abs(dy);drag.x=e.clientX;drag.y=e.clientY;yaw+=dx*.008;pitch=Math.max(-1.2,Math.min(1.45,pitch+dy*.006));tip.style.display="none";return}
+  hover=pick(mx,my);
+  if(hover){const p=hover;tip.innerHTML=`<b>${p.name}</b><div><span>${p.pos} · ${p.team}</span><span>Age ${p.age}</span></div><div><span>Dynasty value</span><span>${p.val.toFixed(1)}</span></div><div><span>Win-now</span><span>${p.now}</span></div><div><span>Group</span><span>${GN[p.g]}</span></div>`;
+    tip.style.display="block";tip.style.left=Math.min(mx+16,W-190)+"px";tip.style.top=Math.max(my-20,6)+"px"}else tip.style.display="none";
+});
+cv.addEventListener("pointerup",e=>{const r=cv.getBoundingClientRect();if(drag&&drag.moved<5){const p=pick(e.clientX-r.left,e.clientY-r.top);pinned=p;sel()}drag=null});
+cv.addEventListener("pointerleave",()=>{hover=null;tip.style.display="none"});
+function sel(){const el=document.getElementById("sel");const p=pinned;
+  el.innerHTML=p?`<h3>Selected</h3><div class="n">${p.name}</div><div class="m">${p.pos} · ${p.team} · age ${p.age}<br>Dynasty value ${p.val.toFixed(1)}<br>Win-now ${p.now}<br>${GN[p.g]}</div>`:`<h3>Selected</h3><div class="read">Click a point.</div>`}
+function keys(){const k=document.getElementById("keys");
+  k.innerHTML=(colmode==="tier"?[["--mint","Cornerstones"],["--text","Core (top)"],["--steel","Core"],["--dim","Depth"]]:[["--red","QB"],["--mint","RB"],["--steel","WR"],["--amber","TE"]]).map(a=>`<div class="key"><i style="background:var(${a[0]})"></i>${a[1]}</div>`).join("")+`<div class="key" style="color:var(--dim)">Dot size = dynasty value</div>`}
+const VIEWS={side:{yaw:0,pitch:0},front:{yaw:Math.PI/2,pitch:0},top:{yaw:0,pitch:Math.PI/2*0.98}};
+function setView(v,quiet){document.querySelectorAll("#viewf button").forEach(b=>b.classList.toggle("on",b.dataset.v===v));if(!quiet&&v!=="free"){target=VIEWS[v];auto=false}if(v==="free"&&!quiet){target={yaw:-0.7,pitch:0.3};auto=true}}
+document.querySelectorAll("#viewf button").forEach(b=>b.onclick=()=>setView(b.dataset.v));
+document.querySelectorAll("#posf button").forEach(b=>b.onclick=()=>{pos=b.dataset.p;document.querySelectorAll("#posf button").forEach(x=>x.classList.toggle("on",x===b))});
+document.querySelectorAll("#colf button").forEach(b=>b.onclick=()=>{colmode=b.dataset.c;document.querySelectorAll("#colf button").forEach(x=>x.classList.toggle("on",x===b));keys()});
+document.getElementById("th").onclick=()=>{const d=document.documentElement;d.dataset.theme=d.dataset.theme==="dark"?"light":"dark"};
+addEventListener("resize",size);size();keys();frame();
+</script>
+</body>
+</html>
