@@ -67,12 +67,6 @@ export default function Standings({ season, opponent, bare = false }) {
           </tbody>
         </table>
       </div>
-      <p className="h2h-note">
-        Playoff odds: the rest of the regular season played out 3,000 times. A team&apos;s strength is its scoring so far,
-        pulled toward the league average by how much a few weeks can really tell (checked against 327 finished Sleeper
-        seasons); this week starts from the points already on the board. Divisions aren&apos;t modelled. Updated once a
-        day.
-      </p>
     </section>
   );
 }
