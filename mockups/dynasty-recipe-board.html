@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dynasty Rankings</title>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=Martian+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+@font-face{font-family:"SD Serif";src:url("../web/app/fonts/SDSerif-Regular.woff2") format("woff2");font-weight:400}
+@font-face{font-family:"SD Serif";src:url("../web/app/fonts/SDSerif-Bold.woff2") format("woff2");font-weight:700}
+:root{
+  --void:#030908; --panel:#09130F; --panel-2:#0D1B17; --hair:#1A2A26;
+  --star:#E6F4F1; --dim:#8C95A3; --mint:#2DD4BF; --steel:#8C95A3; --red:#E11D48;
+  --on-brand:#021210; --on-down:#FFF1F3;
+  --mint-rgb:45,212,191; --steel-rgb:140,149,163; --red-rgb:225,29,72; --star-rgb:230,244,241;
+  --rule:rgba(var(--star-rgb),.12); --rule-strong:rgba(var(--star-rgb),.5);
+  --display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
+  --body:"SD Serif",Georgia,serif;
+  --mono:"Martian Mono",ui-monospace,Menlo,monospace;
+  --row:46px; --head:60px;
+}
+:root[data-theme="light"]{
+  --void:#F4F4F2; --panel:#FBFCFB; --panel-2:#F0F2F0; --hair:#DADFDC;
+  --star:#0F1F1D; --dim:#5C6370; --mint:#0D7A70; --steel:#5C6370;
+  --on-brand:#F2F8F7; --mint-rgb:13,122,112; --steel-rgb:92,99,112; --star-rgb:15,31,29;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{font-stretch:82%}
+body{background:var(--void);color:var(--star);font-family:var(--body);font-size:15px;line-height:1.4}
+button{font-family:var(--mono);font-size:12px;color:inherit;background:none;border:1px solid var(--rule);padding:0 12px;height:34px;cursor:pointer;border-radius:2px}
+button.on{background:var(--mint);color:var(--on-brand);border-color:var(--mint)}
+.logo-l{display:none}
+:root[data-theme="light"] .logo-d{display:none} :root[data-theme="light"] .logo-l{display:inline}
+
+/* ---- site header (static copy of the live bar) ---- */
+.site{position:sticky;top:0;z-index:40;height:var(--head);background:var(--panel);border-bottom:1px solid var(--hair);display:flex;align-items:center;gap:28px;padding:0 24px}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:700;text-transform:uppercase;letter-spacing:.14em;font-size:22px;white-space:nowrap}
+.ring{width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 35% 35%,var(--mint),var(--mint) 45%,var(--red) 80%)}
+.nav{display:flex;gap:26px;font-family:var(--display);font-weight:700;text-transform:uppercase;letter-spacing:.08em;font-size:16px;color:var(--dim)}
+.nav .act{color:var(--star)}
+.sp{flex:1}
+.mock{font-family:var(--mono);font-size:10.5px;color:var(--dim);border:1px dashed var(--rule-strong);padding:4px 8px}
+#th{width:34px;padding:0}
+@media (max-width:900px){.nav{display:none}.brand{font-size:18px}}
+
+/* ---- page ---- */
+.wrap{max-width:1180px;margin:0 auto;padding:22px 24px 90px}
+.eyebrow{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;background:var(--mint);color:var(--on-brand);padding:3px 8px}
+.top{display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:16px}
+h1{font-family:var(--display);text-transform:uppercase;font-weight:800;font-size:46px;line-height:1;margin-top:10px}
+.tools{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.seg{display:inline-flex}
+.seg button{border-radius:0;margin-left:-1px} .seg button:first-child{border-radius:2px 0 0 2px;margin-left:0} .seg button:last-child{border-radius:0 2px 2px 0}
+.tools .gap{width:14px}
+.read{font-family:var(--mono);font-size:11px;color:var(--dim);margin-left:auto;display:flex;align-items:center;gap:8px}
+.read b{color:var(--star);font-weight:500}
+.read i{font-style:normal;color:var(--mint)}
+
+/* ---- the recipe table ---- */
+.panel{background:var(--panel);border:1px solid var(--hair);border-top:2px solid var(--rule-strong)}
+.grid{display:grid;grid-template-columns:48px minmax(230px,1fr) 52px minmax(220px,1.1fr) 42px 230px 56px;grid-auto-rows:var(--row)}
+.h{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);display:flex;align-items:center;padding:0 12px;
+  border-bottom:1px solid var(--rule-strong);background:var(--panel);position:sticky;top:var(--head);z-index:6;height:38px}
+.h.c{justify-content:center;padding:0}
+.h .scale{display:flex;justify-content:space-between;width:100%;padding-right:40px}
+.cell{display:flex;align-items:center;padding:0 12px;border-bottom:1px solid var(--rule);min-width:0;transition:opacity .15s}
+.cell.brk{border-top:2px solid var(--rule-strong)} .cell.brkg{border-top:4px solid var(--star)}
+.rank{font-family:var(--display);font-weight:800;font-size:21px;justify-content:center;padding:0;color:var(--dim)}
+.who{gap:10px}
+.pos{font-family:var(--mono);font-size:10px;font-weight:700;padding:2px 0;width:28px;text-align:center;border-radius:2px;flex-shrink:0}
+.pos.QB{background:#E0475E;color:#fff} .pos.RB{background:#2DBE8C;color:#03140D} .pos.WR{background:#4C8DF0;color:#fff} .pos.TE{background:#E39B2F;color:#1A0F02}
+.who img{width:22px;height:22px;flex-shrink:0}
+.who b{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.age{font-family:var(--mono);font-size:12px;justify-content:center;padding:0}
+.val{gap:10px}
+.track{position:relative;flex:1;height:14px}
+.track::before{content:"";position:absolute;left:0;right:0;top:6px;height:2px;background:var(--rule)}
+.rng{position:absolute;top:3px;height:8px;background:rgba(var(--steel-rgb),.42);border-radius:1px}
+.med{position:absolute;top:0;width:3px;height:14px;margin-left:-1.5px;background:var(--mint)}
+.val em{font-style:normal;font-family:var(--mono);font-size:13px;font-weight:500;width:30px;text-align:right}
+
+/* boxes that span rows = the recipe's merged cells */
+.box{position:relative;border-bottom:1px solid var(--rule-strong);border-left:1px solid var(--rule-strong);border-top:var(--bt,0) solid var(--bc,var(--rule-strong));transition:opacity .15s,background .15s}
+.box .in{position:sticky;top:calc(var(--head) + 38px)}
+.tie .in{display:flex;justify-content:center;padding:10px 0}
+.tie.multi{background:linear-gradient(90deg,transparent 40%,rgba(var(--star-rgb),.05) 40%)}
+.tie.multi::after{content:"";position:absolute;left:12px;top:9px;bottom:9px;width:7px;border:1.5px solid var(--dim);border-right:0}
+.tie .in span{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);writing-mode:vertical-rl;transform:rotate(180deg);margin-left:12px}
+.tier{cursor:default}
+.tier .in{padding:11px 14px 0;display:flex;flex-direction:column;gap:2px}
+.tier .t1{font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:25px;line-height:1;display:flex;align-items:baseline;gap:8px}
+.tier .t1 small{font-family:var(--mono);font-weight:400;font-size:10px;letter-spacing:.06em;color:var(--dim)}
+.tier .t2{font-family:var(--body);font-size:14px}
+.tier .t3{font-family:var(--mono);font-size:10px;color:var(--dim)}
+.tier .beat{position:absolute;left:0;right:0;bottom:0;padding:5px 14px;font-family:var(--mono);font-size:10px;color:var(--red);display:flex;justify-content:space-between;white-space:nowrap;border-top:1px dashed rgba(var(--red-rgb),.4);background:rgba(var(--red-rgb),.06)}
+.tier.short .beat{position:static;margin:4px -14px 0}
+.tier .beat b{font-weight:700}
+.tier.g0{background:rgba(var(--mint-rgb),.12)} .tier.g0 .t1{color:var(--mint)}
+.tier.g1{background:rgba(var(--steel-rgb),.10)}
+.tier.g2,.tier.g3{background:rgba(var(--steel-rgb),.03)} .tier.g2 .t1,.tier.g3 .t1{color:var(--dim)}
+.group{display:flex;justify-content:center}
+.group .in{padding:14px 0}
+.group .gn{font-family:var(--display);font-weight:800;text-transform:uppercase;font-size:21px;letter-spacing:.08em;writing-mode:vertical-rl;transform:rotate(180deg)}
+.group.g0{color:var(--on-brand);background:var(--mint)} .group.g1{color:var(--star);background:rgba(var(--star-rgb),.08)} .group.g2,.group.g3{color:var(--dim)}
+
+/* focus a tier: everything else steps back */
+.grid.focusing .cell:not(.lit),.grid.focusing .box:not(.lit){opacity:.28}
+.cell.hov{background:rgba(var(--star-rgb),.04)}
+
+.foot{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:22px}
+.card{background:var(--panel);border:1px solid var(--hair);border-top:2px solid var(--rule-strong);padding:14px 16px}
+.card h3{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--mint);margin-bottom:8px}
+.card p{font-size:14px;color:var(--dim)} .card p b{color:var(--star)}
+.key{display:inline-block;vertical-align:middle;margin:0 2px}
+@media (max-width:1000px){.foot{grid-template-columns:1fr}}
+
+/* phones: the boxes fold into a strip on the left; values go compact */
+@media (max-width:720px){
+  .wrap{padding:16px 16px 70px}
+  h1{font-size:34px}
+  .read{margin-left:0;width:100%}
+  .mock{display:none}
+  .grid{grid-template-columns:30px minmax(0,1fr) 0 38px 18px 100px 0}
+  .col-age,.col-group{display:none!important}
+  .h .scale{display:none}
+  .track{display:none} .val{justify-content:flex-end;padding:0 6px 0 0}
+  .who{gap:7px;padding:0 6px} .who img{display:none!important} .who b{font-size:14px}
+  .tier .in{padding:8px 8px 0} .tier .t1{font-size:19px} .tier .t1 small,.tier .t3{display:none} .tier .t2{font-size:12px}
+  .tier .beat{padding:4px 8px;font-size:9px} .tier .beat span:first-child{display:none}
+  .tie.multi::after{left:5px} .tie .in span{display:none}
+  .foot{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<header class="site">
+  <div class="brand"><span class="ring"></span>Singularity Dynasty</div>
+  <nav class="nav"><span class="act">Tools</span><span>Feed</span><span>My Team</span><span>The Lab</span></nav>
+  <span class="sp"></span>
+  <span class="mock">MOCKUP · real names, illustrative values</span>
+  <button id="th" aria-label="Switch theme">◐</button>
+</header>
+
+<main class="wrap">
+  <div class="top">
+    <div><span class="eyebrow">Dynasty · Week 8</span><h1>Dynasty Rankings</h1></div>
+  </div>
+  <div class="tools">
+    <span class="seg" id="pos"><button class="on" data-v="ALL">All</button><button data-v="QB">QB</button><button data-v="RB">RB</button><button data-v="WR">WR</button><button data-v="TE">TE</button></span>
+    <span class="gap"></span>
+    <span class="seg" id="fmt"><button class="on" data-v="1QB">1QB</button><button data-v="SF">Superflex</button></span>
+    <span class="read">Read it like a recipe: <b>player</b> <i>→</i> <b>tied</b> <i>→</i> <b>tier</b> <i>→</i> <b>group</b></span>
+  </div>
+
+  <div class="panel"><div class="grid" id="grid"></div></div>
+
+  <div class="foot">
+    <div class="card"><h3>One rule, three boxes</h3><p>Every box is drawn by the same test on the model's simulations: how often does a player above beat a player below? <b>Tied</b> — under 70%, the order inside is close to a coin flip. <b>Tier</b> — nobody inside beats anyone else inside 90% of the time. <b>Group</b> — the same at 99.9%. Each uses the fewest boxes the rule allows, split at the biggest drops.</p></div>
+    <div class="card"><h3>The red line</h3><p>At the foot of each tier: how often a player from that tier ends up worth more than a player from the next one. A <b>heavy rule</b> across the row is a group break; a thinner one is a tier break. The grey bar is each player's 80% value range — overlapping bars are why players share a box.</p></div>
+    <div class="card"><h3>Filter and it re-fits</h3><p>Pick a position and the boxes are re-drawn for just those players, so a WR tier is a WR tier, not a slice of the overall one. Switch to <b>Superflex</b> and quarterbacks climb; the tiers re-form around them. Hover a tier to light up its players.</p></div>
+  </div>
+</main>
+
+<script>
+// name, pos, team, age, value median, value sd  (illustrative stand-ins for the model's multi-season simulations)
+const RAW=[
+["Ja'Marr Chase","WR","CIN",26,98,4.0],["Bijan Robinson","RB","ATL",24,97,4.5],["Jahmyr Gibbs","RB","DET",24,94.5,4.5],
+["Puka Nacua","WR","LAR",25,90,4.5],["Jaxon Smith-Njigba","WR","SEA",24,89.5,5],["Malik Nabers","WR","NYG",23,88.5,5.5],
+["Brock Bowers","TE","LV",23,86,5.5],["Josh Allen","QB","BUF",30,84.5,3.5],["Jayden Daniels","QB","WSH",25,84,5],
+["Justin Jefferson","WR","MIN",27,80.5,4],["Ashton Jeanty","RB","LV",22,79.5,7],["Amon-Ra St. Brown","WR","DET",26,77.5,4],
+["Brian Thomas Jr.","WR","JAX",23,76.5,6],["Drake London","WR","ATL",25,76,5],["Lamar Jackson","QB","BAL",29,75.5,4],
+["Trey McBride","TE","ARI",26,72,4.5],["De'Von Achane","RB","MIA",24,71.5,6],["Ladd McConkey","WR","LAC",24,70,5.5],
+["Tetairoa McMillan","WR","CAR",23,68.5,7],["Garrett Wilson","WR","NYJ",26,67.5,5],["Omarion Hampton","RB","LAC",22,64.5,7.5],
+["Drake Maye","QB","NE",23,63.5,6.5],["Caleb Williams","QB","CHI",24,61,7],["Tyler Warren","TE","IND",23,58,7],
+["Sam LaPorta","TE","DET",25,57,5],["Jonathan Taylor","RB","IND",27,54,4.5],["Bo Nix","QB","DEN",26,52.5,5],
+["Saquon Barkley","RB","PHI",29,51,4],["C.J. Stroud","QB","HOU",24,50,7]
+];
+const SF_QB=13;  // superflex lift for a quarterback's value
+const TIER_NAMES=["Untouchable","Franchise","Locked-in starters","Reliable weekly","Upside bets","Flex-level","Depth","Dart throws","Deep stash"];
+const GROUP_NAMES=["Cornerstones","Core","Depth","Fringe"];
+
+function mulberry32(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const rnd=mulberry32(20261028);
+const gauss=()=>{let u=0;while(!u)u=rnd();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*rnd())};
+const D=4000;
+// one fixed set of standard-normal draws per player, so switching format moves values, not the noise
+const BASE=RAW.map(r=>{const z=new Float32Array(D);for(let i=0;i<D;i++)z[i]=gauss();return{name:r[0],pos:r[1],team:r[2],age:r[3],mu:r[4],sd:r[5],z}});
+
+function qnorm(p){const a=[-39.69683028665376,220.9460984245205,-275.9285104469687,138.357751867269,-30.66479806614716,2.506628277459239],b=[-54.47609879822406,161.5858368580409,-155.6989798598866,66.80131188771972,-13.28068155288572],c=[-.007784894002430293,-.3223964580411365,-2.400758277161838,-2.549732539343734,4.374664141464968,2.938163982698783],d=[.007784695709041462,.3224671290700398,2.445134137142996,3.754408661907416],pl=.02425;let q,r;
+  if(p<pl){q=Math.sqrt(-2*Math.log(p));return(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1)}
+  if(p>1-pl){q=Math.sqrt(-2*Math.log(1-p));return-(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5])/((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1)}
+  q=p-.5;r=q*q;return(((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q/(((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1)}
+
+let L=[],P=[];
+// Fewest contiguous boxes over L[lo..hi] such that no pair inside a box has P(above beats below) >= theta;
+// among equally few, the breaks go where the drops are biggest (largest sum of probits).
+function segment(lo,hi,theta){
+  const str=(i,j)=>qnorm(Math.min(1-1/D,Math.max(.5,P[i][j])));
+  const ok=(a,b)=>{for(let i=a;i<b;i++)for(let j=i+1;j<=b;j++)if(P[i][j]>=theta)return false;return true};
+  const best=[{c:0,s:0,cut:-1}];
+  for(let e=lo;e<=hi;e++){let bb=null;
+    for(let a=e;a>=lo;a--){if(!ok(a,e))break;const pv=best[a-lo],c=pv.c+1,s=pv.s+(a>lo?str(a-1,a):0);
+      if(!bb||c<bb.c||(c===bb.c&&s>bb.s))bb={c,s,cut:a}}
+    best.push(bb)}
+  const out=[];let e=hi;while(e>=lo){const a=best[e-lo+1].cut;out.unshift([a,e]);e=a-1}return out}
+const sup=(A,B)=>{let s=0,c=0;for(let i=A[0];i<=A[1];i++)for(let j=B[0];j<=B[1];j++){s+=P[i][j];c++}return s/c};
+
+let pos="ALL",fmt="1QB";
+function build(){
+  L=BASE.filter(p=>pos==="ALL"||p.pos===pos).map(p=>{
+    const mu=p.mu+(fmt==="SF"&&p.pos==="QB"?SF_QB:0),d=new Float32Array(D);for(let i=0;i<D;i++)d[i]=mu+p.sd*p.z[i];
+    const s=Float32Array.from(d).sort();return{...p,d,med:s[D>>1],lo:s[Math.floor(D*.1)],hi:s[Math.floor(D*.9)]}}).sort((a,b)=>b.med-a.med);
+  P=L.map(a=>L.map(b=>{if(a===b)return .5;let w=0;for(let k=0;k<D;k++)if(a.d[k]>b.d[k])w++;return w/D}));
+  const groups=[],tiers=[],ties=[];
+  segment(0,L.length-1,.999).forEach((G,g)=>{groups.push({r:G,g});
+    segment(G[0],G[1],.90).forEach(T=>{tiers.push({r:T,g});segment(T[0],T[1],.70).forEach(X=>ties.push({r:X}))})});
+  tiers.forEach((t,i)=>{const n=tiers[i+1];if(n)t.beat=n.g!==t.g?sup(groups[t.g].r,groups[n.g].r):sup(t.r,n.r);t.groupBreak=n&&n.g!==t.g});
+  return{groups,tiers,ties}
+}
+
+const grid=document.getElementById("grid");
+const esc=s=>s.replace(/&/g,"&amp;").replace(/'/g,"&#39;");
+const pct=p=>p>=.995?">99%":Math.round(p*100)+"%";
+function render(){
+  const {groups,tiers,ties}=build();
+  const vmin=Math.floor(Math.min(...L.map(p=>p.lo))/5)*5,vmax=Math.ceil(Math.max(...L.map(p=>p.hi))/5)*5;
+  const X=v=>(v-vmin)/(vmax-vmin)*100;
+  const tierOf=i=>tiers.findIndex(t=>i>=t.r[0]&&i<=t.r[1]);
+  const brk=i=>{if(!i)return"";const a=tiers[tierOf(i-1)],b=tiers[tierOf(i)];return a===b?"":a.g!==b.g?" brkg":" brk"};
+  const bt=i=>{const c=brk(i);return c===" brkg"?"--bt:4px;--bc:var(--star)":c===" brk"?"--bt:2px":""};
+  let h=`<div class="h c">#</div><div class="h">Player</div><div class="h c col-age">Age</div>
+    <div class="h"><span class="scale"><span>Value · 80% range</span><span>${vmin}–${vmax}</span></span></div>
+    <div class="h c"></div><div class="h">Tier</div><div class="h c col-group"></div>`;
+  L.forEach((p,i)=>{const r=i+2,t=tierOf(i),b=brk(i),a=`data-t="${t}" data-i="${i}"`;
+    const team=p.team.toLowerCase(),src=`../web/public/team-logos/${team}`;
+    h+=`<div class="cell rank${b}" ${a} style="grid-area:${r}/1">${i+1}</div>
+    <div class="cell who${b}" ${a} style="grid-area:${r}/2"><span class="pos ${p.pos}">${p.pos}</span><img class="logo-d" src="${src}-dark.png" alt="${p.team}"><img class="logo-l" src="${src}.png" alt="${p.team}"><b>${esc(p.name)}</b></div>
+    <div class="cell age col-age${b}" ${a} style="grid-area:${r}/3">${p.age}</div>
+    <div class="cell val${b}" ${a} style="grid-area:${r}/4"><span class="track"><span class="rng" style="left:${X(p.lo)}%;width:${X(p.hi)-X(p.lo)}%"></span><span class="med" style="left:${X(p.med)}%"></span></span><em>${p.med.toFixed(0)}</em></div>`});
+  ties.forEach(x=>{const[a,b]=x.r,n=b-a+1;
+    h+=`<div class="box tie${n>1?" multi":""}" data-t="${tierOf(a)}" style="grid-row:${a+2}/span ${n};grid-column:5;${bt(a)}"><div class="in">${n>1?"<span>Tied</span>":""}</div></div>`});
+  tiers.forEach((t,ti)=>{const[a,b]=t.r,n=b-a+1,ages=L.slice(a,b+1).map(p=>p.age);
+    const next=t.beat==null?"":`<div class="beat"><span>Beats ${t.groupBreak?GROUP_NAMES[tiers[ti+1].g]:"Tier "+(ti+2)}</span><b>${pct(t.beat)}</b></div>`;
+    h+=`<div class="box tier g${t.g}${n<3?" short":""}" data-t="${ti}" style="grid-row:${a+2}/span ${n};grid-column:6;${bt(a)}">
+      <div class="in"><div class="t1">Tier ${ti+1}<small>${n} player${n>1?"s":""}</small></div><div class="t2">${TIER_NAMES[ti]||"Deep"}</div>
+      <div class="t3">ages ${Math.min(...ages)}–${Math.max(...ages)} · value ${L[b].med.toFixed(0)}–${L[a].med.toFixed(0)}</div>${n<3?next:""}</div>${n<3?"":next}</div>`});
+  groups.forEach(G=>{const[a,b]=G.r;
+    h+=`<div class="box group col-group g${G.g}" style="grid-row:${a+2}/span ${b-a+1};grid-column:7;${bt(a)}"><div class="in"><span class="gn" style="font-size:${Math.min(21,((b-a+1)*46-30)/((GROUP_NAMES[G.g]||"").length*.62))}px">${GROUP_NAMES[G.g]||""}</span></div></div>`});
+  grid.innerHTML=h;
+}
+
+// hover a tier box: light its players; hover a player: light his row
+grid.addEventListener("mouseover",e=>{
+  const t=e.target.closest(".tier");grid.querySelectorAll(".lit,.hov").forEach(x=>x.classList.remove("lit","hov"));
+  if(t){grid.classList.add("focusing");grid.querySelectorAll(`[data-t="${t.dataset.t}"]`).forEach(x=>x.classList.add("lit"));return}
+  grid.classList.remove("focusing");
+  const c=e.target.closest(".cell[data-i]");if(c)grid.querySelectorAll(`.cell[data-i="${c.dataset.i}"]`).forEach(x=>x.classList.add("hov"));
+});
+grid.addEventListener("mouseleave",()=>{grid.classList.remove("focusing");grid.querySelectorAll(".lit,.hov").forEach(x=>x.classList.remove("lit","hov"))});
+for(const id of["pos","fmt"])document.getElementById(id).onclick=e=>{const b=e.target.closest("button");if(!b)return;
+  document.querySelectorAll(`#${id} button`).forEach(x=>x.classList.toggle("on",x===b));if(id==="pos")pos=b.dataset.v;else fmt=b.dataset.v;render()};
+document.getElementById("th").onclick=()=>{const d=document.documentElement;d.dataset.theme=d.dataset.theme==="dark"?"light":"dark"};
+render();
+</script>
+</body>
+</html>
