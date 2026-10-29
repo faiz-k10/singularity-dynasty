@@ -113,23 +113,29 @@ export default function DynastyBoard({ rows }) {
 
           {tiers.map((t) => {
             const n = t.b - t.a + 1, ages = L.slice(t.a, t.b + 1).map((p) => p.age);
+            const label = t.groupBreak ? GROUP_NAMES[t.g + 1] || "next group" : `Tier ${t.ti + 2}`;
             const beat = t.beat != null && (
               <div className="dr-beat">
-                <span>Beats {t.groupBreak ? GROUP_NAMES[t.g + 1] || "next group" : `Tier ${t.ti + 2}`}</span>
+                <span>Beats {label}</span>
                 <b>{pct(t.beat)}</b>
               </div>
             );
+            // a box is 46px a player: a 1-player tier is one line (name left, the beat figure right), a 2-player tier drops
+            // the score / age line, and only 3 or more has room for the full label and the strip at its foot
             return (
-              <div key={`t${t.ti}`} data-t={t.ti} className={`dr-box dr-tier g${Math.min(t.g, 3)}${n < 3 ? " is-short" : ""}${breakClass(t.a)}`} style={{ gridRow: `${t.a + 2} / span ${n}`, gridColumn: 6 }}>
+              <div key={`t${t.ti}`} data-t={t.ti} className={`dr-box dr-tier g${Math.min(t.g, 3)}${n === 1 ? " is-one" : n === 2 ? " is-short" : ""}${breakClass(t.a)}`} style={{ gridRow: `${t.a + 2} / span ${n}`, gridColumn: 6 }}>
                 <div className="dr-in">
                   <div className="dr-t1">
                     Tier {t.ti + 1}
                     <small>{n} player{n > 1 ? "s" : ""}</small>
+                    {n === 1 && t.beat != null && <b className="dr-beat-one">{pct(t.beat)}</b>}
                   </div>
-                  <div className="dr-t3">
-                    score {L[t.b].score.toFixed(1)}–{L[t.a].score.toFixed(1)} · ages {Math.min(...ages).toFixed(0)}–{Math.max(...ages).toFixed(0)}
-                  </div>
-                  {n < 3 && beat}
+                  {n >= 3 && (
+                    <div className="dr-t3">
+                      score {L[t.b].score.toFixed(1)}–{L[t.a].score.toFixed(1)} · ages {Math.min(...ages).toFixed(0)}–{Math.max(...ages).toFixed(0)}
+                    </div>
+                  )}
+                  {n === 2 && beat}
                 </div>
                 {n >= 3 && beat}
               </div>
