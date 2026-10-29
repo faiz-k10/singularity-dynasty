@@ -11,7 +11,7 @@
 #     pick, Oct 28 2026, from a sweep of 24-44); both: RB29, WR42, TE13 (1QB / 2RB / 3WR / 1TE / 1FLEX).
 #   - age value, 1-10, on the scale shared by all positions (dynasty_age_value.R, `age_value_cross`).
 #   - sd_prod: how many production-score points the production number misses by next season (the out-of-sample
-#     RMSE of next-season PPG at his position from backtest_production_blend.R, in score units). The site uses it
+#     RMSE of next-season PPG at his position from backtest_production_window.R, in score units). The site uses it
 #     for the range bars and for tiers: two players are tied when each is about as likely to beat the other as not.
 # The CONTENDER / REBUILDER weights (production : age) live on the site (web/lib/dynastyBoard.js).
 
@@ -28,7 +28,7 @@ AGE_DATE  <- as.Date("2026-09-01")
 prod <- read.csv("dynasty_production_value.csv")
 ref  <- read.csv("dynasty_production_reference.csv")
 agev <- read.csv("dynasty_age_value.csv")
-bt   <- readRDS("backtest_production_blend_results.rds")
+bt   <- readRDS("backtest_production_window_results.rds")   # same window / half-life as dynasty_production_value.R
 
 # replacement PPG: the weighted PPG at that rank in each season's pool, averaged over seasons
 repl <- sapply(names(REPL_RANK), function(f) sapply(POSITIONS, function(p) {
@@ -40,7 +40,7 @@ repl <- sapply(names(REPL_RANK), function(f) sapply(POSITIONS, function(p) {
 }))
 cat("replacement PPG:\n"); print(round(repl, 2))
 
-rmse <- sapply(POSITIONS, function(p) bt$rmse[bt$position == p & bt$target == "y1" & bt$w_xfp == 0])
+rmse <- sapply(POSITIONS, function(p) bt$rmse_y1[bt$position == p & bt$window == 34 & bt$half_life == 17])
 sd_prod <- 9 / V_HI * rmse
 
 ros <- as.data.frame(load_rosters(as.integer(format(AGE_DATE, "%Y"))))

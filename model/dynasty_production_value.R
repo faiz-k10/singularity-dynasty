@@ -10,7 +10,7 @@
 #
 # Method
 #   1. A player's number = PPR points per game over his last WINDOW regular-season games (across seasons),
-#      weighted by recency with half-life HALF_LIFE games (the same weighting `usage_profile.R` and the backtest use).
+#      weighted by recency with half-life HALF_LIFE games.
 #   2. The REFERENCE POOL = that number as of the end of every season 2012-2025 for every player with a real
 #      season (>= MIN_GAMES) at the position: what "fantasy-relevant" has looked like, per position.
 #   3. production_value = a straight line in weighted PPG between two anchors of his position's reference pool:
@@ -26,8 +26,8 @@ suppressMessages(library(nflreadr))
 REF_SEASONS <- 2012:2025
 POSITIONS   <- c("QB", "RB", "WR", "TE")
 MIN_GAMES   <- 8      # a real season, for the reference pool
-WINDOW      <- 17
-HALF_LIFE   <- 8
+WINDOW      <- 34     # games; was 17 / half-life 8 until Oct 29 2026 -- backtest_production_window.R: a longer memory predicts next
+HALF_LIFE   <- 17     # season better (WR -2.1% RMSE, QB -1.4%, TE -0.3%, RB +0.4% vs 17 / 8), and one setting keeps the rule simple
 LO_PCT      <- 5      # score 1
 HI_PCT      <- 99     # score 10
 MIN_WINDOW  <- 6      # fewer than this many games in the window -> `thin`
@@ -75,8 +75,9 @@ production_value <- function(position, ppg, anchors = anch) mapply(function(p, v
 }, position, ppg, USE.NAMES = FALSE)
 
 # ---- current players ----
+# 3 seasons back is enough to fill a WINDOW-game memory for anyone
 latest <- as.integer(format(Sys.Date(), "%Y")); cur <- NULL
-for (yr in latest:(latest - 1)) { cur <- try(load_games((yr - 1):yr), silent = TRUE); if (!inherits(cur, "try-error") && nrow(cur) > 0) break }
+for (yr in latest:(latest - 1)) { cur <- try(load_games((yr - 3):yr), silent = TRUE); if (!inherits(cur, "try-error") && nrow(cur) > 0) break }
 cat("current data through season", max(cur$season), "week", max(cur$week[cur$season == max(cur$season)]), "\n")
 names_ <- cur[!duplicated(cur$player_id, fromLast = TRUE), c("player_id", "player_display_name", "position", "team")]
 bp2 <- split(cur, cur$player_id)
