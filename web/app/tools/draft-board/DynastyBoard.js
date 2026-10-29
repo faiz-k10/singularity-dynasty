@@ -24,7 +24,7 @@ function Toggle({ label, value, options, onChange }) {
 // The ranking drawn as a tabular recipe: player rows on the left, and boxes that merge rows on the right -- TIED (a coin flip
 // inside), TIER, GROUP -- so the order, the cliffs and how sure each cliff is read left to right. See lib/dynastyBoard.js.
 export default function DynastyBoard({ rows }) {
-  const [format, setFormat] = useState("1qb");
+  const [format, setFormat] = useState("sf");
   const [mode, setMode] = useState("contender");
   const [pos, setPos] = useState("ALL");
   const gridRef = useRef(null);
