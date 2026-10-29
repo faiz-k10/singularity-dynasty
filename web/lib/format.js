@@ -22,6 +22,21 @@ export function ageOn(birthDate, now = Date.now()) {
   return years > 0 && years < 80 ? years.toFixed(1) : null;
 }
 
+// A player's height as feet and inches ("5'11\""). Sleeper stores inches ("71"); older entries are already "6-1" or 6'1".
+// null when there is nothing usable.
+export function formatHeight(h) {
+  if (h == null || h === "") return null;
+  const str = String(h);
+  if (str.includes("'")) return str;
+  if (str.includes("-")) {
+    const [ft, inch] = str.split("-");
+    return `${ft}'${inch || 0}"`;
+  }
+  const n = parseInt(str, 10);
+  if (!Number.isFinite(n) || n <= 0) return null;
+  return `${Math.floor(n / 12)}'${n % 12}"`;
+}
+
 // A redraft_rankings `notes` value as the site shows it. The model once published "BOUNCEBACK (informational only)" as a note on players
 // coming off a bad game; that wording is not shown anywhere on the site (founder, Oct 27 2026), and the published rows of earlier weeks
 // still carry it, so every reader of `notes` goes through here. What is left is real status ("OUT", ...), or "".

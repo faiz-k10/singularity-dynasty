@@ -3,6 +3,7 @@
 import { useMemo, useRef, useState } from "react";
 import PositionBadge from "../PositionBadge";
 import TeamBadge from "../TeamBadge";
+import DynastyProfile from "./DynastyProfile";
 import { FORMATS, GROUP_NAMES, MODES, boardRows, buildBoard } from "@/lib/dynastyBoard";
 
 const POSITIONS = ["ALL", "QB", "RB", "WR", "TE"];
@@ -23,10 +24,11 @@ function Toggle({ label, value, options, onChange }) {
 
 // The ranking drawn as a tabular recipe: player rows on the left, and boxes that merge rows on the right -- TIED (a coin flip
 // inside), TIER, GROUP -- so the order, the cliffs and how sure each cliff is read left to right. See lib/dynastyBoard.js.
-export default function DynastyBoard({ rows }) {
+export default function DynastyBoard({ rows, meta, complete }) {
   const [format, setFormat] = useState("sf");
   const [mode, setMode] = useState("contender");
   const [pos, setPos] = useState("ALL");
+  const [openId, setOpenId] = useState(null);
   const gridRef = useRef(null);
 
   const { L, groups, tiers, ties } = useMemo(() => {
@@ -58,6 +60,7 @@ export default function DynastyBoard({ rows }) {
   };
 
   const m = MODES[mode];
+  const open = openId && L.find((p) => p.id === openId);
   return (
     <>
       <div className="dr-controls">
@@ -92,7 +95,7 @@ export default function DynastyBoard({ rows }) {
               <div key={`n${i}`} {...at} className={`dr-cell dr-who${b}`} style={{ gridRow: i + 2, gridColumn: 2 }}>
                 <PositionBadge position={p.pos} />
                 <TeamBadge team={p.team} />
-                <b>{p.name}</b>
+                <button type="button" className="dr-name" onClick={() => setOpenId(p.id)}>{p.name}</button>
               </div>,
               <div key={`a${i}`} {...at} className={`dr-cell dr-age dr-col-age${b}`} style={{ gridRow: i + 2, gridColumn: 3 }}>{p.age.toFixed(1)}</div>,
               <div key={`v${i}`} {...at} className={`dr-cell dr-val${b}`} style={{ gridRow: i + 2, gridColumn: 4 }}>
@@ -151,6 +154,8 @@ export default function DynastyBoard({ rows }) {
           ))}
         </div>
       </div>
+
+      {open && <DynastyProfile player={open} rows={rows} L={L} board={{ groups, tiers, ties }} format={format} mode={mode} pos={pos} meta={meta} complete={complete} onClose={() => setOpenId(null)} />}
 
       <div className="dr-notes">
         <div className="board-panel dr-note">

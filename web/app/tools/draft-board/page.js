@@ -78,7 +78,7 @@ function BoardToggle({ active }) {
 }
 
 async function RankingsView({ hasFullAccess }) {
-  const { rows, built, total } = getDynastyRows(hasFullAccess);
+  const { rows, built, total, meta } = getDynastyRows(hasFullAccess);
   return (
     <>
       <InteractiveScript />
@@ -95,7 +95,7 @@ async function RankingsView({ hasFullAccess }) {
             <BoardToggle active="rankings" />
           </div>
         </div>
-        <DynastyBoard rows={rows} />
+        <DynastyBoard rows={rows} meta={meta} complete={rows.length === total} />
         {!hasFullAccess && (
           <div className="tool-paywall reveal in">
             <p>

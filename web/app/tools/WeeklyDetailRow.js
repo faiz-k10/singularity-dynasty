@@ -11,7 +11,7 @@ import DragonBall from "./DragonBall";
 import FitBox from "./FitBox";
 import { MyStrip, MyEmpty } from "./MyPlayers";
 import { PANEL_KEYS } from "@/lib/statPanel";
-import { ageOn } from "@/lib/format";
+import { ageOn, formatHeight } from "@/lib/format";
 import { PROFILE_METRICS as METRICS } from "@/lib/statMetrics";
 
 // ROLE = how the offense uses him; PLAYER = what he does with it (which numbers go where: lib/statPanel.js, which also ranks players by group).
@@ -111,18 +111,6 @@ export function GameLogPanel({ games }) {
       </div>
     </div>
   );
-}
-
-// Sleeper stores height as inches ("71"); duplicated from MyTeamClient.js's
-// own copy since that page's bio card and this one otherwise share no
-// code -- five lines isn't worth threading a shared import for.
-function formatHeight(h) {
-  if (h == null || h === "") return null;
-  const str = String(h);
-  if (str.includes("'")) return str;
-  const n = parseInt(str, 10);
-  if (!Number.isFinite(n) || n <= 0) return null;
-  return `${Math.floor(n / 12)}'${n % 12}"`;
 }
 
 // Tap-to-reveal, not hover-only -- the badges themselves are already

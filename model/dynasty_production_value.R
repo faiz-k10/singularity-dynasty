@@ -22,6 +22,7 @@
 #      window (a young rookie) is scored but flagged `thin = TRUE`.
 
 suppressMessages(library(nflreadr))
+source("dynasty_params.R")   # WINDOW, HALF_LIFE
 
 REF_SEASONS <- 2012:2025
 POSITIONS   <- c("QB", "RB", "WR", "TE")

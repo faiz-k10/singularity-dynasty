@@ -23,6 +23,7 @@ import MatchupPanel, { leagueTabs } from "./MatchupPanel";
 import PanelTabs from "../PanelTabs";
 import SundayBoard from "./SundayBoard";
 import { isGameDay } from "@/lib/liveFeed";
+import { formatHeight } from "@/lib/format";
 import DesktopAlertsToggle, { useDesktopAlerts, useDesktopAlertsSetting } from "./DesktopAlerts";
 
 const POSITION_ORDER = ["QB", "RB", "WR", "TE", "K", "DEF"];
@@ -328,20 +329,6 @@ const ANALYSIS_POS_COLOR = {
   TE: "--pos-te",
 };
 
-// Sleeper stores height as inches ("71"); some older entries are already
-// "6-1" / "6'1\"".
-function formatHeight(h) {
-  if (h == null || h === "") return null;
-  const str = String(h);
-  if (str.includes("'")) return str;
-  if (str.includes("-")) {
-    const [ft, inch] = str.split("-");
-    return `${ft}'${inch || 0}"`;
-  }
-  const n = parseInt(str, 10);
-  if (!Number.isFinite(n) || n <= 0) return null;
-  return `${Math.floor(n / 12)}'${n % 12}"`;
-}
 
 function ordinal(x) {
   const s = ["th", "st", "nd", "rd"];

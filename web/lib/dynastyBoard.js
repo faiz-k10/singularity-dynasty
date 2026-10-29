@@ -47,6 +47,12 @@ export function rowsFromData(data) {
   }));
 }
 
+// What the player profile draws besides the rows: replacement PPG per format and position, the top of the production scale,
+// the per-position age curve ([age, age value, share of production kept over the next 3 seasons]) and the memory settings.
+export function metaFromData(data) {
+  return { built: data.built, window: data.window, vHi: data.v_hi, replacement: data.replacement, ageCurve: data.age_curve };
+}
+
 // Standard normal CDF (Abramowitz-Stegun 7.1.26 on erf, |error| < 1.5e-7).
 export function phi(z) {
   const x = Math.abs(z) / Math.SQRT2, t = 1 / (1 + 0.3275911 * x);
@@ -109,6 +115,31 @@ const superiority = (L, A, B) => {
   for (let i = A[0]; i <= A[1]; i++) for (let j = B[0]; j <= B[1]; j++) { s += phi(zOf(L, i, j)); c++; }
   return s / c;
 };
+
+// How often player a is really better than player b (scoreRows() rows): Phi of the score gap over both errors.
+export const pBetter = (a, b) => phi((a.score - b.score) / Math.hypot(a.sd, b.sd));
+
+// The one-paragraph read at the top of a player's profile: rules over his own numbers, nothing else (no opinion, no grade).
+// `tied` = the other players in his Tied box, `ranks` = his overall rank in every format x mode (null when the pool is not the whole board).
+export function profileRead({ p, mode, repl, tied, ranks }) {
+  const m = MODES[mode], prodC = Math.max(0, m.prod * p.prod), ageC = Math.max(0, m.age * p.ageValue), tot = prodC + ageC || 1;
+  const out = [];
+  if (p.ppg < repl) out.push("Below replacement level on production, so his age is what keeps him on the board.");
+  else {
+    out.push(`Production is ${Math.round((prodC / tot) * 100)}% of his score and age ${Math.round((ageC / tot) * 100)}%.`);
+    if (p.ageValue <= 3) out.push("Age is the drag; production carries him.");
+    else if (p.ageValue >= 7.5 && p.prod < 5) out.push("Young for his position: age is doing much of the work.");
+  }
+  if (tied.length) {
+    const names = tied.slice(0, 2).map((r) => r.name);
+    out.push(`Can't be separated from ${names.join(" or ")}${tied.length > 2 ? ` and ${tied.length - 2} more` : ""}.`);
+  }
+  if (ranks?.length) {
+    const lo = Math.min(...ranks), hi = Math.max(...ranks);
+    out.push(hi - lo >= 5 ? `Ranks #${lo} to #${hi} depending on format and mode.` : "Holds his rank across formats and modes.");
+  }
+  return out.join(" ");
+}
 
 // L: scoreRows() output. Returns { groups, tiers, ties } as index ranges into L ([a, b] inclusive) -- groups hold tiers,
 // tiers hold ties. Each tier carries `beat`: how often one of its players is really better than one of the next tier's

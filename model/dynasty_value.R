@@ -16,6 +16,8 @@
 # The CONTENDER / REBUILDER weights (production : age) live on the site (web/lib/dynastyBoard.js).
 
 suppressMessages(library(nflreadr))
+suppressMessages(library(jsonlite))
+source("dynasty_params.R")   # WINDOW, HALF_LIFE
 
 POSITIONS <- c("QB", "RB", "WR", "TE")
 REPL_RANK <- list(`1QB` = c(QB = 12, RB = 29, WR = 42, TE = 13), SF = c(QB = 32, RB = 29, WR = 42, TE = 13))
@@ -40,7 +42,7 @@ repl <- sapply(names(REPL_RANK), function(f) sapply(POSITIONS, function(p) {
 }))
 cat("replacement PPG:\n"); print(round(repl, 2))
 
-rmse <- sapply(POSITIONS, function(p) bt$rmse_y1[bt$position == p & bt$window == 34 & bt$half_life == 17])
+rmse <- sapply(POSITIONS, function(p) bt$rmse_y1[bt$position == p & bt$window == WINDOW & bt$half_life == HALF_LIFE])
 sd_prod <- 9 / V_HI * rmse
 
 ros <- as.data.frame(load_rosters(as.integer(format(AGE_DATE, "%Y"))))
@@ -65,11 +67,27 @@ out <- d[order(-d$por_sf), c("player_id", "player", "position", "team", "age", "
                               "age_value", "por_1qb", "por_sf", "sd_prod")]
 write.csv(out, "dynasty_value.csv", row.names = FALSE)
 
-# the site's data file (a plain array of rows + when it was built)
+# the site's data file: rows as a compact array, plus what the player profile draws
 q <- function(x) if (is.character(x)) paste0('"', gsub('"', '\\\\"', x), '"') else format(x, trim = TRUE)
 rows <- vapply(seq_len(nrow(out)), function(i) paste0("[", paste(vapply(out[i, ], q, ""), collapse = ","), "]"), "")
-json <- sprintf('{"built":"%s","columns":[%s],"rows":[\n%s\n]}\n', format(Sys.Date()),
-  paste0('"', names(out), '"', collapse = ","), paste(rows, collapse = ",\n"))
+meta <- toJSON(list(
+  built = format(Sys.Date()),
+  window = list(games = WINDOW, half_life = HALF_LIFE),
+  v_hi = V_HI,
+  replacement = lapply(setNames(colnames(repl), colnames(repl)), function(f) setNames(as.list(round(repl[, f], 2)), rownames(repl))),
+  age_curve = lapply(setNames(POSITIONS, POSITIONS), function(p) { t <- agev[agev$position == p & agev$age <= 40, ]
+    unname(Map(function(a, v, r) c(a, round(v, 1), round(r, 3)), t$age, t$age_value_cross, t$retained_smooth)) })
+), auto_unbox = TRUE, digits = NA)
+meta <- sub("^\\{", "", meta); meta <- sub("\\}$", "", meta)
+json <- sprintf('{%s,"columns":[%s],"rows":[\n%s\n]}\n', meta, paste0('"', names(out), '"', collapse = ","), paste(rows, collapse = ",\n"))
 dir.create("../web/data", showWarnings = FALSE)
 writeLines(json, "../web/data/dynasty-values.json")
-cat("wrote dynasty_value.csv and ../web/data/dynasty-values.json:", nrow(out), "players\n")
+
+# each player's last WINDOW games (season x 100 + week, points): the profile's production timeline. Read on demand by
+# /api/dynasty-profile, never shipped with the page.
+g <- as.data.frame(load_player_stats((as.integer(format(AGE_DATE, "%Y")) - 3):as.integer(format(AGE_DATE, "%Y"))))
+g <- g[g$season_type == "REG" & !is.na(g$fantasy_points_ppr) & !is.na(g$player_id) & g$player_id %in% out$player_id, ]
+g <- g[order(g$player_id, g$season, g$week), ]
+logs <- lapply(split(g, g$player_id), function(d) { d <- tail(d, WINDOW); list(w = d$season * 100 + d$week, p = round(d$fantasy_points_ppr, 1)) })
+write(toJSON(logs, auto_unbox = FALSE, digits = NA), "../web/data/dynasty-logs.json")
+cat("wrote dynasty_value.csv, ../web/data/dynasty-values.json and dynasty-logs.json:", nrow(out), "players\n")
