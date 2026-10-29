@@ -666,7 +666,7 @@ defense_history_seasons <- function(target_season = TARGET_SEASON) {
 # outcomes (including future low-snap weeks, which still happen and still
 # need to be predicted). Code fully reverted; load_history() below is
 # back to its pre-this-idea form.
-load_history <- function(seasons = history_seasons()) {
+load_history <- function(seasons = history_seasons(), zero_snap = INCLUDE_ZERO_SNAP_GAMES) {
   # as.data.frame(): load_player_stats() returns a data.table, and its
   # non-standard `[` evaluation gets confused when a variable (STAT_COLS)
   # is nested inside the column-selector c(...) alongside literal string
@@ -688,7 +688,7 @@ load_history <- function(seasons = history_seasons()) {
   reg$attempts[is.na(reg$attempts)] <- 0
   for (col in STAT_COLS) reg[[col]][is.na(reg[[col]])] <- 0
   reg$touches <- reg$carries + reg$targets
-  if (INCLUDE_ZERO_SNAP_GAMES) reg <- add_zero_snap_games(reg, seasons)
+  if (zero_snap) reg <- add_zero_snap_games(reg, seasons)
   reg[order(reg$player_display_name, reg$season, reg$week), ]
 }
 
@@ -727,6 +727,61 @@ add_zero_snap_games <- function(reg, seasons) {
     cat("Snap counts unavailable this run -- history left without zero-snap games:", conditionMessage(e), "\n")
     reg
   })
+}
+
+# ============================= ROOKIES =============================
+# Rookies (Oct 29 2026, founder: "build real projections for rookies in the weekly and player sim"; this replaces the earlier
+# "conservative on purpose" rule). A rookie (years_exp 0 on this season's roster) enters from his FIRST real game instead of
+# MIN_GAMES, and his history starts with ROOKIE_PRIOR_GAMES "prior games": real first-season games of past rookies at his
+# position and draft-pick bucket (2015 on), taken evenly across that group's distribution of fantasy points and placed as his
+# OLDEST games. Everything else is the normal machinery: the recency weights shrink the prior as his own games arrive, the weekly
+# median / floor / ceiling read the mixed history, and the season simulation resamples it (the prior rows carry full stat lines).
+# The prior games never count as games he played: eligibility, availability, banked season totals, `games`, the Building label
+# and touches per game all read his REAL games (prior_game = FALSE).
+# Evidence (backtest_rookie_projection.R + backtest_rookie_prior_games.R, 2015-2025, ~7,100 rookie games, leave-one-season-out,
+# the live weekly method): 6 prior games give a median error of 4.03 at 1-5 real games (no projection at all today) and 4.58 vs 4.66
+# at 6-9 games; rookies beat the median 51-55% of the time (target 50%, was 55-61%) and their ceiling ~12-14% of the time (target
+# 10%, was 17-20%). A further "rookie lift" on the median did not help (MAE unchanged, floors broke) and is NOT applied.
+ROOKIE_PRIOR <- FALSE        # the switch: FALSE = the old rule (rookies wait for MIN_GAMES, no prior)
+ROOKIE_MIN_GAMES <- 1        # real games a rookie needs to be projected
+ROOKIE_PRIOR_GAMES <- 6      # K, swept 2-12 in backtest_rookie_prior_games.R (4-8 are equivalent; 6 is the middle)
+ROOKIE_PICK_BUCKETS <- c(0, 15, 40, 75, 150, Inf)   # overall pick; undrafted rookies use the last bucket
+ROOKIE_PRIOR_FROM <- 2015
+
+rookie_bucket <- function(pick) cut(ifelse(is.na(pick), 999, pick), ROOKIE_PICK_BUCKETS, labels = FALSE)
+
+# This season's rookies at QB / RB / WR / TE: gsis id -> pick bucket.
+rookie_buckets <- function(target_season) {
+  ros <- as.data.frame(load_rosters(target_season))
+  ids <- unique(ros$gsis_id[ros$position %in% c("QB", "RB", "WR", "TE") & !is.na(ros$gsis_id) & !is.na(ros$years_exp) & ros$years_exp == 0])
+  dp <- as.data.frame(load_draft_picks()); dp <- dp[!is.na(dp$gsis_id), ]
+  setNames(rookie_bucket(dp$pick[match(ids, dp$gsis_id)]), ids)
+}
+
+# Past rookies' real first-season games (full stat lines), split by "POS bucket".
+rookie_prior_library <- function(target_season) {
+  lib <- load_history(ROOKIE_PRIOR_FROM:(target_season - 1), zero_snap = FALSE)
+  dp <- as.data.frame(load_draft_picks()); dp <- dp[!is.na(dp$gsis_id), c("gsis_id", "season", "pick")]
+  m <- match(lib$player_id, dp$gsis_id)
+  lib <- lib[!is.na(m) & lib$season == dp$season[m], ]
+  m <- match(lib$player_id, dp$gsis_id)
+  split(lib, paste(lib$position, rookie_bucket(dp$pick[m])))
+}
+
+# K rows taken evenly across a group's points distribution, interleaved (low, high, next-low, ...) so the recency weights don't
+# favour one end, relabelled as player p's oldest games (last season, weeks before any real game: they match no NGS / pbp row).
+rookie_prior_games <- function(cell, k, template, target_season) {
+  if (is.null(cell) || nrow(cell) < k) return(NULL)
+  cell <- cell[order(cell$fantasy_points_ppr), ]
+  idx <- pmin(nrow(cell), ceiling(((seq_len(k) - 0.5) / k) * nrow(cell)))
+  ord <- integer(0); i <- 1; j <- k; while (i <= j) { ord <- c(ord, i); if (i != j) ord <- c(ord, j); i <- i + 1; j <- j - 1 }
+  pr <- cell[idx[ord], intersect(names(template), names(cell)), drop = FALSE]
+  for (col in setdiff(names(template), names(pr))) pr[[col]] <- template[[col]][1]
+  pr$player_id <- template$player_id[1]; pr$player_display_name <- template$player_display_name[1]
+  pr$position <- template$position[1]; pr$team <- template$team[1]
+  pr$season <- target_season - 1; pr$week <- seq_len(k) - 100
+  pr$zero_snap <- FALSE; pr$prior_game <- TRUE
+  pr[, names(template)]
 }
 
 # ============================= CORE MATH =============================
@@ -1029,6 +1084,15 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
   # for that week, overwriting the real pre-week snapshot (the week scrubber then showed week 5's games next to a
   # projection that already knew week 6). Tuesday's run is unaffected: by then the week it publishes for is the next one.
   reg <- reg[!(reg$season == target_season & reg$week >= current_nfl_week(target_season)), ]
+  if (!"zero_snap" %in% names(reg)) reg$zero_snap <- FALSE
+  reg$prior_game <- FALSE
+  # Rookies (see ROOKIES above). Fails safe: no rosters / draft picks / library -> the old rule for everyone.
+  rookies <- NULL; rookie_lib <- NULL
+  if (ROOKIE_PRIOR) {
+    rookies <- tryCatch(rookie_buckets(target_season), error = function(e) { cat("Rookie list unavailable -- old rule:", conditionMessage(e), "\n"); NULL })
+    if (length(rookies)) rookie_lib <- tryCatch(rookie_prior_library(target_season), error = function(e) { cat("Rookie prior library unavailable -- old rule:", conditionMessage(e), "\n"); NULL })
+    if (is.null(rookie_lib)) rookies <- NULL
+  }
   # Position-relevant EPA as a single column, computed up front so every
   # per-stat column below (WOPR/EPA included) gets the identical
   # recency-weighted treatment as the rest of the model's projections,
@@ -1043,6 +1107,12 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
   real <- if ("zero_snap" %in% names(reg)) !reg$zero_snap else rep(TRUE, nrow(reg))
   counts <- table(reg$player_display_name[real])
   eligible <- names(counts[counts >= MIN_GAMES])
+  if (length(rookies)) {
+    rookie_names <- unique(reg$player_display_name[real & reg$season == target_season & reg$player_id %in% names(rookies)])
+    new_rookies <- setdiff(intersect(names(counts[counts >= ROOKIE_MIN_GAMES]), rookie_names), eligible)
+    cat("Rookies let in before", MIN_GAMES, "games:", length(new_rookies), "\n")
+    eligible <- c(eligible, new_rookies)
+  }
 
   # Recency weighting only knows "games ago" within a player's own log --
   # it can't tell "played last week" from "played 5 weeks into last
@@ -1291,6 +1361,12 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
 
   for (p in eligible) {
     d <- reg[reg$player_display_name == p, ]
+    d_real <- d
+    if (length(rookies) && d$player_id[1] %in% names(rookies)) {
+      pr <- rookie_prior_games(rookie_lib[[paste(d$position[1], rookies[[d$player_id[1]]])]], ROOKIE_PRIOR_GAMES, d, target_season)
+      if (!is.null(pr)) d <- rbind(pr, d)
+    }
+    n_real <- nrow(d_real)
     x <- d$fantasy_points_ppr
     pos <- d$position[1]
     n <- length(x)
@@ -1300,7 +1376,7 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
 
     wm <- recency_weights(n, MED_DECAY[pos])
     wc <- recency_weights(n, CEIL_DECAY[pos])
-    avail <- player_availability(d, target_season, completed_weeks)
+    avail <- player_availability(d_real, target_season, completed_weeks)
 
     idx <- seq_len(n)
     relevant_stats <- STAT_COLS_BY_POSITION[[pos]]
@@ -1574,7 +1650,7 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
     # above). Computed here since it needs `n`, and used only for the
     # sample_confidence label downstream, not for anything that changes
     # a published number.
-    low_sample <- n < LOW_SAMPLE_SHRINK_THRESHOLD
+    low_sample <- n_real < LOW_SAMPLE_SHRINK_THRESHOLD
 
     # Trend: last-3-games simple average vs. the weighted median baseline
     # above, +/-10% band. Same comparison that caught Aaron Jones/Kamara's
@@ -1773,8 +1849,8 @@ project_all <- function(seasons = history_seasons(), n_sims = 30000, seed = 42,
     }
 
     rows[[p]] <- data.frame(
-      player_name = p, position = pos, team = team, opponent = opp, is_home = is_home, games = n,
-      touches_per_game = round(mean(d$touches), 1),
+      player_name = p, position = pos, team = team, opponent = opp, is_home = is_home, games = n_real,
+      touches_per_game = round(mean(d_real$touches), 1),
       availability_pct = round(100 * avail, 0),
       shrunk = low_sample,
       trend = trend,
