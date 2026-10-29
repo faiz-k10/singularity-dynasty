@@ -26,7 +26,7 @@ source("player_meta.R")
 SEASONS   <- 2008:2025
 POSITIONS <- c("QB", "RB", "WR", "TE")
 MIN_GAMES <- 8
-HORIZON   <- 5
+HORIZON   <- 3
 DISCOUNT  <- 0.85          # a season k years out counts DISCOUNT^k as much as the next one's
 AGES      <- 21:35         # the grid; younger / older players read the nearest end
 MIN_N     <- 12            # a (position, age) cell thinner than this is left to the smoother
