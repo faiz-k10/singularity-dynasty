@@ -34,8 +34,8 @@ export default function DynastyBoard({ rows }) {
     return { L, ...buildBoard(L) };
   }, [rows, format, mode, pos]);
 
-  const lo = Math.floor(Math.min(...L.map((p) => p.lo)));
-  const x = (v) => ((v - lo) / (10 - lo)) * 100;
+  const lo = Math.floor(Math.min(...L.map((p) => p.lo))), hi = Math.ceil(Math.max(...L.map((p) => p.hi)));
+  const x = (v) => ((v - lo) / (hi - lo)) * 100;
   const tierOf = (i) => tiers.findIndex((t) => i >= t.a && i <= t.b);
   // a heavier rule across the row where a tier (or, heavier, a group) starts
   const breakClass = (i) => {
@@ -157,7 +157,7 @@ export default function DynastyBoard({ rows }) {
           <h3 className="board-panel-title">How the boxes are drawn</h3>
           <p>
             Every box comes from one rule: how often is a player really better than the player below him? <b>Tied</b>: no one inside beats anyone below
-            him more than 60% of the time, so the order inside is close to a coin flip. <b>Tier</b>: no more than 75%. <b>Group</b>: no more than 90%.
+            him more than 55% of the time, so the order inside is close to a coin flip. <b>Tier</b>: no more than 65%. <b>Group</b>: no more than 80%.
             Each uses the fewest boxes that rule allows, split at the biggest drops.
           </p>
         </div>

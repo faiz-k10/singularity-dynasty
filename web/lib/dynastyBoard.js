@@ -7,11 +7,12 @@
 // in score units (model/backtest_production_blend.R); age is a lookup, so it adds none. A player's score sd is
 // prod x sdProd. From that, "how often is player i really better than player j" is P = Phi((si - sj) / sqrt(sdi^2 + sdj^2)),
 // and the board is drawn from it with one rule at three strengths:
-//   TIED  -- nobody inside a box has P >= 0.60 over anyone below him: the order inside is close to a coin flip
-//   TIER  -- nobody inside has P >= 0.75 over anyone below him (3 times in 4)
-//   GROUP -- nobody inside has P >= 0.90
+//   TIED  -- nobody inside a box has P >= 0.55 over anyone below him: the order inside is close to a coin flip
+//   TIER  -- nobody inside has P >= 0.65 over anyone below him (about 2 times in 3)
+//   GROUP -- nobody inside has P >= 0.80 (4 times in 5)
 // (The error is large -- next-season PPG misses by 3-4 points a game -- so a stricter bar, 0.90 / 0.999, can only make a
-// handful of huge boxes. Looser bars give boxes you can read; the red "beat" figure on each break says how sure it is.)
+// handful of huge boxes; 0.60 / 0.75 / 0.90 still gave only 3-5 tiers. These give 7-9 tiers overall, ~8 in a position, and
+// the red "beat" figure on each break says how sure that break is.)
 // Each level uses the FEWEST boxes the rule allows, and where several splits tie, the breaks go where the drops are biggest.
 
 export const MODES = {
@@ -33,7 +34,7 @@ export function boardRows(rows, { format, mode, pos }) {
 }
 
 // the probit of each P above: Phi(z) = P
-const Z_TIE = 0.2533, Z_TIER = 0.6745, Z_GROUP = 1.2816;
+const Z_TIE = 0.1257, Z_TIER = 0.3853, Z_GROUP = 0.8416;
 
 // model/dynasty_value.R writes { columns, rows: [[...]] }; this makes row objects
 export function rowsFromData(data) {
@@ -53,8 +54,6 @@ export function phi(z) {
   return z >= 0 ? 0.5 * (1 + erf) : 0.5 * (1 - erf);
 }
 
-const clamp = (v) => Math.min(10, Math.max(1, v));
-
 // Scores, ranges (80%: 10th to 90th percentile) and sd for the chosen format and mode, best first.
 export function scoreRows(rows, formatKey, modeKey) {
   const f = FORMATS[formatKey] || FORMATS["1qb"], m = MODES[modeKey] || MODES.contender;
@@ -62,7 +61,7 @@ export function scoreRows(rows, formatKey, modeKey) {
     .map((r) => {
       const score = m.prod * r[f.key] + m.age * r.ageValue;
       const sd = m.prod * r.sdProd;
-      return { ...r, prod: r[f.key], score, sd, lo: clamp(score - 1.2816 * sd), hi: clamp(score + 1.2816 * sd) };
+      return { ...r, prod: r[f.key], score, sd, lo: score - 1.2816 * sd, hi: score + 1.2816 * sd };
     })
     .sort((a, b) => b.score - a.score || b.ppg - a.ppg);
 }

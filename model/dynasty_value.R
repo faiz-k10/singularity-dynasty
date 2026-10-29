@@ -4,7 +4,8 @@
 # Writes dynasty_value.csv and ../web/data/dynasty-values.json (what the board reads), one row per player with
 # a recency-weighted PPG and enough games, carrying everything the page needs to score him both ways:
 #   - production over replacement, 1-10, for each LEAGUE FORMAT: his weighted PPG minus the replacement-level
-#     player at his position, on one scale shared by all positions (10 = V_HI points a game over replacement).
+#     player at his position, on one scale shared by all positions (1 = replacement, 10 = V_HI points a game over it;
+#     below replacement it keeps going below 1, it is not floored).
 #     Replacement = the player ranked just past the starters a 12-team league needs (REPL_RANK), averaged over
 #     the end of each season REPL_FROM..2025 so it does not move week to week: 1QB: QB12; superflex: QB32 (founder's
 #     pick, Oct 28 2026, from a sweep of 24-44); both: RB29, WR42, TE13 (1QB / 2RB / 3WR / 1TE / 1FLEX).
@@ -51,7 +52,9 @@ d$age_value <- mapply(function(p, a) {
   t <- agev[agev$position == p, ]
   round(approx(t$age, t$age_value_cross, xout = min(max(a, min(t$age)), max(t$age)))$y, 2)
 }, d$position, d$age)
-por <- function(f) round(pmin(10, pmax(1, 1 + 9 * (d$ppg_weighted - repl[cbind(d$position, f)]) / V_HI)), 2)
+# NOT clipped: a player below replacement is worth LESS than replacement, so his production score goes below 1 (a floor at 1
+# had let a 1.7 PPG rookie and a 6 PPG backup tie, and then his age decided the order)
+por <- function(f) round(1 + 9 * (d$ppg_weighted - repl[cbind(d$position, f)]) / V_HI, 2)
 d$por_1qb <- por("1QB"); d$por_sf <- por("SF")
 d$sd_prod <- round(sd_prod[d$position], 2)
 

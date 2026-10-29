@@ -9,8 +9,9 @@ test("phi is the standard normal CDF", () => {
   assert.ok(Math.abs(phi(0) - 0.5) < 1e-7);
   assert.ok(Math.abs(phi(1.2816) - 0.9) < 1e-4);
   assert.ok(Math.abs(phi(-1.2816) - 0.1) < 1e-4);
-  assert.ok(Math.abs(phi(0.6745) - 0.75) < 1e-4);
-  assert.ok(Math.abs(phi(0.2533) - 0.6) < 1e-4);
+  assert.ok(Math.abs(phi(0.8416) - 0.8) < 1e-4);
+  assert.ok(Math.abs(phi(0.3853) - 0.65) < 1e-4);
+  assert.ok(Math.abs(phi(0.1257) - 0.55) < 1e-4);
 });
 
 test("mode weights and format pick the score", () => {
@@ -25,10 +26,15 @@ test("a quarterback climbs from 1QB to superflex", () => {
   assert.equal(scoreRows(rows, "sf", "contender")[0].name, "QB1");
 });
 
-test("ranges are an 80% interval around the score, clipped to 1-10", () => {
-  const [r] = scoreRows([row("A", "WR", 9.9, 9.9, 9.9, 3)], "1qb", "contender");
-  assert.equal(r.hi, 10);
-  assert.ok(r.lo < r.score);
+test("ranges are an 80% interval around the score", () => {
+  const [r] = scoreRows([row("A", "WR", 9, 9, 9, 3)], "1qb", "contender");
+  assert.ok(Math.abs(r.hi - r.score - 1.2816 * 0.8 * 3) < 1e-9);
+  assert.ok(Math.abs(r.score - r.lo - 1.2816 * 0.8 * 3) < 1e-9);
+});
+
+test("a player below replacement ranks below one at replacement, whatever his age", () => {
+  const L = scoreRows([row("Vet", "WR", 1, 1, 3), row("Kid", "WR", -4, -4, 9.5)], "1qb", "rebuilder");
+  assert.equal(L[0].name, "Vet");
 });
 
 test("boxes cover every player once and nest: ties in tiers in groups", () => {
@@ -51,7 +57,7 @@ test("nobody inside a box is likely better than anyone below him", () => {
   const L = scoreRows(rows, "1qb", "rebuilder");
   const { tiers, ties } = buildBoard(L);
   const z = (i, j) => (L[i].score - L[j].score) / Math.hypot(L[i].sd, L[j].sd);
-  for (const [boxes, limit] of [[tiers, 0.6745], [ties, 0.2533]]) {
+  for (const [boxes, limit] of [[tiers, 0.3853], [ties, 0.1257]]) {
     for (const b of boxes) {
       for (let i = b.a; i < b.b; i++) for (let j = i + 1; j <= b.b; j++) assert.ok(z(i, j) < limit);
     }
@@ -79,6 +85,5 @@ test("the published data loads and builds a board in every format, mode and posi
     }
     const { groups, tiers } = buildBoard(L);
     assert.ok(tiers.length >= 3 && groups.length >= 1);
-    assert.ok(L.every((p) => p.score >= 1 && p.score <= 10));
   }
 });
