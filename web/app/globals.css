@@ -4397,6 +4397,8 @@ a.mine-empty-note{color:var(--horizon-gold);}
 .account-tier,
 .tool-empty,
 .tool-paywall,
+.dr-panel,
+.dr-note,
 .rankings-table-wrap,
 .compare-table-wrap{
   background:rgba(var(--scrim-rgb), var(--glass-alpha));
@@ -6056,3 +6058,66 @@ select.lab-select{min-width:200px; padding-right:8px; cursor:pointer;}
 .share-figure{margin:0 0 22px; padding:12px;}
 .share-figure img{display:block; width:100%; height:auto; border-radius:var(--r-sm);}
 .share-actions{display:flex; flex-wrap:wrap; gap:12px;}
+
+/* ---- Dynasty Draft Board, rankings view (app/tools/draft-board/DynastyBoard.js): the tabular recipe -------------------------
+   Player rows on the left; boxes that merge rows on the right -- Tied (col 5), Tier (6), Group (7). A heavier rule across a row
+   where a tier starts, heaviest where a group does. The panel surface itself comes from the scoreboard-material list above. */
+.dr-controls{display:flex; flex-wrap:wrap; align-items:center; gap:10px 14px; margin-bottom:14px;}
+.dr-controls .board-toggle{margin-bottom:0;}
+.dr-read{margin-left:auto; font-size:11px; color:var(--star-dim); letter-spacing:.04em;}
+.dr-panel{padding:0; margin-bottom:22px;}
+.dr-grid{display:grid; grid-template-columns:48px minmax(240px,1fr) 52px minmax(210px,1.1fr) 42px 236px 56px; grid-template-rows:38px; grid-auto-rows:46px;}
+.dr-h{display:flex; align-items:center; padding:0 12px; height:38px; font-family:var(--font-mono), monospace; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--star-dim); border-bottom:1px solid var(--rule-strong);}
+.dr-h.dr-c{justify-content:center; padding:0;}
+.dr-cell{display:flex; align-items:center; padding:0 12px; min-width:0; border-bottom:1px solid var(--rule); transition:opacity .15s, background .15s;}
+.dr-cell.is-tier-break{border-top:2px solid var(--rule-strong);}
+.dr-cell.is-group-break{border-top:4px solid var(--star);}
+.dr-rank{justify-content:center; padding:0; font-family:var(--font-display); font-weight:800; font-size:21px; color:var(--star-dim);}
+.dr-who{gap:9px;}
+.dr-who b{font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0;}
+.dr-who .team-badge{flex-shrink:0;}
+.dr-age{justify-content:center; padding:0; font-family:var(--font-mono), monospace; font-size:12px;}
+.dr-val{gap:10px;}
+.dr-track{position:relative; flex:1; height:14px;}
+.dr-track::before{content:""; position:absolute; left:0; right:0; top:6px; height:2px; background:var(--rule);}
+.dr-range{position:absolute; top:3px; height:8px; background:rgba(var(--neon-blue-rgb), .42); border-radius:1px;}
+.dr-med{position:absolute; top:0; width:3px; height:14px; margin-left:-1.5px; background:var(--horizon-gold);}
+.dr-val em{font-style:normal; width:30px; text-align:right; font-family:var(--font-mono), monospace; font-size:13px; font-weight:500;}
+.dr-box{position:relative; border-left:1px solid var(--rule-strong); border-bottom:1px solid var(--rule-strong); transition:opacity .15s;}
+.dr-box.is-tier-break{border-top:2px solid var(--rule-strong);}
+.dr-box.is-group-break{border-top:4px solid var(--star);}
+.dr-tie .dr-in{display:flex; justify-content:center; padding:10px 0;}
+.dr-tie.is-multi::after{content:""; position:absolute; left:12px; top:9px; bottom:9px; width:7px; border:1.5px solid var(--star-dim); border-right:0;}
+.dr-tie .dr-in span{margin-left:12px; font-family:var(--font-mono), monospace; font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:var(--star-dim); writing-mode:vertical-rl; transform:rotate(180deg);}
+.dr-tier .dr-in{padding:11px 14px 0; display:flex; flex-direction:column; gap:3px;}
+.dr-t1{display:flex; align-items:baseline; gap:8px; font-family:var(--font-display); font-weight:800; text-transform:uppercase; font-size:25px; line-height:1;}
+.dr-t1 small{font-family:var(--font-mono), monospace; font-weight:400; font-size:10px; letter-spacing:.06em; color:var(--star-dim);}
+.dr-t3{font-family:var(--font-mono), monospace; font-size:10px; color:var(--star-dim);}
+.dr-beat{position:absolute; left:0; right:0; bottom:0; display:flex; justify-content:space-between; white-space:nowrap; padding:5px 14px; font-family:var(--font-mono), monospace; font-size:10px; color:var(--down); border-top:1px dashed rgba(var(--down-rgb), .4); background:rgba(var(--down-rgb), .06);}
+.dr-tier.is-short .dr-beat{position:static; margin:4px -14px 0;}
+.dr-tier.g0{background:rgba(var(--horizon-gold-rgb), .12);} .dr-tier.g0 .dr-t1{color:var(--horizon-gold);}
+.dr-tier.g1{background:rgba(var(--neon-blue-rgb), .10);}
+.dr-tier.g2, .dr-tier.g3{background:rgba(var(--neon-blue-rgb), .03);} .dr-tier.g2 .dr-t1, .dr-tier.g3 .dr-t1{color:var(--star-dim);}
+.dr-group{display:flex; justify-content:center; border-left:2px solid var(--rule-strong);}
+.dr-group .dr-in{padding:14px 0;}
+.dr-gn{font-family:var(--font-display); font-weight:800; text-transform:uppercase; font-size:21px; letter-spacing:.08em; writing-mode:vertical-rl; transform:rotate(180deg);}
+.dr-group.g0{background:var(--horizon-gold); color:var(--on-brand);} .dr-group.g1{background:rgba(var(--star-dot-rgb), .08); color:var(--star);} .dr-group.g2, .dr-group.g3{color:var(--star-dim);}
+/* hover a tier: its players stay lit, everything else steps back */
+.dr-grid.is-focus .dr-cell:not(.is-lit), .dr-grid.is-focus .dr-box:not(.is-lit){opacity:.28;}
+.dr-cell.is-lit:not(.dr-rank):hover{background:rgba(var(--star-dot-rgb), .04);}
+.dr-notes{display:grid; grid-template-columns:repeat(3, 1fr); gap:14px;}
+.dr-note{padding:14px 16px;}
+.dr-note p{margin:8px 0 0; font-size:14px; color:var(--star-dim);} .dr-note p b{color:var(--star); font-weight:700;}
+@media (max-width:1000px){.dr-notes{grid-template-columns:1fr;}}
+/* phones: age and the group strip drop out, the value bar becomes a number, the tier box narrows */
+@media (max-width:720px){
+  .dr-grid{grid-template-columns:30px minmax(0,1fr) 0 38px 18px 88px 0;}
+  .dr-col-age, .dr-col-group{display:none !important;}
+  .dr-h:nth-child(4) span{display:none;}
+  .dr-track{display:none;} .dr-val{justify-content:flex-end; padding:0 6px 0 0;}
+  .dr-who{gap:6px; padding:0 6px;} .dr-who .team-badge{display:none;}
+  .dr-tier .dr-in{padding:8px 8px 0;} .dr-t1{font-size:19px;} .dr-t1 small, .dr-t3{display:none;}
+  .dr-beat{padding:4px 8px; font-size:9px;} .dr-beat span:first-child{display:none;}
+  .dr-tie.is-multi::after{left:5px;} .dr-tie .dr-in span{display:none;}
+  .dr-read{margin-left:0; width:100%;}
+}

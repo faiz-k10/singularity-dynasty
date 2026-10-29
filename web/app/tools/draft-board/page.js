@@ -6,6 +6,8 @@ import { resolveSort, sortRows } from "@/lib/sortLink";
 import InteractiveScript from "../../InteractiveScript";
 import SortableTh from "../SortableTh";
 import ExportCsvButton from "../ExportCsvButton";
+import DynastyBoard from "./DynastyBoard";
+import { FREE_ROWS, getDynastyRows } from "@/lib/dynastyData";
 
 export const metadata = {
   title: "Dynasty Startup & Rookie Draft Board — Singularity Dynasty",
@@ -62,12 +64,60 @@ const getCachedBoard = unstable_cache(
   { revalidate: 60 }
 );
 
+// Rankings (the tabular recipe board) | Startup | Rookie (the round-by-round tables below)
+function BoardToggle({ active }) {
+  return (
+    <div className="board-toggle">
+      {[["rankings", "Rankings"], ["startup", "Startup"], ["rookie", "Rookie"]].map(([key, text]) => (
+        <Link key={key} href={`?type=${key}`} className={active === key ? "active" : ""}>
+          {text}
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+async function RankingsView({ hasFullAccess }) {
+  const { rows, built, total } = getDynastyRows(hasFullAccess);
+  return (
+    <>
+      <InteractiveScript />
+      <main className="wrap tool-wrap">
+        <div className="tool-header-split">
+          <div className="tool-header-left">
+            <div className="eyebrow">{`Dynasty · built ${built}`}</div>
+            <h1>Dynasty Draft Board</h1>
+            <p className="tool-sub">
+              Every player ranked by dynasty value, with the ranking drawn as a recipe: who is tied, which tier, which group.
+            </p>
+          </div>
+          <div className="tool-header-right">
+            <BoardToggle active="rankings" />
+          </div>
+        </div>
+        <DynastyBoard rows={rows} />
+        {!hasFullAccess && (
+          <div className="tool-paywall reveal in">
+            <p>
+              You&apos;re seeing the top {FREE_ROWS} of {total} ranked players. Unlock the full board with Explorer or Singularity.
+            </p>
+            <Link href="/#pricing" className="btn-primary">
+              See Pricing
+            </Link>
+          </div>
+        )}
+      </main>
+    </>
+  );
+}
+
 export default async function DraftBoardPage({ searchParams }) {
   const params = await searchParams;
-  const boardType = params?.type === "rookie" ? "rookie" : "startup";
+  const boardType = params?.type === "rookie" ? "rookie" : params?.type === "startup" ? "startup" : "rankings";
 
   const { tier } = await getUserTier();
   const hasFullAccess = PAID_TIERS.includes(tier);
+  if (boardType === "rankings") return <RankingsView hasFullAccess={hasFullAccess} />;
 
   const { latest, picks, totalRounds } = await getCachedBoard(boardType, hasFullAccess);
 
@@ -99,20 +149,7 @@ export default async function DraftBoardPage({ searchParams }) {
           </div>
           <div className="tool-header-right">
             <div className="toggle-row-flex">
-              <div className="board-toggle">
-                <Link
-                  href="?type=startup"
-                  className={boardType === "startup" ? "active" : ""}
-                >
-                  Startup
-                </Link>
-                <Link
-                  href="?type=rookie"
-                  className={boardType === "rookie" ? "active" : ""}
-                >
-                  Rookie
-                </Link>
-              </div>
+              <BoardToggle active={boardType} />
               {canExport && (
                 <ExportCsvButton
                   filename={`draft-board-${boardType}-${latest.season}.csv`}

@@ -1,0 +1,136 @@
+// The Dynasty Draft Board's rankings: scoring, ranges and the tier rule. Pure, so it is tested (test/dynastyBoard.test.mjs).
+//
+// A player's dynasty score = prod x (production over replacement, 1-10, for the league format) + age x (age value, 1-10),
+// with the weights set by the mode. Both inputs come from model/dynasty_value.R (see its header for how they are made).
+//
+// Every score carries an uncertainty: `sdProd` is how far the production number misses next season's PPG, out of sample,
+// in score units (model/backtest_production_blend.R); age is a lookup, so it adds none. A player's score sd is
+// prod x sdProd. From that, "how often is player i really better than player j" is P = Phi((si - sj) / sqrt(sdi^2 + sdj^2)),
+// and the board is drawn from it with one rule at three strengths:
+//   TIED  -- nobody inside a box has P >= 0.60 over anyone below him: the order inside is close to a coin flip
+//   TIER  -- nobody inside has P >= 0.75 over anyone below him (3 times in 4)
+//   GROUP -- nobody inside has P >= 0.90
+// (The error is large -- next-season PPG misses by 3-4 points a game -- so a stricter bar, 0.90 / 0.999, can only make a
+// handful of huge boxes. Looser bars give boxes you can read; the red "beat" figure on each break says how sure it is.)
+// Each level uses the FEWEST boxes the rule allows, and where several splits tie, the breaks go where the drops are biggest.
+
+export const MODES = {
+  contender: { label: "Contender", prod: 0.8, age: 0.2 },
+  rebuilder: { label: "Rebuilder", prod: 0.65, age: 0.35 },
+};
+export const FORMATS = {
+  "1qb": { label: "1QB", key: "por1qb" },
+  sf: { label: "Superflex", key: "porSf" },
+};
+export const GROUP_NAMES = ["Cornerstones", "Core", "Depth", "Fringe", "Deep"];
+// how much of the shipped pool a view shows: the top 120 overall, the top 60 of one position
+export const SHOW = { all: 120, position: 60 };
+
+// The rows a view draws: scored for the format and mode, optionally one position, cut to SHOW.
+export function boardRows(rows, { format, mode, pos }) {
+  const L = scoreRows(pos && pos !== "ALL" ? rows.filter((r) => r.pos === pos) : rows, format, mode);
+  return L.slice(0, pos && pos !== "ALL" ? SHOW.position : SHOW.all);
+}
+
+// the probit of each P above: Phi(z) = P
+const Z_TIE = 0.2533, Z_TIER = 0.6745, Z_GROUP = 1.2816;
+
+// model/dynasty_value.R writes { columns, rows: [[...]] }; this makes row objects
+export function rowsFromData(data) {
+  const c = data.columns;
+  const at = (n) => c.indexOf(n);
+  return data.rows.map((r) => ({
+    id: r[at("player_id")], name: r[at("player")], pos: r[at("position")], team: r[at("team")], age: r[at("age")],
+    games: r[at("games_in_window")], ppg: r[at("ppg_weighted")], ageValue: r[at("age_value")],
+    por1qb: r[at("por_1qb")], porSf: r[at("por_sf")], sdProd: r[at("sd_prod")],
+  }));
+}
+
+// Standard normal CDF (Abramowitz-Stegun 7.1.26 on erf, |error| < 1.5e-7).
+export function phi(z) {
+  const x = Math.abs(z) / Math.SQRT2, t = 1 / (1 + 0.3275911 * x);
+  const erf = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x);
+  return z >= 0 ? 0.5 * (1 + erf) : 0.5 * (1 - erf);
+}
+
+const clamp = (v) => Math.min(10, Math.max(1, v));
+
+// Scores, ranges (80%: 10th to 90th percentile) and sd for the chosen format and mode, best first.
+export function scoreRows(rows, formatKey, modeKey) {
+  const f = FORMATS[formatKey] || FORMATS["1qb"], m = MODES[modeKey] || MODES.contender;
+  return rows
+    .map((r) => {
+      const score = m.prod * r[f.key] + m.age * r.ageValue;
+      const sd = m.prod * r.sdProd;
+      return { ...r, prod: r[f.key], score, sd, lo: clamp(score - 1.2816 * sd), hi: clamp(score + 1.2816 * sd) };
+    })
+    .sort((a, b) => b.score - a.score || b.ppg - a.ppg);
+}
+
+// z of "row i beats row j" for i above j (sorted best first)
+const zOf = (L, i, j) => (L[i].score - L[j].score) / Math.hypot(L[i].sd, L[j].sd);
+
+// ok[a * n + e] = no pair inside a..e has z >= zt. A box is fine iff its two sub-boxes are and its ends are.
+function okMatrix(L, zt) {
+  const n = L.length, ok = new Uint8Array(n * n);
+  for (let a = 0; a < n; a++) ok[a * n + a] = 1;
+  for (let len = 2; len <= n; len++) {
+    for (let a = 0; a + len - 1 < n; a++) {
+      const e = a + len - 1;
+      ok[a * n + e] = ok[(a + 1) * n + e] && ok[a * n + e - 1] && zOf(L, a, e) < zt ? 1 : 0;
+    }
+  }
+  return ok;
+}
+
+// Fewest contiguous boxes over lo..hi with no violating pair inside; ties broken by the largest sum of z at the breaks.
+function segment(L, ok, lo, hi) {
+  const n = L.length, best = [{ c: 0, s: 0, cut: -1 }];
+  for (let e = lo; e <= hi; e++) {
+    let bb = null;
+    for (let a = e; a >= lo; a--) {
+      if (!ok[a * n + e]) break;
+      const pv = best[a - lo], c = pv.c + 1, s = pv.s + (a > lo ? zOf(L, a - 1, a) : 0);
+      if (!bb || c < bb.c || (c === bb.c && s > bb.s)) bb = { c, s, cut: a };
+    }
+    best.push(bb);
+  }
+  const out = [];
+  for (let e = hi; e >= lo; ) {
+    const a = best[e - lo + 1].cut;
+    out.unshift([a, e]);
+    e = a - 1;
+  }
+  return out;
+}
+
+// average P(a player of box A beats a player of box B), A above B
+const superiority = (L, A, B) => {
+  let s = 0, c = 0;
+  for (let i = A[0]; i <= A[1]; i++) for (let j = B[0]; j <= B[1]; j++) { s += phi(zOf(L, i, j)); c++; }
+  return s / c;
+};
+
+// L: scoreRows() output. Returns { groups, tiers, ties } as index ranges into L ([a, b] inclusive) -- groups hold tiers,
+// tiers hold ties. Each tier carries `beat`: how often one of its players is really better than one of the next tier's
+// (the next GROUP's when it ends a group, with `groupBreak`).
+export function buildBoard(L) {
+  if (!L.length) return { groups: [], tiers: [], ties: [] };
+  const n = L.length, okG = okMatrix(L, Z_GROUP), okT = okMatrix(L, Z_TIER), okX = okMatrix(L, Z_TIE);
+  const groups = [], tiers = [], ties = [];
+  segment(L, okG, 0, n - 1).forEach((G, g) => {
+    groups.push({ a: G[0], b: G[1], g });
+    segment(L, okT, G[0], G[1]).forEach((T) => {
+      const ti = tiers.length;
+      tiers.push({ a: T[0], b: T[1], g, ti });
+      segment(L, okX, T[0], T[1]).forEach((X) => ties.push({ a: X[0], b: X[1], ti }));
+    });
+  });
+  tiers.forEach((t, i) => {
+    const nx = tiers[i + 1];
+    if (!nx) return;
+    t.groupBreak = nx.g !== t.g;
+    t.beat = t.groupBreak ? superiority(L, [groups[t.g].a, groups[t.g].b], [groups[nx.g].a, groups[nx.g].b]) : superiority(L, [t.a, t.b], [nx.a, nx.b]);
+  });
+  return { groups, tiers, ties };
+}

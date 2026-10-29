@@ -33,7 +33,9 @@ POSITIONS <- c("QB", "RB", "WR", "TE")
 MIN_GAMES <- 8
 HORIZON   <- 3
 DISCOUNT  <- 0.85          # a season k years out counts DISCOUNT^k as much as the next one's
-AGES      <- 21:35         # the grid; younger / older players read the nearest end
+AGES      <- 21:42         # the grid; younger players read age 21. Past the last well-sampled age the curve keeps falling
+                           # (x 0.85 a year) so a 38-year-old QB is not scored like a 35-year-old
+SCALE_AGES <- 21:35        # the 1-10 anchors come from these ages only, so the long tail can't move the scale (it just clips at 1)
 LO_PCT    <- 5             # score 1 = this percentile of the position's pool
 HI_PCT    <- 99            # score 10
 MIN_N     <- 12            # a (position, age) cell thinner than this is left to the smoother
@@ -105,9 +107,9 @@ curves <- merge(curves, raw[, c("position", "age", "n", "retained")], by = c("po
 curves <- curves[order(curves$position, curves$age), ]
 
 # cross-position scale (one line for all four positions) -- kept as `age_value_cross`
-ANCHOR_HI <- max(curves$smooth)
-ANCHOR_LO <- min(curves$smooth)
-curves$age_value_cross <- round(1 + 9 * (curves$smooth - ANCHOR_LO) / (ANCHOR_HI - ANCHOR_LO), 1)
+ANCHOR_HI <- max(curves$smooth[curves$age %in% SCALE_AGES])
+ANCHOR_LO <- min(curves$smooth[curves$age %in% SCALE_AGES])
+curves$age_value_cross <- round(pmin(10, pmax(1, 1 + 9 * (curves$smooth - ANCHOR_LO) / (ANCHOR_HI - ANCHOR_LO))), 1)
 
 # position-relative scale: anchors from the position's pool of real player-seasons
 curves$anchor_lo <- curves$anchor_hi <- NA_real_

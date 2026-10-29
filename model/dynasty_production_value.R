@@ -55,6 +55,7 @@ ref <- do.call(rbind, lapply(seq_len(nrow(sea)), function(i) {
   data.frame(position = sea$position[i], season = sea$season[i], ppg = wppg(d$fantasy_points_ppr))
 }))
 cat("reference seasons:", nrow(ref), "\n")
+write.csv(ref, "dynasty_production_reference.csv", row.names = FALSE)   # read by dynasty_value.R (replacement levels)
 
 # ---- anchors: quantiles 0..100 per position ----
 anch <- do.call(rbind, lapply(POSITIONS, function(p) {
