@@ -20,9 +20,9 @@ export const MODES = {
   rebuilder: { label: "Rebuilder", prod: 0.65, age: 0.35 },
 };
 export const FORMATS = {
-  "1qb": { label: "1QB", key: "por1qb" },
   sf: { label: "Superflex", key: "porSf" },
-};
+  "1qb": { label: "1QB", key: "por1qb" },
+};  // toggle order on the page: Superflex, 1QB (the page still opens on 1QB)
 export const GROUP_NAMES = ["Cornerstones", "Core", "Depth", "Fringe", "Deep"];
 // how much of the shipped pool a view shows: the top 120 overall, the top 60 of one position
 export const SHOW = { all: 120, position: 60 };
