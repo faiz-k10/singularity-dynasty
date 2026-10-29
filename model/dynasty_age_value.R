@@ -13,9 +13,14 @@
 #   3. Retained_k(pos, a) = sum of those future PPG / sum of the same players' PPG at age a (a ratio of
 #      sums, so one big ratio from a tiny base can't move it). Seasons not yet played are left out of that k.
 #   4. Retained(pos, a) = sum_k DISCOUNT^k * Retained_k  (the nearer seasons count more).
-#   5. Smoothed across age within the position (a weighted loess, weights = sample size), then put on a
-#      FIXED 1-10 scale shared by all positions: 10 = the best Retained of any position / age on the grid,
-#      1 = the worst. The anchors are saved in the CSV header so a later run can't quietly shift the scale.
+#   5. Smoothed across age within the position (a weighted loess, weights = sample size).
+#   6. Each position gets its OWN 1-10 scale, built like the production score: the reference pool is every
+#      fantasy-relevant player-season (>= MIN_GAMES) at the position, each carrying the smoothed Retained of his
+#      age; the scale is a straight line between the pool's LO_PCT percentile (score 1) and HI_PCT percentile
+#      (score 10), clipped. So a 10 is the best age a position's players really have (a 22-23 year-old RB), a 1
+#      the worst (a 33+ one), and the score says how good an age is FOR THAT POSITION. The anchors are saved
+#      in the CSV so a later run can't quietly shift the scale. `age_value_cross` keeps the earlier single scale
+#      shared by all positions (same age, different position = different score) for when positions are combined.
 #
 # Why a ratio to the player's own current PPG: a 22-year-old RB and a 28-year-old RB have different
 # production, but "what share of THIS level do you still have in k years" is the age effect alone.
@@ -29,6 +34,8 @@ MIN_GAMES <- 8
 HORIZON   <- 3
 DISCOUNT  <- 0.85          # a season k years out counts DISCOUNT^k as much as the next one's
 AGES      <- 21:35         # the grid; younger / older players read the nearest end
+LO_PCT    <- 5             # score 1 = this percentile of the position's pool
+HI_PCT    <- 99            # score 10
 MIN_N     <- 12            # a (position, age) cell thinner than this is left to the smoother
 
 season_ppg <- function() {
@@ -97,14 +104,24 @@ curves <- do.call(rbind, lapply(POSITIONS, function(p) {
 curves <- merge(curves, raw[, c("position", "age", "n", "retained")], by = c("position", "age"), all.x = TRUE)
 curves <- curves[order(curves$position, curves$age), ]
 
-# fixed 1-10 scale across all positions
+# cross-position scale (one line for all four positions) -- kept as `age_value_cross`
 ANCHOR_HI <- max(curves$smooth)
 ANCHOR_LO <- min(curves$smooth)
-curves$age_value <- round(1 + 9 * (curves$smooth - ANCHOR_LO) / (ANCHOR_HI - ANCHOR_LO), 1)
+curves$age_value_cross <- round(1 + 9 * (curves$smooth - ANCHOR_LO) / (ANCHOR_HI - ANCHOR_LO), 1)
+
+# position-relative scale: anchors from the position's pool of real player-seasons
+curves$anchor_lo <- curves$anchor_hi <- NA_real_
+for (p in POSITIONS) {
+  c_ <- curves[curves$position == p, ]
+  v <- c_$smooth[match(pmin(pmax(df$a[df$position == p], min(AGES)), max(AGES)), c_$age)]
+  lo <- as.numeric(quantile(v, LO_PCT / 100)); hi <- as.numeric(quantile(v, HI_PCT / 100))
+  curves$anchor_lo[curves$position == p] <- lo; curves$anchor_hi[curves$position == p] <- hi
+}
+curves$age_value <- round(pmin(10, pmax(1, 1 + 9 * (curves$smooth - curves$anchor_lo) / (curves$anchor_hi - curves$anchor_lo))), 1)
 
 # ------------------------------------------------------------------
 cat("\nRetained production index (1.00 = same PPG as now, every year; below 1 = fades / drops out)\n")
-cat(sprintf("anchors: 10 = %.3f   1 = %.3f\n\n", ANCHOR_HI, ANCHOR_LO))
+a_ <- unique(curves[, c("position", "anchor_lo", "anchor_hi")]); cat("anchors (retained index at score 1 / 10):\n"); print(a_, digits = 3, row.names = FALSE); cat("\n")
 w <- reshape(curves[, c("position", "age", "age_value")], idvar = "age", timevar = "position", direction = "wide")
 names(w) <- sub("age_value.", "", names(w))
 print(w[, c("age", POSITIONS)], row.names = FALSE)
@@ -112,8 +129,8 @@ cat("\nraw retained (before smoothing) and sample size:\n")
 print(reshape(raw[raw$n >= MIN_N, c("position", "age", "retained")], idvar = "age", timevar = "position", direction = "wide"), digits = 3, row.names = FALSE)
 print(reshape(raw[, c("position", "age", "n")], idvar = "age", timevar = "position", direction = "wide"), row.names = FALSE)
 
-out <- curves[, c("position", "age", "age_value", "smooth", "retained", "n")]
-names(out) <- c("position", "age", "age_value", "retained_smooth", "retained_raw", "n")
+out <- curves[, c("position", "age", "age_value", "age_value_cross", "smooth", "retained", "n", "anchor_lo", "anchor_hi")]
+names(out) <- c("position", "age", "age_value", "age_value_cross", "retained_smooth", "retained_raw", "n", "anchor_lo", "anchor_hi")
 write.csv(out, "dynasty_age_value.csv", row.names = FALSE)
 cat("\nwrote dynasty_age_value.csv\n")
 
