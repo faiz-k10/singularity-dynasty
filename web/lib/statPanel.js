@@ -14,8 +14,8 @@ export const PANEL_KEYS = {
     player: ["u_rush_ypg", "u_ypc", "u_rush_epa", "u_rec_ypg", "ryoe"],
   },
   WR: {
-    role: ["avgXfp", "wopr", "u_tgt_pg", "u_tgt_share", "u_air_share", "i10Pg", "i10Share", "p2Td"],
-    player: ["u_rec_ypg", "u_ypt", "u_yac_rec", "u_epa_tgt"],
+    role: ["avgXfp", "wopr", "u_tgt_pg", "i10Pg", "i10Share", "p2Td"],
+    player: ["u_rec_ypg", "u_ypt", "u_yac_rec", "u_epa_tgt", "u_tgt_share", "u_air_share"],   // target / air-yards share are PLAYER numbers (founder, Oct 29 2026)
   },
 };
 PANEL_KEYS.TE = PANEL_KEYS.WR;
