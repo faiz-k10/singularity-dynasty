@@ -258,6 +258,8 @@ export function getAchievements(row) {
   const matchup = playing ? row.defLean || null : null;
   const eliteRole = row.groupRank?.role?.rank <= ELITE_RANK;
   const elitePlayer = row.groupRank?.player?.rank <= ELITE_RANK;
+  // A rookie: no seasons of NFL experience in our player directory (nflverse years_of_experience = 0).
+  const rookie = row.bio?.yearsExp === 0;
 
   return [
     (isEstablished || isBuilding) && {
@@ -265,6 +267,7 @@ export function getAchievements(row) {
       variant: isEstablished ? "gold" : "silver",
       label: isEstablished ? "Established" : "Building",
     },
+    rookie && { key: "rookie", variant: "rookie", label: "Rookie" },
     onFire && { key: "onFire", variant: "heat", label: "On Fire" },
     onIce && { key: "onIce", variant: "ice", label: "On Thin Ice" },
     spread === "volatile" && { key: "volatile", variant: "icarus", label: "Risky Icarus" },

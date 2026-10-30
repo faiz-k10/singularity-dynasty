@@ -6,6 +6,7 @@
 export const BADGE_FILTERS = [
   { id: "established", variant: "gold", label: "Established", match: (a) => a.key === "confidence" && a.variant === "gold" },
   { id: "building", variant: "silver", label: "Building", match: (a) => a.key === "confidence" && a.variant === "silver" },
+  { id: "rookie", variant: "rookie", label: "Rookie", match: (a) => a.key === "rookie" },
   { id: "onFire", variant: "heat", label: "On Fire", match: (a) => a.key === "onFire" },
   { id: "onIce", variant: "ice", label: "On Thin Ice", match: (a) => a.key === "onIce" },
   { id: "volatile", variant: "icarus", label: "Risky Icarus", match: (a) => a.key === "volatile" },
@@ -23,7 +24,7 @@ export const BADGE_FILTERS = [
 
 // The same filters, grouped for the dropdown so it reads as a short list of themes instead of one wall of pills.
 export const BADGE_GROUPS = [
-  { label: "Confidence", ids: ["established", "building"] },
+  { label: "Confidence", ids: ["established", "building", "rookie"] },
   { label: "Form", ids: ["onFire", "onIce", "honorable", "conArtist"] },
   { label: "Range", ids: ["volatile", "locked"] },
   { label: "Value", ids: ["buyLow", "sellHigh"] },

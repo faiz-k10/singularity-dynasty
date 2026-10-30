@@ -359,6 +359,15 @@ function EliteRoleIcon() {
   );
 }
 
+// Rookie: the numeral 1 drawn as an outline (a stroked flag-and-stem shape, hollow inside), in the badge's dark colour on the bronze.
+function RookieIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" aria-hidden="true">
+      <path d="M10 3.6h4.2v16.8h-3.4V8.2L8 9.7V6.6Z" />
+    </svg>
+  );
+}
+
 function ElitePlayerIcon() {
   const digit = { textAnchor: "middle", fontWeight: 700, fontFamily: "Arial, Helvetica, sans-serif" };
   return (
@@ -379,6 +388,8 @@ function achievementNode(a, row) {
       return <GlyphBadge variant="eliteRole" glyph={<EliteRoleIcon />} />;
     case "elitePlayer":
       return <GlyphBadge variant="elitePlayer" glyph={<ElitePlayerIcon />} />;
+    case "rookie":
+      return <GlyphBadge variant="rookie" glyph={<RookieIcon />} />;
     case "confidence":
       return <ConfidenceBadge confidence={row.sample_confidence} />;
     case "onFire":

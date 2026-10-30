@@ -49,6 +49,8 @@ const TICKER_ICONS = {
     '<svg viewBox="0 0 24 24" fill="currentColor"><g transform="translate(0.43,0.18)"><g transform="translate(-0.454,0.974)"><path d="M12 3.2 1.5 8l10.5 4.8L20 9.2v5.4h1.5V8L12 3.2z"/><path d="M5 10.4v4.3c0 1.7 3.1 3.4 7 3.4s7-1.7 7-3.4v-4.3l-7 3.2-7-3.2z" opacity="0.85"/><path d="M18.5 10v6.6" stroke="currentColor" stroke-width="1.2" fill="none" stroke-linecap="round"/><circle cx="18.5" cy="17.6" r="1.1"/></g></g></svg>',
   // Elite Role (framed landscape) and Elite Player (podium): the same one-colour art as the opened-player badges. The podium has no digits here: at 16px they are
   // smaller than 4px and would only read as noise.
+  rookie:
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M10 3.6h4.2v16.8h-3.4V8.2L8 9.7V6.6Z"/></svg>',
   eliteRole:
     '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="3.6" y="5.6" width="16.8" height="12.8" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="15.6" cy="10.2" r="1.7"/><path d="M6 16.6 10 10.4 13 14.5 14.8 12.7 18 16.6Z"/></svg>',
   elitePlayer:
