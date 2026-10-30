@@ -2561,6 +2561,7 @@ a.export-csv-btn{text-decoration:none;}
    the Usage panel needed -- without a special case. */
 .weekly-detail-grid .stat-panel{padding:16px;}
 .weekly-detail-curve-panel{flex:0 1 auto; max-width:400px; display:flex; flex-direction:column;}
+.weekly-detail-curve-panel .weekly-panel-body{flex:1 1 auto; display:flex; flex-direction:column; justify-content:center;} /* when the panel grows to the bottom of its column, the curve sits in the middle of the extra height */
 .weekly-detail-pct-panel{flex:0 1 auto; max-width:320px; display:flex; flex-direction:column;}
 .weekly-pct-head{margin-bottom:7px; flex-shrink:0;}
 /* Opened-player grid: left column = quick-read stats panel over the Outcome Curve; middle column = the "Your player" panel over
@@ -2573,7 +2574,7 @@ a.export-csv-btn{text-decoration:none;}
 .weekly-detail-col .weekly-detail-curve-panel,
 .weekly-detail-col .weekly-detail-pct-panel{flex:1 1 auto; max-width:none;}
 /* The top of the middle column, over Recent Games: a FIXED size (the panels of the opened player are heading toward one static size each): 171px = heading + exactly two league chips (50px each), the rest scroll under the heading. */
-.weekly-detail-mine-panel{flex:0 0 171px; display:flex; flex-direction:column; min-height:0;}
+.weekly-detail-mine-panel{flex:0 0 135px; display:flex; flex-direction:column; min-height:0;} /* heading + exactly two league rows (was 171px, which left ~36px empty under them; founder, Oct 29 2026); more leagues scroll */
 .weekly-detail-mine-panel .mine-strip-vertical{flex:1 1 auto; min-height:0;}
 .mine-strip-list{display:flex; flex-direction:column; gap:10px; flex:1 1 auto; min-height:0; width:100%; overflow-y:auto; padding-right:4px;}
 /* This week (emphasised) | Last week (muted). */
