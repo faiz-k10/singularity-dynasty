@@ -223,7 +223,7 @@ export default async function SiteHeader({ scripts = true }) {
                   <span className="nav-fold-body">
                     <span className="nav-fold-title">Player Season Simulations</span>
                     <span className="nav-fold-desc">10,000 simulated seasons per player: floor, median and ceiling.</span>
-                    <span className="nav-fold-chip nf-singularity">Singularity <i>Updated Tuesdays</i></span>
+                    <span className="nav-fold-chip nf-singularity">Singularity</span>
                   </span>
                 </ToolLink>
                 <ToolLink href="/tools/redraft-rankings" className="nav-fold-card">
@@ -233,7 +233,7 @@ export default async function SiteHeader({ scripts = true }) {
                   <span className="nav-fold-body">
                     <span className="nav-fold-title">Weekly Projection Rankings</span>
                     <span className="nav-fold-desc">This week&apos;s matchup-adjusted rankings, with floor and ceiling.</span>
-                    <span className="nav-fold-chip nf-explorer">Explorer <i>Updated Tuesdays</i></span>
+                    <span className="nav-fold-chip nf-explorer">Explorer</span>
                   </span>
                 </ToolLink>
                 <ToolLink href="/tools/draft-board" className="nav-fold-card">
@@ -243,7 +243,7 @@ export default async function SiteHeader({ scripts = true }) {
                   <span className="nav-fold-body">
                     <span className="nav-fold-title">Dynasty Draft Board</span>
                     <span className="nav-fold-desc">Startup and rookie boards, round by round, with stacks flagged.</span>
-                    <span className="nav-fold-chip nf-explorer">Explorer <i>Updated every 2 weeks</i></span>
+                    <span className="nav-fold-chip nf-explorer">Explorer</span>
                   </span>
                 </ToolLink>
                 <ToolLink href="/tools/prospect-rankings" className="nav-fold-card">
@@ -253,7 +253,7 @@ export default async function SiteHeader({ scripts = true }) {
                   <span className="nav-fold-body">
                     <span className="nav-fold-title">Prospect Rankings</span>
                     <span className="nav-fold-desc">WR and QB prospect boards with side-by-side comparisons.</span>
-                    <span className="nav-fold-chip nf-free">Free <i>Updated every 2 weeks</i></span>
+                    <span className="nav-fold-chip nf-free">Free</span>
                   </span>
                 </ToolLink>
               </div>
