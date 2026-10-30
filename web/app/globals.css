@@ -5309,6 +5309,7 @@ html{font-stretch:82%;}
 .sb-play.is-both::before{content:''; position:absolute; left:-3px; top:0; bottom:0; width:3px; background:var(--star-dim);}
 .sb-play.is-new{background:rgba(var(--horizon-gold-rgb),.1);}
 .sb-play.is-theirs.is-new{background:rgba(var(--down-rgb),.1);}
+.sb-play.is-both.is-new{background:rgba(var(--star-dot-rgb),.08);}
 .sb-play-main{flex:1; min-width:0; display:flex; flex-direction:column; gap:2px;}
 .sb-play-who{font-size:14px; line-height:1.3;}
 .sb-play-name.is-mine{color:var(--star);}
@@ -5641,11 +5642,12 @@ html{font-stretch:82%;}
 /* Recent plays: touchdowns and gains of 20+ yards stand out -- a flat tint across the row in the side's colour (gold = yours, blue = theirs), a heavier edge, a bold name and a bigger points figure. */
 .sb-play.is-hot{background:rgba(var(--horizon-gold-rgb), .13); border-left-color:var(--horizon-gold); border-top-color:rgba(var(--horizon-gold-rgb), .35); box-shadow:inset 0 -1px 0 rgba(var(--horizon-gold-rgb), .35);}
 .sb-play.is-hot.is-theirs{background:rgba(var(--down-rgb), .12); border-left-color:var(--down); border-top-color:rgba(var(--down-rgb), .35); box-shadow:inset 0 -1px 0 rgba(var(--down-rgb), .35);}
+.sb-play.is-hot.is-both{background:rgba(var(--star-dot-rgb), .1); border-top-color:rgba(var(--star-dot-rgb), .3); box-shadow:inset 0 -1px 0 rgba(var(--star-dot-rgb), .3);} /* a player on BOTH sides: white shading to match his white edge (founder, Oct 29 2026) */
 .sb-play.is-hot .sb-play-name{font-weight:700;}
 .sb-play.is-hot .sb-play-what strong{color:var(--horizon-gold);}
 .sb-play.is-hot.is-theirs .sb-play-what strong{color:var(--down);}
 /* Turnovers (interceptions and fumbles, whoever has the ball): a flat red tint, a red edge and a red label, whichever side the play belongs to. */
-.sb-play.is-turnover, .sb-play.is-turnover.is-theirs{background:color-mix(in srgb, var(--down) 14%, transparent); border-left-color:var(--down); border-top-color:color-mix(in srgb, var(--down) 40%, transparent); box-shadow:inset 0 -1px 0 color-mix(in srgb, var(--down) 40%, transparent);}
+.sb-play.is-turnover, .sb-play.is-turnover.is-theirs, .sb-play.is-turnover.is-both{background:color-mix(in srgb, var(--down) 14%, transparent); border-left-color:var(--down); border-top-color:color-mix(in srgb, var(--down) 40%, transparent); box-shadow:inset 0 -1px 0 color-mix(in srgb, var(--down) 40%, transparent);}
 .sb-play.is-turnover .sb-play-name{font-weight:700;}
 .sb-play.is-turnover .sb-play-what strong, .sb-play.is-turnover.is-theirs .sb-play-what strong{color:var(--down);}
 .sb-play.is-turnover .sb-play-pts{font-size:17px;}
