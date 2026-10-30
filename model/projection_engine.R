@@ -742,7 +742,7 @@ add_zero_snap_games <- function(reg, seasons) {
 # the live weekly method): 6 prior games give a median error of 4.03 at 1-5 real games (no projection at all today) and 4.58 vs 4.66
 # at 6-9 games; rookies beat the median 51-55% of the time (target 50%, was 55-61%) and their ceiling ~12-14% of the time (target
 # 10%, was 17-20%). A further "rookie lift" on the median did not help (MAE unchanged, floors broke) and is NOT applied.
-ROOKIE_PRIOR <- FALSE        # the switch: FALSE = the old rule (rookies wait for MIN_GAMES, no prior)
+ROOKIE_PRIOR <- TRUE         # the switch (ON since Oct 29 2026, founder): FALSE = the old rule (rookies wait for MIN_GAMES, no prior)
 ROOKIE_MIN_GAMES <- 1        # real games a rookie needs to be projected
 ROOKIE_PRIOR_GAMES <- 6      # K, swept 2-12 in backtest_rookie_prior_games.R (4-8 are equivalent; 6 is the middle)
 ROOKIE_PICK_BUCKETS <- c(0, 15, 40, 75, 150, Inf)   # overall pick; undrafted rookies use the last bucket
