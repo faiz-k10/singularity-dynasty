@@ -71,9 +71,11 @@ export function onThinIceFlag(games) {
   return floorHitLast2(games) || missedXfpAndMedianAllLast3(games);
 }
 
-// "Honorable" / "Con Artist" -- two opposite xFP badges, both all-or-nothing over the last XFP_STREAK (5) logged games (it was 3 until Oct 29 2026, founder):
-//   Honorable:  scored at-or-above xFP in ALL of them.
-//   Con Artist: scored strictly below xFP in ALL of them.
+// "Honorable" / "Con Artist" -- two opposite xFP badges over his last XFP_WINDOW (5) logged games, needing XFP_NEEDED (4) of them (all 3 of 3 until Oct 29 2026,
+// then 5 of 5 for a few minutes; founder: "4 of the last 5"):
+//   Honorable:  scored at-or-above xFP in at least 4 of the 5.
+//   Con Artist: scored strictly below xFP in at least 4 of the 5.
+// (Both can't be true at once: 4 + 4 > 5.)
 // A mixed result earns neither. Missing xFP for any game the badge needs (~12% of games, see
 // CLAUDE.md) voids that read entirely rather than judging off fewer data points. ("Con Artist" was "Rug Pull"
 // until its icon got redrawn -- a small ornate carpet read as an
@@ -81,13 +83,15 @@ export function onThinIceFlag(games) {
 // to match the new comedy/tragedy-masks icon: putting on a good number,
 // then not delivering it, twice running.)
 const hasXfp = (g) => g.exp_points_ppr != null && g.fantasy_points_ppr != null;
-export const XFP_STREAK = 5;
+export const XFP_WINDOW = 5;
+export const XFP_NEEDED = 4;
 export function xfpTrend(games) {
   if (!games) return null;
-  const run = games.slice(0, XFP_STREAK);
-  if (run.length < XFP_STREAK || !run.every(hasXfp)) return null;
-  if (run.every((g) => g.fantasy_points_ppr >= g.exp_points_ppr)) return "honorable";
-  if (run.every((g) => g.fantasy_points_ppr < g.exp_points_ppr)) return "conArtist";
+  const run = games.slice(0, XFP_WINDOW);
+  if (run.length < XFP_WINDOW || !run.every(hasXfp)) return null;
+  const atOrAbove = run.filter((g) => g.fantasy_points_ppr >= g.exp_points_ppr).length;
+  if (atOrAbove >= XFP_NEEDED) return "honorable";
+  if (XFP_WINDOW - atOrAbove >= XFP_NEEDED) return "conArtist";
   return null;
 }
 

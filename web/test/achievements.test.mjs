@@ -29,27 +29,29 @@ test("spreadFlag falls back to pooled cutoffs for an unknown position", () => {
   assert.equal(flag(1.1, undefined), "locked");
 });
 
-// ---- xFP badges: Honorable (last 5, at-or-above) and Con Artist (last 5, strictly below) ----
-import { xfpTrend, XFP_STREAK } from "../app/tools/achievements.js";
+// ---- xFP badges: Honorable (4 of the last 5 at-or-above) and Con Artist (4 of the last 5 strictly below) ----
+import { xfpTrend, XFP_WINDOW, XFP_NEEDED } from "../app/tools/achievements.js";
 const g = (pts, xfp) => ({ fantasy_points_ppr: pts, exp_points_ppr: xfp });
 const below = () => g(5, 8), above = () => g(12, 9);
 
-test("the streak is five games", () => assert.equal(XFP_STREAK, 5));
+test("the rule is 4 of the last 5", () => assert.deepEqual([XFP_NEEDED, XFP_WINDOW], [4, 5]));
 
-test("Con Artist needs all of the last 5 games below xFP", () => {
+test("Con Artist: 4 or 5 of the last 5 games below xFP, not 3", () => {
   assert.equal(xfpTrend([below(), below(), below(), below(), below()]), "conArtist");
-  assert.equal(xfpTrend([below(), below(), below(), below(), above()]), null); // fifth game beat xFP
+  assert.equal(xfpTrend([below(), above(), below(), below(), below()]), "conArtist"); // one good game is forgiven
+  assert.equal(xfpTrend([below(), above(), below(), above(), below()]), null); // 3 of 5
   assert.equal(xfpTrend([below(), below(), below(), below(), below(), above()]), "conArtist"); // an older game doesn't matter
 });
 
-test("three or four games are no longer enough", () => {
-  assert.equal(xfpTrend([below(), below(), below()]), null);
-  assert.equal(xfpTrend([above(), above(), above(), above()]), null);
+test("Honorable: 4 or 5 of the last 5 games at or above xFP (a tie counts), not 3", () => {
+  assert.equal(xfpTrend([above(), above(), g(10, 10), above(), above()]), "honorable");
+  assert.equal(xfpTrend([above(), below(), above(), above(), above()]), "honorable"); // one miss is forgiven
+  assert.equal(xfpTrend([above(), below(), above(), below(), above()]), null);
 });
 
-test("Honorable needs all of the last 5 games at or above xFP (a tie counts)", () => {
-  assert.equal(xfpTrend([above(), above(), g(10, 10), above(), above()]), "honorable");
-  assert.equal(xfpTrend([above(), above(), above(), above(), below()]), null);
+test("fewer than 5 logged games earns neither", () => {
+  assert.equal(xfpTrend([below(), below(), below(), below()]), null);
+  assert.equal(xfpTrend([above(), above(), above(), above()]), null);
 });
 
 test("either badge is voided by missing xFP in any of the 5 games", () => {
