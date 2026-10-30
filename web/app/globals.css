@@ -1667,7 +1667,7 @@ a.export-csv-btn{text-decoration:none;}
    chart just floating in the middle of the extra room it doesn't use
    wasted the space; bigger label text below is the point of growing
    the canvas, not a taller hump. */
-.outcome-curve-detail{width:100%; max-width:440px; height:210px; display:block; margin:0 auto;}
+.outcome-curve-detail{width:100%; max-width:440px; height:auto; display:block; margin:0 auto;} /* height follows the width (the viewBox's shape), no fixed 210px box around a ~145px drawing */
 .outcome-curve-peak-dot{fill:var(--neon-blue);}
 .outcome-curve-median-label{
   font-family:var(--font-mono), monospace; font-size:19px; font-weight:600;

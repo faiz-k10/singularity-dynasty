@@ -29,7 +29,7 @@
 // to free up headroom for the now-larger two-line median label above
 // it, plus a wider bottom margin for the larger end labels below.
 const WIDTH = 440;
-const HEIGHT = 210;
+const HEIGHT = 166; // just below the lowest label (END_PCT_Y + its descent); was 210, which left ~45 units of empty space under the curve
 const MARGIN_X = 14;
 const TAIL_PX = 60;
 const TAIL_HEIGHT_FRAC = 0.32;

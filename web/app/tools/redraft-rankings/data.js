@@ -168,7 +168,7 @@ async function fetchSimsMetrics(supabase) {
 //     game, so there's no pre-game xFP for the upcoming week these
 //     rankings project -- "current" here means season-to-date usage, not
 //     another projection of this week.
-//   - recentGames: the player's last 8 logged games regardless of season (badges use the newest 5)
+//   - recentGames: the player's last 11 logged games regardless of season (badges use the newest 5)
 //     boundary (so early in a new season, before 5 games exist yet, this
 //     naturally tails off into the end of last season instead of coming
 //     up empty) -- feeds the expanded row's game-log panel AND
@@ -237,7 +237,7 @@ function deriveGameLogData(data, season, floorCeilingByGame, currentWeek = Infin
       avgXfpByName[name] = thisSeasonXfp.reduce((sum, g) => sum + g.exp_points_ppr, 0) / thisSeasonXfp.length;
     }
     // Rows already arrive season/week descending from the query above.
-    recentGamesByName[name] = games.slice(0, 8); // the Recent Games panel shows up to 8; the badges read the first 5 (achievements.js)
+    recentGamesByName[name] = games.slice(0, 11); // the Recent Games panel shows up to 11 (8 until Oct 29 2026: the space under them was empty); the badges read the first 5 (achievements.js)
   }
 
   const lastWeekRankByName = {};
