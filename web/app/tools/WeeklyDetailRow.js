@@ -188,16 +188,19 @@ function FlameIcon() {
   );
 }
 
-// On Thin Ice's own icon -- three icicles hanging from a ledge, the longest in the middle, with a drop about to fall: a solid shape like the rest of the
-// row (the stroked snowflake it replaced read as stock clip art).
-function IcicleIcon() {
+// On Thin Ice's own icon -- a snowflake built like a crystal: six bold arms, each with a pair of branches and a diamond tip, around a solid hexagonal core
+// (heavier and more geometric than a plain line-drawn flake).
+function SnowflakeIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M3 3.4h18a1 1 0 0 1 1 1V6.6H2V4.4a1 1 0 0 1 1-1Z" />
-      <path d="M3.4 6.6h5.6l-1.9 10.4-.9 1.6-.9-1.6Z" />
-      <path d="M9.9 6.6h5.4L13 18.4l-.6 3.6-.8-3.6Z" />
-      <path d="M16.2 6.6h4.4l-1.6 6.6-.8 1.4-.9-1.4Z" />
-      <path d="M18.4 16.6c.7 1 1.1 1.6 1.1 2.2a1.1 1.1 0 0 1-2.2 0c0-.6.4-1.2 1.1-2.2Z" />
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="butt" aria-hidden="true">
+      {[0, 60, 120, 180, 240, 300].map((deg) => (
+        <g key={deg} transform={`rotate(${deg} 12 12)`}>
+        <path d="M12 12V4.2" strokeWidth="2.2" />
+        <path d="M12 6.9 10 4.9M12 6.9 14 4.9" strokeWidth="1.6" />
+        <path d="M12 1.5 13.5 3.7 12 5.9 10.5 3.7Z" fill="currentColor" stroke="none" />
+        </g>
+      ))}
+      <path d="M12 9.2l2.3 1.3v3L12 14.8l-2.3-1.3v-3Z" fill="currentColor" stroke="none" />
     </svg>
   );
 }
@@ -205,7 +208,7 @@ function IcicleIcon() {
 // Steady Eddy's own icon -- still a lock (the shape already reads
 // clearly at this size and the concept fits), just redrawn as a plain
 // filled SVG instead of the platform's own emoji, for the same reason as
-// FlameIcon/IcicleIcon/DiceIcon above.
+// FlameIcon/SnowflakeIcon/DiceIcon above.
 function LockIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -408,7 +411,7 @@ function achievementNode(a, row) {
       return (
         <GlyphBadge
           variant="ice"
-          glyph={<IcicleIcon />}
+          glyph={<SnowflakeIcon />}
         />
       );
     case "volatile":
