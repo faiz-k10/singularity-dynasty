@@ -213,7 +213,7 @@ export default async function SiteHeader({ scripts = true }) {
           <div className="nav-dropdown">
             <Link href="/#tools">Tools</Link>
             {/* Foldout: a glass panel that unfolds under the link -- a ladder of tools, one rung each (icon, name, what it does,
-                who it is for), plus quick links underneath. CSS-only (:hover / :focus-within), like the other menus. */}
+                who it is for). CSS-only (:hover / :focus-within), like the other menus. */}
             <div className="nav-foldout">
               <div className="nav-foldout-grid">
                 <ToolLink href="/tools/player-simulations" className="nav-fold-card">
@@ -256,11 +256,6 @@ export default async function SiteHeader({ scripts = true }) {
                     <span className="nav-fold-chip nf-free">Free <i>Updated every 2 weeks</i></span>
                   </span>
                 </ToolLink>
-              </div>
-              <div className="nav-foldout-foot">
-                <ToolLink href="/tools/compare-players">Compare players →</ToolLink>
-                <ToolLink href="/tools/compare-player-sims">Compare simulations →</ToolLink>
-                <Link href="/#tools">All tools →</Link>
               </div>
             </div>
           </div>
