@@ -30,6 +30,7 @@
 // it, plus a wider bottom margin for the larger end labels below.
 const WIDTH = 440;
 const HEIGHT = 166; // just below the lowest label (END_PCT_Y + its descent); was 210, which left ~45 units of empty space under the curve
+const TOP_PAD = 8; // the MEDIAN label's capitals rise ~5 units above y = 0; the drawing area starts this far above 0 so they aren't clipped
 const MARGIN_X = 14;
 const TAIL_PX = 60;
 const TAIL_HEIGHT_FRAC = 0.32;
@@ -123,7 +124,7 @@ export default function OutcomeCurveDetail({ floor, median, ceiling, maxSpread, 
     `width shown relative to the widest range in this week's pool.`;
 
   return (
-    <svg className="outcome-curve-detail" viewBox={`0 0 ${WIDTH} ${HEIGHT}`} role="img" aria-label={title}>
+    <svg className="outcome-curve-detail" viewBox={`0 ${-TOP_PAD} ${WIDTH} ${HEIGHT + TOP_PAD}`} role="img" aria-label={title}>
       <path className="outcome-curve-tail-floor" d={leftTailPath} />
       <path className="outcome-curve-tail-ceiling" d={rightTailPath} />
       <path className="outcome-curve-middle" d={middlePath} />
