@@ -449,7 +449,7 @@ function LiveFeed({ savedTeams, gameStates, updatedAt, teamId = null, league = n
         <div className="sb-feed-split">
           <div className="sb-feed-scroll">
             {section(feed.mine, "mine", "Yours", feed.mineTotal)}
-            {section(feed.theirs, "theirs", teamId ? "Theirs" : "Your opponents'", feed.theirsTotal)}
+            {section(feed.theirs, "theirs", teamId ? "Theirs" : "Opponents", feed.theirsTotal)}
           </div>
           <RecentPlays rows={all} updatedAt={updatedAt} focus={focus} onPick={pick} onTotals={onTotals} />
         </div>

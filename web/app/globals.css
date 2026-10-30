@@ -5239,7 +5239,7 @@ html{font-stretch:82%;}
 .sb-feed-section{padding:0; margin:0;} /* <section> carries the landing page's big section padding by default */
 .sb-feed-section + .sb-feed-section{margin-top:6px;}
 /* Section label: Yours in gold, theirs in blue -- the same colour language as the cards. */
-.sb-feed-label{position:sticky; top:0; z-index:1; display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin:0; padding:10px 16px 6px; font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; background:var(--void-panel);}
+.sb-feed-label{position:sticky; top:0; z-index:1; display:flex; align-items:baseline; justify-content:center; gap:10px; margin:0; padding:10px 16px 6px; font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; background:var(--void-panel);}
 .sb-feed-section.is-mine .sb-feed-label{color:var(--horizon-gold);}
 .sb-feed-section.is-theirs .sb-feed-label{color:var(--down);}
 .sb-feed-list{list-style:none; margin:0; padding:0;}
@@ -5775,7 +5775,6 @@ html{font-stretch:82%;}
 
 
 /* Recent plays header (founder, Oct 22 2026): no caption, the three buttons ordered Mine / Both / Theirs, and the title, buttons and focus chip centred. */
-.sb-plays-label{justify-content:center;}
 .sb-plays-filter{justify-content:center;}
 .sb-focus-chip{align-self:center;}
 
