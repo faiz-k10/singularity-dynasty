@@ -40,7 +40,7 @@ const TICKER_ICONS = {
   onFire:
     '<svg viewBox="0 0 24 24" fill="currentColor"><g transform="translate(0,-0.15)"><path fill-rule="evenodd" clip-rule="evenodd" d="M12.963 2.286a.75.75 0 00-1.071-.136 9.742 9.742 0 00-3.539 6.176 7.547 7.547 0 01-1.705-1.715.75.75 0 00-1.152-.082A9 9 0 1015.68 4.534a7.46 7.46 0 01-2.717-2.248zM15.75 14.25a3.75 3.75 0 11-7.313-1.172c.628.465 1.35.81 2.133.998a5.27 5.27 0 01-.32-1.83c0-1.014.377-1.94 1-2.647a3.752 3.752 0 014.5 4.65z"/></g></svg>',
   onIce:
-    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 3v18M4.8 7.5l14.4 9M4.8 16.5l14.4-9"/><path d="M12 5.2l-1.8 1.5M12 5.2l1.8 1.5M12 18.8l-1.8-1.5M12 18.8l1.8-1.5"/><path d="M6 8.6l-.3 2.1-2 .6M18 15.4l.3-2.1 2-.6"/></svg>',
+    '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 3.4h18a1 1 0 0 1 1 1V6.6H2V4.4a1 1 0 0 1 1-1Z"/><path d="M3.4 6.6h5.6l-1.9 10.4-.9 1.6-.9-1.6Z"/><path d="M9.9 6.6h5.4L13 18.4l-.6 3.6-.8-3.6Z"/><path d="M16.2 6.6h4.4l-1.6 6.6-.8 1.4-.9-1.4Z"/><path d="M18.4 16.6c.7 1 1.1 1.6 1.1 2.2a1.1 1.1 0 0 1-2.2 0c0-.6.4-1.2 1.1-2.2Z"/></svg>',
   buyLow:
     '<svg viewBox="0 0 24 24" fill="currentColor"><g transform="translate(0.68,-0.57)"><path d="M12 20V11" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M12 14.2c-3.6 0-6.2-2.3-6.2-6.5C9.9 8 12 10.4 12 14.2z"/><path d="M12 11.3c2.9 0 5.1-1.9 5.1-5.4C13.9 6 12 8.1 12 11.3z" opacity="0.85"/></g></svg>',
   sellHigh:

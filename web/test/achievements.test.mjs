@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { spreadFlag, SPREAD_CUTOFFS, PROJECTION_FLOOR } from "../app/tools/achievements.js";
+import { spreadFlag, SPREAD_CUTOFFS, PROJECTION_FLOOR, onFireFlag, onThinIceFlag } from "../app/tools/achievements.js";
 
 // ratio = (ceiling - floor) / projection; floor/ceiling chosen so ratio is exact.
 const flag = (ratio, pos, proj = 10) => spreadFlag(0, ratio * proj, proj, pos);
@@ -94,4 +94,26 @@ test("Matchup badge follows the row's defLean: SMASH -> Smash Spot, AVOID -> Tou
   assert.equal(tough.variant, "tough");
   assert.equal(tough.label, "Tough Spot");
   assert.equal(pick({}), undefined);
+});
+
+const game = (pts, extra = {}) => ({ fantasy_points_ppr: pts, floor: 5, ceiling: 25, median: 12, exp_points_ppr: 12, ...extra });
+
+test("On Fire: two straight games at or over the ceiling, not one", () => {
+  assert.equal(onFireFlag([game(26), game(25)]), true);
+  assert.equal(onFireFlag([game(26), game(10)]), false);
+  assert.equal(onFireFlag([game(26)]), false);
+  assert.equal(onFireFlag([game(26), game(25, { ceiling: null })]), false);
+});
+
+test("On Thin Ice: two straight games at or under the floor, not one", () => {
+  assert.equal(onThinIceFlag([game(5), game(2)]), true);
+  assert.equal(onThinIceFlag([game(5), game(10)]), false);
+  assert.equal(onThinIceFlag([game(2)]), false);
+  assert.equal(onThinIceFlag([game(2), game(3, { floor: null })]), false);
+});
+
+test("the three-game xFP-and-median path is unchanged", () => {
+  assert.equal(onThinIceFlag([game(8), game(9), game(7)]), true);
+  assert.equal(onFireFlag([game(15), game(16), game(14)]), true);
+  assert.equal(onThinIceFlag([game(8), game(9), game(13)]), false);
 });

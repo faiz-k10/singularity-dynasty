@@ -188,15 +188,16 @@ function FlameIcon() {
   );
 }
 
-// On Thin Ice's own icon -- a plain line-drawn snowflake, same treatment as
-// FlameIcon above (a stroked glyph instead of the platform's own colored
-// ice-cube emoji).
-function SnowflakeIcon() {
+// On Thin Ice's own icon -- three icicles hanging from a ledge, the longest in the middle, with a drop about to fall: a solid shape like the rest of the
+// row (the stroked snowflake it replaced read as stock clip art).
+function IcicleIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
-      <path d="M12 3v18M4.8 7.5l14.4 9M4.8 16.5l14.4-9" />
-      <path d="M12 5.2l-1.8 1.5M12 5.2l1.8 1.5M12 18.8l-1.8-1.5M12 18.8l1.8-1.5" />
-      <path d="M6 8.6l-.3 2.1-2 .6M18 15.4l.3-2.1 2-.6" />
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M3 3.4h18a1 1 0 0 1 1 1V6.6H2V4.4a1 1 0 0 1 1-1Z" />
+      <path d="M3.4 6.6h5.6l-1.9 10.4-.9 1.6-.9-1.6Z" />
+      <path d="M9.9 6.6h5.4L13 18.4l-.6 3.6-.8-3.6Z" />
+      <path d="M16.2 6.6h4.4l-1.6 6.6-.8 1.4-.9-1.4Z" />
+      <path d="M18.4 16.6c.7 1 1.1 1.6 1.1 2.2a1.1 1.1 0 0 1-2.2 0c0-.6.4-1.2 1.1-2.2Z" />
     </svg>
   );
 }
@@ -204,7 +205,7 @@ function SnowflakeIcon() {
 // Steady Eddy's own icon -- still a lock (the shape already reads
 // clearly at this size and the concept fits), just redrawn as a plain
 // filled SVG instead of the platform's own emoji, for the same reason as
-// FlameIcon/SnowflakeIcon/DiceIcon above.
+// FlameIcon/IcicleIcon/DiceIcon above.
 function LockIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -407,7 +408,7 @@ function achievementNode(a, row) {
       return (
         <GlyphBadge
           variant="ice"
-          glyph={<SnowflakeIcon />}
+          glyph={<IcicleIcon />}
         />
       );
     case "volatile":
