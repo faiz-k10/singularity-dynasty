@@ -586,14 +586,20 @@ export function PlayerHeaderPanel({ row }) {
 // player row and the Compare Players tool.
 export function OutcomeCurvePanel({ row, maxSpread }) {
   const pct = row.statPct || {};
-  if (isBye(row.opponent)) {
+  // No range to draw: his team is on its bye, or he is projected for zero (listed out) -- say why instead of leaving the panel blank.
+  const bye = isBye(row.opponent);
+  if (bye || (row.projection != null && row.projection <= 0)) {
     return (
       <div className="stat-panel weekly-detail-curve-panel">
         <div className="weekly-pct-head">
           <span className="weekly-panel-title">Outcome Curve</span>
         </div>
         <div className="weekly-panel-body">
-          <p className="weekly-opp-caption">{row.team} is on its bye this week, so there is no projected range. He is back in next week&apos;s rankings.</p>
+          <p className="weekly-opp-caption">
+            {bye
+              ? `${row.team} is on its bye this week, so there is no projected range. He is back in next week's rankings.`
+              : "He is listed out this week, so there is no projected range."}
+          </p>
         </div>
       </div>
     );

@@ -2571,6 +2571,7 @@ a.export-csv-btn{text-decoration:none;}
    in a fairly narrow window, then grow up to their max widths. Phones stack them (max-width:640px block below). */
 .weekly-detail-col-left{flex:1 1 230px; max-width:400px;}
 .weekly-detail-col-mid, .weekly-detail-col-right{flex:1 1 200px; max-width:320px;}
+.weekly-detail-col-mid{flex-basis:280px; min-width:280px;}   /* Recent Games' row (week, two logos, vs / @, points, finish) needs ~265px; any narrower and the finish spilled out of the panel */
 .weekly-detail-col .weekly-detail-curve-panel,
 .weekly-detail-col .weekly-detail-pct-panel{flex:1 1 auto; max-width:none;}
 /* The top of the middle column, over Recent Games: a FIXED size (the panels of the opened player are heading toward one static size each): 171px = heading + exactly two league chips (50px each), the rest scroll under the heading. */
