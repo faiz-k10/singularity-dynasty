@@ -2474,7 +2474,7 @@ a.export-csv-btn{text-decoration:none;}
 .weekly-achievement-badge.rookie .weekly-achievement-label{color:var(--rookie);}
 
 /* On Fire (FlameIcon) / On Ice (SnowflakeIcon) / Risky Icarus
-   (NightSkyIcon) / Steady Eddy (LockIcon) / Super Hero (HeroIcon) /
+   (DiceIcon) / Steady Eddy (LockIcon) / Super Hero (HeroIcon) /
    Honorable (GraduationCapIcon) / Con Artist (ConArtistIcon) -- same 24px
    flat-fill medallion as the other two achievement badges (confidence/bounce),
    all seven small inline SVGs (WeeklyDetailRow.js) instead of platform
@@ -2506,12 +2506,10 @@ a.export-csv-btn{text-decoration:none;}
 .weekly-glyph-badge.ball .dragon-ball{display:flex;}
 .weekly-glyph-badge.ball svg{width:30px; height:30px; overflow:visible;}
 .weekly-glyph-badge.honorable{background:var(--scholar); color:var(--void); box-shadow:0 0 8px rgba(var(--scholar-rgb),0.55);}
-/* Elite Role (a framed landscape painting, rose-wine) and Elite Player (an Olympic podium, periwinkle): the same language as every badge -- a dark one-colour subject on a
-   solid colour. The podium's 1 / 2 / 3 are cut out of the blocks in the badge's own colour. */
+/* Elite Role (a world map, rose-wine) and Elite Player (a goat's head, periwinkle): the same language as every badge -- a dark one-colour subject on a
+   solid colour. */
 .weekly-glyph-badge.eliteRole{background:var(--elite-role); color:var(--void); box-shadow:0 0 8px rgba(var(--elite-role-rgb),0.6);}
 .weekly-glyph-badge.elitePlayer{background:var(--elite-player); color:var(--void); box-shadow:0 0 8px rgba(var(--elite-player-rgb),0.6);}
-.weekly-glyph-badge.elitePlayer svg{width:27px; height:27px;}
-.weekly-glyph-badge.elitePlayer svg text{fill:var(--elite-player);}
 /* Rookie (an outlined numeral 1, bronze -- the one hue no other badge uses, >= 27 dE from every badge in both themes): the same dark subject on a solid colour. */
 .weekly-glyph-badge.rookie{background:var(--rookie); color:var(--void); box-shadow:0 0 8px rgba(var(--rookie-rgb),0.55);}
 .weekly-glyph-badge.menace{background:var(--menace); color:var(--void); box-shadow:0 0 10px rgba(var(--menace-rgb),0.75);}

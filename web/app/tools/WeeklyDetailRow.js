@@ -162,10 +162,12 @@ function GlyphBadge({ variant, glyph }) {
 // flying for the sun) far more directly than a night sky did, and it's
 // still the same starfield language as the homepage background.
 // Heroicons' "sparkles" glyph, three 4-point stars at different scales.
-function NightSkyIcon() {
+function DiceIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
+      <g transform="rotate(12 12 12)">
+        <path fillRule="evenodd" d="M6.9 3.5h10.2a3.4 3.4 0 0 1 3.4 3.4v10.2a3.4 3.4 0 0 1-3.4 3.4H6.9a3.4 3.4 0 0 1-3.4-3.4V6.9a3.4 3.4 0 0 1 3.4-3.4ZM8 6.5a1.55 1.55 0 1 0 0 3.1 1.55 1.55 0 0 0 0-3.1ZM16 6.5a1.55 1.55 0 1 0 0 3.1 1.55 1.55 0 0 0 0-3.1ZM12 10.45a1.55 1.55 0 1 0 0 3.1 1.55 1.55 0 0 0 0-3.1ZM8 14.4a1.55 1.55 0 1 0 0 3.1 1.55 1.55 0 0 0 0-3.1ZM16 14.4a1.55 1.55 0 1 0 0 3.1 1.55 1.55 0 0 0 0-3.1Z" />
+      </g>
     </svg>
   );
 }
@@ -202,7 +204,7 @@ function SnowflakeIcon() {
 // Steady Eddy's own icon -- still a lock (the shape already reads
 // clearly at this size and the concept fits), just redrawn as a plain
 // filled SVG instead of the platform's own emoji, for the same reason as
-// FlameIcon/SnowflakeIcon/NightSkyIcon above.
+// FlameIcon/SnowflakeIcon/DiceIcon above.
 function LockIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -347,14 +349,17 @@ function MoneyBagIcon() {
 // The icon each achievement key renders as in the full banner badge --
 // keyed by achievements.js's own `key` field so this can't fall out of
 // sync with which flags actually exist.
-// Elite Role: a framed landscape painting (sun, two mountains, a hill). Elite Player: an Olympic podium, 2 / 1 / 3, with the numbers cut out of the blocks in the badge's
-// colour (CSS: `.weekly-glyph-badge.elitePlayer svg text`). One-colour art in currentColor on the badge's solid colour, like every other badge.
+// Elite Role: a luxury mansion (pedimented centre with a spire, two wings, chimneys, steps; windows and the arched door cut out). Elite Player: a front-facing goat's head (the GOAT) -- swept-back horns, ears, slit pupils and a beard.
+// One-colour art in currentColor on the badge's solid colour, like every other badge; the eyes and nostrils are cut out of the face.
 function EliteRoleIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <rect x="3.6" y="5.6" width="16.8" height="12.8" rx="1.2" fill="none" stroke="currentColor" strokeWidth="1.8" />
-      <circle cx="15.6" cy="10.2" r="1.7" />
-      <path d="M6 16.6 10 10.4 13 14.5 14.8 12.7 18 16.6Z" />
+      <path fillRule="evenodd" d="M12 3.4 17.9 8.2V9.4H22V20.2H2V9.4H6.1V8.2ZM12 5.7a.9.9 0 1 0 0 1.8.9.9 0 0 0 0-1.8ZM7.1 10.6h1.3v3.8H7.1ZM15.6 10.6h1.3v3.8h-1.3ZM10.9 19.4V15.9a1.1 1.1 0 0 1 2.2 0v3.5ZM3.2 12h1.6v3H3.2ZM19.2 12h1.6v3h-1.6ZM3.2 16.4h1.6v2.2H3.2ZM19.2 16.4h1.6v2.2h-1.6Z" />
+      <path d="M11.4 3.6 12 1.2 12.6 3.6Z" />
+      <path d="M3.2 7.4h1.4v2.2H3.2Z" />
+      <path d="M19.4 7.4h1.4v2.2h-1.4Z" />
+      <path d="M9.4 20.2h5.2v1.5H9.4Z" />
+      <path d="M10.4 21.7h3.2v1H10.4Z" />
     </svg>
   );
 }
@@ -369,15 +374,14 @@ function RookieIcon() {
 }
 
 function ElitePlayerIcon() {
-  const digit = { textAnchor: "middle", fontWeight: 700, fontFamily: "Arial, Helvetica, sans-serif" };
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <rect x="8.7" y="6.3" width="6.6" height="13.2" />
-      <rect x="2" y="10.3" width="6.7" height="9.2" />
-      <rect x="15.3" y="13.5" width="6.7" height="6" />
-      <text x="12" y="13.4" fontSize="6.6" {...digit}>1</text>
-      <text x="5.35" y="16.6" fontSize="6.2" {...digit}>2</text>
-      <text x="18.65" y="18.7" fontSize="5.4" {...digit}>3</text>
+      <path d="M9.6 9C5.4 9.4 2.4 6.6 2.8 1.6C4.8 4.4 7.6 4.8 11 5.6Z" />
+      <path d="M14.4 9c4.2.4 7.2-2.4 6.8-7.4-2 2.8-4.8 3.2-8.2 4Z" />
+      <path d="M8.4 11 2.4 10C2.6 12.4 4.2 13.8 7 14Z" />
+      <path d="M15.6 11l6-1c-.2 2.4-1.8 3.8-4.6 4Z" />
+      <path fillRule="evenodd" d="M8.2 8.6h7.6l-.8 7c-.2 1.7-1.3 2.8-3 2.8s-2.8-1.1-3-2.8ZM9.3 11h1.8v1.1H9.3ZM12.9 11h1.8v1.1h-1.8ZM11 15.1a.5.5 0 1 0 0 1 .5.5 0 0 0 0-1ZM13 15.1a.5.5 0 1 0 0 1 .5.5 0 0 0 0-1Z" />
+      <path d="M10.6 18.4h2.8L12 22.4Z" />
     </svg>
   );
 }
@@ -410,7 +414,7 @@ function achievementNode(a, row) {
       return (
         <GlyphBadge
           variant="icarus"
-          glyph={<NightSkyIcon />}
+          glyph={<DiceIcon />}
         />
       );
     case "locked":
