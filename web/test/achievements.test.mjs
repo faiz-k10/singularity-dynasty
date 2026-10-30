@@ -29,33 +29,33 @@ test("spreadFlag falls back to pooled cutoffs for an unknown position", () => {
   assert.equal(flag(1.1, undefined), "locked");
 });
 
-// ---- xFP badges: Honorable (last 3, at-or-above) and Con Artist (last 3, strictly below) ----
-import { xfpTrend2 } from "../app/tools/achievements.js";
+// ---- xFP badges: Honorable (last 5, at-or-above) and Con Artist (last 5, strictly below) ----
+import { xfpTrend, XFP_STREAK } from "../app/tools/achievements.js";
 const g = (pts, xfp) => ({ fantasy_points_ppr: pts, exp_points_ppr: xfp });
+const below = () => g(5, 8), above = () => g(12, 9);
 
-test("Con Artist needs all of the last 3 games below xFP", () => {
-  assert.equal(xfpTrend2([g(8, 10), g(9, 12), g(5, 7)]), "conArtist");
-  assert.equal(xfpTrend2([g(8, 10), g(9, 12), g(14, 11)]), null); // third game beat xFP
+test("the streak is five games", () => assert.equal(XFP_STREAK, 5));
+
+test("Con Artist needs all of the last 5 games below xFP", () => {
+  assert.equal(xfpTrend([below(), below(), below(), below(), below()]), "conArtist");
+  assert.equal(xfpTrend([below(), below(), below(), below(), above()]), null); // fifth game beat xFP
+  assert.equal(xfpTrend([below(), below(), below(), below(), below(), above()]), "conArtist"); // an older game doesn't matter
 });
 
-test("two misses are no longer enough for Con Artist", () => {
-  assert.equal(xfpTrend2([g(8, 10), g(9, 12)]), null); // only 2 games
-  assert.equal(xfpTrend2([g(8, 10), g(9, 12), g(14, 11), g(1, 9)]), null); // third game back beat xFP
+test("three or four games are no longer enough", () => {
+  assert.equal(xfpTrend([below(), below(), below()]), null);
+  assert.equal(xfpTrend([above(), above(), above(), above()]), null);
 });
 
-test("Con Artist is voided by missing xFP in any of the 3 games", () => {
-  assert.equal(xfpTrend2([g(8, 10), g(9, 12), { fantasy_points_ppr: 5, exp_points_ppr: null }]), null);
+test("Honorable needs all of the last 5 games at or above xFP (a tie counts)", () => {
+  assert.equal(xfpTrend([above(), above(), g(10, 10), above(), above()]), "honorable");
+  assert.equal(xfpTrend([above(), above(), above(), above(), below()]), null);
 });
 
-test("Honorable needs all of the last 3 games at or above xFP", () => {
-  assert.equal(xfpTrend2([g(12, 10), g(10, 10), g(15, 11)]), "honorable"); // equal to xFP counts
-  assert.equal(xfpTrend2([g(12, 10), g(10, 10), g(9, 11)]), null); // third game missed
-  assert.equal(xfpTrend2([g(12, 10), g(10, 10)]), null); // only 2 games
-  assert.equal(xfpTrend2([g(12, 10), g(10, 10), g(15, 11), g(1, 9)]), "honorable"); // an older miss doesn't matter
-});
-
-test("Honorable is voided by missing xFP in any of the 3 games", () => {
-  assert.equal(xfpTrend2([g(12, 10), { fantasy_points_ppr: 10, exp_points_ppr: null }, g(15, 11)]), null);
+test("either badge is voided by missing xFP in any of the 5 games", () => {
+  const gap = { fantasy_points_ppr: 10, exp_points_ppr: null };
+  assert.equal(xfpTrend([above(), above(), gap, above(), above()]), null);
+  assert.equal(xfpTrend([below(), below(), gap, below(), below()]), null);
 });
 
 import { buyLowFlag } from "../app/tools/achievements.js";

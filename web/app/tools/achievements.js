@@ -71,9 +71,9 @@ export function onThinIceFlag(games) {
   return floorHitLast2(games) || missedXfpAndMedianAllLast3(games);
 }
 
-// "Honorable" / "Con Artist" -- two opposite xFP badges, both all-or-nothing over the last 3 logged games:
-//   Honorable:  scored at-or-above xFP in ALL 3.
-//   Con Artist: scored strictly below xFP in ALL 3.
+// "Honorable" / "Con Artist" -- two opposite xFP badges, both all-or-nothing over the last XFP_STREAK (5) logged games (it was 3 until Oct 29 2026, founder):
+//   Honorable:  scored at-or-above xFP in ALL of them.
+//   Con Artist: scored strictly below xFP in ALL of them.
 // A mixed result earns neither. Missing xFP for any game the badge needs (~12% of games, see
 // CLAUDE.md) voids that read entirely rather than judging off fewer data points. ("Con Artist" was "Rug Pull"
 // until its icon got redrawn -- a small ornate carpet read as an
@@ -81,12 +81,13 @@ export function onThinIceFlag(games) {
 // to match the new comedy/tragedy-masks icon: putting on a good number,
 // then not delivering it, twice running.)
 const hasXfp = (g) => g.exp_points_ppr != null && g.fantasy_points_ppr != null;
-export function xfpTrend2(games) {
+export const XFP_STREAK = 5;
+export function xfpTrend(games) {
   if (!games) return null;
-  const last3 = games.slice(0, 3);
-  if (last3.length < 3 || !last3.every(hasXfp)) return null;
-  if (last3.every((g) => g.fantasy_points_ppr >= g.exp_points_ppr)) return "honorable";
-  if (last3.every((g) => g.fantasy_points_ppr < g.exp_points_ppr)) return "conArtist";
+  const run = games.slice(0, XFP_STREAK);
+  if (run.length < XFP_STREAK || !run.every(hasXfp)) return null;
+  if (run.every((g) => g.fantasy_points_ppr >= g.exp_points_ppr)) return "honorable";
+  if (run.every((g) => g.fantasy_points_ppr < g.exp_points_ppr)) return "conArtist";
   return null;
 }
 
@@ -248,7 +249,7 @@ export function getAchievements(row) {
   const onFire = onFireFlag(lastFive);
   const onIce = onThinIceFlag(lastFive);
   const spread = playing ? spreadFlag(row.floor, row.ceiling, row.projection, row.position) : null;
-  const xfpFlag = xfpTrend2(lastFive);
+  const xfpFlag = xfpTrend(lastFive);
   const heroWins = Math.max(0, row.heroWins || 0);
   const buyLow = buyLowFlag(row.woprPercentile, lastFive);
   const sellHigh = sellHighFlag(row.woprPercentile, lastFive);
