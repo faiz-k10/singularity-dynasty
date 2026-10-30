@@ -5077,8 +5077,11 @@ html{font-stretch:82%;}
    boxed with a clear border in its side's colour (gold = yours, blue = your opponent's, the same language as the live
    panel), so what is still to come stands out from what is done. A flat tint, no gradient. The row bleeds out over the
    card's side padding and pads itself back in, so its content stays aligned with the other rows. */
-.h2h-row.is-upcoming{background:rgba(var(--horizon-gold-rgb),.14); border:1.5px solid rgba(var(--horizon-gold-rgb),.7); border-left-width:0; border-right-width:0; border-radius:0; margin:0 calc(-1 * var(--side-pad)); padding:1.5px calc(var(--side-pad) + 2px);} /* its 1.5px border takes the same from the padding, so its contents stay on the same lines */
-.h2h-side.opp .h2h-row.is-upcoming{background:rgba(var(--neon-blue-rgb),.14); border-color:rgba(var(--neon-blue-rgb),.7);}
+/* An empty slot takes the same outline (no shading), so its edges line up with the boxed rows (founder, Oct 29 2026). */
+.h2h-row.is-upcoming, .h2h-row.is-empty{border:1.5px solid rgba(var(--horizon-gold-rgb),.7); border-left-width:0; border-right-width:0; border-radius:0; margin:0 calc(-1 * var(--side-pad)); padding:1.5px calc(var(--side-pad) + 2px);} /* its 1.5px border takes the same from the padding, so its contents stay on the same lines */
+.h2h-row.is-upcoming{background:rgba(var(--horizon-gold-rgb),.14);}
+.h2h-side.opp .h2h-row.is-upcoming{background:rgba(var(--neon-blue-rgb),.14);}
+.h2h-side.opp .h2h-row.is-upcoming, .h2h-side.opp .h2h-row.is-empty{border-color:rgba(var(--neon-blue-rgb),.7);}
 .h2h-side.opp .h2h-c-slot{text-align:right;}
 .h2h-side.opp .h2h-c-player{align-items:flex-end; text-align:right;}
 
