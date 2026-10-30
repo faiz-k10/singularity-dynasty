@@ -212,7 +212,7 @@ export default async function SiteHeader({ scripts = true }) {
         <nav className="top-nav-bar" id="topNavBar" aria-label="Primary">
           <div className="nav-dropdown">
             <Link href="/#tools">Tools</Link>
-            {/* Foldout: a wide glass panel that unfolds under the link -- one card per tool (icon, name, what it does,
+            {/* Foldout: a glass panel that unfolds under the link -- a ladder of tools, one rung each (icon, name, what it does,
                 who it is for), plus quick links underneath. CSS-only (:hover / :focus-within), like the other menus. */}
             <div className="nav-foldout">
               <div className="nav-foldout-grid">

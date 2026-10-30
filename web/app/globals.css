@@ -530,10 +530,11 @@ body::before{
    one specifically must not be reintroduced here (see the position:
    absolute/relative bug this class caused previously). */
 /* ---- Tools foldout (see SiteHeader.js) ----
-   A wide glass panel that unfolds from the Tools link: it tips down from its top edge (perspective rotateX) while fading in,
-   the four tool cards stagger in after it, and a small notch points back at the link. */
+   A glass panel that unfolds from the Tools link: it tips down from its top edge (perspective rotateX) while fading in,
+   the four tools stagger in after it as ONE column -- a ladder, one rung per tool (founder, Oct 29 2026; it was a 2 x 2 grid) --
+   and a small notch points back at the link. */
 .nav-foldout{
-  position:absolute; top:100%; left:-18px; margin-top:14px; width:min(700px, calc(100vw - 48px)); padding:14px;
+  position:absolute; top:100%; left:-18px; margin-top:14px; width:min(470px, calc(100vw - 48px)); padding:12px;
   background:linear-gradient(180deg, rgba(255,255,255,calc(var(--glass-spec) * 1.2)), rgba(255,255,255,0) 60%), rgba(var(--scrim-rgb), 0.97);
   border:1px solid rgba(var(--star-dot-rgb), 0.16); border-radius:2px;
   box-shadow:inset 0 1px 0 var(--glass-rim), 0 28px 60px -12px rgba(var(--shadow-rgb), 0.65), 0 0 0 1px rgba(var(--neon-blue-rgb), 0.06);
@@ -550,9 +551,9 @@ body::before{
   opacity:1; visibility:visible; pointer-events:auto; transform:none;
 }
 .nav-dropdown:has(.nav-foldout)::after{width:360px; left:0; transform:none;}   /* hover bridge under the link and across to the panel */
-.nav-foldout-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+.nav-foldout-grid{display:flex; flex-direction:column; gap:6px;}
 .top-nav-bar .nav-foldout a.nav-fold-card{
-  display:flex; align-items:flex-start; gap:13px; padding:13px 14px; border-radius:2px;
+  display:flex; align-items:flex-start; gap:13px; padding:11px 13px; border-radius:2px;
   border:1px solid var(--line); background:rgba(var(--star-dim-rgb), 0.06);
   text-transform:none; letter-spacing:0; font-size:13px; font-weight:400; white-space:normal; color:var(--star);
   opacity:0; transform:translateY(8px);
@@ -589,7 +590,7 @@ body::before{
 .nf-free{--chip:var(--neon-blue);}
 .nf-explorer{--chip:var(--horizon-gold);}
 .nf-singularity{--chip:var(--horizon);}
-.nav-foldout-foot{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:12px; padding:11px 6px 0; border-top:1px dashed var(--line);}
+.nav-foldout-foot{display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:6px 12px; margin-top:12px; padding:11px 6px 0; border-top:1px dashed var(--line);}
 .top-nav-bar .nav-foldout .nav-foldout-foot a{
   font-family:var(--font-mono), monospace; font-size:11px; font-weight:600; letter-spacing:0.05em; text-transform:none; padding:3px 4px;
   color:var(--star-dim); white-space:nowrap;
