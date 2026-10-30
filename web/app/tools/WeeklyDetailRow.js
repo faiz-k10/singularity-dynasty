@@ -664,8 +664,9 @@ export function UsageTdPanel({ row }) {
 // giving each its own full-width slot keeps the row from running wider
 // than it needs to.
 export default function WeeklyDetailRow({ row, colSpan, maxSpread, owned, mineStatus }) {
-  // Middle column: the "Your player" panel over Recent Games; far right: the usage / touchdown profile (these two swapped places on request,
-  // Oct 24 2026). Without a "Your player" panel the profile keeps the middle column, as before.
+  // Left: This week / Last week, then the "Your player" panel and the Outcome Curve; middle: Recent Games on its own; right: the usage /
+  // touchdown profile (founder, Oct 29 2026: Recent Games swapped places with Your player + Outcome Curve). Without a "Your player"
+  // panel the left column is just the boxes and the curve.
   const mine = (owned || mineStatus) && (
     <div className="stat-panel weekly-detail-mine-panel">
       {owned ? <MyStrip owned={owned} vertical /> : <MyEmpty status={mineStatus} />}
@@ -679,17 +680,15 @@ export default function WeeklyDetailRow({ row, colSpan, maxSpread, owned, mineSt
           <div className="weekly-detail-grid">
             <div className="weekly-detail-col weekly-detail-col-left">
               <PlayerStatsRow row={row} />
-              <GameLogPanel games={row.recentGames} />
-            </div>
-            <div className="weekly-detail-col weekly-detail-col-mid">
-              {mine || <UsageTdPanel row={row} />}
+              {mine}
               <OutcomeCurvePanel row={row} maxSpread={maxSpread} />
             </div>
-            {mine && (
-              <div className="weekly-detail-col weekly-detail-col-right">
-                <UsageTdPanel row={row} />
-              </div>
-            )}
+            <div className="weekly-detail-col weekly-detail-col-mid">
+              <GameLogPanel games={row.recentGames} />
+            </div>
+            <div className="weekly-detail-col weekly-detail-col-right">
+              <UsageTdPanel row={row} />
+            </div>
           </div>
         </div>
       </td>
