@@ -3,7 +3,11 @@
 // since this republish is normally the same season/week that's already
 // live. Also INSERTS any player present in the fresh CSV but missing from
 // the table -- eligibility churns week to week (roster moves, new
-// call-ups), so this isn't a one-time concern.
+// call-ups), so this isn't a one-time concern. And REMOVES this week's rows
+// for players no longer in the CSV (pushed out of the 300-player pool, Oct 29
+// 2026: the rookies pushed 9 fringe players out and their old rows stayed),
+// the same cleanup publish-player-archetypes.mjs does. Capped at MAX_STALE so a
+// broken CSV can never empty the table.
 // Run: node --env-file=.env.local scripts/publish-player-simulations.mjs
 import { createClient } from "@supabase/supabase-js";
 import { readFileSync } from "fs";
@@ -164,4 +168,25 @@ if (missing.length > 0) {
 if (failed.length > 0) {
   console.log(`Failed: ${failed.length}`, failed.slice(0, 10));
   process.exit(1);
+}
+
+const MAX_STALE = 60;
+const keep = new Set(rows.map((r) => r.player_name));
+const { data: existing, error: readErr } = await supabase.from("player_simulations").select("player_name").eq("season", season).eq("week", week);
+if (readErr) {
+  console.log("Could not read back for cleanup:", readErr.message);
+  process.exit(1);
+}
+const stale = existing.map((r) => r.player_name).filter((n) => !keep.has(n));
+if (stale.length > MAX_STALE) {
+  console.log(`Not removing ${stale.length} stale rows (more than ${MAX_STALE}) -- check the CSV.`);
+  process.exit(1);
+}
+if (stale.length) {
+  const { error } = await supabase.from("player_simulations").delete().eq("season", season).eq("week", week).in("player_name", stale);
+  if (error) {
+    console.log("Cleanup failed:", error.message);
+    process.exit(1);
+  }
+  console.log(`Removed ${stale.length} stale row(s) no longer in the pool:`, stale.join(", "));
 }
