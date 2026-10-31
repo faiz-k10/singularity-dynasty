@@ -53,15 +53,3 @@ export function composeUrl(platform, { url, text }) {
       return null;
   }
 }
-
-// Allows `limit` shares per key (an address) in any `windowMs`; `hits` is a Map kept by the caller. Returns false when over.
-export function allowShare(hits, key, now, limit = 20, windowMs = 60 * 60 * 1000) {
-  const recent = (hits.get(key) || []).filter((t) => now - t < windowMs);
-  if (recent.length >= limit) {
-    hits.set(key, recent);
-    return false;
-  }
-  recent.push(now);
-  hits.set(key, recent);
-  return true;
-}

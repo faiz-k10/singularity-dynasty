@@ -1,0 +1,39 @@
+name: Uptime
+
+# Checks the live site every hour: each page must answer 200 within 30 seconds, show the brand (not an error page), and the data-driven tool
+# pages must not be showing their empty "check back soon" message (which means a publish failed or a table emptied). A failed run makes
+# GitHub email the account that last edited this schedule -- that email is the alert. No outside service or account needed.
+# Change SITE when the custom domain is connected. Run it by hand from the Actions tab ("Run workflow") to test it.
+
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+
+env:
+  SITE: https://web-kohl-ten-94.vercel.app
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check pages
+        run: |
+          fail=0
+          check() {  # path, must-have-data (1/0)
+            code=$(curl -s -o page.html -w "%{http_code}" --max-time 30 "$SITE$1" || echo 000)
+            if [ "$code" != "200" ]; then echo "::error::$1 answered $code"; fail=1; return; fi
+            if ! grep -q "Singularity Dynasty" page.html; then echo "::error::$1 did not render the site"; fail=1; return; fi
+            if [ "$2" = "1" ] && grep -qi "check back soon" page.html; then echo "::error::$1 is showing no data"; fail=1; return; fi
+            echo "ok $1"
+          }
+          check / 0
+          check /tools/redraft-rankings 1
+          check /tools/player-simulations 1
+          check /tools/draft-board 1
+          check /tools/lab 1
+          check /tools/prospect-rankings 0
+          check /my-team 0
+          check /login 0
+          exit $fail

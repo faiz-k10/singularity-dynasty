@@ -2,6 +2,8 @@
 
 import { leagueName } from "@/lib/format";
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
+import { allowHit, clientIp } from "@/lib/rateLimit";
 import { createClient } from "@/lib/supabase/server";
 import { resolveTier, savedTeamLimit } from "@/lib/tier";
 import { getAuthUser } from "@/lib/authUser";
@@ -153,7 +155,20 @@ function formatRecord(settings) {
 // teams' full refresh asks for it; the landing page box and the lookup preview stay fast.
 // opts.acquired: also work out how each player got onto the roster (Drafted / Traded / Picked up, lib/leagueAcquisition.js,
 // cached) -- the same full refresh; a save does it for its one league in withAcquired below.
-export async function lookupSleeperTeams(username, opts = {}) {
+// The public lookup (the landing page's Sleeper box, My Team's search): open to anyone and fairly heavy (several Sleeper + Supabase calls, ~2s), so each
+// address gets LOOKUP_LIMIT lookups per LOOKUP_WINDOW_MS (per server instance, lib/rateLimit.js). It takes only a username: the heavy season /
+// acquisition options are for the signed-in refresh, which calls lookupTeams() directly and isn't limited.
+const LOOKUP_LIMIT = 20;
+const LOOKUP_WINDOW_MS = 10 * 60 * 1000;
+const lookupHits = new Map();
+export async function lookupSleeperTeams(username) {
+  if (!allowHit(lookupHits, clientIp(await headers()), Date.now(), LOOKUP_LIMIT, LOOKUP_WINDOW_MS)) {
+    return { error: "Too many lookups from your connection. Try again in a few minutes." };
+  }
+  return lookupTeams(username);
+}
+
+async function lookupTeams(username, opts = {}) {
   const trimmed = (username || "").trim();
   if (!trimmed) {
     return { error: "Enter a Sleeper username." };
@@ -450,7 +465,7 @@ export async function refreshSavedTeams() {
   if (!rows?.length) return { teams: {} };
 
   const usernames = [...new Set(rows.map((r) => r.platform_username).filter(Boolean))];
-  const looked = await Promise.all(usernames.map((u) => lookupSleeperTeams(u, { season: true, acquired: true })));
+  const looked = await Promise.all(usernames.map((u) => lookupTeams(u, { season: true, acquired: true })));
   const byLeague = {};
   for (const res of looked) {
     for (const t of res.teams || []) byLeague[t.league_id] = t;

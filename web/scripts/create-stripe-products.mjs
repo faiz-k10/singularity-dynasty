@@ -1,5 +1,5 @@
 // One-off setup script: creates the Explorer and Singularity Stripe
-// Products + monthly/annual Prices in test mode.
+// Products + monthly/annual Prices (test or live, whichever key it is given; scripts/stripe-go-live.mjs runs it for live).
 //
 // Usage:
 //   node --env-file=.env.local scripts/create-stripe-products.mjs
@@ -14,7 +14,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const PLANS = [
   {
     name: "Explorer",
-    description: "Full rankings, full draft tools, no ceiling on teams.",
+    description: "Up to 10 leagues saved and watched live, every player ranked, the full dynasty board.",
     monthly: 900, // $9.00
     annual: 8400, // $7/mo billed annually ($84/yr)
   },

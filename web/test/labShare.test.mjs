@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { shareId, isShareId, cleanShareMeta, isPng, composeUrl, allowShare } from "../lib/labShare.js";
+import { shareId, isShareId, cleanShareMeta, isPng, composeUrl } from "../lib/labShare.js";
 
 test("shareId: 10 readable characters, accepted by isShareId", () => {
   const id = shareId(new Uint8Array([0, 1, 2, 3, 250, 251, 252, 253, 254, 255]));
@@ -41,10 +41,3 @@ test("composeUrl writes the post for each platform, nothing for the ones without
   assert.equal(composeUrl("instagram", p), null);
 });
 
-test("allowShare caps shares per address in the window", () => {
-  const hits = new Map();
-  for (let i = 0; i < 3; i++) assert.ok(allowShare(hits, "1.2.3.4", 1000 + i, 3, 60000));
-  assert.equal(allowShare(hits, "1.2.3.4", 2000, 3, 60000), false);
-  assert.ok(allowShare(hits, "5.6.7.8", 2000, 3, 60000));
-  assert.ok(allowShare(hits, "1.2.3.4", 1000 + 60001, 3, 60000));
-});

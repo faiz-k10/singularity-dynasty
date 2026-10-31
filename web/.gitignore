@@ -1,2 +1,5 @@
 .vercel
 .env*
+
+# weekly-run.mjs: the last week the email digest went out
+.digest-sent

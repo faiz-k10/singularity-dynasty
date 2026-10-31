@@ -4,7 +4,8 @@
 //
 //   node --env-file=.env.local scripts/weekly-run.mjs game-data
 //   node --env-file=.env.local scripts/weekly-run.mjs projections
-//   node --env-file=.env.local scripts/weekly-run.mjs tuesday      (game-data, then projections only if the week is complete)
+//   node --env-file=.env.local scripts/weekly-run.mjs tuesday      (game-data, then projections only if the week is complete, then the email digest and a backup)
+//   node --env-file=.env.local scripts/weekly-run.mjs backup       (scripts/backup.mjs on its own)
 //
 // game-data    model/player_game_log.R -> publish-player-game-log.mjs -> publish-actual-production.mjs
 // projections  model/projection_engine.R -> publish-rankings.mjs -> publish-player-simulations.mjs
@@ -12,6 +13,8 @@
 //              then (never fatal) model/player_groups.R -> publish-player-groups.mjs
 //              then (never fatal) model/defense_impact.R -> publish-defense-leans.mjs  (matchup flags, display only)
 //              then (never fatal) model/player_directory.R -> publish-player-directory.mjs  (names, teams, bios, headshots; Sleeper ids)
+// digest       scripts/send-weekly-digest.mjs --send, once per published week (marker: web/.digest-sent), only once RESEND_API_KEY and EMAIL_FROM are set; never fatal
+// backup       scripts/backup.mjs: every table + the model's untracked outputs to Website/Backups/auto-* (keeps the newest 8); never fatal after Tuesday
 //
 // Exits non-zero (and prints why) when a check fails, so a scheduled run can
 // report it instead of silently publishing something wrong.
@@ -171,6 +174,30 @@ function archetypes() {
   log(p.status === 0 ? tail : `SKIPPED: archetype publish failed (exit ${p.status}) -- ${tail}`);
 }
 
+// The weekly "Your Players This Week" email, sent at most once per published week (a re-run of Tuesday won't email anyone twice). Does nothing
+// until the sender is set up (RESEND_API_KEY + EMAIL_FROM). Never fatal.
+async function digest() {
+  log("\n--- email digest ---");
+  if (!process.env.RESEND_API_KEY || !process.env.EMAIL_FROM) return log("skipped: RESEND_API_KEY / EMAIL_FROM not set yet");
+  const { season, week } = await latestWeek("redraft_rankings");
+  const marker = path.join(WEB, ".digest-sent");
+  const tag = `${season}-W${week}`;
+  if (fs.existsSync(marker) && fs.readFileSync(marker, "utf8").trim() === tag) return log(`skipped: already sent for ${tag}`);
+  const r = spawnSync(process.execPath, ["--env-file=.env.local", "scripts/send-weekly-digest.mjs", "--send"], { cwd: WEB, encoding: "utf8", maxBuffer: 16 * 1024 * 1024 });
+  const tail = ((r.stdout || "") + (r.stderr || "")).trim().split("\n").slice(-4).join("\n");
+  if (r.status === 0) fs.writeFileSync(marker, tag);
+  log(r.status === 0 ? tail : `DIGEST FAILED (exit ${r.status}) -- ${tail}`);
+}
+
+// Never fatal: a failed backup is reported, the publish it follows still counts.
+function backup() {
+  log("\n--- backup ---");
+  const r = spawnSync(process.execPath, ["--env-file=.env.local", "scripts/backup.mjs"], { cwd: WEB, encoding: "utf8", maxBuffer: 16 * 1024 * 1024 });
+  const tail = ((r.stdout || "") + (r.stderr || "")).trim().split("\n").slice(-4).join("\n");
+  log(r.status === 0 ? tail : `BACKUP FAILED (exit ${r.status}) -- ${tail}`);
+  return r.status === 0;
+}
+
 const mode = process.argv[2];
 log(`Weekly run: ${mode} -- ${new Date().toString()}`);
 if (mode === "game-data") {
@@ -183,7 +210,11 @@ if (mode === "game-data") {
     fail(`Week ${c.week} is not complete (${c.finished}/${c.games} games final` + (c.missing.length ? `, no rows for ${c.missing.join(", ")}` : "") + `). Game data was published; projections were NOT run. Re-run later.`);
   }
   await projections();
+  await digest();
+  backup();
+} else if (mode === "backup") {
+  if (!backup()) process.exit(1);
 } else {
-  fail("usage: weekly-run.mjs game-data | projections | tuesday");
+  fail("usage: weekly-run.mjs game-data | projections | tuesday | backup");
 }
 log("\nDONE");

@@ -1,17 +1,17 @@
 import { NextResponse } from "next/server";
 import { randomBytes } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { SHARE_BUCKET, SHARE_MAX_BYTES, shareId, cleanShareMeta, isPng, allowShare } from "@/lib/labShare";
+import { SHARE_BUCKET, SHARE_MAX_BYTES, shareId, cleanShareMeta, isPng } from "@/lib/labShare";
+import { allowHit, clientIp } from "@/lib/rateLimit";
 
 // Creates a shared chart from The Lab (LabShare.js): the picture (a PNG, already drawn in the browser with the watermark) and its title, caption
 // and Lab view go into the public "lab-shares" bucket as <id>.png + <id>.json, and the answer is the share page's address, /s/<id>, whose
 // link preview is that picture. Open to every visitor of The Lab, so it only takes a PNG of a sane size with a Lab link, and caps how many
-// shares one address can make an hour (per server instance -- enough to stop a loop, not a determined abuser; a table-backed limit would be next).
+// shares one address can make an hour (20; lib/rateLimit.js, per server instance).
 const hits = new Map();
 
 export async function POST(request) {
-  const ip = (request.headers.get("x-forwarded-for") || "").split(",")[0].trim() || "local";
-  if (!allowShare(hits, ip, Date.now())) return NextResponse.json({ error: "Too many shares for now. Try again in a little while." }, { status: 429 });
+  if (!allowHit(hits, clientIp(request.headers), Date.now(), 20, 60 * 60 * 1000)) return NextResponse.json({ error: "Too many shares for now. Try again in a little while." }, { status: 429 });
 
   let form;
   try {
