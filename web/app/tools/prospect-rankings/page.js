@@ -126,16 +126,11 @@ export default async function ProspectRankingsPage({ searchParams }) {
         <div className="eyebrow">
           {latest ? `${latest.draft_class} Draft Class` : "Prospects"}
         </div>
-        <h1>WR/QB Prospect Rankings &amp; Comparisons</h1>
-        <p className="tool-sub">
-          Incoming rookie rankings for wide receivers and quarterbacks, with
-          statistical comps against past prospects using athletic and
-          production percentiles.
-        </p>
+        <h1>WR/QB Prospect Rankings</h1>
 
         {totalRows === 0 ? (
           <div className="tool-empty">
-            <p>Prospect boards publish ahead of the draft — check back soon.</p>
+            <p>Check back soon.</p>
           </div>
         ) : (
           <>
