@@ -46,8 +46,11 @@ export default function WallTracker() {
       },
       { threshold: 0.5 }
     );
-    const watch = () => document.querySelectorAll("[data-wall]:not([data-wall-watched])").forEach((el) => {
-      el.setAttribute("data-wall-watched", "");
+    // watched elements are remembered here, never marked in the page: writing an attribute onto an element React is still hydrating makes it log a mismatch
+    const watched = new WeakSet();
+    const watch = () => document.querySelectorAll("[data-wall]").forEach((el) => {
+      if (watched.has(el)) return;
+      watched.add(el);
       io.observe(el);
     });
     watch();
