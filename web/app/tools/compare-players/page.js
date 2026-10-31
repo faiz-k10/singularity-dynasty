@@ -69,7 +69,7 @@ export default async function ComparePlayersPage({ searchParams }) {
         ) : (
           <>
             {gated && (
-              <div className="tool-paywall reveal in">
+              <div className="tool-paywall reveal in" data-wall="compare-players">
                 <p>
                   You can compare the top {TEASER_LIMIT} players. Unlock all {cached.rows.length} with Explorer or Singularity.
                 </p>

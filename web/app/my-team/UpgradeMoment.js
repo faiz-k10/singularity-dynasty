@@ -39,7 +39,7 @@ export function UpgradeMoment({ teams, savedCount, limit }) {
   }
 
   return (
-    <div className="upgrade-moment" id="upgrade-moment">
+    <div className="upgrade-moment" id="upgrade-moment" data-wall="upgrade-moment">
       <h3>
         You&apos;re in {s.leagues} leagues. Your free plan saves {limit}.
       </h3>

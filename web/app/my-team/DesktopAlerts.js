@@ -65,7 +65,7 @@ export default function DesktopAlertsToggle({ on, setOn, allowed }) {
   const [note, setNote] = useState(null);
   if (!allowed) {
     return (
-      <span className="desk-alerts desk-alerts-locked">
+      <span className="desk-alerts desk-alerts-locked" data-wall="desktop-alerts">
         <BellIcon /> Alerts: <Link href="/#pricing">Explorer</Link>
       </span>
     );

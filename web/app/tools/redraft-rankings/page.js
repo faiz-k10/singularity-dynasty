@@ -124,7 +124,7 @@ export default async function RedraftRankingsPage({ searchParams }) {
             />
 
             {isTeaser && (
-              <div className="tool-paywall reveal in">
+              <div className="tool-paywall reveal in" data-wall="weekly-rankings">
                 <p>
                   You&apos;re seeing the top 50 of {totalCount} players. Unlock
                   the full list with Explorer or Singularity.

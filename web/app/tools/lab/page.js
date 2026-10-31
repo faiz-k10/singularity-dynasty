@@ -61,7 +61,7 @@ export default async function LabPage({ searchParams }) {
         ) : (
           <>
             {!full && (
-              <div className="tool-paywall lab-paywall">
+              <div className="tool-paywall lab-paywall" data-wall="lab">
                 <p>
                   You&apos;re researching the top {lab.rows.length} of this week&apos;s {lab.total} ranked players. Explorer opens every player; Singularity adds
                   the season simulation numbers.

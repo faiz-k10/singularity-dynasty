@@ -43,7 +43,7 @@ export default function LabCompare({ picked, simsAccess, onToggle }) {
               if (locked) {
                 return (
                   <tr key={group} className="compare-group-row">
-                    <th colSpan={picked.length + 1}>
+                    <th colSpan={picked.length + 1} data-wall="lab-sim-metrics">
                       {group}:{" "}
                       <Link href="/#pricing" className="lab-lock-link">
                         Singularity

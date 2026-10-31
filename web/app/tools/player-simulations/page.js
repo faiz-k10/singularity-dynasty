@@ -176,7 +176,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
             />
 
             {isTeaser && (
-              <div className="tool-paywall reveal in">
+              <div className="tool-paywall reveal in" data-wall="player-sims">
                 <p>
                   You&apos;re seeing {sims.length} of {totalCount} simulated
                   players. Unlock the full set with Singularity.

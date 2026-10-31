@@ -151,7 +151,7 @@ export default async function ProspectRankingsPage({ searchParams }) {
             {renderGroup("Quarterbacks", qbs.rows, qbSort, "qb_sort", "qb_dir")}
 
             {isTeaser && (
-              <div className="tool-paywall reveal in">
+              <div className="tool-paywall reveal in" data-wall="prospects">
                 <p>
                   You&apos;re seeing the top {TEASER_LIMIT_PER_POSITION} at
                   each position ({totalRows} of {totalCount} prospects).

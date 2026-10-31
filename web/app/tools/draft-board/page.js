@@ -97,7 +97,7 @@ async function RankingsView({ hasFullAccess }) {
         </div>
         <DynastyBoard rows={rows} meta={meta} complete={rows.length === total} />
         {!hasFullAccess && (
-          <div className="tool-paywall reveal in">
+          <div className="tool-paywall reveal in" data-wall="dynasty-board">
             <p>
               You&apos;re seeing the top {FREE_ROWS} of {total} ranked players. Unlock the full board with Explorer or Singularity.
             </p>
@@ -226,7 +226,7 @@ export default async function DraftBoardPage({ searchParams }) {
             })}
 
             {isTeaser && (
-              <div className="tool-paywall reveal in">
+              <div className="tool-paywall reveal in" data-wall="draft-board">
                 <p>
                   You&apos;re seeing Round 1 of {totalRounds} rounds. Unlock
                   the full board with Explorer or Singularity.

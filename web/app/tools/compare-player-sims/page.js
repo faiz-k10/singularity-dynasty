@@ -84,7 +84,7 @@ export default async function ComparePlayerSimsPage({ searchParams }) {
         ) : (
           <>
             {gated && (
-              <div className="tool-paywall reveal in">
+              <div className="tool-paywall reveal in" data-wall="compare-sims">
                 <p>
                   You can compare the top {TEASER_LIMIT} players. Unlock all {weekData.rows.length} with Singularity.
                 </p>

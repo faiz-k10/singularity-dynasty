@@ -1441,7 +1441,7 @@ export default function MyTeamClient({
           {!autoRefresh && (
             <>
               {" · "}
-              <Link href="/#pricing">auto-refresh: Explorer</Link>
+              <Link href="/#pricing" data-wall="auto-refresh">auto-refresh: Explorer</Link>
             </>
           )}
         </span>
@@ -1452,7 +1452,7 @@ export default function MyTeamClient({
         </button>
       )}
       {isSignedIn && savedTeamLimit != null && (
-        <span>
+        <span data-wall={atLimit ? "team-cap" : undefined}>
           {savedCount} of {savedTeamLimit} saved
           {atLimit && (
             <>

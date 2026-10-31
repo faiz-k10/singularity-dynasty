@@ -32,7 +32,10 @@ export default function PrivacyPage() {
           <p>
             <strong>Usage data:</strong> We may collect basic technical data
             (such as browser type and general usage patterns) to keep the
-            Service running and to understand how it&apos;s used.
+            Service running and to understand how it&apos;s used. That includes
+            which upgrade prompts a visitor sees and clicks; we record the
+            prompt and the page (never your IP address), and attach it to your
+            account only when you are signed in.
           </p>
 
           <h2>2. Cookies</h2>

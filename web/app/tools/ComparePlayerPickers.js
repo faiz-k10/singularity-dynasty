@@ -103,7 +103,7 @@ export default function ComparePlayerPickers({ players, defaults, maxPlayers = 3
         i < maxPlayers ? (
           <PickerField key={slot.name} slot={slot} players={players} defaultValue={defaults[slot.name] || ""} />
         ) : (
-          <div className="compare-form-field" key={slot.name}>
+          <div className="compare-form-field" key={slot.name} data-wall="compare-third-slot">
             <span className="feed-label mono">{slot.label}</span>
             <Link href="/#pricing" className="compare-select compare-picker-input compare-locked">
               Add a third with Explorer →

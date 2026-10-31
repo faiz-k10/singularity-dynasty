@@ -92,7 +92,7 @@ export default function WaiverWire({ teamId, bare = false }) {
             </button>
           )}
           {data && !data.full && data.hidden > 0 && (
-            <span className="h2h-note">
+            <span className="h2h-note" data-wall="waiver-wire">
               {data.hidden} more available {data.hidden === 1 ? "player is" : "players are"} ranked past the free top 50.{" "}
               <Link href="/#pricing" className="h2h-sleeper">
                 See every one with Explorer →

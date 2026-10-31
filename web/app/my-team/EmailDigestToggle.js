@@ -12,7 +12,7 @@ export default function EmailDigestToggle({ tier, enabled }) {
 
   if (tier === "stargazer") {
     return (
-      <p className="email-digest email-digest-locked">
+      <p className="email-digest email-digest-locked" data-wall="email-digest">
         Get this every Tuesday by email &mdash; <Link href="/#pricing">Explorer</Link>.
       </p>
     );
