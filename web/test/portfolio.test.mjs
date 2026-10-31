@@ -127,3 +127,14 @@ test("aggregateGames: expected-points metrics (only over games with an xFP value
     "no xFP games in window -> glPOE null"
   );
 });
+
+test("findProjection falls back to one nickname match, never a guess", async () => {
+  const { findProjection } = await import("../lib/portfolio.js");
+  const byName = { "chig okonkwo": { proj: 7.4 }, "josh allen": { proj: 20 }, "jordan allen": { proj: 5 }, "mike williams": { proj: 9 }, "michael williams": { proj: 4 } };
+  assert.equal(findProjection(byName, "Chigoziem Okonkwo").proj, 7.4);
+  assert.equal(findProjection(byName, "Josh Allen").proj, 20);
+  assert.equal(findProjection(byName, "Joshua Allen"), null); // Josh and Jordan both fit: ambiguous
+  assert.equal(findProjection(byName, "Mike Williams").proj, 9);
+  assert.equal(findProjection(byName, "Mitch Williams"), null);
+  assert.equal(findProjection(byName, "Nobody Else"), null);
+});

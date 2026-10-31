@@ -10,6 +10,30 @@ export function normalizePlayerName(name) {
     .trim();
 }
 
+// A roster player's projection by name. The rankings can use a nickname Sleeper doesn't ("Chig Okonkwo" vs "Chigoziem Okonkwo"), so when
+// the exact normalized name misses, take the ONE projected player with the same last name and the same first two letters; two candidates
+// or none -> null (never a guess). The last-name index is built once per byName object.
+const lastNameIndexes = new WeakMap();
+export function findProjection(byName, name) {
+  if (!byName) return null;
+  const key = normalizePlayerName(name);
+  if (byName[key]) return byName[key];
+  let idx = lastNameIndexes.get(byName);
+  if (!idx) {
+    idx = new Map();
+    for (const k of Object.keys(byName)) {
+      const last = k.slice(k.lastIndexOf(" ") + 1);
+      if (!idx.has(last)) idx.set(last, []);
+      idx.get(last).push(k);
+    }
+    lastNameIndexes.set(byName, idx);
+  }
+  const sp = key.lastIndexOf(" ");
+  if (sp < 0) return null;
+  const pool = (idx.get(key.slice(sp + 1)) || []).filter((k) => k.slice(0, 2) === key.slice(0, 2));
+  return pool.length === 1 ? byName[pool[0]] : null;
+}
+
 // Per-player fields carried straight from the saved snapshot (populated
 // by actions.js at lookup time) -- first non-null value seen wins.
 const SNAPSHOT_PLAYER_FIELDS = [

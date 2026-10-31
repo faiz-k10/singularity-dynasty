@@ -7,6 +7,7 @@ import { indexLeans, flagFor } from "./defenseLeans";
 import { getCachedLeans } from "../app/tools/redraft-rankings/data";
 
 const TTL_MS = 5 * 60 * 1000;
+
 const cache = new Map(); // season -> { at, value }
 
 export async function getWeekProjections(supabase, season) {

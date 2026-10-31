@@ -4,7 +4,7 @@
 // (refreshSavedTeams -> lookupSleeperTeams with { season: true }), never the 30-second poll or the landing page box.
 // The math is in lib/playoffOdds.js.
 import { fetchSleeperMatchups } from "./sleeper";
-import { normalizePlayerName } from "./portfolio";
+import { findProjection } from "./portfolio";
 import { buildSide, summarizeSide } from "./winChance";
 import { rankStandings, seasonStrengths, simulatePlayoffOdds } from "./playoffOdds";
 
@@ -60,7 +60,7 @@ export async function getLeagueSeason({ league, rosters, users, myRosterId, curr
     if (!p) return null;
     return { name: `${p.first_name || ""} ${p.last_name || ""}`.trim(), pos: p.position || null, team: p.team || null, active: p.status ? p.status === "Active" : true };
   };
-  const projFor = (name) => projByName?.[normalizePlayerName(name)] || null;
+  const projFor = (name) => findProjection(projByName, name);
   const pastNums = [];
   for (let w = 1; w <= Math.min(lastScored, lastRegular); w++) pastNums.push(w);
   const pastFeeds = await Promise.all(pastNums.map((w) => fetchSleeperMatchups(league.league_id, w).catch(() => null)));

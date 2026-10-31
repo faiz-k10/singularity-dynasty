@@ -30,6 +30,7 @@ import { fetchGameStates } from "@/lib/gameStatus";
 import { loadGameStats } from "@/lib/gameStats";
 import { loadLivePlays } from "@/lib/playByPlay";
 import { getWeekProjections, getWeekRankRows } from "@/lib/weekProjections";
+import { findProjection } from "@/lib/portfolio";
 import { buildWaiverList, sleeperIndex } from "@/lib/waivers";
 import { buildSide, matchupOutlook } from "@/lib/winChance";
 import { buildBench } from "@/lib/h2hBench";
@@ -118,7 +119,7 @@ function myStarters(myRoster, mine) {
 // schedule is posted.
 function buildH2H(mine, oppEntry, slots, infoFor, projByName) {
   if (!mine || !oppEntry) return null;
-  const projFor = (name) => projByName[normalizeName(name)] || null;
+  const projFor = (name) => findProjection(projByName, name);
   return {
     mine: buildSide(mine.starters, slots, infoFor, projFor, mine.players_points),
     opp: buildSide(oppEntry.starters, slots, infoFor, projFor, oppEntry.players_points),
@@ -209,8 +210,6 @@ async function lookupTeams(username, opts = {}) {
     getWeekProjections(supabase, Number(season)),
     fetchGameStates(),
   ]);
-  const myProjByName = {};
-  for (const [name, v] of Object.entries(weekProj.byName)) myProjByName[name] = v.proj;
 
   // Same achievement badges Weekly Projection Rankings shows (On Fire/On
   // Thin Ice/Risky Icarus/Steady Eddy/Buy Low/Sell High/Super Hero/
@@ -271,7 +270,7 @@ async function lookupTeams(username, opts = {}) {
             const pl = players[pid];
             if (!pl) continue;
             const nm = `${pl.first_name || ""} ${pl.last_name || ""}`.trim();
-            const v = myProjByName[normalizeName(nm)];
+            const v = findProjection(weekProj.byName, nm)?.proj;
             if (typeof v === "number") {
               sum += v;
               n += 1;
@@ -397,8 +396,8 @@ async function lookupTeams(username, opts = {}) {
         const p = players[playerId];
         const name = p ? `${p.first_name || ""} ${p.last_name || ""}`.trim() || playerId : playerId;
         const normName = normalizeName(name);
-        const myProjPts = myProjByName[normName] ?? null;
-        const wk = weekProj.byName[normName];
+        const wk = findProjection(weekProj.byName, name);
+        const myProjPts = wk?.proj ?? null;
         const achievements = getAchievements(
           buildAchievementRow(normName, p?.position || null, {
             recentGamesByName: recentGamesByNormName,
