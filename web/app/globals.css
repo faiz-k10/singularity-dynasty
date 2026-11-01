@@ -5064,11 +5064,15 @@ html{font-stretch:82%;}
 .sb-feed-row.is-closing .sb-feed-name, .sb-feed-row.is-closing .sb-feed-sub, .sb-feed-row.is-closing .sb-feed-clock, .sb-feed-row.is-closing .sb-feed-foot{animation:h2h-from .38s cubic-bezier(.22,.8,.3,1) both;}
 .sb-feed-nums.is-clickable{cursor:pointer;}
 /* Bigger numbers than the matchup rows (the list has the room: three lines of height), and a long line (6+ numbers) in two even rows of columns so the labels never touch. */
-.sb-feed-row .h2h-stat-chips{display:grid; grid-template-columns:repeat(auto-fit, minmax(66px, 1fr)); gap:6px 0;} /* as many columns as fit, never narrower than a label needs, the rest drop to the next row */
-.sb-feed-row .h2h-stat{padding:0 2px;}
+.sb-feed-row .h2h-stat-chips{display:flex; flex-wrap:wrap; justify-content:center; gap:8px 4px;} /* fixed 64px cells that wrap onto as many centred rows as the width needs: a label (at most 8 characters) always fits its own cell */
+.sb-feed-row .h2h-stat{flex:0 0 64px; padding:0;}
+.sb-feed-row .h2h-stat-label{white-space:nowrap;}
 .sb-feed-row .h2h-stat-label{font-size:clamp(9px, 3.3cqw, 11px); line-height:1.2;}
 .sb-feed-row .h2h-stat-value{font-size:clamp(16px, 7cqw, 21px);}
 .sb-feed-row .h2h-statsbox-note{font-size:13px;}
+/* In a Playing now row the box score is a grid item over the whole text column (not an absolute box the row's height can't see), so a long line makes the row taller instead of spilling out of it; idle (closed) it takes no room. */
+.sb-feed-row .h2h-statsbox{position:static; grid-area:1 / 1 / -1 / 2; padding:4px 0 2px; min-width:0; align-self:center;}
+.sb-feed-row .h2h-statsbox.is-idle{display:none;}
 .sb-feed-nums.is-clickable:hover .sb-feed-pts{text-decoration:underline; text-decoration-color:var(--rule-strong); text-underline-offset:4px;}
 @media (prefers-reduced-motion:reduce){ .h2h-row .h2h-c-slot, .h2h-row .h2h-player-name, .h2h-row .h2h-player-sub, .h2h-row .h2h-c-curve, .sb-feed-row .sb-feed-name, .sb-feed-row .sb-feed-sub, .sb-feed-row .sb-feed-clock, .sb-feed-row .sb-feed-foot, .h2h-statsbox{animation-duration:.01s !important;} }
 /* How to read the curves: a one-line legend under the lineups. */

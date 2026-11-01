@@ -66,7 +66,7 @@ export function StatsPanel({ p, slide, wrapAt = null }) {
   if (!slide.ever || !slide.geo) return null;
   const chips = statChips(p.pos, slide.line);
   return (
-    <div className={`h2h-statsbox${slide.phase === "open" ? " is-in" : slide.phase === "closing" ? " is-out" : ""}`} style={{ left: slide.geo.left, right: slide.geo.right }} aria-hidden={slide.phase !== "open"}>
+    <div className={`h2h-statsbox${slide.phase === "open" ? " is-in" : slide.phase === "closing" ? " is-out" : " is-idle"}`} style={{ left: slide.geo.left, right: slide.geo.right }} aria-hidden={slide.phase !== "open"}>
       {slide.line === undefined ? (
         <span className="h2h-statsbox-note mono">Loading…</span>
       ) : chips.length === 0 ? (
