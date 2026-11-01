@@ -33,7 +33,7 @@ export const toneClass = (st) => (st?.tone ? ` is-tone-${st.tone}` : "");
 function gameLabel(p, mounted) {
   const o = p.outlook;
   if (p.out) return "Out";
-  if (o.state === "bye") return "Bye";
+  if (o.state === "bye") return "BYE";
   if (o.state === "post") return "Final";
   if (o.state === "in") return o.detail || "Live";
   if (o.state === "pre" && o.start && mounted) {

@@ -196,7 +196,7 @@ export default function LabGameLog({ picked, week, season }) {
                 <td>{formatMetric("sd", p.m.sd)}</td>
                 <td>{formatMetric("avgXfp", p.m.avgXfp)}</td>
                 <td>{formatMetric("fpoe", p.m.fpoe)}</td>
-                <td>{p.bye ? "Bye" : formatMetric("projection", p.m.projection)}</td>
+                <td>{p.bye ? "BYE" : formatMetric("projection", p.m.projection)}</td>
               </tr>
             ))}
           </tbody>

@@ -27,7 +27,7 @@ export default function LabCompare({ picked, simsAccess, onToggle }) {
                   <span className="lab-compare-meta">
                     <PositionBadge position={p.pos} />
                     <TeamBadge team={p.team} />
-                    <span className="lab-compare-opp">{p.bye ? "Bye" : p.opp ? `${p.home ? "vs" : "@"} ${p.opp}` : ""}</span>
+                    <span className="lab-compare-opp">{p.bye ? "BYE" : p.opp ? `${p.home ? "vs" : "@"} ${p.opp}` : ""}</span>
                   </span>
                   <button type="button" className="lab-chip-x" onClick={() => onToggle(p.name)} aria-label={`Remove ${p.name}`}>
                     ×
