@@ -5064,9 +5064,9 @@ html{font-stretch:82%;}
 .sb-feed-row.is-closing .sb-feed-name, .sb-feed-row.is-closing .sb-feed-sub, .sb-feed-row.is-closing .sb-feed-clock, .sb-feed-row.is-closing .sb-feed-foot{animation:h2h-from .38s cubic-bezier(.22,.8,.3,1) both;}
 .sb-feed-nums.is-clickable{cursor:pointer;}
 /* Bigger numbers than the matchup rows (the list has the room: three lines of height), and a long line (6+ numbers) in two even rows of columns so the labels never touch. */
-.sb-feed-row .h2h-stat-chips{display:block; text-align:center;} /* the numbers flow across the WHOLE row as fixed cells and wrap only when the next one would not fit; a spacer floated at the top right keeps the first line clear of the points */
-.sb-feed-row .h2h-stat-chips::before{content:""; float:right; width:var(--nums-w, 80px); height:44px;}
-.sb-feed-row .h2h-stat{display:inline-flex; width:54px; margin:0 1px 9px; padding:0; vertical-align:top;}
+.sb-feed-row .h2h-stat-chips{display:grid; grid-template-columns:repeat(auto-fill, minmax(52px, 1fr)); gap:10px 0; justify-items:center; text-align:center;} /* one grid: every number sits in the same column on every line; the empty cell at the top right keeps the first line clear of the points */
+.sb-feed-row .h2h-stat-chips::before{content:""; grid-column:-3 / -1; grid-row:1; height:34px;}
+.sb-feed-row .h2h-stat{width:100%; padding:0;}
 .sb-feed-row .h2h-stat-label{white-space:nowrap;}
 .sb-feed-row .h2h-stat-label{font-size:8.5px; letter-spacing:.02em; line-height:1.2;}
 .sb-feed-row .h2h-stat-value{font-size:clamp(15px, 6cqw, 19px);}
