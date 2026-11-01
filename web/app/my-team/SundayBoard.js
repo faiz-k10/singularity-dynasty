@@ -205,8 +205,8 @@ function FeedRow({ r, isNew, delta, showLeagues, focused, onPick, onOpenLeague }
         <span className="sb-feed-sub">
           <PositionBadge position={r.pos} />
           <TeamBadge team={r.team} />
-          <span className="h2h-game mono">{r.detail || "Live"}</span>
         </span>
+        <span className="sb-feed-clock h2h-game mono">{r.detail || "Live"}</span>
         {((showLeagues && where.length > 0) || r.game) && (
           <span className="sb-feed-foot">
             {/* Each league name opens that league's matchup in the drawer, the same as clicking its card. */}
