@@ -5056,7 +5056,7 @@ html{font-stretch:82%;}
 .h2h-statsbox-note{font-size:12px; color:var(--star-dim);}
 .h2h-stat-chips{display:flex; flex-wrap:nowrap; width:100%;} /* one line, always: the numbers share the whole width and scale with it (container units on the next rules), so even a QB's seven stats fit a narrow panel */
 .h2h-stat{flex:1 1 0; min-width:0; display:flex; flex-direction:column; align-items:center; gap:3px; padding:0 3px;}
-.h2h-stat-label{font-size:clamp(7px, 2.4cqw, 9px); text-transform:uppercase; letter-spacing:.04em; color:var(--star-dim); text-align:center; line-height:1.15; max-width:100%;} /* a label that is wider than its column wraps at the space instead of running into the next one */
+.h2h-stat-label{font-size:clamp(7px, 2.4cqw, 9px); text-transform:uppercase; letter-spacing:.04em; color:var(--star-dim); text-align:center; line-height:1.15; max-width:100%; min-height:2.3em; display:flex; align-items:flex-end; justify-content:center;} /* a label that is wider than its column wraps at the space instead of running into the next one */
 .h2h-stat-value{font-size:clamp(12px, 4.8cqw, 20px); line-height:1.1; font-weight:700; color:var(--star); font-variant-numeric:tabular-nums; white-space:nowrap;}
 /* The same slide on a Playing now row (SundayBoard FeedRow): click the points column and the name, badges and league line drift away while the box-score line slides in. */
 .sb-feed-row{position:relative;}
@@ -5067,7 +5067,7 @@ html{font-stretch:82%;}
 .sb-feed-row .h2h-stat-chips{display:grid; grid-template-columns:repeat(auto-fill, minmax(52px, 1fr)); gap:10px 0; justify-items:center; text-align:center;} /* one grid: every number sits in the same column on every line; the empty cell at the top right keeps the first line clear of the points */
 .sb-feed-row .h2h-stat-chips::before{content:""; grid-column:-3 / -1; grid-row:1; height:34px;}
 .sb-feed-row .h2h-stat{width:100%; padding:0;}
-.sb-feed-row .h2h-stat-label{white-space:nowrap;}
+.sb-feed-row .h2h-stat-label{white-space:nowrap; min-height:0;}
 .sb-feed-row .h2h-stat-label{font-size:8.5px; letter-spacing:.02em; line-height:1.2;}
 .sb-feed-row .h2h-stat-value{font-size:clamp(15px, 6cqw, 19px);}
 .sb-feed-row .h2h-statsbox-note{font-size:13px;}
