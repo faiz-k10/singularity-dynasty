@@ -9,7 +9,7 @@ import { buildRow, isTyping, moveFocus } from "./LeagueDashboard";
 import { formatOdds, oddsTone } from "./Standings";
 import PositionBadge from "../tools/PositionBadge";
 import TeamBadge from "../tools/TeamBadge";
-import { buildLiveFeed, trackScoring, sortFeed, applyPending, catchUpPlayers } from "@/lib/liveFeed";
+import { buildLiveFeed, trackScoring, sortFeed, applyPending, catchUpPlayers, benchPlayers } from "@/lib/liveFeed";
 import { matchupState } from "@/lib/matchupState";
 import { getLivePlays } from "./actions";
 import { leadState } from "@/lib/leadState";
@@ -480,7 +480,8 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
   useEffect(() => {
     let cancelled = false;
     const run = () => {
-      const list = catchUpPlayers(savedTeams, gameStates, finalSeen.current, Date.now());
+      const now = Date.now();
+      const list = [...catchUpPlayers(savedTeams, gameStates, finalSeen.current, now), ...benchPlayers(savedTeams, gameStates, finalSeen.current, now)];
       if (!list.length) return;
       getLivePlays(list)
         .then((res) => {

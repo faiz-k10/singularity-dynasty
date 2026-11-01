@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { scoringFrom } from "../lib/playScoring.js";
 import { adjustedMatchup } from "../lib/adjustedMatchup.js";
-import { buildLiveFeed, trackScoring, sortFeed, isGameDay, formatCountdown, pendingEach, applyPending, applyPendingToLineup, catchUpPlayers, CATCH_UP_MS, gameScoreLabel } from "../lib/liveFeed.js";
+import { buildLiveFeed, trackScoring, sortFeed, isGameDay, formatCountdown, pendingEach, applyPending, applyPendingToLineup, catchUpPlayers, benchPlayers, CATCH_UP_MS, gameScoreLabel } from "../lib/liveFeed.js";
 
 const gs = {
   GB: { state: "in", detail: "4:43 - 1st", start: "2026-10-19T00:20Z" },
@@ -213,4 +213,12 @@ test("pendingEach scores the plays in each league's own scoring: Javonte's leagu
   assert.equal(pendingEach([{ pts: 1.7 }], plays), null);
   // Two leagues, two scorings, one player: each gets its own amount.
   assert.deepEqual(pendingEach([{ pts: 1.7, scoring: league, pos: "RB" }, { pts: 1.2 }], plays), [6.45, 6.2]);
+});
+
+test("benchPlayers: bench players of live games, and of finished games for ten minutes", () => {
+  const teams = [{ settings: { h2h: { mine: [], opp: [], mineBench: [love(1), { id: "9", name: "A", pos: "WR", team: "SF" }], oppBench: [{ id: "8", name: "B", pos: "RB", team: "JAX" }] } } }];
+  const seen = {};
+  const first = benchPlayers(teams, gs, seen, 1000);
+  assert.deepEqual(first.map((p) => `${p.side}:${p.playerId}`).sort(), ["mine:6804", "theirs:8"]); // GB live, JAX just final, SF not started
+  assert.equal(benchPlayers(teams, gs, seen, 1000 + CATCH_UP_MS + 1).map((p) => p.playerId).join(), "6804"); // JAX is past its window, GB still on
 });

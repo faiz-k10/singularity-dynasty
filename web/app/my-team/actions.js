@@ -584,7 +584,7 @@ export async function getLivePlays(players) {
   if (!user) return { error: "Sign in required." };
   if (!Array.isArray(players) || !players.length) return { plays: [] };
   const clean = players
-    .slice(0, 80)
+    .slice(0, 240)
     .map((p) => ({
       playerId: String(p?.playerId ?? "").slice(0, 20),
       name: String(p?.name ?? "").slice(0, 60),

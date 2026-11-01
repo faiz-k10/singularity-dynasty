@@ -141,6 +141,29 @@ export function catchUpPlayers(savedTeams, gameStates, seen, now) {
   return [...out.values()];
 }
 
+// Bench players whose game is on (or ended within the catch-up window): the board asks for their plays too, so a bench number is as current
+// as a starter's. Same shape as catchUpPlayers; `seen` is the same remembered "first saw it final" clock.
+export function benchPlayers(savedTeams, gameStates, seen, now) {
+  if (!gameStates) return [];
+  const out = new Map();
+  for (const t of savedTeams || []) {
+    const s = t.settings || {};
+    if (s.isBye) continue;
+    for (const [side, list] of [["mine", s.h2h?.mineBench], ["theirs", s.h2h?.oppBench]]) {
+      for (const p of list || []) {
+        const g = p.id && p.team ? gameStates[p.team] : null;
+        if (!g || (g.state !== "in" && g.state !== "post")) continue;
+        if (g.state === "post") {
+          seen[p.team] ??= now;
+          if (now - seen[p.team] > CATCH_UP_MS) continue;
+        }
+        out.set(`${side}:${p.id}`, { playerId: p.id, name: p.name, pos: p.pos, team: p.team, side });
+      }
+    }
+  }
+  return [...out.values()];
+}
+
 // Rows with those pending points added to their numbers (each start in its own league's scoring; pts / ptsMin follow the starts) and
 // `pending` (the largest) set for the label.
 export function applyPending(rows, totals) {

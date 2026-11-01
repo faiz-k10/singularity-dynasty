@@ -14,6 +14,7 @@ import { leadState } from "@/lib/leadState";
 import { matchupState } from "@/lib/matchupState";
 import { summarizeSide } from "@/lib/winChance";
 import { benchFromRoster } from "@/lib/h2hBench";
+import { applyPendingToLineup } from "@/lib/liveFeed";
 import { useMounted } from "./useMounted";
 
 // Sleeper's own page for this week's matchup in a league (opens in a new tab).
@@ -189,8 +190,15 @@ function MatchupBody({ team, gameStates, playTotals }) {
   const { mine, opp, live, pct, done: allDone, lock, st } = useMemo(() => matchupState(team.settings || {}, gameStates, playTotals), [team.settings, gameStates, playTotals]);
   // The benches under the starters: from the saved head-to-head (both sides), or -- for a snapshot from before benches were saved -- my own from the
   // saved roster. Each row gets its game state like a starter (summarizeSide); none of it enters the totals above.
-  const benchMine = useMemo(() => summarizeSide(s.h2h?.mineBench || benchFromRoster(team.players, s.playerPoints), gameStates).players, [s.h2h, s.playerPoints, team.players, gameStates]);
-  const benchOpp = useMemo(() => summarizeSide(s.h2h?.oppBench || [], gameStates).players, [s.h2h, gameStates]);
+  // The plays Sleeper hasn't posted yet are added to a bench player's points exactly as to a starter's (the board requests their plays too).
+  const benchMine = useMemo(
+    () => summarizeSide(applyPendingToLineup(s.h2h?.mineBench || benchFromRoster(team.players, s.playerPoints), playTotals, s.scoringSettings).list, gameStates).players,
+    [s.h2h, s.playerPoints, s.scoringSettings, team.players, gameStates, playTotals],
+  );
+  const benchOpp = useMemo(
+    () => summarizeSide(applyPendingToLineup(s.h2h?.oppBench || [], playTotals, s.scoringSettings).list, gameStates).players,
+    [s.h2h, s.scoringSettings, gameStates, playTotals],
+  );
   const lineupsRef = useRef(null);
   // Every row's info column (badges + game time) takes the width of the widest one, so the outcome curve beside it is the same size in every row
   // (otherwise "Sun 4:05 PM" under the badges squeezed an unplayed player's curve while "Final" left a finished player's wide). Measured after each render;
