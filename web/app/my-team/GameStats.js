@@ -33,9 +33,12 @@ export function useStatsSlide(p, enabled) {
     }
     const row = e.currentTarget.closest(".h2h-row, .sb-feed-row").getBoundingClientRect();
     const cell = e.currentTarget.getBoundingClientRect();
+    // A matchup row sits inside its card's side padding while the score cell bleeds out to the card's edge; the panel runs to that same edge so
+    // it is centred between the score's divider and the card's edge (a Playing now row has no side card: edge = row).
+    const edge = (e.currentTarget.closest(".h2h-side") || e.currentTarget.closest(".h2h-row, .sb-feed-row")).getBoundingClientRect();
     const scoreOnLeft = cell.left + cell.width / 2 < row.left + row.width / 2;
     // The panel covers the row except the score cell; the old content drifts away from the score.
-    setGeo({ away: scoreOnLeft ? 1 : -1, left: scoreOnLeft ? cell.right - row.left + 6 : 0, right: scoreOnLeft ? 0 : row.right - cell.left + 6 });
+    setGeo({ away: scoreOnLeft ? 1 : -1, left: scoreOnLeft ? cell.right - row.left + 6 : edge.left - row.left, right: scoreOnLeft ? row.right - edge.right : row.right - cell.left + 6 });
     setEver(true);
     setPhase("open");
   }
