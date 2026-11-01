@@ -14,7 +14,7 @@ import { scorePlay } from "./playScoring.js";
 
 // "PHI 14–10": the game's score with the player's own team first (null before the score exists).
 export function gameScoreLabel(team, g) {
-  return Number.isFinite(g?.score) && Number.isFinite(g?.oppScore) ? `${team} ${g.score}–${g.oppScore}${g.opp ? ` vs ${g.opp}` : ""}` : null;
+  return Number.isFinite(g?.score) && Number.isFinite(g?.oppScore) ? `${team} ${g.score}–${g.oppScore}${g.opp ? ` ${g.opp}` : ""}` : null;
 }
 
 export function buildLiveFeed(savedTeams, gameStates, { onlyTeamId = null } = {}) {

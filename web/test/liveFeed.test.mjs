@@ -200,7 +200,7 @@ test("catchUpPlayers: finished games keep their starters for ten minutes after f
 test("gameScoreLabel: the game's running score, the player's own team first; null without a score", () => {
   assert.equal(gameScoreLabel("PHI", { score: 14, oppScore: 10 }), "PHI 14–10");
   assert.equal(gameScoreLabel("DAL", { score: 10, oppScore: 14 }), "DAL 10–14");
-  assert.equal(gameScoreLabel("MIA", { score: 13, oppScore: 3, opp: "BUF" }), "MIA 13–3 vs BUF");
+  assert.equal(gameScoreLabel("MIA", { score: 13, oppScore: 3, opp: "BUF" }), "MIA 13–3 BUF");
   assert.equal(gameScoreLabel("PHI", { score: null, oppScore: null }), null);
   assert.equal(gameScoreLabel("PHI", undefined), null);
 });
