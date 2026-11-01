@@ -206,8 +206,12 @@ function FeedRow({ r, isNew, delta, showLeagues, focused, onPick, onOpenLeague }
           <PositionBadge position={r.pos} />
           <TeamBadge team={r.team} />
         </span>
-        <span className="sb-feed-clock h2h-game mono">{r.detail || "Live"}</span>
-        {((showLeagues && where.length > 0) || r.game) && (
+        {/* One line across the row: the game clock at the left, the NFL game's running score (own team first) at the right end. */}
+        <span className="sb-feed-clock">
+          <span className="h2h-game mono">{r.detail || "Live"}</span>
+          {r.game && <span className="sb-feed-game mono">{r.game}</span>}
+        </span>
+        {showLeagues && where.length > 0 && (
           <span className="sb-feed-foot">
             {/* Each league name opens that league's matchup in the drawer, the same as clicking its card. */}
             <span className="sb-feed-leagues">
@@ -222,8 +226,6 @@ function FeedRow({ r, isNew, delta, showLeagues, focused, onPick, onOpenLeague }
                   ))
                 : ""}
             </span>
-            {/* The NFL game's running score, own team first, at the right end of the league-names line. */}
-            {r.game && <span className="sb-feed-game mono">{r.game}</span>}
           </span>
         )}
       </div>

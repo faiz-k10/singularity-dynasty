@@ -5256,7 +5256,7 @@ html{font-stretch:82%;}
    league names full width underneath -- with the score and its projection / "+" amount in a fixed-width column at the right spanning the name and badge
    lines, so every row is laid out identically whatever its score reads. The name stays on one line: a short form beside an open matchup (.fn-short),
    an ellipsis if it still doesn't fit. */
-.sb-feed-row{display:grid; grid-template-columns:minmax(0,1fr) 80px; grid-template-areas:"name nums" "sub nums" "clock nums" "leagues leagues"; column-gap:12px; row-gap:3px; align-items:center; padding:7px 16px; border-top:1px solid rgba(var(--star-dot-rgb),.06); transition:background-color .6s ease;}
+.sb-feed-row{display:grid; grid-template-columns:minmax(0,1fr) 80px; grid-template-areas:"name nums" "sub nums" "clock clock" "leagues leagues"; column-gap:12px; row-gap:3px; align-items:center; padding:7px 16px; border-top:1px solid rgba(var(--star-dot-rgb),.06); transition:background-color .6s ease;}
 .sb-feed-list .sb-feed-row:first-child{border-top:0;}
 .sb-feed-row.is-new{background:rgba(var(--horizon-gold-rgb),.1); box-shadow:inset 3px 0 0 var(--horizon-gold);}
 .sb-feed-row.is-theirs.is-new{background:rgba(var(--down-rgb),.1); box-shadow:inset 3px 0 0 var(--down);}
@@ -5265,7 +5265,8 @@ html{font-stretch:82%;}
 .sb-feed-name .fn-short{display:none;}
 .sb-feed-row.is-theirs .sb-feed-name{color:color-mix(in srgb, var(--star) 80%, transparent);}
 .sb-feed-sub{grid-area:sub; display:flex; align-items:center; gap:6px; flex-wrap:nowrap; min-width:0; overflow:hidden;}
-.sb-feed-clock{grid-area:clock; color:var(--down); white-space:nowrap; min-width:0; overflow:hidden; text-overflow:ellipsis;}
+.sb-feed-clock{grid-area:clock; display:flex; align-items:baseline; justify-content:space-between; gap:12px; min-width:0;}
+.sb-feed-clock .h2h-game{color:var(--down); min-width:0; overflow:hidden; text-overflow:ellipsis;}
 .sb-feed-sub > .position-badge, .sb-feed-sub > .team-badge{flex:none;}
 .sb-feed-foot{grid-area:leagues; display:flex; align-items:baseline; justify-content:space-between; gap:12px; min-width:0;}
 .sb-feed-league{all:unset; cursor:pointer; color:inherit;}
@@ -5276,7 +5277,7 @@ html{font-stretch:82%;}
 .sb-feed-delta{font-size:11px; font-weight:700; color:var(--horizon-gold);}
 .sb-feed-row.is-theirs .sb-feed-delta{color:var(--down);}
 .sb-feed-proj{font-size:10.5px; color:var(--star-dim);}
-.sb-feed-game{flex:none; margin-left:auto; font-size:11px; font-weight:700; color:var(--down); white-space:nowrap;} /* the NFL game's score, own team first, at the right end of the league-names line */
+.sb-feed-game{flex:none; margin-left:auto; font-size:11px; font-weight:700; color:var(--down); white-space:nowrap;} /* the NFL game's score, own team first, at the right end of the clock line */
 /* Between games: one centred card filling the panel -- a small event-horizon ring (gold-to-blue rim, a slow orbiting
    dot), a gold eyebrow, the kickoff time in the display font, a countdown, the next game(s) as glass pills, and the
    gold / blue count of starters in them. */
@@ -5631,7 +5632,7 @@ html{font-stretch:82%;}
 .sb-body.has-drawer .sb-feed-nums{width:62px;}
 .sb-body.has-drawer .sb-feed-sub{gap:5px;}
 .sb-body.has-drawer .sb-feed-sub .team-logo img{width:18px; height:18px;}
-.sb-body.has-drawer .sb-feed-clock{font-size:10.5px;}
+.sb-body.has-drawer .sb-feed-clock .h2h-game{font-size:10.5px;}
 .sb-body.has-drawer .sb-feed-name .fn-long{display:none;}
 .sb-body.has-drawer .sb-feed-name .fn-short{display:inline;}
 .sb-plays-filter .short{display:none;}
