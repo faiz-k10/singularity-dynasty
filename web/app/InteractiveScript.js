@@ -361,6 +361,10 @@ export default function InteractiveScript() {
               body: JSON.stringify({ plan, billing }),
             });
             const data = await res.json();
+            if (res.status === 401 && data.login) {
+              window.location.href = data.login;
+              return;
+            }
             if (!res.ok || !data.url) {
               throw new Error(data.error || "Checkout failed");
             }

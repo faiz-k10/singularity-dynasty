@@ -28,6 +28,8 @@ const ROUTES = [
   "/tools/prospect-rankings",
   "/tools/compare-players",
   "/tools/compare-player-sims",
+  "/tools/lab",
+  "/my-team/quiz",
   "/sitemap.xml",
   "/robots.txt",
 ];
@@ -37,6 +39,8 @@ const ROUTES = [
 const PARAMS = [
   "/tools/redraft-rankings?sort=projection&dir=asc",
   "/tools/draft-board?type=rookie",
+  "/tools/draft-board?type=startup",
+  "/tools/lab?view=compare&pos=TE",
   "/tools/prospect-rankings?qb_sort=name&qb_dir=desc",
   "/tools/player-simulations?sort=ceiling&dir=desc",
 ];

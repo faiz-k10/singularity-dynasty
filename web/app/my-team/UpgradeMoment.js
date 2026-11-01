@@ -11,6 +11,10 @@ export async function startExplorerCheckout(billing = "annual") {
     body: JSON.stringify({ plan: "explorer", billing }),
   });
   const data = await res.json();
+  if (res.status === 401 && data.login) {
+    window.location.href = data.login;
+    return;
+  }
   if (!res.ok || !data.url) throw new Error(data.error || "Checkout failed");
   window.location.href = data.url;
 }

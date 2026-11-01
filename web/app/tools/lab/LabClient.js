@@ -51,20 +51,25 @@ export default function LabClient({ rows, week, season, simsAccess, initial }) {
 
   const pool = useMemo(() => (pos === "ALL" ? rows : rows.filter((r) => r.pos === pos)), [rows, pos]);
   // The metrics this pool has enough values for.
+  // A pool smaller than MIN_VALUES (the free top 50 can hold only two TEs) needs every player to have the number, or nothing at all
+  // would be offered and both axes would fall back to the same metric.
   const available = useMemo(() => {
+    const need = Math.max(1, Math.min(MIN_VALUES, pool.length));
     const set = new Set();
     for (const m of LAB_METRICS) {
       let n = 0;
-      for (const r of pool) if (typeof r.m[m.key] === "number" && ++n >= MIN_VALUES) break;
-      if (n >= MIN_VALUES) set.add(m.key);
+      for (const r of pool) if (typeof r.m[m.key] === "number" && ++n >= need) break;
+      if (n >= need) set.add(m.key);
     }
     return set;
   }, [pool]);
   // A choice the pool can't show (switching QB -> WR with "Pass Att/G" on an axis) falls back to the position's default, without
   // forgetting what was picked: switching back restores it.
-  const fallback = (want, preferred) => (want && available.has(want) ? want : [preferred, "ppg", "projection"].find((k) => available.has(k)) || [...available][0] || "ppg");
+  // A fallen-back Y skips the X metric so the scatter never plots a number against itself.
+  const fallback = (want, preferred, avoid) =>
+    want && available.has(want) ? want : [preferred, "ppg", "projection", ...available].find((k) => available.has(k) && k !== avoid) || "ppg";
   const xKey = fallback(x, DEFAULT_AXES[pos][0]);
-  const yKey = fallback(y, DEFAULT_AXES[pos][1]);
+  const yKey = fallback(y, DEFAULT_AXES[pos][1], xKey);
   const leadKey = fallback(lead, DEFAULT_LEADER);
 
   const picked = useMemo(

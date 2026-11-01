@@ -1419,7 +1419,10 @@ a.export-csv-btn{text-decoration:none;}
   text-align:center;
 }
 .player-sims-table > tbody > tr:not(.stat-detail-row) td{padding-top:6px; padding-bottom:6px;} /* shorter data rows (the generic .rankings-table td is 12px); content unchanged */
-.player-sims-table .sim-bar-track{margin:0 auto;}
+.player-sims-table .sim-bar-track{margin:0 auto; max-width:100%;}
+/* Range (column 8) holds the 140px bar; under fixed layout an unsized column only gets an even share of what is left, which in a
+   ~1000-1200px window was ~60px of content and the bar ran over Pace %ile (Nov 1 2026). The phone block below sets its own width. */
+.player-sims-table > thead > tr > th:nth-child(8){width:164px;}
 /* Floor/Median/Ceiling (columns 5-7) hold 2-3 digit numbers but were
    sized by their own header labels ("Median ▼", "Ceiling"), which are
    wider than the data -- tighten just these three so the column isn't

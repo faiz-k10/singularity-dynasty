@@ -35,13 +35,15 @@ export async function POST(request) {
 
   const origin = request.headers.get("origin") || new URL(request.url).origin;
 
-  // If the shopper is signed in, thread their user id through Checkout so
-  // the webhook can match the subscription back to the right profile
-  // without relying on email matching.
+  // Checkout needs an account: the user id goes through Checkout so the webhook can match the subscription to the right profile.
+  // Without one, a buyer whose Stripe email matched no profile (or who signed up after paying) was charged and never upgraded.
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: "Sign in to subscribe.", login: "/login?next=%2F%23pricing" }, { status: 401 });
+  }
 
   try {
     const session = await stripe.checkout.sessions.create({
@@ -49,7 +51,8 @@ export async function POST(request) {
       line_items: [{ price: priceId, quantity: 1 }],
       success_url: `${origin}/?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/?checkout=cancelled`,
-      ...(user ? { client_reference_id: user.id, customer_email: user.email } : {}),
+      client_reference_id: user.id,
+      customer_email: user.email,
     });
 
     return NextResponse.json({ url: session.url });
