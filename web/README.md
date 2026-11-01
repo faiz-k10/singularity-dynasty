@@ -24,7 +24,7 @@ Or use the scripts in `scripts/` to exercise checkout/webhook logic directly wit
 
 ```bash
 node --env-file=.env.local scripts/create-test-user.mjs
-node --env-file=.env.local scripts/test-webhook-provisioning.mjs <user_id> <email>
+node --env-file=.env.local scripts/test-webhook-billing.mjs <user_id>
 node --env-file=.env.local scripts/check-profile.mjs <user_id>
 ```
 

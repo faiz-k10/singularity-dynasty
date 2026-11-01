@@ -1,17 +1,12 @@
-import Stripe from "stripe";
 import { NextResponse } from "next/server";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { stripe, syncSubscription, provisionFromCheckout } from "@/lib/billing";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
-const TIER_BY_PRICE_ID = {
-  [process.env.STRIPE_PRICE_EXPLORER_MONTHLY]: "explorer",
-  [process.env.STRIPE_PRICE_EXPLORER_ANNUAL]: "explorer",
-  [process.env.STRIPE_PRICE_SINGULARITY_MONTHLY]: "singularity",
-  [process.env.STRIPE_PRICE_SINGULARITY_ANNUAL]: "singularity",
-};
-
+// Stripe -> profiles.tier. Every event is verified against the webhook signing secret, and the handlers re-read the
+// subscription from Stripe instead of trusting the event body's status (lib/billing.js), so retries and out-of-order
+// delivery settle on Stripe's current state. A database failure answers 500, which makes Stripe retry (it retries for up
+// to three days); everything else answers 200.
 export async function POST(request) {
   const signature = request.headers.get("stripe-signature");
   const rawBody = await request.text();
@@ -24,105 +19,25 @@ export async function POST(request) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
-  const supabase = createAdminClient();
-
-  switch (event.type) {
-    case "checkout.session.completed": {
-      const session = event.data.object;
-
-      const lineItems = await stripe.checkout.sessions.listLineItems(session.id, {
-        limit: 1,
-      });
-      const priceId = lineItems.data[0]?.price?.id;
-      const tier = TIER_BY_PRICE_ID[priceId];
-
-      if (!tier) {
-        console.error(
-          `[stripe webhook] checkout.session.completed with unrecognized price: ${priceId}`
-        );
+  try {
+    switch (event.type) {
+      case "checkout.session.completed":
+      case "checkout.session.async_payment_succeeded":
+        await provisionFromCheckout(event.data.object);
         break;
-      }
-
-      const update = {
-        tier,
-        stripe_customer_id: session.customer,
-        stripe_subscription_id: session.subscription,
-      };
-
-      let updated;
-      if (session.client_reference_id) {
-        ({ data: updated } = await supabase
-          .from("profiles")
-          .update(update)
-          .eq("id", session.client_reference_id)
-          .select());
-      }
-
-      if (!updated?.length && session.customer_details?.email) {
-        ({ data: updated } = await supabase
-          .from("profiles")
-          .update(update)
-          .eq("email", session.customer_details.email)
-          .select());
-      }
-
-      console.log(
-        `[stripe webhook] checkout completed — tier: ${tier}, matched profiles: ${
-          updated?.length || 0
-        }, customer: ${session.customer_details?.email}`
-      );
-      break;
-    }
-
-    case "customer.subscription.updated": {
-      const subscription = event.data.object;
-      const priceId = subscription.items.data[0]?.price?.id;
-      const tier = TIER_BY_PRICE_ID[priceId];
-
-      if (!tier) {
-        console.error(
-          `[stripe webhook] subscription.updated with unrecognized price: ${priceId}`
-        );
+      case "customer.subscription.created":
+      case "customer.subscription.updated":
+      case "customer.subscription.deleted":
+      case "customer.subscription.paused":
+      case "customer.subscription.resumed":
+        await syncSubscription(event.data.object.id, { userId: event.data.object.metadata?.user_id || null });
         break;
-      }
-
-      const { data: updated } = await supabase
-        .from("profiles")
-        .update({ tier })
-        .eq("stripe_subscription_id", subscription.id)
-        .select();
-
-      console.log(
-        `[stripe webhook] subscription updated — id: ${subscription.id}, ` +
-          `tier: ${tier}, status: ${subscription.status}, matched profiles: ${
-            updated?.length || 0
-          }`
-      );
-      break;
+      default:
+        console.log(`[stripe webhook] unhandled event type: ${event.type}`);
     }
-
-    case "customer.subscription.deleted": {
-      const subscription = event.data.object;
-
-      const { data: updated } = await supabase
-        .from("profiles")
-        .update({
-          tier: "stargazer",
-          stripe_subscription_id: null,
-        })
-        .eq("stripe_subscription_id", subscription.id)
-        .select();
-
-      console.log(
-        `[stripe webhook] subscription cancelled — id: ${subscription.id}, matched profiles: ${
-          updated?.length || 0
-        }`
-      );
-      break;
-    }
-
-    default:
-      console.log(`[stripe webhook] unhandled event type: ${event.type}`);
+  } catch (err) {
+    console.error(`[stripe webhook] ${event.type} ${event.id} failed:`, err.message);
+    return NextResponse.json({ error: "Processing failed" }, { status: 500 });
   }
 
   return NextResponse.json({ received: true });

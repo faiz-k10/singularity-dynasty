@@ -451,10 +451,18 @@ async function lookupTeams(username, opts = {}) {
 // roster, projections) and writes it back, so the page isn't stuck on
 // whatever week the team was saved in. Reuses lookupSleeperTeams, one call
 // per distinct Sleeper username.
+// A full refresh can cost ~100 Sleeper calls per league on a cold cache, so each account gets REFRESH_LIMIT per window
+// (the page's own automatic refreshes stay far below it; a script hammering the action does not).
+const REFRESH_LIMIT = 30;
+const REFRESH_WINDOW_MS = 10 * 60 * 1000;
+const refreshHits = new Map();
 export async function refreshSavedTeams() {
   const supabase = await createClient();
   const user = await getAuthUser(supabase); // read path: local JWT check, no round trip to Supabase Auth
   if (!user) return { error: "Sign in to refresh teams." };
+  if (!allowHit(refreshHits, user.id, Date.now(), REFRESH_LIMIT, REFRESH_WINDOW_MS)) {
+    return { error: "Too many refreshes in a short time. Try again in a few minutes." };
+  }
 
   const { data: rows } = await supabase
     .from("saved_teams")
@@ -496,8 +504,10 @@ export async function refreshSavedTeams() {
 export async function pollLiveScores() {
   const t0 = Date.now();
   const supabase = await createClient();
-  const user = await getAuthUser(supabase); // read path: local JWT check, no round trip to Supabase Auth
+  // Live scores are part of Explorer and up (a free account sees its saved snapshot); checked here, not only in the browser.
+  const { user, tier } = await resolveTier(supabase);
   if (!user) return { error: "Sign in required." };
+  if (tier === "stargazer") return { error: "Live scores are part of Explorer." };
   const tAuth = Date.now() - t0;
 
   // The league rows, the NFL week and the ESPN scoreboard + projections are independent, so they start together.

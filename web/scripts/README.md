@@ -33,6 +33,5 @@ development, so the Stripe/Supabase plumbing is exercised straight from Node.
 | `check-profile.mjs <user_id>` | Prints a user's `profiles` row. |
 | `check-posts.mjs` | Prints the `posts` table (Feed section). |
 | `check-projection-math.mjs` | Sanity-checks the projection CSV numbers. |
-| `test-webhook-provisioning.mjs <user_id> <email>` | Signs a fake `checkout.session.completed` and posts it to the local webhook; asserts the tier gets provisioned. |
-| `test-webhook-cancellation.mjs <user_id>` | Same, for `customer.subscription.deleted` → tier reverts to Stargazer. |
+| `test-webhook-billing.mjs [user_id]` | Test keys only: a real test-mode Explorer subscription (Stripe's test card) through the local webhook, then cancelled; shows the profile's tier after each step, deletes the test customer. |
 | `test-billing-portal.mjs` | Creates a real portal session for the admin test user; proves the portal config + API call work. |

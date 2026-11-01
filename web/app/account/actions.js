@@ -1,11 +1,9 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { headers } from "next/headers";
-import Stripe from "stripe";
 import { createClient } from "@/lib/supabase/server";
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+import { stripe } from "@/lib/billing";
+import { siteOrigin } from "@/lib/siteOrigin";
 
 export async function openBillingPortal() {
   const supabase = await createClient();
@@ -14,7 +12,7 @@ export async function openBillingPortal() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/login");
+    redirect("/login?next=%2Faccount");
   }
 
   const { data: profile } = await supabase
@@ -24,16 +22,12 @@ export async function openBillingPortal() {
     .single();
 
   if (!profile?.stripe_customer_id) {
-    redirect("/#pricing");
+    redirect("/account?notice=no-billing");
   }
-
-  const headersList = await headers();
-  const host = headersList.get("host");
-  const protocol = host?.startsWith("localhost") ? "http" : "https";
 
   const session = await stripe.billingPortal.sessions.create({
     customer: profile.stripe_customer_id,
-    return_url: `${protocol}://${host}/account`,
+    return_url: `${await siteOrigin()}/account`,
   });
 
   redirect(session.url);

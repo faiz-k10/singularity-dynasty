@@ -10,7 +10,7 @@
 //
 // It does, in live mode and safely re-runnable: the Explorer / Singularity products and their monthly / annual prices
 // (create-stripe-products.mjs), the Customer Portal configuration (setup-billing-portal.mjs), and the webhook endpoint at
-// <SITE_URL>/api/webhooks/stripe for the three events app/api/webhooks/stripe/route.js handles. A webhook's signing secret is only shown
+// <SITE_URL>/api/webhooks/stripe for the events app/api/webhooks/stripe/route.js handles. A webhook's signing secret is only shown
 // when the endpoint is created -- if one already exists, roll its secret in the dashboard instead.
 import { spawnSync } from "node:child_process";
 import path from "node:path";
@@ -35,7 +35,11 @@ for (const script of ["create-stripe-products.mjs", "setup-billing-portal.mjs"])
   if (r.status !== 0) process.exit(r.status || 1);
 }
 
-const EVENTS = ["checkout.session.completed", "customer.subscription.updated", "customer.subscription.deleted"];
+const EVENTS = [
+  "checkout.session.completed", "checkout.session.async_payment_succeeded",
+  "customer.subscription.created", "customer.subscription.updated", "customer.subscription.deleted",
+  "customer.subscription.paused", "customer.subscription.resumed",
+];
 const stripe = new Stripe(key);
 const url = `${site}/api/webhooks/stripe`;
 console.log(`\n--- webhook endpoint (live) ---`);
