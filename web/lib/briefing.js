@@ -88,6 +88,9 @@ export function weekBriefing(rows) {
 // drift to the edge). Distances are in the map's own units (its width = 100): the core's edge at CORE, the outer edge at EDGE.
 export const CORE = 15;
 export const EDGE = 38;
+// Orbits are ellipses, taller than wide: every vertical distance is STRETCH times the horizontal one, in a map MAP_H units tall (width 100).
+export const STRETCH = 1.45;
+export const MAP_H = 130;
 export const radiusFor = (p) => CORE + (1 - p) * (EDGE - CORE);
 // The rings drawn on the map: the standing() cut-offs (Favored 60%+, Toss-up 40-60%, Underdog 15-40%, Long shot under 15%).
 export const RINGS = [

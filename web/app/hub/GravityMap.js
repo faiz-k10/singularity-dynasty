@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { gravityNodes, expectedWins, radiusFor, RINGS, CORE } from "@/lib/briefing";
+import { gravityNodes, expectedWins, radiusFor, RINGS, CORE, STRETCH, MAP_H } from "@/lib/briefing";
 import { fmt1 } from "@/lib/format";
 import { formatWin } from "@/lib/standing";
 
-// The signed-in home page's right side: the member's week as a gravity well. The core is the singularity; every league is a body pulled
+// The signed-in home page's right side: the member's week as a gravity well on elliptical orbits (taller than wide, like a real orbit). The core is the singularity; every league is a body pulled
 // toward it by its chance to win (lib/briefing.js: distance = 1 - win chance), so favored leagues sit inside the mint event horizon and long
 // shots drift out past the red ring. On load the bodies spiral in from the edge; toss-ups pulse. Only the three standing rings are drawn (no decorative rings, founder Nov 2 2026). The core holds the wins to expect this
 // week. Each body opens the Game Board. Server component: the rings are SVG in the map's own units (width 100), the bodies are placed with
@@ -14,13 +14,14 @@ export default function GravityMap({ rows }) {
   const { wins, of, pct } = expectedWins(rows);
   return (
     <figure className="gm" aria-label={`Your week: ${nodes.map((n) => `${n.name} ${formatWin(n.p)}`).join(", ")}. About ${fmt1(wins)} of ${of} wins expected (${pct}%).`}>
-      <div className="gm-stage">
-        <svg className="gm-rings" viewBox="0 0 100 100" aria-hidden="true">
+      <div className="gm-stage" style={{ "--S": STRETCH, aspectRatio: `100 / ${MAP_H}` }}>
+        <svg className="gm-rings" viewBox={`0 0 100 ${MAP_H}`} aria-hidden="true">
           {RINGS.map((r, i) => (
             <g key={r.p}>
-              <circle className={`gm-ring is-zone-${i}`} cx="50" cy="50" r={radiusFor(r.p)} />
+              <ellipse className={`gm-ring is-zone-${i}`} cx="50" cy={MAP_H / 2} rx={radiusFor(r.p)} ry={radiusFor(r.p) * STRETCH} />
+              <ellipse className={`gm-comet is-zone-${i}`} cx="50" cy={MAP_H / 2} rx={radiusFor(r.p)} ry={radiusFor(r.p) * STRETCH} pathLength="100" />
               {r.label && (
-                <text className={`gm-ring-label is-zone-${i}`} x="50" y={50 - radiusFor(r.p) - 1}>
+                <text className={`gm-ring-label is-zone-${i}`} x="50" y={MAP_H / 2 - radiusFor(r.p) * STRETCH - 1}>
                   {r.label}
                 </text>
               )}
