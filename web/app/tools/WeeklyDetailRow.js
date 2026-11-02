@@ -357,17 +357,12 @@ function MoneyBagIcon() {
 // The icon each achievement key renders as in the full banner badge --
 // keyed by achievements.js's own `key` field so this can't fall out of
 // sync with which flags actually exist.
-// Elite Role: a luxury mansion (pedimented centre with a spire, two wings, chimneys, steps; windows and the arched door cut out). Elite Player: a front-facing goat's head (the GOAT) -- swept-back horns, ears, slit pupils and a beard.
+// Elite Role: a mansion (pedimented centre and two wings; a round window, side windows and the arched door cut out -- kept simple so it reads at 16px). Elite Player: a front-facing goat's head (the GOAT) -- swept-back horns, ears, slit pupils and a beard.
 // One-colour art in currentColor on the badge's solid colour, like every other badge; the eyes and nostrils are cut out of the face.
 function EliteRoleIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path fillRule="evenodd" d="M12 3.4 17.9 8.2V9.4H22V20.2H2V9.4H6.1V8.2ZM12 5.7a.9.9 0 1 0 0 1.8.9.9 0 0 0 0-1.8ZM7.1 10.6h1.3v3.8H7.1ZM15.6 10.6h1.3v3.8h-1.3ZM10.9 19.4V15.9a1.1 1.1 0 0 1 2.2 0v3.5ZM3.2 12h1.6v3H3.2ZM19.2 12h1.6v3h-1.6ZM3.2 16.4h1.6v2.2H3.2ZM19.2 16.4h1.6v2.2h-1.6Z" />
-      <path d="M11.4 3.6 12 1.2 12.6 3.6Z" />
-      <path d="M3.2 7.4h1.4v2.2H3.2Z" />
-      <path d="M19.4 7.4h1.4v2.2h-1.4Z" />
-      <path d="M9.4 20.2h5.2v1.5H9.4Z" />
-      <path d="M10.4 21.7h3.2v1H10.4Z" />
+      <path fillRule="evenodd" d="M12 3.2 18.2 8.4V10H22V20.2H2V10H5.8V8.4ZM12 6.4a1 1 0 1 0 0 2 1 1 0 0 0 0-2ZM10.6 19.4V15.6a1.4 1.4 0 0 1 2.8 0v3.8ZM4 12.4h2.8v3.2H4ZM17.2 12.4h2.8v3.2h-2.8Z" />
     </svg>
   );
 }

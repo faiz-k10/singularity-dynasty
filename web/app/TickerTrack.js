@@ -51,7 +51,7 @@ const TICKER_ICONS = {
   rookie:
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M10 3.6h4.2v16.8h-3.4V8.2L8 9.7V6.6Z"/></svg>',
   eliteRole:
-    '<svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 3.4 17.9 8.2V9.4H22V20.2H2V9.4H6.1V8.2ZM12 5.7a.9.9 0 1 0 0 1.8.9.9 0 0 0 0-1.8ZM7.1 10.6h1.3v3.8H7.1ZM15.6 10.6h1.3v3.8h-1.3ZM10.9 19.4V15.9a1.1 1.1 0 0 1 2.2 0v3.5ZM3.2 12h1.6v3H3.2ZM19.2 12h1.6v3h-1.6ZM3.2 16.4h1.6v2.2H3.2ZM19.2 16.4h1.6v2.2h-1.6Z"/><path d="M11.4 3.6 12 1.2 12.6 3.6Z"/><path d="M3.2 7.4h1.4v2.2H3.2Z"/><path d="M19.4 7.4h1.4v2.2h-1.4Z"/><path d="M9.4 20.2h5.2v1.5H9.4Z"/><path d="M10.4 21.7h3.2v1H10.4Z"/></svg>',
+    '<svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 3.2 18.2 8.4V10H22V20.2H2V10H5.8V8.4ZM12 6.4a1 1 0 1 0 0 2 1 1 0 0 0 0-2ZM10.6 19.4V15.6a1.4 1.4 0 0 1 2.8 0v3.8ZM4 12.4h2.8v3.2H4ZM17.2 12.4h2.8v3.2h-2.8Z"/></svg>',
   elitePlayer:
     '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M9.6 9C5.4 9.4 2.4 6.6 2.8 1.6C4.8 4.4 7.6 4.8 11 5.6Z"/><path d="M14.4 9c4.2.4 7.2-2.4 6.8-7.4-2 2.8-4.8 3.2-8.2 4Z"/><path d="M8.4 11 2.4 10C2.6 12.4 4.2 13.8 7 14Z"/><path d="M15.6 11l6-1c-.2 2.4-1.8 3.8-4.6 4Z"/><path fill-rule="evenodd" d="M8.2 8.6h7.6l-.8 7c-.2 1.7-1.3 2.8-3 2.8s-2.8-1.1-3-2.8ZM9.3 11h1.8v1.1H9.3ZM12.9 11h1.8v1.1h-1.8ZM11 15.1a.5.5 0 1 0 0 1 .5.5 0 0 0 0-1ZM13 15.1a.5.5 0 1 0 0 1 .5.5 0 0 0 0-1Z"/><path d="M10.6 18.4h2.8L12 22.4Z"/></svg>',
   conArtist:
