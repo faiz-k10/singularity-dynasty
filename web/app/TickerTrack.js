@@ -57,6 +57,22 @@ const TICKER_ICONS = {
   conArtist:
     '<svg viewBox="0 0 24 24" fill="currentColor"><g transform="translate(-0.4,0.24)"><path d="M2.245,3.02 C5.71,1.04 9.49,1.04 12.955,3.02 C14.215,9.95 10.3,15.3 7.6,16.29 C4.9,15.3 1.0,9.95 2.245,3.02 Z M5.395,7.31 A0.95,0.95 0 1,0 7.295,7.31 A0.95,0.95 0 1,0 5.395,7.31 Z M8.905,7.31 A0.95,0.95 0 1,0 10.805,7.31 A0.95,0.95 0 1,0 8.905,7.31 Z M4.954,11.27 Q7.6,10.17 10.246,11.27 Q7.6,7.87 4.954,11.27 Z" opacity="0.55" fill-rule="evenodd"/><path d="M6.8 2.9 8.4 2.9 7.6 0.9Z" opacity="0.55"/><path d="M10.19,8.98 C13.82,6.91 17.78,6.91 21.41,8.98 C22.73,16.225 18.5,21.8 15.8,22.435 C13.1,21.8 8.87,16.225 10.19,8.98 Z M13.49,13.465 A1,1 0 1,0 15.49,13.465 A1,1 0 1,0 13.49,13.465 Z M17.11,13.465 A1,1 0 1,0 19.11,13.465 A1,1 0 1,0 17.11,13.465 Z M13.028,17.605 Q15.8,18.705 18.572,17.605 Q15.8,21.205 13.028,17.605 Z" fill-rule="evenodd"/><path d="M15 8.85 16.6 8.85 15.8 6.75Z"/></g></svg>',
 };
+// Where each icon's drawn pixels actually sit, measured from a render (offset of the drawing's bounding-box centre from the 24x24 centre, in
+// icon units). Shifting the viewBox by it centres every glyph in its medallion, whatever the art's own padding is.
+const ICON_OFFSET = {
+  confidence: [0.5, 1.15],
+  locked: [0, -0.5],
+  onFire: [0, -0.35],
+  buyLow: [0, 0.8],
+  honorable: [-0.55, 0],
+  rookie: [-0.95, 0],
+  conArtist: [-0.6, -0.1],
+};
+function tickerIcon(key) {
+  const svg = TICKER_ICONS[key] || TICKER_ICONS.confidence;
+  const [dx, dy] = ICON_OFFSET[key] || [0, 0];
+  return dx || dy ? svg.replace('viewBox="0 0 24 24"', `viewBox="${dx} ${dy} 24 24"`) : svg;
+}
 const fallbackNames = [
   "CeeDee Lamb",
   "Bijan Robinson",
@@ -111,7 +127,7 @@ function buildTicker(track, tickerItems) {
       // same shape.
       const badges = item.badges || [{ key: item.key, variant: item.variant }];
       const icons = badges
-        .map((b) => `<span class="ticker-badge ${b.variant}">${b.key === "hero" ? dragonBallSvg(b.tier || 1, 16) : TICKER_ICONS[b.key] || TICKER_ICONS.confidence}</span>`)
+        .map((b) => `<span class="ticker-badge ${b.variant}">${b.key === "hero" ? dragonBallSvg(b.tier || 1, 16) : tickerIcon(b.key)}</span>`)
         .join("");
       html += `<span class="ticker-item">${item.name} <span class="ticker-badges">${icons}</span></span>`;
     });
