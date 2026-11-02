@@ -101,7 +101,8 @@ jobs:
           fi
           : > .env.local
           for k in NEXT_PUBLIC_SUPABASE_URL SUPABASE_SERVICE_ROLE_KEY RESEND_API_KEY EMAIL_FROM NEXT_PUBLIC_SITE_URL EMAIL_FOOTER_ADDRESS; do
-            v="${!k}"; [ -n "$v" ] && printf '%s=%s\n' "$k" "$v" >> .env.local
+            v="${!k}"
+            if [ -n "$v" ]; then printf '%s=%s\n' "$k" "$v" >> .env.local; fi  # (an "a && b" here would fail the step when the last one is empty)
           done
 
       - name: Run ${{ steps.mode.outputs.mode }}
