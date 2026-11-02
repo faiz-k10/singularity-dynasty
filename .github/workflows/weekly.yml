@@ -1,0 +1,105 @@
+name: Weekly run
+
+# The site's weekly publishing, on GitHub's computers (no Mac, no Claude needed). Each run calls web/scripts/weekly-run.mjs, which runs the R
+# model, publishes to Supabase, checks the result and records it for /admin (Storage bucket "ops"). A failed run makes GitHub email you.
+#
+#   Tuesday   tuesday       finished week's game data, then next week's projections + sims (only if the week is complete), email, backup
+#   Wednesday game-data     late stat corrections and expected points
+#   Thursday  projections   injury news before Thursday night
+#   Sunday    projections   last injury news before the 1 PM games
+#
+# Times are UTC and fixed: noon / 9 AM / 5 PM / 10 AM Eastern in winter, one hour later in summer (GitHub can also start a scheduled run up
+# to ~30 minutes late when it is busy). To run one now: Actions tab -> Weekly run -> Run workflow -> pick the job.
+# Needs repository secrets NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY (the email ones are optional until Resend is set up).
+
+on:
+  schedule:
+    - cron: "0 17 * * 2" # Tuesday
+    - cron: "0 14 * * 3" # Wednesday
+    - cron: "0 22 * * 4" # Thursday
+    - cron: "0 15 * * 0" # Sunday
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Which job to run
+        type: choice
+        options: [tuesday, game-data, projections, backup]
+        default: projections
+
+concurrency:
+  group: weekly-run # never two publishes at once; a second one waits
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Pick the job
+        id: mode
+        run: |
+          case "${{ github.event.schedule }}" in
+            "0 17 * * 2") m=tuesday ;;
+            "0 14 * * 3") m=game-data ;;
+            "0 22 * * 4"|"0 15 * * 0") m=projections ;;
+            *) m="${{ inputs.mode }}" ;;
+          esac
+          echo "mode=$m" >> "$GITHUB_OUTPUT"
+          echo "Job: $m"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install the site's packages
+        working-directory: web
+        run: npm ci
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true # prebuilt Linux packages: installs take seconds, not minutes
+
+      - name: Cache R packages
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.R_LIBS_USER }}
+          key: r-${{ runner.os }}-nflreadr-jsonlite-v1
+
+      - name: Install R packages
+        run: Rscript -e 'for (p in c("nflreadr", "jsonlite")) if (!requireNamespace(p, quietly = TRUE)) install.packages(p)'
+
+      - name: Write the environment file
+        working-directory: web
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+          NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL }}
+          EMAIL_FOOTER_ADDRESS: ${{ secrets.EMAIL_FOOTER_ADDRESS }}
+        run: |
+          if [ -z "$NEXT_PUBLIC_SUPABASE_URL" ] || [ -z "$SUPABASE_SERVICE_ROLE_KEY" ]; then
+            echo "::error::Add the NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY repository secrets first"; exit 1
+          fi
+          : > .env.local
+          for k in NEXT_PUBLIC_SUPABASE_URL SUPABASE_SERVICE_ROLE_KEY RESEND_API_KEY EMAIL_FROM NEXT_PUBLIC_SITE_URL EMAIL_FOOTER_ADDRESS; do
+            v="${!k}"; [ -n "$v" ] && printf '%s=%s\n' "$k" "$v" >> .env.local
+          done
+
+      - name: Run ${{ steps.mode.outputs.mode }}
+        working-directory: web
+        env:
+          BACKUP_DIR: ${{ github.workspace }}/backups
+        run: node --env-file=.env.local scripts/weekly-run.mjs "${{ steps.mode.outputs.mode }}"
+
+      - name: Keep the backup
+        if: always() && hashFiles('backups/**') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: backup-${{ github.run_id }}
+          path: backups/
+          retention-days: 60

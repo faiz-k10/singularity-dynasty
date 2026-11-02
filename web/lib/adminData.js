@@ -77,6 +77,22 @@ async function content(admin) {
   return { posts, prospects: { draftClass: prospectClass, rows: prospects }, board: { season: boardSeason, startup, rookie } };
 }
 
+// The scheduled weekly runs (scripts/weekly-run.mjs records each one in the private Storage bucket "ops" as runs/<mode>.json).
+export const RUN_JOBS = [
+  { mode: "tuesday", when: "Tuesday noon ET", what: "Finished week's game data, then next week's projections and sims, email, backup" },
+  { mode: "game-data", when: "Wednesday 9 AM ET", what: "Late stat corrections and expected points" },
+  { mode: "projections", when: "Thursday 5 PM and Sunday 10 AM ET", what: "Projections and sims with the latest injury news" },
+];
+async function runs(admin) {
+  const bucket = admin.storage.from("ops");
+  return Promise.all(
+    RUN_JOBS.map(async (j) => {
+      const { data } = await bucket.download(`runs/${j.mode}.json`);
+      return { ...j, last: data ? JSON.parse(await data.text()) : null };
+    })
+  );
+}
+
 async function growth(admin) {
   const weekAgo = new Date(Date.now() - 7 * DAY).toISOString();
   const count = (q) => q.then(({ count, error }) => {
@@ -97,7 +113,7 @@ async function growth(admin) {
 
 export async function loadAdminData() {
   const admin = createAdminClient();
-  const [health, memberData, rev, errs, cont, grow] = await Promise.all([settle(loadHealth()), settle(members(admin)), settle(revenue()), settle(errors(admin)), settle(content(admin)), settle(growth(admin))]);
+  const [health, memberData, rev, errs, cont, grow, runList] = await Promise.all([settle(loadHealth()), settle(members(admin)), settle(revenue()), settle(errors(admin)), settle(content(admin)), settle(growth(admin)), settle(runs(admin))]);
   const wallData = await settle(walls(admin, memberData.value?.paid || new Set()));
-  return { health, members: memberData, revenue: rev, walls: wallData, errors: errs, content: cont, growth: grow };
+  return { health, runs: runList, members: memberData, revenue: rev, walls: wallData, errors: errs, content: cont, growth: grow };
 }

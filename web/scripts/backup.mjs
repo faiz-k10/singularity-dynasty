@@ -18,7 +18,8 @@ import { fetchAllRows } from "../lib/fetchAllRows.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.resolve(here, "..", "..");
-const OUT = path.resolve(REPO, "..", "Backups");
+// BACKUP_DIR overrides where it goes (the GitHub Actions weekly run writes into its workspace and keeps the folder as a run artifact).
+const OUT = process.env.BACKUP_DIR ? path.resolve(process.env.BACKUP_DIR) : path.resolve(REPO, "..", "Backups");
 const KEEP = 8;
 
 // Every table in supabase/migrations, each with a unique ordering (its primary key) so paging can't skip or repeat a row.

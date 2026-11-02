@@ -6441,6 +6441,18 @@ select.lab-select{min-width:200px; padding-right:8px; cursor:pointer;}
 .adm-form{display:flex; flex-direction:column; gap:6px;}
 .adm-form .btn-primary{align-self:flex-start; margin-top:8px;}
 .adm-row{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+.adm-runs{list-style:none; padding:0; margin:10px 0 0; display:flex; flex-direction:column;}
+.adm-runs li{display:grid; grid-template-columns:auto 1fr; gap:10px; align-items:start; padding:10px 0; border-top:1px solid var(--rule);}
+.adm-runs li .adm-dot{margin-top:6px; align-self:start;}
+.adm-runs .is-bad .adm-dot{background:var(--down);}
+.adm-runs li:not(.is-ok):not(.is-bad) .adm-dot{background:var(--star-dim);}
+.adm-runs .adm-help{margin:2px 0 4px;}
+.adm-run-mode{font-size:11px; color:var(--star-dim); margin-left:6px;}
+.adm-run-last{font-size:11.5px; color:var(--star);}
+.adm-runs li.is-bad .adm-run-last{color:var(--down);}
+.adm-run-last a{color:var(--horizon-gold);}
+.adm-run-log summary{cursor:pointer; font-size:11px; color:var(--star-dim); margin-top:6px;}
+.adm-run-log pre{max-height:240px; overflow:auto; margin:6px 0 0; padding:10px; font-size:11px; line-height:1.45; white-space:pre-wrap; background:var(--void-panel-2); border:1px solid var(--rule);}
 .adm-file{font-family:var(--font-mono), monospace; font-size:12px; color:var(--star-dim);}
 .adm-posts{list-style:none; padding:0; margin:16px 0 0; border-top:1px solid var(--rule);}
 .adm-posts li{display:flex; justify-content:space-between; gap:10px; align-items:baseline; padding:8px 0; border-bottom:1px solid var(--rule); font-size:13.5px;}

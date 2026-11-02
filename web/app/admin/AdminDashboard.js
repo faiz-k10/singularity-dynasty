@@ -1,6 +1,8 @@
 import { PostForm, ProspectUpload, DraftBoardUpload } from "./AdminForms";
 import { deletePost } from "./actions";
 import ShareCardButton from "../ShareCardButton";
+
+const RUNS_URL = "https://github.com/faiz-k10/singularity-dynasty/actions/workflows/weekly.yml";
 import { money } from "@/lib/format";
 
 const when = (iso) => (iso ? new Date(iso).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit", timeZone: "America/New_York" }) + " ET" : "—");
@@ -57,7 +59,51 @@ export default function AdminDashboard({ d }) {
           )}
         </Panel>
 
-        <Panel n={2} title="Members and revenue" error={d.members.error}>
+        <Panel n={2} title="Weekly runs" error={d.runs.error}>
+          <p className="adm-help">
+            These run by themselves on GitHub (<code>.github/workflows/weekly.yml</code>); a failed run also emails you. To run one now, open{" "}
+            <a href={RUNS_URL} target="_blank" rel="noopener">
+              Actions → Weekly run
+            </a>
+            , press <strong>Run workflow</strong> and pick the job. What to do when one fails is in RUNBOOK.md.
+          </p>
+          <ul className="adm-runs">
+            {(d.runs.value || []).map((j) => (
+              <li key={j.mode} className={j.last ? (j.last.ok ? "is-ok" : "is-bad") : ""}>
+                <span className="adm-dot" aria-hidden="true" />
+                <div>
+                  <strong>{j.when}</strong> <span className="mono adm-run-mode">{j.mode}</span>
+                  <div className="adm-help">{j.what}</div>
+                  <div className="mono adm-run-last">
+                    {j.last ? (
+                      <>
+                        {j.last.ok ? "Passed" : "FAILED"} · {when(j.last.finished)} · {j.last.where}
+                        {j.last.url && (
+                          <>
+                            {" · "}
+                            <a href={j.last.url} target="_blank" rel="noopener">
+                              full log
+                            </a>
+                          </>
+                        )}
+                      </>
+                    ) : (
+                      "No run recorded yet"
+                    )}
+                  </div>
+                  {j.last && (
+                    <details className="adm-run-log">
+                      <summary className="mono">Last lines</summary>
+                      <pre>{j.last.lines.join("\n")}</pre>
+                    </details>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </Panel>
+
+        <Panel n={3} title="Members and revenue" error={d.members.error}>
           {m && (
             <div className="adm-stats">
               <Stat value={m.total} label="Accounts" />
@@ -96,7 +142,7 @@ export default function AdminDashboard({ d }) {
           )}
         </Panel>
 
-        <Panel n={3} title="Growth: email list and referrals" error={d.growth.error}>
+        <Panel n={4} title="Growth: email list and referrals" error={d.growth.error}>
           {d.growth.value && (
             <>
               <div className="adm-stats">
@@ -132,7 +178,7 @@ export default function AdminDashboard({ d }) {
           </div>
         </Panel>
 
-        <Panel n={4} title="Paywalls, last 30 days" error={d.walls.error}>
+        <Panel n={5} title="Paywalls, last 30 days" error={d.walls.error}>
           {d.walls.value &&
             (d.walls.value.walls.length ? (
               <div className="rankings-table-wrap adm-table">
@@ -167,7 +213,7 @@ export default function AdminDashboard({ d }) {
             ))}
         </Panel>
 
-        <Panel n={5} title="Recent errors" error={d.errors.error}>
+        <Panel n={6} title="Recent errors" error={d.errors.error}>
           {d.errors.value &&
             (d.errors.value.length ? (
               <div className="rankings-table-wrap adm-table">
@@ -198,7 +244,7 @@ export default function AdminDashboard({ d }) {
             ))}
         </Panel>
 
-        <Panel n={6} title="Publish" error={d.content.error}>
+        <Panel n={7} title="Publish" error={d.content.error}>
           <div className="adm-grid">
             <div>
               <h3 className="adm-sub mono">Post a drop</h3>
