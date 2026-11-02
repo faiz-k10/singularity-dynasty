@@ -65,13 +65,17 @@ const ICON_OFFSET = {
   honorable: [0, 0.1],
   rookie: [-0.55, -0.3],
   conArtist: [-0.6, -0.4],
-  eliteRole: [0, 0.75],
-  elitePlayer: [0, -0.85],
+  eliteRole: [0, 0.2],
+  elitePlayer: [0, -0.2],
 };
+// Full-width art (the mansion's wings, the goat's horns) runs into the circle's curved edge at 14px, so it is drawn a little smaller.
+const ICON_SCALE = { eliteRole: 0.84, elitePlayer: 0.86 };
 function tickerIcon(key) {
   const svg = TICKER_ICONS[key] || TICKER_ICONS.confidence;
   const [dx, dy] = ICON_OFFSET[key] || [0, 0];
-  return dx || dy ? svg.replace('viewBox="0 0 24 24"', `viewBox="${dx} ${dy} 24 24"`) : svg;
+  const size = 24 / (ICON_SCALE[key] || 1);
+  const o = (24 - size) / 2;
+  return dx || dy || size !== 24 ? svg.replace('viewBox="0 0 24 24"', `viewBox="${o + dx} ${o + dy} ${size} ${size}"`) : svg;
 }
 const fallbackNames = [
   "CeeDee Lamb",
