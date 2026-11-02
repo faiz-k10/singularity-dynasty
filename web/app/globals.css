@@ -6384,7 +6384,8 @@ select.lab-select{min-width:200px; padding-right:8px; cursor:pointer;}
   box-shadow:0 0 0 1.2cqw rgba(var(--horizon-rgb), .1), 0 0 0 2.6cqw rgba(var(--horizon-rgb), .05);
 }
 .gm-core b{font-family:var(--font-display), sans-serif; font-weight:800; font-size:9.5cqw; line-height:.9; letter-spacing:.01em;}
-.gm-core span{font-family:var(--font-mono), monospace; font-size:clamp(7px, 1.65cqw, 10px); font-weight:700; letter-spacing:.08em; text-transform:uppercase; line-height:1.35;}
+.gm-core span{font-family:var(--font-mono), monospace; font-size:clamp(8px, 2.1cqw, 12px); font-weight:700; letter-spacing:.08em; text-transform:uppercase; line-height:1.35;}
+.gm-core .gm-core-pct{margin-top:.5cqw; padding:.2cqw 1.2cqw; font-size:clamp(9px, 2.4cqw, 14px); background:var(--on-brand); color:var(--horizon-gold); border-radius:var(--r-sm);} /* the expected wins as a share of the week */
 /* A league: rotated to its angle and pushed out to its distance (the label turned back upright); on load it spirals in from the edge. */
 .gm-node{
   --tone:var(--star-dim); position:absolute; left:50%; top:50%; width:0; height:0; text-decoration:none; color:inherit;

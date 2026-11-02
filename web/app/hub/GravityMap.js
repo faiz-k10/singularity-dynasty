@@ -11,9 +11,9 @@ import { formatWin } from "@/lib/standing";
 export default function GravityMap({ rows }) {
   const nodes = gravityNodes(rows);
   if (!nodes.length) return null;
-  const { wins, of } = expectedWins(rows);
+  const { wins, of, pct } = expectedWins(rows);
   return (
-    <figure className="gm" aria-label={`Your week: ${nodes.map((n) => `${n.name} ${formatWin(n.p)}`).join(", ")}. About ${fmt1(wins)} wins expected.`}>
+    <figure className="gm" aria-label={`Your week: ${nodes.map((n) => `${n.name} ${formatWin(n.p)}`).join(", ")}. About ${fmt1(wins)} of ${of} wins expected (${pct}%).`}>
       <div className="gm-stage">
         <svg className="gm-rings" viewBox="0 0 100 100" aria-hidden="true">
           <circle className="gm-ring is-outer" cx="50" cy="50" r={EDGE + 6} />
@@ -29,8 +29,8 @@ export default function GravityMap({ rows }) {
         </svg>
         <div className="gm-core" style={{ "--core": `${CORE * 2 - 4}cqw` }}>
           <b>{fmt1(wins)}</b>
-          <span>wins expected</span>
-          <span>of {of} this week</span>
+          <span>of {of} wins</span>
+          <span className="gm-core-pct">{pct}%</span>
         </div>
         {nodes.map((n, i) => (
           <Link

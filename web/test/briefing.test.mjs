@@ -42,5 +42,5 @@ test("gravity map: favored leagues sit near the core, long shots at the edge; th
   assert.equal(nodes.length, 2);
   assert.ok(nodes[0].dist < nodes[1].dist);
   assert.deepEqual(nodes.map((n) => n.angle), [0, 180]);
-  assert.deepEqual(expectedWins(rows), { wins: 1, of: 2 });
+  assert.deepEqual(expectedWins(rows), { wins: 1, of: 2, pct: 50 });
 });

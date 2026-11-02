@@ -90,8 +90,9 @@ export function gravityNodes(rows) {
   return r.map((x, i) => ({ ...x, angle: round1(-90 + ((i + 0.5) * 360) / n), dist: round1(radiusFor(x.p)) }));
 }
 
-// The number in the core: the wins you can expect this week (the sum of the win chances), and out of how many.
+// The number in the core: the wins you can expect this week (the sum of the win chances), out of how many, and as a share of them.
 export function expectedWins(rows) {
   const r = rows.filter((x) => x.p != null);
-  return { wins: round1(r.reduce((a, x) => a + x.p, 0)), of: r.length };
+  const sum = r.reduce((a, x) => a + x.p, 0);
+  return { wins: round1(sum), of: r.length, pct: r.length ? Math.round((sum / r.length) * 100) : 0 };
 }
