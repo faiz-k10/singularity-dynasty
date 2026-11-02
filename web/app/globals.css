@@ -6403,10 +6403,10 @@ select.lab-select{min-width:200px; padding-right:8px; cursor:pointer;}
 .gm-label{
   position:absolute; left:calc(cos(var(--a)) * 2.4cqw); top:calc(sin(var(--a)) * 2.4cqw);
   transform:translate(calc(-50% + cos(var(--a)) * 50%), calc(-50% + sin(var(--a)) * 50%)); display:flex; flex-direction:column; align-items:center; gap:1px;
-  padding:4px 8px; white-space:nowrap; background:var(--void-panel); border:1px solid var(--rule); border-top:2px solid var(--tone);
+  padding:4px 8px; width:max-content; max-width:30cqw; background:var(--void-panel); border:1px solid var(--rule); border-top:2px solid var(--tone);
   font-size:clamp(9.5px, 2.3cqw, 12px); line-height:1.25; transition:border-color .2s ease, background .2s ease, box-shadow .2s ease;
 }
-.gm-label-name{color:var(--star); max-width:26cqw; white-space:normal; text-align:center; overflow-wrap:anywhere;} /* the full league name, wrapping onto a second line when it is long */
+.gm-label-name{color:var(--star); text-align:center; overflow-wrap:break-word;} /* the full league name, wrapping onto a second line when it is long */
 .gm-label-pct{color:var(--tone); font-weight:700;}
 .gm-node:hover, .gm-node:focus-visible{z-index:5;} /* the hovered body and its label come to the front, lit in its own colour */
 .gm-node:hover .gm-label, .gm-node:focus-visible .gm-label{border-color:var(--tone); background:color-mix(in srgb, var(--tone) 18%, var(--void-panel)); box-shadow:0 0 0 1px var(--tone);}
