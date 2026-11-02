@@ -26,7 +26,7 @@ The weekly jobs run on GitHub's computers. Your Mac can be off.
 In summer every time is one hour later (GitHub's clock doesn't change for daylight saving). GitHub sometimes starts a scheduled run late or drops it when it's busy, so each job also has one or two later back-up times. A back-up time does nothing if the job already passed that day, and tries again if it failed.
 
 Other automatic checks:
-- **Every hour**, GitHub checks that the site is up and the data is fresh.
+- **About every hour**, GitHub checks that the site is up and the data is fresh. When GitHub is busy this can stretch to every few hours.
 - **Every Monday**, GitHub checks the site's software for security problems.
 
 ## Your weekly routine (about 2 minutes)
