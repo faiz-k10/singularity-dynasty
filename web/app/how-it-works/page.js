@@ -68,6 +68,7 @@ const FAQ = [
   ["Do you offer refunds?", <>Yes, within 14 days of a payment. <Link href="/contact">Contact us</Link> and we&apos;ll take care of it.</>],
   ["Why did a projection change in the middle of the week?", "Projections publish Tuesday and refresh Thursday afternoon and Sunday morning for injury news. A player ruled out drops to 0."],
   ["Why does a player show 0?", "Either he's ruled out (an injury designation, or no projection anywhere because he won't play) or his team is on its BYE. The site always says which."],
+  ["How does Refer a friend work?", <>Your link is on your <Link href="/account">Account</Link> page. A friend who signs up through it gets 20% off their first payment. When they subscribe, you get a free month of your plan as account credit, taken off your next bill automatically (if you&apos;re on the free plan, it waits for when you subscribe). First-time subscribers only, up to 12 rewards a year.</>],
   ["How do I delete my account and data?", "Account, then Delete account. It cancels any subscription immediately and removes your login, saved leagues and settings."],
   ["Something looks wrong. Who do I tell?", <><Link href="/contact">Contact us</Link>. Errors on the site are also recorded automatically so we can fix them.</>],
 ];

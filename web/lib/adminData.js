@@ -77,9 +77,27 @@ async function content(admin) {
   return { posts, prospects: { draftClass: prospectClass, rows: prospects }, board: { season: boardSeason, startup, rookie } };
 }
 
+async function growth(admin) {
+  const weekAgo = new Date(Date.now() - 7 * DAY).toISOString();
+  const count = (q) => q.then(({ count, error }) => {
+    if (error) throw new Error(error.message.includes("subscribers") || error.message.includes("referrals") ? "Run migration 0043_referrals_and_email_list.sql in the Supabase SQL editor." : error.message);
+    return count ?? 0;
+  });
+  const head = (t) => admin.from(t).select("id", { count: "exact", head: true });
+  const [subs, subs7, unsubs, joined, rewarded, credit] = await Promise.all([
+    count(head("subscribers").is("unsubscribed_at", null)),
+    count(head("subscribers").is("unsubscribed_at", null).gte("created_at", weekAgo)),
+    count(head("subscribers").not("unsubscribed_at", "is", null)),
+    count(head("referrals")),
+    count(head("referrals").eq("status", "rewarded")),
+    admin.from("referrals").select("reward_cents").eq("status", "rewarded").then(({ data }) => (data || []).reduce((n, r) => n + (r.reward_cents || 0), 0)),
+  ]);
+  return { subs, subs7, unsubs, joined, rewarded, creditCents: credit };
+}
+
 export async function loadAdminData() {
   const admin = createAdminClient();
-  const [health, memberData, rev, errs, cont] = await Promise.all([settle(loadHealth()), settle(members(admin)), settle(revenue()), settle(errors(admin)), settle(content(admin))]);
+  const [health, memberData, rev, errs, cont, grow] = await Promise.all([settle(loadHealth()), settle(members(admin)), settle(revenue()), settle(errors(admin)), settle(content(admin)), settle(growth(admin))]);
   const wallData = await settle(walls(admin, memberData.value?.paid || new Set()));
-  return { health, members: memberData, revenue: rev, walls: wallData, errors: errs, content: cont };
+  return { health, members: memberData, revenue: rev, walls: wallData, errors: errs, content: cont, growth: grow };
 }

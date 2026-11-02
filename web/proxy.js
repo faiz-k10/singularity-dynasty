@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse } from "next/server";
+import { REF_COOKIE, REF_DAYS, isReferralCode } from "./lib/referralRules.js";
 
 // Refreshes the Supabase auth session cookie on every navigation so
 // Server Components always see a valid (non-expired) session.
@@ -13,7 +14,18 @@ export async function proxy(request) {
     return NextResponse.redirect(url);
   }
 
-  let response = NextResponse.next({ request });
+  // A friend's referral link (?ref=CODE on any page): remember the code for 30 days so sign-up and checkout can credit them
+  // (lib/referralRules.js). Set on the request too, so the page being loaded already sees it.
+  const ref = searchParams.get("ref");
+  if (isReferralCode(ref)) request.cookies.set(REF_COOKIE, ref);
+
+  const withRef = (res) => {
+    if (isReferralCode(ref)) {
+      res.cookies.set(REF_COOKIE, ref, { maxAge: REF_DAYS * 86400, httpOnly: true, sameSite: "lax", secure: request.nextUrl.protocol === "https:", path: "/" });
+    }
+    return res;
+  };
+  let response = withRef(NextResponse.next({ request }));
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -27,7 +39,7 @@ export async function proxy(request) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           );
-          response = NextResponse.next({ request });
+          response = withRef(NextResponse.next({ request }));
           cookiesToSet.forEach(({ name, value, options }) =>
             response.cookies.set(name, value, options)
           );

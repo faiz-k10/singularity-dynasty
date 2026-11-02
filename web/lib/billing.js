@@ -1,5 +1,6 @@
-import Stripe from "stripe";
+import { stripe } from "@/lib/stripeClient";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { rewardReferral } from "@/lib/referrals";
 import { subscriptionTier } from "@/lib/subscriptionTier";
 
 // Server-only: everything that turns a Stripe subscription into a profile's tier. The Stripe webhook
@@ -7,7 +8,7 @@ import { subscriptionTier } from "@/lib/subscriptionTier";
 // (lib/subscriptionTier.js) and one place that writes `tier` -- the profiles row itself can't be changed by its owner
 // (migration 0038).
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+export { stripe };
 
 export const PRICE_IDS = {
   explorer: { monthly: process.env.STRIPE_PRICE_EXPLORER_MONTHLY, annual: process.env.STRIPE_PRICE_EXPLORER_ANNUAL },
@@ -74,7 +75,11 @@ export async function provisionFromCheckout(sessionOrId, { expectedUserId = null
       check(await createAdminClient().from("profiles").update({ stripe_subscription_id: subscriptionId }).eq("email", email).select("id"));
     }
   }
-  return syncSubscription(subscriptionId, { userId });
+  const result = await syncSubscription(subscriptionId, { userId });
+  // A first subscription that came through a friend's link pays the friend (lib/referrals.js; exactly once, throws to retry).
+  // Only a checkout that carried the referral (the discount was granted, so it was a first-ever subscription) counts.
+  if (userId && session.metadata?.referrer_id && result.tier !== "stargazer") await rewardReferral(userId);
+  return result;
 }
 
 // The account's subscriptions in Stripe that are still running (the profile could be out of date). Used to stop a second

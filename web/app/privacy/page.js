@@ -56,8 +56,18 @@ export default function PrivacyPage() {
             <li>To communicate service-related updates to you.</li>
           </ul>
           <p>
-            If you subscribe to our newsletter, we&apos;ll use your email to
-            send it. You can unsubscribe at any time.
+            If you subscribe to our newsletter, we store your email address,
+            when you signed up and where (for example, the home page), and use
+            it only to send the newsletter. Every newsletter has a link to
+            unsubscribe in one click; we keep a record that you unsubscribed so
+            you aren&apos;t added again by mistake.
+          </p>
+          <p>
+            If you arrive through a member&apos;s referral link, we remember
+            their referral code in a cookie on your device for 30 days, and
+            record which account referred yours when you sign up, so we can
+            apply your discount and credit theirs. The referring member sees
+            only counts (how many friends joined or subscribed), never who.
           </p>
 
           <h2>4. How We Share Information</h2>

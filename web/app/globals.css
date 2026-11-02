@@ -6414,3 +6414,16 @@ select.lab-select{min-width:200px; padding-right:8px; cursor:pointer;}
   .acct-facts > div{grid-template-columns:1fr; gap:2px;}
   .adm-row{grid-template-columns:1fr;}
 }
+
+/* Referral program (account page card, home banner) and the newsletter form's bot trap (Nov 2 2026). */
+.ref-link{display:flex; gap:8px; margin-top:12px; flex-wrap:wrap;}
+.ref-link .feed-input{flex:1 1 220px; min-width:0; font-size:13px; padding:10px 12px;}
+.ref-stats{display:grid; grid-template-columns:repeat(auto-fit, minmax(110px, 1fr)); gap:8px; margin:14px 0 0;}
+.ref-stats > div{padding:10px 12px; border:1px solid var(--rule); border-radius:var(--r-sm);}
+.ref-stats dt{font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--star-dim);}
+.ref-stats dd{margin:4px 0 0; font-family:var(--font-display), sans-serif; font-size:24px; font-weight:800; color:var(--star);}
+.ref-stats .is-brand dd{color:var(--horizon-gold);}
+.ref-banner{display:inline-flex; flex-wrap:wrap; gap:6px 10px; align-items:baseline; margin:0 0 18px; padding:10px 14px; border:1px solid rgba(var(--horizon-gold-rgb),.45); border-left:3px solid var(--horizon-gold); border-radius:var(--r-sm); background:rgba(var(--horizon-gold-rgb),.08); font-size:14px; color:var(--star);}
+.ref-banner .mono{font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--horizon-gold);}
+.ref-banner a{color:var(--horizon-gold);}
+.feed-trap{position:absolute!important; left:-10000px; width:1px; height:1px; opacity:0;}

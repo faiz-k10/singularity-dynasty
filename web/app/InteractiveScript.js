@@ -245,19 +245,6 @@ export default function InteractiveScript() {
       observers.push(ro);
     }
 
-    /* ---- feed newsletter signup ---- */
-    const feedForm = document.getElementById("feedForm");
-    if (feedForm) {
-      feedForm.addEventListener(
-        "submit",
-        (e) => {
-          e.preventDefault();
-          feedForm.classList.add("sent");
-        },
-        { signal }
-      );
-    }
-
     /* ---- orbital tool selector ---- */
     const nodes = document.querySelectorAll(".node");
     const hubPanels = document.querySelectorAll(".hub-panel");

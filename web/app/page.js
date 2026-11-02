@@ -4,7 +4,11 @@ import SiteHeader from "./SiteHeader";
 import LandingHub from "./hub/LandingHub";
 import HorizonBand from "./hub/HorizonBand";
 import YourWeek, { loadYourWeek } from "./hub/YourWeek";
+import { cookies } from "next/headers";
+import { isLiveReferralCode } from "@/lib/referrals";
+import { REF_COOKIE, FRIEND_DISCOUNT_PERCENT } from "@/lib/referralRules";
 import HeroLookup from "./HeroLookup";
+import NewsletterForm from "./NewsletterForm";
 import LeaguePrice from "./LeaguePrice";
 import { createClient } from "@/lib/supabase/server";
 import { getAuthUser } from "@/lib/authUser";
@@ -128,6 +132,9 @@ export default async function Home() {
   const supabase = await createClient();
   const user = await getAuthUser(supabase);
   const yourWeek = user ? await loadYourWeek(supabase, user).catch(() => null) : null;
+  // Arrived through a friend's referral link (proxy.js remembers the code): say the discount is waiting.
+  const refCode = (await cookies()).get(REF_COOKIE)?.value;
+  const invited = !yourWeek && refCode ? await isLiveReferralCode(refCode) : false;
   const heroCandidates = [];
 
   for (const r of trendRows) {
@@ -214,6 +221,12 @@ export default async function Home() {
             <YourWeek data={yourWeek} />
           ) : (
           <div>
+            {invited && (
+              <p className="ref-banner" role="status">
+                <span className="mono">A friend invited you</span> {FRIEND_DISCOUNT_PERCENT}% off your first payment on any plan is saved for you.{" "}
+                <a href="#pricing">See plans</a>
+              </p>
+            )}
             <div className="eyebrow">Dynasty · Data Gravity</div>
             <h1>
               Know the range
@@ -592,30 +605,7 @@ export default async function Home() {
           </div>
 
           <div className="feed-grid">
-            <form className="feed-form reveal" id="feedForm">
-              <label className="feed-label mono" htmlFor="feedEmail">
-                EMAIL ADDRESS
-              </label>
-              <div className="feed-input-row">
-                <input
-                  type="email"
-                  id="feedEmail"
-                  className="feed-input"
-                  placeholder="you@domain.com"
-                  required
-                />
-                <button type="submit" className="btn-primary feed-submit">
-                  Subscribe
-                </button>
-              </div>
-              <p className="feed-fineprint">
-                No spam. Unsubscribe anytime. One email a week, regressed for
-                relevance.
-              </p>
-              <p className="feed-success mono">
-                Signal locked. Check your inbox next Tuesday.
-              </p>
-            </form>
+            <NewsletterForm source="home" />
 
             <div className="feed-posts reveal d1">
               <div className="feed-posts-label mono">Recent Drops</div>

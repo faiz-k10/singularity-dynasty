@@ -5,6 +5,10 @@ import { provisionFromCheckout, accountBilling } from "@/lib/billing";
 import { signout } from "../login/actions";
 import { openBillingPortal, deleteAccount } from "./actions";
 import EmailDigestToggle from "../my-team/EmailDigestToggle";
+import ReferralCard from "./ReferralCard";
+import { ensureReferralCode, referralSummary } from "@/lib/referrals";
+import { FRIEND_DISCOUNT_PERCENT, rewardFor } from "@/lib/referralRules";
+import { siteOrigin } from "@/lib/siteOrigin";
 import SiteHeader from "../SiteHeader";
 
 export const metadata = {
@@ -102,7 +106,12 @@ export default async function AccountPage({ searchParams }) {
 
   const { data: profile } = await supabase.from("profiles").select("tier, email, stripe_customer_id, email_digest").eq("id", user.id).single();
   const tier = profile?.tier || "stargazer";
-  const billing = profile?.stripe_customer_id ? await accountBilling(profile.stripe_customer_id) : null;
+  const [billing, refCode, refSummary, origin] = await Promise.all([
+    profile?.stripe_customer_id ? accountBilling(profile.stripe_customer_id) : null,
+    ensureReferralCode(user.id).catch(() => null),
+    referralSummary(user.id, profile?.stripe_customer_id).catch(() => null),
+    siteOrigin(),
+  ]);
   const notice = NOTICES[params?.notice] || null;
   const joined = user.created_at ? day(Date.parse(user.created_at)) : "";
 
@@ -157,6 +166,18 @@ export default async function AccountPage({ searchParams }) {
             </div>
             {profile?.stripe_customer_id && <p className="acct-small">Change plan, update your card, download invoices or cancel in Manage Billing. Cancelling keeps your plan until the end of the period you paid for.</p>}
           </section>
+
+          {refCode && (
+            <section className="acct-section" aria-labelledby="acct-refer">
+              <h2 id="acct-refer" className="acct-h mono">Refer a friend</h2>
+              <ReferralCard
+                link={`${origin}/?ref=${refCode}`}
+                discountPct={FRIEND_DISCOUNT_PERCENT}
+                rewardLabel={`a free month of ${tier === "singularity" ? "Singularity" : "Explorer"} ($${rewardFor(tier) / 100})`}
+                summary={refSummary}
+              />
+            </section>
+          )}
 
           <section className="acct-section" aria-labelledby="acct-email">
             <h2 id="acct-email" className="acct-h mono">Email</h2>

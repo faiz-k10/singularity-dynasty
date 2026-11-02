@@ -95,7 +95,28 @@ export default function AdminDashboard({ d }) {
           )}
         </Panel>
 
-        <Panel n={3} title="Paywalls, last 30 days" error={d.walls.error}>
+        <Panel n={3} title="Growth: email list and referrals" error={d.growth.error}>
+          {d.growth.value && (
+            <>
+              <div className="adm-stats">
+                <Stat value={d.growth.value.subs} label="On the email list" tone="brand" />
+                <Stat value={d.growth.value.subs7} label="Joined, 7 days" />
+                <Stat value={d.growth.value.unsubs} label="Unsubscribed" />
+                <Stat value={d.growth.value.joined} label="Referred sign-ups" />
+                <Stat value={d.growth.value.rewarded} label="Referred subscribers" />
+                <Stat value={money(d.growth.value.creditCents)} label="Referral credit given" />
+              </div>
+              <a className="btn-ghost" href="/api/admin/subscribers" download>
+                Download the email list (CSV)
+              </a>
+              <p className="adm-help" style={{ marginTop: 10 }}>
+                Import it into your email tool. Each row has that person&apos;s unsubscribe link: put it in every email you send.
+              </p>
+            </>
+          )}
+        </Panel>
+
+        <Panel n={4} title="Paywalls, last 30 days" error={d.walls.error}>
           {d.walls.value &&
             (d.walls.value.walls.length ? (
               <div className="rankings-table-wrap adm-table">
@@ -130,7 +151,7 @@ export default function AdminDashboard({ d }) {
             ))}
         </Panel>
 
-        <Panel n={4} title="Recent errors" error={d.errors.error}>
+        <Panel n={5} title="Recent errors" error={d.errors.error}>
           {d.errors.value &&
             (d.errors.value.length ? (
               <div className="rankings-table-wrap adm-table">
@@ -161,7 +182,7 @@ export default function AdminDashboard({ d }) {
             ))}
         </Panel>
 
-        <Panel n={5} title="Publish" error={d.content.error}>
+        <Panel n={6} title="Publish" error={d.content.error}>
           <div className="adm-grid">
             <div>
               <h3 className="adm-sub mono">Post a drop</h3>

@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { stripe, PRICE_IDS, liveSubscriptions } from "@/lib/billing";
+import { referralOf, recordReferral, ensureReferralCoupon } from "@/lib/referrals";
+import { REF_COOKIE, referralApplies } from "@/lib/referralRules";
 
 // Starts a Stripe Checkout for Explorer or Singularity. Rules:
 //   - an account is required (the webhook matches the subscription to it by id; signed-out buyers used to pay and never
@@ -9,6 +11,8 @@ import { stripe, PRICE_IDS, liveSubscriptions } from "@/lib/billing";
 //     never a second subscription that bills alongside the first
 //   - a returning customer reuses their Stripe customer, so the portal shows one history
 //   - the request must come from this site (the Origin header browsers send on a POST)
+//   - a first-time subscriber who came through a friend's link (lib/referrals.js) gets the friend discount; the friend's
+//     reward is paid when this subscription is (lib/billing.js provisionFromCheckout)
 export async function POST(request) {
   const site = request.nextUrl.origin;
   const origin = request.headers.get("origin");
@@ -44,14 +48,21 @@ export async function POST(request) {
       return NextResponse.json({ url: portal.url, portal: true });
     }
 
+    // Referral: recorded at sign-up, or (signed up before clicking the link) from the link's cookie now. Only a first-ever
+    // subscription counts -- Stripe's own history decides, not the profile.
+    const referral = (await referralOf(user.id)) || (await recordReferral(user.id, request.cookies.get(REF_COOKIE)?.value));
+    const subscribedBefore = customer ? (await stripe.subscriptions.list({ customer, status: "all", limit: 1 })).data.length > 0 : false;
+    const discount = referralApplies({ referrerId: referral?.referrer_id, userId: user.id, subscribedBefore }) ? await ensureReferralCoupon().catch(() => null) : null;
+
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       line_items: [{ price: priceId, quantity: 1 }],
       success_url: `${site}/account?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${site}/?checkout=cancelled#pricing`,
       client_reference_id: user.id,
-      metadata: { user_id: user.id },
+      metadata: { user_id: user.id, ...(discount ? { referrer_id: referral.referrer_id } : {}) },
       subscription_data: { metadata: { user_id: user.id } },
+      ...(discount ? { discounts: [{ coupon: discount }] } : {}),
       ...(customer ? { customer } : { customer_email: user.email }),
     });
     return NextResponse.json({ url: session.url });

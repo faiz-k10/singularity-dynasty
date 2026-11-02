@@ -5,6 +5,9 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { authErrorCode, safeNext } from "@/lib/authMessages";
 import { siteOrigin } from "@/lib/siteOrigin";
+import { cookies } from "next/headers";
+import { recordReferral } from "@/lib/referrals";
+import { REF_COOKIE } from "@/lib/referralRules";
 
 const MIN_PASSWORD = 8;
 
@@ -36,8 +39,12 @@ export async function signup(formData) {
   const supabase = await createClient();
   // The confirmation email links to /auth/confirm, which signs the new account in and continues to `next`.
   const confirm = `${await siteOrigin()}/auth/confirm?next=${encodeURIComponent(next || "/my-team?welcome=1")}`;
-  const { error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: confirm } });
+  const { data, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: confirm } });
   if (error) back("/login", "error", authErrorCode(error), next);
+  // Came through a friend's link? Record it now (a brand-new account only: Supabase answers an existing email with a user
+  // that has no identities, so it can't be claimed by someone typing another person's address).
+  const ref = (await cookies()).get(REF_COOKIE)?.value;
+  if (ref && data?.user?.id && data.user.identities?.length) await recordReferral(data.user.id, ref);
   back("/login", "message", "check-email", next);
 }
 
