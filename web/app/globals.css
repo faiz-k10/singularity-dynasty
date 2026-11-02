@@ -282,7 +282,7 @@ body::before{
 /* 14px in a 16px circle -- 1px margin each side, same clean-pixel-grid
    reasoning as .confidence-badge svg above (an odd margin can't split
    evenly and ends up looking a pixel off-center on one side). */
-.ticker-badge svg{width:14px; height:14px; display:block;}
+.ticker-badge svg{width:15px; height:15px; display:block;}
 .ticker-badge.gold{background:var(--established); color:var(--void); box-shadow:0 0 5px rgba(var(--established-rgb),0.5);}
 .ticker-badge.eliteRole{background:var(--elite-role); color:var(--void); box-shadow:0 0 5px rgba(var(--elite-role-rgb),0.55);}
 .ticker-badge.elitePlayer{background:var(--elite-player); color:var(--void); box-shadow:0 0 5px rgba(var(--elite-player-rgb),0.55);}
