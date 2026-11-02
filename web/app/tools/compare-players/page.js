@@ -52,7 +52,7 @@ export default async function ComparePlayersPage({ searchParams }) {
     <>
       <InteractiveScript />
 
-      <main className="wrap tool-wrap compare-wrap">
+      <main id="main-content" className="wrap tool-wrap compare-wrap">
         <div className="eyebrow">{latest ? `Week ${latest.week} · ${latest.season}` : "Compare"}</div>
         <h1>Compare Players</h1>
         <p className="tool-sub">

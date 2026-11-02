@@ -13,7 +13,7 @@ export const PRICE_IDS = {
   explorer: { monthly: process.env.STRIPE_PRICE_EXPLORER_MONTHLY, annual: process.env.STRIPE_PRICE_EXPLORER_ANNUAL },
   singularity: { monthly: process.env.STRIPE_PRICE_SINGULARITY_MONTHLY, annual: process.env.STRIPE_PRICE_SINGULARITY_ANNUAL },
 };
-const TIER_BY_PRICE = Object.fromEntries(
+export const TIER_BY_PRICE = Object.fromEntries(
   Object.entries(PRICE_IDS).flatMap(([tier, byBilling]) => Object.values(byBilling).filter(Boolean).map((id) => [id, tier]))
 );
 
@@ -84,4 +84,44 @@ export async function liveSubscriptions(customerId) {
   if (!customerId) return [];
   const { data } = await stripe.subscriptions.list({ customer: customerId, status: "all", limit: 20 });
   return data.filter((s) => ["active", "trialing", "past_due", "unpaid"].includes(s.status));
+}
+
+// What the account page shows about billing, straight from Stripe: the running subscription's plan, price, status, renewal
+// or end date, card, and the next charge (an invoice preview, so discounts / proration are included). null when the account
+// has no running subscription. Never throws (the account page must load even when Stripe doesn't answer).
+export async function accountBilling(customerId) {
+  try {
+    const [sub] = await liveSubscriptions(customerId);
+    if (!sub) return null;
+    const full = await stripe.subscriptions.retrieve(sub.id, { expand: ["default_payment_method", "items.data.price.product"] });
+    const item = full.items.data[0];
+    const periodEnd = item?.current_period_end ?? full.current_period_end ?? null;
+    const card = full.default_payment_method?.card || null;
+    let next = null;
+    if (!full.cancel_at_period_end && full.status !== "canceled") {
+      next = await stripe.invoices
+        .createPreview({ customer: customerId, subscription: full.id })
+        .then((inv) => ({ cents: inv.amount_due, at: inv.next_payment_attempt || inv.period_end || periodEnd }))
+        .catch(() => null);
+    }
+    return {
+      plan: subscriptionTier(full, TIER_BY_PRICE),
+      interval: item?.price?.recurring?.interval || null,
+      priceCents: item?.price?.unit_amount ?? null,
+      status: full.status,
+      cancelAtPeriodEnd: Boolean(full.cancel_at_period_end),
+      periodEnd: periodEnd ? periodEnd * 1000 : null,
+      next: next && { cents: next.cents, at: next.at ? next.at * 1000 : null },
+      card: card ? { brand: card.brand, last4: card.last4 } : null,
+    };
+  } catch (e) {
+    console.error("[billing] accountBilling:", e.message);
+    return { error: true };
+  }
+}
+
+// Ends every running subscription now (account deletion): no further charges. Throws on a Stripe error so the account is
+// not deleted while a subscription could still bill.
+export async function cancelAllNow(customerId) {
+  for (const s of await liveSubscriptions(customerId)) await stripe.subscriptions.cancel(s.id);
 }

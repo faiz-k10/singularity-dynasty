@@ -13,17 +13,20 @@ import { MyStrip, MyEmpty } from "./MyPlayers";
 import { PANEL_KEYS } from "@/lib/statPanel";
 import { ageOn, formatHeight } from "@/lib/format";
 import { PROFILE_METRICS as METRICS } from "@/lib/statMetrics";
+import Define from "../Define";
 
 // ROLE = how the offense uses him; PLAYER = what he does with it (which numbers go where: lib/statPanel.js, which also ranks players by group).
 // A number he doesn't have (below the volume gate, or not published) is just left out.
 const PANEL = PANEL_KEYS;
 
 // One line of the touchdown profile / usage panel: the metric, its value, and where he ranks at his position (#1 = highest).
-function RankRow({ label, value, format, rank, unrankedHint }) {
+function RankRow({ k, label, value, format, rank, unrankedHint }) {
   if (!rank && !unrankedHint) return null;
   return (
     <div className="weekly-rank-row" role="row">
-      <span className="weekly-rank-label" role="rowheader">{label}</span>
+      <span className="weekly-rank-label" role="rowheader">
+        <Define term={k}>{label}</Define>
+      </span>
       {rank ? (
         // The number, then a bar that shows the same rank: full for #1, empty for last at his position.
         <span className="weekly-rank-cell" role="cell">
@@ -657,7 +660,7 @@ export function UsageTdPanel({ row }) {
                   </span>
                 </div>
                 {list.map((m) => (
-                  <RankRow key={m.k} label={m.label} value={row[m.k]} format={m.format} rank={row.metricRank?.[m.k]} unrankedHint={m.unrankedHint} />
+                  <RankRow key={m.k} k={m.k} label={m.label} value={row[m.k]} format={m.format} rank={row.metricRank?.[m.k]} unrankedHint={m.unrankedHint} />
                 ))}
               </Fragment>
             ))}

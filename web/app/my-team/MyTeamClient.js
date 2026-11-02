@@ -1067,6 +1067,39 @@ function BuyInField({ teamId, value, disabled, onSave }) {
 // the "N of M saved" indicator and the swap to an upgrade prompt once a
 // free user is at their cap (the server action + DB trigger enforce it
 // for real).
+// The welcome for an account with no saved leagues: where you are in three steps (find your leagues, save them, then the
+// Game Board takes over). The step the visitor is on is marked for screen readers too (aria-current).
+const ONBOARDING = [
+  ["Find your leagues", "Enter your Sleeper username below. We only read your public leagues; nothing is changed in Sleeper."],
+  ["Save them", "Save the leagues you want us to watch. Your plan sets how many."],
+  ["See your week", "Your matchups, win chances, lineup alerts and what changed for your players, all on one board."],
+];
+function Onboarding({ step, signedIn, welcome }) {
+  return (
+    <section className="onb glass-panel" aria-labelledby="onb-title">
+      <h2 id="onb-title" className="onb-title">
+        {welcome && signedIn ? "You're in. Let's bring your leagues over." : "Get started in under a minute."}
+      </h2>
+      <ol className="onb-steps">
+        {ONBOARDING.map(([title, text], i) => (
+          <li key={title} className={`onb-step${i + 1 === step ? " is-current" : i + 1 < step ? " is-done" : ""}`} aria-current={i + 1 === step ? "step" : undefined}>
+            <span className="onb-n mono" aria-hidden="true">{i + 1 < step ? "✓" : i + 1}</span>
+            <span>
+              <strong>{title}</strong>
+              <span className="onb-text">{text}</span>
+            </span>
+          </li>
+        ))}
+      </ol>
+      {!signedIn && (
+        <p className="onb-foot">
+          You can look up your leagues without an account. <Link href="/login?next=%2Fmy-team">Sign in or create a free account</Link> to save them.
+        </p>
+      )}
+    </section>
+  );
+}
+
 export default function MyTeamClient({
   isSignedIn,
   tier,
@@ -1080,6 +1113,7 @@ export default function MyTeamClient({
   feed = null,
   emailDigest = false,
   heading = "My Team",
+  welcome = false,
 }) {
   // Saved teams are DB snapshots from whenever they were last saved, so
   // the page overlays live Sleeper data on top: a full refresh on load
@@ -1538,6 +1572,8 @@ export default function MyTeamClient({
             className="player-search-input"
             type="text"
             placeholder="e.g. yourusername"
+            autoFocus={savedTeams.length === 0}
+            autoComplete="username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
           />
@@ -1652,9 +1688,16 @@ export default function MyTeamClient({
     </div>
   );
 
-  // No saved teams yet: just the lookup, no dashboard to arrange.
+  // No saved teams yet: the three-step welcome over the lookup (where sign-up and sign-in land), no dashboard to arrange.
   if (savedTeams.length === 0) {
-    return <div className="my-team-wrap">{headingRow(null)}{lookupNode}</div>;
+    const step = result?.teams?.length ? 2 : 1;
+    return (
+      <div className="my-team-wrap">
+        {headingRow(null)}
+        <Onboarding step={step} signedIn={isSignedIn} welcome={welcome} />
+        {lookupNode}
+      </div>
+    );
   }
 
   const panels = [

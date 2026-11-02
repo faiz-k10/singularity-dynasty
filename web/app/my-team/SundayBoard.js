@@ -1,7 +1,8 @@
 "use client";
 
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import MatchupPanel, { sleeperMatchupUrl, formatWin, toneClass, leagueTabs } from "./MatchupPanel";
+import MatchupPanel, { sleeperMatchupUrl, toneClass, leagueTabs } from "./MatchupPanel";
+import { formatWin } from "@/lib/standing";
 import PanelTabs from "../PanelTabs";
 import { useMounted } from "./useMounted";
 import { fmt1, fmt2 } from "@/lib/format";

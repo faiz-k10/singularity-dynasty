@@ -6,6 +6,7 @@ import PositionBadge from "../PositionBadge";
 import TeamBadge from "../TeamBadge";
 import { FORMATS, GROUP_NAMES, MODES, pBetter, profileRead, scoreRows } from "@/lib/dynastyBoard";
 import { formatHeight } from "@/lib/format";
+import useFocusTrap from "../../useFocusTrap";
 
 const pct = (p) => (p >= 0.995 ? ">99%" : p < 0.005 ? "<1%" : `${Math.round(p * 100)}%`);
 const ord = (n) => `#${n}`;
@@ -85,6 +86,8 @@ function AgeCurve({ curve, age, value }) {
 // ---- the panel -----------------------------------------------------------------------------------------------------
 export default function DynastyProfile({ player: p, rows, L, board, format, mode, pos, meta, complete, onClose }) {
   const closeRef = useRef(null);
+  const dialogRef = useRef(null);
+  useFocusTrap(dialogRef);
   const data = useProfileData(p.id);
   const f = FORMATS[format], m = MODES[mode];
 
@@ -123,7 +126,7 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
 
   return (
     <div className="dp-overlay" onClick={onClose}>
-      <aside className="dp" role="dialog" aria-modal="true" aria-label={`${p.name}, dynasty profile`} onClick={(e) => e.stopPropagation()}>
+      <aside ref={dialogRef} className="dp" role="dialog" aria-modal="true" aria-label={`${p.name}, dynasty profile`} onClick={(e) => e.stopPropagation()}>
         <button ref={closeRef} type="button" className="dp-close" onClick={onClose} aria-label="Close profile">×</button>
 
         <header className="dp-head">

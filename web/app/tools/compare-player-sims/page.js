@@ -66,7 +66,7 @@ export default async function ComparePlayerSimsPage({ searchParams }) {
     <>
       <InteractiveScript />
 
-      <main className="wrap tool-wrap compare-wrap">
+      <main id="main-content" className="wrap tool-wrap compare-wrap">
         <div className="eyebrow">{latest ? `${latest.season} Season · Week ${latest.week}` : "Compare"}</div>
         <h1>Compare Players — Season Simulations</h1>
         <p className="tool-sub">

@@ -38,9 +38,9 @@ export const pc1 = (v) => `${v.toFixed(1)}%`;
 export const signed2 = (v) => `${v >= 0 ? "+" : ""}${v.toFixed(2)}`;
 export const signed3 = (v) => `${v >= 0 ? "+" : ""}${v.toFixed(3)}`;
 export const PROFILE_METRICS = {
-  avgXfp: { label: "xFP", format: f1, hint: "Expected fantasy points a game from his opportunities (ffopportunity), this season." },
+  avgXfp: { label: "xFP", format: f1, hint: "Expected fantasy points a game: what an average player would score with his targets, carries and where on the field he got them, this season. Points above it are his own doing; below it, opportunities he left on the field." },
   wopr: { label: "WOPR", format: f2, hint: "Weighted opportunity rating: how much of his offense's passing game runs through him (target share and air-yards share together). 0.70+ is a true No. 1 receiver. The same number the Buy Low badge reads." },
-  ryoe: { label: "RYOE/Att", format: signed2, hint: "Rushing yards over expected per carry (NGS)." },
+  ryoe: { label: "RYOE/Att", format: signed2, hint: "Rushing yards over expected per carry (NFL Next Gen Stats): how many more yards he gains than the blocking and defenders in front of him predict." },
   scrambleRate: { label: "Scramble Rate", format: pc1, hint: "Share of his dropbacks that turn into a scramble." },
   playActionRate: { label: "Play-Action Rate", format: pc1, hint: "Share of his dropbacks that are play-action." },
   p2Td: { label: "2+ TD Chance", format: pc1, hint: "Chance of scoring 2 or more touchdowns in a single game, from his expected touchdowns. Treat the order as more reliable than the exact percentage at the very top." },

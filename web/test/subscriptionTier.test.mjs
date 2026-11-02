@@ -24,3 +24,13 @@ test("subscriptionTier: unknown prices, missing data and the highest of several 
   assert.equal(subscriptionTier(sub("active", "p_exp_m", "p_sing_m"), PRICES), "singularity");
   assert.equal(subscriptionTier(sub("active", "p_exp_m"), {}), "stargazer");
 });
+
+test("monthlyCents: monthly and annual prices to a monthly figure; unpaid statuses count 0", async () => {
+  const { monthlyCents } = await import("../lib/subscriptionTier.js");
+  const s = (status, unit_amount, interval) => ({ status, items: { data: [{ quantity: 1, price: { unit_amount, recurring: { interval, interval_count: 1 } } }] } });
+  assert.equal(monthlyCents(s("active", 900, "month")), 900);
+  assert.equal(monthlyCents(s("active", 8400, "year")), 700);
+  assert.equal(monthlyCents(s("trialing", 24000, "year")), 2000);
+  assert.equal(monthlyCents(s("past_due", 900, "month")), 0);
+  assert.equal(monthlyCents(null), 0);
+});

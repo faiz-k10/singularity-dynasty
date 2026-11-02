@@ -3,6 +3,7 @@ import { unstable_cache } from "next/cache";
 import SiteHeader from "./SiteHeader";
 import LandingHub from "./hub/LandingHub";
 import HorizonBand from "./hub/HorizonBand";
+import YourWeek, { loadYourWeek } from "./hub/YourWeek";
 import HeroLookup from "./HeroLookup";
 import LeaguePrice from "./LeaguePrice";
 import { createClient } from "@/lib/supabase/server";
@@ -122,8 +123,11 @@ const getCachedHomeData = unstable_cache(
 
 export default async function Home() {
   const { posts, latestWeek, topRedraft, trendRows, simRows, singularityCount } = await getCachedHomeData();
-  // Signed in? Only changes the hero box's last button ("Open my leagues" vs "Save your leagues").
-  const user = await getAuthUser(await createClient());
+  // Signed in with saved leagues: the hero becomes their week (app/hub/YourWeek.js). Signed in without: the hero box's last
+  // button reads "Open my leagues" instead of "Save your leagues".
+  const supabase = await createClient();
+  const user = await getAuthUser(supabase);
+  const yourWeek = user ? await loadYourWeek(supabase, user).catch(() => null) : null;
   const heroCandidates = [];
 
   for (const r of trendRows) {
@@ -194,7 +198,7 @@ export default async function Home() {
         ></a>
       </nav>
 
-      <div className="eh-meter">
+      <div className="eh-meter" aria-hidden="true">
         <svg viewBox="0 0 52 52">
           <circle className="eh-track" cx="26" cy="26" r="22"></circle>
           <circle className="eh-fill" id="ehFill" cx="26" cy="26" r="22"></circle>
@@ -205,7 +209,10 @@ export default async function Home() {
       </div>
 
       <header className="hero" id="hero">
-        <div className="wrap">
+        <div className="wrap" id="main-content">
+          {yourWeek ? (
+            <YourWeek data={yourWeek} />
+          ) : (
           <div>
             <div className="eyebrow">Dynasty · Data Gravity</div>
             <h1>
@@ -221,6 +228,7 @@ export default async function Home() {
             </p>
             <HeroLookup signedIn={Boolean(user)} />
           </div>
+          )}
 
           <div className="orbit-signal" aria-hidden="true">
             <div className="os-ring r1"></div>
@@ -630,27 +638,6 @@ export default async function Home() {
         </section>
       </main>
 
-      <footer>
-        <div className="wrap">
-          <div className="fbrand">Singularity Dynasty</div>
-          <div className="flinks">
-            <a href="#tools">Tools</a>
-            <a href="#pricing">Pricing</a>
-            <a href="/contact">Contact</a>
-            <a href="/privacy">Privacy</a>
-            <a href="/terms">Terms</a>
-            <a href="/disclaimer">Disclaimer</a>
-          </div>
-          <div className="fcoord mono">VOID // #030908</div>
-          <div className="fsmall">
-            © 2026 Singularity Dynasty. Not affiliated with the NFL or any
-            fantasy football platform. Content is for informational and
-            entertainment purposes only and is not intended for use in
-            gambling, betting, or wagering of any kind — see our{" "}
-            <Link href="/disclaimer">Disclaimer</Link>.
-          </div>
-        </div>
-      </footer>
     </>
   );
 }

@@ -10,7 +10,7 @@ export default function ContactPage() {
   return (
     <div className="auth-page">
       <SiteHeader />
-      <div className="wrap auth-wrap">
+      <main id="main-content" className="wrap auth-wrap">
         <div className="auth-card reveal in">
           <div className="eyebrow blue">Contact</div>
           <h1>Get in touch.</h1>
@@ -25,7 +25,7 @@ export default function ContactPage() {
             </a>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

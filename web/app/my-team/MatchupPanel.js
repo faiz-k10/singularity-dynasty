@@ -1,5 +1,6 @@
 "use client";
 
+import { formatWin } from "@/lib/standing";
 import { useLayoutEffect, useMemo, useRef } from "react";
 import SlotBadge from "./SlotBadge";
 import PositionBadge from "../tools/PositionBadge";
@@ -21,10 +22,6 @@ import { useMounted } from "./useMounted";
 export const sleeperMatchupUrl = (leagueId) => (leagueId ? `https://sleeper.com/leagues/${leagueId}/matchup` : null);
 
 
-export function formatWin(p) {
-  // Near-certain is still not certain: only a locked result says YOU WIN, so the extremes read ">99%" / "<1%", never "100%" / "0%".
-  return p == null ? "—" : p >= 0.995 ? ">99%" : p < 0.005 ? "<1%" : `${Math.round(p * 100)}%`;
-}
 
 // The status colour class (mint | red | grey, from standing().tone) on a card or the scoreboard: the word, its bar and the card edge follow it.
 export const toneClass = (st) => (st?.tone ? ` is-tone-${st.tone}` : "");

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import PositionBadge from "../PositionBadge";
+import Define from "../../Define";
 import TeamBadge from "../TeamBadge";
 import { LAB_GROUPS, LAB_METRICS, formatMetric } from "@/lib/labMetrics";
 
@@ -63,7 +64,7 @@ export default function LabCompare({ picked, simsAccess, onToggle }) {
                   return (
                     <tr key={m.key}>
                       <th scope="row">
-                        {m.label}
+                        <Define term={m.key} fallback={m.label}>{m.label}</Define>
                       </th>
                       {picked.map((p) => {
                         const v = p.m[m.key];

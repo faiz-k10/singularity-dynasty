@@ -22,3 +22,18 @@ export function subscriptionTier(sub, tierByPrice) {
   }
   return best;
 }
+
+// What a subscription brings in per month, in cents (annual prices / 12), for the /admin revenue figure. Only paid-up
+// statuses count (a past_due renewal hasn't been collected yet, so it is left out here even though access continues).
+export function monthlyCents(sub) {
+  if (!sub || !["active", "trialing"].includes(sub.status)) return 0;
+  let total = 0;
+  for (const item of sub.items?.data || []) {
+    const p = item?.price;
+    const amount = (p?.unit_amount ?? 0) * (item.quantity ?? 1);
+    const every = p?.recurring?.interval_count || 1;
+    const perMonth = p?.recurring?.interval === "year" ? amount / (12 * every) : p?.recurring?.interval === "week" ? (amount * 52) / (12 * every) : amount / every;
+    total += perMonth;
+  }
+  return Math.round(total);
+}

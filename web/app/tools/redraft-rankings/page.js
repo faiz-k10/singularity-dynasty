@@ -71,7 +71,7 @@ export default async function RedraftRankingsPage({ searchParams }) {
     <>
       <InteractiveScript />
 
-      <main className="wrap tool-wrap redraft-wrap">
+      <main id="main-content" className="wrap tool-wrap redraft-wrap">
         {rankings.length === 0 ? (
           <>
             <div className="eyebrow">
@@ -110,6 +110,9 @@ export default async function RedraftRankingsPage({ searchParams }) {
               }
               actions={
                 <>
+                  <Link href="/how-it-works#read" className="hub-panel-link">
+                    How to read this →
+                  </Link>
                   <Link href="/tools/compare-players" className="hub-panel-link">
                     Compare Players →
                   </Link>

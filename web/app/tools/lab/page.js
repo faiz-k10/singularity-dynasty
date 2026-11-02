@@ -51,7 +51,7 @@ export default async function LabPage({ searchParams }) {
   return (
     <>
       <InteractiveScript />
-      <main className="wrap tool-wrap lab-wrap">
+      <main id="main-content" className="wrap tool-wrap lab-wrap">
         <div className="eyebrow">{latest ? `Week ${latest.week} · ${latest.season}` : "Research"}</div>
         <h1>The Lab</h1>
         {lab.rows.length === 0 ? (

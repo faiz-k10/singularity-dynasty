@@ -82,7 +82,7 @@ async function RankingsView({ hasFullAccess }) {
   return (
     <>
       <InteractiveScript />
-      <main className="wrap tool-wrap">
+      <main id="main-content" className="wrap tool-wrap">
         <div className="tool-header-split">
           <div className="tool-header-left">
             <div className="eyebrow">{`Dynasty · built ${built}`}</div>
@@ -136,7 +136,7 @@ export default async function DraftBoardPage({ searchParams }) {
     <>
       <InteractiveScript />
 
-      <main className="wrap tool-wrap">
+      <main id="main-content" className="wrap tool-wrap">
         <div className="tool-header-split">
           <div className="tool-header-left">
             <div className="eyebrow">{latest ? `${latest.season} Board` : "Draft Board"}</div>

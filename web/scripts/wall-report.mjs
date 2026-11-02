@@ -10,6 +10,7 @@
 // (the wall they last clicked is not tracked separately, so a person who clicked three walls counts for all three). Anonymous visitors can't be matched.
 import { createClient } from "@supabase/supabase-js";
 import { fetchAllRows } from "../lib/fetchAllRows.js";
+import { summarizeWalls } from "../lib/wallReport.js";
 
 const days = Number(process.argv[2]) || null;
 const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
@@ -30,24 +31,13 @@ if (!rows.length) {
 const { data: profiles } = await sb.from("profiles").select("id, tier");
 const paid = new Set((profiles || []).filter((p) => p.tier === "explorer" || p.tier === "singularity").map((p) => p.id));
 
-const by = {};
-for (const r of rows) {
-  const w = (by[r.wall] ??= { views: 0, clicks: 0, clickers: new Set() });
-  if (r.type === "view") w.views++;
-  else {
-    w.clicks++;
-    if (r.user_id) w.clickers.add(r.user_id);
-  }
-}
-const table = Object.entries(by)
-  .map(([wall, w]) => ({
-    wall,
-    views: w.views,
-    clicks: w.clicks,
-    "click%": w.views ? ((100 * w.clicks) / w.views).toFixed(1) + "%" : "-",
-    "signed-in clickers": w.clickers.size,
-    upgraded: [...w.clickers].filter((id) => paid.has(id)).length,
-  }))
-  .sort((a, b) => b.clicks - a.clicks || b.views - a.views);
+const table = summarizeWalls(rows, paid).map((w) => ({
+  wall: w.wall,
+  views: w.views,
+  clicks: w.clicks,
+  "click%": w.clickPct == null ? "-" : w.clickPct.toFixed(1) + "%",
+  "signed-in clickers": w.clickers,
+  upgraded: w.upgraded,
+}));
 console.log(`${rows.length} events${days ? `, last ${days} days` : ""}, ${rows[0].created_at.slice(0, 10)} to ${rows.at(-1).created_at.slice(0, 10)}\n`);
 console.table(table);

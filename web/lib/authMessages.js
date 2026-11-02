@@ -19,6 +19,7 @@ export const AUTH_MESSAGES = {
   "check-email": "Check your email to confirm your account, then sign in.",
   "reset-sent": "If that email has an account, a link to reset the password is on its way.",
   "signed-out": "You're signed out.",
+  "account-deleted": "Your account and everything saved with it have been deleted. Any subscription was cancelled.",
 };
 
 // A Supabase Auth error -> one of the codes above (error.code is stable; the message text is the fallback).

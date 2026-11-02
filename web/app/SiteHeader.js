@@ -191,7 +191,8 @@ export default async function SiteHeader({ scripts = true }) {
 
   return (
     <>
-      <div className="ticker-bar">
+      {/* A scrolling strip of names and numbers: decorative for screen readers (every figure in it is on the tool pages). */}
+      <div className="ticker-bar" aria-hidden="true">
         <div className="ticker-track" id="tickerTrack"></div>
       </div>
 
@@ -285,6 +286,7 @@ export default async function SiteHeader({ scripts = true }) {
           <Link href="/#feed">Feed</Link>
           <ToolLink href="/my-team">My Team</ToolLink>
           <ToolLink href="/tools/lab">The Lab</ToolLink>
+          <Link href="/how-it-works">How It Works</Link>
           <Link href={user ? "/account" : "/login"}>
             {user ? "Account" : "Sign In"}
           </Link>

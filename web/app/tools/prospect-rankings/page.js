@@ -122,7 +122,7 @@ export default async function ProspectRankingsPage({ searchParams }) {
     <>
       <InteractiveScript />
 
-      <main className="wrap tool-wrap">
+      <main id="main-content" className="wrap tool-wrap">
         <div className="eyebrow">
           {latest ? `${latest.draft_class} Draft Class` : "Prospects"}
         </div>

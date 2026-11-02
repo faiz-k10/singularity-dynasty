@@ -30,6 +30,9 @@ const ROUTES = [
   "/tools/compare-player-sims",
   "/tools/lab",
   "/my-team/quiz",
+  "/how-it-works",
+  "/glossary",
+  "/login/reset",
   "/sitemap.xml",
   "/robots.txt",
 ];

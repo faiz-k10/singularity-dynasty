@@ -1,3 +1,5 @@
+import { buildFeed } from "./myFeed.js";
+import { mineFromTeams } from "./myPlayers.js";
 import { unstable_cache } from "next/cache";
 import { createPublicClient } from "@/lib/supabase/public";
 import { fetchAllRows } from "@/lib/fetchAllRows";
@@ -45,4 +47,22 @@ const getGroups = unstable_cache(safe(() => twoWeeks("player_groups", "player_na
 export async function loadFeedInputs() {
   const [sims, ranks, roles, groups] = await Promise.all([getSims(), getRanks(), getRoles(), getGroups()]);
   return { sims, ranks, roles, groups };
+}
+
+// The "what changed" feed for a set of saved teams, built from loadFeedInputs()' two-week tables (lib/myFeed.js buildFeed).
+// One place for My Team's "Your Players This Week" panel and the signed-in home page. null when the inputs are missing.
+export function buildTeamsFeed(savedTeams, inp) {
+  if (!inp) return null;
+  const mine = mineFromTeams(savedTeams);
+  const pair = (x) => (x ? { cur: x.cur, prev: x.prev } : undefined);
+  const args = { sims: pair(inp.sims), ranks: pair(inp.ranks), roles: pair(inp.roles), groups: pair(inp.groups) };
+  const simPrevWeek = inp.sims?.prevWeek ?? null;
+  return {
+    ready: [inp.sims, inp.ranks, inp.roles, inp.groups].some((x) => x && x.prevWeek != null),
+    week: inp.sims?.week ?? inp.ranks?.week ?? null,
+    prevWeek: inp.sims?.prevWeek ?? inp.ranks?.prevWeek ?? null,
+    teams: mine.teams,
+    all: buildFeed({ mine, ...args, simPrevWeek }),
+    byTeam: mine.teams.map((_, i) => buildFeed({ mine, ...args, teamIndex: i, simPrevWeek })),
+  };
 }

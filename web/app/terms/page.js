@@ -9,7 +9,7 @@ export default function TermsPage() {
   return (
     <div className="auth-page">
       <SiteHeader />
-      <div className="wrap auth-wrap">
+      <main id="main-content" className="wrap auth-wrap">
         <div className="legal-card reveal in">
           <h1>Terms of Service</h1>
           <p className="legal-updated">Last updated: August 2026</p>
@@ -161,7 +161,7 @@ export default function TermsPage() {
             <Link href="/contact">Contact</Link> page.
           </p>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

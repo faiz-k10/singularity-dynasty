@@ -8,6 +8,19 @@ import { useEffect } from "react";
 export default function Error({ error, retry }) {
   useEffect(() => {
     console.error(error);
+    // Recorded for /admin (app/api/client-error): where it happened and the message, nothing the visitor typed.
+    try {
+      fetch("/api/client-error", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          path: window.location.pathname,
+          message: error instanceof Error ? error.message : String(error),
+          digest: error instanceof Error ? error.digest : null,
+        }),
+        keepalive: true,
+      }).catch(() => {});
+    } catch {}
   }, [error]);
   const digest = error instanceof Error ? error.digest : null;
   return (

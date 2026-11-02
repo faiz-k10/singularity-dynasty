@@ -42,7 +42,7 @@ export default async function SharedChartPage({ params }) {
   return (
     <div className="tool-page">
       <SiteHeader />
-      <main className="wrap tool-wrap share-wrap">
+      <main id="main-content" className="wrap tool-wrap share-wrap">
         <div className="eyebrow">Shared from The Lab</div>
         <h1>{share.title}</h1>
         {share.caption && <p className="tool-sub">{share.caption}</p>}

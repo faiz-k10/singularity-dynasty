@@ -120,8 +120,8 @@ export default function OutcomeCurveDetail({ floor, median, ceiling, maxSpread, 
   const xCeilingLabel = Math.min(WIDTH - MARGIN_X - LABEL_HALF_W, (xCeiling + (WIDTH - MARGIN_X)) / 2);
 
   const title =
-    `Floor ${floor.toFixed(1)} to ceiling ${ceiling.toFixed(1)} this week, median ${median.toFixed(1)} -- ` +
-    `width shown relative to the widest range in this week's pool.`;
+    `Outcome curve: floor ${floor.toFixed(1)}, median ${median.toFixed(1)}, ceiling ${ceiling.toFixed(1)} points. ` +
+    `Its width is drawn relative to the widest range in this week's pool.`;
 
   return (
     <svg className="outcome-curve-detail" viewBox={`0 ${-TOP_PAD} ${WIDTH} ${HEIGHT + TOP_PAD}`} role="img" aria-label={title}>

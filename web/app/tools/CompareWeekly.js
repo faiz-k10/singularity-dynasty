@@ -1,5 +1,6 @@
 import TeamBadge from "./TeamBadge";
 import CompareTabs from "./CompareTabs";
+import Define from "../Define";
 import { PlayerHeaderPanel, PlayerStatsRow, OutcomeCurvePanel, UsageTdPanel, GameLogPanel } from "./WeeklyDetailRow";
 
 // Compare Players (Weekly Projection Rankings), as two tabs: HEAD TO HEAD (a table of the numbers that matter) and PLAYER PROFILES (the same
@@ -15,9 +16,9 @@ const signed2 = (v) => `${v >= 0 ? "+" : ""}${v.toFixed(2)}`;
 // best: "high" | "low" -- which end wins. Rows with fewer than two values, or all equal, highlight nobody.
 const ROWS = [
   { label: "Overall rank", get: (r) => r.rank, fmt: int, best: "low" },
-  { label: "Median proj", get: (r) => r.projection, fmt: f1, best: "high", strong: true },
-  { label: "Floor", get: (r) => r.floor, fmt: f1, best: "high" },
-  { label: "Ceiling", get: (r) => r.ceiling, fmt: f1, best: "high" },
+  { label: "Median proj", term: "projection-median", get: (r) => r.projection, fmt: f1, best: "high", strong: true },
+  { label: "Floor", term: "floor", get: (r) => r.floor, fmt: f1, best: "high" },
+  { label: "Ceiling", term: "ceiling", get: (r) => r.ceiling, fmt: f1, best: "high" },
   { label: "Last week (pts)", get: (r) => r.lastWeekRank?.points, fmt: f1, best: "high" },
   { group: "Projected stat line (per game)" },
   { label: "Pass yds", get: (r) => r.passing_yards, fmt: f1, best: "high", skipZero: true },
@@ -29,16 +30,16 @@ const ROWS = [
   { label: "Rec yds", get: (r) => r.receiving_yards, fmt: f1, best: "high", skipZero: true },
   { label: "Rec TD", get: (r) => r.receiving_tds, fmt: f2, best: "high", skipZero: true },
   { group: "Usage and touchdown profile" },
-  { label: "xFP / game", get: (r) => r.avgXfp, fmt: f1, best: "high" },
-  { label: "WOPR", get: (r) => r.wopr, fmt: f2, best: "high" },
-  { label: "Target share", get: (r) => r.targetShare, fmt: pct1, best: "high" },
-  { label: "YAC above exp", get: (r) => r.yacAboveExp, fmt: f2, best: "high" },
-  { label: "RYOE / att", get: (r) => r.ryoe, fmt: signed2, best: "high" },
-  { label: "Scramble rate", get: (r) => r.scrambleRate, fmt: pct1, best: "high" },
-  { label: "Play-action rate", get: (r) => r.playActionRate, fmt: pct1, best: "high" },
-  { label: "2+ TD chance", get: (r) => r.p2Td, fmt: pct1, best: "high" },
-  { label: "In-10 tgts / G", get: (r) => r.i10Pg, fmt: f2, best: "high" },
-  { label: "In-10 share", get: (r) => r.i10Share, fmt: pct1, best: "high" },
+  { label: "xFP / game", term: "avgXfp", get: (r) => r.avgXfp, fmt: f1, best: "high" },
+  { label: "WOPR", term: "wopr", get: (r) => r.wopr, fmt: f2, best: "high" },
+  { label: "Target share", term: "u_tgt_share", get: (r) => r.targetShare, fmt: pct1, best: "high" },
+  { label: "YAC above exp", term: "yac-above-exp", get: (r) => r.yacAboveExp, fmt: f2, best: "high" },
+  { label: "RYOE / att", term: "ryoe", get: (r) => r.ryoe, fmt: signed2, best: "high" },
+  { label: "Scramble rate", term: "scrambleRate", get: (r) => r.scrambleRate, fmt: pct1, best: "high" },
+  { label: "Play-action rate", term: "playActionRate", get: (r) => r.playActionRate, fmt: pct1, best: "high" },
+  { label: "2+ TD chance", term: "p2Td", get: (r) => r.p2Td, fmt: pct1, best: "high" },
+  { label: "In-10 tgts / G", term: "i10Pg", get: (r) => r.i10Pg, fmt: f2, best: "high" },
+  { label: "In-10 share", term: "i10Share", get: (r) => r.i10Share, fmt: pct1, best: "high" },
 ];
 
 function bestIndexes(values, best) {
@@ -127,7 +128,7 @@ export default function CompareWeekly({ players, maxSpread }) {
                     </tr>
                   ) : (
                     <tr key={r.def.label}>
-                      <th>{r.def.label}</th>
+                      <th>{r.def.term ? <Define term={r.def.term}>{r.def.label}</Define> : r.def.label}</th>
                       {r.values.map((v, i) => (
                         <td
                           key={players[i].player_name}

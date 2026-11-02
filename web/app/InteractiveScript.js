@@ -345,7 +345,9 @@ export default function InteractiveScript() {
           const plan = btn.getAttribute("data-plan");
 
           if (plan === "stargazer") {
-            window.location.href = "/login";
+            // A plain DOM handler (no router here): a full load of the sign-in page, which continues to My Team's onboarding.
+            // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+            window.location.href = "/login?next=%2Fmy-team%3Fwelcome%3D1";
             return;
           }
 
@@ -362,8 +364,6 @@ export default function InteractiveScript() {
             });
             const data = await res.json();
             if (res.status === 401 && data.login) {
-              // A plain DOM handler (no router here); a full load of the sign-in page is what we want.
-              // eslint-disable-next-line @next/next/no-location-assign-relative-destination
               window.location.href = data.login;
               return;
             }

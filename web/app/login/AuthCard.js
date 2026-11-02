@@ -9,7 +9,7 @@ export default function AuthCard({ eyebrow = "Account", title, sub, error, messa
   return (
     <div className="auth-page">
       <SiteHeader />
-      <div className="wrap auth-wrap">
+      <main id="main-content" className="wrap auth-wrap">
         <div className="auth-card reveal in">
           <div className="eyebrow blue">{eyebrow}</div>
           <h1>{title}</h1>
@@ -18,7 +18,7 @@ export default function AuthCard({ eyebrow = "Account", title, sub, error, messa
           {messageText && <p className="auth-notice mono">{messageText}</p>}
           {children}
         </div>
-      </div>
+      </main>
     </div>
   );
 }

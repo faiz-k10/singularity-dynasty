@@ -1,7 +1,8 @@
 "use client";
 
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
-import { sleeperMatchupUrl, formatWin } from "./MatchupPanel";
+import { sleeperMatchupUrl } from "./MatchupPanel";
+import { formatWin } from "@/lib/standing";
 import { formatOdds, oddsTone } from "./Standings";
 import { lineupAlertCount } from "@/lib/lineupOptimizer";
 

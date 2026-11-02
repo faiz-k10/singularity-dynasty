@@ -60,3 +60,9 @@ export function standing(pct, done, lock = null) {
   if (pct < 0.4) return { key: "behind", label: "Underdog", tone: "grey" };
   return { key: "close", label: "Toss-up", tone: "grey" };
 }
+
+// A win chance as text. Near-certain is still not certain: only a locked result says YOU WIN, so the extremes read ">99%" /
+// "<1%", never "100%" / "0%". Used by the Game Board, the dashboard and the signed-in home page.
+export function formatWin(p) {
+  return p == null ? "—" : p >= 0.995 ? ">99%" : p < 0.005 ? "<1%" : `${Math.round(p * 100)}%`;
+}

@@ -30,7 +30,7 @@ export default async function GmArchetypeQuizPage() {
   return (
     <>
       <InteractiveScript />
-      <main className="wrap tool-wrap quiz-wrap">
+      <main id="main-content" className="wrap tool-wrap quiz-wrap">
         <div className="eyebrow">My Team</div>
         <h1>What Kind of GM Are You?</h1>
         <p className="tool-sub">

@@ -10,9 +10,7 @@ import { loadInsight, loadTeamInsightForAll, getInsight } from "@/lib/insights";
 import PortfolioOverview from "./PortfolioOverview";
 import ExposureSidebar from "./ExposureSidebar";
 import MyTeamClient from "./MyTeamClient";
-import { mineFromTeams } from "@/lib/myPlayers";
-import { buildFeed } from "@/lib/myFeed";
-import { loadFeedInputs } from "@/lib/myFeedData";
+import { loadFeedInputs, buildTeamsFeed } from "@/lib/myFeedData";
 
 export const metadata = {
   title: "My Team — Singularity Dynasty",
@@ -25,7 +23,8 @@ export const metadata = {
 // becomes the data Team Analysis reads from once that's built. Sleeper's
 // API is public/unauthenticated, so the lookup itself works signed out --
 // only saving a team needs an account (lib/sleeper.js + actions.js).
-export default async function MyTeamPage() {
+export default async function MyTeamPage({ searchParams }) {
+  const welcome = (await searchParams)?.welcome === "1";
   const supabase = await createClient();
   const { user, tier } = await resolveTier(supabase);
 
@@ -129,22 +128,7 @@ export default async function MyTeamPage() {
   let feed = null;
   if (feedInputs) {
     try {
-      const inp = await feedInputs;
-      if (inp) {
-        const mine = mineFromTeams(savedTeams);
-        const pair = (x) => (x ? { cur: x.cur, prev: x.prev } : undefined);
-        const args = { sims: pair(inp.sims), ranks: pair(inp.ranks), roles: pair(inp.roles), groups: pair(inp.groups) };
-        const simPrevWeek = inp.sims?.prevWeek ?? null;
-        const ready = [inp.sims, inp.ranks, inp.roles, inp.groups].some((x) => x && x.prevWeek != null);
-        feed = {
-          ready,
-          week: inp.sims?.week ?? inp.ranks?.week ?? null,
-          prevWeek: inp.sims?.prevWeek ?? inp.ranks?.prevWeek ?? null,
-          teams: mine.teams,
-          all: buildFeed({ mine, ...args, simPrevWeek }),
-          byTeam: mine.teams.map((_, i) => buildFeed({ mine, ...args, teamIndex: i, simPrevWeek })),
-        };
-      }
+      feed = buildTeamsFeed(savedTeams, await feedInputs);
     } catch (e) {
       console.error("[my-team] weekly feed failed:", e?.message || e);
     }
@@ -157,7 +141,7 @@ export default async function MyTeamPage() {
     <>
       <InteractiveScript />
 
-      <main className="wrap tool-wrap my-team-page-wrap">
+      <main id="main-content" className="wrap tool-wrap my-team-page-wrap">
         <MyTeamClient
           isSignedIn={!!user}
           tier={tier}
@@ -165,6 +149,7 @@ export default async function MyTeamPage() {
           savedTeams={savedTeams}
           initialGameStates={gameStates}
           heading={sleeperName ? `${sleeperName}\u2019s Teams` : "My Team"}
+          welcome={welcome}
           playerSims={playerSims}
           playerBios={playerBios}
           feed={feed}

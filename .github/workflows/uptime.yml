@@ -1,7 +1,9 @@
 name: Uptime
 
 # Checks the live site every hour: each page must answer 200 within 30 seconds, show the brand (not an error page), and the data-driven tool
-# pages must not be showing their empty "check back soon" message (which means a publish failed or a table emptied). A failed run makes
+# pages must not be showing their empty "check back soon" message (which means a publish failed or a table emptied). Then /api/health
+# (lib/healthRules.js) must say ok: in season, the weekly rankings and simulations published within 7.5 days (a failed Tuesday run on the
+# Mac leaves last week's numbers up and nothing else would notice), the game log current, and fewer than 25 errors in the last hour. A failed run makes
 # GitHub email the account that last edited this schedule -- that email is the alert. No outside service or account needed.
 # Change SITE when the custom domain is connected. Run it by hand from the Actions tab ("Run workflow") to test it.
 
@@ -36,4 +38,6 @@ jobs:
           check /tools/prospect-rankings 0
           check /my-team 0
           check /login 0
+          health=$(curl -s -w "\n%{http_code}" --max-time 30 "$SITE/api/health" || echo 000)
+          if [ "$(echo "$health" | tail -1)" != "200" ]; then echo "::error::health check failed: $(echo "$health" | head -1)"; fail=1; else echo "ok /api/health"; fi
           exit $fail

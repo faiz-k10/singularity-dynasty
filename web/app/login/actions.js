@@ -26,7 +26,7 @@ export async function login(formData) {
   const { error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) back("/login", "error", authErrorCode(error), next);
   revalidatePath("/", "layout");
-  redirect(next || "/account");
+  redirect(next || "/my-team");
 }
 
 export async function signup(formData) {
@@ -35,7 +35,7 @@ export async function signup(formData) {
   if (password.length < MIN_PASSWORD) back("/login", "error", "weak-password", next);
   const supabase = await createClient();
   // The confirmation email links to /auth/confirm, which signs the new account in and continues to `next`.
-  const confirm = `${await siteOrigin()}/auth/confirm?next=${encodeURIComponent(next || "/account?notice=confirmed")}`;
+  const confirm = `${await siteOrigin()}/auth/confirm?next=${encodeURIComponent(next || "/my-team?welcome=1")}`;
   const { error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: confirm } });
   if (error) back("/login", "error", authErrorCode(error), next);
   back("/login", "message", "check-email", next);

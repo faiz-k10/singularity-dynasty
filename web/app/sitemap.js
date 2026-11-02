@@ -5,6 +5,8 @@ export default function sitemap() {
 
   const marketing = [
     { url: "", changeFrequency: "weekly", priority: 1 },
+    { url: "/how-it-works", changeFrequency: "monthly", priority: 0.7 },
+    { url: "/glossary", changeFrequency: "monthly", priority: 0.5 },
     { url: "/login", changeFrequency: "monthly", priority: 0.3 },
   ];
 

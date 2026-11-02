@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import Tooltip from "./Tooltip";
 import WallTracker from "./WallTracker";
+import SiteFooter from "./SiteFooter";
 
 // Display: Big Shoulders (condensed, scoreboard / jersey-number feel) for headings, the brand name and
 // buttons. Body: Libron (a free OFL serif made for reading; files + license in app/fonts/) for paragraphs and
@@ -98,7 +99,11 @@ export default function RootLayout({ children }) {
         </Script>
       </head>
       <body>
+        <a href="#main-content" className="skip-link">
+          Skip to content
+        </a>
         {children}
+        <SiteFooter />
         <Tooltip />
         <WallTracker />
         <Analytics />
