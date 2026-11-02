@@ -176,6 +176,12 @@ function playerDirectory() {
 // Extra groupings (sustainability, career stage) -- same never-fatal treatment as archetypes below.
 function groups() {
   log("\n--- Player groups (optional) ---");
+  // player_groups.R reads the game log CSV. A projections-only run on a fresh machine (GitHub Actions) has none, so make it first (the Mac kept
+  // the last one from a Tuesday run; this was found when the first projections run on GitHub skipped this step).
+  if (!fs.existsSync(path.join(MODEL, "upload_player_game_log.csv"))) {
+    const g = spawnSync("Rscript", ["player_game_log.R"], { cwd: MODEL, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
+    if (g.status !== 0) return log(`SKIPPED: player groups need the game log, which failed -- ${(g.stderr || "").trim().split("\n").slice(-3).join(" ")}`);
+  }
   const r = spawnSync("Rscript", ["player_groups.R"], { cwd: MODEL, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
   if (r.status !== 0) return log(`SKIPPED: player groups failed -- ${(r.stderr || "").trim().split("\n").slice(-3).join(" ")}`);
   const p = spawnSync(process.execPath, ["--env-file=.env.local", "scripts/publish-player-groups.mjs"], { cwd: WEB, encoding: "utf8" });
