@@ -4,9 +4,10 @@ import { standing } from "./standing.js";
 // The signed-in home page's briefing (app/hub/YourWeek.js) and its gravity map (app/hub/GravityMap.js): each saved league's matchup as one
 // row, the plain-English summary of the week, and where each league sits in the map. Pure; tested in test/briefing.test.mjs.
 
-// One row per saved league from the saved snapshot: live score once anyone has scored, else the projections; win chance and its word.
+// One row per saved league from the saved snapshot: live score once anyone has scored, else the projections; win chance and its word. Best chance first
+// (leagues with no win chance last), so the table and the map read from your strongest matchup down.
 export function weekRows(teams) {
-  return (teams || []).map((t) => {
+  const rows = (teams || []).map((t) => {
     const s = t.settings || {};
     const live = Boolean(s.matchupActual && (s.matchupActual.mine > 0 || s.matchupActual.opp > 0));
     const src = live ? s.matchupActual : s.matchupProj;
@@ -26,6 +27,7 @@ export function weekRows(teams) {
       tone: st.tone,
     };
   });
+  return rows.sort((a, b) => (b.p ?? -1) - (a.p ?? -1));
 }
 
 // What to call the member: the team name they use most across their leagues (usually their Sleeper name).
