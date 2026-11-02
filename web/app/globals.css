@@ -6364,19 +6364,17 @@ select.lab-select{min-width:200px; padding-right:8px; cursor:pointer;}
 
 /* The gravity map: rings in SVG units (width 100), the core and the leagues placed in container units of the stage, so it all scales together. */
 .gm{margin:0 auto; width:100%; max-width:520px;}
-.hero .gm{align-self:start; margin-top:72px;} /* level with the briefing, not centred on the whole (taller) left column */
+.hero .gm{align-self:start; margin-top:72px;}
+.hero:has(.gm) .wrap::before{display:none;} /* founder, Nov 2 2026: no background orbit rules behind the gravity map -- only its own meaning-carrying rings */ /* level with the briefing, not centred on the whole (taller) left column */
 .gm-stage{position:relative; width:100%; aspect-ratio:1; container-type:inline-size;}
 .gm-rings{position:absolute; inset:0; width:100%; height:100%; overflow:visible;}
 .gm-ring{fill:none; stroke:rgba(var(--neon-blue-rgb), var(--orbit-alpha)); stroke-width:.25;}
-.gm-ring.is-outer{stroke-dasharray:.4 1.6;}
-.gm-ring.is-spin{stroke-dasharray:1 2; transform-origin:50px 50px; animation:gm-spin 90s linear infinite;}
 .gm-ring.is-zone-0{stroke:var(--horizon-gold); stroke-width:.45;} /* the event horizon: favored inside */
 .gm-ring.is-zone-1{stroke-dasharray:.6 .9;}
 .gm-ring.is-zone-2{stroke:var(--down); stroke-width:.3; stroke-dasharray:.8 1.2;}
 .gm-ring-label{font-size:1.75px; letter-spacing:.18px; text-transform:uppercase; text-anchor:middle; fill:var(--star-dim);}
 .gm-ring-label.is-zone-0{fill:var(--horizon-gold);}
 .gm-ring-label.is-zone-2{fill:var(--down);}
-@keyframes gm-spin{to{transform:rotate(360deg);}}
 .gm-core{
   position:absolute; left:50%; top:50%; width:var(--core); height:var(--core); transform:translate(-50%, -50%); border-radius:50%;
   display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; color:var(--on-brand);
@@ -6411,7 +6409,7 @@ select.lab-select{min-width:200px; padding-right:8px; cursor:pointer;}
 .gm-label-pct{color:var(--tone); font-weight:700;}
 .gm-node:hover .gm-label, .gm-node:focus-visible .gm-label{border-color:var(--tone);}
 .gm-caption{margin-top:10px; text-align:center; font-size:10.5px; letter-spacing:.05em; color:var(--star-dim);}
-@media (prefers-reduced-motion: reduce){ .gm-node, .gm-ring.is-spin, .gm-node.is-close .gm-dot::after, .yw-status-dot{animation:none;} }
+@media (prefers-reduced-motion: reduce){ .gm-node, .gm-node.is-close .gm-dot::after, .yw-status-dot{animation:none;} }
 
 /* Admin (app/admin) */
 .adm h1{margin:6px 0 22px;}

@@ -1,11 +1,11 @@
 import Link from "next/link";
-import { gravityNodes, expectedWins, radiusFor, RINGS, CORE, EDGE } from "@/lib/briefing";
+import { gravityNodes, expectedWins, radiusFor, RINGS, CORE } from "@/lib/briefing";
 import { fmt1 } from "@/lib/format";
 import { formatWin } from "@/lib/standing";
 
 // The signed-in home page's right side: the member's week as a gravity well. The core is the singularity; every league is a body pulled
 // toward it by its chance to win (lib/briefing.js: distance = 1 - win chance), so favored leagues sit inside the mint event horizon and long
-// shots drift out past the red ring. On load the bodies spiral in from the edge; toss-ups pulse. The core holds the wins to expect this
+// shots drift out past the red ring. On load the bodies spiral in from the edge; toss-ups pulse. Only the three standing rings are drawn (no decorative rings, founder Nov 2 2026). The core holds the wins to expect this
 // week. Each body opens the Game Board. Server component: the rings are SVG in the map's own units (width 100), the bodies are placed with
 // container units so the whole map scales with its column.
 export default function GravityMap({ rows }) {
@@ -16,8 +16,6 @@ export default function GravityMap({ rows }) {
     <figure className="gm" aria-label={`Your week: ${nodes.map((n) => `${n.name} ${formatWin(n.p)}`).join(", ")}. About ${fmt1(wins)} of ${of} wins expected (${pct}%).`}>
       <div className="gm-stage">
         <svg className="gm-rings" viewBox="0 0 100 100" aria-hidden="true">
-          <circle className="gm-ring is-outer" cx="50" cy="50" r={EDGE + 6} />
-          <circle className="gm-ring is-spin" cx="50" cy="50" r={EDGE} />
           {RINGS.map((r, i) => (
             <g key={r.p}>
               <circle className={`gm-ring is-zone-${i}`} cx="50" cy="50" r={radiusFor(r.p)} />
