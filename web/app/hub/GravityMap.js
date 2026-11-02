@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { gravityNodes, expectedWins, radiusFor, RINGS, CORE, STRETCH, MAP_H } from "@/lib/briefing";
+import { gravityNodes, expectedWins, radiusFor, RINGS, CORE, VK } from "@/lib/briefing";
 import { fmt1 } from "@/lib/format";
 import { formatWin } from "@/lib/standing";
 
@@ -14,19 +14,17 @@ export default function GravityMap({ rows }) {
   const { wins, of, pct } = expectedWins(rows);
   return (
     <figure className="gm" aria-label={`Your week: ${nodes.map((n) => `${n.name} ${formatWin(n.p)}`).join(", ")}. About ${fmt1(wins)} of ${of} wins expected (${pct}%).`}>
-      <div className="gm-stage" style={{ "--S": STRETCH, aspectRatio: `100 / ${MAP_H}` }}>
-        <svg className="gm-rings" viewBox={`0 0 100 ${MAP_H}`} aria-hidden="true">
+      <div className="gm-stage" style={{ "--K": VK }}>
+        <svg className="gm-rings" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
           {RINGS.map((r, i) => (
-            <g key={r.p}>
-              <ellipse className={`gm-ring is-zone-${i}`} cx="50" cy={MAP_H / 2} rx={radiusFor(r.p)} ry={radiusFor(r.p) * STRETCH} />
-              {r.label && (
-                <text className={`gm-ring-label is-zone-${i}`} x="50" y={MAP_H / 2 - radiusFor(r.p) * STRETCH - 1}>
-                  {r.label}
-                </text>
-              )}
-            </g>
+            <ellipse key={r.p} className={`gm-ring is-zone-${i}`} cx="50" cy="50" rx={radiusFor(r.p)} ry={radiusFor(r.p) * VK} />
           ))}
         </svg>
+        {RINGS.map((r, i) => (
+          <span key={r.p} className={`gm-ring-label mono is-zone-${i}`} style={{ top: `${50 - radiusFor(r.p) * VK}%` }}>
+            {r.label}
+          </span>
+        ))}
         <div className="gm-core" style={{ "--core": `${CORE * 2 - 4}cqw` }}>
           <b>{fmt1(wins)}</b>
           <span>of {of} wins</span>
@@ -37,7 +35,7 @@ export default function GravityMap({ rows }) {
             key={n.id}
             href="/my-team"
             className={`gm-node is-${n.tone || "grey"}${n.p >= 0.4 && n.p < 0.6 ? " is-close" : ""}`}
-            style={{ "--a0": `${n.angle}deg`, "--d": `${n.dist}cqw`, "--i": i }}
+            style={{ "--a0": `${n.angle}deg`, "--d": n.dist, "--i": i }}
           >
             <i className="gm-dot" aria-hidden="true" />
             <span className="gm-label mono">
