@@ -6324,12 +6324,7 @@ select.lab-select{min-width:200px; padding-right:8px; cursor:pointer;}
 .yw{min-width:0;}
 .yw section{padding:0;} /* a bare <section> on the landing page inherits its big section padding */
 .yw-head{display:flex; align-items:center; gap:18px;}
-.yw-week-num{font-family:var(--font-display), sans-serif; font-weight:800; font-size:68px; line-height:.85; letter-spacing:.02em; color:transparent; -webkit-text-stroke:1.5px var(--horizon-gold); padding-right:18px; border-right:1px solid var(--rule);} /* the week as a big outlined scoreboard numeral, like the landing section indexes */
-.yw-status{display:flex; flex-direction:column; gap:6px; margin:0; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--star-dim);}
-.yw-status-line{display:flex; align-items:center; gap:8px; color:var(--star);}
-.yw-status-sub{padding-left:15px;}
-.yw-status-dot{width:7px; height:7px; border-radius:50%; background:var(--horizon-gold); animation:yw-blink 2.4s ease-in-out infinite;}
-@keyframes yw-blink{0%,100%{opacity:1;}50%{opacity:.25;}}
+.yw-week-num{display:block; font-family:var(--font-display), sans-serif; font-weight:800; font-size:68px; line-height:.85; letter-spacing:.04em; color:transparent; -webkit-text-stroke:1.5px var(--horizon-gold);} /* the week as a big outlined scoreboard numeral, like the landing section indexes; the number comes from the saved leagues, so it turns over every week */
 .hero .yw-h1{font-size:clamp(38px, 5.2vw, 62px); margin:6px 0 12px;}
 .yw-name-hi{color:var(--horizon-gold);}
 .yw-brief{font-size:clamp(16px, 1.35vw, 19px); line-height:1.5; color:var(--star); max-width:560px; margin:0 0 26px;}
@@ -6415,7 +6410,7 @@ select.lab-select{min-width:200px; padding-right:8px; cursor:pointer;}
 .gm-node{z-index:1;} .gm-node:hover, .gm-node:focus-visible{z-index:50;} /* the hovered body and its label come to the front, lit in its own colour */
 .gm-node:hover .gm-label, .gm-node:focus-visible .gm-label{border-color:var(--tone); background:color-mix(in srgb, var(--tone) 18%, var(--void-panel)); box-shadow:0 0 0 1px var(--tone);}
 .gm-node:hover .gm-dot, .gm-node:focus-visible .gm-dot{box-shadow:0 0 0 .7cqw var(--void), 0 0 0 1.2cqw var(--tone); transform:scale(1.25);}
-@media (prefers-reduced-motion: reduce){ .gm-node, .gm-node.is-close .gm-dot::after, .yw-status-dot{animation:none;} }
+@media (prefers-reduced-motion: reduce){ .gm-node, .gm-node.is-close .gm-dot::after{animation:none;} }
 
 /* Admin (app/admin) */
 .adm h1{margin:6px 0 22px;}

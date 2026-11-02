@@ -24,7 +24,6 @@ export async function loadYourWeek(supabase, user) {
 }
 
 const SHOWN = 8;
-const synced = (ms) => new Date(ms).toLocaleString("en-US", { weekday: "short", hour: "numeric", minute: "2-digit", timeZone: "America/New_York" });
 
 function Row({ r }) {
   if (r.bye) {
@@ -72,22 +71,13 @@ export default function YourWeek({ data }) {
   const { teams, feed, rows, name } = data;
   const week = teams.find((t) => t.settings?.week)?.settings.week;
   const changes = (feed?.ready ? feed.all.items : []).slice(0, 4);
-  const updated = teams.reduce((m, t) => Math.max(m, Date.parse(t.updated_at) || 0), 0);
   const anyLive = rows.some((r) => r.live);
   return (
     <div className="yw">
-      <div className="yw-head">
-        {week ? <b className="yw-week-num" aria-hidden="true">{String(week).padStart(2, "0")}</b> : null}
-        <p className="yw-status mono">
-          <span className="yw-status-line">
-            <i className="yw-status-dot" aria-hidden="true" />
-            {week ? `Week ${week} briefing` : "Your week"}
-          </span>
-          <span className="yw-status-sub">
-            {teams.length} {teams.length === 1 ? "league" : "leagues"}
-            {updated > 0 ? ` · synced ${synced(updated)} ET` : ""}
-          </span>
-        </p>
+      <div className="yw-head" aria-label={week ? `Week ${week}` : "Your week"}>
+        <b className="yw-week-num" aria-hidden="true">
+          {week ? `WEEK ${String(week).padStart(2, "0")}` : "YOUR WEEK"}
+        </b>
       </div>
       <Greeting name={name} />
       <p className="yw-brief">{weekBriefing(rows)}</p>
