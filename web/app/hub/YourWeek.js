@@ -76,12 +76,19 @@ export default function YourWeek({ data }) {
   const anyLive = rows.some((r) => r.live);
   return (
     <div className="yw">
-      <div className="eyebrow">{week ? `Week ${week}` : "Your week"}</div>
-      <p className="yw-status mono">
-        <i className="yw-status-dot" aria-hidden="true" />
-        Briefing · {teams.length} {teams.length === 1 ? "league" : "leagues"}
-        {updated > 0 ? ` · synced ${synced(updated)} ET` : ""}
-      </p>
+      <div className="yw-head">
+        {week ? <b className="yw-week-num" aria-hidden="true">{String(week).padStart(2, "0")}</b> : null}
+        <p className="yw-status mono">
+          <span className="yw-status-line">
+            <i className="yw-status-dot" aria-hidden="true" />
+            {week ? `Week ${week} briefing` : "Your week"}
+          </span>
+          <span className="yw-status-sub">
+            {teams.length} {teams.length === 1 ? "league" : "leagues"}
+            {updated > 0 ? ` · synced ${synced(updated)} ET` : ""}
+          </span>
+        </p>
+      </div>
       <Greeting name={name} />
       <p className="yw-brief">{weekBriefing(rows)}</p>
 

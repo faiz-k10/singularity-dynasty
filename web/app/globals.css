@@ -6323,7 +6323,11 @@ select.lab-select{min-width:200px; padding-right:8px; cursor:pointer;}
 /* Signed-in home: the briefing (app/hub/YourWeek.js) and the gravity map (app/hub/GravityMap.js) */
 .yw{min-width:0;}
 .yw section{padding:0;} /* a bare <section> on the landing page inherits its big section padding */
-.yw-status{display:flex; align-items:center; gap:8px; margin:14px 0 0; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--star-dim);}
+.yw-head{display:flex; align-items:center; gap:18px;}
+.yw-week-num{font-family:var(--font-display), sans-serif; font-weight:800; font-size:68px; line-height:.85; letter-spacing:.02em; color:transparent; -webkit-text-stroke:1.5px var(--horizon-gold); padding-right:18px; border-right:1px solid var(--rule);} /* the week as a big outlined scoreboard numeral, like the landing section indexes */
+.yw-status{display:flex; flex-direction:column; gap:6px; margin:0; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--star-dim);}
+.yw-status-line{display:flex; align-items:center; gap:8px; color:var(--star);}
+.yw-status-sub{padding-left:15px;}
 .yw-status-dot{width:7px; height:7px; border-radius:50%; background:var(--horizon-gold); animation:yw-blink 2.4s ease-in-out infinite;}
 @keyframes yw-blink{0%,100%{opacity:1;}50%{opacity:.25;}}
 .hero .yw-h1{font-size:clamp(38px, 5.2vw, 62px); margin:6px 0 12px;}
@@ -6366,7 +6370,7 @@ select.lab-select{min-width:200px; padding-right:8px; cursor:pointer;}
 .gm{margin:0 auto; width:100%; max-width:520px;}
 .hero .gm{align-self:start; margin-top:40px;} /* level with the briefing, not centred on the whole (taller) left column */
 .hero:has(.gm) .wrap::before{display:none;} /* founder, Nov 2 2026: no background orbit rules behind the gravity map -- only its own meaning-carrying rings */
-.hero:has(.yw){min-height:0; align-items:flex-start; padding:96px 0 56px;} /* the briefing starts right under the header (founder, Nov 2 2026: no empty band above it) */
+.hero:has(.yw){min-height:0; align-items:flex-start; padding:70px 0 56px;} /* the briefing starts right under the header (founder, Nov 2 2026: no empty band above it) */
 .gm-stage{position:relative; width:100%; aspect-ratio:1; container-type:inline-size;}
 .gm-rings{position:absolute; inset:0; width:100%; height:100%; overflow:visible;}
 .gm-ring{fill:none; stroke:rgba(var(--neon-blue-rgb), var(--orbit-alpha)); stroke-width:.25;}
