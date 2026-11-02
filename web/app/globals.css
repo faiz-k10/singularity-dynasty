@@ -5482,75 +5482,55 @@ html{font-stretch:82%;}
   -webkit-mask-image:radial-gradient(circle at 50% 50%, #000 0, #000 35%, transparent 72%); mask-image:radial-gradient(circle at 50% 50%, #000 0, #000 35%, transparent 72%);
 }
 
-/* ---------- PRICING LADDER (Oct 19 2026, replaces the three equal cards) ----------
-   Three rungs that widen toward the endpoint: Stargazer ~62%, Explorer ~82%, Singularity the full width and the tallest. Same
-   hooks as before for the billing toggle and checkout (.price-amt, .round-bill, [data-plan]); no tilt, no glow. */
-.ladder{display:flex; flex-direction:column; gap:14px; align-items:flex-start;}
-.rung{
-  position:relative; width:100%; box-sizing:border-box; min-width:0;
-  display:grid; align-items:center; column-gap:22px; row-gap:10px; padding:18px 22px 16px 20px;
-  background:rgba(var(--scrim-rgb), var(--glass-alpha)); border:1px solid var(--rule); border-top:2px solid var(--rule-strong); border-radius:var(--r-lg);
-  grid-template-columns:auto minmax(0, 1.2fr) auto minmax(0, 200px);
-  grid-template-areas:"num id price cta" ". feats feats feats";
-}
-.rung-1{width:64%;}
-.rung-2{width:82%; border-top-color:var(--horizon-gold); border-left:3px solid var(--horizon-gold);}
-.rung-3{width:100%; border-top-color:var(--neon-blue); border-left:3px solid var(--neon-blue); padding:26px 26px 24px 24px; row-gap:0;
-  grid-template-columns:auto minmax(0, 1fr) minmax(0, 230px) minmax(0, 1.35fr);
-  grid-template-areas:"num id price feats" "num id cta feats";
-  align-items:start; overflow:hidden;
-}
-/* the endpoint is ringed by orbit rules, a tight set sunk into its right edge */
-.rung-3::before{
-  content:''; position:absolute; right:-140px; top:50%; width:520px; height:520px; transform:translateY(-50%); pointer-events:none;
-  background:repeating-radial-gradient(circle at 50% 50%, transparent 0 34px, rgba(var(--neon-blue-rgb), .10) 34px 35px);
-  -webkit-mask-image:radial-gradient(circle, #000 0, transparent 70%); mask-image:radial-gradient(circle, #000 0, transparent 70%);
-}
-.rung > *{position:relative;}
-.rung-num{grid-area:num; display:flex; align-items:flex-end; gap:10px; min-width:54px; color:var(--star-dim);} /* the tier as rockets: one, two, three */
-.rung-num .rocket{height:60px; width:auto; display:block;}
-.rung-2 .rung-num{color:var(--horizon-gold);}
-.rung-3 .rung-num{min-width:104px; gap:14px; color:var(--neon-blue);}
-.rung-3 .rung-num .rocket{height:104px;}
-.rung-id{grid-area:id; min-width:0;}
-.rung-id .round-desc{min-height:0; margin:4px 0 0; max-width:360px;}
-.rung .round-title-row{min-height:0;}
-.rung h3{font-family:var(--font-display), sans-serif; font-size:30px; font-weight:800; letter-spacing:.03em; text-transform:uppercase; margin:0;}
-.rung-3 h3{font-size:52px; line-height:.95;}
-.rung-price{grid-area:price;}
-.rung-price .round-price{font-size:46px;}
-.rung-price .round-price sup{font-size:20px; top:3px;}
-.rung-price .round-bill{margin:2px 0 0;}
-.rung-3 .rung-price .round-price{font-size:112px; line-height:.85;}
-.rung-3 .rung-price .round-price sup{font-size:40px; top:8px;}
-.rung-3 .rung-price .round-bill{margin:8px 0 14px;}
-.rung-cta{grid-area:cta;}
-.rung-cta .round-btn{padding:12px 10px;}
-.rung-3 .rung-cta .round-btn{padding:15px 10px; border-color:var(--neon-blue); color:var(--neon-blue);}
-.rung-3 .rung-cta .round-btn:hover{background:var(--neon-blue); color:var(--on-cold);}
-.rung-feats{grid-area:feats; margin:0; display:flex; flex-wrap:wrap; gap:2px 26px; flex:none;}
-.rung-feats li{border-bottom:0; padding:3px 0; font-size:13px;}
-.rung-3 .rung-feats{display:grid; grid-template-columns:1fr; gap:0; align-self:stretch; border-left:1px solid var(--rule); padding-left:26px;}
-.rung-3 .rung-feats li{padding:7px 0; border-bottom:1px dashed var(--line); font-size:14px;}
-.rung-end{position:absolute; top:10px; right:16px; font-size:10.5px; letter-spacing:.18em; text-transform:uppercase; color:var(--neon-blue);}
-@media (max-width:1100px){
-  .rung-1, .rung-2{width:100%;}
-  .rung{grid-template-columns:auto minmax(0, 1fr) auto; grid-template-areas:"num id price" ". cta cta" ". feats feats";}
-  .rung-cta{display:flex; align-items:center; gap:14px;}
-  .rung-cta .round-btn{flex:0 0 220px;}
-  .rung-3{grid-template-columns:auto minmax(0, 1fr) minmax(0, 1fr); grid-template-areas:"num id price" "num id cta" ". feats feats";}
-  .rung-3 .rung-feats{border-left:0; padding-left:0; margin-top:16px; grid-template-columns:1fr 1fr; column-gap:26px;}
-  .rung-3 .rung-cta{display:block;}
-  .rung-3 .rung-cta .round-btn{flex:none;}
+/* ---------- PRICING: THREE ROCKETS (Nov 2 2026, founder: "turn these vertically into rockets ... list all the information while the bar itself being rockets") ----------
+   app/PricingLadder.js. Each plan is a rocket standing on the pad, taller than the one before it; the hull (nose outline, flat body with hairline sides,
+   two fins, a nozzle and a flickering flame) carries the plan's whole card. Colour = the header pricing pill's: steel, mint, mission red. Same hooks as before
+   for the billing toggle and checkout (.price-amt, .round-bill, [data-plan]); flat, no glow. */
+.ladder{display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:30px; align-items:end; padding-top:10px;}
+.rung{--tone:var(--star-dim); --nose:120px; position:relative; display:flex; flex-direction:column; align-items:center; padding-bottom:96px; min-width:0;}
+.rung-2{--tone:var(--horizon-gold); --nose:150px;}
+.rung-3{--tone:var(--down); --nose:180px;}
+.rung-hull{position:relative; width:78%; display:flex; flex-direction:column; flex:1;}
+.rung-1 .rung-hull{min-height:600px;} .rung-2 .rung-hull{min-height:760px;} .rung-3 .rung-hull{min-height:930px;}
+.rung-nose{display:block; width:100%; height:var(--nose); fill:var(--void-panel); stroke:var(--tone); stroke-width:2; vector-effect:non-scaling-stroke; stroke-linejoin:round;}
+.rung-nose path, .rung-fin path{vector-effect:non-scaling-stroke;}
+.rung-port{position:absolute; left:50%; top:calc(var(--nose) * .5); width:42px; height:42px; margin-left:-21px; display:flex; align-items:center; justify-content:center; border-radius:50%; border:2px solid var(--tone); background:var(--void); color:var(--tone); font-size:15px; font-weight:700; letter-spacing:.04em;}
+.rung-body{flex:1; background:var(--void-panel); border:2px solid var(--tone); border-top:0; padding:14px 22px 26px; text-align:center; min-width:0; display:flex; flex-direction:column; align-items:center;}
+.rung-fin{position:absolute; bottom:96px; width:12%; height:200px; fill:var(--void-panel); stroke:var(--tone); stroke-width:2; stroke-linejoin:round;}
+.rung-fin-l{left:5%;} .rung-fin-r{right:5%;}
+.rung-nozzle{width:26%; height:16px; margin-top:-1px; background:var(--void-panel); border:2px solid var(--tone); border-top:0; clip-path:polygon(0 0, 100% 0, 84% 100%, 16% 100%);}
+.rung-flame{position:absolute; bottom:12px; left:50%; width:34px; height:68px; margin-left:-17px; fill:var(--tone); transform-origin:50% 0; animation:rung-flicker .9s ease-in-out infinite alternate;}
+.rung-flame-core{fill:var(--void-panel);}
+@keyframes rung-flicker{from{transform:scaleY(.82) scaleX(.94);} to{transform:scaleY(1.08) scaleX(1.04);}}
+.rung-id{min-width:0;}
+.rung .round-label{margin:0 0 4px;}
+.rung h3{font-family:var(--font-display), sans-serif; font-size:36px; font-weight:800; letter-spacing:.03em; text-transform:uppercase; margin:0; line-height:1;}
+.rung-3 h3{font-size:46px;}
+.rung .round-badge{margin:8px 0 0;}
+.rung .round-desc{min-height:0; margin:10px 0 0; max-width:none; font-size:14px;}
+.rung-price{margin-top:14px;}
+.rung-price .round-price{font-size:56px; line-height:.9;}
+.rung-price .round-price sup{font-size:22px; top:4px;}
+.rung-3 .rung-price .round-price{font-size:92px;}
+.rung-3 .rung-price .round-price sup{font-size:34px; top:6px;}
+.rung-price .round-bill{margin:4px 0 0;}
+.rung-cta{width:100%; margin-top:16px;}
+.rung-cta .round-btn{padding:13px 10px; width:100%; box-sizing:border-box;}
+.rung-3 .rung-cta .round-btn{border-color:var(--down); color:var(--down);}
+.rung-3 .rung-cta .round-btn:hover{background:var(--down); color:var(--on-down);}
+.rung-feats{width:100%; margin:18px 0 0; text-align:left; flex:none;}
+.rung-feats li{padding:6px 0; font-size:13px; border-bottom:1px dashed var(--line);}
+.rung-feats li:last-child{border-bottom:0;}
+@media (prefers-reduced-motion: reduce){ .rung-flame{animation:none;} }
+@media (max-width:1000px){
+  .ladder{grid-template-columns:1fr; gap:56px; justify-items:center;}
+  .rung{width:100%; max-width:460px;}
+  .rung-1 .rung-hull, .rung-2 .rung-hull, .rung-3 .rung-hull{min-height:0;}
 }
 @media (max-width:640px){
-  .rung, .rung-3{grid-template-columns:1fr; grid-template-areas:"num" "id" "price" "cta" "feats"; padding:18px 16px 16px; row-gap:12px;}
-  .rung-3{padding:20px 16px;}
-  .rung-num .rocket{height:44px;} .rung-3 .rung-num .rocket{height:72px;}
-  .rung-cta{display:block;} .rung-cta .round-btn{flex:none;}
-  .rung-3 h3{font-size:40px;} .rung-3 .rung-price .round-price{font-size:84px;}
-  .rung-3 .rung-feats{grid-template-columns:1fr; margin-top:0;}
-  .rung-end{display:none;}
+  .rung-hull{width:84%;} .rung-fin{width:9%; left:auto;} .rung-fin-l{left:3%;} .rung-fin-r{right:3%;}
+  .rung-body{padding:12px 16px 22px;}
+  .rung-3 h3{font-size:40px;} .rung-3 .rung-price .round-price{font-size:78px;}
 }
 
 /* ---------- HUB: ONE LEAD PANEL + A RANKED COLUMN (Oct 19 2026, replaces the grid of equal cards) ----------
