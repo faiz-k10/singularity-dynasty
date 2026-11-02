@@ -1,0 +1,39 @@
+name: Model check (temporary)
+
+# Temporary: runs every R script the weekly run uses, in the weekly run's order, on GitHub's Linux machines -- WITHOUT publishing anything
+# (no secrets, no database) -- to prove the model works there. Deleted once it has passed.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  model:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    defaults:
+      run:
+        working-directory: model
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - name: Cache R packages
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.R_LIBS_USER }}
+          key: r-${{ runner.os }}-nflreadr-jsonlite-v1
+      - name: Install R packages
+        run: Rscript -e 'for (p in c("nflreadr", "jsonlite")) if (!requireNamespace(p, quietly = TRUE)) install.packages(p)'
+      - name: Game log
+        run: Rscript player_game_log.R && wc -l upload_player_game_log.csv
+      - name: Projection engine
+        run: Rscript projection_engine.R && wc -l upload_redraft_rankings.csv upload_player_simulations.csv && head -3 upload_redraft_rankings.csv
+      - name: Archetypes
+        run: Rscript player_archetypes.R && wc -l upload_player_archetypes.csv
+      - name: Player groups
+        run: Rscript player_groups.R && wc -l upload_player_groups.csv
+      - name: Defense leans
+        run: Rscript defense_impact.R && wc -l upload_defense_leans.csv
+      - name: Player directory
+        run: Rscript player_directory.R && wc -l upload_player_directory.csv
