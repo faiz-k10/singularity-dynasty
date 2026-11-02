@@ -19,7 +19,6 @@ export default function GravityMap({ rows }) {
           {RINGS.map((r, i) => (
             <g key={r.p}>
               <ellipse className={`gm-ring is-zone-${i}`} cx="50" cy={MAP_H / 2} rx={radiusFor(r.p)} ry={radiusFor(r.p) * STRETCH} />
-              <ellipse className={`gm-comet is-zone-${i}`} cx="50" cy={MAP_H / 2} rx={radiusFor(r.p)} ry={radiusFor(r.p) * STRETCH} pathLength="100" />
               {r.label && (
                 <text className={`gm-ring-label is-zone-${i}`} x="50" y={MAP_H / 2 - radiusFor(r.p) * STRETCH - 1}>
                   {r.label}
@@ -38,7 +37,7 @@ export default function GravityMap({ rows }) {
             key={n.id}
             href="/my-team"
             className={`gm-node is-${n.tone || "grey"}${n.p >= 0.4 && n.p < 0.6 ? " is-close" : ""}`}
-            style={{ "--a": `${n.angle}deg`, "--d": `${n.dist}cqw`, "--i": i }}
+            style={{ "--a0": `${n.angle}deg`, "--d": `${n.dist}cqw`, "--i": i }}
           >
             <i className="gm-dot" aria-hidden="true" />
             <span className="gm-label mono">

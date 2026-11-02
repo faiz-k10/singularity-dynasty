@@ -6367,20 +6367,12 @@ select.lab-select{min-width:200px; padding-right:8px; cursor:pointer;}
 .hero .gm{align-self:start; margin-top:20px; margin-right:-24px;} /* level with the briefing, not centred on the whole (taller) left column */
 .hero:has(.gm) .wrap::before{display:none;} /* founder, Nov 2 2026: no background orbit rules behind the gravity map -- only its own meaning-carrying rings */
 .hero:has(.yw){min-height:0; align-items:flex-start; padding:70px 0 56px;} /* the briefing starts right under the header (founder, Nov 2 2026: no empty band above it) */
-.gm-stage{position:relative; width:100%; aspect-ratio:100 / 130; container-type:inline-size;}
+.gm-stage{position:relative; width:100%; aspect-ratio:100 / 160; container-type:inline-size;}
 .gm-rings{position:absolute; inset:0; width:100%; height:100%; overflow:visible;}
 .gm-ring{fill:none; stroke:rgba(var(--neon-blue-rgb), var(--orbit-alpha)); stroke-width:.25;}
 .gm-ring.is-zone-0{stroke:var(--horizon-gold); stroke-width:.45;} /* the event horizon: favored inside */
 .gm-ring.is-zone-1{stroke-dasharray:.6 .9;}
 .gm-ring.is-zone-2{stroke:var(--down); stroke-width:.3; stroke-dasharray:.8 1.2;}
-.gm-ring{animation:gm-drift 40s linear infinite;} /* the dashes on the rings creep along the orbit */
-.gm-ring.is-zone-1{animation-direction:reverse; animation-duration:55s;}
-.gm-ring.is-zone-2{animation-duration:70s;}
-.gm-comet{fill:none; stroke:var(--horizon-gold); stroke-width:.7; stroke-linecap:round; stroke-dasharray:7 93; animation:gm-orbit 16s linear infinite;} /* a bright arc travelling round each ring, outer rings slower */
-.gm-comet.is-zone-1{stroke:var(--star-dim); animation-duration:26s; animation-direction:reverse;}
-.gm-comet.is-zone-2{stroke:var(--down); animation-duration:38s;}
-@keyframes gm-drift{to{stroke-dashoffset:-30;}}
-@keyframes gm-orbit{from{stroke-dashoffset:0;}to{stroke-dashoffset:-100;}}
 .gm-ring-label{font-size:1.75px; letter-spacing:.18px; text-transform:uppercase; text-anchor:middle; fill:var(--star-dim);}
 .gm-ring-label.is-zone-0{fill:var(--horizon-gold);}
 .gm-ring-label.is-zone-2{fill:var(--down);}
@@ -6397,9 +6389,13 @@ select.lab-select{min-width:200px; padding-right:8px; cursor:pointer;}
 .gm-node{
   --tone:var(--star-dim); position:absolute; left:50%; top:50%; width:0; height:0; text-decoration:none; color:inherit;
   transform:translate(calc(cos(var(--a)) * var(--d)), calc(sin(var(--a)) * var(--d) * var(--S)));
-  animation:gm-fall 1.6s cubic-bezier(.16, .84, .3, 1) both; animation-delay:calc(var(--i) * 120ms + 150ms);
+  --a:var(--a0);
+  animation:gm-fall 1.6s cubic-bezier(.16, .84, .3, 1) backwards, gm-spin 240s linear infinite; animation-delay:calc(var(--i) * 120ms + 150ms), 0s;
 }
 .gm-node.is-mint{--tone:var(--horizon-gold);} .gm-node.is-red{--tone:var(--down);}
+@property --a{syntax:'<angle>'; inherits:true; initial-value:0deg;}
+@keyframes gm-spin{from{--a:var(--a0);} to{--a:calc(var(--a0) + 360deg);}} /* every league slowly circles the core on its own orbit */
+.gm:hover .gm-node{animation-play-state:running, paused;} /* hold still while someone is pointing at the map */
 @keyframes gm-fall{
   from{transform:translate(calc(cos(var(--a) - 70deg) * 46cqw), calc(sin(var(--a) - 70deg) * 46cqw * var(--S))); opacity:0;}
   30%{opacity:1;}
@@ -6419,7 +6415,7 @@ select.lab-select{min-width:200px; padding-right:8px; cursor:pointer;}
 .gm-node{z-index:1;} .gm-node:hover, .gm-node:focus-visible{z-index:50;} /* the hovered body and its label come to the front, lit in its own colour */
 .gm-node:hover .gm-label, .gm-node:focus-visible .gm-label{border-color:var(--tone); background:color-mix(in srgb, var(--tone) 18%, var(--void-panel)); box-shadow:0 0 0 1px var(--tone);}
 .gm-node:hover .gm-dot, .gm-node:focus-visible .gm-dot{box-shadow:0 0 0 .7cqw var(--void), 0 0 0 1.2cqw var(--tone); transform:scale(1.25);}
-@media (prefers-reduced-motion: reduce){ .gm-node, .gm-node.is-close .gm-dot::after, .gm-ring, .gm-comet{animation:none;} .gm-comet{display:none;} }
+@media (prefers-reduced-motion: reduce){ .gm-node, .gm-node.is-close .gm-dot::after{animation:none;} }
 
 /* Admin (app/admin) */
 .adm h1{margin:6px 0 22px;}
