@@ -1,3 +1,4 @@
+import { isBye } from "./bye.js";
 // Small formatting helpers shared by the My Team screens and the lib code behind them, so one rule lives in one place.
 
 // A finite number, else null.
@@ -40,4 +41,6 @@ export function formatHeight(h) {
 // A redraft_rankings `notes` value as the site shows it. The model once published "BOUNCEBACK (informational only)" as a note on players
 // coming off a bad game; that wording is not shown anywhere on the site (founder, Oct 27 2026), and the published rows of earlier weeks
 // still carry it, so every reader of `notes` goes through here. What is left is real status ("OUT", ...), or "".
-export const publicNote = (n) => String(n ?? "").replace(/BOUNCEBACK(\s*\(informational only\))?/gi, "").trim();
+// Pass the row's opponent: a team on a BYE has no status note -- the model used to publish "OUT" for bye players (Sleeper
+// has no projection for them), which read as "ruled out" (Christian McCaffrey, week 8 2026). A bye is said as a bye.
+export const publicNote = (n, opponent) => (isBye(opponent) ? "" : String(n ?? "").replace(/BOUNCEBACK(\s*\(informational only\))?/gi, "").trim());

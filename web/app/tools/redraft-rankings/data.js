@@ -367,7 +367,7 @@ export const getCachedRedraftData = unstable_cache(
     ]);
     const gameLog = deriveGameLogData(gameLogRows, latest.season, floorCeilingByGame, latest.week);
 
-    for (const r of rows) r.notes = publicNote(r.notes);
+    for (const r of rows) r.notes = publicNote(r.notes, r.opponent);
     const ranked = new Set(rows.map((r) => r.player_name));
     const only = (byName) => Object.fromEntries(Object.entries(byName).filter(([name]) => ranked.has(name)));
     return {

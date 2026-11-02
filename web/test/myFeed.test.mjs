@@ -79,7 +79,7 @@ test("a player listed OUT gets a status line, not a fake rank crash", () => {
     mine,
     ranks: {
       prev: [{ player_name: "Puka Nacua", rank: 4, week: 5 }],
-      cur: [{ player_name: "Puka Nacua", rank: 427, week: 6, opponent: "NA", notes: "OUT" }],
+      cur: [{ player_name: "Puka Nacua", rank: 427, week: 6, opponent: "KC", notes: "OUT" }],
     },
   });
   assert.equal(f.items[0].lines.length, 1);
@@ -110,7 +110,7 @@ test("a starter listed out outranks a big median move", () => {
   assert.equal(f.items[0].lines[0].kind, "status");
 });
 
-test("a player on a bye gets no rank-move line (his rank only drops because he has no game)", () => {
+test("a player on a bye gets a bye line, no rank-move line (his rank only drops because he has no game)", () => {
   const f = buildFeed({
     mine,
     ranks: {
@@ -118,7 +118,7 @@ test("a player on a bye gets no rank-move line (his rank only drops because he h
       cur: [{ player_name: "Puka Nacua", rank: 40, week: 6, opponent: "NA" }],
     },
   });
-  assert.equal(f.items.length, 0);
+  assert.deepEqual(f.items[0].lines.map((l) => l.kind), ["bye"]);
 });
 
 test("publicNote: the old BOUNCEBACK note is never shown; real statuses stay", async () => {
@@ -127,4 +127,34 @@ test("publicNote: the old BOUNCEBACK note is never shown; real statuses stay", a
   assert.equal(publicNote("bounceback"), "");
   assert.equal(publicNote("OUT"), "OUT");
   assert.equal(publicNote(null), "");
+});
+
+test("a player on a BYE is said as a bye, never as listed OUT (even when the published note says OUT)", () => {
+  const f = buildFeed({
+    mine,
+    ranks: {
+      prev: [{ player_name: "Bijan Robinson", rank: 6, week: 7, opponent: "ATL", notes: null }],
+      cur: [{ player_name: "Bijan Robinson", rank: 457, week: 8, opponent: "NA", notes: "OUT" }],
+    },
+  });
+  assert.equal(f.items.length, 1);
+  assert.deepEqual(f.items[0].lines.map((l) => [l.kind, l.dir, l.text]), [["bye", "flag", "On a BYE in week 8"]]);
+});
+
+test("coming back from a bye is not 'back after being listed OUT'", () => {
+  const f = buildFeed({
+    mine,
+    ranks: {
+      prev: [{ player_name: "Bijan Robinson", rank: 457, week: 8, opponent: "NA", notes: "OUT" }],
+      cur: [{ player_name: "Bijan Robinson", rank: 5, week: 9, opponent: "ATL", notes: null }],
+    },
+  });
+  assert.ok(!f.items.some((it) => it.lines.some((l) => /listed/i.test(l.text))));
+});
+
+test("publicNote: a bye row never carries a status note", async () => {
+  const { publicNote } = await import("../lib/format.js");
+  assert.equal(publicNote("OUT", "NA"), "");
+  assert.equal(publicNote("OUT", "KC"), "OUT");
+  assert.equal(publicNote("OUT"), "OUT");
 });

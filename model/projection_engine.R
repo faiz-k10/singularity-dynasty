@@ -1915,6 +1915,18 @@ export_for_supabase <- function(df, target_season = TARGET_SEASON, week = NULL) 
   # (player_simulations, below) are untouched -- one missed week doesn't
   # change a season projection. playoff_ceiling is also untouched here --
   # it's a weeks-15-17 figure, unrelated to this week's status.
+  # Teams on a BYE have no opponent this week. Their players score 0 (no game) but are NOT "out" -- the site says BYE WEEK for
+  # them, and an OUT note made My Team's feed tell people a healthy player on a bye was "Listed OUT" (Christian McCaffrey,
+  # week 8 2026). Sleeper publishes no projection for a bye, so the no-projection OUT check below must skip them too.
+  # Guard: at most 6 of 32 teams are ever on a bye, so a blank opponent for 35%+ of players means the schedule didn't load --
+  # then nobody is treated as on a bye (and the old behaviour stands).
+  on_bye <- is.na(df$opponent) | toupper(df$opponent) == "NA"
+  if (mean(on_bye) >= 0.35) {
+    cat("Opponent missing for", sum(on_bye), "of", nrow(df), "players -- schedule looks unavailable, not treating them as byes\n")
+    on_bye <- rep(FALSE, nrow(df))
+  } else if (any(on_bye)) {
+    cat("On a BYE this week (projection 0, no OUT note):", sum(on_bye), "player(s) on", length(unique(df$team[on_bye])), "team(s)\n")
+  }
   out_players <- tryCatch(load_out_players(season, week), error = function(e) {
     cat("Injury report unavailable this run -- skipping OUT overrides:", conditionMessage(e), "\n")
     character(0)
@@ -1923,7 +1935,7 @@ export_for_supabase <- function(df, target_season = TARGET_SEASON, week = NULL) 
     sm <- tryCatch(fetch_sleeper_median_projections(season, week), error = function(e) NULL)
     if (!is.null(sm) && length(sm) >= SLEEPER_MISSING_OUT_MIN_PAYLOAD) {
       keys <- paste0(normalize_sleeper_name(df$player_name), "|", df$position)
-      ghost <- !(keys %in% names(sm)) & df$median >= SLEEPER_MISSING_OUT_MIN & !(df$player_name %in% out_players)
+      ghost <- !(keys %in% names(sm)) & df$median >= SLEEPER_MISSING_OUT_MIN & !(df$player_name %in% out_players) & !on_bye
       if (any(ghost)) {
         cat("No Sleeper projection + our median >=", SLEEPER_MISSING_OUT_MIN, "-> treated as OUT:", sum(ghost), "player(s) -",
             paste(sprintf("%s (%.1f)", df$player_name[ghost], df$median[ghost]), collapse = ", "), "\n")
@@ -1933,6 +1945,7 @@ export_for_supabase <- function(df, target_season = TARGET_SEASON, week = NULL) 
       cat("Sleeper payload unavailable/too small -- skipping the no-projection OUT check\n")
     }
   }
+  out_players <- setdiff(out_players, df$player_name[on_bye]) # a bye is never an OUT, whatever a report says
   is_out <- df$player_name %in% out_players
   if (length(out_players) > 0) {
     cat("OUT this week (projection/ceiling set to 0):", sum(is_out), "player(s) -",
@@ -1980,20 +1993,23 @@ export_for_supabase <- function(df, target_season = TARGET_SEASON, week = NULL) 
       cat("Non-starter/non-promoted QBs excluded from published tables:", sum(is_extra_qb), "-",
           paste(df$player_name[is_extra_qb], collapse = ", "), "\n")
       df <- df[!is_extra_qb, ]
+      on_bye <- on_bye[!is_extra_qb]
       is_out <- df$player_name %in% out_players
     }
   }
 
-  df$floor <- ifelse(is_out, 0, df$floor)
-  df$median <- ifelse(is_out, 0, df$median)
-  df$ceiling <- ifelse(is_out, 0, df$ceiling)
+  df$on_bye <- on_bye
+  no_game <- is_out | on_bye
+  df$floor <- ifelse(no_game, 0, df$floor)
+  df$median <- ifelse(no_game, 0, df$median)
+  df$ceiling <- ifelse(no_game, 0, df$ceiling)
 
   redraft <- df[order(-df$median), ]
   # OUT players get their fixed-scoring projection zeroed above -- the raw
   # component stats that power custom scoring need the same override,
   # otherwise a user's own PPR/TD/INT settings would reconstruct a
   # nonzero point total for a player the site otherwise shows as 0.
-  redraft_scoring_stats <- ifelse(redraft$player_name %in% out_players, "{}", redraft$weekly_scoring_stats_json)
+  redraft_scoring_stats <- ifelse(redraft$player_name %in% out_players | redraft$on_bye, "{}", redraft$weekly_scoring_stats_json)
   write.csv(data.frame(
     season = season, week = week, rank = seq_len(nrow(redraft)),
     player_name = redraft$player_name, position = redraft$position,

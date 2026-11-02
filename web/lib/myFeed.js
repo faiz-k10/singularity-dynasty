@@ -89,9 +89,12 @@ export function buildFeed({ mine, sims, ranks, roles, groups, teamIndex = null, 
     const rp = rankPrev.get(key);
     if (rc && rp) {
       const moved = rp.rank - rc.rank; // positive = climbed
-      const note = publicNote(rc.notes);
-      const prevNote = publicNote(rp.notes);
-      if (note && note !== prevNote) {
+      const note = publicNote(rc.notes, rc.opponent);
+      const prevNote = publicNote(rp.notes, rp.opponent);
+      if (isBye(rc.opponent)) {
+        // A bye is not a status: no game this week, nothing wrong with him (never "Listed OUT").
+        if (!isBye(rp.opponent)) lines.push({ kind: "bye", dir: "flag", text: `On a BYE in week ${rc.week}`, score: 6 });
+      } else if (note && note !== prevNote) {
         // Listed out/doubtful etc.: the rank he lands on is a placeholder, so say the status instead.
         lines.push({ kind: "status", dir: "down", text: `Listed ${note.length <= 14 ? note.toUpperCase() : note} for week ${rc.week}`, score: 8 });
       } else if (prevNote && !note) {

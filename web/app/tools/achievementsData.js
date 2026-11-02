@@ -142,7 +142,7 @@ export async function fetchLatestRedraftFieldsByName(supabase) {
   if (!latest) return {};
   const { data } = await supabase
     .from("redraft_rankings")
-    .select("player_name, sample_confidence, notes, floor, ceiling, projection")
+    .select("player_name, sample_confidence, notes, floor, ceiling, projection, opponent")
     .eq("season", latest.season)
     .eq("week", latest.week);
   const byName = {};
@@ -215,7 +215,7 @@ export function buildAchievementRow(playerName, position, inputs) {
     heroWins: hero?.count || 0,
     heroWinWeeks: hero?.weeks || [],
     sample_confidence: rf.sample_confidence ?? null,
-    notes: publicNote(rf.notes) || null,
+    notes: publicNote(rf.notes, rf.opponent) || null,
     floor: rf.floor ?? null,
     ceiling: rf.ceiling ?? null,
     projection: rf.projection ?? null,
