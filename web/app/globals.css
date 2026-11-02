@@ -6364,8 +6364,9 @@ select.lab-select{min-width:200px; padding-right:8px; cursor:pointer;}
 
 /* The gravity map: rings in SVG units (width 100), the core and the leagues placed in container units of the stage, so it all scales together. */
 .gm{margin:0 auto; width:100%; max-width:520px;}
-.hero .gm{align-self:start; margin-top:72px;}
-.hero:has(.gm) .wrap::before{display:none;} /* founder, Nov 2 2026: no background orbit rules behind the gravity map -- only its own meaning-carrying rings */ /* level with the briefing, not centred on the whole (taller) left column */
+.hero .gm{align-self:start; margin-top:40px;} /* level with the briefing, not centred on the whole (taller) left column */
+.hero:has(.gm) .wrap::before{display:none;} /* founder, Nov 2 2026: no background orbit rules behind the gravity map -- only its own meaning-carrying rings */
+.hero:has(.yw){min-height:0; align-items:flex-start; padding:96px 0 56px;} /* the briefing starts right under the header (founder, Nov 2 2026: no empty band above it) */
 .gm-stage{position:relative; width:100%; aspect-ratio:1; container-type:inline-size;}
 .gm-rings{position:absolute; inset:0; width:100%; height:100%; overflow:visible;}
 .gm-ring{fill:none; stroke:rgba(var(--neon-blue-rgb), var(--orbit-alpha)); stroke-width:.25;}
