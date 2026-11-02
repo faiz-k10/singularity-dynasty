@@ -1,5 +1,6 @@
 import { PostForm, ProspectUpload, DraftBoardUpload } from "./AdminForms";
 import { deletePost } from "./actions";
+import ShareCardButton from "../ShareCardButton";
 
 const money = (cents) => `$${(cents / 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 const when = (iso) => (iso ? new Date(iso).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit", timeZone: "America/New_York" }) + " ET" : "—");
@@ -114,6 +115,21 @@ export default function AdminDashboard({ d }) {
               </p>
             </>
           )}
+          <h3 className="adm-sub">This week&apos;s share cards</h3>
+          <p className="adm-help">
+            Made automatically from the published numbers. Post Receipts on Tuesday (last week graded) and Smash Spots midweek. Every player card,
+            dynasty card and start / sit card is one Share button away on the tools themselves.
+          </p>
+          <div className="adm-share">
+            <a className="btn-ghost" href="/receipts" target="_blank" rel="noopener">
+              Open Receipts
+            </a>
+            <ShareCardButton card={{ kind: "receipts" }} caption="Last week's receipts: how our ranges and Smash Spots held up." file="singularity-receipts" label="Share Receipts" className="btn-ghost" />
+            <a className="btn-ghost" href="/smash" target="_blank" rel="noopener">
+              Open Smash Spots
+            </a>
+            <ShareCardButton card={{ kind: "smash" }} caption="This week's Smash Spots and Tough Spots." file="singularity-smash" label="Share Smash Spots" className="btn-ghost" />
+          </div>
         </Panel>
 
         <Panel n={4} title="Paywalls, last 30 days" error={d.walls.error}>

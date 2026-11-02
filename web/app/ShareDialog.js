@@ -1,36 +1,21 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { SHARE_W, SHARE_H, composeUrl } from "@/lib/labShare";
+import { createPortal } from "react-dom";
+import { trapTab } from "./useFocusTrap";
+import { composeUrl } from "@/lib/labShare";
 
-// The Share to social pop-up (opened from LabExport). When it opens, the chart is drawn (with the watermark), fitted into a link-preview card and
-// turned into a share link, /s/<id> (app/api/lab-share), whose preview IS the chart. Then each button opens that platform with the post already
-// written -- caption, link, and the chart showing as the link's preview -- so all that's left is to press Post:
+// The Share to social pop-up, for every shareable thing on the site (The Lab's charts, the player / dynasty / start-sit cards, Receipts,
+// Smash Spots). `prepare({ onPreview })` makes the share link -- calling onPreview(src) as soon as there is a picture to show -- and resolves
+// { url, getFile, downloads, caption }: the link, whose link preview IS the picture, (optional) a way to get the picture as a File for the phone share
+// sheet, (optional) plain download links [{ label, href }] (e.g. the 1080 x 1350 Instagram size) and (optional) a better starting caption.
+// Then each button opens that platform with the post already written, so all that's left is to press Post:
 //   X, Threads, Bluesky, Facebook, LinkedIn, Reddit   their own "compose a post" pages
-//   Discord     copies the caption + link and opens Discord: pasted into any channel, the chart shows under it (Discord has no compose link)
-//   Instagram / TikTok   neither takes a post from a website at all; on a phone the button hands the chart to the app through the share sheet
-// The link is made once per opening and reused by every button. Nothing is downloaded. The picture is usually already drawn (LabExport starts it when
-// the Export menu opens) and is previewed at once; the buttons wake up when the share link is ready (a second or so later).
+//   Discord     copies the caption + link and opens Discord: pasted into any channel, the picture shows under it (Discord has no compose link)
+//   Instagram / TikTok   neither takes a post from a website at all; on a phone the button hands the picture to the app through the share sheet
+// A signed-in member's links carry their referral code (the server adds it), so every share also counts as a referral.
 
 const isTouch = () => typeof window !== "undefined" && Boolean(window.matchMedia?.("(pointer: coarse)").matches);
-
-// The chart centred on a 1.91 : 1 card in the page's own background colour: the shape every platform uses for a large link preview, so none of them
-// crops the chart.
-async function toCard(blob) {
-  const img = await createImageBitmap(blob);
-  const canvas = document.createElement("canvas");
-  canvas.width = SHARE_W;
-  canvas.height = SHARE_H;
-  const ctx = canvas.getContext("2d");
-  ctx.fillStyle = getComputedStyle(document.body).backgroundColor;
-  ctx.fillRect(0, 0, SHARE_W, SHARE_H);
-  const pad = 40;
-  const s = Math.min((SHARE_W - 2 * pad) / img.width, (SHARE_H - 2 * pad) / img.height);
-  const w = img.width * s;
-  const h = img.height * s;
-  ctx.drawImage(img, (SHARE_W - w) / 2, (SHARE_H - h) / 2, w, h);
-  return new Promise((resolve, reject) => canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("no card"))), "image/png"));
-}
 
 const ICONS = {
   x: <path d="M17.8 3h3.1l-6.8 7.8L22 21h-6.2l-4.9-6.4L5.3 21H2.2l7.3-8.3L2 3h6.4l4.4 5.8L17.8 3Zm-1.1 16.2h1.7L7.4 4.7H5.6l11.1 14.5Z" />,
@@ -62,54 +47,51 @@ const ICONS = {
 const NAMES = { x: "X", threads: "Threads", bluesky: "Bluesky", facebook: "Facebook", linkedin: "LinkedIn", reddit: "Reddit", discord: "Discord", instagram: "Instagram", tiktok: "TikTok" };
 const COMPOSE = ["x", "threads", "bluesky", "facebook", "linkedin", "reddit"];
 
-export default function LabShare({ render, title, caption, onClose }) {
-  const [share, setShare] = useState(null); // { url, chart (Blob), preview (object URL) }
+export default function ShareDialog({ prepare, heading = "Share to social", caption, onClose }) {
+  const [share, setShare] = useState(null); // { url, preview, getFile }
   const [failed, setFailed] = useState(null);
   const [text, setText] = useState(caption);
   const [note, setNote] = useState(null);
   const dialogRef = useRef(null);
+  const edited = useRef(false);
   const sheet = isTouch() && typeof navigator.canShare === "function";
 
-  // Draw the chart (or take the one LabExport already drew), make its card, show it, then make the share link -- once per opening.
+  // Make the picture and the link -- once per opening. The preview shows as soon as there is one; the buttons wait for the link.
   useEffect(() => {
     let alive = true;
-    let preview = null;
-    (async () => {
-      const chart = await render();
-      const card = await toCard(chart);
-      if (!alive) return;
-      preview = URL.createObjectURL(card);
-      setShare({ url: null, chart, preview }); // the preview shows now; the buttons wait for the link
-      const form = new FormData();
-      form.append("image", card, "chart.png");
-      form.append("title", title);
-      form.append("caption", caption);
-      form.append("view", `${window.location.pathname}${window.location.search}`);
-      const res = await fetch("/api/lab-share", { method: "POST", body: form });
-      const body = await res.json().catch(() => ({}));
-      if (!res.ok || !body.url) throw new Error(body.error || "Couldn't create the share link.");
-      if (alive) setShare((cur) => ({ ...cur, url: body.url }));
-    })().catch((e) => {
-      if (!alive) return;
-      setFailed(e.message || "Couldn't prepare the post.");
-      setNote(`${e.message || "Couldn't prepare the post."} Close this and try again.`);
-    });
+    prepare({ onPreview: (preview) => alive && setShare((cur) => ({ ...cur, preview })) })
+      .then(({ url, getFile, downloads, caption: suggested }) => {
+        if (!alive) return;
+        setShare((cur) => ({ ...cur, url, getFile, downloads }));
+        if (suggested && !edited.current) setText(suggested); // the server's caption carries the card's own numbers
+      })
+      .catch((e) => {
+        if (!alive) return;
+        setFailed(e.message || "Couldn't prepare the post.");
+        setNote(`${e.message || "Couldn't prepare the post."} Close this and try again.`);
+      });
     return () => {
       alive = false;
-      if (preview) URL.revokeObjectURL(preview);
     };
-  }, [render, title, caption]);
+  }, [prepare]);
 
-  // Escape closes; focus moves into the pop-up while it is open and back to the page after.
+  // Escape closes and Tab stays inside; focus moves into the pop-up while it is open and back to the page after. Heard first (window, capture)
+  // and not passed on, so a panel the pop-up was opened from (the dynasty profile, with its own Escape and focus trap) doesn't react too.
   useEffect(() => {
     const before = document.activeElement;
     dialogRef.current?.focus();
     const onKey = (e) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") {
+        e.stopPropagation();
+        onClose();
+      } else if (e.key === "Tab") {
+        e.stopPropagation();
+        trapTab(e, dialogRef.current);
+      }
     };
-    document.addEventListener("keydown", onKey);
+    window.addEventListener("keydown", onKey, true);
     return () => {
-      document.removeEventListener("keydown", onKey);
+      window.removeEventListener("keydown", onKey, true);
       before?.focus?.();
     };
   }, [onClose]);
@@ -139,8 +121,8 @@ export default function LabShare({ render, title, caption, onClose }) {
     if (!href) return;
     const w = window.open(href, "_blank");
     if (w) w.opener = null;
-    if (key === "discord") copy(`${text} ${share.url}`, "Caption and link copied. Paste them into any Discord channel: the chart shows right under the link.");
-    else if (w) setNote(`${NAMES[key]} opened in a new tab with your post written and the chart as its preview. Just press Post.`);
+    if (key === "discord") copy(`${text} ${share.url}`, "Caption and link copied. Paste them into any Discord channel: the picture shows right under the link.");
+    else if (w) setNote(`${NAMES[key]} opened in a new tab with your post written and the picture as its preview. Just press Post.`);
     else
       copy(
         href,
@@ -152,7 +134,8 @@ export default function LabShare({ render, title, caption, onClose }) {
   const sendToApp = async (key) => {
     if (!share?.url || !sheet) return;
     try {
-      await navigator.share({ files: [new File([share.chart], "singularity-lab-chart.png", { type: "image/png" })], text: `${text} ${share.url}` });
+      const file = await share.getFile?.();
+      await navigator.share({ ...(file ? { files: [file] } : {}), text: `${text} ${share.url}` });
     } catch (e) {
       if (e?.name !== "AbortError") setNote(`Couldn't open the share sheet. Copy the link below and post it on ${NAMES[key]}.`);
     }
@@ -161,24 +144,26 @@ export default function LabShare({ render, title, caption, onClose }) {
   const describe = (key) => {
     if (COMPOSE.includes(key)) return "Opens a ready post: just press Post";
     if (key === "discord") return "Copies the post, opens Discord";
-    return sheet ? `Sends the chart to the ${NAMES[key]} app` : "On your phone: sends the chart to the app";
+    return sheet ? `Sends the picture to the ${NAMES[key]} app` : "On your phone: sends the picture to the app";
   };
-  const enabled = (key) => Boolean(share?.url) && (COMPOSE.includes(key) || key === "discord" || sheet);
+  const enabled = (key) => Boolean(share?.url) && (COMPOSE.includes(key) || key === "discord" || (sheet && share.getFile));
 
-  return (
+  // Drawn at the end of <body>: opened from inside a table cell or a size container, a fixed pop-up would otherwise be positioned (and clipped)
+  // by that container instead of the window.
+  return createPortal(
     <div className="lab-share-backdrop" onPointerDown={(e) => e.target === e.currentTarget && onClose()}>
       <div className="lab-share glass-panel" role="dialog" aria-modal="true" aria-labelledby="lab-share-title" tabIndex={-1} ref={dialogRef}>
         <div className="lab-share-head">
-          <h2 id="lab-share-title">Share to social</h2>
+          <h2 id="lab-share-title">{heading}</h2>
           <button type="button" className="lab-chip-x" onClick={onClose} aria-label="Close">
             ×
           </button>
         </div>
 
         <div className="lab-share-preview">
-          {share ? (
-            /* eslint-disable-next-line @next/next/no-img-element -- a local object URL of the card just drawn */
-            <img src={share.preview} alt="The chart as it will appear in the post" />
+          {share?.preview ? (
+            /* eslint-disable-next-line @next/next/no-img-element -- the card just drawn (a local object URL or the card's own image address) */
+            <img src={share.preview} alt="The picture as it will appear in the post" />
           ) : (
             <span>{failed || "Preparing your post…"}</span>
           )}
@@ -203,7 +188,10 @@ export default function LabShare({ render, title, caption, onClose }) {
 
         <label className="lab-field lab-share-caption">
           <span className="lab-field-label">Caption</span>
-          <textarea className="lab-select" rows={2} value={text} onChange={(e) => setText(e.target.value)} />
+          <textarea className="lab-select" rows={2} value={text} onChange={(e) => {
+              edited.current = true;
+              setText(e.target.value);
+            }} />
         </label>
         <div className="lab-share-foot">
           <span className="lab-share-link">
@@ -213,7 +201,17 @@ export default function LabShare({ render, title, caption, onClose }) {
             Copy caption + link
           </button>
         </div>
+        {share?.downloads?.length > 0 && (
+          <div className="lab-share-downloads">
+            {share.downloads.map((d) => (
+              <a key={d.href} className="lab-copy" href={d.href} download>
+                {d.label}
+              </a>
+            ))}
+          </div>
+        )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

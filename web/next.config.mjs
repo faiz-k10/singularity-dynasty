@@ -14,6 +14,13 @@ const SECURITY_HEADERS = [
 
 const nextConfig = {
   poweredByHeader: false,
+  // The share-card pictures (lib/cardArt.js) read their fonts and the team logos from disk; files in public/ aren't part of a server
+  // function on their own, so they are traced in for those routes.
+  outputFileTracingIncludes: {
+    "/c/\\[token\\]/image": ["./assets/og-fonts/*.ttf", "./public/team-logos/*-dark.png"],
+    "/receipts/\\[slug\\]/image": ["./assets/og-fonts/*.ttf"],
+    "/smash/\\[slug\\]/image": ["./assets/og-fonts/*.ttf"],
+  },
   async headers() {
     return [
       { source: "/:path*", headers: SECURITY_HEADERS },

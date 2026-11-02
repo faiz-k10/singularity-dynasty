@@ -2412,7 +2412,7 @@ a.export-csv-btn{text-decoration:none;}
    as a centered name/photo group with a stats sidebar pinned to the
    right, not an off-balance left/right pair. */
 .weekly-player-header{
-  display:flex; align-items:center; flex-wrap:wrap;
+  position:relative; display:flex; align-items:center; flex-wrap:wrap;
   gap:20px; margin-bottom:12px; padding:14px 20px; width:100%; box-sizing:border-box;
 }
 .weekly-player-id{display:flex; align-items:center; justify-content:center; gap:14px; flex:1; min-width:0;}
@@ -5404,7 +5404,8 @@ html{font-stretch:82%;}
 .lu-lean.is-tough{color:var(--tough);}
 .league-dash-tabs button.has-alerts{box-shadow:inset 0 0 0 2px var(--horizon);}
 .league-dash-tabs button.has-alerts.active{box-shadow:inset 0 0 0 2px color-mix(in srgb, var(--on-brand) 60%, transparent);}
-.compare-tabs{margin:0 0 18px; display:flex; justify-content:flex-end;} /* the tab switch sits at the right edge */
+.compare-tabs{margin:0 0 18px; display:flex; align-items:center; justify-content:flex-end; gap:12px; flex-wrap:wrap;} /* the tab switch sits at the right edge */
+.compare-tabs .compare-share{margin-right:auto;} /* the start / sit Share button, at the left of the same row (.lab-copy resets margins, hence the extra class) */
 .compare-pos{display:inline-flex; align-items:center; justify-content:center; gap:8px;} /* position label, dot and team logo on one centre line */
 .lu-gain-label{font-size:10.5px; font-weight:400; letter-spacing:.1em; text-transform:uppercase; color:var(--star-dim); margin-right:4px;}
 .lu-context{margin:0 0 10px; font-size:13px; color:var(--star-dim);}
@@ -6095,6 +6096,13 @@ select.lab-select{min-width:200px; padding-right:8px; cursor:pointer;}
 .share-figure{margin:0 0 22px; padding:12px;}
 .share-figure img{display:block; width:100%; height:auto; border-radius:var(--r-sm);}
 .share-actions{display:flex; flex-wrap:wrap; gap:12px;}
+.share-table{margin:0 0 22px;}
+/* Share buttons for the share cards (ShareCardButton.js) and the pop-up's download links */
+.share-card-btn{display:inline-flex; align-items:center; gap:7px;}
+.weekly-player-share{position:absolute; top:12px; right:14px;}
+.lab-share-downloads{display:flex; flex-wrap:wrap; gap:8px;}
+.lab-share-downloads .lab-copy{text-decoration:none;}
+@media (max-width:640px){ .weekly-player-share{position:static; margin:0 auto;} }
 
 /* ---- Dynasty Draft Board, rankings view (app/tools/draft-board/DynastyBoard.js): the tabular recipe -------------------------
    Player rows on the left; boxes that merge rows on the right -- Tied (col 5), Tier (6), Group (7). A heavier rule across a row

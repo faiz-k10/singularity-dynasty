@@ -32,6 +32,8 @@ const ROUTES = [
   "/my-team/quiz",
   "/how-it-works",
   "/glossary",
+  "/receipts", // redirects to the newest graded week (or How It Works before the first one)
+  "/smash",
   "/login/reset",
   "/sitemap.xml",
   "/robots.txt",

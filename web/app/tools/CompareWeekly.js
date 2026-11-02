@@ -1,6 +1,7 @@
 import TeamBadge from "./TeamBadge";
 import CompareTabs from "./CompareTabs";
 import Define from "../Define";
+import ShareCardButton from "../ShareCardButton";
 import { PlayerHeaderPanel, PlayerStatsRow, OutcomeCurvePanel, UsageTdPanel, GameLogPanel } from "./WeeklyDetailRow";
 
 // Compare Players (Weekly Projection Rankings), as two tabs: HEAD TO HEAD (a table of the numbers that matter) and PLAYER PROFILES (the same
@@ -82,8 +83,22 @@ export default function CompareWeekly({ players, maxSpread }) {
   // Drop a group heading that ended up with no rows under it.
   const shown = rows.filter((r, i) => !r.group || (rows[i + 1] && !rows[i + 1].group));
 
+  // With exactly two players, the comparison is a start / sit question: its share card makes the pick (lib/startSit.js).
+  const [a, b] = players;
+  const startSit =
+    players.length === 2 ? (
+      <ShareCardButton
+        card={{ kind: "s", a: [a.player_name, a.position], b: [b.player_name, b.position] }}
+        caption={`Start / sit: ${a.player_name} (${a.projection?.toFixed(1)}) or ${b.player_name} (${b.projection?.toFixed(1)})?`}
+        file={`singularity-start-sit-${`${a.player_name}-${b.player_name}`.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
+        label="Share start / sit"
+        className="lab-copy compare-share"
+      />
+    ) : null;
+
   return (
     <CompareTabs
+      extra={startSit}
       tabs={[
         {
           key: "h2h",

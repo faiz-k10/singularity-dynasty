@@ -21,10 +21,17 @@ function textColorFor(hex) {
 // NFL's trademarks; whether a paid product may show them is still a question for the lawyer review in CLAUDE.md).
 // Two images, one per theme, swapped in CSS (.team-logo-light / .team-logo-dark) so there is no flash and it works in
 // server components. A code we have no logo for falls back to the old colored pill.
+// The logo's file name in /public/team-logos for a team code, or null when we have none (also used by the share-card images, lib/cardArt.js).
+export function logoFile(team) {
+  if (!team) return null;
+  const file = (LOGO[team] || team).toLowerCase();
+  return LOGO_CODES.has(file) ? file : null;
+}
+
 export default function TeamBadge({ team }) {
   if (!team) return <span className="mono">—</span>;
-  const file = (LOGO[team] || team).toLowerCase();
-  if (LOGO_CODES.has(file)) {
+  const file = logoFile(team);
+  if (file) {
     return (
       <span className="team-badge team-logo" role="img" aria-label={team}>
         <img className="team-logo-light" src={`/team-logos/${file}.png`} alt="" width="22" height="22" loading="lazy" decoding="async" />

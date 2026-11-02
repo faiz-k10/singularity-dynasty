@@ -7,6 +7,7 @@ import { getPlayerBiosByNamePos } from "@/lib/sleeper";
 import { stageTimer } from "@/lib/stageTimer";
 import InteractiveScript from "../../InteractiveScript";
 import ExportCsvButton from "../ExportCsvButton";
+import ShareCardButton from "../../ShareCardButton";
 import RedraftRankingsClient from "./RedraftRankingsClient";
 import { PAID_TIERS, OVERALL_COLUMN_TYPES, sortPositions, getCachedRedraftData, getCachedLeans, getCachedTdProfile, getCachedUsageProfile, enrichRankings } from "./data";
 
@@ -116,6 +117,12 @@ export default async function RedraftRankingsPage({ searchParams }) {
                   <Link href="/tools/compare-players" className="hub-panel-link">
                     Compare Players →
                   </Link>
+                  <ShareCardButton
+                    card={{ kind: "smash", slug: `${latest.season}-w${latest.week}` }}
+                    caption={`Week ${latest.week} Smash Spots and Tough Spots, from the strongest defense-vs-position trends.`}
+                    file={`singularity-smash-week${latest.week}`}
+                    label="Share Smash Spots"
+                  />
                   {canExport && (
                     <ExportCsvButton
                       filename={`redraft-rankings-week${latest.week}-${latest.season}.csv`}

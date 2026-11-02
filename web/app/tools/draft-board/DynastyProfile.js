@@ -7,6 +7,7 @@ import TeamBadge from "../TeamBadge";
 import { FORMATS, GROUP_NAMES, MODES, pBetter, profileRead, scoreRows } from "@/lib/dynastyBoard";
 import { formatHeight } from "@/lib/format";
 import useFocusTrap from "../../useFocusTrap";
+import ShareCardButton from "../../ShareCardButton";
 
 const pct = (p) => (p >= 0.995 ? ">99%" : p < 0.005 ? "<1%" : `${Math.round(p * 100)}%`);
 const ord = (n) => `#${n}`;
@@ -141,6 +142,12 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
             <div className="dp-links">
               <Link href={`/tools/lab?p=${encodeURIComponent(p.name)}`}>The Lab →</Link>
               <Link href="/tools/redraft-rankings">Weekly rankings →</Link>
+              <ShareCardButton
+                card={{ kind: "d", id: p.id, f: format, m: mode }}
+                caption={`${p.name} in dynasty: ${p.score.toFixed(1)} (${f.label}, ${m.label}).`}
+                file={`singularity-dynasty-${p.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
+                label="Share card"
+              />
             </div>
           </div>
         </header>

@@ -1,0 +1,5 @@
+Fonts used to draw the share-card images (lib/cardArt.js). Both are free under the SIL Open Font License 1.1
+(https://openfontlicense.org), downloaded unmodified from Google Fonts:
+
+  BigShoulders-800.ttf            Big Shoulders, Copyright 2019 The Big Shoulders Project Authors (Patric King)
+  MartianMono-400.ttf / -700.ttf  Martian Mono, Copyright 2021 The Martian Mono Project Authors (Evil Martians)

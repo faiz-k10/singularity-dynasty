@@ -7,6 +7,7 @@ export default function sitemap() {
     { url: "", changeFrequency: "weekly", priority: 1 },
     { url: "/how-it-works", changeFrequency: "monthly", priority: 0.7 },
     { url: "/glossary", changeFrequency: "monthly", priority: 0.5 },
+    { url: "/receipts", changeFrequency: "weekly", priority: 0.6 },
     { url: "/login", changeFrequency: "monthly", priority: 0.3 },
   ];
 

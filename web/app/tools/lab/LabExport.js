@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import LabShare from "./LabShare";
+import ShareDialog from "../../ShareDialog";
+import { SHARE_W, SHARE_H } from "@/lib/labShare";
 
 let fontCss = null; // the page's fonts as embeddable CSS, worked out once per visit (the slow part of the first export)
 
@@ -65,16 +66,56 @@ function getPicture(stage) {
   return pictureCache.promise;
 }
 
+// The chart centred on a 1.91 : 1 card in the page's own background colour: the shape every platform uses for a large link preview, so none of them
+// crops the chart.
+async function toCard(blob) {
+  const img = await createImageBitmap(blob);
+  const canvas = document.createElement("canvas");
+  canvas.width = SHARE_W;
+  canvas.height = SHARE_H;
+  const ctx = canvas.getContext("2d");
+  ctx.fillStyle = getComputedStyle(document.body).backgroundColor;
+  ctx.fillRect(0, 0, SHARE_W, SHARE_H);
+  const pad = 40;
+  const s = Math.min((SHARE_W - 2 * pad) / img.width, (SHARE_H - 2 * pad) / img.height);
+  const w = img.width * s;
+  const h = img.height * s;
+  ctx.drawImage(img, (SHARE_W - w) / 2, (SHARE_H - h) / 2, w, h);
+  return new Promise((resolve, reject) => canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("no card"))), "image/png"));
+}
+
 // The Export menu in The Lab's top bar: copy a link to exactly this view, copy the view as an image, save it as a PNG, or share it to social
-// (the LabShare pop-up). Closes on an outside click or Escape; the button says what happened for a moment afterwards.
+// (the shared ShareDialog: the chart is drawn, fitted on a link-preview card and uploaded as /s/<id>, app/api/lab-share). Closes on an outside click or Escape; the button says what happened for a moment afterwards.
 export default function LabExport({ stageRef, fileName, title, caption }) {
   const [open, setOpen] = useState(false);
   const [status, setStatus] = useState(null); // { text, tone }
   const [busy, setBusy] = useState(false);
   const ref = useRef(null);
   const [sharing, setSharing] = useState(false);
-  const renderStage = useCallback(() => getPicture(stageRef.current), [stageRef]);
-  const closeShare = useCallback(() => setSharing(false), []);
+  const previewRef = useRef(null);
+  const closeShare = useCallback(() => {
+    setSharing(false);
+    if (previewRef.current) URL.revokeObjectURL(previewRef.current);
+    previewRef.current = null;
+  }, []);
+  const prepareShare = useCallback(
+    async ({ onPreview }) => {
+      const chart = await getPicture(stageRef.current);
+      const card = await toCard(chart);
+      previewRef.current = URL.createObjectURL(card);
+      onPreview(previewRef.current);
+      const form = new FormData();
+      form.append("image", card, "chart.png");
+      form.append("title", title);
+      form.append("caption", caption);
+      form.append("view", `${window.location.pathname}${window.location.search}`);
+      const res = await fetch("/api/lab-share", { method: "POST", body: form });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok || !body.url) throw new Error(body.error || "Couldn't create the share link.");
+      return { url: body.url, getFile: async () => new File([chart], "singularity-lab-chart.png", { type: "image/png" }) };
+    },
+    [stageRef, title, caption]
+  );
   const canCopyImage = typeof window !== "undefined" && typeof window.ClipboardItem === "function" && Boolean(navigator.clipboard?.write);
 
   // Idle after load: fetch the library and fonts so the first Export click finds them ready.
@@ -181,7 +222,7 @@ export default function LabExport({ stageRef, fileName, title, caption }) {
           </button>
         </div>
       )}
-      {sharing && <LabShare render={renderStage} title={title} caption={caption} onClose={closeShare} />}
+      {sharing && <ShareDialog prepare={prepareShare} caption={caption} onClose={closeShare} />}
     </div>
   );
 }

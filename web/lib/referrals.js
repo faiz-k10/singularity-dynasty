@@ -131,3 +131,14 @@ export async function isLiveReferralCode(code) {
   if (!isReferralCode(code)) return false;
   return Boolean(await referrerByCode(createAdminClient(), code).catch(() => null));
 }
+
+// A share link with the member's referral code on it (?ref=CODE), so anyone who signs up from a member's share counts as their referral.
+// Signed out, or the code can't be made: the link as it is. Never throws.
+export async function withReferral(url, userId) {
+  if (!userId) return url;
+  const code = await ensureReferralCode(userId).catch(() => null);
+  if (!code) return url;
+  const u = new URL(url);
+  u.searchParams.set("ref", code);
+  return u.toString();
+}

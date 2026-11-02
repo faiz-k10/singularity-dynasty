@@ -200,6 +200,10 @@ export default function HowItWorksPage() {
               </tbody>
             </table>
           </div>
+          <p>
+            And every finished week is graded in public: <Link href="/receipts">this week&apos;s receipts</Link> show how many players landed inside their
+            range and how the Smash / Tough Spots did.
+          </p>
         </section>
 
         <section id="sources" className="doc-section" aria-labelledby="h-sources">

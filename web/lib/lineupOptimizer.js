@@ -19,6 +19,7 @@
 // feed lists Doubtful or worse is never a start (and a starter like that scores 0).
 import { ELIGIBLE } from "./lineupSlots.js";
 import { num, round1 as r1, fmt1 } from "./format.js";
+import { startValue } from "./startSit.js";
 
 // "SUPER_FLEX" -> "SUPERFLEX": how a slot is named on screen (the one place that maps it).
 export const slotLabel = (slot) => (slot === "SUPER_FLEX" ? "SUPERFLEX" : slot);
@@ -31,10 +32,7 @@ const OUT_SEVERITY = 3;
 const outNames = (injuries) => new Set((injuries || []).filter((i) => i.severity >= OUT_SEVERITY).map((i) => i.name));
 
 // What a player is worth for start / sit: his median plus the full points effect of a Smash / Tough Spot (see the header for the evidence).
-const value = (p) => {
-  const m = num(p.myProjPts);
-  return m == null ? null : m + (num(p.myLean?.effect) || 0);
-};
+const value = (p) => startValue(num(p.myProjPts), num(p.myLean?.effect));
 
 // Roster with locks, Out players zeroed, the slots that can change and the bench players who can move in. null when there is nothing to optimize.
 function prepare(team, gameStates, injuries) {

@@ -20,7 +20,7 @@ export function indexLeans(rows) {
   return m;
 }
 
-// The flag for one player's matchup, or null: { call: "SMASH" | "AVOID", text }.
+// The flag for one player's matchup, or null: { call: "SMASH" | "AVOID", text, effect (points a game vs an average defense) }.
 export function flagFor(leans, opponent, position, minScore = FLAG_MIN_SCORE) {
   if (!leans || !opponent) return null;
   const l = leans.get(`${opponent}|${position}`);
@@ -36,5 +36,5 @@ export function flagFor(leans, opponent, position, minScore = FLAG_MIN_SCORE) {
   const text = smash
     ? `Smash spot: ${l.defense} has been giving up ${pos} scoring (${pts} pts/game vs. an average defense), ${ordinal(nowRank)} ${word} this season${prior}. A trend to weigh, not part of the projection.`
     : `Tough spot: ${l.defense} has been shutting down ${pos} scoring (${pts} pts/game vs. an average defense), ${ordinal(nowRank)} ${word} this season${prior}. A trend to weigh, not part of the projection.`;
-  return { call: smash ? "SMASH" : "AVOID", text };
+  return { call: smash ? "SMASH" : "AVOID", text, effect: Number(l.effect) };
 }
