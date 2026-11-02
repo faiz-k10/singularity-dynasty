@@ -62,14 +62,14 @@ const TICKER_ICONS = {
 const ICON_OFFSET = {
   confidence: [0.2, 0],
   locked: [0, 0.5],
-  honorable: [0, 0.1],
+  honorable: [-0.3, 0.1],
   rookie: [-0.55, -0.3],
-  conArtist: [-0.6, -0.4],
+  conArtist: [-0.6, -0.1],
   eliteRole: [0, 0.2],
   elitePlayer: [0, -0.2],
 };
 // Full-width art (the mansion's wings, the goat's horns) runs into the circle's curved edge at 14px, so it is drawn a little smaller.
-const ICON_SCALE = { eliteRole: 0.84, elitePlayer: 0.86 };
+const ICON_SCALE = { eliteRole: 0.84, elitePlayer: 0.86, honorable: 0.82, conArtist: 0.72 };
 function tickerIcon(key) {
   const svg = TICKER_ICONS[key] || TICKER_ICONS.confidence;
   const [dx, dy] = ICON_OFFSET[key] || [0, 0];
