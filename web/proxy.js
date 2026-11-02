@@ -38,9 +38,7 @@ export async function proxy(request) {
 
   // Reading the session (getClaims) is what triggers a token refresh when one is due -- and, unlike getUser(), it verifies the
   // JWT locally instead of calling Supabase's Auth server on EVERY navigation.
-  const t0 = Date.now();
   await supabase.auth.getClaims();
-  console.log(`[page] proxy ${request.nextUrl.pathname} getClaims=${Date.now() - t0}ms`);
 
   return response;
 }

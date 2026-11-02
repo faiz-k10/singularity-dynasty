@@ -362,6 +362,8 @@ export default function InteractiveScript() {
             });
             const data = await res.json();
             if (res.status === 401 && data.login) {
+              // A plain DOM handler (no router here); a full load of the sign-in page is what we want.
+              // eslint-disable-next-line @next/next/no-location-assign-relative-destination
               window.location.href = data.login;
               return;
             }
