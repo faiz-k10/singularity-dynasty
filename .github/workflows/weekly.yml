@@ -99,6 +99,15 @@ jobs:
           if [ -z "$NEXT_PUBLIC_SUPABASE_URL" ] || [ -z "$SUPABASE_SERVICE_ROLE_KEY" ]; then
             echo "::error::Add the NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY repository secrets first"; exit 1
           fi
+          # Catch a bad paste now, with a clear reason (length and first characters of a key are not secret).
+          case "$NEXT_PUBLIC_SUPABASE_URL" in
+            https://*.supabase.co) ;;
+            *) echo "::error::NEXT_PUBLIC_SUPABASE_URL should look like https://xxxx.supabase.co (no quotes, no spaces, nothing before https). Re-add it."; exit 1 ;;
+          esac
+          key_len=${#SUPABASE_SERVICE_ROLE_KEY}
+          if [ "${SUPABASE_SERVICE_ROLE_KEY:0:3}" != "eyJ" ] || [ "$key_len" -lt 150 ] || [[ "$SUPABASE_SERVICE_ROLE_KEY" == *[[:space:]\"\'=]* ]]; then
+            echo "::error::SUPABASE_SERVICE_ROLE_KEY looks wrong: it has ${key_len} characters and starts with '${SUPABASE_SERVICE_ROLE_KEY:0:4}'. It should be one long line (about 200+ characters) starting 'eyJ', with no quotes, spaces or '=' in it. Re-add it with only the part AFTER the = sign."; exit 1
+          fi
           : > .env.local
           for k in NEXT_PUBLIC_SUPABASE_URL SUPABASE_SERVICE_ROLE_KEY RESEND_API_KEY EMAIL_FROM NEXT_PUBLIC_SITE_URL EMAIL_FOOTER_ADDRESS; do
             v="${!k}"
