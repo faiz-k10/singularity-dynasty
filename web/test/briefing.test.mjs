@@ -44,3 +44,10 @@ test("gravity map: favored leagues sit near the core, long shots at the edge; th
   assert.deepEqual(nodes.map((n) => n.angle), [0, 180]);
   assert.deepEqual(expectedWins(rows), { wins: 1, of: 2, pct: 50 });
 });
+
+test("splitNames cuts a sentence at league names, longest first", async () => {
+  const { splitNames } = await import("../lib/briefing.js");
+  const parts = splitNames("Dynasty Kingdom and Dynasty will need a miracle.", ["Dynasty", "Dynasty Kingdom"]);
+  assert.deepEqual(parts.filter((p) => p.name).map((p) => p.text), ["Dynasty Kingdom", "Dynasty"]);
+  assert.equal(parts.map((p) => p.text).join(""), "Dynasty Kingdom and Dynasty will need a miracle.");
+});

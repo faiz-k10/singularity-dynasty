@@ -6328,6 +6328,7 @@ select.lab-select{min-width:200px; padding-right:8px; cursor:pointer;}
 .hero .yw-h1{font-size:clamp(38px, 5.2vw, 62px); margin:6px 0 12px;}
 .yw-name-hi{color:var(--horizon-gold);}
 .yw-brief{font-size:clamp(16px, 1.35vw, 19px); line-height:1.5; color:var(--star); max-width:560px; margin:0 0 26px;}
+.yw-brief-name{color:var(--horizon-gold); font-weight:700;} /* league names in the sentence, in the brand mint */
 .yw-h2{font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--star-dim); font-weight:400; margin:18px 0 8px; text-align:left;}
 /* the matchups: one table, so the league, the scores and the chance line up down the page */
 .yw-table{width:100%; border-collapse:collapse; table-layout:fixed;}

@@ -30,6 +30,18 @@ export function weekRows(teams) {
   return rows.sort((a, b) => (b.p ?? -1) - (a.p ?? -1));
 }
 
+// A sentence cut into [{ text, name }] pieces so the league names in it can be highlighted (longest name first, so "Dynasty Kingdom" isn't
+// swallowed by a shorter one).
+export function splitNames(text, names) {
+  const list = [...new Set((names || []).filter(Boolean))].sort((a, b) => b.length - a.length);
+  if (!list.length) return [{ text, name: false }];
+  const re = new RegExp(`(${list.map((n) => n.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})`, "g");
+  return String(text)
+    .split(re)
+    .filter(Boolean)
+    .map((t) => ({ text: t, name: list.includes(t) }));
+}
+
 // What to call the member: the team name they use most across their leagues (usually their Sleeper name).
 export function displayName(teams) {
   const n = new Map();

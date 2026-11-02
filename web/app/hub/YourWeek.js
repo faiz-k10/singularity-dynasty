@@ -4,7 +4,7 @@ import { loadFeedInputs, buildTeamsFeed } from "@/lib/myFeedData";
 import { fmt1, fmt2 } from "@/lib/format";
 import { formatWin } from "@/lib/standing";
 import { leadState } from "@/lib/leadState";
-import { weekRows, displayName, weekBriefing } from "@/lib/briefing";
+import { weekRows, displayName, weekBriefing, splitNames } from "@/lib/briefing";
 
 // The home page for a signed-in member with saved leagues: a briefing on their week first -- a greeting, a sync line, one or two plain
 // sentences on how the week stands (lib/briefing.js), then every league's matchup in one aligned table (score or projection, the
@@ -80,7 +80,17 @@ export default function YourWeek({ data }) {
         </b>
       </div>
       <Greeting name={name} />
-      <p className="yw-brief">{weekBriefing(rows)}</p>
+      <p className="yw-brief">
+        {splitNames(weekBriefing(rows), rows.map((r) => r.name)).map((part, i) =>
+          part.name ? (
+            <span key={i} className="yw-brief-name">
+              {part.text}
+            </span>
+          ) : (
+            part.text
+          )
+        )}
+      </p>
 
       <section aria-labelledby="yw-matchups">
         <table className="yw-table">
