@@ -19,9 +19,11 @@ export default function GravityMap({ rows }) {
           {RINGS.map((r, i) => (
             <g key={r.p}>
               <circle className={`gm-ring is-zone-${i}`} cx="50" cy="50" r={radiusFor(r.p)} />
-              <text className={`gm-ring-label is-zone-${i}`} x="50" y={50 - radiusFor(r.p) - 1}>
-                {r.label}
-              </text>
+              {r.label && (
+                <text className={`gm-ring-label is-zone-${i}`} x="50" y={50 - radiusFor(r.p) - 1}>
+                  {r.label}
+                </text>
+              )}
             </g>
           ))}
         </svg>

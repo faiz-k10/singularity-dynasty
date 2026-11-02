@@ -77,7 +77,7 @@ export const EDGE = 38;
 export const radiusFor = (p) => CORE + (1 - p) * (EDGE - CORE);
 // The rings drawn on the map: the standing() cut-offs (Favored 60%+, Toss-up 40-60%, Underdog 15-40%, Long shot under 15%).
 export const RINGS = [
-  { p: 0.6, label: "Event horizon · favored inside" },
+  { p: 0.6, label: "" },
   { p: 0.4, label: "Toss-up" },
   { p: 0.15, label: "Long shot outside" },
 ];
