@@ -18,12 +18,12 @@ The weekly jobs run on GitHub's computers. Your Mac can be off.
 
 | When (Eastern) | Job | What it does |
 |---|---|---|
-| Tuesday noon | `tuesday` | Loads last week's finished games, then publishes next week's projections and season sims, sends the weekly email (once it's set up) and saves a backup. |
+| Tuesday 1:30 PM | `tuesday` | Loads last week's finished games, then publishes next week's projections and season sims, sends the weekly email (once it's set up) and saves a backup. |
 | Wednesday 9 AM | `game-data` | Picks up stat corrections and late numbers from Monday night. |
 | Thursday 5 PM | `projections` | Republishes with the latest injury news before Thursday night. |
-| Sunday 10 AM | `projections` | Last injury update before the 1 PM games. |
+| Sunday 11 AM | `projections` | Last injury update before the 1 PM games. |
 
-In summer every time is one hour later (GitHub's clock doesn't change for daylight saving). GitHub can also start a run up to about 30 minutes late when it's busy.
+In summer every time is one hour later (GitHub's clock doesn't change for daylight saving). GitHub sometimes starts a scheduled run late or drops it when it's busy, so each job also has one or two later back-up times. A back-up time does nothing if the job already passed that day, and tries again if it failed.
 
 Other automatic checks:
 - **Every hour**, GitHub checks that the site is up and the data is fresh.
@@ -31,7 +31,7 @@ Other automatic checks:
 
 ## Your weekly routine (about 2 minutes)
 
-- **Tuesday afternoon:** open `/admin`. *Weekly runs → Tuesday* should say **Passed** with today's date, and *Site health* should be green. Open Weekly Projection Rankings and check it shows the new week.
+- **Tuesday evening:** open `/admin`. *Weekly runs → Tuesday* should say **Passed** with today's date, and *Site health* should be green. Open Weekly Projection Rankings and check it shows the new week.
 - **Any other day:** only if you got an email from GitHub (see below).
 
 ## When something goes wrong
@@ -97,7 +97,11 @@ The other job names also work in place of `tuesday`.
    - `NEXT_PUBLIC_SITE_URL`
    - `EMAIL_FOOTER_ADDRESS`
 2. **Test it.** Run `game-data` by hand (above). It should say Passed in `/admin` within a few minutes.
-3. **Turn off the old Claude-run schedules** once a GitHub run has passed. Claude Code desktop app → Scheduled tasks → disable the four "weekly" tasks. Running both for a while is harmless: the publishes overwrite the same rows, and the email can't send twice.
+3. **Turn off the old Claude-run schedules** once a GitHub run has passed (Claude Code desktop app → Scheduled tasks → disable the four weekly ones). Until then they cover for each other:
+   - **Tuesday and Sunday:** the Claude task runs first (noon / 10 AM), and GitHub skips if it passed.
+   - **Wednesday and Thursday:** GitHub runs first, and the Claude task (renamed "fallback") skips if GitHub passed.
+
+   The email can't send twice either way.
 
 ## Once a year
 

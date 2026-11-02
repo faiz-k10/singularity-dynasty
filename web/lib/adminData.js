@@ -79,9 +79,9 @@ async function content(admin) {
 
 // The scheduled weekly runs (scripts/weekly-run.mjs records each one in the private Storage bucket "ops" as runs/<mode>.json).
 export const RUN_JOBS = [
-  { mode: "tuesday", when: "Tuesday noon ET", what: "Finished week's game data, then next week's projections and sims, email, backup" },
+  { mode: "tuesday", when: "Tuesday 1:30 PM ET", what: "Finished week's game data, then next week's projections and sims, email, backup" },
   { mode: "game-data", when: "Wednesday 9 AM ET", what: "Late stat corrections and expected points" },
-  { mode: "projections", when: "Thursday 5 PM and Sunday 10 AM ET", what: "Projections and sims with the latest injury news" },
+  { mode: "projections", when: "Thursday 5 PM and Sunday 11 AM ET", what: "Projections and sims with the latest injury news" },
 ];
 async function runs(admin) {
   const bucket = admin.storage.from("ops");

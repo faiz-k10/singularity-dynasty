@@ -3,21 +3,29 @@ name: Weekly run
 # The site's weekly publishing, on GitHub's computers (no Mac, no Claude needed). Each run calls web/scripts/weekly-run.mjs, which runs the R
 # model, publishes to Supabase, checks the result and records it for /admin (Storage bucket "ops"). A failed run makes GitHub email you.
 #
-#   Tuesday   tuesday       finished week's game data, then next week's projections + sims (only if the week is complete), email, backup
-#   Wednesday game-data     late stat corrections and expected points
-#   Thursday  projections   injury news before Thursday night
-#   Sunday    projections   last injury news before the 1 PM games
+#   Tuesday   1:30 PM ET   tuesday       finished week's game data, then next week's projections + sims (only if the week is complete), email, backup
+#   Wednesday 9 AM ET      game-data     late stat corrections and expected points
+#   Thursday  5 PM ET      projections   injury news before Thursday night
+#   Sunday    11 AM ET     projections   last injury news before the 1 PM games
 #
-# Times are UTC and fixed: noon / 9 AM / 5 PM / 10 AM Eastern in winter, one hour later in summer (GitHub can also start a scheduled run up
-# to ~30 minutes late when it is busy). To run one now: Actions tab -> Weekly run -> Run workflow -> pick the job.
+# Times are UTC and fixed, so the Eastern times above are winter ones; in summer each runs an hour later. While the older Claude-run tasks
+# on the Mac are still on, they and these runs cover for each other: whichever runs second skips itself if the job already passed
+# (both record the result in the same place). To run one now: Actions tab -> Weekly run -> Run workflow -> pick the job.
 # Needs repository secrets NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY (the email ones are optional until Resend is set up).
 
 on:
+  # Each job has two or three triggers: GitHub delays or drops scheduled runs when it is busy (the hourly uptime check has fired only every
+  # 4-6 hours at times), and a later trigger skips itself when that day's job already passed (SKIP_IF_DONE_HOURS) but retries a failed one.
   schedule:
-    - cron: "0 17 * * 2" # Tuesday
+    - cron: "30 18 * * 2" # Tuesday
+    - cron: "0 20 * * 2"
+    - cron: "30 21 * * 2"
     - cron: "0 14 * * 3" # Wednesday
+    - cron: "30 15 * * 3"
     - cron: "0 22 * * 4" # Thursday
-    - cron: "0 15 * * 0" # Sunday
+    - cron: "0 23 * * 4"
+    - cron: "0 16 * * 0" # Sunday
+    - cron: "45 16 * * 0"
   workflow_dispatch:
     inputs:
       mode:
@@ -40,12 +48,18 @@ jobs:
       - name: Pick the job
         id: mode
         run: |
-          case "${{ github.event.schedule }}" in
-            "0 17 * * 2") m=tuesday ;;
-            "0 14 * * 3") m=game-data ;;
-            "0 22 * * 4"|"0 15 * * 0") m=projections ;;
-            *) m="${{ inputs.mode }}" ;;
-          esac
+          sched="${{ github.event.schedule }}"
+          if [ -n "$sched" ]; then
+            case "$(echo "$sched" | awk '{print $5}')" in  # the day of the week
+              2) m=tuesday ;;
+              3) m=game-data ;;
+              4|0) m=projections ;;
+            esac
+            echo "skip=8" >> "$GITHUB_OUTPUT"  # a scheduled re-trigger skips a job that passed in the last 8 hours
+          else
+            m="${{ inputs.mode }}"
+            echo "skip=0" >> "$GITHUB_OUTPUT"
+          fi
           echo "mode=$m" >> "$GITHUB_OUTPUT"
           echo "Job: $m"
 
@@ -94,6 +108,7 @@ jobs:
         working-directory: web
         env:
           BACKUP_DIR: ${{ github.workspace }}/backups
+          SKIP_IF_DONE_HOURS: ${{ steps.mode.outputs.skip }}
         run: node --env-file=.env.local scripts/weekly-run.mjs "${{ steps.mode.outputs.mode }}"
 
       - name: Keep the backup

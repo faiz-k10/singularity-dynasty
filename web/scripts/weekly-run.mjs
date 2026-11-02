@@ -221,6 +221,16 @@ function backup() {
 const mode = process.argv[2];
 const started = new Date();
 log(`Weekly run: ${mode} -- ${started.toString()}`);
+// GitHub can drop a scheduled run when it is busy, so the workflow schedules each job two or three times a day with SKIP_IF_DONE_HOURS set:
+// a later trigger does nothing when this job already PASSED within that many hours (a failed one is tried again). Off for hand-started runs.
+const skipHours = Number(process.env.SKIP_IF_DONE_HOURS || 0);
+if (skipHours > 0) {
+  const prev = JSON.parse((await opsRead(`runs/${mode}.json`).catch(() => null)) || "null");
+  if (prev?.ok && Date.now() - Date.parse(prev.finished) < skipHours * 3600e3) {
+    console.log(`Skipped: ${mode} already passed at ${prev.finished} (within ${skipHours} hours).`);
+    process.exit(0);
+  }
+}
 let ok = true;
 try {
   if (mode === "game-data") {
