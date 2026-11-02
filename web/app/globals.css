@@ -6411,7 +6411,6 @@ select.lab-select{min-width:200px; padding-right:8px; cursor:pointer;}
 .gm-node:hover, .gm-node:focus-visible{z-index:5;} /* the hovered body and its label come to the front, lit in its own colour */
 .gm-node:hover .gm-label, .gm-node:focus-visible .gm-label{border-color:var(--tone); background:color-mix(in srgb, var(--tone) 18%, var(--void-panel)); box-shadow:0 0 0 1px var(--tone);}
 .gm-node:hover .gm-dot, .gm-node:focus-visible .gm-dot{box-shadow:0 0 0 .7cqw var(--void), 0 0 0 1.2cqw var(--tone); transform:scale(1.25);}
-.gm-caption{margin-top:10px; text-align:center; font-size:10.5px; letter-spacing:.05em; color:var(--star-dim);}
 @media (prefers-reduced-motion: reduce){ .gm-node, .gm-node.is-close .gm-dot::after, .yw-status-dot{animation:none;} }
 
 /* Admin (app/admin) */

@@ -45,7 +45,6 @@ export default function GravityMap({ rows }) {
           </Link>
         ))}
       </div>
-      <figcaption className="gm-caption mono">The closer to the core, the likelier the win. Inside the mint ring: favored.</figcaption>
     </figure>
   );
 }
