@@ -6363,7 +6363,7 @@ select.lab-select{min-width:200px; padding-right:8px; cursor:pointer;}
 .yw-actions{display:flex; gap:12px; flex-wrap:wrap; margin-top:22px;}
 
 /* The gravity map: rings in SVG units (width 100), the core and the leagues placed in container units of the stage, so it all scales together. */
-.gm{margin:0 0 0 auto; width:100%; max-width:440px; display:flex; flex-direction:column;}
+.gm{margin:0 0 0 auto; width:100%; max-width:660px; display:flex; flex-direction:column;}
 .hero .gm{align-self:stretch; margin-top:0; margin-right:-24px;} /* level with the briefing, not centred on the whole (taller) left column */
 .hero:has(.gm) .wrap::before{display:none;} /* founder, Nov 2 2026: no background orbit rules behind the gravity map -- only its own meaning-carrying rings */
 .hero:has(.yw){min-height:0; align-items:flex-start; padding:70px 0 56px;} /* the briefing starts right under the header (founder, Nov 2 2026: no empty band above it) */
