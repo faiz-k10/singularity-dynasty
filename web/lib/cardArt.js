@@ -4,6 +4,7 @@ import { ImageResponse } from "next/og";
 import { curveGeometry, hump, MARGIN, BASE_Y, X_FLOOR, fmt } from "@/lib/scoreCurve";
 import { logoFile } from "@/app/tools/TeamBadge";
 import { BYE_LABEL } from "@/lib/bye";
+import { fmt1, signed1 } from "@/lib/format";
 
 // Server-only: the share-card PICTURES (next/og -> Satori: flexbox and a subset of CSS, every multi-child box needs display:flex).
 // Two sizes from one layout: "wide" 1200 x 630 is what X, Reddit, Discord, Facebook, LinkedIn and Bluesky show for a link; "tall"
@@ -77,8 +78,6 @@ export async function cardImage(node, { f, dl }, { cache = 3600 } = {}) {
   return new ImageResponse(node, { ...size, fonts: await fonts(), headers });
 }
 
-export const f1 = (v) => (typeof v === "number" && Number.isFinite(v) ? v.toFixed(1) : "—");
-const signed = (v) => `${v > 0 ? "+" : v < 0 ? "−" : ""}${Math.abs(v).toFixed(1)}`;
 
 // ---- building blocks -------------------------------------------------------------------------------------------------------------------------
 
@@ -147,7 +146,7 @@ export function Curve({ floor, median, ceiling, width, height, labels = true, si
     align === "start" ? { left: Math.max(0, at(x) - 6) } : align === "end" ? { right: Math.max(0, width - at(x) - 6) } : { left: at(x) - 90, width: 180 };
   const tag = (x, value, word, color, align) => (
     <div style={{ position: "absolute", ...place(x, align), display: "flex", flexDirection: "column", alignItems: align === "start" ? "flex-start" : align === "end" ? "flex-end" : "center" }}>
-      <div style={{ display: "flex", fontWeight: 700, fontSize: size + 8, color }}>{f1(value)}</div>
+      <div style={{ display: "flex", fontWeight: 700, fontSize: size + 8, color }}>{fmt1(value)}</div>
       <div style={{ display: "flex", fontSize: size - 6, letterSpacing: 2, color: C.steel }}>{word}</div>
     </div>
   );
@@ -186,7 +185,7 @@ function Logo({ src, size }) {
 const nameSize = (name, room, max) => Math.min(max, Math.floor(room / (Math.max(name.length, 4) * 0.5)));
 
 const matchupText = (p) => (p.bye ? BYE_LABEL : p.opponent ? `${p.isHome ? "vs" : "@"} ${p.opponent}` : "");
-const spotText = (lean) => (lean ? `${lean.call === "SMASH" ? "SMASH SPOT" : "TOUGH SPOT"} ${signed(lean.effect)}` : null);
+const spotText = (lean) => (lean ? `${lean.call === "SMASH" ? "SMASH SPOT" : "TOUGH SPOT"} ${signed1(lean.effect)}` : null);
 
 // ---- the cards ---------------------------------------------------------------------------------------------------------------------------------
 
@@ -216,8 +215,8 @@ export function PlayerCard({ f, host, data, img }) {
   const noRange = p.bye ? "His team is on its bye this week." : p.out ? "Listed out this week." : null;
   const number = (
     <div style={{ display: "flex", flexDirection: "column" }}>
-      <Label size={tall ? 20 : 17}>{p.played != null ? `Projected · scored ${f1(p.played)} so far` : "Projected points"}</Label>
-      <div style={{ display: "flex", fontFamily: DISPLAY, fontSize: tall ? 210 : 150, lineHeight: 0.95, color: C.mint }}>{noRange ? "—" : f1(p.projection)}</div>
+      <Label size={tall ? 20 : 17}>{p.played != null ? `Projected · scored ${fmt1(p.played)} so far` : "Projected points"}</Label>
+      <div style={{ display: "flex", fontFamily: DISPLAY, fontSize: tall ? 210 : 150, lineHeight: 0.95, color: C.mint }}>{noRange ? "—" : fmt1(p.projection)}</div>
     </div>
   );
   const curve = noRange ? (
@@ -287,7 +286,7 @@ export function DynastyCard({ f, host, data, img }) {
             {p.tier && <Hair size={tall ? 22 : 19} color={C.mint}>{`TIER ${p.tier.n} OF ${p.tier.of}`}</Hair>}
           </div>
           {p.tier?.group && <Label size={tall ? 22 : 18} color={C.mint} style={{ marginTop: 18 }}>{p.tier.group}</Label>}
-          <div style={{ display: "flex", marginTop: tall ? 22 : "auto", marginBottom: 14, fontSize: tall ? 22 : 18, color: C.steel }}>{`${f1(p.ppg)} PPR points a game, recency-weighted over his last ${Math.min(p.games, 34)} games`}</div>
+          <div style={{ display: "flex", marginTop: tall ? 22 : "auto", marginBottom: 14, fontSize: tall ? 22 : 18, color: C.steel }}>{`${fmt1(p.ppg)} PPR points a game, recency-weighted over his last ${Math.min(p.games, 34)} games`}</div>
         </div>
         <div style={{ display: "flex", flexDirection: "column", ...(tall ? { marginTop: "auto", marginBottom: 40 } : { flexGrow: 1, marginLeft: 40, borderLeft: `2px solid ${C.rule}`, paddingLeft: 36 }) }}>
           <Label size={tall ? 20 : 17}>Dynasty score · 1 to 10</Label>
@@ -304,8 +303,8 @@ export function DynastyCard({ f, host, data, img }) {
             <div style={{ display: "flex", flexGrow: 1, background: C.steel }} />
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", width: barW, marginTop: 10, fontSize: tall ? 22 : 17 }}>
-            <div style={{ display: "flex", color: C.mint }}>{`Production ${f1(p.prod)} × ${data.weights.prod}`}</div>
-            <div style={{ display: "flex", color: C.steel }}>{`Age ${f1(p.ageValue)} × ${data.weights.age}`}</div>
+            <div style={{ display: "flex", color: C.mint }}>{`Production ${fmt1(p.prod)} × ${data.weights.prod}`}</div>
+            <div style={{ display: "flex", color: C.steel }}>{`Age ${fmt1(p.ageValue)} × ${data.weights.age}`}</div>
           </div>
         </div>
       </div>
@@ -330,7 +329,7 @@ export function StartSitCard({ f, host, data, img }) {
         </div>
       </div>
       <div style={{ display: "flex", alignItems: "flex-end", marginTop: tall ? 14 : 16 }}>
-        <div style={{ display: "flex", fontFamily: DISPLAY, fontSize: tall ? 100 : 84, lineHeight: 0.95, color: chosen ? C.mint : C.star }}>{f1(p.projection)}</div>
+        <div style={{ display: "flex", fontFamily: DISPLAY, fontSize: tall ? 100 : 84, lineHeight: 0.95, color: chosen ? C.mint : C.star }}>{fmt1(p.projection)}</div>
         <div style={{ display: "flex", flexDirection: "column", marginLeft: 14, marginBottom: 10 }}>
           <Label size={tall ? 16 : 13}>Median</Label>
           {spotText(p.lean) && <div style={{ display: "flex", marginTop: 6, fontSize: tall ? 17 : 14, fontWeight: 700, color: SPOT[p.lean.call] }}>{spotText(p.lean)}</div>}
@@ -377,7 +376,7 @@ export function ReceiptsCard({ f, host, data, verdict }) {
     return (
       <div style={{ display: "flex", alignItems: "center", marginTop: tall ? 18 : 10, fontSize: tall ? 23 : 18 }}>
         <Plate color={SPOT[call]} ink={C.void} size={tall ? 19 : 15}>{smash ? "SMASH SPOTS" : "TOUGH SPOTS"}</Plate>
-        <div style={{ display: "flex" }}>{`${s.hits} of ${s.n} ${smash ? "beat" : "fell short of"} their median · ${signed(s.vsMedian)} pts on average`}</div>
+        <div style={{ display: "flex" }}>{`${s.hits} of ${s.n} ${smash ? "beat" : "fell short of"} their median · ${signed1(s.vsMedian)} pts on average`}</div>
       </div>
     );
   };
@@ -398,8 +397,8 @@ export function ReceiptsCard({ f, host, data, verdict }) {
         </div>
         {!tall && games[0] && (
           <div style={{ display: "flex", marginTop: "auto", marginBottom: 10, fontSize: 17, color: C.steel }}>
-            {`Biggest ceiling game: ${games[0].name} · ceiling ${f1(games[0].ceiling)} → `}
-            <span style={{ color: C.red, fontWeight: 700, marginLeft: 8 }}>{f1(games[0].pts)}</span>
+            {`Biggest ceiling game: ${games[0].name} · ceiling ${fmt1(games[0].ceiling)} → `}
+            <span style={{ color: C.red, fontWeight: 700, marginLeft: 8 }}>{fmt1(games[0].pts)}</span>
           </div>
         )}
         {tall && games.length > 0 && (
@@ -409,8 +408,8 @@ export function ReceiptsCard({ f, host, data, verdict }) {
               <div key={g.name} style={{ display: "flex", justifyContent: "space-between", fontSize: 23, borderBottom: `2px solid ${C.rule}`, padding: "12px 0" }}>
                 <div style={{ display: "flex" }}>{`${g.name} · ${g.pos}`}</div>
                 <div style={{ display: "flex", color: C.steel }}>
-                  {`ceiling ${f1(g.ceiling)} → `}
-                  <span style={{ color: C.red, fontWeight: 700, marginLeft: 8 }}>{f1(g.pts)}</span>
+                  {`ceiling ${fmt1(g.ceiling)} → `}
+                  <span style={{ color: C.red, fontWeight: 700, marginLeft: 8 }}>{fmt1(g.pts)}</span>
                 </div>
               </div>
             ))}
@@ -437,7 +436,7 @@ export function SmashCard({ f, host, data }) {
             <div style={{ display: "flex", fontSize: tall ? 25 : 20, fontWeight: 700 }}>{`${s.offense} ${s.position}s vs ${s.defense}`}</div>
             {s.players.length > 0 && <div style={{ display: "flex", fontSize: tall ? 18 : 14, color: C.steel, marginTop: 3 }}>{s.players.map((p) => p.name).join(" · ")}</div>}
           </div>
-          <div style={{ display: "flex", fontFamily: DISPLAY, fontSize: tall ? 44 : 34, color: SPOT[call] }}>{signed(s.effect)}</div>
+          <div style={{ display: "flex", fontFamily: DISPLAY, fontSize: tall ? 44 : 34, color: SPOT[call] }}>{signed1(s.effect)}</div>
         </div>
       ))}
     </div>

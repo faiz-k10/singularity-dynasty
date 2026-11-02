@@ -1,8 +1,8 @@
 import { PostForm, ProspectUpload, DraftBoardUpload } from "./AdminForms";
 import { deletePost } from "./actions";
 import ShareCardButton from "../ShareCardButton";
+import { money } from "@/lib/format";
 
-const money = (cents) => `$${(cents / 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 const when = (iso) => (iso ? new Date(iso).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit", timeZone: "America/New_York" }) + " ET" : "—");
 
 function Panel({ n, title, children, error }) {

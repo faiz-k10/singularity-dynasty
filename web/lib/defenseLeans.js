@@ -1,17 +1,12 @@
 // Defense-vs-position matchup flags for Weekly Projection Rankings. Display only: the leans
 // (model/defense_impact.R -> table defense_leans) are NOT inputs to any projection. A flag appears beside a
 // player's opponent when that defense has one of the strongest trends against his position.
+import { ordinal } from "./format.js";
 
 // Only leans scoring at least this are flagged (tier 1 = 3.0+). Lower it to 2.5 to include tier 2.
 export const FLAG_MIN_SCORE = 3.0;
 
 const POS_NAME = { QB: "QB", RB: "RB", WR: "WR", TE: "TE" };
-
-function ordinal(n) {
-  const s = ["th", "st", "nd", "rd"];
-  const v = n % 100;
-  return n + (s[(v - 20) % 10] || s[v] || s[0]);
-}
 
 // rows: defense_leans rows. Returns a Map keyed "DEF|POS".
 export function indexLeans(rows) {

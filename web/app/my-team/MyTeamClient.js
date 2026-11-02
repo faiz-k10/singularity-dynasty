@@ -23,7 +23,7 @@ import MatchupPanel, { leagueTabs } from "./MatchupPanel";
 import PanelTabs from "../PanelTabs";
 import SundayBoard from "./SundayBoard";
 import { isGameDay } from "@/lib/liveFeed";
-import { formatHeight } from "@/lib/format";
+import { formatHeight, ordinal, signed1 } from "@/lib/format";
 import DesktopAlertsToggle, { useDesktopAlerts, useDesktopAlertsSetting } from "./DesktopAlerts";
 
 const POSITION_ORDER = ["QB", "RB", "WR", "TE", "K", "DEF"];
@@ -304,21 +304,20 @@ function LeagueDetail({ team, gameStates, injuries, children }) {
 //    + WOPR/EPA (player_simulations), platform start/roster %, exposure.
 const n1 = (v) => v.toFixed(1);
 const n0 = (v) => Math.round(v).toString();
-const signed = (v) => `${v > 0 ? "+" : ""}${v.toFixed(1)}`;
 const pct0 = (v) => `${Math.round(v)}%`;
 const ANALYSIS_METRICS = [
   { key: "glPPG", label: "PPG", fmt: n1, gameLog: true },
   { key: "glTotal", label: "Total Pts", fmt: n0, gameLog: true },
   { key: "glExpPPG", label: "xFP / G", fmt: n1, gameLog: true },
   { key: "glExpTotal", label: "xFP Total", fmt: n0, gameLog: true },
-  { key: "glPOE", label: "FP − xFP / G", fmt: signed, gameLog: true },
+  { key: "glPOE", label: "FP − xFP / G", fmt: signed1, gameLog: true },
   { key: "glGames", label: "Games", fmt: n0, gameLog: true },
   { key: "myProjPts", label: "Singularity Proj", fmt: n1 },
   { key: "simMedian", label: "Sim Median", fmt: n0 },
   { key: "simCeiling", label: "Sim Ceiling", fmt: n0 },
   { key: "simFloor", label: "Sim Floor", fmt: n0 },
   { key: "wopr", label: "WOPR", fmt: (v) => v.toFixed(2) },
-  { key: "epa", label: "EPA", fmt: signed },
+  { key: "epa", label: "EPA", fmt: signed1 },
   { key: "exposurePct", label: "Exposure %", fmt: pct0 },
 ];
 
@@ -330,11 +329,6 @@ const ANALYSIS_POS_COLOR = {
 };
 
 
-function ordinal(x) {
-  const s = ["th", "st", "nd", "rd"];
-  const v = x % 100;
-  return x + (s[(v - 20) % 10] || s[v] || s[0]);
-}
 
 function experienceLabel(n) {
   if (n == null) return null;

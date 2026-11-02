@@ -17,6 +17,7 @@ import PercentileCard from "./PercentileCard";
 import { radarLayoutFor } from "./radarLayout";
 import { missedSegments } from "@/lib/teamGames";
 import useProgressiveCount from "./useProgressiveCount";
+import { ordinal } from "@/lib/format";
 
 // Week-scrubber data comes from /api/player-sim-history, fetched lazily and
 // remembered for the life of the page (one request per player, one for the
@@ -544,17 +545,6 @@ function formatStat(value) {
   return String(Math.round(value));
 }
 
-function ordinal(n) {
-  const rounded = Math.round(n);
-  const mod100 = rounded % 100;
-  if (mod100 >= 11 && mod100 <= 13) return `${rounded}th`;
-  switch (rounded % 10) {
-    case 1: return `${rounded}st`;
-    case 2: return `${rounded}nd`;
-    case 3: return `${rounded}rd`;
-    default: return `${rounded}th`;
-  }
-}
 
 // League Size / QB Format toggles change POR's replacement-level baseline
 // (lib/replacementValue.js), which needs the full player pool -- including

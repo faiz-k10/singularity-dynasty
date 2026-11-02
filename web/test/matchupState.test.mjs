@@ -29,7 +29,7 @@ test("the Companion reads the adjusted lineups (the plays Sleeper hasn't posted 
   const lists = { mine: [{ ...plain.adj.lists.mine[0], pts: 20 }], opp: plain.adj.lists.opp };
   const adjusted = { t: { adj: { ...plain.adj, lists } } };
   const swing = buildInsights({ savedTeams: [t], gameStates: live, adjusted }).cards.find((c) => c.kind === "swing");
-  assert.match(swing.body, /projected gap in this matchup is 8\.0 in your favor/); // 20 points vs his 12 projection, against 12
+  assert.match(swing.body, /decided by 8\.0 points/); // 20 points vs his 12 projection, against 12
   const snapshot = buildInsights({ savedTeams: [t], gameStates: live }).cards.find((c) => c.kind === "swing");
-  assert.match(snapshot.body, /projected gap in this matchup is 0\.0 in your favor/);
+  assert.match(snapshot.body, /dead even on paper/);
 });

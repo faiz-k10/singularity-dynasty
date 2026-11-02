@@ -1,9 +1,9 @@
 // The Lab's arithmetic (app/tools/lab): season-so-far numbers from a game log, percentiles within a position, a least-squares line with its
 // correlation, axis ticks, and the weekly series the game-log chart draws. Pure; tested in test/labCalc.test.mjs.
 import { rankIn } from "./rank.js";
+import { round1 } from "./format.js";
 
 const isNum = (v) => typeof v === "number" && Number.isFinite(v);
-const r1 = (v) => Math.round(v * 10) / 10;
 const r2 = (v) => Math.round(v * 100) / 100;
 
 export function mean(xs) {
@@ -34,10 +34,10 @@ export function seasonLine(games) {
   const sd = pts.length >= 3 ? stdDev(pts) : null;
   return {
     gp: pts.length,
-    total: r1(total),
+    total: round1(total),
     ppg: r2(total / pts.length),
     l3: r2(mean(pts.slice(-3))),
-    best: r1(Math.max(...pts)),
+    best: round1(Math.max(...pts)),
     ...(sd != null ? { sd: r2(sd) } : {}),
     ...(withX.length ? { fpoe: r2(mean(withX.map((g) => g[1] - g[2]))) } : {}),
   };

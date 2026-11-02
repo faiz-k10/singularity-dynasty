@@ -1,4 +1,5 @@
 import { FLAG_MIN_SCORE } from "./defenseLeans.js";
+import { signed1 } from "./format.js";
 
 // This week's Smash Spots and Tough Spots as one list for the share card (/smash): every defense-vs-position trend strong enough to be
 // flagged on Weekly Projection Rankings that someone actually faces this week, with the offense's top projected players at that position.
@@ -30,8 +31,7 @@ export function smashSpots({ rankRows, leanRows }) {
   return { smash, tough };
 }
 
-const signed = (v) => `${v > 0 ? "+" : "−"}${Math.abs(v).toFixed(1)}`;
-const spotLine = (s) => `${s.offense} ${s.position}s vs ${s.defense} (${signed(s.effect)})`;
+const spotLine = (s) => `${s.offense} ${s.position}s vs ${s.defense} (${signed1(s.effect)})`;
 
 // The card's title, description and post caption.
 export function smashWords(d) {

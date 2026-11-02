@@ -3,12 +3,12 @@ import CompareTabs from "./CompareTabs";
 import Define from "../Define";
 import ShareCardButton from "../ShareCardButton";
 import { PlayerHeaderPanel, PlayerStatsRow, OutcomeCurvePanel, UsageTdPanel, GameLogPanel } from "./WeeklyDetailRow";
+import { fmt1 } from "@/lib/format";
 
 // Compare Players (Weekly Projection Rankings), as two tabs: HEAD TO HEAD (a table of the numbers that matter) and PLAYER PROFILES (the same
 // dashboard panels the opened-player row shows (identity + badges, this week / last week, outcome curve, usage or
 // touchdown profile, recent games), laid out in one grid row per panel so the players line up side by side.
 
-const f1 = (v) => v.toFixed(1);
 const f2 = (v) => v.toFixed(2);
 const pct1 = (v) => `${v.toFixed(1)}%`;
 const int = (v) => String(Math.round(v));
@@ -17,21 +17,21 @@ const signed2 = (v) => `${v >= 0 ? "+" : ""}${v.toFixed(2)}`;
 // best: "high" | "low" -- which end wins. Rows with fewer than two values, or all equal, highlight nobody.
 const ROWS = [
   { label: "Overall rank", get: (r) => r.rank, fmt: int, best: "low" },
-  { label: "Median proj", term: "projection-median", get: (r) => r.projection, fmt: f1, best: "high", strong: true },
-  { label: "Floor", term: "floor", get: (r) => r.floor, fmt: f1, best: "high" },
-  { label: "Ceiling", term: "ceiling", get: (r) => r.ceiling, fmt: f1, best: "high" },
-  { label: "Last week (pts)", get: (r) => r.lastWeekRank?.points, fmt: f1, best: "high" },
+  { label: "Median proj", term: "projection-median", get: (r) => r.projection, fmt: fmt1, best: "high", strong: true },
+  { label: "Floor", term: "floor", get: (r) => r.floor, fmt: fmt1, best: "high" },
+  { label: "Ceiling", term: "ceiling", get: (r) => r.ceiling, fmt: fmt1, best: "high" },
+  { label: "Last week (pts)", get: (r) => r.lastWeekRank?.points, fmt: fmt1, best: "high" },
   { group: "Projected stat line (per game)" },
-  { label: "Pass yds", get: (r) => r.passing_yards, fmt: f1, best: "high", skipZero: true },
+  { label: "Pass yds", get: (r) => r.passing_yards, fmt: fmt1, best: "high", skipZero: true },
   { label: "Pass TD", get: (r) => r.passing_tds, fmt: f2, best: "high", skipZero: true },
   { label: "INT", get: (r) => r.passing_interceptions, fmt: f2, best: "low", skipZero: true },
-  { label: "Rush yds", get: (r) => r.rushing_yards, fmt: f1, best: "high", skipZero: true },
+  { label: "Rush yds", get: (r) => r.rushing_yards, fmt: fmt1, best: "high", skipZero: true },
   { label: "Rush TD", get: (r) => r.rushing_tds, fmt: f2, best: "high", skipZero: true },
-  { label: "Receptions", get: (r) => r.receptions, fmt: f1, best: "high", skipZero: true },
-  { label: "Rec yds", get: (r) => r.receiving_yards, fmt: f1, best: "high", skipZero: true },
+  { label: "Receptions", get: (r) => r.receptions, fmt: fmt1, best: "high", skipZero: true },
+  { label: "Rec yds", get: (r) => r.receiving_yards, fmt: fmt1, best: "high", skipZero: true },
   { label: "Rec TD", get: (r) => r.receiving_tds, fmt: f2, best: "high", skipZero: true },
   { group: "Usage and touchdown profile" },
-  { label: "xFP / game", term: "avgXfp", get: (r) => r.avgXfp, fmt: f1, best: "high" },
+  { label: "xFP / game", term: "avgXfp", get: (r) => r.avgXfp, fmt: fmt1, best: "high" },
   { label: "WOPR", term: "wopr", get: (r) => r.wopr, fmt: f2, best: "high" },
   { label: "Target share", term: "u_tgt_share", get: (r) => r.targetShare, fmt: pct1, best: "high" },
   { label: "YAC above exp", term: "yac-above-exp", get: (r) => r.yacAboveExp, fmt: f2, best: "high" },

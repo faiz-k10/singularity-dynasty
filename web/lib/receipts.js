@@ -1,5 +1,6 @@
 import { normalizePlayerName } from "./portfolio.js";
 import { indexLeans, flagFor } from "./defenseLeans.js";
+import { round1 } from "./format.js";
 
 // "Receipts": how last week's published numbers did against what really happened -- the weekly track-record card (/receipts). Proof is the
 // product's pitch, so the card says it as it is, good week or bad. Pure; tested in test/receipts.test.mjs.
@@ -13,9 +14,8 @@ export const RECEIPT_MIN_PROJ = 5;
 export const TARGET = { over: 10, under: 10, inside: 80 };
 
 const key = (name, pos) => `${normalizePlayerName(name)}|${pos}`;
-const r1 = (v) => Math.round(v * 10) / 10;
 const pctOf = (n, d) => (d ? Math.round((n / d) * 1000) / 10 : null);
-const avg = (xs) => (xs.length ? r1(xs.reduce((s, x) => s + x, 0) / xs.length) : null);
+const avg = (xs) => (xs.length ? round1(xs.reduce((s, x) => s + x, 0) / xs.length) : null);
 
 // rankRows: that week's redraft_rankings (player_name, position, team, opponent, projection, floor, ceiling)
 // games: player_game_log rows of that week (player_name, position, fantasy_points_ppr)
@@ -51,7 +51,7 @@ export function weekReceipts({ rankRows, games, leanRows }) {
     inside: { n: pool.length - over.length - under.length, pct: pctOf(pool.length - over.length - under.length, pool.length) },
     medianError: (() => {
       const e = pool.map((p) => Math.abs(p.pts - p.proj)).sort((a, b) => a - b);
-      return e.length ? r1(e[Math.floor(e.length / 2)]) : null;
+      return e.length ? round1(e[Math.floor(e.length / 2)]) : null;
     })(),
     smash: spot("SMASH"),
     tough: spot("AVOID"),

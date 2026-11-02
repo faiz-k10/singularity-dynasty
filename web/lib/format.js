@@ -5,8 +5,26 @@ import { isBye } from "./bye.js";
 export const num = (v) => (typeof v === "number" && Number.isFinite(v) ? v : null);
 
 // Projections, floors, ceilings: one decimal. Points actually scored: two decimals, like Sleeper. "—" when there is no number.
-export const fmt1 = (v) => (v == null ? "—" : v.toFixed(1));
-export const fmt2 = (v) => (v == null ? "—" : v.toFixed(2));
+// (A numeric string, as some database columns arrive, is read as its number.)
+const asNum = (v) => (typeof v === "string" && v.trim() !== "" ? Number(v) : v);
+export const fmt1 = (v) => (num(asNum(v)) == null ? "—" : asNum(v).toFixed(1));
+export const fmt2 = (v) => (num(asNum(v)) == null ? "—" : asNum(v).toFixed(2));
+
+// +1.2 / −1.2 / 0.0 with a true minus sign, one decimal.
+export const signed1 = (v) => {
+  const r = Math.round(v * 10) / 10;
+  return `${r > 0 ? "+" : r < 0 ? "−" : ""}${Math.abs(r).toFixed(1)}`;
+};
+
+// 1 -> "1st", 22 -> "22nd", 13 -> "13th"; rounds first, so a percentile like 83.4 reads "83rd".
+export function ordinal(n) {
+  const k = Math.round(n);
+  const v = Math.abs(k) % 100;
+  return `${k}${v >= 11 && v <= 13 ? "th" : ["th", "st", "nd", "rd"][v % 10] || "th"}`;
+}
+
+// Stripe amounts (cents) as dollars: 2500 -> "$25.00". "" when unknown.
+export const money = (cents) => (cents == null ? "" : `$${(cents / 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
 
 // What a saved league is called everywhere: its league name, else the team's name, else the caller's fallback.
 export const leagueName = (t, fallback = "") => t?.league_name || t?.team_name || fallback;

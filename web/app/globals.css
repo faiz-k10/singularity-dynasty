@@ -36,7 +36,7 @@
   --pos-rb:#7CE8B5;
   --pos-wr:#5AACF5;
   --pos-te:#F5A251;
-  --radius:3px;
+  --radius:2px;
   --ease:cubic-bezier(.16,.84,.44,1);
   --px:0; --py:0;
 
@@ -763,7 +763,7 @@ section{padding:96px 0 20px; position:relative;}
 .tier-a{background:rgba(var(--neon-blue-rgb),0.15); color:var(--neon-blue); border:1px solid rgba(var(--neon-blue-rgb),0.35);}
 
 .chart-bars{display:flex; align-items:flex-end; gap:8px; height:100px; margin-bottom:8px;}
-.chart-bars .bar{flex:1; background:var(--void-panel); border:1px solid var(--line); border-radius:3px 3px 0 0;}
+.chart-bars .bar{flex:1; background:var(--void-panel); border:1px solid var(--line); border-radius:2px 2px 0 0;}
 .chart-bars .bar.accent{background:linear-gradient(180deg, var(--neon-blue), var(--neon-blue-dim)); border-color:var(--neon-blue);}
 .chart-labels{display:flex; justify-content:space-between; font-family:var(--font-mono), monospace; font-size:10px; color:var(--star-dim);}
 
@@ -867,14 +867,8 @@ section{padding:96px 0 20px; position:relative;}
   font-family:var(--font-mono), monospace; font-size:11px; font-weight:700; letter-spacing:0.06em;
   padding:4px 12px; border-radius:2px; white-space:nowrap; line-height:1.4;
 }
-.round-badge-gold{
-  background:linear-gradient(135deg, var(--horizon-gold), var(--horizon)); color:var(--on-brand);
-  box-shadow:0 4px 14px rgba(var(--horizon-rgb),0.4);
-}
-.round-badge-blue{
-  background:linear-gradient(135deg, var(--neon-blue), var(--neon-blue-dim)); color:var(--on-cold);
-  box-shadow:0 4px 14px rgba(var(--neon-blue-rgb),0.4);
-}
+.round-badge-gold{background:var(--horizon-gold); color:var(--on-brand);} /* flat plates, like the .eyebrow label (scoreboard material: no glows) */
+.round-badge-blue{background:var(--neon-blue); color:var(--on-cold);}
 .round-price{font-family:var(--font-display), sans-serif; font-size:60px; font-weight:800; margin:2px 0 0; line-height:.95; letter-spacing:.01em; display:flex; align-items:flex-start; gap:2px;}
 .round-price sub{align-self:flex-end; margin-left:6px; margin-bottom:6px; line-height:1;} /* the price is the main visual of a tier */
 .round-price sup{font-size:26px; font-weight:700; margin-right:3px; vertical-align:top; position:relative; top:6px;}
@@ -930,11 +924,6 @@ section{padding:96px 0 20px; position:relative;}
 footer{background:var(--void-panel); border-top:1px solid var(--line); padding:36px 0;}
 footer .wrap{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;}
 footer .fbrand{font-family:var(--font-display), sans-serif; font-size:15px;}
-footer .flinks{display:flex; gap:18px 22px; font-size:13px; flex-wrap:wrap;}
-footer .flinks a{text-decoration:none; color:var(--star-dim); position:relative;}
-footer .flinks a::after{content:''; position:absolute; left:0; bottom:-3px; width:0; height:1px; background:var(--horizon-gold); transition:width .25s ease;}
-footer .flinks a:hover{color:var(--horizon-gold);}
-footer .flinks a:hover::after{width:100%;}
 footer .fsmall{font-size:12px; color:var(--star-dim); margin-top:14px; width:100%; opacity:0.85;} /* 0.85, not 0.6: 0.6 left the small print at 4.1:1, under the 4.5:1 minimum */
 footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; letter-spacing:0.08em;}
 
@@ -1632,8 +1621,8 @@ a.export-csv-btn{text-decoration:none;}
    where a player usually lands and how much more is possible. */
 .sim-bar-track{position:relative; width:140px; height:8px; background:var(--void-panel-2); border-radius:2px;}
 /* Low end (floor to median) in mint, high end (median to ceiling) in mission red -- the same colours as Floor / Ceiling everywhere else (Oct 27 2026). */
-.sim-bar-typical{position:absolute; top:0; bottom:0; background:var(--horizon-gold); border-radius:2px 0 0 4px; min-width:3px;}
-.sim-bar-upside{position:absolute; top:0; bottom:0; background:var(--down); border-radius:0 4px 4px 0; min-width:2px;}
+.sim-bar-typical{position:absolute; top:0; bottom:0; background:var(--horizon-gold); border-radius:2px 0 0 2px; min-width:3px;}
+.sim-bar-upside{position:absolute; top:0; bottom:0; background:var(--down); border-radius:0 2px 2px 0; min-width:2px;}
 /* Pace marker -- where a dummy/real in-season player's current pace
    (paceSeasonTotal) sits on the same floor/median/ceiling scale the
    typical/upside segments already use. A pin shape (stem + dot),
@@ -1853,7 +1842,6 @@ a.export-csv-btn{text-decoration:none;}
 .toggle-row-flex{display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px 20px; margin-bottom:32px;}
 .toggle-row-flex .board-toggle{margin-bottom:0;}
 .toggle-row-flex .hub-panel-link{margin-top:0;}
-.toggle-row-actions{display:flex; align-items:center; gap:18px; flex-wrap:wrap;}
 .board-toggle a{
   padding:8px 20px; border-radius:2px; font-size:13px; font-weight:600; text-decoration:none; color:var(--star-dim);
   transition:background .2s ease, color .2s ease;
@@ -2343,8 +2331,8 @@ a.export-csv-btn{text-decoration:none;}
 .stat-panel-pace-rangebar-label-ceiling{transform:translate(-50%, -2px);}
 .stat-panel-pace-rangebar-label-floor{transform:translate(-50%, calc(100% + 2px));}
 .stat-panel-pace-rangebar{position:relative; width:8px; flex:1; min-height:50px; background:var(--void-panel-2); border-radius:2px;}
-.stat-panel-pace-rangebar-typical{position:absolute; left:0; right:0; background:var(--horizon-gold); border-radius:0 0 4px 4px; min-height:3px;}
-.stat-panel-pace-rangebar-upside{position:absolute; left:0; right:0; background:var(--down); border-radius:2px 4px 0 0; min-height:2px;}
+.stat-panel-pace-rangebar-typical{position:absolute; left:0; right:0; background:var(--horizon-gold); border-radius:0 0 2px 2px; min-height:3px;}
+.stat-panel-pace-rangebar-upside{position:absolute; left:0; right:0; background:var(--down); border-radius:2px 2px 0 0; min-height:2px;}
 .stat-panel-pace-rangebar-marker{position:absolute; left:-5px; right:-5px; height:2px; transform:translateY(1px); z-index:2; border-radius:1px;}
 .stat-panel-pace-rangebar-marker::after{content:""; position:absolute; right:-3px; top:50%; transform:translateY(-50%); width:6px; height:6px; border-radius:50%; background:inherit; box-shadow:0 0 4px currentColor;}
 /* Projected full-season total implied by current pace -- same bottom%
@@ -2360,7 +2348,7 @@ a.export-csv-btn{text-decoration:none;}
    on schedule progress than the "· N games" text above. No text label
    of its own (explicit ask -- the count already lives above). */
 .stat-panel-pace-progress{display:flex; align-items:center; gap:8px;}
-.stat-panel-pace-progress-track{position:relative; flex:1; height:6px; background:var(--void-panel-2); border-radius:3px; overflow:hidden;}
+.stat-panel-pace-progress-track{position:relative; flex:1; height:6px; background:var(--void-panel-2); border-radius:2px; overflow:hidden;}
 .stat-panel-pace-scrub{position:relative; flex:1; padding:7px 6px; cursor:pointer; touch-action:none; outline:none;}
 .stat-panel-pace-scrub[data-loading] .stat-panel-pace-progress-track{opacity:.6;}
 .stat-panel-pace-scrub:focus-visible .stat-panel-pace-progress-track{box-shadow:0 0 0 2px rgba(var(--star-dot-rgb),.4);}
@@ -2371,7 +2359,7 @@ a.export-csv-btn{text-decoration:none;}
 .stat-panel-pace-seg-missed{position:absolute; top:0; bottom:0; background:var(--missed-gray);}
 /* When the selected week was one he missed, the dot goes the same gray as that week's stretch. */
 .stat-panel-pace-scrub-handle.missed{background:var(--missed-gray); box-shadow:0 0 0 1px var(--missed-gray);}
-.stat-panel-pace-progress-fill{position:absolute; left:0; top:0; bottom:0; background:var(--down); border-radius:3px;}
+.stat-panel-pace-progress-fill{position:absolute; left:0; top:0; bottom:0; background:var(--down); border-radius:2px;}
 /* Bye weeks read white (founder, Oct 20 2026), like the gray for weeks he missed; a hairline keeps the white visible on a light panel. */
 .stat-panel-pace-seg-bye{position:absolute; top:0; bottom:0; background:#fff; box-shadow:inset 0 0 0 1px rgba(var(--star-dot-rgb), .3);}
 .stat-panel-pace-scrub-handle.bye{background:#fff; box-shadow:0 0 0 1px rgba(var(--star-dot-rgb), .45);}
@@ -2730,11 +2718,8 @@ a.export-csv-btn{text-decoration:none;}
   background:var(--down); box-shadow:0 0 4px currentColor; color:var(--down);
 }
 .weekly-gamelog-dot.above{background:var(--up); color:var(--up);}
-/* No dedicated "warning/amber" token exists elsewhere in the theme
-   system to reuse, and an exact actual-vs-xFP tie is rare/small enough
-   that a fixed (non theme-swapped) amber reads fine against both the
-   dark void and light backgrounds without needing one. */
-.weekly-gamelog-dot.tie{background:#E3B341; color:#E3B341;}
+/* An exact actual-vs-xFP tie: the theme's neutral amber (--matchup-neutral, tuned for both themes). */
+.weekly-gamelog-dot.tie{background:var(--matchup-neutral); color:var(--matchup-neutral);}
 .weekly-gamelog-dot.neutral{background:var(--star-dim); color:var(--star-dim); box-shadow:none;}
 .weekly-gamelog-sep{color:var(--star-dim); font-size:11px; text-align:right;}
 .weekly-gamelog-rank{color:var(--horizon-gold); font-size:12px; font-weight:600; text-align:right;}
@@ -3144,7 +3129,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
    the bottom (height:N%, not width), same 50th-percentile reference
    line concept as the old horizontal bar's midtick, just running
    across the track instead of down it. */
-.pctile-vbar-track{position:relative; width:26px; height:130px; background:var(--void-panel-2); border-radius:2px 6px 3px 3px; overflow:hidden;}
+.pctile-vbar-track{position:relative; width:26px; height:130px; background:var(--void-panel-2); border-radius:2px; overflow:hidden;}
 .pctile-vbar-fill{position:absolute; left:0; right:0; bottom:0; border-radius:inherit; transition:height .2s ease;}
 .pctile-vbar-midline{position:absolute; left:0; right:0; top:50%; height:1px; background:rgba(var(--star-dim-rgb),0.45); z-index:1;}
 .pctile-vbar-midline-label{
@@ -3156,7 +3141,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
    border-radius:inherit, so dropping overflow:hidden doesn't change how
    the fill itself renders. margin-bottom reserves the room that label
    needs without disturbing .pctile-row's own vertical centering. */
-.pctile-bar{position:relative; height:6px; border-radius:3px; background:var(--void-panel-2); margin-bottom:9px;}
+.pctile-bar{position:relative; height:6px; border-radius:2px; background:var(--void-panel-2); margin-bottom:9px;}
 .pctile-bar-lg{height:10px; border-radius:2px; margin-top:10px;}
 .pctile-bar-fill{position:absolute; top:0; left:0; bottom:0; border-radius:inherit; transition:width .2s ease;}
 /* Same four break points as PercentileCard.js's tier() -- weak/below
@@ -3511,7 +3496,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
 /* Exposure cell: "3/5 · 60%" label with a share-bar under it. */
 .portfolio-exposure{display:inline-flex; flex-direction:column; gap:4px; min-width:96px;}
 .portfolio-exposure-bar{
-  height:5px; width:var(--pct, 0%); min-width:2px; border-radius:3px;
+  height:5px; width:var(--pct, 0%); min-width:2px; border-radius:2px;
   background:linear-gradient(90deg, var(--neon-blue-dim), var(--neon-blue));
 }
 .my-team-remove{
@@ -3804,7 +3789,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
   display:flex; align-items:center; gap:6px; font-size:12.5px; color:var(--star-dim);
 }
 .portfolio-pulse-legend-item strong{color:var(--star); font-weight:700;}
-.portfolio-pulse-swatch{width:9px; height:9px; border-radius:3px; display:inline-block;}
+.portfolio-pulse-swatch{width:9px; height:9px; border-radius:2px; display:inline-block;}
 
 .quiz-wrap{max-width:680px;}
 .quiz-form{display:flex; flex-direction:column; gap:28px; margin-top:24px;}
@@ -4021,7 +4006,7 @@ summary:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible{
 .board-dock{display:flex; flex-wrap:wrap; align-items:center; gap:8px;}
 .board-dock-spacer{flex:1;}
 .board-chip, .board-reset{
-  font:inherit; font-size:12.5px; color:var(--star); cursor:grab;
+  font-family:var(--font-mono), monospace; font-size:12.5px; color:var(--star); cursor:grab;
   background:rgba(var(--scrim-rgb),.6); border:1px solid rgba(var(--star-dot-rgb),.13);
   border-radius:2px; padding:7px 14px;
   transition:border-color .15s ease, background-color .15s ease;
@@ -4163,7 +4148,7 @@ summary:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible{
 }
 @keyframes snap-fade{from{opacity:.35; transform:translateY(2px);} to{opacity:1; transform:none;}}
 .player-empty-row td{padding:36px 16px; text-align:center; color:var(--star-dim); font-size:14px;}
-.player-empty-clear{margin-left:12px; background:none; border:1px solid var(--line); border-radius:2px; padding:4px 12px; color:var(--star); font:inherit; font-size:12px; cursor:pointer;}
+.player-empty-clear{margin-left:12px; background:none; border:1px solid var(--line); border-radius:2px; padding:4px 12px; color:var(--star); font-family:var(--font-mono), monospace; font-size:12px; cursor:pointer;}
 .player-empty-clear:hover{border-color:var(--horizon);}
 
 /* Landing on a row via a comp's photo: a brief highlight (reduced-motion users get none). */
@@ -4297,8 +4282,6 @@ summary:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible{
   input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), select, textarea{font-size:16px;}
 
   /* Footer / inline links were ~20px tall; pad them to a finger-sized target. */
-  footer .flinks{gap:2px 20px;}
-  footer .flinks a{padding:9px 0;}
   .hub-panel-link{display:inline-block; padding:8px 0;}
 
   /* Compare table: the stat labels stay put while the player columns scroll under them. */
@@ -4372,7 +4355,7 @@ a.mine-empty-note{color:var(--horizon-gold);}
 .week-card-role{font-family:var(--font-mono), monospace; font-size:10.5px; border:1px solid var(--line); border-radius:2px; padding:1px 8px; color:var(--star-dim);}
 .week-card-role.starter{color:var(--up); border-color:rgba(74,222,128,.4);}
 .week-card-teams{font-size:11.5px; color:var(--star-dim);}
-.week-feed-more{margin-top:10px; background:none; border:none; padding:6px 0; color:var(--neon-blue); font:inherit; font-size:13px; cursor:pointer;}
+.week-feed-more{margin-top:10px; background:none; border:none; padding:6px 0; color:var(--neon-blue); font-family:var(--font-mono), monospace; font-size:13px; cursor:pointer;}
 .week-feed-foot{margin-top:6px; font-size:12px; color:var(--star-dim);}
 @media (max-width:640px){
   .week-card{grid-template-columns:26px minmax(0,1fr); }
@@ -4715,13 +4698,11 @@ html{font-stretch:82%;}
 .hub-list{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:9px;}
 .hub-foot{margin:12px 0 0; font-family:var(--font-mono), monospace; font-size:10.5px; color:var(--star-dim);}
 /* position tags */
-.hub-pos{display:inline-block; padding:1px 6px; border-radius:2px; font-family:var(--font-mono), monospace; font-size:9.5px; font-weight:700; letter-spacing:0.05em; color:#10101a; vertical-align:middle;}
-.hub-pos-QB{background:var(--pos-qb);} .hub-pos-RB{background:var(--pos-rb);} .hub-pos-WR{background:var(--pos-wr);} .hub-pos-TE{background:var(--pos-te);}
 /* movers */
 .hub-mover{display:grid; grid-template-columns:minmax(0, 2fr) minmax(24px, 0.6fr) auto; grid-template-rows:auto auto; column-gap:10px; align-items:center;}
 .hub-mover-name{grid-column:1; font-size:13.5px; color:var(--star); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-.hub-diverge{grid-column:2; height:6px; background:var(--void-panel-2); border-radius:3px; overflow:hidden;}
-.hub-diverge-bar{display:block; height:100%; border-radius:3px;}
+.hub-diverge{grid-column:2; height:6px; background:var(--void-panel-2); border-radius:2px; overflow:hidden;}
+.hub-diverge-bar{display:block; height:100%; border-radius:2px;}
 .hub-diverge-bar.up{background:rgba(var(--up-rgb), 0.75);} .hub-diverge-bar.down{background:rgba(var(--down-rgb), 0.75);}
 .hub-mover-delta{grid-column:3; font-family:var(--font-mono), monospace; font-size:13px; font-weight:700; text-align:right; min-width:38px;}
 .hub-mover-delta.up{color:var(--up);} .hub-mover-delta.down{color:var(--down);}
@@ -4758,7 +4739,7 @@ html{font-stretch:82%;}
 .hub-stage-n{font-family:var(--font-mono), monospace; font-size:11px; color:var(--star-dim); text-align:right;}
 .hub-legend{display:flex; flex-wrap:wrap; gap:6px 16px; list-style:none; padding:0; margin:14px 0 0;}
 .hub-legend li{display:inline-flex; align-items:center; gap:6px; font-family:var(--font-mono), monospace; font-size:11px; color:var(--star-dim);}
-.hub-swatch{width:10px; height:10px; border-radius:3px; display:inline-block;}
+.hub-swatch{width:10px; height:10px; border-radius:2px; display:inline-block;}
 .hub-swatch-QB{background:var(--pos-qb);} .hub-swatch-RB{background:var(--pos-rb);} .hub-swatch-WR{background:var(--pos-wr);} .hub-swatch-TE{background:var(--pos-te);}
 .hub-swatch-trend{background:var(--horizon-gold); height:3px; border-radius:2px;}
 /* age scatter */
@@ -4781,8 +4762,8 @@ html{font-stretch:82%;}
 .hub-role-block ul{list-style:none; margin:8px 0 0; padding:0; display:flex; flex-direction:column; gap:6px;}
 .hub-role-block li{display:grid; grid-template-columns:minmax(0, 1.2fr) minmax(30px, 1fr) 22px; align-items:center; gap:8px;}
 .hub-role-name{font-size:12px; color:var(--star); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-.hub-role-bar{height:6px; background:var(--void-panel-2); border-radius:3px; overflow:hidden;}
-.hub-role-fill{display:block; height:100%; border-radius:3px;}
+.hub-role-bar{height:6px; background:var(--void-panel-2); border-radius:2px; overflow:hidden;}
+.hub-role-fill{display:block; height:100%; border-radius:2px;}
 .hub-role-fill-QB{background:var(--pos-qb);} .hub-role-fill-RB{background:var(--pos-rb);} .hub-role-fill-WR{background:var(--pos-wr);} .hub-role-fill-TE{background:var(--pos-te);}
 .hub-role-n{font-family:var(--font-mono), monospace; font-size:11px; color:var(--star-dim); text-align:right;}
 @media (max-width:820px){
@@ -5418,7 +5399,7 @@ html{font-stretch:82%;}
 .desk-alerts{display:inline-flex; align-items:center; gap:8px; font-family:var(--font-mono), monospace; font-size:11.5px; color:var(--star-dim);}
 .desk-alerts svg{flex:none;}
 .desk-alerts-locked a{color:var(--neon-blue);}
-.desk-alerts-btn{white-space:nowrap; display:inline-flex; align-items:center; gap:6px; height:36px; box-sizing:border-box; font:inherit; font-size:12.5px; color:var(--star-dim); background-color:transparent; background-clip:padding-box; border:1px solid var(--rule); border-radius:var(--r-sm); padding:0 11px; cursor:pointer; transition:color .15s ease, border-color .15s ease, background-color .15s ease;} /* same 36px height and hairline edge as Game Board | Panels; when on, the gold sits INSIDE the box */
+.desk-alerts-btn{white-space:nowrap; display:inline-flex; align-items:center; gap:6px; height:36px; box-sizing:border-box; font-family:var(--font-mono), monospace; font-size:12.5px; color:var(--star-dim); background-color:transparent; background-clip:padding-box; border:1px solid var(--rule); border-radius:var(--r-sm); padding:0 11px; cursor:pointer; transition:color .15s ease, border-color .15s ease, background-color .15s ease;} /* same 36px height and hairline edge as Game Board | Panels; when on, the gold sits INSIDE the box */
 .desk-alerts-btn:hover{color:var(--star); border-color:var(--rule-strong);}
 .desk-alerts-btn.on, .desk-alerts-btn.on:hover{color:var(--void); background-color:var(--horizon-gold); border-color:var(--rule);}
 .desk-alerts-note{font-size:11px; color:var(--down);}
@@ -5747,11 +5728,13 @@ html{font-stretch:82%;}
 .cp-card.is-mine{box-shadow:inset 3px 0 0 var(--horizon-gold);}
 .cp-card.is-theirs{box-shadow:inset 3px 0 0 var(--down);}
 .cp-card.is-alert{box-shadow:inset 3px 0 0 var(--down); background:rgba(var(--star-dot-rgb),.05);}
+.cp-card.is-fun{box-shadow:inset 3px 0 0 var(--star);} /* trivia, luck, stacks, your season as an NFL record */
 .cp-card.is-fresh{background:rgba(var(--horizon-gold-rgb),.09);}
 .cp-label{font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--star-dim);}
 .cp-card.is-mine .cp-label{color:var(--horizon-gold);}
 .cp-card.is-theirs .cp-label{color:var(--down);}
 .cp-card.is-alert .cp-label{color:var(--down);}
+.cp-card.is-fun .cp-label{color:var(--star);}
 .cp-league{font-weight:400; text-transform:none; letter-spacing:.02em; color:var(--star-dim);}
 .cp-new{color:var(--horizon-gold);}
 .cp-team{color:var(--horizon-gold);} /* a fantasy team name inside a card's sentence: yours mint, an opponent's red (no underline) */

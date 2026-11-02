@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { shareId, isShareId, cleanShareMeta, isPng, composeUrl } from "../lib/labShare.js";
+import { shareId, isShareId, cleanShareMeta, isPng } from "../lib/labShare.js";
+import { composeUrl } from "../lib/shareLinks.js";
 
 test("shareId: 10 readable characters, accepted by isShareId", () => {
   const id = shareId(new Uint8Array([0, 1, 2, 3, 250, 251, 252, 253, 254, 255]));

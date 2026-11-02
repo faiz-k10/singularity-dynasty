@@ -1,3 +1,5 @@
+import { ordinal } from "@/lib/format";
+
 // Larger, fully-labeled version of OutcomeCurve.js used only inside a
 // Weekly Projection Rankings row's expanded detail panel (WeeklyDetailRow)
 // -- the inline table cell stays the small, label-free curve exactly as it
@@ -57,17 +59,6 @@ function fmt(x, y) {
 // own small duplicate rather than an import for the same reason that
 // file's tier() is a duplicate of PercentileCard's: five lines isn't
 // worth threading a shared dependency between two components for.
-function ordinal(n) {
-  const rounded = Math.round(n);
-  const mod100 = rounded % 100;
-  if (mod100 >= 11 && mod100 <= 13) return `${rounded}th`;
-  switch (rounded % 10) {
-    case 1: return `${rounded}st`;
-    case 2: return `${rounded}nd`;
-    case 3: return `${rounded}rd`;
-    default: return `${rounded}th`;
-  }
-}
 
 function humpHalf(xPeak, xEdge) {
   const pts = [];

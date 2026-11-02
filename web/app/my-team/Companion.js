@@ -10,8 +10,8 @@ import { formatCountdown } from "@/lib/liveFeed";
 
 // The Game Board's right-hand pane when nobody is on the field (and its "Companion" tab while games are on): a status strip
 // (next kickoff with a countdown, or what state the week is in), one spotlight card that turns over every few seconds, and the
-// whole list of what the numbers are saying right now -- swing players, lineup holes, the best pickups, who decided each
-// matchup, the playoff picture. lib/companion.js writes the cards (rules over the board's own data, recomputed on every
+// whole list of what the numbers are saying right now, in plain English -- wild cards, lineup holes, free pickups, comebacks, who decided
+// each matchup, the playoff race, and trivia. lib/companion.js writes the cards (rules over the board's own data, recomputed on every
 // poll); this file only shows them.
 
 const SPOTLIGHT_MS = 12000;

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { trapTab } from "./useFocusTrap";
-import { composeUrl } from "@/lib/labShare";
+import { composeUrl } from "@/lib/shareLinks";
 
 // The Share to social pop-up, for every shareable thing on the site (The Lab's charts, the player / dynasty / start-sit cards, Receipts,
 // Smash Spots). `prepare({ onPreview })` makes the share link -- calling onPreview(src) as soon as there is a picture to show -- and resolves

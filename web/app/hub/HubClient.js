@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import TeamBadge from "../tools/TeamBadge";
+import PositionBadge from "../tools/PositionBadge";
 import { ARCHETYPE_SHORT } from "@/lib/archetypes";
 import {
   POSITIONS,
@@ -14,12 +15,12 @@ import {
   buildAgeCurve,
   buildStageList,
 } from "@/lib/hubCalc";
+import { fmt1 } from "@/lib/format";
 
 // The landing page's data hub: two tabs (this week / dynasty & offseason), a position filter that applies to every
 // module, and a set of small infographic cards. Which modules show, and in what order, comes from lib/hubConfig.js; the
 // data is free-depth only (see app/hub/hubData.js).
 
-const fmt1 = (v) => (v == null ? "—" : Number(v).toFixed(1));
 const int = (v) => (v == null ? "—" : String(Math.round(v)));
 
 function Card({ title, sub, href, cta, wide, children }) {
@@ -50,12 +51,11 @@ const Lead = ({ fig, cap, tone = "gold" }) => (
   </div>
 );
 
-const PosTag = ({ pos }) => <span className={`hub-pos hub-pos-${pos}`}>{pos}</span>;
 // A name that shortens with an ellipsis while its position tag always stays visible.
 const Nm = ({ n, pos, cls }) => (
   <span className={`hub-nm ${cls || ""}`}>
     <span className="hub-nm-t">{n}</span>
-    {pos && <PosTag pos={pos} />}
+    {pos && <PositionBadge position={pos} />}
   </span>
 );
 
@@ -262,7 +262,7 @@ function StageMap({ data, pos }) {
       <div className="hub-stage">
         {bars.map((b) => (
           <div key={b.pos} className="hub-stage-row">
-            <PosTag pos={b.pos} />
+            <PositionBadge position={b.pos} />
             <span className="hub-stage-bar">
               {b.segments.map((s) => (
                 <span
@@ -390,7 +390,7 @@ function RoleMap({ data, pos }) {
       <div className="hub-roles">
         {blocks.map((b) => (
           <div key={b.p} className="hub-role-block">
-            <PosTag pos={b.p} />
+            <PositionBadge position={b.p} />
             <ul>
               {b.rows.map(([name, n]) => (
                 <li key={name}>
@@ -423,7 +423,7 @@ function Boards({ data, pos, limit }) {
               {prospects.slice(0, limit).map((r) => (
                 <li key={`${r.position}-${r.rank}`} className="hub-asset">
                   <span className="hub-asset-name">
-                    <i className="hub-rank">{r.rank}</i> {r.player_name} <PosTag pos={r.position} />
+                    <i className="hub-rank">{r.rank}</i> {r.player_name} <PositionBadge position={r.position} />
                   </span>
                   <span className="hub-asset-meta">{r.school || ""}</span>
                 </li>
@@ -438,7 +438,7 @@ function Boards({ data, pos, limit }) {
               {draft.slice(0, limit).map((r) => (
                 <li key={`${r.round}-${r.pick}`} className="hub-asset">
                   <span className="hub-asset-name">
-                    <i className="hub-rank">{r.pick}</i> {r.player_name} <PosTag pos={r.position} />
+                    <i className="hub-rank">{r.pick}</i> {r.player_name} <PositionBadge position={r.position} />
                   </span>
                   <span className="hub-asset-meta">{r.team ? <TeamBadge team={r.team} /> : null}</span>
                 </li>

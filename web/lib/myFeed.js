@@ -75,13 +75,15 @@ export function buildFeed({ mine, sims, ranks, roles, groups, teamIndex = null, 
           kind: "median",
           dir: d > 0 ? "up" : "down",
           text: `Season median ${sign(d)}${pts(d)} pts (${Math.round(sp.median)} → ${Math.round(sc.median)})${rankBit}`,
+          plain: `We now expect ${Math.round(sc.median)} points from him this season, ${d > 0 ? "up" : "down"} from ${Math.round(sp.median)}${rc && rp && rc !== rp ? ` (No. ${rc} at ${sc.position}, was ${rp})` : ""}`,
           score: 3 + Math.min((Math.abs(d) / sp.median) * 10, 3),
         });
       }
       for (const [col, label] of bandsComparable ? [["ceiling", "Ceiling"], ["floor", "Floor"]] : []) {
         const b = sc[col] - sp[col];
         if (Math.abs(b) >= Math.max(FEED_RULES.bandMin, FEED_RULES.bandPct * sp[col])) {
-          lines.push({ kind: col, dir: b > 0 ? "up" : "down", text: `${label} ${sign(b)}${pts(b)} pts`, score: 1.5 });
+          const which = col === "ceiling" ? "best-case" : "worst-case";
+          lines.push({ kind: col, dir: b > 0 ? "up" : "down", text: `${label} ${sign(b)}${pts(b)} pts`, plain: `His ${which} season is ${pts(b)} points ${b > 0 ? "higher" : "lower"}`, score: 1.5 });
         }
       }
     }
@@ -93,12 +95,12 @@ export function buildFeed({ mine, sims, ranks, roles, groups, teamIndex = null, 
       const prevNote = publicNote(rp.notes, rp.opponent);
       if (isBye(rc.opponent)) {
         // A bye is not a status: no game this week, nothing wrong with him (never "Listed OUT").
-        if (!isBye(rp.opponent)) lines.push({ kind: "bye", dir: "flag", text: `On a BYE in week ${rc.week}`, score: 6 });
+        if (!isBye(rp.opponent)) lines.push({ kind: "bye", dir: "flag", text: `On a BYE in week ${rc.week}`, plain: `On a bye in week ${rc.week}: his team doesn't play`, score: 6 });
       } else if (note && note !== prevNote) {
         // Listed out/doubtful etc.: the rank he lands on is a placeholder, so say the status instead.
-        lines.push({ kind: "status", dir: "down", text: `Listed ${note.length <= 14 ? note.toUpperCase() : note} for week ${rc.week}`, score: 8 });
+        lines.push({ kind: "status", dir: "down", text: `Listed ${note.length <= 14 ? note.toUpperCase() : note} for week ${rc.week}`, plain: /^out$/i.test(note) ? `Ruled out for week ${rc.week}` : `Listed ${note} for week ${rc.week}`, score: 8 });
       } else if (prevNote && !note) {
-        lines.push({ kind: "status", dir: "up", text: `Back in the week ${rc.week} rankings (#${rc.rank}) after being listed ${prevNote.length <= 14 ? prevNote.toUpperCase() : prevNote}`, score: 7 });
+        lines.push({ kind: "status", dir: "up", text: `Back in the week ${rc.week} rankings (#${rc.rank}) after being listed ${prevNote.length <= 14 ? prevNote.toUpperCase() : prevNote}`, plain: `Back for week ${rc.week} after being ${/^out$/i.test(prevNote) ? "out" : `listed ${prevNote}`}, and ranked No. ${rc.rank} this week`, score: 7 });
       } else if (!note && !isBye(rc.opponent) && Math.abs(moved) >= FEED_RULES.rankMove && Math.min(rp.rank, rc.rank) <= FEED_RULES.rankDepth) {
         // (no rank-move line for a player on a bye: his rank drops only because he has no game)
         const opp = rc.opponent ? ` · ${rc.is_home === false ? "@" : "vs"} ${rc.opponent}` : "";
@@ -106,6 +108,7 @@ export function buildFeed({ mine, sims, ranks, roles, groups, teamIndex = null, 
           kind: "rank",
           dir: moved > 0 ? "up" : "down",
           text: `Week ${rc.week} rank ${rp.rank} → ${rc.rank}${opp}`,
+          plain: `${moved > 0 ? "Up" : "Down"} ${Math.abs(moved)} spots in this week's rankings, to No. ${rc.rank}`,
           score: 2.5 + Math.min(Math.abs(moved) / 10, 2),
         });
       }
@@ -113,17 +116,18 @@ export function buildFeed({ mine, sims, ranks, roles, groups, teamIndex = null, 
     const a = roleCur.get(key);
     const ap = rolePrev.get(key);
     if (a && ap && a.archetype !== ap.archetype) {
-      lines.push({ kind: "role", dir: "flag", text: `Role changed: ${ap.archetype} → ${a.archetype}`, score: 3 });
+      lines.push({ kind: "role", dir: "flag", text: `Role changed: ${ap.archetype} → ${a.archetype}`, plain: `His role changed: now ${a.archetype} (was ${ap.archetype})`, score: 3 });
     }
     const s = susCur.get(key);
     const sp2 = susPrev.get(key);
     if (s && sp2 && s.label !== sp2.label) {
-      lines.push({ kind: "sus", dir: "flag", text: `Sustainability: ${sp2.label} → ${s.label}`, score: 2 });
+      const susPlain = { "Running Hot": "now scoring more than his touches usually bring, which rarely lasts", "Running Cold": "now scoring less than his touches usually bring, which tends to turn around" };
+      lines.push({ kind: "sus", dir: "flag", text: `Sustainability: ${sp2.label} → ${s.label}`, plain: `He's ${susPlain[s.label] || "scoring about what his touches usually bring"}`, score: 2 });
     }
     const g = stageCur.get(key);
     const gp = stagePrev.get(key);
     if (g && gp && g.label !== gp.label) {
-      lines.push({ kind: "stage", dir: "flag", text: `Career stage: ${gp.label} → ${g.label}`, score: 1.5 });
+      lines.push({ kind: "stage", dir: "flag", text: `Career stage: ${gp.label} → ${g.label}`, plain: `His career stage moved from ${gp.label} to ${g.label}`, score: 1.5 });
     }
     if (!lines.length) continue;
     lines.sort((x, y) => y.score - x.score);

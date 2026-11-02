@@ -10,6 +10,7 @@ import { ensureReferralCode, referralSummary } from "@/lib/referrals";
 import { FRIEND_DISCOUNT_PERCENT, rewardFor } from "@/lib/referralRules";
 import { siteOrigin } from "@/lib/siteOrigin";
 import SiteHeader from "../SiteHeader";
+import { money } from "@/lib/format";
 
 export const metadata = {
   title: "Your Account — Singularity Dynasty",
@@ -36,7 +37,6 @@ const NOTICES = {
   "delete-failed": ["bad", "We couldn't delete your account just now, and nothing was changed. Please try again, or contact us."],
 };
 
-const money = (cents) => (cents == null ? "" : `$${(cents / 100).toFixed(2)}`);
 const day = (ms) => (ms ? new Date(ms).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : "");
 
 function Billing({ billing, hasCustomer }) {

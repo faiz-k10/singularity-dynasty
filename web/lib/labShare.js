@@ -1,4 +1,4 @@
-// Shared charts from The Lab (app/tools/lab/LabShare.js -> app/api/lab-share -> app/s/[id]). Each share is a picture of the chart and a small
+// Shared charts from The Lab (app/tools/lab/LabExport.js -> app/api/lab-share -> app/s/[id]). Each share is a picture of the chart and a small
 // description file in the public Supabase Storage bucket below; its page, /s/<id>, carries the picture as its link preview, so posting the link
 // on X, Threads, Bluesky, Facebook, LinkedIn, Reddit or Discord shows the chart itself. Pure; tested in test/labShare.test.mjs.
 
@@ -31,25 +31,4 @@ export function cleanShareMeta({ title, caption, view }) {
 export function isPng(bytes) {
   const sig = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
   return Boolean(bytes && bytes.length > 8 && sig.every((b, i) => bytes[i] === b));
-}
-
-// The address each platform opens with a post ready to go (the link's preview shows the chart). Discord, Instagram and TikTok have none.
-export function composeUrl(platform, { url, text }) {
-  const e = encodeURIComponent;
-  switch (platform) {
-    case "x":
-      return `https://twitter.com/intent/tweet?text=${e(text)}&url=${e(url)}`;
-    case "threads":
-      return `https://www.threads.net/intent/post?text=${e(`${text} ${url}`)}`;
-    case "bluesky":
-      return `https://bsky.app/intent/compose?text=${e(`${text} ${url}`)}`;
-    case "facebook":
-      return `https://www.facebook.com/sharer/sharer.php?u=${e(url)}`;
-    case "linkedin":
-      return `https://www.linkedin.com/sharing/share-offsite/?url=${e(url)}`;
-    case "reddit":
-      return `https://www.reddit.com/submit?url=${e(url)}&title=${e(text)}`;
-    default:
-      return null;
-  }
 }

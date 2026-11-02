@@ -1,20 +1,7 @@
+import { ordinal } from "@/lib/format";
+
 const LAYER_LABEL = { floor: "Floor", median: "Median", ceiling: "Ceiling" };
 
-function ordinal(n) {
-  const rounded = Math.round(n);
-  const rem100 = rounded % 100;
-  if (rem100 >= 11 && rem100 <= 13) return `${rounded}th`;
-  switch (rounded % 10) {
-    case 1:
-      return `${rounded}st`;
-    case 2:
-      return `${rounded}nd`;
-    case 3:
-      return `${rounded}rd`;
-    default:
-      return `${rounded}th`;
-  }
-}
 
 // Same break points drive both the text tier and the bar-fill color, so
 // "Elite" always means the gold fill and never lines up with a blue bar.
