@@ -6320,23 +6320,39 @@ select.lab-select{min-width:200px; padding-right:8px; cursor:pointer;}
 .onb-foot{margin-top:14px; font-size:14px; color:var(--star-dim);}
 .onb-foot a{color:var(--horizon-gold);}
 
-/* Signed-in home: your week (app/hub/YourWeek.js) */
+/* Signed-in home: the briefing (app/hub/YourWeek.js) and the gravity map (app/hub/GravityMap.js) */
 .yw{min-width:0;}
 .yw section{padding:0;} /* a bare <section> on the landing page inherits its big section padding */
-.yw-h1{font-size:clamp(38px, 5.4vw, 64px)!important; margin:8px 0 18px;}
-.yw-h2{font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--star-dim); font-weight:400; margin:18px 0 8px;}
-.yw-list{list-style:none; padding:0; margin:0; border-top:1px solid var(--rule);}
-.yw-row{display:grid; grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) auto auto; gap:12px; align-items:baseline; padding:10px 2px; border-bottom:1px solid var(--rule); font-size:14.5px;}
-.yw-league{display:flex; align-items:baseline; min-width:0; color:var(--star);}
-.yw-name{overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0;}
-.yw-record{flex:none; font-size:10.5px; color:var(--star-dim); border:1px solid var(--rule); padding:1px 5px; margin-left:8px; border-radius:var(--r-sm);}
-.yw-opp{color:var(--star-dim); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
-.yw-score{font-size:13px; color:var(--star); white-space:nowrap;}
-.yw-dim{color:var(--star-dim);}
-.yw-read{font-size:11px; letter-spacing:.04em; white-space:nowrap; text-align:right;}
-.yw-read.is-mint{color:var(--horizon-gold);}
-.yw-read.is-red{color:var(--down);}
-.yw-read.is-grey{color:var(--star-dim);}
+.yw-status{display:flex; align-items:center; gap:8px; margin:14px 0 0; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--star-dim);}
+.yw-status-dot{width:7px; height:7px; border-radius:50%; background:var(--horizon-gold); animation:yw-blink 2.4s ease-in-out infinite;}
+@keyframes yw-blink{0%,100%{opacity:1;}50%{opacity:.25;}}
+.hero .yw-h1{font-size:clamp(38px, 5.2vw, 62px); margin:6px 0 12px;}
+.yw-name-hi{color:var(--horizon-gold);}
+.yw-brief{font-size:clamp(16px, 1.35vw, 19px); line-height:1.5; color:var(--star); max-width:560px; margin:0 0 26px;}
+.yw-h2{font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--star-dim); font-weight:400; margin:18px 0 8px; text-align:left;}
+/* the matchups: one table, so the league, the scores and the chance line up down the page */
+.yw-table{width:100%; border-collapse:collapse; table-layout:fixed;}
+.yw-table th, .yw-table td{padding:10px 0; border-bottom:1px solid var(--rule); vertical-align:middle;}
+.yw-table thead th{padding:0 0 6px; border-bottom:2px solid var(--rule-strong); font-family:var(--font-mono), monospace; font-size:10px; font-weight:400; letter-spacing:.1em; text-transform:uppercase; color:var(--star-dim); text-align:left;}
+.yw-table thead th:first-child{width:auto;}
+.yw-table thead .yw-num{width:78px;}
+.yw-table thead .yw-chance{width:118px;}
+.yw-table tbody th{text-align:left; font-weight:400; padding-right:14px; min-width:0;}
+.yw-league{display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-family:var(--font-body), Georgia, serif; font-weight:700; font-size:15.5px; color:var(--star);}
+.yw-sub{display:flex; align-items:center; gap:8px; margin-top:3px; font-size:11px; color:var(--star-dim); min-width:0;}
+.yw-record{flex:none; padding:0 5px; border:1px solid var(--rule); border-radius:var(--r-sm); line-height:16px;}
+.yw-opp{overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0;}
+.yw-num{text-align:right; padding-right:16px!important; font-family:var(--font-display), sans-serif; font-weight:800; font-size:24px; letter-spacing:.01em; font-variant-numeric:tabular-nums; color:var(--star);}
+.yw-num.is-lead{color:var(--horizon-gold);}
+.yw-num.is-trail{color:var(--down);}
+.yw-tr.is-proj .yw-num{color:var(--star-dim);}
+.yw-chance{text-align:left; font-family:var(--font-mono), monospace; font-size:10.5px; letter-spacing:.05em; text-transform:uppercase; --tone:var(--star-dim);}
+.yw-chance.is-mint{--tone:var(--horizon-gold);} .yw-chance.is-red{--tone:var(--down);}
+.yw-chance-row{display:flex; justify-content:space-between; gap:6px; color:var(--tone);}
+.yw-chance-word{white-space:nowrap;}
+.yw-chance-pct{color:var(--star); font-variant-numeric:tabular-nums;}
+.yw-meter{display:block; height:3px; margin-top:6px; background:linear-gradient(90deg, var(--tone) calc(var(--p) * 100%), rgba(var(--star-dot-rgb), .1) 0);}
+.yw-tr.is-bye .yw-sub{color:var(--star-dim);}
 .yw-more{font-size:11px; color:var(--star-dim); margin-top:8px;}
 .yw-changes{list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:6px;}
 .yw-change{font-size:14px; line-height:1.5; color:var(--star-dim); padding-left:12px; border-left:2px solid var(--rule-strong);}
@@ -6345,7 +6361,56 @@ select.lab-select{min-width:200px; padding-right:8px; cursor:pointer;}
 .yw-change.is-down{border-left-color:var(--down);}
 .yw-change.is-flag{border-left-color:var(--neon-blue);}
 .yw-actions{display:flex; gap:12px; flex-wrap:wrap; margin-top:22px;}
-.yw-foot{font-size:11px; color:var(--star-dim); margin-top:14px; opacity:.8;}
+
+/* The gravity map: rings in SVG units (width 100), the core and the leagues placed in container units of the stage, so it all scales together. */
+.gm{margin:0 auto; width:100%; max-width:520px;}
+.hero .gm{align-self:start; margin-top:72px;} /* level with the briefing, not centred on the whole (taller) left column */
+.gm-stage{position:relative; width:100%; aspect-ratio:1; container-type:inline-size;}
+.gm-rings{position:absolute; inset:0; width:100%; height:100%; overflow:visible;}
+.gm-ring{fill:none; stroke:rgba(var(--neon-blue-rgb), var(--orbit-alpha)); stroke-width:.25;}
+.gm-ring.is-outer{stroke-dasharray:.4 1.6;}
+.gm-ring.is-spin{stroke-dasharray:1 2; transform-origin:50px 50px; animation:gm-spin 90s linear infinite;}
+.gm-ring.is-zone-0{stroke:var(--horizon-gold); stroke-width:.45;} /* the event horizon: favored inside */
+.gm-ring.is-zone-1{stroke-dasharray:.6 .9;}
+.gm-ring.is-zone-2{stroke:var(--down); stroke-width:.3; stroke-dasharray:.8 1.2;}
+.gm-ring-label{font-size:1.75px; letter-spacing:.18px; text-transform:uppercase; text-anchor:middle; fill:var(--star-dim);}
+.gm-ring-label.is-zone-0{fill:var(--horizon-gold);}
+.gm-ring-label.is-zone-2{fill:var(--down);}
+@keyframes gm-spin{to{transform:rotate(360deg);}}
+.gm-core{
+  position:absolute; left:50%; top:50%; width:var(--core); height:var(--core); transform:translate(-50%, -50%); border-radius:50%;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; color:var(--on-brand);
+  background:radial-gradient(circle at 35% 35%, var(--horizon-gold), var(--horizon) 45%, var(--down) 88%);
+  box-shadow:0 0 0 1.2cqw rgba(var(--horizon-rgb), .1), 0 0 0 2.6cqw rgba(var(--horizon-rgb), .05);
+}
+.gm-core b{font-family:var(--font-display), sans-serif; font-weight:800; font-size:9.5cqw; line-height:.9; letter-spacing:.01em;}
+.gm-core span{font-family:var(--font-mono), monospace; font-size:clamp(7px, 1.65cqw, 10px); font-weight:700; letter-spacing:.08em; text-transform:uppercase; line-height:1.35;}
+/* A league: rotated to its angle and pushed out to its distance (the label turned back upright); on load it spirals in from the edge. */
+.gm-node{
+  --tone:var(--star-dim); position:absolute; left:50%; top:50%; width:0; height:0; text-decoration:none; color:inherit;
+  transform:rotate(var(--a)) translateX(var(--d)) rotate(calc(-1 * var(--a)));
+  animation:gm-fall 1.6s cubic-bezier(.16, .84, .3, 1) both; animation-delay:calc(var(--i) * 120ms + 150ms);
+}
+.gm-node.is-mint{--tone:var(--horizon-gold);} .gm-node.is-red{--tone:var(--down);}
+@keyframes gm-fall{
+  from{transform:rotate(calc(var(--a) - 70deg)) translateX(46cqw) rotate(calc(-1 * (var(--a) - 70deg))); opacity:0;}
+  30%{opacity:1;}
+}
+.gm-dot{position:absolute; left:-.9cqw; top:-.9cqw; width:1.8cqw; height:1.8cqw; min-width:9px; min-height:9px; border-radius:50%; background:var(--tone); box-shadow:0 0 0 .7cqw var(--void), 0 0 0 .9cqw var(--tone);}
+.gm-node.is-close .gm-dot::after{content:""; position:absolute; inset:-1.6cqw; border-radius:50%; border:1px solid var(--tone); animation:gm-pulse 2.2s ease-out infinite;}
+@keyframes gm-pulse{from{transform:scale(.5); opacity:.9;}to{transform:scale(1.6); opacity:0;}}
+/* the label sits on the far side of the dot from the core (CSS cos / sin of the league's angle), its near edge toward the dot */
+.gm-label{
+  position:absolute; left:calc(cos(var(--a)) * 2.4cqw); top:calc(sin(var(--a)) * 2.4cqw);
+  transform:translate(calc(-50% + cos(var(--a)) * 50%), calc(-50% + sin(var(--a)) * 50%)); display:flex; flex-direction:column; align-items:center; gap:1px;
+  padding:4px 8px; white-space:nowrap; background:var(--void-panel); border:1px solid var(--rule); border-top:2px solid var(--tone);
+  font-size:clamp(9.5px, 2.3cqw, 12px); line-height:1.25; transition:border-color .2s ease;
+}
+.gm-label-name{color:var(--star); max-width:27cqw; overflow:hidden; text-overflow:ellipsis;}
+.gm-label-pct{color:var(--tone); font-weight:700;}
+.gm-node:hover .gm-label, .gm-node:focus-visible .gm-label{border-color:var(--tone);}
+.gm-caption{margin-top:10px; text-align:center; font-size:10.5px; letter-spacing:.05em; color:var(--star-dim);}
+@media (prefers-reduced-motion: reduce){ .gm-node, .gm-ring.is-spin, .gm-node.is-close .gm-dot::after, .yw-status-dot{animation:none;} }
 
 /* Admin (app/admin) */
 .adm h1{margin:6px 0 22px;}
@@ -6398,10 +6463,16 @@ select.lab-select{min-width:200px; padding-right:8px; cursor:pointer;}
   .sf-cols{grid-template-columns:repeat(2, minmax(0,1fr));}
 }
 @media (max-width:640px){
-  .yw-row{grid-template-columns:minmax(0,1fr) auto; row-gap:2px;}
-  .yw-opp{grid-column:1; font-size:13px;}
-  .yw-score{grid-column:2; grid-row:1;}
-  .yw-read{grid-column:2; grid-row:2;}
+  /* each matchup stacks: the league across the top, then You / Them / Chance, each labelled */
+  .yw-table, .yw-table tbody{display:block;}
+  .yw-table thead{display:none;}
+  .yw-table caption{display:block;}
+  .yw-tr{display:grid; grid-template-columns:1fr 1fr 1.2fr; column-gap:12px; padding:12px 0; border-bottom:1px solid var(--rule);}
+  .yw-tr > th{grid-column:1 / -1; padding:0 0 8px!important; border:0!important;}
+  .yw-tr > td{padding:0!important; border:0!important;}
+  .yw-num{text-align:left; font-size:22px;}
+  .gm{max-width:86%;} /* room at the sides for the outer labels */
+  .yw-tr td[data-label]::before{content:attr(data-label); display:block; font-family:var(--font-mono), monospace; font-weight:400; font-size:9.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--star-dim); margin-bottom:2px;}
   .acct-facts > div{grid-template-columns:1fr; gap:2px;}
   .adm-row{grid-template-columns:1fr;}
 }

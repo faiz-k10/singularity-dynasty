@@ -4,6 +4,7 @@ import SiteHeader from "./SiteHeader";
 import LandingHub from "./hub/LandingHub";
 import HorizonBand from "./hub/HorizonBand";
 import YourWeek, { loadYourWeek } from "./hub/YourWeek";
+import GravityMap from "./hub/GravityMap";
 import { cookies } from "next/headers";
 import { isLiveReferralCode } from "@/lib/referrals";
 import { REF_COOKIE, FRIEND_DISCOUNT_PERCENT } from "@/lib/referralRules";
@@ -138,6 +139,7 @@ export default async function Home() {
   const heroCandidates = [];
 
   for (const r of trendRows) {
+    if (!(r.projection > 0)) continue; // a player listed out or on a bye has nothing to show
     heroCandidates.push({
       name: r.player_name,
       value: `${r.projection.toFixed(1)} PROJ ${r.trend === "RISING" ? "▲" : "▼"}`,
@@ -243,31 +245,35 @@ export default async function Home() {
           </div>
           )}
 
-          <div className="orbit-signal" aria-hidden="true">
-            <div className="os-ring r1"></div>
-            <div className="os-ring r2"></div>
-            <div className="os-core">
-              <span>
-                {latestWeek ? `WK ${latestWeek.week}` : "LIVE"}
-                <br />
-                LIVE
-              </span>
-            </div>
+          {yourWeek ? (
+            <GravityMap rows={yourWeek.rows} />
+          ) : (
+            <div className="orbit-signal" aria-hidden="true">
+              <div className="os-ring r1"></div>
+              <div className="os-ring r2"></div>
+              <div className="os-core">
+                <span>
+                  {latestWeek ? `WK ${latestWeek.week}` : "LIVE"}
+                  <br />
+                  LIVE
+                </span>
+              </div>
 
-            <div className="os-chips-layer" id="osChipsLayer">
-              {heroChips.map((chip, i) => (
-                <div
-                  className="os-chip"
-                  key={`${chip.name}-${i}`}
-                  style={{ "--ang": CHIP_SLOTS[i].ang, "--r": CHIP_SLOTS[i].r }}
-                >
-                  <div className="chip-inner">
-                    {chip.name} <span className={chip.dir}>{chip.value}</span>
+              <div className="os-chips-layer" id="osChipsLayer">
+                {heroChips.map((chip, i) => (
+                  <div
+                    className="os-chip"
+                    key={`${chip.name}-${i}`}
+                    style={{ "--ang": CHIP_SLOTS[i].ang, "--r": CHIP_SLOTS[i].r }}
+                  >
+                    <div className="chip-inner">
+                      {chip.name} <span className={chip.dir}>{chip.value}</span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </header>
 
