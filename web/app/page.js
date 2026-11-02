@@ -1,3 +1,4 @@
+import Rocket from "./Rocket";
 import Link from "next/link";
 import { unstable_cache } from "next/cache";
 import SiteHeader from "./SiteHeader";
@@ -462,7 +463,7 @@ export default async function Home() {
 
           <div className="ladder">
             <article className="rung rung-1 reveal">
-              <div className="rung-num" aria-hidden="true">I</div>
+              <div className="rung-num" aria-hidden="true"><Rocket /></div>
               <div className="rung-id">
                 <div className="round-label">Free</div>
                 <div className="round-title-row">
@@ -492,7 +493,7 @@ export default async function Home() {
             </article>
 
             <article className="rung rung-2 reveal d1">
-              <div className="rung-num" aria-hidden="true">II</div>
+              <div className="rung-num" aria-hidden="true"><Rocket /><Rocket /></div>
               <div className="rung-id">
                 <div className="round-label">Run every league</div>
                 <div className="round-title-row">
@@ -540,7 +541,7 @@ export default async function Home() {
 
             <article className="rung rung-3 reveal d2">
               <div className="rung-end mono" aria-hidden="true">Endpoint →</div>
-              <div className="rung-num" aria-hidden="true">III</div>
+              <div className="rung-num" aria-hidden="true"><Rocket /><Rocket /><Rocket /></div>
               <div className="rung-id">
                 <div className="round-label">Full Access</div>
                 <div className="round-title-row">
