@@ -6408,7 +6408,7 @@ select.lab-select{min-width:200px; padding-right:8px; cursor:pointer;}
 }
 .gm-label-name{color:var(--star); text-align:center; overflow-wrap:break-word;} /* the full league name, wrapping onto a second line when it is long */
 .gm-label-pct{color:var(--tone); font-weight:700;}
-.gm-node:hover, .gm-node:focus-visible{z-index:5;} /* the hovered body and its label come to the front, lit in its own colour */
+.gm-node{z-index:1;} .gm-node:hover, .gm-node:focus-visible{z-index:50;} /* the hovered body and its label come to the front, lit in its own colour */
 .gm-node:hover .gm-label, .gm-node:focus-visible .gm-label{border-color:var(--tone); background:color-mix(in srgb, var(--tone) 18%, var(--void-panel)); box-shadow:0 0 0 1px var(--tone);}
 .gm-node:hover .gm-dot, .gm-node:focus-visible .gm-dot{box-shadow:0 0 0 .7cqw var(--void), 0 0 0 1.2cqw var(--tone); transform:scale(1.25);}
 @media (prefers-reduced-motion: reduce){ .gm-node, .gm-node.is-close .gm-dot::after, .yw-status-dot{animation:none;} }
