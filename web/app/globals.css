@@ -264,7 +264,7 @@ body::before{
   background-image:repeating-linear-gradient(90deg, var(--neon-blue) 0, var(--neon-blue) 2px, transparent 2px, transparent 18px);
   opacity:0.28; pointer-events:none;
 }
-.ticker-track{display:inline-flex; gap:36px; padding:2px 0; animation:scroll-ticker 40s linear infinite;}
+.ticker-track{display:inline-flex; vertical-align:top; gap:36px; padding:2px 0; animation:scroll-ticker 40s linear infinite;}
 .ticker-item{font-family:var(--font-mono), monospace; font-size:12px; color:var(--star-dim); display:inline-flex; gap:8px; align-items:center;}
 @keyframes scroll-ticker{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
 
