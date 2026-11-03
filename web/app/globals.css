@@ -312,7 +312,7 @@ body::before{
   font-family:var(--font-display), sans-serif; font-size:15px; font-weight:600; letter-spacing:0.01em;
   text-decoration:none; color:var(--star);
 }
-.site-header .brandmark{padding:2px 14px 2px 12px; border:2px solid var(--down); border-radius:var(--r-sm);} /* the brand in a mission-red box (founder, Nov 2 2026) */
+.site-header .brandmark{padding:2px 14px 2px 12px; border:1px solid var(--down); border-radius:var(--r-sm);} /* the brand in a mission-red box (founder, Nov 2 2026) */
 .brandmark .ring, .lab-export-brand .ring, .lab-export-foot .ring{
   width:15px; height:15px; border-radius:50%;
   background:radial-gradient(circle at 35% 35%, var(--horizon-gold), var(--horizon) 45%, var(--down) 80%);
