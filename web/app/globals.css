@@ -6351,7 +6351,7 @@ select.lab-select{min-width:200px; padding-right:8px; cursor:pointer;}
 .gm-stage{position:relative; width:100%; flex:1; min-height:560px; container-type:size;} /* as tall as the hero's row (the briefing beside it), so the orbits run the whole way down */
 .gm-rings{position:absolute; inset:0; width:100%; height:100%; overflow:visible;}
 .gm-ring{fill:none; stroke:rgba(var(--neon-blue-rgb), var(--orbit-alpha)); stroke-width:1; vector-effect:non-scaling-stroke;}
-.gm-ring.is-zone-0{stroke:var(--horizon-gold); stroke-width:2;} /* the event horizon: favored inside */
+.gm-ring.is-zone-0{stroke:var(--horizon-gold); stroke-width:1.2; stroke-dasharray:4 6;} /* the event horizon: favored inside */
 .gm-ring.is-zone-1{stroke-dasharray:3 4;}
 .gm-ring.is-zone-2{stroke:var(--down); stroke-width:1.2; stroke-dasharray:4 6;}
 .gm-ring-label{position:absolute; left:50%; transform:translate(-50%, -140%); font-size:clamp(9px, 1.75cqw, 12px); letter-spacing:.1em; text-transform:uppercase; white-space:nowrap; color:var(--star-dim);}
