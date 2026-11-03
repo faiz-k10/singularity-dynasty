@@ -2789,8 +2789,9 @@ tr.stat-row-selected td{background:var(--void-panel);}
   color:var(--star-dim); opacity:0.8; text-align:center; margin:-2px 0 4px; white-space:nowrap;
 }
 .stat-radar-svg{width:100%; display:block; overflow:visible;}
-.radar-ring{fill:none; stroke:var(--line); stroke-width:1;}
-.radar-spoke{stroke:var(--line); stroke-width:1;}
+/* The guides use the text colour at low opacity, not --line (a hairline barely lighter than the panel: invisible on the dark one); --star-dot-rgb flips with the theme. */
+.radar-ring{fill:none; stroke:rgba(var(--star-dot-rgb),0.3); stroke-width:1;}
+.radar-spoke{stroke:rgba(var(--star-dot-rgb),0.38); stroke-width:1;}
 .radar-shape{fill:rgba(var(--neon-blue-rgb),0.18); stroke:var(--horizon-gold); stroke-width:1.25; stroke-linejoin:round; transition:stroke-width .15s ease, opacity .15s ease;}
 .radar-shape-active{stroke-width:3.5;}
 /* column mode ("Median" header clicked) picks one layer to emphasize --
