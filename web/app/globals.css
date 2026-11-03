@@ -312,7 +312,6 @@ body::before{
   font-family:var(--font-display), sans-serif; font-size:15px; font-weight:600; letter-spacing:0.01em;
   text-decoration:none; color:var(--star);
 }
-.site-header .brandmark{padding:2px 14px 2px 12px; border:1px solid var(--down); border-radius:var(--r-sm);} /* the brand in a mission-red box (founder, Nov 2 2026) */
 .brandmark .ring, .lab-export-brand .ring, .lab-export-foot .ring{
   width:15px; height:15px; border-radius:50%;
   background:radial-gradient(circle at 35% 35%, var(--horizon-gold), var(--horizon) 45%, var(--down) 80%);
@@ -4413,7 +4412,7 @@ a.mine-empty-note{color:var(--horizon-gold);}
 /* The top bar and the ticker: solid, with a hairline underneath. */
 .ticker-bar{
   background:rgba(var(--scrim-rgb), .98);
-  border-bottom:1px solid var(--rule);
+  border-bottom:1px solid var(--down); /* the toolbar's bottom edge is outlined in mission red (founder, Nov 2 2026) */
   backdrop-filter:none; -webkit-backdrop-filter:none;
 }
 .site-header{
