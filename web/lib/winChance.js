@@ -65,6 +65,7 @@ export function buildSide(starterIds, slots, infoFor, projFor, points) {
     let out = false;
     if (p && typeof p.proj === "number") {
       range = { proj: p.proj, floor: p.floor ?? null, ceiling: p.ceiling ?? null };
+      if (p.out) out = true; // published OUT: say "Out", not a blank cell
     } else if (found && (info.active === false || !info.team)) {
       range = { proj: 0, floor: 0, ceiling: 0 }; // inactive / IR / free agent: not playing
       out = true;

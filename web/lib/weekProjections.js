@@ -3,6 +3,7 @@
 // live poll's win chance, so it's cached in module memory for 5 minutes: the poll then costs no database query.
 // The table is public read, so sharing one copy across visitors is fine.
 import { normalizePlayerName } from "./portfolio";
+import { publicNote } from "./format";
 import { indexLeans, flagFor } from "./defenseLeans";
 import { getCachedLeans } from "../app/tools/redraft-rankings/data";
 
@@ -25,7 +26,7 @@ export async function getWeekProjections(supabase, season) {
   // The same Smash / Tough Spot leans the Weekly Projection Rankings page flags (one cached read, shared), kept per player as the call + its points effect.
   const [leanRows, { data: rows, error }] = await Promise.all([
     getCachedLeans(),
-    supabase.from("redraft_rankings").select("player_name, position, opponent, projection, floor, ceiling").eq("season", season).eq("week", week),
+    supabase.from("redraft_rankings").select("player_name, position, opponent, projection, floor, ceiling, notes").eq("season", season).eq("week", week),
   ]);
   const leans = indexLeans(leanRows);
   const byName = {};
@@ -37,6 +38,7 @@ export async function getWeekProjections(supabase, season) {
       floor: r.floor == null ? null : Number(r.floor),
       ceiling: r.ceiling == null ? null : Number(r.ceiling),
       lean: lean ? { call: lean.call, effect: Number(lean.effect) } : null,
+      ...(/\bOUT\b/i.test(publicNote(r.notes, r.opponent)) ? { out: true } : {}), // the model has him listed out this week
     };
   }
   const value = { week, byName };
