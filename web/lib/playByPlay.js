@@ -121,7 +121,7 @@ export function roleLabel(type, roles, text = "") {
     // The carry before a fumble: his yards still count (an aborted snap has no carry).
     if (/Fumble Recovery/.test(type) && !/Aborted/i.test(text)) return "Run";
   }
-  if (has("returner") && /Kickoff|Punt/.test(type)) return td ? "Return touchdown" : "Return";
+  if (has("returner") && /Kickoff|Punt/.test(type)) return td ? "Return touchdown" : null; // a return that doesn't score is not listed
   // After a touchdown: the two-point try's target is listed as "patScorer" (no kicker role) -- a failed try is no play.
   if (has("patScorer") && !has("kicker")) return /ATTEMPT FAIL/i.test(text) ? null : "Two-point conversion";
   if (has("kicker")) {
