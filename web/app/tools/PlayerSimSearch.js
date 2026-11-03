@@ -79,15 +79,15 @@ function StatDetailRow({ row, colSpan, shapePeers, wrTePool, tagsByName, maxCeil
       const w = pendingWeek.current;
       if (w != null && x.length > 0) {
         pendingWeek.current = null;
-        const ws = x.map((y) => y.week);
+        const ws = [...x.map((y) => y.week).filter((v) => v < lastWeek), lastWeek];
         const nearest = ws.reduce((best, v) => (Math.abs(v - w) < Math.abs(best - w) ? v : best), ws[0]);
-        setSnapWeek(nearest === ws[ws.length - 1] ? null : nearest);
+        setSnapWeek(nearest === lastWeek ? null : nearest);
       }
     });
     return () => {
       live = false;
     };
-  }, [row.player_name]);
+  }, [row.player_name, lastWeek]);
   useEffect(() => {
     if (snapWeek == null) return;
     let live = true;
@@ -96,8 +96,10 @@ function StatDetailRow({ row, colSpan, shapePeers, wrTePool, tagsByName, maxCeil
       live = false;
     };
   }, [snapWeek]);
-  const weeks = snaps.map((x) => x.week);
   const latestWeek = lastWeek;
+  // The bar's stops: every earlier snapshot week, then the page's own latest week (not the newest snapshot, which can trail it when the
+  // history route's game log is a minute behind the page's -- that made W7 land on W8).
+  const weeks = snaps.length ? [...snaps.map((x) => x.week).filter((v) => v < latestWeek), latestWeek] : [];
   const snap = snapWeek != null && snapWeek !== latestWeek ? snaps.find((x) => x.week === snapWeek) : null;
   const pv = snap ? { ...row, ...snap } : { ...row, week: latestWeek };
   // Dots are evenly spaced: W1 at the very start of the bar, the latest week at
@@ -112,7 +114,7 @@ function StatDetailRow({ row, colSpan, shapePeers, wrTePool, tagsByName, maxCeil
       return;
     }
     const nearest = weeks.reduce((best, x) => (Math.abs(x - w) < Math.abs(best - w) ? x : best), weeks[0]);
-    setSnapWeek(nearest === weeks[weeks.length - 1] ? null : nearest);
+    setSnapWeek(nearest === latestWeek ? null : nearest);
   }
   function scrubTo(e) {
     // The bar sits inside 6px of side padding (room for the handle at either end).
