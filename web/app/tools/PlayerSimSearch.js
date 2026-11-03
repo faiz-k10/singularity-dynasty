@@ -277,8 +277,8 @@ function StatDetailRow({ row, colSpan, shapePeers, wrTePool, tagsByName, maxCeil
                           key={`${g.season}-${g.week}`}
                           className={`pace-game-row${i === pv.recentGames.length - 1 ? " pace-game-row-last" : ""}`}
                         >
-                          <span className="pace-game-week mono">W{g.week} {g.is_home === true ? "vs" : g.is_home === false ? "@" : "·"}</span>
-                          <TeamBadge team={g.opponent} />
+                          <span className="pace-game-week mono">W{g.week}{g.bye ? "" : ` ${g.is_home === true ? "vs" : g.is_home === false ? "@" : "·"}`}</span>
+                          {g.bye ? <span className="pace-game-bye mono">BYE</span> : <TeamBadge team={g.opponent} />}
                           <span className="pace-game-pts mono">
                             {g.fantasy_points_ppr != null ? g.fantasy_points_ppr.toFixed(1) : "—"}
                           </span>

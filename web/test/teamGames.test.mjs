@@ -104,3 +104,17 @@ test("byeWeeks: the weeks his team had no game, not the weeks he sat out", () =>
   assert.deepEqual(missedWeeks(idx, "A"), [4]);
   assert.deepEqual(byeWeeks(idx, "C"), []);
 });
+
+import { recentWeekRows } from "../lib/teamGames.js";
+
+test("recentWeekRows: a bye week is a BYE row worth 0.0 inside the newest three weeks", () => {
+  const g = (week, pts) => ({ season: 2026, week, opponent: "BAL", is_home: false, fantasy_points_ppr: pts });
+  const rows = recentWeekRows([g(4, 9), g(5, 4.2), g(7, 26.8), g(8, 12)], [6], 8);
+  assert.deepEqual(rows.map((r) => r.week), [8, 7, 6]);
+  assert.equal(rows[2].bye, true);
+  assert.equal(rows[2].fantasy_points_ppr, 0);
+  // rewound to week 7 the same bye is still there; before it, there is none
+  assert.deepEqual(recentWeekRows([g(4, 9), g(5, 4.2), g(7, 26.8)], [6], 7).map((r) => r.week), [7, 6, 5]);
+  assert.deepEqual(recentWeekRows([g(4, 9), g(5, 4.2), g(7, 26.8)], [6], 5).map((r) => r.week), [5, 4]);
+  assert.equal(recentWeekRows([], [], 8).length, 0);
+});

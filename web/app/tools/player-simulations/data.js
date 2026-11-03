@@ -7,7 +7,7 @@ import { computeOutcomePercentile } from "@/lib/outcomePercentile";
 import { normalizePlayerName } from "@/lib/portfolio";
 import { fetchAllRows } from "@/lib/fetchAllRows";
 import { ARCHETYPE_NEAR_CONFIDENCE } from "@/lib/archetypes";
-import { byeWeeks, indexGameLog, missedWeeks, teamGamesThrough } from "@/lib/teamGames";
+import { byeWeeks, indexGameLog, missedWeeks, recentWeekRows, teamGamesThrough } from "@/lib/teamGames";
 
 // Data layer of Player Season Simulations, split out of page.js so the Compare Player Sims tool reads the same rows.
 export const TEASER_LIMIT = 10;
@@ -141,21 +141,12 @@ export const getCachedWeekData = unstable_cache(
     const missedWeeksByName = {};
     const byeWeeksByName = {};
     for (const [name, games] of Object.entries(gameIndex.gamesByName)) {
-      recentByName[name] = games
-        .slice(-3)
-        .reverse()
-        .map((g) => ({
-          season: g.season,
-          week: g.week,
-          opponent: g.opponent,
-          is_home: g.is_home,
-          fantasy_points_ppr: g.fantasy_points_ppr,
-        }));
+      const byes = byeWeeks(gameIndex, name);
+      recentByName[name] = recentWeekRows(games, byes);
       const n = teamGamesThrough(gameIndex, name);
       if (n != null) teamGamesByName[name] = n;
       const missed = missedWeeks(gameIndex, name);
       if (missed.length) missedWeeksByName[name] = missed;
-      const byes = byeWeeks(gameIndex, name);
       if (byes.length) byeWeeksByName[name] = byes;
     }
 

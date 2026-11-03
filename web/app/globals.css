@@ -2295,6 +2295,7 @@ a.export-csv-btn{text-decoration:none;}
 .pace-game-row-pad{visibility:hidden;}
 .pace-game-row .team-badge{justify-self:start; font-size:8.5px; height:15px; padding:0 5px; min-width:0; max-width:100%; overflow:hidden; border-radius:2px;}
 .pace-game-week{color:var(--star-dim);}
+.pace-game-bye{justify-self:start; font-size:10px; font-weight:700; letter-spacing:.08em; color:var(--star);}
 .pace-game-pts{justify-self:end; color:var(--star); font-weight:600; font-size:11px;}
 /* Vertical mirror of the main table's own horizontal Range bar (.sim-
    bar-track/-typical/-upside/.pace-marker) -- same maxCeiling-scaled

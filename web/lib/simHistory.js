@@ -5,7 +5,7 @@ import { buildStatPoolByPos, computeStatPercentiles } from "@/lib/statPercentile
 import { computeRegressionScore } from "@/lib/regressionScore";
 import { computeOutcomePercentile } from "@/lib/outcomePercentile";
 import { normalizePlayerName } from "@/lib/portfolio";
-import { indexGameLog, teamGamesThrough } from "@/lib/teamGames";
+import { byeWeeks, indexGameLog, recentWeekRows, teamGamesThrough } from "@/lib/teamGames";
 import { positionRanks } from "@/lib/positionRank";
 
 const GAMES_PER_SEASON = 17;
@@ -120,6 +120,7 @@ export function buildSnapshots(ctx, name) {
   const row = ctx.rowByName[name];
   if (!row) return [];
   const games = ctx.gamesByName[name] || [];
+  const byes = byeWeeks(ctx, name);
   const byWeek = { ...(ctx.historyByName[name] || {}), [ctx.latest.week]: row };
   const out = [];
   for (let w = 1; w <= ctx.lastGameWeek; w++) {
@@ -149,10 +150,7 @@ export function buildSnapshots(ctx, name) {
       regressionScore: reg?.regressionScore ?? null,
       paceSeasonTotal: oc?.paceSeasonTotal ?? null,
       outcomePercentile: oc?.percentile ?? null,
-      recentGames: played
-        .slice(-3)
-        .reverse()
-        .map((g) => ({ season: g.season, week: g.week, opponent: g.opponent, is_home: g.is_home, fantasy_points_ppr: g.fantasy_points_ppr })),
+      recentGames: recentWeekRows(games, byes, w),
       ...(proj.stat_ranges && perc ? { stat_ranges: proj.stat_ranges, ...perc } : {}),
     });
   }

@@ -89,3 +89,16 @@ export function missedSegments(missed, selectedWeek, latestWeek) {
   }
   return out;
 }
+
+// The rows of the pace panel's recent-games list: his newest `n` WEEKS up to `through`, newest first. A game he played is its own row; a
+// week his team had no game is a BYE row worth 0.0 (founder, Nov 3 2026), so a bye reads as a week in the list instead of vanishing.
+// `games` are his logged games (oldest first), `byes` his team's bye weeks.
+export function recentWeekRows(games, byes, through = Infinity, n = 3) {
+  const played = (games || []).filter((g) => g.week <= through);
+  const season = played[played.length - 1]?.season;
+  const byeRows = (byes || []).filter((w) => w <= through).map((week) => ({ season, week, bye: true, fantasy_points_ppr: 0 }));
+  return [...played, ...byeRows]
+    .sort((a, b) => b.week - a.week)
+    .slice(0, n)
+    .map((g) => ({ season: g.season, week: g.week, opponent: g.opponent, is_home: g.is_home, fantasy_points_ppr: g.fantasy_points_ppr, ...(g.bye ? { bye: true } : {}) }));
+}
