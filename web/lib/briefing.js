@@ -94,9 +94,9 @@ export const VK = 44 / EDGE;
 export const radiusFor = (p) => CORE + (1 - p) * (EDGE - CORE);
 // The rings drawn on the map: the standing() cut-offs (Favored 60%+, Toss-up 40-60%, Underdog 15-40%, Long shot under 15%).
 export const RINGS = [
-  { p: 0.6, label: "Favored inside" },
+  { p: 0.6, label: "Favored" },
   { p: 0.4, label: "Toss-up" },
-  { p: 0.15, label: "Long shot outside" },
+  { p: 0.15, label: "Long shot" },
 ];
 
 // Where each league sits: evenly around the core, leaving the top of the map free for the ring labels, at its distance. Leagues with no
