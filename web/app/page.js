@@ -247,7 +247,7 @@ export default async function Home() {
           )}
 
           {yourWeek ? (
-            <GravityMap rows={yourWeek.rows} />
+            <GravityMap rows={yourWeek.rows} now={yourWeek.now} />
           ) : (
             <div className="orbit-signal" aria-hidden="true">
               <div className="os-ring r1"></div>

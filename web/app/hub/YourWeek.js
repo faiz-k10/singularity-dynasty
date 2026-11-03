@@ -20,7 +20,7 @@ export async function loadYourWeek(supabase, user) {
     .order("created_at", { ascending: true });
   if (!teams?.length) return null;
   const feed = buildTeamsFeed(teams, await loadFeedInputs().catch(() => null));
-  return { teams, feed, rows: weekRows(teams), name: displayName(teams) };
+  return { teams, feed, rows: weekRows(teams), name: displayName(teams), now: Date.now() }; // now: the instant the planets are drawn at
 }
 
 const SHOWN = 8;

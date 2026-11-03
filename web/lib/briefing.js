@@ -91,6 +91,10 @@ export const EDGE = 38;
 // Orbits are ellipses that fill the map's height: a body's horizontal distance is in % of the map's width, its vertical distance is VK times that in % of
 // its height (so the outermost orbit reaches 44% of the height, the map being much taller than wide).
 export const VK = 44 / EDGE;
+// Every planet laps the core once every ORBIT_SECONDS, clockwise, timed by the wall clock: angle = its starting angle + how far round the clock is.
+// The same instant gives the same angle on the server and in the browser, so a refresh never restarts the orbit.
+export const ORBIT_SECONDS = 240;
+export const orbitAngle = (a0, ms) => a0 + (360 * ((ms / 1000) % ORBIT_SECONDS)) / ORBIT_SECONDS;
 export const radiusFor = (p) => CORE + (1 - p) * (EDGE - CORE);
 // The rings drawn on the map: the standing() cut-offs (Favored 60%+, Toss-up 40-60%, Underdog 15-40%, Long shot under 15%).
 export const RINGS = [
