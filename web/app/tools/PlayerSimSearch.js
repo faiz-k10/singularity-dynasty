@@ -16,6 +16,7 @@ import { TAG_KINDS } from "@/lib/archetypes";
 import PercentileCard from "./PercentileCard";
 import { radarLayoutFor } from "./radarLayout";
 import { missedSegments } from "@/lib/teamGames";
+import { scrubStops, nearestStop } from "@/lib/scrubStops";
 import useProgressiveCount from "./useProgressiveCount";
 import { ordinal } from "@/lib/format";
 
@@ -79,8 +80,7 @@ function StatDetailRow({ row, colSpan, shapePeers, wrTePool, tagsByName, maxCeil
       const w = pendingWeek.current;
       if (w != null && x.length > 0) {
         pendingWeek.current = null;
-        const ws = [...x.map((y) => y.week).filter((v) => v < lastWeek), lastWeek];
-        const nearest = ws.reduce((best, v) => (Math.abs(v - w) < Math.abs(best - w) ? v : best), ws[0]);
+        const nearest = nearestStop(scrubStops(x.map((y) => y.week), lastWeek), w);
         setSnapWeek(nearest === lastWeek ? null : nearest);
       }
     });
@@ -97,9 +97,7 @@ function StatDetailRow({ row, colSpan, shapePeers, wrTePool, tagsByName, maxCeil
     };
   }, [snapWeek]);
   const latestWeek = lastWeek;
-  // The bar's stops: every earlier snapshot week, then the page's own latest week (not the newest snapshot, which can trail it when the
-  // history route's game log is a minute behind the page's -- that made W7 land on W8).
-  const weeks = snaps.length ? [...snaps.map((x) => x.week).filter((v) => v < latestWeek), latestWeek] : [];
+  const weeks = scrubStops(snaps.map((x) => x.week), latestWeek); // the page's latest week is the last stop, never the newest snapshot
   const snap = snapWeek != null && snapWeek !== latestWeek ? snaps.find((x) => x.week === snapWeek) : null;
   const pv = snap ? { ...row, ...snap } : { ...row, week: latestWeek };
   // Dots are evenly spaced: W1 at the very start of the bar, the latest week at
@@ -113,7 +111,7 @@ function StatDetailRow({ row, colSpan, shapePeers, wrTePool, tagsByName, maxCeil
       pendingWeek.current = w; // applied as soon as the history arrives
       return;
     }
-    const nearest = weeks.reduce((best, x) => (Math.abs(x - w) < Math.abs(best - w) ? x : best), weeks[0]);
+    const nearest = nearestStop(weeks, w);
     setSnapWeek(nearest === latestWeek ? null : nearest);
   }
   function scrubTo(e) {
