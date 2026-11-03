@@ -474,7 +474,7 @@ export default function HubClient({ data, config, defaultTab }) {
   return (
     <section id="hub" className="hub">
       <div className="section-head reveal">
-        <div className="sec-index" aria-hidden="true"><b>01</b><span className="mono">Telemetry</span><i></i><span className="mono">01 / 04</span></div>
+        <div className="sec-index" aria-hidden="true"><b>01</b><i></i><span className="mono">01 / 04</span></div>
         <div className="eyebrow blue">Live data</div>
         <h2>See what the model sees.</h2>
         <p>Real numbers from this week&apos;s projections and the season simulations, in season and out of it. Pick a view, narrow it by position.</p>

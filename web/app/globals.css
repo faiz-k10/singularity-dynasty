@@ -5466,7 +5466,6 @@ html{font-stretch:82%;}
   color:transparent; -webkit-text-stroke:1.5px var(--horizon-gold);
 }
 .sec-index span{font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--star-dim); white-space:nowrap;}
-.sec-index span:first-of-type{color:var(--star);}
 .sec-index i{
   flex:1; height:12px; border-top:1px solid var(--rule-strong);
   background:repeating-linear-gradient(to right, rgba(var(--star-dot-rgb), .4) 0 1px, transparent 1px 14px) 0 0 / 100% 7px no-repeat;

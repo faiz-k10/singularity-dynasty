@@ -285,7 +285,7 @@ export default async function Home() {
 
         <section id="tools">
           <div className="section-head reveal">
-            <div className="sec-index" aria-hidden="true"><b>02</b><span className="mono">Modules</span><i></i><span className="mono">02 / 04</span></div>
+            <div className="sec-index" aria-hidden="true"><b>02</b><i></i><span className="mono">02 / 04</span></div>
           <div className="eyebrow blue">What&apos;s Inside</div>
             <h2>Six tools. One gravity well.</h2>
             <p>
@@ -438,7 +438,7 @@ export default async function Home() {
 
         <section id="pricing">
           <div className="section-head reveal">
-            <div className="sec-index" aria-hidden="true"><b>03</b><span className="mono">Titles</span><i></i><span className="mono">03 / 04</span></div>
+            <div className="sec-index" aria-hidden="true"><b>03</b><i></i><span className="mono">03 / 04</span></div>
             <div className="eyebrow">Pricing</div>
             <h2>Every subscriber earns a title.</h2>
             <p>
@@ -477,7 +477,7 @@ export default async function Home() {
 
         <section id="feed" className="feed-section">
           <div className="section-head reveal">
-            <div className="sec-index" aria-hidden="true"><b>04</b><span className="mono">Transmissions</span><i></i><span className="mono">04 / 04</span></div>
+            <div className="sec-index" aria-hidden="true"><b>04</b><i></i><span className="mono">04 / 04</span></div>
             <div className="eyebrow blue">The Feed</div>
             <h2>Cutting-edge dynasty &amp; fantasy football, in your inbox.</h2>
             <p>
