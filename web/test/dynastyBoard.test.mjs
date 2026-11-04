@@ -115,3 +115,9 @@ test("profileRead: only facts from his own numbers", () => {
   assert.match(old, /Age is the drag/);
   assert.doesNotMatch(old, /Ranks #|Holds his rank/);
 });
+
+test("same displayed score: the younger player ranks first", () => {
+  const mk = (id, age, ageValue, por) => ({ id, age, ageValue, ppg: 10, porSf: por, por1qb: por, sdProd: 1 });
+  const out = scoreRows([mk("old", 31, 5, 5.04), mk("young", 24, 5, 5.0)], "sf", "contender");
+  assert.equal(out[0].id, "young");
+});

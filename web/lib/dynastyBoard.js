@@ -69,7 +69,7 @@ export function scoreRows(rows, formatKey, modeKey) {
       const sd = m.prod * r.sdProd;
       return { ...r, prod: r[f.key], score, sd, lo: score - 1.2816 * sd, hi: score + 1.2816 * sd };
     })
-    .sort((a, b) => b.score - a.score || b.ppg - a.ppg);
+    .sort((a, b) => Math.round(b.score * 10) - Math.round(a.score * 10) || a.age - b.age || b.score - a.score || b.ppg - a.ppg); // same score as shown (1 decimal): the younger player first
 }
 
 // z of "row i beats row j" for i above j (sorted best first)
