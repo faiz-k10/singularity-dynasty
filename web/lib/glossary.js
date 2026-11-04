@@ -60,7 +60,7 @@ const CORE = [
   {
     group: "Dynasty",
     terms: [
-      ["Dynasty score", "Production over replacement and age value blended into one number: 80/20 for a contender, 50/50 for a rebuilder."],
+      ["Dynasty score", "Production over replacement and age value blended into one number: 80/20 for a contender, 55/45 for a rebuilder."],
       ["Production over replacement", "His recent points a game (last 34 games, recent ones weighted most) above the player you could pick up to replace him at his position."],
       ["Age value", "How much of his production players of his position and age have kept over the next three seasons, on a 1-10 scale."],
       ["Tier", "Players nobody below can be separated from with real confidence. A tier break is where the numbers say the gap is real."],

@@ -17,7 +17,7 @@
 
 export const MODES = {
   contender: { label: "Contender", prod: 0.8, age: 0.2 },
-  rebuilder: { label: "Rebuilder", prod: 0.5, age: 0.5 },
+  rebuilder: { label: "Rebuilder", prod: 0.55, age: 0.45 },
 };
 export const FORMATS = {
   sf: { label: "Superflex", key: "porSf" },

@@ -61,7 +61,7 @@ d$por_1qb <- por("1QB"); d$por_sf <- por("SF")
 d$sd_prod <- round(sd_prod[d$position], 2)
 
 # keep the board to the players who can matter: the top KEEP by his best score under any format / mode
-d$best <- pmax(0.8 * pmax(d$por_1qb, d$por_sf) + 0.2 * d$age_value, 0.5 * pmax(d$por_1qb, d$por_sf) + 0.5 * d$age_value)
+d$best <- pmax(0.8 * pmax(d$por_1qb, d$por_sf) + 0.2 * d$age_value, 0.55 * pmax(d$por_1qb, d$por_sf) + 0.45 * d$age_value)
 d <- d[order(-d$best), ][seq_len(min(KEEP, nrow(d))), ]
 out <- d[order(-d$por_sf), c("player_id", "player", "position", "team", "age", "games_in_window", "ppg_weighted",
                               "age_value", "por_1qb", "por_sf", "sd_prod")]
