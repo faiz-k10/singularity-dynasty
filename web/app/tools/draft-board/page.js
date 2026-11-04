@@ -78,18 +78,15 @@ function BoardToggle({ active }) {
 }
 
 async function RankingsView({ hasFullAccess }) {
-  const { rows, built, total, meta } = getDynastyRows(hasFullAccess);
+  const { rows, total, meta } = getDynastyRows(hasFullAccess);
   return (
     <>
       <InteractiveScript />
       <main id="main-content" className="wrap tool-wrap">
         <div className="tool-header-split">
           <div className="tool-header-left">
-            <div className="eyebrow">{`Dynasty · built ${built}`}</div>
+            <div className="eyebrow">{"Dynasty"}</div>
             <h1>Dynasty Draft Board</h1>
-            <p className="tool-sub">
-              Every player ranked by dynasty value, with the ranking drawn as a recipe: who is tied, which tier, which group.
-            </p>
           </div>
           <div className="tool-header-right">
             <BoardToggle active="rankings" />
