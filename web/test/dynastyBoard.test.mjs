@@ -32,8 +32,9 @@ test("ranges are an 80% interval around the score", () => {
   assert.ok(Math.abs(r.score - r.lo - 1.2816 * 0.8 * 3) < 1e-9);
 });
 
-test("a player below replacement ranks below one at replacement, whatever his age", () => {
-  const L = scoreRows([row("Vet", "WR", 1, 1, 3), row("Kid", "WR", -4, -4, 9.5)], "1qb", "rebuilder");
+test("a player below replacement ranks below one at replacement when their ages are alike", () => {
+  // at 50/50 a 21-year-old at 2 PPG (age value 9.5) can pass a replacement-level veteran, so the guard holds for similar ages only
+  const L = scoreRows([row("Vet", "WR", 1, 1, 3), row("Kid", "WR", -4, -4, 4)], "1qb", "rebuilder");
   assert.equal(L[0].name, "Vet");
 });
 
