@@ -17,7 +17,7 @@
 
 export const MODES = {
   contender: { label: "Contender", prod: 0.8, age: 0.2 },
-  rebuilder: { label: "Rebuilder", prod: 0.5, age: 0.5 },
+  rebuilder: { label: "Rebuilder", prod: 0.5, age: 0.5, short: true }, // short: production from his last 17 games (Contender: 34)
 };
 export const FORMATS = {
   sf: { label: "Superflex", key: "porSf" },
@@ -66,6 +66,8 @@ export function rowsFromData(data) {
   return data.rows.map((r) => ({
     id: r[at("player_id")], name: r[at("player")], pos: r[at("position")], team: r[at("team")], age: r[at("age")],
     games: r[at("games_in_window")], ppg: r[at("ppg_weighted")],
+    // the Rebuilder's production numbers (last 17 games); absent in an older data file, then scoreRows uses the long ones
+    gamesS: r[at("games_s")], ppgS: r[at("ppg_s")], por1qbS: r[at("por_1qb_s")], porSfS: r[at("por_sf_s")], sdProdS: r[at("sd_prod_s")],
     ageValue: data.age_curve?.[r[at("position")]] ? ageValueAt(data.age_curve[r[at("position")]], r[at("age")] + AGE_LOOKAHEAD) : r[at("age_value")],
     por1qb: r[at("por_1qb")], porSf: r[at("por_sf")], sdProd: r[at("sd_prod")],
   }));
@@ -74,7 +76,10 @@ export function rowsFromData(data) {
 // What the player profile draws besides the rows: replacement PPG per format and position, the top of the production scale,
 // the per-position age curve ([age, age value, share of production kept over the next 3 seasons]) and the memory settings.
 export function metaFromData(data) {
-  return { built: data.built, window: data.window, vHi: data.v_hi, replacement: data.replacement, ageCurve: data.age_curve };
+  return {
+    built: data.built, window: data.window, windowShort: data.window_short || data.window, vHi: data.v_hi,
+    replacement: data.replacement, replacementShort: data.replacement_short || data.replacement, ageCurve: data.age_curve,
+  };
 }
 
 // Standard normal CDF (Abramowitz-Stegun 7.1.26 on erf, |error| < 1.5e-7).
@@ -89,9 +94,12 @@ export function scoreRows(rows, formatKey, modeKey) {
   const f = FORMATS[formatKey] || FORMATS["1qb"], m = MODES[modeKey] || MODES.contender;
   return rows
     .map((r) => {
-      const score = m.prod * r[f.key] + m.age * r.ageValue;
-      const sd = m.prod * r.sdProd;
-      return { ...r, prod: r[f.key], score, sd, lo: score - 1.2816 * sd, hi: score + 1.2816 * sd };
+      // a mode with `short` reads the 17-game production numbers (ppg, games, production score, sd); the row carries the ones in use
+      const s = m.short && r.ppgS != null;
+      const prod = s ? r[f.key + "S"] : r[f.key], sdProd = s ? r.sdProdS : r.sdProd;
+      const score = m.prod * prod + m.age * r.ageValue;
+      const sd = m.prod * sdProd;
+      return { ...r, ppg: s ? r.ppgS : r.ppg, games: s ? r.gamesS : r.games, prod, score, sd, lo: score - 1.2816 * sd, hi: score + 1.2816 * sd };
     })
     .sort((a, b) => Math.round(b.score * 10) - Math.round(a.score * 10) || a.age - b.age || b.score - a.score || b.ppg - a.ppg); // same score as shown (1 decimal): the younger player first
 }

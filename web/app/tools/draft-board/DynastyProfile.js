@@ -118,7 +118,8 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
   }, [complete, rows, p.id, p.pos]);
   const here = grid?.find((c) => c.fk === format && c.mk === mode);
 
-  const repl = meta.replacement[format.toUpperCase()][p.pos];
+  const repl = (m.short ? meta.replacementShort : meta.replacement)[format.toUpperCase()][p.pos];
+  const win = m.short ? meta.windowShort : meta.window;
   const curve = meta.ageCurve[p.pos];
   const keptAge = p.age + AGE_LOOKAHEAD;
   const kept = (() => { const c = curve.reduce((b, r) => (Math.abs(r[0] - keptAge) < Math.abs(b[0] - keptAge) ? r : b), curve[0]); return c[2]; })();
@@ -179,7 +180,7 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
               <span className="dp-r-w mono">× {Math.round(m.prod * 100)}%</span>
               <span className="dp-r-eq mono">{prodC.toFixed(1)}</span>
             </div>
-            <div className="dp-r-sub mono">{p.ppg.toFixed(1)} PPG over his last {meta.window.games} games, replacement {p.pos} {repl.toFixed(1)} → {(p.ppg - repl >= 0 ? "+" : "") + (p.ppg - repl).toFixed(1)} a game</div>
+            <div className="dp-r-sub mono">{p.ppg.toFixed(1)} PPG over his last {win.games} games, replacement {p.pos} {repl.toFixed(1)} → {(p.ppg - repl >= 0 ? "+" : "") + (p.ppg - repl).toFixed(1)} a game</div>
             <div className="dp-r-row">
               <span className="dp-r-name">Age</span>
               <span className="dp-r-val mono">{p.ageValue.toFixed(1)}</span>
@@ -197,8 +198,8 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
 
         <section className="dp-sec">
           <h3 className="board-panel-title">Production, game by game</h3>
-          {data?.log ? <Timeline log={data.log} level={p.ppg} repl={repl} /> : <div className="dp-chart-skel">{data ? "No game log yet." : "Loading his games…"}</div>}
-          <p className="dp-cap">Each bar is a game. His level is weighted toward the newest, with a half-life of {meta.window.half_life} games.</p>
+          {data?.log ? <Timeline log={{ w: data.log.w.slice(-win.games), p: data.log.p.slice(-win.games) }} level={p.ppg} repl={repl} /> : <div className="dp-chart-skel">{data ? "No game log yet." : "Loading his games…"}</div>}
+          <p className="dp-cap">Each bar is a game. His level is weighted toward the newest, with a half-life of {win.half_life} games.</p>
         </section>
 
         <section className="dp-sec">

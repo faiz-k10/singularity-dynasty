@@ -27,8 +27,11 @@ source("dynasty_params.R")   # WINDOW, HALF_LIFE
 REF_SEASONS <- 2012:2025
 POSITIONS   <- c("QB", "RB", "WR", "TE")
 MIN_GAMES   <- 8      # a real season, for the reference pool
-WINDOW      <- 34     # games; was 17 / half-life 8 until Oct 29 2026 -- backtest_production_window.R: a longer memory predicts next
-HALF_LIFE   <- 17     # season better (WR -2.1% RMSE, QB -1.4%, TE -0.3%, RB +0.4% vs 17 / 8), and one setting keeps the rule simple
+# WINDOW / HALF_LIFE come from dynasty_params.R (34 / 17, the Contender's number); `DYN_WINDOW=17 DYN_HALF_LIFE=8 DYN_SUFFIX=_short Rscript
+# dynasty_production_value.R` makes the Rebuilder's shorter version into files with that suffix (dynasty_value.R reads both).
+WINDOW      <- as.integer(Sys.getenv("DYN_WINDOW", WINDOW))
+HALF_LIFE   <- as.numeric(Sys.getenv("DYN_HALF_LIFE", HALF_LIFE))
+SUF         <- Sys.getenv("DYN_SUFFIX", "")
 LO_PCT      <- 5      # score 1
 HI_PCT      <- 99     # score 10
 MIN_WINDOW  <- 6      # fewer than this many games in the window -> `thin`
@@ -56,14 +59,14 @@ ref <- do.call(rbind, lapply(seq_len(nrow(sea)), function(i) {
   data.frame(position = sea$position[i], season = sea$season[i], ppg = wppg(d$fantasy_points_ppr))
 }))
 cat("reference seasons:", nrow(ref), "\n")
-write.csv(ref, "dynasty_production_reference.csv", row.names = FALSE)   # read by dynasty_value.R (replacement levels)
+write.csv(ref, paste0("dynasty_production_reference", SUF, ".csv"), row.names = FALSE)   # read by dynasty_value.R (replacement levels)
 
 # ---- anchors: quantiles 0..100 per position ----
 anch <- do.call(rbind, lapply(POSITIONS, function(p) {
   x <- ref$ppg[ref$position == p]
   data.frame(position = p, pct = 0:100, ppg = as.numeric(quantile(x, (0:100) / 100)), n = length(x))
 }))
-write.csv(anch, "dynasty_production_anchors.csv", row.names = FALSE)
+write.csv(anch, paste0("dynasty_production_anchors", SUF, ".csv"), row.names = FALSE)
 
 pool_pct <- function(position, ppg, anchors = anch) mapply(function(p, v) {
   a <- anchors[anchors$position == p, ]
@@ -96,7 +99,7 @@ out$ppg_weighted <- round(out$ppg_weighted, 2)
 out <- out[order(out$position, -out$production_value, -out$ppg_weighted),
            c("player_id", "player_display_name", "position", "team", "games_in_window", "ppg_weighted", "production_value", "pct", "thin")]
 names(out)[2] <- "player"
-write.csv(out, "dynasty_production_value.csv", row.names = FALSE)
+write.csv(out, paste0("dynasty_production_value", SUF, ".csv"), row.names = FALSE)
 
 cat("\nweighted PPG needed for each score:\n")
 sc <- c(1, 3, 5, 7, 8, 9, 10)

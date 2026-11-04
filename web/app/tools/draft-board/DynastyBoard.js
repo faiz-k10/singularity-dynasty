@@ -180,7 +180,7 @@ export default function DynastyBoard({ rows, meta, complete }) {
           <h3 className="board-panel-title">Value</h3>
           <p>
             Recency-weighted points per game over a replacement-level player at his position (replacement is set by how many starters the format needs),
-            blended with how well his position keeps its production at his age. Contender leans on production; Rebuilder gives age more weight.
+            blended with how well his position keeps its production at his age. Contender leans on production over his last 34 games; Rebuilder gives age more weight and reads only his last 17.
           </p>
         </div>
       </div>

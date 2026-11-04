@@ -139,3 +139,15 @@ test("form arrow compares the last 8 games to his weighted level", () => {
   assert.equal(formTrend([5, 5, 5], 12), null);
   assert.equal(formTrend(undefined, 12), null);
 });
+
+test("Rebuilder reads the 17-game production numbers, Contender the 34-game ones", () => {
+  const cols = ["player_id", "player", "position", "team", "age", "games_in_window", "ppg_weighted", "age_value", "por_1qb", "por_sf", "sd_prod", "ppg_s", "games_s", "por_1qb_s", "por_sf_s", "sd_prod_s"];
+  const d = { columns: cols, rows: [["a", "A", "WR", "X", 25, 34, 12, 5, 2, 2, 1, 15, 17, 4, 4, 2]] };
+  const [r] = rowsFromData(d);
+  const con = scoreRows([r], "1qb", "contender")[0], reb = scoreRows([r], "1qb", "rebuilder")[0];
+  assert.equal(con.ppg, 12); assert.equal(con.games, 34); assert.equal(con.prod, 2); assert.equal(con.sd, 0.8 * 1);
+  assert.equal(reb.ppg, 15); assert.equal(reb.games, 17); assert.equal(reb.prod, 4); assert.equal(reb.sd, 0.5 * 2);
+  // an older data file with no short columns: Rebuilder falls back to the long numbers
+  const old = rowsFromData({ columns: cols.slice(0, 11), rows: [["a", "A", "WR", "X", 25, 34, 12, 5, 2, 2, 1]] });
+  assert.equal(scoreRows(old, "1qb", "rebuilder")[0].ppg, 12);
+});

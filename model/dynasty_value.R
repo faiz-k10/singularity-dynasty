@@ -29,26 +29,37 @@ AGE_DATE  <- as.Date("2026-09-01")
 
 prod <- read.csv("dynasty_production_value.csv")
 ref  <- read.csv("dynasty_production_reference.csv")
+prod_s <- read.csv("dynasty_production_value_short.csv")        # the Rebuilder's 17-game / half-life 8 number (see dynasty_params.R)
+ref_s  <- read.csv("dynasty_production_reference_short.csv")
 agev <- read.csv("dynasty_age_value.csv")
 bt   <- readRDS("backtest_production_window_results.rds")   # same window / half-life as dynasty_production_value.R
 
 # replacement PPG: the weighted PPG at that rank in each season's pool, averaged over seasons
-repl <- sapply(names(REPL_RANK), function(f) sapply(POSITIONS, function(p) {
+replacement_ppg <- function(ref) sapply(names(REPL_RANK), function(f) sapply(POSITIONS, function(p) {
   r <- REPL_RANK[[f]][[p]]
   mean(sapply(unique(ref$season[ref$season >= REPL_FROM]), function(s) {
     x <- sort(ref$ppg[ref$position == p & ref$season == s], decreasing = TRUE)
     x[min(r, length(x))]
   }))
 }))
-cat("replacement PPG:\n"); print(round(repl, 2))
+repl   <- replacement_ppg(ref)     # Contender: 34-game memory
+repl_s <- replacement_ppg(ref_s)   # Rebuilder: 17-game memory
+cat("replacement PPG (34 games, Contender):\n"); print(round(repl, 2))
+cat("replacement PPG (17 games, Rebuilder):\n"); print(round(repl_s, 2))
 
 rmse <- sapply(POSITIONS, function(p) bt$rmse_y1[bt$position == p & bt$window == WINDOW & bt$half_life == HALF_LIFE])
 sd_prod <- 9 / V_HI * rmse
+rmse_s <- sapply(POSITIONS, function(p) bt$rmse_y1[bt$position == p & bt$window == WINDOW_SHORT & bt$half_life == HALF_LIFE_SHORT])
+sd_prod_s <- 9 / V_HI * rmse_s
 
 ros <- as.data.frame(load_rosters(as.integer(format(AGE_DATE, "%Y"))))
 ros <- ros[!duplicated(ros$gsis_id), c("gsis_id", "birth_date")]
 d <- merge(prod, ros, by.x = "player_id", by.y = "gsis_id")
 d <- d[!d$thin & !is.na(d$birth_date), ]
+# the Rebuilder's 17-game number; a player without one (fewer than 6 games in his last 17) keeps the 34-game number
+d <- merge(d, prod_s[, c("player_id", "ppg_weighted", "games_in_window")], by = "player_id", all.x = TRUE, suffixes = c("", "_s"))
+d$ppg_s   <- ifelse(is.na(d$ppg_weighted_s), d$ppg_weighted, d$ppg_weighted_s)
+d$games_s <- ifelse(is.na(d$games_in_window_s), d$games_in_window, d$games_in_window_s)
 d$age <- round(as.numeric(AGE_DATE - as.Date(d$birth_date)) / 365.25, 1)
 d$age_value <- mapply(function(p, a) {
   t <- agev[agev$position == p, ]
@@ -59,12 +70,15 @@ d$age_value <- mapply(function(p, a) {
 por <- function(f) round(1 + 9 * (d$ppg_weighted - repl[cbind(d$position, f)]) / V_HI, 2)
 d$por_1qb <- por("1QB"); d$por_sf <- por("SF")
 d$sd_prod <- round(sd_prod[d$position], 2)
+por_s <- function(f) round(1 + 9 * (d$ppg_s - repl_s[cbind(d$position, f)]) / V_HI, 2)
+d$por_1qb_s <- por_s("1QB"); d$por_sf_s <- por_s("SF")
+d$sd_prod_s <- round(sd_prod_s[d$position], 2)
 
 # keep the board to the players who can matter: the top KEEP by his best score under any format / mode
-d$best <- pmax(0.8 * pmax(d$por_1qb, d$por_sf) + 0.2 * d$age_value, 0.5 * pmax(d$por_1qb, d$por_sf) + 0.5 * d$age_value)
+d$best <- pmax(0.8 * pmax(d$por_1qb, d$por_sf) + 0.2 * d$age_value, 0.5 * pmax(d$por_1qb_s, d$por_sf_s) + 0.5 * d$age_value)
 d <- d[order(-d$best), ][seq_len(min(KEEP, nrow(d))), ]
 out <- d[order(-d$por_sf), c("player_id", "player", "position", "team", "age", "games_in_window", "ppg_weighted",
-                              "age_value", "por_1qb", "por_sf", "sd_prod")]
+                              "age_value", "por_1qb", "por_sf", "sd_prod", "ppg_s", "games_s", "por_1qb_s", "por_sf_s", "sd_prod_s")]
 write.csv(out, "dynasty_value.csv", row.names = FALSE)
 
 # the site's data file: rows as a compact array, plus what the player profile draws
@@ -73,8 +87,10 @@ rows <- vapply(seq_len(nrow(out)), function(i) paste0("[", paste(vapply(out[i, ]
 meta <- toJSON(list(
   built = format(Sys.Date()),
   window = list(games = WINDOW, half_life = HALF_LIFE),
+  window_short = list(games = WINDOW_SHORT, half_life = HALF_LIFE_SHORT),
   v_hi = V_HI,
   replacement = lapply(setNames(colnames(repl), colnames(repl)), function(f) setNames(as.list(round(repl[, f], 2)), rownames(repl))),
+  replacement_short = lapply(setNames(colnames(repl_s), colnames(repl_s)), function(f) setNames(as.list(round(repl_s[, f], 2)), rownames(repl_s))),
   age_curve = lapply(setNames(POSITIONS, POSITIONS), function(p) { t <- agev[agev$position == p & agev$age <= 40, ]
     unname(Map(function(a, v, r) c(a, round(v, 1), round(r, 3)), t$age, t$age_value_cross, t$retained_smooth)) })
 ), auto_unbox = TRUE, digits = NA)

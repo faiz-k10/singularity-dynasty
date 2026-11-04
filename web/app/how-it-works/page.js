@@ -156,7 +156,7 @@ export default function HowItWorksPage() {
             <article className="doc-card">
               <h3>Dynasty values</h3>
               <p>
-                <Define term="production-over-replacement">Production over replacement</Define> (his last 34 games, recent ones weighted most) blended with
+                <Define term="production-over-replacement">Production over replacement</Define> (his last 34 games for a contender, his last 17 for a rebuilder, recent ones weighted most) blended with
                 <Define term="age-value"> age value</Define> (how much production players of his position and age keep over three seasons). Contenders weight
                 production 80/20, rebuilders 50/50. Tiers break only where the gap is statistically real.
               </p>
