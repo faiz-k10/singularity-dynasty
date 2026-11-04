@@ -151,3 +151,10 @@ test("Rebuilder reads the 17-game production numbers, Contender the 34-game ones
   const old = rowsFromData({ columns: cols.slice(0, 11), rows: [["a", "A", "WR", "X", 25, 34, 12, 5, 2, 2, 1]] });
   assert.equal(scoreRows(old, "1qb", "rebuilder")[0].ppg, 12);
 });
+
+test("same displayed score: the player earlier on his position's age curve ranks first, not just the youngest", () => {
+  const mk = (id, age, ageValue, por) => ({ id, age, ageValue, ppg: 10, porSf: por, por1qb: por, sdProd: 1 });
+  // young but late on his curve (RB, age value 4) vs older but early on his (QB, age value 6): the QB goes first
+  const out = scoreRows([mk("youngRB", 23, 4, 6), mk("olderQB", 29, 6, 4)], "sf", "rebuilder");
+  assert.equal(out[0].id, "olderQB");
+});

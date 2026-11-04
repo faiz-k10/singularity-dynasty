@@ -101,7 +101,7 @@ export function scoreRows(rows, formatKey, modeKey) {
       const sd = m.prod * sdProd;
       return { ...r, ppg: s ? r.ppgS : r.ppg, games: s ? r.gamesS : r.games, prod, score, sd, lo: score - 1.2816 * sd, hi: score + 1.2816 * sd };
     })
-    .sort((a, b) => Math.round(b.score * 10) - Math.round(a.score * 10) || a.age - b.age || b.score - a.score || b.ppg - a.ppg); // same score as shown (1 decimal): the younger player first
+    .sort((a, b) => Math.round(b.score * 10) - Math.round(a.score * 10) || b.ageValue - a.ageValue || a.age - b.age || b.score - a.score || b.ppg - a.ppg); // same score as shown (1 decimal): the player earlier on his own position's age curve first (higher age value = more years at this level), then the younger
 }
 
 // z of "row i beats row j" for i above j (sorted best first)
