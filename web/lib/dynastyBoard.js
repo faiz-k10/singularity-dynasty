@@ -36,13 +36,27 @@ export function boardRows(rows, { format, mode, pos }) {
 // the probit of each P above: Phi(z) = P
 const Z_TIE = 0.1257, Z_TIER = 0.3853, Z_GROUP = 0.8416;
 
+// A player is scored on the age he will be AGE_LOOKAHEAD years from now, on his position's age curve (founder, Nov 3 2026:
+// a 24-year-old and a 32-year-old QB were nearly level on today's age, because QBs keep their production until about 31).
+export const AGE_LOOKAHEAD = 3;
+
+// age value ([age, age value, share kept] rows, sorted by age) at an age, straight lines between ages, held at the ends
+export function ageValueAt(curve, age) {
+  const a = Math.min(Math.max(age, curve[0][0]), curve.at(-1)[0]);
+  for (let i = 0; i < curve.length - 1; i++) {
+    if (a <= curve[i + 1][0]) return curve[i][1] + ((a - curve[i][0]) / (curve[i + 1][0] - curve[i][0])) * (curve[i + 1][1] - curve[i][1]);
+  }
+  return curve.at(-1)[1];
+}
+
 // model/dynasty_value.R writes { columns, rows: [[...]] }; this makes row objects
 export function rowsFromData(data) {
   const c = data.columns;
   const at = (n) => c.indexOf(n);
   return data.rows.map((r) => ({
     id: r[at("player_id")], name: r[at("player")], pos: r[at("position")], team: r[at("team")], age: r[at("age")],
-    games: r[at("games_in_window")], ppg: r[at("ppg_weighted")], ageValue: r[at("age_value")],
+    games: r[at("games_in_window")], ppg: r[at("ppg_weighted")],
+    ageValue: data.age_curve?.[r[at("position")]] ? ageValueAt(data.age_curve[r[at("position")]], r[at("age")] + AGE_LOOKAHEAD) : r[at("age_value")],
     por1qb: r[at("por_1qb")], porSf: r[at("por_sf")], sdProd: r[at("sd_prod")],
   }));
 }

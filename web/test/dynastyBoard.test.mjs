@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { boardRows, buildBoard, metaFromData, pBetter, phi, profileRead, rowsFromData, scoreRows } from "../lib/dynastyBoard.js";
+import { AGE_LOOKAHEAD, ageValueAt, boardRows, buildBoard, metaFromData, pBetter, phi, profileRead, rowsFromData, scoreRows } from "../lib/dynastyBoard.js";
 import data from "../data/dynasty-values.json" with { type: "json" };
 
 const row = (name, pos, p1, ps, age, sd = 2) => ({ id: name, name, pos, team: "AAA", age: 25, games: 17, ppg: 15, ageValue: age, por1qb: p1, porSf: ps, sdProd: sd });
@@ -121,4 +121,13 @@ test("same displayed score: the younger player ranks first", () => {
   const mk = (id, age, ageValue, por) => ({ id, age, ageValue, ppg: 10, porSf: por, por1qb: por, sdProd: 1 });
   const out = scoreRows([mk("old", 31, 5, 5.04), mk("young", 24, 5, 5.0)], "sf", "contender");
   assert.equal(out[0].id, "young");
+});
+
+test("age value is read at the age he will be in three years", () => {
+  const curve = [[22, 9, 0.7], [25, 6, 0.7], [28, 3, 0.6], [31, 1, 0.5]];
+  assert.equal(AGE_LOOKAHEAD, 3);
+  assert.equal(ageValueAt(curve, 26.5), 4.5);
+  assert.equal(ageValueAt(curve, 40), 1);
+  const data = { age_curve: { QB: curve }, columns: ["player_id", "player", "position", "team", "age", "games_in_window", "ppg_weighted", "age_value", "por_1qb", "por_sf", "sd_prod"], rows: [["a", "A", "QB", "X", 23.5, 20, 15, 9, 3, 3, 2]] };
+  assert.equal(rowsFromData(data)[0].ageValue, 4.5);
 });

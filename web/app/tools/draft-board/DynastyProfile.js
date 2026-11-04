@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import PositionBadge from "../PositionBadge";
 import TeamBadge from "../TeamBadge";
-import { FORMATS, GROUP_NAMES, MODES, pBetter, profileRead, scoreRows } from "@/lib/dynastyBoard";
+import { AGE_LOOKAHEAD, FORMATS, GROUP_NAMES, MODES, pBetter, profileRead, scoreRows } from "@/lib/dynastyBoard";
 import { formatHeight } from "@/lib/format";
 import useFocusTrap from "../../useFocusTrap";
 import ShareCardButton from "../../ShareCardButton";
@@ -60,12 +60,13 @@ function Timeline({ log, level, repl }) {
 }
 
 // His position's age value by age, him on it, and the three seasons a buyer is paying for shaded.
-function AgeCurve({ curve, age, value }) {
+function AgeCurve({ curve, age, value }) { // age = his age now; the dot sits on the age he will be in AGE_LOOKAHEAD years
   const W = 480, H = 130, L = 26, R = 8, T = 10, B = 22;
   const lo = curve[0][0], hi = curve.at(-1)[0];
   const x = (a) => L + ((a - lo) / (hi - lo)) * (W - L - R);
   const y = (v) => T + (1 - (v - 1) / 9) * (H - T - B);
   const a = Math.min(Math.max(age, lo), hi);
+  const b = Math.min(a + AGE_LOOKAHEAD, hi);
   return (
     <svg className="dp-chart" viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Age value by age at his position">
       {[1, 5, 10].map((g) => (
@@ -74,12 +75,12 @@ function AgeCurve({ curve, age, value }) {
           <text x={L - 5} y={y(g) + 3} className="dp-axis" textAnchor="end">{g}</text>
         </g>
       ))}
-      <rect x={x(a)} y={T} width={Math.max(0, x(Math.min(a + 3, hi)) - x(a))} height={H - T - B} className="dp-band" />
+      <rect x={x(a)} y={T} width={Math.max(0, x(b) - x(a))} height={H - T - B} className="dp-band" />
       <polyline className="dp-curve" points={curve.map(([ag, v]) => `${x(ag)},${y(v)}`).join(" ")} />
-      <line x1={x(a)} x2={x(a)} y1={y(value)} y2={H - B} className="dp-drop" />
-      <circle cx={x(a)} cy={y(value)} r="4.6" className="dp-dot" />
+      <line x1={x(b)} x2={x(b)} y1={y(value)} y2={H - B} className="dp-drop" />
+      <circle cx={x(b)} cy={y(value)} r="4.6" className="dp-dot" />
       {[25, 30, 35, 40].filter((t) => t >= lo && t <= hi).map((t) => <text key={t} x={x(t)} y={H - 6} className="dp-axis" textAnchor="middle">{t}</text>)}
-      <text x={Math.min(x(a) + 8, W - R - 4)} y={y(value) - 8} className="dp-label is-level" textAnchor={x(a) > W - 90 ? "end" : "start"}>{age.toFixed(1)} · {value.toFixed(1)}</text>
+      <text x={Math.min(x(b) + 8, W - R - 4)} y={y(value) - 8} className="dp-label is-level" textAnchor={x(b) > W - 90 ? "end" : "start"}>{(age + AGE_LOOKAHEAD).toFixed(1)} · {value.toFixed(1)}</text>
     </svg>
   );
 }
@@ -119,7 +120,8 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
 
   const repl = meta.replacement[format.toUpperCase()][p.pos];
   const curve = meta.ageCurve[p.pos];
-  const kept = (() => { const c = curve.reduce((b, r) => (Math.abs(r[0] - p.age) < Math.abs(b[0] - p.age) ? r : b), curve[0]); return c[2]; })();
+  const keptAge = p.age + AGE_LOOKAHEAD;
+  const kept = (() => { const c = curve.reduce((b, r) => (Math.abs(r[0] - keptAge) < Math.abs(b[0] - keptAge) ? r : b), curve[0]); return c[2]; })();
   const neighbours = [...L.slice(Math.max(0, i - 3), i), ...L.slice(i + 1, i + 4)];
   const size = [formatHeight(data?.bio?.height), data?.bio?.weight ? `${data.bio.weight} lbs` : null, data?.bio?.yearsExp != null ? (data.bio.yearsExp === 0 ? "Rookie" : `Year ${data.bio.yearsExp + 1}`) : null].filter(Boolean);
   const prodC = m.prod * p.prod, ageC = m.age * p.ageValue;
@@ -184,7 +186,7 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
               <span className="dp-r-w mono">× {Math.round(m.age * 100)}%</span>
               <span className="dp-r-eq mono">{ageC.toFixed(1)}</span>
             </div>
-            <div className="dp-r-sub mono">{p.pos}s of his age keep about {Math.round(kept * 100)}% of their production over the next three seasons</div>
+            <div className="dp-r-sub mono">{p.pos}s of the age he will be in {AGE_LOOKAHEAD} years ({keptAge.toFixed(1)}) keep about {Math.round(kept * 100)}% of their production over the three seasons after that</div>
             <div className="dp-stack" role="img" aria-label="Production and age shares of the score">
               <span className="dp-stack-prod" style={{ width: `${Math.max(0, prodC) * 10}%` }} />
               <span className="dp-stack-age" style={{ width: `${Math.max(0, ageC) * 10}%` }} />
@@ -202,7 +204,7 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
         <section className="dp-sec">
           <h3 className="board-panel-title">His age curve</h3>
           <AgeCurve curve={curve} age={p.age} value={p.ageValue} />
-          <p className="dp-cap">Age value for {p.pos}s from 2008–25: how much production players of that age kept over the next three seasons, counting those who dropped out. The shaded band is the three seasons.</p>
+          <p className="dp-cap">Age value for {p.pos}s from 2008–25: how much production players of that age kept over the next three seasons, counting those who dropped out. He is scored on his age three years from now (the dot); the shaded band is the years in between.</p>
         </section>
 
         <section className="dp-sec">
