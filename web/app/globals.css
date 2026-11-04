@@ -6144,6 +6144,9 @@ select.lab-select{min-width:200px; padding-right:8px; cursor:pointer;}
 .dr-name{all:unset; cursor:pointer; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; border-bottom:1px solid transparent;}
 .dr-name:hover, .dr-name:focus-visible{border-bottom-color:var(--rule-strong);}
 .dr-name:focus-visible{outline:2px solid var(--neon-blue); outline-offset:2px;}
+.dr-form{font-size:10px; line-height:1; margin-left:6px; flex:none;}
+.dr-form.is-up{color:var(--horizon-gold);}
+.dr-form.is-down{color:var(--down);}
 .dp-overlay{position:fixed; inset:0; z-index:150; display:flex; justify-content:flex-end; background:rgba(var(--scrim-rgb), .62);}
 .dp{position:relative; width:min(540px, 100%); height:100%; overflow-y:auto; box-sizing:border-box; padding:22px 24px 40px; background:var(--void-panel); border-left:1px solid var(--rule); border-top:2px solid var(--rule-strong);}
 .dp-close{all:unset; position:absolute; top:12px; right:14px; width:34px; height:34px; display:grid; place-items:center; cursor:pointer; font-size:26px; line-height:1; color:var(--star-dim); border:1px solid var(--rule); border-radius:2px;}

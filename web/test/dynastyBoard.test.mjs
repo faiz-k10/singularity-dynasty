@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { AGE_LOOKAHEAD, ageValueAt, boardRows, buildBoard, metaFromData, pBetter, phi, profileRead, rowsFromData, scoreRows } from "../lib/dynastyBoard.js";
+import { AGE_LOOKAHEAD, ageValueAt, boardRows, buildBoard, formTrend, metaFromData, pBetter, phi, profileRead, rowsFromData, scoreRows } from "../lib/dynastyBoard.js";
 import data from "../data/dynasty-values.json" with { type: "json" };
 
 const row = (name, pos, p1, ps, age, sd = 2) => ({ id: name, name, pos, team: "AAA", age: 25, games: 17, ppg: 15, ageValue: age, por1qb: p1, porSf: ps, sdProd: sd });
@@ -130,4 +130,12 @@ test("age value is read at the age he will be in three years", () => {
   assert.equal(ageValueAt(curve, 40), 1);
   const data = { age_curve: { QB: curve }, columns: ["player_id", "player", "position", "team", "age", "games_in_window", "ppg_weighted", "age_value", "por_1qb", "por_sf", "sd_prod"], rows: [["a", "A", "QB", "X", 23.5, 20, 15, 9, 3, 3, 2]] };
   assert.equal(rowsFromData(data)[0].ageValue, 4.5);
+});
+
+test("form arrow compares the last 8 games to his weighted level", () => {
+  assert.equal(formTrend([20, 18, 15, 22, 17, 16, 19, 21], 12).dir, "up");
+  assert.equal(formTrend([30, 25, 4, 5, 3, 0, 2, 1], 12).dir, "down");
+  assert.equal(formTrend([11, 12, 13, 12], 12).dir, "flat");
+  assert.equal(formTrend([5, 5, 5], 12), null);
+  assert.equal(formTrend(undefined, 12), null);
 });

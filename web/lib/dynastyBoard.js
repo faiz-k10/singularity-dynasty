@@ -49,6 +49,16 @@ export function ageValueAt(curve, age) {
   return curve.at(-1)[1];
 }
 
+// Form arrow: his last FORM_GAMES games against his weighted level (the 34-game number the score uses). Up / down when the gap is
+// FORM_DELTA points a game or more; needs at least FORM_MIN games. Display only: the score still reads the long memory.
+export const FORM_GAMES = 8, FORM_MIN = 4, FORM_DELTA = 3;
+export function formTrend(points, ppg) {
+  if (!points || points.length < FORM_MIN || !Number.isFinite(ppg)) return null;
+  const last = points.slice(-FORM_GAMES);
+  const recent = last.reduce((a, b) => a + b, 0) / last.length, delta = recent - ppg;
+  return { dir: delta >= FORM_DELTA ? "up" : delta <= -FORM_DELTA ? "down" : "flat", recent, delta, games: last.length };
+}
+
 // model/dynasty_value.R writes { columns, rows: [[...]] }; this makes row objects
 export function rowsFromData(data) {
   const c = data.columns;

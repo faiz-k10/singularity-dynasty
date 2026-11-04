@@ -96,6 +96,9 @@ export default function DynastyBoard({ rows, meta, complete }) {
                 <PositionBadge position={p.pos} />
                 <TeamBadge team={p.team} />
                 <button type="button" className="dr-name" onClick={() => setOpenId(p.id)}>{p.name}</button>
+                {p.form && p.form.dir !== "flat" && (
+                  <span className={`dr-form is-${p.form.dir}`} role="img" aria-label={`Last ${p.form.games} games: ${p.form.recent.toFixed(1)} a game, ${Math.abs(p.form.delta).toFixed(1)} ${p.form.dir === "up" ? "above" : "below"} his usual level`}>{p.form.dir === "up" ? "▲" : "▼"}</span>
+                )}
               </div>,
               <div key={`a${i}`} {...at} className={`dr-cell dr-age dr-col-age${b}`} style={{ gridRow: i + 2, gridColumn: 3 }}>{p.age.toFixed(1)}</div>,
               <div key={`v${i}`} {...at} className={`dr-cell dr-val${b}`} style={{ gridRow: i + 2, gridColumn: 4 }}>
