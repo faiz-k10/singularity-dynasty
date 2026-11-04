@@ -7,8 +7,8 @@
 #     player at his position, on one scale shared by all positions (1 = replacement, 10 = V_HI points a game over it;
 #     below replacement it keeps going below 1, it is not floored).
 #     Replacement = the player ranked just past the starters a 12-team league needs (REPL_RANK), averaged over
-#     the end of each season REPL_FROM..2025 so it does not move week to week: 1QB: QB12; superflex: QB32 (founder's
-#     pick, Oct 28 2026, from a sweep of 24-44); both: RB29, WR42, TE13 (1QB / 2RB / 3WR / 1TE / 1FLEX).
+#     the end of each season REPL_FROM..2025 so it does not move week to week: 1QB: QB12; superflex: QB25 (the first QB past
+#     the 24 a 12-team superflex league starts; was QB32 from Oct 28 until Nov 3 2026, when mid-range QBs ranked above elite WRs); both: RB29, WR42, TE13 (1QB / 2RB / 3WR / 1TE / 1FLEX).
 #   - age value, 1-10, on the scale shared by all positions (dynasty_age_value.R, `age_value_cross`).
 #   - sd_prod: how many production-score points the production number misses by next season (the out-of-sample
 #     RMSE of next-season PPG at his position from backtest_production_window.R, in score units). The site uses it
@@ -20,7 +20,7 @@ suppressMessages(library(jsonlite))
 source("dynasty_params.R")   # WINDOW, HALF_LIFE
 
 POSITIONS <- c("QB", "RB", "WR", "TE")
-REPL_RANK <- list(`1QB` = c(QB = 12, RB = 29, WR = 42, TE = 13), SF = c(QB = 32, RB = 29, WR = 42, TE = 13))
+REPL_RANK <- list(`1QB` = c(QB = 12, RB = 29, WR = 42, TE = 13), SF = c(QB = 25, RB = 29, WR = 42, TE = 13))
 REPL_FROM <- 2018
 V_HI      <- 15
 KEEP      <- 250   # players shipped; the page shows the top 120 overall and the top 60 of a position (below that the
