@@ -158,7 +158,7 @@ export default function HowItWorksPage() {
               <p>
                 <Define term="production-over-replacement">Production over replacement</Define> (his last 34 games, recent ones weighted most) blended with
                 <Define term="age-value"> age value</Define> (how much production players of his position and age keep over three seasons). Contenders weight
-                production 80/20, rebuilders 60/40. Tiers break only where the gap is statistically real.
+                production 80/20, rebuilders 50/50. Tiers break only where the gap is statistically real.
               </p>
             </article>
             <article className="doc-card">

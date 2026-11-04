@@ -17,7 +17,7 @@ test("phi is the standard normal CDF", () => {
 test("mode weights and format pick the score", () => {
   const rows = [row("A", "QB", 4, 9, 8)];
   assert.ok(Math.abs(scoreRows(rows, "1qb", "contender")[0].score - (0.8 * 4 + 0.2 * 8)) < 1e-9);
-  assert.ok(Math.abs(scoreRows(rows, "sf", "rebuilder")[0].score - (0.6 * 9 + 0.4 * 8)) < 1e-9);
+  assert.ok(Math.abs(scoreRows(rows, "sf", "rebuilder")[0].score - (0.5 * 9 + 0.5 * 8)) < 1e-9);
 });
 
 test("a quarterback climbs from 1QB to superflex", () => {
