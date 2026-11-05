@@ -2608,9 +2608,9 @@ a.export-csv-btn{text-decoration:none;}
 /* One line, always: even a three-digit position rank ("TE103") and a median fit beside each other, so the numbers
    shrink and the labels tighten instead of wrapping onto a second row. */
 .weekly-stats-pair{display:flex; flex-wrap:nowrap; justify-content:space-between; gap:clamp(4px, 5cqw, 14px);}
-.weekly-stats-item{display:flex; flex-direction:column; gap:3px; min-width:0;}
+.weekly-stats-item{display:flex; flex-direction:column; align-items:center; gap:3px; min-width:0;} /* each number centred under its label (founder, Nov 5 2026) */
 .weekly-stats-split .weekly-player-stat-label{font-size:calc(clamp(6px, calc((100cqw - 10px) / var(--ch-lb, 16)), 11px) * var(--fit, 1)); letter-spacing:0.06em; white-space:nowrap;}
-.weekly-stats-value-dim, .weekly-stats-value-big{display:flex; align-items:center; height:28px; white-space:nowrap; font-family:var(--font-mono), monospace; line-height:1;}
+.weekly-stats-value-dim, .weekly-stats-value-big{display:flex; align-items:center; justify-content:center; height:28px; white-space:nowrap; font-family:var(--font-mono), monospace; line-height:1;}
 .weekly-stats-value-dim{font-size:calc(clamp(9px, calc((100cqw - 14px) / var(--ch-val, 6)), 17px) * var(--fit, 1)); font-weight:600; color:var(--star-dim);}
 .weekly-stats-value-big{font-size:calc(clamp(11px, calc((100cqw - 14px) / var(--ch-val, 6)), 26px) * var(--fit, 1)); font-weight:700; color:var(--star);}
 .weekly-stats-value-gold{color:var(--horizon-gold); text-shadow:0 0 18px rgba(var(--horizon-gold-rgb),0.45);}
