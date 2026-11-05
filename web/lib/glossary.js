@@ -76,7 +76,7 @@ const CORE = [
       ["On Thin Ice", "The reverse: two straight games at or under the floor, or three straight short of both his expected points and median."],
       ["Steady Eddy", "A narrow range for his position: you know roughly what you'll get."],
       ["Risky Icarus", "A wide range for his position: big upside, real downside."],
-      ["Rock Solid Floor", "His floor and median both rank at least 5 percentiles higher at his position than his ceiling does, and his floor or median is in the top 10% (90th percentile or better): the bottom of his range is elite for his position, the top is not."],
+      ["Anti-Loser Floor", "His floor and median both rank at least 5 percentiles higher at his position than his ceiling does, and his floor or median is in the top 10% (90th percentile or better): the bottom of his range is elite for his position, the top is not."],
       ["Long Shot Winners", "His ceiling is in the top 10% at his position (90th percentile or better) and ranks at least 5 percentiles higher than his floor and median do: a modest base with a big top end."],
       ["Buy Low", "His usage is among the best at his position but his points haven't caught up yet."],
       ["Sell High", "His points are running ahead of his usage, which tends to come back to earth."],

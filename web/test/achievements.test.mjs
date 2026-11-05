@@ -120,7 +120,7 @@ test("the three-game xFP-and-median path is unchanged", () => {
   assert.equal(onThinIceFlag([game(8), game(9), game(13)]), false);
 });
 
-// Rock Solid Floor / Long Shot Winners: read off the outcome curve's floor / median / ceiling percentiles (>= 5 apart).
+// Anti-Loser Floor / Long Shot Winners: read off the outcome curve's floor / median / ceiling percentiles (>= 5 apart).
 import { rangeLean, getAchievements as getAch } from "../app/tools/achievements.js";
 test("rangeLean: floor and median 5+ above the ceiling -> solidFloor; ceiling 5+ above both -> highCeiling", () => {
   assert.equal(rangeLean({ floor: 95, projection: 85, ceiling: 70 }), "solidFloor");
@@ -141,7 +141,7 @@ test("rangeLean: needs a full 5 on BOTH comparisons, all three percentiles, and 
 });
 test("getAchievements adds the lean badge from row.statPct and not for a zero projection", () => {
   const row = { statPct: { floor: 92, projection: 75, ceiling: 60 }, projection: 12 };
-  assert.deepEqual(getAch(row).filter((a) => a.key === "solidFloor").map((a) => a.label), ["Rock Solid Floor"]);
+  assert.deepEqual(getAch(row).filter((a) => a.key === "solidFloor").map((a) => a.label), ["Anti-Loser Floor"]);
   const roof = { statPct: { floor: 40, projection: 45, ceiling: 92 }, projection: 12 };
   assert.deepEqual(getAch(roof).filter((a) => a.key === "highCeiling").map((a) => a.label), ["Long Shot Winners"]);
   assert.equal(getAch({ ...row, projection: 0 }).some((a) => a.key === "solidFloor"), false);
