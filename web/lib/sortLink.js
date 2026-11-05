@@ -34,10 +34,13 @@ export function sortHref(
   const params = new URLSearchParams(currentParams || {});
   // First click on a column defaults to descending (highest values first,
   // the more common thing to want for rankings/stats), then toggles.
-  const nextDir = activeSort === sortKey && activeDir === "desc" ? "asc" : "desc";
   params.set(sortParam, sortKey);
-  params.set(dirParam, nextDir);
+  params.set(dirParam, nextSortDir(sortKey, activeSort, activeDir));
   return `?${params.toString()}`;
+}
+
+export function nextSortDir(sortKey, activeSort, activeDir) {
+  return activeSort === sortKey && activeDir === "desc" ? "asc" : "desc";
 }
 
 export function sortArrow(sortKey, activeSort, activeDir) {

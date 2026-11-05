@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import RankingsSearch from "../RankingsSearch";
 import { sortRows } from "@/lib/sortLink";
+import useClientSort from "../useClientSort";
 
 const STAT_COLUMN_KEYS = [
   "passing_yards", "passing_tds", "passing_interceptions",
@@ -32,7 +33,8 @@ const COLUMN_TYPES = {
 // why this page dropped the PPR/TE-premium settings panel it used to
 // have (lib/scoring.js's computeCustomProjection only ever produced one
 // recomputed number, not a distribution).
-export default function RedraftRankingsClient({ rawRows, sortKey, sortDir, currentParams, positions, maxSpread, header, actions, mine, gated }) {
+export default function RedraftRankingsClient({ rawRows, sortKey: initialKey, sortDir: initialDir, currentParams, positions, maxSpread, header, actions, mine, gated }) {
+  const { sortKey, sortDir, onSort } = useClientSort(initialKey, initialDir);
   const [selectedPositions, setSelectedPositions] = useState(positions || []);
   function togglePosition(pos) {
     setSelectedPositions((prev) =>
@@ -50,6 +52,7 @@ export default function RedraftRankingsClient({ rawRows, sortKey, sortDir, curre
       rows={rows}
       sortKey={sortKey}
       sortDir={sortDir}
+      onSort={onSort}
       currentParams={currentParams}
       positions={positions}
       selected={selectedPositions}

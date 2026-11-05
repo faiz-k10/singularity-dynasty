@@ -268,6 +268,7 @@ export default function RankingsTable({
   sortKey,
   sortDir,
   currentParams,
+  onSort,
   sortParam = "sort",
   dirParam = "dir",
   tableClassName = "",
@@ -279,7 +280,7 @@ export default function RankingsTable({
   myViewOn,
   gated,
 }) {
-  const sortProps = { activeSort: sortKey, activeDir: sortDir, currentParams, sortParam, dirParam };
+  const sortProps = { activeSort: sortKey, activeDir: sortDir, currentParams, sortParam, dirParam, onSort };
   // Click-to-expand/collapse, keyed by the same string the row itself is
   // keyed by -- a Set rather than one active key, so multiple rows can be
   // open at once (comparing several players' curves side by side without

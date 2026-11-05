@@ -3,6 +3,7 @@ import { resolveTier } from "@/lib/tier";
 import { loadMyPlayers } from "@/lib/myPlayers";
 import { createClient } from "@/lib/supabase/server";
 import { resolveSort, sortRows } from "@/lib/sortLink";
+import { SIM_COLUMN_TYPES as COLUMN_TYPES } from "@/lib/simColumns";
 import { getPlayerBiosByNamePos } from "@/lib/sleeper";
 import { stageTimer } from "@/lib/stageTimer";
 import InteractiveScript from "../../InteractiveScript";
@@ -45,18 +46,6 @@ export const metadata = {
 };
 
 const POSITION_ORDER = ["QB", "RB", "WR", "TE"];
-const COLUMN_TYPES = {
-  rank: "number",
-  player_name: "string",
-  position: "string",
-  team: "string",
-  floor: "number",
-  median: "number",
-  ceiling: "number",
-  por: "number",
-  regressionScore: "number",
-  outcomePercentile: "number",
-};
 
 function sortPositions(positions) {
   return [...positions].sort((a, b) => {

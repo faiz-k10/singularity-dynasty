@@ -3,6 +3,9 @@
 import { Fragment, memo, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import SortableTh from "./SortableTh";
+import useClientSort from "./useClientSort";
+import { sortRows } from "@/lib/sortLink";
+import { SIM_COLUMN_TYPES } from "@/lib/simColumns";
 import { MyPlayersFilter, mineClass, MyStrip, useMyView } from "./MyPlayers";
 import RankingsToolbar from "./RankingsToolbar";
 import { matchesBadgeFilters } from "./badgeFilters";
@@ -696,7 +699,10 @@ const COLS = SHOW_POR ? 11 : 10;
 // Same pattern as RankingsSearch (Redraft): position-pill
 // filter + player name search, both client-side. Sorting stays
 // server-driven via the existing URL-param mechanism.
-export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams, positions, maxCeiling, wrTePool, lastWeek, simLatestWeek, leagueTeams, superflex, header, actions, mine, gated }) {
+export default function PlayerSimSearch({ rows: sortedRows, sortKey: initialKey, sortDir: initialDir, currentParams, positions, maxCeiling, wrTePool, lastWeek, simLatestWeek, leagueTeams, superflex, header, actions, mine, gated }) {
+  // Sorted in the browser: a header click no longer reloads the page (or drops full-screen).
+  const { sortKey, sortDir, onSort } = useClientSort(initialKey, initialDir);
+  const rows = useMemo(() => sortRows(sortedRows, sortKey, sortDir, SIM_COLUMN_TYPES), [sortedRows, sortKey, sortDir]);
   const showPositionFilter = Array.isArray(positions) && positions.length > 0;
   const [selected, setSelected] = useState(positions || []);
   const [query, setQuery] = useState("");
@@ -733,7 +739,7 @@ export default function PlayerSimSearch({ rows, sortKey, sortDir, currentParams,
   function toggleGroup(key) {
     setOpenGroups((g) => ({ ...g, [key]: !g[key] }));
   }
-  const sortProps = { activeSort: sortKey, activeDir: sortDir, currentParams };
+  const sortProps = { activeSort: sortKey, activeDir: sortDir, currentParams, onSort };
 
   function toggle(pos) {
     setSelected((prev) =>

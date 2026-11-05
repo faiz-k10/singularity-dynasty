@@ -9,7 +9,18 @@ export default function SortableTh({
   currentParams,
   sortParam = "sort",
   dirParam = "dir",
+  onSort, // given: sort in the browser (useClientSort) instead of navigating to the sorted URL
 }) {
+  if (onSort) {
+    return (
+      <th aria-sort={sortKey === activeSort ? (activeDir === "desc" ? "descending" : "ascending") : undefined}>
+        <button type="button" className={`th-sort-btn${sortKey === activeSort ? " sort-active" : ""}`} onClick={() => onSort(sortKey)}>
+          {label}
+          {sortArrow(sortKey, activeSort, activeDir)}
+        </button>
+      </th>
+    );
+  }
   return (
     <th>
       <Link

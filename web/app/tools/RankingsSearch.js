@@ -8,13 +8,14 @@ import { getAchievementsCached } from "./achievements";
 import { MyPlayersFilter, MyPlayersNote, useMyView } from "./MyPlayers";
 
 // The Weekly Projection Rankings page's top block and table: title row (title left, Compare Players / Export CSV
-// right), one filter toolbar (search, position pills, All players / My players), then the table. Sorting stays
-// server-driven via the URL-param mechanism; the search text is the only state owned here -- which positions are
+// right), one filter toolbar (search, position pills, All players / My players), then the table. Sorting happens in
+// the browser (the parent's useClientSort, passed as onSort); the search text is the only state owned here -- which positions are
 // selected is owned by the parent (RedraftRankingsClient) and passed in as `selected` / `onTogglePosition`.
 export default function RankingsSearch({
   rows,
   sortKey,
   sortDir,
+  onSort,
   currentParams,
   positions, // omit (or pass []) to skip position filtering entirely
   selected, // currently-selected positions, owned by the parent
@@ -136,6 +137,7 @@ export default function RankingsSearch({
         maxSpread={maxSpread}
         sortKey={sortKey}
         sortDir={sortDir}
+        onSort={onSort}
         currentParams={currentParams}
         tableClassName={tableClassName}
         showStatColumns={showStatColumns}
