@@ -216,7 +216,8 @@ const RankingRow = memo(function RankingRow({
           : document.querySelector(".site-header")?.getBoundingClientRect().bottom ?? 72;
         const delta = tr.getBoundingClientRect().top - offset;
         const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-        (scroller || window).scrollBy({ top: delta, behavior: reduce ? "auto" : "smooth" });
+        // Start the glide on the next frame, once the newly opened panel has painted, so the scroll doesn't stutter over its first layout.
+        requestAnimationFrame(() => (scroller || window).scrollBy({ top: delta, behavior: reduce ? "auto" : "smooth" }));
       }
     }
     wasOpen.current = isExpanded;

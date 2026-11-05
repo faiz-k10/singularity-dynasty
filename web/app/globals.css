@@ -258,7 +258,7 @@ body::before{
 }
 
 /* ---------- TELEMETRY TICKER (fixed top strip) ---------- */
-.ticker-bar{position:fixed; top:0; left:0; right:0; z-index:80; background:rgba(var(--scrim-rgb),0.92); backdrop-filter:blur(10px); overflow:hidden; white-space:nowrap; border-bottom:1px solid var(--line);}
+.ticker-bar{position:fixed; top:0; left:0; right:0; z-index:80; background:rgba(var(--scrim-rgb),0.92); overflow:hidden; white-space:nowrap; border-bottom:1px solid var(--line);}
 .ticker-bar::after{
   content:''; position:absolute; bottom:-1px; left:0; right:0; height:1px;
   background-image:repeating-linear-gradient(90deg, var(--neon-blue) 0, var(--neon-blue) 2px, transparent 2px, transparent 18px);
@@ -320,7 +320,7 @@ body::before{
 .menu-btn{
   position:fixed; top:26px; right:24px; z-index:90;
   width:44px; height:44px; border-radius:50%;
-  background:rgba(var(--scrim-rgb),0.7); border:1px solid var(--line); backdrop-filter:blur(8px);
+  background:rgba(var(--scrim-rgb),0.7); border:1px solid var(--line);
   color:var(--star); font-size:18px; cursor:pointer;
   display:flex; align-items:center; justify-content:center;
   transition:border-color .2s ease, transform .2s var(--ease);
@@ -366,7 +366,7 @@ body::before{
   margin-top:24px; /* clears the ticker strip above it (the strip's 20px items sit in its visible 24px: 2px above and below) */
   display:flex; align-items:center; gap:24px;
   padding:6px 28px;
-  background:rgba(var(--scrim-rgb),0.78); backdrop-filter:blur(10px);
+  background:rgba(var(--scrim-rgb),0.78);
   border-bottom:1px solid var(--line);
 }
 /* brand, nav, and the spacer are equal flex zones, so the nav gets a wide
@@ -2385,7 +2385,7 @@ a.export-csv-btn{text-decoration:none;}
    number could. */
 /* The opened player spans the table's visible width at every size (founder, Nov 3 2026: it sat centred with empty margins): pinned 10px in from each edge of
    the scroller (the table can be wider than what is visible), and its three columns grow to fill it. */
-.weekly-detail-wrap{display:block; position:sticky; left:10px; width:calc(100cqw - 20px); max-width:none; box-sizing:border-box;}
+.weekly-detail-wrap{display:block; position:sticky; left:10px; width:calc(100cqw - 20px); max-width:none; box-sizing:border-box; contain:layout style;}
 .rankings-table-wrap .redraft-table > tbody > tr.stat-detail-row > td{padding-left:0; padding-right:0;}   /* the pin is measured from the scroller's edge, so the cell adds no side padding of its own */
 /* The pins for narrow tables (explained at .rankings-table-wrap, top of the file) -- placed AFTER the base rule so they win the cascade: */
 @container (max-width:980px){
@@ -2716,16 +2716,16 @@ a.export-csv-btn{text-decoration:none;}
 .weekly-gamelog-row{border-bottom:none; cursor:default;}
 .weekly-gamelog-row.is-clickable{cursor:pointer;}
 .weekly-gamelog-row.is-clickable:hover .weekly-gamelog-week{color:var(--star);}
-/* The dropdown: a grid row that opens from 0fr to 1fr, so the height animates without measuring. */
-.weekly-gamelog-more{display:grid; grid-template-rows:0fr; transition:grid-template-rows .22s ease;}
-.weekly-gamelog-item.is-open .weekly-gamelog-more{grid-template-rows:1fr;}
-.weekly-gamelog-more-inner{overflow:hidden; display:flex; flex-wrap:wrap; gap:6px; min-height:0;}
-.weekly-gamelog-item.is-open .weekly-gamelog-more-inner{padding:0 0 12px;}
+/* The dropdown appears at once and fades / slides its chips in: animating its height would re-lay out the whole rankings table every frame. */
+.weekly-gamelog-more{display:none;}
+.weekly-gamelog-item.is-open .weekly-gamelog-more{display:block;}
+.weekly-gamelog-more-inner{display:flex; flex-wrap:wrap; gap:6px; padding:0 0 12px; animation:gl-in .18s ease-out;}
+@keyframes gl-in{from{opacity:0; transform:translateY(-4px);}to{opacity:1; transform:none;}}
 .weekly-gamelog-chip{display:flex; flex-direction:column; gap:2px; padding:6px 10px; background:var(--void-panel-2); border:1px solid var(--line); flex:1 1 calc((100% - 6px * (var(--cols, 3) - 1)) / var(--cols, 3) - 0.5px); min-width:0;}
 .weekly-gamelog-note{font-size:11px; letter-spacing:.06em; color:var(--star-dim); padding:4px 0;}
 .weekly-gamelog-chip b{font-size:15px; color:var(--star); white-space:nowrap;}
 .weekly-gamelog-chip small{font-size:9.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--star-dim); white-space:nowrap;}
-@media (prefers-reduced-motion:reduce){.weekly-gamelog-more{transition:none;}}
+@media (prefers-reduced-motion:reduce){.weekly-gamelog-more-inner{animation:none;}}
 .weekly-gamelog-week{color:var(--star-dim);}
 .weekly-gamelog-opp{display:flex; align-items:center; gap:7px;}
 .weekly-gamelog-sep{color:var(--star-dim); font-size:13px; min-width:16px;}

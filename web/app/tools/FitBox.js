@@ -25,9 +25,21 @@ export default function FitBox({ className, children }) {
         range.selectNodeContents(n);
         return range.getBoundingClientRect().width > n.clientWidth + 0.5;
       };
-      while (s > FLOOR && [...marked].some(tooWide)) {
-        s = Math.round((s - STEP) * 100) / 100;
+      // Text width scales with the font size, so one measurement at full size gives the factor directly (one layout instead of one per 3%
+      // step -- inside the big rankings table each forced layout is expensive); the small loop only covers rounding.
+      let ratio = 1;
+      for (const n of marked) {
+        range.selectNodeContents(n);
+        const w = range.getBoundingClientRect().width;
+        if (w > n.clientWidth + 0.5) ratio = Math.min(ratio, n.clientWidth / w);
+      }
+      if (ratio < 1) {
+        s = Math.max(FLOOR, Math.floor(ratio * 100) / 100);
         el.style.setProperty("--fit", String(s));
+        while (s > FLOOR && [...marked].some(tooWide)) {
+          s = Math.round((s - STEP) * 100) / 100;
+          el.style.setProperty("--fit", String(s));
+        }
       }
     };
     fit();
