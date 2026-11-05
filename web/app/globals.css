@@ -2641,17 +2641,17 @@ a.export-csv-btn{text-decoration:none;}
    when there's real extra height to fill. Degrades to plain centering
    for Curve's single SVG child (one child = identical to :center). */
 .weekly-panel-body{flex:1; display:flex; flex-direction:column; justify-content:space-evenly; min-height:0;}
-/* Small gold-dash + tracked mono uppercase -- the same eyebrow motif as
-   .eyebrow/.hub-tag/.round-label elsewhere on the site, scoped to this
-   row's own panel titles rather than overriding the shared
-   .pctile-card-title (Player Season Simulations' PercentileCard still
-   uses that plain style and isn't part of this pass). */
+/* Panel titles in the scoreboard language (same family as .sec-index): the title in the display font, a hairline running out to the right and
+   ending in a small mint block, like a rule on a stat sheet. Scoped to this row's own panels, not the shared .pctile-card-title. */
 .weekly-panel-title{
-  display:flex; align-items:center; gap:8px;
-  font-family:var(--font-mono), monospace; font-size:10.5px; letter-spacing:0.1em;
-  text-transform:uppercase; color:var(--star-dim);
+  display:flex; align-items:center; gap:12px;
+  font-family:var(--font-display), sans-serif; font-weight:700; font-size:17px; line-height:1; letter-spacing:0.12em;
+  text-transform:uppercase; color:var(--star);
 }
-.weekly-panel-title::before{content:''; width:14px; height:1px; background:var(--horizon-gold); flex-shrink:0;}
+.weekly-panel-title::after{
+  content:''; flex:1; height:6px; min-width:16px;
+  background:linear-gradient(var(--rule), var(--rule)) left center / 100% 1px no-repeat, linear-gradient(var(--horizon-gold), var(--horizon-gold)) right center / 6px 6px no-repeat;
+}
 /* label column widened (70 -> 100) and the bar column now a fixed 80px
    instead of 1fr -- 1fr let the bar claim every pixel of spare row
    width, which is exactly what squeezed the label column down to
