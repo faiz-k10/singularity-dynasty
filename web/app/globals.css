@@ -70,7 +70,7 @@
   --elite-player:#4B5BD1; --elite-player-rgb:75,91,209;
   --rookie:#BF8A5C; --rookie-rgb:191,138,92;
   --boulder:#869550; --boulder-rgb:134,149,80;  /* Rock Solid Floor: moss-khaki on dark, mustard on light (the free hues; every other is within ~23 dE of the rest in the badge palette) */
-  --cloud:#EBADB7; --cloud-rgb:235,173,183;  /* The Ceiling Is the Roof: soft pink */
+  --cloud:#EBADB7; --cloud-rgb:235,173,183;  /* Long Shot Winners: soft pink */
   --matchup-neutral-rgb:240,196,61;
   --star-dim-rgb:140,149,163;
   --inj-ok:#22C55E; --inj-q:#FACC15; --inj-d:#FB923C; --inj-out:#EF4444;
@@ -147,7 +147,7 @@
     --elite-player:#4B5BD1; --elite-player-rgb:75,91,209;
     --rookie:#7A4E24; --rookie-rgb:122,78,36;
   --boulder:#D9D026; --boulder-rgb:217,208,38;  /* Rock Solid Floor: moss-khaki on dark, mustard on light (the free hues; every other is within ~23 dE of the rest in the badge palette) */
-  --cloud:#F5A3C8; --cloud-rgb:245,163,200;  /* The Ceiling Is the Roof: soft pink */
+  --cloud:#F5A3C8; --cloud-rgb:245,163,200;  /* Long Shot Winners: soft pink */
     --matchup-neutral-rgb:168,123,0;
     --star-dim-rgb:92,99,112;
     --orbit-alpha:0.8;
@@ -215,7 +215,7 @@
   --elite-player:#4B5BD1; --elite-player-rgb:75,91,209;
   --rookie:#7A4E24; --rookie-rgb:122,78,36;
   --boulder:#D9D026; --boulder-rgb:217,208,38;  /* Rock Solid Floor: moss-khaki on dark, mustard on light (the free hues; every other is within ~23 dE of the rest in the badge palette) */
-  --cloud:#F5A3C8; --cloud-rgb:245,163,200;  /* The Ceiling Is the Roof: soft pink */
+  --cloud:#F5A3C8; --cloud-rgb:245,163,200;  /* Long Shot Winners: soft pink */
   --matchup-neutral-rgb:168,123,0;
   --orbit-alpha:0.8;
 }

@@ -226,11 +226,11 @@ export const ELITE_RANK = 5;
 
 // Floor / ceiling lean, read off the Outcome Curve's percentiles (row.statPct: each of his floor, median and ceiling against the same number
 // for every player at his position). Rock Solid Floor: his floor AND median rank at least 5 percentiles higher than his ceiling does, and his floor or median is in the 90th percentile or better (the
-// bottom of his range is strong for his position, the top is not). The Ceiling Is the Roof: his ceiling ranks at least 5 percentiles higher
+// bottom of his range is strong for his position, the top is not). Long Shot Winners: his ceiling ranks at least 5 percentiles higher
 // than his floor AND his median do, and his ceiling percentile is at least the 90th. Needs all three percentiles; a bye / listed-out row has no range, so neither applies.
 export const LEAN_PCT_GAP = 5;
 export const SOLID_MIN_PCT = 90; // Rock Solid Floor also needs his floor OR his median in at least the 90th percentile
-export const ROOF_MIN_CEILING_PCT = 90; // The Ceiling Is the Roof also needs a ceiling in at least the 90th percentile at his position
+export const ROOF_MIN_CEILING_PCT = 90; // Long Shot Winners also needs a ceiling in at least the 90th percentile at his position
 export function rangeLean(statPct, playing = true) {
   const f = statPct?.floor;
   const m = statPct?.projection;
@@ -296,7 +296,7 @@ export function getAchievements(row) {
     spread === "volatile" && { key: "volatile", variant: "icarus", label: "Risky Icarus" },
     spread === "locked" && { key: "locked", variant: "eddy", label: "Steady Eddy" },
     lean === "solidFloor" && { key: "solidFloor", variant: "boulder", label: "Rock Solid Floor" },
-    lean === "highCeiling" && { key: "highCeiling", variant: "cloud", label: "The Ceiling Is the Roof" },
+    lean === "highCeiling" && { key: "highCeiling", variant: "cloud", label: "Long Shot Winners" },
     buyLow && { key: "buyLow", variant: "sprout", label: "Buy Low" },
     sellHigh && { key: "sellHigh", variant: "peak", label: "Sell High" },
     matchup && {

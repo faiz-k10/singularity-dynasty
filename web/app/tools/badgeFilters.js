@@ -12,7 +12,7 @@ export const BADGE_FILTERS = [
   { id: "volatile", variant: "icarus", label: "Risky Icarus", match: (a) => a.key === "volatile" },
   { id: "locked", variant: "eddy", label: "Steady Eddy", match: (a) => a.key === "locked" },
   { id: "solidFloor", variant: "boulder", label: "Rock Solid Floor", match: (a) => a.key === "solidFloor" },
-  { id: "highCeiling", variant: "cloud", label: "The Ceiling Is the Roof", match: (a) => a.key === "highCeiling" },
+  { id: "highCeiling", variant: "cloud", label: "Long Shot Winners", match: (a) => a.key === "highCeiling" },
   { id: "buyLow", variant: "sprout", label: "Buy Low", match: (a) => a.key === "buyLow" },
   { id: "sellHigh", variant: "peak", label: "Sell High", match: (a) => a.key === "sellHigh" },
   { id: "smash", variant: "smash", label: "Smash Spot", match: (a) => a.key === "matchup" && a.variant === "smash" },
