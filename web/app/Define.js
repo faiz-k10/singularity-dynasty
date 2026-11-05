@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
+import { createPortal } from "react-dom";
 import { glossaryTerm } from "@/lib/glossary";
 
 // Tap-to-define: wraps a label (a stat name like "xFP") in a button that opens its glossary definition (lib/glossary.js) in
@@ -58,14 +59,16 @@ export default function Define({ term, fallback, children }) {
       <button ref={btn} type="button" className="def-term" aria-expanded={Boolean(pos)} aria-controls={pos ? id : undefined} onClick={toggle}>
         {children}
       </button>
-      {pos && (
+      {/* Portalled to <body>: an ancestor with containment (the opened player's panel) would otherwise become the card's frame for position:fixed. */}
+      {pos && createPortal(
         <span ref={card} id={id} role="note" className="def-card" style={pos}>
           <strong className="def-card-term">{entry.full ? `${entry.term}: ${entry.full}` : entry.term}</strong>
           <span className="def-card-text">{entry.def}</span>
           <Link href={`/glossary#${entry.id}`} className="def-card-link mono">
             Full glossary →
           </Link>
-        </span>
+        </span>,
+        document.body
       )}
     </>
   );
