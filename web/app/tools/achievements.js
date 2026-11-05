@@ -224,6 +224,21 @@ export const HERO_MAX_TIER = 7;
 // by average rank over the group's numbers, NOT the weekly projection ranking.
 export const ELITE_RANK = 5;
 
+// Floor / ceiling lean, read off the Outcome Curve's percentiles (row.statPct: each of his floor, median and ceiling against the same number
+// for every player at his position). Rock Solid Floor: his floor AND median rank at least 5 percentiles higher than his ceiling does (the
+// bottom of his range is strong for his position, the top is not). The Ceiling Is the Roof: his ceiling ranks at least 5 percentiles higher
+// than his floor AND his median do. Needs all three percentiles; a bye / listed-out row has no range, so neither applies.
+export const LEAN_PCT_GAP = 5;
+export function rangeLean(statPct, playing = true) {
+  const f = statPct?.floor;
+  const m = statPct?.projection;
+  const c = statPct?.ceiling;
+  if (!playing || ![f, m, c].every((v) => typeof v === "number" && Number.isFinite(v))) return null;
+  if (f - c >= LEAN_PCT_GAP && m - c >= LEAN_PCT_GAP) return "solidFloor";
+  if (c - f >= LEAN_PCT_GAP && c - m >= LEAN_PCT_GAP) return "highCeiling";
+  return null;
+}
+
 // Ordered list of whichever of the flags apply to this row, as plain
 // {key, variant, label, ...} metadata -- no JSX/icons here, since the
 // two consumers render the same flag very differently (a full badge vs.
@@ -265,6 +280,7 @@ export function getAchievements(row) {
   const elitePlayer = row.groupRank?.player?.rank <= ELITE_RANK;
   // A rookie: no seasons of NFL experience in our player directory (nflverse years_of_experience = 0).
   const rookie = row.bio?.yearsExp === 0;
+  const lean = rangeLean(row.statPct, playing);
 
   return [
     (isEstablished || isBuilding) && {
@@ -277,6 +293,8 @@ export function getAchievements(row) {
     onIce && { key: "onIce", variant: "ice", label: "On Thin Ice" },
     spread === "volatile" && { key: "volatile", variant: "icarus", label: "Risky Icarus" },
     spread === "locked" && { key: "locked", variant: "eddy", label: "Steady Eddy" },
+    lean === "solidFloor" && { key: "solidFloor", variant: "boulder", label: "Rock Solid Floor" },
+    lean === "highCeiling" && { key: "highCeiling", variant: "cloud", label: "The Ceiling Is the Roof" },
     buyLow && { key: "buyLow", variant: "sprout", label: "Buy Low" },
     sellHigh && { key: "sellHigh", variant: "peak", label: "Sell High" },
     matchup && {

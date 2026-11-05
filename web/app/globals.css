@@ -69,6 +69,8 @@
   --elite-role:#B8346A; --elite-role-rgb:184,52,106;
   --elite-player:#4B5BD1; --elite-player-rgb:75,91,209;
   --rookie:#BF8A5C; --rookie-rgb:191,138,92;
+  --boulder:#869550; --boulder-rgb:134,149,80;  /* Rock Solid Floor: moss-khaki on dark, mustard on light (the free hues; every other is within ~23 dE of the rest in the badge palette) */
+  --cloud:#EBADB7; --cloud-rgb:235,173,183;  /* The Ceiling Is the Roof: soft pink */
   --matchup-neutral-rgb:240,196,61;
   --star-dim-rgb:140,149,163;
   --inj-ok:#22C55E; --inj-q:#FACC15; --inj-d:#FB923C; --inj-out:#EF4444;
@@ -144,6 +146,8 @@
     --elite-role:#B8346A; --elite-role-rgb:184,52,106;
     --elite-player:#4B5BD1; --elite-player-rgb:75,91,209;
     --rookie:#7A4E24; --rookie-rgb:122,78,36;
+  --boulder:#D9D026; --boulder-rgb:217,208,38;  /* Rock Solid Floor: moss-khaki on dark, mustard on light (the free hues; every other is within ~23 dE of the rest in the badge palette) */
+  --cloud:#F5A3C8; --cloud-rgb:245,163,200;  /* The Ceiling Is the Roof: soft pink */
     --matchup-neutral-rgb:168,123,0;
     --star-dim-rgb:92,99,112;
     --orbit-alpha:0.8;
@@ -210,6 +214,8 @@
   --elite-role:#B8346A; --elite-role-rgb:184,52,106;
   --elite-player:#4B5BD1; --elite-player-rgb:75,91,209;
   --rookie:#7A4E24; --rookie-rgb:122,78,36;
+  --boulder:#D9D026; --boulder-rgb:217,208,38;  /* Rock Solid Floor: moss-khaki on dark, mustard on light (the free hues; every other is within ~23 dE of the rest in the badge palette) */
+  --cloud:#F5A3C8; --cloud-rgb:245,163,200;  /* The Ceiling Is the Roof: soft pink */
   --matchup-neutral-rgb:168,123,0;
   --orbit-alpha:0.8;
 }
@@ -287,6 +293,8 @@ body::before{
 .ticker-badge.eliteRole{background:var(--elite-role); color:var(--void); box-shadow:0 0 5px rgba(var(--elite-role-rgb),0.55);}
 .ticker-badge.elitePlayer{background:var(--elite-player); color:var(--void); box-shadow:0 0 5px rgba(var(--elite-player-rgb),0.55);}
 .ticker-badge.rookie{background:var(--rookie); color:var(--void); box-shadow:0 0 5px rgba(var(--rookie-rgb),0.5);}
+.ticker-badge.boulder{background:var(--boulder); color:var(--void); box-shadow:0 0 5px rgba(var(--boulder-rgb),0.5);}
+.ticker-badge.cloud{background:var(--cloud); color:var(--void); box-shadow:0 0 5px rgba(var(--cloud-rgb),0.5);}
 .ticker-badge.silver{background:var(--silver); color:var(--void); box-shadow:0 0 4px rgba(var(--silver-rgb),0.4);}
 .ticker-badge.icarus{background:var(--icarus); color:var(--void); box-shadow:0 0 5px rgba(var(--icarus-rgb),0.5);}
 .ticker-badge.eddy{background:var(--eddy); color:var(--void); box-shadow:0 0 5px rgba(var(--eddy-rgb),0.5);}
@@ -2036,6 +2044,8 @@ a.export-csv-btn{text-decoration:none;}
 .player-achv-dot.eliteRole{background:var(--elite-role); box-shadow:0 0 4px rgba(var(--elite-role-rgb),0.7);}
 .player-achv-dot.elitePlayer{background:var(--elite-player); box-shadow:0 0 4px rgba(var(--elite-player-rgb),0.7);}
 .player-achv-dot.rookie{background:var(--rookie); box-shadow:0 0 4px rgba(var(--rookie-rgb),0.7);}
+.player-achv-dot.boulder{background:var(--boulder); box-shadow:0 0 4px rgba(var(--boulder-rgb),0.7);}
+.player-achv-dot.cloud{background:var(--cloud); box-shadow:0 0 4px rgba(var(--cloud-rgb),0.7);}
 .player-achv-dot.menace{background:var(--menace); box-shadow:0 0 4px rgba(var(--menace-rgb),0.85);}
 
 /* Explicit text-align (and white-space below) throughout -- this table is
@@ -2502,6 +2512,8 @@ a.export-csv-btn{text-decoration:none;}
 .weekly-achievement-badge.eliteRole .weekly-achievement-label{color:var(--elite-role);}
 .weekly-achievement-badge.elitePlayer .weekly-achievement-label{color:var(--elite-player);}
 .weekly-achievement-badge.rookie .weekly-achievement-label{color:var(--rookie);}
+.weekly-achievement-badge.boulder .weekly-achievement-label{color:var(--boulder);}
+.weekly-achievement-badge.cloud .weekly-achievement-label{color:var(--cloud);}
 
 /* On Fire (FlameIcon) / On Ice (SnowflakeIcon) / Risky Icarus
    (DiceIcon) / Steady Eddy (LockIcon) / Super Hero (HeroIcon) /
@@ -2542,6 +2554,8 @@ a.export-csv-btn{text-decoration:none;}
 .weekly-glyph-badge.elitePlayer{background:var(--elite-player); color:var(--void); box-shadow:0 0 8px rgba(var(--elite-player-rgb),0.6);}
 /* Rookie (an outlined numeral 1, bronze -- the one hue no other badge uses, >= 27 dE from every badge in both themes): the same dark subject on a solid colour. */
 .weekly-glyph-badge.rookie{background:var(--rookie); color:var(--void); box-shadow:0 0 8px rgba(var(--rookie-rgb),0.55);}
+.weekly-glyph-badge.boulder{background:var(--boulder); color:var(--void); box-shadow:0 0 8px rgba(var(--boulder-rgb),0.55);}
+.weekly-glyph-badge.cloud{background:var(--cloud); color:var(--void); box-shadow:0 0 8px rgba(var(--cloud-rgb),0.55);}
 .weekly-glyph-badge.menace{background:var(--menace); color:var(--void); box-shadow:0 0 10px rgba(var(--menace-rgb),0.75);}
 /* Four stats, each its own little label-over-value stack -- same
    eyebrow-adjacent mono-uppercase label language as .weekly-panel-title

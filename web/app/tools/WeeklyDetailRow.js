@@ -244,6 +244,10 @@ function achievementNode(a, row) {
       return <GlyphBadge variant="eliteRole" glyph={<BadgeIcon k="eliteRole" />} />;
     case "elitePlayer":
       return <GlyphBadge variant="elitePlayer" glyph={<BadgeIcon k="elitePlayer" />} />;
+    case "solidFloor":
+      return <GlyphBadge variant="boulder" glyph={<BadgeIcon k="solidFloor" />} />;
+    case "highCeiling":
+      return <GlyphBadge variant="cloud" glyph={<BadgeIcon k="highCeiling" />} />;
     case "rookie":
       return <GlyphBadge variant="rookie" glyph={<BadgeIcon k="rookie" />} />;
     case "confidence":

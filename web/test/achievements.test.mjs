@@ -119,3 +119,27 @@ test("the three-game xFP-and-median path is unchanged", () => {
   assert.equal(onFireFlag([game(15), game(16), game(14)]), true);
   assert.equal(onThinIceFlag([game(8), game(9), game(13)]), false);
 });
+
+// Rock Solid Floor / The Ceiling Is the Roof: read off the outcome curve's floor / median / ceiling percentiles (>= 5 apart).
+import { rangeLean, getAchievements as getAch } from "../app/tools/achievements.js";
+test("rangeLean: floor and median 5+ above the ceiling -> solidFloor; ceiling 5+ above both -> highCeiling", () => {
+  assert.equal(rangeLean({ floor: 80, projection: 75, ceiling: 60 }), "solidFloor");
+  assert.equal(rangeLean({ floor: 71, projection: 68, ceiling: 53 }), "solidFloor");
+  assert.equal(rangeLean({ floor: 60, projection: 70, ceiling: 80 }), "highCeiling");
+  assert.equal(rangeLean({ floor: 70, projection: 60, ceiling: 80 }), "highCeiling");
+});
+test("rangeLean: needs a full 5 on BOTH comparisons, all three percentiles, and a player who is playing", () => {
+  assert.equal(rangeLean({ floor: 80, projection: 63, ceiling: 60 }), null); // median only 3 above the ceiling
+  assert.equal(rangeLean({ floor: 62, projection: 70, ceiling: 66 }), null); // ceiling not above both
+  assert.equal(rangeLean({ floor: 50, projection: 52, ceiling: 53 }), null);
+  assert.equal(rangeLean({ floor: 80, ceiling: 60 }), null);
+  assert.equal(rangeLean(undefined), null);
+  assert.equal(rangeLean({ floor: 80, projection: 75, ceiling: 60 }, false), null);
+});
+test("getAchievements adds the lean badge from row.statPct and not for a zero projection", () => {
+  const row = { statPct: { floor: 80, projection: 75, ceiling: 60 }, projection: 12 };
+  assert.deepEqual(getAch(row).filter((a) => a.key === "solidFloor").map((a) => a.label), ["Rock Solid Floor"]);
+  const roof = { statPct: { floor: 40, projection: 45, ceiling: 70 }, projection: 12 };
+  assert.deepEqual(getAch(roof).filter((a) => a.key === "highCeiling").map((a) => a.label), ["The Ceiling Is the Roof"]);
+  assert.equal(getAch({ ...row, projection: 0 }).some((a) => a.key === "solidFloor"), false);
+});
