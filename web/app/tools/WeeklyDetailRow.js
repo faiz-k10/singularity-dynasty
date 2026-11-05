@@ -77,12 +77,14 @@ function RankTable({ children }) {
 // actual-vs-expected match is a real, not-hypothetical case. Dim/
 // neutral, not red, for the ~12% of games with no xFP row (see
 // CLAUDE.md) -- a missing comparison isn't the same as underperforming.
-export function GameLogPanel({ games }) {
+export function GameLogPanel({ games: all }) {
+  // This season's games only (the list is newest first).
+  const games = all ? all.filter((g) => g.season === all[0].season) : all;
   if (!games || games.length === 0) return null;
   return (
     <div className="stat-panel weekly-gamelog-panel">
       <div className="weekly-pct-head">
-        <span className="weekly-panel-title">Recent Games</span>
+        <span className="weekly-panel-title">{games[0].season} Games</span>
       </div>
       <div className="weekly-gamelog-rows">
         {games.map((g) => {
@@ -95,7 +97,7 @@ export function GameLogPanel({ games }) {
             <div key={`${g.season}-${g.week}`} className="weekly-gamelog-row">
               <span className="weekly-gamelog-week mono">
                 <span className={`weekly-gamelog-dot ${dotCls}`} />
-                {g.season} W{g.week}
+                W{g.week}
               </span>
               {/* the team he played FOR that game (players change teams), then vs / @ and the opponent */}
               {g.team ? <TeamBadge team={g.team} /> : <span />}

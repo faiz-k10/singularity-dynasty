@@ -237,7 +237,7 @@ function deriveGameLogData(data, season, floorCeilingByGame, currentWeek = Infin
       avgXfpByName[name] = thisSeasonXfp.reduce((sum, g) => sum + g.exp_points_ppr, 0) / thisSeasonXfp.length;
     }
     // Rows already arrive season/week descending from the query above.
-    recentGamesByName[name] = games.slice(0, 11); // the Recent Games panel shows up to 11 (8 until Oct 29 2026: the space under them was empty); the badges read the first 5 (achievements.js)
+    recentGamesByName[name] = games.slice(0, 18); // the Recent Games panel shows this season's games (a full season is 18 weeks; up to 11 until Nov 5 2026, and it showed last season too) (8 until Oct 29 2026: the space under them was empty); the badges read the first 5 (achievements.js)
   }
 
   const lastWeekRankByName = {};
