@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, memo, useCallback, useEffect, useState } from "react";
+import { Fragment, memo, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import SortableTh from "./SortableTh";
 import TrendTag from "./TrendTag";
@@ -201,9 +201,21 @@ const RankingRow = memo(function RankingRow({
   const bye = isBye(row.opponent);
   const hasDetail = showCurve && (bye || (row.floor != null && row.ceiling != null));
   const isExpanded = hasDetail && isExpanded0 && !hidden;
+  // Opening a row brings it and its dashboard into view (the row to just under the site header), so the panel never opens off screen.
+  const trRef = useRef(null);
+  const wasOpen = useRef(isExpanded);
+  useEffect(() => {
+    if (isExpanded && !wasOpen.current) {
+      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      trRef.current?.scrollIntoView({ block: "start", behavior: reduce ? "auto" : "smooth" });
+    }
+    wasOpen.current = isExpanded;
+  }, [isExpanded]);
   return (
     <Fragment key={rowKey}>
       <tr
+        ref={trRef}
+        style={{ scrollMarginTop: 120 }}
         data-pos={row.position}
         className={`${hasDetail ? "row-expandable" : ""}${hidden ? " row-filtered" : ""}` || undefined}
         onClick={hasDetail ? () => onToggle(rowKey) : undefined}
