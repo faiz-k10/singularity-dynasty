@@ -2599,9 +2599,9 @@ a.export-csv-btn{text-decoration:none;}
    usual size, using the rough character count of the text it holds (--ch-eb / --ch-lb / --ch-val), and overflow is clipped as a last resort.
    Anything new that goes in these boxes must scale the same way instead of relying on white-space:nowrap alone. */
 .weekly-stats-next, .weekly-stats-last{container-type:inline-size; overflow:hidden;}
-.weekly-stats-next{--ch-eb:15.4; --eb-extra:32px; --ch-lb:16.5; --ch-val:6.4;}
-.weekly-stats-last{--ch-eb:9.6; --eb-extra:0px; --ch-lb:8.6; --ch-val:5.4;}
-.weekly-stats-eyebrow{display:flex; align-items:center; justify-content:center; height:22px; font-family:var(--font-mono), monospace; font-size:calc(clamp(6px, calc((100cqw - var(--eb-extra, 0px)) / var(--ch-eb, 12)), 10px) * var(--fit, 1)); letter-spacing:0.1em; text-transform:uppercase; color:var(--star-dim); white-space:nowrap; overflow:hidden;}
+.weekly-stats-next{--ch-eb:12.3; --eb-extra:32px; --ch-lb:14; --ch-val:6.4;}
+.weekly-stats-last{--ch-eb:7.7; --eb-extra:0px; --ch-lb:7.3; --ch-val:5.4;}
+.weekly-stats-eyebrow{display:flex; align-items:center; justify-content:center; height:22px; font-family:var(--font-mono), monospace; font-size:calc(clamp(6px, calc((100cqw - var(--eb-extra, 0px)) / var(--ch-eb, 12)), 12.5px) * var(--fit, 1)); letter-spacing:0.1em; text-transform:uppercase; color:var(--star-dim); white-space:nowrap; overflow:hidden;}
 .weekly-stats-eyebrow-next{color:var(--horizon-gold); font-weight:700;}
 .weekly-stats-eyebrow-next{flex-wrap:nowrap; column-gap:4px; letter-spacing:0.03em;} /* the opponent always stays on the heading's line (founder, Oct 20): the panel is given the room instead (grid below) */
 .weekly-stats-last .weekly-stats-eyebrow{letter-spacing:0.06em;}
@@ -2611,7 +2611,7 @@ a.export-csv-btn{text-decoration:none;}
    shrink and the labels tighten instead of wrapping onto a second row. */
 .weekly-stats-pair{display:flex; flex-wrap:nowrap; justify-content:space-between; gap:clamp(4px, 5cqw, 14px);}
 .weekly-stats-item{display:flex; flex-direction:column; gap:3px; min-width:0;}
-.weekly-stats-split .weekly-player-stat-label{font-size:calc(clamp(6px, calc((100cqw - 10px) / var(--ch-lb, 16)), 9.5px) * var(--fit, 1)); letter-spacing:0.06em; white-space:nowrap;}
+.weekly-stats-split .weekly-player-stat-label{font-size:calc(clamp(6px, calc((100cqw - 10px) / var(--ch-lb, 16)), 11px) * var(--fit, 1)); letter-spacing:0.06em; white-space:nowrap;}
 .weekly-stats-value-dim, .weekly-stats-value-big{display:flex; align-items:center; height:28px; white-space:nowrap; font-family:var(--font-mono), monospace; line-height:1;}
 .weekly-stats-value-dim{font-size:calc(clamp(9px, calc((100cqw - 14px) / var(--ch-val, 6)), 17px) * var(--fit, 1)); font-weight:600; color:var(--star-dim);}
 .weekly-stats-value-big{font-size:calc(clamp(11px, calc((100cqw - 14px) / var(--ch-val, 6)), 26px) * var(--fit, 1)); font-weight:700; color:var(--star);}
