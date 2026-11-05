@@ -28,3 +28,8 @@ export const BADGE_ICONS = {
   conArtist:
     '<svg viewBox="0 0 24 24" fill="currentColor"><g transform="translate(11.99 11.62) scale(0.824) translate(-11.42 -11.47)"><g transform="translate(-0.4,0.24)"><path d="M2.245,3.02 C5.71,1.04 9.49,1.04 12.955,3.02 C14.215,9.95 10.3,15.3 7.6,16.29 C4.9,15.3 1.0,9.95 2.245,3.02 Z M5.395,7.31 A0.95,0.95 0 1,0 7.295,7.31 A0.95,0.95 0 1,0 5.395,7.31 Z M8.905,7.31 A0.95,0.95 0 1,0 10.805,7.31 A0.95,0.95 0 1,0 8.905,7.31 Z M4.954,11.27 Q7.6,10.17 10.246,11.27 Q7.6,7.87 4.954,11.27 Z" opacity="0.55" fill-rule="evenodd"/><path d="M6.8 2.9 8.4 2.9 7.6 0.9Z" opacity="0.55"/><path d="M10.19,8.98 C13.82,6.91 17.78,6.91 21.41,8.98 C22.73,16.225 18.5,21.8 15.8,22.435 C13.1,21.8 8.87,16.225 10.19,8.98 Z M13.49,13.465 A1,1 0 1,0 15.49,13.465 A1,1 0 1,0 13.49,13.465 Z M17.11,13.465 A1,1 0 1,0 19.11,13.465 A1,1 0 1,0 17.11,13.465 Z M13.028,17.605 Q15.8,18.705 18.572,17.605 Q15.8,21.205 13.028,17.605 Z" fill-rule="evenodd"/><path d="M15 8.85 16.6 8.85 15.8 6.75Z"/></g></g></svg>',
 };
+
+// A glyph drawn to FILL its badge: the svg is the badge's own size (so the circle and the glyph land on the same pixels -- a 25px svg inside a
+// 30px badge sits 2.5px in, and browsers snap that half pixel, which put every glyph ~0.5px low and right), with the 24-unit art padded out to
+// 28.8 units so it still covers 25/30 of the circle.
+export const filledBadgeSvg = (key) => (BADGE_ICONS[key] || "").replace('viewBox="0 0 24 24"', 'viewBox="-2.4 -2.4 28.8 28.8"');

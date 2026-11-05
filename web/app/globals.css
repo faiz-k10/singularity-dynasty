@@ -2450,7 +2450,7 @@ a.export-csv-btn{text-decoration:none;}
    grid (see .confidence-badge svg's own comment for why that matters).
    Matches .weekly-glyph-badge svg's identical 20-in-24 ratio right
    below, so every badge in this row sizes its own art the same way. */
-.weekly-player-achievements .confidence-badge svg{width:25px; height:25px;}
+.weekly-player-achievements .confidence-badge svg{width:100%; height:100%;} /* the glyph fills the badge; its size is set in the viewBox (filledBadgeSvg) */
 .weekly-player-achievements .confidence-badge.gold{
   background:var(--established); color:var(--void);
   box-shadow:0 0 8px rgba(var(--established-rgb),0.55);
@@ -2511,7 +2511,7 @@ a.export-csv-btn{text-decoration:none;}
   display:inline-flex; align-items:center; justify-content:center; width:30px; height:30px;
   border-radius:50%; font-size:17px; line-height:1; flex-shrink:0; cursor:pointer; vertical-align:middle;
 }
-.weekly-glyph-badge svg{width:25px; height:25px; display:block;}
+.weekly-glyph-badge svg{width:100%; height:100%; display:block;} /* the glyph fills the badge; its size is set in the viewBox (filledBadgeSvg) */
 .weekly-glyph-badge.heat{background:var(--fire); color:var(--void); box-shadow:0 0 8px rgba(var(--fire-rgb),0.55);}
 .weekly-glyph-badge.ice{background:var(--frost); color:var(--void); box-shadow:0 0 8px rgba(var(--frost-rgb),0.55);}
 .weekly-glyph-badge.icarus{background:var(--icarus); color:var(--void); box-shadow:0 0 8px rgba(var(--icarus-rgb),0.55);}

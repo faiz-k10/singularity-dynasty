@@ -3,7 +3,7 @@
 import { Fragment, useState } from "react";
 import OutcomeCurveDetail from "./OutcomeCurveDetail";
 import TeamBadge from "./TeamBadge";
-import { BADGE_ICONS } from "@/lib/badgeIcons";
+import { filledBadgeSvg } from "@/lib/badgeIcons";
 import { isBye, BYE_LABEL } from "@/lib/bye";
 import PositionBadge from "./PositionBadge";
 import ConfidenceBadge from "./ConfidenceBadge";
@@ -210,7 +210,7 @@ function ExpandableBadge({ variant, label, children }) {
 // through this one shared shell instead of having its own component.
 // A badge glyph from the shared set (lib/badgeIcons.js); display:contents so the <svg> itself is the badge's child for sizing.
 function BadgeIcon({ k }) {
-  return <span className="badge-icon" aria-hidden="true" dangerouslySetInnerHTML={{ __html: BADGE_ICONS[k] }} />;
+  return <span className="badge-icon" aria-hidden="true" dangerouslySetInnerHTML={{ __html: filledBadgeSvg(k) }} />;
 }
 
 function GlyphBadge({ variant, glyph }) {
@@ -232,15 +232,11 @@ function GlyphBadge({ variant, glyph }) {
 // down = tough spot), so the badge and the mark read as one thing.
 function MatchupIcon({ up }) {
   return (
-    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <svg viewBox="-2.4 -2.4 28.8 28.8" fill="currentColor" aria-hidden="true">
       <path d={up ? "M12 4 19 11.5h-4.5V20h-5v-8.5H5Z" : "M12 20 19 12.5h-4.5V4h-5v8.5H5Z"} />
     </svg>
   );
 }
-
-
-
-
 
 function achievementNode(a, row) {
   switch (a.key) {
@@ -251,7 +247,7 @@ function achievementNode(a, row) {
     case "rookie":
       return <GlyphBadge variant="rookie" glyph={<BadgeIcon k="rookie" />} />;
     case "confidence":
-      return <ConfidenceBadge confidence={row.sample_confidence} />;
+      return <ConfidenceBadge confidence={row.sample_confidence} filled />;
     case "onFire":
       return (
         <GlyphBadge
