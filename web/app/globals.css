@@ -1120,7 +1120,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 .rankings-theater-bar .rankings-theater-controls{display:flex; align-items:center; flex:1; min-width:0;}
 .rankings-theater-bar .rk-controls{flex-wrap:nowrap;}
 /* On the page (not full screen) the filters share the full-screen button's row: the filter box first, the button at the far right (founder, Nov 5 2026). */
-.rankings-theater-bar:not(.theater){justify-content:flex-start; align-items:center; gap:12px; margin-bottom:14px;}
+.rankings-theater-bar:not(.theater){justify-content:flex-start; align-items:center; gap:12px; margin-bottom:14px; position:relative; z-index:30;} /* above the table's sticky header cells, so the Badges / Teams dropdowns open over them */
 .rankings-theater-bar:not(.theater) .rankings-theater-btn{flex:none;}
 .rankings-theater-bar:not(.theater) .rankings-theater-controls{flex:1 1 0; padding:10px 12px; background:var(--void-panel); border:1px solid var(--line); border-radius:var(--r-lg, 16px); box-sizing:border-box;}
 /* Narrower windows: the full-screen bar wraps its controls onto extra rows and grows to fit (the table below is offset by the same variable). */
