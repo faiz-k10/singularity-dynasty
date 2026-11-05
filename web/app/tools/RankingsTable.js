@@ -201,13 +201,23 @@ const RankingRow = memo(function RankingRow({
   const bye = isBye(row.opponent);
   const hasDetail = showCurve && (bye || (row.floor != null && row.ceiling != null));
   const isExpanded = hasDetail && isExpanded0 && !hidden;
-  // Opening a row brings it and its dashboard into view (the row to just under the site header), so the panel never opens off screen.
+  // Opening a row scrolls it to sit directly under the table's sticky header (in full screen, under the panel's own header), dashboard below.
   const trRef = useRef(null);
   const wasOpen = useRef(isExpanded);
   useEffect(() => {
     if (isExpanded && !wasOpen.current) {
-      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      trRef.current?.scrollIntoView({ block: "start", behavior: reduce ? "auto" : "smooth" });
+      const tr = trRef.current;
+      const th = tr?.closest("table")?.querySelector("thead th");
+      if (tr && th) {
+        const scroller = tr.closest(".rankings-table-wrap.theater");
+        // Full screen: the panel's own sticky header sits at its top. Normal page: the header scrolls away, so clear the site bar.
+        const offset = scroller
+          ? scroller.getBoundingClientRect().top + th.getBoundingClientRect().height
+          : document.querySelector(".site-header")?.getBoundingClientRect().bottom ?? 72;
+        const delta = tr.getBoundingClientRect().top - offset;
+        const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        (scroller || window).scrollBy({ top: delta, behavior: reduce ? "auto" : "smooth" });
+      }
     }
     wasOpen.current = isExpanded;
   }, [isExpanded]);
@@ -215,7 +225,6 @@ const RankingRow = memo(function RankingRow({
     <Fragment key={rowKey}>
       <tr
         ref={trRef}
-        style={{ scrollMarginTop: 120 }}
         data-pos={row.position}
         className={`${hasDetail ? "row-expandable" : ""}${hidden ? " row-filtered" : ""}` || undefined}
         onClick={hasDetail ? () => onToggle(rowKey) : undefined}
