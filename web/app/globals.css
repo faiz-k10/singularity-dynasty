@@ -2404,17 +2404,17 @@ a.export-csv-btn{text-decoration:none;}
    as a centered name/photo group with a stats sidebar pinned to the
    right, not an off-balance left/right pair. */
 .weekly-player-header{
-  position:relative; display:flex; align-items:center; flex-wrap:wrap; overflow:hidden;
-  gap:20px; margin-bottom:12px; padding:14px 120px 14px 148px; width:100%; box-sizing:border-box; /* 148 = the photo's 112px + 36px of air; room on the right for the Share button, so the name and info line are centred in the free space */
+  position:relative; display:flex; align-items:stretch; justify-content:center; flex-wrap:wrap; overflow:hidden;
+  gap:20px; margin-bottom:12px; padding:0 110px; width:100%; box-sizing:border-box; /* 110 each side keeps the group clear of the Share button */
 }
-.weekly-player-id{display:flex; align-items:center; justify-content:center; gap:14px; flex:1; min-width:0;}
-/* The opened player's photo fills the header's whole height, flush with its left, top and bottom edges (founder, Nov 5 2026); the name and the
-   identity line start to its right, left-justified. The photo is positioned against the header, not the name. */
+.weekly-player-id{display:flex; align-items:stretch; justify-content:center; gap:24px; flex:0 1 auto; min-width:0;}
+/* The opened player's photo is a full-height column flush with the header's top, bottom and left of its own block, and the photo + text group is
+   centred in the header with the text left-aligned beside the photo (founder, Nov 5 2026). */
 .weekly-player-photo{
-  position:absolute; left:0; top:0; bottom:0; width:112px; height:100%; border-radius:0; object-fit:cover; object-position:center top;
-  background:var(--void-panel-2); border:0; border-right:1px solid var(--line);
+  display:block; flex:none; align-self:stretch; width:112px; height:auto; min-height:104px; border-radius:0; object-fit:cover; object-position:center top;
+  background:var(--void-panel-2); border:0; border-right:1px solid var(--line); border-left:1px solid var(--line);
 }
-.weekly-player-idtext{display:flex; flex-direction:column; align-items:center; gap:8px; min-width:0; text-align:center;}
+.weekly-player-idtext{display:flex; flex-direction:column; align-items:flex-start; justify-content:center; gap:8px; padding:14px 0; min-width:0; text-align:left;}
 .weekly-player-namewrap{display:inline-block; max-width:100%;}
 /* The opened player's name is the card's headline: display font, heavy, uppercase, wide-spaced like the brand name. */
 .weekly-player-name{
@@ -2423,8 +2423,9 @@ a.export-csv-btn{text-decoration:none;}
   display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
 }
 @media (max-width:700px){
-  .weekly-player-header{padding:14px 14px 14px 96px;}
-  .weekly-player-photo{width:76px;}
+  .weekly-player-header{padding:0 14px;}
+  .weekly-player-id{gap:14px;}
+  .weekly-player-photo{width:76px; min-height:80px;}
   .weekly-player-name{font-size:22px; letter-spacing:0.05em;}
 }
 .weekly-player-badges{display:flex; align-items:center; gap:12px; flex-wrap:wrap;}
@@ -4300,7 +4301,7 @@ summary:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible{
   /* Redraft Rankings' opened player: one column (its width is pinned by the @container rules below). */
   .weekly-detail-grid > *{flex:1 1 100%; max-width:none;}
   .weekly-detail-side-col{max-width:none;}
-  .weekly-player-header{padding:12px 14px 12px 96px; gap:12px;}
+  .weekly-player-header{padding:0 14px; gap:12px;}
 
   /* Landing hero: get the headline AND both buttons onto the first screen. */
   .hero{padding:108px 0 40px; min-height:100svh;}
@@ -4669,10 +4670,11 @@ html{font-stretch:82%;}
 @media (min-width:1250px){
   .compare-panels .weekly-stats-split{grid-template-columns:1.6fr 1fr;}
 }
-.compare-panels .weekly-player-header{margin-bottom:0; padding:12px 14px; gap:12px; justify-content:center; overflow:visible;}
+.compare-panels .weekly-player-header{margin-bottom:0; padding:12px 14px; gap:12px; justify-content:center; overflow:visible; align-items:center;}
 .compare-panels .weekly-player-id{justify-content:center; gap:12px;}
 /* Compare profiles: everything centred -- photo + name, then position / team / size, then the badges on a line of their own. */
-.compare-panels .weekly-player-idtext{align-items:center; text-align:center;}
+.compare-panels .weekly-player-id{align-items:center;}
+.compare-panels .weekly-player-idtext{align-items:center; text-align:center; padding:0;}
 .compare-panels .weekly-player-namewrap{display:flex; align-items:center; justify-content:center; gap:10px;}
 .compare-panels .weekly-player-photo{position:static; transform:none; margin:0; width:40px; height:40px; border-radius:var(--r-sm); border:1px solid var(--line);}
 .compare-panels .weekly-player-name{font-size:22px; letter-spacing:0.05em;}

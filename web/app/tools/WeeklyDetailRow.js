@@ -390,22 +390,27 @@ export function PlayerHeaderPanel({ row, share = false }) {
   // each flag renders as here, which the dot preview has no use for.
   const achievements = getAchievements(row).map((a) => ({ ...a, node: achievementNode(a, row) }));
 
+  const photo = (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      key={bio.headshot || row.player_name}
+      className="weekly-player-photo"
+      src={bio.headshot || ""}
+      alt=""
+      onError={(e) => {
+        e.currentTarget.style.display = "none";
+      }}
+    />
+  );
+
   return (
     <div className="stat-panel weekly-player-header">
       <div className="weekly-player-id">
+        {share && photo}
         <div className="weekly-player-idtext">
-          {/* The name stays centred over the badges row; the (square) photo hangs right beside it on the left. */}
+          {/* Compare profiles keep the small photo beside the name; the opened player (share) has it as a full-height column of its own. */}
           <span className="weekly-player-namewrap">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              key={bio.headshot || row.player_name}
-              className="weekly-player-photo"
-              src={bio.headshot || ""}
-              alt=""
-              onError={(e) => {
-                e.currentTarget.style.display = "none";
-              }}
-            />
+            {!share && photo}
             <span className="weekly-player-name">{row.player_name}</span>
           </span>
           <div className="weekly-player-badges">
