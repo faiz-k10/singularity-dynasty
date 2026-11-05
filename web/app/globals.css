@@ -2420,8 +2420,17 @@ a.export-csv-btn{text-decoration:none;}
   .weekly-player-photo{width:38px; height:38px; margin-right:10px;}
   .weekly-player-name{font-size:22px; letter-spacing:0.05em;}
 }
-.weekly-player-badges{display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
-.weekly-player-size{font-size:12px; color:var(--star-dim);}
+.weekly-player-badges{display:flex; align-items:center; gap:12px; flex-wrap:wrap;}
+.weekly-player-size{font-size:15px; color:var(--star-dim);}
+/* The identity line uses the wide strip's room (founder, Nov 5 2026): a bigger position badge and team logo beside 15px text. */
+.weekly-player-badges > .position-badge{font-size:14px; height:26px; min-width:44px; padding:0 11px;}
+.weekly-player-badges > .team-badge.team-logo img{width:32px; height:32px;}
+@media (max-width:700px){
+  .weekly-player-badges{gap:8px;}
+  .weekly-player-size{font-size:12px;}
+  .weekly-player-badges > .position-badge{font-size:10.5px; height:19px; min-width:34px; padding:0 7px;}
+  .weekly-player-badges > .team-badge.team-logo img{width:24px; height:24px;}
+}
 /* Confidence, sized up for this banner specifically -- .confidence-badge
    keeps its plain small look everywhere else (a dense table cell has no
    room for more). First pass here used a radial-gradient "sphere" +
