@@ -445,12 +445,10 @@ body::before{
 .site-header .top-nav-bar{flex:1 1 0; justify-content:flex-start; gap:clamp(14px, 1.7vw, 28px);}
 .top-nav-bar a.tn-cta.tn-cta-tiers{flex:1 1 auto; margin-left:clamp(0px, 1vw, 16px);}
 .tn-tier{flex:1 1 0;}
-/* The pill is ringed in mint and its three tiers read as three solid blocks: red, red over steel, steel (the colours were mint / mint over
-   steel / steel with a red ring until Oct 27 2026, when the founder had them swapped). */
-.top-nav-bar a.tn-cta.tn-cta-tiers{
-  box-shadow:0 0 0 2px var(--horizon-gold); background:none; color:var(--on-down);
-}
-.top-nav-bar a.tn-cta.tn-cta-tiers:hover{box-shadow:0 0 0 2px var(--horizon-gold); color:var(--on-down);}
+/* The pill's three tiers read as three solid blocks: red, red over steel, steel, with no ring around them (the mint ring was removed Nov 5 2026,
+   founder; the colours were mint / mint over steel / steel with a red ring until Oct 27 2026). */
+.top-nav-bar a.tn-cta.tn-cta-tiers{box-shadow:none; background:none; color:var(--on-down);}
+.top-nav-bar a.tn-cta.tn-cta-tiers:hover{box-shadow:none; color:var(--on-down); filter:brightness(1.08);}
 .tn-tier:nth-child(1){background:var(--down);}
 .tn-tier:nth-child(1) small{color:#fff;} /* white, not --on-down, so the tiny price line clears 4.5:1 on the red */
 .tn-tier:nth-child(2){background:color-mix(in srgb, var(--down) 50%, var(--neon-blue)); color:var(--on-cold);}
@@ -4425,7 +4423,7 @@ a.mine-empty-note{color:var(--horizon-gold);}
 /* The top bar and the ticker: solid, with a hairline underneath. */
 .ticker-bar{
   background:rgba(var(--scrim-rgb), .98);
-  border-bottom:1px solid var(--down); /* the toolbar's bottom edge is outlined in mission red (founder, Nov 2 2026) */
+  border-bottom:1px solid var(--down); box-shadow:inset 0 1px 0 var(--down); /* the ticker is outlined in mission red above and below (founder, Nov 2 / Nov 5 2026); the top line is an inset shadow so the strip keeps its height */
   backdrop-filter:none; -webkit-backdrop-filter:none;
 }
 .site-header{
