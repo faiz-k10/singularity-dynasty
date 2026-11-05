@@ -390,6 +390,18 @@ export function PlayerHeaderPanel({ row, share = false }) {
   // each flag renders as here, which the dot preview has no use for.
   const achievements = getAchievements(row).map((a) => ({ ...a, node: achievementNode(a, row) }));
 
+  // Confidence / streak / spread flags as one row of flat-fill pills, each click / tap-to-reveal its own 1-2 word label via ExpandableBadge. They
+  // sit beside the name in the opened player's header (share) and on the identity line in the compare profiles.
+  const achievementPills = (
+    <span className="weekly-player-achievements">
+      {achievements.map((a) => (
+        <ExpandableBadge key={a.key} variant={a.variant} label={a.label}>
+          {a.node}
+        </ExpandableBadge>
+      ))}
+    </span>
+  );
+
   const photo = (
     // eslint-disable-next-line @next/next/no-img-element
     <img
@@ -409,9 +421,10 @@ export function PlayerHeaderPanel({ row, share = false }) {
         {share && photo}
         <div className="weekly-player-idtext">
           {/* Compare profiles keep the small photo beside the name; the opened player (share) has it as a full-height column of its own. */}
-          <span className="weekly-player-namewrap">
+          <span className={`weekly-player-namewrap${share ? " has-pills" : ""}`}>
             {!share && photo}
             <span className="weekly-player-name">{row.player_name}</span>
+            {share && achievementPills}
           </span>
           <div className="weekly-player-badges">
             <PositionBadge position={row.position} />
@@ -419,24 +432,10 @@ export function PlayerHeaderPanel({ row, share = false }) {
             {sizeText && (
               <span className="weekly-player-size mono">
                 {sizeText}
-                <span className="weekly-player-dot">{achievements.length > 0 ? " ·" : ""}</span>
+                {!share && <span className="weekly-player-dot">{achievements.length > 0 ? " ·" : ""}</span>}
               </span>
             )}
-            {/* Confidence/streak/spread flags, all as one row
-                of flat-fill "achievement" pills -- these used to be plain
-                glyphs next to the name in the collapsed table row, but
-                that duplicated the same info twice (dense table cell AND
-                this banner) for no reason; this banner has the room to be
-                the one place they live. Each is click/tap-to-reveal its
-                own 1-2 word label via ExpandableBadge, not just a hover
-                title. */}
-            <span className="weekly-player-achievements">
-              {achievements.map((a) => (
-                <ExpandableBadge key={a.key} variant={a.variant} label={a.label}>
-                  {a.node}
-                </ExpandableBadge>
-              ))}
-            </span>
+            {!share && achievementPills}
           </div>
         </div>
       </div>

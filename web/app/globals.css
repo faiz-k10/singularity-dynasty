@@ -2416,6 +2416,8 @@ a.export-csv-btn{text-decoration:none;}
 }
 .weekly-player-idtext{display:flex; flex-direction:column; align-items:flex-start; justify-content:center; gap:8px; padding:14px 0; min-width:0; text-align:left;}
 .weekly-player-namewrap{display:inline-block; max-width:100%;}
+/* The opened player: the badges sit right beside the name, on its row. */
+.weekly-player-namewrap.has-pills{display:flex; align-items:center; gap:16px; flex-wrap:wrap;}
 /* The opened player's name is the card's headline: display font, heavy, uppercase, wide-spaced like the brand name. */
 .weekly-player-name{
   font-family:var(--font-display), sans-serif; font-size:30px; font-weight:800; letter-spacing:0.07em; line-height:1.1;
