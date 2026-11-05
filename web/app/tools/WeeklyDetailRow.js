@@ -145,7 +145,7 @@ export function GameLogPanel({ games: all }) {
                 {/* his points as a bar (mint = beat his expected points, red = fell short), a dash where his expected points (xFP) were */}
                 <span className="weekly-gamelog-bar" aria-label={hasXfp ? `${pts.toFixed(1)} points, ${g.exp_points_ppr.toFixed(1)} expected` : undefined}>
                   {pts != null && <em className={dotCls} style={{ width: pct(pts) }} />}
-                  {hasXfp && <u style={{ left: pct(g.exp_points_ppr) }} />}
+                  {hasXfp && <u style={{ left: pct(g.exp_points_ppr) }} title={`xFP ${Number(g.exp_points_ppr).toFixed(1)}`} />}
                 </span>
                 <span className="weekly-gamelog-pts mono">{pts != null ? pts.toFixed(1) : "—"}</span>
                 <span className="weekly-gamelog-rank mono">{g.posRank != null ? `${g.position}${g.posRank}` : "—"}</span>
