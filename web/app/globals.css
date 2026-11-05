@@ -6509,3 +6509,6 @@ select.lab-select{min-width:200px; padding-right:8px; cursor:pointer;}
 .ref-banner .mono{font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--horizon-gold);}
 .ref-banner a{color:var(--horizon-gold);}
 .feed-trap{position:absolute!important; left:-10000px; width:1px; height:1px; opacity:0;}
+
+/* Shared badge glyph wrapper (lib/badgeIcons.js via BadgeIcon / FlagIcon): no box of its own, the svg sizes as the badge child. */
+.badge-icon{display:contents;}

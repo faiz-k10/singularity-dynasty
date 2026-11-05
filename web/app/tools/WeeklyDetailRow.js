@@ -3,6 +3,7 @@
 import { Fragment, useState } from "react";
 import OutcomeCurveDetail from "./OutcomeCurveDetail";
 import TeamBadge from "./TeamBadge";
+import { BADGE_ICONS } from "@/lib/badgeIcons";
 import { isBye, BYE_LABEL } from "@/lib/bye";
 import PositionBadge from "./PositionBadge";
 import ConfidenceBadge from "./ConfidenceBadge";
@@ -207,6 +208,11 @@ function ExpandableBadge({ variant, label, children }) {
 // Plain colored medallion + a glyph -- unlike Confidence (its own
 // ConfidenceBadge component), every other achievement flag renders
 // through this one shared shell instead of having its own component.
+// A badge glyph from the shared set (lib/badgeIcons.js); display:contents so the <svg> itself is the badge's child for sizing.
+function BadgeIcon({ k }) {
+  return <span className="badge-icon" aria-hidden="true" dangerouslySetInnerHTML={{ __html: BADGE_ICONS[k] }} />;
+}
+
 function GlyphBadge({ variant, glyph }) {
   return (
     <span className={`weekly-glyph-badge ${variant}`}>
@@ -215,154 +221,12 @@ function GlyphBadge({ variant, glyph }) {
   );
 }
 
-// Risky Icarus's own icon -- a dice glyph read as generic "randomness"
-// clip art, out of step with every other icon on the site (all either a
-// flat glyph/team-color pill or something drawn from the site's own
-// starfield/void motif). A first pass paired the stars with a crescent
-// moon, but the moon was the wrong image for what this badge means --
-// dropped it and kept just a scatter of sparkle-stars at different
-// sizes: "reaching for the stars" reads as boom-or-bust upside (Icarus
-// flying for the sun) far more directly than a night sky did, and it's
-// still the same starfield language as the homepage background.
-// Heroicons' "sparkles" glyph, three 4-point stars at different scales.
-function DiceIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <g transform="rotate(12 12 12)">
-        <path fillRule="evenodd" d="M6.9 3.5h10.2a3.4 3.4 0 0 1 3.4 3.4v10.2a3.4 3.4 0 0 1-3.4 3.4H6.9a3.4 3.4 0 0 1-3.4-3.4V6.9a3.4 3.4 0 0 1 3.4-3.4ZM8 6.5a1.55 1.55 0 1 0 0 3.1 1.55 1.55 0 0 0 0-3.1ZM16 6.5a1.55 1.55 0 1 0 0 3.1 1.55 1.55 0 0 0 0-3.1ZM12 10.45a1.55 1.55 0 1 0 0 3.1 1.55 1.55 0 0 0 0-3.1ZM8 14.4a1.55 1.55 0 1 0 0 3.1 1.55 1.55 0 0 0 0-3.1ZM16 14.4a1.55 1.55 0 1 0 0 3.1 1.55 1.55 0 0 0 0-3.1Z" />
-      </g>
-    </svg>
-  );
-}
 
-// On Fire's own icon -- Heroicons' solid "fire" glyph, in the same
-// flat-fill-plus-currentColor language as every other icon on this row
-// instead of a colorful platform emoji (which ignores the badge's own
-// color entirely and looks pasted-on next to the flat pills).
-function FlameIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path
-        fillRule="evenodd"
-        clipRule="evenodd"
-        d="M12.963 2.286a.75.75 0 00-1.071-.136 9.742 9.742 0 00-3.539 6.176 7.547 7.547 0 01-1.705-1.715.75.75 0 00-1.152-.082A9 9 0 1015.68 4.534a7.46 7.46 0 01-2.717-2.248zM15.75 14.25a3.75 3.75 0 11-7.313-1.172c.628.465 1.35.81 2.133.998a5.27 5.27 0 01-.32-1.83c0-1.014.377-1.94 1-2.647a3.752 3.752 0 014.5 4.65z"
-      />
-    </svg>
-  );
-}
 
-// On Thin Ice's own icon -- a snowflake built like a crystal: six bold arms, each with a pair of branches and a diamond tip, around a solid hexagonal core
-// (heavier and more geometric than a plain line-drawn flake).
-function SnowflakeIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="butt" aria-hidden="true">
-      {[0, 60, 120, 180, 240, 300].map((deg) => (
-        <g key={deg} transform={`rotate(${deg} 12 12)`}>
-        <path d="M12 12V4.2" strokeWidth="2.2" />
-        <path d="M12 6.9 10 4.9M12 6.9 14 4.9" strokeWidth="1.6" />
-        <path d="M12 1.5 13.5 3.7 12 5.9 10.5 3.7Z" fill="currentColor" stroke="none" />
-        </g>
-      ))}
-      <path d="M12 9.2l2.3 1.3v3L12 14.8l-2.3-1.3v-3Z" fill="currentColor" stroke="none" />
-    </svg>
-  );
-}
 
-// Steady Eddy's own icon -- still a lock (the shape already reads
-// clearly at this size and the concept fits), just redrawn as a plain
-// filled SVG instead of the platform's own emoji, for the same reason as
-// FlameIcon/SnowflakeIcon/DiceIcon above.
-function LockIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5zm-3 8V7a3 3 0 0 1 6 0v3H9zm3 4a1.6 1.6 0 0 1 1 2.85V18a1 1 0 1 1-2 0v-1.15A1.6 1.6 0 0 1 12 14z" />
-    </svg>
-  );
-}
 
-// Honorable's own icon -- a graduation cap (mortarboard) with its
-// tassel hanging off the back, for "kept pace with (or beat) expectation
-// two games running."
-function GraduationCapIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      {/* The old translate(0.5,1.05) here centered the shape's BOUNDING
-          BOX against viewBox-center, but a bbox-centered cap still read
-          as shifted right at real badge size -- the tassel is a thin
-          line/dot that barely affects the bbox (which only cares about
-          the outermost extent) but does drag the actual PIXEL-MASS
-          centroid right, since it's real filled area on that side. Fixed
-          the same way as StarIcon: rasterized the shape, measured every
-          filled pixel's average position, and re-picked this translate
-          until that pixel-mass centroid landed within 0.01 units of
-          (12,12) -- optical centering, not bbox centering. */}
-      <g transform="translate(-0.454,0.974)">
-        <path d="M12 3.2 1.5 8l10.5 4.8L20 9.2v5.4h1.5V8L12 3.2z" />
-        <path
-          d="M5 10.4v4.3c0 1.7 3.1 3.4 7 3.4s7-1.7 7-3.4v-4.3l-7 3.2-7-3.2z"
-          opacity="0.85"
-        />
-        <path d="M18.5 10v6.6" stroke="currentColor" strokeWidth="1.2" fill="none" strokeLinecap="round" />
-        <circle cx="18.5" cy="17.6" r="1.1" />
-      </g>
-    </svg>
-  );
-}
 
-// Con Artist's own icon -- the classic comedy/tragedy theater masks
-// (replaced an earlier rug motif that read as an envelope/dollar sign
-// at this size, not a carpet). One mask per game of the 2-game read
-// this badge is built on: a dim, sad mask behind (the number you were
-// promised) and a solid, grinning mask in front (the one that actually
-// showed up) -- "con artist" as in the act put on, not just "missed
-// expectations." Each mask is one compound path (fillRule="evenodd") so
-// its eyes/mouth punch clean holes straight through to the badge's own
-// circle-fill behind it, same flat-fill-plus-glow language as every
-// other badge here -- no separate cutout color to keep in sync.
-function ConArtistIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      {/* back mask (tragedy) -- dim, frowning, upper-left. A real mask
-          silhouette now (arched brow, tapered chin point), not a plain
-          oval -- outline+eyes+mouth share one evenodd path so the
-          cutouts punch real holes; the top knot is its own separate
-          path so it stays solid instead of getting eaten by that same
-          evenodd rule where it touches the outline's edge. */}
-      <path
-        d="M2.245,3.02 C5.71,1.04 9.49,1.04 12.955,3.02 C14.215,9.95 10.3,15.3 7.6,16.29 C4.9,15.3 1.0,9.95 2.245,3.02 Z
-           M5.395,7.31 A0.95,0.95 0 1,0 7.295,7.31 A0.95,0.95 0 1,0 5.395,7.31 Z
-           M8.905,7.31 A0.95,0.95 0 1,0 10.805,7.31 A0.95,0.95 0 1,0 8.905,7.31 Z
-           M4.954,11.27 Q7.6,10.17 10.246,11.27 Q7.6,7.87 4.954,11.27 Z"
-        opacity="0.55"
-        fillRule="evenodd"
-      />
-      <path d="M6.8 2.9 8.4 2.9 7.6 0.9Z" opacity="0.55" />
-      {/* front mask (comedy) -- solid, grinning, lower-right, overlapping,
-          and drawn a size larger than the back mask so it reads as the
-          one "in front." */}
-      <path
-        d="M10.19,8.98 C13.82,6.91 17.78,6.91 21.41,8.98 C22.73,16.225 18.5,21.8 15.8,22.435 C13.1,21.8 8.87,16.225 10.19,8.98 Z
-           M13.49,13.465 A1,1 0 1,0 15.49,13.465 A1,1 0 1,0 13.49,13.465 Z
-           M17.11,13.465 A1,1 0 1,0 19.11,13.465 A1,1 0 1,0 17.11,13.465 Z
-           M13.028,17.605 Q15.8,18.705 18.572,17.605 Q15.8,21.205 13.028,17.605 Z"
-        fillRule="evenodd"
-      />
-      <path d="M15 8.85 16.6 8.85 15.8 6.75Z" />
-    </svg>
-  );
-}
 
-// Buy Low's own icon -- a sprout (stem + two leaves), for real usage
-// that hasn't grown into points yet.
-function SproutIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M12 20V11" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" />
-      <path d="M12 14.2c-3.6 0-6.2-2.3-6.2-6.5C9.9 8 12 10.4 12 14.2z" />
-      <path d="M12 11.3c2.9 0 5.1-1.9 5.1-5.4C13.9 6 12 8.1 12 11.3z" opacity="0.85" />
-    </svg>
-  );
-}
 
 // Matchup badge's icon -- the same solid triangle as the ▲ / ▼ beside the opponent in the table (up = smash spot,
 // down = tough spot), so the badge and the mark read as one thing.
@@ -374,116 +238,46 @@ function MatchupIcon({ up }) {
   );
 }
 
-// Sell High's own icon -- a cinched money bag with a $ punched through
-// it (the $ is filled with var(--peak), the badge's own background
-// color, so in both light and dark theme it reads as a genuine cutout
-// down to the badge behind the bag, not just a same-color line drawn on
-// top). Replaced an earlier "wilting sprout" (SproutIcon rotated 180deg,
-// the literal inverse of Buy Low's art) that tested as too abstract to
-// read at a glance -- a money bag says "cash out" far more directly.
-// Centered by the same pixel-mass-centroid method as the star/graduation
-// cap above (rasterized the bag-minus-$ silhouette, measured the average
-// position of every filled pixel, translated until that centroid landed
-// within 0.01 units of (12,12) -- the bag's neck being narrower than its
-// base means a naive bbox-center placement reads low-right otherwise).
-function MoneyBagIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <g transform="translate(-1.085,-1.115)">
-        <path d="M10.3 4.2c-.5 0-1 .3-1.1.8l-.5 1.7c-2.8 1.1-4.7 3.8-4.7 7 0 4.3 3.9 7.8 9 7.8s9-3.5 9-7.8c0-3.2-1.9-5.9-4.7-7l-.5-1.7c-.1-.5-.6-.8-1.1-.8z" />
-        {/* The $ sign's own bbox center (12.2, 13.0) sat 0.8 units left of
-            the bag path's own bbox center (13, 12.85) -- this nested
-            translate re-centers the $ ON THE BAG specifically, separate
-            from the outer translate above (which only centers the
-            combined bag+$ shape within the badge circle -- fixing that
-            alone doesn't fix the $'s position relative to the bag it
-            sits inside). */}
-        <g transform="translate(0.8,-0.15)">
-          <path
-            d="M12 8.3v9.4M14.1 10c-.4-.4-1.2-.8-2-.8-1.1 0-2 .6-2 1.6 0 1 1 1.4 2 1.7 1.3.3 2.3.8 2.3 1.9 0 1-.9 1.7-2.1 1.7-.9 0-1.8-.4-2.3-.9"
-            stroke="var(--peak)"
-            strokeWidth="1.4"
-            fill="none"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </g>
-      </g>
-    </svg>
-  );
-}
 
-// The icon each achievement key renders as in the full banner badge --
-// keyed by achievements.js's own `key` field so this can't fall out of
-// sync with which flags actually exist.
-// Elite Role: a mansion (pedimented centre and two wings; a round window, side windows and the arched door cut out -- kept simple so it reads at 16px). Elite Player: a front-facing goat's head (the GOAT) -- swept-back horns, ears, slit pupils and a beard.
-// One-colour art in currentColor on the badge's solid colour, like every other badge; the eyes and nostrils are cut out of the face.
-function EliteRoleIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path fillRule="evenodd" d="M12 3.2 18.2 8.4V10H22V20.2H2V10H5.8V8.4ZM12 6.4a1 1 0 1 0 0 2 1 1 0 0 0 0-2ZM10.6 19.4V15.6a1.4 1.4 0 0 1 2.8 0v3.8ZM4 12.4h2.8v3.2H4ZM17.2 12.4h2.8v3.2h-2.8Z" />
-    </svg>
-  );
-}
 
-// Rookie: the numeral 1 drawn as an outline (a stroked flag-and-stem shape, hollow inside), in the badge's dark colour on the bronze.
-function RookieIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" aria-hidden="true">
-      <path d="M10 3.6h4.2v16.8h-3.4V8.2L8 9.7V6.6Z" />
-    </svg>
-  );
-}
 
-function ElitePlayerIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M9.6 9C5.4 9.4 2.4 6.6 2.8 1.6C4.8 4.4 7.6 4.8 11 5.6Z" />
-      <path d="M14.4 9c4.2.4 7.2-2.4 6.8-7.4-2 2.8-4.8 3.2-8.2 4Z" />
-      <path d="M8.4 11 2.4 10C2.6 12.4 4.2 13.8 7 14Z" />
-      <path d="M15.6 11l6-1c-.2 2.4-1.8 3.8-4.6 4Z" />
-      <path fillRule="evenodd" d="M8.2 8.6h7.6l-.8 7c-.2 1.7-1.3 2.8-3 2.8s-2.8-1.1-3-2.8ZM9.3 11h1.8v1.1H9.3ZM12.9 11h1.8v1.1h-1.8ZM11 15.1a.5.5 0 1 0 0 1 .5.5 0 0 0 0-1ZM13 15.1a.5.5 0 1 0 0 1 .5.5 0 0 0 0-1Z" />
-      <path d="M10.6 18.4h2.8L12 22.4Z" />
-    </svg>
-  );
-}
 
 function achievementNode(a, row) {
   switch (a.key) {
     case "eliteRole":
-      return <GlyphBadge variant="eliteRole" glyph={<EliteRoleIcon />} />;
+      return <GlyphBadge variant="eliteRole" glyph={<BadgeIcon k="eliteRole" />} />;
     case "elitePlayer":
-      return <GlyphBadge variant="elitePlayer" glyph={<ElitePlayerIcon />} />;
+      return <GlyphBadge variant="elitePlayer" glyph={<BadgeIcon k="elitePlayer" />} />;
     case "rookie":
-      return <GlyphBadge variant="rookie" glyph={<RookieIcon />} />;
+      return <GlyphBadge variant="rookie" glyph={<BadgeIcon k="rookie" />} />;
     case "confidence":
       return <ConfidenceBadge confidence={row.sample_confidence} />;
     case "onFire":
       return (
         <GlyphBadge
           variant="heat"
-          glyph={<FlameIcon />}
+          glyph={<BadgeIcon k="onFire" />}
         />
       );
     case "onIce":
       return (
         <GlyphBadge
           variant="ice"
-          glyph={<SnowflakeIcon />}
+          glyph={<BadgeIcon k="onIce" />}
         />
       );
     case "volatile":
       return (
         <GlyphBadge
           variant="icarus"
-          glyph={<DiceIcon />}
+          glyph={<BadgeIcon k="volatile" />}
         />
       );
     case "locked":
       return (
         <GlyphBadge
           variant="eddy"
-          glyph={<LockIcon />}
+          glyph={<BadgeIcon k="locked" />}
         />
       );
     case "hero":
@@ -492,7 +286,7 @@ function achievementNode(a, row) {
       return (
         <GlyphBadge
           variant="sprout"
-          glyph={<SproutIcon />}
+          glyph={<BadgeIcon k="buyLow" />}
         />
       );
     case "matchup":
@@ -506,21 +300,21 @@ function achievementNode(a, row) {
       return (
         <GlyphBadge
           variant="peak"
-          glyph={<MoneyBagIcon />}
+          glyph={<BadgeIcon k="sellHigh" />}
         />
       );
     case "honorable":
       return (
         <GlyphBadge
           variant="honorable"
-          glyph={<GraduationCapIcon />}
+          glyph={<BadgeIcon k="honorable" />}
         />
       );
     case "conArtist":
       return (
         <GlyphBadge
           variant="menace"
-          glyph={<ConArtistIcon />}
+          glyph={<BadgeIcon k="conArtist" />}
         />
       );
     default:

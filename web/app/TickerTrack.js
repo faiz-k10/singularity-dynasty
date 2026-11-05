@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { dragonBallSvg } from "@/lib/dragonBall";
+import { BADGE_ICONS } from "@/lib/badgeIcons";
 
 /* ---- ticker: a random assortment of achievement badges ----
    tickerItems (passed from the server-rendered homepage,
@@ -18,7 +19,7 @@ import { dragonBallSvg } from "@/lib/dragonBall";
    rankings published yet). Markup mirrors each badge's real icon
    (the matching *Icon function in WeeklyDetailRow.js) as plain
    strings, since this is vanilla DOM/innerHTML, not React.
-   TICKER_ICONS is keyed by the achievement's `key` (confidence/
+   BADGE_ICONS is keyed by the achievement's `key` (confidence/
    volatile/locked/onFire/onIce/hero/honorable/conArtist), NOT its
    `variant` (gold/icarus/eddy/heat/ice/cape/honorable/menace) --
    those two are different fields on the same object (see
@@ -32,32 +33,6 @@ import { dragonBallSvg } from "@/lib/dragonBall";
 // the nav, menus and every other interaction are live without waiting for the ticker's data.
 // Generated for the ticker: every icon is centred on its own ink (70% visual weight, 30% bounding box) and scaled so its farthest point sits the same
 // distance from the centre, so all of them sit inside the 16px circle with the same room around them. Regenerate if an icon's art changes.
-const TICKER_ICONS = {
-  confidence:
-    '<svg viewBox="0 0 24 24" fill="currentColor"><g transform="translate(12 12) scale(0.809) translate(-12.06 -11.42)"><g transform="translate(0.6,1.2)"><path d="M5 2.8a1 1 0 0 1 1 1v16.4a1 1 0 1 1-2 0V3.8a1 1 0 0 1 1-1z"/><path d="M6.6 4.4c2.2-1.25 4.45-1.25 6.65 0s4.45 1.25 6.65 0v8.6c-2.2 1.25-4.45 1.25-6.65 0s-4.45-1.25-6.65 0z"/></g></g></svg>',
-  volatile:
-    '<svg viewBox="0 0 24 24" fill="currentColor"><g transform="translate(12 12) scale(0.979) translate(-11.98 -11.97)"><g transform="rotate(12 12 12)"><path fill-rule="evenodd" d="M6.9 3.5h10.2a3.4 3.4 0 0 1 3.4 3.4v10.2a3.4 3.4 0 0 1-3.4 3.4H6.9a3.4 3.4 0 0 1-3.4-3.4V6.9a3.4 3.4 0 0 1 3.4-3.4ZM8 6.5a1.55 1.55 0 1 0 0 3.1 1.55 1.55 0 0 0 0-3.1ZM16 6.5a1.55 1.55 0 1 0 0 3.1 1.55 1.55 0 0 0 0-3.1ZM12 10.45a1.55 1.55 0 1 0 0 3.1 1.55 1.55 0 0 0 0-3.1ZM8 14.4a1.55 1.55 0 1 0 0 3.1 1.55 1.55 0 0 0 0-3.1ZM16 14.4a1.55 1.55 0 1 0 0 3.1 1.55 1.55 0 0 0 0-3.1Z"/></g></g></svg>',
-  locked:
-    '<svg viewBox="0 0 24 24" fill="currentColor"><g transform="translate(12 12) scale(1.003) translate(-11.98 -12.90)"><g transform="translate(12 11.55) scale(0.9) translate(-12 -12)"><path d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5zm-3 8V7a3 3 0 0 1 6 0v3H9zm3 4a1.6 1.6 0 0 1 1 2.85V18a1 1 0 1 1-2 0v-1.15A1.6 1.6 0 0 1 12 14z"/></g></g></svg>',
-  onFire:
-    '<svg viewBox="0 0 24 24" fill="currentColor"><g transform="translate(12 12) scale(1.006) translate(-12.03 -12.14)"><g transform="translate(0,-0.15)"><path fill-rule="evenodd" clip-rule="evenodd" d="M12.963 2.286a.75.75 0 00-1.071-.136 9.742 9.742 0 00-3.539 6.176 7.547 7.547 0 01-1.705-1.715.75.75 0 00-1.152-.082A9 9 0 1015.68 4.534a7.46 7.46 0 01-2.717-2.248zM15.75 14.25a3.75 3.75 0 11-7.313-1.172c.628.465 1.35.81 2.133.998a5.27 5.27 0 01-.32-1.83c0-1.014.377-1.94 1-2.647a3.752 3.752 0 014.5 4.65z"/></g></g></svg>',
-  onIce:
-    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="butt"><g transform="translate(12 12) scale(0.993) translate(-11.98 -11.97)"><g transform="rotate(0 12 12)"><path d="M12 12V4.2" stroke-width="2.2"/><path d="M12 6.9 10 4.9M12 6.9 14 4.9" stroke-width="1.6"/><path d="M12 1.5 13.5 3.7 12 5.9 10.5 3.7Z" fill="currentColor" stroke="none"/></g><g transform="rotate(60 12 12)"><path d="M12 12V4.2" stroke-width="2.2"/><path d="M12 6.9 10 4.9M12 6.9 14 4.9" stroke-width="1.6"/><path d="M12 1.5 13.5 3.7 12 5.9 10.5 3.7Z" fill="currentColor" stroke="none"/></g><g transform="rotate(120 12 12)"><path d="M12 12V4.2" stroke-width="2.2"/><path d="M12 6.9 10 4.9M12 6.9 14 4.9" stroke-width="1.6"/><path d="M12 1.5 13.5 3.7 12 5.9 10.5 3.7Z" fill="currentColor" stroke="none"/></g><g transform="rotate(180 12 12)"><path d="M12 12V4.2" stroke-width="2.2"/><path d="M12 6.9 10 4.9M12 6.9 14 4.9" stroke-width="1.6"/><path d="M12 1.5 13.5 3.7 12 5.9 10.5 3.7Z" fill="currentColor" stroke="none"/></g><g transform="rotate(240 12 12)"><path d="M12 12V4.2" stroke-width="2.2"/><path d="M12 6.9 10 4.9M12 6.9 14 4.9" stroke-width="1.6"/><path d="M12 1.5 13.5 3.7 12 5.9 10.5 3.7Z" fill="currentColor" stroke="none"/></g><g transform="rotate(300 12 12)"><path d="M12 12V4.2" stroke-width="2.2"/><path d="M12 6.9 10 4.9M12 6.9 14 4.9" stroke-width="1.6"/><path d="M12 1.5 13.5 3.7 12 5.9 10.5 3.7Z" fill="currentColor" stroke="none"/></g><path d="M12 9.2l2.3 1.3v3L12 14.8l-2.3-1.3v-3Z" fill="currentColor" stroke="none"/></g></svg>',
-  buyLow:
-    '<svg viewBox="0 0 24 24" fill="currentColor"><g transform="translate(12 12) scale(1.196) translate(-12.09 -11.62)"><g transform="translate(0.68,-0.57)"><path d="M12 20V11" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M12 14.2c-3.6 0-6.2-2.3-6.2-6.5C9.9 8 12 10.4 12 14.2z"/><path d="M12 11.3c2.9 0 5.1-1.9 5.1-5.4C13.9 6 12 8.1 12 11.3z" opacity="0.85"/></g></g></svg>',
-  sellHigh:
-    '<svg viewBox="0 0 24 24" fill="currentColor"><g transform="translate(12 12) scale(1.119) translate(-12.01 -12.10)"><g transform="translate(0.12,0.2)"><g transform="translate(-1.085,-1.115)"><path d="M10.3 4.2c-.5 0-1 .3-1.1.8l-.5 1.7c-2.8 1.1-4.7 3.8-4.7 7 0 4.3 3.9 7.8 9 7.8s9-3.5 9-7.8c0-3.2-1.9-5.9-4.7-7l-.5-1.7c-.1-.5-.6-.8-1.1-.8z"/><g transform="translate(0.8,-0.15)"><path d="M12 8.3v9.4M14.1 10c-.4-.4-1.2-.8-2-.8-1.1 0-2 .6-2 1.6 0 1 1 1.4 2 1.7 1.3.3 2.3.8 2.3 1.9 0 1-.9 1.7-2.1 1.7-.9 0-1.8-.4-2.3-.9" stroke="var(--peak)" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g></g></g></g></svg>',
-  honorable:
-    '<svg viewBox="0 0 24 24" fill="currentColor"><g transform="translate(12 12) scale(0.936) translate(-12.19 -12.18)"><g transform="translate(0.43,0.18)"><g transform="translate(-0.454,0.974)"><path d="M12 3.2 1.5 8l10.5 4.8L20 9.2v5.4h1.5V8L12 3.2z"/><path d="M5 10.4v4.3c0 1.7 3.1 3.4 7 3.4s7-1.7 7-3.4v-4.3l-7 3.2-7-3.2z" opacity="0.85"/><path d="M18.5 10v6.6" stroke="currentColor" stroke-width="1.2" fill="none" stroke-linecap="round"/><circle cx="18.5" cy="17.6" r="1.1"/></g></g></g></svg>',
-  rookie:
-    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><g transform="translate(12 12) scale(1.031) translate(-11.62 -11.60)"><path d="M10 3.6h4.2v16.8h-3.4V8.2L8 9.7V6.6Z"/></g></svg>',
-  eliteRole:
-    '<svg viewBox="0 0 24 24" fill="currentColor"><g transform="translate(12 12) scale(0.845) translate(-11.98 -12.88)"><path fill-rule="evenodd" d="M12 3.2 18.2 8.4V10H22V20.2H2V10H5.8V8.4ZM12 6.4a1 1 0 1 0 0 2 1 1 0 0 0 0-2ZM10.6 19.4V15.6a1.4 1.4 0 0 1 2.8 0v3.8ZM4 12.4h2.8v3.2H4ZM17.2 12.4h2.8v3.2h-2.8Z"/></g></svg>',
-  elitePlayer:
-    '<svg viewBox="0 0 24 24" fill="currentColor"><g transform="translate(12 12) scale(0.802) translate(-11.97 -10.81)"><path d="M9.6 9C5.4 9.4 2.4 6.6 2.8 1.6C4.8 4.4 7.6 4.8 11 5.6Z"/><path d="M14.4 9c4.2.4 7.2-2.4 6.8-7.4-2 2.8-4.8 3.2-8.2 4Z"/><path d="M8.4 11 2.4 10C2.6 12.4 4.2 13.8 7 14Z"/><path d="M15.6 11l6-1c-.2 2.4-1.8 3.8-4.6 4Z"/><path fill-rule="evenodd" d="M8.2 8.6h7.6l-.8 7c-.2 1.7-1.3 2.8-3 2.8s-2.8-1.1-3-2.8ZM9.3 11h1.8v1.1H9.3ZM12.9 11h1.8v1.1h-1.8ZM11 15.1a.5.5 0 1 0 0 1 .5.5 0 0 0 0-1ZM13 15.1a.5.5 0 1 0 0 1 .5.5 0 0 0 0-1Z"/><path d="M10.6 18.4h2.8L12 22.4Z"/></g></svg>',
-  conArtist:
-    '<svg viewBox="0 0 24 24" fill="currentColor"><g transform="translate(12 12) scale(0.824) translate(-11.42 -11.47)"><g transform="translate(-0.4,0.24)"><path d="M2.245,3.02 C5.71,1.04 9.49,1.04 12.955,3.02 C14.215,9.95 10.3,15.3 7.6,16.29 C4.9,15.3 1.0,9.95 2.245,3.02 Z M5.395,7.31 A0.95,0.95 0 1,0 7.295,7.31 A0.95,0.95 0 1,0 5.395,7.31 Z M8.905,7.31 A0.95,0.95 0 1,0 10.805,7.31 A0.95,0.95 0 1,0 8.905,7.31 Z M4.954,11.27 Q7.6,10.17 10.246,11.27 Q7.6,7.87 4.954,11.27 Z" opacity="0.55" fill-rule="evenodd"/><path d="M6.8 2.9 8.4 2.9 7.6 0.9Z" opacity="0.55"/><path d="M10.19,8.98 C13.82,6.91 17.78,6.91 21.41,8.98 C22.73,16.225 18.5,21.8 15.8,22.435 C13.1,21.8 8.87,16.225 10.19,8.98 Z M13.49,13.465 A1,1 0 1,0 15.49,13.465 A1,1 0 1,0 13.49,13.465 Z M17.11,13.465 A1,1 0 1,0 19.11,13.465 A1,1 0 1,0 17.11,13.465 Z M13.028,17.605 Q15.8,18.705 18.572,17.605 Q15.8,21.205 13.028,17.605 Z" fill-rule="evenodd"/><path d="M15 8.85 16.6 8.85 15.8 6.75Z"/></g></g></svg>',
-};
 const fallbackNames = [
   "CeeDee Lamb",
   "Bijan Robinson",
@@ -112,7 +87,7 @@ function buildTicker(track, tickerItems) {
       // same shape.
       const badges = item.badges || [{ key: item.key, variant: item.variant }];
       const icons = badges
-        .map((b) => `<span class="ticker-badge ${b.variant}">${b.key === "hero" ? dragonBallSvg(b.tier || 1, 16) : TICKER_ICONS[b.key] || TICKER_ICONS.confidence}</span>`)
+        .map((b) => `<span class="ticker-badge ${b.variant}">${b.key === "hero" ? dragonBallSvg(b.tier || 1, 16) : BADGE_ICONS[b.key] || BADGE_ICONS.confidence}</span>`)
         .join("");
       html += `<span class="ticker-item">${item.name} <span class="ticker-badges">${icons}</span></span>`;
     });
