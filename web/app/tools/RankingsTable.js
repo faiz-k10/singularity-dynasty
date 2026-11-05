@@ -337,7 +337,7 @@ export default function RankingsTable({
   return (
     <>
       <div className={`rankings-theater-bar${theater ? " theater" : ""}`}>
-        {theater && toolbar && <div className="rankings-theater-controls">{toolbar}</div>}
+        {toolbar && <div className="rankings-theater-controls">{toolbar}</div>}
         <button
           type="button"
           className="rankings-theater-btn"

@@ -929,7 +929,6 @@ export default function PlayerSimSearch({ rows: sortedRows, sortKey: initialKey,
         {actions && <div className="rk-top-actions">{actions}</div>}
       </div>
 
-      <div className="rk-toolbar">{toolbar}</div>
       {filtering && (
         <p className="rk-status">
           <span className="my-filter-note">
@@ -1004,7 +1003,7 @@ export default function PlayerSimSearch({ rows: sortedRows, sortKey: initialKey,
       {(
         <>
           <div className={`rankings-theater-bar${theater ? " theater" : ""}`}>
-            {theater && (
+            {toolbar && (
               <div className="rankings-theater-controls">
                 {toolbar}
               </div>

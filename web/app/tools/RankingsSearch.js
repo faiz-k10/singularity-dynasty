@@ -114,7 +114,6 @@ export default function RankingsSearch({
         </div>
       )}
 
-      <div className="rk-toolbar">{toolbar}</div>
       {(myView.on || filtering) && (
         <p className="rk-status">
           {note}
