@@ -227,15 +227,16 @@ export const ELITE_RANK = 5;
 // Floor / ceiling lean, read off the Outcome Curve's percentiles (row.statPct: each of his floor, median and ceiling against the same number
 // for every player at his position). Rock Solid Floor: his floor AND median rank at least 5 percentiles higher than his ceiling does (the
 // bottom of his range is strong for his position, the top is not). The Ceiling Is the Roof: his ceiling ranks at least 5 percentiles higher
-// than his floor AND his median do. Needs all three percentiles; a bye / listed-out row has no range, so neither applies.
+// than his floor AND his median do, and his ceiling percentile is at least the 90th. Needs all three percentiles; a bye / listed-out row has no range, so neither applies.
 export const LEAN_PCT_GAP = 5;
+export const ROOF_MIN_CEILING_PCT = 90; // The Ceiling Is the Roof also needs a ceiling in at least the 90th percentile at his position
 export function rangeLean(statPct, playing = true) {
   const f = statPct?.floor;
   const m = statPct?.projection;
   const c = statPct?.ceiling;
   if (!playing || ![f, m, c].every((v) => typeof v === "number" && Number.isFinite(v))) return null;
   if (f - c >= LEAN_PCT_GAP && m - c >= LEAN_PCT_GAP) return "solidFloor";
-  if (c - f >= LEAN_PCT_GAP && c - m >= LEAN_PCT_GAP) return "highCeiling";
+  if (c >= ROOF_MIN_CEILING_PCT && c - f >= LEAN_PCT_GAP && c - m >= LEAN_PCT_GAP) return "highCeiling";
   return null;
 }
 
