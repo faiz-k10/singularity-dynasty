@@ -2711,7 +2711,20 @@ a.export-csv-btn{text-decoration:none;}
   display:grid; grid-template-columns:28px 50px minmax(24px,1fr) 44px 46px; align-items:center; column-gap:clamp(6px, 2.4cqw, 12px);
   padding:10px 0; border-bottom:1px solid rgba(var(--shadow-rgb),0.5); font-size:14px;
 }
-.weekly-gamelog-row:last-child{border-bottom:none;}
+.weekly-gamelog-item{border-bottom:1px solid rgba(var(--shadow-rgb),0.5);}
+.weekly-gamelog-item:last-child{border-bottom:none;}
+.weekly-gamelog-row{border-bottom:none; cursor:default;}
+.weekly-gamelog-row.is-clickable{cursor:pointer;}
+.weekly-gamelog-row.is-clickable:hover .weekly-gamelog-week{color:var(--star);}
+/* The dropdown: a grid row that opens from 0fr to 1fr, so the height animates without measuring. */
+.weekly-gamelog-more{display:grid; grid-template-rows:0fr; transition:grid-template-rows .22s ease;}
+.weekly-gamelog-item.is-open .weekly-gamelog-more{grid-template-rows:1fr;}
+.weekly-gamelog-more-inner{overflow:hidden; display:flex; flex-wrap:wrap; gap:6px; min-height:0;}
+.weekly-gamelog-item.is-open .weekly-gamelog-more-inner{padding:0 0 12px;}
+.weekly-gamelog-chip{display:flex; flex-direction:column; gap:2px; padding:6px 10px; background:var(--void-panel-2); border:1px solid var(--line); flex:1 1 72px; min-width:0;}
+.weekly-gamelog-chip b{font-size:15px; color:var(--star); white-space:nowrap;}
+.weekly-gamelog-chip small{font-size:9.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--star-dim); white-space:nowrap;}
+@media (prefers-reduced-motion:reduce){.weekly-gamelog-more{transition:none;}}
 .weekly-gamelog-week{color:var(--star-dim);}
 .weekly-gamelog-opp{display:flex; align-items:center; gap:7px;}
 .weekly-gamelog-sep{color:var(--star-dim); font-size:13px; min-width:16px;}

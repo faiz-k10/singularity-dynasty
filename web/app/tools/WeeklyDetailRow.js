@@ -77,10 +77,42 @@ function RankTable({ children }) {
 // actual-vs-expected match is a real, not-hypothetical case. Dim/
 // neutral, not red, for the ~12% of games with no xFP row (see
 // CLAUDE.md) -- a missing comparison isn't the same as underperforming.
+// The box-score numbers a game's dropdown shows, by position (anything he has no line for is left out). The log carries touchdowns as one total.
+function gameStatChips(g) {
+  const n = (v) => (v == null ? null : Number(v));
+  const chips = [];
+  const add = (label, value) => value != null && chips.push([label, value]);
+  const pos = g.position;
+  if (pos === "QB") {
+    add("Pass yds", n(g.pass_yards));
+    add("Rush", n(g.rush_att) != null ? `${n(g.rush_att)} for ${n(g.rush_yards) ?? 0}` : null);
+  } else if (pos === "RB") {
+    add("Rush", n(g.rush_att) != null ? `${n(g.rush_att)} for ${n(g.rush_yards) ?? 0}` : null);
+    add("Catches", n(g.receptions) != null ? `${n(g.receptions)} of ${n(g.targets) ?? n(g.receptions)}` : null);
+    add("Rec yds", n(g.rec_yards));
+  } else {
+    add("Catches", n(g.receptions) != null ? `${n(g.receptions)} of ${n(g.targets) ?? n(g.receptions)}` : null);
+    add("Rec yds", n(g.rec_yards));
+    if (n(g.rush_att)) add("Rush", `${n(g.rush_att)} for ${n(g.rush_yards) ?? 0}`);
+  }
+  add("TD", n(g.tds));
+  if (g.exp_points_ppr != null) add("Expected pts", Number(g.exp_points_ppr).toFixed(1));
+  if (g.won != null) add("Result", g.won ? "Win" : "Loss");
+  return chips;
+}
+
 export function GameLogPanel({ games: all }) {
   // This season's games only (the list is newest first).
   const games = all ? all.filter((g) => g.season === all[0].season) : all;
+  const [open, setOpen] = useState(() => new Set());
   if (!games || games.length === 0) return null;
+  const toggle = (key) =>
+    setOpen((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
   // One scale for the whole list so bars and xFP dashes compare across games.
   const scaleMax = Math.max(10, ...games.map((g) => Math.max(g.fantasy_points_ppr ?? 0, g.exp_points_ppr ?? 0))) * 1.05;
   return (
@@ -90,26 +122,60 @@ export function GameLogPanel({ games: all }) {
       </div>
       <div className="weekly-gamelog-rows">
         {games.map((g) => {
+          const key = `${g.season}-${g.week}`;
           const sep = g.is_home === true ? "vs" : g.is_home === false ? "@" : "·";
           const pts = g.fantasy_points_ppr;
           const hasXfp = g.exp_points_ppr != null && pts != null;
           const dotCls = !hasXfp ? "neutral" : pts === g.exp_points_ppr ? "tie" : pts > g.exp_points_ppr ? "above" : "below";
           const pct = (v) => `${Math.min(100, Math.max(0, (v / scaleMax) * 100)).toFixed(1)}%`;
+          const chips = gameStatChips(g);
+          const canOpen = chips.length > 1;
+          const isOpen = canOpen && open.has(key);
           return (
-            <div key={`${g.season}-${g.week}`} className="weekly-gamelog-row">
-              <span className="weekly-gamelog-week mono">W{g.week}</span>
-              {/* vs / @ and the opponent */}
-              <span className="weekly-gamelog-opp">
-                <span className="weekly-gamelog-sep mono">{sep}</span>
-                <TeamBadge team={g.opponent} />
-              </span>
-              {/* his points as a bar (mint = beat his expected points, red = fell short), a dash where his expected points (xFP) were */}
-              <span className="weekly-gamelog-bar" aria-label={hasXfp ? `${pts.toFixed(1)} points, ${g.exp_points_ppr.toFixed(1)} expected` : undefined}>
-                {pts != null && <em className={dotCls} style={{ width: pct(pts) }} />}
-                {hasXfp && <u style={{ left: pct(g.exp_points_ppr) }} />}
-              </span>
-              <span className="weekly-gamelog-pts mono">{pts != null ? pts.toFixed(1) : "—"}</span>
-              <span className="weekly-gamelog-rank mono">{g.posRank != null ? `${g.position}${g.posRank}` : "—"}</span>
+            <div key={key} className={`weekly-gamelog-item${isOpen ? " is-open" : ""}`}>
+              <div
+                className={`weekly-gamelog-row${canOpen ? " is-clickable" : ""}`}
+                role={canOpen ? "button" : undefined}
+                tabIndex={canOpen ? 0 : undefined}
+                aria-expanded={canOpen ? isOpen : undefined}
+                onClick={canOpen ? () => toggle(key) : undefined}
+                onKeyDown={
+                  canOpen
+                    ? (e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          toggle(key);
+                        }
+                      }
+                    : undefined
+                }
+              >
+                <span className="weekly-gamelog-week mono">W{g.week}</span>
+                {/* vs / @ and the opponent */}
+                <span className="weekly-gamelog-opp">
+                  <span className="weekly-gamelog-sep mono">{sep}</span>
+                  <TeamBadge team={g.opponent} />
+                </span>
+                {/* his points as a bar (mint = beat his expected points, red = fell short), a dash where his expected points (xFP) were */}
+                <span className="weekly-gamelog-bar" aria-label={hasXfp ? `${pts.toFixed(1)} points, ${g.exp_points_ppr.toFixed(1)} expected` : undefined}>
+                  {pts != null && <em className={dotCls} style={{ width: pct(pts) }} />}
+                  {hasXfp && <u style={{ left: pct(g.exp_points_ppr) }} />}
+                </span>
+                <span className="weekly-gamelog-pts mono">{pts != null ? pts.toFixed(1) : "—"}</span>
+                <span className="weekly-gamelog-rank mono">{g.posRank != null ? `${g.position}${g.posRank}` : "—"}</span>
+              </div>
+              {canOpen && (
+                <div className="weekly-gamelog-more" aria-hidden={!isOpen}>
+                  <div className="weekly-gamelog-more-inner">
+                    {chips.map(([label, value]) => (
+                      <span key={label} className="weekly-gamelog-chip">
+                        <b className="mono">{value}</b>
+                        <small className="mono">{label}</small>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           );
         })}

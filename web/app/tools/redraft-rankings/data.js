@@ -191,7 +191,7 @@ function fetchGameLogRows(supabase) {
   return fetchAllRows(
     supabase,
     "player_game_log",
-    "player_name, position, team, season, week, opponent, is_home, fantasy_points_ppr, exp_points_ppr",
+    "player_name, position, team, season, week, opponent, is_home, won, fantasy_points_ppr, exp_points_ppr, receptions, targets, rec_yards, rush_att, rush_yards, pass_yards, tds",
     (q) => q.order("season", { ascending: false }).order("week", { ascending: false }).order("player_name", { ascending: true })
   );
 }
@@ -236,8 +236,17 @@ function deriveGameLogData(data, season, floorCeilingByGame, currentWeek = Infin
     if (thisSeasonXfp.length > 0) {
       avgXfpByName[name] = thisSeasonXfp.reduce((sum, g) => sum + g.exp_points_ppr, 0) / thisSeasonXfp.length;
     }
-    // Rows already arrive season/week descending from the query above.
-    recentGamesByName[name] = games.slice(0, 18); // the Recent Games panel shows this season's games (a full season is 18 weeks; up to 11 until Nov 5 2026, and it showed last season too) (8 until Oct 29 2026: the space under them was empty); the badges read the first 5 (achievements.js)
+    // Rows already arrive season/week descending from the query above. The Recent Games panel shows this season's games (up to 18 weeks);
+    // the badges read the newest 5 (achievements.js). The box-score numbers behind each game's dropdown are kept for this season's games only
+    // and a game's player name is dropped (the key already has it): this object goes into Next's data cache, which refuses entries over 2MB.
+    const keep = Math.max(11, games.filter((g) => g.season === season).length);
+    recentGamesByName[name] = games.slice(0, keep).map(({ player_name, ...g }) => {
+      if (g.season !== season) {
+        const { won, receptions, targets, rec_yards, rush_att, rush_yards, pass_yards, tds, ...rest } = g;
+        return rest;
+      }
+      return g;
+    });
   }
 
   const lastWeekRankByName = {};
