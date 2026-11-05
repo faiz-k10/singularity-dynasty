@@ -77,42 +77,28 @@ function RankTable({ children }) {
 // actual-vs-expected match is a real, not-hypothetical case. Dim/
 // neutral, not red, for the ~12% of games with no xFP row (see
 // CLAUDE.md) -- a missing comparison isn't the same as underperforming.
-// The box-score numbers a game's dropdown shows, by position (anything he has no line for is left out). The log carries touchdowns as one total.
-function gameStatChips(g) {
-  const n = (v) => (v == null ? null : Number(v));
-  const chips = [];
-  const add = (label, value) => value != null && chips.push([label, value]);
-  const pos = g.position;
-  if (pos === "QB") {
-    add("Pass yds", n(g.pass_yards));
-    add("Rush", n(g.rush_att) != null ? `${n(g.rush_att)} for ${n(g.rush_yards) ?? 0}` : null);
-  } else if (pos === "RB") {
-    add("Rush", n(g.rush_att) != null ? `${n(g.rush_att)} for ${n(g.rush_yards) ?? 0}` : null);
-    add("Catches", n(g.receptions) != null ? `${n(g.receptions)} of ${n(g.targets) ?? n(g.receptions)}` : null);
-    add("Rec yds", n(g.rec_yards));
-  } else {
-    add("Catches", n(g.receptions) != null ? `${n(g.receptions)} of ${n(g.targets) ?? n(g.receptions)}` : null);
-    add("Rec yds", n(g.rec_yards));
-    if (n(g.rush_att)) add("Rush", `${n(g.rush_att)} for ${n(g.rush_yards) ?? 0}`);
-  }
-  add("TD", n(g.tds));
-  if (g.exp_points_ppr != null) add("Expected pts", Number(g.exp_points_ppr).toFixed(1));
-  if (g.won != null) add("Result", g.won ? "Win" : "Loss");
-  return chips;
-}
-
 export function GameLogPanel({ games: all }) {
   // This season's games only (the list is newest first).
   const games = all ? all.filter((g) => g.season === all[0].season) : all;
   const [open, setOpen] = useState(() => new Set());
+  // Each game's box score (the same ESPN numbers the Game Board shows), fetched the first time its row opens: key -> "loading" | chips[].
+  const [boxes, setBoxes] = useState({});
   if (!games || games.length === 0) return null;
-  const toggle = (key) =>
+  const toggle = (g, key) => {
     setOpen((prev) => {
       const next = new Set(prev);
       if (next.has(key)) next.delete(key);
       else next.add(key);
       return next;
     });
+    if (boxes[key] !== undefined) return;
+    setBoxes((b) => ({ ...b, [key]: "loading" }));
+    const qs = new URLSearchParams({ season: g.season, week: g.week, team: g.team, name: g.player_name || g.name || "", pos: g.position || "" });
+    fetch(`/api/game-box?${qs}`)
+      .then((r) => r.json())
+      .then((j) => setBoxes((b) => ({ ...b, [key]: Array.isArray(j.chips) ? j.chips : [] })))
+      .catch(() => setBoxes((b) => ({ ...b, [key]: [] })));
+  };
   // One scale for the whole list so bars and xFP dashes compare across games.
   const scaleMax = Math.max(10, ...games.map((g) => Math.max(g.fantasy_points_ppr ?? 0, g.exp_points_ppr ?? 0))) * 1.05;
   return (
@@ -128,9 +114,9 @@ export function GameLogPanel({ games: all }) {
           const hasXfp = g.exp_points_ppr != null && pts != null;
           const dotCls = !hasXfp ? "neutral" : pts === g.exp_points_ppr ? "tie" : pts > g.exp_points_ppr ? "above" : "below";
           const pct = (v) => `${Math.min(100, Math.max(0, (v / scaleMax) * 100)).toFixed(1)}%`;
-          const chips = gameStatChips(g);
-          const canOpen = chips.length > 1;
+          const canOpen = !!(g.team && g.position && (g.player_name || g.name) && pts != null);
           const isOpen = canOpen && open.has(key);
+          const box = boxes[key];
           return (
             <div key={key} className={`weekly-gamelog-item${isOpen ? " is-open" : ""}`}>
               <div
@@ -138,13 +124,13 @@ export function GameLogPanel({ games: all }) {
                 role={canOpen ? "button" : undefined}
                 tabIndex={canOpen ? 0 : undefined}
                 aria-expanded={canOpen ? isOpen : undefined}
-                onClick={canOpen ? () => toggle(key) : undefined}
+                onClick={canOpen ? () => toggle(g, key) : undefined}
                 onKeyDown={
                   canOpen
                     ? (e) => {
                         if (e.key === "Enter" || e.key === " ") {
                           e.preventDefault();
-                          toggle(key);
+                          toggle(g, key);
                         }
                       }
                     : undefined
@@ -166,13 +152,19 @@ export function GameLogPanel({ games: all }) {
               </div>
               {canOpen && (
                 <div className="weekly-gamelog-more" aria-hidden={!isOpen}>
-                  <div className="weekly-gamelog-more-inner">
-                    {chips.map(([label, value]) => (
-                      <span key={label} className="weekly-gamelog-chip">
-                        <b className="mono">{value}</b>
-                        <small className="mono">{label}</small>
-                      </span>
-                    ))}
+                  <div className="weekly-gamelog-more-inner" style={{ "--cols": Array.isArray(box) ? (box.length >= 7 || box.length === 4 ? 4 : Math.min(3, box.length)) : 1 }}>
+                    {box === "loading" || box === undefined ? (
+                      <span className="weekly-gamelog-note mono">Loading box score…</span>
+                    ) : box.length === 0 ? (
+                      <span className="weekly-gamelog-note mono">No box score available for this game.</span>
+                    ) : (
+                      box.map((c) => (
+                        <span key={c.label} className="weekly-gamelog-chip">
+                          <b className="mono">{c.value}</b>
+                          <small className="mono">{c.label}</small>
+                        </span>
+                      ))
+                    )}
                   </div>
                 </div>
               )}

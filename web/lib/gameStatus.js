@@ -76,3 +76,18 @@ export function livePointsFor(player, playerPoints, gameStates) {
   const v = playerPoints[player.player_id];
   return { pts: typeof v === "number" ? v : 0, state: g.state };
 }
+
+// One past (or current) week's scoreboard, for a game's box score from the Recent Games panel. Finished weeks never change, so they are kept for hours.
+const weekCache = new Map(); // "season|week" -> { at, value: Promise }
+export function fetchWeekGameStates(season, week) {
+  const key = `${season}|${week}`;
+  const hit = weekCache.get(key);
+  if (hit && Date.now() - hit.at < 60 * 60 * 1000) return hit.value;
+  const value = fetch(`${URL}?dates=${season}&seasontype=2&week=${week}`, { cache: "no-store" }).then(async (res) => {
+    if (!res.ok) throw new Error(`ESPN ${res.status}`);
+    return parseScoreboard(await res.json());
+  });
+  value.catch(() => weekCache.delete(key));
+  weekCache.set(key, { at: Date.now(), value });
+  return value;
+}

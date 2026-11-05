@@ -2721,7 +2721,8 @@ a.export-csv-btn{text-decoration:none;}
 .weekly-gamelog-item.is-open .weekly-gamelog-more{grid-template-rows:1fr;}
 .weekly-gamelog-more-inner{overflow:hidden; display:flex; flex-wrap:wrap; gap:6px; min-height:0;}
 .weekly-gamelog-item.is-open .weekly-gamelog-more-inner{padding:0 0 12px;}
-.weekly-gamelog-chip{display:flex; flex-direction:column; gap:2px; padding:6px 10px; background:var(--void-panel-2); border:1px solid var(--line); flex:1 1 72px; min-width:0;}
+.weekly-gamelog-chip{display:flex; flex-direction:column; gap:2px; padding:6px 10px; background:var(--void-panel-2); border:1px solid var(--line); flex:1 1 calc((100% - 6px * (var(--cols, 3) - 1)) / var(--cols, 3) - 0.5px); min-width:0;}
+.weekly-gamelog-note{font-size:11px; letter-spacing:.06em; color:var(--star-dim); padding:4px 0;}
 .weekly-gamelog-chip b{font-size:15px; color:var(--star); white-space:nowrap;}
 .weekly-gamelog-chip small{font-size:9.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--star-dim); white-space:nowrap;}
 @media (prefers-reduced-motion:reduce){.weekly-gamelog-more{transition:none;}}
