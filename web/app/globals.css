@@ -2383,12 +2383,11 @@ a.export-csv-btn{text-decoration:none;}
    wider than that estimate left the header visibly short of the grid's
    own right edge. This can't drift out of sync the way a hardcoded
    number could. */
-.weekly-detail-wrap{display:inline-block; max-width:100%; vertical-align:top;}
+/* The opened player spans the table's visible width at every size (founder, Nov 3 2026: it sat centred with empty margins): pinned 10px in from each edge of
+   the scroller (the table can be wider than what is visible), and its three columns grow to fill it. */
+.weekly-detail-wrap{display:block; position:sticky; left:10px; width:calc(100cqw - 20px); max-width:none; box-sizing:border-box;}
+.rankings-table-wrap .redraft-table > tbody > tr.stat-detail-row > td{padding-left:0; padding-right:0;}   /* the pin is measured from the scroller's edge, so the cell adds no side padding of its own */
 /* The pins for narrow tables (explained at .rankings-table-wrap, top of the file) -- placed AFTER the base rule so they win the cascade: */
-@container (max-width:1160px){
-  .weekly-detail-wrap{display:block; position:sticky; left:10px; width:calc(100cqw - 20px); max-width:none; box-sizing:border-box;}
-  .rankings-table-wrap .redraft-table > tbody > tr.stat-detail-row > td{padding-left:0; padding-right:0;}   /* the pin below is measured from the scroller's edge, so the cell adds no side padding of its own */
-}
 @container (max-width:980px){
   .stat-detail-row > td > .stat-detail-grid, .stat-detail-row > td > .stat-detail-mine{position:sticky; left:10px; width:calc(100cqw - 20px); box-sizing:border-box;}
   .rankings-table-wrap .player-sims-table > tbody > tr.stat-detail-row > td{padding-left:0; padding-right:0;}
@@ -2580,8 +2579,8 @@ a.export-csv-btn{text-decoration:none;}
 .weekly-detail-col{display:flex; flex-direction:column; gap:12px; min-width:0;}
 /* Small flex-basis on purpose: all three columns (stats+curve | Your player+games | touchdown / usage) fit on one row even
    in a fairly narrow window, then grow up to their max widths. Phones stack them (max-width:640px block below). */
-.weekly-detail-col-left{flex:1 1 230px; max-width:400px;}
-.weekly-detail-col-mid, .weekly-detail-col-right{flex:1 1 200px; max-width:320px;}
+.weekly-detail-col-left{flex:1.25 1 230px;}
+.weekly-detail-col-mid, .weekly-detail-col-right{flex:1 1 200px;}
 .weekly-detail-col-mid{flex-basis:280px; min-width:280px;}   /* Recent Games' row (week, two logos, vs / @, points, finish) needs ~265px; any narrower and the finish spilled out of the panel */
 .weekly-detail-col .weekly-detail-curve-panel,
 .weekly-detail-col .weekly-detail-pct-panel{flex:1 1 auto; max-width:none;}
