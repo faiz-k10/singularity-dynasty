@@ -2708,25 +2708,23 @@ a.export-csv-btn{text-decoration:none;}
    height at the top (founder, Oct 29 2026: since Recent Games got the middle column to itself, sharing the extra height made each row ~64px). */
 .weekly-detail-col .weekly-gamelog-panel{flex:1 1 auto;}
 .weekly-gamelog-row{
-  display:grid; grid-template-columns:minmax(0,1fr) 32px 28px 32px 60px 54px; align-items:center; justify-items:center; column-gap:10px;
+  display:grid; grid-template-columns:28px 50px minmax(24px,1fr) 44px 46px; align-items:center; column-gap:clamp(6px, 2.4cqw, 12px);
   padding:10px 0; border-bottom:1px solid rgba(var(--shadow-rgb),0.5); font-size:14px;
 }
 .weekly-gamelog-row:last-child{border-bottom:none;}
-.weekly-gamelog-week{display:flex; align-items:center; gap:9px; color:var(--star-dim); justify-self:start;}
-.weekly-gamelog-dot{
-  width:6px; height:6px; border-radius:50%; flex-shrink:0;
-  background:var(--down); box-shadow:0 0 4px currentColor; color:var(--down);
-}
-.weekly-gamelog-dot.above{background:var(--up); color:var(--up);}
-/* An exact actual-vs-xFP tie: the theme's neutral amber (--matchup-neutral, tuned for both themes). */
-.weekly-gamelog-dot.tie{background:var(--matchup-neutral); color:var(--matchup-neutral);}
-.weekly-gamelog-dot.neutral{background:var(--star-dim); color:var(--star-dim); box-shadow:none;}
-.weekly-gamelog-sep{color:var(--star-dim); font-size:13px; text-align:center;}
-.weekly-gamelog-rank{color:var(--horizon-gold); font-size:14px; font-weight:600; text-align:right; justify-self:end;}
-.weekly-gamelog-pts{
-  color:var(--star); font-weight:700; text-align:center; background:var(--void-panel-2);
-  border:1px solid var(--line); border-radius:2px; padding:3px 0; width:100%; font-size:15px;
-}
+.weekly-gamelog-week{color:var(--star-dim);}
+.weekly-gamelog-opp{display:flex; align-items:center; gap:7px;}
+.weekly-gamelog-sep{color:var(--star-dim); font-size:13px; min-width:16px;}
+/* The points bar: a track, the fill (mint when he beat his expected points, red when he fell short, steel with no xFP / on a tie) and a vertical dash at his xFP. */
+.weekly-gamelog-bar{position:relative; display:block; height:8px; background:var(--void-panel-2);}
+.weekly-gamelog-bar em{display:block; height:100%; background:var(--down);}
+.weekly-gamelog-bar em.above{background:var(--horizon-gold);}
+.weekly-gamelog-bar em.tie{background:var(--matchup-neutral);}
+.weekly-gamelog-bar em.neutral{background:var(--star-dim);}
+.weekly-gamelog-bar u{position:absolute; top:-4px; bottom:-4px; width:2px; margin-left:-1px; background:var(--star); text-decoration:none;}
+.weekly-gamelog-rank{color:var(--horizon-gold); font-size:14px; font-weight:600; text-align:right;}
+.weekly-gamelog-pts{color:var(--star); font-weight:700; font-size:15px; text-align:right;}
+.weekly-gamelog-panel{container-type:inline-size;}
 
 /* Opponent Defense + Recent Games are both compact/badge-driven panels
    that never needed a full-width slot of their own -- paired into one

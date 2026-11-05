@@ -81,6 +81,8 @@ export function GameLogPanel({ games: all }) {
   // This season's games only (the list is newest first).
   const games = all ? all.filter((g) => g.season === all[0].season) : all;
   if (!games || games.length === 0) return null;
+  // One scale for the whole list so bars and xFP dashes compare across games.
+  const scaleMax = Math.max(10, ...games.map((g) => Math.max(g.fantasy_points_ppr ?? 0, g.exp_points_ppr ?? 0))) * 1.05;
   return (
     <div className="stat-panel weekly-gamelog-panel">
       <div className="weekly-pct-head">
@@ -89,28 +91,25 @@ export function GameLogPanel({ games: all }) {
       <div className="weekly-gamelog-rows">
         {games.map((g) => {
           const sep = g.is_home === true ? "vs" : g.is_home === false ? "@" : "·";
-          const hasXfp = g.exp_points_ppr != null && g.fantasy_points_ppr != null;
-          const isTie = hasXfp && g.fantasy_points_ppr === g.exp_points_ppr;
-          const beatXfp = hasXfp && g.fantasy_points_ppr > g.exp_points_ppr;
-          const dotCls = !hasXfp ? "neutral" : isTie ? "tie" : beatXfp ? "above" : "below";
+          const pts = g.fantasy_points_ppr;
+          const hasXfp = g.exp_points_ppr != null && pts != null;
+          const dotCls = !hasXfp ? "neutral" : pts === g.exp_points_ppr ? "tie" : pts > g.exp_points_ppr ? "above" : "below";
+          const pct = (v) => `${Math.min(100, Math.max(0, (v / scaleMax) * 100)).toFixed(1)}%`;
           return (
             <div key={`${g.season}-${g.week}`} className="weekly-gamelog-row">
-              <span className="weekly-gamelog-week mono">
-                <span className={`weekly-gamelog-dot ${dotCls}`} />
-                W{g.week}
+              <span className="weekly-gamelog-week mono">W{g.week}</span>
+              {/* vs / @ and the opponent */}
+              <span className="weekly-gamelog-opp">
+                <span className="weekly-gamelog-sep mono">{sep}</span>
+                <TeamBadge team={g.opponent} />
               </span>
-              {/* the team he played FOR that game (players change teams), then vs / @ and the opponent */}
-              {g.team ? <TeamBadge team={g.team} /> : <span />}
-              <span className="weekly-gamelog-sep mono">{sep}</span>
-              <TeamBadge team={g.opponent} />
-              <span className="weekly-gamelog-pts mono">
-                {g.fantasy_points_ppr != null ? g.fantasy_points_ppr.toFixed(1) : "—"}
+              {/* his points as a bar (mint = beat his expected points, red = fell short), a dash where his expected points (xFP) were */}
+              <span className="weekly-gamelog-bar" aria-label={hasXfp ? `${pts.toFixed(1)} points, ${g.exp_points_ppr.toFixed(1)} expected` : undefined}>
+                {pts != null && <em className={dotCls} style={{ width: pct(pts) }} />}
+                {hasXfp && <u style={{ left: pct(g.exp_points_ppr) }} />}
               </span>
-              <span
-                className="weekly-gamelog-rank mono"
-              >
-                {g.posRank != null ? `${g.position}${g.posRank}` : "—"}
-              </span>
+              <span className="weekly-gamelog-pts mono">{pts != null ? pts.toFixed(1) : "—"}</span>
+              <span className="weekly-gamelog-rank mono">{g.posRank != null ? `${g.position}${g.posRank}` : "—"}</span>
             </div>
           );
         })}
