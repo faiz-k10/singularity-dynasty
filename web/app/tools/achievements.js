@@ -152,26 +152,9 @@ export function spreadFlag(floor, ceiling, projection, position) {
   return null;
 }
 
-// "Buy Low" -- real workload that hasn't shown up on the scoreboard the
-// last 2 games (and who has still scored at or above xFP in 2 of his last 3 -- see atOrAboveXfpTwoOfLast3). A genuinely different dimension from every badge above:
-// those all key off floor/ceiling/median/xFP (a projection vs. an
-// outcome); this keys off WOPR (weighted opportunity rating -- target
-// share + air yards share, from Player Season Simulations' own latest
-// publish), a measure of how much the OFFENSE is feeding a player,
-// independent of whether it's scored yet. High usage without results is
-// the classic buy-low signal -- volume tends to win out over a longer
-// sample than 2 games.
-//
-// `woprPercentile` is WOPR ranked WITHIN POSITION (0-100, see
-// redraft-rankings/page.js's attachStatPercentiles / achievementsData.js's
-// fetchWoprPercentileByName), NOT the raw WOPR number. A flat raw-WOPR
-// cutoff shared across positions was the first version of this badge and
-// it was wrong: WOPR only counts receiving usage (targets + air yards),
-// so RBs cluster far lower than WRs even as genuine workhorses on the
-// ground -- a real-world check found a 0.154 WOPR reading as "low usage"
-// by a cross-position cutoff when it was actually ~82nd percentile among
-// RBs specifically. Ranking within position first fixes that.
-export const USAGE_HIGH_PERCENTILE = 80; // top ~20% within the player's own position
+// "Buy Low" -- his last 2 games both finished below that week's median, but he still scored at or above his xFP in at least 2 of his last 3
+// (see atOrAboveXfpTwoOfLast3): production has kept pace with the opportunity and the below-median pair is the dip. Needs at least 3 logged
+// games. (Until Nov 5 2026 it also needed a WOPR percentile of 80+ at his position; the founder removed that condition from both badges.)
 export function underperformingMedianLast2(games) {
   if (!games || games.length < 2) return false;
   const last2 = games.slice(0, 2);
@@ -188,27 +171,26 @@ export function atOrAboveXfpTwoOfLast3(games) {
   const hits = games.slice(0, 3).filter((g) => hasXfp(g) && g.fantasy_points_ppr >= g.exp_points_ppr).length;
   return hits >= 2;
 }
-export function buyLowFlag(woprPercentile, games) {
-  if (woprPercentile == null || woprPercentile < USAGE_HIGH_PERCENTILE) return false;
+export function buyLowFlag(games) {
   return underperformingMedianLast2(games) && atOrAboveXfpTwoOfLast3(games);
 }
 
-// "Sell High" -- the literal inverse of Buy Low: LOW usage (within
-// position, same woprPercentile basis) that's still somehow scoring
-// above its own median 2 games running. If the workload isn't really
-// there, the recent results are more likely luck (TD variance, garbage
-// time, a soft matchup) than a repeatable level -- exactly the opposite
-// argument Buy Low makes for volume winning out.
-export const USAGE_LOW_PERCENTILE = 20; // bottom ~20% within the player's own position
+// "Sell High" -- his last 2 games both finished above that week's median, but he scored below his xFP in at least 2 of his last 3 (the
+// results are running ahead of the opportunity, so they are more likely luck than a repeatable level). Needs at least 3 logged games; a game
+// with no xFP row doesn't count toward the 2.
+export function belowXfpTwoOfLast3(games) {
+  if (!games || games.length < 3) return false;
+  const hits = games.slice(0, 3).filter((g) => hasXfp(g) && g.fantasy_points_ppr < g.exp_points_ppr).length;
+  return hits >= 2;
+}
 export function overperformingMedianLast2(games) {
   if (!games || games.length < 2) return false;
   const last2 = games.slice(0, 2);
   if (last2.some((g) => g.fantasy_points_ppr == null || g.median == null)) return false;
   return last2.every((g) => g.fantasy_points_ppr > g.median);
 }
-export function sellHighFlag(woprPercentile, games) {
-  if (woprPercentile == null || woprPercentile > USAGE_LOW_PERCENTILE) return false;
-  return overperformingMedianLast2(games);
+export function sellHighFlag(games) {
+  return overperformingMedianLast2(games) && belowXfpTwoOfLast3(games);
 }
 
 // "Super Hero" -- outright top scorer at their own position for a given
@@ -275,8 +257,8 @@ export function getAchievements(row) {
   const spread = playing ? spreadFlag(row.floor, row.ceiling, row.projection, row.position) : null;
   const xfpFlag = xfpTrend(lastFive);
   const heroWins = Math.max(0, row.heroWins || 0);
-  const buyLow = buyLowFlag(row.woprPercentile, lastFive);
-  const sellHigh = sellHighFlag(row.woprPercentile, lastFive);
+  const buyLow = buyLowFlag(lastFive);
+  const sellHigh = sellHighFlag(lastFive);
   // Matchup badge: just the ▲ / ▼ beside the opponent (lib/defenseLeans.js flagFor, attached as row.defLean by
   // Weekly Projection Rankings), shown as a badge too. Display only -- never a projection input. Rows without a
   // defLean (every page that doesn't load the leans, bye weeks, defenses with no strong trend) just don't get it.

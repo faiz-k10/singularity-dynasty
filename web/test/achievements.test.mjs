@@ -65,23 +65,22 @@ const bg = (pts, med, xfp) => ({ fantasy_points_ppr: pts, median: med, exp_point
 
 test("Buy Low needs high usage, two games under median, and at/above xFP in 2 of the last 3", () => {
   // last 2 under median (8 < 12); at/above xFP in games 1 and 3 -> fires
-  assert.equal(buyLowFlag(85, [bg(8, 12, 7), bg(9, 12, 10), bg(14, 12, 11)]), true);
+  assert.equal(buyLowFlag([bg(8, 12, 7), bg(9, 12, 10), bg(14, 12, 11)]), true);
   // at/above xFP in only 1 of the last 3 -> the bad-player case, no badge
-  assert.equal(buyLowFlag(85, [bg(8, 12, 11), bg(9, 12, 10), bg(14, 12, 15)]), false);
+  assert.equal(buyLowFlag([bg(8, 12, 11), bg(9, 12, 10), bg(14, 12, 15)]), false);
   // equal to xFP counts as at-or-above
-  assert.equal(buyLowFlag(85, [bg(8, 12, 8), bg(9, 12, 9), bg(5, 12, 20)]), true);
+  assert.equal(buyLowFlag([bg(8, 12, 8), bg(9, 12, 9), bg(5, 12, 20)]), true);
 });
 
 test("Buy Low keeps its other rules: usage percentile and the below-median pair", () => {
-  assert.equal(buyLowFlag(79, [bg(8, 12, 7), bg(9, 12, 8), bg(14, 12, 11)]), false); // usage too low
-  assert.equal(buyLowFlag(85, [bg(13, 12, 7), bg(9, 12, 8), bg(14, 12, 11)]), false); // latest game above median
-  assert.equal(buyLowFlag(85, [bg(8, 12, 7), bg(9, 12, 8)]), false); // only 2 games logged
+  assert.equal(buyLowFlag([bg(13, 12, 7), bg(9, 12, 8), bg(14, 12, 11)]), false); // latest game above median
+  assert.equal(buyLowFlag([bg(8, 12, 7), bg(9, 12, 8)]), false); // only 2 games logged
 });
 
 test("Buy Low: a game with no xFP row does not count toward the 2", () => {
   const noXfp = { fantasy_points_ppr: 9, median: 12, exp_points_ppr: null };
-  assert.equal(buyLowFlag(85, [bg(8, 12, 7), noXfp, bg(5, 12, 20)]), false); // only 1 confirmed
-  assert.equal(buyLowFlag(85, [bg(8, 12, 7), noXfp, bg(14, 12, 11)]), true); // 2 confirmed
+  assert.equal(buyLowFlag([bg(8, 12, 7), noXfp, bg(5, 12, 20)]), false); // only 1 confirmed
+  assert.equal(buyLowFlag([bg(8, 12, 7), noXfp, bg(14, 12, 11)]), true); // 2 confirmed
 });
 
 import { getAchievements } from "../app/tools/achievements.js";
@@ -145,4 +144,12 @@ test("getAchievements adds the lean badge from row.statPct and not for a zero pr
   const roof = { statPct: { floor: 40, projection: 45, ceiling: 92 }, projection: 12 };
   assert.deepEqual(getAch(roof).filter((a) => a.key === "highCeiling").map((a) => a.label), ["Long Shot Winners"]);
   assert.equal(getAch({ ...row, projection: 0 }).some((a) => a.key === "solidFloor"), false);
+});
+
+import { sellHighFlag } from "../app/tools/achievements.js";
+test("Sell High: last 2 above the median and below xFP in 2 of the last 3, at least 3 games", () => {
+  assert.equal(sellHighFlag([bg(14, 12, 16), bg(15, 12, 18), bg(9, 12, 10)]), true);
+  assert.equal(sellHighFlag([bg(14, 12, 10), bg(15, 12, 11), bg(9, 12, 8)]), false); // at or above xFP
+  assert.equal(sellHighFlag([bg(11, 12, 16), bg(15, 12, 18), bg(9, 12, 10)]), false); // latest game under the median
+  assert.equal(sellHighFlag([bg(14, 12, 16), bg(15, 12, 18)]), false); // only 2 games logged
 });
