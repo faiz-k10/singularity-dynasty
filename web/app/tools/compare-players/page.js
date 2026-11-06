@@ -43,7 +43,7 @@ export default async function ComparePlayersPage({ searchParams }) {
   const pool = latest ? enrichRankings({ cached, hasFullAccess, tdProfile, usageProfile, leanRows, bioByNamePos }) : [];
   const byName = new Map(pool.map((r) => [r.player_name, r]));
   const maxPlayers = MAX_COMPARE[tier] ?? 3;
-  const selected = SLOTS.slice(0, maxPlayers).map((slot) => byName.get(params?.[slot])).filter(Boolean);
+  const selected = [...new Set(SLOTS.slice(0, maxPlayers).map((slot) => byName.get(params?.[slot])).filter(Boolean))]; // the same player twice counts once
   const playerOptions = pool.map((r) => ({ player_name: r.player_name, position: r.position }));
   const maxSpread = pool.reduce((m, r) => Math.max(m, r.floor != null && r.ceiling != null ? r.ceiling - r.floor : 0), 1);
   const gated = !hasFullAccess && cached.rows.length > TEASER_LIMIT;

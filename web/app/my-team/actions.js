@@ -30,7 +30,7 @@ import { fetchGameStates } from "@/lib/gameStatus";
 import { loadGameStats } from "@/lib/gameStats";
 import { loadLivePlays } from "@/lib/playByPlay";
 import { getWeekProjections, getWeekRankRows } from "@/lib/weekProjections";
-import { findProjection } from "@/lib/portfolio";
+import { findProjection, findNameKey, normalizePlayerName } from "@/lib/portfolio";
 import { buildWaiverList, sleeperIndex } from "@/lib/waivers";
 import { buildSide, matchupOutlook } from "@/lib/winChance";
 import { buildBench } from "@/lib/h2hBench";
@@ -45,13 +45,7 @@ import { fetchInjuryFeed } from "@/lib/injuryFeed";
 // sides the same way (lowercase, no periods, no trailing suffix) is what
 // actually matches them up. Checked by hand against the live dataset:
 // no two different players collide once normalized this way.
-function normalizeName(name) {
-  return (name || "")
-    .toLowerCase()
-    .replace(/\./g, "")
-    .replace(/\s+(jr|sr|ii|iii|iv|v)$/i, "")
-    .trim();
-}
+const normalizeName = normalizePlayerName; // the one shared copy (lib/portfolio.js)
 
 // Same normalized-name matching problem as myProjByName below, just for
 // achievementsData.js's maps (all raw-keyed by player_game_log/
@@ -395,7 +389,8 @@ async function lookupTeams(username, opts = {}) {
       const rosterPlayers = (myRoster.players || []).map((playerId) => {
         const p = players[playerId];
         const name = p ? `${p.first_name || ""} ${p.last_name || ""}`.trim() || playerId : playerId;
-        const normName = normalizeName(name);
+        // The rankings / game log can spell him differently from Sleeper (Chig / Chigoziem Okonkwo): resolve to their name once.
+        const normName = findNameKey(redraftFieldsByNormName, name) ?? findNameKey(recentGamesByNormName, name) ?? normalizeName(name);
         const wk = findProjection(weekProj.byName, name);
         const myProjPts = wk?.proj ?? null;
         const achievements = getAchievements(
@@ -689,6 +684,7 @@ export async function getRosterNews() {
     byKey.set(`${f.norm}|${f.position}`, f);
     if (!byNorm.has(f.norm)) byNorm.set(f.norm, f);
   }
+  const byNormObj = Object.fromEntries(byNorm); // for the nickname fallback (ESPN "Kenny Gainwell", Sleeper "Kenneth")
 
   const items = new Map();
   const byTeam = {};
@@ -699,7 +695,7 @@ export async function getRosterNews() {
   for (const t of teams || []) {
     for (const p of t.players || []) {
       const norm = normalizeName(p.name);
-      const f = byKey.get(`${norm}|${p.position}`) || byNorm.get(norm);
+      const f = byKey.get(`${norm}|${p.position}`) || byNorm.get(norm) || findProjection(byNormObj, p.name);
       if (!f) continue;
       const recent = f.date && new Date(f.date).getTime() > cutoff;
       const key = `${norm}|${p.position}`;

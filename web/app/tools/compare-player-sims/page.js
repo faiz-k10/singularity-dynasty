@@ -32,7 +32,7 @@ export default async function ComparePlayerSimsPage({ searchParams }) {
   const { sims, maxCeiling, simsWithComputed } = buildSimRows({ cached: weekData, hasFullAccess, bioByNamePos });
   const byName = new Map(simsWithComputed.map((r) => [r.player_name, r]));
   const maxPlayers = MAX_COMPARE[tier] ?? 3;
-  const selected = SLOTS.slice(0, maxPlayers).map((slot) => byName.get(params?.[slot])).filter(Boolean);
+  const selected = [...new Set(SLOTS.slice(0, maxPlayers).map((slot) => byName.get(params?.[slot])).filter(Boolean))]; // the same player twice counts once
   const playerOptions = sims.map((r) => ({ player_name: r.player_name, position: r.position }));
   const gated = !hasFullAccess && weekData.rows.length > sims.length;
 

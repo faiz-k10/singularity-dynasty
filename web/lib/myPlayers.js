@@ -5,7 +5,7 @@
 // Shape (kept small -- it is serialized into the page):
 //   { signedIn, teams: ["League A", ...], byName: { "josh allen": [[teamIndex, how "D"|"T"|"P"|""], ...] } }
 // (how = Drafted / Traded / Picked up, from the saved roster's `acquired`, "" when unknown).
-import { normalizePlayerName } from "./portfolio.js";
+import { normalizePlayerName, findProjection } from "./portfolio.js";
 import { leagueName } from "./format.js";
 import { ACQUIRED_CODE, ACQUIRED_FROM_CODE } from "./acquisition.js";
 
@@ -37,7 +37,7 @@ export async function loadMyPlayers(supabase, user) {
 // Where a player sits on the user's teams: null when he is on none (of the chosen league),
 // else { leagues: [{ label, how }] } -- how he got onto each ("drafted" | "traded" | "pickup" | null).
 export function ownedFor(mine, name, league = "all") {
-  const hits = mine?.byName?.[normalizePlayerName(name)];
+  const hits = findProjection(mine?.byName, name); // nickname-tolerant (the rankings say Chig, Sleeper Chigoziem)
   if (!hits) return null;
   const sel = league === "all" ? hits : hits.filter((h) => h[0] === Number(league));
   if (!sel.length) return null;

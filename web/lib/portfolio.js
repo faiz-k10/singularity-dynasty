@@ -18,9 +18,14 @@ export function normalizePlayerName(name) {
 // or none -> null (never a guess). The last-name index is built once per byName object.
 const lastNameIndexes = new WeakMap();
 export function findProjection(byName, name) {
+  const k = findNameKey(byName, name);
+  return k == null ? null : byName[k];
+}
+// The key of byName (a map keyed by normalizePlayerName) that `name` resolves to, with the nickname tolerance above; null when none.
+export function findNameKey(byName, name) {
   if (!byName) return null;
   const key = normalizePlayerName(name);
-  if (byName[key]) return byName[key];
+  if (byName[key] !== undefined) return key;
   let idx = lastNameIndexes.get(byName);
   if (!idx) {
     idx = new Map();
@@ -34,7 +39,7 @@ export function findProjection(byName, name) {
   const sp = key.lastIndexOf(" ");
   if (sp < 0) return null;
   const pool = (idx.get(key.slice(sp + 1)) || []).filter((k) => k.slice(0, 2) === key.slice(0, 2));
-  return pool.length === 1 ? byName[pool[0]] : null;
+  return pool.length === 1 ? pool[0] : null;
 }
 
 // A player's bio from getPlayerBiosByNamePos ({ "name|POS": bio }) with the same nickname tolerance as findProjection (Cam / Cameron Ward,
@@ -124,8 +129,8 @@ export function buildPortfolio(savedTeams, buyIns = {}, sims = {}, gameLogs = {}
   const n = savedTeams.length;
   const num = (v) => (typeof v === "number" && Number.isFinite(v) ? v : null);
   const rows = [...byPlayer.values()].map((e) => {
-    const key = normalizePlayerName(e.name);
-    const s = sims[key] || {};
+    const s = findProjection(sims, e.name) || {}; // nickname-tolerant, like the projections (Chig / Chigoziem)
+    const logKey = findNameKey(gameLogs, e.name);
     return {
       ...e,
       exposurePct: n ? (e.teams / n) * 100 : 0,
@@ -136,7 +141,7 @@ export function buildPortfolio(savedTeams, buyIns = {}, sims = {}, gameLogs = {}
       simCeiling: num(s.ceiling),
       wopr: num(s.wopr),
       epa: num(s.epa),
-      _games: Array.isArray(gameLogs[key]) ? gameLogs[key] : [],
+      _games: logKey != null && Array.isArray(gameLogs[logKey]) ? gameLogs[logKey] : [],
     };
   });
 
