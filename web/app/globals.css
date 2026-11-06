@@ -2333,7 +2333,8 @@ a.export-csv-btn{text-decoration:none;}
 /* order:-1 puts the bar before -pace-info without reordering the JSX --
    flipped to the panel's left edge (explicit ask) so the pace-total
    number can overflow off that side instead of the right. */
-.stat-panel-pace-rangebar-wrap{flex:0 0 auto; order:-1; display:flex; flex-direction:column; align-items:center; gap:4px;}
+/* padding-left: room for the pace total, which sits to the LEFT of the bar (right:14px of it) -- without it the number was clipped by the panel edge ("476" read "76"). */
+.stat-panel-pace-rangebar-wrap{flex:0 0 auto; order:-1; display:flex; flex-direction:column; align-items:center; gap:4px; padding-left:26px;}
 /* Centered on the track's own axis (left:50%), pushed clear of the
    segment edge they label instead of straddling it -- floor sits right
    below the blue/typical fill, ceiling right above the gold/upside fill,
@@ -4281,9 +4282,6 @@ summary:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible{
   .shape-finder-score-value{font-size:18px;}
   .shape-finder-portrait{width:40px; height:40px;}
 
-  /* The pace bar's total number hangs ~16px off the panel's left edge by design; on a
-     phone that edge is the scroller's, so it was being cut off. Make room inside the panel. */
-  .stat-detail-grid .stat-panel-pace{padding-left:28px;}
 
   /* Tool-page header block: the desktop spacing pushed the table a full screen down. */
   .tool-header-split{gap:0;}
