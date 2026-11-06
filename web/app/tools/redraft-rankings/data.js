@@ -451,7 +451,7 @@ const groupProfileLoader = (kind, cacheKey) =>
 export const getCachedTdProfile = groupProfileLoader("td_profile", "td-profile-latest-v2");
 // Usage / efficiency profile for QB, RB, WR and TE (model/usage_profile.R, kind "usage_profile"): attempts / carries / targets a game,
 // yards per attempt / carry / target, EPA, CPOE, sack rate, target and air-yards share ... from nflreadr player stats.
-export const getCachedUsageProfile = groupProfileLoader("usage_profile", "usage-profile-latest-v1");
+export const getCachedUsageProfile = groupProfileLoader("usage_profile", "usage-profile-latest-v2");
 
 // Where each WR/TE ranks on the four touchdown-profile numbers (1 = highest), among EVERY ranked player at his
 // position that has a profile -- not just the rows a free visitor can see, so a rank means the same thing on every
