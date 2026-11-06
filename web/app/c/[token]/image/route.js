@@ -1,6 +1,6 @@
 import { cardFromToken, latestWeek } from "@/lib/cardData";
 import { getPlayerBiosByNamePos } from "@/lib/sleeper";
-import { normalizePlayerName } from "@/lib/portfolio";
+import { findBio } from "@/lib/portfolio";
 import { cardImage, cardRequest, teamLogo, photo, PlayerCard, DynastyCard, StartSitCard } from "@/lib/cardArt";
 
 // The picture of a share card (/c/<token>): wide 1200 x 630 for link previews, ?f=tall 1080 x 1350 for Instagram, ?dl=name to download.
@@ -23,7 +23,7 @@ export async function GET(request, { params }) {
   } else if (c.card.k === "d") {
     const bios = await getPlayerBiosByNamePos();
     const p = c.data.player;
-    node = <DynastyCard f={req.f} host={req.host} data={c.data} img={await imgsFor(p, bios[`${normalizePlayerName(p.name)}|${p.pos}`]?.headshot)} />;
+    node = <DynastyCard f={req.f} host={req.host} data={c.data} img={await imgsFor(p, findBio(bios, p.name, p.pos)?.headshot)} />;
   } else {
     const [a, b] = await Promise.all([imgsFor(c.data.a, c.data.a.headshot), imgsFor(c.data.b, c.data.b.headshot)]);
     node = <StartSitCard f={req.f} host={req.host} data={c.data} img={{ a, b }} />;

@@ -5,6 +5,7 @@
 // action getWaiverWire (app/my-team/actions.js).
 import { normalizePlayerName } from "./portfolio.js";
 import { isBye } from "./bye.js";
+import { teamCode } from "./gameStatus.js";
 
 export const WAIVER_POSITIONS = ["QB", "RB", "WR", "TE"];
 // Per position in the answer; the panel shows the top 10 of whichever filter is picked, "Show more" up to this.
@@ -25,7 +26,7 @@ export function sleeperIndex(dict) {
 function sleeperIdFor(row, idx) {
   const hits = idx.get(`${normalizePlayerName(row.player_name)}|${row.position}`) || [];
   if (hits.length === 1) return hits[0].id;
-  return hits.find((h) => h.team === row.team)?.id || null;
+  return hits.find((h) => teamCode(h.team) === teamCode(row.team))?.id || null; // Sleeper says LAR, the rankings LA
 }
 
 // rows: this week's redraft_rankings rows (player_name, position, team, opponent, is_home, projection, floor, ceiling,

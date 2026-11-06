@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { unstable_cache } from "next/cache";
 import { createPublicClient } from "@/lib/supabase/public";
 import { fetchAllRows } from "@/lib/fetchAllRows";
-import { normalizePlayerName } from "@/lib/portfolio";
+import { findBio } from "@/lib/portfolio";
 import { getPlayerBiosByNamePos } from "@/lib/sleeper";
 import { indexLeans, flagFor } from "@/lib/defenseLeans";
 import { isBye } from "@/lib/bye";
@@ -124,7 +124,7 @@ export async function weeklyCardPlayer(season, week, name, pos) {
     week,
     player: cardPlayer(
       { ...r, positionLabel: labels.get(r.player_name) },
-      { badges: [], lean: flag ? { call: flag.call, effect: flag.effect } : null, headshot: bios[`${normalizePlayerName(name)}|${pos}`]?.headshot || null, played: null }
+      { badges: [], lean: flag ? { call: flag.call, effect: flag.effect } : null, headshot: findBio(bios, name, pos)?.headshot || null, played: null }
     ),
   };
 }

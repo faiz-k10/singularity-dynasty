@@ -3,7 +3,7 @@ import { indexLeans, flagFor } from "@/lib/defenseLeans";
 import { createPublicClient } from "@/lib/supabase/public";
 import { fetchAllRows } from "@/lib/fetchAllRows";
 import { percentileRank, INVERTED_STATS } from "@/lib/statPercentiles";
-import { normalizePlayerName } from "@/lib/portfolio";
+import { findBio } from "@/lib/portfolio";
 import { groupRanks } from "@/lib/statPanel";
 import { rankIn } from "@/lib/rank";
 import { PROFILE_METRICS } from "@/lib/statMetrics";
@@ -598,7 +598,7 @@ export function enrichRankings({ cached, hasFullAccess = true, tdProfile, usageP
       lastWeekRank: lastWeekRankByName[r.player_name] || null,
       heroWins: heroWinsByName[r.player_name]?.count || 0,
       heroWinWeeks: heroWinsByName[r.player_name]?.weeks || [],
-      bio: bioByNamePos[`${normalizePlayerName(r.player_name)}|${r.position}`] || null,
+      bio: findBio(bioByNamePos, r.player_name, r.position),
     };
   });
 

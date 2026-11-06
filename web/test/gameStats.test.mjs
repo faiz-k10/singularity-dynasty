@@ -51,3 +51,10 @@ test("findLine: the nickname ESPN uses still finds him (Kenny / Kenneth Gainwell
   assert.equal(findLine(box, "Jaylen Gainwell"), null); // wrong first name
   assert.equal(findLine(null, "Kenneth Gainwell"), null);
 });
+
+test("findLine: first names ESPN swaps for an unrelated nickname, and accents", () => {
+  const box = { drewogletree: { receiving: { REC: "2" } }, hollywoodbrown: { receiving: { REC: "4" } }, ajbrown: { receiving: { REC: "6" } }, audricestime: { rushing: { CAR: "9" } } };
+  assert.equal(findLine(box, "Andrew Ogletree").receiving.REC, "2");
+  assert.equal(findLine(box, "Marquise Brown").receiving.REC, "4");
+  assert.equal(findLine(box, "Audric Estimé").rushing.CAR, "9");
+});

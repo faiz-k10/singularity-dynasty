@@ -4,7 +4,7 @@ import { buildStatPoolByPos, computeStatPercentiles } from "@/lib/statPercentile
 import { computeReplacementValues } from "@/lib/replacementValue";
 import { computeRegressionScore } from "@/lib/regressionScore";
 import { computeOutcomePercentile } from "@/lib/outcomePercentile";
-import { normalizePlayerName } from "@/lib/portfolio";
+import { findBio } from "@/lib/portfolio";
 import { fetchAllRows } from "@/lib/fetchAllRows";
 import { ARCHETYPE_NEAR_CONFIDENCE } from "@/lib/archetypes";
 import { byeWeeks, indexGameLog, missedWeeks, recentWeekRows, teamGamesThrough } from "@/lib/teamGames";
@@ -279,7 +279,7 @@ export function buildSimRows({ cached, hasFullAccess, bioByNamePos, leagueTeams 
       heat: round(heatFor("median", row), 2),
       floorHeat: round(heatFor("floor", row), 2),
       ceilingHeat: round(heatFor("ceiling", row), 2),
-      headshot: bioByNamePos[`${normalizePlayerName(row.player_name)}|${row.position}`]?.headshot || null,
+      headshot: findBio(bioByNamePos, row.player_name, row.position)?.headshot || null,
       por: round(porByName[row.player_name], 1),
       regressionScore: round(regression?.regressionScore ?? null, 2),
       currentPPG: round(regression?.currentPPG ?? null, 3),

@@ -3,9 +3,9 @@
 // game hasn't started shows "—" instead of a misleading 0.0. Cached 30 seconds in module memory, matching the poll.
 const URL = "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard";
 
-// ESPN and Sleeper spell Washington differently; compare on Sleeper's code. (Both use LAR for the Rams -- checked
-// against Sleeper's player dictionary and ESPN's team list, Oct 2026.)
-const ALIAS = { WSH: "WAS", JAC: "JAX" };
+// ESPN and Sleeper spell Washington differently; compare on Sleeper's code. ESPN and Sleeper both use LAR for the Rams, but our
+// nflverse tables (rankings, game log) say LA -- map that too, so a row from either source finds its game.
+const ALIAS = { WSH: "WAS", JAC: "JAX", LA: "LAR" };
 export const teamCode = (t) => (t ? ALIAS[t] || t : t);
 
 // { TEAM: { state: "pre" | "in" | "post", detail, period, clock, start, eventId, espnId, home } } for every team in this

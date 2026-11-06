@@ -154,7 +154,7 @@ const cachedBiosByNamePos = unstable_cache(
     if (!Object.keys(byNamePos).length) throw new Error("Sleeper player dictionary unavailable"); // never cache an empty answer
     return byNamePos;
   },
-  ["sleeper-bios-by-name-pos-v5"],
+  ["sleeper-bios-by-name-pos-v6"],
   { revalidate: 86400 }
 );
 

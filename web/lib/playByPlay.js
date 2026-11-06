@@ -22,7 +22,8 @@ const idFrom = (ref, kind) => {
 };
 
 const SUFFIX = /\s+(jr|sr|ii|iii|iv|v)\.?$/i;
-export const normName = (s) => String(s || "").replace(SUFFIX, "").toLowerCase().replace(/[^a-z]/g, "");
+// Accents are folded first ("Estimé" -> "estime", the way ESPN spells it) -- dropping the letter left "estim", which matched nothing.
+export const normName = (s) => String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(SUFFIX, "").toLowerCase().replace(/[^a-z]/g, "");
 const lastName = (s) => {
   const parts = String(s || "").replace(SUFFIX, "").trim().split(/\s+/);
   return normName(parts[parts.length - 1]);

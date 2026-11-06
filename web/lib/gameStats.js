@@ -24,12 +24,16 @@ export function parseBoxscore(json) {
 // Gainwell, Josh / Joshua, Mike / Michael), so when the exact name isn't there, take the ONE athlete on that team whose last name matches and whose
 // first name starts with the same two letters. Several candidates (or none) -> null rather than a guess.
 const lastWord = (name) => String(name || "").replace(/[,.]?\s+(jr|sr|ii|iii|iv|v)\.?$/i, "").trim().split(/\s+/).pop();
+// First names ESPN replaces with a nickname that shares no opening letters (the two-letter rule can't catch these): ESPN's name for the player.
+const NICKNAMES = { andrew: ["drew"], marquise: ["hollywood"], william: ["bill", "will"], robert: ["bobby", "rob"], christopher: ["chris"], nathaniel: ["nate"], zachary: ["zach"] };
 export function findLine(teamBox, name) {
   if (!teamBox) return null;
   const key = normName(name);
   if (teamBox[key]) return teamBox[key];
   const last = normName(lastWord(name));
   if (!last || key.length <= last.length) return null;
+  const first = key.slice(0, key.length - last.length);
+  for (const nick of NICKNAMES[first] || []) if (teamBox[nick + last]) return teamBox[nick + last];
   const first2 = key.slice(0, 2);
   const hits = Object.keys(teamBox).filter((k) => k.length > last.length && k.endsWith(last) && k.slice(0, 2) === first2);
   return hits.length === 1 ? teamBox[hits[0]] : null;

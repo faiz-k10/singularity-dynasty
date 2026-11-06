@@ -138,3 +138,13 @@ test("findProjection falls back to one nickname match, never a guess", async () 
   assert.equal(findProjection(byName, "Mitch Williams"), null);
   assert.equal(findProjection(byName, "Nobody Else"), null);
 });
+
+import { findBio } from "../lib/portfolio.js";
+test("findBio: exact name|pos, then the same nickname tolerance as findProjection, within the position", () => {
+  const bios = { "cameron ward|QB": { id: 1 }, "devon achane|RB": { id: 2 }, "audric estime|RB": { id: 3 }, "jonathan ward|RB": { id: 4 } };
+  assert.equal(findBio(bios, "Cam Ward", "QB").id, 1);
+  assert.equal(findBio(bios, "De'Von Achane", "RB").id, 2); // apostrophe
+  assert.equal(findBio(bios, "Audric Estimé", "RB").id, 3); // accent
+  assert.equal(findBio(bios, "Cam Ward", "RB"), null); // other position's Ward doesn't start "ca"
+  assert.equal(findBio(bios, "Nobody Here", "WR"), null);
+});

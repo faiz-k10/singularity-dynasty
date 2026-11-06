@@ -4,7 +4,7 @@ import { fetchAllRows } from "@/lib/fetchAllRows";
 import { buildStatPoolByPos, computeStatPercentiles } from "@/lib/statPercentiles";
 import { computeRegressionScore } from "@/lib/regressionScore";
 import { computeOutcomePercentile } from "@/lib/outcomePercentile";
-import { normalizePlayerName } from "@/lib/portfolio";
+import { findBio } from "@/lib/portfolio";
 import { byeWeeks, indexGameLog, recentWeekRows, teamGamesThrough } from "@/lib/teamGames";
 import { positionRanks } from "@/lib/positionRank";
 
@@ -171,7 +171,7 @@ export function buildPeersByWeek(ctx, visibleNames, bioByNamePos) {
         name: r.player_name,
         position: r.position,
         positionRank: ctx.rankByWeek[wk]?.[r.player_name] ?? null,
-        headshot: bioByNamePos[`${normalizePlayerName(r.player_name)}|${r.position}`]?.headshot || null,
+        headshot: findBio(bioByNamePos, r.player_name, r.position)?.headshot || null,
         ...ctx.percByWeek[wk][r.player_name],
         stat_ranges: r.stat_ranges,
       });

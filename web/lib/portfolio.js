@@ -3,9 +3,12 @@
 // drops suffixes ("Luther Burden"), our data keeps them ("Brian Thomas
 // Jr."), so normalize both to lowercase, no periods, no trailing suffix.
 export function normalizePlayerName(name) {
+  // Accents and apostrophes are dropped too: sources disagree on them ("Audric Estimé" / "Estime", "De'Von Achane" / "Devon").
   return (name || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
-    .replace(/\./g, "")
+    .replace(/[.'’]/g, "")
     .replace(/\s+(jr|sr|ii|iii|iv|v)$/i, "")
     .trim();
 }
@@ -32,6 +35,25 @@ export function findProjection(byName, name) {
   if (sp < 0) return null;
   const pool = (idx.get(key.slice(sp + 1)) || []).filter((k) => k.slice(0, 2) === key.slice(0, 2));
   return pool.length === 1 ? byName[pool[0]] : null;
+}
+
+// A player's bio from getPlayerBiosByNamePos ({ "name|POS": bio }) with the same nickname tolerance as findProjection (Cam / Cameron Ward,
+// Chig / Chigoziem Okonkwo, Kenny / Kenneth Gainwell), within his position. The rankings and our directory spell ~2% of players differently.
+const biosByPos = new WeakMap();
+export function findBio(bios, name, pos) {
+  if (!bios || !name) return null;
+  const exact = bios[`${normalizePlayerName(name)}|${pos}`];
+  if (exact) return exact;
+  let split = biosByPos.get(bios);
+  if (!split) {
+    split = {};
+    for (const [k, v] of Object.entries(bios)) {
+      const i = k.lastIndexOf("|");
+      (split[k.slice(i + 1)] ??= {})[k.slice(0, i)] = v;
+    }
+    biosByPos.set(bios, split);
+  }
+  return findProjection(split[pos], name);
 }
 
 // Per-player fields carried straight from the saved snapshot (populated
