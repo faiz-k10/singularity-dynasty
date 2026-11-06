@@ -6110,10 +6110,10 @@ select.lab-select{min-width:200px; padding-right:8px; cursor:pointer;}
 .share-table{margin:0 0 22px;}
 /* Share buttons for the share cards (ShareCardButton.js) and the pop-up's download links */
 .share-card-btn{display:inline-flex; align-items:center; gap:7px;}
-.weekly-player-share{position:absolute; top:12px; right:14px;}
+.weekly-player-share{position:absolute; top:50%; right:14px; transform:translateY(-50%);}
 .lab-share-downloads{display:flex; flex-wrap:wrap; gap:8px;}
 .lab-share-downloads .lab-copy{text-decoration:none;}
-@media (max-width:640px){ .weekly-player-share{position:static; margin:0 auto;} }
+@media (max-width:640px){ .weekly-player-share{position:static; transform:none; margin:0 auto;} }
 
 /* ---- Dynasty Draft Board, rankings view (app/tools/draft-board/DynastyBoard.js): the tabular recipe -------------------------
    Player rows on the left; boxes that merge rows on the right -- Tied (col 5), Tier (6), Group (7). A heavier rule across a row
