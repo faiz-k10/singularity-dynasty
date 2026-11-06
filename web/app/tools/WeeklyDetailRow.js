@@ -244,6 +244,10 @@ function achievementNode(a, row) {
       return <GlyphBadge variant="eliteRole" glyph={<BadgeIcon k="eliteRole" />} />;
     case "elitePlayer":
       return <GlyphBadge variant="elitePlayer" glyph={<BadgeIcon k="elitePlayer" />} />;
+    case "plusValue":
+      return <GlyphBadge variant="plusValue" glyph={<BadgeIcon k="plusValue" />} />;
+    case "minusValue":
+      return <GlyphBadge variant="minusValue" glyph={<BadgeIcon k="minusValue" />} />;
     case "solidFloor":
       return <GlyphBadge variant="boulder" glyph={<BadgeIcon k="solidFloor" />} />;
     case "highCeiling":

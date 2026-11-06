@@ -49,3 +49,13 @@ test("Elite Role / Elite Player: top 5 in the position's Role / Player group, fr
   assert.equal(keys(row).at(-1), "hero", "the ball is still last");
   assert.equal(keys({}).length, 0, "no groupRank, no elite badges");
 });
+
+test("Plus Value / Minus Value: role and player rank 20 or more spots apart, from groupRank", () => {
+  const keys = (row) => getAchievements(row).map((a) => a.key);
+  const g = (role, player) => ({ groupRank: { role: { rank: role, of: 60 }, player: { rank: player, of: 60 } } });
+  assert.ok(keys(g(40, 20)).includes("plusValue"));
+  assert.ok(!keys(g(39, 20)).includes("plusValue"));
+  assert.ok(keys(g(10, 30)).includes("minusValue"));
+  assert.ok(!keys(g(10, 29)).includes("minusValue"));
+  assert.ok(!keys({}).includes("plusValue") && !keys({}).includes("minusValue"));
+});

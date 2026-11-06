@@ -68,6 +68,8 @@
   --icarus-rgb:167,139,250;
   --elite-role:#B8346A; --elite-role-rgb:184,52,106;
   --elite-player:#4B5BD1; --elite-player-rgb:75,91,209;
+  --plus-value:#DEF994; --plus-value-rgb:222,249,148;  /* Plus Value */
+  --minus-value:#8D47F5; --minus-value-rgb:141,71,245;  /* Minus Value */
   --rookie:#BF8A5C; --rookie-rgb:191,138,92;
   --boulder:#869550; --boulder-rgb:134,149,80;  /* Anti-Loser Floor: moss-khaki on dark, mustard on light (the free hues; every other is within ~23 dE of the rest in the badge palette) */
   --cloud:#EBADB7; --cloud-rgb:235,173,183;  /* Long Shot Winners: soft pink */
@@ -145,6 +147,8 @@
     --icarus-rgb:124,58,237;
     --elite-role:#B8346A; --elite-role-rgb:184,52,106;
     --elite-player:#4B5BD1; --elite-player-rgb:75,91,209;
+    --plus-value:#2F7D32; --plus-value-rgb:47,125,50;  /* Plus Value */
+    --minus-value:#692673; --minus-value-rgb:105,38,115;  /* Minus Value */
     --rookie:#7A4E24; --rookie-rgb:122,78,36;
   --boulder:#D9D026; --boulder-rgb:217,208,38;  /* Anti-Loser Floor: moss-khaki on dark, mustard on light (the free hues; every other is within ~23 dE of the rest in the badge palette) */
   --cloud:#F5A3C8; --cloud-rgb:245,163,200;  /* Long Shot Winners: soft pink */
@@ -213,6 +217,8 @@
   --icarus-rgb:124,58,237;
   --elite-role:#B8346A; --elite-role-rgb:184,52,106;
   --elite-player:#4B5BD1; --elite-player-rgb:75,91,209;
+  --plus-value:#2F7D32; --plus-value-rgb:47,125,50;  /* Plus Value */
+  --minus-value:#692673; --minus-value-rgb:105,38,115;  /* Minus Value */
   --rookie:#7A4E24; --rookie-rgb:122,78,36;
   --boulder:#D9D026; --boulder-rgb:217,208,38;  /* Anti-Loser Floor: moss-khaki on dark, mustard on light (the free hues; every other is within ~23 dE of the rest in the badge palette) */
   --cloud:#F5A3C8; --cloud-rgb:245,163,200;  /* Long Shot Winners: soft pink */
@@ -291,6 +297,8 @@ body::before{
 .ticker-badge svg{width:15px; height:15px; display:block;}
 .ticker-badge.gold{background:var(--established); color:var(--void); box-shadow:0 0 5px rgba(var(--established-rgb),0.5);}
 .ticker-badge.eliteRole{background:var(--elite-role); color:var(--void); box-shadow:0 0 5px rgba(var(--elite-role-rgb),0.55);}
+.ticker-badge.plusValue{background:var(--plus-value); color:var(--void); box-shadow:0 0 5px rgba(var(--plus-value-rgb),0.5);}
+.ticker-badge.minusValue{background:var(--minus-value); color:var(--void); box-shadow:0 0 5px rgba(var(--minus-value-rgb),0.5);}
 .ticker-badge.elitePlayer{background:var(--elite-player); color:var(--void); box-shadow:0 0 5px rgba(var(--elite-player-rgb),0.55);}
 .ticker-badge.rookie{background:var(--rookie); color:var(--void); box-shadow:0 0 5px rgba(var(--rookie-rgb),0.5);}
 .ticker-badge.boulder{background:var(--boulder); color:var(--void); box-shadow:0 0 5px rgba(var(--boulder-rgb),0.5);}
@@ -2042,6 +2050,8 @@ a.export-csv-btn{text-decoration:none;}
 .player-achv-dot.ball{background:var(--star); box-shadow:0 0 4px rgba(var(--star-dot-rgb),0.6);}
 .player-achv-dot.honorable{background:var(--scholar); box-shadow:0 0 4px rgba(var(--scholar-rgb),0.7);}
 .player-achv-dot.eliteRole{background:var(--elite-role); box-shadow:0 0 4px rgba(var(--elite-role-rgb),0.7);}
+.player-achv-dot.plusValue{background:var(--plus-value); box-shadow:0 0 4px rgba(var(--plus-value-rgb),0.7);}
+.player-achv-dot.minusValue{background:var(--minus-value); box-shadow:0 0 4px rgba(var(--minus-value-rgb),0.7);}
 .player-achv-dot.elitePlayer{background:var(--elite-player); box-shadow:0 0 4px rgba(var(--elite-player-rgb),0.7);}
 .player-achv-dot.rookie{background:var(--rookie); box-shadow:0 0 4px rgba(var(--rookie-rgb),0.7);}
 .player-achv-dot.boulder{background:var(--boulder); box-shadow:0 0 4px rgba(var(--boulder-rgb),0.7);}
@@ -2506,6 +2516,8 @@ a.export-csv-btn{text-decoration:none;}
 .weekly-achievement-badge.honorable .weekly-achievement-label{color:var(--scholar);}
 .weekly-achievement-badge.menace .weekly-achievement-label{color:var(--menace);}
 .weekly-achievement-badge.eliteRole .weekly-achievement-label{color:var(--elite-role);}
+.weekly-achievement-badge.plusValue .weekly-achievement-label{color:var(--plus-value);}
+.weekly-achievement-badge.minusValue .weekly-achievement-label{color:var(--minus-value);}
 .weekly-achievement-badge.elitePlayer .weekly-achievement-label{color:var(--elite-player);}
 .weekly-achievement-badge.rookie .weekly-achievement-label{color:var(--rookie);}
 .weekly-achievement-badge.boulder .weekly-achievement-label{color:var(--boulder);}
@@ -2547,6 +2559,8 @@ a.export-csv-btn{text-decoration:none;}
 /* Elite Role (a world map, rose-wine) and Elite Player (a goat's head, periwinkle): the same language as every badge -- a dark one-colour subject on a
    solid colour. */
 .weekly-glyph-badge.eliteRole{background:var(--elite-role); color:var(--void); box-shadow:0 0 8px rgba(var(--elite-role-rgb),0.6);}
+.weekly-glyph-badge.plusValue{background:var(--plus-value); color:var(--void); box-shadow:0 0 8px rgba(var(--plus-value-rgb),0.55);}
+.weekly-glyph-badge.minusValue{background:var(--minus-value); color:var(--void); box-shadow:0 0 8px rgba(var(--minus-value-rgb),0.55);}
 .weekly-glyph-badge.elitePlayer{background:var(--elite-player); color:var(--void); box-shadow:0 0 8px rgba(var(--elite-player-rgb),0.6);}
 /* Rookie (an outlined numeral 1, bronze -- the one hue no other badge uses, >= 27 dE from every badge in both themes): the same dark subject on a solid colour. */
 .weekly-glyph-badge.rookie{background:var(--rookie); color:var(--void); box-shadow:0 0 8px rgba(var(--rookie-rgb),0.55);}

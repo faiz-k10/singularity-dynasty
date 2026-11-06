@@ -223,6 +223,9 @@ export const HERO_MAX_TIER = 7;
 // Elite Role / Elite Player: top 5 at his position in the opened-player panel's Role / Player group (row.groupRank, lib/statPanel.js) -- the ranking
 // by average rank over the group's numbers, NOT the weekly projection ranking.
 export const ELITE_RANK = 5;
+// Plus Value / Minus Value: the two group ranks disagree by 20 or more spots. Plus Value = his Role rank is at least 20 spots worse (a bigger number)
+// than his Player rank (he does more with his role than the role would suggest); Minus Value is the other way round.
+export const VALUE_RANK_GAP = 20;
 
 // Floor / ceiling lean, read off the Outcome Curve's percentiles (row.statPct: each of his floor, median and ceiling against the same number
 // for every player at his position). Anti-Loser Floor: his floor AND median rank at least 5 percentiles higher than his ceiling does, and his floor or median is in the 90th percentile or better (the
@@ -280,6 +283,11 @@ export function getAchievements(row) {
   const matchup = playing ? row.defLean || null : null;
   const eliteRole = row.groupRank?.role?.rank <= ELITE_RANK;
   const elitePlayer = row.groupRank?.player?.rank <= ELITE_RANK;
+  const roleRank = row.groupRank?.role?.rank;
+  const playerRank = row.groupRank?.player?.rank;
+  const hasRanks = Number.isFinite(roleRank) && Number.isFinite(playerRank);
+  const plusValue = hasRanks && roleRank - playerRank >= VALUE_RANK_GAP;
+  const minusValue = hasRanks && playerRank - roleRank >= VALUE_RANK_GAP;
   // A rookie: no seasons of NFL experience in our player directory (nflverse years_of_experience = 0).
   const rookie = row.bio?.yearsExp === 0;
   const lean = rangeLean(row.statPct, playing);
@@ -309,6 +317,8 @@ export function getAchievements(row) {
     xfpFlag === "conArtist" && { key: "conArtist", variant: "menace", label: "Con Artist" },
     eliteRole && { key: "eliteRole", variant: "eliteRole", label: "Elite Role", rank: row.groupRank.role.rank },
     elitePlayer && { key: "elitePlayer", variant: "elitePlayer", label: "Elite Player", rank: row.groupRank.player.rank },
+    plusValue && { key: "plusValue", variant: "plusValue", label: "Plus Value", roleRank, playerRank },
+    minusValue && { key: "minusValue", variant: "minusValue", label: "Minus Value", roleRank, playerRank },
     // Always last: the ball badge closes the row.
     heroWins > 0 && {
       key: "hero",

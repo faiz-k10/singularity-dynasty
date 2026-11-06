@@ -18,7 +18,7 @@ const C = { void: "#030908", panel: "#09130F", panel2: "#0D1B17", rule: "#1A2A26
 // Badge medallion colours, dark theme (globals.css --cape, --fire, ...); Established keeps the old gold.
 const BADGE = {
   gold: "#FFC773", silver: "#A0AAB9", rookie: "#BF8A5C", boulder: "#869550", cloud: "#EBADB7", heat: "#FF2400", ice: "#4F8EF7", icarus: "#A78BFA", eddy: "#4ADE80", sprout: "#A3E635",
-  peak: "#FACC15", smash: "#FF7A45", tough: "#3DDCFF", honorable: "#2DD4BF", menace: "#E879F9", eliteRole: "#D9648C", elitePlayer: "#7283EE", ball: "#E6F4F1",
+  peak: "#FACC15", smash: "#FF7A45", tough: "#3DDCFF", honorable: "#2DD4BF", menace: "#E879F9", eliteRole: "#D9648C", elitePlayer: "#7283EE", plusValue: "#DEF994", minusValue: "#8D47F5", ball: "#E6F4F1",
 };
 export const SPOT = { SMASH: BADGE.smash, AVOID: BADGE.tough };
 const DISPLAY = "Big Shoulders";

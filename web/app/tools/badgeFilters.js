@@ -20,6 +20,8 @@ export const BADGE_FILTERS = [
   { id: "hero", variant: "ball", label: "Super Hero", match: (a) => a.key === "hero" },
   { id: "eliteRole", variant: "eliteRole", label: "Elite Role", match: (a) => a.key === "eliteRole" },
   { id: "elitePlayer", variant: "elitePlayer", label: "Elite Player", match: (a) => a.key === "elitePlayer" },
+  { id: "plusValue", variant: "plusValue", label: "Plus Value", match: (a) => a.key === "plusValue" },
+  { id: "minusValue", variant: "minusValue", label: "Minus Value", match: (a) => a.key === "minusValue" },
   { id: "honorable", variant: "honorable", label: "Honorable", match: (a) => a.key === "honorable" },
   { id: "conArtist", variant: "menace", label: "Con Artist", match: (a) => a.key === "conArtist" },
 ];
@@ -29,7 +31,7 @@ export const BADGE_GROUPS = [
   { label: "Confidence", ids: ["established", "building", "rookie"] },
   { label: "Form", ids: ["onFire", "onIce", "honorable", "conArtist"] },
   { label: "Range", ids: ["volatile", "locked", "solidFloor", "highCeiling"] },
-  { label: "Value", ids: ["buyLow", "sellHigh"] },
+  { label: "Value", ids: ["buyLow", "sellHigh", "plusValue", "minusValue"] },
   { label: "Matchup", ids: ["smash", "tough"] },
   { label: "Track record", ids: ["hero"] },
   { label: "Elite at his position", ids: ["eliteRole", "elitePlayer"] },
