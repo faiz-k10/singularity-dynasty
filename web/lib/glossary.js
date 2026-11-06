@@ -85,8 +85,8 @@ const CORE = [
       ["Super Hero", "One star for every top-3 finish at his position this season."],
       ["Elite Role", "Top 5 at his position in how his offense uses him (the Role stats)."],
       ["Elite Player", "Top 5 at his position in what he does with it (the Player stats)."],
-      ["Plus Value", "His Role rank is at least 20 spots worse than his Player rank: he does more with his opportunity than his role alone would suggest."],
-      ["Minus Value", "His Player rank is at least 20 spots worse than his Role rank: his role is better than what he does with it."],
+      ["Plus Value", "His Role rank is at least 15 spots worse than his Player rank: he does more with his opportunity than his role alone would suggest."],
+      ["Minus Value", "His Player rank is at least 15 spots worse than his Role rank: his role is better than what he does with it."],
     ],
   },
 ];
