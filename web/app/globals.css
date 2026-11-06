@@ -2421,17 +2421,17 @@ a.export-csv-btn{text-decoration:none;}
 /* The opened player's photo is a full-height column flush with the header's top, bottom and left of its own block, and the photo + text group is
    centred in the header with the text left-aligned beside the photo (founder, Nov 5 2026). */
 .weekly-player-photo{
-  display:block; flex:none; align-self:stretch; width:112px; height:auto; min-height:104px; border-radius:0; object-fit:cover; object-position:center top;
+  display:block; flex:none; align-self:stretch; width:84px; height:auto; min-height:78px; border-radius:0; object-fit:cover; object-position:center top;
   background:var(--void-panel-2); border:0; border-right:1px solid var(--line); border-left:1px solid var(--line);
 }
-.weekly-player-idtext{display:flex; flex-direction:column; align-items:flex-start; justify-content:center; gap:8px; padding:14px 0; min-width:0; text-align:left;}
+.weekly-player-idtext{display:flex; flex-direction:column; align-items:flex-start; justify-content:center; gap:5px; padding:8px 0; min-width:0; text-align:left;}
 .weekly-player-namewrap{display:inline-block; max-width:100%;}
 /* The opened player: the badges sit right beside the name, on its row. */
 .weekly-player-namewrap.has-pills{display:flex; align-items:center; gap:16px; flex-wrap:wrap;}
 .weekly-player-namewrap.has-pills .weekly-player-achievements{display:flex; align-items:center; gap:6px;} /* the badges sit close together; the 16px gap is name-to-badges only */
 /* The opened player's name is the card's headline: display font, heavy, uppercase, wide-spaced like the brand name. */
 .weekly-player-name{
-  font-family:var(--font-display), sans-serif; font-size:30px; font-weight:800; letter-spacing:0.07em; line-height:1.1;
+  font-family:var(--font-display), sans-serif; font-size:26px; font-weight:800; letter-spacing:0.07em; line-height:1.1;
   text-transform:uppercase; color:var(--star);
   display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
 }
@@ -2442,10 +2442,10 @@ a.export-csv-btn{text-decoration:none;}
   .weekly-player-name{font-size:22px; letter-spacing:0.05em;}
 }
 .weekly-player-badges{display:flex; align-items:center; gap:12px; flex-wrap:wrap;}
-.weekly-player-size{font-size:15px; color:var(--star-dim);}
+.weekly-player-size{font-size:14px; color:var(--star-dim);}
 /* The identity line uses the wide strip's room (founder, Nov 5 2026): a bigger position badge and team logo beside 15px text. */
-.weekly-player-badges > .position-badge{font-size:14px; height:26px; min-width:44px; padding:0 11px;}
-.weekly-player-badges > .team-badge.team-logo img{width:32px; height:32px;}
+.weekly-player-badges > .position-badge{font-size:13px; height:22px; min-width:38px; padding:0 9px;}
+.weekly-player-badges > .team-badge.team-logo img{width:22px; height:22px;}
 @media (max-width:700px){
   .weekly-player-badges{gap:8px;}
   .weekly-player-size{font-size:12px;}
