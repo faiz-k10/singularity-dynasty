@@ -67,6 +67,7 @@ export const PROFILE_METRICS = {
   u_air_share: { label: "Air Yds Share", format: pc1, hint: "Share of his team's air yards: how much of the deep passing game is his." },
   u_rec_ypg: { label: "Rec Yds/G", format: f1, hint: "Receiving yards a game." },
   u_ypt: { label: "Yds/Target", format: f2, hint: "Receiving yards per target." },
+  u_catch_rate: { label: "Catch Rate", format: pc1, hint: "Share of his targets he catches (receptions divided by targets)." },
   u_yac_rec: { label: "YAC/Rec", format: f2, hint: "Yards after the catch per reception." },
   u_epa_tgt: { label: "EPA/Target", format: signed3, hint: "Expected points added per target." },
 };

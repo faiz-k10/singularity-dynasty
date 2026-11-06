@@ -11,6 +11,7 @@ const FULL = {
   u_epa_db: "Expected points added per dropback",
   u_rush_epa: "Expected points added per carry",
   u_epa_tgt: "Expected points added per target",
+  u_catch_rate: "Catch rate: catches per target",
   u_yac_rec: "Yards after the catch, per reception",
   i10Pg: "Targets inside the 10-yard line, per game",
   i10Share: "Share of targets inside the 10",

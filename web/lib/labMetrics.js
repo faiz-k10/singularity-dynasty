@@ -43,7 +43,7 @@ const PROFILE_GROUP = {
   u_tgt_pg: "Usage & role", u_tgt_share: "Usage & role", u_air_share: "Usage & role", playActionRate: "Usage & role",
   ryoe: "Efficiency & output", scrambleRate: "Efficiency & output", u_ypa: "Efficiency & output", u_aypa: "Efficiency & output",
   u_cpoe: "Efficiency & output", u_epa_db: "Efficiency & output", u_sack_rate: "Efficiency & output", u_rush_ypg: "Efficiency & output",
-  u_ypc: "Efficiency & output", u_rush_epa: "Efficiency & output", u_rec_ypg: "Efficiency & output", u_ypt: "Efficiency & output",
+  u_ypc: "Efficiency & output", u_rush_epa: "Efficiency & output", u_rec_ypg: "Efficiency & output", u_ypt: "Efficiency & output", u_catch_rate: "Efficiency & output",
   u_yac_rec: "Efficiency & output", u_epa_tgt: "Efficiency & output",
   p2Td: "Touchdowns", i10Pg: "Touchdowns", i10Share: "Touchdowns", u_i5_cpg: "Touchdowns", u_i5_tpg: "Touchdowns", u_i5_share: "Touchdowns",
 };

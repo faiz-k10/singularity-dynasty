@@ -16,7 +16,7 @@
 #       i5_tpg  touches inside the opponent's 5-yard line a game (carries + catches, from play-by-play)
 #       i5_share  share of his touches that came inside the 5, %
 #   WR / TE  tgt_pg  targets a game      tgt_share  share of team targets, %   air_share  share of team air yards, %
-#       rec_ypg  receiving yards a game  ypt  yards per target            yac_rec  yards after the catch per catch   epa_tgt  EPA per target
+#       rec_ypg  receiving yards a game  ypt  yards per target            catch_rate  catches per target, %   yac_rec  yards after the catch per catch   epa_tgt  EPA per target
 #
 # Rate numbers need real volume to mean anything (a backup with 3 carries): they are left out (NA -> the site shows no row) below
 # QB 15 attempts a game, RB 5 carries a game (in-5 share only), WR / TE 3 targets a game. Players with fewer than UP_MIN_GAMES games get no profile.
@@ -73,6 +73,7 @@ up_metrics <- function(x, pos) {
       out$tgt_share <- r(100 * wmean(x$target_share), 1)
       out$air_share <- r(100 * wmean(x$air_yards_share), 1)
       out$ypt <- r(ratio(x$receiving_yards, x$targets))
+      out$catch_rate <- r(100 * ratio(x$receptions, x$targets), 1)
       out$yac_rec <- r(ratio(x$receiving_yards_after_catch, x$receptions))
       out$epa_tgt <- r(ratio(x$receiving_epa, x$targets), 3)
     }
