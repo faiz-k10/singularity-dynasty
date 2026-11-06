@@ -2277,14 +2277,10 @@ a.export-csv-btn{text-decoration:none;}
 .stat-panel-pace-name{font-family:var(--font-display); font-size:13.5px; font-weight:600; color:var(--star); line-height:1.25;}
 .stat-panel-pace-pos{display:flex; align-items:center; justify-content:center; gap:6px; font-size:10.5px; color:var(--star-dim); letter-spacing:0.03em;}
 .stat-panel-pace-pos .pos-rank{font-size:inherit; margin-left:1px;}
-/* The season total is the headline of this panel: same treatment as the weekly "This week · Projected" panel
-   (gold-tinted box, gold glow, big mono figure). */
+/* The season total is the headline of this panel: a big mono figure with a glow, no box around it (the box crowded the range bar, founder Nov 6 2026). */
 .stat-panel-pace-actual{
   display:inline-block; font-family:var(--font-mono), monospace; font-size:24px; font-weight:700; line-height:1.1;
-  color:var(--horizon-gold); text-shadow:0 0 18px rgba(var(--horizon-gold-rgb),0.45);
-  padding:8px 10px 9px; border-radius:2px; border:1px solid rgba(var(--horizon-gold-rgb),0.6);
-  background:linear-gradient(160deg, rgba(var(--horizon-gold-rgb),0.14), rgba(var(--horizon-gold-rgb),0.03) 60%, transparent);
-  box-shadow:0 0 0 1px rgba(var(--horizon-gold-rgb),0.12), 0 8px 28px rgba(var(--horizon-gold-rgb),0.10);
+  color:var(--horizon-gold); text-shadow:0 0 18px rgba(var(--horizon-gold-rgb),0.45); text-align:center;
 }
 .stat-panel-pace-games{display:block; font-family:var(--font-mono), monospace; font-size:10px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--horizon-gold); text-shadow:none; margin-bottom:4px;}
 /* Points ahead of / behind pace, as a tinted tag in the same recipe as the role / sustainability pills. */
