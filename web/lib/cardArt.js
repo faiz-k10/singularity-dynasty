@@ -216,7 +216,7 @@ export function PlayerCard({ f, host, data, img }) {
   const number = (
     <div style={{ display: "flex", flexDirection: "column" }}>
       <Label size={tall ? 20 : 17}>{p.played != null ? `Projected · scored ${fmt1(p.played)} so far` : "Projected points"}</Label>
-      <div style={{ display: "flex", fontFamily: DISPLAY, fontSize: tall ? 210 : 150, lineHeight: 0.95, color: C.mint }}>{noRange ? "—" : fmt1(p.projection)}</div>
+      <div style={{ display: "flex", fontFamily: DISPLAY, fontSize: tall ? 210 : 150, lineHeight: 0.95, color: noRange ? C.steel : C.mint }}>{noRange ? (p.bye ? "BYE" : "OUT") : fmt1(p.projection)}</div>
     </div>
   );
   const curve = noRange ? (
@@ -314,7 +314,7 @@ export function DynastyCard({ f, host, data, img }) {
 
 // Start / sit between two players (Compare Players).
 export function StartSitCard({ f, host, data, img }) {
-  const { a, b, pick, gain, week, season } = data;
+  const { a, b, pick, gain, week, season, neither } = data;
   const tall = sizeOf(f) === "tall";
   const side = (p, im, chosen) => (
     <div style={{ display: "flex", flexDirection: "column", width: tall ? 952 : 500, padding: tall ? 24 : 20, border: `2px solid ${chosen ? C.mint : C.rule}`, background: chosen ? "rgba(45,212,191,0.07)" : C.panel }}>
@@ -329,9 +329,9 @@ export function StartSitCard({ f, host, data, img }) {
         </div>
       </div>
       <div style={{ display: "flex", alignItems: "flex-end", marginTop: tall ? 14 : 16 }}>
-        <div style={{ display: "flex", fontFamily: DISPLAY, fontSize: tall ? 100 : 84, lineHeight: 0.95, color: chosen ? C.mint : C.star }}>{fmt1(p.projection)}</div>
+        <div style={{ display: "flex", fontFamily: DISPLAY, fontSize: tall ? 100 : 84, lineHeight: 0.95, color: p.bye || p.out ? C.steel : chosen ? C.mint : C.star }}>{p.bye ? "BYE" : p.out ? "OUT" : fmt1(p.projection)}</div>
         <div style={{ display: "flex", flexDirection: "column", marginLeft: 14, marginBottom: 10 }}>
-          <Label size={tall ? 16 : 13}>Median</Label>
+          {!(p.bye || p.out) && <Label size={tall ? 16 : 13}>Median</Label>}
           {spotText(p.lean) && <div style={{ display: "flex", marginTop: 6, fontSize: tall ? 17 : 14, fontWeight: 700, color: SPOT[p.lean.call] }}>{spotText(p.lean)}</div>}
         </div>
       </div>
@@ -351,8 +351,8 @@ export function StartSitCard({ f, host, data, img }) {
           {side(b, img.b, pB)}
         </div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "auto", marginBottom: tall ? 26 : 12, background: winner ? C.mint : C.panel2, color: winner ? C.onBrand : C.star, padding: tall ? "20px 26px" : "13px 22px" }}>
-          <div style={{ display: "flex", fontFamily: DISPLAY, fontSize: tall ? 50 : 40, textTransform: "uppercase", letterSpacing: 1 }}>{winner ? `Start ${winner.name}` : "Coin flip"}</div>
-          <div style={{ display: "flex", fontSize: tall ? 20 : 16, fontWeight: 700 }}>{winner ? `+${gain.toFixed(1)} projected` : "within 0.1 points"}</div>
+          <div style={{ display: "flex", fontFamily: DISPLAY, fontSize: tall ? 50 : 40, textTransform: "uppercase", letterSpacing: 1 }}>{winner ? `Start ${winner.name}` : neither ? "Neither plays" : "Coin flip"}</div>
+          <div style={{ display: "flex", fontSize: tall ? 20 : 16, fontWeight: 700 }}>{winner ? (a.bye || a.out || b.bye || b.out ? "the other isn't playing" : `+${gain.toFixed(1)} projected`) : neither ? "both off this week" : "within 0.1 points"}</div>
         </div>
         <div style={{ display: "flex", fontSize: tall ? 17 : 13, color: C.steel, marginBottom: 6 }}>Median plus the Smash / Tough Spot effect: the two inputs that picked the higher scorer most often in our backtest.</div>
       </div>

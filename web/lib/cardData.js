@@ -259,15 +259,17 @@ export async function cardFromToken(token) {
   const choice = usable(a.player) && usable(b.player)
     ? pickStart({ projection: a.player.projection, effect: a.player.lean?.effect }, { projection: b.player.projection, effect: b.player.lean?.effect })
     : { pick: usable(a.player) ? "a" : usable(b.player) ? "b" : null, gain: Math.abs((a.player.projection || 0) - (b.player.projection || 0)) };
-  const data = { season: card.s, week: card.w, a: a.player, b: b.player, ...choice };
+  const neither = !usable(a.player) && !usable(b.player); // both on a bye or listed out: no pick, and not a "coin flip" either
+  const data = { season: card.s, week: card.w, a: a.player, b: b.player, ...choice, neither };
   const winner = choice.pick === "a" ? a.player : choice.pick === "b" ? b.player : null;
   const loser = choice.pick === "a" ? b.player : a.player;
+  const projWord = (p) => (p.bye ? "bye" : p.out ? "out" : one(p.projection));
   return {
     card,
     data,
-    title: winner ? `Start ${winner.name} over ${loser.name} (week ${card.w})` : `${a.player.name} or ${b.player.name}? A coin flip in week ${card.w}`,
-    description: `${a.player.name} ${one(a.player.projection)} vs ${b.player.name} ${one(b.player.projection)}, median plus the Smash / Tough Spot effect. From Singularity Dynasty.`,
-    caption: `Start / sit, week ${card.w}: ${a.player.name} (${one(a.player.projection)}) or ${b.player.name} (${one(b.player.projection)})? ${winner ? `The pick: ${winner.name}.` : "Too close to call."}`,
+    title: winner ? `Start ${winner.name} over ${loser.name} (week ${card.w})` : neither ? `${a.player.name} or ${b.player.name}? Neither plays in week ${card.w}` : `${a.player.name} or ${b.player.name}? A coin flip in week ${card.w}`,
+    description: `${a.player.name} ${projWord(a.player)} vs ${b.player.name} ${projWord(b.player)}, median plus the Smash / Tough Spot effect. From Singularity Dynasty.`,
+    caption: `Start / sit, week ${card.w}: ${a.player.name} (${projWord(a.player)}) or ${b.player.name} (${projWord(b.player)})? ${winner ? `The pick: ${winner.name}.` : neither ? "Neither plays this week." : "Too close to call."}`,
     tool: { href: `/tools/compare-players?p1=${encodeURIComponent(a.player.name)}&p2=${encodeURIComponent(b.player.name)}`, label: "Compare them side by side" },
   };
 }
