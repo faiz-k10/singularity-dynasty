@@ -223,9 +223,9 @@ export const HERO_MAX_TIER = 7;
 // Elite Role / Elite Player: top 5 at his position in the opened-player panel's Role / Player group (row.groupRank, lib/statPanel.js) -- the ranking
 // by average rank over the group's numbers, NOT the weekly projection ranking.
 export const ELITE_RANK = 5;
-// Plus Value / Minus Value: the two group ranks disagree by 15 or more spots. Plus Value = his Role rank is at least 15 spots worse (a bigger number)
+// Plus Value / Minus Value: the two group ranks disagree by 20 or more spots. Plus Value = his Role rank is at least 20 spots worse (a bigger number)
 // than his Player rank (he does more with his role than the role would suggest); Minus Value is the other way round.
-export const VALUE_RANK_GAP = 15;
+export const VALUE_RANK_GAP = 20;
 
 // Floor / ceiling lean, read off the Outcome Curve's percentiles (row.statPct: each of his floor, median and ceiling against the same number
 // for every player at his position). Anti-Loser Floor: his floor AND median rank at least 5 percentiles higher than his ceiling does, and his floor or median is in the 90th percentile or better (the
