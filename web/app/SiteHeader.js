@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { sampleWithReplacement } from "@/lib/sample";
+import { sampleUnique } from "@/lib/sample";
 import { unstable_cache } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getAuthUser } from "@/lib/authUser";
@@ -171,9 +171,11 @@ async function TickerFeed() {
       }
     }
     const badgeShare = pool.length > 0 && pacePool.length > 0 ? Math.round(TICKER_ITEMS * 0.65) : pool.length > 0 ? TICKER_ITEMS : 0;
+    // One strip item per player: a name shared by the badge and pace pools is drawn once.
+    const seen = new Set();
     const picks = [
-      ...(badgeShare > 0 ? sampleWithReplacement(pool, badgeShare) : []),
-      ...(pacePool.length > 0 ? sampleWithReplacement(pacePool, TICKER_ITEMS - badgeShare) : []),
+      ...(badgeShare > 0 ? sampleUnique(pool, badgeShare, seen) : []),
+      ...(pacePool.length > 0 ? sampleUnique(pacePool, TICKER_ITEMS - badgeShare, seen) : []),
     ];
     if (picks.length > 0) tickerItems = picks;
   }
