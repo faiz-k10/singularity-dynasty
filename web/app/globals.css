@@ -6054,20 +6054,31 @@ select.lab-select{min-width:200px; padding-right:8px; cursor:pointer;}
 /* Leaderboard: rank, name, badges, a bar from zero (the average is the thin line), value. */
 .lab-board-list{list-style:none; margin:0; padding:0;}
 .lab-board-row{
-  display:grid; grid-template-columns:34px minmax(150px, 230px) 64px minmax(80px, 1fr) 72px; align-items:center; gap:10px;
-  padding:5px 8px; border-bottom:1px solid rgba(var(--star-dot-rgb), .06);
+  display:grid; grid-template-columns:44px minmax(150px, 230px) 64px minmax(80px, 1fr) 84px; align-items:center; gap:12px;
+  padding:6px 10px; border-bottom:1px solid rgba(var(--star-dot-rgb), .06);
 }
 .lab-board-row.is-picked{background:color-mix(in srgb, var(--c) 10%, transparent); box-shadow:inset 3px 0 0 var(--c);}
-.lab-board-rank{text-align:right; font-family:var(--font-mono), monospace; font-size:12px; color:var(--star-dim);}
-.lab-board-name{all:unset; cursor:pointer; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-family:var(--font-body), Georgia, serif; font-size:14px; color:var(--star);}
+/* Rank is a scoreboard numeral: outlined, and solid mint on the top three. */
+.lab-board-rank{text-align:right; font-family:var(--font-display), sans-serif; font-size:26px; font-weight:800; line-height:1; color:transparent; -webkit-text-stroke:1px rgba(var(--star-dot-rgb), .45);}
+.lab-board-row.is-top .lab-board-rank{color:var(--horizon-gold); -webkit-text-stroke:0;}
+.lab-board-name{all:unset; cursor:pointer; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-family:var(--font-body), Georgia, serif; font-size:15px; color:var(--star);}
 .lab-board-name:hover, .lab-board-name:focus-visible{color:var(--horizon-gold);}
 .lab-board-badges{display:inline-flex; align-items:center; gap:6px;}
-.lab-board-track{position:relative; height:14px; background:rgba(var(--star-dot-rgb), .04);}
-.lab-board-track::after{content:""; position:absolute; top:-3px; bottom:-3px; left:var(--avg); width:1px; background:rgba(var(--star-dot-rgb), .5);}
-.lab-board-bar{position:absolute; top:0; bottom:0; background:var(--horizon-gold); opacity:.45;}
+/* The bar is a row of lit segments, like scoreboard LEDs, over a dim unlit track. */
+.lab-board-track{
+  position:relative; height:14px;
+  background:repeating-linear-gradient(90deg, rgba(var(--star-dot-rgb), .07) 0 5px, transparent 5px 8px);
+}
+.lab-board-track::after{content:""; position:absolute; top:-4px; bottom:-4px; left:var(--avg); width:2px; background:var(--star);}
+.lab-board-bar{
+  position:absolute; top:0; bottom:0; background:var(--neon-blue); opacity:.8;
+  -webkit-mask:repeating-linear-gradient(90deg, #000 0 5px, transparent 5px 8px); mask:repeating-linear-gradient(90deg, #000 0 5px, transparent 5px 8px);
+}
+.lab-board-row.is-top .lab-board-bar{background:var(--horizon-gold); opacity:1;}
 .lab-board-row.is-picked .lab-board-bar{background:var(--c); opacity:1;}
-.lab-board-zero{position:absolute; top:-3px; bottom:-3px; width:1px; background:var(--rule-strong);}
-.lab-board-val{text-align:right; font-family:var(--font-mono), monospace; font-size:13px; font-weight:700; color:var(--star);}
+.lab-board-zero{position:absolute; top:-4px; bottom:-4px; width:1px; background:var(--rule-strong);}
+.lab-board-val{text-align:right; font-family:var(--font-display), sans-serif; font-size:24px; font-weight:800; line-height:1; color:var(--star);}
+.lab-board-row.is-top .lab-board-val{color:var(--horizon-gold);}
 .lab-board-split{margin:14px 0 4px; font-family:var(--font-mono), monospace; font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--star-dim);}
 
 /* Tables: the game log's season summary and Compare. */
@@ -6108,7 +6119,9 @@ select.lab-select{min-width:200px; padding-right:8px; cursor:pointer;}
   .lab-export-menu{left:0; right:auto;}
   .lab-field{flex:1 1 150px;}
   select.lab-select{min-width:0; width:100%;}
-  .lab-board-row{grid-template-columns:26px minmax(0,1fr) auto 58px; row-gap:4px;}
+  .lab-board-row{grid-template-columns:30px minmax(0,1fr) auto 64px; row-gap:4px;}
+  .lab-board-rank{font-size:22px;}
+  .lab-board-val{font-size:20px;}
   .lab-board-track{grid-column:2 / -1; grid-row:2;}
   .lab-notes div{grid-template-columns:1fr; gap:2px;}
   .lab-strip b{font-size:24px;}

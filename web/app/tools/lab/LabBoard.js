@@ -38,7 +38,7 @@ export default function LabBoard({ pool, available, simsAccess, colorOf, onToggl
   const row = ({ r, rank, v }) => {
     const c = colorOf.get(r.name);
     return (
-      <li key={r.name} className={`lab-board-row${c ? " is-picked" : ""}`} style={c ? { "--c": c } : undefined}>
+      <li key={r.name} className={`lab-board-row${c ? " is-picked" : ""}${rank <= 3 ? " is-top" : ""}`} style={c ? { "--c": c } : undefined}>
         <span className="lab-board-rank">{rank}</span>
         <button type="button" className="lab-board-name" onClick={() => onToggle(r.name)}>
           {r.name}
