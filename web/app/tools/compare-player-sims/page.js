@@ -95,6 +95,7 @@ export default async function ComparePlayerSimsPage({ searchParams }) {
             )}
             <form className="compare-form">
               <ComparePlayerPickers
+                key={JSON.stringify(params || {})} /* a Back / Forward navigation re-reads the boxes from the address */
                 players={playerOptions}
                 defaults={{ p1: params?.p1 || "", p2: params?.p2 || "", p3: params?.p3 || "" }}
                 maxPlayers={maxPlayers}

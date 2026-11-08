@@ -48,7 +48,7 @@ export default function DynastyBoard({ rows, meta, complete }) {
     return { L, ...buildBoard(L) };
   }, [rows, format, mode, pos]);
 
-  const lo = Math.floor(Math.min(...L.map((p) => p.lo))), hi = Math.ceil(Math.max(...L.map((p) => p.hi)));
+  const lo = L.length ? Math.floor(Math.min(...L.map((p) => p.lo))) : 0, hi = L.length ? Math.ceil(Math.max(...L.map((p) => p.hi))) : 1;
   const x = (v) => `${Math.max(0, Math.min(100, ((v - lo) / (hi - lo)) * 100))}%`;
   const m = MODES[mode];
   // The pane shows the picked player while he is on the list, else the top one.

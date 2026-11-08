@@ -112,9 +112,18 @@ export default function ComparePlayerPickers({ players, defaults, maxPlayers = 3
   const router = useRouter();
   const path = usePathname();
   const shown = SLOTS.slice(0, Math.min(slots, maxPlayers + 1));
-  const [picked, setPicked] = useState(() =>
-    Object.fromEntries(shown.map((s) => [s.name, players.some((p) => p.player_name === defaults[s.name]) ? defaults[s.name] : ""]))
-  );
+  // From the address: only boxes this viewer may use, only known players, and a player named twice keeps only his first box.
+  const [picked, setPicked] = useState(() => {
+    const seen = new Set();
+    return Object.fromEntries(
+      shown.slice(0, maxPlayers).map((s) => {
+        const name = defaults[s.name];
+        const ok = name && !seen.has(name) && players.some((p) => p.player_name === name);
+        if (ok) seen.add(name);
+        return [s.name, ok ? name : ""];
+      })
+    );
+  });
   const change = (name, player) => {
     const next = { ...picked, [name]: player?.player_name || "" };
     setPicked(next);
@@ -131,7 +140,7 @@ export default function ComparePlayerPickers({ players, defaults, maxPlayers = 3
             key={slot.name}
             slot={slot}
             players={players}
-            defaultValue={picked[slot.name]}
+            defaultValue={picked[slot.name] || ""}
             taken={new Set(Object.entries(picked).filter(([k, v]) => k !== slot.name && v).map(([, v]) => v))}
             onChange={(p) => change(slot.name, p)}
           />
@@ -143,6 +152,11 @@ export default function ComparePlayerPickers({ players, defaults, maxPlayers = 3
             </Link>
           </div>
         )
+      )}
+      {Object.values(picked).some(Boolean) && (
+        <button type="button" className="compare-clear-all mono" onClick={() => router.push(path, { scroll: false })}>
+          Clear
+        </button>
       )}
     </>
   );

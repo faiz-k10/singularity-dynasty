@@ -65,7 +65,7 @@ function MatchupCell({ row }) {
 // HEAD TO HEAD as cards (founder, Nov 8 2026: the table left too much empty space): one card per player carrying every number the table
 // does -- position, matchup, overall rank, median / floor / ceiling, last week, the projected stat line and the usage profile -- and
 // the player's header (photo, size, badges) on top. In each row the best value is shaded mint and the worst red (founder, Nov 8 2026); the card that leads the most rows
-// gets a mint top edge. The table stays one tab over.
+// gets a mint top edge. (A Table tab with the old grid was removed on Nov 8 2026, founder.)
 function HeadToHeadCards({ players, shown }) {
   const n = players.length;
   // The headline numbers (everything above the first section) become their own "This week" section, listed like every other section.
@@ -153,68 +153,6 @@ export default function CompareWeekly({ players, maxSpread }) {
       extra={startSit}
       tabs={[
         { key: "h2h", label: "Head to Head", node: <HeadToHeadCards players={players} shown={shown} /> },
-        {
-          key: "table",
-          label: "Table",
-          node: (
-            <>
-          <div className="compare-table-wrap compare-h2h">
-            <table className="compare-table" style={{ "--cmp-n": n }}>
-              <thead>
-                <tr>
-                  <th></th>
-                  {players.map((p) => (
-                    <th key={p.player_name}>{p.player_name}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <th>Position</th>
-                  {players.map((p) => (
-                    <td className="mono" key={p.player_name}>
-                      <span className="compare-pos">
-                    {p.positionLabel || p.position}
-                    <span aria-hidden="true">·</span>
-                    <TeamBadge team={p.team} />
-                  </span>
-                    </td>
-                  ))}
-                </tr>
-                <tr>
-                  <th>Matchup</th>
-                  {players.map((p) => (
-                    <td key={p.player_name}>
-                      <MatchupCell row={p} />
-                    </td>
-                  ))}
-                </tr>
-                {shown.map((r) =>
-                  r.group ? (
-                    <tr className="compare-group-row" key={r.group}>
-                      <th colSpan={n + 1}>{r.group}</th>
-                    </tr>
-                  ) : (
-                    <tr key={r.def.label}>
-                      <th>{r.def.term ? <Define term={r.def.term}>{r.def.label}</Define> : r.def.label}</th>
-                      {r.values.map((v, i) => (
-                        <td
-                          key={players[i].player_name}
-                          className={`mono${r.best.has(i) ? " compare-best" : ""}${r.def.strong ? " compare-strong" : ""}`}
-                        >
-                          {v == null ? "—" : r.def.fmt(v)}
-                        </td>
-                      ))}
-                    </tr>
-                  )
-                )}
-              </tbody>
-            </table>
-          </div>
-          <p className="compare-legend">Gold marks the leader in each row. Projected stats are per-game averages.</p>
-            </>
-          ),
-        },
         {
           key: "profiles",
           label: "Player Profiles",

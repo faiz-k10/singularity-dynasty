@@ -80,6 +80,7 @@ export default async function ComparePlayersPage({ searchParams }) {
             )}
             <form className="compare-form">
               <ComparePlayerPickers
+                key={JSON.stringify(params || {})} /* a Back / Forward navigation re-reads the boxes from the address */
                 players={playerOptions}
                 defaults={Object.fromEntries(SLOTS.map((k) => [k, params?.[k] || ""]))}
                 maxPlayers={maxPlayers}
