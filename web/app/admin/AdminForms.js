@@ -60,7 +60,7 @@ export function DraftBoardUpload() {
         </div>
         <div>
           <label className="feed-label mono" htmlFor="db-type">BOARD</label>
-          <select id="db-type" name="board_type" className="feed-input auth-input" defaultValue="startup">
+          <select id="db-type" name="board_type" className="my-filter-select auth-input" defaultValue="startup">
             <option value="startup">Startup</option>
             <option value="rookie">Rookie</option>
           </select>
