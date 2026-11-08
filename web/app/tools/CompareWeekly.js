@@ -54,17 +54,10 @@ function bestIndexes(values, best) {
 function MatchupCell({ row }) {
   if (!row.opponent || row.opponent === "NA") return <span className="mono">BYE</span>;
   const sep = row.is_home === true ? "vs" : row.is_home === false ? "@" : "·";
-  const lean = row.defLean;
   return (
     <span className="compare-matchup">
       <span className="matchup-sep">{sep}</span>
       <TeamBadge team={row.opponent} />
-      {lean && (
-        <span className="compare-matchup-lean">
-          <span className={`player-achv-dot ${lean.call === "SMASH" ? "smash" : "tough"}`} />
-          {lean.call === "SMASH" ? "Smash" : "Tough"}
-        </span>
-      )}
     </span>
   );
 }
