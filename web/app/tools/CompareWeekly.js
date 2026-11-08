@@ -30,7 +30,7 @@ const ROWS = [
   { label: "Receptions", get: (r) => r.receptions, fmt: fmt1, best: "high", skipZero: true },
   { label: "Rec yds", get: (r) => r.receiving_yards, fmt: fmt1, best: "high", skipZero: true },
   { label: "Rec TD", get: (r) => r.receiving_tds, fmt: f2, best: "high", skipZero: true },
-  { group: "Usage and touchdown profile" },
+  { group: "Key usage profile" },
   { label: "xFP / game", term: "avgXfp", get: (r) => r.avgXfp, fmt: fmt1, best: "high" },
   { label: "WOPR", term: "wopr", get: (r) => r.wopr, fmt: f2, best: "high" },
   { label: "Target share", term: "u_tgt_share", get: (r) => r.targetShare, fmt: pct1, best: "high" },
