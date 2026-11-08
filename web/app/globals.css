@@ -2428,7 +2428,7 @@ a.export-csv-btn{text-decoration:none;}
 /* The opened player's photo is a full-height column flush with the header's top, bottom and left of its own block, and the photo + text group is
    centred in the header with the text left-aligned beside the photo (founder, Nov 5 2026). */
 .weekly-player-photo{
-  display:block; flex:none; align-self:stretch; width:84px; height:auto; min-height:78px; border-radius:0; object-fit:cover; object-position:center top;
+  display:block; flex:none; align-self:center; width:84px; height:84px; border-radius:var(--r-sm); object-fit:cover; object-position:center top; /* a square, whatever the photo's own shape */
   background:var(--void-panel-2); border:0; border-right:1px solid var(--line); border-left:1px solid var(--line);
 }
 .weekly-player-idtext{display:flex; flex-direction:column; align-items:flex-start; justify-content:center; gap:5px; padding:8px 0; min-width:0; text-align:left;}
@@ -2445,7 +2445,7 @@ a.export-csv-btn{text-decoration:none;}
 @media (max-width:700px){
   .weekly-player-header{padding:0 14px;}
   .weekly-player-id{gap:14px;}
-  .weekly-player-photo{width:76px; min-height:80px;}
+  .weekly-player-photo{width:64px; height:64px;}
   .weekly-player-name{font-size:22px; letter-spacing:0.05em;}
 }
 .weekly-player-badges{display:flex; align-items:center; gap:12px; flex-wrap:wrap;}
@@ -4702,7 +4702,7 @@ html{font-stretch:82%;}
 .compare-panels .weekly-player-id{align-items:center;}
 .compare-panels .weekly-player-idtext{align-items:center; text-align:center; padding:0;}
 .compare-panels .weekly-player-namewrap{display:flex; align-items:center; justify-content:center; gap:10px;}
-.compare-panels .weekly-player-photo{position:static; transform:none; margin:0; width:40px; height:40px; border-radius:var(--r-sm); border:1px solid var(--line);}
+.compare-panels .weekly-player-photo{position:static; transform:none; margin:0; width:40px; height:40px; min-height:0; align-self:center; border-radius:var(--r-sm); border:1px solid var(--line);}
 .compare-panels .weekly-player-name{font-size:22px; letter-spacing:0.05em;}
 .compare-panels .weekly-player-badges{flex-wrap:wrap; justify-content:center;}
 .compare-panels .weekly-player-dot{display:none;}
