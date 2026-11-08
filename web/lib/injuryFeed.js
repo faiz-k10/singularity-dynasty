@@ -39,7 +39,6 @@ export async function fetchInjuryFeed() {
           status: i.status || "Active",
           severity: SEVERITY[i.status] ?? 0,
           detail: i.details?.type || null,
-          returnDate: i.details?.returnDate || null,
           comment: i.shortComment || null, // longComment deliberately dropped (size)
           date: i.date || null,
         });

@@ -36,7 +36,6 @@ export default function RosterNews({ news, onlyStarters = false, onlyInjuries = 
                 <span className="league-dash-muted">{i.position}{i.team ? ` · ${i.team}` : ""}</span>
                 {i.severity > 0 && <span className={`status-text status-text-${i.severity}`}>{i.status}</span>}
                 {i.detail && i.severity > 0 && <span className="league-dash-muted">{i.detail}</span>}
-                {i.returnDate && i.severity > 0 && <span className="league-dash-muted">· est. return {i.returnDate}</span>}
                 <span className="league-dash-muted roster-news-time">{ago(i.date)}</span>
               </div>
               {i.comment && <p className="roster-news-comment">{i.comment}</p>}
