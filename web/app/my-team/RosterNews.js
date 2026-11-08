@@ -35,8 +35,8 @@ export default function RosterNews({ news, onlyStarters = false, onlyInjuries = 
             <li key={`${i.norm}|${i.position}`} className="roster-news-item">
               <div className="roster-news-head">
                 <span className={`status-dot status-dot-${i.severity}`} aria-label={i.status} />
-                <strong>{i.name}</strong>
                 <span className="roster-news-tags">
+                  <strong>{i.name}</strong>
                   {i.team && <TeamBadge team={i.team} />}
                   <PositionBadge position={i.position} />
                 </span>

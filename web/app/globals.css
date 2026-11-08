@@ -3903,7 +3903,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .roster-news-item{padding:10px 0; border-top:1px solid rgba(var(--star-rgb,255,255,255),.08);}
 .roster-news-item:first-child{border-top:0;}
 .roster-news-head{display:flex; flex-wrap:wrap; align-items:center; gap:8px 12px;}
-.roster-news-tags{display:inline-flex; align-items:center; gap:4px;}
+.roster-news-tags{display:inline-flex; align-items:center; gap:6px;}
 .roster-news-time{margin-left:auto;}
 .roster-news-comment{margin:6px 0 4px; font-size:.88rem; line-height:1.45;}
 
