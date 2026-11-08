@@ -2779,7 +2779,7 @@ a.export-csv-btn{text-decoration:none;}
 .weekly-gamelog-bar em.neutral{background:var(--star-dim);}
 /* The dash is drawn 2px wide inside a 12px hover target, so its "xFP 18.6" tip is easy to reach. */
 .weekly-gamelog-bar u{position:absolute; top:-6px; bottom:-6px; width:12px; margin-left:-6px; text-decoration:none; cursor:help;}
-.weekly-gamelog-bar u::before{content:''; position:absolute; left:5px; top:2px; bottom:2px; width:2px; background:var(--star);}
+.weekly-gamelog-bar u::before{content:''; position:absolute; left:5.5px; top:5px; bottom:5px; width:1px; background:rgba(var(--star-dot-rgb), .4);} /* his xFP for the game: a quiet hairline, not a second reading */
 .weekly-gamelog-rank{color:var(--horizon-gold); font-size:14px; font-weight:600; text-align:right;}
 .weekly-gamelog-pts{color:var(--star); font-weight:700; font-size:15px; text-align:right;}
 .weekly-gamelog-panel{container-type:inline-size;}
