@@ -6563,7 +6563,7 @@ select.lab-select{min-width:200px;}
       pointer at its end -- Player Exposure on My Team.
    3. ARC GAUGE (board views: app/ArcGauge.js): win chance on the Game Board cards / scoreboard and the home briefing, the dynasty score.
    A new bar joins the hazard lists below (track / fill) instead of drawing its own. ===== */
-:root{--hazard:repeating-linear-gradient(45deg, #000 0 3px, transparent 3px 6px);}
+:root{--hazard:repeating-linear-gradient(45deg, #000 0 4.5px, transparent 4.5px 6px);}
 .sim-bar-track, .stat-panel-pace-progress-track, .weekly-rank-bar, .weekly-gamelog-bar, .shape-compare-track, .pctile-bar, .pctile-scale-track,
 .hub-range-track, .hub-stage-bar, .hub-role-bar, .league-dash-winbar, .lab-cell-pct, .lab-board-track, .dyb-led{
   box-sizing:border-box; min-height:8px; background:none; border-radius:0;
