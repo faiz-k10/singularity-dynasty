@@ -5263,8 +5263,10 @@ html{font-stretch:82%;}
 
 .sb-card-verdict{display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap;}
 .sb-card-word{font-family:var(--font-display), sans-serif; font-weight:800; font-size:30px; line-height:1; letter-spacing:.03em; text-transform:uppercase; color:var(--tone);}
-.sb-card-pct{font-size:13px; color:var(--star-dim); margin-left:auto; text-align:right;} /* the odds end the one-word reading's row, right above your score */
-.sb-card-word + .sb-card-pct{white-space:nowrap;}
+.sb-card-verdict:has(.sb-card-gauge){align-items:center;}
+.sb-card-gauge{margin-left:auto;} /* the win-chance dial ends the one-word reading's row, right above your score */
+.sb-card-gauge b{font-family:var(--font-display); font-weight:800; font-size:19px; color:var(--star);}
+.sb-card-gauge small{font-family:var(--font-mono), monospace; font-size:8.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--star-dim); margin-top:1px;}
 .sb-card-scores{flex:1; display:flex; flex-direction:column; justify-content:center; gap:10px;}
 .sb-card-side{display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:10px;}
 .sb-card-team{font-size:17px; font-weight:700; color:var(--star); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;} /* your team: bold and bright (no YOU tag) */

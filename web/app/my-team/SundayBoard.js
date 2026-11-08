@@ -3,6 +3,7 @@
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import MatchupPanel, { sleeperMatchupUrl, toneClass, leagueTabs } from "./MatchupPanel";
 import { formatWin } from "@/lib/standing";
+import ArcGauge from "../ArcGauge";
 import PanelTabs from "../PanelTabs";
 import { useMounted } from "./useMounted";
 import { fmt1, fmt2 } from "@/lib/format";
@@ -122,7 +123,12 @@ function LeagueCard({ team, ms, onOpen }) {
           {st.label ? (
             <div className="sb-card-verdict">
               <span className="sb-card-word">{st.label}</span>
-              {pct != null && !done && !lock && <span className="sb-card-pct mono">{formatWin(pct)} to win</span>}
+              {pct != null && !done && !lock && (
+                <ArcGauge value={pct} size={84} label={`${formatWin(pct)} chance to win`} className="sb-card-gauge">
+                  <b>{formatWin(pct)}</b>
+                  <small>to win</small>
+                </ArcGauge>
+              )}
             </div>
           ) : (
             <div className="sb-card-verdict">
