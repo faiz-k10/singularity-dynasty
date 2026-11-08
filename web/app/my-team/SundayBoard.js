@@ -4,6 +4,7 @@ import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "rea
 import MatchupPanel, { sleeperMatchupUrl, toneClass, leagueTabs } from "./MatchupPanel";
 import { formatWin } from "@/lib/standing";
 import ArcGauge from "../ArcGauge";
+import ThemeToggle from "../ThemeToggle";
 import PanelTabs from "../PanelTabs";
 import { useMounted } from "./useMounted";
 import { fmt1, fmt2 } from "@/lib/format";
@@ -670,6 +671,7 @@ export default function SundayBoard({ savedTeams, gameStates, injuriesByTeam, up
             </span>
           )}
           {toolbar}
+          <ThemeToggle inline />
         </div>
       </div>
       <div className={`sb-body${openTeam ? " has-drawer" : ""}${feedCollapsed ? " feed-collapsed" : ""}`}>

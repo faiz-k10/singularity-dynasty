@@ -372,6 +372,7 @@ body::before{
   .site-header{height:60px;}
   .theme-toggle{top:37px; right:24px;}
 }
+.theme-toggle.is-inline{position:static; height:36px; flex:none;} /* in a toolbar (the Game Board top bar), not pinned to the page corner */
 
 /* ---------- SITE HEADER (full-width top bar — replaces the hamburger on
    wide viewports; the hamburger + radial-menu below remain as the

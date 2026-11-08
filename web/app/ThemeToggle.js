@@ -1,8 +1,23 @@
-// A square two-cell switch: sun | moon, the cell for the current theme filled gold (see .theme-toggle in globals.css). One button, so a
-// click anywhere flips the theme (InteractiveScript wires #themeToggle).
-export default function ThemeToggle() {
+"use client";
+
+// Flip light / dark: data-theme on <html>, remembered in localStorage (layout.js reads it before the first paint).
+function flipTheme() {
+  const root = document.documentElement;
+  const current = root.getAttribute("data-theme") || (window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
+  const next = current === "light" ? "dark" : "light";
+  root.setAttribute("data-theme", next);
+  try {
+    localStorage.setItem("theme", next);
+  } catch {
+    // Safari private mode etc. -- the theme just won't persist.
+  }
+}
+
+// A square two-cell switch: sun | moon, the cell for the current theme filled (see .theme-toggle in globals.css). One button, so a click
+// anywhere flips the theme. The header's copy is fixed at the top right; `inline` sits in a toolbar (the Game Board's top bar).
+export default function ThemeToggle({ inline = false }) {
   return (
-    <button className="theme-toggle" id="themeToggle" aria-label="Toggle light/dark theme">
+    <button type="button" className={`theme-toggle${inline ? " is-inline" : ""}`} onClick={flipTheme} aria-label="Toggle light/dark theme">
       <span className="tt-cell tt-sun">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
           <circle cx="12" cy="12" r="4.5" />

@@ -91,31 +91,6 @@ export default function InteractiveScript() {
       });
     }
 
-    /* ---- theme toggle ---- */
-    const themeToggle = document.getElementById("themeToggle");
-    if (themeToggle) {
-      themeToggle.addEventListener(
-        "click",
-        () => {
-          const root = document.documentElement;
-          const systemPrefersLight = window.matchMedia(
-            "(prefers-color-scheme: light)"
-          ).matches;
-          const current =
-            root.getAttribute("data-theme") ||
-            (systemPrefersLight ? "light" : "dark");
-          const next = current === "light" ? "dark" : "light";
-          root.setAttribute("data-theme", next);
-          try {
-            localStorage.setItem("theme", next);
-          } catch {
-            // Safari private mode etc. — theme just won't persist.
-          }
-        },
-        { signal }
-      );
-    }
-
     /* ---- orbit side-nav + top nav bar: smooth scroll + scrollspy ----
        Top-nav-bar/radial-menu links point at /#section (not bare #section)
        so they work as a real navigation back to the homepage from any other
