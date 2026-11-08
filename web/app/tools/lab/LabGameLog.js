@@ -14,8 +14,8 @@ const KINDS = [
   ["fpoe", "Pts − xFP"],
 ];
 
-// Why a player has no game in a week: BYE (his team had none) or INJURED (his team played, he didn't; lib/labData.js `off`).
-const missedLabel = (p, w) => ({ B: "BYE", I: "INJURED" })[p.off?.find((o) => o[0] === w)?.[1]] || "no game";
+// Why a player has no game in a week: BYE (his team had none) or DNP, did not play (his team played, he didn't; lib/labData.js `off`).
+const missedLabel = (p, w) => ({ B: "BYE", I: "DNP" })[p.off?.find((o) => o[0] === w)?.[1]] || "no game";
 
 // The picked players' weekly scoring this season, one line each in his colour: points, expected points from his opportunities, or the gap
 // between them, optionally as a three-game average. Consecutive weeks are joined with a solid line, a week he didn't play with a dashed one.
