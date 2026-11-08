@@ -29,6 +29,7 @@ export default function RankingsSearch({
   actions, // the links/buttons at the right of the top row (Compare Players, Export CSV)
   mine, // the viewer's saved teams (lib/myPlayers.js) -- adds the My players view
   gated, // true when the viewer only sees a teaser slice of the table
+  compareHref, // a Compare Players button at the end of the toolbar (Weekly Projection Rankings)
 }) {
   const showPositionFilter = Array.isArray(positions) && positions.length > 0;
   const [query, setQuery] = useState("");
@@ -102,6 +103,7 @@ export default function RankingsSearch({
       teamIds={teamIds}
       onToggleTeam={toggleTeam}
       onClearTeams={() => setTeamIds(new Set())}
+      compareHref={compareHref}
     />
   );
 

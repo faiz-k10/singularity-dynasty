@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { BADGE_FILTERS, BADGE_GROUPS } from "./badgeFilters";
 import TeamBadge from "./TeamBadge";
 import { NFL_DIVISIONS } from "@/lib/nflDivisions";
@@ -50,6 +51,7 @@ export default function RankingsToolbar({
   teamIds,
   onToggleTeam,
   onClearTeams,
+  compareHref,
 }) {
   const [open, setOpen, ref] = useDropdown();
   const [teamsOpen, setTeamsOpen, teamsRef] = useDropdown();
@@ -200,6 +202,12 @@ export default function RankingsToolbar({
       )}
 
       {view}
+
+      {compareHref && (
+        <Link href={compareHref} prefetch={false} className="theater-badge-filter-btn rk-compare">
+          Compare Players
+        </Link>
+      )}
 
       <label className="rk-search">
         <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">

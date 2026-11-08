@@ -33,7 +33,7 @@ const COLUMN_TYPES = {
 // why this page dropped the PPR/TE-premium settings panel it used to
 // have (lib/scoring.js's computeCustomProjection only ever produced one
 // recomputed number, not a distribution).
-export default function RedraftRankingsClient({ rawRows, sortKey: initialKey, sortDir: initialDir, currentParams, positions, maxSpread, header, actions, mine, gated }) {
+export default function RedraftRankingsClient({ rawRows, sortKey: initialKey, sortDir: initialDir, currentParams, positions, maxSpread, header, actions, mine, gated, compareHref }) {
   const { sortKey, sortDir, onSort } = useClientSort(initialKey, initialDir);
   const [selectedPositions, setSelectedPositions] = useState(positions || []);
   function togglePosition(pos) {
@@ -66,6 +66,7 @@ export default function RedraftRankingsClient({ rawRows, sortKey: initialKey, so
       gated={gated}
       header={header}
       actions={actions}
+      compareHref={compareHref}
     />
   );
 }
