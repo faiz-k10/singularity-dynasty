@@ -36,6 +36,7 @@ export async function fetchInjuryFeed() {
           name,
           norm: normalizePlayerName(name),
           position: a.position?.abbreviation || null,
+          team: team.team?.abbreviation || a.team?.abbreviation || null, // the roster's team can be empty (IR, released)
           status: i.status || "Active",
           severity: SEVERITY[i.status] ?? 0,
           detail: i.details?.type || null,

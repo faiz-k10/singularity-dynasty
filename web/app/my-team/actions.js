@@ -702,7 +702,7 @@ export async function getRosterNews() {
       if (f.severity > 0) statusByKey[key] = { status: f.status, severity: f.severity };
       if (f.severity === 0 && !recent) continue;
       if (!items.has(key)) {
-        items.set(key, { ...f, key, team: p.team, starts: [], rosters: [] });
+        items.set(key, { ...f, key, team: p.team || f.team || null, starts: [], rosters: [] });
       }
       const it = items.get(key);
       const label = leagueName(t);
