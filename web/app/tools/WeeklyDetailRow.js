@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import OutcomeCurveDetail from "./OutcomeCurveDetail";
 import TeamBadge from "./TeamBadge";
 import { filledBadgeSvg } from "@/lib/badgeIcons";
@@ -389,6 +389,17 @@ export function PlayerStatsRow({ row }) {
 // `logoByName`: the team logo sits right after the name instead of in the line under it (the Head to Head cards).
 export function PlayerHeaderPanel({ row, share = false, logoByName = false }) {
   const [openBadge, setOpenBadge] = useState(null); // the one badge whose label is showing
+  const swapTimer = useRef(null);
+  useEffect(() => () => clearTimeout(swapTimer.current), []);
+  // Clicking another badge first CLOSES the open label (its 0.22s slide-out), and only then opens the new one -- in that order, never both at once.
+  const toggleBadge = (key) => {
+    clearTimeout(swapTimer.current);
+    if (openBadge === key) setOpenBadge(null);
+    else if (openBadge) {
+      setOpenBadge(null);
+      swapTimer.current = setTimeout(() => setOpenBadge(key), 230);
+    } else setOpenBadge(key);
+  };
   const bio = row.bio || {};
   const ht = formatHeight(bio.height);
   const age = ageOn(bio.birthDate);
@@ -405,7 +416,7 @@ export function PlayerHeaderPanel({ row, share = false, logoByName = false }) {
   const achievementPills = (
     <span className="weekly-player-achievements">
       {achievements.map((a) => (
-        <ExpandableBadge key={a.key} variant={a.variant} label={a.label} open={openBadge === a.key} onToggle={() => setOpenBadge((k) => (k === a.key ? null : a.key))}>
+        <ExpandableBadge key={a.key} variant={a.variant} label={a.label} open={openBadge === a.key} onToggle={() => toggleBadge(a.key)}>
           {a.node}
         </ExpandableBadge>
       ))}
