@@ -248,7 +248,7 @@ function MatchupBody({ team, gameStates, playTotals }) {
     <div className={`h2h-center${toneClass(st)}`}>
       {st.label && <div className="h2h-word">{st.label}</div>}
       {pct != null && !allDone && (
-        <ArcGauge value={pct} size={300} height={60} label={`${formatWin(pct)} chance to win`} className="h2h-win-gauge">
+        <ArcGauge value={pct} size={240} height={66} label={`${formatWin(pct)} chance to win`} className="h2h-win-gauge">
           {!lock && (
             <>
               <b>{formatWin(pct)}</b>
