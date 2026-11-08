@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import { trapTab } from "./useFocusTrap";
 import { composeUrl } from "@/lib/shareLinks";
 
-// The Share to social pop-up, for every shareable thing on the site (The Lab's charts, the player / dynasty / start-sit cards, Receipts,
+// The Share to social pop-up, for every shareable thing on the site (The Observatory's charts, the player / dynasty / start-sit cards, Receipts,
 // Smash Spots). `prepare({ onPreview })` makes the share link -- calling onPreview(src) as soon as there is a picture to show -- and resolves
 // { url, getFile, downloads, caption }: the link, whose link preview IS the picture, (optional) a way to get the picture as a File for the phone share
 // sheet, (optional) plain download links [{ label, href }] (e.g. the 1080 x 1350 Instagram size) and (optional) a better starting caption.

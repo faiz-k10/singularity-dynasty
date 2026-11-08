@@ -1,4 +1,4 @@
-// Shared charts from The Lab (app/tools/lab/LabExport.js -> app/api/lab-share -> app/s/[id]). Each share is a picture of the chart and a small
+// Shared charts from The Observatory (app/tools/lab/LabExport.js -> app/api/lab-share -> app/s/[id]). Each share is a picture of the chart and a small
 // description file in the public Supabase Storage bucket below; its page, /s/<id>, carries the picture as its link preview, so posting the link
 // on X, Threads, Bluesky, Facebook, LinkedIn, Reddit or Discord shows the chart itself. Pure; tested in test/labShare.test.mjs.
 

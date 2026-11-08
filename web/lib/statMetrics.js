@@ -1,5 +1,5 @@
 // The usage / efficiency / touchdown numbers shown across the site (Weekly Projection Rankings' opened-player stats panel, the compare
-// pages, The Lab): label, display format and hover tip, keyed by the field name a ranked row carries. One table, so every place shows the
+// pages, The Observatory): label, display format and hover tip, keyed by the field name a ranked row carries. One table, so every place shows the
 // same words for the same number.
 // Season-level usage/efficiency metrics, not weekly stats -- attached
 // server-side in page.js's fetchSimsMetrics()/fetchSeasonXfp() (joined

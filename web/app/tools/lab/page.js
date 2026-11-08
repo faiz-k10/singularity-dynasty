@@ -11,14 +11,14 @@ import { PAID_TIERS, getCachedRedraftData, getCachedLeans, getCachedTdProfile, g
 import { getCachedWeekData, buildSimRows } from "../player-simulations/data";
 
 export const metadata = {
-  title: "The Lab — Singularity Dynasty",
+  title: "The Observatory — Singularity Dynasty",
   description:
     "Research any player with the numbers behind the rankings: plot two stats against each other, rank a position on one, chart weekly scoring and compare players side by side.",
 };
 
 const TEASER_LIMIT = 50;
 
-// The Lab: basic research on the numbers the site already publishes (lib/labMetrics.js). Depth follows the tools it draws from: everyone
+// The Observatory: basic research on the numbers the site already publishes (lib/labMetrics.js). Depth follows the tools it draws from: everyone
 // ranked this week for Explorer and Singularity, the top 50 for everyone else (Weekly Projection Rankings' rule), and the season simulation
 // numbers only for Singularity (Player Season Simulations' rule). The rows are cut server-side, so a page never carries what its viewer can't see.
 export default async function LabPage({ searchParams }) {
@@ -55,10 +55,10 @@ export default async function LabPage({ searchParams }) {
       <InteractiveScript />
       <main id="main-content" className="wrap tool-wrap lab-wrap">
         <div className="eyebrow">{latest ? `Week ${latest.week} · ${latest.season}` : "Research"}</div>
-        <h1>The Lab</h1>
+        <h1>The Observatory</h1>
         {lab.rows.length === 0 ? (
           <div className="tool-empty">
-            <p>The Lab reads this week&apos;s rankings, which publish weekly during the season. Check back soon.</p>
+            <p>The Observatory reads this week&apos;s rankings, which publish weekly during the season. Check back soon.</p>
           </div>
         ) : (
           <>

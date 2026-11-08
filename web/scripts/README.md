@@ -45,7 +45,7 @@ Every script's own header comment says exactly what it does and how to call it; 
 | `create-stripe-products.mjs` | Creates the 4 Prices (Explorer / Singularity × monthly / annual). |
 | `setup-billing-portal.mjs` | Stripe Customer Portal configuration (plan switching on). |
 | `stripe-go-live.mjs` | **The founder runs it with the live key in the command:** live products, prices, portal and webhook in one go. |
-| `setup-lab-shares-bucket.mjs` | The public Storage bucket for The Lab's shared charts. |
+| `setup-lab-shares-bucket.mjs` | The public Storage bucket for The Observatory's shared charts. |
 | `backfill-targets.mjs` | Already run: WR / TE Targets for the season-sim weeks published before Targets existed. |
 | `rebuild-week-history.mjs` | Already run (Oct 20 2026): earlier weeks put on the current method. |
 

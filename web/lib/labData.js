@@ -1,4 +1,4 @@
-// The Lab's rows (app/tools/lab/page.js): one per player in this week's Weekly Projection Rankings, every number The Lab can chart under `m`
+// The Observatory's rows (app/tools/lab/page.js): one per player in this week's Weekly Projection Rankings, every number The Observatory can chart under `m`
 // (keys from lib/labMetrics.js), his percentile at his position for each under `pct`, and his games this season under `g` for the game-log
 // chart. Percentiles are worked out over the WHOLE ranked pool before the free slice is cut, so a free visitor sees the same percentile a
 // paid one does; the slice itself is cut here, so a free page never carries the other rows. Pure; tested in test/labData.test.mjs.

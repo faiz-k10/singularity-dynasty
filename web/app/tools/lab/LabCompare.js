@@ -6,7 +6,7 @@ import Define from "../../Define";
 import TeamBadge from "../TeamBadge";
 import { LAB_GROUPS, LAB_METRICS, formatMetric } from "@/lib/labMetrics";
 
-// The picked players side by side on every number The Lab knows, section by section. Each value carries a bar for his percentile at HIS
+// The picked players side by side on every number The Observatory knows, section by section. Each value carries a bar for his percentile at HIS
 // position (so a mixed group compares each player with his own peers), and the best value in a row is gold unless neither end of that
 // number is better. Rows nobody has a value for are left out.
 export default function LabCompare({ picked, simsAccess, onToggle }) {

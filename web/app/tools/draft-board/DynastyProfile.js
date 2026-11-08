@@ -143,7 +143,7 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
               <span className="mono">{[`${p.age.toFixed(1)} yrs`, ...size].join(" · ")}</span>
             </div>
             <div className="dp-links">
-              <Link href={`/tools/lab?p=${encodeURIComponent(p.name)}`}>The Lab →</Link>
+              <Link href={`/tools/lab?p=${encodeURIComponent(p.name)}`}>The Observatory →</Link>
               <Link href="/tools/redraft-rankings">Weekly rankings →</Link>
               <ShareCardButton
                 card={{ kind: "d", id: p.id, f: format, m: mode }}

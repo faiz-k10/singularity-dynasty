@@ -1,4 +1,4 @@
-// Creates the public Storage bucket The Lab's shared charts live in (lib/labShare.js SHARE_BUCKET): <id>.png (the chart card) and <id>.json
+// Creates the public Storage bucket The Observatory's shared charts live in (lib/labShare.js SHARE_BUCKET): <id>.png (the chart card) and <id>.json
 // (title, caption, Lab view). Public read so the share page's link preview works for every platform; only the server (service role, app/api/
 // lab-share) writes. Idempotent: an existing bucket gets the same settings.
 // Run: node --env-file=.env.local scripts/setup-lab-shares-bucket.mjs

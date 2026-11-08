@@ -1,4 +1,4 @@
-// The Lab's arithmetic (app/tools/lab): season-so-far numbers from a game log, percentiles within a position, a least-squares line with its
+// The Observatory's arithmetic (app/tools/lab): season-so-far numbers from a game log, percentiles within a position, a least-squares line with its
 // correlation, axis ticks, and the weekly series the game-log chart draws. Pure; tested in test/labCalc.test.mjs.
 import { rankIn } from "./rank.js";
 import { round1 } from "./format.js";

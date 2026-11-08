@@ -7,7 +7,7 @@ import { SHARE_W, SHARE_H } from "@/lib/labShare";
 let fontCss = null; // the page's fonts as embeddable CSS, worked out once per visit (the slow part of the first export)
 
 // The library and the font CSS are the heavy first-time costs (a chunk download + parse, then every font file fetched and base64'd). They are
-// fetched when the browser is idle after The Lab loads, so opening the menu never has to do them while the pointer is on it.
+// fetched when the browser is idle after The Observatory loads, so opening the menu never has to do them while the pointer is on it.
 const loadLib = () => import("html-to-image");
 async function warmFonts(stage) {
   if (fontCss || !stage) return;
@@ -84,7 +84,7 @@ async function toCard(blob) {
   return new Promise((resolve, reject) => canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("no card"))), "image/png"));
 }
 
-// The Export menu in The Lab's top bar: copy a link to exactly this view, copy the view as an image, save it as a PNG, or share it to social
+// The Export menu in The Observatory's top bar: copy a link to exactly this view, copy the view as an image, save it as a PNG, or share it to social
 // (the shared ShareDialog: the chart is drawn, fitted on a link-preview card and uploaded as /s/<id>, app/api/lab-share). Closes on an outside click or Escape; the button says what happened for a moment afterwards.
 export default function LabExport({ stageRef, fileName, title, caption }) {
   const [open, setOpen] = useState(false);

@@ -25,7 +25,7 @@ const DEFAULT_LEADER = "projection";
 // A metric is offered for a pool once a few players have it (rate numbers are left out below a volume gate, and some only exist at one position).
 const MIN_VALUES = 3;
 
-// The Lab: one panel with four views over the same players -- Scatter (two numbers against each other), Leaderboard (a position ranked on
+// The Observatory: one panel with four views over the same players -- Scatter (two numbers against each other), Leaderboard (a position ranked on
 // one), Game Log (weekly scoring of the picked players) and Compare (the picked players side by side, every number with its percentile).
 // Up to five picked players carry their own colour through every view. The whole state lives in the URL, so a chart can be shared.
 export default function LabClient({ rows, week, season, simsAccess, mine, gated, initial }) {
@@ -114,9 +114,9 @@ export default function LabClient({ rows, week, season, simsAccess, mine, gated,
 
   const shared = { pool, available, simsAccess, colorOf, onToggle: toggle, pos };
   return (
-    <section className="lab glass-panel" aria-label="The Lab">
+    <section className="lab glass-panel" aria-label="The Observatory">
       <div className="lab-bar">
-        <PanelTabs tabs={VIEWS} value={view} onChange={setView} label="Lab view" />
+        <PanelTabs tabs={VIEWS} value={view} onChange={setView} label="Observatory view" />
         <div className="rk-positions" role="group" aria-label="Position">
           {POSITIONS.map((p) => (
             <button key={p} type="button" className={pos === p ? "active" : ""} aria-pressed={pos === p} onClick={() => setPos(p)}>
@@ -125,7 +125,7 @@ export default function LabClient({ rows, week, season, simsAccess, mine, gated,
           ))}
         </div>
         <MyPlayersFilter mine={mine} view={my} gated={gated} compact />
-        <LabExport stageRef={stageRef} fileName={fileName} title={title} caption={`${title} · ${scope}. Charted in The Lab by Singularity Dynasty.`} />
+        <LabExport stageRef={stageRef} fileName={fileName} title={title} caption={`${title} · ${scope}. Charted in The Observatory by Singularity Dynasty.`} />
       </div>
 
       {my.on && <MyPlayersNote mine={mine} view={my} gated={gated} />}
@@ -136,7 +136,7 @@ export default function LabClient({ rows, week, season, simsAccess, mine, gated,
         <div className="lab-export-head" aria-hidden="true">
           <span className="lab-export-brand">
             <span className="ring" />
-            Singularity Dynasty <i>The Lab</i>
+            Singularity Dynasty <i>The Observatory</i>
           </span>
           <span className="lab-export-title">{title}</span>
           <span className="lab-export-scope">{scope}</span>

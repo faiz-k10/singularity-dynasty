@@ -3,8 +3,8 @@ import { notFound } from "next/navigation";
 import SiteHeader from "../../SiteHeader";
 import { SHARE_BUCKET, SHARE_W, SHARE_H, isShareId } from "@/lib/labShare";
 
-// A chart shared from The Lab. The page exists mostly for its link preview: X, Threads, Bluesky, Facebook, LinkedIn, Reddit and Discord show
-// og:image -- the chart -- when the link is posted. A visitor who clicks through sees the chart, its caption and a way into The Lab.
+// A chart shared from The Observatory. The page exists mostly for its link preview: X, Threads, Bluesky, Facebook, LinkedIn, Reddit and Discord show
+// og:image -- the chart -- when the link is posted. A visitor who clicks through sees the chart, its caption and a way into The Observatory.
 const fileUrl = (id, ext) => `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${SHARE_BUCKET}/${id}.${ext}`;
 
 async function loadShare(id) {
@@ -24,8 +24,8 @@ export async function generateMetadata({ params }) {
   const { id } = await params;
   const share = await loadShare(id);
   if (!share) return { title: "Chart not found — Singularity Dynasty" };
-  const title = `${share.title} — The Lab · Singularity Dynasty`;
-  const description = share.caption || "Charted in The Lab by Singularity Dynasty.";
+  const title = `${share.title} — The Observatory · Singularity Dynasty`;
+  const description = share.caption || "Charted in The Observatory by Singularity Dynasty.";
   const images = [{ url: share.image, width: SHARE_W, height: SHARE_H, alt: share.title }];
   return {
     title,
@@ -43,7 +43,7 @@ export default async function SharedChartPage({ params }) {
     <div className="tool-page">
       <SiteHeader />
       <main id="main-content" className="wrap tool-wrap share-wrap">
-        <div className="eyebrow">Shared from The Lab</div>
+        <div className="eyebrow">Shared from The Observatory</div>
         <h1>{share.title}</h1>
         {share.caption && <p className="tool-sub">{share.caption}</p>}
         <figure className="share-figure glass-panel">
@@ -52,7 +52,7 @@ export default async function SharedChartPage({ params }) {
         </figure>
         <div className="share-actions">
           <Link href={share.view} className="btn-primary">
-            Open this chart in The Lab
+            Open this chart in The Observatory
           </Link>
           <Link href="/#pricing" className="btn-ghost">
             See the plans

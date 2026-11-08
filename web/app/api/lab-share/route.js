@@ -7,9 +7,9 @@ import { createClient } from "@/lib/supabase/server";
 import { getAuthUser } from "@/lib/authUser";
 import { withReferral } from "@/lib/referrals";
 
-// Creates a shared chart from The Lab (LabShare.js): the picture (a PNG, already drawn in the browser with the watermark) and its title, caption
+// Creates a shared chart from The Observatory (LabShare.js): the picture (a PNG, already drawn in the browser with the watermark) and its title, caption
 // and Lab view go into the public "lab-shares" bucket as <id>.png + <id>.json, and the answer is the share page's address, /s/<id>, whose
-// link preview is that picture. Open to every visitor of The Lab, so it only takes a PNG of a sane size with a Lab link, and caps how many
+// link preview is that picture. Open to every visitor of The Observatory, so it only takes a PNG of a sane size with a Lab link, and caps how many
 // shares one address can make an hour (20; lib/rateLimit.js, per server instance). A signed-in member's link carries their referral code.
 const hits = new Map();
 

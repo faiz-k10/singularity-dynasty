@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { LAB_GROUPS, LAB_METRICS, LAB_METRIC, formatMetric } from "@/lib/labMetrics";
 
-// Pieces shared by The Lab's views: the colours of the picked players, position colours, a width-measuring hook for the charts and the
+// Pieces shared by The Observatory's views: the colours of the picked players, position colours, a width-measuring hook for the charts and the
 // metric picker.
 
 // One colour per picked player, in the order they were added (theme tokens, so both themes work). Mint, mission red, steel, the old gold and frost blue -- all from the Europa palette, each with a light-mode value.
@@ -94,7 +94,7 @@ export function Signature({ axis = null }) {
   return (
     <div className={`lab-export-foot${axis ? " is-on-axis" : ""}`} style={axis ? { right: axis.r, bottom: axis.b + 6 } : undefined} aria-hidden="true">
       <span className="ring" />
-      Singularity Dynasty · The Lab
+      Singularity Dynasty · The Observatory
     </div>
   );
 }

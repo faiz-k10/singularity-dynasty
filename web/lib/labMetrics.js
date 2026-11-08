@@ -1,4 +1,4 @@
-// Every number The Lab (app/tools/lab) can chart, in the order its pickers list them. Each one is a number the site already publishes
+// Every number The Observatory (app/tools/lab) can chart, in the order its pickers list them. Each one is a number the site already publishes
 // somewhere -- this week's projection and stat line (Weekly Projection Rankings), the usage / efficiency / touchdown profile (the opened
 // player's stats panel, lib/statMetrics.js), the season so far (player_game_log, as in Recent Games) and the season simulation (Player
 // Season Simulations, Singularity only). Nothing here is a new model number.

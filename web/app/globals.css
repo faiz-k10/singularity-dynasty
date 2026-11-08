@@ -5877,7 +5877,7 @@ html{font-stretch:82%;}
 @keyframes page-skel-sweep{to{transform:translateX(100%);}}
 @media (prefers-reduced-motion: reduce){.page-skel::after{animation:none;}}
 
-/* ---------- THE LAB (app/tools/lab, Oct 25 2026) ----------
+/* ---------- THE OBSERVATORY (app/tools/lab, Oct 25 2026) ----------
    One tier-1 panel (.lab.glass-panel) holding the view tabs, the position pills, the picked players and the chart. Controls are mono, names
    Libron, headline figures the display font (the type roles); flat hairline boxes and 2px corners (the scoreboard material). Picked players
    carry their own colour as --c everywhere. */
@@ -6131,7 +6131,7 @@ select.lab-select{min-width:200px;}
   .lab-strip b{font-size:24px;}
 }
 
-/* A chart shared from The Lab (app/s/[id]): the picture in a tier-1 panel, then the way into The Lab. */
+/* A chart shared from The Observatory (app/s/[id]): the picture in a tier-1 panel, then the way into The Observatory. */
 .share-figure{margin:0 0 22px; padding:12px;}
 .share-figure img{display:block; width:100%; height:auto; border-radius:var(--r-sm);}
 .share-actions{display:flex; flex-wrap:wrap; gap:12px;}

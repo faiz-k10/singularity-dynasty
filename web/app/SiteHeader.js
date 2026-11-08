@@ -183,7 +183,7 @@ async function TickerFeed() {
 }
 
 // Shared by every page: the fixed telemetry ticker + full-width site banner
-// (brand, section nav with The Lab, the pricing pill, Account at the right end, hamburger + radial-menu mobile
+// (brand, section nav with The Observatory, the pricing pill, Account at the right end, hamburger + radial-menu mobile
 // fallback). Nav links use /#section so they work whether the visitor is
 // already on the homepage (smooth-scroll, see InteractiveScript) or on a
 // tool/auth/legal page (full navigation back to the homepage section).
@@ -260,7 +260,7 @@ export default async function SiteHeader({ scripts = true }) {
           </div>
           <Link href="/#feed">Feed</Link>
           <ToolLink href="/my-team">My Team</ToolLink>
-          <ToolLink href="/tools/lab">The Lab</ToolLink>
+          <ToolLink href="/tools/lab">The Observatory</ToolLink>
           <Link
             href="/#pricing"
             className="tn-cta tn-cta-tiers"
@@ -283,7 +283,7 @@ export default async function SiteHeader({ scripts = true }) {
           <Link href="/#pricing">Pricing</Link>
           <Link href="/#feed">Feed</Link>
           <ToolLink href="/my-team">My Team</ToolLink>
-          <ToolLink href="/tools/lab">The Lab</ToolLink>
+          <ToolLink href="/tools/lab">The Observatory</ToolLink>
           <Link href="/how-it-works">How It Works</Link>
           <Link href={user ? "/account" : "/login"}>
             {user ? "Account" : "Sign In"}
