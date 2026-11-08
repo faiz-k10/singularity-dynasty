@@ -4674,10 +4674,9 @@ html{font-stretch:82%;}
 .compare-table td.compare-strong{font-size:16px;}
 .compare-table .compare-group-row th, .lab-compare .compare-group-row th{
   padding:12px 20px; text-transform:capitalize; font-weight:700; background:transparent; color:var(--horizon-gold); letter-spacing:0.1em; font-size:14px;
-  border-bottom:1px solid var(--line); text-align:center;
+  border-bottom:1px solid var(--line); text-align:left;
   box-shadow:inset 0 0 0 1px var(--horizon-gold); /* a yellow border just inside the heading's box */
 }
-@media (max-width:640px){.compare-table .compare-group-row th, .lab-compare .compare-group-row th{text-align:left;}} /* a phone scrolls the table sideways, so the heading stays at the left edge */
 .compare-matchup{display:inline-flex; align-items:center; gap:8px;}
 .compare-matchup-lean{display:inline-flex; align-items:center; gap:5px; font-family:var(--font-mono), monospace; font-size:11px; color:var(--star-dim); cursor:help;}
 .compare-matchup-lean .player-achv-dot{width:7px; height:7px;}
