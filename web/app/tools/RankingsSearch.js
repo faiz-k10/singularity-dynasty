@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import RankingsTable from "./RankingsTable";
+import RankingsBoard from "./RankingsBoard";
 import RankingsToolbar from "./RankingsToolbar";
 import { matchesBadgeFilters } from "./badgeFilters";
 import { getAchievementsCached } from "./achievements";
@@ -30,6 +31,26 @@ export default function RankingsSearch({
   mine, // the viewer's saved teams (lib/myPlayers.js) -- adds the My players view
   gated, // true when the viewer only sees a teaser slice of the table
 }) {
+  // Board (a headline strip, a ranked list and the opened player's dashboard beside it) or the wide Table. Board only where rows carry a
+  // range to draw (Weekly Projection Rankings); the choice is remembered per browser.
+  const boardAble = showCurve;
+  const [view, setView] = useState("board");
+  useEffect(() => {
+    const t = setTimeout(() => {
+      try {
+        const v = window.localStorage.getItem("rk-view");
+        if (v === "table" || v === "board") setView(v);
+      } catch {}
+    }, 0);
+    return () => clearTimeout(t);
+  }, []);
+  const pickView = (v) => {
+    setView(v);
+    try {
+      window.localStorage.setItem("rk-view", v);
+    } catch {}
+  };
+  const asBoard = boardAble && view === "board";
   const showPositionFilter = Array.isArray(positions) && positions.length > 0;
   const [query, setQuery] = useState("");
   const [badgeIds, setBadgeIds] = useState(() => new Set());
@@ -110,7 +131,19 @@ export default function RankingsSearch({
       {(header || actions) && (
         <div className="rk-top">
           <div className="rk-top-title">{header}</div>
-          {actions && <div className="rk-top-actions">{actions}</div>}
+          <div className="rk-top-actions">
+            {boardAble && (
+              <div className="tier-toggle" role="group" aria-label="Layout">
+                <button type="button" className={asBoard ? "active" : ""} aria-pressed={asBoard} onClick={() => pickView("board")}>
+                  Board
+                </button>
+                <button type="button" className={asBoard ? "" : "active"} aria-pressed={!asBoard} onClick={() => pickView("table")}>
+                  Table
+                </button>
+              </div>
+            )}
+            {actions}
+          </div>
         </div>
       )}
 
@@ -125,6 +158,18 @@ export default function RankingsSearch({
         </p>
       )}
 
+      {asBoard ? (
+        <RankingsBoard
+          rows={filteredRows}
+          allRows={rows}
+          maxSpread={maxSpread}
+          ownedByName={myView.ownedByName}
+          mineStatus={!mine ? undefined : !mine.signedIn ? "signedOut" : mine.teams.length === 0 ? "noTeams" : "ready"}
+          toolbar={toolbar}
+          myViewOn={myView.on}
+          gated={gated}
+        />
+      ) : (
       <RankingsTable
         rows={rows}
         visibleRows={visibleRows}
@@ -147,6 +192,7 @@ export default function RankingsSearch({
         myViewOn={myView.on}
         gated={gated}
       />
+      )}
     </>
   );
 }

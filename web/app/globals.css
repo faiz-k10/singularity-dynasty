@@ -6562,3 +6562,51 @@ select.lab-select{min-width:200px;}
 
 /* Shared badge glyph wrapper (lib/badgeIcons.js via BadgeIcon / FlagIcon): no box of its own, the svg sizes as the badge child. */
 .badge-icon{display:contents;}
+
+/* ===== Weekly Projection Rankings: Board view (app/tools/RankingsBoard.js) ===== */
+.board-strip{display:grid; grid-template-columns:repeat(5, minmax(0,1fr)); background:var(--void-panel); border:1px solid var(--line); border-top:2px solid var(--rule-strong, #2a3d38); border-radius:2px; margin-bottom:12px;}
+.board-strip-cell{padding:12px 18px; border-right:1px solid var(--line); min-width:0;}
+.board-strip-cell:last-child{border-right:0;}
+.board-strip-n{font-family:var(--font-display); font-weight:800; font-size:clamp(30px, 3.2vw, 46px); line-height:1; color:var(--star);}
+.board-strip-n.is-up{color:var(--horizon-gold);}
+.board-strip-n.is-down{color:var(--down);}
+.board-strip-l{font-family:var(--font-mono), monospace; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--star-dim); margin-top:5px;}
+.board-strip-s{font-size:12px; color:var(--star-dim); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.board-shell{display:grid; grid-template-columns:minmax(0,1fr) minmax(420px, 540px); gap:12px; height:min(760px, calc(100vh - 150px)); min-height:520px;}
+.board-list, .board-detail{display:flex; flex-direction:column; min-height:0; overflow:hidden; padding:0;}
+.board-detail{overflow:auto; padding:14px;}
+.board-list-head, .board-row{display:grid; grid-template-columns:46px minmax(0,1fr) 64px 150px; align-items:center; gap:10px; padding:0 14px;}
+.board-list-head{height:34px; flex:none; border-bottom:1px solid var(--line); font-family:var(--font-mono), monospace; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--star-dim);}
+.board-list-head span:nth-child(1){text-align:right;}
+.board-list-head span:nth-child(3){text-align:right;}
+.board-list-rows{overflow:auto; flex:1; min-height:0;}
+.board-row{min-height:58px; padding-top:7px; padding-bottom:7px; border-bottom:1px solid var(--line); border-left:3px solid transparent; cursor:pointer;}
+.board-row:hover{background:rgba(var(--star-dot-rgb), .04);}
+.board-row.is-selected{background:rgba(var(--horizon-gold-rgb), .08); border-left-color:var(--horizon-gold);}
+.board-rank{font-family:var(--font-display); font-weight:800; font-size:26px; line-height:1; text-align:right; color:transparent; -webkit-text-stroke:1px var(--star-dim);}
+.board-row.is-top .board-rank{color:var(--horizon-gold); -webkit-text-stroke:0;}
+.board-who{display:flex; flex-direction:column; gap:3px; min-width:0;}
+.board-name-line{display:flex; align-items:center; gap:7px; min-width:0;}
+.board-name{font-family:var(--font-body), Georgia, serif; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.board-name.is-mine{color:var(--horizon-gold);}
+.board-posrank{font-family:var(--font-mono), monospace; font-size:10.5px; color:var(--star-dim);}
+.board-sub{font-family:var(--font-mono), monospace; font-size:11px; color:var(--star-dim);}
+.board-bye{color:var(--star-dim);}
+.board-med{font-family:var(--font-display); font-weight:800; font-size:24px; line-height:1; text-align:right;}
+.board-range{display:flex; flex-direction:column; gap:3px;}
+.board-led{position:relative; height:9px; background:repeating-linear-gradient(90deg, rgba(var(--star-dot-rgb), .08) 0 5px, transparent 5px 8px);}
+.board-led i{position:absolute; left:0; top:0; bottom:0; background:var(--horizon-gold); -webkit-mask:repeating-linear-gradient(90deg,#000 0 5px,transparent 5px 8px); mask:repeating-linear-gradient(90deg,#000 0 5px,transparent 5px 8px);}
+.board-led b{position:absolute; top:0; bottom:0; width:3px; margin-left:-1px; background:var(--down);}
+.board-led-n{display:flex; justify-content:space-between; font-family:var(--font-mono), monospace; font-size:10px; color:var(--star-dim);}
+.board-detail-body .weekly-detail-col{gap:12px;}
+.board-detail-body .weekly-detail-grid{margin-top:12px;}
+.board-detail-body .weekly-detail-curve-panel{max-width:none;}
+@media (max-width:1100px){
+  .board-shell{grid-template-columns:minmax(0,1fr); height:auto;}
+  .board-list{height:60vh;}
+  .board-strip{grid-template-columns:repeat(2, minmax(0,1fr));}
+}
+@media (max-width:640px){
+  .board-list-head, .board-row{grid-template-columns:34px minmax(0,1fr) 52px; }
+  .board-range, .board-list-head span:nth-child(4){display:none;}
+}
