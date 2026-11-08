@@ -6069,12 +6069,10 @@ select.lab-select{min-width:200px;}
 /* The bar is a row of lit segments, like scoreboard LEDs, over a dim unlit track. */
 .lab-board-track{
   position:relative; height:14px;
-  background:repeating-linear-gradient(90deg, rgba(var(--star-dot-rgb), .07) 0 5px, transparent 5px 8px);
 }
 .lab-board-track::after{content:""; position:absolute; top:-4px; bottom:-4px; left:var(--avg); width:2px; background:var(--star);}
 .lab-board-bar{
   position:absolute; top:0; bottom:0; background:var(--neon-blue); opacity:.8;
-  -webkit-mask:repeating-linear-gradient(90deg, #000 0 5px, transparent 5px 8px); mask:repeating-linear-gradient(90deg, #000 0 5px, transparent 5px 8px);
 }
 .lab-board-row.is-top .lab-board-bar{background:var(--horizon-gold); opacity:1;}
 .lab-board-row.is-picked .lab-board-bar{background:var(--c); opacity:1;}
@@ -6106,8 +6104,8 @@ select.lab-select{min-width:200px;}
 .lab-cell{display:flex; flex-direction:column; gap:5px;}
 .lab-cell-val{font-size:13px;}
 /* Percentile bar = a row of lit segments over a dim unlit track, like the leaderboard. */
-.lab-cell-pct{display:block; height:10px; background:repeating-linear-gradient(90deg, rgba(var(--star-dot-rgb), .07) 0 5px, transparent 5px 8px);}
-.lab-cell-bar{display:block; height:100%; -webkit-mask:repeating-linear-gradient(90deg, #000 0 5px, transparent 5px 8px); mask:repeating-linear-gradient(90deg, #000 0 5px, transparent 5px 8px);}
+.lab-cell-pct{display:block; height:10px;}
+.lab-cell-bar{display:block; height:100%;}
 .lab-compare td.is-best{background:rgba(var(--horizon-gold-rgb), .07);}
 .lab-compare td.is-best .lab-cell-val{color:var(--horizon-gold); font-weight:700;}
 .lab-lock-link{color:var(--neon-blue); text-decoration:underline; text-underline-offset:3px;}
@@ -6539,8 +6537,8 @@ select.lab-select{min-width:200px;}
 .dyb-sub{font-family:var(--font-mono), monospace; font-size:11px; color:var(--star-dim);}
 .dyb-score{font-family:var(--font-display); font-weight:800; font-size:24px; line-height:1; text-align:right;}
 .dyb-range{display:flex; flex-direction:column; gap:3px;}
-.dyb-led{position:relative; height:9px; background:repeating-linear-gradient(90deg, rgba(var(--star-dot-rgb), .08) 0 5px, transparent 5px 8px);}
-.dyb-led i{position:absolute; top:0; bottom:0; background:var(--horizon-gold); -webkit-mask:repeating-linear-gradient(90deg,#000 0 5px,transparent 5px 8px); mask:repeating-linear-gradient(90deg,#000 0 5px,transparent 5px 8px);}
+.dyb-led{position:relative; height:9px;}
+.dyb-led i{position:absolute; top:0; bottom:0; background:var(--horizon-gold);}
 .dyb-led b{position:absolute; top:-2px; bottom:-2px; width:3px; margin-left:-1px; background:var(--down);}
 .dyb-led-n{display:flex; justify-content:space-between; font-family:var(--font-mono), monospace; font-size:10px; color:var(--star-dim);}
 @media (max-width:1100px){
@@ -6554,3 +6552,25 @@ select.lab-select{min-width:200px;}
   .dyb-range, .dyb-head span:nth-child(4){display:none;}
   .dyb-row.is-tied::after{left:40px;}
 }
+
+/* ===== LED segments: the site's bar language (founder, Nov 7 2026: "make all bars ... part of the design language") =====
+   Every bar is drawn as scoreboard LED segments: 5px lit / 3px gap. A bar's TRACK shows the unlit segments (--led-off), its FILL is cut into
+   the same segments by a mask (--led-on), whatever colour it is. Vertical bars run the segments bottom-up. A new bar joins these lists. */
+:root{
+  --led-on:repeating-linear-gradient(90deg, #000 0 5px, transparent 5px 8px);
+  --led-off:repeating-linear-gradient(90deg, rgba(var(--star-dot-rgb), .09) 0 5px, transparent 5px 8px);
+  --led-on-v:repeating-linear-gradient(0deg, #000 0 5px, transparent 5px 8px);
+  --led-off-v:repeating-linear-gradient(0deg, rgba(var(--star-dot-rgb), .09) 0 5px, transparent 5px 8px);
+}
+.sim-bar-track, .stat-panel-pace-progress-track, .weekly-rank-bar, .weekly-gamelog-bar, .shape-compare-track, .pctile-bar, .pctile-scale-track,
+.exposure-side-bar, .hub-range-track, .hub-stage-bar, .hub-role-bar, .league-dash-winbar, .h2h-win-bar, .lab-cell-pct, .lab-board-track, .dyb-led{
+  background:var(--led-off); border-radius:0;
+}
+.sim-bar-typical, .sim-bar-upside, .stat-panel-pace-progress-fill, .weekly-rank-bar > span, .weekly-gamelog-bar em, .shape-compare-fill, .pctile-bar-fill,
+.pctile-scale-fill, .exposure-side-bar > span, .hub-range-span, .hub-stage-seg, .hub-role-fill, .league-dash-winbar > span, .h2h-win-bar > span,
+.lab-cell-bar, .lab-board-bar, .dyb-led i, .yw-meter{
+  -webkit-mask:var(--led-on); mask:var(--led-on); border-radius:0;
+}
+.pctile-vbar-track, .stat-panel-pace-rangebar{background:var(--led-off-v); border-radius:0;}
+.pctile-vbar-fill, .stat-panel-pace-rangebar-typical, .stat-panel-pace-rangebar-upside{-webkit-mask:var(--led-on-v); mask:var(--led-on-v); border-radius:0;}
+.weekly-rank-bar.is-none{background:none;}
