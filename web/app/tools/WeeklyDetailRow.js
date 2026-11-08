@@ -377,7 +377,7 @@ export function PlayerStatsRow({ row }) {
           </div>
           <div className="weekly-stats-item" data-fit>
             <span className="weekly-player-stat-label">Output</span>
-            <span className="weekly-stats-value-dim">{lastWeek?.points != null ? lastWeek.points.toFixed(1) : "—"}</span>
+            <span className="weekly-stats-value-dim">{lastWeek?.points != null ? lastWeek.points.toFixed(1) : row.lastWeekStatus || "—"}</span>
           </div>
         </div>
       </FitBox>

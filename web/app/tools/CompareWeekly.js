@@ -16,31 +16,31 @@ const signed2 = (v) => `${v >= 0 ? "+" : ""}${v.toFixed(2)}`;
 
 // best: "high" | "low" -- which end wins. Rows with fewer than two values, or all equal, highlight nobody.
 const ROWS = [
-  { label: "Overall rank", get: (r) => r.rank, fmt: int, best: "low" },
-  { label: "Median proj", term: "projection-median", get: (r) => r.projection, fmt: fmt1, best: "high", strong: true },
+  { label: "Overall Rank", get: (r) => r.rank, fmt: int, best: "low" },
+  { label: "Median Proj", term: "projection-median", get: (r) => r.projection, fmt: fmt1, best: "high", strong: true },
   { label: "Floor", term: "floor", get: (r) => r.floor, fmt: fmt1, best: "high" },
   { label: "Ceiling", term: "ceiling", get: (r) => r.ceiling, fmt: fmt1, best: "high" },
-  { label: "Last week (pts)", get: (r) => r.lastWeekRank?.points, fmt: fmt1, best: "high" },
+  { label: "Last Week Points", get: (r) => r.lastWeekRank?.points, fmt: fmt1, best: "high", missing: (r) => r.lastWeekStatus },
   { group: "Projected stat line (per game)" },
-  { label: "Pass yds", get: (r) => r.passing_yards, fmt: fmt1, best: "high", skipZero: true },
+  { label: "Pass Yards", get: (r) => r.passing_yards, fmt: fmt1, best: "high", skipZero: true },
   { label: "Pass TD", get: (r) => r.passing_tds, fmt: f2, best: "high", skipZero: true },
   { label: "INT", get: (r) => r.passing_interceptions, fmt: f2, best: "low", skipZero: true },
-  { label: "Rush yds", get: (r) => r.rushing_yards, fmt: fmt1, best: "high", skipZero: true },
+  { label: "Rush Yards", get: (r) => r.rushing_yards, fmt: fmt1, best: "high", skipZero: true },
   { label: "Rush TD", get: (r) => r.rushing_tds, fmt: f2, best: "high", skipZero: true },
   { label: "Receptions", get: (r) => r.receptions, fmt: fmt1, best: "high", skipZero: true },
-  { label: "Rec yds", get: (r) => r.receiving_yards, fmt: fmt1, best: "high", skipZero: true },
+  { label: "Rec Yards", get: (r) => r.receiving_yards, fmt: fmt1, best: "high", skipZero: true },
   { label: "Rec TD", get: (r) => r.receiving_tds, fmt: f2, best: "high", skipZero: true },
   { group: "Key usage profile" },
-  { label: "xFP / game", term: "avgXfp", get: (r) => r.avgXfp, fmt: fmt1, best: "high" },
+  { label: "xFP / Game", term: "avgXfp", get: (r) => r.avgXfp, fmt: fmt1, best: "high" },
   { label: "WOPR", term: "wopr", get: (r) => r.wopr, fmt: f2, best: "high" },
-  { label: "Target share", term: "u_tgt_share", get: (r) => r.targetShare, fmt: pct1, best: "high" },
-  { label: "YAC above exp", term: "yac-above-exp", get: (r) => r.yacAboveExp, fmt: f2, best: "high" },
-  { label: "RYOE / att", term: "ryoe", get: (r) => r.ryoe, fmt: signed2, best: "high" },
-  { label: "Scramble rate", term: "scrambleRate", get: (r) => r.scrambleRate, fmt: pct1, best: "high" },
-  { label: "Play-action rate", term: "playActionRate", get: (r) => r.playActionRate, fmt: pct1, best: "high" },
-  { label: "2+ TD chance", term: "p2Td", get: (r) => r.p2Td, fmt: pct1, best: "high" },
-  { label: "In-10 tgts / G", term: "i10Pg", get: (r) => r.i10Pg, fmt: f2, best: "high" },
-  { label: "In-10 share", term: "i10Share", get: (r) => r.i10Share, fmt: pct1, best: "high" },
+  { label: "Target Share", term: "u_tgt_share", get: (r) => r.targetShare, fmt: pct1, best: "high" },
+  { label: "YAC Above Exp", term: "yac-above-exp", get: (r) => r.yacAboveExp, fmt: f2, best: "high" },
+  { label: "RYOE / Att", term: "ryoe", get: (r) => r.ryoe, fmt: signed2, best: "high" },
+  { label: "Scramble Rate", term: "scrambleRate", get: (r) => r.scrambleRate, fmt: pct1, best: "high" },
+  { label: "Play-Action Rate", term: "playActionRate", get: (r) => r.playActionRate, fmt: pct1, best: "high" },
+  { label: "2+ TD Chance", term: "p2Td", get: (r) => r.p2Td, fmt: pct1, best: "high" },
+  { label: "In-10 Tgts / G", term: "i10Pg", get: (r) => r.i10Pg, fmt: f2, best: "high" },
+  { label: "In-10 Share", term: "i10Share", get: (r) => r.i10Share, fmt: pct1, best: "high" },
 ];
 
 function bestIndexes(values, best) {
@@ -69,7 +69,7 @@ function MatchupCell({ row }) {
 function HeadToHeadCards({ players, shown }) {
   const n = players.length;
   // The headline numbers (everything above the first section) become their own "This week" section, listed like every other section.
-  const TOP_ORDER = ["Overall rank", "Median proj", "Floor", "Ceiling", "Last week (pts)"];
+  const TOP_ORDER = ["Overall Rank", "Median Proj", "Floor", "Ceiling", "Last Week Points"];
   const top = shown
     .filter((r, i) => !r.group && !shown.slice(0, i).some((x) => x.group))
     .sort((a, b) => TOP_ORDER.indexOf(a.def.label) - TOP_ORDER.indexOf(b.def.label));
@@ -80,7 +80,7 @@ function HeadToHeadCards({ players, shown }) {
   }
   const leads = players.map((_, i) => shown.filter((r) => !r.group && r.best.has(i)).length);
   const most = Math.max(...leads);
-  const val = (r, i) => (r.values[i] == null ? "—" : r.def.fmt(r.values[i]));
+  const val = (r, i) => (r.values[i] == null ? r.def.missing?.(players[i]) || "—" : r.def.fmt(r.values[i]));
   return (
     <>
       <div className="cmpc-grid" style={{ "--cmp-n": n, "--rows": sections.length + 1 }}>

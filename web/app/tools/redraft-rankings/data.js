@@ -244,6 +244,10 @@ function deriveGameLogData(data, season, floorCeilingByGame, currentWeek = Infin
 
   const lastWeekRankByName = {};
   const lastDone = (data || []).find(complete);
+  // The teams that played in that finished week (any player's row proves a game), so a player with no line can be told apart:
+  // his team had no game (BYE) or it played without him (INJURED -- the log can't tell an injury from a scratch).
+  const lastWeekTeams = new Set();
+  if (lastDone) for (const r of data) if (r.season === lastDone.season && r.week === lastDone.week && r.team) lastWeekTeams.add(r.team);
   if (lastDone) {
     const { season: lwSeason, week: lwWeek } = lastDone;
     const byPos = {};
@@ -295,7 +299,7 @@ function deriveGameLogData(data, season, floorCeilingByGame, currentWeek = Infin
     entry.weeks.sort((a, b) => b.season - a.season || b.week - a.week);
   }
 
-  return { avgXfpByName, recentGamesByName, lastWeekRankByName, heroWinsByName };
+  return { avgXfpByName, recentGamesByName, lastWeekRankByName, heroWinsByName, lastWeekTeams: [...lastWeekTeams] };
 }
 
 // Historical Floor/Ceiling per (player, season, week) -- redraft_rankings
@@ -380,9 +384,10 @@ export const getCachedRedraftData = unstable_cache(
       recentGamesByName: only(gameLog.recentGamesByName),
       lastWeekRankByName: only(gameLog.lastWeekRankByName),
       heroWinsByName: only(gameLog.heroWinsByName),
+      lastWeekTeams: gameLog.lastWeekTeams,
     };
   },
-  ["redraft-rankings-latest-week-v2"],
+  ["redraft-rankings-latest-week-v3"],
   { revalidate: 60 }
 );
 
@@ -596,6 +601,8 @@ export function enrichRankings({ cached, hasFullAccess = true, tdProfile, usageP
         return g && g.season === cached.latest?.season && g.week === cached.latest?.week && g.fantasy_points_ppr != null ? g.fantasy_points_ppr : null;
       })(),
       lastWeekRank: lastWeekRankByName[r.player_name] || null,
+      // No line last week: "BYE" when his team had no game, "INJURED" when it played without him.
+      lastWeekStatus: lastWeekRankByName[r.player_name] || !cached.lastWeekTeams?.length ? null : cached.lastWeekTeams.includes(r.team) ? "INJURED" : "BYE",
       heroWins: heroWinsByName[r.player_name]?.count || 0,
       heroWinWeeks: heroWinsByName[r.player_name]?.weeks || [],
       bio: findBio(bioByNamePos, r.player_name, r.position),
