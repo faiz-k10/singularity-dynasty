@@ -295,7 +295,7 @@ function MatchupBody({ team, gameStates, playTotals }) {
       <ul className="h2h-legend" aria-label="How to read the curves">
         <li>
           <span className="h2h-legend-swatch is-low" aria-hidden="true" />
-          <span><strong>Floor</strong> a bad game: mint zone</span>
+          <span><strong>Floor</strong> a bad game: red zone</span>
         </li>
         <li>
           <span className="h2h-legend-swatch is-mid" aria-hidden="true" />
@@ -303,12 +303,12 @@ function MatchupBody({ team, gameStates, playTotals }) {
         </li>
         <li>
           <span className="h2h-legend-swatch is-good" aria-hidden="true" />
-          <span><strong>Ceiling</strong> a great game: red zone</span>
+          <span><strong>Ceiling</strong> a great game: mint zone</span>
         </li>
         <li>
           <span className="h2h-legend-dot" aria-hidden="true" />
           <span>
-            Points so far: <span className="tone-low-text">mint</span> at or under his floor, <span className="tone-good-text">red</span> at or over his ceiling, plain in between
+            Points so far: <span className="tone-low-text">red</span> at or under his floor, <span className="tone-good-text">mint</span> at or over his ceiling, plain in between
           </span>
         </li>
       </ul>

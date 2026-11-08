@@ -64,7 +64,7 @@ function MatchupCell({ row }) {
 
 // HEAD TO HEAD as cards (founder, Nov 8 2026: the table left too much empty space): one card per player carrying every number the table
 // does -- position, matchup, overall rank, median / floor / ceiling, last week, the projected stat line and the usage profile -- and
-// the player's header (photo, size, badges) on top. In each row the best value is shaded red and the worst green (founder, Nov 8 2026); the card that leads the most rows
+// the player's header (photo, size, badges) on top. In each row the best value is shaded mint and the worst red (founder, Nov 8 2026); the card that leads the most rows
 // gets a mint top edge. The table stays one tab over.
 function HeadToHeadCards({ players, shown }) {
   const n = players.length;
@@ -116,7 +116,7 @@ function HeadToHeadCards({ players, shown }) {
           </div>
         ))}
       </div>
-      <p className="compare-legend">In each row the best value is shaded red and the worst green. Projected stats are per-game averages.</p>
+      <p className="compare-legend">In each row the best value is shaded mint and the worst red. Projected stats are per-game averages.</p>
     </>
   );
 }

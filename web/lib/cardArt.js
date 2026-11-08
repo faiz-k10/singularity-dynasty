@@ -153,17 +153,17 @@ export function Curve({ floor, median, ceiling, width, height, labels = true, si
   return (
     <div style={{ display: "flex", flexDirection: "column", width }}>
       <svg width={width} height={height} viewBox={`0 ${top} ${CW} ${BASE_Y - top + 1}`} preserveAspectRatio="none">
-        <path d={lo} fill={C.mint} fillOpacity="0.85" />
-        <path d={hi} fill={C.red} fillOpacity="0.85" />
+        <path d={lo} fill={C.red} fillOpacity="0.85" />
+        <path d={hi} fill={C.mint} fillOpacity="0.85" />
         <path d={middle} fill={C.steel} fillOpacity="0.32" stroke={C.steel} strokeWidth="0.8" />
         <line x1={xPeak} x2={xPeak} y1={7} y2={BASE_Y} stroke={C.star} strokeOpacity="0.5" strokeWidth="0.6" />
         <line x1={MARGIN} x2={CW - MARGIN} y1={BASE_Y} y2={BASE_Y} stroke={C.rule} strokeWidth="1" />
       </svg>
       {labels && (
         <div style={{ display: "flex", position: "relative", height: size * 2 + 22, marginTop: 10 }}>
-          {tag(X_FLOOR, floor, "FLOOR", C.mint, "start")}
+          {tag(X_FLOOR, floor, "FLOOR", C.red, "start")}
           {tag(xPeak, median, "MEDIAN", C.star, "middle")}
-          {tag(xCeil, ceiling, "CEILING", C.red, "end")}
+          {tag(xCeil, ceiling, "CEILING", C.mint, "end")}
         </div>
       )}
     </div>
@@ -388,8 +388,8 @@ export function ReceiptsCard({ f, host, data, verdict }) {
         <div style={{ display: "flex", fontSize: tall ? 21 : 17, color: C.steel, marginTop: 10 }}>{`${data.n} players projected for 5+ points who played · ${verdict}`}</div>
         <div style={{ display: "flex", marginTop: tall ? 44 : 26 }}>
           {stat(data.inside.pct, 80, "landed inside the range", C.steel)}
-          {stat(data.over.pct, 10, "beat their ceiling", C.red)}
-          {stat(data.under.pct, 10, "fell under their floor", C.mint)}
+          {stat(data.over.pct, 10, "beat their ceiling", C.mint)}
+          {stat(data.under.pct, 10, "fell under their floor", C.red)}
         </div>
         <div style={{ display: "flex", flexDirection: "column", marginTop: tall ? 40 : 20 }}>
           {spot(data.smash, "SMASH")}
@@ -398,7 +398,7 @@ export function ReceiptsCard({ f, host, data, verdict }) {
         {!tall && games[0] && (
           <div style={{ display: "flex", marginTop: "auto", marginBottom: 10, fontSize: 17, color: C.steel }}>
             {`Biggest ceiling game: ${games[0].name} · ceiling ${fmt1(games[0].ceiling)} → `}
-            <span style={{ color: C.red, fontWeight: 700, marginLeft: 8 }}>{fmt1(games[0].pts)}</span>
+            <span style={{ color: C.mint, fontWeight: 700, marginLeft: 8 }}>{fmt1(games[0].pts)}</span>
           </div>
         )}
         {tall && games.length > 0 && (
