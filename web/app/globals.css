@@ -6343,7 +6343,6 @@ select.lab-select{min-width:200px;}
 .yw-chance-word{white-space:nowrap;}
 .yw-chance-pct{color:var(--star); font-variant-numeric:tabular-nums;}
 .yw-tr.is-bye .yw-sub{color:var(--star-dim);}
-.yw-more{font-size:11px; color:var(--star-dim); margin-top:8px;}
 .yw-changes{list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:6px;}
 .yw-change{font-size:14px; line-height:1.5; color:var(--star-dim); padding-left:12px; border-left:2px solid var(--rule-strong);}
 .yw-change strong{color:var(--star); margin-right:4px;}
@@ -6635,3 +6634,6 @@ select.lab-select{min-width:200px;}
 
 /* Badges whose disc is drawn in their SVG (lib/badgeIcons.js filledBadgeSvg): no CSS disc behind it, so glyph and disc can't drift apart */
 .weekly-glyph-badge:has(.badge-icon), .weekly-player-achievements .confidence-badge:has(.badge-icon){background:transparent;}
+/* Home briefing: five matchups at most are in view; the rest scroll inside the box (app/hub/FiveRows.js sets the height). The header stays put. */
+.yw-scroll{position:relative; overflow-y:auto; overscroll-behavior:contain; scrollbar-width:thin;}
+.yw-scroll .yw-table thead th{position:sticky; top:0; z-index:1; background:var(--void);}

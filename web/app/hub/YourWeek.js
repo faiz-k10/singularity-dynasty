@@ -1,5 +1,6 @@
 import Link from "next/link";
 import ArcGauge from "../ArcGauge";
+import FiveRows from "./FiveRows";
 import Greeting from "./Greeting";
 import { loadFeedInputs, buildTeamsFeed } from "@/lib/myFeedData";
 import { fmt1, fmt2 } from "@/lib/format";
@@ -24,7 +25,6 @@ export async function loadYourWeek(supabase, user) {
   return { teams, feed, rows: weekRows(teams), name: displayName(teams), now: Date.now() }; // now: the instant the planets are drawn at
 }
 
-const SHOWN = 8;
 
 function Row({ r }) {
   if (r.bye) {
@@ -96,6 +96,7 @@ export default function YourWeek({ data }) {
       </p>
 
       <section aria-labelledby="yw-matchups">
+        <FiveRows>
         <table className="yw-table">
           <caption id="yw-matchups" className="yw-h2 mono">Your matchups</caption>
           <thead>
@@ -107,12 +108,12 @@ export default function YourWeek({ data }) {
             </tr>
           </thead>
           <tbody>
-            {rows.slice(0, SHOWN).map((r) => (
+            {rows.map((r) => (
               <Row key={r.id} r={r} />
             ))}
           </tbody>
         </table>
-        {teams.length > SHOWN && <p className="yw-more mono">+ {teams.length - SHOWN} more on your Game Board</p>}
+        </FiveRows>
       </section>
 
       {changes.length > 0 && (
