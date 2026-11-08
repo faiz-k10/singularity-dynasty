@@ -151,31 +151,6 @@ export default function DynastyBoard({ rows, meta, complete }) {
           {open && <DynastyProfile key={`${open.id}-${format}-${mode}`} player={open} rows={rows} L={L} board={{ groups, tiers, ties }} format={format} mode={mode} meta={meta} complete={complete} />}
         </div>
       </div>
-
-      <div className="dr-notes">
-        <div className="board-panel dr-note">
-          <h3 className="board-panel-title">How the boxes are drawn</h3>
-          <p>
-            Every box comes from one rule: how often is a player really better than the player below him? <b>Tied</b>: no one inside beats anyone below
-            him more than 55% of the time, so the order inside is close to a coin flip. <b>Tier</b>: no more than 65%. <b>Group</b>: no more than 80%.
-            Each uses the fewest boxes that rule allows, split at the biggest drops.
-          </p>
-        </div>
-        <div className="board-panel dr-note">
-          <h3 className="board-panel-title">The red line</h3>
-          <p>
-            At the foot of a tier: how often one of its players ends up better than one from the next tier. The grey bar on each row is the 80% range
-            of his value, from how far last-season-style projections miss. Where bars overlap, the order between those players is not settled.
-          </p>
-        </div>
-        <div className="board-panel dr-note">
-          <h3 className="board-panel-title">Value</h3>
-          <p>
-            Recency-weighted points per game over a replacement-level player at his position (replacement is set by how many starters the format needs),
-            blended with how well his position keeps its production at his age. Contender leans on production over his last 34 games; Rebuilder gives age more weight and reads only his last 17.
-          </p>
-        </div>
-      </div>
     </>
   );
 }

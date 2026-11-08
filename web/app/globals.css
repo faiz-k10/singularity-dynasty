@@ -4455,7 +4455,6 @@ a.mine-empty-note{color:var(--horizon-gold);}
 .account-tier,
 .tool-empty,
 .tool-paywall,
-.dr-note,
 .rankings-table-wrap,
 .compare-table-wrap{
   background:rgba(var(--scrim-rgb), var(--glass-alpha));
@@ -6147,10 +6146,6 @@ select.lab-select{min-width:200px;}
 .dr-controls{display:flex; flex-wrap:wrap; align-items:center; gap:10px 14px; margin-bottom:14px;}
 .dr-controls .board-toggle{margin-bottom:0;}
 .dr-read{margin-left:auto; font-size:11px; color:var(--star-dim); letter-spacing:.04em;}
-.dr-notes{display:grid; grid-template-columns:repeat(3, 1fr); gap:14px;}
-.dr-note{padding:14px 16px;}
-.dr-note p{margin:8px 0 0; font-size:14px; color:var(--star-dim);} .dr-note p b{color:var(--star); font-weight:700;}
-@media (max-width:1000px){.dr-notes{grid-template-columns:1fr;}}
 /* ---- Dynasty Draft Board: the player profile (app/tools/draft-board/DynastyProfile.js) ------------------------------------
    The pane beside the board's list. Flat scoreboard material, one section per question:
    the read, the recipe, his games, his age, who is close, how his rank moves. Charts are SVG in site tokens. */
