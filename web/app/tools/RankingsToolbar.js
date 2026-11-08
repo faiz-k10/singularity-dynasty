@@ -205,7 +205,7 @@ export default function RankingsToolbar({
 
       {compareHref && (
         <Link href={compareHref} prefetch={false} className="theater-badge-filter-btn rk-compare">
-          Compare Players
+          Player Comparison
         </Link>
       )}
 

@@ -6598,3 +6598,4 @@ select.lab-select{min-width:200px;}
 .dyb-theater{position:fixed; inset:0; z-index:200; display:flex; flex-direction:column; padding:12px 16px 16px; background:var(--void); overflow:auto;}
 .dyb-theater .dyb-shell{flex:1; height:auto; min-height:0; margin-bottom:0;}
 .dyb-theater .dr-controls{flex:none;}
+.rk-compare{text-decoration:none;}
