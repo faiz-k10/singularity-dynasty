@@ -40,7 +40,7 @@ export default function RosterNews({ news, onlyStarters = false, onlyInjuries = 
               </div>
               {i.comment && <p className="roster-news-comment">{i.comment}</p>}
               <div className="league-dash-muted">
-                {i.starts.length > 0 ? `Starting in ${i.starts.length}: ${i.starts.join(", ")}` : `Bench / not starting`}
+                {i.starts.length > 0 ? `Starting in ${i.starts.length}: ${i.starts.join(", ")}` : "Bench"}
                 {i.rosters.length > i.starts.length && i.starts.length > 0 ? ` · rostered in ${i.rosters.length}` : ""}
               </div>
             </li>
