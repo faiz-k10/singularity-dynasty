@@ -6599,3 +6599,6 @@ select.lab-select{min-width:200px;}
 .dyb-theater .dyb-shell{flex:1; height:auto; min-height:0; margin-bottom:0;}
 .dyb-theater .dr-controls{flex:none;}
 .rk-compare{text-decoration:none;}
+/* the compare pickers are type-ahead inputs, not dropdowns: no caret (their own x clears them), a text cursor, room for the x */
+.compare-select.compare-picker-input{background-image:none; cursor:text; padding-right:34px;}
+.compare-select.compare-picker-input.compare-locked{cursor:pointer;}
