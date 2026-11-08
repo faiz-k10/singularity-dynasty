@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import PositionBadge from "../PositionBadge";
 import TeamBadge from "../TeamBadge";
 import { AGE_LOOKAHEAD, FORMATS, GROUP_NAMES, MODES, pBetter, profileRead, scoreRows } from "@/lib/dynastyBoard";
 import { formatHeight } from "@/lib/format";
-import useFocusTrap from "../../useFocusTrap";
 import ShareCardButton from "../../ShareCardButton";
 
 const pct = (p) => (p >= 0.995 ? ">99%" : p < 0.005 ? "<1%" : `${Math.round(p * 100)}%`);
@@ -86,21 +85,10 @@ function AgeCurve({ curve, age, value }) { // age = his age now; the dot sits on
 }
 
 // ---- the panel -----------------------------------------------------------------------------------------------------
-export default function DynastyProfile({ player: p, rows, L, board, format, mode, pos, meta, complete, onClose }) {
-  const closeRef = useRef(null);
-  const dialogRef = useRef(null);
-  useFocusTrap(dialogRef);
+// The picked player's profile, in the pane beside the board's list (DynastyBoard.js).
+export default function DynastyProfile({ player: p, rows, L, board, format, mode, meta, complete }) {
   const data = useProfileData(p.id);
   const f = FORMATS[format], m = MODES[mode];
-
-  useEffect(() => {
-    const prevFocus = document.activeElement, prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    closeRef.current?.focus();
-    const onKey = (e) => e.key === "Escape" && onClose();
-    window.addEventListener("keydown", onKey);
-    return () => { window.removeEventListener("keydown", onKey); document.body.style.overflow = prevOverflow; prevFocus?.focus?.(); };
-  }, [onClose]);
 
   const i = L.findIndex((r) => r.id === p.id);
   const tier = board.tiers.find((t) => i >= t.a && i <= t.b);
@@ -129,9 +117,7 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
   const read = profileRead({ p, mode, repl, tied, ranks: grid?.map((c) => c.rank) });
 
   return (
-    <div className="dp-overlay" onClick={onClose}>
-      <aside ref={dialogRef} className="dp" role="dialog" aria-modal="true" aria-label={`${p.name}, dynasty profile`} onClick={(e) => e.stopPropagation()}>
-        <button ref={closeRef} type="button" className="dp-close" onClick={onClose} aria-label="Close profile">×</button>
+      <aside className="dp" aria-label={`${p.name}, dynasty profile`}>
 
         <header className="dp-head">
           <div className="dp-photo">{data?.bio?.headshot ? <img src={data.bio.headshot} alt="" width="76" height="76" /> : <span>{p.name.split(" ").map((w) => w[0]).slice(0, 2).join("")}</span>}</div>
@@ -244,6 +230,5 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
           </section>
         )}
       </aside>
-    </div>
   );
 }
