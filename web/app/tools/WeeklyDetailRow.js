@@ -386,7 +386,8 @@ export function PlayerStatsRow({ row }) {
 }
 
 // `share`: a Share button for his card (the opened row on Weekly Projection Rankings; not on the compare page).
-export function PlayerHeaderPanel({ row, share = false }) {
+// `logoByName`: the team logo sits right after the name instead of in the line under it (the Head to Head cards).
+export function PlayerHeaderPanel({ row, share = false, logoByName = false }) {
   const bio = row.bio || {};
   const ht = formatHeight(bio.height);
   const age = ageOn(bio.birthDate);
@@ -432,11 +433,12 @@ export function PlayerHeaderPanel({ row, share = false }) {
           <span className={`weekly-player-namewrap${share ? " has-pills" : ""}`}>
             {!share && photo}
             <span className="weekly-player-name">{row.player_name}</span>
+            {logoByName && <TeamBadge team={row.team} />}
             {share && achievementPills}
           </span>
           <div className="weekly-player-badges">
             <PositionBadge position={row.position} />
-            <TeamBadge team={row.team} />
+            {!logoByName && <TeamBadge team={row.team} />}
             {sizeText && (
               <span className="weekly-player-size mono">
                 {sizeText}

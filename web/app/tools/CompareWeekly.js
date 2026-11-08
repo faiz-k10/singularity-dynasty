@@ -83,22 +83,27 @@ function HeadToHeadCards({ players, shown }) {
   const val = (r, i) => (r.values[i] == null ? "—" : r.def.fmt(r.values[i]));
   return (
     <>
-      <div className="cmpc-grid" style={{ "--cmp-n": n }}>
+      <div className="cmpc-grid" style={{ "--cmp-n": n, "--rows": sections.length + 1 }}>
         {players.map((p, i) => (
           <div key={p.player_name} className={`cmpc-card${leads[i] === most ? " is-lead" : ""}`}>
             <div className="cmpc-head">
               <div className="compare-panels cmpc-id">
-                <PlayerHeaderPanel row={p} />
+                <PlayerHeaderPanel row={p} logoByName />
               </div>
-              <span className="cmpc-meta mono">
-                <span>{p.positionLabel || p.position}</span>
-                <MatchupCell row={p} />
-              </span>
             </div>
             {sections.map((sec) => (
               <details key={sec.group} className="cmpc-sec" open>
                 <summary>{sec.group}</summary>
                 <div className="cmpc-rows">
+                  {sec.group === "This week" && (
+                    <div className="cmpc-row">
+                      <span className="cmpc-row-l">Matchup</span>
+                      <span className="cmpc-row-v mono cmpc-matchup">
+                        {p.positionLabel || p.position}
+                        <MatchupCell row={p} />
+                      </span>
+                    </div>
+                  )}
                   {sec.rows.map((r) => (
                     <div key={r.def.label} className={`cmpc-row${r.best.has(i) ? " is-best" : r.worst.has(i) ? " is-worst" : ""}${r.def.strong ? " is-strong" : ""}`}>
                       <span className="cmpc-row-l">{r.def.term ? <Define term={r.def.term}>{r.def.label}</Define> : r.def.label}</span>

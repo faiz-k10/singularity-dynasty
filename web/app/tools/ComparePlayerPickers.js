@@ -4,11 +4,7 @@ import { useMemo, useRef, useState } from "react";
 import Link from "next/link";
 
 const MAX_SUGGESTIONS = 8;
-const SLOTS = [
-  { name: "p1", label: "Player 1" },
-  { name: "p2", label: "Player 2" },
-  { name: "p3", label: "Player 3" },
-];
+const SLOTS = [1, 2, 3, 4, 5].map((n) => ({ name: `p${n}`, label: `Player ${n}` }));
 
 function displayFor(player) {
   return player ? `${player.player_name} (${player.position})` : "";
@@ -103,18 +99,20 @@ function PickerField({ slot, players, defaultValue }) {
   );
 }
 
-// maxPlayers: how many players this viewer may compare (Stargazer 2, Explorer and up 3). Slots past it show as locked.
-export default function ComparePlayerPickers({ players, defaults, maxPlayers = 3 }) {
+// maxPlayers: how many players this viewer may compare; slots: how many the page offers (Compare Players 5, Compare Simulations 3). When the
+// viewer may pick fewer than the page offers, ONE locked slot stands for the rest.
+export default function ComparePlayerPickers({ players, defaults, maxPlayers = 3, slots = 3 }) {
+  const shown = SLOTS.slice(0, Math.min(slots, maxPlayers + 1));
   return (
     <>
-      {SLOTS.map((slot, i) =>
+      {shown.map((slot, i) =>
         i < maxPlayers ? (
           <PickerField key={slot.name} slot={slot} players={players} defaultValue={defaults[slot.name] || ""} />
         ) : (
           <div className="compare-form-field" key={slot.name} data-wall="compare-third-slot">
             <span className="feed-label mono">{slot.label}</span>
             <Link href="/#pricing" className="compare-select compare-picker-input compare-locked">
-              Add a third with Explorer →
+              Add more with Explorer →
             </Link>
           </div>
         )

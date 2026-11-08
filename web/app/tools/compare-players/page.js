@@ -16,11 +16,11 @@ import {
 export const metadata = {
   title: "Compare Players — Weekly Projections — Singularity Dynasty",
   description:
-    "Compare up to three players side by side on this week's projections: median, floor and ceiling, matchup, usage and touchdown profile, recent games, and badges.",
+    "Compare up to five players side by side on this week's projections: median, floor and ceiling, matchup, usage and touchdown profile, recent games, and badges.",
 };
 
-const SLOTS = ["p1", "p2", "p3"];
-// Stargazer compares 2 players, Explorer and Singularity 3.
+const SLOTS = ["p1", "p2", "p3", "p4", "p5"];
+// Stargazer compares 2 players, Explorer and Singularity up to 5 (founder, Nov 8 2026; was 3).
 const MAX_COMPARE = { stargazer: 2 };
 const TEASER_LIMIT = 50;
 
@@ -42,7 +42,7 @@ export default async function ComparePlayersPage({ searchParams }) {
 
   const pool = latest ? enrichRankings({ cached, hasFullAccess, tdProfile, usageProfile, leanRows, bioByNamePos }) : [];
   const byName = new Map(pool.map((r) => [r.player_name, r]));
-  const maxPlayers = MAX_COMPARE[tier] ?? 3;
+  const maxPlayers = MAX_COMPARE[tier] ?? SLOTS.length;
   const selected = [...new Set(SLOTS.slice(0, maxPlayers).map((slot) => byName.get(params?.[slot])).filter(Boolean))]; // the same player twice counts once
   const playerOptions = pool.map((r) => ({ player_name: r.player_name, position: r.position }));
   const maxSpread = pool.reduce((m, r) => Math.max(m, r.floor != null && r.ceiling != null ? r.ceiling - r.floor : 0), 1);
@@ -56,7 +56,7 @@ export default async function ComparePlayersPage({ searchParams }) {
         <div className="eyebrow">{latest ? `Week ${latest.week} · ${latest.season}` : "Compare"}</div>
         <h1>Compare Players</h1>
         <p className="tool-sub">
-          Pick two{maxPlayers > 2 ? " or three" : ""} players from this week&apos;s projections to see them side by side. Looking for full-season outlooks?{" "}
+          Pick {maxPlayers > 2 ? `two to ${maxPlayers === 5 ? "five" : maxPlayers}` : "two"} players from this week&apos;s projections to see them side by side. Looking for full-season outlooks?{" "}
           <Link href="/tools/compare-player-sims" className="hub-panel-link">
             Compare season simulations →
           </Link>
@@ -81,8 +81,9 @@ export default async function ComparePlayersPage({ searchParams }) {
             <form className="compare-form">
               <ComparePlayerPickers
                 players={playerOptions}
-                defaults={{ p1: params?.p1 || "", p2: params?.p2 || "", p3: params?.p3 || "" }}
+                defaults={Object.fromEntries(SLOTS.map((k) => [k, params?.[k] || ""]))}
                 maxPlayers={maxPlayers}
+                slots={SLOTS.length}
               />
             </form>
 
