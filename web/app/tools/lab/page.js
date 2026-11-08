@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { resolveTier } from "@/lib/tier";
+import { loadMyPlayers } from "@/lib/myPlayers";
 import { getPlayerBiosByNamePos } from "@/lib/sleeper";
 import { buildLabRows } from "@/lib/labData";
 import InteractiveScript from "../../InteractiveScript";
@@ -23,8 +24,9 @@ const TEASER_LIMIT = 50;
 export default async function LabPage({ searchParams }) {
   const params = await searchParams;
   const supabase = await createClient();
-  const [{ tier }, cached, bioByNamePos, leanRows, tdProfile, usageProfile] = await Promise.all([
-    resolveTier(supabase),
+  const [{ tier, mine }, cached, bioByNamePos, leanRows, tdProfile, usageProfile] = await Promise.all([
+    // Per-visitor like the tier: their saved teams (own rows only) for the My players filter.
+    resolveTier(supabase).then(async (r) => ({ ...r, mine: await loadMyPlayers(supabase, r.user) })),
     getCachedRedraftData(),
     getPlayerBiosByNamePos(),
     getCachedLeans(),
@@ -71,7 +73,7 @@ export default async function LabPage({ searchParams }) {
                 </Link>
               </div>
             )}
-            <LabClient rows={lab.rows} week={latest.week} season={latest.season} simsAccess={simsAccess} initial={params || {}} />
+            <LabClient rows={lab.rows} week={latest.week} season={latest.season} simsAccess={simsAccess} mine={mine} gated={!full} initial={params || {}} />
           </>
         )}
       </main>

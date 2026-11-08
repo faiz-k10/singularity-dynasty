@@ -10,6 +10,7 @@ import LabBoard from "./LabBoard";
 import LabGameLog from "./LabGameLog";
 import LabCompare from "./LabCompare";
 import LabExport from "./LabExport";
+import { useMyView, MyPlayersFilter, MyPlayersNote } from "../MyPlayers";
 
 const VIEWS = [
   ["scatter", "Scatter"],
@@ -27,7 +28,7 @@ const MIN_VALUES = 3;
 // The Lab: one panel with four views over the same players -- Scatter (two numbers against each other), Leaderboard (a position ranked on
 // one), Game Log (weekly scoring of the picked players) and Compare (the picked players side by side, every number with its percentile).
 // Up to five picked players carry their own colour through every view. The whole state lives in the URL, so a chart can be shared.
-export default function LabClient({ rows, week, season, simsAccess, initial }) {
+export default function LabClient({ rows, week, season, simsAccess, mine, gated, initial }) {
   const byName = useMemo(() => new Map(rows.map((r) => [r.name, r])), [rows]);
   const usable = (k) => Boolean(LAB_METRIC[k]) && (LAB_METRIC[k].tier !== "singularity" || simsAccess);
 
@@ -49,7 +50,14 @@ export default function LabClient({ rows, week, season, simsAccess, initial }) {
     return [...new Set(start)].slice(0, MAX_PICKS).map((name, slot) => ({ name, slot }));
   });
 
-  const pool = useMemo(() => (pos === "ALL" ? rows : rows.filter((r) => r.pos === pos)), [rows, pos]);
+  // The My players filter (shared with the rankings pages): only players on the viewer's saved teams, optionally one league. The hook reads
+  // `player_name`, the Lab's rows say `name`.
+  const myRows = useMemo(() => rows.map((r) => ({ player_name: r.name })), [rows]);
+  const my = useMyView(mine, myRows);
+  const pool = useMemo(
+    () => rows.filter((r) => (pos === "ALL" || r.pos === pos) && (!my.on || my.ownedByName.has(r.name))),
+    [rows, pos, my.on, my.ownedByName]
+  );
   // The metrics this pool has enough values for.
   // A pool smaller than MIN_VALUES (the free top 50 can hold only two TEs) needs every player to have the number, or nothing at all
   // would be offered and both axes would fall back to the same metric.
@@ -116,9 +124,11 @@ export default function LabClient({ rows, week, season, simsAccess, initial }) {
             </button>
           ))}
         </div>
+        <MyPlayersFilter mine={mine} view={my} gated={gated} compact />
         <LabExport stageRef={stageRef} fileName={fileName} title={title} caption={`${title} · ${scope}. Charted in The Lab by Singularity Dynasty.`} />
       </div>
 
+      {my.on && <MyPlayersNote mine={mine} view={my} gated={gated} />}
       <LabPicker rows={rows} picked={picked} onToggle={toggle} full={picks.length >= MAX_PICKS} />
 
       <div className="lab-stage" ref={stageRef}>
