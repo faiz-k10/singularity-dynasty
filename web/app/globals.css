@@ -6555,45 +6555,37 @@ select.lab-select{min-width:200px;}
 }
 
 /* ===== Bars: the site's three instrument styles (founder, Nov 7 2026: "I don't want separate bars to be misconstrued as an actual measure").
-   Nothing is drawn in countable units.
-   1. VERNIER SCALE (the default for every bar): a hairline baseline with a ruler's major ticks at 0 / 25 / 50 / 75 / 100% of the bar, the
-      value drawn as a solid 3px line along it, and a pointer at its end (single-value bars; range bars and stacked parts have no pointer).
-   2. HAZARD FILL (specific places, where the bar is a risk): diagonal stripes in a bracketed housing -- Player Exposure on My Team.
-   3. ARC GAUGE (board views: app/ArcGauge.js): win chance on the Game Board scoreboard and the home briefing, the dynasty score.
-   A new bar joins the vernier lists below (track / fill / pointer) instead of drawing its own. ===== */
-:root{
-  --vern-ticks:repeating-linear-gradient(90deg, rgba(var(--star-dot-rgb), .38) 0 1px, transparent 1px 25%);
-  --vern-base:linear-gradient(rgba(var(--star-dot-rgb), .3), rgba(var(--star-dot-rgb), .3));
-}
+   Nothing is drawn in countable units. (First pass the same day had vernier as the default and hazard for Player Exposure; the founder
+   switched them.)
+   1. HAZARD FILL (the default for every bar): the bar sits in a bracketed housing (hairline top and bottom, heavier ends) and its fill is
+      cut into fine diagonal stripes, in whatever colour the bar already is.
+   2. VERNIER SCALE (specific places): a hairline baseline with ruler ticks at 0 / 25 / 50 / 75 / 100%, the value a solid 3px line with a
+      pointer at its end -- Player Exposure on My Team.
+   3. ARC GAUGE (board views: app/ArcGauge.js): win chance on the Game Board cards / scoreboard and the home briefing, the dynasty score.
+   A new bar joins the hazard lists below (track / fill) instead of drawing its own. ===== */
+:root{--hazard:repeating-linear-gradient(45deg, #000 0 3px, transparent 3px 6px);}
 .sim-bar-track, .stat-panel-pace-progress-track, .weekly-rank-bar, .weekly-gamelog-bar, .shape-compare-track, .pctile-bar, .pctile-scale-track,
 .hub-range-track, .hub-stage-bar, .hub-role-bar, .league-dash-winbar, .lab-cell-pct, .lab-board-track, .dyb-led{
-  background:var(--vern-base) left bottom / 100% 1px no-repeat, var(--vern-ticks) left bottom / calc(100% + 1px) 6px no-repeat;
-  border-radius:0; overflow:visible; min-height:10px;
+  box-sizing:border-box; min-height:8px; background:none; border-radius:0;
+  border:1px solid rgba(var(--star-dot-rgb), .28); border-left:2px solid rgba(var(--star-dot-rgb), .6); border-right:2px solid rgba(var(--star-dot-rgb), .6);
 }
-/* block fills sit on the baseline */
-.weekly-rank-bar, .weekly-gamelog-bar, .hub-stage-bar, .hub-role-bar, .league-dash-winbar, .lab-cell-pct{display:flex; align-items:flex-end;}
 .sim-bar-typical, .sim-bar-upside, .stat-panel-pace-progress-fill, .weekly-rank-bar > span, .weekly-gamelog-bar em, .shape-compare-fill, .pctile-bar-fill,
 .pctile-scale-fill, .hub-range-span, .hub-stage-seg, .hub-role-fill, .league-dash-winbar > span, .lab-cell-bar, .lab-board-bar, .dyb-led i{
-  top:auto; bottom:0; height:3px; border-radius:0; opacity:1;
+  -webkit-mask:var(--hazard); mask:var(--hazard); border-radius:0; opacity:1;
 }
-.weekly-rank-bar > span, .weekly-gamelog-bar em, .hub-role-fill, .league-dash-winbar > span, .lab-cell-bar{position:relative; display:block;}
-/* the pointer at the reading: a small triangle in the fill's own colour, standing on the line's end */
-.stat-panel-pace-progress-fill::after, .weekly-rank-bar > span::after, .weekly-gamelog-bar em::after, .pctile-bar-fill::after, .hub-role-fill::after,
-.league-dash-winbar > span::after, .lab-cell-bar::after, .lab-board-bar::after{
-  content:""; position:absolute; right:-4px; bottom:3px; width:8px; height:6px; background:inherit; clip-path:polygon(0 0, 100% 0, 50% 100%);
-}
-/* vertical bars: the same scale stood on end (baseline on the left, ticks every quarter, the value a 3px line up the left edge) */
 .pctile-vbar-track, .stat-panel-pace-rangebar{
-  background:linear-gradient(rgba(var(--star-dot-rgb), .3), rgba(var(--star-dot-rgb), .3)) left top / 1px 100% no-repeat,
-             repeating-linear-gradient(0deg, rgba(var(--star-dot-rgb), .38) 0 1px, transparent 1px 25%) left bottom / 6px calc(100% + 1px) no-repeat;
-  border-radius:0; overflow:visible;
+  background:none; border-radius:0;
+  border:1px solid rgba(var(--star-dot-rgb), .28); border-top:2px solid rgba(var(--star-dot-rgb), .6); border-bottom:2px solid rgba(var(--star-dot-rgb), .6);
 }
-.pctile-vbar-fill, .stat-panel-pace-rangebar-typical, .stat-panel-pace-rangebar-upside{left:0; right:auto; width:3px; border-radius:0;}
-/* HAZARD FILL: Player Exposure (how much of your leagues ride on one player) */
-.exposure-side-bar{position:relative; display:block; height:10px; margin:7px 6px 0; padding:2px; border:1px solid rgba(var(--star-dot-rgb), .35); border-radius:0; background:none; overflow:visible;}
-.exposure-side-bar::before, .exposure-side-bar::after{content:""; position:absolute; top:-4px; bottom:-4px; width:4px; border:1px solid var(--star);}
-.exposure-side-bar::before{left:-6px; border-right:0;} .exposure-side-bar::after{right:-6px; border-left:0;}
-.exposure-side-bar > span{display:block; height:100%; background:repeating-linear-gradient(45deg, var(--horizon-gold) 0 3px, transparent 3px 6px);}
+.pctile-vbar-fill, .stat-panel-pace-rangebar-typical, .stat-panel-pace-rangebar-upside{-webkit-mask:var(--hazard); mask:var(--hazard); border-radius:0;}
+/* VERNIER SCALE: Player Exposure (how much of your leagues ride on one player) */
+.exposure-side-bar{
+  position:relative; display:flex; align-items:flex-end; height:10px; margin-top:5px; border-radius:0; overflow:visible;
+  background:linear-gradient(rgba(var(--star-dot-rgb), .3), rgba(var(--star-dot-rgb), .3)) left bottom / 100% 1px no-repeat,
+             repeating-linear-gradient(90deg, rgba(var(--star-dot-rgb), .38) 0 1px, transparent 1px 25%) left bottom / calc(100% + 1px) 6px no-repeat;
+}
+.exposure-side-bar > span{position:relative; display:block; height:3px; background:var(--horizon-gold);}
+.exposure-side-bar > span::after{content:""; position:absolute; right:-4px; bottom:3px; width:8px; height:6px; background:inherit; clip-path:polygon(0 0, 100% 0, 50% 100%);}
 /* ARC GAUGE */
 .arc-gauge{position:relative; display:inline-flex; flex-direction:column; align-items:center; flex:none;}
 .arc-gauge{max-width:100%;}
