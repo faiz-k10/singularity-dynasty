@@ -6603,6 +6603,6 @@ select.lab-select{min-width:200px;}
 .arc-gauge-needle{stroke:var(--star); stroke-width:2;}
 .arc-gauge-mid{position:absolute; left:0; right:0; bottom:0; display:flex; flex-direction:column; align-items:center; line-height:1;}
 .h2h-center .arc-gauge{margin:4px 0 2px;}
-.h2h-win-gauge b{font-family:var(--font-display); font-weight:800; font-size:44px; color:var(--star);}
-.h2h-win-gauge small{font-family:var(--font-mono), monospace; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--star-dim); margin-top:2px;}
+.h2h-win-gauge b{font-family:var(--font-display); font-weight:800; font-size:24px; color:var(--star);}
+.h2h-win-gauge small{font-family:var(--font-mono), monospace; font-size:9.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--star-dim); margin-top:2px;}
 .dp-gauge .dp-big{font-size:42px; line-height:1;}
