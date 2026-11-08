@@ -6,9 +6,8 @@ import { LAB_GROUPS, LAB_METRICS, LAB_METRIC, formatMetric } from "@/lib/labMetr
 // Pieces shared by The Lab's views: the colours of the picked players, position colours, a width-measuring hook for the charts and the
 // metric picker.
 
-// One colour per picked player, in the order they were added (theme tokens, so both themes work). Mint and steel first (the site's two
-// accents), then mission red, the old gold and frost blue -- all from the Europa palette, each with a light-mode value.
-export const PICK_COLORS = ["var(--horizon-gold)", "var(--neon-blue)", "var(--down)", "var(--established)", "var(--frost)"];
+// One colour per picked player, in the order they were added (theme tokens, so both themes work). Mint, mission red, steel, the old gold and frost blue -- all from the Europa palette, each with a light-mode value.
+export const PICK_COLORS = ["var(--horizon-gold)", "var(--down)", "var(--neon-blue)", "var(--established)", "var(--frost)"];
 export const MAX_PICKS = PICK_COLORS.length;
 export const POS_COLOR = { QB: "var(--pos-qb)", RB: "var(--pos-rb)", WR: "var(--pos-wr)", TE: "var(--pos-te)" };
 
