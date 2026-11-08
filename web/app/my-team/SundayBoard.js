@@ -416,7 +416,7 @@ function LiveFeed({ savedTeams, gameStates, updatedAt, teamId = null, league = n
   const [picked, setPicked] = useState(null);
   const mode = nobody ? "companion" : picked || "live";
   return (
-    <aside className={`sb-feed glass-panel${collapsed ? " is-collapsed" : ""}`} aria-label="Companion">
+    <aside className={`sb-feed glass-panel${collapsed ? " is-collapsed" : ""}`} aria-label="Game Companion">
       {/* The pane folds to a thin rail at the right edge. Everything else stays mounted (just hidden), so the plays keep loading and the
           scores on the cards keep their "ahead of Sleeper" adjustment while it is folded. */}
       <button type="button" className="sb-feed-rail" onClick={onToggle} aria-label="Open the Companion pane" tabIndex={collapsed ? 0 : -1}>
@@ -424,7 +424,7 @@ function LiveFeed({ savedTeams, gameStates, updatedAt, teamId = null, league = n
         <svg className="sb-feed-rail-arrow" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
           <path d="M10 3L5 8l5 5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
-        <span className="sb-feed-rail-label mono">{mode === "live" ? "Playing now" : "Companion"}</span>
+        <span className="sb-feed-rail-label mono">{mode === "live" ? "Playing now" : "Game Companion"}</span>
       </button>
       <div className="sb-feed-head">
         <div className="sb-feed-headleft">
@@ -435,12 +435,12 @@ function LiveFeed({ savedTeams, gameStates, updatedAt, teamId = null, league = n
           </button>
           <h2 className="board-panel-title">
             {all.length > 0 && <span className="sb-live-dot" aria-hidden="true" />}
-            {mode === "live" ? "Playing now" : "Companion"}
+            {mode === "live" ? "Playing now" : "Game Companion"}
           </h2>
         </div>
         {!nobody && (
           <span className="sb-feed-tabs">
-            <PanelTabs tabs={[["live", "Live"], ["companion", "Companion"]]} value={mode} onChange={setPicked} />
+            <PanelTabs tabs={[["live", "Live"], ["companion", "Game Companion"]]} value={mode} onChange={setPicked} />
           </span>
         )}
         {nobody && league && <span className="sb-feed-scope mono">{league}</span>}
