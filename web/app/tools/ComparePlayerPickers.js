@@ -23,23 +23,28 @@ function PickerField({ slot, players, defaultValue }) {
   const [query, setQuery] = useState(displayFor(defaultPlayer));
   const [selected, setSelected] = useState(defaultPlayer);
   const [open, setOpen] = useState(false);
+  // The list is filtered only by what he has TYPED: on a field that already holds a player, clicking it shows the whole pool to switch from
+  // (the box holds "Jahmyr Gibbs (RB)", which would match nobody).
+  const [typed, setTyped] = useState(false);
   const blurTimer = useRef(null);
 
   const matches = useMemo(() => {
-    const q = query.trim().toLowerCase();
+    const q = typed ? query.trim().toLowerCase() : "";
     const pool = q ? players.filter((p) => p.player_name.toLowerCase().includes(q)) : players;
     return pool.slice(0, MAX_SUGGESTIONS);
-  }, [players, query]);
+  }, [players, query, typed]);
 
   function pick(player) {
     setSelected(player);
     setQuery(displayFor(player));
+    setTyped(false);
     setOpen(false);
   }
 
   function clear() {
     setSelected(null);
     setQuery("");
+    setTyped(false);
   }
 
   return (
@@ -56,15 +61,18 @@ function PickerField({ slot, players, defaultValue }) {
           value={query}
           onChange={(e) => {
             setQuery(e.target.value);
+            setTyped(true);
             setOpen(true);
           }}
           onFocus={(e) => {
+            setTyped(false);
             setOpen(true);
             e.target.select();
           }}
           onBlur={() => {
             blurTimer.current = setTimeout(() => {
               setOpen(false);
+              setTyped(false);
               setQuery(displayFor(selected));
             }, 150);
           }}
