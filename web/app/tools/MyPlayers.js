@@ -74,7 +74,7 @@ export function MyPlayersFilter({ mine, view, gated, compact }) {
         </div>
         {on && mine.teams.length > 1 && (
           <select className="my-filter-select" value={league} onChange={(e) => setLeague(e.target.value)} aria-label="Which of your teams">
-            <option value="all">All my teams</option>
+            <option value="all">All Teams</option>
             {mine.teams.map((t, i) => (
               <option key={i} value={String(i)}>
                 {t}
@@ -102,7 +102,7 @@ export function MyPlayersFilter({ mine, view, gated, compact }) {
           onChange={(e) => setLeague(e.target.value)}
           aria-label="Which of your teams"
         >
-          <option value="all">All my teams</option>
+          <option value="all">All Teams</option>
           {mine.teams.map((t, i) => (
             <option key={i} value={String(i)}>
               {t}

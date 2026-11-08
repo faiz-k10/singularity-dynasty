@@ -4358,7 +4358,7 @@ summary:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible{
   background-image:linear-gradient(45deg, transparent 50%, var(--star-dim) 50%), linear-gradient(135deg, var(--star-dim) 50%, transparent 50%);
   background-position:calc(100% - 14px) 50%, calc(100% - 9px) 50%; background-size:5px 5px; background-repeat:no-repeat;
   border:1px solid var(--line); border-radius:2px; color:var(--star);
-  font-family:var(--font-mono), monospace; font-stretch:82%; font-size:11.5px; line-height:1;
+  font-family:var(--font-mono), monospace; font-stretch:82%; font-size:11.5px; line-height:normal;
   transition:border-color .15s ease;
 }
 .my-filter-select:focus, .compare-select:focus, select.lab-select:focus{border-color:var(--neon-blue);}

@@ -37,7 +37,7 @@ export default function MyWeekFeed({ feed }) {
         <div className="week-feed-headline">{headline}</div>
         {feed.teams.length > 1 && (
           <select className="my-filter-select" value={team} onChange={(e) => setTeam(e.target.value)} aria-label="Which of your teams">
-            <option value="all">All my teams</option>
+            <option value="all">All Teams</option>
             {feed.teams.map((t, i) => (
               <option key={i} value={String(i)}>
                 {t}
