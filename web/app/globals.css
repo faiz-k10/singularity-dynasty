@@ -3277,7 +3277,6 @@ tr.stat-row-selected td{background:var(--void-panel);}
   margin-bottom:28px; box-shadow:0 30px 70px rgba(var(--shadow-rgb),0.4);
 }
 .compare-form-field{display:flex; flex-direction:column; min-width:180px; flex:1;}
-.compare-submit{border:none; flex-shrink:0;}
 
 /* Compare Players -- type-ahead picker replacing a plain <select> now that
    the pool runs into the hundreds. A hidden input still carries the real

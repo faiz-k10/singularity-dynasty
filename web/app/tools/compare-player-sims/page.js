@@ -107,7 +107,7 @@ export default async function ComparePlayerSimsPage({ searchParams }) {
                 <ComparePlayerRadars players={comparePlayers} />
               </>
             ) : (
-              <p className="tool-hint">Pick at least two players, then hit Compare.</p>
+              <p className="tool-hint">Pick at least two players to compare them.</p>
             )}
           </>
         )}

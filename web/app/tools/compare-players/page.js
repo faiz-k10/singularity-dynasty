@@ -90,7 +90,7 @@ export default async function ComparePlayersPage({ searchParams }) {
             {selected.length >= 2 ? (
               <CompareWeekly players={selected} maxSpread={maxSpread} />
             ) : (
-              <p className="tool-hint">Pick at least two players, then hit Compare.</p>
+              <p className="tool-hint">Pick at least two players to compare them.</p>
             )}
           </>
         )}
