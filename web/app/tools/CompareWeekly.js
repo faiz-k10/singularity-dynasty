@@ -64,7 +64,7 @@ function MatchupCell({ row }) {
 
 // HEAD TO HEAD as cards (founder, Nov 8 2026: the table left too much empty space): one card per player carrying every number the table
 // does -- position, matchup, overall rank, median / floor / ceiling, last week, the projected stat line and the usage profile -- and
-// the player's header (photo, size, badges) on top. The leader of each row is mint with a triangle; the card that leads the most rows
+// the player's header (photo, size, badges) on top. In each row the best value is shaded red and the worst green (founder, Nov 8 2026); the card that leads the most rows
 // gets a mint top edge. The table stays one tab over.
 function HeadToHeadCards({ players, shown }) {
   const n = players.length;
@@ -100,10 +100,9 @@ function HeadToHeadCards({ players, shown }) {
                 <summary>{sec.group}</summary>
                 <div className="cmpc-rows">
                   {sec.rows.map((r) => (
-                    <div key={r.def.label} className={`cmpc-row${r.best.has(i) ? " is-best" : ""}${r.def.strong ? " is-strong" : ""}`}>
+                    <div key={r.def.label} className={`cmpc-row${r.best.has(i) ? " is-best" : r.worst.has(i) ? " is-worst" : ""}${r.def.strong ? " is-strong" : ""}`}>
                       <span className="cmpc-row-l">{r.def.term ? <Define term={r.def.term}>{r.def.label}</Define> : r.def.label}</span>
                       <span className="cmpc-row-v mono">{val(r, i)}</span>
-                      <span className="cmpc-row-m" aria-hidden="true">{r.best.has(i) ? "▲" : ""}</span>
                     </div>
                   ))}
                 </div>
@@ -112,7 +111,7 @@ function HeadToHeadCards({ players, shown }) {
           </div>
         ))}
       </div>
-      <p className="compare-legend">Mint with a ▲ marks the leader in each row. Projected stats are per-game averages.</p>
+      <p className="compare-legend">In each row the best value is shaded red and the worst green. Projected stats are per-game averages.</p>
     </>
   );
 }
@@ -126,7 +125,7 @@ export default function CompareWeekly({ players, maxSpread }) {
       return v == null || Number.isNaN(Number(v)) ? null : Number(v);
     });
     const hasAny = def.skipZero ? values.some((v) => v) : values.some((v) => v != null);
-    return hasAny ? { def, values, best: bestIndexes(values, def.best) } : null;
+    return hasAny ? { def, values, best: bestIndexes(values, def.best), worst: bestIndexes(values, def.best === "low" ? "high" : "low") } : null;
   }).filter(Boolean);
   // Drop a group heading that ended up with no rows under it.
   const shown = rows.filter((r, i) => !r.group || (rows[i + 1] && !rows[i + 1].group));
