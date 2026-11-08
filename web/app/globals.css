@@ -6593,3 +6593,8 @@ select.lab-select{min-width:200px;}
 .h2h-win-gauge b{font-family:var(--font-display); font-weight:800; font-size:24px; color:var(--star);}
 .h2h-win-gauge small{font-family:var(--font-mono), monospace; font-size:9.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--star-dim); margin-top:2px;}
 .dp-gauge .dp-big{font-size:42px; line-height:1;}
+
+/* Dynasty Draft Board, full screen: only the controls, the list and the profile pane, edge to edge */
+.dyb-theater{position:fixed; inset:0; z-index:200; display:flex; flex-direction:column; padding:12px 16px 16px; background:var(--void); overflow:auto;}
+.dyb-theater .dyb-shell{flex:1; height:auto; min-height:0; margin-bottom:0;}
+.dyb-theater .dr-controls{flex:none;}

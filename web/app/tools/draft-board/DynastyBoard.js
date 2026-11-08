@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import PositionBadge from "../PositionBadge";
 import TeamBadge from "../TeamBadge";
 import DynastyProfile from "./DynastyProfile";
@@ -29,6 +29,19 @@ export default function DynastyBoard({ rows, meta, complete }) {
   const [mode, setMode] = useState("contender");
   const [pos, setPos] = useState("ALL");
   const [pickedId, setPickedId] = useState(null);
+  // Full screen: just the controls, the list and the profile -- no page header or headline strip. Escape leaves it; the page doesn't scroll behind it.
+  const [theater, setTheater] = useState(false);
+  useEffect(() => {
+    if (!theater) return undefined;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e) => e.key === "Escape" && setTheater(false);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [theater]);
 
   const { L, groups, tiers, ties } = useMemo(() => {
     const L = boardRows(rows, { format, mode, pos });
@@ -52,7 +65,8 @@ export default function DynastyBoard({ rows, meta, complete }) {
   );
 
   return (
-    <>
+    <div className={theater ? "dyb-theater" : undefined}>
+      {!theater && (
       <div className="dyb-strip">
         {cell(L.length, "Players ranked", `${FORMATS[format].label} · ${m.label}`)}
         {cell(L[0] ? L[0].score.toFixed(1) : "—", "Top score", L[0] && `${L[0].name} · ${L[0].pos}`, "up")}
@@ -60,6 +74,7 @@ export default function DynastyBoard({ rows, meta, complete }) {
         {cell(groups[0] ? groups[0].b - groups[0].a + 1 : 0, GROUP_NAMES[0] || "Top group", "players in the top group")}
         {cell(youngest ? youngest.age.toFixed(1) : "—", "Youngest in tier 1", youngest && youngest.name)}
       </div>
+      )}
 
       <div className="dr-controls">
         <Toggle label="Mode" value={mode} onChange={setMode} options={Object.entries(MODES).map(([k, v]) => [k, v.label])} />
@@ -74,6 +89,11 @@ export default function DynastyBoard({ rows, meta, complete }) {
         <span className="dr-read mono">
           {Math.round(m.prod * 100)}% production · {Math.round(m.age * 100)}% age
         </span>
+        <button type="button" className="rankings-theater-btn" onClick={() => setTheater((v) => !v)} aria-label={theater ? "Exit full-screen view" : "Expand to full-screen view"}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            {theater ? <path d="M9 4v3a2 2 0 0 1-2 2H4M20 9h-3a2 2 0 0 1-2-2V4M4 15h3a2 2 0 0 1 2 2v3M15 20v-3a2 2 0 0 1 2-2h3" /> : <path d="M9 4H6a2 2 0 0 0-2 2v3M20 9V6a2 2 0 0 0-2-2h-3M4 15v3a2 2 0 0 0 2 2h3M15 20h3a2 2 0 0 0 2-2v-3" />}
+          </svg>
+        </button>
       </div>
 
       <div className="dyb-shell">
@@ -151,6 +171,6 @@ export default function DynastyBoard({ rows, meta, complete }) {
           {open && <DynastyProfile key={`${open.id}-${format}-${mode}`} player={open} rows={rows} L={L} board={{ groups, tiers, ties }} format={format} mode={mode} meta={meta} complete={complete} />}
         </div>
       </div>
-    </>
+    </div>
   );
 }
