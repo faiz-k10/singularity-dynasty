@@ -13,7 +13,7 @@
 #   usage_profile   QB, RB, WR and TE ranked this week (usage_profile.R): volume, share and efficiency numbers from nflreadr player stats
 #                   (attempts / carries / targets a game, yards per attempt / carry / target, EPA, CPOE, sack rate, target and air-yards
 #                   share ...), recency-weighted; ranked against the position on the site. Display only.
-#   td_profile      WR and TE only, for everyone ranked on Weekly Projection Rankings (td_profile.R): expected TDs per
+#   td_profile      WR and TE (and the 2+ TD chance for RB), for everyone ranked on Weekly Projection Rankings (td_profile.R): expected TDs per
 #                   game, chance of 2+ TD in a game, inside-10 targets per game and share. Display only.
 #
 # Run: Rscript player_groups.R   (after projection_engine.R; reads upload_player_simulations.csv for the pool and

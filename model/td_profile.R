@@ -34,14 +34,14 @@ td_p2 <- function(par, x) { L <- exp(par[1]) * x^par[2]; 1 - exp(-L) * (1 + L) }
 td_name_key <- function(x) gsub("[^a-z]", "", tolower(gsub("\\b(jr|sr|ii|iii|iv|v)\\b\\.?", "", x, ignore.case = TRUE)))
 
 td_profile_rows <- function(pool, season, week) {
-  pool <- pool[pool$position %in% c("WR", "TE"), c("player_name", "position")]
+  pool <- pool[pool$position %in% c("WR", "TE", "RB"), c("player_name", "position")]
   pool$k <- td_name_key(pool$player_name)
 
   # expected TDs per player-game, 2018 on
   ffo <- as.data.frame(load_ff_opportunity(2018:season, stat_type = "weekly"))
   # Regular season only (weeks 1-18): the feed also carries playoff games, which only some teams play and which would
   # make one player's 17-game window reach further back than another's.
-  ffo <- ffo[ffo$position %in% c("WR", "TE") & !is.na(ffo$week) & ffo$week <= 18, ]
+  ffo <- ffo[ffo$position %in% c("WR", "TE", "RB") & !is.na(ffo$week) & ffo$week <= 18, ]
   ffo <- ffo[order(ffo$player_id, ffo$season, ffo$week), ]
   ffo$td <- ffo$rush_touchdown + ffo$rec_touchdown
   ffo$xtd <- ffo$rush_touchdown_exp + ffo$rec_touchdown_exp
@@ -54,7 +54,7 @@ td_profile_rows <- function(pool, season, week) {
   # P(2+ TDs) = 1 - exp(-L) * (1 + L) with L = a * xtd^b (a Poisson-shaped curve; a and b fitted per position on
   # completed seasons only, using each game's pre-game xtd). Replaced a logistic that overstated the top end
   # (players it put at 15-20%+ actually hit ~13% / ~11%); this curve is calibrated across the range.
-  fits <- lapply(c(WR = "WR", TE = "TE"), function(ps) {
+  fits <- lapply(c(WR = "WR", TE = "TE", RB = "RB"), function(ps) {
     d <- ffo[ffo$position == ps & !is.na(ffo$pre) & ffo$pre > 0 & ffo$season < season, ]
     nll <- function(par) { p <- pmin(pmax(td_p2(par, d$pre), 1e-6), 1 - 1e-6); -sum(d$two * log(p) + (1 - d$two) * log(1 - p)) }
     optim(c(log(0.5), 1.5), nll)$par
@@ -62,7 +62,7 @@ td_profile_rows <- function(pool, season, week) {
 
   # targets and inside-10 targets per player-game, the window's seasons
   seasons <- (season - 2):season
-  st <- as.data.frame(load_player_stats(seasons)); st <- st[st$season_type == "REG" & st$position %in% c("WR", "TE"), ]
+  st <- as.data.frame(load_player_stats(seasons)); st <- st[st$season_type == "REG" & st$position %in% c("WR", "TE", "RB"), ]
   pb <- as.data.frame(load_pbp(seasons))
   pb <- pb[which(pb$season_type == "REG" & pb$play_type == "pass" & !is.na(pb$receiver_player_id) & pb$two_point_attempt == 0 & pb$yardline_100 <= 10), ]
   pb$one <- 1
@@ -90,10 +90,13 @@ td_profile_rows <- function(pool, season, week) {
     n <- nrow(x); wt <- 0.5^(((n - 1):0) / TD_HL)
     i10_pg <- sum(wt * x$i10) / sum(wt)
     share <- if (sum(wt * x$targets) > 0) 100 * sum(wt * x$i10) / sum(wt * x$targets) else 0
+    # A back's profile is the 2+ TD chance only: the inside-10 TARGET numbers are a receiver's usage, not his (founder, Nov 9 2026).
+    detail <- if (pool$position[r] == "RB") list(games = n, xtd_pg = round(xtd, 2), p2 = round(p2, 1))
+              else list(games = n, xtd_pg = round(xtd, 2), p2 = round(p2, 1), i10_pg = round(i10_pg, 2), i10_share = round(share, 1), tgt_pg = round(mean(sx$targets, na.rm = TRUE), 2), tgt_games = nrow(sx))
     out[[length(out) + 1]] <- data.frame(
       season = season, week = week, player_name = pool$player_name[r], position = pool$position[r], kind = "td_profile",
       label = sprintf("%.1f%% chance of 2+ TDs", p2),
-      detail = as.character(jsonlite::toJSON(list(games = n, xtd_pg = round(xtd, 2), p2 = round(p2, 1), i10_pg = round(i10_pg, 2), i10_share = round(share, 1), tgt_pg = round(mean(sx$targets, na.rm = TRUE), 2), tgt_games = nrow(sx)), auto_unbox = TRUE)),
+      detail = as.character(jsonlite::toJSON(detail, auto_unbox = TRUE)),
       stringsAsFactors = FALSE)
   }
   do.call(rbind, out)

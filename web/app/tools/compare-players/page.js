@@ -16,11 +16,11 @@ import {
 export const metadata = {
   title: "Compare Players — Weekly Projections — Singularity Dynasty",
   description:
-    "Compare up to five players side by side on this week's projections: median, floor and ceiling, matchup, usage and touchdown profile, recent games, and badges.",
+    "Compare up to four players side by side on this week's projections: median, floor and ceiling, matchup, usage and touchdown profile, recent games, and badges.",
 };
 
-const SLOTS = ["p1", "p2", "p3", "p4", "p5"];
-// Stargazer compares 2 players, Explorer and Singularity up to 5 (founder, Nov 8 2026; was 3).
+const SLOTS = ["p1", "p2", "p3", "p4"];
+// Stargazer compares 2 players, Explorer and Singularity up to 4 (founder, Nov 9 2026: 5 was tried for a day; 3 before that).
 const MAX_COMPARE = { stargazer: 2 };
 const TEASER_LIMIT = 50;
 
@@ -56,7 +56,7 @@ export default async function ComparePlayersPage({ searchParams }) {
         <div className="eyebrow">{latest ? `Week ${latest.week} · ${latest.season}` : "Compare"}</div>
         <h1>Compare Players</h1>
         <p className="tool-sub">
-          Pick {maxPlayers > 2 ? `two to ${maxPlayers === 5 ? "five" : maxPlayers}` : "two"} players from this week&apos;s projections to see them side by side. Looking for full-season outlooks?{" "}
+          Pick {maxPlayers > 2 ? `two to ${maxPlayers === 4 ? "four" : maxPlayers === 3 ? "three" : maxPlayers}` : "two"} players from this week&apos;s projections to see them side by side. Looking for full-season outlooks?{" "}
           <Link href="/tools/compare-player-sims" className="hub-panel-link">
             Compare season simulations →
           </Link>

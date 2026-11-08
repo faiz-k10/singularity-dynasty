@@ -21,7 +21,7 @@ const ROWS = [
   { label: "Floor", term: "floor", get: (r) => r.floor, fmt: fmt1, best: "high" },
   { label: "Ceiling", term: "ceiling", get: (r) => r.ceiling, fmt: fmt1, best: "high" },
   { label: "Last Week Points", get: (r) => r.lastWeekRank?.points, fmt: fmt1, best: "high", missing: (r) => r.lastWeekStatus },
-  { group: "Projected stat line (per game)" },
+  { group: "Projected stat line" },
   { label: "Pass Yards", get: (r) => r.passing_yards, fmt: fmt1, best: "high", skipZero: true },
   { label: "Pass TD", get: (r) => r.passing_tds, fmt: f2, best: "high", skipZero: true },
   { label: "INT", get: (r) => r.passing_interceptions, fmt: f2, best: "low", skipZero: true },
@@ -33,11 +33,16 @@ const ROWS = [
   { group: "Key usage profile" },
   { label: "xFP / Game", term: "avgXfp", get: (r) => r.avgXfp, fmt: fmt1, best: "high" },
   { label: "WOPR", term: "wopr", get: (r) => r.wopr, fmt: f2, best: "high" },
-  { label: "Target Share", term: "u_tgt_share", get: (r) => r.targetShare, fmt: pct1, best: "high" },
-  { label: "YAC Above Exp", term: "yac-above-exp", get: (r) => r.yacAboveExp, fmt: f2, best: "high" },
+  { label: "Target Share", term: "u_tgt_share", get: (r) => r.targetShare ?? r.u_tgt_share, fmt: pct1, best: "high", receiving: true },
+  { label: "YAC Above Exp", term: "yac-above-exp", get: (r) => r.yacAboveExp, fmt: f2, best: "high", receiving: true },
   { label: "RYOE / Att", term: "ryoe", get: (r) => r.ryoe, fmt: signed2, best: "high" },
   { label: "Scramble Rate", term: "scrambleRate", get: (r) => r.scrambleRate, fmt: pct1, best: "high" },
   { label: "Play-Action Rate", term: "playActionRate", get: (r) => r.playActionRate, fmt: pct1, best: "high" },
+  { label: "Targets / G", term: "u_tgt_pg", get: (r) => r.u_tgt_pg, fmt: fmt1, best: "high", receiving: true },
+  { label: "Catch Rate", term: "u_catch_rate", get: (r) => r.u_catch_rate, fmt: pct1, best: "high", receiving: true },
+  { label: "Yards / Target", term: "u_ypt", get: (r) => r.u_ypt, fmt: f2, best: "high", receiving: true },
+  { label: "YAC / Reception", term: "u_yac_rec", get: (r) => r.u_yac_rec, fmt: f2, best: "high", receiving: true },
+  { label: "Air Yards Share", term: "u_air_share", get: (r) => r.u_air_share, fmt: pct1, best: "high", receiving: true },
   { label: "2+ TD Chance", term: "p2Td", get: (r) => r.p2Td, fmt: pct1, best: "high" },
   { label: "In-10 Tgts / G", term: "i10Pg", get: (r) => r.i10Pg, fmt: f2, best: "high" },
   { label: "In-10 Share", term: "i10Share", get: (r) => r.i10Share, fmt: pct1, best: "high" },
@@ -129,6 +134,9 @@ export default function CompareWeekly({ players, maxSpread }) {
       const v = def.get(p);
       return v == null || Number.isNaN(Number(v)) ? null : Number(v);
     });
+    // Receiving rows (target share, catch rate, YAC ...) are a receiver's numbers: backs carry them too now, but they only show when a
+    // receiver (WR / TE) is in the comparison -- an RB against a WR -- never for backs or quarterbacks alone (founder, Nov 9 2026).
+    if (def.receiving && !players.some((p) => p.position === "WR" || p.position === "TE")) return null;
     const hasAny = def.skipZero ? values.some((v) => v) : values.some((v) => v != null);
     return hasAny ? { def, values, best: bestIndexes(values, def.best), worst: bestIndexes(values, def.best === "low" ? "high" : "low") } : null;
   }).filter(Boolean);

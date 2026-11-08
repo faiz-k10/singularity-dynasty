@@ -28,7 +28,8 @@ suppressMessages(library(nflreadr))
 UP_WIN <- 17
 UP_HL  <- 8
 UP_MIN_GAMES <- 6
-UP_GATE <- c(QB = 15, RB = 5, WR = 3, TE = 3)   # volume a game below which the rate numbers are left out
+UP_GATE <- c(QB = 15, RB = 5, WR = 3, TE = 3)
+UP_RB_REC_GATE <- 2   # targets a game a back needs before his receiving RATES are published (shown only when the compare page needs them)   # volume a game below which the rate numbers are left out
 up_name_key <- function(x) gsub("[^a-z]", "", tolower(gsub("\\b(jr|sr|ii|iii|iv|v)\\b\\.?", "", x, ignore.case = TRUE)))
 
 # x: the player's last games, oldest first. Returns a named list of metrics (NA where not defined / below the gate).
@@ -60,8 +61,18 @@ up_metrics <- function(x, pos) {
       out$ypc <- r(ratio(x$rushing_yards, x$carries))
       out$rush_epa <- r(ratio(x$rushing_epa, x$carries), 3)
     }
-    out$tgt_pg <- r(per_game(x$targets), 1)
+    tgt <- per_game(x$targets)
+    out$tgt_pg <- r(tgt, 1)
     out$rec_ypg <- r(per_game(x$receiving_yards), 1)
+    # receiving rates for backs (not listed in the opened-player panel; the compare page uses them when a back is set against a receiver)
+    if (tgt >= UP_RB_REC_GATE) {
+      out$tgt_share <- r(100 * wmean(x$target_share), 1)
+      out$air_share <- r(100 * wmean(x$air_yards_share), 1)
+      out$ypt <- r(ratio(x$receiving_yards, x$targets))
+      out$catch_rate <- r(100 * ratio(x$receptions, x$targets), 1)
+      out$yac_rec <- r(ratio(x$receiving_yards_after_catch, x$receptions))
+      out$epa_tgt <- r(ratio(x$receiving_epa, x$targets), 3)
+    }
     out$touches_pg <- r(per_game(num(x$carries) + num(x$receptions)), 1)
     out$i5_tpg <- r(per_game(x$i5), 2)
     if (car >= UP_GATE[["RB"]]) out$i5_share <- r(100 * ratio(x$i5, num(x$carries) + num(x$receptions)), 1)
