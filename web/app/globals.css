@@ -2480,11 +2480,11 @@ a.export-csv-btn{text-decoration:none;}
    below, so every badge in this row sizes its own art the same way. */
 .weekly-player-achievements .confidence-badge svg{width:100%; height:100%;} /* the glyph fills the badge; its size is set in the viewBox (filledBadgeSvg) */
 .weekly-player-achievements .confidence-badge.gold{
-  background:var(--established); color:var(--void);
+  --badge-bg:var(--established); background:var(--established); color:var(--void);
   box-shadow:0 0 8px rgba(var(--established-rgb),0.55);
 }
 .weekly-player-achievements .confidence-badge.silver{
-  background:var(--silver); color:var(--void);
+  --badge-bg:var(--silver); background:var(--silver); color:var(--void);
   box-shadow:0 0 6px rgba(var(--silver-rgb),0.4);
 }
 
@@ -2544,30 +2544,30 @@ a.export-csv-btn{text-decoration:none;}
   border-radius:50%; font-size:17px; line-height:1; flex-shrink:0; cursor:pointer; vertical-align:middle;
 }
 .weekly-glyph-badge svg{width:100%; height:100%; display:block;} /* the glyph fills the badge; its size is set in the viewBox (filledBadgeSvg) */
-.weekly-glyph-badge.heat{background:var(--fire); color:var(--void); box-shadow:0 0 8px rgba(var(--fire-rgb),0.55);}
-.weekly-glyph-badge.ice{background:var(--frost); color:var(--void); box-shadow:0 0 8px rgba(var(--frost-rgb),0.55);}
-.weekly-glyph-badge.icarus{background:var(--icarus); color:var(--void); box-shadow:0 0 8px rgba(var(--icarus-rgb),0.55);}
-.weekly-glyph-badge.eddy{background:var(--eddy); color:var(--void); box-shadow:0 0 8px rgba(var(--eddy-rgb),0.55);}
-.weekly-glyph-badge.cape{background:var(--cape); color:var(--void); box-shadow:0 0 8px rgba(var(--cape-rgb),0.55);}
-.weekly-glyph-badge.sprout{background:var(--sprout); color:var(--void); box-shadow:0 0 8px rgba(var(--sprout-rgb),0.55);}
-.weekly-glyph-badge.peak{background:var(--peak); color:var(--void); box-shadow:0 0 8px rgba(var(--peak-rgb),0.55);}
-.weekly-glyph-badge.smash{background:var(--smash); color:var(--void); box-shadow:0 0 8px rgba(var(--smash-rgb),0.55);}
-.weekly-glyph-badge.tough{background:var(--tough); color:var(--void); box-shadow:0 0 8px rgba(var(--tough-rgb),0.55);}
+.weekly-glyph-badge.heat{--badge-bg:var(--fire); background:var(--fire); color:var(--void); box-shadow:0 0 8px rgba(var(--fire-rgb),0.55);}
+.weekly-glyph-badge.ice{--badge-bg:var(--frost); background:var(--frost); color:var(--void); box-shadow:0 0 8px rgba(var(--frost-rgb),0.55);}
+.weekly-glyph-badge.icarus{--badge-bg:var(--icarus); background:var(--icarus); color:var(--void); box-shadow:0 0 8px rgba(var(--icarus-rgb),0.55);}
+.weekly-glyph-badge.eddy{--badge-bg:var(--eddy); background:var(--eddy); color:var(--void); box-shadow:0 0 8px rgba(var(--eddy-rgb),0.55);}
+.weekly-glyph-badge.cape{--badge-bg:var(--cape); background:var(--cape); color:var(--void); box-shadow:0 0 8px rgba(var(--cape-rgb),0.55);}
+.weekly-glyph-badge.sprout{--badge-bg:var(--sprout); background:var(--sprout); color:var(--void); box-shadow:0 0 8px rgba(var(--sprout-rgb),0.55);}
+.weekly-glyph-badge.peak{--badge-bg:var(--peak); background:var(--peak); color:var(--void); box-shadow:0 0 8px rgba(var(--peak-rgb),0.55);}
+.weekly-glyph-badge.smash{--badge-bg:var(--smash); background:var(--smash); color:var(--void); box-shadow:0 0 8px rgba(var(--smash-rgb),0.55);}
+.weekly-glyph-badge.tough{--badge-bg:var(--tough); background:var(--tough); color:var(--void); box-shadow:0 0 8px rgba(var(--tough-rgb),0.55);}
 .weekly-glyph-badge.ball{background:none; box-shadow:none;}
 .weekly-glyph-badge.ball .dragon-ball{display:flex;}
 .weekly-glyph-badge.ball svg{width:30px; height:30px; overflow:visible;}
-.weekly-glyph-badge.honorable{background:var(--scholar); color:var(--void); box-shadow:0 0 8px rgba(var(--scholar-rgb),0.55);}
+.weekly-glyph-badge.honorable{--badge-bg:var(--scholar); background:var(--scholar); color:var(--void); box-shadow:0 0 8px rgba(var(--scholar-rgb),0.55);}
 /* Elite Role (a world map, rose-wine) and Elite Player (a goat's head, periwinkle): the same language as every badge -- a dark one-colour subject on a
    solid colour. */
-.weekly-glyph-badge.eliteRole{background:var(--elite-role); color:var(--void); box-shadow:0 0 8px rgba(var(--elite-role-rgb),0.6);}
-.weekly-glyph-badge.plusValue{background:var(--plus-value); color:var(--void); box-shadow:0 0 8px rgba(var(--plus-value-rgb),0.55);}
-.weekly-glyph-badge.minusValue{background:var(--minus-value); color:var(--void); box-shadow:0 0 8px rgba(var(--minus-value-rgb),0.55);}
-.weekly-glyph-badge.elitePlayer{background:var(--elite-player); color:var(--void); box-shadow:0 0 8px rgba(var(--elite-player-rgb),0.6);}
+.weekly-glyph-badge.eliteRole{--badge-bg:var(--elite-role); background:var(--elite-role); color:var(--void); box-shadow:0 0 8px rgba(var(--elite-role-rgb),0.6);}
+.weekly-glyph-badge.plusValue{--badge-bg:var(--plus-value); background:var(--plus-value); color:var(--void); box-shadow:0 0 8px rgba(var(--plus-value-rgb),0.55);}
+.weekly-glyph-badge.minusValue{--badge-bg:var(--minus-value); background:var(--minus-value); color:var(--void); box-shadow:0 0 8px rgba(var(--minus-value-rgb),0.55);}
+.weekly-glyph-badge.elitePlayer{--badge-bg:var(--elite-player); background:var(--elite-player); color:var(--void); box-shadow:0 0 8px rgba(var(--elite-player-rgb),0.6);}
 /* Rookie (an outlined numeral 1, bronze -- the one hue no other badge uses, >= 27 dE from every badge in both themes): the same dark subject on a solid colour. */
-.weekly-glyph-badge.rookie{background:var(--rookie); color:var(--void); box-shadow:0 0 8px rgba(var(--rookie-rgb),0.55);}
-.weekly-glyph-badge.boulder{background:var(--boulder); color:var(--void); box-shadow:0 0 8px rgba(var(--boulder-rgb),0.55);}
-.weekly-glyph-badge.cloud{background:var(--cloud); color:var(--void); box-shadow:0 0 8px rgba(var(--cloud-rgb),0.55);}
-.weekly-glyph-badge.menace{background:var(--menace); color:var(--void); box-shadow:0 0 10px rgba(var(--menace-rgb),0.75);}
+.weekly-glyph-badge.rookie{--badge-bg:var(--rookie); background:var(--rookie); color:var(--void); box-shadow:0 0 8px rgba(var(--rookie-rgb),0.55);}
+.weekly-glyph-badge.boulder{--badge-bg:var(--boulder); background:var(--boulder); color:var(--void); box-shadow:0 0 8px rgba(var(--boulder-rgb),0.55);}
+.weekly-glyph-badge.cloud{--badge-bg:var(--cloud); background:var(--cloud); color:var(--void); box-shadow:0 0 8px rgba(var(--cloud-rgb),0.55);}
+.weekly-glyph-badge.menace{--badge-bg:var(--menace); background:var(--menace); color:var(--void); box-shadow:0 0 10px rgba(var(--menace-rgb),0.75);}
 /* Four stats, each its own little label-over-value stack -- same
    eyebrow-adjacent mono-uppercase label language as .weekly-panel-title
    elsewhere in this row, just without the gold dash (these are plain
@@ -2703,7 +2703,9 @@ a.export-csv-btn{text-decoration:none;}
    label text is the part that actually needs the room. */
 /* Usage / touchdown panel as a small table: Metric | Rank | Value. Rank is a bar before the value: the higher he ranks at his position, the fuller it is. */
 .weekly-detail-pct-panel .weekly-panel-body{justify-content:flex-start;}
-.weekly-rank-table{display:flex; flex-direction:column; width:100%;}
+.weekly-rank-table{display:flex; flex-direction:column; width:100%; gap:10px;}
+/* each of PLAYER and ROLE sits in its own 1px box (founder, Nov 8 2026) */
+.weekly-rank-group{border:1px solid var(--rule-strong); border-radius:2px; padding:0 8px 4px;}
 .weekly-rank-row{display:grid; grid-template-columns:minmax(0,1fr) 100px 52px; align-items:center; column-gap:10px;}
 .weekly-rank-row{padding:4px 4px; border-bottom:1px solid rgba(var(--shadow-rgb),0.5);}
 .weekly-rank-row:last-child{border-bottom:none; padding-bottom:2px;}
@@ -2721,8 +2723,9 @@ a.export-csv-btn{text-decoration:none;}
    subgrid of it, so the bars all start at the same x. (Without subgrid support the fixed-width columns above stay.) */
 @supports (grid-template-columns: subgrid){
   .weekly-rank-table{display:grid; grid-template-columns:max-content minmax(0,1fr) minmax(52px,max-content); column-gap:10px;}
-  .weekly-rank-table > .weekly-rank-section{grid-column:1 / -1;}
-  .weekly-rank-table > .weekly-rank-row{grid-column:1 / -1; grid-template-columns:subgrid;}
+  .weekly-rank-group{grid-column:1 / -1; display:grid; grid-template-columns:subgrid;}
+  .weekly-rank-table .weekly-rank-section{grid-column:1 / -1;}
+  .weekly-rank-table .weekly-rank-row{grid-column:1 / -1; grid-template-columns:subgrid;}
 }
 .weekly-pct-value{font-family:var(--font-mono), monospace; font-size:12px; color:var(--star); text-align:right;}
 
@@ -6625,8 +6628,10 @@ select.lab-select{min-width:200px;}
 .cmpc-row.is-worst{background:rgba(var(--down-rgb), .14);}
 .cmpc-row.is-best .cmpc-row-v{color:var(--horizon-gold);}
 .cmpc-row.is-worst .cmpc-row-v{color:var(--down);}
-.cmpc-row.is-strong .cmpc-row-v{font-size:16px;}
 @media (max-width:900px){.cmpc-grid{grid-template-columns:minmax(0, 1fr);}}
 /* Compare pickers: one Clear button at the end of the row empties every box */
 .compare-clear-all{flex:none; align-self:flex-end; height:30px; padding:0 16px; background:transparent; border:1px solid var(--rule); border-radius:2px; color:var(--star-dim); font-size:12px; letter-spacing:.06em; text-transform:uppercase; cursor:pointer;}
 .compare-clear-all:hover{color:var(--star); border-color:var(--rule-strong);}
+
+/* Badges whose disc is drawn in their SVG (lib/badgeIcons.js filledBadgeSvg): no CSS disc behind it, so glyph and disc can't drift apart */
+.weekly-glyph-badge:has(.badge-icon), .weekly-player-achievements .confidence-badge:has(.badge-icon){background:transparent;}

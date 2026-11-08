@@ -40,4 +40,9 @@ export const BADGE_ICONS = {
 // A glyph drawn to FILL its badge: the svg is the badge's own size (so the circle and the glyph land on the same pixels -- a 25px svg inside a
 // 30px badge sits 2.5px in, and browsers snap that half pixel, which put every glyph ~0.5px low and right), with the 24-unit art padded out to
 // 28.8 units so it still covers 25/30 of the circle.
-export const filledBadgeSvg = (key) => (BADGE_ICONS[key] || "").replace('viewBox="0 0 24 24"', 'viewBox="-2.4 -2.4 28.8 28.8"');
+// The badge's coloured disc is drawn INSIDE the same SVG as the glyph (fill = the badge's --badge-bg), so the two always land on the same
+// pixels; a CSS background behind a separate SVG could round to a different pixel than the glyph and make it look off-centre (founder, Nov 8 2026).
+export const filledBadgeSvg = (key) =>
+  (BADGE_ICONS[key] || "")
+    .replace('viewBox="0 0 24 24"', 'viewBox="-2.4 -2.4 28.8 28.8"')
+    .replace(/(<svg[^>]*>)/, '$1<circle cx="12" cy="12" r="14.4" fill="var(--badge-bg, none)"/>');

@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useState } from "react";
+import { useState } from "react";
 import OutcomeCurveDetail from "./OutcomeCurveDetail";
 import TeamBadge from "./TeamBadge";
 import { filledBadgeSvg } from "@/lib/badgeIcons";
@@ -519,7 +519,7 @@ export function UsageTdPanel({ row }) {
         {sections.length > 0 ? (
           <RankTable>
             {sections.map(([name, list]) => (
-              <Fragment key={name}>
+              <div key={name} className="weekly-rank-group" role="rowgroup">
                 <div className="weekly-rank-section" role="row">
                   <span>{name}</span>
                   <span
@@ -531,7 +531,7 @@ export function UsageTdPanel({ row }) {
                 {list.map((m) => (
                   <RankRow key={m.k} k={m.k} label={m.label} value={row[m.k]} format={m.format} rank={row.metricRank?.[m.k]} unrankedHint={m.unrankedHint} />
                 ))}
-              </Fragment>
+              </div>
             ))}
           </RankTable>
         ) : (

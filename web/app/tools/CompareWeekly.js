@@ -105,7 +105,7 @@ function HeadToHeadCards({ players, shown }) {
                     </div>
                   )}
                   {sec.rows.map((r) => (
-                    <div key={r.def.label} className={`cmpc-row${r.best.has(i) ? " is-best" : r.worst.has(i) ? " is-worst" : ""}${r.def.strong ? " is-strong" : ""}`}>
+                    <div key={r.def.label} className={`cmpc-row${r.best.has(i) ? " is-best" : r.worst.has(i) ? " is-worst" : ""}`}>
                       <span className="cmpc-row-l">{r.def.term ? <Define term={r.def.term}>{r.def.label}</Define> : r.def.label}</span>
                       <span className="cmpc-row-v mono">{val(r, i)}</span>
                     </div>
