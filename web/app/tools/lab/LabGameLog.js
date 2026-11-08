@@ -14,6 +14,9 @@ const KINDS = [
   ["fpoe", "Pts − xFP"],
 ];
 
+// Why a player has no game in a week: BYE (his team had none) or INJURED (his team played, he didn't; lib/labData.js `off`).
+const missedLabel = (p, w) => ({ B: "BYE", I: "INJURED" })[p.off?.find((o) => o[0] === w)?.[1]] || "no game";
+
 // The picked players' weekly scoring this season, one line each in his colour: points, expected points from his opportunities, or the gap
 // between them, optionally as a three-game average. Consecutive weeks are joined with a solid line, a week he didn't play with a dashed one.
 // For points, this week's projection is the hollow dot at the end. Below: each player's season so far.
@@ -140,7 +143,7 @@ export default function LabGameLog({ picked, week, season }) {
               return (
                 <div key={p.name} className="lab-tip-row" style={{ "--c": p.color }}>
                   <span className="lab-tip-player">{p.name}</span>
-                  <b>{pt ? `${formatMetric(valueKey, pt.value)}${pt.opp ? ` vs ${pt.opp}` : ""}` : isProj ? `${formatMetric("ppg", proj)} proj.` : "no game"}</b>
+                  <b>{pt ? `${formatMetric(valueKey, pt.value)}${pt.opp ? ` vs ${pt.opp}` : ""}` : isProj ? `${formatMetric("ppg", proj)} proj.` : missedLabel(p, hoverWeek)}</b>
                 </div>
               );
             })}

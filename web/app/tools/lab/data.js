@@ -11,11 +11,11 @@ export const getCachedLabGames = unstable_cache(
     const rows = await fetchAllRows(
       createPublicClient(),
       "player_game_log",
-      "player_name, season, week, opponent, fantasy_points_ppr, exp_points_ppr",
+      "player_name, team, season, week, opponent, fantasy_points_ppr, exp_points_ppr",
       (q) => q.gte("season", season - 1).lte("season", season).order("season", { ascending: true }).order("week", { ascending: true }).order("player_name", { ascending: true })
     );
     return indexLabGames(rows, season);
   },
-  ["lab-game-log-v1"],
+  ["lab-game-log-v2"],
   { revalidate: 600 }
 );

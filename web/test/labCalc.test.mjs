@@ -106,3 +106,13 @@ test("buildLabRows: whole-pool percentiles, free slice, byes, last season and si
   assert.equal(buildLabRows({ ranked, games }).rows[2].m.s_median, undefined);
   assert.equal(buildLabRows({ ranked, games, sims: { C: { median: 200 } } }).rows[2].m.s_median, 200);
 });
+
+test("indexLabGames marks each missing week as a bye or an injury", () => {
+  const row = (name, team, week) => ({ player_name: name, team, season: 2026, week, opponent: "X", fantasy_points_ppr: 10, exp_points_ppr: 9 });
+  const games = indexLabGames(
+    [row("A", "AAA", 1), row("A", "AAA", 3), row("A", "AAA", 4), row("B", "AAA", 1), row("B", "AAA", 2), row("B", "AAA", 3), row("B", "AAA", 4), row("C", "CCC", 1), row("C", "CCC", 2), row("C", "CCC", 4)],
+    2026
+  );
+  assert.deepEqual(games.A.off, [[2, "I"]]); // his team played week 2 (B's row proves it), he did not
+  assert.deepEqual(games.C.off, [[3, "B"]]); // no CCC game in week 3: the bye
+});
