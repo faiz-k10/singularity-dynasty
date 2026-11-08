@@ -1,6 +1,7 @@
 "use client";
 
 import { formatWin } from "@/lib/standing";
+import ArcGauge from "../ArcGauge";
 import { useLayoutEffect, useMemo, useRef } from "react";
 import SlotBadge from "./SlotBadge";
 import PositionBadge from "../tools/PositionBadge";
@@ -246,11 +247,15 @@ function MatchupBody({ team, gameStates, playTotals }) {
   const center = (
     <div className={`h2h-center${toneClass(st)}`}>
       {st.label && <div className="h2h-word">{st.label}</div>}
-      {pct != null && !allDone && !lock && <div className="h2h-win-label mono">{formatWin(pct)} to win</div>}
       {pct != null && !allDone && (
-        <div className="h2h-win-bar" role="img" aria-label={`${formatWin(pct)} chance to win`}>
-          <span style={{ width: `${Math.max(2, pct * 100)}%` }} />
-        </div>
+        <ArcGauge value={pct} size={112} label={`${formatWin(pct)} chance to win`} className="h2h-win-gauge">
+          {!lock && (
+            <>
+              <b>{formatWin(pct)}</b>
+              <small>to win</small>
+            </>
+          )}
+        </ArcGauge>
       )}
       {sleeperLink}
     </div>

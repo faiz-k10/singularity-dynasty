@@ -5017,8 +5017,6 @@ html{font-stretch:82%;}
 .h2h-center{--tone:var(--star);}
 .h2h-word{font-family:var(--font-display), sans-serif; font-weight:800; font-size:34px; line-height:1; letter-spacing:.03em; text-transform:uppercase; color:var(--tone);}
 .h2h-win-label{font-size:12px; color:var(--star-dim);}
-.h2h-win-bar{width:160px; height:4px; border-radius:2px; background:rgba(var(--star-dot-rgb),.1); overflow:hidden;}
-.h2h-win-bar > span{display:block; height:100%; border-radius:2px; background:var(--tone); transition:width .8s ease;}
 .h2h-sleeper{font-size:11.5px; color:var(--neon-blue); text-decoration:none; margin-top:4px; white-space:nowrap;}
 .h2h-sleeper:hover{text-decoration:underline;}
 
@@ -6331,7 +6329,7 @@ select.lab-select{min-width:200px;}
 .yw-table thead th{padding:0 0 6px; border-bottom:2px solid var(--rule-strong); font-family:var(--font-mono), monospace; font-size:10px; font-weight:400; letter-spacing:.1em; text-transform:uppercase; color:var(--star-dim); text-align:left;}
 .yw-table thead th:first-child{width:auto;}
 .yw-table thead .yw-num{width:78px;}
-.yw-table thead .yw-chance{width:118px;}
+.yw-table thead .yw-chance{width:150px;}
 .yw-table tbody th{text-align:left; font-weight:400; padding-right:14px; min-width:0;}
 .yw-league{display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-family:var(--font-body), Georgia, serif; font-weight:700; font-size:15.5px; color:var(--star);}
 .yw-sub{display:flex; align-items:center; gap:8px; margin-top:3px; font-size:11px; color:var(--star-dim); min-width:0;}
@@ -6343,10 +6341,10 @@ select.lab-select{min-width:200px;}
 .yw-tr.is-proj .yw-num{color:var(--star-dim);}
 .yw-chance{text-align:left; font-family:var(--font-mono), monospace; font-size:10.5px; letter-spacing:.05em; text-transform:uppercase; --tone:var(--star-dim);}
 .yw-chance.is-mint{--tone:var(--horizon-gold);} .yw-chance.is-red{--tone:var(--down);}
-.yw-chance-row{display:flex; justify-content:space-between; gap:6px; color:var(--tone);}
+.yw-chance-row{display:flex; align-items:center; gap:8px; color:var(--tone);}
+.yw-chance-text{display:flex; flex-direction:column; gap:2px;}
 .yw-chance-word{white-space:nowrap;}
 .yw-chance-pct{color:var(--star); font-variant-numeric:tabular-nums;}
-.yw-meter{display:block; height:3px; margin-top:6px; background:linear-gradient(90deg, var(--tone) calc(var(--p) * 100%), rgba(var(--star-dot-rgb), .1) 0);}
 .yw-tr.is-bye .yw-sub{color:var(--star-dim);}
 .yw-more{font-size:11px; color:var(--star-dim); margin-top:8px;}
 .yw-changes{list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:6px;}
@@ -6553,24 +6551,54 @@ select.lab-select{min-width:200px;}
   .dyb-row.is-tied::after{left:40px;}
 }
 
-/* ===== LED segments: the site's bar language (founder, Nov 7 2026: "make all bars ... part of the design language") =====
-   Every bar is drawn as scoreboard LED segments: 5px lit / 3px gap. A bar's TRACK shows the unlit segments (--led-off), its FILL is cut into
-   the same segments by a mask (--led-on), whatever colour it is. Vertical bars run the segments bottom-up. A new bar joins these lists. */
+/* ===== Bars: the site's three instrument styles (founder, Nov 7 2026: "I don't want separate bars to be misconstrued as an actual measure").
+   Nothing is drawn in countable units.
+   1. VERNIER SCALE (the default for every bar): a hairline baseline with a ruler's major ticks at 0 / 25 / 50 / 75 / 100% of the bar, the
+      value drawn as a solid 3px line along it, and a pointer at its end (single-value bars; range bars and stacked parts have no pointer).
+   2. HAZARD FILL (specific places, where the bar is a risk): diagonal stripes in a bracketed housing -- Player Exposure on My Team.
+   3. ARC GAUGE (board views: app/ArcGauge.js): win chance on the Game Board scoreboard and the home briefing, the dynasty score.
+   A new bar joins the vernier lists below (track / fill / pointer) instead of drawing its own. ===== */
 :root{
-  --led-on:repeating-linear-gradient(90deg, #000 0 5px, transparent 5px 8px);
-  --led-off:repeating-linear-gradient(90deg, rgba(var(--star-dot-rgb), .09) 0 5px, transparent 5px 8px);
-  --led-on-v:repeating-linear-gradient(0deg, #000 0 5px, transparent 5px 8px);
-  --led-off-v:repeating-linear-gradient(0deg, rgba(var(--star-dot-rgb), .09) 0 5px, transparent 5px 8px);
+  --vern-ticks:repeating-linear-gradient(90deg, rgba(var(--star-dot-rgb), .38) 0 1px, transparent 1px 25%);
+  --vern-base:linear-gradient(rgba(var(--star-dot-rgb), .3), rgba(var(--star-dot-rgb), .3));
 }
 .sim-bar-track, .stat-panel-pace-progress-track, .weekly-rank-bar, .weekly-gamelog-bar, .shape-compare-track, .pctile-bar, .pctile-scale-track,
-.exposure-side-bar, .hub-range-track, .hub-stage-bar, .hub-role-bar, .league-dash-winbar, .h2h-win-bar, .lab-cell-pct, .lab-board-track, .dyb-led{
-  background:var(--led-off); border-radius:0;
+.hub-range-track, .hub-stage-bar, .hub-role-bar, .league-dash-winbar, .lab-cell-pct, .lab-board-track, .dyb-led{
+  background:var(--vern-base) left bottom / 100% 1px no-repeat, var(--vern-ticks) left bottom / calc(100% + 1px) 6px no-repeat;
+  border-radius:0; overflow:visible; min-height:10px;
 }
+/* block fills sit on the baseline */
+.weekly-rank-bar, .weekly-gamelog-bar, .hub-stage-bar, .hub-role-bar, .league-dash-winbar, .lab-cell-pct{display:flex; align-items:flex-end;}
 .sim-bar-typical, .sim-bar-upside, .stat-panel-pace-progress-fill, .weekly-rank-bar > span, .weekly-gamelog-bar em, .shape-compare-fill, .pctile-bar-fill,
-.pctile-scale-fill, .exposure-side-bar > span, .hub-range-span, .hub-stage-seg, .hub-role-fill, .league-dash-winbar > span, .h2h-win-bar > span,
-.lab-cell-bar, .lab-board-bar, .dyb-led i, .yw-meter{
-  -webkit-mask:var(--led-on); mask:var(--led-on); border-radius:0;
+.pctile-scale-fill, .hub-range-span, .hub-stage-seg, .hub-role-fill, .league-dash-winbar > span, .lab-cell-bar, .lab-board-bar, .dyb-led i{
+  top:auto; bottom:0; height:3px; border-radius:0; opacity:1;
 }
-.pctile-vbar-track, .stat-panel-pace-rangebar{background:var(--led-off-v); border-radius:0;}
-.pctile-vbar-fill, .stat-panel-pace-rangebar-typical, .stat-panel-pace-rangebar-upside{-webkit-mask:var(--led-on-v); mask:var(--led-on-v); border-radius:0;}
-.weekly-rank-bar.is-none{background:none;}
+.weekly-rank-bar > span, .weekly-gamelog-bar em, .hub-role-fill, .league-dash-winbar > span, .lab-cell-bar{position:relative; display:block;}
+/* the pointer at the reading: a small triangle in the fill's own colour, standing on the line's end */
+.stat-panel-pace-progress-fill::after, .weekly-rank-bar > span::after, .weekly-gamelog-bar em::after, .pctile-bar-fill::after, .hub-role-fill::after,
+.league-dash-winbar > span::after, .lab-cell-bar::after, .lab-board-bar::after{
+  content:""; position:absolute; right:-4px; bottom:3px; width:8px; height:6px; background:inherit; clip-path:polygon(0 0, 100% 0, 50% 100%);
+}
+/* vertical bars: the same scale stood on end (baseline on the left, ticks every quarter, the value a 3px line up the left edge) */
+.pctile-vbar-track, .stat-panel-pace-rangebar{
+  background:linear-gradient(rgba(var(--star-dot-rgb), .3), rgba(var(--star-dot-rgb), .3)) left top / 1px 100% no-repeat,
+             repeating-linear-gradient(0deg, rgba(var(--star-dot-rgb), .38) 0 1px, transparent 1px 25%) left bottom / 6px calc(100% + 1px) no-repeat;
+  border-radius:0; overflow:visible;
+}
+.pctile-vbar-fill, .stat-panel-pace-rangebar-typical, .stat-panel-pace-rangebar-upside{left:0; right:auto; width:3px; border-radius:0;}
+/* HAZARD FILL: Player Exposure (how much of your leagues ride on one player) */
+.exposure-side-bar{position:relative; display:block; height:10px; margin:7px 6px 0; padding:2px; border:1px solid rgba(var(--star-dot-rgb), .35); border-radius:0; background:none; overflow:visible;}
+.exposure-side-bar::before, .exposure-side-bar::after{content:""; position:absolute; top:-4px; bottom:-4px; width:4px; border:1px solid var(--star);}
+.exposure-side-bar::before{left:-6px; border-right:0;} .exposure-side-bar::after{right:-6px; border-left:0;}
+.exposure-side-bar > span{display:block; height:100%; background:repeating-linear-gradient(45deg, var(--horizon-gold) 0 3px, transparent 3px 6px);}
+/* ARC GAUGE */
+.arc-gauge{position:relative; display:inline-flex; flex-direction:column; align-items:center; flex:none;}
+.arc-gauge svg{display:block; overflow:visible;}
+.arc-gauge-track{fill:none; stroke:rgba(var(--star-dot-rgb), .12); stroke-width:7;}
+.arc-gauge-fill{fill:none; stroke:var(--tone, var(--horizon-gold)); stroke-width:7;} /* the parent's tone (mint / red / grey), mint when none */
+.arc-gauge-needle{stroke:var(--star); stroke-width:2;}
+.arc-gauge-mid{position:absolute; left:0; right:0; bottom:0; display:flex; flex-direction:column; align-items:center; line-height:1;}
+.h2h-center .arc-gauge{margin:4px 0 2px;}
+.h2h-win-gauge b{font-family:var(--font-display); font-weight:800; font-size:24px; color:var(--star);}
+.h2h-win-gauge small{font-family:var(--font-mono), monospace; font-size:9.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--star-dim); margin-top:2px;}
+.dp-gauge .dp-big{font-size:42px; line-height:1;}

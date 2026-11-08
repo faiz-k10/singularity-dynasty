@@ -1,4 +1,5 @@
 import Link from "next/link";
+import ArcGauge from "../ArcGauge";
 import Greeting from "./Greeting";
 import { loadFeedInputs, buildTeamsFeed } from "@/lib/myFeedData";
 import { fmt1, fmt2 } from "@/lib/format";
@@ -54,10 +55,12 @@ function Row({ r }) {
         {r.p != null ? (
           <>
             <span className="yw-chance-row">
-              <span className="yw-chance-word">{r.label}</span>
-              <span className="yw-chance-pct">{formatWin(r.p)}</span>
+              <ArcGauge value={r.p} size={46} label={`${formatWin(r.p)} chance to win`} className="yw-gauge" />
+              <span className="yw-chance-text">
+                <span className="yw-chance-word">{r.label}</span>
+                <span className="yw-chance-pct">{formatWin(r.p)}</span>
+              </span>
             </span>
-            <span className="yw-meter" style={{ "--p": r.p }} aria-hidden="true" />
           </>
         ) : (
           <span className="yw-chance-word">—</span>

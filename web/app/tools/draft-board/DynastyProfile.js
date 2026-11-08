@@ -7,6 +7,7 @@ import TeamBadge from "../TeamBadge";
 import { AGE_LOOKAHEAD, FORMATS, GROUP_NAMES, MODES, pBetter, profileRead, scoreRows } from "@/lib/dynastyBoard";
 import { formatHeight } from "@/lib/format";
 import ShareCardButton from "../../ShareCardButton";
+import ArcGauge from "../../ArcGauge";
 
 const pct = (p) => (p >= 0.995 ? ">99%" : p < 0.005 ? "<1%" : `${Math.round(p * 100)}%`);
 const ord = (n) => `#${n}`;
@@ -142,7 +143,9 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
         </header>
 
         <section className="dp-score">
-          <div className="dp-big">{p.score.toFixed(1)}</div>
+          <ArcGauge value={p.score / 10} size={150} label={`Dynasty score ${p.score.toFixed(1)} of 10`} className="dp-gauge">
+            <span className="dp-big">{p.score.toFixed(1)}</span>
+          </ArcGauge>
           <div className="dp-score-side">
             <div className="dp-eyebrow mono">Dynasty score · {f.label} · {m.label}</div>
             <div className="dp-facts">
