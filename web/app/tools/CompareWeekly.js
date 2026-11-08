@@ -64,72 +64,43 @@ function MatchupCell({ row }) {
 
 // HEAD TO HEAD as cards (founder, Nov 8 2026: the table left too much empty space): one card per player carrying every number the table
 // does -- position, matchup, overall rank, median / floor / ceiling, last week, the projected stat line and the usage profile -- and
-// nothing from Player Profiles (photo, size, badges, curve, games). The leader of each row is mint with a triangle; a strip on top counts
-// how many rows each player leads. The table stays one tab over.
+// the player's header (photo, size, badges) on top. The leader of each row is mint with a triangle; the card that leads the most rows
+// gets a mint top edge. The table stays one tab over.
 function HeadToHeadCards({ players, shown }) {
   const n = players.length;
-  // the headline numbers (everything above the first section): rank, median and last week on one line, floor and ceiling under them
-  const TOP_ORDER = ["Overall rank", "Median proj", "Last week (pts)", "Floor", "Ceiling"];
+  // The headline numbers (everything above the first section) become their own "This week" section, listed like every other section.
+  const TOP_ORDER = ["Overall rank", "Median proj", "Floor", "Ceiling", "Last week (pts)"];
   const top = shown
     .filter((r, i) => !r.group && !shown.slice(0, i).some((x) => x.group))
     .sort((a, b) => TOP_ORDER.indexOf(a.def.label) - TOP_ORDER.indexOf(b.def.label));
-  const sections = [];
+  const sections = [{ group: "This week", rows: top }];
   for (const r of shown) {
     if (r.group) sections.push({ group: r.group, rows: [] });
-    else if (sections.length) sections[sections.length - 1].rows.push(r);
+    else if (sections.length > 1) sections[sections.length - 1].rows.push(r);
   }
   const leads = players.map((_, i) => shown.filter((r) => !r.group && r.best.has(i)).length);
   const most = Math.max(...leads);
-  const order = players.map((p, i) => i).sort((a, b) => leads[b] - leads[a]);
   const val = (r, i) => (r.values[i] == null ? "—" : r.def.fmt(r.values[i]));
-  const Big = ({ r, i }) => (
-    <div className={`cmpc-stat${r.best.has(i) ? " is-best" : ""}`}>
-      <span className="cmpc-stat-l">{r.def.term ? <Define term={r.def.term}>{r.def.label}</Define> : r.def.label}</span>
-      <span className="cmpc-stat-v">
-        {val(r, i)}
-        {r.best.has(i) && <i aria-label="leads">▲</i>}
-      </span>
-    </div>
-  );
   return (
     <>
-      <div className="cmpc-verdict">
-        <div>
-          <span className="cmpc-eyebrow">Leads the most</span>
-          <b className="cmpc-verdict-name">{leads.filter((x) => x === most).length > 1 ? "Even" : players[leads.indexOf(most)].player_name}</b>
-        </div>
-        <div className="cmpc-tally">
-          {order.map((i) => (
-            <span key={players[i].player_name}>
-              <b>{leads[i]}</b>
-              {players[i].player_name.split(" ").slice(-1)[0]}
-            </span>
-          ))}
-        </div>
-        <span className="cmpc-eyebrow">rows led of {shown.filter((r) => !r.group).length}</span>
-      </div>
       <div className="cmpc-grid" style={{ "--cmp-n": n }}>
         {players.map((p, i) => (
           <div key={p.player_name} className={`cmpc-card${leads[i] === most ? " is-lead" : ""}`}>
             <div className="cmpc-head">
-              <span className="cmpc-name">{p.player_name}</span>
+              <div className="compare-panels cmpc-id">
+                <PlayerHeaderPanel row={p} />
+              </div>
               <span className="cmpc-meta mono">
                 <span>{p.positionLabel || p.position}</span>
-                <TeamBadge team={p.team} />
                 <MatchupCell row={p} />
               </span>
-            </div>
-            <div className="cmpc-strip" style={{ "--k": Math.min(3, top.length) }}>
-              {top.map((r) => (
-                <Big key={r.def.label} r={r} i={i} />
-              ))}
             </div>
             {sections.map((sec) => (
               <details key={sec.group} className="cmpc-sec" open>
                 <summary>{sec.group}</summary>
                 <div className="cmpc-rows">
                   {sec.rows.map((r) => (
-                    <div key={r.def.label} className={`cmpc-row${r.best.has(i) ? " is-best" : ""}`}>
+                    <div key={r.def.label} className={`cmpc-row${r.best.has(i) ? " is-best" : ""}${r.def.strong ? " is-strong" : ""}`}>
                       <span className="cmpc-row-l">{r.def.term ? <Define term={r.def.term}>{r.def.label}</Define> : r.def.label}</span>
                       <span className="cmpc-row-v mono">{val(r, i)}</span>
                       <span className="cmpc-row-m" aria-hidden="true">{r.best.has(i) ? "▲" : ""}</span>
