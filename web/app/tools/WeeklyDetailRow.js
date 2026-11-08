@@ -183,19 +183,19 @@ export function GameLogPanel({ games: all }) {
 // word answer out to the right instead, closed by tapping the badge
 // again. One open flag per badge (not shared across the row) so opening
 // one badge doesn't collapse another, e.g. the confidence star.
-function ExpandableBadge({ variant, label, children }) {
-  const [open, setOpen] = useState(false);
+// `open` / `onToggle` come from the badge row, which keeps only one label open at a time (founder, Nov 8 2026).
+function ExpandableBadge({ variant, label, children, open, onToggle }) {
   return (
     <span
       className={`weekly-achievement-badge ${variant}${open ? " open" : ""}`}
-      onClick={() => setOpen((v) => !v)}
+      onClick={onToggle}
       role="button"
       tabIndex={0}
       aria-expanded={open}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
-          setOpen((v) => !v);
+          onToggle();
         }
       }}
     >
@@ -388,6 +388,7 @@ export function PlayerStatsRow({ row }) {
 // `share`: a Share button for his card (the opened row on Weekly Projection Rankings; not on the compare page).
 // `logoByName`: the team logo sits right after the name instead of in the line under it (the Head to Head cards).
 export function PlayerHeaderPanel({ row, share = false, logoByName = false }) {
+  const [openBadge, setOpenBadge] = useState(null); // the one badge whose label is showing
   const bio = row.bio || {};
   const ht = formatHeight(bio.height);
   const age = ageOn(bio.birthDate);
@@ -404,7 +405,7 @@ export function PlayerHeaderPanel({ row, share = false, logoByName = false }) {
   const achievementPills = (
     <span className="weekly-player-achievements">
       {achievements.map((a) => (
-        <ExpandableBadge key={a.key} variant={a.variant} label={a.label}>
+        <ExpandableBadge key={a.key} variant={a.variant} label={a.label} open={openBadge === a.key} onToggle={() => setOpenBadge((k) => (k === a.key ? null : a.key))}>
           {a.node}
         </ExpandableBadge>
       ))}
