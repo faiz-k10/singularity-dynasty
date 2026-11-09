@@ -435,38 +435,11 @@ body::before{
   color:var(--on-brand); padding:7px 24px; border-radius:2px; font-weight:700;
 }
 .top-nav-bar a.tn-cta:hover{box-shadow:0 6px 18px rgba(var(--horizon-rgb),0.35); color:var(--on-brand);}
-/* Get Started doubles as the pricing summary: the label plus the three tiers (name over price and a few words), as one
-   segmented pill. Replaces the old Pricing menu. */
-.top-nav-bar a.tn-cta.tn-cta-tiers{
-  display:flex; align-items:stretch; padding:0; border-radius:2px; overflow:hidden; text-transform:none; letter-spacing:0;
-}
-.tn-tier{
-  display:flex; flex-direction:column; justify-content:center; align-items:center; gap:3px; padding:6px clamp(8px, calc(8px + (100vw - 1180px) * 0.04), 22px);
-  border-left:1px solid color-mix(in srgb, currentColor 30%, transparent); white-space:nowrap; line-height:1;
-}
-.tn-tier:first-child{border-left:0;}
-.tn-tier b{
-  display:inline-flex; align-items:center; gap:0.38em; font-family:var(--font-display), sans-serif; font-size:clamp(15px, 1.3vw, 19px); font-weight:800;
-  letter-spacing:0.09em; text-transform:uppercase; line-height:1;
-}
-/* Each tier carries its own small glyph before the name: a singularity (ring + core), a compass, a star. */
-.tn-tier b svg{width:0.82em; height:0.82em; flex:0 0 auto; }
-.tn-tier small{font-family:var(--font-mono), monospace; font-size:9px; font-weight:600; letter-spacing:0.02em;} /* full opacity: at 0.78 the price lines fell to ~3.5:1 */
 
 /* Layout of the bar: brand | Tools Feed My Team Account | the three-tier pill, which stretches to fill all the room up to just
    before the theme toggle (the spacer holds the toggle's place: 48px toggle + 78px from the edge, minus the bar's padding). */
 .site-header .brandmark{flex:0 0 auto; min-width:max-content;}
 .site-header .top-nav-bar{flex:1 1 0; justify-content:flex-start; gap:clamp(14px, 1.7vw, 28px);}
-.top-nav-bar a.tn-cta.tn-cta-tiers{flex:1 1 auto; margin-left:clamp(0px, 1vw, 16px);}
-.tn-tier{flex:1 1 0;}
-/* The pill (Event Horizon retheme, Nov 9 2026; it was three solid blocks, red / red over steel / steel): Singularity the one ember
-   block, Explorer and Stargazer quiet text, all inside one hairline. */
-.top-nav-bar a.tn-cta.tn-cta-tiers{box-shadow:none; background:none; color:var(--star); border:1px solid var(--line);}
-.top-nav-bar a.tn-cta.tn-cta-tiers:hover{box-shadow:none; color:var(--star); border-color:var(--star-dim);}
-.tn-tier{border-left-color:var(--line);}
-.tn-tier:nth-child(1){background:var(--horizon); color:var(--on-brand);}
-.tn-tier:nth-child(2){color:var(--star);}
-.tn-tier:nth-child(3){color:var(--star-dim);}
 .site-header-spacer{flex:0 0 90px;}
 /* "Tools" dropdown -- CSS-only (:hover/:focus-within, no JS state needed)
    since this only has to work in .top-nav-bar, which is itself hidden
@@ -948,16 +921,7 @@ footer .fcoord{font-size:10.5px; color:var(--neon-blue-dim); opacity:0.55; lette
 /* top padding matches .hero -- clears the fixed ticker +
    site-header banner that SiteHeader now renders on every page. */
 .auth-page{position:relative; min-height:100vh; display:flex; align-items:center; justify-content:center; overflow:hidden; padding:150px 0 80px;}
-.auth-page::before{
-  content:''; position:absolute; top:-180px; right:-160px; width:640px; height:640px;
-  background:radial-gradient(circle, rgba(var(--horizon-rgb),0.25) 0%, rgba(var(--horizon-rgb),0.08) 35%, transparent 68%);
-  filter:blur(10px); pointer-events:none; z-index:-1;
-}
-.auth-page::after{
-  content:''; position:absolute; bottom:-220px; left:-200px; width:560px; height:560px;
-  background:radial-gradient(circle, var(--neon-blue-glow) 0%, rgba(var(--neon-blue-rgb),0.08) 40%, transparent 70%);
-  filter:blur(14px); pointer-events:none; z-index:-1;
-}
+/* (the soft glow blobs behind these pages were removed with the Event Horizon restyle, Nov 10 2026) */
 .auth-wrap{display:flex; flex-direction:column; align-items:center; gap:36px;}
 .auth-card{
   width:100%; max-width:420px; background:var(--void-panel); border:1px solid var(--line); border-radius:2px;
