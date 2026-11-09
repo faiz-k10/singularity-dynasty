@@ -3077,7 +3077,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
      row grid below (88px label + 8px gap on the left, 34px value + 8px gap on the right). */
   text-align:center; padding:0 42px 0 96px;
 }
-.shape-compare-row{display:grid; grid-template-columns:88px 1fr 34px; align-items:center; gap:8px; padding:2px 0 11px;} /* the bottom padding reserves room for the "50" label, so the name, the bar and the number share one centre line */
+.shape-compare-row{display:grid; grid-template-columns:88px 1fr 34px; align-items:center; gap:8px; padding:5px 0;}
 /* 88px (not the old 52px) fits the longest full stat name on one line
    ("YAC Above Exp", "Avg Separation") without truncating -- was
    clipped to "YAC Ab…"/"Avg Sep…", illegible at a glance. The bar
@@ -3094,10 +3094,6 @@ tr.stat-row-selected td{background:var(--void-panel);}
    regardless of where the two ticks land, so "ahead of/behind average"
    reads at a glance instead of eyeballing a 0-100 position. */
 .shape-compare-midtick{position:absolute; left:50%; top:-2px; bottom:-2px; width:1px; background:rgba(var(--star-dim-rgb),0.45); transform:translateX(-50%);}
-.shape-compare-midtick-label{
-  position:absolute; left:50%; top:calc(100% + 4px); transform:translateX(-50%);
-  font-family:var(--font-mono), monospace; font-size:8px; line-height:1; color:var(--star-dim);
-}
 .shape-compare-tick{
   position:absolute; top:50%; width:8px; height:8px; border-radius:50%;
   transform:translate(-50%, -50%); border:2px solid var(--void-panel);
