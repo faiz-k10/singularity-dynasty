@@ -33,7 +33,7 @@ export default function SiteFooter() {
             ))}
           </nav>
         </div>
-        <div className="fcoord mono" aria-hidden="true">VOID // #030908</div>
+        <div className="fcoord mono" aria-hidden="true">VOID // #0B0B0B</div>
         <div className="fsmall">
           © {new Date().getFullYear()} Singularity Dynasty. Not affiliated with the NFL or any fantasy football platform. Content is for
           informational and entertainment purposes only and is not intended for use in gambling, betting, or wagering of any kind; see

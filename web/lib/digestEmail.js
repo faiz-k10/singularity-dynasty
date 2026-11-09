@@ -32,25 +32,25 @@ export function renderDigest({ items, week, siteUrl, address = "", max = 8 }) {
     .map(
       (i) => `
     <tr><td style="padding:14px 0;border-bottom:1px solid #2a2a38">
-      <div style="font:700 16px Georgia,serif;color:#e6f4f1">${esc(i.name)}${i.position ? ` <span style="font:11px monospace;color:#8c95a3">${esc(i.position)}</span>` : ""}
-        <span style="font:11px monospace;color:${i.starter ? "#2dd4bf" : "#8c95a3"}">${i.starter ? "STARTING" : "BENCH"}</span></div>
-      <div style="font:12px monospace;color:#8c95a3;margin:2px 0 6px">${esc(i.teams.map((t) => t.label).join(" · "))}</div>
+      <div style="font:700 16px Georgia,serif;color:#ece7dc">${esc(i.name)}${i.position ? ` <span style="font:11px monospace;color:#a39e92">${esc(i.position)}</span>` : ""}
+        <span style="font:11px monospace;color:${i.starter ? "#e8643f" : "#a39e92"}">${i.starter ? "STARTING" : "BENCH"}</span></div>
+      <div style="font:12px monospace;color:#a39e92;margin:2px 0 6px">${esc(i.teams.map((t) => t.label).join(" · "))}</div>
       ${i.lines
         .slice(0, 2)
-        .map((l) => `<div style="font:13px Georgia,serif;color:${l.dir === "up" ? "#6fe3a8" : l.dir === "down" ? "#e11d48" : "#e6f4f1"}">${esc(lineText(l))}</div>`)
+        .map((l) => `<div style="font:13px Georgia,serif;color:${l.dir === "up" ? "#e8643f" : l.dir === "down" ? "#6e9bd8" : "#ece7dc"}">${esc(lineText(l))}</div>`)
         .join("")}
     </td></tr>`
     )
     .join("");
 
-  const html = `<!doctype html><html><body style="margin:0;background:#030908;padding:24px">
+  const html = `<!doctype html><html><body style="margin:0;background:#0b0b0b;padding:24px">
 <table role="presentation" width="100%" style="max-width:560px;margin:0 auto;background:#12121a;border-radius:14px;padding:24px;border:1px solid #2a2a38">
   <tr><td>
-    <div style="font:700 11px monospace;letter-spacing:.12em;color:#2dd4bf;text-transform:uppercase">Singularity Dynasty · Week ${esc(week)}</div>
-    <div style="font:700 24px Georgia,serif;color:#e6f4f1;margin:6px 0 14px">Your players this week</div>
-    <table role="presentation" width="100%">${rows || `<tr><td style="font:14px Georgia,serif;color:#8c95a3;padding:10px 0">Nothing moved enough to flag this week.</td></tr>`}</table>
-    <p style="margin:20px 0 0"><a href="${esc(manage)}" style="display:inline-block;background:#2dd4bf;color:#021210;font:700 14px Arial,sans-serif;padding:11px 22px;border-radius:999px;text-decoration:none">Open my leagues</a></p>
-    <p style="font:11px Arial,sans-serif;color:#5e6a70;margin:22px 0 0">You get this because you turned on the weekly email. <a href="${esc(manage)}" style="color:#2dd4bf">Turn it off</a> in the Your Players This Week panel.${address ? `<br>${esc(address)}` : ""}</p>
+    <div style="font:700 11px monospace;letter-spacing:.12em;color:#e8643f;text-transform:uppercase">Singularity Dynasty · Week ${esc(week)}</div>
+    <div style="font:700 24px Georgia,serif;color:#ece7dc;margin:6px 0 14px">Your players this week</div>
+    <table role="presentation" width="100%">${rows || `<tr><td style="font:14px Georgia,serif;color:#a39e92;padding:10px 0">Nothing moved enough to flag this week.</td></tr>`}</table>
+    <p style="margin:20px 0 0"><a href="${esc(manage)}" style="display:inline-block;background:#e8643f;color:#120804;font:700 14px Arial,sans-serif;padding:11px 22px;border-radius:999px;text-decoration:none">Open my leagues</a></p>
+    <p style="font:11px Arial,sans-serif;color:#6b675e;margin:22px 0 0">You get this because you turned on the weekly email. <a href="${esc(manage)}" style="color:#e8643f">Turn it off</a> in the Your Players This Week panel.${address ? `<br>${esc(address)}` : ""}</p>
   </td></tr>
 </table></body></html>`;
 

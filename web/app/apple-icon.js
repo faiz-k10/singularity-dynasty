@@ -13,7 +13,7 @@ export default function AppleIcon() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "#030908",
+          background: "#ECE7DC",
         }}
       >
         <div
@@ -22,8 +22,9 @@ export default function AppleIcon() {
             height: 130,
             borderRadius: "50%",
             display: "flex",
-            background:
-              "radial-gradient(circle at 35% 35%, #5EEAD4, #2DD4BF 45%, #E11D48 85%)",
+            background: "#0B0B0B",
+            boxSizing: "border-box",
+            border: "8px solid #E8643F",
           }}
         />
       </div>

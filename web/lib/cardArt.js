@@ -14,7 +14,7 @@ import { fmt1, signed1 } from "@/lib/format";
 export const SIZES = { wide: { width: 1200, height: 630 }, tall: { width: 1080, height: 1350 } };
 export const sizeOf = (f) => (f === "tall" ? "tall" : "wide");
 
-const C = { void: "#030908", panel: "#09130F", panel2: "#0D1B17", rule: "#1A2A26", star: "#E6F4F1", steel: "#8C95A3", mint: "#2DD4BF", red: "#E11D48", onBrand: "#021210" };
+const C = { void: "#0B0B0B", panel: "#131210", panel2: "#1A1915", rule: "#27251F", star: "#ECE7DC", steel: "#A39E92", mint: "#E8643F", red: "#6E9BD8", onBrand: "#120804" }; // Event Horizon dark set (Nov 9 2026); "mint" = the accent (ember), "red" = the floor / down colour (cold blue)
 // Badge medallion colours, dark theme (globals.css --cape, --fire, ...); Established keeps the old gold.
 const BADGE = {
   gold: "#FFC773", silver: "#A0AAB9", rookie: "#BF8A5C", boulder: "#869550", cloud: "#EBADB7", heat: "#FF2400", ice: "#4F8EF7", icarus: "#A78BFA", eddy: "#4ADE80", sprout: "#A3E635",

@@ -14,7 +14,7 @@ export default function OpengraphImage() {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          background: "#030908",
+          background: "#ECE7DC",
           position: "relative",
         }}
       >
@@ -41,7 +41,7 @@ export default function OpengraphImage() {
             borderRadius: "50%",
             display: "flex",
             background:
-              "radial-gradient(circle, rgba(140,149,163,0.24) 0%, rgba(140,149,163,0.07) 40%, rgba(140,149,163,0) 70%)",
+              "radial-gradient(circle, rgba(17,17,17,0.24) 0%, rgba(17,17,17,0.07) 40%, rgba(17,17,17,0) 70%)",
           }}
         />
 
@@ -50,7 +50,7 @@ export default function OpengraphImage() {
             display: "flex",
             letterSpacing: 6,
             fontSize: 22,
-            color: "#2DD4BF",
+            color: "#C8401E",
             marginBottom: 28,
           }}
         >
@@ -64,8 +64,7 @@ export default function OpengraphImage() {
             height: 96,
             borderRadius: "50%",
             marginBottom: 28,
-            background:
-              "radial-gradient(circle at 35% 35%, #5EEAD4, #2DD4BF 45%, #E11D48 85%)",
+            background: "#0B0B0B",
           }}
         />
 
@@ -74,7 +73,7 @@ export default function OpengraphImage() {
             display: "flex",
             fontSize: 76,
             fontWeight: 700,
-            color: "#E6F4F1",
+            color: "#121212",
             marginBottom: 22,
           }}
         >
@@ -85,7 +84,7 @@ export default function OpengraphImage() {
           style={{
             display: "flex",
             fontSize: 32,
-            color: "#8C95A3",
+            color: "#5C5850",
           }}
         >
           Where the data reaches its endpoint.

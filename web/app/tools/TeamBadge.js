@@ -14,7 +14,7 @@ function textColorFor(hex) {
   const g = parseInt(hex.slice(3, 5), 16) / 255;
   const b = parseInt(hex.slice(5, 7), 16) / 255;
   const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-  return lum > 0.5 ? "#0A0A0F" : "#E6F4F1";
+  return lum > 0.5 ? "#0A0A0F" : "#ECE7DC";
 }
 
 // The team's logo (Oct 2026, founder's call -- the earlier version was a colored code pill because the marks are the

@@ -1,18 +1,18 @@
 :root{
-  --void:#030908;
-  --void-panel:#09130F;
-  --void-panel-2:#0D1B17;
-  --line:#1A2A26;
-  --star:#E6F4F1;
-  --star-dim:#8C95A3;
-  --horizon:#2DD4BF;
-  --horizon-rgb:45,212,191;
-  --horizon-gold:#2DD4BF;
-  --neon-blue:#8C95A3;
-  --neon-blue-dim:#6B7480;
-  --neon-blue-glow:rgba(140,149,163,0.28);
-  --up:#6FE3A8;
-  --down:#E11D48;
+  --void:#0B0B0B;
+  --void-panel:#131210;
+  --void-panel-2:#1A1915;
+  --line:#27251F;
+  --star:#ECE7DC;
+  --star-dim:#A39E92;
+  --horizon:#E8643F;
+  --horizon-rgb:232,100,63;
+  --horizon-gold:#E8643F;
+  --neon-blue:#8E897E;
+  --neon-blue-dim:#6B675E;
+  --neon-blue-glow:rgba(142,137,126,0.28);
+  --up:#E8643F;
+  --down:#6E9BD8;
   --purple:#B18AFF;
   --frost:#4F8EF7;
   /* Badge palette (cape/fire/peak/sprout/eddy/scholar/frost/icarus/menace): nine badge hues spread around the color wheel (red, orange, yellow, lime, green, cyan, blue, violet, magenta), tuned separately for dark and light mode so no two read as the same color in either. Used by the badge dots/medallions/ticker AND Portfolio Pulse's Badges tab. */
@@ -41,13 +41,13 @@
   --px:0; --py:0;
 
   /* theme-aware helpers: rgb triplets so callsites can pick their own alpha */
-  --scrim-rgb:9,19,15;
-  --star-dot-rgb:230,244,241;
+  --scrim-rgb:11,11,11;
+  --star-dot-rgb:236,231,220;
   --shadow-rgb:0,0,0;
-  --neon-blue-rgb:140,149,163;
-  --horizon-gold-rgb:45,212,191;
-  --up-rgb:111,227,168;
-  --down-rgb:225,29,72;
+  --neon-blue-rgb:142,137,126;
+  --horizon-gold-rgb:232,100,63;
+  --up-rgb:232,100,63;
+  --down-rgb:110,155,216;
   --purple-rgb:177,138,255;
   --frost-rgb:79,142,247;
   --cape-rgb:229,56,79;
@@ -74,11 +74,11 @@
   --boulder:#869550; --boulder-rgb:134,149,80;  /* Anti-Loser Floor: moss-khaki on dark, mustard on light (the free hues; every other is within ~23 dE of the rest in the badge palette) */
   --cloud:#EBADB7; --cloud-rgb:235,173,183;  /* Long Shot Winners: soft pink */
   --matchup-neutral-rgb:240,196,61;
-  --star-dim-rgb:140,149,163;
+  --star-dim-rgb:163,158,146;
   --inj-ok:#22C55E; --inj-q:#FACC15; --inj-d:#FB923C; --inj-out:#EF4444;
-  --on-brand:#021210;
-  --on-cold:#021210;
-  --on-down:#FFF1F3; /* text on a mission-red fill (same in both themes) */
+  --on-brand:#120804;
+  --on-cold:#0B0B0B;
+  --on-down:#0B0B0B; /* text on a --down fill (the cold blue since the Event Horizon retheme; white in light mode) */
   --tough:#3DDCFF; --tough-rgb:61,220,255;
   --orbit-alpha:0.3;
 }
@@ -89,25 +89,26 @@
    explicitly forced light via the toggle (data-theme="light"). */
 @media (prefers-color-scheme: light){
   :root:not([data-theme="dark"]){
-    --horizon:#0D7A70;
-    --horizon-rgb:13,122,112;
+    --on-down:#FFFFFF;
+    --horizon:#C8401E;
+    --horizon-rgb:200,64,30;
     --inj-ok:#16A34A; --inj-q:#A16207; --inj-d:#C2410C; --inj-out:#DC2626;
-    --on-brand:#F2F8F7;
-    --on-cold:#F4F4F2;
+    --on-brand:#FFF6EE;
+    --on-cold:#ECE7DC;
     --tough:#0A7F99;
     --tough-rgb:10,127,153;
-    --void:#F4F4F2;
-    --void-panel:#FBFCFB;
-    --void-panel-2:#ECEFEE;
-    --line:#D5DBDA;
-    --star:#0F1F1D;
-    --star-dim:#5C6370;
-    --horizon-gold:#0D7A70;
-    --neon-blue:#5C6370;
-    --neon-blue-dim:#4A525E;
-    --up:#1C8F52;
+    --void:#ECE7DC;
+    --void-panel:#F4F0E7;
+    --void-panel-2:#E4DED1;
+    --line:#D5CEBF;
+    --star:#121212;
+    --star-dim:#5C5850;
+    --horizon-gold:#C8401E;
+    --neon-blue:#6E6A61;
+    --neon-blue-dim:#57534B;
+    --up:#C8401E;
     --purple:#7C3AED;
-    --down:#E11D48;
+    --down:#2F5E9E;
     --frost:#2563EB;
     --cape:#C41E3A;
     --scholar:#0D9488;
@@ -120,14 +121,14 @@
     --pos-rb:#007A50;
     --pos-wr:#0B7FCC;
     --pos-te:#C4700A;
-    --scrim-rgb:251,252,251;
-    --star-dot-rgb:15,31,29;
+    --scrim-rgb:236,231,220;
+    --star-dot-rgb:18,18,18;
     --shadow-rgb:80,70,50;
-    --neon-blue-rgb:92,99,112;
-    --horizon-gold-rgb:13,122,112;
-    --up-rgb:28,143,82;
+    --neon-blue-rgb:110,106,97;
+    --horizon-gold-rgb:200,64,30;
+    --up-rgb:200,64,30;
     --purple-rgb:124,58,237;
-    --down-rgb:225,29,72;
+    --down-rgb:47,94,158;
     --frost-rgb:37,99,235;
     --cape-rgb:196,30,58;
     --scholar-rgb:13,148,136;
@@ -153,31 +154,32 @@
   --boulder:#D9D026; --boulder-rgb:217,208,38;  /* Anti-Loser Floor: moss-khaki on dark, mustard on light (the free hues; every other is within ~23 dE of the rest in the badge palette) */
   --cloud:#F5A3C8; --cloud-rgb:245,163,200;  /* Long Shot Winners: soft pink */
     --matchup-neutral-rgb:168,123,0;
-    --star-dim-rgb:92,99,112;
+    --star-dim-rgb:92,88,80;
     --orbit-alpha:0.8;
   }
 }
 :root[data-theme="light"]{
-  --star-dim-rgb:92,99,112;
-  --horizon:#0D7A70;
-  --horizon-rgb:13,122,112;
+  --on-down:#FFFFFF;
+  --star-dim-rgb:92,88,80;
+  --horizon:#C8401E;
+  --horizon-rgb:200,64,30;
   --inj-ok:#16A34A; --inj-q:#A16207; --inj-d:#C2410C; --inj-out:#DC2626;
-  --on-brand:#F2F8F7;
-  --on-cold:#F4F4F2;
+  --on-brand:#FFF6EE;
+  --on-cold:#ECE7DC;
   --tough:#0A7F99;
   --tough-rgb:10,127,153;
-  --void:#F4F4F2;
-  --void-panel:#FBFCFB;
-  --void-panel-2:#ECEFEE;
-  --line:#D5DBDA;
-  --star:#0F1F1D;
-  --star-dim:#5C6370;
-  --horizon-gold:#0D7A70;
-  --neon-blue:#5C6370;
-  --neon-blue-dim:#4A525E;
-  --up:#1C8F52;
+  --void:#ECE7DC;
+  --void-panel:#F4F0E7;
+  --void-panel-2:#E4DED1;
+  --line:#D5CEBF;
+  --star:#121212;
+  --star-dim:#5C5850;
+  --horizon-gold:#C8401E;
+  --neon-blue:#6E6A61;
+  --neon-blue-dim:#57534B;
+  --up:#C8401E;
   --purple:#7C3AED;
-  --down:#E11D48;
+  --down:#2F5E9E;
   --frost:#2563EB;
   --cape:#C41E3A;
   --scholar:#0D9488;
@@ -190,14 +192,14 @@
   --pos-rb:#007A50;
   --pos-wr:#0B7FCC;
   --pos-te:#C4700A;
-  --scrim-rgb:251,252,251;
-  --star-dot-rgb:15,31,29;
+  --scrim-rgb:236,231,220;
+  --star-dot-rgb:18,18,18;
   --shadow-rgb:80,70,50;
-  --neon-blue-rgb:92,99,112;
-  --horizon-gold-rgb:13,122,112;
-  --up-rgb:28,143,82;
+  --neon-blue-rgb:110,106,97;
+  --horizon-gold-rgb:200,64,30;
+  --up-rgb:200,64,30;
   --purple-rgb:124,58,237;
-  --down-rgb:225,29,72;
+  --down-rgb:47,94,158;
   --frost-rgb:37,99,235;
   --cape-rgb:196,30,58;
   --scholar-rgb:13,148,136;
@@ -330,7 +332,7 @@ body::before{
 }
 .brandmark .ring, .lab-export-brand .ring, .lab-export-foot .ring{
   width:15px; height:15px; border-radius:50%;
-  background:radial-gradient(circle at 35% 35%, var(--horizon-gold), var(--horizon) 45%, var(--down) 80%);
+  background:var(--star); /* the Event Horizon hole: a plain ink disc (bone in dark mode), the same mark the landing page docks in its header */
   flex-shrink:0;
 }
 .menu-btn{
@@ -462,14 +464,14 @@ body::before{
 .site-header .top-nav-bar{flex:1 1 0; justify-content:flex-start; gap:clamp(14px, 1.7vw, 28px);}
 .top-nav-bar a.tn-cta.tn-cta-tiers{flex:1 1 auto; margin-left:clamp(0px, 1vw, 16px);}
 .tn-tier{flex:1 1 0;}
-/* The pill's three tiers read as three solid blocks: red, red over steel, steel, with no ring around them (the mint ring was removed Nov 5 2026,
-   founder; the colours were mint / mint over steel / steel with a red ring until Oct 27 2026). */
-.top-nav-bar a.tn-cta.tn-cta-tiers{box-shadow:none; background:none; color:var(--on-down);}
-.top-nav-bar a.tn-cta.tn-cta-tiers:hover{box-shadow:none; color:var(--on-down); filter:brightness(1.08);}
-.tn-tier:nth-child(1){background:var(--down);}
-.tn-tier:nth-child(1) small{color:#fff;} /* white, not --on-down, so the tiny price line clears 4.5:1 on the red */
-.tn-tier:nth-child(2){background:color-mix(in srgb, var(--down) 50%, var(--neon-blue)); color:var(--on-cold);}
-.tn-tier:nth-child(3){background:var(--neon-blue); color:var(--on-cold);}
+/* The pill (Event Horizon retheme, Nov 9 2026; it was three solid blocks, red / red over steel / steel): Singularity the one ember
+   block, Explorer and Stargazer quiet text, all inside one hairline. */
+.top-nav-bar a.tn-cta.tn-cta-tiers{box-shadow:none; background:none; color:var(--star); border:1px solid var(--line);}
+.top-nav-bar a.tn-cta.tn-cta-tiers:hover{box-shadow:none; color:var(--star); border-color:var(--star-dim);}
+.tn-tier{border-left-color:var(--line);}
+.tn-tier:nth-child(1){background:var(--horizon); color:var(--on-brand);}
+.tn-tier:nth-child(2){color:var(--star);}
+.tn-tier:nth-child(3){color:var(--star-dim);}
 .site-header-spacer{flex:0 0 90px;}
 /* "Tools" dropdown -- CSS-only (:hover/:focus-within, no JS state needed)
    since this only has to work in .top-nav-bar, which is itself hidden
