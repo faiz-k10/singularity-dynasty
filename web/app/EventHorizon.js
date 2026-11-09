@@ -619,9 +619,9 @@ export default function EventHorizon({ signedIn, member, invited, discountPct, w
             <thead>
               <tr>
                 <th className="l">Player</th>
-                <th>Bad</th>
-                <th>Normal</th>
-                <th>Great</th>
+                <th>Floor</th>
+                <th>Median</th>
+                <th>Ceiling</th>
                 <th className="l">Range</th>
               </tr>
             </thead>
