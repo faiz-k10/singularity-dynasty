@@ -13,7 +13,7 @@ import STAT_LABELS from "./statLabels";
 import StatRadar from "./StatRadar";
 import SimilarShapeFinder from "./SimilarShapeFinder";
 import ArchetypePill from "./ArchetypePill";
-import { TAG_KINDS, ARCHETYPE_BLURB } from "@/lib/archetypes";
+import { ARCHETYPE_BLURB } from "@/lib/archetypes";
 import { SEASON_LABELS, LEVEL_FAMILY, TREND_FAMILY } from "@/lib/seasonLabels";
 
 // The Tags filter (replaces the Badges filter here, founder Nov 9 2026): the season-long labels in their two families, best to worst.
@@ -436,7 +436,7 @@ function StatDetailRow({ row, colSpan, shapePeers, wrTePool, tagsByName, maxCeil
           <div className="stat-panel stat-panel-table">
             {(tagKinds.length > 0 || row.labels?.length > 0) && (
               <div className="role-block">
-                <div className="role-block-caption mono">{TAG_KINDS.find((k) => k.key === activeTag)?.heading || "Season"}</div>
+                <div className="role-block-caption mono">Seasonal Player Progress</div>
                 <div className="role-block-tags">
                   {tagKinds.map((k) => (
                     <ArchetypePill key={k} name={tagLabel(row, k)} active={openTag === k} onClick={() => clickTag(k)} />
