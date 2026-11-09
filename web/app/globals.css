@@ -2334,7 +2334,7 @@ a.export-csv-btn{text-decoration:none;}
    flipped to the panel's left edge (explicit ask) so the pace-total
    number can overflow off that side instead of the right. */
 /* padding-left: room for the pace total, which sits to the LEFT of the bar (right:14px of it) -- without it the number was clipped by the panel edge ("476" read "76"). */
-.stat-panel-pace-rangebar-wrap{flex:0 0 auto; order:-1; display:flex; flex-direction:column; align-items:center; gap:4px; padding:0 34px 0 0;} /* the bar sits against the panel's left edge (founder, Nov 9 2026); the pace total moved to its right, in the padding-right room */
+.stat-panel-pace-rangebar-wrap{flex:0 0 auto; order:-1; display:flex; flex-direction:column; align-items:center; gap:4px; padding:0;} /* the bar sits against the panel's left edge (founder, Nov 9 2026); the pace total hangs off its left, outside the panel */
 /* Centered on the track's own axis (left:50%), pushed clear of the
    segment edge they label instead of straddling it -- floor sits right
    below the blue/typical fill, ceiling right above the gold/upside fill,
@@ -2356,13 +2356,13 @@ a.export-csv-btn{text-decoration:none;}
 .stat-panel-pace-rangebar-typical{position:absolute; left:0; right:0; background:var(--down); border-radius:0 0 2px 2px; min-height:3px;}
 .stat-panel-pace-rangebar-upside{position:absolute; left:0; right:0; background:var(--horizon-gold); border-radius:2px 2px 0 0; min-height:2px;}
 .stat-panel-pace-rangebar-marker{position:absolute; left:-5px; right:-5px; height:2px; transform:translateY(1px); z-index:2; border-radius:1px;}
-.stat-panel-pace-rangebar-marker::after{content:""; position:absolute; right:-3px; top:50%; transform:translateY(-50%); width:6px; height:6px; border-radius:50%; background:inherit; box-shadow:0 0 4px currentColor;}
+.stat-panel-pace-rangebar-marker::after{content:""; position:absolute; left:-3px; top:50%; transform:translateY(-50%); width:6px; height:6px; border-radius:50%; background:inherit; box-shadow:0 0 4px currentColor;}
 /* Projected full-season total implied by current pace -- same bottom%
    as the marker tick beside it, offset clear of the 8px-wide track so it
    never overlaps the typical/upside fill, colored to match the tick's
    own hot/cold (reuses -pace-delta's classes, not the marker's, since
    this is text color not a background). */
-.stat-panel-pace-rangebar-total{position:absolute; left:calc(100% + 18px); transform:translateY(50%); font-family:var(--font-mono), monospace; font-size:10.5px; font-weight:600; white-space:nowrap; z-index:2;}
+.stat-panel-pace-rangebar-total{position:absolute; right:calc(100% + 18px); transform:translateY(50%); font-family:var(--font-mono), monospace; font-size:10.5px; font-weight:600; white-space:nowrap; z-index:2;}
 .stat-panel-pace-rangebar-total.pace-hot{color:var(--up);}
 .stat-panel-pace-rangebar-total.pace-cold{color:var(--down);}
 /* Games-played-of-17 loading bar, pinned to the bottom of the whole
@@ -2410,7 +2410,7 @@ a.export-csv-btn{text-decoration:none;}
 .rankings-table-wrap .redraft-table > tbody > tr.stat-detail-row > td{padding-left:0; padding-right:0;}   /* the pin is measured from the scroller's edge, so the cell adds no side padding of its own */
 /* The pins for narrow tables (explained at .rankings-table-wrap, top of the file) -- placed AFTER the base rule so they win the cascade: */
 @container (max-width:980px){
-  .stat-detail-row > td > .stat-detail-grid{position:sticky; left:10px; width:calc(100cqw - 20px); box-sizing:border-box;}
+  .stat-detail-row > td > .stat-detail-grid{position:sticky; left:40px; width:calc(100cqw - 50px); box-sizing:border-box;} /* 30px more on the left: room for the pace total, which hangs off the range bar outside the panel */
   .rankings-table-wrap .player-sims-table > tbody > tr.stat-detail-row > td{padding-left:0; padding-right:0;}
 }
 /* Identity strip above the 3-column grid -- name/photo/badges on the
@@ -3077,7 +3077,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
      row grid below (88px label + 8px gap on the left, 34px value + 8px gap on the right). */
   text-align:center; padding:0 42px 0 96px;
 }
-.shape-compare-row{display:grid; grid-template-columns:88px 1fr 34px; align-items:center; gap:8px; padding:5px 0;}
+.shape-compare-row{display:grid; grid-template-columns:88px 1fr 34px; align-items:center; gap:8px; padding:1px 0;}
 /* 88px (not the old 52px) fits the longest full stat name on one line
    ("YAC Above Exp", "Avg Separation") without truncating -- was
    clipped to "YAC Ab…"/"Avg Sep…", illegible at a glance. The bar
@@ -6632,3 +6632,7 @@ select.lab-select{min-width:200px;}
 /* Home briefing: five matchups at most are in view; the rest scroll inside the box (app/hub/FiveRows.js sets the height). The header stays put. */
 .yw-scroll{position:relative; overflow-y:auto; overscroll-behavior:contain; scrollbar-width:thin;}
 .yw-scroll .yw-table thead th{position:sticky; top:0; z-index:1; background:var(--void);}
+
+/* the pace total hangs off the bar's left edge, outside the panel, so the panel and the cell around it must not clip it */
+.stat-panel-pace, .stat-panel-pace-top, .stat-panel-pace-rangebar-wrap{overflow:visible;}
+.player-sims-table .stat-detail-row > td > .stat-detail-grid{margin-left:30px;} /* room for the pace total outside the pace panel's left edge */
