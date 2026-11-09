@@ -201,6 +201,21 @@ function HoleLookup({ signedIn, member }) {
   );
 }
 
+// A small planet with one more orbit ring per tool (1 for the first, 5 for the last), the planet drawn on the outermost ring.
+function OrbitIcon({ rings }) {
+  const rx = (k) => +(8 + k * 4.4).toFixed(1);
+  const out = rx(rings - 1);
+  return (
+    <svg className="ehp-ico" viewBox="-28 -28 56 56" aria-hidden="true">
+      <circle r="3.6" fill="currentColor" />
+      {Array.from({ length: rings }, (_, k) => (
+        <ellipse key={k} rx={rx(k)} ry={+(rx(k) * 0.42).toFixed(1)} fill="none" stroke="currentColor" strokeOpacity=".45" strokeWidth=".7" transform="rotate(-12)" />
+      ))}
+      <circle className="planet" cx={+(out * Math.cos(0.8)).toFixed(1)} cy={+(out * 0.42 * Math.sin(0.8)).toFixed(1)} r="2.6" fill="currentColor" transform="rotate(-12)" />
+    </svg>
+  );
+}
+
 function Curve({ player }) {
   if (!player) return null;
   const { name, week, floor: fl, median: m, ceiling: c } = player;
@@ -478,6 +493,7 @@ export default function EventHorizon({ signedIn, member, invited, discountPct, p
               <li key={h}>
                 <Link href={href}>
                   <span className="no">{String(i + 1).padStart(2, "0")}</span>
+                  <OrbitIcon rings={i + 1} />
                   <span className="name">{h}</span>
                   <span className="say">{p}</span>
                   <span className="t">{t}</span>
