@@ -2166,7 +2166,7 @@ a.export-csv-btn{text-decoration:none;}
    the last column -- explicit ask, mirrors how .shape-finder-list
    centers its own cards below. */
 .stat-detail-grid{
-  display:grid; grid-template-columns:minmax(0,150px) minmax(0,360px) minmax(0,520px) minmax(0,340px);
+  display:grid; grid-template-columns:minmax(0,196px) minmax(0,360px) minmax(0,520px) minmax(0,340px); /* the season / pace column was 150px and felt cramped (founder, Nov 9 2026) */
   grid-template-areas:"season table percentile radar" "finder finder finder finder";
   column-gap:20px; row-gap:20px; align-items:stretch; justify-content:center;
 }
@@ -2198,7 +2198,7 @@ a.export-csv-btn{text-decoration:none;}
    width scales the whole chart (paths AND text) down together, no
    separate font-size overrides needed inside StatRadar.js itself. */
 .stat-detail-grid .stat-panel-radar{max-width:340px; justify-content:center;}
-.stat-detail-grid .stat-panel-pace{padding:10px 8px;}
+.stat-detail-grid .stat-panel-pace{padding:14px 12px 14px 8px;}
 .stat-detail-grid .stat-panel-pace-portrait-slot{min-height:40px;}
 .stat-detail-grid .pctile-card{margin-top:8px; padding-top:8px;}
 /* PercentileCard now lives in its own top-level panel (.stat-panel-
@@ -2270,7 +2270,7 @@ a.export-csv-btn{text-decoration:none;}
   grid-area:season; display:flex; flex-direction:column;
   white-space:normal; gap:10px; padding:14px 10px;
 }
-.stat-panel-pace-top{display:flex; flex-direction:row; align-items:stretch; gap:10px; flex:1;}
+.stat-panel-pace-top{display:flex; flex-direction:row; align-items:stretch; gap:16px; flex:1;}
 .stat-panel-pace-info{
   flex:1; min-width:0; display:flex; flex-direction:column; justify-content:flex-start; align-items:center;
   text-align:center; gap:6px;
@@ -2364,7 +2364,7 @@ a.export-csv-btn{text-decoration:none;}
    never overlaps the typical/upside fill, colored to match the tick's
    own hot/cold (reuses -pace-delta's classes, not the marker's, since
    this is text color not a background). */
-.stat-panel-pace-rangebar-total{position:absolute; right:calc(100% + 18px); transform:translateY(50%); font-family:var(--font-mono), monospace; font-size:10.5px; font-weight:600; white-space:nowrap; z-index:2;}
+.stat-panel-pace-rangebar-total{position:absolute; right:calc(100% + 16px); transform:translateY(50%); font-family:var(--font-mono), monospace; font-size:10.5px; font-weight:600; white-space:nowrap; z-index:2;}
 .stat-panel-pace-rangebar-total.pace-hot{color:var(--up);}
 .stat-panel-pace-rangebar-total.pace-cold{color:var(--down);}
 /* Games-played-of-17 loading bar, pinned to the bottom of the whole
