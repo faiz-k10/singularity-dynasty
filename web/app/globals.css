@@ -6856,9 +6856,9 @@ body:has(.ehp) .site-footer .fsmall,body:has(.ehp) .site-footer .fsmall a,body:h
 /* the visitor sample's lineup alerts (under the matchups table) */
 .ehp-al{margin-top:34px;}
 .ehp-al ul{list-style:none;margin:12px 0 0;border-top:1px solid var(--ehp-holeink);}
-.ehp-al li{display:grid;grid-template-columns:150px 1fr auto;gap:18px;align-items:baseline;padding:14px 0;border-bottom:1px solid color-mix(in srgb, var(--ehp-holeink) 16%, transparent);}
-.ehp-al .lg{font:400 15px var(--font-body), serif;}
-.ehp-al .tx{font:12px var(--font-mono), monospace;font-stretch:82%;color:var(--down);}
+.ehp-al li{display:grid;grid-template-columns:150px minmax(0,1fr) auto;gap:18px;align-items:baseline;white-space:nowrap;padding:14px 0;border-bottom:1px solid color-mix(in srgb, var(--ehp-holeink) 16%, transparent);}
+.ehp-al .lg{font:400 15px var(--font-body), serif;overflow:hidden;text-overflow:ellipsis;}
+.ehp-al .tx{font:12px var(--font-mono), monospace;font-stretch:82%;color:var(--down);overflow:hidden;text-overflow:ellipsis;}
 .ehp-al .fx{font:italic 13.5px var(--font-body), serif;color:var(--ehp-holedim);text-align:right;}
 
 /* 3 · Weekly Projection Rankings (paper) */
@@ -6885,7 +6885,7 @@ body:has(.ehp) .site-footer .fsmall,body:has(.ehp) .site-footer .fsmall a,body:h
 .ehp-dy .sc{font:400 34px/1 var(--font-display), sans-serif;text-align:right;}
 .ehp-dy .tr{font:10.5px var(--font-mono), monospace;font-stretch:82%;letter-spacing:.16em;text-transform:uppercase;color:var(--ehp-holedim);text-align:right;}
 @media (max-width:900px){
-  .ehp-al li{grid-template-columns:1fr;gap:4px;} .ehp-al .fx{text-align:left;}
+  .ehp-al li{grid-template-columns:minmax(0,1fr);gap:3px;} .ehp-al .fx{text-align:left;overflow:hidden;text-overflow:ellipsis;}
   .ehp-weekly,.ehp-inside,.ehp-dark{padding:80px 0 !important;}
   .ehp-wk td:nth-child(5),.ehp-wk th:nth-child(5){display:none;}
   .ehp-dy li{grid-template-columns:30px 1fr 64px;} .ehp-dy .tr{display:none;}

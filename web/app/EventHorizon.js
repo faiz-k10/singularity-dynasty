@@ -255,9 +255,9 @@ const SAMPLE_ROWS = [
   { id: "s4", name: "Mile High Club", record: "2-6", opponent: "Bye Week Heroes", live: true, mine: 32.15, opp: 88.7, p: 0.01, label: "Long shot", tone: "red" },
 ];
 const SAMPLE_ALERTS = [
-  { league: "Sunday Scaries", text: "Your WR2 is listed questionable", fix: "Swap in your best bench receiver" },
-  { league: "Dynasty Drifters", text: "An empty starting slot at RB2", fix: "Fill it before Sunday's kickoff" },
-  { league: "The Long Snappers", text: "Your TE is on a bye this week", fix: "Start the next tight end on your bench" },
+  { league: "Sunday Scaries", text: "WR2 questionable", fix: "Swap in your best bench WR" },
+  { league: "Dynasty Drifters", text: "Empty slot at RB2", fix: "Fill it before kickoff" },
+  { league: "The Long Snappers", text: "TE on a bye week", fix: "Start your next TE" },
 ];
 
 function Alerts({ items, sample }) {
