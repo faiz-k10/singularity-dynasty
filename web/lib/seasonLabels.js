@@ -20,9 +20,9 @@ export const STREAK_WEEKS = 4;
 
 // `plain` is the one-sentence caption under a clicked pill: deliberately vague, so it says what the tag means without giving away the rule.
 export const SEASON_LABELS = {
-  leagueWinners: { name: "League Winner", tone: "win", plain: "His season has gone far better than anyone could have reasonably hoped." },
+  leagueWinners: { name: "League Winner", tone: "win", plain: "His season has gone far better than we could have reasonably hoped." },
   breakout: { name: "Breakout", tone: "win", plain: "He has turned into a better player than we expected before the season." },
-  tankCommander: { name: "Tank Commander", tone: "lose", plain: "His season has gone far worse than anyone could have reasonably feared." },
+  tankCommander: { name: "Tank Commander", tone: "lose", plain: "His season has gone far worse than we could have reasonably feared." },
   collapse: { name: "Collapse", tone: "lose", plain: "He has turned out much worse than we expected before the season." },
   neutral: { name: "Neutral", tone: "neutral", plain: "So far he is about where we expected him to be." },
   riser: { name: "Riser", tone: "win", plain: "His outlook has been getting better week after week." },
