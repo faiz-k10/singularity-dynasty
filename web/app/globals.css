@@ -2334,7 +2334,7 @@ a.export-csv-btn{text-decoration:none;}
    flipped to the panel's left edge (explicit ask) so the pace-total
    number can overflow off that side instead of the right. */
 /* padding-left: room for the pace total, which sits to the LEFT of the bar (right:14px of it) -- without it the number was clipped by the panel edge ("476" read "76"). */
-.stat-panel-pace-rangebar-wrap{flex:0 0 auto; order:-1; display:flex; flex-direction:column; align-items:center; gap:4px; padding-left:26px;}
+.stat-panel-pace-rangebar-wrap{flex:0 0 auto; order:-1; display:flex; flex-direction:column; align-items:center; gap:4px; padding:0 34px 0 0;} /* the bar sits against the panel's left edge (founder, Nov 9 2026); the pace total moved to its right, in the padding-right room */
 /* Centered on the track's own axis (left:50%), pushed clear of the
    segment edge they label instead of straddling it -- floor sits right
    below the blue/typical fill, ceiling right above the gold/upside fill,
@@ -2362,7 +2362,7 @@ a.export-csv-btn{text-decoration:none;}
    never overlaps the typical/upside fill, colored to match the tick's
    own hot/cold (reuses -pace-delta's classes, not the marker's, since
    this is text color not a background). */
-.stat-panel-pace-rangebar-total{position:absolute; right:14px; transform:translateY(50%); font-family:var(--font-mono), monospace; font-size:10.5px; font-weight:600; white-space:nowrap; z-index:2;}
+.stat-panel-pace-rangebar-total{position:absolute; left:calc(100% + 18px); transform:translateY(50%); font-family:var(--font-mono), monospace; font-size:10.5px; font-weight:600; white-space:nowrap; z-index:2;}
 .stat-panel-pace-rangebar-total.pace-hot{color:var(--up);}
 .stat-panel-pace-rangebar-total.pace-cold{color:var(--down);}
 /* Games-played-of-17 loading bar, pinned to the bottom of the whole
