@@ -249,10 +249,10 @@ function OrbitIcon({ rings }) {
 // What a visitor sees in the Game Board section: a made-up week in the same structure as a member's (the leagues are invented and
 // labelled as a sample), plus the lineup alerts the Game Board raises -- shown here only as an example of what it does.
 const SAMPLE_ROWS = [
-  { id: "s1", name: "Sunday Scaries", record: "5-3", opponent: "Gridiron Ghosts", live: false, mine: 118.4, opp: 112.1, p: 0.62, label: "Favored", tone: "mint" },
-  { id: "s2", name: "The Long Snappers", record: "7-1", opponent: "Fourth & Goal", live: false, mine: 104.9, opp: 103.2, p: 0.52, label: "Toss-up", tone: "grey" },
-  { id: "s3", name: "Dynasty Drifters", record: "3-5", opponent: "Waiver Wire Warriors", live: false, mine: 97.6, opp: 109.3, p: 0.31, label: "Underdog", tone: "grey" },
-  { id: "s4", name: "Mile High Club", record: "2-6", opponent: "Bye Week Heroes", live: false, mine: 88.1, opp: 121.7, p: 0.07, label: "Long shot", tone: "red" },
+  { id: "s1", name: "Sunday Scaries", record: "5-3", opponent: "Gridiron Ghosts", live: true, mine: 74.62, opp: 51.38, p: 0.78, label: "Favored", tone: "mint" },
+  { id: "s2", name: "The Long Snappers", record: "7-1", opponent: "Fourth & Goal", live: true, mine: 63.1, opp: 66.44, p: 0.46, label: "Toss-up", tone: "grey" },
+  { id: "s3", name: "Dynasty Drifters", record: "3-5", opponent: "Waiver Wire Warriors", live: true, mine: 48.9, opp: 71.26, p: 0.17, label: "Underdog", tone: "grey" },
+  { id: "s4", name: "Mile High Club", record: "2-6", opponent: "Bye Week Heroes", live: true, mine: 32.15, opp: 88.7, p: 0.01, label: "Long shot", tone: "red" },
 ];
 const SAMPLE_ALERTS = [
   { league: "Sunday Scaries", text: "Your WR2 is listed questionable", fix: "Swap in your best bench receiver" },

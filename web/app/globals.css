@@ -6836,7 +6836,8 @@ body:has(.ehp) .site-footer .fsmall,body:has(.ehp) .site-footer .fsmall a,body:h
 .ehp-mt .sub i{font-style:normal;border:1px solid color-mix(in srgb, var(--ehp-holeink) 25%, transparent);padding:0 5px;}
 .ehp-mt .num{font:400 30px/1 var(--font-display), sans-serif;}
 .ehp-mt .num.proj{opacity:.55;}
-.ehp-mt .num.is-lead{color:var(--ehp-mark);}
+.ehp-mt .num.is-lead{color:var(--ehp-mark);} /* ahead = ember (the site's good colour) */
+.ehp-mt .num.is-trail{color:var(--down);} /* behind = cold blue (the site's bad colour) */
 .ehp-mt .ch{min-width:150px;font:11px var(--font-mono), monospace;font-stretch:82%;}
 .ehp-mt .ch b{font-weight:400;letter-spacing:.14em;text-transform:uppercase;}
 .ehp-mt .ch.is-mint b{color:var(--ehp-mark);}
