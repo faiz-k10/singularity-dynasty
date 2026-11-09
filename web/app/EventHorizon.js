@@ -106,6 +106,17 @@ function Sky({ size, nextKickoff }) {
         </g>
       </g>
       <g className="ehp-infall" />
+    </svg>
+  );
+}
+
+// The four orbiting tools live in their own layer ABOVE the hole, drawn white with mix-blend-mode: difference, so a planet that
+// passes in front of the disc turns negative (dark on the bone disc in dark mode, light on the ink disc in light mode, like a
+// retrograde star chart) and stays clickable.
+function Bodies({ size }) {
+  const { w, h } = size;
+  return (
+    <svg className="ehp-sky ehp-bodies" viewBox={`${-w / 2} ${-h / 2} ${w} ${h}`}>
       {BODIES.map((b, i) => (
         <a key={b.n} href={b.href} className="ehp-body" data-i={i} style={{ transitionDelay: `${2 + i * 0.25}s` }} aria-label={`${b.n.toLowerCase()}: ${b.say}`}>
           <circle className="halo" r="15" />
@@ -346,7 +357,7 @@ export default function EventHorizon({ signedIn, member, invited, discountPct, p
     const bodies = [...root.querySelectorAll(".ehp-body")];
     const stars = root.querySelector(".ehp-stars");
     const infall = root.querySelector(".ehp-infall");
-    const hz = root.querySelector(".ehp-hz"), hole = root.querySelector(".ehp-hole"), sky = root.querySelector(".ehp-sky"), cue = root.querySelector(".ehp-cue");
+    const hz = root.querySelector(".ehp-hz"), hole = root.querySelector(".ehp-hole"), skies = [...root.querySelectorAll(".ehp-sky")], cue = root.querySelector(".ehp-cue");
     const rnd = seeded(11);
     let tx = 0, ty = 0, px = 0, py = 0, speck = null, raf = 0, ready = false;
     const t0 = performance.now();
@@ -392,8 +403,10 @@ export default function EventHorizon({ signedIn, member, invited, discountPct, p
         hole.style.pointerEvents = p > 0.2 ? "none" : "";
         cue.style.opacity = String(Math.max(0, 1 - p * 6));
       }
-      sky.style.opacity = String(1 - Math.min(1, p * 1.6));
-      sky.style.transform = `scale(${1 + e * 0.35})`;
+      skies.forEach((sk) => {
+        sk.style.opacity = String(1 - Math.min(1, p * 1.6));
+        sk.style.transform = `scale(${1 + e * 0.35})`;
+      });
       const inside = document.getElementById("ehp-inside")?.getBoundingClientRect();
       setHeader(inside && inside.bottom <= 72 ? "docked" : p > 0.55 ? "in-hole" : "");
       if (inside && inside.top < innerHeight * 0.55) setSeen(true);
@@ -451,6 +464,7 @@ export default function EventHorizon({ signedIn, member, invited, discountPct, p
           <div className="ehp-hole" id="main-content">
             <HoleLookup signedIn={signedIn} member={member} />
           </div>
+          <Bodies size={size} />
           {invited && (
             <p className="ehp-invite" role="status">
               A friend invited you · {discountPct}% off your first payment is saved for you
