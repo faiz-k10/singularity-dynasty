@@ -78,6 +78,12 @@ function StatDetailRow({ row, colSpan, shapePeers, wrTePool, tagsByName, maxCeil
   const tagKinds = ["role"].filter((k) => tagLabel(row, k));
   const activeTag = tagKinds[0];
   const [openTag, setOpenTag] = useState(null); // the tag whose one-sentence caption is showing: "role" or a season label key
+  // Which family the comparison cards' pills show: the family of the last tag clicked here (role, the level family or the trend family).
+  const [compareKind, setCompareKind] = useState("role");
+  const clickTag = (key) => {
+    setOpenTag((t) => (t === key ? null : key));
+    setCompareKind(key === "role" ? "role" : LEVEL_FAMILY.includes(key) ? "level" : "trend");
+  };
   const [snapWeek, setSnapWeek] = useState(null);
   const [snaps, setSnaps] = useState([]);
   const pendingWeek = useRef(null);
@@ -433,10 +439,10 @@ function StatDetailRow({ row, colSpan, shapePeers, wrTePool, tagsByName, maxCeil
                 <div className="role-block-caption mono">{TAG_KINDS.find((k) => k.key === activeTag)?.heading || "Season"}</div>
                 <div className="role-block-tags">
                   {tagKinds.map((k) => (
-                    <ArchetypePill key={k} name={tagLabel(row, k)} active={openTag === k} onClick={() => setOpenTag((t) => (t === k ? null : k))} />
+                    <ArchetypePill key={k} name={tagLabel(row, k)} active={openTag === k} onClick={() => clickTag(k)} />
                   ))}
                   {(row.labels || []).map((k) => (
-                    <ArchetypePill key={k} name={SEASON_LABELS[k].name} active={openTag === k} onClick={() => setOpenTag((t) => (t === k ? null : k))} />
+                    <ArchetypePill key={k} name={SEASON_LABELS[k].name} active={openTag === k} onClick={() => clickTag(k)} />
                   ))}
                 </div>
                 {/* One sentence for whichever tag was clicked (click it again to close). */}
@@ -547,7 +553,7 @@ function StatDetailRow({ row, colSpan, shapePeers, wrTePool, tagsByName, maxCeil
             onGoToPlayer={onGoToPlayer ? (name) => onGoToPlayer(name, row.player_name) : undefined}
             selection={selection}
             tagsByName={tagsByName}
-            tagKind={activeTag}
+            tagKind={compareKind}
           />
         </div>
       </td>
@@ -795,7 +801,13 @@ export default function PlayerSimSearch({ rows: sortedRows, sortKey: initialKey,
   // peers come from the history API and carry no archetype of their own).
   const tagsByName = useMemo(() => {
     const out = {};
-    for (const row of rows) if (row.archetype || row.sus || row.stage) out[row.player_name] = { role: row.archetype, sus: row.sus, stage: row.stage };
+    for (const row of rows) {
+      if (!(row.archetype || row.sus || row.stage || row.labels)) continue;
+      // `level` / `trend`: his tag in each season-long family (lib/seasonLabels.js), so a comp's pill can follow the family clicked in the opened player's panel
+      const fam = (keys) => keys.find((k) => row.labels?.includes(k));
+      const lv = fam(LEVEL_FAMILY), tr = fam(TREND_FAMILY);
+      out[row.player_name] = { role: row.archetype, sus: row.sus, stage: row.stage, level: lv && SEASON_LABELS[lv].name, trend: tr && SEASON_LABELS[tr].name };
+    }
     return out;
   }, [rows]);
 
