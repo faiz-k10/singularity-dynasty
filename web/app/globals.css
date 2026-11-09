@@ -2307,7 +2307,7 @@ a.export-csv-btn{text-decoration:none;}
 .stat-panel-pace-delta.pace-cold{--tone:var(--down);}
 /* One shared 3-column grid for all rows (each row is a subgrid), so the week label, team pill and
    points columns are sized together and every pill starts at the same x -- left edges match. */
-.stat-panel-pace-recent{display:grid; grid-template-columns:auto minmax(0,1fr) auto; column-gap:6px; width:100%; min-width:0; margin-top:6px;}
+.stat-panel-pace-recent{display:grid; grid-template-columns:auto minmax(0,1fr) auto; column-gap:6px; width:calc(100% - 14px); margin-left:14px; min-width:0; margin-top:6px;} /* narrower, set in from the range bar so the floor plate never touches it */
 .pace-game-row{display:grid; grid-column:1 / -1; grid-template-columns:subgrid; align-items:center; min-width:0; padding:4px 0; border-bottom:1px solid rgba(var(--shadow-rgb),0.5); font-size:10px; white-space:nowrap;}
 .pace-game-row:last-child{border-bottom:none;}
 /* Fewer than three games: the last real row keeps its (invisible) border so the list is the same height in every state. */
