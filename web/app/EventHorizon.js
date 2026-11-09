@@ -412,8 +412,6 @@ export default function EventHorizon({ signedIn, member, invited, discountPct, w
   const bodies = useMemo(() => bodiesFor(member), [member]);
   const [size, setSize] = useState({ w: 1440, h: 900 });
   const [arrived, setArrived] = useState(false);
-  const [header, setHeader] = useState("");
-  const [seen, setSeen] = useState(false);
 
   // the stage's size (the sky is drawn in its pixels, so the hole and the ring always share one centre)
   useEffect(() => {
@@ -511,9 +509,6 @@ export default function EventHorizon({ signedIn, member, invited, discountPct, w
         sk.style.opacity = String(1 - Math.min(1, p * 1.6));
         sk.style.transform = `scale(${1 + e * 0.35})`;
       });
-      const inside = document.getElementById("ehp-inside")?.getBoundingClientRect();
-      setHeader(inside && inside.bottom <= 72 ? "docked" : p > 0.55 ? "in-hole" : "");
-      if (inside && inside.top < innerHeight * 0.55) setSeen(true);
     }
     const ready_t = setTimeout(() => {
       ready = true;
@@ -539,7 +534,7 @@ export default function EventHorizon({ signedIn, member, invited, discountPct, w
 
   return (
     <div className={`ehp${arrived ? " arrived" : ""}`} style={{ "--ehp-r": `${radiusFor(size.w)}px` }}>
-      <header className={`ehp-header ${header}`}>
+      <header className="ehp-header">
         <div className="ehp-wrap ehp-bar">
           <nav>
             <a href="#tools">Tools</a>
@@ -588,7 +583,7 @@ export default function EventHorizon({ signedIn, member, invited, discountPct, w
       </section>
 
       {/* 2 · the Game Board: a member's own week; a visitor a sample in the same structure, with the lineup alerts the board raises */}
-      <section className={`ehp-inside${seen ? " seen" : ""}`} id="ehp-inside">
+      <section className="ehp-inside" id="ehp-inside">
         <div className="ehp-wrap ehp-two">
           <div>
             <div className="ehp-k">{member?.rows?.length ? "The Game Board" : "The Game Board · a sample week"}</div>
