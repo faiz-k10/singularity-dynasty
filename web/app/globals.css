@@ -2981,7 +2981,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
    vertical padding here as possible; 1px is about the floor before the
    active-state pill starts looking clipped around the text. */
 .shape-finder-layers{
-  grid-area:picker; display:grid; grid-template-columns:104px repeat(3, 1fr); gap:0;
+  grid-area:picker; display:grid; grid-template-columns:131px repeat(3, 1fr); gap:0; /* 131px = the table's own Stat column, so each button sits exactly over its column of numbers */
   padding-bottom:2px; border-bottom:1px solid var(--line);
 }
 .shape-finder-layer-btn:nth-of-type(1){grid-column:2;}
