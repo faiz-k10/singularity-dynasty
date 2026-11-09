@@ -120,8 +120,9 @@ function Sky({ size, nextKickoff }) {
   );
 }
 
-// The Sleeper box inside the hole; the answer replaces the question in the same place.
-function HoleLookup({ signedIn }) {
+// The Sleeper box inside the hole; the answer replaces the question in the same place. A member with saved leagues sees their
+// week there instead (expected wins across their leagues, from the home page's loadYourWeek).
+function HoleLookup({ signedIn, member }) {
   const [name, setName] = useState("");
   const [answer, setAnswer] = useState(null);
   const [error, setError] = useState(null);
@@ -146,6 +147,19 @@ function HoleLookup({ signedIn }) {
         setError("Couldn't reach Sleeper just now. Try again in a moment.");
       }
     });
+  }
+  // a member with saved leagues: their week, in the same place a visitor's answer appears
+  if (member && !answer) {
+    return (
+      <div className="ehp-answer">
+        <div className="ehp-k">Welcome back, {member.name}</div>
+        <p className="ehp-big">
+          {member.wins.toFixed(1)} <span className="ehp-of">of {member.of}</span>
+        </p>
+        <p className="ehp-line">wins to expect this week across your {member.leagues} {member.leagues === 1 ? "league" : "leagues"}</p>
+        <Link className="ehp-holebtn" href="/my-team">Open the Game Board →</Link>
+      </div>
+    );
   }
   if (answer) {
     const s = answer.summary, m = s.matchups, top = s.exposure[0];
@@ -278,7 +292,7 @@ function Plans() {
   );
 }
 
-export default function EventHorizon({ signedIn, invited, discountPct, player, nextKickoff, posts }) {
+export default function EventHorizon({ signedIn, member, invited, discountPct, player, nextKickoff, posts }) {
   const stageRef = useRef(null);
   const [size, setSize] = useState({ w: 1440, h: 900 });
   const [arrived, setArrived] = useState(false);
@@ -422,7 +436,7 @@ export default function EventHorizon({ signedIn, invited, discountPct, player, n
           <Sky size={size} nextKickoff={nextKickoff} />
           <div className="ehp-hz" aria-hidden="true" />
           <div className="ehp-hole" id="main-content">
-            <HoleLookup signedIn={signedIn} />
+            <HoleLookup signedIn={signedIn} member={member} />
           </div>
           {invited && (
             <p className="ehp-invite" role="status">

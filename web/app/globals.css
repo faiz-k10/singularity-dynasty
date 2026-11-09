@@ -6667,6 +6667,7 @@ body:has(.ehp){--ehp-bg:#0B0B0B;--ehp-ink:#ECE7DC;--ehp-dim:#A39E92;--ehp-faint:
 .ehp-err{margin-top:10px;font:italic 13px var(--font-body), serif;color:var(--ehp-mark);max-width:210px;}
 .ehp-answer{display:flex;flex-direction:column;align-items:center;gap:6px;}
 .ehp-big{font:400 40px/1 var(--font-display), sans-serif;margin:4px 0 2px;}
+.ehp-of{font-size:20px;color:var(--ehp-holedim);}
 .ehp-line{font:13.5px/1.4 var(--font-body), serif;color:var(--ehp-holedim);max-width:210px;}
 .ehp-line b{color:var(--ehp-holeink);font-weight:400;}
 .ehp-holebtn{margin-top:8px;font:12px var(--font-mono), monospace;color:var(--ehp-holeink);border-bottom:1px solid var(--ehp-mark);padding-bottom:2px;}
