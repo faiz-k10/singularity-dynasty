@@ -414,6 +414,11 @@ function StatDetailRow({ row, colSpan, shapePeers, wrTePool, tagsByName, maxCeil
                           style={{ left: `${seg.start}%`, width: `${seg.end - seg.start}%` }}
                         />
                       ))}
+                      {/* Weeks before his earliest published projection (a rookie projected from week 7 on has none for W1-W6) can't be
+                          scrubbed to; they read as an empty, dotted stretch instead of a red one. */}
+                      {weeks.length > 0 && weeks[0] > 1 && latestWeek > 1 && (
+                        <div className="stat-panel-pace-seg-nodata" style={{ width: `${((weeks[0] - 1) / (latestWeek - 1)) * 100}%` }} />
+                      )}
                       {/* His team's bye weeks read white. */}
                       {missedSegments(row.byeWeeks, pv.week, latestWeek).map((seg) => (
                         <div
