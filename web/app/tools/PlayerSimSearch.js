@@ -15,6 +15,7 @@ import StatRadar from "./StatRadar";
 import SimilarShapeFinder from "./SimilarShapeFinder";
 import ArchetypePill from "./ArchetypePill";
 import { TAG_KINDS } from "@/lib/archetypes";
+import { SEASON_LABELS } from "@/lib/seasonLabels";
 import PercentileCard from "./PercentileCard";
 import { radarLayoutFor } from "./radarLayout";
 import { missedSegments } from "@/lib/teamGames";
@@ -416,12 +417,15 @@ function StatDetailRow({ row, colSpan, shapePeers, wrTePool, tagsByName, maxCeil
             </div>
           )}
           <div className="stat-panel stat-panel-table">
-            {tagKinds.length > 0 && (
+            {(tagKinds.length > 0 || row.labels?.length > 0) && (
               <div className="role-block">
-                <div className="role-block-caption mono">{TAG_KINDS.find((k) => k.key === activeTag)?.heading}</div>
+                <div className="role-block-caption mono">{TAG_KINDS.find((k) => k.key === activeTag)?.heading || "Season"}</div>
                 <div className="role-block-tags">
                   {tagKinds.map((k) => (
                     <ArchetypePill key={k} name={tagLabel(row, k)} active />
+                  ))}
+                  {(row.labels || []).map((k) => (
+                    <ArchetypePill key={k} name={SEASON_LABELS[k].name} active />
                   ))}
                 </div>
               </div>

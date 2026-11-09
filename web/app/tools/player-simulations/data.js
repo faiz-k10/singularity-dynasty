@@ -7,6 +7,7 @@ import { computeOutcomePercentile } from "@/lib/outcomePercentile";
 import { findBio } from "@/lib/portfolio";
 import { fetchAllRows } from "@/lib/fetchAllRows";
 import { ARCHETYPE_NEAR_CONFIDENCE } from "@/lib/archetypes";
+import { seasonLabelsByName } from "@/lib/seasonLabels";
 import { byeWeeks, indexGameLog, missedWeeks, recentWeekRows, teamGamesThrough } from "@/lib/teamGames";
 
 // Data layer of Player Season Simulations, split out of page.js so the Compare Player Sims tool reads the same rows.
@@ -15,6 +16,19 @@ export const GAMES_PER_SEASON = 17;
 // Singularity-only per the pricing copy -- Explorer does not include this, so both Stargazer and Explorer see the
 // same top-10 teaser.
 export const PAID_TIERS = ["singularity"];
+
+// Season-long labels (League Winners, Breakout, Tank Commander, Collapse, Riser, Faller; lib/seasonLabels.js): every weekly snapshot of the
+// season's floor / median / ceiling, boiled down to { name: [label keys] }. Optional like the groups below -- a failed read just shows none.
+async function loadSeasonLabels(client, latest) {
+  try {
+    const rows = await fetchAllRows(client, "player_simulations", "player_name, week, floor, median, ceiling", (q) =>
+      q.eq("season", latest.season).order("week", { ascending: true }).order("player_name", { ascending: true })
+    );
+    return seasonLabelsByName(rows);
+  } catch {
+    return {};
+  }
+}
 
 // Role groups (RB/WR/TE) from the player_archetypes table: this sim week's rows, or the newest week
 // that has any if archetypes haven't been published for this one yet. Optional by design -- a missing
@@ -97,7 +111,7 @@ export const getCachedWeekData = unstable_cache(
 
     if (!latest) return { latest: null, rows: [], totalCount: 0, actualProductionByName: {} };
 
-    const [{ data, count }, logRows, archetypeByName, groupsByName] = await Promise.all([
+    const [{ data, count }, logRows, archetypeByName, groupsByName, seasonLabelsByName_] = await Promise.all([
       publicSupabase
         .from("player_simulations")
         .select(
@@ -124,6 +138,7 @@ export const getCachedWeekData = unstable_cache(
       ),
       loadArchetypes(publicSupabase, latest),
       loadGroups(publicSupabase, latest),
+      loadSeasonLabels(publicSupabase, latest),
     ]);
 
     const actualProductionByName = {};
@@ -150,9 +165,9 @@ export const getCachedWeekData = unstable_cache(
       if (byes.length) byeWeeksByName[name] = byes;
     }
 
-    return { latest, rows: data || [], totalCount: count || 0, actualProductionByName, recentByName, lastGameWeek, teamGamesByName, missedWeeksByName, byeWeeksByName, archetypeByName, groupsByName };
+    return { latest, rows: data || [], totalCount: count || 0, actualProductionByName, recentByName, lastGameWeek, teamGamesByName, missedWeeksByName, byeWeeksByName, archetypeByName, groupsByName, seasonLabelsByName: seasonLabelsByName_ };
   },
-  ["player-simulations-latest-week"],
+  ["player-simulations-latest-week-v2"],
   { revalidate: 60 }
 );
 
@@ -161,7 +176,7 @@ export const getCachedWeekData = unstable_cache(
 // `hasFullAccess` false = the free teaser slice only. Returns the full pool too (heat, ranges and percentiles always mean
 // the whole league, never the teaser slice).
 export function buildSimRows({ cached, hasFullAccess, bioByNamePos, leagueTeams = 12, superflex = false }) {
-  const { latest, rows, totalCount: fetchedCount, actualProductionByName, recentByName, teamGamesByName, missedWeeksByName, byeWeeksByName, archetypeByName, groupsByName } = cached;
+  const { latest, rows, totalCount: fetchedCount, actualProductionByName, recentByName, teamGamesByName, missedWeeksByName, byeWeeksByName, archetypeByName, groupsByName, seasonLabelsByName: seasonLabelKeys } = cached;
   let sims = [];
   let poolRows = [];
   let totalCount = 0;
@@ -276,6 +291,7 @@ export function buildSimRows({ cached, hasFullAccess, bioByNamePos, leagueTeams 
       ...(role ? { archetype: role.a, ...(role.near ? { archetypeNear: role.near } : {}) } : {}),
       ...(grp?.sus ? { sus: grp.sus.l, susFp: grp.sus.fp, susXfp: grp.sus.xfp } : {}),
       ...(grp?.stage ? { stage: grp.stage.l, age: grp.stage.age } : {}),
+      ...(seasonLabelKeys?.[row.player_name] ? { labels: seasonLabelKeys[row.player_name] } : {}),
       heat: round(heatFor("median", row), 2),
       floorHeat: round(heatFor("floor", row), 2),
       ceilingHeat: round(heatFor("ceiling", row), 2),

@@ -61,6 +61,13 @@ export const TAG_TONE = {
   "Decline Watch": "warn",
   "Late Career": "late",
   Veteran: "neutral",
+  // Season-long labels (lib/seasonLabels.js): mint = his season projection has risen, red = it has fallen
+  "League Winners": "win",
+  Breakout: "win",
+  Riser: "win",
+  "Tank Commander": "lose",
+  Collapse: "lose",
+  Faller: "lose",
 };
 
 // The three kinds of tag a player can carry, in display order, with the small heading shown over the

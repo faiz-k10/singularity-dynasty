@@ -3025,6 +3025,8 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .tone-prime{--tone:var(--neon-blue);}
 .tone-warn{--tone:var(--horizon-gold);}
 .tone-late{--tone:var(--down);}
+.tone-win{--tone:var(--horizon-gold);}  /* season-long labels: mint = his season projection rose */
+.tone-lose{--tone:var(--down);}
 /* Toggle buttons in a player's panel: the selected one is filled and ringed. */
 .tag-btn{cursor:pointer; opacity:0.72; transition:opacity .15s ease, background .15s ease, box-shadow .15s ease;}
 .tag-btn:hover{opacity:1;}
