@@ -38,7 +38,6 @@
   --pos-te:#F5A251;
   --radius:2px;
   --ease:cubic-bezier(.16,.84,.44,1);
-  --px:0; --py:0;
 
   /* theme-aware helpers: rgb triplets so callsites can pick their own alpha */
   --scrim-rgb:11,11,11;
@@ -255,7 +254,8 @@ a{color:inherit;}
 img,svg{display:block;}
 a:focus-visible, button:focus-visible{outline:2px solid var(--neon-blue); outline-offset:3px;}
 
-/* subtle starfield, mouse-parallaxed */
+/* subtle starfield (still: the mouse parallax wrote --px / --py on the root on every mouse move, which restyled every node on the page --
+   ~60ms a move on the 20,000-node rankings table; removed Nov 9 2026) */
 body::before{
   content:'';
   position:fixed; top:-10%; left:-10%; width:120%; height:120%; z-index:-1; pointer-events:none;
@@ -267,8 +267,6 @@ body::before{
     radial-gradient(1px 1px at 90% 85%, rgba(var(--star-dot-rgb),0.35), transparent),
     radial-gradient(1.5px 1.5px at 10% 65%, rgba(var(--star-dot-rgb),0.3), transparent),
     radial-gradient(1px 1px at 55% 45%, rgba(var(--star-dot-rgb),0.25), transparent);
-  transform:translate3d(calc(var(--px) * 1px), calc(var(--py) * 1px), 0);
-  transition:transform .7s ease-out;
 }
 
 /* ---------- TELEMETRY TICKER (fixed top strip) ---------- */

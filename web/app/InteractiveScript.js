@@ -8,9 +8,6 @@ export default function InteractiveScript() {
   useEffect(() => {
     const controller = new AbortController();
     const { signal } = controller;
-    const isFinePointer = window.matchMedia(
-      "(hover:hover) and (pointer:fine)"
-    ).matches;
     const reducedMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)"
     ).matches;
@@ -324,20 +321,6 @@ export default function InteractiveScript() {
         { signal }
       );
     });
-
-    /* ---- starfield parallax ---- */
-    if (isFinePointer && !reducedMotion) {
-      document.addEventListener(
-        "mousemove",
-        (e) => {
-          const px = (e.clientX / window.innerWidth - 0.5) * 16;
-          const py = (e.clientY / window.innerHeight - 0.5) * 16;
-          document.documentElement.style.setProperty("--px", px.toFixed(2));
-          document.documentElement.style.setProperty("--py", py.toFixed(2));
-        },
-        { signal }
-      );
-    }
 
     /* ---- click-and-drag horizontal scroll for wide data tables ---- */
     // The scroll-affordance problem isn't that these tables can't scroll
