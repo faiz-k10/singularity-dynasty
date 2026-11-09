@@ -366,16 +366,16 @@ body::before{
   flex:1 1 0; flex-shrink:0; min-width:0; gap:12px;
   font-size:clamp(19px, 1.75vw, 30px); font-weight:700; letter-spacing:clamp(0.05em, 0.5vw, 0.08em); text-transform:uppercase; white-space:nowrap;
 }
-.site-header .brandmark .ring{width:clamp(22px, 1.8vw, 30px); height:clamp(22px, 1.8vw, 30px);}
+.site-header .brandmark .ring{width:clamp(32px, 2.6vw, 42px); height:clamp(32px, 2.6vw, 42px);}
 /* Phones: the menu + theme buttons take the right side, so the name steps down (still uppercase, still wide-set). */
 @media (max-width:640px){
   .site-header .brandmark{font-size:18px; letter-spacing:0.05em; gap:9px;}
-  .site-header .brandmark .ring{width:22px; height:22px;}
+  .site-header .brandmark .ring{width:32px; height:32px;}
 }
 /* Under 360px the two-cell theme switch would sit on the name, so the name steps down once more. */
 @media (max-width:359px){
   .site-header .brandmark{font-size:15px; gap:7px;}
-  .site-header .brandmark .ring{width:18px; height:18px;}
+  .site-header .brandmark .ring{width:28px; height:28px;}
 }
 .site-header-spacer{flex:1 1 0;}
 .top-nav-bar{display:flex; align-items:center; justify-content:space-between; gap:20px; flex:1.6 1 0;}
@@ -6564,7 +6564,7 @@ body:has(.ehp){--ehp-bg:#0B0B0B;--ehp-ink:#ECE7DC;--ehp-dim:#A39E92;--ehp-faint:
 .ehp-bar nav{display:flex;gap:30px;}
 .ehp-bar a:hover{color:var(--ehp-ink);}
 .ehp-brand{display:flex;align-items:center;font:600 22px var(--font-display), sans-serif;letter-spacing:.34em;text-transform:uppercase;color:var(--ehp-ink) !important;}
-.ehp-dock{width:22px;height:22px;margin-right:16px;border-radius:50%;background:var(--ehp-ink);}
+.ehp-dock{margin-right:10px;}
 .ehp-r{display:flex;justify-content:flex-end;align-items:center;gap:26px;}
 .ehp-in{color:var(--ehp-ink);border-bottom:1px solid var(--ehp-mark);padding-bottom:1px;}
 .ehp .theme-toggle{height:26px;border-radius:13px;background:none;border:1px solid var(--ehp-rule);color:var(--ehp-dim);overflow:hidden;}
@@ -6831,3 +6831,10 @@ body:has(.ehp) .site-footer .fsmall,body:has(.ehp) .site-footer .fsmall a,body:h
 
 /* the landing page: the ticker sits above the header and scrolls away with it (no persistent top bar there) */
 body:has(.ehp) .ticker-bar{position:absolute;}
+
+/* THE MARK (lib/brandMark.js): the ink disc + one ember line spiralling in to it. Two masked layers (a mask would clip a child), each coloured by a theme token. */
+.brandmark .ring, .lab-export-brand .ring, .lab-export-foot .ring, .ehp-dock{position:relative; display:block; width:34px; height:34px; border-radius:0; background:none; flex-shrink:0;}
+.brandmark .ring::before, .lab-export-brand .ring::before, .lab-export-foot .ring::before, .ehp-dock::before, .brandmark .ring::after, .lab-export-brand .ring::after, .lab-export-foot .ring::after, .ehp-dock::after{content:''; position:absolute; inset:0; -webkit-mask-repeat:no-repeat; mask-repeat:no-repeat; -webkit-mask-size:100% 100%; mask-size:100% 100%;}
+.brandmark .ring::before, .lab-export-brand .ring::before, .lab-export-foot .ring::before, .ehp-dock::before{background:var(--star); -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='12.5'/%3E%3C/svg%3E"); mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='12.5'/%3E%3C/svg%3E");}
+.brandmark .ring::after, .lab-export-brand .ring::after, .lab-export-foot .ring::after, .ehp-dock::after{background:var(--horizon); -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M3.37 10.40 L4.29 9.12 L5.30 7.91 L6.40 6.79 L7.58 5.77 L8.84 4.86 L10.16 4.05 L11.53 3.35 L12.96 2.77 L14.42 2.31 L15.91 1.98 L17.41 1.77 L18.92 1.68 L20.43 1.72 L21.93 1.88 L23.40 2.16 L24.84 2.56 L26.24 3.07 L27.59 3.70 L28.87 4.43 L30.09 5.27 L31.23 6.19 L32.29 7.21 L33.25 8.30 L34.12 9.47 L34.89 10.70 L35.55 11.98 L36.11 13.31 L36.55 14.67 L36.87 16.07 L37.08 17.48 L37.17 18.90 L37.15 20.31 L37.01 21.72 L36.75 23.10 L36.38 24.45 L35.91 25.76 L35.33 27.03 L34.65 28.24 L33.87 29.39 L33.01 30.46 L32.06 31.46 L31.04 32.37 L29.95 33.19 L28.81 33.92 L27.60 34.55 L26.36 35.07 L25.08 35.49 L23.78 35.80 L22.45 36.00 L21.13 36.10 L19.80 36.08 L18.48 35.95 L17.18 35.72 L15.91 35.38 L14.68 34.94 L13.49 34.40 L12.35 33.77 L11.28 33.05 L10.27 32.25 L9.33 31.36 L8.47 30.41 L7.69 29.39 L7.01 28.32 L6.42 27.20 L5.92 26.04 L5.52 24.84 L5.22 23.62 L5.03 22.38 L4.94 21.14 L4.95 19.89 L5.06 18.66 L5.27 17.45 L5.59 16.26 L5.99 15.10 L6.49 13.99 L7.08 12.92 L7.75 11.91 L8.50 10.96 L9.32 10.08 L10.21 9.28 L11.15 8.55 L12.16 7.90 L13.20 7.34 L14.29 6.88 L15.40 6.50 L16.54 6.22 L17.70 6.03 L18.86 5.94 L20.02 5.95 L21.17 6.05' fill='none' stroke='%23000' stroke-width='1.5' stroke-linecap='round'/%3E%3Ccircle cx='3.37' cy='10.4' r='1.9'/%3E%3C/svg%3E"); mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M3.37 10.40 L4.29 9.12 L5.30 7.91 L6.40 6.79 L7.58 5.77 L8.84 4.86 L10.16 4.05 L11.53 3.35 L12.96 2.77 L14.42 2.31 L15.91 1.98 L17.41 1.77 L18.92 1.68 L20.43 1.72 L21.93 1.88 L23.40 2.16 L24.84 2.56 L26.24 3.07 L27.59 3.70 L28.87 4.43 L30.09 5.27 L31.23 6.19 L32.29 7.21 L33.25 8.30 L34.12 9.47 L34.89 10.70 L35.55 11.98 L36.11 13.31 L36.55 14.67 L36.87 16.07 L37.08 17.48 L37.17 18.90 L37.15 20.31 L37.01 21.72 L36.75 23.10 L36.38 24.45 L35.91 25.76 L35.33 27.03 L34.65 28.24 L33.87 29.39 L33.01 30.46 L32.06 31.46 L31.04 32.37 L29.95 33.19 L28.81 33.92 L27.60 34.55 L26.36 35.07 L25.08 35.49 L23.78 35.80 L22.45 36.00 L21.13 36.10 L19.80 36.08 L18.48 35.95 L17.18 35.72 L15.91 35.38 L14.68 34.94 L13.49 34.40 L12.35 33.77 L11.28 33.05 L10.27 32.25 L9.33 31.36 L8.47 30.41 L7.69 29.39 L7.01 28.32 L6.42 27.20 L5.92 26.04 L5.52 24.84 L5.22 23.62 L5.03 22.38 L4.94 21.14 L4.95 19.89 L5.06 18.66 L5.27 17.45 L5.59 16.26 L5.99 15.10 L6.49 13.99 L7.08 12.92 L7.75 11.91 L8.50 10.96 L9.32 10.08 L10.21 9.28 L11.15 8.55 L12.16 7.90 L13.20 7.34 L14.29 6.88 L15.40 6.50 L16.54 6.22 L17.70 6.03 L18.86 5.94 L20.02 5.95 L21.17 6.05' fill='none' stroke='%23000' stroke-width='1.5' stroke-linecap='round'/%3E%3Ccircle cx='3.37' cy='10.4' r='1.9'/%3E%3C/svg%3E");}
+.ehp-dock::before{background:var(--ehp-ink);} .ehp-dock::after{background:var(--ehp-mark);}

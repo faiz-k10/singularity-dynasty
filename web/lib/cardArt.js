@@ -14,6 +14,7 @@ import { fmt1, signed1 } from "@/lib/format";
 export const SIZES = { wide: { width: 1200, height: 630 }, tall: { width: 1080, height: 1350 } };
 export const sizeOf = (f) => (f === "tall" ? "tall" : "wide");
 
+import { MarkSvg } from "./markSvg";
 const C = { void: "#0B0B0B", panel: "#131210", panel2: "#1A1915", rule: "#27251F", star: "#ECE7DC", steel: "#A39E92", mint: "#E8643F", red: "#6E9BD8", onBrand: "#120804" }; // Event Horizon dark set (Nov 9 2026); "mint" = the accent (ember), "red" = the floor / down colour (cold blue)
 // Badge medallion colours, dark theme (globals.css --cape, --fire, ...); Established keeps the old gold.
 const BADGE = {
@@ -88,7 +89,7 @@ export function Frame({ f, eyebrow, host, tool, children }) {
     <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", background: C.void, color: C.star, fontFamily: MONO, borderTop: `8px solid ${C.mint}`, padding: `${pad - 14}px ${pad}px ${pad - 18}px` }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div style={{ display: "flex", alignItems: "center" }}>
-          <div style={{ width: 34, height: 34, borderRadius: 17, display: "flex", borderStyle: "solid", borderWidth: 6, borderTopColor: C.mint, borderLeftColor: C.mint, borderRightColor: C.red, borderBottomColor: C.red, transform: "rotate(-45deg)" }} />
+          <MarkSvg size={46} ink={C.star} ember={C.mint} bold={1.3} />
           <div style={{ display: "flex", marginLeft: 14, fontFamily: DISPLAY, fontSize: tall ? 34 : 30, letterSpacing: 5, textTransform: "uppercase" }}>Singularity Dynasty</div>
         </div>
         {eyebrow && <div style={{ display: "flex", flexShrink: 0, whiteSpace: "nowrap", background: C.mint, color: C.onBrand, fontWeight: 700, fontSize: tall ? 20 : 18, letterSpacing: 2, padding: "7px 14px", textTransform: "uppercase" }}>{eyebrow}</div>}

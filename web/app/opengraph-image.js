@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { MarkSvg } from "@/lib/markSvg";
 
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
@@ -57,16 +58,9 @@ export default function OpengraphImage() {
           DYNASTY · DATA GRAVITY
         </div>
 
-        <div
-          style={{
-            display: "flex",
-            width: 96,
-            height: 96,
-            borderRadius: "50%",
-            marginBottom: 28,
-            background: "#0B0B0B",
-          }}
-        />
+        <div style={{ display: "flex", marginBottom: 28 }}>
+          <MarkSvg size={130} ink="#0B0B0B" ember="#C8401E" bold={1.2} />
+        </div>
 
         <div
           style={{
