@@ -291,8 +291,9 @@ function StatDetailRow({ row, colSpan, shapePeers, wrTePool, tagsByName, maxCeil
                           key={`${g.season}-${g.week}`}
                           className={`pace-game-row${i === pv.recentGames.length - 1 ? " pace-game-row-last" : ""}`}
                         >
-                          <span className="pace-game-week mono">W{g.week}{g.bye ? "" : ` ${g.is_home === true ? "vs" : g.is_home === false ? "@" : "·"}`}</span>
-                          {g.bye ? <span className="pace-game-bye mono">BYE</span> : <TeamBadge team={g.opponent} />}
+                          <span className="pace-game-week mono">W{g.week}</span>
+                          <span className="pace-game-venue mono">{g.bye || g.dnp ? "" : g.is_home === true ? "vs" : g.is_home === false ? "@" : "·"}</span>
+                          {g.bye ? <span className="pace-game-bye mono">BYE</span> : g.dnp ? <span className="pace-game-bye mono">{g.pre ? "BUILDING" : "DNP"}</span> : <TeamBadge team={g.opponent} />}
                           <span className="pace-game-pts mono">
                             {g.fantasy_points_ppr != null ? g.fantasy_points_ppr.toFixed(1) : "—"}
                           </span>
@@ -303,7 +304,8 @@ function StatDetailRow({ row, colSpan, shapePeers, wrTePool, tagsByName, maxCeil
                           stays the same size as in the three-game view. */}
                       {Array.from({ length: Math.max(0, 3 - pv.recentGames.length) }, (_, i) => (
                         <div key={`pad-${i}`} className="pace-game-row pace-game-row-pad" aria-hidden="true">
-                          <span className="pace-game-week mono">W0 @</span>
+                          <span className="pace-game-week mono">W0</span>
+                          <span className="pace-game-venue mono">@</span>
                           <TeamBadge team="XXX" />
                           <span className="pace-game-pts mono">0.0</span>
                         </div>
@@ -833,9 +835,14 @@ export default function PlayerSimSearch({ rows: sortedRows, sortKey: initialKey,
   function goToPlayer(name, fromName) {
     const target = rows.find((r) => r.player_name === name);
     if (!target) return;
-    if (showPositionFilter && !selected.includes(target.position)) setSelected((prev) => [...prev, target.position]);
+    // Whatever filter is hiding him is lifted, so the row is there to open: position, search, teams, tags, My players.
+    if (showPositionFilter && selected.length > 0 && !selected.includes(target.position)) setSelected((prev) => [...prev, target.position]);
     const q = query.trim().toLowerCase();
     if (q && !target.player_name.toLowerCase().includes(q)) setQuery("");
+    if (teamIds.size > 0 && !teamIds.has(target.team)) setTeamIds(new Set());
+    if (badgeIds.size > 0 && !hasTags(target, badgeIds, badgeMatch)) setBadgeIds(new Set());
+    if (myView.on && !myView.ownedByName.has(name)) myView.setOn(false);
+    setMountAll(true); // his row may be past the chunk that is on the page right now
     setExpanded((prev) => {
       const next = new Set(prev);
       if (fromName) next.delete(fromName);
@@ -878,7 +885,9 @@ export default function PlayerSimSearch({ rows: sortedRows, sortKey: initialKey,
   }, [rows, selected, query, showPositionFilter, myView.on, myView.ownedByName, teamIds, badgeIds, badgeMatch]);
 
   const visibleRows = useMemo(() => new Set(filteredRows), [filteredRows]);
-  const mountedRows = useProgressiveCount(rows.length); // rows on the page right now: the first chunk at once, the rest in idle time
+  const [mountAll, setMountAll] = useState(false);
+  const progressive = useProgressiveCount(rows.length);
+  const mountedRows = mountAll ? rows.length : progressive; // rows on the page right now: the first chunk at once, the rest in idle time
 
   const tableWrapRef = useRef(null);
 
@@ -918,10 +927,10 @@ export default function PlayerSimSearch({ rows: sortedRows, sortKey: initialKey,
   useEffect(() => {
     const name = pendingScroll.current;
     if (!name) return;
-    pendingScroll.current = null;
     const wrap = tableWrapRef.current;
     const tr = wrap?.querySelector(`tr[data-player="${CSS.escape(name)}"]`);
-    if (!tr) return;
+    if (!tr || tr.offsetParent === null) return; // not on the page (or still hidden by a filter) yet: try again after the next render
+    pendingScroll.current = null;
     const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
     const headerH = wrap.querySelector("thead")?.getBoundingClientRect().height ?? 40;
     const wrapRect = wrap.getBoundingClientRect();

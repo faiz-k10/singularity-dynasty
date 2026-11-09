@@ -91,14 +91,26 @@ export function missedSegments(missed, selectedWeek, latestWeek) {
 }
 
 // The rows of the pace panel's recent-games list: his newest `n` WEEKS up to `through`, newest first. A game he played is its own row; a
-// week his team had no game is a BYE row worth 0.0 (founder, Nov 3 2026), so a bye reads as a week in the list instead of vanishing.
-// `games` are his logged games (oldest first), `byes` his team's bye weeks.
-export function recentWeekRows(games, byes, through = Infinity, n = 3) {
+// week his team had no game is a BYE row worth 0.0 (founder, Nov 3 2026), so a bye reads as a week in the list instead of vanishing; a week
+// his team played and he didn't is a DNP row (0.0, Nov 9 2026), flagged `pre` when it falls before his first logged game (a debut still to
+// come -- see settleRecent). `games` are his logged games (oldest first), `byes` his team's bye weeks, `missed` the weeks he sat out.
+export function recentWeekRows(games, byes, through = Infinity, n = 3, missed = []) {
   const played = (games || []).filter((g) => g.week <= through);
   const season = played[played.length - 1]?.season;
+  const first = (games || [])[0]?.week ?? Infinity;
   const byeRows = (byes || []).filter((w) => w <= through).map((week) => ({ season, week, bye: true, fantasy_points_ppr: 0 }));
-  return [...played, ...byeRows]
+  const dnpRows = (missed || []).filter((w) => w <= through).map((week) => ({ season, week, dnp: true, ...(week < first ? { pre: true } : {}), fantasy_points_ppr: 0 }));
+  return [...played, ...byeRows, ...dnpRows]
     .sort((a, b) => b.week - a.week)
     .slice(0, n)
-    .map((g) => ({ season: g.season, week: g.week, opponent: g.opponent, is_home: g.is_home, fantasy_points_ppr: g.fantasy_points_ppr, ...(g.bye ? { bye: true } : {}) }));
+    .map((g) => ({
+      season: g.season, week: g.week, opponent: g.opponent, is_home: g.is_home, fantasy_points_ppr: g.fantasy_points_ppr,
+      ...(g.bye ? { bye: true } : {}), ...(g.dnp ? { dnp: true } : {}), ...(g.pre ? { pre: true } : {}),
+    }));
+}
+
+// A DNP row before a player's first game reads BUILDING for a rookie (founder, Nov 9 2026: his data hasn't started yet) and plain DNP for
+// anyone else (a veteran who was out, not new).
+export function settleRecent(rows, rookie) {
+  return (rows || []).map((g) => (g.pre && !rookie ? { ...g, pre: undefined } : g));
 }

@@ -5,7 +5,7 @@ import { buildStatPoolByPos, computeStatPercentiles } from "@/lib/statPercentile
 import { computeRegressionScore } from "@/lib/regressionScore";
 import { computeOutcomePercentile } from "@/lib/outcomePercentile";
 import { findBio } from "@/lib/portfolio";
-import { byeWeeks, indexGameLog, recentWeekRows, teamGamesThrough } from "@/lib/teamGames";
+import { byeWeeks, indexGameLog, missedWeeks, recentWeekRows, settleRecent, teamGamesThrough } from "@/lib/teamGames";
 import { positionRanks } from "@/lib/positionRank";
 
 const GAMES_PER_SEASON = 17;
@@ -116,11 +116,12 @@ async function buildSimHistoryContext() {
 
 // "W3" = every game through week 3 and the projection as it stood after
 // them (the sim published for week 4; the latest sim stands in past it).
-export function buildSnapshots(ctx, name) {
+export function buildSnapshots(ctx, name, rookie = false) {
   const row = ctx.rowByName[name];
   if (!row) return [];
   const games = ctx.gamesByName[name] || [];
   const byes = byeWeeks(ctx, name);
+  const missed = missedWeeks(ctx, name);
   const byWeek = { ...(ctx.historyByName[name] || {}), [ctx.latest.week]: row };
   const out = [];
   for (let w = 1; w <= ctx.lastGameWeek; w++) {
@@ -150,7 +151,7 @@ export function buildSnapshots(ctx, name) {
       regressionScore: reg?.regressionScore ?? null,
       paceSeasonTotal: oc?.paceSeasonTotal ?? null,
       outcomePercentile: oc?.percentile ?? null,
-      recentGames: recentWeekRows(games, byes, w),
+      recentGames: settleRecent(recentWeekRows(games, byes, w, 3, missed), rookie),
       ...(proj.stat_ranges && perc ? { stat_ranges: proj.stat_ranges, ...perc } : {}),
     });
   }

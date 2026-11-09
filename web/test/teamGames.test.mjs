@@ -118,3 +118,14 @@ test("recentWeekRows: a bye week is a BYE row worth 0.0 inside the newest three 
   assert.deepEqual(recentWeekRows([g(4, 9), g(5, 4.2), g(7, 26.8)], [6], 5).map((r) => r.week), [5, 4]);
   assert.equal(recentWeekRows([], [], 8).length, 0);
 });
+
+test("recentWeekRows: weeks he sat out are DNP rows, before his debut they are flagged pre; settleRecent keeps BUILDING for rookies only", async () => {
+  const { recentWeekRows, settleRecent } = await import("../lib/teamGames.js");
+  const games = [{ season: 2026, week: 4, opponent: "X", is_home: true, fantasy_points_ppr: 9 }, { season: 2026, week: 6, opponent: "Y", is_home: false, fantasy_points_ppr: 5 }];
+  const rows = recentWeekRows(games, [8], 8, 5, [2, 3, 5, 7]);
+  assert.deepEqual(rows.map((r) => [r.week, r.bye ? "bye" : r.dnp ? (r.pre ? "pre" : "dnp") : "game"]), [[8, "bye"], [7, "dnp"], [6, "game"], [5, "dnp"], [4, "game"]]);
+  const early = recentWeekRows(games, [], 6, 6, [2, 3]);
+  assert.deepEqual(early.filter((r) => r.dnp).map((r) => r.pre), [true, true]);
+  assert.equal(settleRecent(early, true).filter((r) => r.pre).length, 2);
+  assert.equal(settleRecent(early, false).filter((r) => r.pre).length, 0);
+});

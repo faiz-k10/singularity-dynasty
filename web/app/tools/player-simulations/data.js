@@ -8,7 +8,7 @@ import { findBio } from "@/lib/portfolio";
 import { fetchAllRows } from "@/lib/fetchAllRows";
 import { ARCHETYPE_NEAR_CONFIDENCE } from "@/lib/archetypes";
 import { seasonLabelsByName } from "@/lib/seasonLabels";
-import { byeWeeks, indexGameLog, missedWeeks, recentWeekRows, teamGamesThrough } from "@/lib/teamGames";
+import { byeWeeks, indexGameLog, missedWeeks, recentWeekRows, settleRecent, teamGamesThrough } from "@/lib/teamGames";
 
 // Data layer of Player Season Simulations, split out of page.js so the Compare Player Sims tool reads the same rows.
 export const TEASER_LIMIT = 10;
@@ -157,10 +157,10 @@ export const getCachedWeekData = unstable_cache(
     const byeWeeksByName = {};
     for (const [name, games] of Object.entries(gameIndex.gamesByName)) {
       const byes = byeWeeks(gameIndex, name);
-      recentByName[name] = recentWeekRows(games, byes);
-      const n = teamGamesThrough(gameIndex, name);
+            const n = teamGamesThrough(gameIndex, name);
       if (n != null) teamGamesByName[name] = n;
       const missed = missedWeeks(gameIndex, name);
+      recentByName[name] = recentWeekRows(games, byes, Infinity, 3, missed);
       if (missed.length) missedWeeksByName[name] = missed;
       if (byes.length) byeWeeksByName[name] = byes;
     }
@@ -300,7 +300,7 @@ export function buildSimRows({ cached, hasFullAccess, bioByNamePos, leagueTeams 
       regressionScore: round(regression?.regressionScore ?? null, 2),
       currentPPG: round(regression?.currentPPG ?? null, 3),
       gamesPlayed: regression?.gamesPlayed ?? 0,
-      recentGames: recentByName[row.player_name] || [],
+      recentGames: settleRecent(recentByName[row.player_name], findBio(bioByNamePos, row.player_name, row.position)?.yearsExp === 0),
       ...(missed ? { missedWeeks: missed } : {}),
       ...(byes ? { byeWeeks: byes } : {}),
       outcomePercentile: round(outcome?.percentile ?? null, 2),

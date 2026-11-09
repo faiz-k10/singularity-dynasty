@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { resolveTier } from "@/lib/tier";
 import { getPlayerBiosByNamePos } from "@/lib/sleeper";
+import { findBio } from "@/lib/portfolio";
 import { loadSimHistoryContext, buildSnapshots, buildPeersByWeek } from "@/lib/simHistory";
 
 // Same gate as the Player Season Simulations page: Singularity sees every
@@ -22,7 +23,8 @@ export async function GET(request) {
   const player = params.get("player");
   if (player) {
     if (!visible.has(player)) return NextResponse.json({ snapshots: [] }, { status: 403 });
-    return NextResponse.json({ snapshots: buildSnapshots(ctx, player) }, { headers });
+    const bio = findBio(await getPlayerBiosByNamePos(), player, ctx.rowByName[player]?.position);
+    return NextResponse.json({ snapshots: buildSnapshots(ctx, player, bio?.yearsExp === 0) }, { headers });
   }
   if (params.get("peers")) {
     const bios = await getPlayerBiosByNamePos();
