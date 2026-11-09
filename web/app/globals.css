@@ -6645,7 +6645,7 @@ body:has(.ehp){--ehp-bg:#0B0B0B;--ehp-ink:#ECE7DC;--ehp-dim:#A39E92;--ehp-faint:
 
 /* the fall: a tall section whose stage sticks while you scroll; the hole grows to cover the screen */
 .ehp-fall{height:220vh;position:relative;}
-.ehp-stage{position:sticky;top:0;height:100vh;overflow:hidden;}
+.ehp-stage{position:sticky;top:0;height:100vh;overflow:hidden;background:var(--ehp-bg);isolation:isolate;} /* an opaque paper behind the planets, so their difference blend inverts against it in both modes */
 .ehp-sky{position:absolute;inset:0;width:100%;height:100%;color:var(--ehp-ink);}
 .ehp-hz{position:absolute;left:50%;top:50%;width:calc(var(--ehp-r, 150px) * 2);height:calc(var(--ehp-r, 150px) * 2);margin:calc(var(--ehp-r, 150px) * -1) 0 0 calc(var(--ehp-r, 150px) * -1);border-radius:50%;background:var(--ehp-hole);will-change:transform;transform:scale(0);transition:transform 1.4s cubic-bezier(.2,.8,.2,1);}
 .ehp.arrived .ehp-hz{transform:scale(1);}
