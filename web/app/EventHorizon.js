@@ -47,11 +47,12 @@ function bodiesFor(member) {
     });
 }
 const TOOLS = [
-  ["Weekly Projection Rankings", "Every player's range this week, and the matchups that tilt it.", "Top 50 free", "/tools/redraft-rankings"],
-  ["Player Season Simulations", "Where each player's season is heading, and how it has moved.", "Top 10 free", "/tools/player-simulations"],
-  ["Dynasty Draft Board", "Production against age, tiered by who is truly ahead.", "Top 20 free", "/tools/draft-board"],
-  ["The Observatory", "Any two numbers, every player, one chart.", "Top 50 free", "/tools/lab"],
+  // most to least valuable to a typical player (founder, Nov 10 2026): the weekly habit first, the analyst tools last
   ["The Game Board", "Every league you play, live, on one screen.", "1 league free", "/my-team"],
+  ["Weekly Projection Rankings", "Every player's range this week, and the matchups that tilt it.", "Top 50 free", "/tools/redraft-rankings"],
+  ["Dynasty Draft Board", "Production against age, tiered by who is truly ahead.", "Top 20 free", "/tools/draft-board"],
+  ["Player Season Simulations", "Where each player's season is heading, and how it has moved.", "Top 10 free", "/tools/player-simulations"],
+  ["The Observatory", "Any two numbers, every player, one chart.", "Top 50 free", "/tools/lab"],
 ];
 const PLANS = [
   { id: "stargazer", name: "Stargazer", r: 230, say: "The top of every board and one saved league.", month: 0, year: 0 },
