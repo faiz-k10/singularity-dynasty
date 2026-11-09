@@ -1,14 +1,15 @@
 // Shared by both Player Season Simulations and its Compare Players view --
 // pulled out here so the two never drift (see the interpolation/full-pool
 // fixes below, which both pages need identically).
-export const INVERTED_STATS = new Set(["passing_interceptions"]);
+// Stats where MORE ranks LOWER. Empty since Nov 9 2026 (founder): interceptions now read like every other stat, more = a higher percentile.
+export const INVERTED_STATS = new Set([]);
 
 // Share of a position pool that a value beats, as an interpolated 0-100
 // rank rather than a plain count of pool members strictly below it --
 // linearly interpolates within whatever gap a value falls into whenever
 // the value isn't itself a pool member. invert flips "higher raw value =
 // higher percentile" for stats where more is actually worse
-// (interceptions).
+// (none right now, see INVERTED_STATS).
 //
 // Ties rank at the bottom of their own tied block (rank = count strictly
 // below), not the block's midpoint -- a value literally cannot "beat" a

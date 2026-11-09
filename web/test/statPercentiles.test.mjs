@@ -34,7 +34,7 @@ test("percentileRank: invert flips direction (more is worse)", () => {
   const pool = [0, 5, 10, 15, 20]; // interceptions
   assert.equal(percentileRank(0, pool, true), 100, "fewest INTs = best");
   assert.equal(percentileRank(20, pool, true), 0, "most INTs = worst");
-  assert.ok(INVERTED_STATS.has("passing_interceptions"));
+  assert.ok(!INVERTED_STATS.has("passing_interceptions")); // interceptions rank like any stat (founder, Nov 9 2026)
 });
 
 test("buildStatPoolByPos + computeStatPercentiles: floor/median/ceiling all rank vs one combined pool", () => {
