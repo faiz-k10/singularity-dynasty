@@ -13,8 +13,9 @@
 //     Steady          neither (the middle of the family; added Nov 9 2026)
 //     Faller          it fell in each step
 //
-// Within the level family the strongest rule wins. Players whose week-1 median was under MIN_MEDIAN (deep backups) get none, and the level
-// family needs two snapshots, the trend family three.
+// Within the level family the strongest rule wins. Players whose week-1 median was under MIN_MEDIAN (deep backups) get no LEVEL label; the trend
+// family never reads week 1, so it only asks that his median now is at least MIN_MEDIAN (Nov 10 2026: Malik Willis, 39 in week 1, had lost both
+// families to the week-1 rule). The level family needs two snapshots, the trend family three.
 export const MIN_MEDIAN = 40;
 export const STREAK_WEEKS = 3;
 
@@ -41,15 +42,16 @@ export function seasonLabels(path) {
   const [, , m1, c1] = p[0];
   const f1 = p[0][1];
   const [, nf, nm, nc] = p[p.length - 1];
-  if (m1 < MIN_MEDIAN) return [];
   const out = [];
-  if (nf > c1) out.push("leagueWinners");
-  else if (nm > c1) out.push("breakout");
-  else if (nc < f1) out.push("tankCommander");
-  else if (nc < m1) out.push("collapse");
-  else out.push("neutral");
+  if (m1 >= MIN_MEDIAN) {
+    if (nf > c1) out.push("leagueWinners");
+    else if (nm > c1) out.push("breakout");
+    else if (nc < f1) out.push("tankCommander");
+    else if (nc < m1) out.push("collapse");
+    else out.push("neutral");
+  }
   const tail = p.slice(-STREAK_WEEKS).map((r) => r[2]);
-  if (tail.length === STREAK_WEEKS) {
+  if (tail.length === STREAK_WEEKS && nm >= MIN_MEDIAN) {
     if (tail.every((v, i) => i === 0 || v > tail[i - 1])) out.push("riser");
     else if (tail.every((v, i) => i === 0 || v < tail[i - 1])) out.push("faller");
     else out.push("steady");

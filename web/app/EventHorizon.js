@@ -352,6 +352,41 @@ function Matchups({ rows }) {
   );
 }
 
+// The header's Plans link opens a small panel with the three plans and a checkout button each (founder, Nov 10 2026): CSS hover / keyboard focus,
+// the same startCheckout() as the Plans section, Yearly by default.
+function HeaderPlans() {
+  const [yearly, setYearly] = useState(true);
+  const [busy, setBusy] = useState(null);
+  async function choose(id) {
+    setBusy(id);
+    try {
+      await startCheckout(id, yearly ? "annual" : "monthly");
+    } catch {
+      alert("Something went wrong starting checkout. Please try again.");
+      setBusy(null);
+    }
+  }
+  return (
+    <div className="ehp-pm">
+      <a href="#pricing" aria-haspopup="true">Plans</a>
+      <div className="ehp-pm-panel" role="group" aria-label="Plans">
+        <div className="ehp-pm-bill" role="group" aria-label="Billing">
+          <button type="button" className={yearly ? "" : "on"} onClick={() => setYearly(false)} aria-pressed={!yearly}>Monthly</button>
+          <button type="button" className={yearly ? "on" : ""} onClick={() => setYearly(true)} aria-pressed={yearly}>Yearly</button>
+        </div>
+        {PLANS.map((p) => (
+          <div key={p.id} className="ehp-pm-row">
+            <b>{p.name}</b>
+            <em>{p.month ? `$${yearly ? p.year : p.month} / mo` : "Free"}</em>
+            <button type="button" onClick={() => choose(p.id)} disabled={busy === p.id}>{busy === p.id ? "…" : p.month ? "Choose →" : "Start →"}</button>
+          </div>
+        ))}
+        <p>{yearly ? "Billed yearly · " : ""}14-day refund, cancel any time.</p>
+      </div>
+    </div>
+  );
+}
+
 function Plans() {
   const [on, setOn] = useState(1);
   const [yearly, setYearly] = useState(true);
@@ -539,7 +574,7 @@ export default function EventHorizon({ signedIn, member, invited, discountPct, w
         <div className="ehp-wrap ehp-bar">
           <nav>
             <a href="#tools">Tools</a>
-            <a href="#pricing">Plans</a>
+            <HeaderPlans />
             <a href="#feed">Letter</a>
           </nav>
           <Link className="ehp-brand" href="/">

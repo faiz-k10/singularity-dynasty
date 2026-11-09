@@ -3107,7 +3107,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
 }
 .pctile-vbar:hover{background:rgba(var(--neon-blue-rgb),0.08);}
 .pctile-vbar-active{background:rgba(var(--horizon-gold-rgb),0.1);}
-.pctile-vbar-label{font-size:11px; color:var(--star-dim); white-space:normal; text-align:center; line-height:1.2;}
+.pctile-vbar-label{font-size:11px; color:var(--star-dim); white-space:nowrap; text-align:center; line-height:1.2;}
 .pctile-vbar-active .pctile-vbar-label{color:var(--star);}
 /* Raw value stacked over its percentile -- the number the table itself
    would show, on top, with the ordinal as a dimmer subscript underneath
@@ -4542,12 +4542,11 @@ svg text, .pctile-vbar-label, .pctile-vbar-value{font-family:var(--font-mono), m
 .stat-detail-grid .stat-panel-percentile .pctile-vbar-track{flex:1; width:min(100%, 40px); min-height:100px; height:auto; align-self:center;}
 .stat-detail-grid .stat-panel-percentile .pctile-row-raw{font-size:15px;}
 .stat-detail-grid .stat-panel-percentile .pctile-row-ordinal{font-size:12px;}
-.stat-detail-grid .stat-panel-percentile .pctile-vbar-label{font-size:11px; white-space:normal; letter-spacing:-0.02em; min-width:0; max-width:100%;} /* a two-word label (Target Share, Rec Yards) wraps onto two lines instead of running past its bar */
+/* every bar label is ONE line (founder, Nov 10 2026): the bar is a size container and the label's size follows its width (12 characters of the mono face ~ 6em), 11px at most */
+.stat-detail-grid .pctile-vbar{container-type:inline-size;}
+.stat-detail-grid .stat-panel-percentile .pctile-vbar-label{font-size:min(11px, 15.5cqw); white-space:nowrap; letter-spacing:-0.02em; min-width:0; max-width:100%;}
 .stat-detail-grid .pctile-rows{overflow-x:hidden;}
-/* On a phone five bars share ~300px, too narrow for "Target Share" on one line -- let it wrap there only. */
-@media (max-width:640px){
-  .stat-detail-grid .stat-panel-percentile .pctile-vbar-label{white-space:normal; font-size:10.5px;}
-}
+
 
 /* Martian Mono's width axis (the only font here that has one): a touch narrower than its default so data fits compact panels. */
 html{font-stretch:82%;}
@@ -6838,3 +6837,21 @@ body:has(.ehp) .ticker-bar{position:absolute;}
 .brandmark .ring::before, .lab-export-brand .ring::before, .lab-export-foot .ring::before, .ehp-dock::before{background:var(--star); -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='12.5'/%3E%3C/svg%3E"); mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='12.5'/%3E%3C/svg%3E");}
 .brandmark .ring::after, .lab-export-brand .ring::after, .lab-export-foot .ring::after, .ehp-dock::after{background:var(--horizon); -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M3.37 10.40 L4.29 9.12 L5.30 7.91 L6.40 6.79 L7.58 5.77 L8.84 4.86 L10.16 4.05 L11.53 3.35 L12.96 2.77 L14.42 2.31 L15.91 1.98 L17.41 1.77 L18.92 1.68 L20.43 1.72 L21.93 1.88 L23.40 2.16 L24.84 2.56 L26.24 3.07 L27.59 3.70 L28.87 4.43 L30.09 5.27 L31.23 6.19 L32.29 7.21 L33.25 8.30 L34.12 9.47 L34.89 10.70 L35.55 11.98 L36.11 13.31 L36.55 14.67 L36.87 16.07 L37.08 17.48 L37.17 18.90 L37.15 20.31 L37.01 21.72 L36.75 23.10 L36.38 24.45 L35.91 25.76 L35.33 27.03 L34.65 28.24 L33.87 29.39 L33.01 30.46 L32.06 31.46 L31.04 32.37 L29.95 33.19 L28.81 33.92 L27.60 34.55 L26.36 35.07 L25.08 35.49 L23.78 35.80 L22.45 36.00 L21.13 36.10 L19.80 36.08 L18.48 35.95 L17.18 35.72 L15.91 35.38 L14.68 34.94 L13.49 34.40 L12.35 33.77 L11.28 33.05 L10.27 32.25 L9.33 31.36 L8.47 30.41 L7.69 29.39 L7.01 28.32 L6.42 27.20 L5.92 26.04 L5.52 24.84 L5.22 23.62 L5.03 22.38 L4.94 21.14 L4.95 19.89 L5.06 18.66 L5.27 17.45 L5.59 16.26 L5.99 15.10 L6.49 13.99 L7.08 12.92 L7.75 11.91 L8.50 10.96 L9.32 10.08 L10.21 9.28 L11.15 8.55 L12.16 7.90 L13.20 7.34 L14.29 6.88 L15.40 6.50 L16.54 6.22 L17.70 6.03 L18.86 5.94 L20.02 5.95 L21.17 6.05' fill='none' stroke='%23000' stroke-width='1.5' stroke-linecap='round'/%3E%3Ccircle cx='3.37' cy='10.4' r='1.9'/%3E%3C/svg%3E"); mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M3.37 10.40 L4.29 9.12 L5.30 7.91 L6.40 6.79 L7.58 5.77 L8.84 4.86 L10.16 4.05 L11.53 3.35 L12.96 2.77 L14.42 2.31 L15.91 1.98 L17.41 1.77 L18.92 1.68 L20.43 1.72 L21.93 1.88 L23.40 2.16 L24.84 2.56 L26.24 3.07 L27.59 3.70 L28.87 4.43 L30.09 5.27 L31.23 6.19 L32.29 7.21 L33.25 8.30 L34.12 9.47 L34.89 10.70 L35.55 11.98 L36.11 13.31 L36.55 14.67 L36.87 16.07 L37.08 17.48 L37.17 18.90 L37.15 20.31 L37.01 21.72 L36.75 23.10 L36.38 24.45 L35.91 25.76 L35.33 27.03 L34.65 28.24 L33.87 29.39 L33.01 30.46 L32.06 31.46 L31.04 32.37 L29.95 33.19 L28.81 33.92 L27.60 34.55 L26.36 35.07 L25.08 35.49 L23.78 35.80 L22.45 36.00 L21.13 36.10 L19.80 36.08 L18.48 35.95 L17.18 35.72 L15.91 35.38 L14.68 34.94 L13.49 34.40 L12.35 33.77 L11.28 33.05 L10.27 32.25 L9.33 31.36 L8.47 30.41 L7.69 29.39 L7.01 28.32 L6.42 27.20 L5.92 26.04 L5.52 24.84 L5.22 23.62 L5.03 22.38 L4.94 21.14 L4.95 19.89 L5.06 18.66 L5.27 17.45 L5.59 16.26 L5.99 15.10 L6.49 13.99 L7.08 12.92 L7.75 11.91 L8.50 10.96 L9.32 10.08 L10.21 9.28 L11.15 8.55 L12.16 7.90 L13.20 7.34 L14.29 6.88 L15.40 6.50 L16.54 6.22 L17.70 6.03 L18.86 5.94 L20.02 5.95 L21.17 6.05' fill='none' stroke='%23000' stroke-width='1.5' stroke-linecap='round'/%3E%3Ccircle cx='3.37' cy='10.4' r='1.9'/%3E%3C/svg%3E");}
 .ehp-dock::before{background:var(--ehp-ink);} .ehp-dock::after{background:var(--ehp-mark);}
+
+/* landing header: Plans opens a panel of the three plans with a checkout button each (hover / keyboard focus; EventHorizon.js HeaderPlans) */
+.ehp-pm{position:relative;}
+.ehp-pm-panel{position:absolute;top:100%;left:-18px;margin-top:10px;width:360px;padding:14px 18px 12px;background:var(--ehp-bg);border:1px solid var(--ehp-rule);opacity:0;visibility:hidden;transform:translateY(-4px);transition:opacity .18s,transform .18s,visibility .18s;z-index:70;}
+.ehp-pm::after{content:'';position:absolute;left:-18px;right:-18px;top:100%;height:12px;} /* bridges the gap so the pointer can travel to the panel */
+.ehp-pm:hover .ehp-pm-panel,.ehp-pm:focus-within .ehp-pm-panel{opacity:1;visibility:visible;transform:none;}
+.ehp-pm-bill{display:inline-flex;border:1px solid var(--ehp-rule);margin-bottom:6px;}
+.ehp-pm-bill button{font:11px var(--font-mono), monospace;font-stretch:82%;padding:5px 11px;color:var(--ehp-dim);background:none;border:0;cursor:pointer;white-space:nowrap;}
+.ehp-pm-bill button.on{background:var(--ehp-ink);color:var(--ehp-bg);}
+.ehp-pm-row{display:grid;grid-template-columns:1fr auto 84px;gap:14px;align-items:center;padding:11px 0;border-bottom:1px solid var(--ehp-rule);}
+.ehp-pm-row b{font:500 15px var(--font-display), sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--ehp-ink);white-space:nowrap;}
+.ehp-pm-row em{font:12px var(--font-mono), monospace;font-stretch:82%;font-style:normal;white-space:nowrap;color:var(--ehp-dim);}
+.ehp-pm-row button{font:11.5px var(--font-mono), monospace;font-stretch:82%;white-space:nowrap;padding:6px 0;border:1px solid var(--ehp-ink);background:none;color:var(--ehp-ink);cursor:pointer;transition:background .2s,color .2s;}
+.ehp-pm-row button:hover:not(:disabled){background:var(--ehp-ink);color:var(--ehp-bg);}
+.ehp-pm-row:last-of-type button{border-color:var(--ehp-mark);color:var(--ehp-mark);}
+.ehp-pm-row:last-of-type button:hover:not(:disabled){background:var(--ehp-mark);color:var(--ehp-bg);}
+.ehp-pm-panel p{margin:10px 0 0;font:11px var(--font-mono), monospace;font-stretch:82%;color:var(--ehp-faint);white-space:nowrap;}
+@media (max-width:760px){.ehp-pm-panel{display:none;}}
