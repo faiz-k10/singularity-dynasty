@@ -273,11 +273,6 @@ body::before{
 
 /* ---------- TELEMETRY TICKER (fixed top strip) ---------- */
 .ticker-bar{position:fixed; top:0; left:0; right:0; z-index:80; background:rgba(var(--scrim-rgb),0.92); overflow:hidden; white-space:nowrap; border-bottom:1px solid var(--line);}
-.ticker-bar::after{
-  content:''; position:absolute; bottom:-1px; left:0; right:0; height:1px;
-  background-image:repeating-linear-gradient(90deg, var(--neon-blue) 0, var(--neon-blue) 2px, transparent 2px, transparent 18px);
-  opacity:0.28; pointer-events:none;
-}
 .ticker-track{display:inline-flex; vertical-align:top; gap:36px; padding:2px 0; animation:scroll-ticker 40s linear infinite;}
 .ticker-item{font-family:var(--font-mono), monospace; font-size:12px; color:var(--star-dim); display:inline-flex; gap:8px; align-items:center;}
 @keyframes scroll-ticker{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
@@ -4473,7 +4468,7 @@ a.mine-empty-note{color:var(--horizon-gold);}
 /* The top bar and the ticker: solid, with a hairline underneath. */
 .ticker-bar{
   background:rgba(var(--scrim-rgb), .98);
-  border-bottom:1px solid var(--down); box-shadow:inset 0 1px 0 var(--down); /* the ticker is outlined in mission red above and below (founder, Nov 2 / Nov 5 2026); the top line is an inset shadow so the strip keeps its height */
+  border-bottom:1px solid var(--line); box-shadow:none; /* a plain hairline under the strip (the red / blue outline was removed Nov 10 2026, founder) */
   backdrop-filter:none; -webkit-backdrop-filter:none;
 }
 .site-header{
@@ -6811,8 +6806,7 @@ body:has(.ehp) .site-footer .fsmall,body:has(.ehp) .site-footer .fsmall a,body:h
 :root[data-theme="light"] .theme-toggle .tt-moon{opacity:.45;} :root[data-theme="light"] .theme-toggle .tt-sun{opacity:1;}
 :root[data-theme="dark"] .theme-toggle .tt-sun{opacity:.45;} :root[data-theme="dark"] .theme-toggle .tt-moon{opacity:1;}
 
-/* the ticker: one hairline strip, plain names, small badge glyphs */
-.ticker{border-bottom:1px solid var(--line) !important;border-top:0 !important;background:var(--void) !important;box-shadow:none !important;}
+/* the ticker: plain names, small badge glyphs (its strip is .ticker-bar, one hairline underneath) */
 .ticker-item{font-size:11.5px !important;letter-spacing:.02em !important;color:var(--star-dim) !important;}
 
 /* section labels: a dot and small mono text, not a filled plate */
