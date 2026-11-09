@@ -3103,7 +3103,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
   transform:translate(-50%, -50%); border:2px solid var(--void-panel);
 }
 .shape-compare-tick-player{background:var(--horizon-gold); z-index:2;}
-.shape-compare-tick-comp{background:var(--neon-blue); z-index:1;}
+.shape-compare-tick-comp{background:var(--down); z-index:1;}
 .shape-compare-diff{
   font-family:var(--font-mono), monospace; font-size:11px; text-align:right;
   font-variant-numeric:tabular-nums;
