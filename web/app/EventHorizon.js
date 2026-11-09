@@ -7,6 +7,9 @@ import NewsletterForm from "./NewsletterForm";
 import { lookupSleeperTeams } from "./my-team/actions";
 import { summarizeLeagues } from "@/lib/heroLookup";
 import { startCheckout } from "@/lib/startCheckout";
+import { formatWin } from "@/lib/standing";
+import { leadState } from "@/lib/leadState";
+import { fmt1, fmt2 } from "@/lib/format";
 
 // EVENT HORIZON -- the landing page for visitors (founder's pick, Nov 9 2026; the design before it is the git tag
 // design-classic-2026-11-09). Calm by default; the memorable parts happen as you move:
@@ -24,7 +27,7 @@ const radiusFor = (w) => (w < 560 ? Math.max(104, Math.round((w - 120) / 2)) : 1
 const TILT = (-7 * Math.PI) / 180;
 const TOOL_BODIES = [
   { n: "WEEKLY", say: "this week, in range", href: "/tools/redraft-rankings", rx: 280, ry: 96, a: -0.6, s: 70 },
-  { n: "SEASON", say: "the year, ten thousand times", href: "/tools/player-simulations", rx: 400, ry: 140, a: 1.1, s: 100 },
+  { n: "SEASON", say: "where the season is heading", href: "/tools/player-simulations", rx: 400, ry: 140, a: 1.1, s: 100 },
   { n: "DYNASTY", say: "who is really ahead", href: "/tools/draft-board", rx: 520, ry: 186, a: 2.7, s: 135 },
   { n: "OBSERVATORY", say: "plot any two numbers", href: "/tools/lab", rx: 640, ry: 232, a: 4.3, s: 175 },
 ];
@@ -44,7 +47,7 @@ function bodiesFor(member) {
 }
 const TOOLS = [
   ["Weekly Projection Rankings", "Every player's range this week, and the matchups that tilt it.", "Top 50 free", "/tools/redraft-rankings"],
-  ["Player Season Simulations", "Where each season is heading, ten thousand times over.", "Top 10 free", "/tools/player-simulations"],
+  ["Player Season Simulations", "Where each player's season is heading, and how it has moved.", "Top 10 free", "/tools/player-simulations"],
   ["Dynasty Draft Board", "Production against age, tiered by who is truly ahead.", "Top 20 free", "/tools/draft-board"],
   ["The Observatory", "Any two numbers, every player, one chart.", "Top 50 free", "/tools/lab"],
   ["The Game Board", "Every league you play, live, on one screen.", "1 league free", "/my-team"],
@@ -269,9 +272,60 @@ function Curve({ player }) {
         </g>
       ))}
       <text className="cap ehp-fade" style={{ transitionDelay: "2.4s" }} x={x(0)} y={base + 66}>
-        {name}, week {week} · from 10,000 simulated games
+        {name}, week {week}
       </text>
     </svg>
+  );
+}
+
+// A member's week inside the horizon: every league with the score (live) or the projection, the opponent and the chance to win
+// -- the classic landing page's "Your matchups" table in this page's material.
+function Matchups({ rows }) {
+  return (
+    <table className="ehp-mt">
+      <thead>
+        <tr>
+          <th className="l">League</th>
+          <th>You</th>
+          <th>Them</th>
+          <th className="l">Chance</th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((r) => {
+          if (r.bye) {
+            return (
+              <tr key={r.id}>
+                <td className="l"><span className="lg">{r.name}</span><span className="sub">{r.record ? `${r.record} · ` : ""}bye week</span></td>
+                <td colSpan={3} />
+              </tr>
+            );
+          }
+          const [me, them] = r.live ? leadState(r.mine, r.opp) : [null, null];
+          const n = (v) => (v == null ? "—" : r.live ? fmt2(v) : fmt1(v));
+          return (
+            <tr key={r.id}>
+              <td className="l">
+                <span className="lg">{r.name}</span>
+                <span className="sub">{r.record && <i>{r.record}</i>}vs {r.opponent || "—"}</span>
+              </td>
+              <td className={`num${me ? ` is-${me}` : ""}${r.live ? "" : " proj"}`}>{n(r.mine)}</td>
+              <td className={`num${them ? ` is-${them}` : ""}${r.live ? "" : " proj"}`}>{n(r.opp)}</td>
+              <td className={`l ch is-${r.tone || "grey"}`}>
+                {r.p != null ? (
+                  <>
+                    <b>{r.label}</b> <span>{formatWin(r.p)}</span>
+                    <i className="meter"><i style={{ width: `${Math.round(r.p * 100)}%` }} /></i>
+                  </>
+                ) : (
+                  "—"
+                )}
+              </td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
   );
 }
 
@@ -513,15 +567,31 @@ export default function EventHorizon({ signedIn, member, invited, discountPct, p
 
       <section className={`ehp-inside${seen ? " seen" : ""}`} id="ehp-inside">
         <div className="ehp-wrap ehp-two">
-          <div>
-            <div className="ehp-k">Inside the horizon</div>
-            <h2 className="ehp-h">
-              Not a guess. <em>A distribution.</em>
-            </h2>
-            <p className="ehp-lede">Ten thousand simulated games give every player three numbers: a bad week, a typical week and a great one.</p>
-            <Link className="ehp-link" href="/how-it-works">How the numbers are made →</Link>
-          </div>
-          <Curve player={player} />
+          {member?.rows?.length ? (
+            <>
+              <div>
+                <div className="ehp-k">Inside the horizon</div>
+                <h2 className="ehp-h">
+                  Your week, <em>league by league.</em>
+                </h2>
+                <p className="ehp-lede">Every matchup you&apos;re in, the score so far (or what we expect before kickoff) and how likely you are to win it.</p>
+                <Link className="ehp-link" href="/my-team">Open the Game Board →</Link>
+              </div>
+              <Matchups rows={member.rows} />
+            </>
+          ) : (
+            <>
+              <div>
+                <div className="ehp-k">Inside the horizon</div>
+                <h2 className="ehp-h">
+                  Not a guess. <em>A distribution.</em>
+                </h2>
+                <p className="ehp-lede">Nobody scores the same every week. For each player we show what a bad week, a normal week and a great week look like, so you can see how high he can go and how low he can fall.</p>
+                <Link className="ehp-link" href="/how-it-works">How to read it →</Link>
+              </div>
+              <Curve player={player} />
+            </>
+          )}
         </div>
       </section>
 

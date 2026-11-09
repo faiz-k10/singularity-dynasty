@@ -6836,3 +6836,22 @@ body:has(.ehp) .site-footer .fsmall,body:has(.ehp) .site-footer .fsmall a,body:h
 :is(.weekly-glyph-badge,.ticker-badge).eliteRole,:is(.weekly-glyph-badge,.ticker-badge).elitePlayer{--badge-bg:var(--tone) !important;background:var(--tone) !important;color:var(--void) !important;}
 .player-achv-dot:not(.ball){background:var(--tone) !important;box-shadow:none !important;}
 .weekly-achievement-badge:not(.ball) .weekly-achievement-label{color:var(--tone) !important;}
+/* the member's matchups table inside the horizon (EventHorizon.js Matchups): on the hole's colour */
+.ehp-mt{width:100%;border-collapse:collapse;color:var(--ehp-holeink);}
+.ehp-mt th{font:400 10px var(--font-mono), monospace;font-stretch:82%;letter-spacing:.16em;text-transform:uppercase;color:var(--ehp-holedim);text-align:right;padding:0 12px 12px;border-bottom:1px solid var(--ehp-holeink);}
+.ehp-mt th.l,.ehp-mt td.l{text-align:left;}
+.ehp-mt td{padding:16px 12px;border-bottom:1px solid color-mix(in srgb, var(--ehp-holeink) 16%, transparent);text-align:right;vertical-align:middle;}
+.ehp-mt .lg{display:block;font:400 17px var(--font-body), serif;}
+.ehp-mt .sub{display:flex;gap:8px;align-items:center;margin-top:3px;font:11.5px var(--font-mono), monospace;font-stretch:82%;color:var(--ehp-holedim);}
+.ehp-mt .sub i{font-style:normal;border:1px solid color-mix(in srgb, var(--ehp-holeink) 25%, transparent);padding:0 5px;}
+.ehp-mt .num{font:400 30px/1 var(--font-display), sans-serif;}
+.ehp-mt .num.proj{opacity:.55;}
+.ehp-mt .num.is-lead{color:var(--ehp-mark);}
+.ehp-mt .ch{min-width:150px;font:11px var(--font-mono), monospace;font-stretch:82%;}
+.ehp-mt .ch b{font-weight:400;letter-spacing:.14em;text-transform:uppercase;}
+.ehp-mt .ch span{color:var(--ehp-holedim);margin-left:6px;}
+.ehp-mt .ch.is-mint b{color:var(--ehp-mark);}
+.ehp-mt .meter{display:block;height:2px;margin-top:8px;background:color-mix(in srgb, var(--ehp-holeink) 14%, transparent);}
+.ehp-mt .meter i{display:block;height:100%;background:var(--ehp-holeink);}
+.ehp-mt .ch.is-mint .meter i{background:var(--ehp-mark);}
+@media (max-width:700px){.ehp-mt .num{font-size:22px;} .ehp-mt .ch{min-width:0;} .ehp-mt td,.ehp-mt th{padding-left:6px;padding-right:6px;}}

@@ -56,7 +56,9 @@ export default async function Home() {
   if (week) {
     const { wins, of } = expectedWins(week.rows);
     const matchups = week.rows.filter((r) => !r.bye && r.p != null).slice(0, 6).map((r) => ({ id: r.id, name: r.name, p: r.p, say: `${r.label.toLowerCase()} · ${formatWin(r.p)}` }));
-    member = { name: week.name, leagues: week.teams.length, wins, of, matchups };
+    // the matchups table shown inside the horizon (the classic page's "Your matchups"); plain values only, the client formats them
+    const rows = week.rows.map((r) => ({ id: r.id, name: r.name, record: r.record, opponent: r.opponent, bye: r.bye, live: r.live, mine: r.mine, opp: r.opp, p: r.p, label: r.label, tone: r.tone }));
+    member = { name: week.name, leagues: week.teams.length, wins, of, matchups, rows };
   }
   // Arrived through a friend's referral link (proxy.js remembers the code): say the discount is waiting.
   const refCode = (await cookies()).get(REF_COOKIE)?.value;
