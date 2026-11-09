@@ -2,7 +2,7 @@
 // (PPR points over the full season; the median already includes points he has scored, see model/projection_engine.R) every week, so week 1
 // can be set against now. Pure; tested in test/seasonLabels.test.mjs. Founder's picks, Nov 9 2026.
 //
-//   League Winners  his floor now is above his ceiling in week 1
+//   League Winner  his floor now is above his ceiling in week 1
 //   Breakout        his median now is above his ceiling in week 1
 //   Tank Commander  his ceiling now is below his floor in week 1
 //   Collapse        his ceiling now is below his median in week 1
@@ -15,7 +15,7 @@ export const MIN_MEDIAN = 40;
 export const STREAK_WEEKS = 4;
 
 export const SEASON_LABELS = {
-  leagueWinners: { name: "League Winners", tone: "win", plain: "His floor now is above his week-1 ceiling." },
+  leagueWinners: { name: "League Winner", tone: "win", plain: "His floor now is above his week-1 ceiling." },
   breakout: { name: "Breakout", tone: "win", plain: "His median now is above his week-1 ceiling." },
   tankCommander: { name: "Tank Commander", tone: "lose", plain: "His ceiling now is below his week-1 floor." },
   collapse: { name: "Collapse", tone: "lose", plain: "His ceiling now is below his week-1 median." },

@@ -62,7 +62,7 @@ export const TAG_TONE = {
   "Late Career": "late",
   Veteran: "neutral",
   // Season-long labels (lib/seasonLabels.js): mint = his season projection has risen, red = it has fallen
-  "League Winners": "win",
+  "League Winner": "win",
   Breakout: "win",
   Riser: "win",
   "Tank Commander": "lose",

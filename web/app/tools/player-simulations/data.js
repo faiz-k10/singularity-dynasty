@@ -17,7 +17,7 @@ export const GAMES_PER_SEASON = 17;
 // same top-10 teaser.
 export const PAID_TIERS = ["singularity"];
 
-// Season-long labels (League Winners, Breakout, Tank Commander, Collapse, Riser, Faller; lib/seasonLabels.js): every weekly snapshot of the
+// Season-long labels (League Winner, Breakout, Tank Commander, Collapse, Riser, Faller; lib/seasonLabels.js): every weekly snapshot of the
 // season's floor / median / ceiling, boiled down to { name: [label keys] }. Optional like the groups below -- a failed read just shows none.
 async function loadSeasonLabels(client, latest) {
   try {

@@ -4,7 +4,7 @@ import { seasonLabels, seasonLabelsByName } from "../lib/seasonLabels.js";
 
 const path = (...rows) => rows.map(([w, f, m, c]) => [w, f, m, c]);
 
-test("floor above the week-1 ceiling is League Winners (not also Breakout)", () => {
+test("floor above the week-1 ceiling is League Winner (not also Breakout)", () => {
   assert.deepEqual(seasonLabels(path([1, 24, 58, 98], [9, 182, 233, 274])), ["leagueWinners"]);
 });
 test("median above the week-1 ceiling, floor not, is Breakout", () => {
