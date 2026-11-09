@@ -2371,7 +2371,7 @@ a.export-csv-btn{text-decoration:none;}
    of its own (explicit ask -- the count already lives above). */
 .stat-panel-pace-progress{display:flex; align-items:center; gap:8px;}
 .stat-panel-pace-progress-track{position:relative; flex:1; height:6px; background:var(--void-panel-2); border-radius:2px; overflow:hidden;}
-.stat-panel-pace-scrub{position:relative; flex:1; padding:7px 6px; cursor:pointer; touch-action:none; outline:none;}
+.stat-panel-pace-scrub{position:relative; flex:1; padding:7px 6px 7px 0; cursor:pointer; touch-action:none; outline:none;}
 .stat-panel-pace-scrub[data-loading] .stat-panel-pace-progress-track{opacity:.6;}
 .stat-panel-pace-scrub:focus-visible .stat-panel-pace-progress-track{box-shadow:0 0 0 2px rgba(var(--star-dot-rgb),.4);}
 .stat-panel-pace-scrub{--missed-gray:#77777d; --missed-gray:color-mix(in srgb, rgb(var(--star-dot-rgb)) 40%, var(--void-panel-2));}
@@ -4291,7 +4291,7 @@ summary:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible{
   .shape-finder-layer-btn{padding:7px 2px; font-size:11px;}
   .stat-detail-grid .stat-header-trigger,
   .stat-detail-grid .stat-row-trigger{padding:7px 8px;}
-  .stat-panel-pace-scrub{padding:14px 6px;}
+  .stat-panel-pace-scrub{padding:14px 6px 14px 0;}
 
   /* 100vh on a phone includes the browser's address bar, which pushed the bottom of the
      scroll box off-screen; svh is the visible height. */
