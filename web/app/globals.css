@@ -3077,7 +3077,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
      row grid below (88px label + 8px gap on the left, 34px value + 8px gap on the right). */
   text-align:center; padding:0 42px 0 96px;
 }
-.shape-compare-row{display:grid; grid-template-columns:88px 1fr 34px; align-items:center; gap:8px; padding:2px 0;}
+.shape-compare-row{display:grid; grid-template-columns:88px 1fr 34px; align-items:center; gap:8px; padding:2px 0 11px;} /* the bottom padding reserves room for the "50" label, so the name, the bar and the number share one centre line */
 /* 88px (not the old 52px) fits the longest full stat name on one line
    ("YAC Above Exp", "Avg Separation") without truncating -- was
    clipped to "YAC Ab…"/"Avg Sep…", illegible at a glance. The bar
@@ -3085,7 +3085,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .shape-compare-row-label{font-size:10.5px; color:var(--star-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
 /* margin-bottom on the track (not the row) reserves room for the "50"
    label below without disturbing the row's own vertical centering. */
-.shape-compare-track{position:relative; height:4px; border-radius:2px; background:var(--void-panel-2); margin-bottom:9px;}
+.shape-compare-track{position:relative; height:10px; border-radius:2px; background:var(--void-panel-2); margin:0;}
 .shape-compare-fill{position:absolute; top:0; bottom:0; border-radius:inherit;}
 .shape-compare-fill-up{background:rgba(var(--up-rgb),0.55);}
 .shape-compare-fill-down{background:rgba(var(--down-rgb),0.55);}
@@ -3095,7 +3095,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
    reads at a glance instead of eyeballing a 0-100 position. */
 .shape-compare-midtick{position:absolute; left:50%; top:-2px; bottom:-2px; width:1px; background:rgba(var(--star-dim-rgb),0.45); transform:translateX(-50%);}
 .shape-compare-midtick-label{
-  position:absolute; left:50%; top:calc(100% + 2px); transform:translateX(-50%);
+  position:absolute; left:50%; top:calc(100% + 4px); transform:translateX(-50%);
   font-family:var(--font-mono), monospace; font-size:8px; line-height:1; color:var(--star-dim);
 }
 .shape-compare-tick{
@@ -3220,7 +3220,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
    page share the same "here's average" visual language. */
 .pctile-bar-midtick{position:absolute; left:50%; top:-2px; bottom:-2px; width:1px; background:rgba(var(--star-dim-rgb),0.45); transform:translateX(-50%);}
 .pctile-bar-midtick-label{
-  position:absolute; left:50%; top:calc(100% + 2px); transform:translateX(-50%);
+  position:absolute; left:50%; top:calc(100% + 4px); transform:translateX(-50%);
   font-family:var(--font-mono), monospace; font-size:8px; line-height:1; color:var(--star-dim);
 }
 /* The raw stat value is the headline number now (pctile-hero-value);
