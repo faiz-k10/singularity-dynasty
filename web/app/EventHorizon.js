@@ -246,35 +246,53 @@ function OrbitIcon({ rings }) {
   );
 }
 
-function Curve({ player }) {
-  if (!player) return null;
-  const { name, week, floor: fl, median: m, ceiling: c } = player;
-  const top = Math.max(45, Math.ceil((c + 6) / 5) * 5);
-  const x = (v) => +(30 + (v / top) * 660).toFixed(1), base = 250;
-  const yAt = (v) => {
-    const s = v < m ? (m - fl) / 1.2816 : (c - m) / 1.2816;
-    return +(base - 190 * Math.exp(-((v - m) ** 2) / (2 * s * s))).toFixed(1);
-  };
+// What a visitor sees in the Game Board section: a made-up week in the same structure as a member's (the leagues are invented and
+// labelled as a sample), plus the lineup alerts the Game Board raises -- shown here only as an example of what it does.
+const SAMPLE_ROWS = [
+  { id: "s1", name: "Sunday Scaries", record: "5-3", opponent: "Gridiron Ghosts", live: false, mine: 118.4, opp: 112.1, p: 0.62, label: "Favored", tone: "mint" },
+  { id: "s2", name: "The Long Snappers", record: "7-1", opponent: "Fourth & Goal", live: false, mine: 104.9, opp: 103.2, p: 0.52, label: "Toss-up", tone: "grey" },
+  { id: "s3", name: "Dynasty Drifters", record: "3-5", opponent: "Waiver Wire Warriors", live: false, mine: 97.6, opp: 109.3, p: 0.31, label: "Underdog", tone: "grey" },
+  { id: "s4", name: "Mile High Club", record: "2-6", opponent: "Bye Week Heroes", live: false, mine: 88.1, opp: 121.7, p: 0.07, label: "Long shot", tone: "red" },
+];
+const SAMPLE_ALERTS = [
+  { league: "Sunday Scaries", text: "Your WR2 is listed questionable", fix: "Swap in your best bench receiver" },
+  { league: "Dynasty Drifters", text: "An empty starting slot at RB2", fix: "Fill it before Sunday's kickoff" },
+  { league: "The Long Snappers", text: "Your TE is on a bye this week", fix: "Start the next tight end on your bench" },
+];
+
+function Alerts({ items, sample }) {
+  return (
+    <div className="ehp-al">
+      <div className="ehp-k">Lineup alerts{sample ? " · the Game Board flags problems like these before kickoff" : ""}</div>
+      <ul>
+        {items.map((a) => (
+          <li key={a.league + a.text}>
+            <span className="lg">{a.league}</span>
+            <span className="tx">{a.text}</span>
+            <span className="fx">{a.fix} →</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+// A tiny outcome curve for the weekly table: the hump, a cold-blue tick at the floor, an ink line at the median, an ember tick at the ceiling.
+function MiniCurve({ floor: fl, median: m, ceiling: c }) {
+  const w = 120, h = 28, x = (v) => +(2 + (v / 45) * (w - 4)).toFixed(1);
   let d = "";
-  for (let i = 0; i <= 140; i++) {
-    const v = (i * top) / 140;
-    d += `${i ? " L" : "M"}${x(v).toFixed(1)} ${yAt(v).toFixed(1)}`;
+  for (let i = 0; i <= 44; i++) {
+    const v = fl - 6 + (i * (c - fl + 12)) / 44;
+    const sd = v < m ? (m - fl) / 1.28 : (c - m) / 1.28;
+    d += `${i ? " L" : "M"}${x(v)} ${(h - 2 - (h - 6) * Math.exp(-((v - m) ** 2) / (2 * sd * sd))).toFixed(1)}`;
   }
   return (
-    <svg className="ehp-curve" viewBox="0 0 720 330" role="img" aria-label={`${name}, week ${week}: a bad week ${fl.toFixed(1)}, a typical week ${m.toFixed(1)}, a great week ${c.toFixed(1)} points`}>
-      <line x1={x(0)} x2={x(top)} y1={base} y2={base} stroke="currentColor" strokeOpacity=".35" strokeWidth=".8" />
-      <path className="ehp-curve-ln" d={d} />
-      {[[fl, "a bad week"], [m, "a typical week"], [c, "a great week"]].map(([v, l], i) => (
-        <g key={l} className="ehp-fade" style={{ transitionDelay: `${1.4 + i * 0.3}s` }}>
-          <line x1={x(v)} x2={x(v)} y1={yAt(v)} y2={base} stroke={i === 1 ? "var(--ehp-mark)" : "currentColor"} strokeOpacity={i === 1 ? 1 : 0.5} strokeWidth={i === 1 ? 1.4 : 0.8} />
-          <circle cx={x(v)} cy={yAt(v)} r="3.5" fill={i === 1 ? "var(--ehp-mark)" : "currentColor"} />
-          <text className="num" x={x(v)} y={yAt(v) - 22} textAnchor="middle">{v.toFixed(1)}</text>
-          <text className="lbl" x={x(v)} y={base + 26} textAnchor="middle">{l.toUpperCase()}</text>
-        </g>
-      ))}
-      <text className="cap ehp-fade" style={{ transitionDelay: "2.4s" }} x={x(0)} y={base + 66}>
-        {name}, week {week}
-      </text>
+    <svg className="ehp-mini" width={w} height={h} viewBox={`0 0 ${w} ${h}`} aria-hidden="true">
+      <path d={`${d} L${x(c + 6)} ${h - 2} L${x(fl - 6)} ${h - 2}Z`} fill="currentColor" fillOpacity=".09" />
+      <path d={d} fill="none" stroke="currentColor" strokeWidth="1" />
+      <line x1={x(fl)} x2={x(fl)} y1={h - 9} y2={h - 1} stroke="var(--down)" strokeWidth="1.2" />
+      <line x1={x(m)} x2={x(m)} y1="3" y2={h - 1} stroke="currentColor" strokeWidth="1" />
+      <line x1={x(c)} x2={x(c)} y1={h - 9} y2={h - 1} stroke="var(--ehp-mark)" strokeWidth="1.2" />
     </svg>
   );
 }
@@ -389,7 +407,7 @@ function Plans() {
   );
 }
 
-export default function EventHorizon({ signedIn, member, invited, discountPct, player, nextKickoff, posts }) {
+export default function EventHorizon({ signedIn, member, invited, discountPct, weekly, weekNo, dynasty, nextKickoff, posts }) {
   const stageRef = useRef(null);
   const bodies = useMemo(() => bodiesFor(member), [member]);
   const [size, setSize] = useState({ w: 1440, h: 900 });
@@ -569,33 +587,91 @@ export default function EventHorizon({ signedIn, member, invited, discountPct, p
         </div>
       </section>
 
+      {/* 2 · the Game Board: a member's own week; a visitor a sample in the same structure, with the lineup alerts the board raises */}
       <section className={`ehp-inside${seen ? " seen" : ""}`} id="ehp-inside">
         <div className="ehp-wrap ehp-two">
-          {member?.rows?.length ? (
-            <>
-              <div>
-                <div className="ehp-k">Inside the horizon</div>
-                <h2 className="ehp-h">
-                  Your week, <em>league by league.</em>
-                </h2>
-                <p className="ehp-lede">Every matchup you&apos;re in, the score so far (or what we expect before kickoff) and how likely you are to win it.</p>
-                <Link className="ehp-link" href="/my-team">Open the Game Board →</Link>
-              </div>
-              <Matchups rows={member.rows} />
-            </>
-          ) : (
-            <>
-              <div>
-                <div className="ehp-k">Inside the horizon</div>
-                <h2 className="ehp-h">
-                  Not a guess. <em>A distribution.</em>
-                </h2>
-                <p className="ehp-lede">Nobody scores the same every week. For each player we show what a bad week, a normal week and a great week look like, so you can see how high he can go and how low he can fall.</p>
-                <Link className="ehp-link" href="/how-it-works">How to read it →</Link>
-              </div>
-              <Curve player={player} />
-            </>
-          )}
+          <div>
+            <div className="ehp-k">{member?.rows?.length ? "The Game Board" : "The Game Board · a sample week"}</div>
+            <h2 className="ehp-h">
+              {member?.rows?.length ? <>Your week, <em>league by league.</em></> : <>Every league, <em>one screen.</em></>}
+            </h2>
+            <p className="ehp-lede">
+              {member?.rows?.length
+                ? "Every matchup you're in, the score so far (or what we expect before kickoff) and how likely you are to win it."
+                : "Every matchup you're in, the score so far (or what we expect before kickoff) and how likely you are to win it, plus a heads-up when a starter in your lineup needs attention."}
+            </p>
+            <Link className="ehp-link" href="/my-team">Open the Game Board →</Link>
+          </div>
+          <div>
+            <Matchups rows={member?.rows?.length ? member.rows : SAMPLE_ROWS} />
+            {!member?.rows?.length && <Alerts items={SAMPLE_ALERTS} sample />}
+          </div>
+        </div>
+      </section>
+
+      {/* 3 · Weekly Projection Rankings */}
+      <section className="ehp-weekly" id="weekly">
+        <div className="ehp-wrap ehp-two">
+          <div>
+            <div className="ehp-k">Weekly Projection Rankings{weekNo ? ` · week ${weekNo}` : ""}</div>
+            <h2 className="ehp-h">
+              Not a guess. <em>A range.</em>
+            </h2>
+            <p className="ehp-lede">Nobody scores the same every week. For every player we show a bad week, a normal week and a great week, so you can see how high he can go and how low he can fall, and which matchups tilt it.</p>
+            <Link className="ehp-link" href="/tools/redraft-rankings">See every player →</Link>
+          </div>
+          <table className="ehp-wk">
+            <thead>
+              <tr>
+                <th className="l">Player</th>
+                <th>Bad</th>
+                <th>Normal</th>
+                <th>Great</th>
+                <th className="l">Range</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(weekly || []).map((r) => (
+                <tr key={r.name}>
+                  <td className="l">
+                    <span className="nm">{r.name}</span>
+                    <span className="sub">{r.pos} · {r.team}{r.opp ? ` · ${r.opp}` : ""}</span>
+                  </td>
+                  <td className="fl">{fmt1(r.floor)}</td>
+                  <td className="md">{fmt1(r.median)}</td>
+                  <td className="ce">{fmt1(r.ceiling)}</td>
+                  <td className="l"><MiniCurve floor={r.floor} median={r.median} ceiling={r.ceiling} /></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      {/* 4 · Dynasty Draft Board */}
+      <section className="ehp-dynasty ehp-dark" id="dynasty">
+        <div className="ehp-wrap ehp-two">
+          <div>
+            <div className="ehp-k">Dynasty Draft Board</div>
+            <h2 className="ehp-h">
+              Who is <em>really ahead.</em>
+            </h2>
+            <p className="ehp-lede">Every player ranked on what he has produced and how many good years he has left, then grouped into tiers, so you can see who is genuinely a step above the next name on the list.</p>
+            <Link className="ehp-link" href="/tools/draft-board">Open the board →</Link>
+          </div>
+          <ol className="ehp-dy">
+            {(dynasty || []).map((r, i, all) => (
+              <li key={r.name} className={all[i - 1] && all[i - 1].tier !== r.tier ? "new-tier" : ""}>
+                <span className="no">{String(r.rank).padStart(2, "0")}</span>
+                <span className="nm">
+                  {r.name}
+                  <span className="sub">{r.pos} · {r.team} · {r.age.toFixed(1)} yrs</span>
+                </span>
+                <span className="sc">{r.score.toFixed(1)}</span>
+                <span className="tr">Tier {r.tier}</span>
+              </li>
+            ))}
+          </ol>
         </div>
       </section>
 

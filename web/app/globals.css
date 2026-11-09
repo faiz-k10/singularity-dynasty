@@ -6694,17 +6694,11 @@ body:has(.ehp){--ehp-bg:#0B0B0B;--ehp-ink:#ECE7DC;--ehp-dim:#A39E92;--ehp-faint:
 .ehp-invite{position:absolute;left:50%;top:92px;transform:translateX(-50%);font:12px var(--font-mono), monospace;color:var(--ehp-mark);white-space:nowrap;}
 
 /* inside the horizon: the next section begins in the hole's colour, over the end of the fall */
-.ehp-inside{background:var(--ehp-hole);color:var(--ehp-holeink);padding:120px 0 130px !important;margin-top:-40vh;position:relative;z-index:2;}
-.ehp-inside .ehp-k{color:var(--ehp-holedim);}
-.ehp-curve{width:100%;height:auto;color:var(--ehp-holeink);overflow:visible;}
-.ehp-curve .lbl{font:10.5px var(--font-mono), monospace;font-stretch:82%;letter-spacing:.16em;fill:var(--ehp-holedim);}
-.ehp-curve .num{font:400 34px var(--font-display), sans-serif;fill:currentColor;}
-.ehp-curve .cap{font:italic 13.5px var(--font-body), serif;fill:var(--ehp-holedim);}
-.ehp-curve-ln{fill:none;stroke:currentColor;stroke-width:1.4;stroke-dasharray:1400;stroke-dashoffset:1400;transition:stroke-dashoffset 2.4s cubic-bezier(.4,.1,.2,1);}
-.ehp-inside.seen .ehp-curve-ln{stroke-dashoffset:0;}
-.ehp-fade{opacity:0;transition:opacity .8s;}
-.ehp-inside.seen .ehp-fade{opacity:1;}
-
+.ehp-inside,.ehp-dark{background:var(--ehp-hole);color:var(--ehp-holeink);padding:120px 0 130px !important;position:relative;z-index:2;}
+.ehp-inside{margin-top:-40vh;}
+.ehp-inside .ehp-k,.ehp-dark .ehp-k{color:var(--ehp-holedim);}
+.ehp-inside .ehp-two,.ehp-dark .ehp-two{align-items:start;}
+.ehp-dark .ehp-link{color:var(--ehp-holeink);}
 /* instruments: a ruled index */
 .ehp-inst{padding:110px 0 90px !important;}
 .ehp-head{display:flex;justify-content:space-between;align-items:end;margin-bottom:40px;}
@@ -6754,7 +6748,7 @@ body:has(.ehp){--ehp-bg:#0B0B0B;--ehp-ink:#ECE7DC;--ehp-dim:#A39E92;--ehp-faint:
 
 @media (prefers-reduced-motion: reduce){
   .ehp *{animation:none !important;transition:none !important;}
-  .ehp .ehp-hz{transform:scale(1);} .ehp .ehp-hole,.ehp .ehp-reveal,.ehp .ehp-body,.ehp .ehp-cue,.ehp .ehp-fade{opacity:1;} .ehp .ehp-orbit,.ehp .ehp-curve-ln{stroke-dashoffset:0;}
+  .ehp .ehp-hz{transform:scale(1);} .ehp .ehp-hole,.ehp .ehp-reveal,.ehp .ehp-body,.ehp .ehp-cue{opacity:1;} .ehp .ehp-orbit{stroke-dashoffset:0;}
 }
 @media (max-width:900px){
   .ehp-wrap{padding:0 20px;}
@@ -6861,3 +6855,41 @@ body:has(.ehp) .site-footer .fsmall,body:has(.ehp) .site-footer .fsmall a,body:h
 .ehp-mt .arc-gauge-track{stroke:color-mix(in srgb, var(--ehp-holeink) 16%, transparent);}
 .ehp-mt .arc-gauge-needle{stroke:var(--ehp-holeink);}
 @media (max-width:700px){.ehp-mt .num{font-size:22px;} .ehp-mt .ch{min-width:0;} .ehp-mt td,.ehp-mt th{padding-left:6px;padding-right:6px;}}
+
+/* the visitor sample's lineup alerts (under the matchups table) */
+.ehp-al{margin-top:34px;}
+.ehp-al ul{list-style:none;margin:12px 0 0;border-top:1px solid var(--ehp-holeink);}
+.ehp-al li{display:grid;grid-template-columns:150px 1fr auto;gap:18px;align-items:baseline;padding:14px 0;border-bottom:1px solid color-mix(in srgb, var(--ehp-holeink) 16%, transparent);}
+.ehp-al .lg{font:400 15px var(--font-body), serif;}
+.ehp-al .tx{font:12px var(--font-mono), monospace;font-stretch:82%;color:var(--down);}
+.ehp-al .fx{font:italic 13.5px var(--font-body), serif;color:var(--ehp-holedim);text-align:right;}
+
+/* 3 · Weekly Projection Rankings (paper) */
+.ehp-weekly{padding:120px 0 120px !important;}
+.ehp-weekly .ehp-two{align-items:start;}
+.ehp-wk{width:100%;border-collapse:collapse;}
+.ehp-wk th{font:400 10px var(--font-mono), monospace;font-stretch:82%;letter-spacing:.16em;text-transform:uppercase;color:var(--ehp-faint);text-align:right;padding:0 12px 12px;border-bottom:1px solid var(--ehp-ink);}
+.ehp-wk th.l,.ehp-wk td.l{text-align:left;}
+.ehp-wk td{padding:16px 12px;border-bottom:1px solid var(--ehp-rule);text-align:right;font:13px var(--font-mono), monospace;font-stretch:82%;font-variant-numeric:tabular-nums;vertical-align:middle;}
+.ehp-wk .nm{display:block;font:400 17px var(--font-body), serif;}
+.ehp-wk .sub{display:block;margin-top:2px;font:11px var(--font-mono), monospace;color:var(--ehp-faint);}
+.ehp-wk .fl{color:var(--down);}
+.ehp-wk .md{font:400 24px/1 var(--font-display), sans-serif;}
+.ehp-wk .ce{color:var(--ehp-mark);}
+.ehp-mini{display:block;color:var(--ehp-ink);}
+
+/* 4 · Dynasty Draft Board (the hole's colour again) */
+.ehp-dy{list-style:none;margin:0;padding:0;border-top:1px solid var(--ehp-holeink);}
+.ehp-dy li{display:grid;grid-template-columns:44px 1fr 90px 80px;gap:16px;align-items:center;padding:18px 0;border-bottom:1px solid color-mix(in srgb, var(--ehp-holeink) 16%, transparent);}
+.ehp-dy li.new-tier{border-top:1px solid var(--ehp-holeink);margin-top:-1px;}
+.ehp-dy .no{font:11px var(--font-mono), monospace;color:var(--ehp-holedim);}
+.ehp-dy .nm{font:400 19px var(--font-body), serif;}
+.ehp-dy .sub{display:block;margin-top:2px;font:11px var(--font-mono), monospace;font-stretch:82%;color:var(--ehp-holedim);}
+.ehp-dy .sc{font:400 34px/1 var(--font-display), sans-serif;text-align:right;}
+.ehp-dy .tr{font:10.5px var(--font-mono), monospace;font-stretch:82%;letter-spacing:.16em;text-transform:uppercase;color:var(--ehp-holedim);text-align:right;}
+@media (max-width:900px){
+  .ehp-al li{grid-template-columns:1fr;gap:4px;} .ehp-al .fx{text-align:left;}
+  .ehp-weekly,.ehp-inside,.ehp-dark{padding:80px 0 !important;}
+  .ehp-wk td:nth-child(5),.ehp-wk th:nth-child(5){display:none;}
+  .ehp-dy li{grid-template-columns:30px 1fr 64px;} .ehp-dy .tr{display:none;}
+}
