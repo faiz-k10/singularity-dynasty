@@ -44,6 +44,11 @@ export function parseScoreboard(json) {
   return out;
 }
 
+// The next kickoff still to come (ISO), from fetchGameStates' result; null when none is scheduled in it.
+export function nextKickoff(states, now = Date.now()) {
+  return Object.values(states || {}).filter((g) => g?.state === "pre" && g.start && Date.parse(g.start) > now).map((g) => g.start).sort()[0] || null;
+}
+
 let cached = null;
 let cachedAt = 0;
 let inflight = null; // callers that arrive while ESPN is being read wait for that one request instead of sending their own

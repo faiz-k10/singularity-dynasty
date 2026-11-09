@@ -9,7 +9,8 @@ import GravityMap from "./hub/GravityMap";
 import { cookies } from "next/headers";
 import { isLiveReferralCode } from "@/lib/referrals";
 import { REF_COOKIE, FRIEND_DISCOUNT_PERCENT } from "@/lib/referralRules";
-import HeroLookup from "./HeroLookup";
+import EventHorizon from "./EventHorizon";
+import { fetchGameStates, nextKickoff } from "@/lib/gameStatus";
 import NewsletterForm from "./NewsletterForm";
 import LeaguePrice from "./LeaguePrice";
 import { createClient } from "@/lib/supabase/server";
@@ -28,27 +29,6 @@ function formatPostDate(iso) {
     .toUpperCase();
 }
 
-// Fisher-Yates -- safe to do server-side here since Home() is a Server
-// Component (no client hydration re-run to mismatch against), unlike
-// NavStars.js's constellation pick which has to happen in a client
-// useEffect for that exact reason.
-function shuffle(arr) {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
-
-const CHIP_SLOTS = [
-  { ang: "-90deg", r: "150px" },
-  { ang: "-18deg", r: "150px" },
-  { ang: "54deg", r: "150px" },
-  { ang: "126deg", r: "150px" },
-  { ang: "198deg", r: "150px" },
-];
-
 // Founding-cohort scarcity for Singularity -- first 50 real subscribers
 // only. Counted live off profiles.tier so this can never drift stale the
 // way a hardcoded "50 remaining" would the moment anyone actually signs
@@ -59,7 +39,6 @@ const SINGULARITY_FOUNDING_CAP = 50;
 // tables, plus one service-role count), so it is fetched once -- the three
 // independent chains in parallel -- and cached for 60s. It used to run six
 // queries back to back on every load, which was most of the page's ~2s wait.
-// The per-visitor shuffle of the hero chips stays in Home(), after the cache.
 const getCachedHomeData = unstable_cache(
   async () => {
     const supabase = createPublicClient();
@@ -72,48 +51,20 @@ const getCachedHomeData = unstable_cache(
         .order("week", { ascending: false })
         .limit(1)
         .maybeSingle();
-      if (!latestWeek) return { latestWeek: null, topRedraft: [], trendRows: [] };
-      const [{ data: top }, { data: trend }] = await Promise.all([
-        supabase
-          .from("redraft_rankings")
-          .select("rank, player_name, position, projection")
-          .eq("season", latestWeek.season)
-          .eq("week", latestWeek.week)
-          .order("rank", { ascending: true })
-          .limit(3),
-        // Same RISING/FALLING trend field the ticker uses (SiteHeader.js) --
-        // real week-over-week movement, not a fabricated stat.
-        supabase
-          .from("redraft_rankings")
-          .select("player_name, trend, projection")
-          .eq("season", latestWeek.season)
-          .eq("week", latestWeek.week)
-          .in("trend", ["RISING", "FALLING"])
-          .limit(30),
-      ]);
-      return { latestWeek, topRedraft: top || [], trendRows: trend || [] };
+      if (!latestWeek) return { latestWeek: null, topRedraft: [] };
+      const { data: top } = await supabase
+        .from("redraft_rankings")
+        .select("rank, player_name, position, projection, floor, ceiling")
+        .eq("season", latestWeek.season)
+        .eq("week", latestWeek.week)
+        .order("rank", { ascending: true })
+        .limit(3);
+      return { latestWeek, topRedraft: top || [] };
     };
 
-    const simsChain = async () => {
-      const { data: simSeasonRow } = await supabase
-        .from("player_simulations")
-        .select("season")
-        .order("season", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      if (!simSeasonRow) return [];
-      const { data } = await supabase
-        .from("player_simulations")
-        .select("player_name, floor, median, ceiling")
-        .eq("season", simSeasonRow.season)
-        .limit(30);
-      return data || [];
-    };
-
-    const [{ data: posts }, { latestWeek, topRedraft, trendRows }, simRows, { count: singularityCount }] = await Promise.all([
+    const [{ data: posts }, { latestWeek, topRedraft }, { count: singularityCount }] = await Promise.all([
       supabase.from("posts").select("id, title, url, published_at").order("published_at", { ascending: false }).limit(3),
       redraftChain(),
-      simsChain(),
       // profiles' RLS only lets a visitor read their OWN row (see
       // 0001_profiles.sql), so a real cross-user count needs the
       // service-role admin client -- otherwise every signed-out visitor's
@@ -121,14 +72,14 @@ const getCachedHomeData = unstable_cache(
       // static, wrong "50 remaining" forever regardless of real signups.
       createAdminClient().from("profiles").select("*", { count: "exact", head: true }).eq("tier", "singularity"),
     ]);
-    return { posts: posts || [], latestWeek, topRedraft, trendRows, simRows, singularityCount: singularityCount || 0 };
+    return { posts: posts || [], latestWeek, topRedraft, singularityCount: singularityCount || 0 };
   },
-  ["landing-page-data"],
+  ["landing-page-data-v2"],
   { revalidate: 60 }
 );
 
 export default async function Home() {
-  const { posts, latestWeek, topRedraft, trendRows, simRows, singularityCount } = await getCachedHomeData();
+  const { posts, latestWeek, topRedraft, singularityCount } = await getCachedHomeData();
   // Signed in with saved leagues: the hero becomes their week (app/hub/YourWeek.js). Signed in without: the hero box's last
   // button reads "Open my leagues" instead of "Save your leagues".
   const supabase = await createClient();
@@ -137,47 +88,23 @@ export default async function Home() {
   // Arrived through a friend's referral link (proxy.js remembers the code): say the discount is waiting.
   const refCode = (await cookies()).get(REF_COOKIE)?.value;
   const invited = !yourWeek && refCode ? await isLiveReferralCode(refCode) : false;
-  const heroCandidates = [];
 
-  for (const r of trendRows) {
-    if (!(r.projection > 0)) continue; // a player listed out or on a bye has nothing to show
-    heroCandidates.push({
-      name: r.player_name,
-      value: `${r.projection.toFixed(1)} PROJ ${r.trend === "RISING" ? "▲" : "▼"}`,
-      dir: r.trend === "RISING" ? "up" : "down",
-    });
+  // Visitors (and members with no saved leagues) get the Event Horizon landing page (app/EventHorizon.js). Members with
+  // leagues keep their week briefing on the classic page below until it is redesigned too.
+  if (!yourWeek) {
+    const top = topRedraft.find((r) => r.projection > 0 && r.floor != null && r.ceiling > r.projection);
+    const states = await Promise.race([fetchGameStates().catch(() => null), new Promise((r) => setTimeout(() => r(null), 1500))]);
+    return (
+      <EventHorizon
+        signedIn={Boolean(user)}
+        invited={invited}
+        discountPct={FRIEND_DISCOUNT_PERCENT}
+        player={top && latestWeek ? { name: top.player_name, week: latestWeek.week, floor: top.floor, median: top.projection, ceiling: top.ceiling } : null}
+        nextKickoff={nextKickoff(states)}
+        posts={posts}
+      />
+    );
   }
-
-  // Boom/bust lean from the simulation's own shape -- more ceiling
-  // upside than floor downside reads "up", the reverse reads "down".
-  // Real derived signal, not an invented number.
-  for (const r of simRows) {
-    const upside = r.ceiling - r.median;
-    const downside = r.median - r.floor;
-    const isUp = upside >= downside;
-    heroCandidates.push({
-      name: r.player_name,
-      value: `${Math.round(isUp ? r.ceiling : r.floor)} ${isUp ? "CEIL ▲" : "FLOOR ▼"}`,
-      dir: isUp ? "up" : "down",
-    });
-  }
-
-  // heroCandidates is built from two independent queries above (trend
-  // rows + sim rows) -- the same player can easily land in both (e.g. a
-  // RISING trend row AND a player_simulations row), and without deduping
-  // first, shuffle+slice could pick that player twice into the same
-  // panel: a visible duplicate name in the chips, and two React children
-  // sharing key={chip.name} ("Encountered two children with the same
-  // key"). Keeping just the first candidate per name (order is still
-  // pre-shuffle at this point, so "first" isn't favoring either query)
-  // fixes both.
-  const seenNames = new Set();
-  const uniqueCandidates = heroCandidates.filter((c) => {
-    if (seenNames.has(c.name)) return false;
-    seenNames.add(c.name);
-    return true;
-  });
-  const heroChips = shuffle(uniqueCandidates).slice(0, CHIP_SLOTS.length);
 
   const singularityRemaining = Math.max(0, SINGULARITY_FOUNDING_CAP - singularityCount);
 
@@ -220,61 +147,8 @@ export default async function Home() {
 
       <header className="hero" id="hero">
         <div className="wrap" id="main-content">
-          {yourWeek ? (
-            <YourWeek data={yourWeek} />
-          ) : (
-          <div>
-            {invited && (
-              <p className="ref-banner" role="status">
-                <span className="mono">A friend invited you</span> {FRIEND_DISCOUNT_PERCENT}% off your first payment on any plan is saved for you.{" "}
-                <a href="#pricing">See plans</a>
-              </p>
-            )}
-            <div className="eyebrow">Dynasty · Data Gravity</div>
-            <h1>
-              Know the range
-              <br />
-              on every player,
-              <br />
-              in every <span>league</span>.
-            </h1>
-            <p className="lede">
-              Enter your Sleeper username. We pull every league you play in and show you the floor, median and ceiling on your
-              roster &mdash; and the players you&apos;re most exposed to.
-            </p>
-            <HeroLookup signedIn={Boolean(user)} />
-          </div>
-          )}
-
-          {yourWeek ? (
-            <GravityMap rows={yourWeek.rows} now={yourWeek.now} />
-          ) : (
-            <div className="orbit-signal" aria-hidden="true">
-              <div className="os-ring r1"></div>
-              <div className="os-ring r2"></div>
-              <div className="os-core">
-                <span>
-                  {latestWeek ? `WK ${latestWeek.week}` : "LIVE"}
-                  <br />
-                  LIVE
-                </span>
-              </div>
-
-              <div className="os-chips-layer" id="osChipsLayer">
-                {heroChips.map((chip, i) => (
-                  <div
-                    className="os-chip"
-                    key={`${chip.name}-${i}`}
-                    style={{ "--ang": CHIP_SLOTS[i].ang, "--r": CHIP_SLOTS[i].r }}
-                  >
-                    <div className="chip-inner">
-                      {chip.name} <span className={chip.dir}>{chip.value}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          <YourWeek data={yourWeek} />
+          <GravityMap rows={yourWeek.rows} now={yourWeek.now} />
         </div>
       </header>
 

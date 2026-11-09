@@ -1,5 +1,7 @@
 "use client";
 
+import { startCheckout } from "@/lib/startCheckout";
+
 import { useEffect } from "react";
 
 export default function InteractiveScript() {
@@ -305,34 +307,13 @@ export default function InteractiveScript() {
         async (e) => {
           e.preventDefault();
           const plan = btn.getAttribute("data-plan");
-
-          if (plan === "stargazer") {
-            // A plain DOM handler (no router here): a full load of the sign-in page, which continues to My Team's onboarding.
-            // eslint-disable-next-line @next/next/no-location-assign-relative-destination
-            window.location.href = "/login?next=%2Fmy-team%3Fwelcome%3D1";
-            return;
-          }
-
-          const billing = annual ? "annual" : "monthly";
           const originalText = btn.textContent;
-          btn.textContent = "Redirecting…";
-          btn.style.pointerEvents = "none";
-
+          if (plan !== "stargazer") {
+            btn.textContent = "Redirecting…";
+            btn.style.pointerEvents = "none";
+          }
           try {
-            const res = await fetch("/api/checkout", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ plan, billing }),
-            });
-            const data = await res.json();
-            if (res.status === 401 && data.login) {
-              window.location.href = data.login;
-              return;
-            }
-            if (!res.ok || !data.url) {
-              throw new Error(data.error || "Checkout failed");
-            }
-            window.location.href = data.url;
+            await startCheckout(plan, annual ? "annual" : "monthly");
           } catch (err) {
             console.error(err);
             alert("Something went wrong starting checkout. Please try again.");
