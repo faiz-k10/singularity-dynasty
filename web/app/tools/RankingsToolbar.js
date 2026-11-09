@@ -52,9 +52,13 @@ export default function RankingsToolbar({
   onToggleTeam,
   onClearTeams,
   compareHref,
+  filterLabel = "Badges", // the first dropdown's name (Season Simulations calls it Tags)
+  filterWord = "badge",
+  filterGroups, // [{ label, items: [{ id, label, variant?, tone? }] }] -- the badge groups by default
 }) {
   const [open, setOpen, ref] = useDropdown();
   const [teamsOpen, setTeamsOpen, teamsRef] = useDropdown();
+  const groups = filterGroups || BADGE_GROUPS.map((g) => ({ label: g.label, items: g.ids.map((id) => BADGE_FILTERS.find((x) => x.id === id)) }));
 
   return (
     <div className="rk-controls">
@@ -83,7 +87,7 @@ export default function RankingsToolbar({
           aria-expanded={open}
           aria-haspopup="dialog"
         >
-          Badges
+          {filterLabel}
           {badgeIds.size > 0 && (
             <span className="theater-badge-filter-count">
               {badgeIds.size}
@@ -93,10 +97,10 @@ export default function RankingsToolbar({
           <span className={`theater-badge-filter-chevron${open ? " open" : ""}`}>▾</span>
         </button>
         {open && (
-          <div className="theater-badge-filter-panel" role="dialog" aria-label="Filter players by badge">
+          <div className="theater-badge-filter-panel" role="dialog" aria-label={`Filter players by ${filterWord}`}>
             <div className="tbf-head">
-              <span className="tbf-title">Filter by badge</span>
-              <div className="tbf-mode" role="group" aria-label="How to match the selected badges">
+              <span className="tbf-title">Filter by {filterWord}</span>
+              <div className="tbf-mode" role="group" aria-label={`How to match the selected ${filterWord}s`}>
                 {["or", "and"].map((m) => (
                   <button key={m} type="button" className={badgeMatch === m ? "on" : ""} aria-pressed={badgeMatch === m} onClick={() => onBadgeMatch(m)}>
                     {m.toUpperCase()}
@@ -106,15 +110,15 @@ export default function RankingsToolbar({
             </div>
             <p className="tbf-hint">
               {badgeMatch === "or"
-                ? "Show players who have any of the selected badges."
-                : "Show only players who have all of the selected badges."}
+                ? `Show players who have any of the selected ${filterWord}s.`
+                : `Show only players who have all of the selected ${filterWord}s.`}
             </p>
-            {BADGE_GROUPS.map((g) => (
+            {groups.map((g) => (
               <div key={g.label} className="tbf-group">
                 <span className="tbf-group-label">{g.label}</span>
                 <div className="tbf-group-pills">
-                  {g.ids.map((id) => {
-                    const f = BADGE_FILTERS.find((x) => x.id === id);
+                  {g.items.map((f) => {
+                    const id = f.id;
                     const on = badgeIds.has(id);
                     return (
                       <button
@@ -124,7 +128,7 @@ export default function RankingsToolbar({
                         onClick={() => onToggleBadge(id)}
                         aria-pressed={on}
                       >
-                        <span className={`player-achv-dot ${f.variant}`} />
+                        <span className={`player-achv-dot ${f.variant || ""}${f.tone ? ` tbf-tone-dot tone-${f.tone}` : ""}`} />
                         {f.label}
                       </button>
                     );

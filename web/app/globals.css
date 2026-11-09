@@ -6640,3 +6640,4 @@ select.lab-select{min-width:200px;}
 /* the pace total hangs off the bar's left edge, outside the panel, so the panel and the cell around it must not clip it */
 .stat-panel-pace, .stat-panel-pace-top, .stat-panel-pace-rangebar-wrap{overflow:visible;}
 .player-sims-table .stat-detail-row > td > .stat-detail-grid{margin-left:2px;} /* room for the pace total outside the pace panel's left edge */
+.theater-badge-pill .tbf-tone-dot{background:var(--tone);} /* the filter dropdown's dot for a season-long tag: mint or red */

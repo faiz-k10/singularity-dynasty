@@ -10,34 +10,6 @@ import InteractiveScript from "../../InteractiveScript";
 import ExportCsvButton from "../ExportCsvButton";
 import PlayerSimSearch from "../PlayerSimSearch";
 import { TEASER_LIMIT, PAID_TIERS, getCachedWeekData, buildSimRows } from "./data";
-import { getAchievements } from "../achievements";
-import {
-  PAID_TIERS as WEEKLY_PAID_TIERS,
-  getCachedRedraftData,
-  getCachedLeans,
-  getCachedTdProfile,
-  enrichRankings,
-} from "../redraft-rankings/data";
-
-// Each player's Weekly Projection Rankings badges, by name, so the full-screen toolbar's Badges filter works here too.
-// Built from the same rows (and the same tier rule) as that dashboard; only {key, variant} is kept, which is all the
-// filter matches on. Optional: if the weekly data can't load, the filter just finds no badges.
-async function loadWeeklyBadges(tier, bioByNamePos) {
-  try {
-    const [cached, leanRows, tdProfile] = await Promise.all([getCachedRedraftData(), getCachedLeans(), getCachedTdProfile()]);
-    if (!cached?.latest) return {};
-    const rows = enrichRankings({ cached, hasFullAccess: WEEKLY_PAID_TIERS.includes(tier), tdProfile, leanRows, bioByNamePos });
-    const out = {};
-    for (const r of rows) {
-      if (r.floor == null || r.ceiling == null) continue;
-      const ach = getAchievements(r).map((a) => ({ key: a.key, variant: a.variant }));
-      if (ach.length) out[r.player_name] = ach;
-    }
-    return out;
-  } catch {
-    return {};
-  }
-}
 
 export const metadata = {
   title: "Player Season Simulations — Floor/Median/Ceiling Projections — Singularity Dynasty",
@@ -100,11 +72,8 @@ export default async function PlayerSimulationsPage({ searchParams }) {
   const canExport = tier === "singularity" && sims.length > 0;
   const positions = sortPositions([...new Set(sims.map((r) => r.position))]);
 
-  const weeklyBadges = await st.time("badges", loadWeeklyBadges(tier, bioByNamePos));
   st.done();
-  const simsWithHeat = sortRows(simsWithComputed, sortKey, sortDir, COLUMN_TYPES).map((r) =>
-    weeklyBadges[r.player_name] ? { ...r, weeklyBadges: weeklyBadges[r.player_name] } : r,
-  );
+  const simsWithHeat = sortRows(simsWithComputed, sortKey, sortDir, COLUMN_TYPES);
   return (
     <>
       <InteractiveScript />

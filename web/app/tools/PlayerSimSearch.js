@@ -8,7 +8,6 @@ import { sortRows } from "@/lib/sortLink";
 import { SIM_COLUMN_TYPES } from "@/lib/simColumns";
 import { MyPlayersFilter, mineClass, useMyView } from "./MyPlayers";
 import RankingsToolbar from "./RankingsToolbar";
-import { matchesBadgeFilters } from "./badgeFilters";
 import TeamBadge from "./TeamBadge";
 import STAT_LABELS from "./statLabels";
 import StatRadar from "./StatRadar";
@@ -16,6 +15,16 @@ import SimilarShapeFinder from "./SimilarShapeFinder";
 import ArchetypePill from "./ArchetypePill";
 import { TAG_KINDS } from "@/lib/archetypes";
 import { SEASON_LABELS } from "@/lib/seasonLabels";
+
+// The Tags filter (replaces the Badges filter here, founder Nov 9 2026): the six season-long labels, grouped up / down.
+const TAG_GROUPS = [
+  { label: "Season is going up", items: ["leagueWinners", "breakout", "riser"].map((id) => ({ id, label: SEASON_LABELS[id].name, tone: SEASON_LABELS[id].tone })) },
+  { label: "Season is going down", items: ["tankCommander", "collapse", "faller"].map((id) => ({ id, label: SEASON_LABELS[id].name, tone: SEASON_LABELS[id].tone })) },
+];
+const hasTags = (row, ids, match) => {
+  const mine = row.labels || [];
+  return match === "and" ? [...ids].every((id) => mine.includes(id)) : [...ids].some((id) => mine.includes(id));
+};
 import PercentileCard from "./PercentileCard";
 import { radarLayoutFor } from "./radarLayout";
 import { missedSegments } from "@/lib/teamGames";
@@ -704,7 +713,7 @@ export default function PlayerSimSearch({ rows: sortedRows, sortKey: initialKey,
   const myView = useMyView(mine, rows);
   // Teams and Badges filters of the shared RankingsToolbar (the same one Weekly Projection Rankings uses).
   const [teamIds, setTeamIds] = useState(() => new Set());
-  // Badges = this week's Weekly Projection Rankings badges (row.weeklyBadges, attached server-side).
+  // Tags = the season-long labels (row.labels, lib/seasonLabels.js). (badgeIds / badgeMatch keep their old names: they hold the picked tags.)
   const [badgeIds, setBadgeIds] = useState(() => new Set());
   const [badgeMatch, setBadgeMatch] = useState("or");
   function toggleBadge(id) {
@@ -822,7 +831,7 @@ export default function PlayerSimSearch({ rows: sortedRows, sortKey: initialKey,
       out = out.filter((row) => teamIds.has(row.team));
     }
     if (badgeIds.size > 0) {
-      out = out.filter((row) => matchesBadgeFilters(row.weeklyBadges || [], badgeIds, badgeMatch));
+      out = out.filter((row) => hasTags(row, badgeIds, badgeMatch));
     }
     if (myView.on) {
       out = out.filter((row) => myView.ownedByName.has(row.player_name));
@@ -911,6 +920,9 @@ export default function PlayerSimSearch({ rows: sortedRows, sortKey: initialKey,
       onClearBadges={() => setBadgeIds(new Set())}
       badgeMatch={badgeMatch}
       onBadgeMatch={setBadgeMatch}
+      filterLabel="Tags"
+      filterWord="tag"
+      filterGroups={TAG_GROUPS}
       teamIds={teamIds}
       onToggleTeam={toggleTeam}
       onClearTeams={() => setTeamIds(new Set())}
