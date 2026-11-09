@@ -8,15 +8,15 @@
 //     Neutral         none of the four (the middle of the family; added Nov 9 2026)
 //     Collapse        his ceiling now is below his median in week 1
 //     Tank Commander  his ceiling now is below his floor in week 1
-//   TREND family (his median over the last four weekly snapshots) -- exactly one once four snapshots exist:
+//   TREND family (his median over the last three weekly snapshots) -- exactly one once three snapshots exist:
 //     Riser           it rose in each step
 //     Steady          neither (the middle of the family; added Nov 9 2026)
 //     Faller          it fell in each step
 //
 // Within the level family the strongest rule wins. Players whose week-1 median was under MIN_MEDIAN (deep backups) get none, and the level
-// family needs two snapshots, the trend family four.
+// family needs two snapshots, the trend family three.
 export const MIN_MEDIAN = 40;
-export const STREAK_WEEKS = 4;
+export const STREAK_WEEKS = 3;
 
 // `plain` is the one-sentence caption under a clicked pill: deliberately vague, so it says what the tag means without giving away the rule.
 export const SEASON_LABELS = {

@@ -14,7 +14,7 @@ test("ceiling below the week-1 floor is Tank Commander; below only the median is
   assert.deepEqual(seasonLabels(path([1, 207, 250, 300], [9, 100, 146, 196])), ["tankCommander"]);
   assert.deepEqual(seasonLabels(path([1, 96, 154, 224], [9, 20, 50, 150])), ["collapse"]);
 });
-test("four straight weekly gains is Riser, four drops Faller, either can sit beside a tier label", () => {
+test("three straight weekly gains is Riser, three drops Faller, either can sit beside a tier label", () => {
   assert.deepEqual(seasonLabels(path([1, 10, 100, 190], [6, 10, 110, 190], [7, 10, 120, 190], [8, 10, 130, 190], [9, 10, 140, 190])), ["neutral", "riser"]);
   assert.deepEqual(seasonLabels(path([1, 10, 100, 190], [6, 10, 90, 190], [7, 10, 80, 190], [8, 10, 70, 190], [9, 10, 60, 190])), ["neutral", "faller"]);
   assert.deepEqual(seasonLabels(path([1, 24, 58, 98], [6, 160, 190, 250], [7, 170, 200, 260], [8, 175, 215, 265], [9, 182, 233, 274])), ["leagueWinners", "riser"]);
@@ -22,8 +22,10 @@ test("four straight weekly gains is Riser, four drops Faller, either can sit bes
 test("Neutral and Steady fill the middle of each family", () => {
   // inside the week-1 range, and a median that wobbles instead of running one way
   assert.deepEqual(seasonLabels(path([1, 50, 100, 150], [6, 50, 110, 150], [7, 50, 105, 150], [8, 50, 112, 150], [9, 50, 108, 150])), ["neutral", "steady"]);
-  // fewer than four snapshots: the level label only
-  assert.deepEqual(seasonLabels(path([1, 50, 100, 150], [2, 50, 105, 150], [3, 50, 108, 150])), ["neutral"]);
+  // fewer than three snapshots: the level label only
+  assert.deepEqual(seasonLabels(path([1, 50, 100, 150], [2, 50, 105, 150])), ["neutral"]);
+  // exactly three snapshots are enough for a trend
+  assert.deepEqual(seasonLabels(path([1, 50, 100, 150], [2, 50, 105, 150], [3, 50, 108, 150])), ["neutral", "riser"]);
 });
 test("deep backups, a single snapshot and unordered rows", () => {
   assert.deepEqual(seasonLabels(path([1, 5, 30, 60], [9, 200, 300, 400])), []);

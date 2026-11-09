@@ -20,7 +20,7 @@ import { SEASON_LABELS, LEVEL_FAMILY, TREND_FAMILY } from "@/lib/seasonLabels";
 const tagItems = (keys) => keys.map((id) => ({ id, label: SEASON_LABELS[id].name, tone: SEASON_LABELS[id].tone }));
 const TAG_GROUPS = [
   { label: "Season total vs week 1", items: tagItems(LEVEL_FAMILY) },
-  { label: "Last four weeks", items: tagItems(TREND_FAMILY) },
+  { label: "Last three weeks", items: tagItems(TREND_FAMILY) },
 ];
 const hasTags = (row, ids, match) => {
   const mine = row.labels || [];
