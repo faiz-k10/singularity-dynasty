@@ -6,7 +6,7 @@ import { signout } from "../login/actions";
 import { openBillingPortal, deleteAccount } from "./actions";
 import EmailDigestToggle from "../my-team/EmailDigestToggle";
 import ReferralCard from "./ReferralCard";
-import { ensureReferralCode, referralSummary } from "@/lib/referrals";
+import { ensureReferralCode, referralSummary, settleReferrals } from "@/lib/referrals";
 import { FRIEND_DISCOUNT_PERCENT, rewardFor } from "@/lib/referralRules";
 import { siteOrigin } from "@/lib/siteOrigin";
 import SiteHeader from "../SiteHeader";
@@ -109,7 +109,7 @@ export default async function AccountPage({ searchParams }) {
   const [billing, refCode, refSummary, origin] = await Promise.all([
     profile?.stripe_customer_id ? accountBilling(profile.stripe_customer_id) : null,
     ensureReferralCode(user.id).catch(() => null),
-    referralSummary(user.id, profile?.stripe_customer_id).catch(() => null),
+    settleReferrals(user.id).then(() => referralSummary(user.id, profile?.stripe_customer_id)).catch(() => null),
     siteOrigin(),
   ]);
   const notice = NOTICES[params?.notice] || null;

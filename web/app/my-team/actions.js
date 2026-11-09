@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { allowHit, clientIp } from "@/lib/rateLimit";
 import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import { resolveTier, savedTeamLimit } from "@/lib/tier";
 import { getAuthUser } from "@/lib/authUser";
 import { loadGameLogsFor, namesOnTeams } from "@/lib/myGameLogs";
@@ -198,10 +199,10 @@ async function lookupTeams(username, opts = {}) {
   // redraft_rankings table /tools/redraft-rankings reads from (public
   // read, no tier gate on the projection column itself), matched by
   // normalized player name since Sleeper IDs don't exist in that table.
-  const supabase = await createClient();
+  const pub = createPublicClient(); // published model tables: read with the server's key (lib/supabase/public.js)
   // Latest published week, with weekly floor/ceiling for the win chance (lib/weekProjections.js, cached 5 min).
   const [weekProj, gameStates] = await Promise.all([
-    getWeekProjections(supabase, Number(season)),
+    getWeekProjections(pub, Number(season)),
     fetchGameStates(),
   ]);
 
@@ -211,9 +212,9 @@ async function lookupTeams(username, opts = {}) {
   // current season (the same one already resolved above for the
   // projection lookup) for Super Hero's own season-scoping.
   const [achievementInputs, redraftFieldsByName, woprPercentileByName] = await Promise.all([
-    fetchAchievementInputs(supabase, Number(season)),
-    fetchLatestRedraftFieldsByName(supabase),
-    fetchWoprPercentileByName(supabase),
+    fetchAchievementInputs(pub, Number(season)),
+    fetchLatestRedraftFieldsByName(pub),
+    fetchWoprPercentileByName(pub),
   ]);
   const recentGamesByNormName = normalizedIndex(achievementInputs.recentGamesByName);
   const heroWinsByNormName = normalizedIndex(achievementInputs.heroWinsByName);
@@ -507,7 +508,7 @@ export async function pollLiveScores() {
 
   // The league rows, the NFL week and the ESPN scoreboard + projections are independent, so they start together.
   const gameStatesP = fetchGameStates();
-  const projP = getWeekProjections(supabase, new Date().getFullYear()).catch(() => ({ byName: {} }));
+  const projP = getWeekProjections(createPublicClient(), new Date().getFullYear()).catch(() => ({ byName: {} }));
   const stateP = fetchSleeperState();
   stateP.catch(() => {}); // no unhandled rejection if we return early below; the await further down still throws
   const { data: rows } = await supabase
@@ -641,7 +642,7 @@ export async function getWaiverWire(teamId) {
   const [rosters, dict, week] = await Promise.all([
     fetchSleeperRosters(row.platform_league_id).catch(() => null),
     getSleeperPlayers().catch(() => null),
-    getWeekRankRows(supabase, new Date().getFullYear()),
+    getWeekRankRows(createPublicClient(), new Date().getFullYear()),
   ]);
   if (!rosters?.length || !dict) return { error: "Couldn't read this league from Sleeper right now." };
   if (waiverIdx.dict !== dict) waiverIdx = { dict, idx: sleeperIndex(dict) };
@@ -750,6 +751,10 @@ export async function saveTeam({ sleeperUsername, leagueId, leagueName, teamName
   if (!user) {
     return { error: "Sign in to save a team." };
   }
+  // The browser sends the looked-up league; it only ever lands on the caller's own account, but it must look like one: a
+  // Sleeper league id (digits) and a sane size, so a hand-made request can't store megabytes or odd ids.
+  if (!/^\d{6,24}$/.test(String(leagueId || ""))) return { error: "That league couldn't be saved." };
+  if (JSON.stringify({ settings, lookedUp, leagueName, teamName, sleeperUsername }).length > 1_500_000) return { error: "That league is too large to save." };
 
   // Only a NEW save counts against the tier cap -- re-saving an existing
   // team to refresh its roster is always allowed. The DB trigger
@@ -775,7 +780,7 @@ export async function saveTeam({ sleeperUsername, leagueId, leagueName, teamName
         return {
           error:
             limit === 1
-              ? "Stargazer saves 1 team. Upgrade to Explorer for unlimited saved teams."
+              ? "Stargazer saves 1 team. Upgrade to Explorer to save up to 10."
               : `Your plan saves up to ${limit} teams.`,
           limitReached: true,
         };
@@ -808,7 +813,7 @@ export async function saveTeam({ sleeperUsername, leagueId, leagueName, teamName
     // Trigger fallback, in case a concurrent save slipped past the check.
     if (error.code === "23514" || /Saved-team limit/.test(error.message || "")) {
       return {
-        error: "Saved-team limit reached. Upgrade for unlimited saved teams.",
+        error: "Saved-team limit reached for your plan.",
         limitReached: true,
       };
     }

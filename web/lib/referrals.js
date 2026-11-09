@@ -1,7 +1,7 @@
 import { randomBytes } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { stripe } from "@/lib/stripeClient";
-import { makeCode, isReferralCode, rewardFor, REWARD_CAP_PER_YEAR, COUPON_ID, FRIEND_DISCOUNT_PERCENT } from "@/lib/referralRules";
+import { makeCode, isReferralCode, rewardFor, rewardDecision, REWARD_CAP_PER_YEAR, COUPON_ID, FRIEND_DISCOUNT_PERCENT } from "@/lib/referralRules";
 
 // Server-only: the referral program's database and Stripe side (rules in lib/referralRules.js). Tables `referrals` and
 // `profiles.referral_code` (migration 0043) are service-role only.
@@ -63,7 +63,41 @@ export function ensureReferralCoupon() {
   return couponReady;
 }
 
-// Pays the referrer once `referredId` has a paid plan: one month of the referrer's plan as Stripe account credit. Exactly
+// Card fingerprints a Stripe customer has paid with or saved (the same physical card has the same fingerprint everywhere).
+async function cardsOf(customer) {
+  const out = new Set();
+  if (!customer) return out;
+  const [pms, charges] = await Promise.all([
+    stripe.paymentMethods.list({ customer, type: "card", limit: 20 }).catch(() => ({ data: [] })),
+    stripe.charges.list({ customer, limit: 20 }).catch(() => ({ data: [] })),
+  ]);
+  for (const pm of pms.data) if (pm.card?.fingerprint) out.add(pm.card.fingerprint);
+  for (const c of charges.data) if (c.payment_method_details?.card?.fingerprint) out.add(c.payment_method_details.card.fingerprint);
+  return out;
+}
+
+// Where one referral stands (rewardDecision in lib/referralRules.js): reads the friend's subscription and charges from Stripe.
+async function decide(admin, referredId, referrer) {
+  const { data: friend } = await admin.from("profiles").select("stripe_customer_id, stripe_subscription_id").eq("id", referredId).maybeSingle();
+  if (!friend?.stripe_customer_id || !friend?.stripe_subscription_id) return "wait";
+  const [sub, charges, referrerCards] = await Promise.all([
+    stripe.subscriptions.retrieve(friend.stripe_subscription_id),
+    stripe.charges.list({ customer: friend.stripe_customer_id, limit: 20 }),
+    cardsOf(referrer.stripe_customer_id),
+  ]);
+  return rewardDecision({
+    now: Date.now(),
+    referrerId: referrer.id,
+    sub: { status: sub.status, referrerId: sub.metadata?.referrer_id || null },
+    charges: charges.data.map((c) => ({ paid: c.paid, status: c.status, refunded: c.refunded, amountRefunded: c.amount_refunded, created: c.created, fingerprint: c.payment_method_details?.card?.fingerprint || null })),
+    referrerCards,
+  });
+}
+
+// Pays the referrer once `referredId`'s first payment has stood for the refund window (rewardDecision): one month of the
+// referrer's plan as Stripe account credit. Called when the friend's checkout completes (too early: it waits), on every later
+// subscription event of the friend (a renewal settles it) and when the referrer opens their account page (settleReferrals).
+// A referral that will never pay ("void": refunded, cancelled, the referrer's own card) is closed with no credit. Exactly
 // once: the referral row is claimed (joined -> rewarded) before Stripe is called, and the credit carries an idempotency key;
 // if Stripe fails the claim is undone and the error thrown, so the webhook answers 500 and Stripe retries the event.
 export async function rewardReferral(referredId) {
@@ -72,6 +106,13 @@ export async function rewardReferral(referredId) {
   if (!row || row.status !== "joined") return null;
   const { data: referrer } = await admin.from("profiles").select("id, email, tier, stripe_customer_id").eq("id", row.referrer_id).maybeSingle();
   if (!referrer) return null;
+  const decision = await decide(admin, referredId, referrer);
+  if (decision === "wait") return { pending: true };
+  if (decision === "void") {
+    await admin.from("referrals").update({ status: "rewarded", rewarded_at: new Date().toISOString(), reward_cents: 0 }).eq("referred_id", referredId).eq("status", "joined");
+    console.log(`[referrals] closed without a reward: ${referredId} (refunded, ended, not a referred checkout, or the referrer's own card)`);
+    return { cents: 0, void: true };
+  }
 
   const yearAgo = new Date(Date.now() - 365 * 86_400_000).toISOString();
   const { count } = await admin.from("referrals").select("id", { count: "exact", head: true }).eq("referrer_id", referrer.id).eq("status", "rewarded").gt("reward_cents", 0).gte("rewarded_at", yearAgo);
@@ -107,6 +148,16 @@ export async function rewardReferral(referredId) {
   }
 }
 
+// The referrer's referrals still open (at most 10 a call), each settled if its friend's refund window has passed. Never throws.
+export async function settleReferrals(referrerId) {
+  try {
+    const { data: rows } = await createAdminClient().from("referrals").select("referred_id").eq("referrer_id", referrerId).eq("status", "joined").limit(10);
+    for (const r of rows || []) await rewardReferral(r.referred_id).catch((e) => console.error("[referrals] settle:", e?.message || e));
+  } catch (e) {
+    console.error("[referrals] settle:", e?.message || e);
+  }
+}
+
 // What the account page shows: friends who joined through the link, friends who subscribed, credit earned, and the credit
 // still waiting on the member's Stripe balance (a negative balance is credit).
 export async function referralSummary(userId, customerId) {
@@ -120,7 +171,7 @@ export async function referralSummary(userId, customerId) {
   }
   return {
     joined: list.length,
-    subscribed: list.filter((r) => r.status === "rewarded").length,
+    subscribed: list.filter((r) => r.status === "rewarded" && r.reward_cents > 0).length,
     earnedCents: list.reduce((n, r) => n + (r.reward_cents || 0), 0),
     waitingCents,
   };

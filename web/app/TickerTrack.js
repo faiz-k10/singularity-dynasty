@@ -63,6 +63,9 @@ function shuffle(arr) {
   return a;
 }
 
+// Text going into the strip's HTML (names come from our own published tables, but nothing reaches innerHTML unescaped).
+const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+
 // Builds the scrolling strip into the track element: items shuffled (display order only), the list written twice so the CSS scroll loops seamlessly.
 function buildTicker(track, tickerItems) {
   const items = shuffle(
@@ -80,16 +83,16 @@ function buildTicker(track, tickerItems) {
   for (let rep = 0; rep < 2; rep++) {
     items.forEach((item) => {
       if (item.key === "pace") {
-        html += `<span class="ticker-item">${item.name} <span class="ticker-pace ${item.variant}">${item.label}</span></span>`;
+        html += `<span class="ticker-item">${esc(item.name)} <span class="ticker-pace ${esc(item.variant)}">${esc(item.label)}</span></span>`;
         return;
       }
       // One item per player: his name, then every badge he has as an icon only (no text labels). The made-up fallback items carry a single badge in the
       // same shape.
       const badges = item.badges || [{ key: item.key, variant: item.variant }];
       const icons = badges
-        .map((b) => `<span class="ticker-badge ${b.variant}">${b.key === "hero" ? dragonBallSvg(b.tier || 1, 16) : BADGE_ICONS[b.key] || BADGE_ICONS.confidence}</span>`)
+        .map((b) => `<span class="ticker-badge ${esc(b.variant)}">${b.key === "hero" ? dragonBallSvg(b.tier || 1, 16) : BADGE_ICONS[b.key] || BADGE_ICONS.confidence}</span>`)
         .join("");
-      html += `<span class="ticker-item">${item.name} <span class="ticker-badges">${icons}</span></span>`;
+      html += `<span class="ticker-item">${esc(item.name)} <span class="ticker-badges">${icons}</span></span>`;
     });
   }
   track.innerHTML = html;

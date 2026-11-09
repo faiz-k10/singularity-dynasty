@@ -29,3 +29,24 @@ export const rewardFor = (tier) => (tier === "singularity" ? REWARD_CENTS.singul
 export function referralApplies({ referrerId, userId, subscribedBefore }) {
   return Boolean(referrerId) && referrerId !== userId && !subscribedBefore;
 }
+
+// The reward waits until the friend's first payment has stood for the refund window (founder's security check, Nov 9 2026):
+// paid at once, a friend could subscribe through the link, ask for the 14-day refund and leave the referrer a free month, or
+// one person could refer their own second email. Decision for one referral, from the friend's subscription and charges:
+//   "wait" -- not yet: no payment, or the first payment is younger than REWARD_HOLD_DAYS
+//   "pay"  -- first payment REWARD_HOLD_DAYS+ old, never refunded, the subscription still running, a different card
+//   "void" -- will never pay: refunded, cancelled / expired, not the referred checkout, or paid with the referrer's own card
+export const REWARD_HOLD_DAYS = 14;
+const RUNNING = new Set(["active", "trialing", "past_due"]);
+const ENDED = new Set(["canceled", "incomplete_expired", "unpaid", "paused"]);
+export function rewardDecision({ now, referrerId, sub, charges, referrerCards }) {
+  if (!sub) return "wait";
+  if (sub.referrerId !== referrerId) return "void";
+  if (ENDED.has(sub.status)) return "void";
+  const paid = (charges || []).filter((c) => c.paid && c.status === "succeeded");
+  if ((charges || []).some((c) => c.refunded || c.amountRefunded > 0)) return "void";
+  if (paid.some((c) => c.fingerprint && referrerCards?.has(c.fingerprint))) return "void";
+  if (!paid.length || !RUNNING.has(sub.status)) return "wait";
+  const first = Math.min(...paid.map((c) => c.created));
+  return now - first * 1000 >= REWARD_HOLD_DAYS * 86_400_000 ? "pay" : "wait";
+}

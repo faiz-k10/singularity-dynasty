@@ -61,7 +61,7 @@ export async function POST(request) {
       cancel_url: `${site}/?checkout=cancelled#pricing`,
       client_reference_id: user.id,
       metadata: { user_id: user.id, ...(discount ? { referrer_id: referral.referrer_id } : {}) },
-      subscription_data: { metadata: { user_id: user.id } },
+      subscription_data: { metadata: { user_id: user.id, ...(discount ? { referrer_id: referral.referrer_id } : {}) } }, // the referral reward checks this (lib/referrals.js)
       ...(discount ? { discounts: [{ coupon: discount }] } : {}),
       ...(customer ? { customer } : { customer_email: user.email }),
     });

@@ -26,7 +26,7 @@ export default function ReferralCard({ link, discountPct, rewardLabel, summary }
   return (
     <div className="ref">
       <p className="acct-line">
-        Give a friend <strong>{discountPct}% off</strong> their first payment. When they subscribe, you get <strong>{rewardLabel}</strong> as account credit, taken off your next bill automatically.
+        Give a friend <strong>{discountPct}% off</strong> their first payment. Once they have been subscribed for 14 days, you get <strong>{rewardLabel}</strong> as account credit, taken off your next bill automatically.
       </p>
       <div className="ref-link">
         <input className="feed-input auth-input mono" value={link} readOnly aria-label="Your referral link" onFocus={(e) => e.target.select()} />

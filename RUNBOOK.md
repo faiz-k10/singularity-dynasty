@@ -102,6 +102,7 @@ The other job names also work in place of `tuesday`.
    - **Wednesday and Thursday:** GitHub runs first, and the Claude task (renamed "fallback") skips if GitHub passed.
 
    The email can't send twice either way.
+4. **Lock the paid tables (do once, after the Nov 9 2026 deploy is live).** Supabase → SQL Editor → paste the whole of `web/supabase/migrations/0044_lock_paid_tables.sql` → Run. Then open Weekly Projection Rankings and Player Season Simulations on the live site to check they still load. Before this, anyone holding the project's public key could download every ranking and simulation straight from the database.
 
 ## Once a year
 

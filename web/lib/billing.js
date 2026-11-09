@@ -55,6 +55,8 @@ export async function syncSubscription(subscriptionId, { userId = null } = {}) {
     matched = res.data?.length || 0;
   }
   console.log(`[billing] subscription ${sub.id} status=${sub.status} tier=${tier} owner=${owner || "-"} matched=${matched}`);
+  // A referred friend's subscription moved (a renewal, a cancellation): settle the friend's referral if it is due.
+  if (owner && sub.metadata?.referrer_id) await rewardReferral(owner);
   return { tier, matched, status: sub.status };
 }
 
@@ -75,11 +77,8 @@ export async function provisionFromCheckout(sessionOrId, { expectedUserId = null
       check(await createAdminClient().from("profiles").update({ stripe_subscription_id: subscriptionId }).eq("email", email).select("id"));
     }
   }
-  const result = await syncSubscription(subscriptionId, { userId });
-  // A first subscription that came through a friend's link pays the friend (lib/referrals.js; exactly once, throws to retry).
-  // Only a checkout that carried the referral (the discount was granted, so it was a first-ever subscription) counts.
-  if (userId && session.metadata?.referrer_id && result.tier !== "stargazer") await rewardReferral(userId);
-  return result;
+  // The referral reward (if this checkout carried one) is settled by syncSubscription once the friend's refund window has passed.
+  return syncSubscription(subscriptionId, { userId });
 }
 
 // The account's subscriptions in Stripe that are still running (the profile could be out of date). Used to stop a second
