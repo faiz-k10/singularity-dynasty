@@ -2,15 +2,19 @@
 // (PPR points over the full season; the median already includes points he has scored, see model/projection_engine.R) every week, so week 1
 // can be set against now. Pure; tested in test/seasonLabels.test.mjs. Founder's picks, Nov 9 2026.
 //
-//   League Winner  his floor now is above his ceiling in week 1
-//   Breakout        his median now is above his ceiling in week 1
-//   Tank Commander  his ceiling now is below his floor in week 1
-//   Collapse        his ceiling now is below his median in week 1
-//   Riser           his median rose in each of the last four weekly snapshots
-//   Faller          his median fell in each of the last four weekly snapshots
+//   LEVEL family (his season total now vs where week 1 had him) -- every player carries exactly one:
+//     League Winner   his floor now is above his ceiling in week 1
+//     Breakout        his median now is above his ceiling in week 1
+//     Neutral         none of the four (the middle of the family; added Nov 9 2026)
+//     Collapse        his ceiling now is below his median in week 1
+//     Tank Commander  his ceiling now is below his floor in week 1
+//   TREND family (his median over the last four weekly snapshots) -- exactly one once four snapshots exist:
+//     Riser           it rose in each step
+//     Steady          neither (the middle of the family; added Nov 9 2026)
+//     Faller          it fell in each step
 //
-// A player gets at most one of each pair of the first four (the stronger wins) and may also carry Riser or Faller. Players whose week-1
-// median was under MIN_MEDIAN (deep backups) get none.
+// Within the level family the strongest rule wins. Players whose week-1 median was under MIN_MEDIAN (deep backups) get none, and the level
+// family needs two snapshots, the trend family four.
 export const MIN_MEDIAN = 40;
 export const STREAK_WEEKS = 4;
 
@@ -19,9 +23,15 @@ export const SEASON_LABELS = {
   breakout: { name: "Breakout", tone: "win", plain: "His median now is above his week-1 ceiling." },
   tankCommander: { name: "Tank Commander", tone: "lose", plain: "His ceiling now is below his week-1 floor." },
   collapse: { name: "Collapse", tone: "lose", plain: "His ceiling now is below his week-1 median." },
+  neutral: { name: "Neutral", tone: "neutral", plain: "His season projection is still inside the range it had in week 1." },
   riser: { name: "Riser", tone: "win", plain: "His median is up four weeks in a row." },
+  steady: { name: "Steady", tone: "neutral", plain: "His median has not moved in one direction for four weeks." },
   faller: { name: "Faller", tone: "lose", plain: "His median is down four weeks in a row." },
 };
+
+// The two families in display order (the Tags filter and the pills): label keys, best to worst.
+export const LEVEL_FAMILY = ["leagueWinners", "breakout", "neutral", "collapse", "tankCommander"];
+export const TREND_FAMILY = ["riser", "steady", "faller"];
 
 // path: [[week, floor, median, ceiling], ...] for ONE player and one season, any order. Returns label keys, strongest first.
 export function seasonLabels(path) {
@@ -36,15 +46,17 @@ export function seasonLabels(path) {
   else if (nm > c1) out.push("breakout");
   else if (nc < f1) out.push("tankCommander");
   else if (nc < m1) out.push("collapse");
+  else out.push("neutral");
   const tail = p.slice(-STREAK_WEEKS).map((r) => r[2]);
   if (tail.length === STREAK_WEEKS) {
     if (tail.every((v, i) => i === 0 || v > tail[i - 1])) out.push("riser");
     else if (tail.every((v, i) => i === 0 || v < tail[i - 1])) out.push("faller");
+    else out.push("steady");
   }
   return out;
 }
 
-// Rows of { player_name, week, floor, median, ceiling } for one season -> { name: [label keys] } (players with no label are left out).
+// Rows of { player_name, week, floor, median, ceiling } for one season -> { name: [label keys] } (players too thin to label are left out).
 export function seasonLabelsByName(rows) {
   const paths = {};
   for (const r of rows || []) (paths[r.player_name] ??= []).push([r.week, r.floor, r.median, r.ceiling]);

@@ -68,6 +68,8 @@ export const TAG_TONE = {
   "Tank Commander": "lose",
   Collapse: "lose",
   Faller: "lose",
+  Neutral: "neutral",
+  Steady: "neutral",
 };
 
 // The three kinds of tag a player can carry, in display order, with the small heading shown over the

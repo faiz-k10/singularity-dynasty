@@ -15,9 +15,15 @@ test("ceiling below the week-1 floor is Tank Commander; below only the median is
   assert.deepEqual(seasonLabels(path([1, 96, 154, 224], [9, 20, 50, 150])), ["collapse"]);
 });
 test("four straight weekly gains is Riser, four drops Faller, either can sit beside a tier label", () => {
-  assert.deepEqual(seasonLabels(path([1, 10, 100, 190], [6, 10, 110, 190], [7, 10, 120, 190], [8, 10, 130, 190], [9, 10, 140, 190])), ["riser"]);
-  assert.deepEqual(seasonLabels(path([1, 10, 100, 190], [6, 10, 90, 190], [7, 10, 80, 190], [8, 10, 70, 190], [9, 10, 60, 190])), ["faller"]);
+  assert.deepEqual(seasonLabels(path([1, 10, 100, 190], [6, 10, 110, 190], [7, 10, 120, 190], [8, 10, 130, 190], [9, 10, 140, 190])), ["neutral", "riser"]);
+  assert.deepEqual(seasonLabels(path([1, 10, 100, 190], [6, 10, 90, 190], [7, 10, 80, 190], [8, 10, 70, 190], [9, 10, 60, 190])), ["neutral", "faller"]);
   assert.deepEqual(seasonLabels(path([1, 24, 58, 98], [6, 160, 190, 250], [7, 170, 200, 260], [8, 175, 215, 265], [9, 182, 233, 274])), ["leagueWinners", "riser"]);
+});
+test("Neutral and Steady fill the middle of each family", () => {
+  // inside the week-1 range, and a median that wobbles instead of running one way
+  assert.deepEqual(seasonLabels(path([1, 50, 100, 150], [6, 50, 110, 150], [7, 50, 105, 150], [8, 50, 112, 150], [9, 50, 108, 150])), ["neutral", "steady"]);
+  // fewer than four snapshots: the level label only
+  assert.deepEqual(seasonLabels(path([1, 50, 100, 150], [2, 50, 105, 150], [3, 50, 108, 150])), ["neutral"]);
 });
 test("deep backups, a single snapshot and unordered rows", () => {
   assert.deepEqual(seasonLabels(path([1, 5, 30, 60], [9, 200, 300, 400])), []);
@@ -29,5 +35,5 @@ test("seasonLabelsByName groups rows and leaves unlabelled players out", () => {
     { player_name: "A", week: 1, floor: 24, median: 58, ceiling: 98 }, { player_name: "A", week: 9, floor: 182, median: 233, ceiling: 274 },
     { player_name: "B", week: 1, floor: 50, median: 100, ceiling: 150 }, { player_name: "B", week: 9, floor: 60, median: 110, ceiling: 160 },
   ]);
-  assert.deepEqual(out, { A: ["leagueWinners"] });
+  assert.deepEqual(out, { A: ["leagueWinners"], B: ["neutral"] }); // two snapshots: a level label, no trend label yet
 });

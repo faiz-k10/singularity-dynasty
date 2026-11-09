@@ -14,12 +14,13 @@ import StatRadar from "./StatRadar";
 import SimilarShapeFinder from "./SimilarShapeFinder";
 import ArchetypePill from "./ArchetypePill";
 import { TAG_KINDS, ARCHETYPE_BLURB } from "@/lib/archetypes";
-import { SEASON_LABELS } from "@/lib/seasonLabels";
+import { SEASON_LABELS, LEVEL_FAMILY, TREND_FAMILY } from "@/lib/seasonLabels";
 
-// The Tags filter (replaces the Badges filter here, founder Nov 9 2026): the six season-long labels, grouped up / down.
+// The Tags filter (replaces the Badges filter here, founder Nov 9 2026): the season-long labels in their two families, best to worst.
+const tagItems = (keys) => keys.map((id) => ({ id, label: SEASON_LABELS[id].name, tone: SEASON_LABELS[id].tone }));
 const TAG_GROUPS = [
-  { label: "Season is going up", items: ["leagueWinners", "breakout", "riser"].map((id) => ({ id, label: SEASON_LABELS[id].name, tone: SEASON_LABELS[id].tone })) },
-  { label: "Season is going down", items: ["tankCommander", "collapse", "faller"].map((id) => ({ id, label: SEASON_LABELS[id].name, tone: SEASON_LABELS[id].tone })) },
+  { label: "Season total vs week 1", items: tagItems(LEVEL_FAMILY) },
+  { label: "Last four weeks", items: tagItems(TREND_FAMILY) },
 ];
 const hasTags = (row, ids, match) => {
   const mine = row.labels || [];
