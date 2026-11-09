@@ -119,6 +119,7 @@ function Bodies({ size }) {
     <svg className="ehp-sky ehp-bodies" viewBox={`${-w / 2} ${-h / 2} ${w} ${h}`}>
       {BODIES.map((b, i) => (
         <a key={b.n} href={b.href} className="ehp-body" data-i={i} style={{ transitionDelay: `${2 + i * 0.25}s` }} aria-label={`${b.n.toLowerCase()}: ${b.say}`}>
+          <circle r="26" fill="transparent" />
           <circle className="halo" r="15" />
           <circle className="dot" r="5.5" />
           <text x="18" y="4">{b.n}</text>
@@ -360,14 +361,26 @@ export default function EventHorizon({ signedIn, member, invited, discountPct, p
     const hz = root.querySelector(".ehp-hz"), hole = root.querySelector(".ehp-hole"), skies = [...root.querySelectorAll(".ehp-sky")], cue = root.querySelector(".ehp-cue");
     const rnd = seeded(11);
     let tx = 0, ty = 0, px = 0, py = 0, speck = null, raf = 0, ready = false;
-    const t0 = performance.now();
+    // time for the orbits: it slows to a stop while a planet is hovered or focused, so it can be clicked without chasing it
+    let T = 0, last = performance.now(), speed = 1, hovering = false;
+    const hold = (v) => () => { hovering = v; };
+    const holdOn = hold(true), holdOff = hold(false);
+    bodies.forEach((o) => {
+      o.addEventListener("pointerenter", holdOn);
+      o.addEventListener("pointerleave", holdOff);
+      o.addEventListener("focus", holdOn);
+      o.addEventListener("blur", holdOff);
+    });
     const onMove = (e) => {
       tx = e.clientX / innerWidth - 0.5;
       ty = e.clientY / innerHeight - 0.5;
     };
     const c = Math.cos(TILT), s = Math.sin(TILT);
     function frame(now) {
-      const T = (now - t0) / 1000;
+      const dt = Math.min(0.1, (now - last) / 1000);
+      last = now;
+      speed += ((hovering ? 0 : 1) - speed) * Math.min(1, dt * 9); // ease to a stop and back
+      T += dt * speed;
       bodies.forEach((o) => {
         const b = BODIES[+o.dataset.i];
         const a = b.a + (reduce ? 0 : (T * 2 * Math.PI) / b.s);
@@ -424,6 +437,12 @@ export default function EventHorizon({ signedIn, member, invited, discountPct, p
       clearTimeout(ready_t);
       removeEventListener("pointermove", onMove);
       removeEventListener("scroll", onScroll);
+      bodies.forEach((o) => {
+        o.removeEventListener("pointerenter", holdOn);
+        o.removeEventListener("pointerleave", holdOff);
+        o.removeEventListener("focus", holdOn);
+        o.removeEventListener("blur", holdOff);
+      });
     };
   }, [size]);
 
