@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, memo, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import SortableTh from "./SortableTh";
 import useClientSort from "./useClientSort";
@@ -585,6 +585,73 @@ function leagueHref(currentParams, key, value) {
 // and redoing the one that changed.
 const pct = (v) => Math.round(v * 10) / 10; // bar positions to 0.1% -- finer is invisible
 
+// The row's cells, memoised on their own (the same split as RankingsTable.js's RowCells): a filter only flips the row's class, so the
+// logo, range-bar and heat cells underneath are drawn once and never again until the row's data changes.
+const SimRowCells = memo(function SimRowCells({ row, maxCeiling, owned }) {
+  return (
+    <>
+      <td className="mono">{row.rank}</td>
+      <td className={`player-cell${mineClass(owned)}`}>
+        {row.player_name}
+      </td>
+      <td className="mono align-left">
+        {row.position}
+        {row.positionRank != null && <span className="pos-rank">{row.positionRank}</span>}
+      </td>
+      <td className="mono align-left">
+        <TeamBadge team={row.team} />
+      </td>
+      <td className="mono heat-cell-alt" style={{ "--heat": row.floorHeat || 0 }}>
+        {formatStat(row.floor)}
+      </td>
+      <td className="mono heat-cell" style={{ "--heat": row.heat || 0 }}>
+        <strong>{formatStat(row.median)}</strong>
+      </td>
+      <td className="mono heat-cell-ceiling" style={{ "--heat": row.ceilingHeat || 0 }}>
+        {formatStat(row.ceiling)}
+      </td>
+      <td>
+        <div className="sim-bar-track">
+          <div
+            className="sim-bar-typical"
+            style={{
+              left: `${pct((row.floor / maxCeiling) * 100)}%`,
+              width: `${pct(((row.median - row.floor) / maxCeiling) * 100)}%`,
+            }}
+          ></div>
+          <div
+            className="sim-bar-upside"
+            style={{
+              left: `${pct((row.median / maxCeiling) * 100)}%`,
+              width: `${pct(((row.ceiling - row.median) / maxCeiling) * 100)}%`,
+            }}
+          ></div>
+          {row.paceSeasonTotal != null && (
+            <div
+              className={`pace-marker ${row.outcomePercentile >= 50 ? "pace-marker-hot" : "pace-marker-cold"}`}
+              style={{ left: `${pct(Math.min(100, (row.paceSeasonTotal / maxCeiling) * 100))}%` }}
+            ></div>
+          )}
+        </div>
+      </td>
+      <td className="mono align-left">{row.outcomePercentile != null ? ordinal(row.outcomePercentile) : "—"}</td>
+      <td
+        className={`mono align-left ${row.regressionScore != null ? (row.regressionScore >= 0 ? "por-positive" : "por-negative") : ""}`}
+      >
+        {row.regressionScore != null
+          ? `${row.regressionScore >= 0 ? "+" : ""}${row.regressionScore.toFixed(2)}`
+          : "—"}
+      </td>
+      {SHOW_POR && (
+        <td className={`mono por-cell ${row.por >= 0 ? "por-positive" : "por-negative"}`}>
+          {row.por >= 0 ? "+" : ""}
+          {row.por.toFixed(1)}
+        </td>
+      )}
+    </>
+  );
+});
+
 const PlayerRow = memo(function PlayerRow({
   row,
   expandedFlag,
@@ -597,6 +664,7 @@ const PlayerRow = memo(function PlayerRow({
   onToggle,
   onGoToPlayer,
   owned,
+  hidden,
 }) {
   const hasStats = row.stat_ranges && Object.keys(row.stat_ranges).length > 0;
   const isExpanded = hasStats && expandedFlag;
@@ -610,7 +678,7 @@ const PlayerRow = memo(function PlayerRow({
       <tr
         data-pos={row.position}
         data-player={row.player_name}
-        className={hasStats ? "row-expandable" : undefined}
+        className={`${hasStats ? "row-expandable" : ""}${hidden ? " row-filtered" : ""}` || undefined}
         onClick={hasStats ? () => onToggle(row.player_name) : undefined}
         onPointerEnter={prefetch ? () => { hoverTimer.current = setTimeout(prefetch, 140); } : undefined}
         onPointerLeave={prefetch ? () => clearTimeout(hoverTimer.current) : undefined}
@@ -630,66 +698,9 @@ const PlayerRow = memo(function PlayerRow({
             : undefined
         }
       >
-        <td className="mono">{row.rank}</td>
-        <td className={`player-cell${mineClass(owned)}`}>
-          {row.player_name}
-        </td>
-        <td className="mono align-left">
-          {row.position}
-          {row.positionRank != null && <span className="pos-rank">{row.positionRank}</span>}
-        </td>
-        <td className="mono align-left">
-          <TeamBadge team={row.team} />
-        </td>
-        <td className="mono heat-cell-alt" style={{ "--heat": row.floorHeat || 0 }}>
-          {formatStat(row.floor)}
-        </td>
-        <td className="mono heat-cell" style={{ "--heat": row.heat || 0 }}>
-          <strong>{formatStat(row.median)}</strong>
-        </td>
-        <td className="mono heat-cell-ceiling" style={{ "--heat": row.ceilingHeat || 0 }}>
-          {formatStat(row.ceiling)}
-        </td>
-        <td>
-          <div className="sim-bar-track">
-            <div
-              className="sim-bar-typical"
-              style={{
-                left: `${pct((row.floor / maxCeiling) * 100)}%`,
-                width: `${pct(((row.median - row.floor) / maxCeiling) * 100)}%`,
-              }}
-            ></div>
-            <div
-              className="sim-bar-upside"
-              style={{
-                left: `${pct((row.median / maxCeiling) * 100)}%`,
-                width: `${pct(((row.ceiling - row.median) / maxCeiling) * 100)}%`,
-              }}
-            ></div>
-            {row.paceSeasonTotal != null && (
-              <div
-                className={`pace-marker ${row.outcomePercentile >= 50 ? "pace-marker-hot" : "pace-marker-cold"}`}
-                style={{ left: `${pct(Math.min(100, (row.paceSeasonTotal / maxCeiling) * 100))}%` }}
-              ></div>
-            )}
-          </div>
-        </td>
-        <td className="mono align-left">{row.outcomePercentile != null ? ordinal(row.outcomePercentile) : "—"}</td>
-        <td
-          className={`mono align-left ${row.regressionScore != null ? (row.regressionScore >= 0 ? "por-positive" : "por-negative") : ""}`}
-        >
-          {row.regressionScore != null
-            ? `${row.regressionScore >= 0 ? "+" : ""}${row.regressionScore.toFixed(2)}`
-            : "—"}
-        </td>
-        {SHOW_POR && (
-          <td className={`mono por-cell ${row.por >= 0 ? "por-positive" : "por-negative"}`}>
-            {row.por >= 0 ? "+" : ""}
-            {row.por.toFixed(1)}
-          </td>
-        )}
+        <SimRowCells row={row} maxCeiling={maxCeiling} owned={owned} />
       </tr>
-      {isExpanded && (
+      {isExpanded && !hidden && (
         <StatDetailRow
           row={row}
           colSpan={COLS}
@@ -836,9 +847,9 @@ export default function PlayerSimSearch({ rows: sortedRows, sortKey: initialKey,
   });
   const stableGoToPlayer = useCallback((name, fromName) => goToPlayerRef.current(name, fromName), []);
 
-  // The list follows the search box a beat behind it: typing stays instant and
-  // the (up to ~300 row) filter runs at lower priority instead of blocking keys.
-  const deferredQuery = useDeferredValue(query);
+  // Filtering only decides which rows SHOW: every row stays mounted and a filtered-out one is hidden with .row-filtered (the same pattern as
+  // Weekly Projection Rankings, RankingsTable.js), so a filter click or a keystroke flips classes instead of tearing rows down and rebuilding
+  // them. (No useDeferredValue: a deferred list showed the OLD result for a moment after a deselect.)
   const filteredRows = useMemo(() => {
     let out = rows;
     // No position selected = no position filter (everyone), same as Weekly Projection Rankings.
@@ -854,15 +865,15 @@ export default function PlayerSimSearch({ rows: sortedRows, sortKey: initialKey,
     if (myView.on) {
       out = out.filter((row) => myView.ownedByName.has(row.player_name));
     }
-    const q = deferredQuery.trim().toLowerCase();
+    const q = query.trim().toLowerCase();
     if (q) {
       out = out.filter((row) => row.player_name.toLowerCase().includes(q));
     }
     return out;
-  }, [rows, selected, deferredQuery, showPositionFilter, myView.on, myView.ownedByName, teamIds, badgeIds, badgeMatch]);
+  }, [rows, selected, query, showPositionFilter, myView.on, myView.ownedByName, teamIds, badgeIds, badgeMatch]);
 
-  const displayRows = filteredRows;
-  const mountedRows = useProgressiveCount(displayRows.length); // rows on the page right now: the first chunk at once, the rest in idle time
+  const visibleRows = useMemo(() => new Set(filteredRows), [filteredRows]);
+  const mountedRows = useProgressiveCount(rows.length); // rows on the page right now: the first chunk at once, the rest in idle time
 
   const tableWrapRef = useRef(null);
 
@@ -1085,7 +1096,7 @@ export default function PlayerSimSearch({ rows: sortedRows, sortKey: initialKey,
               </tr>
             </thead>
             <tbody>
-              {displayRows.length === 0 && (
+              {filteredRows.length === 0 && (
                 <tr className="player-empty-row">
                   <td colSpan={COLS}>
                     <span>
@@ -1105,7 +1116,7 @@ export default function PlayerSimSearch({ rows: sortedRows, sortKey: initialKey,
                   </td>
                 </tr>
               )}
-              {displayRows.slice(0, mountedRows).map((row) => (
+              {rows.slice(0, mountedRows).map((row) => (
                 <PlayerRow
                   key={row.player_name}
                   row={row}
@@ -1119,6 +1130,7 @@ export default function PlayerSimSearch({ rows: sortedRows, sortKey: initialKey,
                   onToggle={toggleExpanded}
                   onGoToPlayer={stableGoToPlayer}
                   owned={myView.ownedByName.get(row.player_name)}
+                  hidden={!visibleRows.has(row)}
                 />
               ))}
             </tbody>
