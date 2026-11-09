@@ -14,7 +14,6 @@ import STAT_LABELS from "./statLabels";
 import StatRadar from "./StatRadar";
 import SimilarShapeFinder from "./SimilarShapeFinder";
 import ArchetypePill from "./ArchetypePill";
-import TagCaption from "./TagCaption";
 import { TAG_KINDS } from "@/lib/archetypes";
 import PercentileCard from "./PercentileCard";
 import { radarLayoutFor } from "./radarLayout";
@@ -63,11 +62,10 @@ const tagLabel = (row, kind) => (kind === "role" ? row.archetype : row[kind]);
 function StatDetailRow({ row, colSpan, shapePeers, wrTePool, tagsByName, maxCeiling, lastWeek, simLatestWeek, onGoToPlayer }) {
   // Week scrubber state (see the bar at the bottom of the pace panel):
   // null = the latest published week; otherwise a snapshot's week.
-  // Which tag (role / sustainability / career stage) is selected: it sets the caption under the pills
-  // and which kind of tag the comparison cards show for their players.
-  const tagKinds = TAG_KINDS.map((k) => k.key).filter((k) => tagLabel(row, k));
-  const [tagKind, setTagKind] = useState(null);
-  const activeTag = tagKinds.includes(tagKind) ? tagKind : tagKinds[0];
+  // Only the player's ROLE pill is shown (founder, Nov 9 2026: the sustainability and career-stage pills and the caption under them were
+  // removed); it is also the kind of tag the comparison cards show for their players.
+  const tagKinds = ["role"].filter((k) => tagLabel(row, k));
+  const activeTag = tagKinds[0];
   const [snapWeek, setSnapWeek] = useState(null);
   const [snaps, setSnaps] = useState([]);
   const pendingWeek = useRef(null);
@@ -423,10 +421,9 @@ function StatDetailRow({ row, colSpan, shapePeers, wrTePool, tagsByName, maxCeil
                 <div className="role-block-caption mono">{TAG_KINDS.find((k) => k.key === activeTag)?.heading}</div>
                 <div className="role-block-tags">
                   {tagKinds.map((k) => (
-                    <ArchetypePill key={k} name={tagLabel(row, k)} active={k === activeTag} onClick={() => setTagKind(k)} />
+                    <ArchetypePill key={k} name={tagLabel(row, k)} active />
                   ))}
                 </div>
-                <TagCaption row={row} kind={activeTag} />
               </div>
             )}
             <table className="stat-detail-table">
