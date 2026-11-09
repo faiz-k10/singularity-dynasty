@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import ThemeToggle from "./ThemeToggle";
+import ArcGauge from "./ArcGauge";
 import NewsletterForm from "./NewsletterForm";
 import { lookupSleeperTeams } from "./my-team/actions";
 import { summarizeLeagues } from "@/lib/heroLookup";
@@ -313,10 +314,13 @@ function Matchups({ rows }) {
               <td className={`num${them ? ` is-${them}` : ""}${r.live ? "" : " proj"}`}>{n(r.opp)}</td>
               <td className={`l ch is-${r.tone || "grey"}`}>
                 {r.p != null ? (
-                  <>
-                    <b>{r.label}</b> <span>{formatWin(r.p)}</span>
-                    <i className="meter"><i style={{ width: `${Math.round(r.p * 100)}%` }} /></i>
-                  </>
+                  <span className="chrow">
+                    <ArcGauge value={r.p} size={46} label={`${formatWin(r.p)} chance to win`} />
+                    <span className="chtx">
+                      <b>{r.label}</b>
+                      <span>{formatWin(r.p)}</span>
+                    </span>
+                  </span>
                 ) : (
                   "—"
                 )}

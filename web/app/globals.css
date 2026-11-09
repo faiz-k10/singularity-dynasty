@@ -6849,9 +6849,15 @@ body:has(.ehp) .site-footer .fsmall,body:has(.ehp) .site-footer .fsmall a,body:h
 .ehp-mt .num.is-lead{color:var(--ehp-mark);}
 .ehp-mt .ch{min-width:150px;font:11px var(--font-mono), monospace;font-stretch:82%;}
 .ehp-mt .ch b{font-weight:400;letter-spacing:.14em;text-transform:uppercase;}
-.ehp-mt .ch span{color:var(--ehp-holedim);margin-left:6px;}
 .ehp-mt .ch.is-mint b{color:var(--ehp-mark);}
-.ehp-mt .meter{display:block;height:2px;margin-top:8px;background:color-mix(in srgb, var(--ehp-holeink) 14%, transparent);}
-.ehp-mt .meter i{display:block;height:100%;background:var(--ehp-holeink);}
-.ehp-mt .ch.is-mint .meter i{background:var(--ehp-mark);}
+/* the classic page's dial (ArcGauge), recoloured for the hole: ember when favoured, cold blue for a long shot / loss, ink otherwise */
+.ehp-mt .ch{--tone:var(--ehp-holeink);}
+.ehp-mt .ch.is-mint{--tone:var(--ehp-mark);}
+.ehp-mt .ch.is-red{--tone:var(--down);}
+.ehp-mt .ch.is-red b{color:var(--down);}
+.ehp-mt .chrow{display:inline-flex;align-items:center;gap:12px;}
+.ehp-mt .chtx{display:flex;flex-direction:column;gap:3px;}
+.ehp-mt .chtx span{color:var(--ehp-holedim);}
+.ehp-mt .arc-gauge-track{stroke:color-mix(in srgb, var(--ehp-holeink) 16%, transparent);}
+.ehp-mt .arc-gauge-needle{stroke:var(--ehp-holeink);}
 @media (max-width:700px){.ehp-mt .num{font-size:22px;} .ehp-mt .ch{min-width:0;} .ehp-mt td,.ehp-mt th{padding-left:6px;padding-right:6px;}}
