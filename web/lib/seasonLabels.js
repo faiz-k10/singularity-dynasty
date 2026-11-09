@@ -26,7 +26,7 @@ export const SEASON_LABELS = {
   collapse: { name: "Collapse", tone: "lose", plain: "He has turned out much worse than we expected before the season." },
   neutral: { name: "Neutral", tone: "neutral", plain: "So far he is about where we expected him to be." },
   riser: { name: "Riser", tone: "win", plain: "His outlook has been getting better week after week." },
-  steady: { name: "Steady", tone: "neutral", plain: "His outlook has not been heading in any one direction lately." },
+  steady: { name: "Steady", tone: "neutral", plain: "His outlook has been holding level lately." },
   faller: { name: "Faller", tone: "lose", plain: "His outlook has been getting worse week after week." },
 };
 
