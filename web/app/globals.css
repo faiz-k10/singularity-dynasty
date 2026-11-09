@@ -6865,9 +6865,11 @@ body:has(.ehp) .site-footer .fsmall,body:has(.ehp) .site-footer .fsmall a,body:h
 .ehp-weekly{padding:120px 0 120px !important;}
 .ehp-weekly .ehp-two{align-items:start;}
 .ehp-wk{width:100%;border-collapse:collapse;}
-.ehp-wk th{font:400 10px var(--font-mono), monospace;font-stretch:82%;letter-spacing:.16em;text-transform:uppercase;color:var(--ehp-faint);text-align:right;padding:0 12px 12px;border-bottom:1px solid var(--ehp-ink);}
-.ehp-wk th.l,.ehp-wk td.l{text-align:left;}
-.ehp-wk td{padding:16px 12px;border-bottom:1px solid var(--ehp-rule);text-align:right;font:13px var(--font-mono), monospace;font-stretch:82%;font-variant-numeric:tabular-nums;vertical-align:middle;}
+.ehp-wk th{font:400 10px var(--font-mono), monospace;font-stretch:82%;letter-spacing:.16em;text-transform:uppercase;color:var(--ehp-faint);text-align:center;padding:0 12px 12px;border-bottom:1px solid var(--ehp-ink);}
+.ehp-wk th,.ehp-wk td{text-align:center;} /* the column names and their numbers are centred together; only the player column is left-aligned */
+.ehp-wk th:first-child,.ehp-wk td:first-child{text-align:left;}
+.ehp-wk td .ehp-mini{margin:0 auto;}
+.ehp-wk td{padding:16px 12px;border-bottom:1px solid var(--ehp-rule);font:13px var(--font-mono), monospace;font-stretch:82%;font-variant-numeric:tabular-nums;vertical-align:middle;}
 .ehp-wk .nm{display:block;font:400 17px var(--font-body), serif;}
 .ehp-wk .sub{display:block;margin-top:2px;font:11px var(--font-mono), monospace;color:var(--ehp-faint);}
 .ehp-wk .fl{color:var(--down);}
