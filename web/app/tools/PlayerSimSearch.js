@@ -13,7 +13,7 @@ import STAT_LABELS from "./statLabels";
 import StatRadar from "./StatRadar";
 import SimilarShapeFinder from "./SimilarShapeFinder";
 import ArchetypePill from "./ArchetypePill";
-import { TAG_KINDS } from "@/lib/archetypes";
+import { TAG_KINDS, ARCHETYPE_BLURB } from "@/lib/archetypes";
 import { SEASON_LABELS } from "@/lib/seasonLabels";
 
 // The Tags filter (replaces the Badges filter here, founder Nov 9 2026): the six season-long labels, grouped up / down.
@@ -76,6 +76,7 @@ function StatDetailRow({ row, colSpan, shapePeers, wrTePool, tagsByName, maxCeil
   // removed); it is also the kind of tag the comparison cards show for their players.
   const tagKinds = ["role"].filter((k) => tagLabel(row, k));
   const activeTag = tagKinds[0];
+  const [openTag, setOpenTag] = useState(null); // the tag whose one-sentence caption is showing: "role" or a season label key
   const [snapWeek, setSnapWeek] = useState(null);
   const [snaps, setSnaps] = useState([]);
   const pendingWeek = useRef(null);
@@ -431,12 +432,16 @@ function StatDetailRow({ row, colSpan, shapePeers, wrTePool, tagsByName, maxCeil
                 <div className="role-block-caption mono">{TAG_KINDS.find((k) => k.key === activeTag)?.heading || "Season"}</div>
                 <div className="role-block-tags">
                   {tagKinds.map((k) => (
-                    <ArchetypePill key={k} name={tagLabel(row, k)} active />
+                    <ArchetypePill key={k} name={tagLabel(row, k)} active={openTag === k} onClick={() => setOpenTag((t) => (t === k ? null : k))} />
                   ))}
                   {(row.labels || []).map((k) => (
-                    <ArchetypePill key={k} name={SEASON_LABELS[k].name} active />
+                    <ArchetypePill key={k} name={SEASON_LABELS[k].name} active={openTag === k} onClick={() => setOpenTag((t) => (t === k ? null : k))} />
                   ))}
                 </div>
+                {/* One sentence for whichever tag was clicked (click it again to close). */}
+                {openTag && (
+                  <p className="role-block-blurb">{openTag === "role" ? ARCHETYPE_BLURB[row.archetype] : SEASON_LABELS[openTag]?.plain}</p>
+                )}
               </div>
             )}
             <table className="stat-detail-table">
