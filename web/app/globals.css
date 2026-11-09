@@ -2364,7 +2364,7 @@ a.export-csv-btn{text-decoration:none;}
    never overlaps the typical/upside fill, colored to match the tick's
    own hot/cold (reuses -pace-delta's classes, not the marker's, since
    this is text color not a background). */
-.stat-panel-pace-rangebar-total{position:absolute; right:calc(100% + 16px); transform:translateY(50%); font-family:var(--font-mono), monospace; font-size:10.5px; font-weight:600; white-space:nowrap; z-index:2;}
+.stat-panel-pace-rangebar-total{position:absolute; right:calc(100% + 12px); transform:translateY(50%); font-family:var(--font-mono), monospace; font-size:10.5px; font-weight:600; white-space:nowrap; z-index:2;}
 .stat-panel-pace-rangebar-total.pace-hot{color:var(--up);}
 .stat-panel-pace-rangebar-total.pace-cold{color:var(--down);}
 /* Games-played-of-17 loading bar, pinned to the bottom of the whole
