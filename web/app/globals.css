@@ -2342,7 +2342,7 @@ a.export-csv-btn{text-decoration:none;}
    numbers beside it. */
 /* line-height:1 keeps the label's own box tight to its glyphs, so the
    px offsets below are measuring against the actual text height. */
-.stat-panel-pace-rangebar-label{position:absolute; left:50%; z-index:3; line-height:1; font-family:var(--font-mono), monospace; font-size:11.5px; font-weight:700; color:var(--star); white-space:nowrap; padding:3px 6px; background:var(--void-panel); border:1px solid var(--rule-strong);} /* outlined plates (founder, Nov 9 2026): the ceiling's is mint, the floor's red */
+.stat-panel-pace-rangebar-label{position:absolute; left:50%; z-index:3; line-height:1; font-family:var(--font-mono), monospace; font-size:11px; font-weight:700; color:var(--star); white-space:nowrap; padding:3px 0; background:var(--void-panel); border:1px solid var(--rule-strong); text-align:center;} /* outlined plates (founder, Nov 9 2026): the ceiling's is mint, the floor's red */
 .stat-panel-pace-rangebar-label-ceiling{border-color:var(--horizon-gold);}
 .stat-panel-pace-rangebar-label-floor{border-color:var(--down);}
 /* Both labels use `bottom:X%`, which already places their box flush
@@ -2352,8 +2352,8 @@ a.export-csv-btn{text-decoration:none;}
    zero gap, so it only needs the small nudge, not another -100%. That
    mismatch (both using -100%/+100% symmetrically) was the actual cause
    of ceiling's bigger-looking gap, not a line-height issue. */
-.stat-panel-pace-rangebar-label-ceiling{transform:translate(-50%, -5px);}
-.stat-panel-pace-rangebar-label-floor{transform:translate(-50%, calc(100% + 5px));}
+.stat-panel-pace-rangebar-label-ceiling{transform:translate(calc(-50% + 7px), -5px);} /* nudged right so the plate clears the pin head and the pace number on the left */
+.stat-panel-pace-rangebar-label-floor{transform:translate(calc(-50% + 7px), calc(100% + 5px));}
 .stat-panel-pace-rangebar{position:relative; width:8px; flex:1; min-height:50px; background:var(--void-panel-2); border-radius:2px;}
 .stat-panel-pace-rangebar-typical{position:absolute; left:0; right:0; background:var(--down); border-radius:0 0 2px 2px; min-height:3px;}
 .stat-panel-pace-rangebar-upside{position:absolute; left:0; right:0; background:var(--horizon-gold); border-radius:2px 2px 0 0; min-height:2px;}
