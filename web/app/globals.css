@@ -6788,3 +6788,57 @@ body:has(.ehp){--ehp-bg:#0B0B0B;--ehp-ink:#ECE7DC;--ehp-dim:#A39E92;--ehp-faint:
 body:has(.ehp) .site-footer{background:var(--ehp-bg);border-top:1px solid var(--ehp-rule);color:var(--ehp-dim);}
 body:has(.ehp) .site-footer a,body:has(.ehp) .site-footer h2,body:has(.ehp) .site-footer h3,body:has(.ehp) .site-footer h4{color:var(--ehp-ink);}
 body:has(.ehp) .site-footer .fsmall,body:has(.ehp) .site-footer .fsmall a,body:has(.ehp) .site-footer p{color:var(--ehp-dim);}
+
+/* ===== EVENT HORIZON MATERIAL, SITE-WIDE (Nov 10 2026, founder: every page follows the landing page; the design before this is
+   the git tag design-eh-tokens-2026-11-10). Overrides the older chrome in one place: hairlines and ink instead of filled plates,
+   a calm header (no pricing pill, a Plans link), quiet text toggles, and the BADGES IN THREE COLOURS --
+   ember = good, cold blue = bad, ink = informational -- drawn as a hairline ring with the glyph in the colour (solid only for
+   Elite Role / Elite Player). The Super Hero ball keeps its own colours. Mockup: mockups/tools-event-horizon.html. ===== */
+
+/* header: the hole as the logo, quiet mono nav, Plans + Account as text */
+.site-header{background:var(--void);border-bottom:1px solid var(--line);}
+.site-header .brandmark{font-weight:600;letter-spacing:.34em;}
+.top-nav-bar a,.top-nav-bar .nav-fold-trigger{font-family:var(--font-mono), monospace !important;font-stretch:82%;font-size:12.5px !important;font-weight:400 !important;letter-spacing:.02em !important;text-transform:none !important;color:var(--star-dim) !important;}
+.top-nav-bar a:hover,.top-nav-bar a.active{color:var(--star) !important;}
+.top-nav-bar a:not(.tn-cta):not(.tn-box)::after{height:1px;background:var(--star);}
+.top-nav-bar a.tn-plans{margin-left:auto;}
+.top-nav-bar a.tn-box,.top-nav-bar a.tn-account{border:0 !important;background:none !important;padding:0 0 1px !important;color:var(--star) !important;border-bottom:1px solid var(--horizon) !important;border-radius:0 !important;}
+.theme-toggle{height:26px !important;border-radius:13px !important;background:none !important;border:1px solid var(--line) !important;color:var(--star-dim) !important;overflow:hidden;}
+.theme-toggle .tt-cell{width:24px;height:24px;border-radius:50%;background:none !important;color:inherit !important;opacity:.45;}
+.theme-toggle .tt-cell svg{width:12px;height:12px;}
+.theme-toggle .tt-moon{opacity:1;}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]) .theme-toggle .tt-moon{opacity:.45;} :root:not([data-theme="dark"]) .theme-toggle .tt-sun{opacity:1;}}
+:root[data-theme="light"] .theme-toggle .tt-moon{opacity:.45;} :root[data-theme="light"] .theme-toggle .tt-sun{opacity:1;}
+:root[data-theme="dark"] .theme-toggle .tt-sun{opacity:.45;} :root[data-theme="dark"] .theme-toggle .tt-moon{opacity:1;}
+
+/* the ticker: one hairline strip, plain names, small badge glyphs */
+.ticker{border-bottom:1px solid var(--line) !important;border-top:0 !important;background:var(--void) !important;box-shadow:none !important;}
+.ticker-item{font-size:11.5px !important;letter-spacing:.02em !important;color:var(--star-dim) !important;}
+
+/* section labels: a dot and small mono text, not a filled plate */
+.eyebrow,.eyebrow.blue{background:none !important;color:var(--star-dim) !important;padding:0 !important;font-weight:400 !important;letter-spacing:.2em !important;font-size:10.5px !important;display:inline-flex;align-items:center;gap:10px;}
+.eyebrow::before,.eyebrow.blue::before{content:"" !important;display:inline-block !important;width:6px;height:6px;border-radius:50%;background:var(--horizon);position:static;}
+
+/* buttons: outlined ink, filled ink on hover (the landing page's "go" button) */
+.btn-primary,.btn-ghost{background:none !important;color:var(--star) !important;border:1px solid var(--star) !important;border-radius:0 !important;box-shadow:none !important;filter:none !important;font-family:var(--font-mono), monospace !important;font-stretch:82%;font-size:12.5px !important;font-weight:400 !important;letter-spacing:.04em !important;text-transform:none !important;}
+.btn-primary:hover,.btn-ghost:hover{background:var(--star) !important;color:var(--void) !important;}
+
+/* toggles and segmented controls: the chosen one is filled ink, the rest plain text (was a filled ember plate) */
+.tbf-mode button.on,.tier-toggle a.active,.tier-toggle button.active,.board-toggle a.active,.board-toggle button.active,.compare-radar-layer-toggle button.active,
+.board-orient button[aria-pressed="true"],.board-collapse[aria-pressed="true"],.rk-positions button.active,.hub-tabs button.on,.hub-posfilter button.on,
+.sb-plays-filter button[aria-pressed="true"],.sb-focus-chip{background:var(--star) !important;color:var(--void) !important;box-shadow:none !important;border-color:var(--star) !important;}
+
+/* tables: no heat-tinted columns and no coloured position stripes; floor reads cold blue, ceiling ember */
+.heat-cell,.heat-cell-alt,.heat-cell-floor,.heat-cell-ceiling{background:none !important;}
+.heat-cell-floor,.heat-cell-alt{color:var(--down);}
+.heat-cell-ceiling{color:var(--horizon);}
+.rankings-table tbody tr[data-pos] > td:first-child{border-left-color:transparent !important;}
+
+/* badges: three colours */
+:is(.weekly-glyph-badge,.ticker-badge,.confidence-badge,.player-achv-dot,.weekly-achievement-badge):is(.heat,.sprout,.smash,.honorable,.eliteRole,.elitePlayer,.plusValue,.boulder,.cloud,.cape){--tone:var(--horizon);}
+:is(.weekly-glyph-badge,.ticker-badge,.confidence-badge,.player-achv-dot,.weekly-achievement-badge):is(.ice,.tough,.menace,.minusValue){--tone:var(--down);}
+:is(.weekly-glyph-badge,.ticker-badge,.confidence-badge,.player-achv-dot,.weekly-achievement-badge):is(.gold,.silver,.rookie,.icarus,.eddy,.peak){--tone:var(--star-dim);}
+:is(.weekly-glyph-badge,.ticker-badge,.confidence-badge):not(.ball){--badge-bg:none !important;background:none !important;box-shadow:none !important;color:var(--tone) !important;border:1px solid var(--tone) !important;border-radius:50% !important;}
+:is(.weekly-glyph-badge,.ticker-badge).eliteRole,:is(.weekly-glyph-badge,.ticker-badge).elitePlayer{--badge-bg:var(--tone) !important;background:var(--tone) !important;color:var(--void) !important;}
+.player-achv-dot:not(.ball){background:var(--tone) !important;box-shadow:none !important;}
+.weekly-achievement-badge:not(.ball) .weekly-achievement-label{color:var(--tone) !important;}
