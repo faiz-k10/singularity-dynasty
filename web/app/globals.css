@@ -6629,13 +6629,13 @@ body:has(.ehp){--ehp-bg:#0B0B0B;--ehp-ink:#ECE7DC;--ehp-dim:#A39E92;--ehp-faint:
 
 /* header: quiet over the sky, white-on-black while you're inside the hole, then a paper bar holding the hole as the logo */
 .ehp-header{position:fixed;inset:0 0 auto;z-index:60;border-bottom:1px solid transparent;transition:background .35s, border-color .35s;}
-.ehp-bar{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;height:72px;font:12px var(--font-mono), monospace;font-stretch:82%;color:var(--ehp-dim);transition:color .35s;}
+.ehp-bar{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;height:84px;font:12px var(--font-mono), monospace;font-stretch:82%;color:var(--ehp-dim);transition:color .35s;}
 .ehp-bar nav{display:flex;gap:30px;}
 .ehp-bar a:hover{color:var(--ehp-ink);}
-.ehp-brand{display:flex;align-items:center;font:500 12.5px var(--font-display), sans-serif;letter-spacing:.55em;text-transform:uppercase;color:var(--ehp-ink) !important;}
-.ehp-dock{width:0;height:18px;border-radius:50%;background:var(--ehp-ink);transition:width .5s cubic-bezier(.3,.7,.2,1), margin .5s;}
+.ehp-brand{display:flex;align-items:center;font:600 22px var(--font-display), sans-serif;letter-spacing:.34em;text-transform:uppercase;color:var(--ehp-ink) !important;}
+.ehp-dock{width:0;height:22px;border-radius:50%;background:var(--ehp-ink);transition:width .5s cubic-bezier(.3,.7,.2,1), margin .5s;}
 .ehp-header.docked{background:var(--ehp-bg);border-bottom-color:var(--ehp-rule);}
-.ehp-header.docked .ehp-dock{width:18px;margin-right:14px;}
+.ehp-header.docked .ehp-dock{width:22px;height:22px;margin-right:16px;}
 .ehp-header.in-hole .ehp-bar{color:var(--ehp-holedim);}
 .ehp-header.in-hole .ehp-brand,.ehp-header.in-hole .ehp-in{color:var(--ehp-holeink) !important;}
 .ehp-r{display:flex;justify-content:flex-end;align-items:center;gap:26px;}
@@ -6765,7 +6765,7 @@ body:has(.ehp){--ehp-bg:#0B0B0B;--ehp-ink:#ECE7DC;--ehp-dim:#A39E92;--ehp-faint:
   .ehp-wrap{padding:0 20px;}
   .ehp-bar nav{display:none;}
   .ehp-bar{grid-template-columns:auto 1fr;}
-  .ehp-brand{letter-spacing:.3em;font-size:11px;}
+  .ehp-brand{letter-spacing:.22em;font-size:15px;}
   .ehp-r{gap:16px;}
   .ehp-two,.ehp-plans{grid-template-columns:1fr;gap:40px;}
   .ehp-h{font-size:42px;} .ehp-h em{font-size:36px;}
@@ -6781,7 +6781,7 @@ body:has(.ehp){--ehp-bg:#0B0B0B;--ehp-ink:#ECE7DC;--ehp-dim:#A39E92;--ehp-faint:
   .ehp-form{width:190px;} .ehp-form input{font-size:16px;letter-spacing:-.02em;}
   .ehp-big{font-size:32px;} .ehp-line{font-size:12.5px;max-width:170px;}
   .ehp-r>a:first-child{display:none;}
-  .ehp-brand{letter-spacing:.24em;font-size:10.5px;}
+  .ehp-brand{letter-spacing:.14em;font-size:13px;}
   .ehp-ringtext{font-size:10px;}
 }
 /* the site footer under the Event Horizon page takes the page's paper and ink */
