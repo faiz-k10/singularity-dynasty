@@ -182,6 +182,22 @@ async function TickerFeed() {
   return <TickerTrack items={tickerItems} />;
 }
 
+// The ticker strip on its own: the empty bar now, its picks streamed in after the page. Used by SiteHeader and by the landing page
+// (EventHorizon has its own header, so it renders just this above it).
+export function SiteTicker() {
+  return (
+    <>
+      {/* A scrolling strip of names and numbers: decorative for screen readers (every figure in it is on the tool pages). */}
+      <div className="ticker-bar" aria-hidden="true">
+        <div className="ticker-track" id="tickerTrack"></div>
+      </div>
+      <Suspense fallback={null}>
+        <TickerFeed />
+      </Suspense>
+    </>
+  );
+}
+
 // Shared by every page: the fixed telemetry ticker + full-width site banner
 // (brand, section nav with The Observatory, the pricing pill, Account at the right end, hamburger + radial-menu mobile
 // fallback). Nav links use /#section so they work whether the visitor is
@@ -193,10 +209,7 @@ export default async function SiteHeader({ scripts = true }) {
 
   return (
     <>
-      {/* A scrolling strip of names and numbers: decorative for screen readers (every figure in it is on the tool pages). */}
-      <div className="ticker-bar" aria-hidden="true">
-        <div className="ticker-track" id="tickerTrack"></div>
-      </div>
+      <SiteTicker />
 
       <ThemeToggle />
       <button
@@ -286,9 +299,6 @@ export default async function SiteHeader({ scripts = true }) {
         </nav>
       </div>
 
-      <Suspense fallback={null}>
-        <TickerFeed />
-      </Suspense>
       {scripts && <InteractiveScript />}
     </>
   );

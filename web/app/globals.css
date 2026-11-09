@@ -6559,7 +6559,7 @@ body:has(.ehp){--ehp-bg:#0B0B0B;--ehp-ink:#ECE7DC;--ehp-dim:#A39E92;--ehp-faint:
 .ehp-two{display:grid;grid-template-columns:.8fr 1.2fr;gap:70px;align-items:center;}
 
 /* header: quiet over the sky, white-on-black while you're inside the hole, then a paper bar holding the hole as the logo */
-.ehp-header{position:absolute;inset:0 0 auto;z-index:60;} /* part of the page: it scrolls away with the hero (founder, Nov 10 2026: no persistent top bar) */
+.ehp-header{position:absolute;inset:25px 0 auto;z-index:60;} /* under the ticker strip (24px + hairline) */ /* part of the page: it scrolls away with the hero (founder, Nov 10 2026: no persistent top bar) */
 .ehp-bar{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;height:84px;font:12px var(--font-mono), monospace;font-stretch:82%;color:var(--ehp-dim);transition:color .35s;}
 .ehp-bar nav{display:flex;gap:30px;}
 .ehp-bar a:hover{color:var(--ehp-ink);}
@@ -6828,3 +6828,6 @@ body:has(.ehp) .site-footer .fsmall,body:has(.ehp) .site-footer .fsmall a,body:h
   .ehp-wk td:nth-child(5),.ehp-wk th:nth-child(5){display:none;}
   .ehp-dy li{grid-template-columns:30px 1fr 64px;} .ehp-dy .tr{display:none;}
 }
+
+/* the landing page: the ticker sits above the header and scrolls away with it (no persistent top bar there) */
+body:has(.ehp) .ticker-bar{position:absolute;}

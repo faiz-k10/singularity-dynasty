@@ -1,6 +1,7 @@
 import { unstable_cache } from "next/cache";
 import { cookies } from "next/headers";
 import EventHorizon from "./EventHorizon";
+import { SiteTicker } from "./SiteHeader";
 import { loadYourWeek } from "./hub/YourWeek";
 import { getDynastyRows } from "@/lib/dynastyData";
 import { buildBoard, scoreRows } from "@/lib/dynastyBoard";
@@ -72,6 +73,8 @@ export default async function Home() {
   const dynasty = dList.slice(0, 6).map((r, i) => ({ rank: i + 1, name: r.name, pos: r.pos, team: r.team, age: r.age, score: r.score, tier: tiers.findIndex((t) => i >= t.a && i <= t.b) + 1 }));
 
   return (
+    <>
+    <SiteTicker />
     <EventHorizon
       signedIn={Boolean(user)}
       member={member}
@@ -83,5 +86,6 @@ export default async function Home() {
       nextKickoff={nextKickoff(states)}
       posts={posts}
     />
+    </>
   );
 }
