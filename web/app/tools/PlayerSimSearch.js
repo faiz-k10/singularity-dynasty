@@ -19,8 +19,8 @@ import { SEASON_LABELS, LEVEL_FAMILY, TREND_FAMILY } from "@/lib/seasonLabels";
 // The Tags filter (replaces the Badges filter here, founder Nov 9 2026): the season-long labels in their two families, best to worst.
 const tagItems = (keys) => keys.map((id) => ({ id, label: SEASON_LABELS[id].name, tone: SEASON_LABELS[id].tone }));
 const TAG_GROUPS = [
-  { label: "Season total vs week 1", items: tagItems(LEVEL_FAMILY) },
-  { label: "Last three weeks", items: tagItems(TREND_FAMILY) },
+  { label: "Season So Far", items: tagItems(LEVEL_FAMILY) },
+  { label: "Recent Momentum", items: tagItems(TREND_FAMILY) },
 ];
 const hasTags = (row, ids, match) => {
   const mine = row.labels || [];
