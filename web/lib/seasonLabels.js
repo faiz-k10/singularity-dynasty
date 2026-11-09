@@ -18,15 +18,16 @@
 export const MIN_MEDIAN = 40;
 export const STREAK_WEEKS = 4;
 
+// `plain` is the one-sentence caption under a clicked pill: deliberately vague, so it says what the tag means without giving away the rule.
 export const SEASON_LABELS = {
-  leagueWinners: { name: "League Winner", tone: "win", plain: "His floor now is above his week-1 ceiling." },
-  breakout: { name: "Breakout", tone: "win", plain: "His median now is above his week-1 ceiling." },
-  tankCommander: { name: "Tank Commander", tone: "lose", plain: "His ceiling now is below his week-1 floor." },
-  collapse: { name: "Collapse", tone: "lose", plain: "His ceiling now is below his week-1 median." },
-  neutral: { name: "Neutral", tone: "neutral", plain: "His season projection is still inside the range it had in week 1." },
-  riser: { name: "Riser", tone: "win", plain: "His median is up four weeks in a row." },
-  steady: { name: "Steady", tone: "neutral", plain: "His median has not moved in one direction for four weeks." },
-  faller: { name: "Faller", tone: "lose", plain: "His median is down four weeks in a row." },
+  leagueWinners: { name: "League Winner", tone: "win", plain: "His season has gone far better than anyone could have reasonably hoped." },
+  breakout: { name: "Breakout", tone: "win", plain: "He has turned into a better player than we expected before the season." },
+  tankCommander: { name: "Tank Commander", tone: "lose", plain: "His season has gone far worse than anyone could have reasonably feared." },
+  collapse: { name: "Collapse", tone: "lose", plain: "He has turned out much worse than we expected before the season." },
+  neutral: { name: "Neutral", tone: "neutral", plain: "So far he is about where we expected him to be." },
+  riser: { name: "Riser", tone: "win", plain: "His outlook has been getting better week after week." },
+  steady: { name: "Steady", tone: "neutral", plain: "His outlook has not been heading in any one direction lately." },
+  faller: { name: "Faller", tone: "lose", plain: "His outlook has been getting worse week after week." },
 };
 
 // The two families in display order (the Tags filter and the pills): label keys, best to worst.
