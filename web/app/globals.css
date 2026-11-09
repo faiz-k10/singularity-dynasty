@@ -272,9 +272,9 @@ body::before{
 }
 
 /* ---------- TELEMETRY TICKER (fixed top strip) ---------- */
-.ticker-bar{position:fixed; top:0; left:0; right:0; z-index:80; background:rgba(var(--scrim-rgb),0.92); overflow:hidden; white-space:nowrap; border-bottom:1px solid var(--line);}
+.ticker-bar{position:fixed; top:0; left:0; right:0; z-index:80; background:rgba(var(--scrim-rgb),0.92); overflow:hidden; white-space:nowrap; border-bottom:1px solid var(--line); line-height:0;} /* no text strut: the strip is exactly the track (24px) + its hairline */
 .ticker-track{display:inline-flex; vertical-align:top; gap:36px; padding:2px 0; animation:scroll-ticker 40s linear infinite;}
-.ticker-item{font-family:var(--font-mono), monospace; font-size:12px; color:var(--star-dim); display:inline-flex; gap:8px; align-items:center;}
+.ticker-item{font-family:var(--font-mono), monospace; font-size:12px; line-height:20px; color:var(--star-dim); display:inline-flex; gap:8px; align-items:center;} /* a whole-pixel line, so the 16px badges centre on a whole pixel (2px in) */
 @keyframes scroll-ticker{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
 
 /* Ticker badges -- a random assortment of the same Confidence/Bounce-
@@ -283,38 +283,12 @@ body::before{
    20 players' real flags and re-rolled on every page load. Same flat-
    fill + glow language and same variant colors as everywhere else those
    badges appear -- just scaled down to fit a one-line ticker strip. */
-.ticker-badges{display:inline-flex; align-items:center; gap:5px; position:relative; top:-.5px;} /* capitals sit a half pixel above the line box's middle */
-.ticker-badge{
-  display:inline-flex; align-items:center; justify-content:center; width:16px; height:16px;
-  border-radius:50%; font-size:12px; line-height:1; flex-shrink:0;
-}
-/* 14px in a 16px circle -- 1px margin each side, same clean-pixel-grid
-   reasoning as .confidence-badge svg above (an odd margin can't split
-   evenly and ends up looking a pixel off-center on one side). */
-.ticker-badge svg{width:15px; height:15px; display:block;}
-.ticker-badge.gold{background:var(--established); color:var(--void); box-shadow:0 0 5px rgba(var(--established-rgb),0.5);}
-.ticker-badge.eliteRole{background:var(--elite-role); color:var(--void); box-shadow:0 0 5px rgba(var(--elite-role-rgb),0.55);}
-.ticker-badge.plusValue{background:var(--plus-value); color:var(--void); box-shadow:0 0 5px rgba(var(--plus-value-rgb),0.5);}
-.ticker-badge.minusValue{background:var(--minus-value); color:var(--void); box-shadow:0 0 5px rgba(var(--minus-value-rgb),0.5);}
-.ticker-badge.elitePlayer{background:var(--elite-player); color:var(--void); box-shadow:0 0 5px rgba(var(--elite-player-rgb),0.55);}
-.ticker-badge.rookie{background:var(--rookie); color:var(--void); box-shadow:0 0 5px rgba(var(--rookie-rgb),0.5);}
-.ticker-badge.boulder{background:var(--boulder); color:var(--void); box-shadow:0 0 5px rgba(var(--boulder-rgb),0.5);}
-.ticker-badge.cloud{background:var(--cloud); color:var(--void); box-shadow:0 0 5px rgba(var(--cloud-rgb),0.5);}
-.ticker-badge.silver{background:var(--silver); color:var(--void); box-shadow:0 0 4px rgba(var(--silver-rgb),0.4);}
-.ticker-badge.icarus{background:var(--icarus); color:var(--void); box-shadow:0 0 5px rgba(var(--icarus-rgb),0.5);}
-.ticker-badge.eddy{background:var(--eddy); color:var(--void); box-shadow:0 0 5px rgba(var(--eddy-rgb),0.5);}
-/* Added once the ticker's pool grew from Confidence/Risky Icarus/Steady
-   Eddy to the full achievement set -- same colors as .weekly-glyph-badge's
-   own variants, just this component's own smaller glow radius. */
-.ticker-badge.heat{background:var(--fire); color:var(--void); box-shadow:0 0 5px rgba(var(--fire-rgb),0.5);}
-.ticker-badge.ice{background:var(--frost); color:var(--void); box-shadow:0 0 5px rgba(var(--frost-rgb),0.5);}
-.ticker-badge.cape{background:var(--cape); color:var(--void); box-shadow:0 0 5px rgba(var(--cape-rgb),0.5);}
-.ticker-badge.sprout{background:var(--sprout); color:var(--void); box-shadow:0 0 5px rgba(var(--sprout-rgb),0.5);}
-.ticker-badge.peak{background:var(--peak); color:var(--void); box-shadow:0 0 5px rgba(var(--peak-rgb),0.5);}
-.ticker-badge.ball{ background:none; box-shadow:none;}
-.ticker-badge.ball svg{width:16px; height:16px; overflow:visible;}
-.ticker-badge.honorable{background:var(--scholar); color:var(--void); box-shadow:0 0 5px rgba(var(--scholar-rgb),0.5);}
-.ticker-badge.menace{background:var(--menace); color:var(--void); box-shadow:0 0 6px rgba(var(--menace-rgb),0.65);}
+.ticker-badges{display:inline-flex; align-items:center; gap:5px;}
+/* The small ringed badge (ticker, Badges filter): the ring and the glyph are ONE svg (lib/badgeIcons.js ringBadgeSvg), sized to the box, so
+   nothing can round to a different pixel than its circle. Colour = --tone (set per variant in the "badges: three colours" block). */
+.sym-badge{display:inline-block; width:16px; height:16px; flex-shrink:0; color:var(--tone, var(--star-dim)); line-height:0;}
+.sym-badge svg{display:block; width:100%; height:100%; overflow:visible;}
+.sym-badge.eliteRole,.sym-badge.elitePlayer{--badge-bg:var(--tone); color:var(--void);}
 .ticker-pace{font-weight:600; padding:1px 7px; border:1px solid currentColor; border-radius:2px; line-height:1.35;} /* a box: green (hot) or red (cold) */
 .ticker-pace.hot{color:var(--up); background:color-mix(in srgb, var(--up) 16%, transparent); border-color:color-mix(in srgb, var(--up) 55%, transparent);}
 .ticker-pace.cold{color:var(--down); background:color-mix(in srgb, var(--down) 16%, transparent); border-color:color-mix(in srgb, var(--down) 55%, transparent);}
@@ -6783,11 +6757,11 @@ body:has(.ehp) .site-footer .fsmall,body:has(.ehp) .site-footer .fsmall a,body:h
 .rankings-table tbody tr[data-pos] > td:first-child{border-left-color:transparent !important;}
 
 /* badges: three colours */
-:is(.weekly-glyph-badge,.ticker-badge,.confidence-badge,.player-achv-dot,.weekly-achievement-badge):is(.heat,.sprout,.smash,.honorable,.eliteRole,.elitePlayer,.plusValue,.boulder,.cloud,.cape){--tone:var(--horizon);}
-:is(.weekly-glyph-badge,.ticker-badge,.confidence-badge,.player-achv-dot,.weekly-achievement-badge):is(.ice,.tough,.menace,.minusValue){--tone:var(--down);}
-:is(.weekly-glyph-badge,.ticker-badge,.confidence-badge,.player-achv-dot,.weekly-achievement-badge):is(.gold,.silver,.rookie,.icarus,.eddy,.peak){--tone:var(--star-dim);}
-:is(.weekly-glyph-badge,.ticker-badge,.confidence-badge):not(.ball){--badge-bg:none !important;background:none !important;box-shadow:none !important;color:var(--tone) !important;border:1px solid var(--tone) !important;border-radius:50% !important;}
-:is(.weekly-glyph-badge,.ticker-badge).eliteRole,:is(.weekly-glyph-badge,.ticker-badge).elitePlayer{--badge-bg:var(--tone) !important;background:var(--tone) !important;color:var(--void) !important;}
+:is(.weekly-glyph-badge,.sym-badge,.confidence-badge,.player-achv-dot,.weekly-achievement-badge):is(.heat,.sprout,.smash,.honorable,.eliteRole,.elitePlayer,.plusValue,.boulder,.cloud,.cape){--tone:var(--horizon);}
+:is(.weekly-glyph-badge,.sym-badge,.confidence-badge,.player-achv-dot,.weekly-achievement-badge):is(.ice,.tough,.menace,.minusValue){--tone:var(--down);}
+:is(.weekly-glyph-badge,.sym-badge,.confidence-badge,.player-achv-dot,.weekly-achievement-badge):is(.gold,.silver,.rookie,.icarus,.eddy,.peak){--tone:var(--star-dim);}
+:is(.weekly-glyph-badge,.confidence-badge):not(.ball){--badge-bg:none !important;background:none !important;box-shadow:none !important;color:var(--tone) !important;border:1px solid var(--tone) !important;border-radius:50% !important;}
+.weekly-glyph-badge.eliteRole,.weekly-glyph-badge.elitePlayer{--badge-bg:var(--tone) !important;background:var(--tone) !important;color:var(--void) !important;}
 .player-achv-dot:not(.ball){background:var(--tone) !important;box-shadow:none !important;}
 .weekly-achievement-badge:not(.ball) .weekly-achievement-label{color:var(--tone) !important;}
 /* the member's matchups table inside the horizon (EventHorizon.js Matchups): on the hole's colour */

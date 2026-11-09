@@ -1,11 +1,11 @@
-// Every badge getAchievements() can return, as a flat filter list --
+// Every badge getAchievements() can return, as a flat filter list (`icon` = its glyph in lib/badgeIcons.js when it differs from `id`) --
 // Established/Building split out of the single "confidence" key by
 // variant since they're really two different filters a viewer would
 // want separately, not "has any confidence tier." Shown in the filter toolbar in both normal and full-screen view
 // (RankingsToolbar.js).
 export const BADGE_FILTERS = [
-  { id: "established", variant: "gold", label: "Established", match: (a) => a.key === "confidence" && a.variant === "gold" },
-  { id: "building", variant: "silver", label: "Building", match: (a) => a.key === "confidence" && a.variant === "silver" },
+  { id: "established", variant: "gold", icon: "confidence", label: "Established", match: (a) => a.key === "confidence" && a.variant === "gold" },
+  { id: "building", variant: "silver", icon: "confidence", label: "Building", match: (a) => a.key === "confidence" && a.variant === "silver" },
   { id: "rookie", variant: "rookie", label: "Rookie", match: (a) => a.key === "rookie" },
   { id: "onFire", variant: "heat", label: "On Fire", match: (a) => a.key === "onFire" },
   { id: "onIce", variant: "ice", label: "On Thin Ice", match: (a) => a.key === "onIce" },

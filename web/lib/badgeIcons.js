@@ -1,8 +1,13 @@
 // The badge glyphs, as SVG markup keyed by the achievement's `key` (achievements.js). ONE copy for every place a badge is drawn -- the ticker
 // (TickerTrack.js, 16px) and the opened player's header / compare profiles (BadgeIcon, 30px) -- so they can't drift apart. Each icon's drawn
 // shape (its ink's bounding box, measured by rasterising it) is centred exactly on the badge centre and scaled to the same radius inside the 24-unit box, so every glyph sits in the middle of its circle.
-// The Super Hero ball (lib/dragonBall.js) and the Smash / Tough arrows (MatchupIcon) are drawn separately.
+// The Super Hero ball is drawn by lib/dragonBall.js (`symbolSvg` below hands it out with the rest).
+import { dragonBallSvg } from "./dragonBall";
+
 export const BADGE_ICONS = {
+  // Smash / Tough Spot (achievement key "matchup", told apart by variant): the solid up / down arrow.
+  smash: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 4 19 11.5h-4.5V20h-5v-8.5H5Z"/></svg>',
+  tough: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 20 19 12.5h-4.5V4h-5v8.5H5Z"/></svg>',
   confidence:
     '<svg viewBox="0 0 24 24" fill="currentColor"><g transform="translate(11.61 10.55) scale(0.809) translate(-12.06 -11.42)"><g transform="translate(0.6,1.2)"><path d="M5 2.8a1 1 0 0 1 1 1v16.4a1 1 0 1 1-2 0V3.8a1 1 0 0 1 1-1z"/><path d="M6.6 4.4c2.2-1.25 4.45-1.25 6.65 0s4.45 1.25 6.65 0v8.6c-2.2 1.25-4.45 1.25-6.65 0s-4.45-1.25-6.65 0z"/></g></g></svg>',
   volatile:
@@ -46,3 +51,17 @@ export const filledBadgeSvg = (key) =>
   (BADGE_ICONS[key] || "")
     .replace('viewBox="0 0 24 24"', 'viewBox="-2.4 -2.4 28.8 28.8"')
     .replace(/(<svg[^>]*>)/, '$1<circle cx="12" cy="12" r="14.4" fill="var(--badge-bg, none)"/>');
+
+// A small RINGED badge (the ticker, the Badges filter): the ring is drawn inside the same SVG as the glyph, so ring and glyph always share
+// pixels -- a CSS border around a separate SVG rounds on its own and left the ticker glyphs a half pixel off (Nov 9 2026). The ring is
+// 1.8 of the 28.8 units (1px at 16px) in the badge's tone; a solid badge (Elite) fills it via --badge-bg and draws the glyph in --badge-ink.
+export const ringBadgeSvg = (key) =>
+  (BADGE_ICONS[key] || BADGE_ICONS.confidence)
+    .replace('viewBox="0 0 24 24"', 'viewBox="-2.4 -2.4 28.8 28.8" aria-hidden="true"')
+    .replace(/(<svg[^>]*>)/, '$1<circle cx="12" cy="12" r="13.5" fill="var(--badge-bg, none)" stroke="var(--tone, currentColor)" stroke-width="1.8"/>');
+
+// The icon key for an achievement / filter: a matchup badge is drawn by its variant, everything else by its key.
+export const iconKey = (a) => (a.key === "matchup" ? a.variant : a.key);
+
+// Any small badge as markup: the Super Hero ball (its own art and colours) or a ringed glyph.
+export const symbolSvg = (key, tier = 1, size = 16) => (key === "hero" ? dragonBallSvg(tier, size) : ringBadgeSvg(key));

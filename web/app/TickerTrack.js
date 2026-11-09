@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { dragonBallSvg } from "@/lib/dragonBall";
-import { BADGE_ICONS } from "@/lib/badgeIcons";
+import { iconKey, symbolSvg } from "@/lib/badgeIcons";
 
 /* ---- ticker: a random assortment of achievement badges ----
    tickerItems (passed from the server-rendered homepage,
@@ -90,7 +89,7 @@ function buildTicker(track, tickerItems) {
       // same shape.
       const badges = item.badges || [{ key: item.key, variant: item.variant }];
       const icons = badges
-        .map((b) => `<span class="ticker-badge ${esc(b.variant)}">${b.key === "hero" ? dragonBallSvg(b.tier || 1, 16) : BADGE_ICONS[b.key] || BADGE_ICONS.confidence}</span>`)
+        .map((b) => `<span class="sym-badge ${esc(b.variant)}">${symbolSvg(iconKey(b), b.tier || 1, 16)}</span>`)
         .join("");
       html += `<span class="ticker-item">${esc(item.name)} <span class="ticker-badges">${icons}</span></span>`;
     });

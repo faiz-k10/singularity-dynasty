@@ -231,11 +231,7 @@ function GlyphBadge({ variant, glyph }) {
 // Matchup badge's icon -- the same solid triangle as the ▲ / ▼ beside the opponent in the table (up = smash spot,
 // down = tough spot), so the badge and the mark read as one thing.
 function MatchupIcon({ up }) {
-  return (
-    <svg viewBox="-2.4 -2.4 28.8 28.8" fill="currentColor" aria-hidden="true">
-      <path d={up ? "M12 4 19 11.5h-4.5V20h-5v-8.5H5Z" : "M12 20 19 12.5h-4.5V4h-5v8.5H5Z"} />
-    </svg>
-  );
+  return <BadgeIcon k={up ? "smash" : "tough"} />;
 }
 
 function achievementNode(a, row) {

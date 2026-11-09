@@ -5,6 +5,7 @@ import Link from "next/link";
 import { BADGE_FILTERS, BADGE_GROUPS } from "./badgeFilters";
 import TeamBadge from "./TeamBadge";
 import { NFL_DIVISIONS } from "@/lib/nflDivisions";
+import { symbolSvg } from "@/lib/badgeIcons";
 
 // The Weekly Projection Rankings filter controls, in one row: position pills, the Badges dropdown (grouped, with an
 // OR / AND match toggle), the Teams dropdown (by division), the All players / My players switch (passed in as `view`), and the name search pinned to
@@ -128,7 +129,12 @@ export default function RankingsToolbar({
                         onClick={() => onToggleBadge(id)}
                         aria-pressed={on}
                       >
-                        <span className={`player-achv-dot ${f.variant || ""}${f.tone ? ` tbf-tone-dot tone-${f.tone}` : ""}`} />
+                        {f.tone ? (
+                          <span className={`player-achv-dot tbf-tone-dot tone-${f.tone}`} />
+                        ) : (
+                          // the badge itself, at ticker size (the same ringed svg the ticker draws)
+                          <span className={`sym-badge ${f.variant || ""}`} aria-hidden="true" dangerouslySetInnerHTML={{ __html: symbolSvg(f.icon || f.id) }} />
+                        )}
                         {f.label}
                       </button>
                     );
