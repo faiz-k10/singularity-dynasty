@@ -6,7 +6,7 @@ import SortableTh from "./SortableTh";
 import useClientSort from "./useClientSort";
 import { sortRows } from "@/lib/sortLink";
 import { SIM_COLUMN_TYPES } from "@/lib/simColumns";
-import { MyPlayersFilter, mineClass, MyStrip, useMyView } from "./MyPlayers";
+import { MyPlayersFilter, mineClass, useMyView } from "./MyPlayers";
 import RankingsToolbar from "./RankingsToolbar";
 import { matchesBadgeFilters } from "./badgeFilters";
 import TeamBadge from "./TeamBadge";
@@ -60,7 +60,7 @@ function loadPeers() {
 // A player's label for one tag kind: "role" (archetype), "sus" (sustainability) or "stage" (career stage).
 const tagLabel = (row, kind) => (kind === "role" ? row.archetype : row[kind]);
 
-function StatDetailRow({ row, colSpan, shapePeers, wrTePool, tagsByName, maxCeiling, lastWeek, simLatestWeek, onGoToPlayer, owned }) {
+function StatDetailRow({ row, colSpan, shapePeers, wrTePool, tagsByName, maxCeiling, lastWeek, simLatestWeek, onGoToPlayer }) {
   // Week scrubber state (see the bar at the bottom of the pace panel):
   // null = the latest published week; otherwise a snapshot's week.
   // Which tag (role / sustainability / career stage) is selected: it sets the caption under the pills
@@ -218,11 +218,6 @@ function StatDetailRow({ row, colSpan, shapePeers, wrTePool, tagsByName, maxCeil
   return (
     <tr className="stat-detail-row">
       <td colSpan={colSpan}>
-        {owned && (
-          <div className="stat-detail-mine">
-            <MyStrip owned={owned} />
-          </div>
-        )}
         <div className="stat-detail-grid">
           {/* Actual points scored so far this season + vs Pace, spelled
               out in the same units and color language (--up/--down) as
@@ -683,7 +678,6 @@ const PlayerRow = memo(function PlayerRow({
           lastWeek={lastWeek}
           simLatestWeek={simLatestWeek}
           onGoToPlayer={onGoToPlayer}
-          owned={owned}
         />
       )}
     </Fragment>

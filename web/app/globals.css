@@ -2410,7 +2410,7 @@ a.export-csv-btn{text-decoration:none;}
 .rankings-table-wrap .redraft-table > tbody > tr.stat-detail-row > td{padding-left:0; padding-right:0;}   /* the pin is measured from the scroller's edge, so the cell adds no side padding of its own */
 /* The pins for narrow tables (explained at .rankings-table-wrap, top of the file) -- placed AFTER the base rule so they win the cascade: */
 @container (max-width:980px){
-  .stat-detail-row > td > .stat-detail-grid, .stat-detail-row > td > .stat-detail-mine{position:sticky; left:10px; width:calc(100cqw - 20px); box-sizing:border-box;}
+  .stat-detail-row > td > .stat-detail-grid{position:sticky; left:10px; width:calc(100cqw - 20px); box-sizing:border-box;}
   .rankings-table-wrap .player-sims-table > tbody > tr.stat-detail-row > td{padding-left:0; padding-right:0;}
 }
 /* Identity strip above the 3-column grid -- name/photo/badges on the
@@ -4378,8 +4378,6 @@ select:focus-visible{outline-offset:1px;}
 /* A player of yours in a table: his name in the brand colour, and a small "x3" after it when he is on several of your teams. */
 td.player-cell.is-mine, td.player-cell.is-mine .player-hover{color:var(--horizon-gold);}
 /* "Your player" strip at the top of an opened player. */
-.stat-detail-mine{margin-bottom:10px;}
-.weekly-detail-wrap > .stat-detail-mine{margin-bottom:12px;}
 .mine-strip{display:flex; flex-wrap:wrap; align-items:center; gap:6px 8px; padding:8px 12px; border:1px solid rgba(var(--horizon-gold-rgb),0.35); background:rgba(var(--horizon-gold-rgb),0.07); border-radius:2px; font-size:12px;}
 .mine-strip-star{font-family:var(--font-mono), monospace; font-size:10.5px; letter-spacing:0.08em; text-transform:uppercase; color:var(--horizon-gold); font-weight:700;}
 .mine-strip-chip{display:inline-flex; align-items:center; gap:6px; color:var(--star); background:var(--void-panel-2); border:1px solid var(--line); border-radius:2px; padding:3px 10px;}
