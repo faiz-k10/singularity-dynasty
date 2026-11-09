@@ -6,6 +6,7 @@ import { isLiveReferralCode } from "@/lib/referrals";
 import { REF_COOKIE, FRIEND_DISCOUNT_PERCENT } from "@/lib/referralRules";
 import { fetchGameStates, nextKickoff } from "@/lib/gameStatus";
 import { expectedWins } from "@/lib/briefing";
+import { formatWin } from "@/lib/standing";
 import { createClient } from "@/lib/supabase/server";
 import { getAuthUser } from "@/lib/authUser";
 import { createPublicClient } from "@/lib/supabase/public";
@@ -54,7 +55,8 @@ export default async function Home() {
   let member = null;
   if (week) {
     const { wins, of } = expectedWins(week.rows);
-    member = { name: week.name, leagues: week.teams.length, wins, of };
+    const matchups = week.rows.filter((r) => !r.bye && r.p != null).slice(0, 6).map((r) => ({ id: r.id, name: r.name, p: r.p, say: `${r.label.toLowerCase()} · ${formatWin(r.p)}` }));
+    member = { name: week.name, leagues: week.teams.length, wins, of, matchups };
   }
   // Arrived through a friend's referral link (proxy.js remembers the code): say the discount is waiting.
   const refCode = (await cookies()).get(REF_COOKIE)?.value;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import ThemeToggle from "./ThemeToggle";
 import NewsletterForm from "./NewsletterForm";
@@ -22,12 +22,26 @@ import { startCheckout } from "@/lib/startCheckout";
 // horizon radius, px: 150 on a desktop, smaller on a phone so the ring (R + 30) fits the screen
 const radiusFor = (w) => (w < 560 ? Math.max(104, Math.round((w - 120) / 2)) : 150);
 const TILT = (-7 * Math.PI) / 180;
-const BODIES = [
+const TOOL_BODIES = [
   { n: "WEEKLY", say: "this week, in range", href: "/tools/redraft-rankings", rx: 280, ry: 96, a: -0.6, s: 70 },
   { n: "SEASON", say: "the year, ten thousand times", href: "/tools/player-simulations", rx: 400, ry: 140, a: 1.1, s: 100 },
   { n: "DYNASTY", say: "who is really ahead", href: "/tools/draft-board", rx: 520, ry: 186, a: 2.7, s: 135 },
   { n: "OBSERVATORY", say: "plot any two numbers", href: "/tools/lab", rx: 640, ry: 232, a: 4.3, s: 175 },
 ];
+
+// What orbits the hole. A visitor sees the four tools. A member with saved leagues sees THIS WEEK'S MATCHUPS instead (as on the
+// classic landing page): one planet per league, its orbit set by the win chance -- a favoured matchup rides close to the hole,
+// a long shot far out -- labelled with the league and the one-word reading; each opens the Game Board.
+function bodiesFor(member) {
+  const m = member?.matchups;
+  if (!m?.length) return TOOL_BODIES;
+  return [...m]
+    .sort((a, b) => b.p - a.p)
+    .map((x, i, all) => {
+      const rx = 250 + (1 - x.p) * 420; // p = 1 at 250, p = 0 at 670
+      return { n: x.name.length > 22 ? `${x.name.slice(0, 21)}…`.toUpperCase() : x.name.toUpperCase(), say: x.say, href: "/my-team", rx, ry: rx * 0.36, a: (i / all.length) * Math.PI * 2 - 0.6, s: 70 + i * 22 };
+    });
+}
 const TOOLS = [
   ["Weekly Projection Rankings", "Every player's range this week, and the matchups that tilt it.", "Top 50 free", "/tools/redraft-rankings"],
   ["Player Season Simulations", "Where each season is heading, ten thousand times over.", "Top 10 free", "/tools/player-simulations"],
@@ -55,7 +69,7 @@ function countdown(iso) {
   return `${p(Math.floor(s / 3600))}:${p(Math.floor((s % 3600) / 60))}:${p(s % 60)}`; // hours is the largest unit, however far off (e.g. 61:09:28)
 }
 
-function Sky({ size, nextKickoff }) {
+function Sky({ size, nextKickoff, bodies }) {
   const { w, h } = size;
   const R = radiusFor(w);
   const k = Math.max(0.45, Math.min(1, w / 1300)); // orbits shrink on small screens
@@ -86,7 +100,7 @@ function Sky({ size, nextKickoff }) {
           <circle key={i} cx={s.x.toFixed(1)} cy={s.y.toFixed(1)} r={s.r.toFixed(2)} fill="currentColor" fillOpacity={s.o.toFixed(2)} />
         ))}
       </g>
-      {BODIES.map((b, i) => {
+      {bodies.map((b, i) => {
         const rx = +(b.rx * k).toFixed(1), ry = +(b.ry * k).toFixed(1);
         const c = Math.PI * (3 * (rx + ry) - Math.sqrt((3 * rx + ry) * (rx + 3 * ry)));
         return <ellipse key={b.n} className="ehp-orbit" style={{ "--c": c.toFixed(0), transitionDelay: `${1.4 + i * 0.25}s` }} rx={rx} ry={ry} transform="rotate(-7)" />;
@@ -113,12 +127,12 @@ function Sky({ size, nextKickoff }) {
 // The four orbiting tools live in their own layer ABOVE the hole, drawn white with mix-blend-mode: difference, so a planet that
 // passes in front of the disc turns negative (dark on the bone disc in dark mode, light on the ink disc in light mode, like a
 // retrograde star chart) and stays clickable.
-function Bodies({ size }) {
+function Bodies({ size, bodies }) {
   const { w, h } = size;
   return (
     <svg className="ehp-sky ehp-bodies" viewBox={`${-w / 2} ${-h / 2} ${w} ${h}`}>
-      {BODIES.map((b, i) => (
-        <a key={b.n} href={b.href} className="ehp-body" data-i={i} style={{ transitionDelay: `${2 + i * 0.25}s` }} aria-label={`${b.n.toLowerCase()}: ${b.say}`}>
+      {bodies.map((b, i) => (
+        <a key={b.n + i} href={b.href} className="ehp-body" data-i={i} style={{ transitionDelay: `${2 + i * 0.25}s` }} aria-label={`${b.n.toLowerCase()}: ${b.say}`}>
           <circle r="26" fill="transparent" />
           <circle className="halo" r="15" />
           <circle className="dot" r="5.5" />
@@ -319,6 +333,7 @@ function Plans() {
 
 export default function EventHorizon({ signedIn, member, invited, discountPct, player, nextKickoff, posts }) {
   const stageRef = useRef(null);
+  const bodies = useMemo(() => bodiesFor(member), [member]);
   const [size, setSize] = useState({ w: 1440, h: 900 });
   const [arrived, setArrived] = useState(false);
   const [header, setHeader] = useState("");
@@ -355,7 +370,7 @@ export default function EventHorizon({ signedIn, member, invited, discountPct, p
     if (!root) return undefined;
     const k = Math.max(0.45, Math.min(1, size.w / 1300));
     const R = radiusFor(size.w);
-    const bodies = [...root.querySelectorAll(".ehp-body")];
+    const els = [...root.querySelectorAll(".ehp-body")];
     const stars = root.querySelector(".ehp-stars");
     const infall = root.querySelector(".ehp-infall");
     const hz = root.querySelector(".ehp-hz"), hole = root.querySelector(".ehp-hole"), skies = [...root.querySelectorAll(".ehp-sky")], cue = root.querySelector(".ehp-cue");
@@ -365,7 +380,7 @@ export default function EventHorizon({ signedIn, member, invited, discountPct, p
     let T = 0, last = performance.now(), speed = 1, hovering = false;
     const hold = (v) => () => { hovering = v; };
     const holdOn = hold(true), holdOff = hold(false);
-    bodies.forEach((o) => {
+    els.forEach((o) => {
       o.addEventListener("pointerenter", holdOn);
       o.addEventListener("pointerleave", holdOff);
       o.addEventListener("focus", holdOn);
@@ -381,8 +396,8 @@ export default function EventHorizon({ signedIn, member, invited, discountPct, p
       last = now;
       speed += ((hovering ? 0 : 1) - speed) * Math.min(1, dt * 9); // ease to a stop and back
       T += dt * speed;
-      bodies.forEach((o) => {
-        const b = BODIES[+o.dataset.i];
+      els.forEach((o) => {
+        const b = bodies[+o.dataset.i];
         const a = b.a + (reduce ? 0 : (T * 2 * Math.PI) / b.s);
         const x = b.rx * k * Math.cos(a), y = b.ry * k * Math.sin(a);
         o.setAttribute("transform", `translate(${(x * c - y * s).toFixed(1)} ${(x * s + y * c).toFixed(1)})`);
@@ -437,14 +452,14 @@ export default function EventHorizon({ signedIn, member, invited, discountPct, p
       clearTimeout(ready_t);
       removeEventListener("pointermove", onMove);
       removeEventListener("scroll", onScroll);
-      bodies.forEach((o) => {
+      els.forEach((o) => {
         o.removeEventListener("pointerenter", holdOn);
         o.removeEventListener("pointerleave", holdOff);
         o.removeEventListener("focus", holdOn);
         o.removeEventListener("blur", holdOff);
       });
     };
-  }, [size]);
+  }, [size, bodies]);
 
   return (
     <div className={`ehp${arrived ? " arrived" : ""}`} style={{ "--ehp-r": `${radiusFor(size.w)}px` }}>
@@ -478,12 +493,12 @@ export default function EventHorizon({ signedIn, member, invited, discountPct, p
 
       <section className="ehp-fall" id="hero">
         <div className="ehp-stage" ref={stageRef}>
-          <Sky size={size} nextKickoff={nextKickoff} />
+          <Sky size={size} nextKickoff={nextKickoff} bodies={bodies} />
           <div className="ehp-hz" aria-hidden="true" />
           <div className="ehp-hole" id="main-content">
             <HoleLookup signedIn={signedIn} member={member} />
           </div>
-          <Bodies size={size} />
+          <Bodies size={size} bodies={bodies} />
           {invited && (
             <p className="ehp-invite" role="status">
               A friend invited you · {discountPct}% off your first payment is saved for you
