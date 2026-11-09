@@ -51,10 +51,8 @@ function countdown(iso) {
   if (!iso) return null;
   let s = Math.floor((Date.parse(iso) - Date.now()) / 1000);
   if (!(s > 0)) return null;
-  const d = Math.floor(s / 86400);
-  s %= 86400;
   const p = (v) => String(v).padStart(2, "0");
-  return `${d}d ${p(Math.floor(s / 3600))}:${p(Math.floor((s % 3600) / 60))}:${p(s % 60)}`;
+  return `${p(Math.floor(s / 3600))}:${p(Math.floor((s % 3600) / 60))}:${p(s % 60)}`; // hours is the largest unit, however far off (e.g. 61:09:28)
 }
 
 function Sky({ size, nextKickoff }) {
