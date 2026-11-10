@@ -29,9 +29,10 @@ const TILT = (-7 * Math.PI) / 180;
 // A visitor's sky (founder, Nov 10 2026: "much bigger planets with the 3 plan names"): the three plans, closer to the hole = more (as in the Plans
 // section), each a big planet (`pr` = its radius) that opens the Plans section on click and says its price on hover.
 const TOOL_BODIES = [
-  { n: "SINGULARITY", say: "everything, from $20 a month", href: "#pricing", pr: 54, rx: 340, ry: 120, a: -0.7, s: 95 },
-  { n: "EXPLORER", say: "every player, from $7 a month", href: "#pricing", pr: 40, rx: 480, ry: 170, a: 2.1, s: 130 },
-  { n: "STARGAZER", say: "free, no card", href: "#pricing", pr: 28, rx: 620, ry: 222, a: 4.2, s: 170 },
+  // each planet is its own: Singularity the largest, ringed; Explorer big with the one glow (and pulse) on hover; Stargazer a small, plain speck of a planet
+  { id: "singularity", n: "SINGULARITY", say: "everything, from $20 a month", href: "#pricing", pr: 92, rx: 360, ry: 128, a: -0.7, s: 95 },
+  { id: "explorer", n: "EXPLORER", say: "every player, from $7 a month", href: "#pricing", pr: 68, rx: 500, ry: 178, a: 2.1, s: 130 },
+  { id: "stargazer", n: "STARGAZER", say: "free, no card", href: "#pricing", pr: 14, rx: 640, ry: 228, a: 4.2, s: 170 },
 ];
 
 // What orbits the hole. A visitor sees the three plans. A member with saved leagues sees THIS WEEK'S MATCHUPS instead (as on the
@@ -140,8 +141,15 @@ function Bodies({ size, bodies }) {
       {bodies.map((b, i) => {
         const pr = b.pr ? +(b.pr * Math.max(0.5, Math.min(1, w / 1300))).toFixed(1) : 5.5; // a plan planet is big, and shrinks with the sky on a phone
         return (
-        <a key={b.n + i} href={b.href} className="ehp-body" data-i={i} style={{ transitionDelay: `${2 + i * 0.25}s` }} aria-label={`${b.n.toLowerCase()}: ${b.say}`}>
+        <a key={b.n + i} href={b.href} className={`ehp-body${b.id ? ` plan-${b.id}` : ""}`} data-i={i} style={{ transitionDelay: `${2 + i * 0.25}s` }} aria-label={`${b.n.toLowerCase()}: ${b.say}`}>
           <circle r={pr + 14} fill="transparent" />
+          {b.id === "explorer" && (
+            <>
+              <circle className="glow" r={pr * 1.25} />
+              <circle className="pulse" r={pr + 6} />
+            </>
+          )}
+          {b.id === "singularity" && <ellipse className="saturn" rx={pr * 1.75} ry={pr * 0.36} transform="rotate(-18)" />}
           <circle className="halo" r={pr + 9} />
           <circle className="dot" r={pr} />
           <text x={pr + 16} y="4">{b.n}</text>

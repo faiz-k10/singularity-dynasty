@@ -6855,3 +6855,14 @@ body:has(.ehp) .ticker-bar{position:absolute;}
 .ehp-pm-row:last-of-type button:hover:not(:disabled){background:var(--ehp-mark);color:var(--ehp-bg);}
 .ehp-pm-panel p{margin:10px 0 0;font:11px var(--font-mono), monospace;font-stretch:82%;color:var(--ehp-faint);white-space:nowrap;}
 @media (max-width:760px){.ehp-pm-panel{display:none;}}
+
+/* the three plan planets are each their own (EventHorizon.js TOOL_BODIES): Explorer alone glows and pulses on hover, Singularity wears a ring, Stargazer is a small plain one */
+.ehp-body .glow{fill:#fff;filter:blur(26px);opacity:0;transition:opacity .35s;}
+.ehp-body .pulse{fill:none;stroke:#fff;stroke-width:1.2;opacity:0;}
+.plan-explorer:hover .glow,.plan-explorer:focus-visible .glow{opacity:.85;}
+.plan-explorer:hover .pulse,.plan-explorer:focus-visible .pulse{animation:ehp-pulse 1.8s ease-out infinite;}
+@keyframes ehp-pulse{0%{opacity:.8;transform:scale(1);}100%{opacity:0;transform:scale(1.55);}}
+.plan-explorer .pulse{transform-box:fill-box;transform-origin:center;}
+.ehp-body .saturn{fill:none;stroke:#fff;stroke-width:1.4;stroke-opacity:.8;}
+.plan-stargazer .halo{display:none;}
+@media (prefers-reduced-motion:reduce){.plan-explorer:hover .pulse{animation:none;}}
