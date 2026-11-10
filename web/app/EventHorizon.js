@@ -33,13 +33,18 @@ const ball = (r, grow = 0) => { const L = (2.5 * r) / 2 + grow, W = 0.95 * r * 1
 const BALL_TILT = -12;
 // a plan's orbit reaches across the screen (founder, Nov 10 2026): `fx` is its half-width as a share of the screen's, never inside the ring
 const orbitX = (b, w, R, k) => (b.fx ? Math.max(b.fx * (w / 2), R + 70) : b.rx * k);
-// the football's laces, laid along its top: a seam and four stitches, cut out of the planet like the price
+// the football's laces, seen from the SIDE: a seam and five stitches on the very top edge of the ball, following its curve, cut out like the price
 function Laces({ r }) {
-  const y = -0.42 * r, sw = Math.max(0.9, r * 0.05), L = 0.5 * r, st = 0.17 * r;
+  const L = (2.5 * r) / 2, W = 0.95 * r * 1.333;
+  const P = (t) => { const u = 1 - t; return [u ** 3 * -L + 3 * u * u * t * -L / 2 + 3 * u * t * t * L / 2 + t ** 3 * L, 3 * u * t * u * -W + 3 * u * t * t * -W]; }; // the top edge, t 0..1
+  const D = (t) => { const u = 1 - t; return [3 * u * u * (-L / 2 + L) + 6 * u * t * (L / 2 + L / 2) + 3 * t * t * (L - L / 2), 3 * u * u * -W + 6 * u * t * 0 + 3 * t * t * W]; };
+  const at = (t, off) => { const [x, y] = P(t), [dx, dy] = D(t), m = Math.hypot(dx, dy) || 1; return [x - (dy / m) * off, y + (dx / m) * off]; }; // off > 0 = toward the inside of the ball
+  const sw = Math.max(0.9, r * 0.05), ts = [0.36, 0.43, 0.5, 0.57, 0.64];
+  const seam = [0.3, 0.4, 0.5, 0.6, 0.7].map((t) => at(t, 0.15 * r)).map(([x, y], i) => `${i ? "L" : "M"}${x.toFixed(2)} ${y.toFixed(2)}`).join(" ");
   return (
     <g stroke="#000" strokeWidth={sw} strokeLinecap="round" fill="none">
-      <path d={`M${-L} ${y} H${L}`} />
-      {[-0.6, -0.2, 0.2, 0.6].map((f) => <path key={f} d={`M${f * L} ${y - st} V${y + st}`} />)}
+      <path d={seam} />
+      {ts.map((t) => { const [x1, y1] = at(t, 0.03 * r), [x2, y2] = at(t, 0.28 * r); return <path key={t} d={`M${x1.toFixed(2)} ${y1.toFixed(2)} L${x2.toFixed(2)} ${y2.toFixed(2)}`} />; })}
     </g>
   );
 }
@@ -49,9 +54,9 @@ const TILT = (-7 * Math.PI) / 180;
 const TOOL_BODIES = [
   // speeds (`s` = seconds a lap): the smaller the planet the faster it goes -- Stargazer 55s, Explorer 105s, Singularity 160s (founder, Nov 10 2026)
   // each planet is its own: Singularity the largest, ringed; Explorer big with the one glow (and pulse) on hover; Stargazer a small, plain speck of a planet
-  { id: "singularity", n: "SINGULARITY", say: "everything, from $20 a month", href: "#pricing", pr: 92, price: "$20", fx: 0.66, rx: 330, ry: 116, a: -0.7, s: 160 },
-  { id: "explorer", n: "EXPLORER", say: "every player, from $7 a month", href: "#pricing", pr: 68, price: "$7", fx: 0.92, rx: 420, ry: 148, a: 2.1, s: 105 },
-  { id: "stargazer", n: "STARGAZER", say: "free, no card", href: "#pricing", pr: 14, price: "Free", fx: 1.18, rx: 510, ry: 180, a: 4.2, s: 55 },
+  { id: "singularity", n: "SINGULARITY", say: "everything, from $20 a month", href: "#pricing", pr: 92, price: "$20", fx: 0.5, rx: 330, ry: 116, a: -0.7, s: 160 },
+  { id: "explorer", n: "EXPLORER", say: "every player, from $7 a month", href: "#pricing", pr: 68, price: "$7", fx: 0.68, rx: 420, ry: 148, a: 2.1, s: 105 },
+  { id: "stargazer", n: "STARGAZER", say: "free, no card", href: "#pricing", pr: 14, price: "Free", fx: 0.84, rx: 510, ry: 180, a: 4.2, s: 55 },
 ];
 
 // What orbits the hole. A visitor sees the three plans. A member with saved leagues sees THIS WEEK'S MATCHUPS instead (as on the
