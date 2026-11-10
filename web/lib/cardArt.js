@@ -90,7 +90,7 @@ export function Frame({ f, eyebrow, host, tool, children }) {
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div style={{ display: "flex", alignItems: "center" }}>
           <MarkSvg size={46} ink={C.star} ember="#4C7DF0" bold={1.1} />
-          <div style={{ display: "flex", marginLeft: 14, fontFamily: DISPLAY, fontSize: tall ? 34 : 30, letterSpacing: 5, textTransform: "uppercase" }}>Singularity Dynasty</div>
+          <div style={{ display: "flex", marginLeft: 14, fontFamily: DISPLAY, fontSize: tall ? 34 : 30, letterSpacing: 5, textTransform: "uppercase" }}>Dynasty Singularity</div>
         </div>
         {eyebrow && <div style={{ display: "flex", flexShrink: 0, whiteSpace: "nowrap", background: C.mint, color: C.onBrand, fontWeight: 700, fontSize: tall ? 20 : 18, letterSpacing: 2, padding: "7px 14px", textTransform: "uppercase" }}>{eyebrow}</div>}
       </div>

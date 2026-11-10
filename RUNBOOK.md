@@ -1,4 +1,4 @@
-# Running Singularity Dynasty
+# Running Dynasty Singularity
 
 How to run the site week to week on your own. No code and no Claude needed for anything on this page.
 

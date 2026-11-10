@@ -53,7 +53,7 @@ for (const [table, keys] of Object.entries(TABLES)) {
 const commit = spawnSync("git", ["rev-parse", "--short", "HEAD"], { cwd: REPO, encoding: "utf8" }).stdout.trim();
 fs.writeFileSync(
   path.join(dbDir, "BACKUP-INFO.txt"),
-  `SINGULARITY DYNASTY - AUTOMATIC BACKUP\nTaken: ${stamp} (local time)\nCode: git commit ${commit}\n\nRows per table:\n${counts.join("\n")}\n\n` +
+  `DYNASTY SINGULARITY - AUTOMATIC BACKUP\nTaken: ${stamp} (local time)\nCode: git commit ${commit}\n\nRows per table:\n${counts.join("\n")}\n\n` +
     "NOT in this folder: Supabase login accounts, Stripe's own data, the lab-shares Storage bucket.\n" +
     "Restore a table by upserting its JSON with the service-role key (same shape the publish scripts use).\n"
 );

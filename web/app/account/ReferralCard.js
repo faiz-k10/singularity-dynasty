@@ -6,7 +6,7 @@ import { useState } from "react";
 export default function ReferralCard({ link, discountPct, rewardLabel, summary }) {
   const [copied, setCopied] = useState(false);
   const canShare = typeof navigator !== "undefined" && typeof navigator.share === "function";
-  const text = `I use Singularity Dynasty for floor / median / ceiling projections on every player in my leagues. ${discountPct}% off your first payment with my link:`;
+  const text = `I use Dynasty Singularity for floor / median / ceiling projections on every player in my leagues. ${discountPct}% off your first payment with my link:`;
 
   async function copy() {
     try {
@@ -19,7 +19,7 @@ export default function ReferralCard({ link, discountPct, rewardLabel, summary }
   }
   async function share() {
     try {
-      await navigator.share({ title: "Singularity Dynasty", text, url: link });
+      await navigator.share({ title: "Dynasty Singularity", text, url: link });
     } catch {}
   }
 

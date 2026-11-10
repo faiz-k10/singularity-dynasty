@@ -1,4 +1,4 @@
-// The Singularity Dynasty mark: the event-horizon disc with one line spiralling in toward it, a football at its outer end (the line is its flight
+// The Dynasty Singularity mark: the event-horizon disc with one line spiralling in toward it, a football at its outer end (the line is its flight
 // path) -- everything collapsing to one point. A 40-unit box. Redrawn Nov 10 2026 with the founder (tighter spiral, a football instead of a dot,
 // the line ending just above the disc at the top). ONE source for every copy of the mark: the header / landing / Observatory marks are inline svg
 // (app/BrandMark.js -- not CSS masks, which render blurry), the favicon / apple
@@ -26,23 +26,23 @@ export const MARK_BALL = {
   laces: "M-0.75 0 H0.75 M-0.45 -0.32 V0.32 M0 -0.32 V0.32 M0.45 -0.32 V0.32", // stroked 0.16 in the background colour (or cut out)
 };
 
-// "SD" in Big Shoulders 800 (the site's display face) as an outline, 1 unit tall (cap height), centred on 0,0 -- scale it with a transform. Made
+// "DS" in Big Shoulders 800 (the site's display face) as an outline, 1 unit tall (cap height), centred on 0,0 -- scale it with a transform. Made
 // from web/assets/og-fonts/BigShoulders-800.ttf with fontTools, so the letters look the same everywhere (inline svg, Satori images) with no font
-// loading. Width = 1.2845 x the height.
-export const MARK_SD = "M-0.3425 0.5Q-0.4737 0.5 -0.5324 0.446Q-0.591 0.3919 -0.5965 0.2662Q-0.5971 0.2442 -0.5971 0.2198Q-0.5971 0.1954 -0.5958 0.1706Q-0.5946 0.1459 -0.5922 0.1239H-0.4316Q-0.4341 0.1703 -0.4347 0.2146Q-0.4353 0.2589 -0.4316 0.2973Q-0.4292 0.3284 -0.4066 0.3446Q-0.384 0.3608 -0.3425 0.3608Q-0.3034 0.3608 -0.2821 0.3446Q-0.2607 0.3284 -0.257 0.2973Q-0.2546 0.2753 -0.254 0.2534Q-0.2534 0.2314 -0.2543 0.2094Q-0.2552 0.1874 -0.257 0.1661Q-0.2595 0.1368 -0.2784 0.1148Q-0.2973 0.0928 -0.3284 0.0861L-0.4335 0.0617Q-0.4951 0.0476 -0.5311 0.0177Q-0.5672 -0.0122 -0.583 -0.0577Q-0.5989 -0.1032 -0.6007 -0.1642Q-0.6013 -0.1929 -0.6013 -0.2173Q-0.6013 -0.2418 -0.6007 -0.2674Q-0.5971 -0.3504 -0.5699 -0.4017Q-0.5427 -0.453 -0.4872 -0.4765Q-0.4316 -0.5 -0.3425 -0.5Q-0.2125 -0.5 -0.1542 -0.4463Q-0.0958 -0.3926 -0.091 -0.2674Q-0.0897 -0.2393 -0.0907 -0.2002Q-0.0916 -0.1612 -0.0934 -0.1264H-0.2564Q-0.2546 -0.1703 -0.254 -0.2131Q-0.2534 -0.2558 -0.2552 -0.2985Q-0.2564 -0.3291 -0.2787 -0.3452Q-0.301 -0.3614 -0.3431 -0.3614Q-0.3828 -0.3614 -0.4051 -0.3452Q-0.4274 -0.3291 -0.4304 -0.2985Q-0.4341 -0.265 -0.4341 -0.2314Q-0.4341 -0.1978 -0.4304 -0.1642Q-0.428 -0.1355 -0.4139 -0.1145Q-0.3999 -0.0934 -0.3687 -0.0861L-0.2753 -0.0665Q-0.2082 -0.0519 -0.1676 -0.0211Q-0.127 0.0098 -0.1078 0.0565Q-0.0885 0.1032 -0.0861 0.1661Q-0.0855 0.1819 -0.0855 0.199Q-0.0855 0.2161 -0.0861 0.2332Q-0.0867 0.2503 -0.0873 0.2662Q-0.0922 0.3919 -0.1514 0.446Q-0.2106 0.5 -0.3425 0.5ZM0.091 0.4884V-0.4884H0.3388Q0.4701 -0.4884 0.5284 -0.4332Q0.5867 -0.3779 0.5891 -0.2515Q0.591 -0.1618 0.5916 -0.0809Q0.5922 0 0.5916 0.0803Q0.591 0.1606 0.5891 0.2503Q0.5867 0.3773 0.5284 0.4328Q0.4701 0.4884 0.3394 0.4884ZM0.2607 0.3382H0.3394Q0.3791 0.3382 0.399 0.3208Q0.4188 0.3034 0.4194 0.2698Q0.4212 0.2002 0.4222 0.1331Q0.4231 0.0659 0.4231 -0.0006Q0.4231 -0.0672 0.4222 -0.1346Q0.4212 -0.2021 0.4194 -0.2711Q0.4188 -0.304 0.3987 -0.3211Q0.3785 -0.3382 0.3388 -0.3382H0.2607Z";
-export const MARK_SD_WIDTH = 1.2845;
+// loading. Width = 1.2726 x the height.
+export const MARK_DS = "M-0.6363 0.4884V-0.4884H-0.3884Q-0.2572 -0.4884 -0.1989 -0.4332Q-0.1406 -0.3779 -0.1381 -0.2515Q-0.1363 -0.1618 -0.1357 -0.0809Q-0.1351 0 -0.1357 0.0803Q-0.1363 0.1606 -0.1381 0.2503Q-0.1406 0.3773 -0.1989 0.4328Q-0.2572 0.4884 -0.3878 0.4884ZM-0.4666 0.3382H-0.3878Q-0.3481 0.3382 -0.3283 0.3208Q-0.3085 0.3034 -0.3078 0.2698Q-0.306 0.2002 -0.3051 0.1331Q-0.3042 0.0659 -0.3042 -0.0006Q-0.3042 -0.0672 -0.3051 -0.1346Q-0.306 -0.2021 -0.3078 -0.2711Q-0.3085 -0.304 -0.3286 -0.3211Q-0.3487 -0.3382 -0.3884 -0.3382H-0.4666ZM0.3793 0.5Q0.248 0.5 0.1894 0.446Q0.1308 0.3919 0.1253 0.2662Q0.1247 0.2442 0.1247 0.2198Q0.1247 0.1954 0.1259 0.1706Q0.1271 0.1459 0.1296 0.1239H0.2901Q0.2877 0.1703 0.2871 0.2146Q0.2865 0.2589 0.2901 0.2973Q0.2926 0.3284 0.3152 0.3446Q0.3378 0.3608 0.3793 0.3608Q0.4183 0.3608 0.4397 0.3446Q0.4611 0.3284 0.4647 0.2973Q0.4672 0.2753 0.4678 0.2534Q0.4684 0.2314 0.4675 0.2094Q0.4666 0.1874 0.4647 0.1661Q0.4623 0.1368 0.4434 0.1148Q0.4245 0.0928 0.3933 0.0861L0.2883 0.0617Q0.2266 0.0476 0.1906 0.0177Q0.1546 -0.0122 0.1387 -0.0577Q0.1229 -0.1032 0.121 -0.1642Q0.1204 -0.1929 0.1204 -0.2173Q0.1204 -0.2418 0.121 -0.2674Q0.1247 -0.3504 0.1519 -0.4017Q0.179 -0.453 0.2346 -0.4765Q0.2901 -0.5 0.3793 -0.5Q0.5093 -0.5 0.5676 -0.4463Q0.6259 -0.3926 0.6308 -0.2674Q0.632 -0.2393 0.6311 -0.2002Q0.6302 -0.1612 0.6284 -0.1264H0.4654Q0.4672 -0.1703 0.4678 -0.2131Q0.4684 -0.2558 0.4666 -0.2985Q0.4654 -0.3291 0.4431 -0.3452Q0.4208 -0.3614 0.3787 -0.3614Q0.339 -0.3614 0.3167 -0.3452Q0.2944 -0.3291 0.2914 -0.2985Q0.2877 -0.265 0.2877 -0.2314Q0.2877 -0.1978 0.2914 -0.1642Q0.2938 -0.1355 0.3078 -0.1145Q0.3219 -0.0934 0.353 -0.0861L0.4464 -0.0665Q0.5136 -0.0519 0.5542 -0.0211Q0.5948 0.0098 0.614 0.0565Q0.6332 0.1032 0.6357 0.1661Q0.6363 0.1819 0.6363 0.199Q0.6363 0.2161 0.6357 0.2332Q0.6351 0.2503 0.6345 0.2662Q0.6296 0.3919 0.5704 0.446Q0.5111 0.5 0.3793 0.5Z";
+export const MARK_DS_WIDTH = 1.2726;
 
 // the football IN the disc (founder, Nov 10 2026): the plain logo has a big football cut out of the middle of the disc, tilted like a ball in
-// flight, and its laces ARE the letters SD -- the S and D take the place of the stitches and the seam (the short line that joined the stitches) is
+// flight, and its laces ARE the letters DS -- the D and S take the place of the stitches and the seam (the short line that joined the stitches) is
 // laid over them, all in the disc's colour (picked from mockups/logo-football-sd-as-laces.png, "bigger", with the ball 10% larger).
-const CB_L = 16.5, CB_W = 7.0, SD_H = 4.4;
+const CB_L = 16.5, CB_W = 7.0, DS_H = 4.4;
 export const MARK_CENTER_BALL = {
   transform: "translate(20 20) rotate(-35)",
   d: `M${-CB_L / 2} 0 C${-CB_L / 4} ${-CB_W} ${CB_L / 4} ${-CB_W} ${CB_L / 2} 0 C${CB_L / 4} ${CB_W} ${-CB_L / 4} ${CB_W} ${-CB_L / 2} 0 Z`,
-  sdTransform: `scale(${SD_H})`, // MARK_SD drawn at the laces' size, in the ball's own (tilted) coordinates
+  dsTransform: `scale(${DS_H})`, // MARK_DS drawn at the laces' size, in the ball's own (tilted) coordinates
   seam: "M-3.9 0 H3.9", // the laces' line, laid over the letters
   seamWidth: 0.65,
 };
 
-// the version with just the initials (no football in the disc): SD upright and large in the disc
-export const MARK_DISC_SD = { transform: "translate(20 20.2) scale(9.6)" };
+// the version with just the initials (no football in the disc): DS upright and large in the disc
+export const MARK_DISC_DS = { transform: "translate(20 20.2) scale(9.6)" };

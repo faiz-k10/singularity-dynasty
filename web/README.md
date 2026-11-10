@@ -1,6 +1,6 @@
-# Singularity Dynasty — web app
+# Dynasty Singularity — web app
 
-Next.js 16 app for the Singularity Dynasty landing page, Stripe checkout, and Supabase auth. See the root [`CLAUDE.md`](../CLAUDE.md) for full project context.
+Next.js 16 app for the Dynasty Singularity landing page, Stripe checkout, and Supabase auth. See the root [`CLAUDE.md`](../CLAUDE.md) for full project context.
 
 ## Setup
 

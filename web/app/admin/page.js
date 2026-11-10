@@ -4,7 +4,7 @@ import SiteHeader from "../SiteHeader";
 import AdminDashboard from "./AdminDashboard";
 
 export const metadata = {
-  title: "Admin — Singularity Dynasty",
+  title: "Admin — Dynasty Singularity",
   robots: { index: false, follow: false },
 };
 

@@ -126,7 +126,7 @@ export default function LabClient({ rows, week, season, simsAccess, mine, gated,
           ))}
         </div>
         <MyPlayersFilter mine={mine} view={my} gated={gated} compact />
-        <LabExport stageRef={stageRef} fileName={fileName} title={title} caption={`${title} · ${scope}. Charted in The Observatory by Singularity Dynasty.`} />
+        <LabExport stageRef={stageRef} fileName={fileName} title={title} caption={`${title} · ${scope}. Charted in The Observatory by Dynasty Singularity.`} />
       </div>
 
       {my.on && <MyPlayersNote mine={mine} view={my} gated={gated} />}
@@ -137,14 +137,14 @@ export default function LabClient({ rows, week, season, simsAccess, mine, gated,
         <div className="lab-export-head" aria-hidden="true">
           <span className="lab-export-brand">
             <BrandMark />
-            Singularity Dynasty <i>The Observatory</i>
+            Dynasty Singularity <i>The Observatory</i>
           </span>
           <span className="lab-export-title">{title}</span>
           <span className="lab-export-scope">{scope}</span>
         </div>
         {/* The watermark, also only in an exported picture: a faint wordmark across the chart, plus the brand signature (labUi Signature: on a
             chart's x axis, under the view otherwise), so a shared chart always carries where it came from. */}
-        <div className="lab-export-mark" aria-hidden="true">Singularity Dynasty</div>
+        <div className="lab-export-mark" aria-hidden="true">Dynasty Singularity</div>
         {view === "scatter" && (
           <LabScatter {...shared} xKey={xKey} yKey={yKey} onX={setX} onY={setY} onSwap={() => (setX(yKey), setY(xKey))} />
         )}

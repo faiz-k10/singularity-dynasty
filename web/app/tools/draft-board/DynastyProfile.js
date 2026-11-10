@@ -135,7 +135,7 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
               <ShareCardButton
                 card={{ kind: "d", id: p.id, f: format, m: mode }}
                 caption={`${p.name} in dynasty: ${p.score.toFixed(1)} (${f.label}, ${m.label}).`}
-                file={`singularity-dynasty-${p.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
+                file={`dynasty-singularity-${p.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
                 label="Share card"
               />
             </div>

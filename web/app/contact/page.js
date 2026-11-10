@@ -1,7 +1,7 @@
 import SiteHeader from "../SiteHeader";
 
 export const metadata = {
-  title: "Contact — Singularity Dynasty",
+  title: "Contact — Dynasty Singularity",
 };
 
 const SUPPORT_EMAIL = "eremruh11@gmail.com";

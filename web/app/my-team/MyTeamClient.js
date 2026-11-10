@@ -710,7 +710,7 @@ function MyAnalysisPanel({ rows, playerBios = {} }) {
           <g className="mac-watermark" transform={`translate(${W - padR - 194} ${H + 15})`}>
             <circle cx="7" cy="-4" r="7" fill="url(#macLogoGrad)" />
             <text className="mac-watermark-text" x="22" y="1">
-              SINGULARITY DYNASTY
+              DYNASTY SINGULARITY
             </text>
           </g>
         </svg>

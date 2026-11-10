@@ -13,7 +13,7 @@ import MyTeamClient from "./MyTeamClient";
 import { loadFeedInputs, buildTeamsFeed } from "@/lib/myFeedData";
 
 export const metadata = {
-  title: "My Team — Singularity Dynasty",
+  title: "My Team — Dynasty Singularity",
   description:
     "Import your team from Sleeper, save it, and get ready for personalized roster analysis.",
 };

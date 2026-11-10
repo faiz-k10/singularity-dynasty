@@ -4,7 +4,7 @@ import AuthCard from "./AuthCard";
 import { safeNext } from "@/lib/authMessages";
 
 export const metadata = {
-  title: "Sign In — Singularity Dynasty",
+  title: "Sign In — Dynasty Singularity",
 };
 
 export default async function LoginPage({ searchParams }) {

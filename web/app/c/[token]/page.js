@@ -6,7 +6,7 @@ import { cardFromToken } from "@/lib/cardData";
 export async function generateMetadata({ params }) {
   const { token } = await params;
   const c = await cardFromToken(token);
-  if (!c) return { title: "Card not found — Singularity Dynasty", robots: { index: false } };
+  if (!c) return { title: "Card not found — Dynasty Singularity", robots: { index: false } };
   return { ...cardMetadata({ title: c.title, description: c.description, image: `/c/${token}/image` }), robots: { index: false, follow: true } };
 }
 

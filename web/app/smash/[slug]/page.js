@@ -12,7 +12,7 @@ async function load(slug) {
 export async function generateMetadata({ params }) {
   const { slug } = await params;
   const d = await load(slug);
-  if (!d) return { title: "Smash Spots — Singularity Dynasty" };
+  if (!d) return { title: "Smash Spots — Dynasty Singularity" };
   const w = words(d);
   return cardMetadata({ title: w.title, description: w.description, image: `/smash/${slug}/image` });
 }

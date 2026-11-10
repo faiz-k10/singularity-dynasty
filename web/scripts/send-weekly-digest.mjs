@@ -5,7 +5,7 @@
 //   node --env-file=.env.local scripts/send-weekly-digest.mjs --demo     renders ONE email for the first member with saved teams (opted in or not), never sends
 //
 // To send for real you need (one-time, your accounts): a Resend account with a verified sending domain, and in .env.local
-//   RESEND_API_KEY=...   EMAIL_FROM="Singularity Dynasty <digest@yourdomain.com>"   NEXT_PUBLIC_SITE_URL=https://yourdomain.com
+//   RESEND_API_KEY=...   EMAIL_FROM="Dynasty Singularity <digest@yourdomain.com>"   NEXT_PUBLIC_SITE_URL=https://yourdomain.com
 //   EMAIL_FOOTER_ADDRESS="your business mailing address"   (US law requires a postal address and a working off switch in marketing email)
 // and migration 0038 run in the Supabase SQL editor (adds profiles.email_digest). Run it Tuesday after the projections publish.
 import { createClient } from "@supabase/supabase-js";

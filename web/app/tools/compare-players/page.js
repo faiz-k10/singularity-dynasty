@@ -14,7 +14,7 @@ import {
 } from "../redraft-rankings/data";
 
 export const metadata = {
-  title: "Compare Players — Weekly Projections — Singularity Dynasty",
+  title: "Compare Players — Weekly Projections — Dynasty Singularity",
   description:
     "Compare up to four players side by side on this week's projections: median, floor and ceiling, matchup, usage and touchdown profile, recent games, and badges.",
 };

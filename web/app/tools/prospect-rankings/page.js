@@ -8,7 +8,7 @@ import SortableTh from "../SortableTh";
 import ExportCsvButton from "../ExportCsvButton";
 
 export const metadata = {
-  title: "WR/QB Rookie Prospect Rankings & Comparisons — Singularity Dynasty",
+  title: "WR/QB Rookie Prospect Rankings & Comparisons — Dynasty Singularity",
   description:
     "Incoming rookie wide receiver and quarterback rankings with side-by-side statistical comparisons against past draft classes, using athletic and production percentiles. Top 5 per position free for every Stargazer.",
 };

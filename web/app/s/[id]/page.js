@@ -23,14 +23,14 @@ async function loadShare(id) {
 export async function generateMetadata({ params }) {
   const { id } = await params;
   const share = await loadShare(id);
-  if (!share) return { title: "Chart not found — Singularity Dynasty" };
-  const title = `${share.title} — The Observatory · Singularity Dynasty`;
-  const description = share.caption || "Charted in The Observatory by Singularity Dynasty.";
+  if (!share) return { title: "Chart not found — Dynasty Singularity" };
+  const title = `${share.title} — The Observatory · Dynasty Singularity`;
+  const description = share.caption || "Charted in The Observatory by Dynasty Singularity.";
   const images = [{ url: share.image, width: SHARE_W, height: SHARE_H, alt: share.title }];
   return {
     title,
     description,
-    openGraph: { title, description, images, type: "article", siteName: "Singularity Dynasty" },
+    openGraph: { title, description, images, type: "article", siteName: "Dynasty Singularity" },
     twitter: { card: "summary_large_image", title, description, images: [share.image] },
   };
 }

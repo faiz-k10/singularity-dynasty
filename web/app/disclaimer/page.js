@@ -2,7 +2,7 @@ import Link from "next/link";
 import SiteHeader from "../SiteHeader";
 
 export const metadata = {
-  title: "Disclaimer — Singularity Dynasty",
+  title: "Disclaimer — Dynasty Singularity",
 };
 
 export default function DisclaimerPage() {
@@ -17,7 +17,7 @@ export default function DisclaimerPage() {
           <div className="legal-callout">
             <p>
               <strong>
-                Singularity Dynasty is not a gambling, betting, or wagering
+                Dynasty Singularity is not a gambling, betting, or wagering
                 service, and none of our content is intended to be used for
                 that purpose.
               </strong>{" "}
@@ -38,7 +38,7 @@ export default function DisclaimerPage() {
             entirely at your own risk and discretion.
           </p>
           <p>
-            Singularity Dynasty, its founder, employees, and contributors
+            Dynasty Singularity, its founder, employees, and contributors
             disclaim any and all responsibility or liability for any
             financial gains or losses — including losses related to
             wagering, betting, or any cash-prize contest — that result, in
@@ -73,7 +73,7 @@ export default function DisclaimerPage() {
 
           <h2>No Affiliation</h2>
           <p>
-            Singularity Dynasty is an independent, third-party analytics
+            Dynasty Singularity is an independent, third-party analytics
             service. We are not affiliated with, endorsed by, or sponsored
             by the National Football League (NFL), the NFL Players
             Association, any NFL team, or any fantasy sports platform

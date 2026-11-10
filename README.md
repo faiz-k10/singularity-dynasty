@@ -1,4 +1,4 @@
-# Singularity Dynasty
+# Dynasty Singularity
 
 Subscription website for a dynasty fantasy-football data-science business.
 

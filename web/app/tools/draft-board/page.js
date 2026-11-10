@@ -5,7 +5,7 @@ import DynastyBoard from "./DynastyBoard";
 import { FREE_ROWS, getDynastyRows } from "@/lib/dynastyData";
 
 export const metadata = {
-  title: "Dynasty Draft Board — Singularity Dynasty",
+  title: "Dynasty Draft Board — Dynasty Singularity",
   description:
     "Dynasty rankings built from production over replacement and age, split into tiers by how often one player really beats the next. Superflex or 1QB, contender or rebuilder. Full board with Explorer or Singularity.",
 };

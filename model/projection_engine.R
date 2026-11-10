@@ -1,4 +1,4 @@
-# Singularity Dynasty — Monte Carlo Projection Engine
+# Dynasty Singularity — Monte Carlo Projection Engine
 #
 # Bootstrap-resampling Monte Carlo simulation that powers (or will power)
 # three product tools: Player Season Simulations, Best Ball Rankings, and

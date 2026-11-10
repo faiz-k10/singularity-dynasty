@@ -225,7 +225,7 @@ export default async function SiteHeader({ scripts = true }) {
 
       <header className="site-header">
         <ToolLink href="/#hero" className="brandmark">
-          <BrandMark />Singularity Dynasty
+          <BrandMark />Dynasty Singularity
         </ToolLink>
         <nav className="top-nav-bar" id="topNavBar" aria-label="Primary">
           <div className="nav-dropdown">

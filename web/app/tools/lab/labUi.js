@@ -95,7 +95,7 @@ export function Signature({ axis = null }) {
   return (
     <div className={`lab-export-foot${axis ? " is-on-axis" : ""}`} style={axis ? { right: axis.r, bottom: axis.b + 6 } : undefined} aria-hidden="true">
       <BrandMark />
-      Singularity Dynasty · The Observatory
+      Dynasty Singularity · The Observatory
     </div>
   );
 }

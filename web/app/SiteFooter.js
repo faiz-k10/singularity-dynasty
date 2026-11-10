@@ -15,7 +15,7 @@ export default function SiteFooter() {
       <div className="wrap">
         <div className="sf-top">
           <div className="sf-brand">
-            <div className="fbrand">Singularity Dynasty</div>
+            <div className="fbrand">Dynasty Singularity</div>
             <p className="sf-tag">Where the data reaches its endpoint.</p>
           </div>
           <nav className="sf-cols" aria-label="Footer">
@@ -35,7 +35,7 @@ export default function SiteFooter() {
         </div>
         <div className="fcoord mono" aria-hidden="true">VOID // #0B0B0B</div>
         <div className="fsmall">
-          © {new Date().getFullYear()} Singularity Dynasty. Not affiliated with the NFL or any fantasy football platform. Content is for
+          © {new Date().getFullYear()} Dynasty Singularity. Not affiliated with the NFL or any fantasy football platform. Content is for
           informational and entertainment purposes only and is not intended for use in gambling, betting, or wagering of any kind; see
           our <Link href="/disclaimer">Disclaimer</Link>.
         </div>

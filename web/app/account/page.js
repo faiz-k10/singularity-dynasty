@@ -13,7 +13,7 @@ import SiteHeader from "../SiteHeader";
 import { money } from "@/lib/format";
 
 export const metadata = {
-  title: "Your Account — Singularity Dynasty",
+  title: "Your Account — Dynasty Singularity",
   robots: { index: false, follow: false },
 };
 

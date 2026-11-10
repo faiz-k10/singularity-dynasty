@@ -1,9 +1,9 @@
-import { MARK_DISC, MARK_SPIRAL, MARK_BALL, MARK_CENTER_BALL, MARK_SD, MARK_STROKE } from "@/lib/brandMark";
+import { MARK_DISC, MARK_SPIRAL, MARK_BALL, MARK_CENTER_BALL, MARK_DS, MARK_STROKE } from "@/lib/brandMark";
 
 // The logo as INLINE svg (Nov 10 2026: drawn as CSS mask images it was rasterised at a low resolution and looked blurry; inline svg stays sharp
 // at any size and screen density). Geometry from lib/brandMark.js. Colours come from CSS: the disc is `--mark-disc` (the page's text colour by
 // default), the line and its football `--mark-accent` (ember on the light theme, cobalt on the dark). The football in the disc (its laces are the
-// letters SD) and the small ball's laces are CUT OUT with masks, so they show whatever is behind the logo. Two copies of the mask ids on one page are harmless: they are identical.
+// letters DS) and the small ball's laces are CUT OUT with masks, so they show whatever is behind the logo. Two copies of the mask ids on one page are harmless: they are identical.
 export default function BrandMark({ className = "ring" }) {
   const { cx, cy, r } = MARK_DISC;
   return (
@@ -13,8 +13,8 @@ export default function BrandMark({ className = "ring" }) {
           <circle cx={cx} cy={cy} r={r} fill="#fff" />
           <g transform={MARK_CENTER_BALL.transform}>
             <path d={MARK_CENTER_BALL.d} fill="#000" />
-            {/* its laces are the letters SD with the seam laid over them, left in the disc's colour */}
-            <path d={MARK_SD} transform={MARK_CENTER_BALL.sdTransform} fill="#fff" />
+            {/* its laces are the letters DS with the seam laid over them, left in the disc's colour */}
+            <path d={MARK_DS} transform={MARK_CENTER_BALL.dsTransform} fill="#fff" />
             <path d={MARK_CENTER_BALL.seam} stroke="#fff" strokeWidth={MARK_CENTER_BALL.seamWidth} strokeLinecap="round" fill="none" />
           </g>
         </mask>

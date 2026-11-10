@@ -2,7 +2,7 @@ import Link from "next/link";
 import SiteHeader from "../SiteHeader";
 
 export const metadata = {
-  title: "Privacy Policy — Singularity Dynasty",
+  title: "Privacy Policy — Dynasty Singularity",
 };
 
 export default function PrivacyPage() {
@@ -109,7 +109,7 @@ export default function PrivacyPage() {
 
           <h2>8. Children&apos;s Privacy</h2>
           <p>
-            Singularity Dynasty is not directed at children under 13, and we
+            Dynasty Singularity is not directed at children under 13, and we
             do not knowingly collect personal information from children
             under 13. Consistent with our <Link href="/terms">Terms of
             Service</Link>, the Service is intended for users 18 and older.

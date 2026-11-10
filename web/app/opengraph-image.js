@@ -71,7 +71,7 @@ export default function OpengraphImage() {
             marginBottom: 22,
           }}
         >
-          Singularity Dynasty
+          Dynasty Singularity
         </div>
 
         <div

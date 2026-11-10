@@ -11,7 +11,7 @@ import RedraftRankingsClient from "./RedraftRankingsClient";
 import { PAID_TIERS, OVERALL_COLUMN_TYPES, sortPositions, getCachedRedraftData, getCachedLeans, getCachedTdProfile, getCachedUsageProfile, enrichRankings } from "./data";
 
 export const metadata = {
-  title: "Weekly Projection Rankings (PPR) — Singularity Dynasty",
+  title: "Weekly Projection Rankings (PPR) — Dynasty Singularity",
   description:
     "Standard weekly projection rankings for every position, refreshed weekly and adjusted for matchup and opponent-strength data. Free top-50 access for every Stargazer.",
 };

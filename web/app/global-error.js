@@ -6,9 +6,9 @@ export default function GlobalError({ retry }) {
   return (
     <html lang="en">
       <body style={{ margin: 0, minHeight: "100vh", display: "grid", placeItems: "center", background: "#0B0B0B", color: "#ECE7DC", fontFamily: "system-ui, sans-serif" }}>
-        <title>Something went wrong — Singularity Dynasty</title>
+        <title>Something went wrong — Dynasty Singularity</title>
         <main style={{ maxWidth: 440, padding: 24, textAlign: "center" }}>
-          <p style={{ letterSpacing: "0.2em", fontSize: 12, color: "#E8643F", textTransform: "uppercase" }}>Singularity Dynasty</p>
+          <p style={{ letterSpacing: "0.2em", fontSize: 12, color: "#E8643F", textTransform: "uppercase" }}>Dynasty Singularity</p>
           <h1 style={{ fontSize: 26, margin: "12px 0" }}>Something went wrong on our side.</h1>
           <p style={{ color: "#A39E92", lineHeight: 1.5 }}>The site couldn&apos;t load just now. Please try again in a moment.</p>
           <button

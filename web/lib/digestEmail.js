@@ -46,7 +46,7 @@ export function renderDigest({ items, week, siteUrl, address = "", max = 8 }) {
   const html = `<!doctype html><html><body style="margin:0;background:#0b0b0b;padding:24px">
 <table role="presentation" width="100%" style="max-width:560px;margin:0 auto;background:#12121a;border-radius:14px;padding:24px;border:1px solid #2a2a38">
   <tr><td>
-    <div style="font:700 11px monospace;letter-spacing:.12em;color:#e8643f;text-transform:uppercase">Singularity Dynasty · Week ${esc(week)}</div>
+    <div style="font:700 11px monospace;letter-spacing:.12em;color:#e8643f;text-transform:uppercase">Dynasty Singularity · Week ${esc(week)}</div>
     <div style="font:700 24px Georgia,serif;color:#ece7dc;margin:6px 0 14px">Your players this week</div>
     <table role="presentation" width="100%">${rows || `<tr><td style="font:14px Georgia,serif;color:#a39e92;padding:10px 0">Nothing moved enough to flag this week.</td></tr>`}</table>
     <p style="margin:20px 0 0"><a href="${esc(manage)}" style="display:inline-block;background:#e8643f;color:#120804;font:700 14px Arial,sans-serif;padding:11px 22px;border-radius:999px;text-decoration:none">Open my leagues</a></p>

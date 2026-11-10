@@ -10,9 +10,9 @@ import { FRIEND_DISCOUNT_PERCENT } from "@/lib/referralRules";
 export function cardMetadata({ title, description, image }) {
   const images = [{ url: image, width: 1200, height: 630, alt: title }];
   return {
-    title: `${title} — Singularity Dynasty`,
+    title: `${title} — Dynasty Singularity`,
     description,
-    openGraph: { title, description, images, type: "article", siteName: "Singularity Dynasty" },
+    openGraph: { title, description, images, type: "article", siteName: "Dynasty Singularity" },
     twitter: { card: "summary_large_image", title, description, images: [image] },
   };
 }

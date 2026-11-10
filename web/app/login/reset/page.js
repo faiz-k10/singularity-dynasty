@@ -3,7 +3,7 @@ import { requestPasswordReset } from "../actions";
 import AuthCard from "../AuthCard";
 
 export const metadata = {
-  title: "Reset Password — Singularity Dynasty",
+  title: "Reset Password — Dynasty Singularity",
 };
 
 export default async function ResetPage({ searchParams }) {

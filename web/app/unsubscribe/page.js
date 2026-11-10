@@ -4,7 +4,7 @@ import { subscriberByToken, unsubscribe } from "@/lib/emailList";
 import { maskEmail } from "@/lib/emailRules";
 
 export const metadata = {
-  title: "Unsubscribe — Singularity Dynasty",
+  title: "Unsubscribe — Dynasty Singularity",
   robots: { index: false, follow: false },
 };
 

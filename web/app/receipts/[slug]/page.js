@@ -14,7 +14,7 @@ async function load(slug) {
 export async function generateMetadata({ params }) {
   const { slug } = await params;
   const r = await load(slug);
-  if (!r) return { title: "Receipts — Singularity Dynasty" };
+  if (!r) return { title: "Receipts — Dynasty Singularity" };
   const w = words(r);
   return cardMetadata({ title: w.title, description: w.description, image: `/receipts/${slug}/image` });
 }

@@ -11,7 +11,7 @@ import { PAID_TIERS, getCachedRedraftData, getCachedLeans, getCachedTdProfile, g
 import { getCachedWeekData, buildSimRows } from "../player-simulations/data";
 
 export const metadata = {
-  title: "The Observatory — Singularity Dynasty",
+  title: "The Observatory — Dynasty Singularity",
   description:
     "Research any player with the numbers behind the rankings: plot two stats against each other, rank a position on one, chart weekly scoring and compare players side by side.",
 };

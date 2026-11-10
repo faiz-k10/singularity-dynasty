@@ -4,8 +4,8 @@ import { GLOSSARY, slug } from "@/lib/glossary";
 import GlossaryFilter from "./GlossaryFilter";
 
 export const metadata = {
-  title: "Glossary — Singularity Dynasty",
-  description: "Every number and badge on Singularity Dynasty in plain words: floor, median, ceiling, xFP, WOPR, RYOE, CPOE, EPA, Smash Spot and more.",
+  title: "Glossary — Dynasty Singularity",
+  description: "Every number and badge on Dynasty Singularity in plain words: floor, median, ceiling, xFP, WOPR, RYOE, CPOE, EPA, Smash Spot and more.",
 };
 
 // Every term in lib/glossary.js (the same text the tap-to-define labels show), grouped, each with its own #anchor so a

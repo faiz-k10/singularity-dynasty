@@ -2,7 +2,7 @@ import Link from "next/link";
 import AuthCard from "./login/AuthCard";
 
 export const metadata = {
-  title: "Page Not Found — Singularity Dynasty",
+  title: "Page Not Found — Dynasty Singularity",
 };
 
 // Any address that doesn't exist (and notFound() calls, e.g. an unknown Lab share link).

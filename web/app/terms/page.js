@@ -2,7 +2,7 @@ import Link from "next/link";
 import SiteHeader from "../SiteHeader";
 
 export const metadata = {
-  title: "Terms of Service — Singularity Dynasty",
+  title: "Terms of Service — Dynasty Singularity",
 };
 
 export default function TermsPage() {
@@ -16,7 +16,7 @@ export default function TermsPage() {
 
           <h2>1. Acceptance of Terms</h2>
           <p>
-            By accessing or using Singularity Dynasty (the
+            By accessing or using Dynasty Singularity (the
             &quot;Service&quot;), you agree to be bound by these Terms of
             Service (&quot;Terms&quot;). If you do not agree, do not use the
             Service.
@@ -24,7 +24,7 @@ export default function TermsPage() {
 
           <h2>2. Description of Service</h2>
           <p>
-            Singularity Dynasty provides fantasy football analytics,
+            Dynasty Singularity provides fantasy football analytics,
             including dynasty and weekly projection rankings, player season
             simulations, draft board tools, team
             analysis, and prospect rankings, delivered through a
@@ -96,7 +96,7 @@ export default function TermsPage() {
           <p>
             All rankings, projections, simulations, written content,
             design, and branding on the Service (&quot;Content&quot;) are
-            owned by Singularity Dynasty or its licensors and are protected
+            owned by Dynasty Singularity or its licensors and are protected
             by intellectual property law. Subject to these Terms, we grant
             you a limited, non-exclusive, non-transferable license to access
             and use the Content for your personal, non-commercial use.
@@ -115,7 +115,7 @@ export default function TermsPage() {
 
           <h2>9. Limitation of Liability</h2>
           <p>
-            To the fullest extent permitted by law, Singularity Dynasty and
+            To the fullest extent permitted by law, Dynasty Singularity and
             its founder, employees, and contributors will not be liable for
             any indirect, incidental, special, consequential, or punitive
             damages, or any loss of profits, revenue, data, or — as
@@ -129,7 +129,7 @@ export default function TermsPage() {
 
           <h2>10. Indemnification</h2>
           <p>
-            You agree to indemnify and hold Singularity Dynasty harmless
+            You agree to indemnify and hold Dynasty Singularity harmless
             from any claims, damages, or expenses arising from your use of
             the Service or violation of these Terms.
           </p>
@@ -144,7 +144,7 @@ export default function TermsPage() {
           <h2>12. Governing Law</h2>
           <p>
             These Terms are governed by the laws applicable in the
-            jurisdiction in which Singularity Dynasty operates, without
+            jurisdiction in which Dynasty Singularity operates, without
             regard to conflict-of-law principles.
           </p>
 

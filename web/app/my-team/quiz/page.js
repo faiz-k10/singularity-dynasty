@@ -5,7 +5,7 @@ import { loadInsight, GM_ARCHETYPE_QUESTIONS } from "@/lib/insights";
 import QuizClient from "./QuizClient";
 
 export const metadata = {
-  title: "GM Archetype Quiz — Singularity Dynasty",
+  title: "GM Archetype Quiz — Dynasty Singularity",
   description:
     "A 60-second quiz to find out what kind of dynasty GM you are -- aggressive win-now, patient rebuilder, or somewhere in between.",
 };

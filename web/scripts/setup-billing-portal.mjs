@@ -27,7 +27,7 @@ async function main() {
   }
 
   const settings = {
-    business_profile: { headline: "Singularity Dynasty subscription management" },
+    business_profile: { headline: "Dynasty Singularity subscription management" },
     features: {
       customer_update: { enabled: true, allowed_updates: ["email"] },
       invoice_history: { enabled: true },

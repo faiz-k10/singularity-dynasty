@@ -4,9 +4,9 @@ import OutcomeCurveDetail from "../tools/OutcomeCurveDetail";
 import Define from "../Define";
 
 export const metadata = {
-  title: "How It Works — Singularity Dynasty",
+  title: "How It Works — Dynasty Singularity",
   description:
-    "How Singularity Dynasty's floor, median and ceiling projections and season simulations are built, how often they're right, where the data comes from, and answers to common questions.",
+    "How Dynasty Singularity's floor, median and ceiling projections and season simulations are built, how often they're right, where the data comes from, and answers to common questions.",
 };
 
 // The methods page: how to read a range, how each number is made, how often it's right (the backtests, quoted with what they were

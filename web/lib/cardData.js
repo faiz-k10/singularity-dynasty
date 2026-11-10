@@ -235,7 +235,7 @@ export async function cardFromToken(token) {
       card,
       data,
       title: `${p.name}, week ${card.w}: ${range(p)}`,
-      description: `${[p.posLabel, p.rank != null && `#${p.rank} overall`, p.opponent && `${p.isHome ? "vs" : "@"} ${p.opponent}`].filter(Boolean).join(" · ")}${spot(p.lean)}. From Singularity Dynasty's Weekly Projection Rankings.`,
+      description: `${[p.posLabel, p.rank != null && `#${p.rank} overall`, p.opponent && `${p.isHome ? "vs" : "@"} ${p.opponent}`].filter(Boolean).join(" · ")}${spot(p.lean)}. From Dynasty Singularity's Weekly Projection Rankings.`,
       caption: `${p.name}, week ${card.w}: ${range(p)}.`,
       tool: { href: "/tools/redraft-rankings", label: "See every player's range" },
     };
@@ -248,7 +248,7 @@ export async function cardFromToken(token) {
       card,
       data,
       title: `${p.name} in dynasty: ${p.score.toFixed(1)}, #${p.rank} overall (${data.format}, ${data.mode})`,
-      description: `${p.pos}${p.posRank}${p.tier ? ` · Tier ${p.tier.n} of ${p.tier.of}` : ""} · ${p.age.toFixed(1)} years old · ${one(p.ppg)} PPR points a game. From Singularity Dynasty's Dynasty Draft Board.`,
+      description: `${p.pos}${p.posRank}${p.tier ? ` · Tier ${p.tier.n} of ${p.tier.of}` : ""} · ${p.age.toFixed(1)} years old · ${one(p.ppg)} PPR points a game. From Dynasty Singularity's Dynasty Draft Board.`,
       caption: `${p.name} in dynasty: ${p.score.toFixed(1)}, ${p.pos}${p.posRank} and #${p.rank} overall (${data.format}, ${data.mode}).`,
       tool: { href: "/tools/draft-board", label: "See the whole dynasty board" },
     };
@@ -268,7 +268,7 @@ export async function cardFromToken(token) {
     card,
     data,
     title: winner ? `Start ${winner.name} over ${loser.name} (week ${card.w})` : neither ? `${a.player.name} or ${b.player.name}? Neither plays in week ${card.w}` : `${a.player.name} or ${b.player.name}? A coin flip in week ${card.w}`,
-    description: `${a.player.name} ${projWord(a.player)} vs ${b.player.name} ${projWord(b.player)}, median plus the Smash / Tough Spot effect. From Singularity Dynasty.`,
+    description: `${a.player.name} ${projWord(a.player)} vs ${b.player.name} ${projWord(b.player)}, median plus the Smash / Tough Spot effect. From Dynasty Singularity.`,
     caption: `Start / sit, week ${card.w}: ${a.player.name} (${projWord(a.player)}) or ${b.player.name} (${projWord(b.player)})? ${winner ? `The pick: ${winner.name}.` : neither ? "Neither plays this week." : "Too close to call."}`,
     tool: { href: `/tools/compare-players?p1=${encodeURIComponent(a.player.name)}&p2=${encodeURIComponent(b.player.name)}`, label: "Compare them side by side" },
   };

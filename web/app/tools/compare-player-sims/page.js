@@ -11,7 +11,7 @@ import { radarStartDegFor } from "../radarLayout";
 import { TEASER_LIMIT, PAID_TIERS, getCachedWeekData, buildSimRows } from "../player-simulations/data";
 
 export const metadata = {
-  title: "Compare Players — Season Simulations — Singularity Dynasty",
+  title: "Compare Players — Season Simulations — Dynasty Singularity",
   description:
     "Compare up to three players' full-season simulation outcomes side by side: floor, median and ceiling, season-to-date pace, projected stats, role tags, and percentile shapes.",
 };

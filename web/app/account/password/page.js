@@ -5,7 +5,7 @@ import { updatePassword } from "../../login/actions";
 import AuthCard from "../../login/AuthCard";
 
 export const metadata = {
-  title: "Set Password — Singularity Dynasty",
+  title: "Set Password — Dynasty Singularity",
 };
 
 // Set a new password: reached from the account page, or from the reset email (which /auth/confirm has already signed in).

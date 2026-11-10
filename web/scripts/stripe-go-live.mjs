@@ -50,7 +50,7 @@ if (existing) {
   console.log(`Webhook endpoint already exists (${existing.id}) for ${url}.`);
   console.log("Its signing secret can't be read back: Stripe dashboard -> Developers -> Webhooks -> this endpoint -> Roll secret, then set STRIPE_WEBHOOK_SECRET in Vercel.");
 } else {
-  const created = await stripe.webhookEndpoints.create({ url, enabled_events: EVENTS, description: "Singularity Dynasty tier provisioning" });
+  const created = await stripe.webhookEndpoints.create({ url, enabled_events: EVENTS, description: "Dynasty Singularity tier provisioning" });
   console.log(`Created webhook endpoint ${created.id} -> ${url}`);
   console.log(`\nSet this in Vercel (Production):\nSTRIPE_WEBHOOK_SECRET=${created.secret}`);
 }

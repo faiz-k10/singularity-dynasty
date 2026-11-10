@@ -12,7 +12,7 @@ import PlayerSimSearch from "../PlayerSimSearch";
 import { TEASER_LIMIT, PAID_TIERS, getCachedWeekData, buildSimRows } from "./data";
 
 export const metadata = {
-  title: "Player Season Simulations — Floor/Median/Ceiling Projections — Singularity Dynasty",
+  title: "Player Season Simulations — Floor/Median/Ceiling Projections — Dynasty Singularity",
   description:
     "10,000-run Monte Carlo season simulations for every fantasy football player, distilled to floor, median, and ceiling point totals. Free top-10 preview for every Stargazer.",
 };
