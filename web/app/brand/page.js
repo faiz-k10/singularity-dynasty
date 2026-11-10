@@ -23,7 +23,7 @@ export default function BrandPage() {
         <h1 className="doc-h1">Brand Assets</h1>
         <p className="doc-lede">
           The Singularity Dynasty logo, ready for a profile picture or a write-up. Square PNGs, centred with room to spare so a round crop never cuts the mark.
-          Use the 1024px file for uploads; 400px is the size most platforms show.
+          The 2048px file is the sharpest; 1024px suits most uploads, and 400px is the size most platforms show.
         </p>
         <div className="brand-grid">
           {LOGOS.map((l) => (
@@ -33,6 +33,7 @@ export default function BrandPage() {
                 <b>{l.name}</b>
                 <span>{l.note}</span>
                 <span className="brand-dl">
+                  <a href={`/brand/${l.file}-2048.png`} download>PNG 2048</a>
                   <a href={`/brand/${l.file}-1024.png`} download>PNG 1024</a>
                   <a href={`/brand/${l.file}-400.png`} download>PNG 400</a>
                 </span>

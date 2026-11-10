@@ -9,7 +9,7 @@ import { MARK_DISC, MARK_SPIRAL, MARK_BALL, MARK_CENTER_BALL, MARK_STROKE } from
 
 const font = await readFile("assets/og-fonts/BigShoulders-800.ttf");
 const OUT = "../brand";
-const S = 1024, BOX = 800; // the mark's 40-unit box drawn 760px wide, centred (platforms crop to a circle)
+const S = 2048, BOX = 1600; // drawn natively at 2048px (the sharpest file; 1024 and 400 are scaled down from it); the mark's 40-unit box 1600px wide, centred (platforms crop to a circle)
 const u = BOX / 40, off = (S - BOX) / 2;
 const variants = {
   light: { bg: "#ECE7DC", disc: "#0B0B0B", ring: "#C8401E" }, // the site's light mode: bone paper, ink disc, ember
@@ -38,8 +38,9 @@ for (const [name, v] of Object.entries(variants)) {
     const base = `${OUT}/logo-${name}${sd ? "-sd" : ""}`;
     for (const dir of [OUT, "public/brand"]) {
       const b = base.replace(OUT, dir);
-      await writeFile(`${b}-1024.png`, buf);
-      await sharp(buf).resize(400, 400).png().toFile(`${b}-400.png`);
+      await writeFile(`${b}-2048.png`, buf);
+      await sharp(buf).resize(1024, 1024, { kernel: "lanczos3" }).png().toFile(`${b}-1024.png`);
+      await sharp(buf).resize(400, 400, { kernel: "lanczos3" }).png().toFile(`${b}-400.png`);
     }
     console.log(base);
   }
