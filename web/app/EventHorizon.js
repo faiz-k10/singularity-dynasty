@@ -31,6 +31,8 @@ const radiusFor = (w) => (w < 560 ? Math.max(104, Math.round((w - 120) / 2)) : 1
 // a planet is a FOOTBALL (founder, Nov 10 2026): a full-bodied oval, 2.6 radii long and 1.6 tall, with gently pointed ends -- not a lemon -- tilted a little
 const ball = (r, grow = 0) => { const L = 1.3 * r + grow, H = 0.8 * r + grow; return `M${-L} 0 C${-0.82 * L} ${-0.4 * H} ${-0.45 * L} ${-H} 0 ${-H} C${0.45 * L} ${-H} ${0.82 * L} ${-0.4 * H} ${L} 0 C${0.82 * L} ${0.4 * H} ${0.45 * L} ${H} 0 ${H} C${-0.45 * L} ${H} ${-0.82 * L} ${0.4 * H} ${-L} 0 Z`; };
 const BALL_TILT = -12;
+// the two white stripes near the ends of the ball, cut out of the planet: curved bands across it, bowing toward the nearer tip
+const stripes = (r) => { const L = 1.3 * r, H = 0.85 * r, c = 0.06 * L; return [-1, 1].map((sg) => { const a = sg * 0.6 * L, b = sg * 0.72 * L; return `M${a} ${-H} Q${a + sg * c} 0 ${a} ${H} L${b} ${H} Q${b + sg * c} 0 ${b} ${-H} Z`; }).join(" "); };
 // a plan's orbit reaches across the screen (founder, Nov 10 2026): `fx` is its half-width as a share of the screen's, never inside the ring
 const orbitX = (b, w, R, k) => (b.fx ? Math.max(b.fx * (w / 2), R + 70) : b.rx * k);
 const TILT = (-7 * Math.PI) / 180;
@@ -195,6 +197,7 @@ function Bodies({ size, bodies }) {
               <path className="halo" d={ball(pr, 9)} transform={`rotate(${BALL_TILT})`} />
               <mask id={`ehp-pm-${i}`}>
                 <path d={ball(pr)} fill="#fff" transform={`rotate(${BALL_TILT})`} />
+                <path d={stripes(pr)} fill="#000" transform={`rotate(${BALL_TILT})`} />
                 {b.price && (
                   // the price is CUT OUT of the planet (a mask), so it reads as the sky showing through; per month sits under the figure
                   <>
