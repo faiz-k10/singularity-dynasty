@@ -7,6 +7,12 @@ import { readFile, writeFile } from "node:fs/promises";
 import sharp from "sharp";
 import { MARK_DISC, MARK_SPIRAL, MARK_SPECK, MARK_STROKE } from "../lib/brandMark.js";
 
+// the ball sits where the spiral starts, pointing along it (the line's first step heads up and to the right)
+const BALL_L = 4.4, BALL_W = 1.85; // length; the curve's control height (the ball is about 1.5x that wide)
+const DIR = [4.29 - 3.37, 9.12 - 10.4], DL = Math.hypot(...DIR), UX = DIR[0] / DL, UY = DIR[1] / DL;
+const BALL_ANGLE = (Math.atan2(UY, UX) * 180) / Math.PI;
+// the ball sits just BEHIND the line's end, its back tip on the line, so the line reads as its flight path rather than a stem
+const BALL_CX = MARK_SPECK.cx - UX * (BALL_L / 2 + 0.15), BALL_CY = MARK_SPECK.cy - UY * (BALL_L / 2 + 0.15);
 const font = await readFile("assets/og-fonts/BigShoulders-800.ttf");
 const OUT = "../brand";
 const S = 1024, BOX = 760; // the mark's 40-unit box drawn 760px wide, centred (platforms crop to a circle)
@@ -21,7 +27,10 @@ for (const [name, v] of Object.entries(variants)) {
     const mark = h("svg", { width: BOX, height: BOX, viewBox: "0 0 40 40", style: { position: "absolute", left: off, top: off } },
       h("circle", { cx: MARK_DISC.cx, cy: MARK_DISC.cy, r: MARK_DISC.r, fill: v.disc }),
       h("path", { d: MARK_SPIRAL, fill: "none", stroke: v.ring, strokeWidth: MARK_STROKE * bold, strokeLinecap: "round" }),
-      h("circle", { cx: MARK_SPECK.cx, cy: MARK_SPECK.cy, r: MARK_SPECK.r * 0.75, fill: v.ring }));
+      // the point at the end is a FOOTBALL (founder, Nov 10 2026): a pointed oval laid along the line, with laces in the background colour
+      h("g", { transform: `translate(${BALL_CX} ${BALL_CY}) rotate(${BALL_ANGLE})` },
+        h("path", { d: `M${-BALL_L / 2} 0 C${-BALL_L / 4} ${-BALL_W} ${BALL_L / 4} ${-BALL_W} ${BALL_L / 2} 0 C${BALL_L / 4} ${BALL_W} ${-BALL_L / 4} ${BALL_W} ${-BALL_L / 2} 0 Z`, fill: v.ring }),
+        h("path", { d: `M-0.75 0 H0.75 M-0.45 -0.32 V0.32 M0 -0.32 V0.32 M0.45 -0.32 V0.32`, stroke: v.bg, strokeWidth: 0.16, strokeLinecap: "round", fill: "none" })));
     const dCx = off + MARK_DISC.cx * u, dCy = off + MARK_DISC.cy * u, dR = MARK_DISC.r * u;
     const letters = sd
       ? h("div", { style: { position: "absolute", left: dCx - dR, top: dCy - dR, width: dR * 2, height: dR * 2, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "BS", fontSize: dR * 1.12, letterSpacing: dR * 0.02, color: v.bg, paddingTop: dR * 0.06 } }, "SD")
