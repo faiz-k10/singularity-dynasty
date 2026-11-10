@@ -6668,14 +6668,14 @@ body:has(.ehp){--ehp-bg:#0B0B0B;--ehp-ink:#ECE7DC;--ehp-dim:#A39E92;--ehp-faint:
 
 /* the Tuesday letter: the shared sign-up form, restyled to the page */
 .ehp-letter{border-top:1px solid var(--ehp-rule);padding:100px 0 110px !important;}
-.ehp .feed-form{background:none;border:0;border-top:1px solid var(--ehp-ink);padding:22px 0 0;}
-.ehp .feed-form::before{display:none;}
-.ehp .feed-label{color:var(--ehp-faint);}
-.ehp .feed-input{background:none;border:0;border-bottom:1px solid var(--ehp-rule);border-radius:0;color:var(--ehp-ink);}
+:is(.ehp,.site-header) .feed-form{background:none;border:0;border-top:1px solid var(--ehp-ink);padding:22px 0 0;}
+:is(.ehp,.site-header) .feed-form::before{display:none;}
+:is(.ehp,.site-header) .feed-label{color:var(--ehp-faint);}
+:is(.ehp,.site-header) .feed-input{background:none;border:0;border-bottom:1px solid var(--ehp-rule);border-radius:0;color:var(--ehp-ink);}
 /* focus = the underline darkens and thickens (the generic glow ring was cut off on the left by the form's edge, founder Nov 10 2026) */
-.ehp .feed-input:focus,.ehp .feed-input:focus-visible{outline:none;box-shadow:inset 0 -1px 0 var(--ehp-ink);border-bottom-color:var(--ehp-ink);}
-.ehp .feed-form{overflow:visible;}
-.ehp .feed-submit{background:var(--ehp-ink);color:var(--ehp-bg);border-radius:0;}
+:is(.ehp,.site-header) .feed-input:focus,:is(.ehp,.site-header) .feed-input:focus-visible{outline:none;box-shadow:inset 0 -1px 0 var(--ehp-ink);border-bottom-color:var(--ehp-ink);}
+:is(.ehp,.site-header) .feed-form{overflow:visible;}
+:is(.ehp,.site-header) .feed-submit{background:var(--ehp-ink);color:var(--ehp-bg);border-radius:0;}
 .ehp-posts{list-style:none;margin:26px 0 0;padding:0;border-top:1px solid var(--ehp-rule);}
 .ehp-posts a{display:flex;justify-content:space-between;gap:20px;padding:12px 0;border-bottom:1px solid var(--ehp-rule);font-size:15px;}
 .ehp-posts em{font:11px var(--font-mono), monospace;font-style:normal;color:var(--ehp-faint);}
@@ -6848,6 +6848,8 @@ body:has(.ehp) .ticker-bar{position:absolute;}
 
 /* landing header: Plans opens a panel of the three plans with a checkout button each (hover / keyboard focus; EventHorizon.js HeaderPlans) */
 .ehp-pm{position:relative;}
+/* the same dropdowns in the site header on every other page: the landing page's tokens mapped onto the site's */
+.site-header{--ehp-bg:var(--void);--ehp-rule:var(--line);--ehp-ink:var(--star);--ehp-dim:var(--star-dim);--ehp-faint:var(--star-dim);--ehp-mark:var(--ember);}
 .ehp-pm-panel{position:absolute;top:100%;left:-18px;margin-top:10px;width:360px;padding:14px 18px 12px;background:var(--ehp-bg);border:1px solid var(--ehp-rule);opacity:0;visibility:hidden;transform:translateY(-4px);transition:opacity .18s,transform .18s,visibility .18s;z-index:70;}
 .ehp-pm::after{content:'';position:absolute;left:-18px;right:-18px;top:100%;height:12px;} /* bridges the gap so the pointer can travel to the panel */
 .ehp-pm:hover .ehp-pm-panel,.ehp-pm:focus-within .ehp-pm-panel{opacity:1;visibility:visible;transform:none;}

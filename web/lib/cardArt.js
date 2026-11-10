@@ -258,7 +258,7 @@ export function PlayerCard({ f, host, data, img }) {
   );
 }
 
-// One player's dynasty value (the Dynasty Draft Board's Rankings tab).
+// One player's dynasty value (the Dynasty Board's Rankings tab).
 export function DynastyCard({ f, host, data, img }) {
   const { player: p } = data;
   const tall = sizeOf(f) === "tall";
@@ -268,7 +268,7 @@ export function DynastyCard({ f, host, data, img }) {
   const tot = prodPart + agePart || 1;
   const barW = tall ? 952 : 510;
   return (
-    <Frame f={f} host={host} tool="Dynasty Draft Board" eyebrow={`Dynasty · ${data.format === "Superflex" ? "SF" : data.format} · ${data.mode}`}>
+    <Frame f={f} host={host} tool="Dynasty Board" eyebrow={`Dynasty · ${data.format === "Superflex" ? "SF" : data.format} · ${data.mode}`}>
       <div style={{ display: "flex", flexDirection: tall ? "column" : "row", flexGrow: 1 }}>
         <div style={{ display: "flex", flexDirection: "column", width: tall ? "100%" : 500 }}>
           <div style={{ display: "flex", alignItems: "center" }}>

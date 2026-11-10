@@ -7,6 +7,7 @@ import ToolsMenuRows from "./ToolsMenu";
 import ThemeToggle from "./ThemeToggle";
 import ArcGauge from "./ArcGauge";
 import NewsletterForm from "./NewsletterForm";
+import { HeaderPlans, HeaderLetter, PLANS } from "./HeaderMenus";
 import { lookupSleeperTeams } from "./my-team/actions";
 import { summarizeLeagues } from "@/lib/heroLookup";
 import { startCheckout } from "@/lib/startCheckout";
@@ -67,14 +68,9 @@ const TOOLS = [
   // most to least valuable to a typical player (founder, Nov 10 2026): the weekly habit first, the analyst tools last
   ["The Game Board", "Every league you play, live, on one screen.", "1 league free", "/my-team"],
   ["Weekly Projection Rankings", "Every player's range this week, and the matchups that tilt it.", "Top 50 free", "/tools/redraft-rankings"],
-  ["Dynasty Draft Board", "Production against age, tiered by who is truly ahead.", "Top 20 free", "/tools/draft-board"],
+  ["Dynasty Board", "Production against age, tiered by who is truly ahead.", "Top 20 free", "/tools/draft-board"],
   ["Player Season Simulations", "Where each player's season is heading, and how it has moved.", "Top 10 free", "/tools/player-simulations"],
   ["The Observatory", "Any two numbers, every player, one chart.", "Top 50 free", "/tools/lab"],
-];
-const PLANS = [
-  { id: "stargazer", name: "Stargazer", r: 230, say: "The top of every board and one saved league.", month: 0, year: 0 },
-  { id: "explorer", name: "Explorer", r: 150, say: "Every player, ten leagues watched live, the Tuesday email.", month: 9, year: 7 },
-  { id: "singularity", name: "Singularity", r: 76, say: "Every simulation, unlimited leagues, exports.", month: 25, year: 20 },
 ];
 
 // a seeded random, so the sky is the same on every visit
@@ -480,51 +476,6 @@ function HeaderTools() {
   );
 }
 
-// the header's Newsletter link opens a dropdown with the sign-up right there (founder, Nov 10 2026); the link still jumps to the section
-function HeaderLetter() {
-  return (
-    <div className="ehp-pm ehp-nl">
-      <a href="#feed" aria-haspopup="true">Newsletter</a>
-      <div className="ehp-pm-panel" role="group" aria-label="Newsletter sign-up">
-        <NewsletterForm source="nav" inputId="navEmail" />
-      </div>
-    </div>
-  );
-}
-
-function HeaderPlans() {
-  const [yearly, setYearly] = useState(true);
-  const [busy, setBusy] = useState(null);
-  async function choose(id) {
-    setBusy(id);
-    try {
-      await startCheckout(id, yearly ? "annual" : "monthly");
-    } catch {
-      alert("Something went wrong starting checkout. Please try again.");
-      setBusy(null);
-    }
-  }
-  return (
-    <div className="ehp-pm">
-      <a href="#pricing" aria-haspopup="true">Plans</a>
-      <div className="ehp-pm-panel" role="group" aria-label="Plans">
-        <div className="ehp-pm-bill" role="group" aria-label="Billing">
-          <button type="button" className={yearly ? "" : "on"} onClick={() => setYearly(false)} aria-pressed={!yearly}>Monthly</button>
-          <button type="button" className={yearly ? "on" : ""} onClick={() => setYearly(true)} aria-pressed={yearly}>Yearly</button>
-        </div>
-        {PLANS.map((p) => (
-          <div key={p.id} className={`ehp-pm-row${p.id === "explorer" ? " is-pick" : ""}`}>
-            <b>{p.name}</b>
-            <em>{p.month ? `$${yearly ? p.year : p.month} / mo` : "Free"}</em>
-            <button type="button" onClick={() => choose(p.id)} disabled={busy === p.id}>{busy === p.id ? "…" : p.month ? "Choose →" : "Start →"}</button>
-          </div>
-        ))}
-        <p>{yearly ? "Billed yearly · " : ""}14-day refund, cancel any time.</p>
-      </div>
-    </div>
-  );
-}
-
 function Plans() {
   const [on, setOn] = useState(1);
   const [yearly, setYearly] = useState(true);
@@ -853,11 +804,11 @@ export default function EventHorizon({ signedIn, member, invited, discountPct, w
         </div>
       </section>
 
-      {/* 4 · Dynasty Draft Board */}
+      {/* 4 · Dynasty Board */}
       <section className="ehp-dynasty ehp-dark" id="dynasty">
         <div className="ehp-wrap ehp-two">
           <div>
-            <div className="ehp-k">Dynasty Draft Board</div>
+            <div className="ehp-k">Dynasty Board</div>
             <h2 className="ehp-h">
               Who is <em>really ahead.</em>
             </h2>

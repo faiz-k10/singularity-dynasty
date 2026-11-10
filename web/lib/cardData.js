@@ -138,7 +138,7 @@ export async function canCardPlayer(name, pos, hasFullAccess) {
 
 // ---- dynasty --------------------------------------------------------------------------------------------------------------------------------
 
-// One player's dynasty card in a format and mode: his score, range, ranks and tier exactly as the Rankings tab of the Dynasty Draft Board draws them.
+// One player's dynasty card in a format and mode: his score, range, ranks and tier exactly as the Rankings tab of the Dynasty Board draws them.
 export function dynastyCardPlayer(id, format, mode) {
   const all = rowsFromData(dynastyData);
   const scored = scoreRows(all, format, mode);
@@ -248,7 +248,7 @@ export async function cardFromToken(token) {
       card,
       data,
       title: `${p.name} in dynasty: ${p.score.toFixed(1)}, #${p.rank} overall (${data.format}, ${data.mode})`,
-      description: `${p.pos}${p.posRank}${p.tier ? ` · Tier ${p.tier.n} of ${p.tier.of}` : ""} · ${p.age.toFixed(1)} years old · ${one(p.ppg)} PPR points a game. From Dynasty Singularity's Dynasty Draft Board.`,
+      description: `${p.pos}${p.posRank}${p.tier ? ` · Tier ${p.tier.n} of ${p.tier.of}` : ""} · ${p.age.toFixed(1)} years old · ${one(p.ppg)} PPR points a game. From Dynasty Singularity's Dynasty Board.`,
       caption: `${p.name} in dynasty: ${p.score.toFixed(1)}, ${p.pos}${p.posRank} and #${p.rank} overall (${data.format}, ${data.mode}).`,
       tool: { href: "/tools/draft-board", label: "See the whole dynasty board" },
     };

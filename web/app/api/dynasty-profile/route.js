@@ -4,7 +4,7 @@ import { getDynastyProfile } from "@/lib/dynastyData";
 import { getPlayerBiosByNamePos } from "@/lib/sleeper";
 import { findBio } from "@/lib/portfolio";
 
-// What the Dynasty Draft Board's player profile loads when it opens: his last games and his bio (headshot, size, years in
+// What the Dynasty Board's player profile loads when it opens: his last games and his bio (headshot, size, years in
 // the league). Same gate as the board itself: a player this tier can't see on the board gets a 403.
 const PAID_TIERS = ["explorer", "singularity"];
 

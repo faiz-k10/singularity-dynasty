@@ -11,6 +11,7 @@ import InteractiveScript from "./InteractiveScript";
 import TickerTrack from "./TickerTrack";
 import ToolLink from "./ToolLink";
 import HeaderNavLink from "./HeaderNavLink";
+import { HeaderPlans, HeaderLetter } from "./HeaderMenus";
 import ToolsMenuRows from "./ToolsMenu";
 import BrandMark from "./BrandMark";
 import { getAchievements } from "./tools/achievements";
@@ -237,8 +238,8 @@ export default async function SiteHeader({ scripts = true }) {
               </div>
             </div>
           </div>
-          <Link href="/#pricing">Plans</Link>
-          <Link href="/#feed">Newsletter</Link>
+          <HeaderPlans />
+          <HeaderLetter />
         </nav>
         <ToolLink href="/" className="brandmark">
           <BrandMark />Dynasty Singularity

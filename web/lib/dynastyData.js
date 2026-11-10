@@ -2,7 +2,7 @@ import data from "@/data/dynasty-values.json";
 import logs from "@/data/dynasty-logs.json";
 import { formTrend, metaFromData, rowsFromData, scoreRows } from "./dynastyBoard";
 
-// The Dynasty Draft Board's player rows (model/dynasty_value.R -> data/dynasty-values.json, refreshed by committing a new file).
+// The Dynasty Board's player rows (model/dynasty_value.R -> data/dynasty-values.json, refreshed by committing a new file).
 // Server-only: the page hands the client only the rows its tier may see. Everyone sees the same TOP FREE_ROWS players
 // (by the default view, Superflex / Contender), so a free visitor never gets the rest in the page.
 export const FREE_ROWS = 20;

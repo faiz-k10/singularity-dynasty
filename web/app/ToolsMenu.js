@@ -6,7 +6,7 @@ import ToolLink from "./ToolLink";
 export const TOOLS_MENU = [
   { href: "/my-team", name: "My Team", say: "Every league you play, live, on one screen.", free: "1 league free" },
   { href: "/tools/redraft-rankings", name: "Weekly Projection Rankings", say: "Every player's range this week, matchups included.", free: "Top 50 free" },
-  { href: "/tools/draft-board", name: "Dynasty Draft Board", say: "Production against age, tiered by who is truly ahead.", free: "Top 20 free" },
+  { href: "/tools/draft-board", name: "Dynasty Board", say: "Production against age, tiered by who is truly ahead.", free: "Top 20 free" },
   { href: "/tools/player-simulations", name: "Player Season Simulations", say: "Where each player's season is heading.", free: "Top 10 free" },
   { href: "/tools/lab", name: "The Observatory", say: "Any two numbers, every player, one chart.", free: "Top 50 free" },
 ];

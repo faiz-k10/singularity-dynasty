@@ -10,7 +10,7 @@ export async function generateMetadata({ params }) {
   return { ...cardMetadata({ title: c.title, description: c.description, image: `/c/${token}/image` }), robots: { index: false, follow: true } };
 }
 
-const EYEBROW = { p: "Weekly Projection Rankings", d: "Dynasty Draft Board", s: "Start / sit" };
+const EYEBROW = { p: "Weekly Projection Rankings", d: "Dynasty Board", s: "Start / sit" };
 
 export default async function CardPage({ params, searchParams }) {
   const [{ token }, sp] = await Promise.all([params, searchParams]);

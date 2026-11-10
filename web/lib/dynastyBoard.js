@@ -1,4 +1,4 @@
-// The Dynasty Draft Board's rankings: scoring, ranges and the tier rule. Pure, so it is tested (test/dynastyBoard.test.mjs).
+// The Dynasty Board's rankings: scoring, ranges and the tier rule. Pure, so it is tested (test/dynastyBoard.test.mjs).
 //
 // A player's dynasty score = prod x (production over replacement, 1-10, for the league format) + age x (age value, 1-10),
 // with the weights set by the mode. Both inputs come from model/dynasty_value.R (see its header for how they are made).

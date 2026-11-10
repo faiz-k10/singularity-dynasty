@@ -66,7 +66,7 @@ export default async function Home() {
   const refCode = (await cookies()).get(REF_COOKIE)?.value;
   const invited = !member && refCode ? await isLiveReferralCode(refCode) : false;
 
-  // The Dynasty Draft Board's top six (the same default view the free board shows: Superflex, Contender) with the tier each sits in.
+  // The Dynasty Board's top six (the same default view the free board shows: Superflex, Contender) with the tier each sits in.
   const { rows: dRows } = getDynastyRows(false);
   const dList = scoreRows(dRows, "sf", "contender").slice(0, 30);
   const tiers = buildBoard(dList).tiers;

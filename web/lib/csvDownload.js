@@ -2,7 +2,7 @@ import { getUserTier } from "@/lib/tier";
 import { toCsv } from "@/lib/csv";
 
 // Shared plumbing for the Singularity-only CSV download routes (Player Season
-// Simulations, Weekly Projection Rankings, Dynasty Draft Board, Prospect
+// Simulations, Weekly Projection Rankings, Dynasty Board, Prospect
 // Rankings). Each file is built here on request instead of being embedded in
 // the tool page, which used to carry a complete extra copy of its rows (twice,
 // once in the HTML and once in the page data) just so a rarely-clicked button

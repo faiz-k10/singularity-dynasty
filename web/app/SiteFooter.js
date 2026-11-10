@@ -3,7 +3,7 @@ import Link from "next/link";
 // The one footer every page ends with (rendered once by app/layout.js): the tools, help and legal pages, so anything on the
 // site is two clicks away from anywhere. Full-screen board views sit above it.
 const COLUMNS = [
-  ["Tools", [["/tools/redraft-rankings", "Weekly Rankings"], ["/tools/player-simulations", "Season Simulations"], ["/tools/draft-board", "Dynasty Draft Board"], ["/tools/lab", "The Observatory"], ["/my-team", "My Team"]]],
+  ["Tools", [["/tools/redraft-rankings", "Weekly Rankings"], ["/tools/player-simulations", "Season Simulations"], ["/tools/draft-board", "Dynasty Board"], ["/tools/lab", "The Observatory"], ["/my-team", "My Team"]]],
   ["Help", [["/how-it-works", "How It Works"], ["/how-it-works#faq", "FAQ"], ["/glossary", "Glossary"], ["/brand", "Brand assets"], ["/contact", "Contact"]]],
   ["Account", [["/#pricing", "Plans & Pricing"], ["/account", "Your Account"], ["/login", "Sign In"]]],
   ["Legal", [["/terms", "Terms"], ["/privacy", "Privacy"], ["/disclaimer", "Disclaimer"]]],
