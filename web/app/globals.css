@@ -6609,6 +6609,8 @@ body:has(.ehp){--ehp-bg:#0B0B0B;--ehp-ink:#ECE7DC;--ehp-dim:#A39E92;--ehp-faint:
 .ehp-body .hit,.ehp-body text:not(.pm-n):not(.pm-s){pointer-events:auto;} /* only the planet and its label take the pointer; the rest of each planet's box lets clicks through to the hole */
 .ehp.arrived .ehp-body{opacity:1;}
 .ehp-body .dot{fill:#fff;transition:fill .2s;}
+.ehp-body .nm{opacity:0;transition:opacity .25s;pointer-events:none;} /* the name shows only on hover, above the football */
+.ehp-body:hover .nm,.ehp-body:focus-visible .nm{opacity:1;}
 .ehp-body .halo{fill:none;stroke:#fff;stroke-opacity:0;stroke-width:.8;transition:stroke-opacity .25s;}
 .ehp-body text{font:11px var(--font-mono), monospace;font-stretch:82%;letter-spacing:.18em;fill:#fff;}
 .ehp-body .say{font:italic 14px var(--font-body), serif;letter-spacing:0;fill:#fff;fill-opacity:.7;opacity:0;transition:opacity .25s;}

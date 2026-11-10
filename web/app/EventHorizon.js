@@ -209,8 +209,8 @@ function Bodies({ size, bodies }) {
                 )}
               </mask>
               <path className="dot" d={ball(pr)} transform={`rotate(${BALL_TILT})`} mask={`url(#ehp-pm-${i})`} />
-              <text x={pr * 1.25 + 16} y="4">{b.n}</text>
-              {!b.id && <text className="say" x={pr * 1.25 + 16} y="23">{b.say}</text>}{/* the plan planets carry their price inside; no caption under the name */}
+              <text className="nm" textAnchor="middle" x="0" y={-(pr * 0.8 + 14)}>{b.n}</text>
+              {!b.id && <text className="say" textAnchor="middle" x="0" y={pr * 0.8 + 24}>{b.say}</text>}{/* the plan planets carry their price inside; no caption under the name */}
             </svg>
           </ToolLink>
         );
