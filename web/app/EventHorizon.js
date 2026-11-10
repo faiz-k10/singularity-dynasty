@@ -105,7 +105,7 @@ function Sky({ size, nextKickoff, bodies }) {
           <circle key={i} cx={s.x.toFixed(1)} cy={s.y.toFixed(1)} r={s.r.toFixed(2)} fill="currentColor" fillOpacity={s.o.toFixed(2)} />
         ))}
       </svg>
-      <svg className="ehp-sky ehp-orbits" viewBox={vb} aria-hidden="true">
+      <svg className="ehp-sky ehp-orbitsky" viewBox={vb} aria-hidden="true">
         {bodies.map((b, i) => {
           const rx = +(b.rx * k).toFixed(1), ry = +(b.ry * k).toFixed(1);
           const c = Math.PI * (3 * (rx + ry) - Math.sqrt((3 * rx + ry) * (rx + 3 * ry)));

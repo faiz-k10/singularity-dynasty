@@ -6903,7 +6903,7 @@ body:has(.ehp) .ticker-bar{position:absolute;}
 :root[data-theme="light"]{--cobalt:#1F4FC4;--cobalt-rgb:31,79,196;}
 
 /* landing motion layers (EventHorizon.js Sky / Ring / Bodies): each moves by transform only, on its own compositor layer */
-.ehp-starfield,.ehp-orbits,.ehp-ringlayer{will-change:transform,opacity;}
+.ehp-starfield,.ehp-orbitsky,.ehp-ringlayer{will-change:transform,opacity;}
 .ehp-ringlayer svg{position:absolute;left:50%;top:50%;overflow:visible;transform-origin:center;}
 .ehp-speck{position:absolute;left:50%;top:50%;width:4px;height:4px;margin:-2px 0 0 -2px;border-radius:50%;background:var(--ehp-mark);opacity:0;will-change:transform,opacity;pointer-events:none;z-index:1;}
 
