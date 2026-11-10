@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import Link from "next/link";
+import ToolLink from "./ToolLink";
 import ThemeToggle from "./ThemeToggle";
 import ArcGauge from "./ArcGauge";
 import NewsletterForm from "./NewsletterForm";
@@ -76,22 +77,53 @@ function countdown(iso) {
   return `${p(Math.floor(s / 3600))}:${p(Math.floor((s % 3600) / 60))}:${p(s % 60)}`; // hours is the largest unit, however far off (e.g. 61:09:28)
 }
 
+// The sky, split into layers that each only MOVE (Nov 10 2026, founder: "make it as smooth as possible"): the stars, the orbits and the spinning
+// ring are separate elements the browser can move or rotate without repainting them; nothing inside an svg changes from frame to frame.
 function Sky({ size, nextKickoff, bodies }) {
   const { w, h } = size;
   const R = radiusFor(w);
   const k = Math.max(0.45, Math.min(1, w / 1300)); // orbits shrink on small screens
-  const rnd = seeded(5);
-  const stars = [];
-  for (let i = 0; i < 150; i++) {
-    let x = (rnd() - 0.5) * w * 1.1;
-    let y = (rnd() - 0.5) * h * 1.1;
-    // gentle lensing: light from behind the hole is pushed out toward the Einstein ring, so the sky thins around it
-    const d = Math.hypot(x, y), E = 170, d2 = (d + Math.sqrt(d * d + 4 * E * E)) / 2, t = Math.atan2(y, x);
-    x = d2 * Math.cos(t);
-    y = d2 * Math.sin(t);
-    stars.push({ x, y, r: Math.pow(rnd(), 3) * 1.5 + 0.35, o: 0.15 + rnd() * 0.45 });
-  }
-  const RR = R + 30, C = 2 * Math.PI * RR;
+  const stars = useMemo(() => {
+    const rnd = seeded(5);
+    const out = [];
+    for (let i = 0; i < 150; i++) {
+      let x = (rnd() - 0.5) * w * 1.1;
+      let y = (rnd() - 0.5) * h * 1.1;
+      // gentle lensing: light from behind the hole is pushed out toward the Einstein ring, so the sky thins around it
+      const d = Math.hypot(x, y), E = 170, d2 = (d + Math.sqrt(d * d + 4 * E * E)) / 2, t = Math.atan2(y, x);
+      x = d2 * Math.cos(t);
+      y = d2 * Math.sin(t);
+      out.push({ x, y, r: Math.pow(rnd(), 3) * 1.5 + 0.35, o: 0.15 + rnd() * 0.45 });
+    }
+    return out;
+  }, [w, h]);
+  const vb = `${-w / 2} ${-h / 2} ${w} ${h}`;
+  return (
+    <>
+      <svg className="ehp-sky ehp-starfield" viewBox={vb} aria-hidden="true">
+        {stars.map((s, i) => (
+          <circle key={i} cx={s.x.toFixed(1)} cy={s.y.toFixed(1)} r={s.r.toFixed(2)} fill="currentColor" fillOpacity={s.o.toFixed(2)} />
+        ))}
+      </svg>
+      <svg className="ehp-sky ehp-orbits" viewBox={vb} aria-hidden="true">
+        {bodies.map((b, i) => {
+          const rx = +(b.rx * k).toFixed(1), ry = +(b.ry * k).toFixed(1);
+          const c = Math.PI * (3 * (rx + ry) - Math.sqrt((3 * rx + ry) * (rx + 3 * ry)));
+          return <ellipse key={b.n} className="ehp-orbit" style={{ "--c": c.toFixed(0), transitionDelay: `${1.4 + i * 0.25}s` }} rx={rx} ry={ry} transform="rotate(-7)" />;
+        })}
+      </svg>
+      <div className="ehp-sky ehp-ringlayer" aria-hidden="true">
+        <Ring R={R} nextKickoff={nextKickoff} />
+      </div>
+      <i className="ehp-speck" aria-hidden="true" />
+    </>
+  );
+}
+
+// The ring round the hole: the name and the live countdown. Its own component (the clock ticks every second without touching the rest of the
+// sky) and its own svg, rotated as a whole by CSS so the spin never repaints.
+function Ring({ R, nextKickoff }) {
+  const RR = R + 30, C = 2 * Math.PI * RR, S = RR + 20;
   const [clock, setClock] = useState(null);
   useEffect(() => {
     const tick = () => setClock(countdown(nextKickoff));
@@ -101,90 +133,75 @@ function Sky({ size, nextKickoff, bodies }) {
   }, [nextKickoff]);
   const piece = clock ? ["Singularity Dynasty · kickoff in ", clock, " · "] : ["Singularity Dynasty · where the data reaches its endpoint · ", "", ""];
   return (
-    <svg className="ehp-sky" viewBox={`${-w / 2} ${-h / 2} ${w} ${h}`} aria-hidden="true">
-      <g className="ehp-stars">
-        {stars.map((s, i) => (
-          <circle key={i} cx={s.x.toFixed(1)} cy={s.y.toFixed(1)} r={s.r.toFixed(2)} fill="currentColor" fillOpacity={s.o.toFixed(2)} />
-        ))}
-      </g>
-      {bodies.map((b, i) => {
-        const rx = +(b.rx * k).toFixed(1), ry = +(b.ry * k).toFixed(1);
-        const c = Math.PI * (3 * (rx + ry) - Math.sqrt((3 * rx + ry) * (rx + 3 * ry)));
-        return <ellipse key={b.n} className="ehp-orbit" style={{ "--c": c.toFixed(0), transitionDelay: `${1.4 + i * 0.25}s` }} rx={rx} ry={ry} transform="rotate(-7)" />;
-      })}
-      <g className="ehp-reveal" style={{ transitionDelay: "1.6s" }}>
-        <circle r={R + 12} fill="none" stroke="currentColor" strokeOpacity=".45" strokeWidth=".6" />
-        <defs>
-          <path id="ehp-ring" d={`M0,${-RR} a${RR},${RR} 0 1,1 -0.01,0`} />
-        </defs>
-        <g className="ehp-spin">
-          <text className="ehp-ringtext">
-            <textPath href="#ehp-ring" textLength={(C - 10).toFixed(0)} lengthAdjust="spacing">
-              {piece[0]}<tspan className="t">{piece[1]}</tspan>{piece[2]}
-              {piece[0]}<tspan className="t">{piece[1]}</tspan>{piece[2]}
-            </textPath>
-          </text>
-        </g>
-      </g>
-      <g className="ehp-infall" />
+    <svg className="ehp-reveal ehp-spin" viewBox={`${-S} ${-S} ${2 * S} ${2 * S}`} style={{ width: 2 * S, height: 2 * S, marginLeft: -S, marginTop: -S, transitionDelay: "1.6s" }}>
+      <circle r={R + 12} fill="none" stroke="currentColor" strokeOpacity=".45" strokeWidth=".6" />
+      <defs>
+        <path id="ehp-ring" d={`M0,${-RR} a${RR},${RR} 0 1,1 -0.01,0`} />
+      </defs>
+      <text className="ehp-ringtext">
+        <textPath href="#ehp-ring" textLength={(C - 10).toFixed(0)} lengthAdjust="spacing">
+          {piece[0]}<tspan className="t">{piece[1]}</tspan>{piece[2]}
+          {piece[0]}<tspan className="t">{piece[1]}</tspan>{piece[2]}
+        </textPath>
+      </text>
     </svg>
   );
 }
 
-// The four orbiting tools live in their own layer ABOVE the hole, drawn white with mix-blend-mode: difference, so a planet that
-// passes in front of the disc turns negative (dark on the bone disc in dark mode, light on the ink disc in light mode, like a
-// retrograde star chart) and stays clickable.
+// What orbits the hole, ABOVE it. Every planet is its own element, centred on the stage and moved by a transform each frame (no repaint), drawn
+// white with mix-blend-mode: difference: one passing in front of the disc turns negative and stays clickable, and where two overlap the overlap
+// goes dark. They sit straight in the stage (no wrapper) so they blend with the hole, the sky and each other.
 function Bodies({ size, bodies }) {
-  const { w, h } = size;
+  const { w } = size;
   const kk = Math.max(0.5, Math.min(1, w / 1300));
   return (
     <>
-    {/* Explorer's hover glow is EMBER, so it can't live in the white difference-blended layer below (it would invert): its own plain layer, moved with the planet by the same loop */}
-    <svg className="ehp-sky ehp-eglows" viewBox={`${-w / 2} ${-h / 2} ${w} ${h}`} aria-hidden="true">
-      <defs>
-        <radialGradient id="ehp-eg">
-          <stop offset="0" style={{ stopColor: "var(--ehp-mark)", stopOpacity: 0 }} />
-          <stop offset=".6" style={{ stopColor: "var(--ehp-mark)", stopOpacity: 0 }} />
-          <stop offset=".66" style={{ stopColor: "var(--ehp-mark)", stopOpacity: .75 }} />
-          <stop offset="1" style={{ stopColor: "var(--ehp-mark)", stopOpacity: 0 }} />
-        </radialGradient>
-        <radialGradient id="ehp-cg">
-          <stop offset="0" style={{ stopColor: "var(--cobalt)", stopOpacity: 0 }} />
-          <stop offset=".6" style={{ stopColor: "var(--cobalt)", stopOpacity: 0 }} />
-          <stop offset=".66" style={{ stopColor: "var(--cobalt)", stopOpacity: .8 }} />
-          <stop offset="1" style={{ stopColor: "var(--cobalt)", stopOpacity: 0 }} />
-        </radialGradient>
-      </defs>
-      {bodies.map((b, i) => (b.id === "explorer" || b.id === "singularity") && (
-        <g key={b.n} className={`ehp-eglow g-${b.id}`} data-i={i}>
-          <circle className="eg" r={+(b.pr * kk * 1.7).toFixed(1)} fill={b.id === "singularity" ? "url(#ehp-cg)" : "url(#ehp-eg)"} />
-          <circle className="ep" r={+(b.pr * kk + 6).toFixed(1)} />
-        </g>
-      ))}
-    </svg>
-    <svg className="ehp-sky ehp-bodies" viewBox={`${-w / 2} ${-h / 2} ${w} ${h}`}>
+      {/* Explorer's (ember) and Singularity's (cobalt) hover glows: coloured, so they can't sit in the difference-blended planets (they'd invert) -- their own elements, moved with their planets */}
       {bodies.map((b, i) => {
-        const pr = b.pr ? +(b.pr * Math.max(0.5, Math.min(1, w / 1300))).toFixed(1) : 5.5; // a plan planet is big, and shrinks with the sky on a phone
+        if (b.id !== "explorer" && b.id !== "singularity") return null;
+        const pr = b.pr * kk, G = +(pr * 1.7).toFixed(1), S = Math.ceil(G * 1.7);
+        const col = b.id === "singularity" ? "var(--cobalt)" : "var(--ehp-mark)";
         return (
-        <a key={b.n + i} href={b.href} className={`ehp-body${b.id ? ` plan-${b.id}` : ""}`} data-i={i} style={{ transitionDelay: `${2 + i * 0.25}s` }} aria-label={`${b.n.toLowerCase()}: ${b.say}`}>
-          <circle r={pr + 14} fill="transparent" />
-          {b.id === "singularity" && <ellipse className="saturn" rx={pr * 1.75} ry={pr * 0.36} transform="rotate(-18)" />}
-          <circle className="halo" r={pr + 9} />
-          {b.price && (
-            // the price is CUT OUT of the planet (a mask), so it reads as the sky showing through; per month sits under the figure
-            <mask id={`ehp-pm-${i}`}>
-              <circle r={pr} fill="#fff" />
-              <text className="pm-n" textAnchor="middle" y={b.price === "Free" ? pr * 0.3 : pr * 0.2} style={{ fontSize: b.price === "Free" ? Math.max(8, pr * 0.62) : pr * 0.78 }} fill="#000">{b.price}</text>
-              {b.price !== "Free" && <text className="pm-s" textAnchor="middle" y={pr * 0.52} style={{ fontSize: Math.max(9, pr * 0.15) }} fill="#000">PER MONTH</text>}
-            </mask>
-          )}
-          <circle className="dot" r={pr} mask={b.price ? `url(#ehp-pm-${i})` : undefined} />
-          <text x={pr + 16} y="4">{b.n}</text>
-          <text className="say" x={pr + 16} y="23">{b.say}</text>
-        </a>
+          <div key={b.n} className={`ehp-eglow g-${b.id}`} data-i={i} aria-hidden="true">
+            <svg viewBox={`${-S} ${-S} ${2 * S} ${2 * S}`} style={{ width: 2 * S, height: 2 * S, left: -S, top: -S }}>
+              <defs>
+                <radialGradient id={`ehp-g-${b.id}`}>
+                  <stop offset="0" style={{ stopColor: col, stopOpacity: 0 }} />
+                  <stop offset=".6" style={{ stopColor: col, stopOpacity: 0 }} />
+                  <stop offset=".66" style={{ stopColor: col, stopOpacity: 0.8 }} />
+                  <stop offset="1" style={{ stopColor: col, stopOpacity: 0 }} />
+                </radialGradient>
+              </defs>
+              <circle className="eg" r={G} fill={`url(#ehp-g-${b.id})`} />
+              <circle className="ep" r={+(pr + 6).toFixed(1)} />
+            </svg>
+          </div>
         );
       })}
-    </svg>
+      {bodies.map((b, i) => {
+        const pr = b.pr ? +(b.pr * kk).toFixed(1) : 5.5; // a plan planet is big, and shrinks with the sky on a phone
+        const A = Math.ceil(pr * 1.8 + 320), B = Math.ceil(pr * 1.8 + 30); // room for the ring (Singularity) and the label to the right
+        return (
+          <ToolLink key={b.n + i} href={b.href} className={`ehp-body${b.id ? ` plan-${b.id}` : ""}`} data-i={i} style={{ transitionDelay: `${2 + i * 0.25}s` }} aria-label={`${b.n.toLowerCase()}: ${b.say}`}>
+            <svg viewBox={`${-A} ${-B} ${2 * A} ${2 * B}`} style={{ width: 2 * A, height: 2 * B, left: -A, top: -B }}>
+              <circle className="hit" r={pr + 14} fill="transparent" />
+              {b.id === "singularity" && <ellipse className="saturn" rx={pr * 1.75} ry={pr * 0.36} transform="rotate(-18)" />}
+              <circle className="halo" r={pr + 9} />
+              {b.price && (
+                // the price is CUT OUT of the planet (a mask), so it reads as the sky showing through; per month sits under the figure
+                <mask id={`ehp-pm-${i}`}>
+                  <circle r={pr} fill="#fff" />
+                  <text className="pm-n" textAnchor="middle" y={b.price === "Free" ? pr * 0.3 : pr * 0.2} style={{ fontSize: b.price === "Free" ? Math.max(8, pr * 0.62) : pr * 0.78 }} fill="#000">{b.price}</text>
+                  {b.price !== "Free" && <text className="pm-s" textAnchor="middle" y={pr * 0.52} style={{ fontSize: Math.max(9, pr * 0.15) }} fill="#000">PER MONTH</text>}
+                </mask>
+              )}
+              <circle className="dot" r={pr} mask={b.price ? `url(#ehp-pm-${i})` : undefined} />
+              <text x={pr + 16} y="4">{b.n}</text>
+              <text className="say" x={pr + 16} y="23">{b.say}</text>
+            </svg>
+          </ToolLink>
+        );
+      })}
     </>
   );
 }
@@ -226,7 +243,7 @@ function HoleLookup({ signedIn, member }) {
           {member.wins.toFixed(1)} <span className="ehp-of">of {member.of}</span>
         </p>
         <p className="ehp-line">wins to expect this week across your {member.leagues} {member.leagues === 1 ? "league" : "leagues"}</p>
-        <Link className="ehp-holebtn" href="/my-team">Open the Game Board →</Link>
+        <ToolLink className="ehp-holebtn" href="/my-team">Open the Game Board →</ToolLink>
       </div>
     );
   }
@@ -248,9 +265,9 @@ function HoleLookup({ signedIn, member }) {
             Most exposed to <b>{top.name}</b>, in {top.leagues} of {s.leagues}
           </p>
         )}
-        <Link className="ehp-holebtn" href={signedIn ? "/my-team" : "/login?next=/my-team"}>
+        <ToolLink className="ehp-holebtn" href={signedIn ? "/my-team" : "/login?next=/my-team"}>
           {signedIn ? "Open my leagues →" : "Save them, free →"}
-        </Link>
+        </ToolLink>
         <button type="button" className="ehp-again" onClick={() => setAnswer(null)}>
           another name
         </button>
@@ -411,7 +428,7 @@ function HeaderTools() {
       <a href="#tools" aria-haspopup="true">Tools</a>
       <div className="ehp-pm-panel ehp-tm-panel" role="group" aria-label="Tools">
         {four.map(([name, say, free, href], i) => (
-          <Link key={href} href={href} className="ehp-tm-row">
+          <ToolLink key={href} href={href} className="ehp-tm-row">
             <span className="ehp-tm-n" aria-hidden="true">{PLANET_GLYPHS[i]}</span>
             <span className="ehp-tm-t">
               <b>{name}</b>
@@ -419,7 +436,7 @@ function HeaderTools() {
             </span>
             <span className="ehp-tm-f">{free}</span>
             <span className="ehp-tm-a" aria-hidden="true">→</span>
-          </Link>
+          </ToolLink>
         ))}
       </div>
     </div>
@@ -552,17 +569,21 @@ export default function EventHorizon({ signedIn, member, invited, discountPct, w
     if (!root) return undefined;
     const k = Math.max(0.45, Math.min(1, size.w / 1300));
     const R = radiusFor(size.w);
+    // Everything that moves is its own layer and only gets a transform / opacity here, ONCE per frame: no repaint, no layout. The scroll
+    // handler only records the position; the frame applies it.
     const els = [...root.querySelectorAll(".ehp-body, .ehp-eglow")];
-    const stars = root.querySelector(".ehp-stars");
-    const infall = root.querySelector(".ehp-infall");
-    const hz = root.querySelector(".ehp-hz"), hole = root.querySelector(".ehp-hole"), skies = [...root.querySelectorAll(".ehp-sky")], cue = root.querySelector(".ehp-cue");
+    const planets = els.filter((o) => o.classList.contains("ehp-body"));
+    const stars = root.querySelector(".ehp-starfield");
+    const speckEl = root.querySelector(".ehp-speck");
+    const hz = root.querySelector(".ehp-hz"), hole = root.querySelector(".ehp-hole"), cue = root.querySelector(".ehp-cue");
+    const skies = [...root.querySelectorAll(".ehp-sky")];
     const rnd = seeded(11);
-    let tx = 0, ty = 0, px = 0, py = 0, speck = null, raf = 0, ready = false;
+    let tx = 0, ty = 0, px = 0, py = 0, speck = null, raf = 0, ready = false, settled = false;
     // time for the orbits: it slows to a stop while a planet is hovered or focused, so it can be clicked without chasing it
     let T = 0, last = performance.now(), speed = 1, hovering = false;
     const hold = (v) => () => { hovering = v; };
     const holdOn = hold(true), holdOff = hold(false);
-    els.forEach((o) => {
+    planets.forEach((o) => {
       o.addEventListener("pointerenter", holdOn);
       o.addEventListener("pointerleave", holdOff);
       o.addEventListener("focus", holdOn);
@@ -572,66 +593,94 @@ export default function EventHorizon({ signedIn, member, invited, discountPct, w
       tx = e.clientX / innerWidth - 0.5;
       ty = e.clientY / innerHeight - 0.5;
     };
-    const c = Math.cos(TILT), s = Math.sin(TILT);
-    function frame(now) {
-      const dt = Math.min(0.1, (now - last) / 1000);
-      last = now;
-      speed += ((hovering ? 0 : 1) - speed) * Math.min(1, dt * 9); // ease to a stop and back
-      T += dt * speed;
-      els.forEach((o) => {
-        const b = bodies[+o.dataset.i];
-        const a = b.a + (reduce ? 0 : (T * 2 * Math.PI) / b.s);
-        const x = b.rx * k * Math.cos(a), y = b.ry * k * Math.sin(a);
-        o.setAttribute("transform", `translate(${(x * c - y * s).toFixed(1)} ${(x * s + y * c).toFixed(1)})`);
-      });
-      if (!reduce) {
-        px += (tx - px) * 0.04;
-        py += (ty - py) * 0.04;
-        stars?.setAttribute("transform", `translate(${(-px * 18).toFixed(2)} ${(-py * 12).toFixed(2)})`);
-        if (!speck || T - speck.t0 > 9) speck = { t0: T + 1, a0: rnd() * Math.PI * 2 };
-        const p = (T - speck.t0) / 6.5;
-        if (infall) {
-          if (p >= 0 && p <= 1) {
-            const r = Math.max(size.w, size.h) * 0.6 * (1 - p) + R * p, a = speck.a0 + p * 5;
-            const op = Math.min(1, p * 6) * (1 - Math.pow(p, 6));
-            infall.innerHTML = `<circle cx="${(r * Math.cos(a)).toFixed(1)}" cy="${(r * 0.55 * Math.sin(a)).toFixed(1)}" r="${(1.9 - p * 0.9).toFixed(2)}" fill="var(--ehp-mark)" opacity="${op.toFixed(2)}"/>`;
-          } else infall.innerHTML = "";
-        }
-      }
-      raf = requestAnimationFrame(frame);
-    }
-    raf = requestAnimationFrame(frame);
-    function onScroll() {
-      const fall = root.parentElement;
-      const span = fall.offsetHeight - innerHeight;
-      const p = Math.min(1, Math.max(0, (scrollY - fall.offsetTop) / span));
+    // the fall's geometry, read once (and on resize) instead of on every scroll
+    const fall = root.parentElement;
+    let fallTop = 0, span = 1;
+    const geom = () => {
+      fallTop = fall.getBoundingClientRect().top + scrollY;
+      span = Math.max(1, fall.offsetHeight - innerHeight);
+    };
+    geom();
+    let sy = scrollY, lastSy = -1, sc = 1, skyOp = 1;
+    const need = (Math.hypot(size.w, size.h) / 2 / R) * 1.04;
+    function applyScroll() {
+      const p = Math.min(1, Math.max(0, (sy - fallTop) / span));
       const e = p * p * (3 - 2 * p);
-      const need = (Math.hypot(size.w, size.h) / 2 / R) * 1.04;
+      sc = 1 + e * 0.35;
+      skyOp = 1 - Math.min(1, p * 1.6);
       if (ready) {
-        hz.style.transform = `scale(${1 + (need - 1) * e})`;
+        hz.style.transform = `scale(${(1 + (need - 1) * e).toFixed(4)})`;
         hole.style.opacity = String(Math.max(0, 1 - p * 3.2));
         hole.style.pointerEvents = p > 0.2 ? "none" : "";
         cue.style.opacity = String(Math.max(0, 1 - p * 6));
       }
       skies.forEach((sk) => {
-        sk.style.opacity = String(1 - Math.min(1, p * 1.6));
-        sk.style.transform = `scale(${1 + e * 0.35})`;
+        sk.style.opacity = String(skyOp);
+        if (sk !== stars) sk.style.transform = `scale(${sc.toFixed(4)})`;
       });
+      if (settled) planets.forEach((o) => { o.style.opacity = String(skyOp); });
     }
+    const c = Math.cos(TILT), s = Math.sin(TILT);
+    function frame(now) {
+      const dt = Math.min(0.1, (now - last) / 1000);
+      last = now;
+      if (sy !== lastSy) {
+        lastSy = sy;
+        applyScroll();
+      }
+      // nothing to draw once the sky has faded out (the visitor is reading further down): skip the work until it comes back
+      if (skyOp > 0) {
+        speed += ((hovering ? 0 : 1) - speed) * Math.min(1, dt * 9); // ease to a stop and back
+        T += dt * speed;
+        els.forEach((o) => {
+          const b = bodies[+o.dataset.i];
+          const a = b.a + (reduce ? 0 : (T * 2 * Math.PI) / b.s);
+          const x = b.rx * k * Math.cos(a), y = b.ry * k * Math.sin(a);
+          o.style.transform = `translate3d(${((x * c - y * s) * sc).toFixed(1)}px,${((x * s + y * c) * sc).toFixed(1)}px,0) scale(${sc.toFixed(4)})`;
+        });
+        if (!reduce) {
+          px += (tx - px) * 0.04;
+          py += (ty - py) * 0.04;
+          if (stars) stars.style.transform = `translate3d(${(-px * 18).toFixed(2)}px,${(-py * 12).toFixed(2)}px,0) scale(${sc.toFixed(4)})`;
+          if (!speck || T - speck.t0 > 9) speck = { t0: T + 1, a0: rnd() * Math.PI * 2 };
+          const p = (T - speck.t0) / 6.5;
+          if (speckEl) {
+            if (p >= 0 && p <= 1) {
+              const r = Math.max(size.w, size.h) * 0.6 * (1 - p) + R * p, a = speck.a0 + p * 5;
+              const op = Math.min(1, p * 6) * (1 - Math.pow(p, 6));
+              speckEl.style.transform = `translate3d(${(r * Math.cos(a) * sc).toFixed(1)}px,${(r * 0.55 * Math.sin(a) * sc).toFixed(1)}px,0) scale(${(1.9 - p * 0.9).toFixed(2)})`;
+              speckEl.style.opacity = (op * skyOp).toFixed(2);
+            } else speckEl.style.opacity = "0";
+          }
+        }
+      }
+      raf = requestAnimationFrame(frame);
+    }
+    raf = requestAnimationFrame(frame);
+    const onScroll = () => { sy = scrollY; };
+    const onResize = () => { geom(); lastSy = -1; };
     const ready_t = setTimeout(() => {
       ready = true;
       hz.style.transition = "none";
-      onScroll();
+      lastSy = -1;
     }, reduce ? 0 : 2000);
-    addEventListener("pointermove", onMove);
+    // once the planets have faded in, the scroll owns their opacity (their own fade-in transition would make it lag)
+    const settle_t = setTimeout(() => {
+      settled = true;
+      planets.forEach((o) => { o.style.transition = "none"; });
+      lastSy = -1;
+    }, reduce ? 0 : 3400);
+    addEventListener("pointermove", onMove, { passive: true });
     addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
+    addEventListener("resize", onResize);
     return () => {
       cancelAnimationFrame(raf);
       clearTimeout(ready_t);
+      clearTimeout(settle_t);
       removeEventListener("pointermove", onMove);
       removeEventListener("scroll", onScroll);
-      els.forEach((o) => {
+      removeEventListener("resize", onResize);
+      planets.forEach((o) => {
         o.removeEventListener("pointerenter", holdOn);
         o.removeEventListener("pointerleave", holdOff);
         o.removeEventListener("focus", holdOn);
@@ -656,13 +705,13 @@ export default function EventHorizon({ signedIn, member, invited, discountPct, w
           <div className="ehp-r">
             {signedIn ? (
               <>
-                <Link href="/account">Account</Link>
-                <Link className="ehp-in" href="/my-team">My Team</Link>
+                <ToolLink href="/account">Account</ToolLink>
+                <ToolLink className="ehp-in" href="/my-team">My Team</ToolLink>
               </>
             ) : (
               <>
-                <Link href="/login">Sign in</Link>
-                <Link className="ehp-in" href="/login?next=/my-team">Fall in</Link>
+                <ToolLink href="/login">Sign in</ToolLink>
+                <ToolLink className="ehp-in" href="/login?next=/my-team">Fall in</ToolLink>
               </>
             )}
             <ThemeToggle inline />
@@ -703,7 +752,7 @@ export default function EventHorizon({ signedIn, member, invited, discountPct, w
                 ? "Every matchup you're in, the score so far (or what we expect before kickoff) and how likely you are to win it."
                 : "Every matchup you're in, the score so far (or what we expect before kickoff) and how likely you are to win it, plus a heads-up when a starter in your lineup needs attention."}
             </p>
-            <Link className="ehp-link" href="/my-team">Open the Game Board →</Link>
+            <ToolLink className="ehp-link" href="/my-team">Open the Game Board →</ToolLink>
           </div>
           <div>
             <Matchups rows={member?.rows?.length ? member.rows : SAMPLE_ROWS} />
@@ -721,7 +770,7 @@ export default function EventHorizon({ signedIn, member, invited, discountPct, w
               Not a guess. <em>A range.</em>
             </h2>
             <p className="ehp-lede">Nobody scores the same every week. For every player we show a bad week, a normal week and a great week, so you can see how high he can go and how low he can fall, and which matchups tilt it.</p>
-            <Link className="ehp-link" href="/tools/redraft-rankings">See every player →</Link>
+            <ToolLink className="ehp-link" href="/tools/redraft-rankings">See every player →</ToolLink>
           </div>
           <table className="ehp-wk">
             <thead>
@@ -760,7 +809,7 @@ export default function EventHorizon({ signedIn, member, invited, discountPct, w
               Who is <em>really ahead.</em>
             </h2>
             <p className="ehp-lede">Every player ranked on what he has produced and how many good years he has left, then grouped into tiers, so you can see who is genuinely a step above the next name on the list.</p>
-            <Link className="ehp-link" href="/tools/draft-board">Open the board →</Link>
+            <ToolLink className="ehp-link" href="/tools/draft-board">Open the board →</ToolLink>
           </div>
           <ol className="ehp-dy">
             {(dynasty || []).map((r, i, all) => (
@@ -792,14 +841,14 @@ export default function EventHorizon({ signedIn, member, invited, discountPct, w
           <ol>
             {TOOLS.map(([h, p, t, href], i) => (
               <li key={h}>
-                <Link href={href}>
+                <ToolLink href={href}>
                   <span className="no">{String(i + 1).padStart(2, "0")}</span>
                   <OrbitIcon rings={i + 1} />
                   <span className="name">{h}</span>
                   <span className="say">{p}</span>
                   <span className="t">{t}</span>
                   <span className="ar" aria-hidden="true">→</span>
-                </Link>
+                </ToolLink>
               </li>
             ))}
           </ol>

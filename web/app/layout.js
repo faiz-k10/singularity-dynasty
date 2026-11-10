@@ -1,6 +1,7 @@
 import { Big_Shoulders, Martian_Mono } from "next/font/google";
 import localFont from "next/font/local";
 import Script from "next/script";
+import { ViewTransition } from "react";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import Tooltip from "./Tooltip";
@@ -102,7 +103,8 @@ export default function RootLayout({ children }) {
         <a href="#main-content" className="skip-link">
           Skip to content
         </a>
-        {children}
+        {/* page changes crossfade (React view transitions; navigations are transitions, so this animates on every client-side route change) */}
+        <ViewTransition>{children}</ViewTransition>
         <SiteFooter />
         <Tooltip />
         <WallTracker />

@@ -222,9 +222,9 @@ export default async function SiteHeader({ scripts = true }) {
       </button>
 
       <header className="site-header">
-        <Link href="/#hero" className="brandmark">
+        <ToolLink href="/#hero" className="brandmark">
           <span className="ring"></span>Singularity Dynasty
-        </Link>
+        </ToolLink>
         <nav className="top-nav-bar" id="topNavBar" aria-label="Primary">
           <div className="nav-dropdown">
             <Link href="/#tools">Tools</Link>

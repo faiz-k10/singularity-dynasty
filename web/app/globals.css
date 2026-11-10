@@ -6608,8 +6608,9 @@ body:has(.ehp){--ehp-bg:#0B0B0B;--ehp-ink:#ECE7DC;--ehp-dim:#A39E92;--ehp-faint:
 .ehp.arrived .ehp-reveal{opacity:1;}
 .ehp-orbit{fill:none;stroke:currentColor;stroke-opacity:.2;stroke-width:.8;stroke-dasharray:var(--c);stroke-dashoffset:var(--c);transition:stroke-dashoffset 2.2s cubic-bezier(.3,.6,.2,1);}
 .ehp.arrived .ehp-orbit{stroke-dashoffset:0;}
-.ehp-bodies{pointer-events:none;mix-blend-mode:difference;z-index:3;color:#fff;}
-.ehp-body{cursor:pointer;opacity:0;transition:opacity .9s;pointer-events:auto;}
+.ehp-body{position:absolute;left:50%;top:50%;width:0;height:0;z-index:3;color:#fff;mix-blend-mode:difference;will-change:transform,opacity;cursor:pointer;opacity:0;transition:opacity .9s;pointer-events:none;}
+.ehp-body svg{position:absolute;overflow:visible;pointer-events:none;}
+.ehp-body .hit,.ehp-body text:not(.pm-n):not(.pm-s){pointer-events:auto;} /* only the planet and its label take the pointer; the rest of each planet's box lets clicks through to the hole */
 .ehp.arrived .ehp-body{opacity:1;}
 .ehp-body .dot{fill:#fff;transition:fill .2s;}
 .ehp-body .halo{fill:none;stroke:#fff;stroke-opacity:0;stroke-width:.8;transition:stroke-opacity .25s;}
@@ -6857,7 +6858,8 @@ body:has(.ehp) .ticker-bar{position:absolute;}
 @media (max-width:760px){.ehp-pm-panel{display:none;}}
 
 /* the three plan planets are each their own (EventHorizon.js TOOL_BODIES): Explorer alone glows and pulses on hover, Singularity wears a ring, Stargazer is a small plain one */
-.ehp-eglows{pointer-events:none;z-index:2;}
+.ehp-eglow{position:absolute;left:50%;top:50%;width:0;height:0;z-index:2;pointer-events:none;will-change:transform;}
+.ehp-eglow svg{position:absolute;overflow:visible;}
 .ehp-eglow .eg{opacity:0;transition:opacity .35s;}
 .ehp-eglow .ep{fill:none;stroke:var(--ehp-mark);stroke-width:1.4;opacity:0;transform-box:fill-box;transform-origin:center;}
 .ehp-stage:has(.plan-explorer:hover) .g-explorer .eg,.ehp-stage:has(.plan-explorer:focus-visible) .g-explorer .eg,
@@ -6894,9 +6896,17 @@ body:has(.ehp) .ticker-bar{position:absolute;}
 
 /* planets that overlap cancel out (founder, Nov 10 2026: "create the black in between"): each planet is its own difference layer inside the bodies svg, so where two white discs meet
    white-on-white = black, and the sky shows through. The svg itself still blends against the sky as before. */
-.ehp-body{mix-blend-mode:difference;}
 
 /* COBALT BLUE (Nov 10 2026, founder: "keep the cobalt blue ... as one of the accent colors"): a second accent beside ember. First used for Singularity's hover glow on the landing page. */
 :root{--cobalt:#4C7DF0;--cobalt-rgb:76,125,240;}
 @media (prefers-color-scheme: light){:root:not([data-theme="dark"]){--cobalt:#1F4FC4;--cobalt-rgb:31,79,196;}}
 :root[data-theme="light"]{--cobalt:#1F4FC4;--cobalt-rgb:31,79,196;}
+
+/* landing motion layers (EventHorizon.js Sky / Ring / Bodies): each moves by transform only, on its own compositor layer */
+.ehp-starfield,.ehp-orbits,.ehp-ringlayer{will-change:transform,opacity;}
+.ehp-ringlayer svg{position:absolute;left:50%;top:50%;overflow:visible;transform-origin:center;}
+.ehp-speck{position:absolute;left:50%;top:50%;width:4px;height:4px;margin:-2px 0 0 -2px;border-radius:50%;background:var(--ehp-mark);opacity:0;will-change:transform,opacity;pointer-events:none;z-index:1;}
+
+/* client-side page changes (the ViewTransition in layout.js): a quick crossfade; none at all for reduced motion */
+::view-transition-old(*), ::view-transition-new(*){animation-duration:.18s; animation-timing-function:ease-out;}
+@media (prefers-reduced-motion: reduce){ ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*){animation:none !important;} }
