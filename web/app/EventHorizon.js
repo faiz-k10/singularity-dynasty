@@ -696,7 +696,7 @@ export default function EventHorizon({ signedIn, member, invited, discountPct, w
           <nav>
             <HeaderTools />
             <HeaderPlans />
-            <a href="#feed">Letter</a>
+            <a href="#feed">Newsletter</a>
           </nav>
           <Link className="ehp-brand" href="/">
             <BrandMark className="ehp-dock" />
