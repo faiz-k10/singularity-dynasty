@@ -202,7 +202,7 @@ function Bodies({ size, bodies }) {
           <ToolLink key={b.n + i} href={b.href} className={`ehp-body${b.id ? ` plan-${b.id}` : ""}`} data-i={i} style={{ transitionDelay: `${2 + i * 0.25}s` }} aria-label={`${b.n.toLowerCase()}: ${b.say}`}>
             <svg viewBox={`${-A} ${-B} ${2 * A} ${2 * B}`} style={{ width: 2 * A, height: 2 * B, left: -A, top: -B }}>
               <circle className="hit" r={pr + 14} fill="transparent" />
-              {b.id === "singularity" && <ellipse className="saturn" rx={pr * 1.75} ry={pr * 0.36} transform="rotate(-18)" />}
+              {b.id === "singularity" && <ellipse className="saturn" rx={pr * 0.38} ry={pr * 1.7} transform="rotate(14)" />}
               <path className="halo" d={ball(pr, 9)} transform={`rotate(${BALL_TILT})`} />
               <clipPath id={`ehp-sc-${i}`}><path d={ball(pr * 0.88)} transform={`rotate(${BALL_TILT})`} /></clipPath>
               <mask id={`ehp-pm-${i}`}>
