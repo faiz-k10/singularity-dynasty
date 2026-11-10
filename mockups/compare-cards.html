@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Compare cards mockup</title>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&family=Martian+Mono:wdth,wght@75..112,400;75..112,700&display=swap" rel="stylesheet">
+<style>
+:root{--void:#030908;--p1:#09130F;--p2:#0D1B17;--line:#1A2A26;--star:#E6F4F1;--dim:#8C95A3;--mint:#2DD4BF;--red:#E11D48;--rgb:230,244,241;--mint-rgb:45,212,191;--on:#021210}
+:root.light{--void:#F4F4F2;--p1:#FBFCFB;--p2:#EEF1F0;--line:#D9DEDC;--star:#0F1F1D;--dim:#5C6370;--mint:#0D7A70;--red:#E11D48;--rgb:15,31,29;--mint-rgb:13,122,112;--on:#F2F8F7}
+*{box-sizing:border-box;margin:0}
+body{background:var(--void);color:var(--star);font:14px/1.4 Georgia,serif;padding:20px 24px 50px}
+.mono{font-family:'Martian Mono',monospace;font-stretch:82%}
+.top{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:12px;gap:16px;flex-wrap:wrap}
+h1{font:800 44px/1 'Big Shoulders Display'}
+.seg{display:flex;border:1px solid var(--line);border-radius:2px;overflow:hidden}
+.seg button{font:12px 'Martian Mono';font-stretch:82%;background:none;color:var(--dim);border:0;padding:8px 14px;cursor:pointer}
+.seg button.on{background:var(--mint);color:var(--on)}
+.verdict{display:flex;align-items:center;gap:18px;flex-wrap:wrap;background:var(--p1);border:1px solid var(--line);border-top:2px solid rgba(var(--rgb),.25);padding:12px 16px;margin-bottom:12px}
+.verdict .big{font:800 34px/1 'Big Shoulders Display'}
+.verdict .tally{display:flex;gap:6px}
+.tally span{font:700 11px 'Martian Mono';font-stretch:82%;padding:5px 9px;border:1px solid var(--line);color:var(--dim)}
+.tally span b{color:var(--mint);font-size:15px;margin-right:4px}
+.verdict p{color:var(--dim);font-size:13.5px;flex:1;min-width:260px}
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.card{background:var(--p1);border:1px solid var(--line);border-top:2px solid rgba(var(--rgb),.25);border-radius:2px;display:flex;flex-direction:column}
+.card.lead{border-top-color:var(--mint)}
+.head{display:flex;gap:12px;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line)}
+.ph{width:56px;height:56px;border-radius:2px;background:var(--p2);border:1px solid var(--line);flex:none}
+.nm{font:800 24px/1.05 'Big Shoulders Display';letter-spacing:.05em;text-transform:uppercase}
+.meta{display:flex;align-items:center;gap:6px;margin-top:5px;flex-wrap:wrap}
+.pos{font:700 10px 'Martian Mono';font-stretch:82%;padding:2px 6px;border-radius:2px;background:#33C9A5;color:#0b0b0b}
+.lg{width:18px;height:18px;border-radius:50%;background:var(--p2);border:1px solid var(--line);font:700 7px 'Martian Mono';display:grid;place-items:center;color:var(--dim)}
+.sz{font:11px 'Martian Mono';font-stretch:82%;color:var(--dim)}
+.rank{margin-left:auto;text-align:right}
+.rank .n{font:800 36px/1 'Big Shoulders Display'}
+.rank .l{font:10px 'Martian Mono';font-stretch:82%;color:var(--dim);letter-spacing:.08em;text-transform:uppercase}
+.wk{display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid var(--line)}
+.wk div{padding:10px 14px;border-right:1px solid var(--line)}.wk div:last-child{border:0}
+.wk .l{font:10px 'Martian Mono';font-stretch:82%;color:var(--dim);letter-spacing:.08em;text-transform:uppercase}
+.wk .v{font:800 26px/1.1 'Big Shoulders Display';margin-top:2px}
+.wk .v small{font:11px 'Martian Mono';color:var(--dim);margin-left:4px}
+.sec{border-bottom:1px solid var(--line)}
+.sec:last-child{border:0}
+.sec summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:10px 16px;font:700 11px 'Martian Mono';font-stretch:82%;letter-spacing:.1em;text-transform:uppercase;color:var(--mint)}
+.sec summary::-webkit-details-marker{display:none}
+.sec summary i{font-style:normal;color:var(--dim);font-weight:400}
+.sec summary::after{content:"−";color:var(--dim);margin-left:8px}
+.sec:not([open]) summary::after{content:"+"}
+.rows{padding:0 16px 10px}
+.r{display:grid;grid-template-columns:1fr auto 22px;gap:8px;align-items:center;padding:5px 0;border-bottom:1px dashed var(--line);font-size:13px}
+.r:last-child{border:0}
+.r .k{font:11.5px 'Martian Mono';font-stretch:82%;color:var(--dim)}
+.r .v{font:700 14px 'Martian Mono';font-stretch:82%;text-align:right}
+.r .m{font:700 11px 'Martian Mono';color:var(--mint);text-align:center}
+.r.best .v{color:var(--mint)}
+.r.best{background:linear-gradient(90deg,transparent,rgba(var(--mint-rgb),.07))}
+.curve{padding:6px 16px 12px}
+.curve svg{width:100%;height:auto;display:block}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:0 24px}
+@media (max-width:1000px){.cards{grid-template-columns:1fr}}
+.note{color:var(--dim);font-size:12.5px;margin-top:14px;max-width:900px}
+</style></head><body>
+<div class="top"><div><div class="mono" style="font-size:11px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px">Week 9 · 2026</div><h1>Compare Players</h1></div>
+ <div style="display:flex;gap:10px"><div class="seg"><button class="on">Cards</button><button>Table</button></div><div class="seg"><button class="on">Head to Head</button><button>Player Profiles</button></div><button class="seg" style="padding:8px 14px;font:12px 'Martian Mono';background:none;color:var(--star);cursor:pointer" onclick="document.documentElement.classList.toggle('light')">Light / dark</button></div></div>
+
+<div class="verdict">
+ <div><div class="mono" style="font-size:10px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase">Leads the most</div><div class="big">Joe Burrow</div></div>
+ <div class="tally"><span><b>7</b>Burrow</span><span><b>6</b>Allen</span><span><b>1</b>Maye</span></div>
+ <p>Burrow has the best median, the most passing yards and TDs, and the top last-week score. Allen has the highest floor and ceiling and the most rushing upside. Maye is lowest on the projected numbers this week.</p>
+</div>
+
+<div class="cards" id="cards"></div>
+<p class="note">Head to Head keeps exactly what the table had: position, matchup, overall rank, median / floor / ceiling, last week, the projected stat line and the usage profile. The photo, size, badges, outcome curve and recent games stay on the Player Profiles tab, so the two never repeat each other. The best value in each row is mint with a ▲. The Table switch keeps the old grid.</p>
+
+<script>
+// Head to Head only carries what the table carried: position, matchup, overall rank, median / floor / ceiling, last week, the projected stat
+// line and the usage profile. The photo, size, badges, outcome curve and recent games stay on the Player Profiles tab.
+const P=[
+{n:"Joe Burrow",t:"CIN",pr:"QB1",opp:"@ ATL",rk:3,med:23.5,fl:8.3,ce:33.7,lw:39.5,
+ stat:[["Pass yds",308.9],["Pass TD",2.89],["INT",0.7,"low"],["Rush yds",9.1],["Rush TD",0.12]],
+ use:[["xFP / game",22.4],["Scramble rate","4.1%"],["Play-action rate","24.0%"]]},
+{n:"Josh Allen",t:"BUF",pr:"QB2",opp:"@ MIN",rk:4,med:23.3,fl:10.4,ce:39.9,lw:26.6,
+ stat:[["Pass yds",246.1],["Pass TD",1.51],["INT",0.6,"low"],["Rush yds",37.1],["Rush TD",0.52]],
+ use:[["xFP / game",23.1],["Scramble rate","8.9%"],["Play-action rate","27.3%"]]},
+{n:"Drake Maye",t:"NE",pr:"QB3",opp:"vs GB",rk:8,med:21.7,fl:5.1,ce:27.4,lw:22.5,
+ stat:[["Pass yds",258.0],["Pass TD",2.05],["INT",0.8,"low"],["Rush yds",23.7],["Rush TD",0.33]],
+ use:[["xFP / game",19.7],["Scramble rate","7.0%"],["Play-action rate","22.1%"]]}];
+const num=v=>typeof v==="number"?v:parseFloat(v);
+const bestOf=(vals,low)=>{const t=low?Math.min(...vals):Math.max(...vals);return vals.map(v=>v===t)};
+function rowsFor(list,key,i){return list.map((r,ri)=>{const vals=P.map(q=>num(q[key][ri][1]));const low=r[2]==="low";const b=bestOf(vals,low)[i];const all=vals.every(v=>v===vals[0]);return `<div class="r${b&&!all?' best':''}"><span class="k">${r[0]}</span><span class="v">${r[1]}</span><span class="m">${b&&!all?'▲':''}</span></div>`}).join('')}
+const cell=(k,vals,i,low,fmt)=>{const b=bestOf(vals,low)[i];return `<div><div class="l">${k}</div><div class="v" style="color:${b?'var(--mint)':'inherit'}">${fmt(vals[i])}${b?'<small>▲</small>':''}</div></div>`};
+document.getElementById('cards').innerHTML=P.map((p,i)=>{const lead=p.med===Math.max(...P.map(q=>q.med));
+return `<div class="card${lead?' lead':''}"><div class="head"><div style="min-width:0"><div class="nm">${p.n}</div><div class="meta"><span class="sz" style="color:var(--star)">${p.pr}</span><span class="lg">${p.t}</span><span class="sz">${p.opp}</span></div></div></div>
+<div class="wk" style="grid-template-columns:repeat(3,1fr)">${cell('Overall rank',P.map(q=>q.rk),i,true,v=>v)}${cell('Median proj',P.map(q=>q.med),i,false,v=>v.toFixed(1))}${cell('Last week',P.map(q=>q.lw),i,false,v=>v.toFixed(1))}</div>
+<div class="wk" style="grid-template-columns:repeat(2,1fr)">${cell('Floor',P.map(q=>q.fl),i,false,v=>v.toFixed(1))}${cell('Ceiling',P.map(q=>q.ce),i,false,v=>v.toFixed(1))}</div>
+<details class="sec" open><summary>Projected stat line <i>per game</i></summary><div class="rows">${rowsFor(p.stat,'stat',i)}</div></details>
+<details class="sec" open><summary>Key usage profile</summary><div class="rows">${rowsFor(p.use,'use',i)}</div></details></div>`}).join('');
+</script></body></html>

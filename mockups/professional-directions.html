@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Professional directions v2</title>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;600;700;800;900&family=Martian+Mono:wdth,wght@75..112,400;75..112,500;75..112,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
+<style>
+/* Three directions built to look like nothing a template or an AI build produces: no rounded cards, no soft shadows, no
+   navy-and-indigo, no gradient glows, no pill badges, no hero card with three stat numbers, no three equal pricing cards.
+   Each takes its look from a real object in astronomy instead. "Current" is today's site for comparison. */
+:root{--display:'Big Shoulders Display',sans-serif;--mono:'Martian Mono',monospace;--serif:'Source Serif 4',Georgia,serif}
+
+/* CURRENT */
+body[data-dir="cur"]{--bg:#030908;--ink:#E6F4F1;--dim:#8C95A3;--faint:#5b6470;--rule:#1A2A26;--rule2:#2c4540;--acc:#2DD4BF;--acc-ink:#021210;--up:#2DD4BF;--dn:#E11D48;--fill:#09130F;--rgb:230,244,241}
+/* A EPHEMERIS: a printed astronomical almanac. Warm ink black, bone text, one hydrogen-alpha red. Light = the paper itself. */
+body[data-dir="a"]{--bg:#0F0E0C;--ink:#ECE6D8;--dim:#A39C8C;--faint:#6E685C;--rule:#2A2722;--rule2:#4A453C;--acc:#E0573A;--acc-ink:#140806;--up:#ECE6D8;--dn:#E0573A;--fill:#161512;--rgb:236,230,216}
+body[data-dir="a"].light{--bg:#F1ECDF;--ink:#1A1813;--dim:#5F5A4E;--faint:#8F897A;--rule:#D3CBB8;--rule2:#A89F8A;--acc:#B5361C;--acc-ink:#FFF6EE;--up:#1A1813;--dn:#B5361C;--fill:#E9E3D3;--rgb:26,24,19}
+/* B TELEMETRY: an Apollo-era guidance panel. Black glass, one phosphor amber, every figure in a bracketed register. */
+body[data-dir="b"]{--bg:#0A0A09;--ink:#E8E4DA;--dim:#8D877A;--faint:#5C574D;--rule:#24221E;--rule2:#3A3730;--acc:#F2A93B;--acc-ink:#1A1004;--up:#F2A93B;--dn:#8D877A;--fill:#121110;--rgb:232,228,218}
+body[data-dir="b"].light{--bg:#EDEAE3;--ink:#16140F;--dim:#5E594E;--faint:#8E887B;--rule:#D2CDC2;--rule2:#ABA497;--acc:#A9650A;--acc-ink:#FFF8EC;--up:#A9650A;--dn:#5E594E;--fill:#E4E0D7;--rgb:22,20,15}
+/* C CYANOTYPE: an observatory blueprint / sun print. Prussian blue on paper in light, paper on Prussian blue in dark. */
+body[data-dir="c"]{--bg:#0E2A4F;--ink:#EEF1F4;--dim:#A7B5C6;--faint:#6F84A0;--rule:#24426B;--rule2:#3D5E88;--acc:#FFFFFF;--acc-ink:#0E2A4F;--up:#EEF1F4;--dn:#F3B2A1;--fill:#12335E;--rgb:238,241,244}
+body[data-dir="c"].light{--bg:#F4F1EA;--ink:#13315C;--dim:#4F6585;--faint:#8797AE;--rule:#CFD6DF;--rule2:#8FA1BA;--acc:#13315C;--acc-ink:#F4F1EA;--up:#13315C;--dn:#B54A33;--fill:#EAE6DC;--rgb:19,49,92}
+
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.45 var(--serif)}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+.switch{position:sticky;top:0;z-index:20;display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 24px;background:#1b1b1f;color:#eee;font:12px var(--mono);border-bottom:1px solid #333}
+.switch button{padding:6px 12px;border:1px solid #444;color:#ddd}
+.switch button.on{background:#eee;color:#111}
+.switch .sp{flex:1}
+.note{max-width:1240px;margin:16px auto 0;padding:0 28px;color:var(--dim);font-size:14px}
+.note strong{color:var(--ink)}
+.dir{display:none}
+body[data-dir="cur"] .dir.cur,body[data-dir="a"] .dir.a,body[data-dir="b"] .dir.b,body[data-dir="c"] .dir.c{display:block}
+.mono{font-family:var(--mono);font-stretch:82%}
+.wrap{max-width:1240px;margin:0 auto;padding:0 28px}
+
+/* ======================= A · EPHEMERIS ======================= */
+.a .strip{border-bottom:1px solid var(--rule);font:11px var(--mono);font-stretch:82%;color:var(--dim)}
+.a .strip .wrap{display:grid;grid-template-columns:repeat(6,1fr);height:30px;align-items:center}
+.a .strip span{border-left:1px solid var(--rule);padding-left:10px;white-space:nowrap;overflow:hidden}
+.a .strip span:first-child{border-left:0;padding-left:0;color:var(--ink)}
+.a .strip b{font-weight:500;color:var(--ink)}.a .strip em{font-style:normal;color:var(--acc)}
+.a .mast{border-bottom:3px double var(--rule2)}
+.a .mast .wrap{display:grid;grid-template-columns:1fr auto 1fr;align-items:end;padding-top:18px;padding-bottom:12px}
+.a .mast .l,.a .mast .r{font:11px var(--mono);font-stretch:82%;color:var(--dim);letter-spacing:.06em}
+.a .mast .r{text-align:right}
+.a .word{font:400 44px/1 var(--display);letter-spacing:.32em;text-transform:uppercase;text-align:center;padding-left:.32em}
+.a .word small{display:block;font:italic 13px var(--serif);letter-spacing:0;color:var(--dim);margin-top:6px;text-transform:none}
+.a nav{border-bottom:1px solid var(--rule)}
+.a nav .wrap{display:flex;gap:26px;height:38px;align-items:center;font:12px var(--mono);font-stretch:82%;color:var(--dim)}
+.a nav .on{color:var(--ink);border-bottom:1px solid var(--acc);padding-bottom:2px}
+.a nav .sp{flex:1}
+.a nav .go{color:var(--acc)}
+.a .head{display:grid;grid-template-columns:120px 1fr 280px;gap:28px;padding:34px 0 22px;border-bottom:1px solid var(--rule)}
+.a .no{font:400 64px/0.85 var(--display);color:var(--faint)}
+.a .no small{display:block;font:11px var(--mono);letter-spacing:.08em;margin-top:10px}
+.a h1{font:600 46px/1 var(--display);letter-spacing:.01em}
+.a .lede{font:italic 17px/1.5 var(--serif);color:var(--dim);margin-top:12px;max-width:560px}
+.a .meta{font:12px/1.9 var(--mono);font-stretch:82%;color:var(--dim);border-left:1px solid var(--rule);padding-left:18px}
+.a .meta b{color:var(--ink);font-weight:500}
+.a .body{display:grid;grid-template-columns:120px 1fr 280px;gap:28px;padding:22px 0 40px}
+.a .margin{font:11px/1.7 var(--mono);color:var(--faint)}
+.a .filters{display:flex;gap:18px;font:12px var(--mono);font-stretch:82%;color:var(--dim);padding-bottom:10px;border-bottom:1px solid var(--rule2)}
+.a .filters .on{color:var(--ink);text-decoration:underline;text-underline-offset:4px;text-decoration-color:var(--acc)}
+.a .filters .s{margin-left:auto;color:var(--faint)}
+.a table{width:100%;border-collapse:collapse}
+.a th{font:10.5px var(--mono);font-stretch:82%;color:var(--faint);text-align:right;padding:9px 8px;border-bottom:1px solid var(--rule);font-weight:400;letter-spacing:.04em}
+.a th.l,.a td.l{text-align:left}
+.a td{padding:10px 8px;border-bottom:1px solid var(--rule);text-align:right;font:13px var(--mono);font-stretch:82%}
+.a td.n{font:15px var(--serif)}
+.a td.n i{font:11px var(--mono);font-style:normal;color:var(--faint);margin-left:8px}
+.a td.cat{color:var(--faint)}
+.a td.md{font-weight:700}
+.a .sig{font:11px var(--mono);color:var(--acc)}
+.a tr:nth-child(5n) td{border-bottom-color:var(--rule2)}
+.a aside h3{font:600 22px var(--display);letter-spacing:.02em;border-bottom:1px solid var(--rule2);padding-bottom:8px}
+.a aside .big{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--rule);padding:12px 0}
+.a aside .big div{font:10px var(--mono);color:var(--faint)}
+.a aside .big b{display:block;font:500 30px/1.1 var(--display);color:var(--ink)}
+.a aside .big .m b{color:var(--acc)}
+.a aside dl{font:12.5px var(--mono);font-stretch:82%;margin-top:10px}
+.a aside dl div{display:grid;grid-template-columns:1fr auto auto;gap:12px;padding:6px 0;border-bottom:1px dotted var(--rule2)}
+.a aside dd.r{color:var(--faint)}
+.a .ledger{border-top:3px double var(--rule2);margin-top:8px}
+.a .ledger table td{font:14px var(--serif);text-align:left;padding:14px 8px;vertical-align:top}
+.a .ledger td.p{font:500 26px var(--display)}
+.a .ledger td.p small{font:11px var(--mono);color:var(--faint);display:block}
+.a .ledger a{font:12px var(--mono);color:var(--acc);text-decoration:none;white-space:nowrap}
+
+/* ======================= B · TELEMETRY ======================= */
+.b{font-family:var(--mono);font-stretch:82%}
+.b .bar{display:flex;align-items:stretch;border-bottom:1px solid var(--rule2);height:52px}
+.b .bar>*{display:flex;align-items:center;padding:0 18px;border-right:1px solid var(--rule)}
+.b .id{font:800 22px var(--display);letter-spacing:.08em;gap:12px}
+.b .id .sq{width:12px;height:12px;background:var(--acc)}
+.b .bar a{font-size:12px;color:var(--dim);text-decoration:none}
+.b .bar a.on{color:var(--ink);box-shadow:inset 0 -2px 0 var(--acc)}
+.b .bar .sp{flex:1;border-right:0}
+.b .bar .go{background:var(--acc);color:var(--acc-ink);font-weight:700;font-size:12px;border-right:0}
+.b .feed{display:flex;border-bottom:1px solid var(--rule);font-size:11.5px;height:28px;overflow:hidden;white-space:nowrap}
+.b .feed span{display:flex;align-items:center;gap:8px;padding:0 16px;border-right:1px solid var(--rule);color:var(--dim)}
+.b .feed b{font-weight:500;color:var(--ink)}
+.b .feed em{font-style:normal;color:var(--acc)}
+.b .feed .lbl{background:var(--fill);color:var(--faint);letter-spacing:.1em}
+.b .grid{display:grid;grid-template-columns:repeat(12,1fr);border-bottom:1px solid var(--rule)}
+.b .cell{padding:16px 18px;border-right:1px solid var(--rule)}
+.b .cell:last-child{border-right:0}
+.b .k{font-size:10px;letter-spacing:.14em;color:var(--faint);text-transform:uppercase}
+.b .reg{font:600 34px/1 var(--display);margin-top:8px;letter-spacing:.02em}
+.b .reg::before{content:"[";color:var(--faint);margin-right:2px}.b .reg::after{content:"]";color:var(--faint);margin-left:2px}
+.b h1{font:800 54px/.95 var(--display);text-transform:uppercase;letter-spacing:.02em}
+.b .sub{color:var(--dim);font:14px/1.5 var(--serif);margin-top:10px;max-width:520px}
+.b .tb{display:flex;border-bottom:1px solid var(--rule);font-size:12px}
+.b .tb>*{padding:10px 16px;border-right:1px solid var(--rule);color:var(--dim)}
+.b .tb .on{color:var(--acc-ink);background:var(--acc)}
+.b .tb .s{margin-left:auto;border-left:1px solid var(--rule);color:var(--faint)}
+.b table{width:100%;border-collapse:collapse;font-size:13px}
+.b th{font-size:10px;font-weight:400;letter-spacing:.12em;color:var(--faint);text-align:right;padding:9px 12px;border-bottom:1px solid var(--rule)}
+.b th.l,.b td.l{text-align:left}
+.b td{padding:10px 12px;text-align:right;border-bottom:1px solid var(--rule)}
+.b td.n{font:15px var(--serif)}
+.b tr td:first-child{color:var(--faint)}
+.b .md{color:var(--acc);font-weight:700}
+.b .bars{display:inline-block;position:relative;width:90px;height:8px;border:1px solid var(--rule2);vertical-align:middle}
+.b .bars i{position:absolute;top:1px;bottom:1px;background:var(--acc)}
+.b .bars b{position:absolute;top:-3px;bottom:-3px;width:1px;background:var(--ink)}
+.b .flag{font-size:10px;letter-spacing:.08em;color:var(--acc);border:1px solid var(--acc);padding:1px 5px}
+.b .flag.q{color:var(--dim);border-color:var(--rule2)}
+.b .side .row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--rule);font-size:12.5px}
+.b .side .row b{font-weight:500}
+.b .plans{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--rule2)}
+.b .plans>div{padding:20px 18px;border-right:1px solid var(--rule)}
+.b .plans>div:last-child{border-right:0;background:var(--fill)}
+.b .plans .reg{font-size:40px}
+.b .plans ul{list-style:none;font-size:12px;color:var(--dim);margin:12px 0 16px;display:grid;gap:5px}
+.b .plans li::before{content:"> ";color:var(--faint)}
+.b .plans button{width:100%;padding:10px;border:1px solid var(--rule2);font-size:12px}
+.b .plans button.p{background:var(--acc);color:var(--acc-ink);border-color:var(--acc);font-weight:700}
+
+/* ======================= C · CYANOTYPE ======================= */
+.c .top{display:flex;align-items:center;gap:34px;height:64px;border-bottom:1px solid var(--rule2)}
+.c .logo{display:flex;align-items:center;gap:12px;font:600 19px var(--display);letter-spacing:.22em;text-transform:uppercase}
+.c .logo svg{width:28px;height:28px}
+.c .top nav{display:flex;gap:26px;font:13px var(--serif);color:var(--dim)}
+.c .top nav .on{color:var(--ink);font-style:italic}
+.c .top .sp{flex:1}
+.c .top .go{font:12px var(--mono);font-stretch:82%;border:1px solid var(--ink);padding:8px 14px;color:var(--ink)}
+.c .top .go:hover{background:var(--ink);color:var(--bg)}
+.c .plate{position:relative;display:grid;grid-template-columns:1.1fr .9fr;gap:40px;padding:44px 0 34px;border-bottom:1px solid var(--rule2);overflow:hidden}
+.c .plate svg.chart{position:absolute;right:-40px;top:-30px;width:520px;height:420px;opacity:.9;pointer-events:none}
+.c .fig{font:12px var(--mono);font-stretch:82%;color:var(--dim);letter-spacing:.08em}
+.c h1{font:500 60px/.95 var(--display);letter-spacing:.005em;margin:10px 0 14px}
+.c h1 em{font:italic 400 52px var(--serif)}
+.c .lede{font:16px/1.55 var(--serif);color:var(--dim);max-width:520px}
+.c .caption{font:italic 13px var(--serif);color:var(--dim);border-top:1px solid var(--rule);margin-top:24px;padding-top:10px;max-width:520px}
+.c .rail{display:flex;gap:0;font:12px var(--mono);font-stretch:82%;border-bottom:1px solid var(--rule);margin-top:26px}
+.c .rail span{padding:10px 16px;color:var(--dim);border-right:1px solid var(--rule)}
+.c .rail span.on{color:var(--ink);box-shadow:inset 0 -2px 0 var(--ink)}
+.c .rail .s{margin-left:auto;border-right:0;border-left:1px solid var(--rule)}
+.c table{width:100%;border-collapse:collapse}
+.c th{font:400 10.5px var(--mono);font-stretch:82%;letter-spacing:.1em;color:var(--faint);padding:10px;text-align:right;border-bottom:1px solid var(--rule2)}
+.c th.l,.c td.l{text-align:left}
+.c td{padding:12px 10px;text-align:right;border-bottom:1px solid var(--rule);font:13px var(--mono);font-stretch:82%}
+.c td.n{font:16px var(--serif)}
+.c td.n small{font:italic 12px var(--serif);color:var(--dim);margin-left:8px}
+.c td.md{font-weight:700}
+.c .curve path.area{fill:rgba(var(--rgb),.12)}.c .curve path.ln{fill:none;stroke:var(--ink);stroke-width:1.1}
+.c .curve line{stroke:var(--ink);stroke-width:1}
+.c .ann{font:italic 13px var(--serif);color:var(--dim)}
+.c .cols{display:grid;grid-template-columns:1fr 300px;gap:40px;padding:26px 0 44px}
+.c aside{border-left:1px solid var(--rule2);padding-left:24px}
+.c aside .fig{margin-bottom:8px}
+.c aside h3{font:500 30px var(--display)}
+.c aside .trio{display:flex;gap:22px;margin:14px 0;font:11px var(--mono);color:var(--dim)}
+.c aside .trio b{display:block;font:500 32px/1 var(--display);color:var(--ink)}
+.c aside p{font:italic 14px/1.55 var(--serif);color:var(--dim)}
+.c .prices{border-top:1px solid var(--rule2);padding:26px 0 50px;display:grid;grid-template-columns:200px 1fr;gap:40px}
+.c .prices ol{list-style:none}
+.c .prices li{display:grid;grid-template-columns:150px 1fr 150px;gap:20px;align-items:baseline;padding:14px 0;border-bottom:1px solid var(--rule)}
+.c .prices li b{font:500 26px var(--display);letter-spacing:.06em;text-transform:uppercase}
+.c .prices li span{font:15px var(--serif);color:var(--dim)}
+.c .prices li em{font:12px var(--mono);font-style:normal;text-align:right}
+
+/* ======================= CURRENT (for comparison) ======================= */
+.cur .tk{height:34px;border-bottom:2px solid var(--dn);display:flex;gap:30px;align-items:center;padding:0 20px;font:14px var(--mono);overflow:hidden;white-space:nowrap}
+.cur .tk i{display:inline-block;width:18px;height:18px;border-radius:50%;margin-left:5px;vertical-align:-4px}
+.cur .hd{display:flex;align-items:center;gap:26px;height:62px;padding:0 24px;border-bottom:1px solid var(--rule)}
+.cur .bn{display:flex;gap:10px;align-items:center;font:800 30px var(--display);letter-spacing:.06em;text-transform:uppercase}
+.cur .bn i{width:26px;height:26px;border-radius:50%;background:conic-gradient(#2DD4BF 0 60%,#E11D48 0)}
+.cur .hd nav{display:flex;gap:22px;font:700 20px var(--display);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
+.cur .pill{display:flex;margin-left:auto;border:2px solid var(--acc)}
+.cur .pill span{padding:6px 18px;font:800 20px/1 var(--display);text-transform:uppercase}
+.cur .pill span:nth-child(1){background:#E11D48}.cur .pill span:nth-child(2){background:#a0475a}.cur .pill span:nth-child(3){background:#8C95A3;color:#05090a}
+.cur .pg{padding:28px 24px}
+.cur .eb{display:inline-block;background:var(--acc);color:var(--acc-ink);font:700 12px var(--mono);letter-spacing:.16em;padding:7px 14px}
+.cur h1{font:800 46px var(--display);text-transform:uppercase;margin:12px 0}
+.cur table{width:100%;border-collapse:collapse;border-top:2px solid rgba(var(--rgb),.6);background:var(--fill)}
+.cur td,.cur th{padding:10px 12px;border-bottom:1px solid var(--rule);font:13px var(--mono);text-align:right}
+.cur th{font-size:10px;color:var(--dim)}
+.cur td.l,.cur th.l{text-align:left}
+.cur .hf{background:rgba(225,29,72,.22)}.cur .hc{background:rgba(45,212,191,.2)}
+.cur .db{display:inline-block;width:20px;height:20px;border-radius:50%;margin-left:3px}
+
+@media (max-width:980px){.a .head,.a .body{grid-template-columns:1fr}.a .margin{display:none}.c .plate,.c .cols,.c .prices{grid-template-columns:1fr}.c .plate svg.chart{display:none}.b .grid{grid-template-columns:1fr}.b .cell{grid-column:auto!important;border-right:0;border-bottom:1px solid var(--rule)}}
+</style></head>
+<body data-dir="a">
+<div class="switch">
+  <b>Direction</b>
+  <button data-d="cur">Current</button>
+  <button data-d="a" class="on">A · Ephemeris</button>
+  <button data-d="b">B · Telemetry</button>
+  <button data-d="c">C · Cyanotype</button>
+  <span class="sp"></span>
+  <button id="mode">Light / dark</button>
+</div>
+<p class="note" id="note"></p>
+
+<!-- ======================= A · EPHEMERIS ======================= -->
+<section class="dir a">
+  <div class="strip"><div class="wrap">
+    <span>Vs pace, week 9</span><span><b>Prescott</b> +4.2</span><span><b>C. Williams</b> <em>−2.8</em></span><span><b>Chase</b> +6.1</span><span><b>Hubbard</b> <em>−1.4</em></span><span><b>Burrow</b> +5.7</span>
+  </div></div>
+  <div class="mast"><div class="wrap">
+    <div class="l">VOL. 2026 · WEEK 9<br>PUBLISHED TUE 4 NOV</div>
+    <div class="word">Singularity Dynasty<small>An almanac of fantasy football outcomes</small></div>
+    <div class="r">10,000 SIMULATIONS PER PLAYER<br>539 PLAYERS CATALOGUED</div>
+  </div></div>
+  <nav><div class="wrap"><span class="on">Tools</span><span>Feed</span><span>My Team</span><span>The Observatory</span><span>Pricing</span><span class="sp"></span><span>Sign in</span><span class="go">Subscribe →</span><span>☾</span></div></nav>
+  <div class="wrap">
+    <div class="head">
+      <div class="no">§1<small>WEEKLY<br>TABLES</small></div>
+      <div><h1>Weekly Projection Rankings</h1><p class="lede">Each player's likely floor, median and ceiling for the week ahead, read from ten thousand simulated games.</p></div>
+      <div class="meta">Players catalogued <b>539</b><br>Smash spots flagged <b>13</b><br>Last week inside range <b>81%</b><br>Next revision <b>Thu 5 PM</b></div>
+    </div>
+    <div class="body">
+      <div class="margin">Read across:<br>a player's floor is<br>his 1-in-10 low week,<br>the ceiling his<br>1-in-10 high.<br><br>Rules every fifth<br>line, as in a<br>printed table.</div>
+      <div>
+        <div class="filters"><span class="on">All</span><span>QB</span><span>RB</span><span>WR</span><span>TE</span><span>Signals</span><span>Teams</span><span class="s">Find a player …</span></div>
+        <table><thead><tr><th class="l">Cat.</th><th class="l">Player</th><th class="l">Opp.</th><th>Floor</th><th>Median</th><th>Ceiling</th><th class="l">Signal</th></tr></thead><tbody id="ta"></tbody></table>
+      </div>
+      <aside>
+        <h3>Jahmyr Gibbs</h3>
+        <div class="big"><div>FLOOR<b>11.8</b></div><div class="m">MEDIAN<b>21.4</b></div><div>CEILING<b>33.9</b></div></div>
+        <dl id="da"></dl>
+      </aside>
+    </div>
+    <div class="ledger"><table><tbody>
+      <tr><td style="width:200px"><b class="mono">STARGAZER</b></td><td>The top fifty each week, the top ten season simulations, one saved league.</td><td class="p">Free<small>always</small></td><td><a>Create account →</a></td></tr>
+      <tr><td><b class="mono">EXPLORER</b></td><td>Every ranked player, ten leagues watched live, the Tuesday letter.</td><td class="p">$7<small>a month, billed yearly</small></td><td><a>Subscribe →</a></td></tr>
+      <tr><td><b class="mono">SINGULARITY</b></td><td>The complete almanac: every season simulation, unlimited leagues, exports.</td><td class="p">$20<small>a month, billed yearly</small></td><td><a>Subscribe →</a></td></tr>
+    </tbody></table></div>
+  </div>
+</section>
+
+<!-- ======================= B · TELEMETRY ======================= -->
+<section class="dir b">
+  <div class="bar"><div class="id"><span class="sq"></span>SINGULARITY DYNASTY</div><a class="on">TOOLS</a><a>FEED</a><a>MY TEAM</a><a>OBSERVATORY</a><a>PRICING</a><span class="sp"></span><a>SIGN IN</a><a class="go">START ▸</a></div>
+  <div class="feed"><span class="lbl">VS PACE</span><span><b>PRESCOTT</b> <em>+4.2</em></span><span><b>C.WILLIAMS</b> −2.8</span><span><b>CHASE</b> <em>+6.1</em></span><span><b>HUBBARD</b> −1.4</span><span><b>LOVE</b> <em>+0.9</em></span><span><b>BURROW</b> <em>+5.7</em></span><span><b>ALLEN</b> −0.6</span></div>
+  <div class="grid">
+    <div class="cell" style="grid-column:span 7"><div class="k">Module 01 · Wk 09 · 2026</div><h1 style="margin-top:10px">Weekly<br>Projection Rankings</h1><p class="sub">Floor, median and ceiling for every player this week, from 10,000 simulated games.</p></div>
+    <div class="cell" style="grid-column:span 2"><div class="k">Players</div><div class="reg">539</div></div>
+    <div class="cell" style="grid-column:span 2"><div class="k">Smash spots</div><div class="reg">13</div></div>
+    <div class="cell" style="grid-column:span 1"><div class="k">Rev</div><div class="reg">3</div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 300px">
+    <div style="border-right:1px solid var(--rule)">
+      <div class="tb"><span class="on">ALL</span><span>QB</span><span>RB</span><span>WR</span><span>TE</span><span>SIGNALS ▾</span><span>TEAMS ▾</span><span class="s">SEARCH _</span></div>
+      <table><thead><tr><th class="l">#</th><th class="l">PLAYER</th><th class="l">OPP</th><th>FLR</th><th>MED</th><th>CEIL</th><th class="l">SPREAD</th><th class="l">FLAG</th></tr></thead><tbody id="tb"></tbody></table>
+    </div>
+    <div class="side" style="padding:16px 18px"><div class="k">Selected</div><div style="font:800 26px var(--display);margin:6px 0 10px">GIBBS, J.</div><div id="db"></div></div>
+  </div>
+  <div class="plans">
+    <div><div class="k">Tier 1 · Stargazer</div><div class="reg">FREE</div><ul><li>Top 50 weekly</li><li>Top 10 season sims</li><li>1 league</li></ul><button>CREATE ACCOUNT</button></div>
+    <div><div class="k">Tier 2 · Explorer</div><div class="reg">$7</div><ul><li>Every player</li><li>10 leagues, live</li><li>Tuesday email</li></ul><button class="p">START EXPLORER</button></div>
+    <div><div class="k">Tier 3 · Singularity</div><div class="reg">$20</div><ul><li>Full season sims</li><li>Unlimited leagues</li><li>CSV exports</li></ul><button>START SINGULARITY</button></div>
+  </div>
+</section>
+
+<!-- ======================= C · CYANOTYPE ======================= -->
+<section class="dir c">
+  <div class="wrap">
+    <div class="top">
+      <div class="logo"><svg viewBox="0 0 28 28"><circle cx="14" cy="14" r="12" fill="none" stroke="currentColor" stroke-width="1"/><ellipse cx="14" cy="14" rx="12" ry="4" fill="none" stroke="currentColor" stroke-width="1"/><circle cx="14" cy="14" r="3.2" fill="currentColor"/></svg>Singularity Dynasty</div>
+      <nav><span class="on">Tools</span><span>Feed</span><span>My Team</span><span>The Observatory</span><span>Pricing</span></nav>
+      <span class="sp"></span><span class="mono" style="font-size:12px;color:var(--dim)">Sign in</span><span class="go">Begin observing</span>
+    </div>
+    <div class="plate">
+      <svg class="chart" viewBox="0 0 520 420" id="chart"></svg>
+      <div style="position:relative">
+        <div class="fig">PLATE IX · WEEK 9, 2026</div>
+        <h1>Weekly Projection <em>Rankings</em></h1>
+        <p class="lede">Every player's floor, median and ceiling for the week ahead, drawn from ten thousand simulated games.</p>
+        <p class="caption">Fig. 9 — 539 players plotted this week; 81% of last week's results landed inside their projected range.</p>
+      </div>
+    </div>
+    <div class="rail"><span class="on">All</span><span>QB</span><span>RB</span><span>WR</span><span>TE</span><span>Signals</span><span>Teams</span><span class="s">Search a player</span></div>
+    <div class="cols">
+      <table class="tc"><thead><tr><th class="l">No.</th><th class="l">Player</th><th>Floor</th><th>Median</th><th>Ceiling</th><th class="l">Range</th><th class="l">Note</th></tr></thead><tbody id="tc"></tbody></table>
+      <aside><div class="fig">SELECTED · RB1 · DET</div><h3>Jahmyr Gibbs</h3><div class="trio"><div>FLOOR<b>11.8</b></div><div>MEDIAN<b>21.4</b></div><div>CEILING<b>33.9</b></div></div><p>Projected for the week's best running-back median; a smash spot against Green Bay lifts his range by about two points.</p></aside>
+    </div>
+    <div class="prices">
+      <div><div class="fig">SUBSCRIPTIONS</div><p class="ann" style="margin-top:8px">Three titles, earned in order.</p></div>
+      <ol>
+        <li><b>Stargazer</b><span>The top fifty and one saved league, free.</span><em>FREE →</em></li>
+        <li><b>Explorer</b><span>Every player, ten leagues watched live.</span><em>$7 / MO →</em></li>
+        <li><b>Singularity</b><span>The full simulations and everything else.</span><em>$20 / MO →</em></li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= CURRENT ======================= -->
+<section class="dir cur">
+  <div class="tk">Dak Prescott<i style="background:#7B6CF6"></i><i style="background:#E11D48"></i><i style="background:#FFA43A"></i> Caleb Williams<i style="background:#5BA3F5"></i><i style="background:#FFA43A"></i> Ja'Marr Chase<i style="background:#2DD4BF"></i><i style="background:#E11D48"></i><i style="background:#FFA43A"></i> Chuba Hubbard<i style="background:#7B6CF6"></i> Jordan Love<i style="background:#7B6CF6"></i></div>
+  <div class="hd"><div class="bn"><i></i>Singularity Dynasty</div><nav><span>Tools</span><span>Feed</span><span>My Team</span><span>The Observatory</span></nav><div class="pill"><span>Singularity</span><span>Explorer</span><span>Stargazer</span></div></div>
+  <div class="pg"><span class="eb">WEEK 9 · 2026</span><h1>Weekly Projection Rankings</h1>
+  <table><thead><tr><th class="l">RANK</th><th class="l">PLAYER</th><th>FLOOR</th><th>MEDIAN</th><th>CEILING</th><th class="l">BADGES</th></tr></thead><tbody id="tcur"></tbody></table></div>
+</section>
+
+<script>
+const R=[[1,"Jahmyr Gibbs","RB","DET","vs GB",11.8,21.4,33.9,"SMASH"],[2,"Ja'Marr Chase","WR","CIN","@ ATL",9.6,19.8,32.1,"ON FIRE"],[3,"Josh Allen","QB","BUF","@ MIN",13.2,23.3,39.9,""],[4,"Bijan Robinson","RB","ATL","vs CIN",10.4,19.1,30.6,""],[5,"Trey McBride","TE","ARI","vs SEA",7.9,14.6,24.2,"COLD"],[6,"Puka Nacua","WR","LAR","@ NO",8.8,18.2,29.7,"SMASH"],[7,"Lamar Jackson","QB","BAL","vs MIA",12.0,22.1,36.4,""],[8,"Christian McCaffrey","RB","SF","@ HOU",9.9,18.7,30.0,""]];
+const f=v=>v.toFixed(1);
+const curve=(fl,m,c,w=120,h=26)=>{const x=v=>2+(v/42)*(w-4);let d="";for(let i=0;i<=40;i++){const v=fl-6+i*((c-fl+12)/40);const s=v<m?(m-fl)/1.28:(c-m)/1.28;const y=h-2-(h-6)*Math.exp(-((v-m)**2)/(2*s*s));d+=(i?" L":"M")+x(v).toFixed(1)+" "+y.toFixed(1);}
+ return `<svg class="curve" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><path class="area" d="${d} L${x(c+6)} ${h-2} L${x(fl-6)} ${h-2}Z"/><path class="ln" d="${d}"/><line x1="${x(m)}" x2="${x(m)}" y1="3" y2="${h}"/></svg>`;};
+document.getElementById("ta").innerHTML=R.map(([r,n,p,t,o,fl,m,c,s])=>`<tr><td class="l cat">SD-${String(r).padStart(3,"0")}</td><td class="l n">${n}<i>${p} ${t}</i></td><td class="l">${o}</td><td>${f(fl)}</td><td class="md">${f(m)}</td><td>${f(c)}</td><td class="l sig">${s?s.toLowerCase():""}</td></tr>`).join("");
+document.getElementById("da").innerHTML=[["xFP per game","18.4","#2"],["Touches per game","21.6","#4"],["Targets per game","4.9","#11"],["Inside-5 touches","1.3","#1"],["Rush yards per game","88.2","#3"]].map(([a,b,c])=>`<div><dt>${a}</dt><dd>${b}</dd><dd class="r">${c}</dd></div>`).join("");
+document.getElementById("tb").innerHTML=R.map(([r,n,p,t,o,fl,m,c,s])=>{const X=v=>(v/42*100).toFixed(1)+"%";return `<tr><td class="l">${String(r).padStart(2,"0")}</td><td class="l n">${n}</td><td class="l">${o}</td><td>${f(fl)}</td><td class="md">${f(m)}</td><td>${f(c)}</td><td class="l"><span class="bars"><i style="left:${X(fl)};width:calc(${X(c)} - ${X(fl)})"></i><b style="left:${X(m)}"></b></span></td><td class="l">${s?`<span class="flag ${s==="COLD"?"q":""}">${s}</span>`:""}</td></tr>`}).join("");
+document.getElementById("db").innerHTML=[["FLOOR","11.8"],["MEDIAN","21.4"],["CEILING","33.9"],["XFP/G","18.4"],["TOUCH/G","21.6"],["IN-5 TCH","1.3"]].map(([a,b])=>`<div class="row"><span style="color:var(--faint)">${a}</span><b>[ ${b} ]</b></div>`).join("");
+document.getElementById("tc").innerHTML=R.map(([r,n,p,t,o,fl,m,c,s])=>`<tr><td class="l" style="color:var(--faint)">${r}.</td><td class="l n">${n}<small>${p}, ${t} ${o}</small></td><td>${f(fl)}</td><td class="md">${f(m)}</td><td>${f(c)}</td><td class="l">${curve(fl,m,c)}</td><td class="l ann">${s==="SMASH"?"favourable":s==="ON FIRE"?"in form":s==="COLD"?"cooling":""}</td></tr>`).join("");
+document.getElementById("tcur").innerHTML=R.slice(0,6).map(([r,n,p,t,o,fl,m,c])=>`<tr><td class="l">${r}</td><td class="l" style="font-family:var(--serif)">${n}</td><td class="hf">${f(fl)}</td><td>${f(m)}</td><td class="hc">${f(c)}</td><td class="l"><span class="db" style="background:#FF2400"></span><span class="db" style="background:#FFA43A"></span><span class="db" style="background:#7B6CF6"></span></td></tr>`).join("");
+// the cyanotype star chart: right ascension / declination grid, a few plotted "stars" (players) and a labelled orbit
+(()=>{const s=document.getElementById("chart");let g="";for(let i=0;i<8;i++)g+=`<circle cx="330" cy="200" r="${40+i*34}" fill="none" stroke="currentColor" stroke-opacity="${i%2?.14:.24}" stroke-width="1"/>`;
+ for(let a=0;a<12;a++){const t=a*Math.PI/6;g+=`<line x1="330" y1="200" x2="${330+300*Math.cos(t)}" y2="${200+300*Math.sin(t)}" stroke="currentColor" stroke-opacity=".12"/>`;}
+ const st=[[250,120,3],[410,150,2],[300,260,4],[200,300,2],[460,280,3],[380,90,1.6],[150,180,1.6],[350,330,2.4]];
+ st.forEach(([x,y,r],i)=>{g+=`<circle cx="${x}" cy="${y}" r="${r}" fill="currentColor"/>`;if(i<3)g+=`<text x="${x+8}" y="${y-6}" font-family="Martian Mono" font-size="9" fill="currentColor" fill-opacity=".7">${["GIBBS","CHASE","ALLEN"][i]}</text>`;});
+ g+=`<circle cx="330" cy="200" r="7" fill="currentColor"/><text x="342" y="215" font-family="Source Serif 4" font-style="italic" font-size="12" fill="currentColor" fill-opacity=".7">the endpoint</text>`;
+ s.innerHTML=g;s.style.color="var(--ink)";})();
+const NOTES={
+ cur:"<strong>Current.</strong> Today's site, for comparison.",
+ a:"<strong>A · Ephemeris.</strong> A printed astronomical almanac: a masthead with a volume and week dateline, a catalogue number for every player (SD-001), notes in the margin, double rules and a heavier rule every fifth line like a printed table, an italic serif voice. One hydrogen-alpha red is the only colour; pricing is a three-line ledger. <em>Taken from:</em> the editorial, print-led approach behind GrandArmy and Space Agency's Inversion Space identity (AIGA 365 winner, 2024), applied to data the way an almanac prints it.",
+ b:"<strong>B · Telemetry.</strong> A mission-control panel: every element on one hard grid of cells, figures in [ bracketed ] registers, upper-case labels, a single phosphor amber. <em>Taken from:</em> the NASA Graphics Standards Manual (Danne &amp; Blackburn, reissued by Standards Manual, its Worm logo back in use since 2020) -- praised as 'rational, systematic design' -- and the 2025 Impulse Space interface work, which 'grounds the brand in the real' hardware.",
+ c:"<strong>C · Cyanotype.</strong> An observatory blueprint: Prussian blue and paper, a real star chart behind the title with players plotted as stars, 'Plate IX' / 'Fig. 9' captions, italic annotations instead of badges; the mark is drawn from orbital geometry. <em>Taken from:</em> Kontrapunkt's True Anomaly identity (2023, Creative Circle Award 2024), whose logo is built from a real orbital-mechanics symbol and whose system generates its own patterns -- here the star chart is drawn from the actual players' numbers."};
+function show(d){document.body.dataset.dir=d;document.querySelectorAll(".switch [data-d]").forEach(x=>x.classList.toggle("on",x.dataset.d===d));document.getElementById("note").innerHTML=NOTES[d];}
+document.querySelectorAll(".switch [data-d]").forEach(b=>b.onclick=()=>show(b.dataset.d));
+document.getElementById("mode").onclick=()=>document.body.classList.toggle("light");
+show("a");
+</script>
+</body></html>

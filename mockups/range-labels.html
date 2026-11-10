@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Range bar labels</title>
+<link href="https://fonts.googleapis.com/css2?family=Martian+Mono:wdth,wght@75..112,400;75..112,700&display=swap" rel="stylesheet">
+<style>
+:root{--void:#030908;--p1:#09130F;--line:#1A2A26;--star:#E6F4F1;--dim:#8C95A3;--mint:#2DD4BF;--red:#E11D48;--rgb:230,244,241}
+:root.light{--void:#F4F4F2;--p1:#FBFCFB;--line:#D9DEDC;--star:#0F1F1D;--dim:#5C6370;--mint:#0D7A70;--red:#E11D48;--rgb:15,31,29}
+*{box-sizing:border-box;margin:0}
+body{background:var(--void);color:var(--star);font:14px Georgia,serif;padding:24px}
+.mono{font-family:'Martian Mono',monospace;font-stretch:82%}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+h1{font:700 22px 'Martian Mono';font-stretch:82%}
+button{font:12px 'Martian Mono';font-stretch:82%;background:none;color:var(--star);border:1px solid var(--line);padding:8px 14px;border-radius:2px;cursor:pointer}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+.card{background:var(--p1);border:1px solid var(--line);border-top:2px solid rgba(var(--rgb),.25);padding:14px 14px 16px}
+.card h2{font:700 12px 'Martian Mono';font-stretch:82%;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
+.card p{font-size:12.5px;color:var(--dim);margin-bottom:14px;line-height:1.4;min-height:52px}
+.stage{display:flex;justify-content:center;height:230px}
+/* the bar + labels (shared) */
+.bar{position:relative;width:12px;height:100%;border:1px solid rgba(var(--rgb),.28);border-top:2px solid rgba(var(--rgb),.6);border-bottom:2px solid rgba(var(--rgb),.6)}
+.fill-up{position:absolute;left:0;right:0;top:12%;height:30%;background:var(--mint);-webkit-mask:repeating-linear-gradient(45deg,#000 0 4.5px,transparent 4.5px 6px)}
+.fill-dn{position:absolute;left:0;right:0;top:42%;height:30%;background:var(--red);-webkit-mask:repeating-linear-gradient(45deg,#000 0 4.5px,transparent 4.5px 6px)}
+.lab{position:absolute;left:50%;line-height:1;white-space:nowrap;font:11px 'Martian Mono';font-stretch:82%}
+.ceil{top:12%;transform:translate(-50%,calc(-100% - 5px))}
+.floor{top:72%;transform:translate(-50%,5px)}
+/* A: current */
+.A .lab{color:var(--dim);font-size:9.5px;font-weight:400}
+/* B: bright + bold */
+.B .lab{color:var(--star);font-weight:700;font-size:12px}
+/* C: zone colours */
+.C .ceil{color:var(--mint)}.C .floor{color:var(--red)}.C .lab{font-weight:700;font-size:12px}
+/* D: plates */
+.D .lab{background:var(--void);border:1px solid rgba(var(--rgb),.5);color:var(--star);font-weight:700;font-size:11.5px;padding:3px 6px}
+.D .ceil{border-color:var(--mint)}.D .floor{border-color:var(--red)}
+/* E: filled pills */
+.E .lab{font-weight:700;font-size:11.5px;padding:3px 7px;border-radius:2px;color:#021210}
+.E .ceil{background:var(--mint)}.E .floor{background:var(--red);color:#FFF1F3}
+/* F: side labels with word + leader */
+.F .lab{left:auto;transform:none;display:flex;align-items:center;gap:6px;font-weight:700;font-size:12px;color:var(--star)}
+.F .ceil{top:12%;left:22px;transform:translateY(-50%)}.F .floor{top:72%;left:22px;transform:translateY(-50%)}
+.F .lab::before{content:"";width:16px;height:1px;background:currentColor;margin-left:-22px;margin-right:0;opacity:.7;position:relative}
+.F .lab small{font-size:8.5px;letter-spacing:.1em;color:var(--dim);font-weight:400}
+.F .ceil b{color:var(--mint)}.F .floor b{color:var(--red)}
+.F .ceil::before{background:var(--mint)}.F .floor::before{background:var(--red)}
+.mid{position:absolute;left:-18px;top:34%;width:48px;height:2px;background:var(--mint)}
+</style></head><body>
+<div class="top"><h1>Floor / ceiling labels</h1><button onclick="document.documentElement.classList.toggle('light')">Light / dark</button></div>
+<div class="grid">
+<div class="card"><h2>A · Now</h2><p>Small grey numbers. They read as background text.</p><div class="stage A"><div class="bar"><span class="lab ceil">448</span><div class="fill-up"></div><div class="fill-dn"></div><span class="lab floor">318</span><div class="mid"></div></div></div></div>
+<div class="card"><h2>B · Bright and bold</h2><p>Same place, full-brightness text, bold and larger. The least change.</p><div class="stage B"><div class="bar"><span class="lab ceil">448</span><div class="fill-up"></div><div class="fill-dn"></div><span class="lab floor">318</span><div class="mid"></div></div></div></div>
+<div class="card"><h2>C · Zone colours</h2><p>Ceiling in mint, floor in red, matching the fill next to it (the site's floor / ceiling colours).</p><div class="stage C"><div class="bar"><span class="lab ceil">448</span><div class="fill-up"></div><div class="fill-dn"></div><span class="lab floor">318</span><div class="mid"></div></div></div></div>
+<div class="card"><h2>D · Outlined plates</h2><p>Each number sits in a small box with a mint or red outline, like a gauge readout.</p><div class="stage D"><div class="bar"><span class="lab ceil">448</span><div class="fill-up"></div><div class="fill-dn"></div><span class="lab floor">318</span><div class="mid"></div></div></div></div>
+<div class="card"><h2>E · Filled tags</h2><p>Solid mint and red tags with dark text. The loudest; hard to miss.</p><div class="stage E"><div class="bar"><span class="lab ceil">448</span><div class="fill-up"></div><div class="fill-dn"></div><span class="lab floor">318</span><div class="mid"></div></div></div></div>
+<div class="card"><h2>F · Side labels with leaders</h2><p>Numbers move beside the bar with a short leader line and a CEIL / FLOOR word, in zone colours.</p><div class="stage F"><div class="bar"><span class="lab ceil"><b>448</b> <small>CEIL</small></span><div class="fill-up"></div><div class="fill-dn"></div><span class="lab floor"><b>318</b> <small>FLOOR</small></span><div class="mid"></div></div></div></div>
+</div></body></html>

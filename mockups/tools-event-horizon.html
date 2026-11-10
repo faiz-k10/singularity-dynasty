@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tool pages in the Event Horizon style</title>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@400;500;600&family=Martian+Mono:wdth,wght@75..112,300;75..112,400;75..112,500&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,300;1,8..60,400&display=swap" rel="stylesheet">
+<style>
+/* The tool pages (Weekly Projection Rankings here) in the landing page's language: paper and ink, hairline rules, no filled plates or
+   coloured stripes, no heat-tinted columns. Three signal colours only -- EMBER = good, COLD BLUE = bad, INK = informational -- on
+   every badge, number and curve. The Super Hero ball keeps its original colours. */
+:root{--display:'Big Shoulders Display',sans-serif;--mono:'Martian Mono',monospace;--serif:'Source Serif 4',Georgia,serif;
+ --bg:#0B0B0B;--panel:#131210;--ink:#ECE7DC;--dim:#A39E92;--faint:#6B675E;--rule:#27251F;--rule2:#3A372F;--good:#E8643F;--bad:#6E9BD8;--rgb:236,231,220;--hole:#ECE7DC;--holeink:#0B0B0B}
+body.light{--bg:#ECE7DC;--panel:#F4F0E7;--ink:#121212;--dim:#5C5850;--faint:#8A8478;--rule:#D5CEBF;--rule2:#B9B1A0;--good:#C8401E;--bad:#2F5E9E;--rgb:18,18,18;--hole:#0C0C0C;--holeink:#ECE7DC}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-font-smoothing:antialiased}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 var(--serif);transition:background .3s,color .3s}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+.mono{font-family:var(--mono);font-stretch:82%}
+.k{font:10.5px var(--mono);font-stretch:82%;letter-spacing:.2em;text-transform:uppercase;color:var(--faint)}
+.wrap{max-width:1360px;margin:0 auto;padding:0 40px}
+.switch{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:100;display:flex;gap:6px;padding:6px;background:#1b1b1f;color:#eee;font:11.5px var(--mono);border:1px solid #333}
+.switch button{padding:7px 12px;color:#ccc}.switch button.on{background:#eee;color:#111}
+
+/* header + ticker */
+header{position:sticky;top:0;z-index:50;background:var(--bg);border-bottom:1px solid var(--rule)}
+.bar{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;height:64px;font:12px var(--mono);font-stretch:82%;color:var(--dim)}
+.bar nav{display:flex;gap:30px}.bar a{color:inherit;text-decoration:none}.bar a:hover,.bar a.on{color:var(--ink)}
+.brand{display:flex;align-items:center;gap:14px;font:500 12.5px var(--display);letter-spacing:.55em;text-transform:uppercase;color:var(--ink)!important}
+.hole{width:18px;height:18px;border-radius:50%;background:var(--ink)}
+.r{display:flex;justify-content:flex-end;align-items:center;gap:26px}
+.r .in{color:var(--ink);border-bottom:1px solid var(--good);padding-bottom:1px}
+.tg{display:grid;place-items:center;width:24px;height:24px;border:1px solid var(--rule);border-radius:50%;cursor:pointer}
+.ticker{border-top:1px solid var(--rule);height:34px;overflow:hidden;white-space:nowrap;font:11.5px var(--mono);font-stretch:82%;color:var(--dim);display:flex;align-items:center}
+.ticker .lab{padding:0 18px 0 40px;color:var(--faint);letter-spacing:.14em;border-right:1px solid var(--rule);height:100%;display:flex;align-items:center;background:var(--bg);position:relative;z-index:2}
+.tk{display:inline-flex;align-items:center;gap:9px;padding:0 24px}
+.tk b{font-weight:400;color:var(--ink)}
+.tk .n.g{color:var(--good)}.tk .n.b{color:var(--bad)}
+.track{display:inline-flex;animation:slide 70s linear infinite}
+@keyframes slide{to{transform:translateX(-50%)}}
+
+/* badges: a hairline ring, the glyph in the signal colour; solid for the few that matter most */
+.bd{--c:var(--ink);display:inline-grid;place-items:center;border-radius:50%;border:1px solid var(--c);color:var(--c);flex:none;vertical-align:middle}
+.bd.good{--c:var(--good)}.bd.bad{--c:var(--bad)}.bd.neutral{--c:var(--dim)}
+.bd svg{width:62%;height:62%;display:block}
+.bd.solid{background:var(--c);color:var(--bg)}
+.bd.s15{width:16px;height:16px}.bd.s22{width:22px;height:22px}.bd.s30{width:30px;height:30px}.bd.s40{width:40px;height:40px}
+.bd.ball{border:0;background:none}.bd.ball svg{width:100%;height:100%}
+.bd .arrow{width:56%;height:56%}
+
+/* page */
+.starfield{position:absolute;inset:0;pointer-events:none;color:var(--ink)}
+.head{position:relative;padding:46px 0 30px;border-bottom:1px solid var(--rule);overflow:hidden}
+.head .wrap{position:relative;display:flex;justify-content:space-between;align-items:flex-end;gap:30px}
+.eyebrow{display:inline-flex;align-items:center;gap:10px}
+.eyebrow i{width:6px;height:6px;border-radius:50%;background:var(--good)}
+h1{font:400 64px/.95 var(--display);letter-spacing:.005em;margin:14px 0 14px}
+h1 em{font:italic 400 52px var(--serif)}
+.sub{font:300 18px/1.55 var(--serif);color:var(--dim);max-width:520px}
+.acts{display:flex;gap:10px}
+.btn{font:12px var(--mono);font-stretch:82%;padding:11px 16px;border:1px solid var(--ink);transition:background .2s,color .2s}
+.btn:hover{background:var(--ink);color:var(--bg)}
+.tools{display:flex;align-items:center;gap:0;border-bottom:1px solid var(--rule);font:12px var(--mono);font-stretch:82%;color:var(--dim)}
+.tools>*{padding:14px 18px;border-right:1px solid var(--rule)}
+.tools>*:first-child{padding-left:0}
+.seg{display:flex;padding:0!important;border-right:1px solid var(--rule)}
+.seg button{padding:14px 16px;color:var(--dim)}.seg button.on{color:var(--ink);box-shadow:inset 0 -2px 0 var(--ink)}
+.tools .s{margin-left:auto;border-right:0;border-left:1px solid var(--rule);min-width:260px;color:var(--faint)}
+
+table{width:100%;border-collapse:collapse}
+th{font:400 10px var(--mono);font-stretch:82%;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);padding:14px 12px 10px;text-align:right;border-bottom:1px solid var(--rule2);white-space:nowrap}
+th.l,td.l{text-align:left}
+td{padding:0 12px;height:62px;text-align:right;border-bottom:1px solid var(--rule);font:13px var(--mono);font-stretch:82%;font-variant-numeric:tabular-nums;white-space:nowrap}
+tbody tr.row{cursor:pointer;transition:background .15s}
+tbody tr.row:hover{background:rgba(var(--rgb),.035)}
+tbody tr.open{background:rgba(var(--rgb),.05)}
+td.no{color:var(--faint);width:44px}
+td.pl{font:400 16.5px var(--serif);text-align:left}
+td.pl small{font:italic 12.5px var(--serif);color:var(--faint);margin-left:10px}
+td.pos{color:var(--dim);text-align:left;width:70px}
+td.opp{color:var(--dim)}
+td.proj{font:500 15px var(--mono);color:var(--ink)}
+td.fl{color:var(--bad)}td.ce{color:var(--good)}
+.curve path.area{fill:rgba(var(--rgb),.09)}.curve path.ln{fill:none;stroke:var(--ink);stroke-width:1}.curve line.m{stroke:var(--ink);stroke-width:1}
+.curve line.f{stroke:var(--bad);stroke-width:1.2}.curve line.c{stroke:var(--good);stroke-width:1.2}
+.bdgs{display:inline-flex;gap:5px;align-items:center}
+td.stat{color:var(--dim)}td.stat.d{color:var(--faint)}
+
+/* opened player */
+tr.detail td{height:auto;padding:0;background:rgba(var(--rgb),.03);border-bottom:1px solid var(--rule2);text-align:left}
+.dgrid{display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:0}
+.dgrid>div{padding:26px 28px;border-right:1px solid var(--rule)}.dgrid>div:last-child{border-right:0}
+.who{display:flex;gap:16px;align-items:center}
+.ph{width:60px;height:60px;border:1px solid var(--rule2);background:var(--panel)}
+.who h3{font:400 38px/1 var(--display)}
+.who .m{font:12px var(--mono);color:var(--dim);margin-top:4px}
+.dbadges{margin-top:18px;display:grid;gap:9px}
+.dbadges div{display:flex;gap:12px;align-items:center;font:14px var(--serif)}
+.dbadges small{font:11px var(--mono);color:var(--faint);margin-left:auto}
+.pair{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--ink);margin-top:14px}
+.pair div{padding:12px 0}.pair div+div{padding-left:16px;border-left:1px solid var(--rule)}
+.pair b{display:block;font:400 34px/1.05 var(--display);margin-top:4px}
+.pair .g{color:var(--good)}
+.rows{margin-top:14px;border-top:1px solid var(--ink)}
+.rows div{display:grid;grid-template-columns:1fr auto 34px;gap:10px;padding:8px 0;border-bottom:1px dotted var(--rule2);font:12.5px var(--mono);font-stretch:82%}
+.rows dt{font:14px var(--serif);color:var(--dim)}.rows span{color:var(--faint);text-align:right}
+.bigcurve{width:100%;height:auto;color:var(--ink)}
+.bigcurve text{font:10px var(--mono);font-stretch:82%;letter-spacing:.14em;fill:var(--faint)}
+.bigcurve .num{font:400 26px var(--display);letter-spacing:0;fill:var(--ink)}
+
+/* the badge sheet */
+.sheet{padding:70px 0 120px}
+.sheet h2{font:400 46px/1 var(--display)}
+.sheet h2 em{font:italic 400 40px var(--serif)}
+.groups{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-top:1px solid var(--ink);margin-top:30px}
+.groups>div{padding:24px 28px 10px 0}.groups>div+div{padding-left:28px;border-left:1px solid var(--rule)}
+.groups h4{font:500 15px var(--display);letter-spacing:.28em;text-transform:uppercase;display:flex;gap:10px;align-items:center}
+.groups h4 i{width:8px;height:8px;border-radius:50%;background:var(--c)}
+.groups .good h4{color:var(--good)}.groups .bad h4{color:var(--bad)}.groups .neutral h4{color:var(--dim)}
+.groups p.d{font:italic 14px var(--serif);color:var(--dim);margin:6px 0 14px}
+.groups li{list-style:none;display:grid;grid-template-columns:40px 1fr auto;gap:14px;align-items:center;padding:10px 0;border-top:1px solid var(--rule)}
+.groups li b{font:400 16px var(--serif)}
+.groups li span.t{font:11px var(--mono);color:var(--faint)}
+.sizes{display:flex;gap:34px;align-items:center;margin-top:34px;padding-top:24px;border-top:1px solid var(--rule)}
+.sizes>div{display:flex;gap:10px;align-items:center}
+.sizes .lbl{font:10.5px var(--mono);color:var(--faint);letter-spacing:.14em;text-transform:uppercase}
+</style></head>
+<body>
+<header>
+  <div class="wrap bar">
+    <nav><a class="on">Tools</a><a>Feed</a><a>My Team</a><a>The Observatory</a></nav>
+    <a class="brand"><span class="hole"></span>Singularity Dynasty</a>
+    <div class="r"><a>Plans</a><a>Account</a><a class="in">My Team →</a><span class="tg" id="tg">◐</span></div>
+  </div>
+  <div class="ticker"><span class="lab">VS PACE</span><span class="track" id="track"></span></div>
+</header>
+
+<section class="head">
+  <svg class="starfield" id="stars" preserveAspectRatio="xMidYMid slice"></svg>
+  <div class="wrap">
+    <div>
+      <div class="k eyebrow"><i></i>Week 9 · 2026 · Updated Tuesday</div>
+      <h1>Weekly Projection <em>Rankings</em></h1>
+      <p class="sub">Every player's floor, median and ceiling for the week ahead, drawn from ten thousand simulated games.</p>
+    </div>
+    <div class="acts"><button class="btn">Player comparison</button><button class="btn">Export CSV</button></div>
+  </div>
+</section>
+
+<div class="wrap">
+  <div class="tools">
+    <div class="seg"><button class="on">All</button><button>QB</button><button>RB</button><button>WR</button><button>TE</button></div>
+    <div>Badges ▾</div><div>Teams ▾</div><div>★ My players</div>
+    <div class="s">Search a player</div>
+  </div>
+  <table>
+    <thead><tr><th class="l">#</th><th class="l">Player</th><th class="l">Pos</th><th>Proj</th><th class="l">Matchup</th><th>Floor</th><th class="l">Range</th><th>Ceiling</th><th>Pass yds</th><th>Rush yds</th><th>Rec</th><th class="l">Signals</th></tr></thead>
+    <tbody id="rows"></tbody>
+  </table>
+</div>
+
+<section class="sheet"><div class="wrap">
+  <div class="k">Badges</div>
+  <h2>Three colours, <em>the shape does the talking.</em></h2>
+  <div class="groups" id="groups"></div>
+  <div class="sizes" id="sizes"></div>
+</div></section>
+
+<div class="switch"><button id="m1" class="on">Dark</button><button id="m2">Light</button></div>
+
+<script>
+const D={"icons":{"confidence":"<svg viewBox=\"0 0 24 24\" fill=\"currentColor\"><g transform=\"translate(11.61 10.55) scale(0.809) translate(-12.06 -11.42)\"><g transform=\"translate(0.6,1.2)\"><path d=\"M5 2.8a1 1 0 0 1 1 1v16.4a1 1 0 1 1-2 0V3.8a1 1 0 0 1 1-1z\"/><path d=\"M6.6 4.4c2.2-1.25 4.45-1.25 6.65 0s4.45 1.25 6.65 0v8.6c-2.2 1.25-4.45 1.25-6.65 0s-4.45-1.25-6.65 0z\"/></g></g></svg>","volatile":"<svg viewBox=\"0 0 24 24\" fill=\"currentColor\"><g transform=\"translate(11.99 11.96) scale(0.979) translate(-11.98 -11.97)\"><g transform=\"rotate(12 12 12)\"><path fill-rule=\"evenodd\" d=\"M6.9 3.5h10.2a3.4 3.4 0 0 1 3.4 3.4v10.2a3.4 3.4 0 0 1-3.4 3.4H6.9a3.4 3.4 0 0 1-3.4-3.4V6.9a3.4 3.4 0 0 1 3.4-3.4ZM8 6.5a1.55 1.55 0 1 0 0 3.1 1.55 1.55 0 0 0 0-3.1ZM16 6.5a1.55 1.55 0 1 0 0 3.1 1.55 1.55 0 0 0 0-3.1ZM12 10.45a1.55 1.55 0 1 0 0 3.1 1.55 1.55 0 0 0 0-3.1ZM8 14.4a1.55 1.55 0 1 0 0 3.1 1.55 1.55 0 0 0 0-3.1ZM16 14.4a1.55 1.55 0 1 0 0 3.1 1.55 1.55 0 0 0 0-3.1Z\"/></g></g></svg>","locked":"<svg viewBox=\"0 0 24 24\" fill=\"currentColor\"><g transform=\"translate(11.97 13.36) scale(1.003) translate(-11.98 -12.90)\"><g transform=\"translate(12 11.55) scale(0.9) translate(-12 -12)\"><path d=\"M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5zm-3 8V7a3 3 0 0 1 6 0v3H9zm3 4a1.6 1.6 0 0 1 1 2.85V18a1 1 0 1 1-2 0v-1.15A1.6 1.6 0 0 1 12 14z\"/></g></g></svg>","onFire":"<svg viewBox=\"0 0 24 24\" fill=\"currentColor\"><g transform=\"translate(12.04 12.42) scale(1.006) translate(-12.03 -12.14)\"><g transform=\"translate(0,-0.15)\"><path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M12.963 2.286a.75.75 0 00-1.071-.136 9.742 9.742 0 00-3.539 6.176 7.547 7.547 0 01-1.705-1.715.75.75 0 00-1.152-.082A9 9 0 1015.68 4.534a7.46 7.46 0 01-2.717-2.248zM15.75 14.25a3.75 3.75 0 11-7.313-1.172c.628.465 1.35.81 2.133.998a5.27 5.27 0 01-.32-1.83c0-1.014.377-1.94 1-2.647a3.752 3.752 0 014.5 4.65z\"/></g></g></svg>","onIce":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"butt\"><g transform=\"translate(11.99 11.97) scale(0.993) translate(-11.98 -11.97)\"><g transform=\"rotate(0 12 12)\"><path d=\"M12 12V4.2\" stroke-width=\"2.2\"/><path d=\"M12 6.9 10 4.9M12 6.9 14 4.9\" stroke-width=\"1.6\"/><path d=\"M12 1.5 13.5 3.7 12 5.9 10.5 3.7Z\" fill=\"currentColor\" stroke=\"none\"/></g><g transform=\"rotate(60 12 12)\"><path d=\"M12 12V4.2\" stroke-width=\"2.2\"/><path d=\"M12 6.9 10 4.9M12 6.9 14 4.9\" stroke-width=\"1.6\"/><path d=\"M12 1.5 13.5 3.7 12 5.9 10.5 3.7Z\" fill=\"currentColor\" stroke=\"none\"/></g><g transform=\"rotate(120 12 12)\"><path d=\"M12 12V4.2\" stroke-width=\"2.2\"/><path d=\"M12 6.9 10 4.9M12 6.9 14 4.9\" stroke-width=\"1.6\"/><path d=\"M12 1.5 13.5 3.7 12 5.9 10.5 3.7Z\" fill=\"currentColor\" stroke=\"none\"/></g><g transform=\"rotate(180 12 12)\"><path d=\"M12 12V4.2\" stroke-width=\"2.2\"/><path d=\"M12 6.9 10 4.9M12 6.9 14 4.9\" stroke-width=\"1.6\"/><path d=\"M12 1.5 13.5 3.7 12 5.9 10.5 3.7Z\" fill=\"currentColor\" stroke=\"none\"/></g><g transform=\"rotate(240 12 12)\"><path d=\"M12 12V4.2\" stroke-width=\"2.2\"/><path d=\"M12 6.9 10 4.9M12 6.9 14 4.9\" stroke-width=\"1.6\"/><path d=\"M12 1.5 13.5 3.7 12 5.9 10.5 3.7Z\" fill=\"currentColor\" stroke=\"none\"/></g><g transform=\"rotate(300 12 12)\"><path d=\"M12 12V4.2\" stroke-width=\"2.2\"/><path d=\"M12 6.9 10 4.9M12 6.9 14 4.9\" stroke-width=\"1.6\"/><path d=\"M12 1.5 13.5 3.7 12 5.9 10.5 3.7Z\" fill=\"currentColor\" stroke=\"none\"/></g><path d=\"M12 9.2l2.3 1.3v3L12 14.8l-2.3-1.3v-3Z\" fill=\"currentColor\" stroke=\"none\"/></g></svg>","buyLow":"<svg viewBox=\"0 0 24 24\" fill=\"currentColor\"><g transform=\"translate(11.95 10.55) scale(1.196) translate(-12.09 -11.62)\"><g transform=\"translate(0.68,-0.57)\"><path d=\"M12 20V11\" stroke=\"currentColor\" stroke-width=\"1.8\" fill=\"none\" stroke-linecap=\"round\"/><path d=\"M12 14.2c-3.6 0-6.2-2.3-6.2-6.5C9.9 8 12 10.4 12 14.2z\"/><path d=\"M12 11.3c2.9 0 5.1-1.9 5.1-5.4C13.9 6 12 8.1 12 11.3z\" opacity=\"0.85\"/></g></g></svg>","sellHigh":"<svg viewBox=\"0 0 24 24\" fill=\"currentColor\"><g transform=\"translate(11.97 12.19) scale(1.119) translate(-12.01 -12.10)\"><g transform=\"translate(0.12,0.2)\"><g transform=\"translate(-1.085,-1.115)\"><path d=\"M10.3 4.2c-.5 0-1 .3-1.1.8l-.5 1.7c-2.8 1.1-4.7 3.8-4.7 7 0 4.3 3.9 7.8 9 7.8s9-3.5 9-7.8c0-3.2-1.9-5.9-4.7-7l-.5-1.7c-.1-.5-.6-.8-1.1-.8z\"/><g transform=\"translate(0.8,-0.15)\"><path d=\"M12 8.3v9.4M14.1 10c-.4-.4-1.2-.8-2-.8-1.1 0-2 .6-2 1.6 0 1 1 1.4 2 1.7 1.3.3 2.3.8 2.3 1.9 0 1-.9 1.7-2.1 1.7-.9 0-1.8-.4-2.3-.9\" stroke=\"var(--peak)\" stroke-width=\"1.4\" fill=\"none\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></g></g></g></g></svg>","honorable":"<svg viewBox=\"0 0 24 24\" fill=\"currentColor\"><g transform=\"translate(12.66 12.06) scale(0.936) translate(-12.19 -12.18)\"><g transform=\"translate(0.43,0.18)\"><g transform=\"translate(-0.454,0.974)\"><path d=\"M12 3.2 1.5 8l10.5 4.8L20 9.2v5.4h1.5V8L12 3.2z\"/><path d=\"M5 10.4v4.3c0 1.7 3.1 3.4 7 3.4s7-1.7 7-3.4v-4.3l-7 3.2-7-3.2z\" opacity=\"0.85\"/><path d=\"M18.5 10v6.6\" stroke=\"currentColor\" stroke-width=\"1.2\" fill=\"none\" stroke-linecap=\"round\"/><circle cx=\"18.5\" cy=\"17.6\" r=\"1.1\"/></g></g></g></svg>","solidFloor":"<svg viewBox=\"0 0 24 24\" fill=\"currentColor\"><g transform=\"translate(12 12) scale(1.05) translate(-12.1 -12.7)\"><path fill-rule=\"evenodd\" d=\"M3.2 18.6 4.6 11.2 8.8 6.2 15.2 5.2 20 8.8 21 15.6 17.6 19.6 8.2 20.2ZM9.6 6.9 10.7 6.7 12 12.4 9.2 18.8 8 18.4 10.4 12.5ZM15.4 5.9 16.4 6 16.1 11.2 19.9 14.4 19.6 15.6 14.8 12.2Z\"/></g></svg>","highCeiling":"<svg viewBox=\"0 0 24 24\" fill=\"currentColor\"><g transform=\"translate(12 12) scale(1.15) translate(-12.5 -12.75)\"><path d=\"M4 14.5a4 4 0 1 0 8 0a4 4 0 1 0-8 0Z\"/><path d=\"M8 12a5 5 0 1 0 10 0a5 5 0 1 0-10 0Z\"/><path d=\"M14 15a3.5 3.5 0 1 0 7 0a3.5 3.5 0 1 0-7 0Z\"/><path d=\"M8 14.5h9.5v4H8Z\"/></g></svg>","rookie":"<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.9\" stroke-linejoin=\"round\"><g transform=\"translate(12.54 11.59) scale(1.031) translate(-11.62 -11.60)\"><path d=\"M10 3.6h4.2v16.8h-3.4V8.2L8 9.7V6.6Z\"/></g></svg>","eliteRole":"<svg viewBox=\"0 0 24 24\" fill=\"currentColor\"><g transform=\"translate(11.99 13.00) scale(0.845) translate(-11.98 -12.88)\"><path fill-rule=\"evenodd\" d=\"M12 3.2 18.2 8.4V10H22V20.2H2V10H5.8V8.4ZM12 6.4a1 1 0 1 0 0 2 1 1 0 0 0 0-2ZM10.6 19.4V15.6a1.4 1.4 0 0 1 2.8 0v3.8ZM4 12.4h2.8v3.2H4ZM17.2 12.4h2.8v3.2h-2.8Z\"/></g></svg>","elitePlayer":"<svg viewBox=\"0 0 24 24\" fill=\"currentColor\"><g transform=\"translate(11.97 11.04) scale(0.802) translate(-11.97 -10.81)\"><path d=\"M9.6 9C5.4 9.4 2.4 6.6 2.8 1.6C4.8 4.4 7.6 4.8 11 5.6Z\"/><path d=\"M14.4 9c4.2.4 7.2-2.4 6.8-7.4-2 2.8-4.8 3.2-8.2 4Z\"/><path d=\"M8.4 11 2.4 10C2.6 12.4 4.2 13.8 7 14Z\"/><path d=\"M15.6 11l6-1c-.2 2.4-1.8 3.8-4.6 4Z\"/><path fill-rule=\"evenodd\" d=\"M8.2 8.6h7.6l-.8 7c-.2 1.7-1.3 2.8-3 2.8s-2.8-1.1-3-2.8ZM9.3 11h1.8v1.1H9.3ZM12.9 11h1.8v1.1h-1.8ZM11 15.1a.5.5 0 1 0 0 1 .5.5 0 0 0 0-1ZM13 15.1a.5.5 0 1 0 0 1 .5.5 0 0 0 0-1Z\"/><path d=\"M10.6 18.4h2.8L12 22.4Z\"/></g></svg>","plusValue":"<svg viewBox=\"0 0 24 24\" fill=\"currentColor\"><path d=\"M10.2 3.5h3.6v6.7h6.7v3.6h-6.7v6.7h-3.6v-6.7H3.5v-3.6h6.7Z\"/></svg>","minusValue":"<svg viewBox=\"0 0 24 24\" fill=\"currentColor\"><path d=\"M3.5 10.2h17v3.6h-17Z\"/></svg>","conArtist":"<svg viewBox=\"0 0 24 24\" fill=\"currentColor\"><g transform=\"translate(11.99 11.62) scale(0.824) translate(-11.42 -11.47)\"><g transform=\"translate(-0.4,0.24)\"><path d=\"M2.245,3.02 C5.71,1.04 9.49,1.04 12.955,3.02 C14.215,9.95 10.3,15.3 7.6,16.29 C4.9,15.3 1.0,9.95 2.245,3.02 Z M5.395,7.31 A0.95,0.95 0 1,0 7.295,7.31 A0.95,0.95 0 1,0 5.395,7.31 Z M8.905,7.31 A0.95,0.95 0 1,0 10.805,7.31 A0.95,0.95 0 1,0 8.905,7.31 Z M4.954,11.27 Q7.6,10.17 10.246,11.27 Q7.6,7.87 4.954,11.27 Z\" opacity=\"0.55\" fill-rule=\"evenodd\"/><path d=\"M6.8 2.9 8.4 2.9 7.6 0.9Z\" opacity=\"0.55\"/><path d=\"M10.19,8.98 C13.82,6.91 17.78,6.91 21.41,8.98 C22.73,16.225 18.5,21.8 15.8,22.435 C13.1,21.8 8.87,16.225 10.19,8.98 Z M13.49,13.465 A1,1 0 1,0 15.49,13.465 A1,1 0 1,0 13.49,13.465 Z M17.11,13.465 A1,1 0 1,0 19.11,13.465 A1,1 0 1,0 17.11,13.465 Z M13.028,17.605 Q15.8,18.705 18.572,17.605 Q15.8,21.205 13.028,17.605 Z\" fill-rule=\"evenodd\"/><path d=\"M15 8.85 16.6 8.85 15.8 6.75Z\"/></g></g></svg>"},"ball":"<svg width=\"26\" height=\"26\" viewBox=\"5 5 54 54\" style=\"overflow:visible\" aria-hidden=\"true\" focusable=\"false\"><defs><radialGradient id=\"db3g\" cx=\"50%\" cy=\"50%\" r=\"50%\"><stop offset=\"0.6\" stop-color=\"#FF7A45\" stop-opacity=\"0.4\"/><stop offset=\"1\" stop-color=\"#FF7A45\" stop-opacity=\"0\"/></radialGradient><radialGradient id=\"db3b\" cx=\"37%\" cy=\"30%\" r=\"80%\"><stop offset=\"0\" stop-color=\"#FFEDB8\"/><stop offset=\"0.22\" stop-color=\"#FFC773\"/><stop offset=\"0.52\" stop-color=\"#FF9A4D\"/><stop offset=\"0.76\" stop-color=\"#FF7A45\"/><stop offset=\"1\" stop-color=\"#A93A0B\"/></radialGradient><radialGradient id=\"db3h\" cx=\"50%\" cy=\"50%\" r=\"50%\"><stop offset=\"0\" stop-color=\"#fff\" stop-opacity=\"0.92\"/><stop offset=\"1\" stop-color=\"#fff\" stop-opacity=\"0\"/></radialGradient><radialGradient id=\"db3u\" cx=\"50%\" cy=\"100%\" r=\"70%\"><stop offset=\"0\" stop-color=\"#FFD9A0\" stop-opacity=\"0.55\"/><stop offset=\"1\" stop-color=\"#FFD9A0\" stop-opacity=\"0\"/></radialGradient></defs><circle cx=\"32\" cy=\"32\" r=\"31.5\" fill=\"url(#db3g)\"/><circle cx=\"32\" cy=\"32\" r=\"27\" fill=\"url(#db3b)\" stroke=\"#5E1D06\" stroke-width=\"1.4\"/><circle cx=\"32\" cy=\"32\" r=\"27\" fill=\"url(#db3u)\"/><circle cx=\"32\" cy=\"32\" r=\"24.3\" fill=\"none\" stroke=\"#fff\" stroke-opacity=\"0.25\" stroke-width=\"0.8\"/><g transform=\"translate(32 32) scale(.93) translate(-32 -32)\"><polygon points=\"32,11 34.13,17.56 41.04,17.56 35.45,21.62 37.58,28.19 32,24.13 26.42,28.19 28.55,21.62 22.96,17.56 29.87,17.56\" fill=\"#D81E14\" stroke=\"#6E0A04\" stroke-width=\"1.1\" stroke-linejoin=\"round\"/><polygon points=\"21.5,29 23.63,35.56 30.54,35.56 24.95,39.62 27.08,46.19 21.5,42.13 15.92,46.19 18.05,39.62 12.46,35.56 19.37,35.56\" fill=\"#D81E14\" stroke=\"#6E0A04\" stroke-width=\"1.1\" stroke-linejoin=\"round\"/><polygon points=\"42.5,29 44.63,35.56 51.54,35.56 45.95,39.62 48.08,46.19 42.5,42.13 36.92,46.19 39.05,39.62 33.46,35.56 40.37,35.56\" fill=\"#D81E14\" stroke=\"#6E0A04\" stroke-width=\"1.1\" stroke-linejoin=\"round\"/></g><ellipse cx=\"22.5\" cy=\"18.5\" rx=\"10\" ry=\"5.6\" transform=\"rotate(-35 22.5 18.5)\" fill=\"url(#db3h)\"/><path d=\"M46.5 44a19.5 19.5 0 0 1-15 10.2\" fill=\"none\" stroke=\"#3DDCFF\" stroke-opacity=\"0.65\" stroke-width=\"1.8\" stroke-linecap=\"round\"/></svg>","ball30":"<svg width=\"30\" height=\"30\" viewBox=\"5 5 54 54\" style=\"overflow:visible\" aria-hidden=\"true\" focusable=\"false\"><defs><radialGradient id=\"db5g\" cx=\"50%\" cy=\"50%\" r=\"50%\"><stop offset=\"0.6\" stop-color=\"#FF7A45\" stop-opacity=\"0.4\"/><stop offset=\"1\" stop-color=\"#FF7A45\" stop-opacity=\"0\"/></radialGradient><radialGradient id=\"db5b\" cx=\"37%\" cy=\"30%\" r=\"80%\"><stop offset=\"0\" stop-color=\"#FFEDB8\"/><stop offset=\"0.22\" stop-color=\"#FFC773\"/><stop offset=\"0.52\" stop-color=\"#FF9A4D\"/><stop offset=\"0.76\" stop-color=\"#FF7A45\"/><stop offset=\"1\" stop-color=\"#A93A0B\"/></radialGradient><radialGradient id=\"db5h\" cx=\"50%\" cy=\"50%\" r=\"50%\"><stop offset=\"0\" stop-color=\"#fff\" stop-opacity=\"0.92\"/><stop offset=\"1\" stop-color=\"#fff\" stop-opacity=\"0\"/></radialGradient><radialGradient id=\"db5u\" cx=\"50%\" cy=\"100%\" r=\"70%\"><stop offset=\"0\" stop-color=\"#FFD9A0\" stop-opacity=\"0.55\"/><stop offset=\"1\" stop-color=\"#FFD9A0\" stop-opacity=\"0\"/></radialGradient></defs><circle cx=\"32\" cy=\"32\" r=\"31.5\" fill=\"url(#db5g)\"/><circle cx=\"32\" cy=\"32\" r=\"27\" fill=\"url(#db5b)\" stroke=\"#5E1D06\" stroke-width=\"1.4\"/><circle cx=\"32\" cy=\"32\" r=\"27\" fill=\"url(#db5u)\"/><circle cx=\"32\" cy=\"32\" r=\"24.3\" fill=\"none\" stroke=\"#fff\" stroke-opacity=\"0.25\" stroke-width=\"0.8\"/><g transform=\"translate(32 32) scale(.93) translate(-32 -32)\"><polygon points=\"32,9 33.8,14.53 39.61,14.53 34.91,17.94 36.7,23.47 32,20.06 27.3,23.47 29.09,17.94 24.39,14.53 30.2,14.53\" fill=\"#D81E14\" stroke=\"#6E0A04\" stroke-width=\"1.1\" stroke-linejoin=\"round\"/><polygon points=\"46.27,19.36 48.07,24.89 53.88,24.89 49.18,28.3 50.97,33.83 46.27,30.42 41.57,33.83 43.36,28.3 38.66,24.89 44.47,24.89\" fill=\"#D81E14\" stroke=\"#6E0A04\" stroke-width=\"1.1\" stroke-linejoin=\"round\"/><polygon points=\"40.82,36.14 42.62,41.67 48.43,41.67 43.73,45.08 45.52,50.61 40.82,47.2 36.12,50.61 37.91,45.08 33.21,41.67 39.02,41.67\" fill=\"#D81E14\" stroke=\"#6E0A04\" stroke-width=\"1.1\" stroke-linejoin=\"round\"/><polygon points=\"23.18,36.14 24.98,41.67 30.79,41.67 26.09,45.08 27.88,50.61 23.18,47.2 18.48,50.61 20.27,45.08 15.57,41.67 21.38,41.67\" fill=\"#D81E14\" stroke=\"#6E0A04\" stroke-width=\"1.1\" stroke-linejoin=\"round\"/><polygon points=\"17.73,19.36 19.53,24.89 25.34,24.89 20.64,28.3 22.43,33.83 17.73,30.42 13.03,33.83 14.82,28.3 10.12,24.89 15.93,24.89\" fill=\"#D81E14\" stroke=\"#6E0A04\" stroke-width=\"1.1\" stroke-linejoin=\"round\"/></g><ellipse cx=\"22.5\" cy=\"18.5\" rx=\"10\" ry=\"5.6\" transform=\"rotate(-35 22.5 18.5)\" fill=\"url(#db5h)\"/><path d=\"M46.5 44a19.5 19.5 0 0 1-15 10.2\" fill=\"none\" stroke=\"#3DDCFF\" stroke-opacity=\"0.65\" stroke-width=\"1.8\" stroke-linecap=\"round\"/></svg>"};
+const I=D.icons;
+// kind: good (ember) / bad (cold blue) / neutral (ink); solid = filled disc for the ones that matter most
+const B={
+ onFire:{n:"On Fire",k:"good",d:"scoring above his ceiling two weeks running"},
+ buyLow:{n:"Buy Low",k:"good",d:"under-scoring his usage"},
+ smash:{n:"Smash Spot",k:"good",d:"a matchup that favours him",arrow:"up"},
+ honorable:{n:"Honorable",k:"good",d:"four of five games above expectation"},
+ eliteRole:{n:"Elite Role",k:"good",solid:1,d:"top five at his position by role"},
+ elitePlayer:{n:"Elite Player",k:"good",solid:1,d:"top five at his position by play"},
+ plusValue:{n:"Plus Value",k:"good",d:"production ahead of his role"},
+ solidFloor:{n:"Anti-Loser Floor",k:"good",d:"a high floor and median"},
+ highCeiling:{n:"Long Shot Winners",k:"good",d:"a very high ceiling"},
+ onIce:{n:"On Thin Ice",k:"bad",d:"under his floor two weeks running"},
+ tough:{n:"Tough Spot",k:"bad",d:"a matchup that works against him",arrow:"down"},
+ conArtist:{n:"Con Artist",k:"bad",d:"four of five games below expectation"},
+ minusValue:{n:"Minus Value",k:"bad",d:"role ahead of his production"},
+ confidence:{n:"Established",k:"neutral",d:"a long track record"},
+ rookie:{n:"Rookie",k:"neutral",d:"first NFL season"},
+ volatile:{n:"Risky Icarus",k:"neutral",d:"a very wide range"},
+ locked:{n:"Steady Eddy",k:"neutral",d:"a very narrow range"},
+ sellHigh:{n:"Sell High",k:"neutral",d:"above his usage, may cool"}};
+const arrow=up=>`<svg class="arrow" viewBox="-2.4 -2.4 28.8 28.8" fill="currentColor"><path d="${up?"M12 4 19 11.5h-4.5V20h-5v-8.5H5Z":"M12 20 19 12.5h-4.5V4h-5v8.5H5Z"}"/></svg>`;
+const badge=(key,s=22)=>{if(key==="hero")return `<span class="bd ball s${s}">${s>=30?D.ball30:D.ball}</span>`;const b=B[key];return `<span class="bd ${b.k}${b.solid?" solid":""} s${s}">${b.arrow?arrow(b.arrow==="up"):I[key]}</span>`;};
+
+// the ticker: name, a signed number, up to two small glyphs
+const T=[["Prescott","+4.2","g",["smash"]],["C. Williams","−2.8","b",["onIce"]],["Chase","+6.1","g",["onFire","hero"]],["Hubbard","−1.4","b",[]],["Love","+0.9","g",["buyLow"]],["Lawrence","+3.3","g",["locked"]],["Burrow","+5.7","g",["onFire"]],["Allen","−0.6","b",["tough"]],["Maye","+2.4","g",["honorable"]]];
+const tk=T.map(([n,v,c,b])=>`<span class="tk"><b>${n}</b><span class="n ${c}">${v}</span>${b.map(k=>badge(k,15)).join("")}</span>`).join("");
+document.getElementById("track").innerHTML=tk+tk;
+
+const R=[[1,"Jahmyr Gibbs","RB","DET","vs GB",25.2,9.4,39.9,["onFire","smash","hero"],0,98.7,38.5],[2,"Jaxon Smith-Njigba","WR","SEA","vs ARI",24.0,12.6,37.0,["eliteRole","buyLow"],0,0,118.0],[3,"Joe Burrow","QB","CIN","@ ATL",23.3,8.3,33.7,["onFire","plusValue"],308.9,8.9,0],[4,"Josh Allen","QB","BUF","@ MIN",23.3,10.4,39.9,["elitePlayer","locked"],246.1,37.1,0],[5,"Trey McBride","TE","ARI","@ SEA",14.6,7.9,24.2,["tough","onIce"],0,0,92.0],[6,"Puka Nacua","WR","LAR","@ NO",18.2,8.8,29.7,["smash","confidence"],0,0,104.0],[7,"Bijan Robinson","RB","ATL","vs CIN",19.1,10.4,30.6,["minusValue","rookie"],0,62.0,41.0],[8,"Lamar Jackson","QB","BAL","vs MIA",22.1,12.0,36.4,["conArtist","sellHigh"],231.0,58.4,0]];
+const curve=(fl,m,c,w=120,h=28)=>{const x=v=>2+(v/42)*(w-4);let d="";for(let i=0;i<=44;i++){const v=fl-6+i*((c-fl+12)/44);const s=v<m?(m-fl)/1.28:(c-m)/1.28;const y=h-2-(h-6)*Math.exp(-((v-m)**2)/(2*s*s));d+=(i?" L":"M")+x(v).toFixed(1)+" "+y.toFixed(1);}
+ return `<svg class="curve" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><path class="area" d="${d} L${x(c+6)} ${h-2} L${x(fl-6)} ${h-2}Z"/><path class="ln" d="${d}"/><line class="f" x1="${x(fl)}" x2="${x(fl)}" y1="${h-9}" y2="${h-1}"/><line class="m" x1="${x(m)}" x2="${x(m)}" y1="3" y2="${h-1}"/><line class="c" x1="${x(c)}" x2="${x(c)}" y1="${h-9}" y2="${h-1}"/></svg>`;};
+const dash=v=>v?v.toFixed(1):"–";
+function render(){
+ document.getElementById("rows").innerHTML=R.map(([r,n,p,t,o,pj,fl,ce,b,py,ry,rec],i)=>`<tr class="row${i===0?" open":""}" onclick="this.classList.toggle('open');this.nextElementSibling&&this.nextElementSibling.classList.contains('detail')&&(this.nextElementSibling.style.display=this.classList.contains('open')?'table-row':'none')">
+  <td class="l no">${String(r).padStart(2,"0")}</td><td class="pl">${n}<small>${t}</small></td><td class="pos">${p}</td><td class="proj">${pj.toFixed(1)}</td><td class="l opp">${o}</td><td class="fl">${fl.toFixed(1)}</td><td class="l">${curve(fl,pj,ce)}</td><td class="ce">${ce.toFixed(1)}</td>
+  <td class="stat ${py?"":"d"}">${dash(py)}</td><td class="stat ${ry?"":"d"}">${dash(ry)}</td><td class="stat ${rec?"":"d"}">${dash(rec)}</td><td class="l"><span class="bdgs">${b.map(k=>badge(k,22)).join("")}</span></td></tr>
+  ${i===0?detail():""}`).join("");
+}
+function detail(){return `<tr class="detail"><td colspan="12"><div class="dgrid">
+ <div><div class="who"><div class="ph"></div><div><h3>Jahmyr Gibbs</h3><div class="m">RB1 · DET · 5'9" · 207 lbs · 24.6 yrs</div></div></div>
+  <div class="dbadges">${["onFire","smash","hero"].map(k=>`<div>${badge(k,30)}<span>${k==="hero"?"5x Super Hero":B[k].n}</span><small>${k==="hero"?"top-3 finishes":B[k].d}</small></div>`).join("")}</div></div>
+ <div><div class="k">This week · projected vs GB</div><div class="pair"><div><div class="k">Position rank</div><b>RB1</b></div><div><div class="k">Median</div><b class="g">25.2</b></div></div>
+  <div class="k" style="margin-top:22px">Stats vs. the RB pool</div><dl class="rows"><div><dt>xFP per game</dt><dd>18.4</dd><span>#2</span></div><div><dt>Touches per game</dt><dd>21.6</dd><span>#4</span></div><div><dt>Goal-line touches</dt><dd>1.3</dd><span>#1</span></div></dl></div>
+ <div><div class="k">Outcome curve</div>${big(9.4,25.2,39.9)}</div></div></td></tr>`;}
+function big(fl,m,c){const W=360,H=190,x=v=>12+(v/45)*(W-24),base=140;const yAt=v=>{const s=v<m?(m-fl)/1.2816:(c-m)/1.2816;return base-100*Math.exp(-((v-m)**2)/(2*s*s));};let d="";for(let i=0;i<=120;i++){const v=i*45/120;d+=(i?" L":"M")+x(v).toFixed(1)+" "+yAt(v).toFixed(1);}
+ return `<svg class="bigcurve" viewBox="0 0 ${W} ${H}"><path d="${d} L${x(45)} ${base} L${x(0)} ${base}Z" fill="rgba(var(--rgb),.07)"/><path d="${d}" fill="none" stroke="currentColor" stroke-width="1.2"/><line x1="${x(0)}" x2="${x(45)}" y1="${base}" y2="${base}" stroke="currentColor" stroke-opacity=".35"/>
+ ${[[fl,"FLOOR","var(--bad)"],[m,"MEDIAN","currentColor"],[c,"CEILING","var(--good)"]].map(([v,l,col])=>`<line x1="${x(v)}" x2="${x(v)}" y1="${yAt(v)}" y2="${base}" stroke="${col}" stroke-width="${l==="MEDIAN"?1.4:1}"/><circle cx="${x(v)}" cy="${yAt(v)}" r="3" fill="${col}"/><text class="num" x="${x(v)}" y="${yAt(v)-12}" text-anchor="middle" ${col!=="currentColor"?`style="fill:${col}"`:""}>${v.toFixed(1)}</text><text x="${x(v)}" y="${base+20}" text-anchor="middle">${l}</text>`).join("")}</svg>`;}
+
+// the badge sheet
+const G={good:["Ember","good for him: form, value, matchup, standing"],bad:["Cold blue","bad for him: cold form, a worse matchup, an overrated role"],neutral:["Ink","informational: it describes him, it doesn't grade him"]};
+document.getElementById("groups").innerHTML=["good","bad","neutral"].map(k=>`<div class="${k}"><h4><i style="--c:var(--${k==="neutral"?"dim":k})"></i>${G[k][0]}</h4><p class="d">${G[k][1]}</p><ul>${Object.entries(B).filter(([,b])=>b.k===k).map(([key,b])=>`<li>${badge(key,40)}<b>${b.n}</b><span class="t">${b.solid?"solid":""}</span></li>`).join("")}${k==="good"?`<li>${badge("hero",40)}<b>Super Hero</b><span class="t">unchanged</span></li>`:""}</ul></div>`).join("");
+document.getElementById("sizes").innerHTML=`<div><span class="lbl">Ticker 15</span>${["onFire","onIce","locked","hero"].map(k=>badge(k,15)).join("")}</div><div><span class="lbl">Table 22</span>${["onFire","onIce","locked","smash","tough","hero"].map(k=>badge(k,22)).join("")}</div><div><span class="lbl">Header 30</span>${["eliteRole","onIce","rookie","hero"].map(k=>badge(k,30)).join("")}</div>`;
+
+// a faint starfield and one orbit behind the page title
+(()=>{const s=document.getElementById("stars");let g="";let a=3;const rnd=()=>((a=(a*16807)%2147483647)/2147483647);s.setAttribute("viewBox","0 0 1400 300");
+ for(let i=0;i<70;i++)g+=`<circle cx="${rnd()*1400}" cy="${rnd()*300}" r="${(Math.pow(rnd(),3)*1.3+.3).toFixed(2)}" fill="currentColor" fill-opacity="${(.1+rnd()*.3).toFixed(2)}"/>`;
+ g+=`<ellipse cx="1150" cy="170" rx="330" ry="110" fill="none" stroke="currentColor" stroke-opacity=".14" transform="rotate(-8 1150 170)"/><ellipse cx="1150" cy="170" rx="230" ry="76" fill="none" stroke="currentColor" stroke-opacity=".14" transform="rotate(-8 1150 170)"/><circle cx="1380" cy="130" r="4" fill="var(--good)"/>`;s.innerHTML=g;})();
+const setMode=l=>{document.body.classList.toggle("light",l);document.getElementById("m1").classList.toggle("on",!l);document.getElementById("m2").classList.toggle("on",l);};
+document.getElementById("m1").onclick=()=>setMode(false);document.getElementById("m2").onclick=()=>setMode(true);document.getElementById("tg").onclick=()=>setMode(!document.body.classList.contains("light"));
+render();
+</script>
+</body></html>

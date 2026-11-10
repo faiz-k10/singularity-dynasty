@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>My Team layouts</title>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=Martian+Mono:wdth,wght@75..112,400;75..112,700&display=swap" rel="stylesheet">
+<style>
+:root{--void:#030908;--p1:#09130F;--p2:#0D1B17;--line:#1A2A26;--star:#E6F4F1;--dim:#8C95A3;--red:#E11D48;--steel:#8C95A3;--mint:#2DD4BF}
+*{box-sizing:border-box;margin:0}
+body{background:var(--void);color:var(--star);font:14px/1.4 Georgia,serif;padding:0 0 60px}
+.mono{font-family:'Martian Mono',monospace;font-stretch:82%}
+.disp{font-family:'Big Shoulders Display',sans-serif;font-weight:800}
+.switch{position:sticky;top:0;z-index:9;background:var(--void);border-bottom:1px solid var(--line);display:flex;gap:8px;padding:12px 20px;align-items:center;flex-wrap:wrap}
+.switch b{font:12px 'Martian Mono',monospace;color:var(--dim);margin-right:8px;letter-spacing:.08em}
+.switch button{font:12px 'Martian Mono',monospace;font-stretch:82%;background:none;color:var(--star);border:1px solid var(--line);padding:8px 14px;border-radius:2px;cursor:pointer}
+.switch button.on{background:var(--mint);color:#021210;border-color:var(--mint)}
+.note{padding:14px 20px;color:var(--dim);font-size:13px;max-width:980px}
+.note strong{color:var(--star)}
+.stage{padding:0 20px}
+.panel{background:var(--p1);border:1px solid var(--line);border-top:2px solid #2a3d38;border-radius:2px}
+.eyebrow{font:10.5px 'Martian Mono',monospace;font-stretch:82%;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+.h{font-family:'Big Shoulders Display';font-weight:800;font-size:22px;letter-spacing:.01em}
+.pos{font:700 10px 'Martian Mono',monospace;font-stretch:82%;padding:2px 6px;border-radius:2px;color:#0b0b0b}
+.QB{background:#EF5B87}.RB{background:#33C9A5}.WR{background:#4F9DFF}.TE{background:#F5A04A}
+.up{color:var(--mint)}.dn{color:var(--red)}
+.bar{height:4px;background:rgba(230,244,241,.08)}.bar i{display:block;height:100%;background:var(--mint)}
+.chip{font:10.5px 'Martian Mono',monospace;font-stretch:82%;border:1px solid var(--line);padding:2px 7px;border-radius:2px;color:var(--dim);white-space:nowrap}
+.seg{display:flex;border:1px solid var(--line);border-radius:2px;overflow:hidden;width:max-content}
+.seg button{font:12px 'Martian Mono',monospace;font-stretch:82%;background:none;color:var(--star);border:0;padding:8px 14px;cursor:pointer}
+.seg button.on{background:var(--mint);color:#021210}
+.pulse{display:flex;height:8px;gap:0}.pulse i{display:block;height:100%}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--dim)}
+.legend span:before{content:"";display:inline-block;width:8px;height:8px;background:var(--c);margin-right:6px}
+table{border-collapse:collapse;width:100%}
+th{font:10px 'Martian Mono',monospace;font-stretch:82%;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--p1)}
+td{padding:7px 10px;border-bottom:1px solid var(--line);font-size:13px;vertical-align:middle}
+tr.sel td{background:rgba(45,212,191,.07)}
+tr.clk{cursor:pointer}tr.clk:hover td{background:rgba(230,244,241,.04)}
+.scroll{overflow:auto}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px}
+.kpi{display:flex;flex-direction:column;gap:2px;padding:12px 16px;border-right:1px solid var(--line)}
+.kpi .n{font:800 34px/1 'Big Shoulders Display'}
+.sub{color:var(--dim);font-size:12px}
+.grid{display:grid;gap:12px}
+.v{display:none}.v.on{display:block}
+</style></head><body>
+<div class="switch"><b>LAYOUT</b>
+<button data-v="a" class="on">A · Tabbed workspace</button>
+<button data-v="b">B · One-screen command grid</button>
+<button data-v="c">C · List + detail pane</button>
+<button data-v="d">D · One player table</button>
+<button data-v="e">E · Rail + focus view</button>
+</div>
+<div class="note" id="note"></div>
+<div class="stage">
+<div id="a" class="v on"></div><div id="b" class="v"></div><div id="c" class="v"></div><div id="d" class="v"></div><div id="e" class="v"></div>
+</div>
+<script>
+const BAD=[["Super Hero",17,"#2DD4BF"],["Buy Low",2,"#B6E22E"],["Sell High",6,"#FACC15"],["Risky Icarus",4,"#A78BFA"],["Steady Eddy",5,"#4ADE80"],["On Fire",5,"#FF2400"],["On Thin Ice",8,"#4F8EF7"],["Con Artist",21,"#E879F9"],["Honorable",12,"#2DD4BF"]];
+const P=[
+["Geno Smith","QB",4,80,"Out","—",["Con Artist"],"QB14 → QB11",+2.1,"Fantasy Degenerates · Dynasty Free Play · 2 more"],
+["Cole Payton","QB",4,80,"Starter","—",["Super Hero"],"QB22 → QB19",+1.4,"4 leagues"],
+["Antonio Williams","WR",3,60,"Starter","—",["Honorable","On Fire"],"WR31 → WR24",+3.2,"3 leagues"],
+["Chigoziem Okonkwo","TE",3,60,"Starter","—",["Steady Eddy"],"TE18 → TE16",+0.6,"3 leagues"],
+["Jayden Daniels","QB",2,40,"Starter","Q",["Super Hero","On Thin Ice"],"QB6 → QB7",-0.9,"2 leagues"],
+["Trevor Lawrence","QB",2,40,"Starter","—",["Con Artist"],"QB15 → QB15",0,"2 leagues"],
+["Jacoby Brissett","QB",1,20,"Out","OUT",["Con Artist"],"QB18 → QB21",-21,"Fantasy Degenerates"],
+["Terrance Ferguson","TE",2,40,"Out","OUT",[],"TE46 → TE49",-5,"Dynasty Free Play · Dynasty Kingdom"],
+["Treylon Burks","WR",1,20,"Out","OUT",["On Thin Ice"],"WR88 → WR97",-4,"Fantasy Degenerates"],
+["Chris Godwin","WR",2,40,"Starter","—",["Sell High"],"WR22 → WR20",+1.1,"2 leagues"],
+];
+const badgeDots=b=>b.map(n=>`<span class="dot" style="background:${BAD.find(x=>x[0]==n)[2]}" title="${n}"></span>`).join("");
+const chg=v=>v==0?'<span class="sub">—</span>':`<span class="${v>0?'up':'dn'} mono">${v>0?'+':''}${v}</span>`;
+const pulse=()=>`<div class="pulse">${BAD.map(b=>`<i style="flex:${b[1]};background:${b[2]}"></i>`).join("")}</div><div class="legend" style="margin-top:8px">${BAD.map(b=>`<span style="--c:${b[2]}">${b[0]} <b style="color:var(--star)">${b[1]}</b></span>`).join("")}</div>`;
+const gm=`<div style="display:flex;align-items:center;gap:12px"><div><div class="eyebrow">GM archetype</div><div class="mono" style="font-size:17px;font-weight:700;letter-spacing:.06em">The Opportunist</div></div></div>`;
+const moved=`<div class="eyebrow">Your players this week</div>`;
+function movesList(n){return P.slice(0,n).map(p=>`<div style="display:grid;grid-template-columns:26px 1fr auto;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);align-items:center"><span class="${p[8]>=0?'up':'dn'}">${p[8]>=0?'▲':'▼'}</span><div><b>${p[0]}</b> <span class="pos ${p[1]}">${p[1]}</span><div class="sub">${p[5]=='OUT'?'Listed OUT for week 9 · ':''}${p[7]}</div></div>${chg(p[8])}</div>`).join("")}
+function expTable(n,extra){return `<table><tr><th>#</th><th>Player</th><th>Pos</th><th>Teams</th><th style="width:120px">Exposure</th>${extra?'<th>Badges</th><th>Change</th>':''}</tr>${P.slice(0,n).map((p,i)=>`<tr><td class="sub">${i+1}</td><td>${p[0]}</td><td><span class="pos ${p[1]}">${p[1]}</span></td><td class="mono">${p[2]}/5</td><td><div class="bar"><i style="width:${p[3]}%"></i></div></td>${extra?`<td>${badgeDots(p[6])}</td><td>${chg(p[8])}</td>`:''}</tr>`).join("")}</table>`}
+const heading=(small)=>`<div class="disp" style="font-size:${small?34:46}px;padding:16px 0 10px">jaysship7’s Teams</div>`;
+
+// A tabbed
+document.getElementById('a').innerHTML=heading()+`
+<div class="panel" style="display:flex;align-items:stretch;margin-bottom:12px">
+ <div class="kpi" style="min-width:230px">${gm}</div>
+ <div class="kpi"><div class="n">5</div><div class="sub">teams</div></div>
+ <div class="kpi"><div class="n">103</div><div class="sub">players</div></div>
+ <div class="kpi"><div class="n up">64</div><div class="sub">starters moved</div></div>
+ <div class="kpi"><div class="n dn">3</div><div class="sub">starters OUT</div></div>
+ <div class="kpi" style="border:0;flex:1;justify-content:center">${pulse()}</div>
+</div>
+<div class="seg" style="margin-bottom:12px"><button class="on">This week</button><button>Exposure</button><button>Badges</button><button>Analytics</button></div>
+<div class="panel" style="padding:16px;display:grid;grid-template-columns:1.3fr 1fr;gap:24px;height:430px">
+ <div class="scroll">${moved}${movesList(9)}</div>
+ <div class="scroll"><div class="eyebrow" style="margin-bottom:6px">Top exposure</div>${expTable(8)}</div>
+</div>`;
+
+// B command grid
+document.getElementById('b').innerHTML=`<div style="display:flex;justify-content:space-between;align-items:end"><div class="disp" style="font-size:34px;padding:12px 0 8px">jaysship7’s Teams</div><div class="seg"><button class="on">Today</button><button>Week 9</button><button>Season</button></div></div>
+<div class="grid" style="grid-template-columns:repeat(12,1fr);grid-template-rows:auto 1fr;height:640px">
+ <div class="panel" style="grid-column:span 3;padding:16px">${gm}<div style="margin-top:14px" class="grid"><div><div class="n disp" style="font-size:44px;line-height:1">2.4</div><div class="sub">wins expected of 5 matchups</div></div><div><div class="disp up" style="font-size:44px;line-height:1">64</div><div class="sub">starters moved since week 8</div></div></div></div>
+ <div class="panel" style="grid-column:span 5;padding:16px"><div class="h">Portfolio Pulse</div><div class="sub" style="margin:2px 0 12px">80 badges earned across your players</div>${pulse()}</div>
+ <div class="panel" style="grid-column:span 4;padding:16px"><div class="h">Needs attention</div><div style="margin-top:8px">${P.filter(p=>p[5]=='OUT'||p[5]=='Q').map(p=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)"><span>${p[0]} <span class="pos ${p[1]}">${p[1]}</span></span><span class="chip" style="color:${p[5]=='OUT'?'var(--red)':'#FACC15'}">${p[5]}</span></div>`).join("")}</div></div>
+ <div class="panel scroll" style="grid-column:span 7;padding:16px">${moved}${movesList(10)}</div>
+ <div class="panel scroll" style="grid-column:span 5;padding:16px"><div class="h" style="margin-bottom:6px">Player exposure</div>${expTable(10)}</div>
+</div>`;
+
+// C master-detail
+document.getElementById('c').innerHTML=heading(1)+`
+<div class="panel" style="padding:12px 16px;margin-bottom:12px;display:flex;gap:28px;align-items:center;flex-wrap:wrap">${gm}<div style="flex:1;min-width:300px">${pulse()}</div></div>
+<div class="grid" style="grid-template-columns:minmax(380px,1fr) 1.2fr;height:560px">
+ <div class="panel scroll"><table id="clist"></table></div>
+ <div class="panel" id="cdet" style="padding:22px"></div>
+</div>`;
+function cDetail(i){const p=P[i];document.getElementById('cdet').innerHTML=`<div style="display:flex;gap:14px;align-items:center"><div style="width:64px;height:64px;background:var(--p2);border:1px solid var(--line)"></div><div><div class="disp" style="font-size:34px;line-height:1">${p[0]}</div><div style="margin-top:4px"><span class="pos ${p[1]}">${p[1]}</span> <span class="chip">${p[4]}</span> ${p[6].map(b=>`<span class="chip">${b}</span>`).join(' ')}</div></div></div>
+<div class="grid" style="grid-template-columns:repeat(3,1fr);margin:20px 0"><div class="panel" style="padding:12px"><div class="eyebrow">Exposure</div><div class="disp" style="font-size:34px">${p[2]}/5</div></div><div class="panel" style="padding:12px"><div class="eyebrow">Rank move</div><div class="mono" style="font-size:14px;margin-top:8px">${p[7]}</div></div><div class="panel" style="padding:12px"><div class="eyebrow">Season median</div><div class="disp ${p[8]>=0?'up':'dn'}" style="font-size:34px">${p[8]>0?'+':''}${p[8]}</div></div></div>
+<div class="eyebrow" style="margin-bottom:6px">Where he plays</div><div class="sub" style="font-size:14px;line-height:1.8">${p[9]}</div>`}
+const cl=document.getElementById('clist');cl.innerHTML='<tr><th>Player</th><th>Pos</th><th>Teams</th><th>Badges</th><th>Move</th></tr>'+P.map((p,i)=>`<tr class="clk" data-i="${i}"><td>${p[0]}</td><td><span class="pos ${p[1]}">${p[1]}</span></td><td class="mono">${p[2]}/5</td><td>${badgeDots(p[6])}</td><td>${chg(p[8])}</td></tr>`).join('');
+cl.onclick=e=>{const r=e.target.closest('tr.clk');if(!r)return;cl.querySelectorAll('tr').forEach(x=>x.classList.remove('sel'));r.classList.add('sel');cDetail(+r.dataset.i)};cl.querySelector('tr.clk').click();
+
+// D one table
+document.getElementById('d').innerHTML=heading(1)+`<div style="display:flex;gap:20px;align-items:center;margin-bottom:12px;flex-wrap:wrap"><div class="panel" style="padding:10px 16px;flex:1;min-width:420px">${pulse()}</div>${gm}</div>
+<div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap"><div class="seg"><button class="on">All 103</button><button>Moved 64</button><button>Starters</button><button>Needs attention 3</button></div><div class="seg"><button class="on">All</button><button>QB</button><button>RB</button><button>WR</button><button>TE</button></div><span class="chip" style="padding:9px 12px;flex:1;max-width:260px">Search players…</span></div>
+<div class="panel scroll" style="max-height:540px"><table><tr><th>#</th><th>Player</th><th>Pos</th><th>Status</th><th>Exposure</th><th style="width:110px"></th><th>Badges</th><th>Rank move</th><th>Pts</th></tr>${P.map((p,i)=>`<tr class="clk"><td class="sub">${i+1}</td><td><b>${p[0]}</b></td><td><span class="pos ${p[1]}">${p[1]}</span></td><td><span class="chip" style="${p[5]=='OUT'?'color:var(--red)':''}">${p[5]=='OUT'?'OUT':p[4]}</span></td><td class="mono">${p[2]}/5</td><td><div class="bar"><i style="width:${p[3]}%"></i></div></td><td>${badgeDots(p[6])}</td><td class="mono sub">${p[7]}</td><td>${chg(p[8])}</td></tr>`).join('')}</table></div><div class="sub" style="margin-top:8px">Click a row to expand: leagues he is in, this week’s change, full badge list.</div>`;
+
+// E rail + focus
+document.getElementById('e').innerHTML=`<div class="grid" style="grid-template-columns:230px 1fr;height:700px;margin-top:14px"><div class="panel" style="padding:14px;display:flex;flex-direction:column;gap:4px"><div class="disp" style="font-size:26px;margin-bottom:10px">jaysship7</div>${[["Overview",""],["This week","64"],["Exposure","103"],["Badges","80"],["Age & Position",""],["Analytics",""],["Alerts","3"]].map((x,i)=>`<div style="display:flex;justify-content:space-between;padding:10px 12px;border-left:3px solid ${i==1?'var(--mint)':'transparent'};background:${i==1?'rgba(45,212,191,.07)':'none'}"><span>${x[0]}</span><span class="chip">${x[1]}</span></div>`).join('')}<div style="margin-top:auto">${gm}</div></div>
+<div class="panel" style="padding:20px;display:flex;flex-direction:column;gap:14px;overflow:hidden"><div style="display:flex;justify-content:space-between;align-items:end"><div><div class="eyebrow">Week 9 vs 8</div><div class="disp" style="font-size:40px">64 of your starters moved</div></div><div class="seg"><button class="on">All teams</button><button>Fantasy Degenerates</button><button>Dynasty Free Play</button></div></div><div class="scroll" style="flex:1">${movesList(10)}</div></div></div>`;
+
+const NOTES={
+a:"<strong>A · Tabbed workspace.</strong> The summary (archetype, counts, badge bar) collapses into one slim strip that is always visible. The rest become tabs: only one big panel is on screen at a time, so the page never needs a long scroll. Smallest change from today.",
+b:"<strong>B · One-screen command grid.</strong> Everything fits one screen, like a scoreboard. Headline numbers up top, an “Needs attention” panel pulls the OUT / Questionable players out of the noise, and the two long lists scroll inside their own panels instead of the page.",
+c:"<strong>C · List + detail pane.</strong> A compact player list on the left; click a player and everything about him (exposure, rank move, badges, which leagues) fills the right. Shows lots of data without ever stacking it down the page. Best for exploring.",
+d:"<strong>D · One player table.</strong> “Your players this week” and “Player exposure” are really the same list. Merge them into one sortable, filterable table: status, exposure, badges and rank move in one row. Filters replace the separate panels.",
+e:"<strong>E · Side rail + focus view.</strong> A left rail with the sections and their counts (like an app), and the main area shows one section at a time, full height. The most “app-like”; scales to more sections later without making the page longer."};
+const note=document.getElementById('note');
+document.querySelectorAll('.switch button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.switch button').forEach(x=>x.classList.remove('on'));b.classList.add('on');document.querySelectorAll('.v').forEach(v=>v.classList.toggle('on',v.id==b.dataset.v));note.innerHTML=NOTES[b.dataset.v]});
+note.innerHTML=NOTES.a;
+</script></body></html>

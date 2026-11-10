@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Singularity Dynasty · Event Horizon</title>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@400;500;600&family=Martian+Mono:wdth,wght@75..112,300;75..112,400;75..112,500&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;1,8..60,300;1,8..60,400&display=swap" rel="stylesheet">
+<style>
+/* EVENT HORIZON -- the landing page.
+   Signatures, in order of appearance:
+     1. The ring: the brand name set once around the horizon, turning slowly.
+     2. Lensing: the stars behind the hole are bent into arcs, the way a real black hole bends light (positions computed, not drawn).
+     3. Infall: this week's real medians drift inward on spiral paths and fade at the horizon -- "every player falls to one number".
+     4. The clock at the horizon: time to the next kickoff, ticking at the edge of the disc.
+     5. The dock: scroll down and the hole shrinks into the header, where it stays as the logo.
+   Professional rules: one ink, one paper, one ember accent used three times; hairlines; no cards, shadows, gradients or pills. */
+:root{--display:'Big Shoulders Display',sans-serif;--mono:'Martian Mono',monospace;--serif:'Source Serif 4',Georgia,serif;
+ --bg:#ECE7DC;--ink:#111111;--dim:#5A574F;--faint:#959084;--rule:#D3CCBD;--hole:#0B0B0B;--holeink:#ECE7DC;--mark:#C8401E;--rgb:17,17,17}
+body.dark{--bg:#0A0A0A;--ink:#ECE7DC;--dim:#A39E92;--faint:#6B675E;--rule:#25231F;--hole:#ECE7DC;--holeink:#0A0A0A;--mark:#E8643F;--rgb:236,231,220}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-font-smoothing:antialiased;scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font:16px/1.55 var(--serif);overflow-x:hidden;transition:background .35s,color .35s}
+button,input{font:inherit;color:inherit;background:none;border:0}
+a{color:inherit;text-decoration:none}
+.k{font:10.5px var(--mono);font-stretch:82%;letter-spacing:.18em;text-transform:uppercase;color:var(--faint)}
+.wrap{max-width:1280px;margin:0 auto;padding:0 44px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* header: fixed, quiet; the docked hole appears in it once the hero is scrolled past */
+header{position:fixed;inset:0 0 auto;z-index:50;transition:background .3s,border-color .3s;border-bottom:1px solid transparent}
+header.solid{background:var(--bg);border-bottom-color:var(--rule)}
+header .wrap{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;height:68px;font:12px var(--mono);font-stretch:82%;color:var(--dim)}
+header nav{display:flex;gap:28px}
+header nav a:hover,header .r a:hover{color:var(--ink)}
+.brand{display:flex;align-items:center;gap:12px;font:500 13px var(--display);letter-spacing:.5em;text-transform:uppercase;color:var(--ink)}
+.dock{width:0;height:22px;border-radius:50%;background:var(--hole);transition:width .45s cubic-bezier(.3,.7,.2,1),margin .45s,box-shadow .45s;margin-right:-12px}
+header.solid .dock{width:22px;margin-right:4px;box-shadow:0 0 0 3px var(--bg),0 0 0 3.8px var(--ink)}
+header .r{display:flex;justify-content:flex-end;align-items:center;gap:24px}
+header .r .in{color:var(--ink);border-bottom:1px solid var(--mark);padding-bottom:1px}
+header .tg{cursor:pointer;width:26px;height:26px;display:grid;place-items:center;border:1px solid var(--rule)}
+
+/* 1 · the field */
+.field{position:relative;height:100vh;min-height:720px;max-height:980px;overflow:hidden}
+.field svg.sky{position:absolute;inset:0;width:100%;height:100%;color:var(--ink)}
+.horizon{position:absolute;left:50%;top:52%;width:320px;height:320px;margin:-160px 0 0 -160px;will-change:transform}
+.hole{position:absolute;inset:0;border-radius:50%;background:var(--hole);color:var(--holeink);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:44px}
+.hole .k{color:var(--holeink);opacity:.5}
+.hole h1{font:400 30px/1.08 var(--display);letter-spacing:.01em;margin:12px 0 18px}
+.hole h1 em{font:italic 300 28px var(--serif)}
+.hole form{display:flex;border-bottom:1px solid rgba(255,255,255,.0);width:210px;border-bottom:1px solid currentColor}
+body:not(.dark) .hole form{border-bottom-color:var(--holeink)}
+.hole input{flex:1;min-width:0;padding:7px 0;font:12.5px var(--mono);font-stretch:82%;outline:none;color:var(--holeink)}
+.hole input::placeholder{color:var(--holeink);opacity:.45}
+.hole button{font:13px var(--mono);color:var(--holeink);cursor:pointer;padding-left:8px}
+.hole button:hover{color:var(--mark)}
+.clock{position:absolute;left:50%;top:100%;transform:translate(-50%,62px);white-space:nowrap;font:11px var(--mono);font-stretch:82%;letter-spacing:.14em;color:var(--dim)}
+.clock b{font-weight:400;color:var(--ink);font-variant-numeric:tabular-nums}
+.ringtext{font:600 15px var(--display);text-transform:uppercase;fill:currentColor}
+.spin{transform-origin:0 0;animation:spin 180s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.body{cursor:pointer}
+.body text{font:11px var(--mono);font-stretch:82%;letter-spacing:.16em;fill:currentColor}
+.body .halo{fill:none;stroke:currentColor;stroke-opacity:.35;stroke-width:.7;transition:r .3s}
+.body:hover .dot,.body.on .dot{fill:var(--mark)}
+.body.on .halo{stroke:var(--mark);stroke-opacity:.9}
+.infall text{font:10px var(--mono);font-stretch:82%;fill:currentColor}
+.cap{position:absolute;left:44px;bottom:40px;width:330px;border-top:1px solid var(--ink);padding-top:12px;transition:opacity .25s}
+.cap h2{font:500 32px/1 var(--display);margin:8px 0 8px}
+.cap p{font:15px/1.5 var(--serif);color:var(--dim)}
+.cap a{display:inline-block;margin-top:12px;font:12px var(--mono);border-bottom:1px solid var(--mark)}
+.measure{position:absolute;right:44px;bottom:40px;text-align:right;font:12px/1.8 var(--mono);font-stretch:82%;color:var(--dim)}
+.measure b{display:block;font:400 40px/1 var(--display);color:var(--ink);margin-bottom:6px}
+.cue{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);font:10.5px var(--mono);letter-spacing:.2em;color:var(--faint)}
+
+/* 2 · reading a range: one real outcome curve, annotated */
+.read{border-top:1px solid var(--rule);padding:110px 0 100px}
+.read .wrap{display:grid;grid-template-columns:.8fr 1.2fr;gap:70px;align-items:center}
+h3{font:400 56px/.95 var(--display);letter-spacing:.005em}
+h3 em{font:italic 300 50px var(--serif)}
+.lede{font:300 18.5px/1.6 var(--serif);color:var(--dim);margin-top:18px;max-width:440px}
+.read svg{width:100%;height:auto;color:var(--ink);overflow:visible}
+.read .lbl{font:11px var(--mono);font-stretch:82%;letter-spacing:.12em;fill:currentColor}
+.read .num{font:400 30px var(--display);fill:currentColor}
+.read .note{font:italic 14px var(--serif);fill:var(--dim)}
+
+/* 3 · instruments: the tools as a ruled index, each with its own little orbit diagram */
+.inst{border-top:1px solid var(--rule);padding:90px 0}
+.inst .head{display:flex;justify-content:space-between;align-items:end;margin-bottom:34px}
+.inst ol{list-style:none;border-top:1px solid var(--ink)}
+.inst li{display:grid;grid-template-columns:70px 64px 1fr 1.2fr 140px;gap:28px;align-items:center;padding:24px 0;border-bottom:1px solid var(--rule);transition:background .2s}
+.inst li:hover{background:rgba(var(--rgb),.03)}
+.inst li .no{font:12px var(--mono);color:var(--faint)}
+.inst li svg{width:56px;height:56px;color:var(--ink)}
+.inst li h4{font:500 30px/1 var(--display)}
+.inst li p{font:15.5px/1.5 var(--serif);color:var(--dim)}
+.inst li .t{font:11px var(--mono);font-stretch:82%;text-align:right;color:var(--dim)}
+.inst li .t b{display:block;font-weight:400;color:var(--ink);margin-bottom:4px}
+.inst li:hover .dot{fill:var(--mark)}
+
+/* 4 · plans as orbits */
+.orbits{border-top:1px solid var(--rule);padding:100px 0 110px}
+.orbits .wrap{display:grid;grid-template-columns:.85fr 1.15fr;gap:60px;align-items:center}
+.plans svg{width:100%;height:auto;color:var(--ink);overflow:visible}
+.plans text{font:11px var(--mono);font-stretch:82%;fill:currentColor;letter-spacing:.08em}
+.plans .pn{font:500 18px var(--display);letter-spacing:.22em}
+.plans .tier{cursor:pointer}
+.plans .tier:hover circle.o{stroke-width:2}
+.plan-detail{margin-top:30px;border-top:1px solid var(--ink)}
+.plan-detail div{display:grid;grid-template-columns:150px 1fr auto;gap:18px;padding:14px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+.plan-detail b{font:500 18px var(--display);letter-spacing:.2em;text-transform:uppercase}
+.plan-detail span{color:var(--dim);font-size:15px}
+.plan-detail em{font:12px var(--mono);font-style:normal}
+.plan-detail .on b,.plan-detail .on em{color:var(--mark)}
+.go{display:inline-block;margin-top:24px;font:12.5px var(--mono);font-stretch:82%;letter-spacing:.06em;padding:12px 18px;border:1px solid var(--ink);transition:background .2s,color .2s}
+.go:hover{background:var(--ink);color:var(--bg)}
+
+/* footer: the small ring again */
+footer{border-top:1px solid var(--rule);padding:44px 0 60px}
+footer .wrap{display:grid;grid-template-columns:auto 1fr auto;gap:40px;align-items:center;font:12px var(--mono);font-stretch:82%;color:var(--dim)}
+footer svg{width:72px;height:72px;color:var(--ink)}
+footer nav{display:flex;gap:26px;flex-wrap:wrap}
+@media (max-width:900px){header nav{display:none}.cap,.measure{display:none}.read .wrap,.orbits .wrap{grid-template-columns:1fr}.inst li{grid-template-columns:40px 1fr;}.inst li svg,.inst li .t{display:none}.inst li p{grid-column:2}h3{font-size:42px}h3 em{font-size:38px}}
+</style></head>
+<body>
+<header id="hdr"><div class="wrap">
+  <nav><a href="#inst">Weekly</a><a href="#inst">Season</a><a href="#inst">Dynasty</a><a href="#inst">Observatory</a></nav>
+  <a class="brand" href="#"><span class="dock"></span>Singularity Dynasty</a>
+  <div class="r"><a href="#plans">Plans</a><a>Sign in</a><a class="in" href="#">Fall in</a><span class="tg" id="tg" title="">☾</span></div>
+</div></header>
+
+<section class="field" id="field">
+  <svg class="sky" id="sky" viewBox="-720 -450 1440 900" preserveAspectRatio="xMidYMid slice"></svg>
+  <div class="horizon" id="hz">
+    <div class="hole">
+      <div class="k">Where the data ends</div>
+      <h1>Every player falls to <em>one number.</em></h1>
+      <form onsubmit="return false"><input placeholder="your Sleeper username" aria-label="Sleeper username"><button aria-label="Read my leagues">→</button></form>
+    </div>
+    <div class="clock">KICKOFF IN <b id="clock">--</b></div>
+  </div>
+  <div class="cap" id="cap"></div>
+  <div class="measure"><b>81%</b>of last week's results landed<br>inside their projected range</div>
+  <div class="cue">SCROLL</div>
+</section>
+
+<section class="read"><div class="wrap">
+  <div><div class="k">Reading a range</div><h3>Not a guess. <em>A distribution.</em></h3><p class="lede">Ten thousand simulated games give every player three numbers: a bad week, a typical week and a great one. The floor is beaten nine times in ten; the ceiling once.</p></div>
+  <svg id="curve" viewBox="0 0 720 340"></svg>
+</div></section>
+
+<section class="inst" id="inst"><div class="wrap">
+  <div class="head"><div><div class="k">Instruments</div><h3>Five ways <em>to look.</em></h3></div><div class="k">Updated Tuesdays · refreshed Thursday and Sunday</div></div>
+  <ol id="tools"></ol>
+</div></section>
+
+<section class="orbits" id="plans"><div class="wrap">
+  <div><div class="k">Plans</div><h3>The closer you orbit, <em>the more you see.</em></h3><p class="lede">Three orbits around the same number. The outer one is free. The innermost is the endpoint: every player, every simulation, every league.</p>
+    <div class="plan-detail" id="pd"></div><a class="go" href="#">Begin at the outer orbit →</a></div>
+  <div class="plans"><svg id="plansvg" viewBox="-300 -300 600 600"></svg></div>
+</div></section>
+
+<footer><div class="wrap"><svg viewBox="-60 -60 120 120" id="fring"></svg><nav><a>How it works</a><a>Glossary</a><a>Receipts</a><a>Privacy</a><a>Terms</a><a>Contact</a></nav><span>Not for wagering · © 2026</span></div></footer>
+
+<script>
+const NS='font-family="Martian Mono" font-stretch="82%"';
+let seed=5;const rnd=()=>((seed=(seed*16807)%2147483647)/2147483647);
+const MEDIANS=[["GIBBS",21.4],["ALLEN",23.3],["CHASE",19.8],["JACKSON",22.1],["McBRIDE",14.6],["NACUA",18.2]];
+const HR=160; // horizon radius in sky units (the disc is drawn in HTML on top)
+const ORBIT_TILT=-8*Math.PI/180;
+const BODIES=[
+ {n:"WEEKLY",rx:300,ry:120,a:-.5,s:60,k:"Weekly projection rankings",h:"This week, in range.",p:"Floor, median and ceiling for every player this week, and the matchups that tilt them."},
+ {n:"SEASON",rx:420,ry:172,a:.9,s:90,k:"Player season simulations",h:"The year, ten thousand times.",p:"Where each player's season is heading, rewound week by week."},
+ {n:"DYNASTY",rx:540,ry:228,a:2.6,s:125,k:"Dynasty draft board",h:"Who is really ahead.",p:"Production against age, tiered by how often one player truly beats the next."},
+ {n:"OBSERVATORY",rx:650,ry:285,a:4.2,s:165,k:"The Observatory",h:"Plot any two numbers.",p:"Every player in the pool on any two measures. Circle your own."}];
+
+/* ---------- 2 · lensing: a point source at angle t, distance d appears at d' = (d + sqrt(d^2 + 4 E^2)) / 2 (the outer image of a
+   point-mass lens), stretched tangentially; stars that land under the horizon are hidden. E is the Einstein radius. ---------- */
+function sky(){const s=document.getElementById("sky");let g="";const E=150;seed=5;
+ for(let i=0;i<420;i++){const x=(rnd()-.5)*1440,y=(rnd()-.5)*900,d=Math.hypot(x,y),t=Math.atan2(y,x);const d2=(d+Math.sqrt(d*d+4*E*E))/2;
+  const r=Math.pow(rnd(),3)*1.7+.3,o=(.12+rnd()*.5).toFixed(2);const X=d2*Math.cos(t),Y=d2*Math.sin(t);
+  const stretch=Math.min(5,d2/Math.max(d,8));if(d2<HR+64)continue; // keep the band the ring text sits in clear
+  if(stretch>1.25){const L=r*stretch*3.2/d2;g+=`<path d="M${(d2*Math.cos(t-L)).toFixed(1)} ${(d2*Math.sin(t-L)).toFixed(1)} A${d2.toFixed(1)} ${d2.toFixed(1)} 0 0 1 ${(d2*Math.cos(t+L)).toFixed(1)} ${(d2*Math.sin(t+L)).toFixed(1)}" stroke="currentColor" stroke-opacity="${o}" stroke-width="${(r*.8).toFixed(2)}" stroke-linecap="round" fill="none"/>`;}
+  else g+=`<circle cx="${X.toFixed(1)}" cy="${Y.toFixed(1)}" r="${r.toFixed(2)}" fill="currentColor" fill-opacity="${o}"/>`;}
+ // the photon ring and the orbits
+ g+=`<circle r="${HR+16}" fill="none" stroke="currentColor" stroke-width=".8"/><circle r="${HR+20}" fill="none" stroke="currentColor" stroke-opacity=".25" stroke-width=".5"/>`;
+ BODIES.forEach(b=>g+=`<ellipse rx="${b.rx}" ry="${b.ry}" fill="none" stroke="currentColor" stroke-opacity=".24" stroke-width=".7" transform="rotate(-8)"/>`);
+ // 1 · the ring: the name set exactly once around the horizon
+ const R=HR+38,C=2*Math.PI*R;
+ g+=`<defs><path id="ringp" d="M0,${-R} a${R},${R} 0 1,1 -0.01,0"/></defs><g class="spin"><text class="ringtext"><textPath href="#ringp" textLength="${(C-14).toFixed(0)}" lengthAdjust="spacing">Singularity Dynasty · where the data reaches its endpoint · </textPath></text></g>`;
+ g+=`<g class="infall" id="infall"></g>`;
+ BODIES.forEach((b,i)=>g+=`<g class="body" data-i="${i}"><circle class="dot" r="6.5" fill="currentColor"/><circle class="halo" r="15"/><text x="22" y="4">${b.n}</text></g>`);
+ s.innerHTML=g;
+ s.querySelectorAll(".body").forEach(el=>{el.onmouseenter=el.onclick=()=>caption(+el.dataset.i);});caption(0);}
+function caption(i){const b=BODIES[i];document.querySelectorAll(".body").forEach(e=>e.classList.toggle("on",+e.dataset.i===i));
+ document.getElementById("cap").innerHTML=`<div class="k">${String(i+1).padStart(2,"0")} · ${b.k}</div><h2>${b.h}</h2><p>${b.p}</p><a href="#inst">Enter the ${b.n.toLowerCase()} →</a>`;}
+
+/* ---------- 3 · infall: real medians spiralling in; each label shrinks and fades as it reaches the horizon ---------- */
+const FALL=MEDIANS.map(([n,m],i)=>({n,m,t0:i*5,a0:i*1.05+.4,period:30}));
+function frame(T){const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;const c=Math.cos(ORBIT_TILT),s=Math.sin(ORBIT_TILT);
+ document.querySelectorAll(".body").forEach(o=>{const b=BODIES[+o.dataset.i];const a=b.a+(reduce?0:T*2*Math.PI/b.s);const x=b.rx*Math.cos(a),y=b.ry*Math.sin(a);o.setAttribute("transform",`translate(${(x*c-y*s).toFixed(1)} ${(x*s+y*c).toFixed(1)})`);});
+ if(reduce)return;let g="";FALL.forEach(f=>{const p=((T+f.t0)%f.period)/f.period;const r=560-(560-HR-20)*Math.pow(p,1.25);const a=f.a0+p*4.2;const op=p<.08?p/.08:p>.86?(1-p)/.14:1;
+  const x=r*Math.cos(a),y=r*.62*Math.sin(a);g+=`<g transform="translate(${x.toFixed(1)} ${y.toFixed(1)})" opacity="${(op*.55).toFixed(2)}"><circle r="1.6" fill="currentColor"/><text x="7" y="3" font-size="${(10-p*3.5).toFixed(1)}">${f.n} ${f.m.toFixed(1)}</text></g>`;});
+ document.getElementById("infall").innerHTML=g;}
+
+
+/* ---------- 4 · the clock at the horizon: the next kickoff (Sunday 1 PM ET in this mockup) ---------- */
+function clock(){const now=new Date();const k=new Date(now);k.setUTCDate(now.getUTCDate()+((7-now.getUTCDay())%7||7));k.setUTCHours(18,0,0,0);
+ let s=Math.max(0,Math.floor((k-now)/1000));const d=Math.floor(s/86400);s%=86400;const p=v=>String(v).padStart(2,"0");
+ document.getElementById("clock").textContent=`${d}D ${p(Math.floor(s/3600))}:${p(Math.floor(s%3600/60))}:${p(s%60)}`;}
+setInterval(clock,1000);clock();
+
+/* ---------- 5 · the dock: the hole shrinks and lifts as you scroll, then the header holds it as the logo ---------- */
+const hz=document.getElementById("hz"),hdr=document.getElementById("hdr");
+function onScroll(){const f=document.getElementById("field").offsetHeight;const p=Math.min(1,scrollY/(f*.7));
+ hz.style.transform=`translateY(${-p*f*.42}px) scale(${1-p*.9})`;hz.style.opacity=p>.96?0:1;hdr.classList.toggle("solid",p>.92);}
+addEventListener("scroll",onScroll,{passive:true});
+
+/* ---------- reading a range: one real player's outcome curve, annotated like a figure ---------- */
+function curve(){const fl=11.8,m=21.4,c=33.9,W=720,H=340,x=v=>40+(v/45)*(W-80),base=270;let d="";
+ for(let i=0;i<=120;i++){const v=i*45/120;const s=v<m?(m-fl)/1.2816:(c-m)/1.2816;const y=base-200*Math.exp(-((v-m)**2)/(2*s*s));d+=(i?" L":"M")+x(v).toFixed(1)+" "+y.toFixed(1);}
+ let g=`<path d="${d} L${x(45)} ${base} L${x(0)} ${base}Z" fill="currentColor" fill-opacity=".06"/><path d="${d}" fill="none" stroke="currentColor" stroke-width="1.4"/><line x1="${x(0)}" x2="${x(45)}" y1="${base}" y2="${base}" stroke="currentColor" stroke-width=".8"/>`;
+ for(let v=0;v<=45;v+=5)g+=`<line x1="${x(v)}" x2="${x(v)}" y1="${base}" y2="${base+6}" stroke="currentColor" stroke-width=".7"/><text class="lbl" x="${x(v)}" y="${base+22}" text-anchor="middle" fill-opacity=".6">${v}</text>`;
+ [[fl,"FLOOR","beaten 9 weeks in 10"],[m,"MEDIAN","his typical week"],[c,"CEILING","reached 1 week in 10"]].forEach(([v,l,n],i)=>{const top=i===1?60:base-200*Math.exp(-((v-m)**2)/(2*((v<m?(m-fl):(c-m))/1.2816)**2))-50;
+  g+=`<line x1="${x(v)}" x2="${x(v)}" y1="${top+14}" y2="${base}" stroke="${i===1?"var(--mark)":"currentColor"}" stroke-width="${i===1?1.4:.8}" stroke-dasharray="${i===1?"none":"3 3"}"/><text class="lbl" x="${x(v)}" y="${top-26}" text-anchor="middle">${l}</text><text class="num" x="${x(v)}" y="${top}" text-anchor="middle" ${i===1?'fill="var(--mark)"':""}>${v.toFixed(1)}</text><text class="note" x="${x(v)}" y="${top+12+ (i===1?0:0)}" text-anchor="middle" dy="${i===1?-48:-46}"></text>`;});
+ g+=`<text class="note" x="${x(0)}" y="${base+50}">Fig. 1 — Jahmyr Gibbs, week 9: points from 10,000 simulated games. Floor beaten nine weeks in ten, ceiling reached one in ten.</text>`;
+ document.getElementById("curve").innerHTML=g;}
+
+/* ---------- instruments: each tool with a tiny orbit diagram of its own ---------- */
+function tools(){const T=[["Weekly Projection Rankings","Floor, median and ceiling for every player this week, with the matchups that tilt them.","Every Tuesday","Explorer",1],
+ ["Player Season Simulations","Ten thousand seasons for every player; where his year is heading, week by week.","Every Tuesday","Singularity",2],
+ ["Dynasty Draft Board","Production against age, tiered by how often one player truly beats the next.","Every two weeks","Explorer",3],
+ ["The Observatory","Any two numbers for every player, plotted. Circle your own.","Live","Explorer",4],
+ ["The Game Board","Every league you play on one screen on Sunday: scores, what is left, what moved.","Live on game days","Explorer",5]];
+ document.getElementById("tools").innerHTML=T.map(([h,p,w,t,n],i)=>`<li><span class="no">${String(i+1).padStart(2,"0")}</span><svg viewBox="-28 -28 56 56"><circle r="3.6" fill="currentColor"/>${Array.from({length:n},(_,k)=>`<ellipse rx="${8+k*4.4}" ry="${(8+k*4.4)*.42}" fill="none" stroke="currentColor" stroke-opacity=".45" stroke-width=".7" transform="rotate(-12)"/>`).join("")}<circle class="dot" cx="${(8+(n-1)*4.4)*Math.cos(.8)}" cy="${(8+(n-1)*4.4)*.42*Math.sin(.8)}" r="2.4" fill="currentColor" transform="rotate(-12)"/></svg><h4>${h}</h4><p>${p}</p><span class="t"><b>${t}</b>${w}</span></li>`).join("");}
+
+/* ---------- plans: three orbits; hover / tap one to light it in the list ---------- */
+const PL=[["STARGAZER",250,"Free","The top fifty each week, the top ten season simulations, one saved league."],["EXPLORER",165,"$7 / month","Every ranked player, ten leagues watched live, the Tuesday letter."],["SINGULARITY",85,"$20 / month","Every simulation, unlimited leagues, exports. The endpoint."]];
+function plans(on=1){let q=`<circle r="40" fill="var(--hole)"/>`;
+ PL.forEach(([n,r],i)=>{const a=-2.35+i*.32,x=r*Math.cos(a),y=r*Math.sin(a),hot=i===on;
+  q+=`<g class="tier" data-i="${i}"><circle class="o" r="${r}" fill="none" stroke="${hot?"var(--mark)":"currentColor"}" stroke-width="${hot?1.6:.8}" stroke-dasharray="${i===0?"2 6":"none"}"/><circle r="${r}" fill="none" stroke="transparent" stroke-width="22"/><circle cx="${x}" cy="${y}" r="6" fill="${hot?"var(--mark)":"currentColor"}"/><text class="pn" x="${x-14}" y="${y-12}" text-anchor="end" ${hot?'fill="var(--mark)"':""}>${n}</text></g>`;});
+ document.getElementById("plansvg").innerHTML=q;
+ document.querySelectorAll(".tier").forEach(t=>t.onmouseenter=t.onclick=()=>plans(+t.dataset.i));
+ document.getElementById("pd").innerHTML=PL.map(([n,r,p,d],i)=>`<div class="${i===on?"on":""}"><b>${n}</b><span>${d}</span><em>${p}</em></div>`).join("");}
+
+function footRing(){const R=44,C=2*Math.PI*R;document.getElementById("fring").innerHTML=`<circle r="26" fill="var(--hole)"/><defs><path id="fr" d="M0,${-R} a${R},${R} 0 1,1 -0.01,0"/></defs><g class="spin"><text style="font:500 8.5px var(--display);text-transform:uppercase;fill:currentColor"><textPath href="#fr" textLength="${(C-6).toFixed(0)}" lengthAdjust="spacing">Singularity Dynasty · Singularity Dynasty · </textPath></text></g>`;}
+
+document.getElementById("tg").onclick=()=>document.body.classList.toggle("dark");
+sky();curve();tools();plans();footRing();onScroll();
+const t0=performance.now();(function loop(t){frame((t-t0)/1000);requestAnimationFrame(loop);})(t0);
+</script>
+</body></html>

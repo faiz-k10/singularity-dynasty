@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bar styles</title>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&family=Martian+Mono:wdth,wght@75..112,400;75..112,700&display=swap" rel="stylesheet">
+<style>
+:root{--void:#030908;--p1:#09130F;--line:#1A2A26;--star:#E6F4F1;--dim:#8C95A3;--mint:#2DD4BF;--red:#E11D48;--rgb:230,244,241}
+:root.light{--void:#F4F4F2;--p1:#FBFCFB;--line:#D9DEDC;--star:#0F1F1D;--dim:#5C6370;--mint:#0D7A70;--red:#E11D48;--rgb:15,31,29}
+*{box-sizing:border-box;margin:0}
+body{background:var(--void);color:var(--star);font:14px Georgia,serif;padding:20px}
+.mono{font-family:'Martian Mono',monospace;font-stretch:82%}
+h1{font:800 40px 'Big Shoulders Display';margin-bottom:4px}
+.top{display:flex;justify-content:space-between;align-items:end;margin-bottom:18px}
+button{font:12px 'Martian Mono';font-stretch:82%;background:none;color:var(--star);border:1px solid var(--line);padding:8px 14px;border-radius:2px;cursor:pointer}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:14px}
+.card{background:var(--p1);border:1px solid var(--line);border-top:2px solid rgba(var(--rgb),.25);border-radius:2px;padding:16px 18px}
+.card h2{font:800 22px 'Big Shoulders Display';letter-spacing:.02em}
+.card .src{font:10.5px 'Martian Mono';font-stretch:82%;color:var(--dim);letter-spacing:.08em;text-transform:uppercase;margin:2px 0 12px}
+.row{display:grid;grid-template-columns:120px 34px 1fr 46px;gap:10px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)}
+.row .l{font-size:13px}.row .r{font:700 12px 'Martian Mono';color:var(--mint);text-align:right}.row .v{font:12px 'Martian Mono';text-align:right}
+.sub{font:10px 'Martian Mono';font-stretch:82%;color:var(--dim);letter-spacing:.08em;text-transform:uppercase;margin:12px 0 4px}
+.rng{display:grid;grid-template-columns:1fr;gap:4px}
+.nums{display:flex;justify-content:space-between;font:10px 'Martian Mono';color:var(--dim)}
+.why{font-size:12.5px;color:var(--dim);margin-top:12px;line-height:1.45}
+.bar{position:relative;height:12px}
+/* 1 LED (snapped) */
+.led{background:repeating-linear-gradient(90deg,rgba(var(--rgb),.09) 0 5px,transparent 5px 8px)}
+.led i{position:absolute;left:0;top:0;bottom:0;background:var(--c,var(--mint));-webkit-mask:repeating-linear-gradient(90deg,#000 0 5px,transparent 5px 8px);mask:repeating-linear-gradient(90deg,#000 0 5px,transparent 5px 8px)}
+/* 2 vernier scale */
+.vern{height:16px;border-bottom:1px solid rgba(var(--rgb),.35);background:repeating-linear-gradient(90deg,rgba(var(--rgb),.35) 0 1px,transparent 1px 10%) bottom/100% 6px no-repeat,repeating-linear-gradient(90deg,rgba(var(--rgb),.18) 0 1px,transparent 1px 2%) bottom/100% 3px no-repeat}
+.vern i{position:absolute;left:0;bottom:-1px;height:3px;background:var(--c,var(--mint))}
+.vern b{position:absolute;bottom:3px;width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:8px solid var(--c,var(--mint));margin-left:-5px}
+/* 3 spectrograph */
+.spec{height:12px;background:linear-gradient(90deg,var(--mint),#8C95A3 55%,var(--red));opacity:1}
+.spec::before{content:"";position:absolute;inset:0;background:var(--p1);opacity:.78;clip-path:inset(0 0 0 var(--p))}
+.spec b{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--star);margin-left:-1px}
+/* 4 telemetry trace */
+.trace{height:12px}
+.trace::before{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:rgba(var(--rgb),.2)}
+.trace i{position:absolute;left:0;top:50%;height:3px;margin-top:-1px;background:var(--c,var(--mint))}
+.trace i::after{content:"";position:absolute;right:-1px;top:-4px;width:2px;height:11px;background:var(--c,var(--mint))}
+/* 5 photometer comb */
+.comb{height:14px;background:repeating-linear-gradient(90deg,rgba(var(--rgb),.14) 0 1px,transparent 1px 4px)}
+.comb i{position:absolute;left:0;top:0;bottom:0;background:var(--c,var(--mint));-webkit-mask:repeating-linear-gradient(90deg,#000 0 2px,transparent 2px 4px);mask:repeating-linear-gradient(90deg,#000 0 2px,transparent 2px 4px)}
+/* 6 dot matrix */
+.dots{height:12px;background:radial-gradient(circle,rgba(var(--rgb),.16) 2.3px,transparent 2.6px) 0 50%/8px 8px repeat-x}
+.dots i{position:absolute;left:0;top:0;bottom:0;background:radial-gradient(circle,var(--c,var(--mint)) 2.3px,transparent 2.6px) 0 50%/8px 8px repeat-x}
+/* 7 HUD tape */
+.hud{height:18px;border:1px solid rgba(var(--rgb),.25);border-width:0 1px}
+.hud::before{content:"";position:absolute;left:0;right:0;top:50%;border-top:1px dashed rgba(var(--rgb),.25)}
+.hud i{position:absolute;left:0;top:4px;bottom:4px;background:var(--c,var(--mint));clip-path:polygon(0 0,calc(100% - 7px) 0,100% 50%,calc(100% - 7px) 100%,0 100%)}
+/* 8 bracketed readout */
+.brk{height:14px;border:1px solid rgba(var(--rgb),.35);padding:2px}
+.brk::before,.brk::after{content:"";position:absolute;top:-4px;bottom:-4px;width:4px;border:1px solid var(--star)}
+.brk::before{left:-6px;border-right:0}.brk::after{right:-6px;border-left:0}
+.brk i{position:absolute;left:2px;top:2px;bottom:2px;background:repeating-linear-gradient(45deg,var(--c,var(--mint)) 0 3px,transparent 3px 6px)}
+/* 9 arc gauge */
+.arcs{display:flex;gap:16px;flex-wrap:wrap;margin-top:6px}
+.arc{text-align:center;font:10px 'Martian Mono';color:var(--dim)}
+.arc b{display:block;font:800 18px 'Big Shoulders Display';color:var(--star);margin-top:-22px}
+</style></head><body>
+<div class="top"><div><h1>Bar styles</h1><div class="mono" style="color:var(--dim);font-size:12px">Same three readings in each style: stat ranks, a floor–median–ceiling range, and one game vs his xFP (tick)</div></div><button onclick="document.documentElement.classList.toggle('light')">Light / dark</button></div>
+<div class="grid" id="g"></div>
+<script>
+const STATS=[["Rush Yds/G",3,93.4,94],["Yds/Carry",12,4.88,67],["Rush EPA/Carry",34,"−0.057",3],["Rec Yds/G",1,40.2,100]];
+const STYLES=[
+["led","1 · LED segments, snapped","Mission control panels, ISS caution & warning lights","What you have now, but every fill rounded to whole segments, so a block is fully lit or not lit at all."],
+["vern","2 · Vernier scale + pointer","Sextants, telescope setting circles, star trackers","A graduated ruler with a thin coloured line and a triangular pointer. Reads like a precision instrument, very calm."],
+["spec","3 · Spectrograph band","Spectroscopes splitting starlight into colours","A mint→steel→red spectrum is revealed up to the value; a white line marks the reading. Colour itself says floor vs ceiling."],
+["trace","4 · Telemetry trace","Ground-station telemetry and strip-chart recorders","A thin trace on a faint baseline ending in a vertical cap. The lightest of all; lets numbers lead."],
+["comb","5 · Photometer comb","Light-curve readouts and CCD sensor columns","Fine 2px teeth instead of chunky blocks: still segmented, but reads as data density, not a scoreboard."],
+["dots","6 · Dot matrix","Starfields, dot-matrix spacecraft displays","Lit dots like stars on an unlit field. Ties into the starfield background."],
+["hud","7 · HUD tape","Spacecraft and fighter head-up display tapes","A tape with an arrow-shaped tip between end brackets and a dashed centre line. Feels like a cockpit readout."],
+["brk","8 · Bracketed hazard fill","Launch-pad gauges and hazard striping","Diagonal striped fill inside a bracketed housing. Loudest; best kept for one or two key bars."],
+];
+const bar=(cls,p,extra="")=>`<div class="bar ${cls}" style="--p:${p}%">${cls==='spec'?`<b style="left:${p}%"></b>`:cls==='vern'?`<i style="width:${p}%"></i><b style="left:${p}%"></b>`:`<i style="width:${cls==='led'?Math.round(p*0.01*45)/45*100:p}%"></i>`}${extra}</div>`;
+document.getElementById('g').innerHTML=STYLES.map(([c,t,src,why])=>`<div class="card"><h2>${t}</h2><div class="src">${src}</div>
+${STATS.map(s=>`<div class="row"><span class="l">${s[0]}</span><span class="r">#${s[1]}</span>${bar(c,s[3])}<span class="v">${s[2]}</span></div>`).join('')}
+<div class="sub">Range · floor 9.4 · median 25.1 · ceiling 39.9</div>
+<div class="rng"><div style="display:flex;gap:2px">${`<div style="flex:63">${bar(c,100).replace('<i ','<i data-c ')}</div>`.replace('data-c','style="--c:var(--mint)"')}<div style="flex:37"><div class="bar ${c}" style="--c:var(--red);--p:100%">${c==='spec'?'':`<i style="width:100%;--c:var(--red)"></i>`}</div></div></div><div class="nums"><span>9.4</span><span>25.1</span><span>39.9</span></div></div>
+<div class="sub">W6 · 12.0 pts vs 14.6 xFP</div>
+<div style="position:relative">${bar(c,42).replace('<i ','<i style="--c:var(--red)" data-x ')}<span style="position:absolute;top:-3px;bottom:-3px;left:51%;width:2px;background:var(--star)"></span></div>
+<p class="why">${why}</p></div>`).join('')+`<div class="card"><h2>9 · Arc gauge</h2><div class="src">Cockpit dials, orbital-period clocks</div>
+<div class="arcs">${STATS.map(s=>{const a=Math.PI*(1-s[3]/100);return `<div class="arc"><svg width="88" height="52" viewBox="0 0 88 52"><path d="M6 46 A38 38 0 0 1 82 46" fill="none" stroke="rgba(var(--rgb),.14)" stroke-width="6" stroke-dasharray="3 2"/><path d="M6 46 A38 38 0 0 1 ${44+38*Math.cos(a)} ${46-38*Math.sin(a)}" fill="none" stroke="var(--mint)" stroke-width="6" stroke-dasharray="3 2"/></svg><b>#${s[1]}</b>${s[0]}</div>`}).join('')}</div>
+<p class="why">Half-circle dials for headline numbers (win chance, percentiles). Too big for table rows; best for a few hero figures.</p></div>`;
+</script></body></html>

@@ -1,0 +1,95 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Compare bars</title>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders:wght@700;800&family=Martian+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--void:#030908;--panel:#09130F;--rule:#1A2A26;--star:#E6F4F1;--steel:#8C95A3;--mint:#2DD4BF;--red:#E11D48;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--void);color:var(--star);font-family:Georgia,serif;padding:28px}
+h1{font-family:"Big Shoulders";font-weight:800;font-size:30px;margin:0 0 4px}
+p.n{margin:0 0 26px;color:var(--steel);font:12px "Martian Mono",monospace}
+.opt{margin:0 0 34px;max-width:1000px}
+.opt h2{font:700 12px "Martian Mono",monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--mint);margin:0 0 4px}
+.opt .d{font:12px "Martian Mono",monospace;color:var(--steel);margin:0 0 10px}
+.tbl{border:1px solid var(--rule);border-top:2px solid var(--rule);background:var(--panel)}
+.row{display:grid;grid-template-columns:200px 1fr 1fr;border-bottom:1px solid var(--rule)}
+.row:last-child{border:0}
+.lab{padding:16px 18px;font:13px "Martian Mono",monospace;color:var(--steel)}
+.cell{padding:12px 18px}
+.cell+.cell{border-left:1px solid var(--rule)}
+.v{font:700 14px "Martian Mono",monospace;color:var(--star)}
+.win .v{color:var(--mint)}
+.bar{margin-top:8px}
+/* A: LED segments */
+.A .bar{height:12px;background:repeating-linear-gradient(90deg,rgba(230,244,241,.07) 0 5px,transparent 5px 8px)}
+.A .bar i{display:block;height:100%;background:var(--steel);-webkit-mask:repeating-linear-gradient(90deg,#000 0 5px,transparent 5px 8px);mask:repeating-linear-gradient(90deg,#000 0 5px,transparent 5px 8px)}
+.A .win .bar i{background:var(--mint)}
+/* B: big numeral, thin rule bar with end tick */
+.B .v{font:800 34px "Big Shoulders";line-height:1}
+.B .bar{height:2px;background:rgba(230,244,241,.12);position:relative;margin-top:10px}
+.B .bar i{display:block;height:100%;background:var(--steel)}
+.B .bar i::after{content:"";position:absolute;top:-5px;width:3px;height:12px;background:var(--steel);left:var(--w);transform:translateX(-3px)}
+.B .win .bar i{background:var(--mint)}.B .win .bar i::after{background:var(--mint)}
+/* C: tall block bar with value inside */
+.C .bar{height:30px;background:rgba(230,244,241,.05);margin-top:0;position:relative}
+.C .bar i{display:block;height:100%;background:var(--steel);opacity:.55}
+.C .win .bar i{background:var(--mint);opacity:1}
+.C .bar b{position:absolute;left:10px;top:0;line-height:30px;font:800 20px "Big Shoulders";color:var(--star)}
+.C .win .bar b{color:var(--void)}
+.C .v{display:none}
+/* D: centered tug-of-war handled per row below */
+.D .row{grid-template-columns:200px 1fr}
+.D .tug{display:grid;grid-template-columns:90px 1fr 90px;align-items:center;gap:14px;padding:14px 18px}
+.D .tug .n{font:800 28px "Big Shoulders";line-height:1}
+.D .tug .n.r{text-align:right}
+.D .track{display:flex;height:14px;background:rgba(230,244,241,.05)}
+.D .track .l{display:flex;justify-content:flex-end;width:50%}
+.D .track .r{display:flex;width:50%;border-left:2px solid var(--star)}
+.D .track i{display:block;height:100%}
+.D .l i{background:var(--steel)}.D .r i{background:var(--steel)}
+.D .lead .l i,.D .lead.R .r i{background:var(--mint)}
+.D .win{color:var(--mint)}
+/* E: dot scale / lollipop */
+.E .bar{height:18px;position:relative;margin-top:10px;background:linear-gradient(var(--rule),var(--rule)) center/100% 1px no-repeat}
+.E .bar i{position:absolute;top:50%;left:var(--w);width:14px;height:14px;border-radius:2px;background:var(--steel);transform:translate(-100%,-50%) rotate(45deg) scale(.8)}
+.E .bar::before{content:"";position:absolute;left:0;top:50%;height:3px;width:var(--w);background:var(--steel);transform:translateY(-50%)}
+.E .win .bar i,.E .win .bar::before{background:var(--mint)}
+.E .v{font:800 26px "Big Shoulders"}
+</style></head><body>
+<h1>Compare bars</h1><p class="n">Same data (Gibbs vs Smith-Njigba, This Week). Pick a letter.</p>
+
+<div class="opt A"><h2>A &middot; LED segments</h2><p class="d">Matches the new Lab leaderboard. Winner lit mint, loser steel.</p>
+<div class="tbl">
+<div class="row"><div class="lab">Proj. Points</div><div class="cell win"><div class="v">25.3</div><div class="bar"><i style="width:100%"></i></div></div><div class="cell"><div class="v">24.0</div><div class="bar"><i style="width:95%"></i></div></div></div>
+<div class="row"><div class="lab">Floor</div><div class="cell"><div class="v">9.4</div><div class="bar"><i style="width:74%"></i></div></div><div class="cell win"><div class="v">12.6</div><div class="bar"><i style="width:100%"></i></div></div></div>
+<div class="row"><div class="lab">Ceiling</div><div class="cell win"><div class="v">39.9</div><div class="bar"><i style="width:100%"></i></div></div><div class="cell"><div class="v">37.0</div><div class="bar"><i style="width:93%"></i></div></div></div>
+<div class="row"><div class="lab">Range</div><div class="cell win"><div class="v">30.5</div><div class="bar"><i style="width:100%"></i></div></div><div class="cell"><div class="v">24.4</div><div class="bar"><i style="width:80%"></i></div></div></div>
+</div></div>
+
+<div class="opt B"><h2>B &middot; Big numeral, hairline gauge</h2><p class="d">Number does the talking; a thin rule with an end tick shows the share.</p>
+<div class="tbl">
+<div class="row"><div class="lab">Proj. Points</div><div class="cell win"><div class="v">25.3</div><div class="bar" style="--w:100%"><i style="width:100%"></i></div></div><div class="cell"><div class="v">24.0</div><div class="bar" style="--w:95%"><i style="width:95%"></i></div></div></div>
+<div class="row"><div class="lab">Floor</div><div class="cell"><div class="v">9.4</div><div class="bar" style="--w:74%"><i style="width:74%"></i></div></div><div class="cell win"><div class="v">12.6</div><div class="bar" style="--w:100%"><i style="width:100%"></i></div></div></div>
+<div class="row"><div class="lab">Ceiling</div><div class="cell win"><div class="v">39.9</div><div class="bar" style="--w:100%"><i style="width:100%"></i></div></div><div class="cell"><div class="v">37.0</div><div class="bar" style="--w:93%"><i style="width:93%"></i></div></div></div>
+</div></div>
+
+<div class="opt C"><h2>C &middot; Solid block with the number inside</h2><p class="d">One element per cell, like a scoreboard strip. Winner is a full mint block.</p>
+<div class="tbl">
+<div class="row"><div class="lab">Proj. Points</div><div class="cell win"><div class="bar"><i style="width:100%"></i><b>25.3</b></div></div><div class="cell"><div class="bar"><i style="width:95%"></i><b>24.0</b></div></div></div>
+<div class="row"><div class="lab">Floor</div><div class="cell"><div class="bar"><i style="width:74%"></i><b>9.4</b></div></div><div class="cell win"><div class="bar"><i style="width:100%"></i><b>12.6</b></div></div></div>
+<div class="row"><div class="lab">Ceiling</div><div class="cell win"><div class="bar"><i style="width:100%"></i><b>39.9</b></div></div><div class="cell"><div class="bar"><i style="width:93%"></i><b>37.0</b></div></div></div>
+</div></div>
+
+<div class="opt D"><h2>D &middot; Tug of war</h2><p class="d">One shared bar per stat, centre line, each player pushes out from it. Best for a two-player compare.</p>
+<div class="tbl">
+<div class="row"><div class="lab">Proj. Points</div><div class="tug"><div class="n win">25.3</div><div class="track lead"><div class="l"><i style="width:100%"></i></div><div class="r"><i style="width:95%"></i></div></div><div class="n r">24.0</div></div></div>
+<div class="row"><div class="lab">Floor</div><div class="tug"><div class="n">9.4</div><div class="track lead R"><div class="l"><i style="width:74%"></i></div><div class="r"><i style="width:100%"></i></div></div><div class="n r win">12.6</div></div></div>
+<div class="row"><div class="lab">Ceiling</div><div class="tug"><div class="n win">39.9</div><div class="track lead"><div class="l"><i style="width:100%"></i></div><div class="r"><i style="width:93%"></i></div></div><div class="n r">37.0</div></div></div>
+</div></div>
+
+<div class="opt E"><h2>E &middot; Marker on a line</h2><p class="d">A line with a diamond marker, lighter than a bar; reads as a position on a scale.</p>
+<div class="tbl">
+<div class="row"><div class="lab">Proj. Points</div><div class="cell win"><div class="v">25.3</div><div class="bar" style="--w:100%"><i></i></div></div><div class="cell"><div class="v">24.0</div><div class="bar" style="--w:95%"><i></i></div></div></div>
+<div class="row"><div class="lab">Floor</div><div class="cell"><div class="v">9.4</div><div class="bar" style="--w:74%"><i></i></div></div><div class="cell win"><div class="v">12.6</div><div class="bar" style="--w:100%"><i></i></div></div></div>
+<div class="row"><div class="lab">Ceiling</div><div class="cell win"><div class="v">39.9</div><div class="bar" style="--w:100%"><i></i></div></div><div class="cell"><div class="v">37.0</div><div class="bar" style="--w:93%"><i></i></div></div></div>
+</div></div>
+</body></html>
