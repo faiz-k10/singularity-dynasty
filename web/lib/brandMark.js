@@ -3,14 +3,14 @@
 // the line ending just above the disc at the top). ONE source for every copy of the mark: the header / landing / Observatory marks are inline svg
 // (app/BrandMark.js -- not CSS masks, which render blurry), the favicon / apple
 // icon / share images draw them through lib/markSvg.js, and the profile-picture files in brand/ come from scripts/make-brand-logos.mjs.
-export const MARK_DISC = { cx: 20, cy: 20, r: 15.0 };
+export const MARK_DISC = { cx: 20, cy: 20, r: 12.5 };
 export const MARK_STROKE = 1.5; // the line's width in the header; the brand files draw it thinner
 
 // from -142.2 degrees round to 270 (the top of the circle, just above the disc's edge), radius 17 -> 13.7. The start angle puts the football's
 // CENTRE exactly at 10 o'clock (founder, Nov 10 2026, picked from mockups/logo-football-10.png).
-const R_OUT = 17.6, R_IN = 15.0, START = -142.2, END = 270, FLARE = 0.16; // the line rides the disc's edge (it IS the border) and only its first stretch swings out to carry the football
+const R_OUT = 17.0, R_IN = 13.7, START = -142.2, END = 270;
 const spiralPoint = (t) => {
-  const r = R_IN + (R_OUT - R_IN) * Math.pow(Math.max(0, 1 - t / FLARE), 2);
+  const r = R_OUT - (R_OUT - R_IN) * Math.pow(t, 0.9);
   const th = ((START + (END - START) * t) * Math.PI) / 180;
   return [20 + r * Math.cos(th), 20 + r * Math.sin(th)];
 };
