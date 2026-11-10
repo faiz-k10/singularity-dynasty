@@ -5,7 +5,7 @@ import { ImageResponse } from "next/og.js";
 import { createElement as h } from "react";
 import { readFile, writeFile } from "node:fs/promises";
 import sharp from "sharp";
-import { MARK_DISC, MARK_SPIRAL, MARK_SPECK, MARK_STROKE } from "../lib/brandMark.js";
+import { MARK_DISC, MARK_SPECK, MARK_STROKE } from "../lib/brandMark.js";
 
 // the ball sits where the spiral starts, pointing along it (the line's first step heads up and to the right)
 const BALL_L = 4.4, BALL_W = 1.85; // length; the curve's control height (the ball is about 1.5x that wide)
@@ -13,6 +13,20 @@ const DIR = [4.29 - 3.37, 9.12 - 10.4], DL = Math.hypot(...DIR), UX = DIR[0] / D
 const BALL_ANGLE = (Math.atan2(UY, UX) * 180) / Math.PI;
 // the ball sits just BEHIND the line's end, its back tip on the line, so the line reads as its flight path rather than a stem
 const BALL_CX = MARK_SPECK.cx - UX * (BALL_L / 2 + 0.15), BALL_CY = MARK_SPECK.cy - UY * (BALL_L / 2 + 0.15);
+// The spiral for these files: the site's spiral (lib/brandMark.js: radius 19.2 -> 14 over 1.18 turns from -150 degrees) with its INNER end bent
+// down into the disc (founder, Nov 10 2026: "make the other end merging into the circle"): over the last quarter it eases from the site's path to
+// radius 11, under the disc's edge, and the disc is drawn on top, so the line flows into the circle instead of stopping short of it.
+const SPIRAL = (() => {
+  const pts = [];
+  for (let i = 0; i <= 120; i++) {
+    const t = i / 120;
+    const q = Math.min(1, Math.max(0, (t - 0.72) / 0.28)), ease = q * q * (3 - 2 * q);
+    const r = 19.2 - 5.2 * Math.pow(t, 0.9) - 3.0 * ease;
+    const th = ((-150 + 1.18 * 360 * t) * Math.PI) / 180;
+    pts.push(`${(20 + r * Math.cos(th)).toFixed(2)} ${(20 + r * Math.sin(th)).toFixed(2)}`);
+  }
+  return "M" + pts.join(" L");
+})();
 const font = await readFile("assets/og-fonts/BigShoulders-800.ttf");
 const OUT = "../brand";
 const S = 1024, BOX = 760; // the mark's 40-unit box drawn 760px wide, centred (platforms crop to a circle)
@@ -25,8 +39,8 @@ for (const [name, v] of Object.entries(variants)) {
   for (const sd of [false, true]) {
     const bold = 0.6; // much thinner than the header's 1.5-unit line: at avatar size the site's own weight reads heavy (founder, Nov 10 2026: "lines are too thick")
     const mark = h("svg", { width: BOX, height: BOX, viewBox: "0 0 40 40", style: { position: "absolute", left: off, top: off } },
+      h("path", { d: SPIRAL, fill: "none", stroke: v.ring, strokeWidth: MARK_STROKE * bold, strokeLinecap: "round" }),
       h("circle", { cx: MARK_DISC.cx, cy: MARK_DISC.cy, r: MARK_DISC.r, fill: v.disc }),
-      h("path", { d: MARK_SPIRAL, fill: "none", stroke: v.ring, strokeWidth: MARK_STROKE * bold, strokeLinecap: "round" }),
       // the point at the end is a FOOTBALL (founder, Nov 10 2026): a pointed oval laid along the line, with laces in the background colour
       h("g", { transform: `translate(${BALL_CX} ${BALL_CY}) rotate(${BALL_ANGLE})` },
         h("path", { d: `M${-BALL_L / 2} 0 C${-BALL_L / 4} ${-BALL_W} ${BALL_L / 4} ${-BALL_W} ${BALL_L / 2} 0 C${BALL_L / 4} ${BALL_W} ${-BALL_L / 4} ${BALL_W} ${-BALL_L / 2} 0 Z`, fill: v.ring }),
