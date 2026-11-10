@@ -759,8 +759,7 @@ export default function EventHorizon({ signedIn, member, invited, discountPct, w
               </>
             ) : (
               <>
-                <ToolLink href="/login">Sign in</ToolLink>
-                <ToolLink className="ehp-in" href="/login?next=/my-team">Dive in</ToolLink>
+                <ToolLink className="ehp-in" href="/login">Sign in</ToolLink>
               </>
             )}
             <ThemeToggle inline />

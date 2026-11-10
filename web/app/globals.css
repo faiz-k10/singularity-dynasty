@@ -6915,9 +6915,6 @@ body:has(.ehp) .ticker-bar{position:absolute;}
 @media (prefers-reduced-motion:reduce){.ehp-fx{display:none;}}
 .ehp-speck{position:absolute;left:50%;top:50%;width:4px;height:4px;margin:-2px 0 0 -2px;border-radius:50%;background:var(--ehp-mark);opacity:0;will-change:transform,opacity;pointer-events:none;z-index:1;}
 
-/* client-side page changes (the ViewTransition in layout.js): a quick crossfade; none at all for reduced motion */
-::view-transition-old(*), ::view-transition-new(*){animation-duration:.18s; animation-timing-function:ease-out;}
-@media (prefers-reduced-motion: reduce){ ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*){animation:none !important;} }
 
 /* THE TOOLS DROPDOWN (app/ToolsMenu.js), the same on the landing page and in every other page's header. Colours fall back from the landing's
    --ehp-* tokens to the site's, so one block serves both. */
