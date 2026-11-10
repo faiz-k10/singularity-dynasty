@@ -6671,6 +6671,9 @@ body:has(.ehp){--ehp-bg:#0B0B0B;--ehp-ink:#ECE7DC;--ehp-dim:#A39E92;--ehp-faint:
 .ehp .feed-form::before{display:none;}
 .ehp .feed-label{color:var(--ehp-faint);}
 .ehp .feed-input{background:none;border:0;border-bottom:1px solid var(--ehp-rule);border-radius:0;color:var(--ehp-ink);}
+/* focus = the underline darkens and thickens (the generic glow ring was cut off on the left by the form's edge, founder Nov 10 2026) */
+.ehp .feed-input:focus,.ehp .feed-input:focus-visible{outline:none;box-shadow:inset 0 -1px 0 var(--ehp-ink);border-bottom-color:var(--ehp-ink);}
+.ehp .feed-form{overflow:visible;}
 .ehp .feed-submit{background:var(--ehp-ink);color:var(--ehp-bg);border-radius:0;}
 .ehp-posts{list-style:none;margin:26px 0 0;padding:0;border-top:1px solid var(--ehp-rule);}
 .ehp-posts a{display:flex;justify-content:space-between;gap:20px;padding:12px 0;border-bottom:1px solid var(--ehp-rule);font-size:15px;}
@@ -6854,7 +6857,7 @@ body:has(.ehp) .ticker-bar{position:absolute;}
 .ehp-nl .ehp-pm-panel{width:340px;padding:16px 18px;}
 .ehp-nl .feed-form{border-top:0;padding:0;}
 .ehp-nl .feed-input-row{flex-wrap:nowrap;gap:8px;}
-.ehp-nl .feed-input{flex:1;min-width:0;font-size:13px;padding:9px 2px;}
+.ehp-nl .feed-input{flex:1;min-width:0;font-size:13px;padding:9px 4px;}
 .ehp-nl .feed-submit{padding:9px 14px;font-size:13px;}
 .ehp-nl .ehp-pm-panel p{white-space:normal;line-height:1.5;}
 @media (max-width:760px){.ehp-pm-panel{display:none;}}
