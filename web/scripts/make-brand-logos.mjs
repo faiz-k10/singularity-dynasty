@@ -9,12 +9,10 @@ import { MARK_DISC, MARK_STROKE } from "../lib/brandMark.js";
 
 // The spiral for these files: the site's shape (lib/brandMark.js: 1.18 turns from -150 degrees) drawn TIGHTER around the disc (founder, Nov 10
 // 2026: "make the spiral tighter"): radius R_OUT -> R_IN instead of the site's 19.2 -> 14, so the two passes sit closer together and closer to the
-// disc. Its inner end merges into the disc at the TOP: over the last stretch it eases to just under the disc's 12.5 edge, and the disc is drawn on
-// top, so the line flows into the circle there.
-const R_OUT = 17.0, R_IN = 13.7, R_END = 12.0;
+// disc. Its inner end stops just short of the disc at the TOP of the circle, like the site's (a merge into the disc was tried and dropped, founder).
+const R_OUT = 17.0, R_IN = 13.7;
 const spiralPoint = (t) => {
-  const q = Math.min(1, Math.max(0, (t - 0.86) / 0.14)), ease = q * q;
-  const r = R_OUT - (R_OUT - R_IN) * Math.pow(t, 0.9) - (R_IN - R_END) * ease;
+  const r = R_OUT - (R_OUT - R_IN) * Math.pow(t, 0.9);
   const th = ((-150 + 1.18 * 360 * t) * Math.PI) / 180;
   return [20 + r * Math.cos(th), 20 + r * Math.sin(th)];
 };
