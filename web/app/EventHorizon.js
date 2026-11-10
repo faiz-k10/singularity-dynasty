@@ -203,6 +203,8 @@ function Bodies({ size, bodies }) {
               <mask id={`ehp-pm-${i}`}>
                 <path d={ball(pr)} fill="#fff" transform={`rotate(${BALL_TILT})`} />
                 <path d={stripes(pr)} fill="#000" transform={`rotate(${BALL_TILT})`} />
+                {/* a rim of the planet's colour all the way round, so the stripes stop short of the edge and the silhouette stays one whole football */}
+                <path d={ball(pr)} fill="none" stroke="#fff" strokeWidth={Math.max(1.6, pr * 0.16)} strokeLinejoin="round" transform={`rotate(${BALL_TILT})`} />
                 {b.price && (
                   // the price is CUT OUT of the planet (a mask), so it reads as the sky showing through; centred on the ball and set along its axis
                   (() => { const fs = b.price === "Free" ? Math.max(8, pr * 0.62) : pr * 0.85; return <text className="pm-n" textAnchor="middle" y={+(fs * 0.36).toFixed(2)} transform={`rotate(${BALL_TILT})`} style={{ fontSize: fs }} fill="#000">{b.price}</text>; })()
