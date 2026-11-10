@@ -298,9 +298,8 @@ body::before{
   text-decoration:none; color:var(--star);
 }
 .brandmark .ring, .lab-export-brand .ring, .lab-export-foot .ring{
-  width:15px; height:15px; border-radius:50%;
-  background:var(--star); /* the Event Horizon hole: a plain ink disc (bone in dark mode), the same mark the landing page docks in its header */
-  flex-shrink:0;
+  width:15px; height:15px;
+  flex-shrink:0; /* no CSS disc behind the svg: the mark draws its own disc, bounded by the ember line (founder, Nov 10 2026) */
 }
 .menu-btn{
   position:fixed; top:26px; right:24px; z-index:90;
