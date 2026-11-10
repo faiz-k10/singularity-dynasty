@@ -6,11 +6,12 @@
 export const MARK_DISC = { cx: 20, cy: 20, r: 12.5 };
 export const MARK_STROKE = 1.5; // the line's width in the header; the brand files draw it thinner
 
-// 1.18 turns from -150 degrees, radius 17 -> 13.7, so it ends at the top of the circle just above the disc's edge
-const R_OUT = 17.0, R_IN = 13.7;
+// from -142.2 degrees round to 270 (the top of the circle, just above the disc's edge), radius 17 -> 13.7. The start angle puts the football's
+// CENTRE exactly at 10 o'clock (founder, Nov 10 2026, picked from mockups/logo-football-10.png).
+const R_OUT = 17.0, R_IN = 13.7, START = -142.2, END = 270;
 const spiralPoint = (t) => {
   const r = R_OUT - (R_OUT - R_IN) * Math.pow(t, 0.9);
-  const th = ((-150 + 1.18 * 360 * t) * Math.PI) / 180;
+  const th = ((START + (END - START) * t) * Math.PI) / 180;
   return [20 + r * Math.cos(th), 20 + r * Math.sin(th)];
 };
 export const MARK_SPIRAL = "M" + Array.from({ length: 121 }, (_, i) => spiralPoint(i / 120).map((n) => n.toFixed(2)).join(" ")).join(" L");
