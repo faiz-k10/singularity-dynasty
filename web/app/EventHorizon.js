@@ -13,6 +13,7 @@ import { startCheckout } from "@/lib/startCheckout";
 import { formatWin } from "@/lib/standing";
 import { leadState } from "@/lib/leadState";
 import { fmt1, fmt2 } from "@/lib/format";
+import BrandMark from "@/app/BrandMark";
 
 // EVENT HORIZON -- the landing page for visitors (founder's pick, Nov 9 2026; the design before it is the git tag
 // design-classic-2026-11-09). Calm by default; the memorable parts happen as you move:
@@ -681,7 +682,7 @@ export default function EventHorizon({ signedIn, member, invited, discountPct, w
             <a href="#feed">Letter</a>
           </nav>
           <Link className="ehp-brand" href="/">
-            <span className="ehp-dock" aria-hidden="true" />
+            <BrandMark className="ehp-dock" />
             Singularity Dynasty
           </Link>
           <div className="ehp-r">

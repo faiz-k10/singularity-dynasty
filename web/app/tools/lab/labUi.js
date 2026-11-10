@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { LAB_GROUPS, LAB_METRICS, LAB_METRIC, formatMetric } from "@/lib/labMetrics";
+import BrandMark from "@/app/BrandMark";
 
 // Pieces shared by The Observatory's views: the colours of the picked players, position colours, a width-measuring hook for the charts and the
 // metric picker.
@@ -93,7 +94,7 @@ export function MetricSelect({ label, value, onChange, available, simsAccess, id
 export function Signature({ axis = null }) {
   return (
     <div className={`lab-export-foot${axis ? " is-on-axis" : ""}`} style={axis ? { right: axis.r, bottom: axis.b + 6 } : undefined} aria-hidden="true">
-      <span className="ring" />
+      <BrandMark />
       Singularity Dynasty · The Observatory
     </div>
   );

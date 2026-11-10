@@ -1,7 +1,7 @@
 // The Singularity Dynasty mark: the event-horizon disc with one line spiralling in toward it, a football at its outer end (the line is its flight
 // path) -- everything collapsing to one point. A 40-unit box. Redrawn Nov 10 2026 with the founder (tighter spiral, a football instead of a dot,
-// the line ending just above the disc at the top). ONE source for every copy of the mark: the header / landing / Observatory marks are CSS masks
-// of these paths (globals.css "THE MARK"; regenerate the two data-URIs with `node scripts/mark-masks.mjs` after a change), the favicon / apple
+// the line ending just above the disc at the top). ONE source for every copy of the mark: the header / landing / Observatory marks are inline svg
+// (app/BrandMark.js -- not CSS masks, which render blurry), the favicon / apple
 // icon / share images draw them through lib/markSvg.js, and the profile-picture files in brand/ come from scripts/make-brand-logos.mjs.
 export const MARK_DISC = { cx: 20, cy: 20, r: 12.5 };
 export const MARK_STROKE = 1.5; // the line's width in the header; the brand files draw it thinner

@@ -11,6 +11,7 @@ import InteractiveScript from "./InteractiveScript";
 import TickerTrack from "./TickerTrack";
 import ToolLink from "./ToolLink";
 import ToolsMenuRows from "./ToolsMenu";
+import BrandMark from "./BrandMark";
 import { getAchievements } from "./tools/achievements";
 import { getCachedRedraftData, getCachedTdProfile, getCachedUsageProfile, computeRanks } from "./tools/redraft-rankings/data";
 import { computeRegressionScore } from "@/lib/regressionScore";
@@ -224,7 +225,7 @@ export default async function SiteHeader({ scripts = true }) {
 
       <header className="site-header">
         <ToolLink href="/#hero" className="brandmark">
-          <span className="ring"></span>Singularity Dynasty
+          <BrandMark />Singularity Dynasty
         </ToolLink>
         <nav className="top-nav-bar" id="topNavBar" aria-label="Primary">
           <div className="nav-dropdown">

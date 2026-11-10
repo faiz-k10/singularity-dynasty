@@ -11,6 +11,7 @@ import LabGameLog from "./LabGameLog";
 import LabCompare from "./LabCompare";
 import LabExport from "./LabExport";
 import { useMyView, MyPlayersFilter, MyPlayersNote } from "../MyPlayers";
+import BrandMark from "@/app/BrandMark";
 
 const VIEWS = [
   ["scatter", "Scatter"],
@@ -135,7 +136,7 @@ export default function LabClient({ rows, week, season, simsAccess, mine, gated,
         {/* Shown only in an exported picture (.is-exporting): the brand, what the chart is, and the week. */}
         <div className="lab-export-head" aria-hidden="true">
           <span className="lab-export-brand">
-            <span className="ring" />
+            <BrandMark />
             Singularity Dynasty <i>The Observatory</i>
           </span>
           <span className="lab-export-title">{title}</span>
