@@ -885,7 +885,6 @@ export default function EventHorizon({ signedIn, member, invited, discountPct, w
                 Five ways <em>to look.</em>
               </h2>
             </div>
-            <div className="ehp-k">Updated every Tuesday</div>
           </div>
           <ol>
             {TOOLS.map(([h, p, t, href], i) => (
