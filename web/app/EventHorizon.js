@@ -28,15 +28,18 @@ import BrandMark from "@/app/BrandMark";
 
 // horizon radius, px: 150 on a desktop, smaller on a phone so the ring (R + 30) fits the screen
 const radiusFor = (w) => (w < 560 ? Math.max(104, Math.round((w - 120) / 2)) : 150);
+// a planet is a FOOTBALL (founder, Nov 10 2026): the logo's pointed oval, 2.5 radii long and 0.8 tall, tilted a little
+const ball = (r, grow = 0) => { const L = (2.5 * r) / 2 + grow, W = 0.8 * r * 1.333 + grow; return `M${-L} 0 C${-L / 2} ${-W} ${L / 2} ${-W} ${L} 0 C${L / 2} ${W} ${-L / 2} ${W} ${-L} 0 Z`; };
+const BALL_TILT = -12;
 const TILT = (-7 * Math.PI) / 180;
 // A visitor's sky (founder, Nov 10 2026: "much bigger planets with the 3 plan names"): the three plans, closer to the hole = more (as in the Plans
 // section), each a big planet (`pr` = its radius) that opens the Plans section on click and says its price on hover.
 const TOOL_BODIES = [
   // speeds (`s` = seconds a lap): the smaller the planet the faster it goes -- Stargazer 55s, Explorer 105s, Singularity 160s (founder, Nov 10 2026)
   // each planet is its own: Singularity the largest, ringed; Explorer big with the one glow (and pulse) on hover; Stargazer a small, plain speck of a planet
-  { id: "singularity", n: "SINGULARITY", say: "everything, from $20 a month", href: "#pricing", pr: 92, price: "$20", rx: 360, ry: 128, a: -0.7, s: 160 },
-  { id: "explorer", n: "EXPLORER", say: "every player, from $7 a month", href: "#pricing", pr: 68, price: "$7", rx: 500, ry: 178, a: 2.1, s: 105 },
-  { id: "stargazer", n: "STARGAZER", say: "free, no card", href: "#pricing", pr: 14, price: "Free", rx: 640, ry: 228, a: 4.2, s: 55 },
+  { id: "singularity", n: "SINGULARITY", say: "everything, from $20 a month", href: "#pricing", pr: 92, price: "$20", rx: 330, ry: 116, a: -0.7, s: 160 },
+  { id: "explorer", n: "EXPLORER", say: "every player, from $7 a month", href: "#pricing", pr: 68, price: "$7", rx: 420, ry: 148, a: 2.1, s: 105 },
+  { id: "stargazer", n: "STARGAZER", say: "free, no card", href: "#pricing", pr: 14, price: "Free", rx: 510, ry: 180, a: 4.2, s: 55 },
 ];
 
 // What orbits the hole. A visitor sees the three plans. A member with saved leagues sees THIS WEEK'S MATCHUPS instead (as on the
@@ -189,18 +192,18 @@ function Bodies({ size, bodies }) {
             <svg viewBox={`${-A} ${-B} ${2 * A} ${2 * B}`} style={{ width: 2 * A, height: 2 * B, left: -A, top: -B }}>
               <circle className="hit" r={pr + 14} fill="transparent" />
               {b.id === "singularity" && <ellipse className="saturn" rx={pr * 1.75} ry={pr * 0.36} transform="rotate(-18)" />}
-              <circle className="halo" r={pr + 9} />
+              <path className="halo" d={ball(pr, 9)} transform={`rotate(${BALL_TILT})`} />
               {b.price && (
                 // the price is CUT OUT of the planet (a mask), so it reads as the sky showing through; per month sits under the figure
                 <mask id={`ehp-pm-${i}`}>
-                  <circle r={pr} fill="#fff" />
+                  <path d={ball(pr)} fill="#fff" transform={`rotate(${BALL_TILT})`} />
                   <text className="pm-n" textAnchor="middle" y={b.price === "Free" ? pr * 0.3 : pr * 0.2} style={{ fontSize: b.price === "Free" ? Math.max(8, pr * 0.62) : pr * 0.78 }} fill="#000">{b.price}</text>
                   {b.price !== "Free" && <text className="pm-s" textAnchor="middle" y={pr * 0.52} style={{ fontSize: Math.max(9, pr * 0.15) }} fill="#000">PER MONTH</text>}
                 </mask>
               )}
-              <circle className="dot" r={pr} mask={b.price ? `url(#ehp-pm-${i})` : undefined} />
-              <text x={pr + 16} y="4">{b.n}</text>
-              {!b.id && <text className="say" x={pr + 16} y="23">{b.say}</text>}{/* the plan planets carry their price inside; no caption under the name */}
+              <path className="dot" d={ball(pr)} transform={`rotate(${BALL_TILT})`} mask={b.price ? `url(#ehp-pm-${i})` : undefined} />
+              <text x={pr * 1.25 + 16} y="4">{b.n}</text>
+              {!b.id && <text className="say" x={pr * 1.25 + 16} y="23">{b.say}</text>}{/* the plan planets carry their price inside; no caption under the name */}
             </svg>
           </ToolLink>
         );
