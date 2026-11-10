@@ -15,13 +15,14 @@ const BALL_ANGLE = (Math.atan2(UY, UX) * 180) / Math.PI;
 const BALL_CX = MARK_SPECK.cx - UX * (BALL_L / 2 + 0.15), BALL_CY = MARK_SPECK.cy - UY * (BALL_L / 2 + 0.15);
 // The spiral for these files: the site's spiral (lib/brandMark.js: radius 19.2 -> 14 over 1.18 turns from -150 degrees) with its INNER end bent
 // down into the disc (founder, Nov 10 2026: "make the other end merging into the circle"): over the last quarter it eases from the site's path to
-// radius 11, under the disc's edge, and the disc is drawn on top, so the line flows into the circle instead of stopping short of it.
+// just under the disc's edge only at its very end, which is at the TOP of the disc (where the site's spiral ends), and the disc is drawn on top, so
+// the line flows into the circle there instead of stopping short of it.
 const SPIRAL = (() => {
   const pts = [];
   for (let i = 0; i <= 120; i++) {
     const t = i / 120;
-    const q = Math.min(1, Math.max(0, (t - 0.72) / 0.28)), ease = q * q * (3 - 2 * q);
-    const r = 19.2 - 5.2 * Math.pow(t, 0.9) - 3.0 * ease;
+    const q = Math.min(1, Math.max(0, (t - 0.86) / 0.14)), ease = q * q;
+    const r = 19.2 - 5.2 * Math.pow(t, 0.9) - 2.0 * ease; // reaches 12.0 (just under the disc's 12.5 edge) only at the very end, at the TOP of the disc
     const th = ((-150 + 1.18 * 360 * t) * Math.PI) / 180;
     pts.push(`${(20 + r * Math.cos(th)).toFixed(2)} ${(20 + r * Math.sin(th)).toFixed(2)}`);
   }
