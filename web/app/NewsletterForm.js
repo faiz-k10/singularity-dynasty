@@ -4,7 +4,8 @@ import { useState } from "react";
 
 // The home page's newsletter sign-up, saving to the email list (app/api/subscribe -> table `subscribers`). It used to show
 // "Signal locked" without saving anything.
-export default function NewsletterForm({ source = "home" }) {
+// `inputId` keeps two copies on one page apart (the landing page has one in its header dropdown and one in its own section).
+export default function NewsletterForm({ source = "home", inputId = "feedEmail" }) {
   const [state, setState] = useState("idle"); // idle | sending | done | error
   const [error, setError] = useState("");
 
@@ -30,11 +31,11 @@ export default function NewsletterForm({ source = "home" }) {
 
   return (
     <form className={`feed-form reveal in${state === "done" ? " sent" : ""}`} onSubmit={submit} noValidate={false}>
-      <label className="feed-label mono" htmlFor="feedEmail">
+      <label className="feed-label mono" htmlFor={inputId}>
         EMAIL ADDRESS
       </label>
       <div className="feed-input-row">
-        <input type="email" id="feedEmail" name="email" className="feed-input" placeholder="you@domain.com" required maxLength={254} autoComplete="email" disabled={state === "done"} />
+        <input type="email" id={inputId} name="email" className="feed-input" placeholder="you@domain.com" required maxLength={254} autoComplete="email" disabled={state === "done"} />
         <button type="submit" className="btn-primary feed-submit" disabled={state === "sending" || state === "done"}>
           {state === "sending" ? "Saving…" : "Subscribe"}
         </button>

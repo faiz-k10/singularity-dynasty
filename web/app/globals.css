@@ -6850,6 +6850,13 @@ body:has(.ehp) .ticker-bar{position:absolute;}
 .ehp-pm-row.is-pick button{border-color:var(--ehp-mark);color:var(--ehp-mark);}
 .ehp-pm-row.is-pick button:hover:not(:disabled){background:var(--ehp-mark);color:var(--ehp-bg);}
 .ehp-pm-panel p{margin:10px 0 0;font:11px var(--font-mono), monospace;font-stretch:82%;color:var(--ehp-faint);white-space:nowrap;}
+/* the Newsletter dropdown: the same panel, holding the sign-up form */
+.ehp-nl .ehp-pm-panel{width:340px;padding:16px 18px;}
+.ehp-nl .feed-form{border-top:0;padding:0;}
+.ehp-nl .feed-input-row{flex-wrap:nowrap;gap:8px;}
+.ehp-nl .feed-input{flex:1;min-width:0;font-size:13px;padding:9px 2px;}
+.ehp-nl .feed-submit{padding:9px 14px;font-size:13px;}
+.ehp-nl .ehp-pm-panel p{white-space:normal;line-height:1.5;}
 @media (max-width:760px){.ehp-pm-panel{display:none;}}
 
 /* the three plan planets are each their own (EventHorizon.js TOOL_BODIES): Explorer alone glows and pulses on hover, Singularity wears a ring, Stargazer is a small plain one */
@@ -6886,14 +6893,7 @@ body:has(.ehp) .ticker-bar{position:absolute;}
 .ehp-ringlayer svg{position:absolute;left:50%;top:50%;overflow:visible;transform-origin:center;}
 /* the sky effects (EventHorizon.js .ehp-fx): pure CSS animations of transform / opacity, run by the compositor */
 .ehp-fx{pointer-events:none;z-index:1;}
-.ehp-meteor{position:absolute;left:50%;top:50%;width:180px;height:2px;margin:-1px 0 0 -180px;transform-origin:180px 50%;background:linear-gradient(90deg, transparent, var(--ehp-ink));border-radius:1px;opacity:0;transform:translate3d(var(--x0),var(--y0),0) rotate(var(--a));animation:ehp-meteor 26s linear infinite;backface-visibility:hidden;will-change:transform,opacity;} /* a meteor: the head is its right end */
-@keyframes ehp-meteor{
-  0%{transform:translate3d(var(--x0),var(--y0),0) rotate(var(--a));opacity:0;}
-  1%{opacity:.85;}
-  7.5%{opacity:.85;}
-  9%{transform:translate3d(var(--x1),var(--y1),0) rotate(var(--a));opacity:0;}
-  100%{transform:translate3d(var(--x1),var(--y1),0) rotate(var(--a));opacity:0;}
-}
+.ehp-meteor{position:absolute;left:50%;top:50%;width:180px;height:2px;margin:-1px 0 0 -180px;transform-origin:180px 50%;background:linear-gradient(90deg, transparent, var(--ehp-ink));border-radius:1px;opacity:0;backface-visibility:hidden;will-change:transform,opacity;} /* a meteor: the head is its right end; animated by EventHorizon.js (Web Animations) */
 /* the ripple is drawn at its LARGEST size and scaled down, so it is rasterised once, sharp, and the compositor only shrinks it */
 .ehp-ripple{position:absolute;left:50%;top:50%;box-sizing:border-box;width:calc(var(--ehp-r, 150px) * 6.7);height:calc(var(--ehp-r, 150px) * 6.7);margin:calc(var(--ehp-r, 150px) * -3.35) 0 0 calc(var(--ehp-r, 150px) * -3.35);border-radius:50%;border:1.5px solid var(--ehp-ink);opacity:0;transform:scale(.31);animation:ehp-ripple 12s cubic-bezier(.2,.6,.35,1) infinite;will-change:transform,opacity;}
 @keyframes ehp-ripple{

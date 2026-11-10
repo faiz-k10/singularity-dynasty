@@ -113,19 +113,32 @@ function Sky({ size, nextKickoff, bodies }) {
   }, [w, h]);
   const vb = `${-w / 2} ${-h / 2} ${w} ${h}`;
   // the meteor shower (founder, Nov 10 2026): five streaks cross the WHOLE screen from the top left to the bottom right, a burst every
-  // 26 seconds (the timing lives in the CSS); each starts off screen above / left and ends off screen below / right
-  const meteors = useMemo(() => {
+  // 26 seconds; each starts off screen above / left and ends off screen below / right. Run with the Web Animations API on CONCRETE
+  // transform / opacity values (no CSS variables inside the keyframes), which every browser can hand to its compositor, so the streaks
+  // stay smooth even while the page's own code is busy.
+  const fxRef = useRef(null);
+  useEffect(() => {
+    const root = fxRef.current;
+    if (!root || matchMedia("(prefers-reduced-motion: reduce)").matches) return undefined;
     const rnd = seeded(23);
     const diag = Math.atan2(h, w);
-    return [0, 1, 2, 3, 4].map((j) => {
+    const anims = [...root.querySelectorAll(".ehp-meteor")].map((el, j) => {
       const a = diag + ((rnd() - 0.5) * 8 * Math.PI) / 180, d = Math.hypot(w, h) * 1.15;
       const x0 = -0.5 * w - 160 + rnd() * 0.45 * w, y0 = -0.5 * h - 60 - rnd() * 0.12 * h;
-      return {
-        "--x0": `${x0.toFixed(0)}px`, "--y0": `${y0.toFixed(0)}px`,
-        "--x1": `${(x0 + Math.cos(a) * d).toFixed(0)}px`, "--y1": `${(y0 + Math.sin(a) * d).toFixed(0)}px`,
-        "--a": `${((a * 180) / Math.PI).toFixed(1)}deg`, animationDelay: `${(4 + j * 0.35 + rnd() * 0.3).toFixed(2)}s`,
-      };
+      const x1 = x0 + Math.cos(a) * d, y1 = y0 + Math.sin(a) * d, deg = ((a * 180) / Math.PI).toFixed(2);
+      const at = (x, y) => `translate3d(${x.toFixed(1)}px,${y.toFixed(1)}px,0) rotate(${deg}deg)`;
+      return el.animate(
+        [
+          { offset: 0, transform: at(x0, y0), opacity: 0 },
+          { offset: 0.01, transform: at(x0 + (x1 - x0) / 9, y0 + (y1 - y0) / 9), opacity: 0.85 },
+          { offset: 0.075, transform: at(x0 + ((x1 - x0) * 7.5) / 9, y0 + ((y1 - y0) * 7.5) / 9), opacity: 0.85 },
+          { offset: 0.09, transform: at(x1, y1), opacity: 0 },
+          { offset: 1, transform: at(x1, y1), opacity: 0 },
+        ],
+        { duration: 26000, delay: (4 + j * 0.35 + rnd() * 0.3) * 1000, iterations: Infinity, easing: "linear" }
+      );
     });
+    return () => anims.forEach((an) => an.cancel());
   }, [w, h]);
   return (
     <>
@@ -148,8 +161,8 @@ function Sky({ size, nextKickoff, bodies }) {
       {/* three more things in the sky (founder, Nov 10 2026): a meteor shower, a lensing ripple off the hole and a pulsar sweeping its beam.
           They are CSS animations (transform / opacity only), so the compositor runs them and they stay smooth whatever the page's main
           thread is doing; this layer is one of the skies, so the fall scales and fades it with the rest. */}
-      <div className="ehp-sky ehp-fx" aria-hidden="true">
-        {meteors.map((m, j) => <i key={j} className="ehp-meteor" style={m} />)}
+      <div className="ehp-sky ehp-fx" aria-hidden="true" ref={fxRef}>
+        {[0, 1, 2, 3, 4].map((j) => <i key={j} className="ehp-meteor" />)}
         <i className="ehp-ripple" />
         <i className="ehp-ripple" style={{ animationDelay: "0.8s" }} />
         <div className="ehp-pulsar"><i className="ehp-pulsar-beam" /><i className="ehp-pulsar-star" /></div>
@@ -467,6 +480,18 @@ function HeaderTools() {
   );
 }
 
+// the header's Newsletter link opens a dropdown with the sign-up right there (founder, Nov 10 2026); the link still jumps to the section
+function HeaderLetter() {
+  return (
+    <div className="ehp-pm ehp-nl">
+      <a href="#feed" aria-haspopup="true">Newsletter</a>
+      <div className="ehp-pm-panel" role="group" aria-label="Newsletter sign-up">
+        <NewsletterForm source="nav" inputId="navEmail" />
+      </div>
+    </div>
+  );
+}
+
 function HeaderPlans() {
   const [yearly, setYearly] = useState(true);
   const [busy, setBusy] = useState(null);
@@ -720,7 +745,7 @@ export default function EventHorizon({ signedIn, member, invited, discountPct, w
           <nav>
             <HeaderTools />
             <HeaderPlans />
-            <a href="#feed">Newsletter</a>
+            <HeaderLetter />
           </nav>
           <Link className="ehp-brand" href="/">
             <BrandMark className="ehp-dock" />
