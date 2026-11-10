@@ -59,7 +59,7 @@ export default function OpengraphImage() {
         </div>
 
         <div style={{ display: "flex", marginBottom: 28 }}>
-          <MarkSvg size={130} ink="#0B0B0B" ember="#C8401E" bold={1.2} />
+          <MarkSvg size={130} ink="#0B0B0B" ember="#C8401E" bg="#ECE7DC" bold={0.8} />
         </div>
 
         <div

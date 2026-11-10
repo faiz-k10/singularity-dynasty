@@ -8,7 +8,7 @@ export default function AppleIcon() {
   return new ImageResponse(
     (
       <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "#ECE7DC" }}>
-        <MarkSvg size={160} ink="#0B0B0B" ember="#C8401E" bold={1.3} />
+        <MarkSvg size={160} ink="#0B0B0B" ember="#C8401E" bg="#ECE7DC" bold={0.8} />
       </div>
     ),
     { ...size }

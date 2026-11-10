@@ -1,8 +1,26 @@
-// The Singularity Dynasty mark (Nov 10 2026, founder: "incorporate the concept of the site ... 0/10 AI similarity"): the event-horizon disc with
-// one thin ember line spiralling IN to it, ending in the speck that is still falling -- everything collapsing to one point. A 40-unit box:
-// disc radius 12.5 at the centre, the spiral from radius 19 down to 14, 1.2 turns. ONE source: the header and landing marks are CSS masks of
-// these paths (globals.css, `.brandmark .ring`, `.ehp-dock`), the favicon / apple icon / share image draw the same paths.
+// The Singularity Dynasty mark: the event-horizon disc with one line spiralling in toward it, a football at its outer end (the line is its flight
+// path) -- everything collapsing to one point. A 40-unit box. Redrawn Nov 10 2026 with the founder (tighter spiral, a football instead of a dot,
+// the line ending just above the disc at the top). ONE source for every copy of the mark: the header / landing / Observatory marks are CSS masks
+// of these paths (globals.css "THE MARK"; regenerate the two data-URIs with `node scripts/mark-masks.mjs` after a change), the favicon / apple
+// icon / share images draw them through lib/markSvg.js, and the profile-picture files in brand/ come from scripts/make-brand-logos.mjs.
 export const MARK_DISC = { cx: 20, cy: 20, r: 12.5 };
-export const MARK_SPIRAL = "M3.37 10.40 L4.29 9.12 L5.30 7.91 L6.40 6.79 L7.58 5.77 L8.84 4.86 L10.16 4.05 L11.53 3.35 L12.96 2.77 L14.42 2.31 L15.91 1.98 L17.41 1.77 L18.92 1.68 L20.43 1.72 L21.93 1.88 L23.40 2.16 L24.84 2.56 L26.24 3.07 L27.59 3.70 L28.87 4.43 L30.09 5.27 L31.23 6.19 L32.29 7.21 L33.25 8.30 L34.12 9.47 L34.89 10.70 L35.55 11.98 L36.11 13.31 L36.55 14.67 L36.87 16.07 L37.08 17.48 L37.17 18.90 L37.15 20.31 L37.01 21.72 L36.75 23.10 L36.38 24.45 L35.91 25.76 L35.33 27.03 L34.65 28.24 L33.87 29.39 L33.01 30.46 L32.06 31.46 L31.04 32.37 L29.95 33.19 L28.81 33.92 L27.60 34.55 L26.36 35.07 L25.08 35.49 L23.78 35.80 L22.45 36.00 L21.13 36.10 L19.80 36.08 L18.48 35.95 L17.18 35.72 L15.91 35.38 L14.68 34.94 L13.49 34.40 L12.35 33.77 L11.28 33.05 L10.27 32.25 L9.33 31.36 L8.47 30.41 L7.69 29.39 L7.01 28.32 L6.42 27.20 L5.92 26.04 L5.52 24.84 L5.22 23.62 L5.03 22.38 L4.94 21.14 L4.95 19.89 L5.06 18.66 L5.27 17.45 L5.59 16.26 L5.99 15.10 L6.49 13.99 L7.08 12.92 L7.75 11.91 L8.50 10.96 L9.32 10.08 L10.21 9.28 L11.15 8.55 L12.16 7.90 L13.20 7.34 L14.29 6.88 L15.40 6.50 L16.54 6.22 L17.70 6.03 L18.86 5.94 L20.02 5.95 L21.17 6.05";
-export const MARK_SPECK = { cx: 3.37, cy: 10.4, r: 1.9 };
-export const MARK_STROKE = 1.5;
+export const MARK_STROKE = 1.5; // the line's width in the header; the brand files draw it thinner
+
+// 1.18 turns from -150 degrees, radius 17 -> 13.7, so it ends at the top of the circle just above the disc's edge
+const R_OUT = 17.0, R_IN = 13.7;
+const spiralPoint = (t) => {
+  const r = R_OUT - (R_OUT - R_IN) * Math.pow(t, 0.9);
+  const th = ((-150 + 1.18 * 360 * t) * Math.PI) / 180;
+  return [20 + r * Math.cos(th), 20 + r * Math.sin(th)];
+};
+export const MARK_SPIRAL = "M" + Array.from({ length: 121 }, (_, i) => spiralPoint(i / 120).map((n) => n.toFixed(2)).join(" ")).join(" L");
+
+// the football: just behind the line's outer end, pointing along it, its back tip on the line
+const BALL_L = 4.4, BALL_W = 1.85; // length; the curve's control height (the ball is about 1.5x that wide)
+const [P0, P1] = [spiralPoint(0), spiralPoint(0.01)];
+const DL = Math.hypot(P1[0] - P0[0], P1[1] - P0[1]), UX = (P1[0] - P0[0]) / DL, UY = (P1[1] - P0[1]) / DL;
+export const MARK_BALL = {
+  transform: `translate(${(P0[0] - UX * (BALL_L / 2 + 0.15)).toFixed(2)} ${(P0[1] - UY * (BALL_L / 2 + 0.15)).toFixed(2)}) rotate(${((Math.atan2(UY, UX) * 180) / Math.PI).toFixed(1)})`,
+  d: `M${-BALL_L / 2} 0 C${-BALL_L / 4} ${-BALL_W} ${BALL_L / 4} ${-BALL_W} ${BALL_L / 2} 0 C${BALL_L / 4} ${BALL_W} ${-BALL_L / 4} ${BALL_W} ${-BALL_L / 2} 0 Z`,
+  laces: "M-0.75 0 H0.75 M-0.45 -0.32 V0.32 M0 -0.32 V0.32 M0.45 -0.32 V0.32", // stroked 0.16 in the background colour (or cut out)
+};

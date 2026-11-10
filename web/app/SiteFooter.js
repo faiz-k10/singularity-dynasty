@@ -4,7 +4,7 @@ import Link from "next/link";
 // site is two clicks away from anywhere. Full-screen board views sit above it.
 const COLUMNS = [
   ["Tools", [["/tools/redraft-rankings", "Weekly Rankings"], ["/tools/player-simulations", "Season Simulations"], ["/tools/draft-board", "Dynasty Draft Board"], ["/tools/lab", "The Observatory"], ["/my-team", "My Team"]]],
-  ["Help", [["/how-it-works", "How It Works"], ["/how-it-works#faq", "FAQ"], ["/glossary", "Glossary"], ["/contact", "Contact"]]],
+  ["Help", [["/how-it-works", "How It Works"], ["/how-it-works#faq", "FAQ"], ["/glossary", "Glossary"], ["/brand", "Brand assets"], ["/contact", "Contact"]]],
   ["Account", [["/#pricing", "Plans & Pricing"], ["/account", "Your Account"], ["/login", "Sign In"]]],
   ["Legal", [["/terms", "Terms"], ["/privacy", "Privacy"], ["/disclaimer", "Disclaimer"]]],
 ];
