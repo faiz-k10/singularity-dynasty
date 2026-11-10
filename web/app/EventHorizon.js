@@ -441,7 +441,7 @@ function HeaderPlans() {
           <button type="button" className={yearly ? "on" : ""} onClick={() => setYearly(true)} aria-pressed={yearly}>Yearly</button>
         </div>
         {PLANS.map((p) => (
-          <div key={p.id} className="ehp-pm-row">
+          <div key={p.id} className={`ehp-pm-row${p.id === "explorer" ? " is-pick" : ""}`}>
             <b>{p.name}</b>
             <em>{p.month ? `$${yearly ? p.year : p.month} / mo` : "Free"}</em>
             <button type="button" onClick={() => choose(p.id)} disabled={busy === p.id}>{busy === p.id ? "…" : p.month ? "Choose →" : "Start →"}</button>

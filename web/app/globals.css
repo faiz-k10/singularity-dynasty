@@ -6851,8 +6851,8 @@ body:has(.ehp) .ticker-bar{position:absolute;}
 .ehp-pm-row em{font:12px var(--font-mono), monospace;font-stretch:82%;font-style:normal;white-space:nowrap;color:var(--ehp-dim);}
 .ehp-pm-row button{font:11.5px var(--font-mono), monospace;font-stretch:82%;white-space:nowrap;padding:6px 0;border:1px solid var(--ehp-ink);background:none;color:var(--ehp-ink);cursor:pointer;transition:background .2s,color .2s;}
 .ehp-pm-row button:hover:not(:disabled){background:var(--ehp-ink);color:var(--ehp-bg);}
-.ehp-pm-row:last-of-type button{border-color:var(--ehp-mark);color:var(--ehp-mark);}
-.ehp-pm-row:last-of-type button:hover:not(:disabled){background:var(--ehp-mark);color:var(--ehp-bg);}
+.ehp-pm-row.is-pick button{border-color:var(--ehp-mark);color:var(--ehp-mark);}
+.ehp-pm-row.is-pick button:hover:not(:disabled){background:var(--ehp-mark);color:var(--ehp-bg);}
 .ehp-pm-panel p{margin:10px 0 0;font:11px var(--font-mono), monospace;font-stretch:82%;color:var(--ehp-faint);white-space:nowrap;}
 @media (max-width:760px){.ehp-pm-panel{display:none;}}
 
