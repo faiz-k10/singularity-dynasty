@@ -26,14 +26,15 @@ import { fmt1, fmt2 } from "@/lib/format";
 // horizon radius, px: 150 on a desktop, smaller on a phone so the ring (R + 30) fits the screen
 const radiusFor = (w) => (w < 560 ? Math.max(104, Math.round((w - 120) / 2)) : 150);
 const TILT = (-7 * Math.PI) / 180;
+// A visitor's sky (founder, Nov 10 2026: "much bigger planets with the 3 plan names"): the three plans, closer to the hole = more (as in the Plans
+// section), each a big planet (`pr` = its radius) that opens the Plans section on click and says its price on hover.
 const TOOL_BODIES = [
-  { n: "WEEKLY", say: "this week, in range", href: "/tools/redraft-rankings", rx: 280, ry: 96, a: -0.6, s: 70 },
-  { n: "SEASON", say: "where the season is heading", href: "/tools/player-simulations", rx: 400, ry: 140, a: 1.1, s: 100 },
-  { n: "DYNASTY", say: "who is really ahead", href: "/tools/draft-board", rx: 520, ry: 186, a: 2.7, s: 135 },
-  { n: "OBSERVATORY", say: "plot any two numbers", href: "/tools/lab", rx: 640, ry: 232, a: 4.3, s: 175 },
+  { n: "SINGULARITY", say: "everything, from $20 a month", href: "#pricing", pr: 54, rx: 340, ry: 120, a: -0.7, s: 95 },
+  { n: "EXPLORER", say: "every player, from $7 a month", href: "#pricing", pr: 40, rx: 480, ry: 170, a: 2.1, s: 130 },
+  { n: "STARGAZER", say: "free, no card", href: "#pricing", pr: 28, rx: 620, ry: 222, a: 4.2, s: 170 },
 ];
 
-// What orbits the hole. A visitor sees the four tools. A member with saved leagues sees THIS WEEK'S MATCHUPS instead (as on the
+// What orbits the hole. A visitor sees the three plans. A member with saved leagues sees THIS WEEK'S MATCHUPS instead (as on the
 // classic landing page): one planet per league, its orbit set by the win chance -- a favoured matchup rides close to the hole,
 // a long shot far out -- labelled with the league and the one-word reading; each opens the Game Board.
 function bodiesFor(member) {
@@ -136,15 +137,18 @@ function Bodies({ size, bodies }) {
   const { w, h } = size;
   return (
     <svg className="ehp-sky ehp-bodies" viewBox={`${-w / 2} ${-h / 2} ${w} ${h}`}>
-      {bodies.map((b, i) => (
+      {bodies.map((b, i) => {
+        const pr = b.pr ? +(b.pr * Math.max(0.5, Math.min(1, w / 1300))).toFixed(1) : 5.5; // a plan planet is big, and shrinks with the sky on a phone
+        return (
         <a key={b.n + i} href={b.href} className="ehp-body" data-i={i} style={{ transitionDelay: `${2 + i * 0.25}s` }} aria-label={`${b.n.toLowerCase()}: ${b.say}`}>
-          <circle r="26" fill="transparent" />
-          <circle className="halo" r="15" />
-          <circle className="dot" r="5.5" />
-          <text x="18" y="4">{b.n}</text>
-          <text className="say" x="18" y="23">{b.say}</text>
+          <circle r={pr + 14} fill="transparent" />
+          <circle className="halo" r={pr + 9} />
+          <circle className="dot" r={pr} />
+          <text x={pr + 16} y="4">{b.n}</text>
+          <text className="say" x={pr + 16} y="23">{b.say}</text>
         </a>
-      ))}
+        );
+      })}
     </svg>
   );
 }
