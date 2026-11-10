@@ -6,13 +6,13 @@
   --star:#ECE7DC;
   --star-dim:#A39E92;
   --ember:#E8643F; --ember-rgb:232,100,63; /* the brand accent (ember): chrome only -- good / bad colours are --up (blue, good) and --down (red, bad) since Nov 10 2026 */
-  --horizon:#6E9BD8;
-  --horizon-rgb:110,155,216;
-  --horizon-gold:#6E9BD8;
+  --horizon:#4C7DF0;
+  --horizon-rgb:76,125,240;
+  --horizon-gold:#4C7DF0;
   --neon-blue:#8E897E;
   --neon-blue-dim:#6B675E;
   --neon-blue-glow:rgba(142,137,126,0.28);
-  --up:#6E9BD8;
+  --up:#4C7DF0;
   --down:#E8643F;
   --purple:#B18AFF;
   --frost:#4F8EF7;
@@ -45,8 +45,8 @@
   --star-dot-rgb:236,231,220;
   --shadow-rgb:0,0,0;
   --neon-blue-rgb:142,137,126;
-  --horizon-gold-rgb:110,155,216;
-  --up-rgb:110,155,216;
+  --horizon-gold-rgb:76,125,240;
+  --up-rgb:76,125,240;
   --down-rgb:232,100,63;
   --purple-rgb:177,138,255;
   --frost-rgb:79,142,247;
@@ -91,8 +91,8 @@
   :root:not([data-theme="dark"]){
     --on-down:#FFFFFF;
     --ember:#AE3516; --ember-rgb:174,53,22;
-  --horizon:#2F5E9E;
-    --horizon-rgb:47,94,158;
+  --horizon:#1F4FC4;
+    --horizon-rgb:31,79,196;
     --inj-ok:#16A34A; --inj-q:#A16207; --inj-d:#C2410C; --inj-out:#B91C1C;
     --on-brand:#FFF6EE;
     --on-cold:#ECE7DC;
@@ -104,10 +104,10 @@
     --line:#D5CEBF;
     --star:#121212;
     --star-dim:#5C5850;
-    --horizon-gold:#2F5E9E;
+    --horizon-gold:#1F4FC4;
     --neon-blue:#615D55;
     --neon-blue-dim:#57534B;
-    --up:#2F5E9E;
+    --up:#1F4FC4;
     --purple:#7C3AED;
     --down:#AE3516;
     --frost:#2563EB;
@@ -126,8 +126,8 @@
     --star-dot-rgb:18,18,18;
     --shadow-rgb:80,70,50;
     --neon-blue-rgb:97,93,85;
-    --horizon-gold-rgb:47,94,158;
-    --up-rgb:47,94,158;
+    --horizon-gold-rgb:31,79,196;
+    --up-rgb:31,79,196;
     --purple-rgb:124,58,237;
     --down-rgb:174,53,22;
     --frost-rgb:37,99,235;
@@ -163,8 +163,8 @@
   --on-down:#FFFFFF;
   --ember:#AE3516; --ember-rgb:174,53,22;
   --star-dim-rgb:92,88,80;
-  --horizon:#2F5E9E;
-  --horizon-rgb:47,94,158;
+  --horizon:#1F4FC4;
+  --horizon-rgb:31,79,196;
   --inj-ok:#16A34A; --inj-q:#A16207; --inj-d:#C2410C; --inj-out:#B91C1C;
   --on-brand:#FFF6EE;
   --on-cold:#ECE7DC;
@@ -176,10 +176,10 @@
   --line:#D5CEBF;
   --star:#121212;
   --star-dim:#5C5850;
-  --horizon-gold:#2F5E9E;
+  --horizon-gold:#1F4FC4;
   --neon-blue:#615D55;
   --neon-blue-dim:#57534B;
-  --up:#2F5E9E;
+  --up:#1F4FC4;
   --purple:#7C3AED;
   --down:#AE3516;
   --frost:#2563EB;
@@ -198,8 +198,8 @@
   --star-dot-rgb:18,18,18;
   --shadow-rgb:80,70,50;
   --neon-blue-rgb:97,93,85;
-  --horizon-gold-rgb:47,94,158;
-  --up-rgb:47,94,158;
+  --horizon-gold-rgb:31,79,196;
+  --up-rgb:31,79,196;
   --purple-rgb:124,58,237;
   --down-rgb:174,53,22;
   --frost-rgb:37,99,235;
@@ -6538,11 +6538,11 @@ select.lab-select{min-width:200px;}
    design-classic-2026-11-09). Its own material: paper, ink and one ember, no cards, shadows, gradients or pills. Every class
    starts with ehp- (the old .eh-meter and the generic .reveal / .inside / .orbit classes belong to other code). Tokens sit on the
    body so the site footer under the page shares the paper. Dark is the site default, so the dark set is first. ===== */
-body:has(.ehp){--ehp-bg:#0B0B0B;--ehp-ink:#ECE7DC;--ehp-dim:#A39E92;--ehp-faint:#857F75;--ehp-rule:#25231F;--ehp-hole:#ECE7DC;--ehp-holeink:#0B0B0B;--ehp-holedim:#5C5850;--ehp-mark:#E8643F;--ehp-holemark:#AE3516;--ehp-holecold:#2F5E9E;background:var(--ehp-bg);}
+body:has(.ehp){--ehp-bg:#0B0B0B;--ehp-ink:#ECE7DC;--ehp-dim:#A39E92;--ehp-faint:#857F75;--ehp-rule:#25231F;--ehp-hole:#ECE7DC;--ehp-holeink:#0B0B0B;--ehp-holedim:#5C5850;--ehp-mark:#E8643F;--ehp-holemark:#AE3516;--ehp-holecold:#1F4FC4;background:var(--ehp-bg);}
 @media (prefers-color-scheme: light){
-  :root:not([data-theme="dark"]) body:has(.ehp){--ehp-bg:#ECE7DC;--ehp-ink:#121212;--ehp-dim:#5C5850;--ehp-faint:#67625A;--ehp-rule:#D5CEBF;--ehp-hole:#0C0C0C;--ehp-holeink:#ECE7DC;--ehp-holedim:#8E897E;--ehp-mark:#AE3516;--ehp-holemark:#E8643F;--ehp-holecold:#6E9BD8;}
+  :root:not([data-theme="dark"]) body:has(.ehp){--ehp-bg:#ECE7DC;--ehp-ink:#121212;--ehp-dim:#5C5850;--ehp-faint:#67625A;--ehp-rule:#D5CEBF;--ehp-hole:#0C0C0C;--ehp-holeink:#ECE7DC;--ehp-holedim:#8E897E;--ehp-mark:#AE3516;--ehp-holemark:#E8643F;--ehp-holecold:#4C7DF0;}
 }
-:root[data-theme="light"] body:has(.ehp){--ehp-bg:#ECE7DC;--ehp-ink:#121212;--ehp-dim:#5C5850;--ehp-faint:#67625A;--ehp-rule:#D5CEBF;--ehp-hole:#0C0C0C;--ehp-holeink:#ECE7DC;--ehp-holedim:#8E897E;--ehp-mark:#AE3516;--ehp-holemark:#E8643F;--ehp-holecold:#6E9BD8;}
+:root[data-theme="light"] body:has(.ehp){--ehp-bg:#ECE7DC;--ehp-ink:#121212;--ehp-dim:#5C5850;--ehp-faint:#67625A;--ehp-rule:#D5CEBF;--ehp-hole:#0C0C0C;--ehp-holeink:#ECE7DC;--ehp-holedim:#8E897E;--ehp-mark:#AE3516;--ehp-holemark:#E8643F;--ehp-holecold:#4C7DF0;}
 .ehp{position:relative;background:var(--ehp-bg);color:var(--ehp-ink);font-family:var(--font-body), Georgia, serif;transition:background .4s, color .4s;}
 .ehp section{padding:0;}
 .ehp a{color:inherit;text-decoration:none;}
