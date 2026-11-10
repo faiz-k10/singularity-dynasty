@@ -146,7 +146,7 @@ export default function StatRadar({ entries, selection = null, startDeg = -90, c
 
   return (
     <div className="stat-radar">
-      <div className="stat-radar-label">Percentile shape</div>
+      <div className="weekly-panel-title stat-radar-title">Percentile Shape</div>
       {pool && <div className="stat-radar-sub">vs. {pool} pool</div>}
       <svg
         viewBox={viewBox}

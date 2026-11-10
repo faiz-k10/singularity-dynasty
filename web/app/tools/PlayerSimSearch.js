@@ -248,6 +248,7 @@ function StatDetailRow({ row, colSpan, shapePeers, wrTePool, tagsByName, maxCeil
               nullable metric on this page already uses. */}
           {row.gamesPlayed > 0 && row.currentPPG != null && row.regressionScore != null && (
             <div className="stat-panel stat-panel-pace">
+              <span className="weekly-panel-title">Season Pace</span>
               <div className="stat-panel-pace-top">
                 <div className="stat-panel-pace-info">
                   {pv.headshot && (
@@ -441,6 +442,7 @@ function StatDetailRow({ row, colSpan, shapePeers, wrTePool, tagsByName, maxCeil
             </div>
           )}
           <div className="stat-panel stat-panel-table">
+            <span className="weekly-panel-title">Season Simulation</span>
             {(tagKinds.length > 0 || row.labels?.length > 0) && (
               <div className="role-block">
                 <div className="role-block-caption mono">Seasonal Player Progress</div>
@@ -532,6 +534,7 @@ function StatDetailRow({ row, colSpan, shapePeers, wrTePool, tagsByName, maxCeil
             </table>
           </div>
           <div className="stat-panel stat-panel-percentile">
+            <span className="weekly-panel-title">Percentile</span>
             <PercentileCard stats={percentileStats} position={row.position} selection={selection} onSelectCell={selectCell} />
           </div>
           <div className="stat-panel stat-panel-radar">
