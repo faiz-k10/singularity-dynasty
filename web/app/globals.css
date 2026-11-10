@@ -3105,7 +3105,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
 }
 .pctile-vbar:hover{background:rgba(var(--neon-blue-rgb),0.08);}
 .pctile-vbar-active{background:rgba(var(--horizon-gold-rgb),0.1);}
-.pctile-vbar-label{font-size:11px; color:var(--star-dim); white-space:nowrap; text-align:center; line-height:1.2;}
+.pctile-vbar-label{font-size:11px; color:var(--star-dim); white-space:normal; overflow-wrap:break-word; text-align:center; line-height:1.2;}
 .pctile-vbar-active .pctile-vbar-label{color:var(--star);}
 /* Raw value stacked over its percentile -- the number the table itself
    would show, on top, with the ordinal as a dimmer subscript underneath
@@ -4540,7 +4540,7 @@ svg text, .pctile-vbar-label, .pctile-vbar-value{font-family:var(--font-mono), m
 .stat-detail-grid .stat-panel-percentile .pctile-row-ordinal{font-size:12px;}
 /* every bar label is ONE line (founder, Nov 10 2026): the bar is a size container and the label's size follows its width (12 characters of the mono face ~ 6em), 11px at most */
 .stat-detail-grid .pctile-vbar{container-type:inline-size;}
-.stat-detail-grid .stat-panel-percentile .pctile-vbar-label{font-size:min(11px, 15.5cqw); white-space:nowrap; letter-spacing:-0.02em; min-width:0; max-width:100%;}
+.stat-detail-grid .stat-panel-percentile .pctile-vbar-label{font-size:min(11px, 15.5cqw); white-space:normal; letter-spacing:-0.02em; min-width:0; max-width:100%;} /* a long name wraps onto a second line inside its own column, so labels never run into each other */
 .stat-detail-grid .pctile-rows{overflow-x:hidden;}
 
 

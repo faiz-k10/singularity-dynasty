@@ -69,7 +69,6 @@ export default function ComparePlayerRadars({ players }) {
               position={p.position}
               selection={selection}
               onSelectCell={selectCell}
-              rankColumnByPercentile={false}
             />
           </div>
         ))}

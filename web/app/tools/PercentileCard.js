@@ -71,13 +71,7 @@ function PercentileVBar({ label, value, pctile, isActive, onClick }) {
 // the "vs. RB pool" caption), selection/onSelectCell mirror StatDetailRow
 // so clicking a row here drives the same shared selection as clicking a
 // table cell or a radar vertex.
-// rankColumnByPercentile: the single-player page ranks column mode as a
-// mini leaderboard (that player's best stat first). Compare Players sets
-// this false -- with three cards side by side, each ranked by its own
-// player's percentiles would put a different stat on the same row of
-// each card, defeating the point of comparing the same stat across
-// players; there it stays in fixed STAT_LABELS order instead.
-export default function PercentileCard({ stats, position, selection, onSelectCell, rankColumnByPercentile = true }) {
+export default function PercentileCard({ stats, position, selection, onSelectCell }) {
   if (!stats.length) return null;
 
   if (!selection) {
@@ -187,13 +181,9 @@ export default function PercentileCard({ stats, position, selection, onSelectCel
     );
   }
 
-  // column mode -- ranked highest to lowest so the stat this player is
-  // most elite in in that layer reads first, like a mini leaderboard
-  // (single-player page only -- see rankColumnByPercentile above).
+  // column mode -- the bars follow the stat table's order (founder, Nov 10 2026), never a ranking by percentile
   const layer = selection.layer;
-  const ranked = rankColumnByPercentile
-    ? [...stats].sort((a, b) => (b[`${layer}Pctile`] ?? 0) - (a[`${layer}Pctile`] ?? 0))
-    : stats;
+  const ranked = stats;
   return (
     <div className="pctile-card">
       <div className="pctile-card-head">
