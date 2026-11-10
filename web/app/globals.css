@@ -6884,11 +6884,32 @@ body:has(.ehp) .ticker-bar{position:absolute;}
 /* landing motion layers (EventHorizon.js Sky / Ring / Bodies): each moves by transform only, on its own compositor layer */
 .ehp-starfield,.ehp-orbitsky,.ehp-ringlayer{will-change:transform,opacity;}
 .ehp-ringlayer svg{position:absolute;left:50%;top:50%;overflow:visible;transform-origin:center;}
-.ehp-meteor{position:absolute;left:50%;top:50%;width:120px;height:1.5px;margin:-1px 0 0 -120px;transform-origin:120px 50%;background:linear-gradient(90deg, transparent, var(--ehp-ink));opacity:0;will-change:transform,opacity;pointer-events:none;z-index:1;} /* a meteor: the head is its right end */
-.ehp-ripple{position:absolute;left:50%;top:50%;box-sizing:border-box;width:calc(var(--ehp-r, 150px) * 2);height:calc(var(--ehp-r, 150px) * 2);margin:calc(var(--ehp-r, 150px) * -1) 0 0 calc(var(--ehp-r, 150px) * -1);border-radius:50%;border:.7px solid var(--ehp-ink);opacity:0;will-change:transform,opacity;pointer-events:none;z-index:1;} /* a ring of bent light leaving the hole */
-.ehp-pulsar{position:absolute;left:50%;top:50%;width:0;height:0;opacity:0;will-change:transform,opacity;pointer-events:none;z-index:1;}
-.ehp-pulsar-star{position:absolute;left:-1.5px;top:-1.5px;width:3px;height:3px;border-radius:50%;background:var(--ehp-ink);}
-.ehp-pulsar-beam{position:absolute;left:-150px;top:-1px;width:300px;height:2px;background:linear-gradient(90deg, transparent, var(--cobalt) 46%, var(--cobalt) 54%, transparent);opacity:0;} /* both arms of the beam, centred on the star */
+/* the sky effects (EventHorizon.js .ehp-fx): pure CSS animations of transform / opacity, run by the compositor */
+.ehp-fx{pointer-events:none;z-index:1;}
+.ehp-meteor{position:absolute;left:50%;top:50%;width:180px;height:2px;margin:-1px 0 0 -180px;transform-origin:180px 50%;background:linear-gradient(90deg, transparent, var(--ehp-ink));border-radius:1px;opacity:0;transform:translate3d(var(--x0),var(--y0),0) rotate(var(--a));animation:ehp-meteor 26s linear infinite;backface-visibility:hidden;will-change:transform,opacity;} /* a meteor: the head is its right end */
+@keyframes ehp-meteor{
+  0%{transform:translate3d(var(--x0),var(--y0),0) rotate(var(--a));opacity:0;}
+  1%{opacity:.85;}
+  7.5%{opacity:.85;}
+  9%{transform:translate3d(var(--x1),var(--y1),0) rotate(var(--a));opacity:0;}
+  100%{transform:translate3d(var(--x1),var(--y1),0) rotate(var(--a));opacity:0;}
+}
+/* the ripple is drawn at its LARGEST size and scaled down, so it is rasterised once, sharp, and the compositor only shrinks it */
+.ehp-ripple{position:absolute;left:50%;top:50%;box-sizing:border-box;width:calc(var(--ehp-r, 150px) * 6.7);height:calc(var(--ehp-r, 150px) * 6.7);margin:calc(var(--ehp-r, 150px) * -3.35) 0 0 calc(var(--ehp-r, 150px) * -3.35);border-radius:50%;border:1.5px solid var(--ehp-ink);opacity:0;transform:scale(.31);animation:ehp-ripple 12s cubic-bezier(.2,.6,.35,1) infinite;will-change:transform,opacity;}
+@keyframes ehp-ripple{
+  0%{transform:scale(.31);opacity:0;}
+  3%{opacity:.3;}
+  42%{transform:scale(1);opacity:0;}
+  100%{transform:scale(1);opacity:0;}
+}
+.ehp-pulsar{position:absolute;left:84%;top:24%;width:0;height:0;}
+.ehp-pulsar-star{position:absolute;left:-1.5px;top:-1.5px;width:3px;height:3px;border-radius:50%;background:var(--ehp-ink);animation:ehp-twinkle 2.1s ease-in-out infinite alternate;}
+.ehp-pulsar-beam{position:absolute;left:-150px;top:-1px;width:300px;height:2px;border-radius:1px;background:linear-gradient(90deg, transparent, var(--cobalt) 46%, var(--cobalt) 54%, transparent);opacity:.07;backface-visibility:hidden;will-change:transform,opacity;animation:ehp-spin 16s linear infinite, ehp-flash 8s linear infinite;} /* both arms of the beam; it flashes each time it lies flat (twice a turn) */
+@keyframes ehp-spin{to{transform:rotate(360deg);}}
+@keyframes ehp-flash{0%{opacity:.67;}7%{opacity:.07;}93%{opacity:.07;}100%{opacity:.67;}}
+@keyframes ehp-twinkle{from{opacity:.55;}to{opacity:1;}}
+@media (max-width:560px){.ehp-pulsar{transform:scale(.65);}}
+@media (prefers-reduced-motion:reduce){.ehp-fx{display:none;}}
 .ehp-speck{position:absolute;left:50%;top:50%;width:4px;height:4px;margin:-2px 0 0 -2px;border-radius:50%;background:var(--ehp-mark);opacity:0;will-change:transform,opacity;pointer-events:none;z-index:1;}
 
 /* client-side page changes (the ViewTransition in layout.js): a quick crossfade; none at all for reduced motion */

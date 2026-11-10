@@ -112,6 +112,21 @@ function Sky({ size, nextKickoff, bodies }) {
     return out;
   }, [w, h]);
   const vb = `${-w / 2} ${-h / 2} ${w} ${h}`;
+  // the meteor shower (founder, Nov 10 2026): five streaks cross the WHOLE screen from the top left to the bottom right, a burst every
+  // 26 seconds (the timing lives in the CSS); each starts off screen above / left and ends off screen below / right
+  const meteors = useMemo(() => {
+    const rnd = seeded(23);
+    const diag = Math.atan2(h, w);
+    return [0, 1, 2, 3, 4].map((j) => {
+      const a = diag + ((rnd() - 0.5) * 8 * Math.PI) / 180, d = Math.hypot(w, h) * 1.15;
+      const x0 = -0.5 * w - 160 + rnd() * 0.45 * w, y0 = -0.5 * h - 60 - rnd() * 0.12 * h;
+      return {
+        "--x0": `${x0.toFixed(0)}px`, "--y0": `${y0.toFixed(0)}px`,
+        "--x1": `${(x0 + Math.cos(a) * d).toFixed(0)}px`, "--y1": `${(y0 + Math.sin(a) * d).toFixed(0)}px`,
+        "--a": `${((a * 180) / Math.PI).toFixed(1)}deg`, animationDelay: `${(4 + j * 0.35 + rnd() * 0.3).toFixed(2)}s`,
+      };
+    });
+  }, [w, h]);
   return (
     <>
       <svg className="ehp-sky ehp-starfield" viewBox={vb} aria-hidden="true">
@@ -130,10 +145,15 @@ function Sky({ size, nextKickoff, bodies }) {
         <Ring R={R} nextKickoff={nextKickoff} />
       </div>
       <i className="ehp-speck" aria-hidden="true" />
-      {/* three more things in the sky (founder, Nov 10 2026): a meteor shower, a lensing ripple off the hole and a pulsar sweeping its beam */}
-      {[0, 1, 2, 3, 4].map((j) => <i key={`m${j}`} className="ehp-meteor" aria-hidden="true" />)}
-      {[0, 1].map((j) => <i key={`r${j}`} className="ehp-ripple" aria-hidden="true" />)}
-      <div className="ehp-pulsar" aria-hidden="true"><i className="ehp-pulsar-beam" /><i className="ehp-pulsar-star" /></div>
+      {/* three more things in the sky (founder, Nov 10 2026): a meteor shower, a lensing ripple off the hole and a pulsar sweeping its beam.
+          They are CSS animations (transform / opacity only), so the compositor runs them and they stay smooth whatever the page's main
+          thread is doing; this layer is one of the skies, so the fall scales and fades it with the rest. */}
+      <div className="ehp-sky ehp-fx" aria-hidden="true">
+        {meteors.map((m, j) => <i key={j} className="ehp-meteor" style={m} />)}
+        <i className="ehp-ripple" />
+        <i className="ehp-ripple" style={{ animationDelay: "0.8s" }} />
+        <div className="ehp-pulsar"><i className="ehp-pulsar-beam" /><i className="ehp-pulsar-star" /></div>
+      </div>
     </>
   );
 }
@@ -579,9 +599,6 @@ export default function EventHorizon({ signedIn, member, invited, discountPct, w
     const planets = els.filter((o) => o.classList.contains("ehp-body"));
     const stars = root.querySelector(".ehp-starfield");
     const speckEl = root.querySelector(".ehp-speck");
-    const meteorEls = [...root.querySelectorAll(".ehp-meteor")], rippleEls = [...root.querySelectorAll(".ehp-ripple")];
-    const pulsar = root.querySelector(".ehp-pulsar"), pBeam = root.querySelector(".ehp-pulsar-beam"), pStar = root.querySelector(".ehp-pulsar-star");
-    let burstId = -1, meteors = [];
     const hz = root.querySelector(".ehp-hz"), hole = root.querySelector(".ehp-hole"), cue = root.querySelector(".ehp-cue");
     const skies = [...root.querySelectorAll(".ehp-sky")];
     const rnd = seeded(11);
@@ -658,39 +675,6 @@ export default function EventHorizon({ signedIn, member, invited, discountPct, w
               speckEl.style.transform = `translate3d(${(r * Math.cos(a) * sc).toFixed(1)}px,${(r * 0.55 * Math.sin(a) * sc).toFixed(1)}px,0) scale(${(1.9 - p * 0.9).toFixed(2)})`;
               speckEl.style.opacity = (op * skyOp).toFixed(2);
             } else speckEl.style.opacity = "0";
-          }
-          // meteor shower: every 26s a burst of five thin streaks crosses the upper sky, one after another
-          const id = Math.floor(T / 26);
-          if (id !== burstId) {
-            burstId = id;
-            const dir = rnd() < 0.5 ? 1 : -1;
-            meteors = meteorEls.map((_, j) => ({
-              t0: id * 26 + 4 + j * 0.3 + rnd() * 0.25, dur: 0.9 + rnd() * 0.5, dist: 360 + rnd() * 200,
-              ang: dir * (24 + rnd() * 12), x0: (dir > 0 ? -0.46 : 0.2) * size.w + rnd() * 0.26 * size.w, y0: (-0.36 + rnd() * 0.28) * size.h,
-            }));
-          }
-          meteorEls.forEach((el, j) => {
-            const m = meteors[j], q = m ? (T - m.t0) / m.dur : -1;
-            if (q < 0 || q > 1) { el.style.opacity = "0"; return; }
-            const a = (m.ang * Math.PI) / 180, d = m.dist * q, dx = Math.cos(a) * (m.ang < 0 ? -1 : 1), dy = Math.abs(Math.sin(a));
-            el.style.transform = `translate3d(${((m.x0 + dx * d) * sc).toFixed(1)}px,${((m.y0 + dy * d) * sc).toFixed(1)}px,0) rotate(${(m.ang < 0 ? 180 - Math.abs(m.ang) : m.ang).toFixed(1)}deg)`;
-            el.style.opacity = (Math.sin(q * Math.PI) * 0.85 * skyOp).toFixed(2);
-          });
-          // lensing ripple: two faint rings of bent light leave the hole every 12s
-          rippleEls.forEach((el, j) => {
-            const q = (((T - j * 0.8) % 12) + 12) % 12 / 5;
-            if (q > 1) { el.style.opacity = "0"; return; }
-            el.style.transform = `translate3d(0,0,0) scale(${((1.04 + q * 2.3) * sc).toFixed(3)})`;
-            el.style.opacity = (0.34 * Math.pow(1 - q, 1.5) * Math.min(1, q * 8) * skyOp).toFixed(3);
-          });
-          // pulsar: a distant star with a thin double beam that flashes as it sweeps past
-          if (pulsar) {
-            const a = T * ((2 * Math.PI) / 16) + 0.6;
-            pulsar.style.transform = `translate3d(${(-0.34 * size.w * sc).toFixed(1)}px,${(-0.26 * size.h * sc).toFixed(1)}px,0) scale(${Math.max(0.6, Math.min(1, size.w / 1300)).toFixed(2)})`;
-            pulsar.style.opacity = skyOp.toFixed(2);
-            pBeam.style.transform = `rotate(${(a * 57.2958).toFixed(1)}deg)`;
-            pBeam.style.opacity = (0.07 + 0.6 * Math.pow(Math.abs(Math.cos(a)), 14)).toFixed(2);
-            pStar.style.opacity = (0.75 + 0.25 * Math.sin(T * 3)).toFixed(2);
           }
         }
       }
