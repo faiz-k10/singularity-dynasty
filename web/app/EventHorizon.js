@@ -199,7 +199,7 @@ function Bodies({ size, bodies }) {
               )}
               <circle className="dot" r={pr} mask={b.price ? `url(#ehp-pm-${i})` : undefined} />
               <text x={pr + 16} y="4">{b.n}</text>
-              <text className="say" x={pr + 16} y="23">{b.say}</text>
+              {!b.id && <text className="say" x={pr + 16} y="23">{b.say}</text>}{/* the plan planets carry their price inside; no caption under the name */}
             </svg>
           </ToolLink>
         );
