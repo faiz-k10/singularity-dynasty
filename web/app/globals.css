@@ -6862,7 +6862,7 @@ body:has(.ehp) .ticker-bar{position:absolute;}
 .g-singularity .ep{stroke:var(--cobalt);}
 @keyframes ehp-pulse{0%{opacity:.9;transform:scale(1);}100%{opacity:0;transform:scale(1.6);}}
 .ehp-body .saturn{fill:none;stroke:#fff;stroke-width:1.4;stroke-opacity:.8;}
-.plan-stargazer .halo{display:none;}
+.plan-stargazer .halo,.plan-explorer .halo,.plan-singularity .halo{display:none;} /* Explorer and Singularity have their own glow and pulse ring */
 @media (prefers-reduced-motion:reduce){.ehp-stage:has(.plan-explorer:hover) .g-explorer .ep,.ehp-stage:has(.plan-singularity:hover) .g-singularity .ep{animation:none;}}
 
 /* the price cut out of each plan planet (EventHorizon.js Bodies): the figure in the display face, "per month" small under it (these override .ehp-body text) */
