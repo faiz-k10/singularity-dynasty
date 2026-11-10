@@ -2098,7 +2098,7 @@ a.export-csv-btn{text-decoration:none;}
    the last column -- explicit ask, mirrors how .shape-finder-list
    centers its own cards below. */
 .stat-detail-grid{
-  display:grid; grid-template-columns:minmax(0,224px) minmax(0,360px) minmax(0,520px) minmax(0,340px); /* the season / pace column was 150px and felt cramped (founder, Nov 9 2026) */
+  display:grid; grid-template-columns:minmax(0,224px) minmax(0,280px) minmax(0,600px) minmax(0,340px); /* the season / pace column was 150px and felt cramped (founder, Nov 9 2026); the stat table gave 80px to the percentile panel so its bar labels fit on ONE line (founder, Nov 10 2026) */
   grid-template-areas:"season table percentile radar" "finder finder finder finder";
   column-gap:20px; row-gap:20px; align-items:stretch; justify-content:center;
 }
@@ -2164,13 +2164,13 @@ a.export-csv-btn{text-decoration:none;}
    own padding. Matches the grid's own column-2 track cap exactly (see
    .stat-detail-grid above) so there's no leftover space trapped inside
    the track beyond what the panel itself uses. */
-.stat-panel-table{grid-area:table; max-width:360px; display:flex; flex-direction:column; justify-content:center;}
+.stat-panel-table{grid-area:table; max-width:280px; display:flex; flex-direction:column; justify-content:center;}
 /* max-width:520px -- matches the grid's own column-3 track cap, for the
    same reason .stat-panel-table's does: without it, this panel (no
    natural max-width of its own) just stretches to fill the whole track,
    which used to be sized as a bare "0.9fr" share of the row and grew
    without bound on a wide viewport. */
-.stat-panel-percentile{grid-area:percentile; max-width:520px; display:flex; flex-direction:column; justify-content:flex-start;}
+.stat-panel-percentile{grid-area:percentile; max-width:600px; display:flex; flex-direction:column; justify-content:flex-start;}
 /* 440 (not the old 340) so the panel actually uses close to its natural
    grid-column width instead of capping well under it -- StatRadar's own
    point-to-label gap is a fraction of the rendered size, so a wider box
@@ -3105,7 +3105,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
 }
 .pctile-vbar:hover{background:rgba(var(--neon-blue-rgb),0.08);}
 .pctile-vbar-active{background:rgba(var(--horizon-gold-rgb),0.1);}
-.pctile-vbar-label{font-size:11px; color:var(--star-dim); white-space:normal; overflow-wrap:break-word; text-align:center; line-height:1.2;}
+.pctile-vbar-label{font-size:11px; color:var(--star-dim); white-space:nowrap; text-align:center; line-height:1.2;}
 .pctile-vbar-active .pctile-vbar-label{color:var(--star);}
 /* Raw value stacked over its percentile -- the number the table itself
    would show, on top, with the ordinal as a dimmer subscript underneath
@@ -4533,14 +4533,14 @@ svg text, .pctile-vbar-label, .pctile-vbar-value{font-family:var(--font-mono), m
 .stat-detail-grid .stat-panel-percentile .pctile-card{flex:1; display:flex; flex-direction:column; min-height:0;}
 .stat-detail-grid .stat-panel-percentile .pctile-card-title{font-size:12px;}
 .stat-detail-grid .stat-panel-percentile .pctile-card-sub{font-size:11px;}
-.stat-detail-grid .stat-panel-percentile .pctile-rows{flex:1; align-items:stretch; padding:8px 2px 2px; gap:4px;}
-.stat-detail-grid .stat-panel-percentile .pctile-rows .pctile-vbar{max-width:none; padding:4px 2px; gap:8px;}
+.stat-detail-grid .stat-panel-percentile .pctile-rows{flex:1; align-items:stretch; padding:8px 0 2px; gap:2px;}
+.stat-detail-grid .stat-panel-percentile .pctile-rows .pctile-vbar{max-width:none; padding:4px 0; gap:8px;}
 .stat-detail-grid .stat-panel-percentile .pctile-vbar-track{flex:1; width:min(100%, 40px); min-height:100px; height:auto; align-self:center;}
 .stat-detail-grid .stat-panel-percentile .pctile-row-raw{font-size:15px;}
 .stat-detail-grid .stat-panel-percentile .pctile-row-ordinal{font-size:12px;}
 /* every bar label is ONE line (founder, Nov 10 2026): the bar is a size container and the label's size follows its width (12 characters of the mono face ~ 6em), 11px at most */
 .stat-detail-grid .pctile-vbar{container-type:inline-size;}
-.stat-detail-grid .stat-panel-percentile .pctile-vbar-label{font-size:min(11px, 15.5cqw); white-space:normal; letter-spacing:-0.02em; min-width:0; max-width:100%;} /* a long name wraps onto a second line inside its own column, so labels never run into each other */
+.stat-detail-grid .stat-panel-percentile .pctile-vbar-label{font-size:min(11px, 13.5cqw); white-space:nowrap; letter-spacing:-0.02em; min-width:0; max-width:100%;} /* ONE line always; the size follows the column's width, so labels never run into each other */
 .stat-detail-grid .pctile-rows{overflow-x:hidden;}
 
 
@@ -6943,3 +6943,9 @@ body:has(.ehp) .ticker-bar{position:absolute;}
 :root{--pos-ink:var(--void);}
 @media (prefers-color-scheme: light){:root:not([data-theme="dark"]){--pos-ink:#FFFFFF;}}
 :root[data-theme="light"]{--pos-ink:#FFFFFF;}
+/* the stat table is 280px wide now (its 80px went to the percentile panel so the bar labels fit on one line); a slimmer stat-name column keeps all four columns inside it (founder, Nov 10 2026) */
+.stat-detail-grid .stat-detail-table th:first-child, .stat-detail-grid .stat-detail-table td:first-child{padding-left:6px; padding-right:6px;}
+.stat-detail-grid .stat-detail-table th:first-child{width:92px;}
+.stat-detail-grid .stat-detail-table th{letter-spacing:0.03em;}
+.stat-detail-grid .stat-detail-table .stat-header-trigger{padding:4px 1px;}
+.stat-detail-grid .stat-detail-table td:first-child .stat-row-trigger{padding:4px 2px;}
