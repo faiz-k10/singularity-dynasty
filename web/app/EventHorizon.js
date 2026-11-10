@@ -148,10 +148,16 @@ function Bodies({ size, bodies }) {
           <stop offset=".66" style={{ stopColor: "var(--ehp-mark)", stopOpacity: .75 }} />
           <stop offset="1" style={{ stopColor: "var(--ehp-mark)", stopOpacity: 0 }} />
         </radialGradient>
+        <radialGradient id="ehp-cg">
+          <stop offset="0" style={{ stopColor: "var(--cobalt)", stopOpacity: 0 }} />
+          <stop offset=".6" style={{ stopColor: "var(--cobalt)", stopOpacity: 0 }} />
+          <stop offset=".66" style={{ stopColor: "var(--cobalt)", stopOpacity: .8 }} />
+          <stop offset="1" style={{ stopColor: "var(--cobalt)", stopOpacity: 0 }} />
+        </radialGradient>
       </defs>
-      {bodies.map((b, i) => b.id === "explorer" && (
-        <g key={b.n} className="ehp-eglow" data-i={i}>
-          <circle className="eg" r={+(b.pr * kk * 1.7).toFixed(1)} fill="url(#ehp-eg)" />
+      {bodies.map((b, i) => (b.id === "explorer" || b.id === "singularity") && (
+        <g key={b.n} className={`ehp-eglow g-${b.id}`} data-i={i}>
+          <circle className="eg" r={+(b.pr * kk * 1.7).toFixed(1)} fill={b.id === "singularity" ? "url(#ehp-cg)" : "url(#ehp-eg)"} />
           <circle className="ep" r={+(b.pr * kk + 6).toFixed(1)} />
         </g>
       ))}
