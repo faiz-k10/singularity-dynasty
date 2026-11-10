@@ -28,23 +28,11 @@ import BrandMark from "@/app/BrandMark";
 
 // horizon radius, px: 150 on a desktop, smaller on a phone so the ring (R + 30) fits the screen
 const radiusFor = (w) => (w < 560 ? Math.max(104, Math.round((w - 120) / 2)) : 150);
-// a planet is a FOOTBALL (founder, Nov 10 2026): the logo's pointed oval, 2.5 radii long and 0.95 tall, tilted a little
-const ball = (r, grow = 0) => { const L = (2.5 * r) / 2 + grow, W = 0.95 * r * 1.333 + grow; return `M${-L} 0 C${-L / 2} ${-W} ${L / 2} ${-W} ${L} 0 C${L / 2} ${W} ${-L / 2} ${W} ${-L} 0 Z`; };
+// a planet is a FOOTBALL (founder, Nov 10 2026): a full-bodied oval, 2.6 radii long and 1.6 tall, with gently pointed ends -- not a lemon -- tilted a little
+const ball = (r, grow = 0) => { const L = 1.3 * r + grow, H = 0.8 * r + grow; return `M${-L} 0 C${-0.82 * L} ${-0.4 * H} ${-0.45 * L} ${-H} 0 ${-H} C${0.45 * L} ${-H} ${0.82 * L} ${-0.4 * H} ${L} 0 C${0.82 * L} ${0.4 * H} ${0.45 * L} ${H} 0 ${H} C${-0.45 * L} ${H} ${-0.82 * L} ${0.4 * H} ${-L} 0 Z`; };
 const BALL_TILT = -12;
 // a plan's orbit reaches across the screen (founder, Nov 10 2026): `fx` is its half-width as a share of the screen's, never inside the ring
 const orbitX = (b, w, R, k) => (b.fx ? Math.max(b.fx * (w / 2), R + 70) : b.rx * k);
-// the football's laces, seen from the SIDE (founder, Nov 10 2026): ONE line lies on the very top edge of the ball, straddling it, with short stitches
-// hanging down from it on the ball's face only -- never above it. The seam is drawn in the planet's colour along the edge; the stitches are cut out.
-function laceGeom(r) {
-  const L = (2.5 * r) / 2, W = 0.95 * r * 1.333;
-  const P = (t) => { const u = 1 - t; return [u ** 3 * -L + 3 * u * u * t * (-L / 2) + 3 * u * t * t * (L / 2) + t ** 3 * L, -3 * u * u * t * W - 3 * u * t * t * W]; }; // the top edge, t 0..1
-  const D = (t) => { const u = 1 - t; return [3 * u * u * (L / 2) + 6 * u * t * L + 3 * t * t * (L / 2), -3 * u * u * W + 3 * t * t * W]; };
-  const at = (t, off) => { const [x, y] = P(t), [dx, dy] = D(t), m = Math.hypot(dx, dy) || 1; return [x - (dy / m) * off, y + (dx / m) * off]; }; // off > 0 = down into the ball
-  const f = (n) => n.toFixed(2);
-  const seam = [0.28, 0.36, 0.44, 0.5, 0.56, 0.64, 0.72].map((t) => at(t, 0)).map(([x, y], i) => `${i ? "L" : "M"}${f(x)} ${f(y)}`).join(" ");
-  const stitches = [0.33, 0.4, 0.47, 0.53, 0.6, 0.67].map((t) => { const [x1, y1] = at(t, 0.09 * r), [x2, y2] = at(t, 0.3 * r); return `M${f(x1)} ${f(y1)} L${f(x2)} ${f(y2)}`; }).join(" ");
-  return { seam, stitches, sw: Math.max(0.9, r * 0.05) };
-}
 const TILT = (-7 * Math.PI) / 180;
 // A visitor's sky (founder, Nov 10 2026: "much bigger planets with the 3 plan names"): the three plans, closer to the hole = more (as in the Plans
 // section), each a big planet (`pr` = its radius) that opens the Plans section on click and says its price on hover.
@@ -179,21 +167,19 @@ function Bodies({ size, bodies }) {
       {/* Explorer's (ember) and Singularity's (cobalt) hover glows: coloured, so they can't sit in the difference-blended planets (they'd invert) -- their own elements, moved with their planets */}
       {bodies.map((b, i) => {
         if (b.id !== "explorer" && b.id !== "singularity") return null;
-        const pr = b.pr * kk, G = +(pr * 1.7).toFixed(1), S = Math.ceil(G * 1.7);
+        const pr = b.pr * kk, S = Math.ceil(pr * 3.4);
         const col = b.id === "singularity" ? "var(--cobalt)" : "var(--ehp-mark)";
         return (
           <div key={b.n} className={`ehp-eglow g-${b.id}`} data-i={i} aria-hidden="true">
             <svg viewBox={`${-S} ${-S} ${2 * S} ${2 * S}`} style={{ width: 2 * S, height: 2 * S, left: -S, top: -S }}>
               <defs>
-                <radialGradient id={`ehp-g-${b.id}`}>
-                  <stop offset="0" style={{ stopColor: col, stopOpacity: 0 }} />
-                  <stop offset=".6" style={{ stopColor: col, stopOpacity: 0 }} />
-                  <stop offset=".66" style={{ stopColor: col, stopOpacity: 0.8 }} />
-                  <stop offset="1" style={{ stopColor: col, stopOpacity: 0 }} />
-                </radialGradient>
+                <filter id={`ehp-gb-${b.id}`} x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation={+(pr * 0.22).toFixed(1)} /></filter>
               </defs>
-              <circle className="eg" r={G} fill={`url(#ehp-g-${b.id})`} />
-              <circle className="ep" r={+(pr + 6).toFixed(1)} />
+              {/* the glow and the pulse follow the football's outline (founder, Nov 10 2026), tilted like the planet */}
+              <g transform={`rotate(${BALL_TILT})`}>
+                <path className="eg" d={ball(pr, pr * 0.28)} fill={col} fillOpacity=".6" filter={`url(#ehp-gb-${b.id})`} />
+                <path className="ep" d={ball(pr, 6)} />
+              </g>
             </svg>
           </div>
         );
@@ -209,7 +195,6 @@ function Bodies({ size, bodies }) {
               <path className="halo" d={ball(pr, 9)} transform={`rotate(${BALL_TILT})`} />
               <mask id={`ehp-pm-${i}`}>
                 <path d={ball(pr)} fill="#fff" transform={`rotate(${BALL_TILT})`} />
-                <path d={laceGeom(pr).stitches} transform={`rotate(${BALL_TILT})`} stroke="#000" strokeWidth={laceGeom(pr).sw} strokeLinecap="round" fill="none" />
                 {b.price && (
                   // the price is CUT OUT of the planet (a mask), so it reads as the sky showing through; per month sits under the figure
                   <>
@@ -218,7 +203,6 @@ function Bodies({ size, bodies }) {
                   </>
                 )}
               </mask>
-              <path className="seam" d={laceGeom(pr).seam} transform={`rotate(${BALL_TILT})`} strokeWidth={laceGeom(pr).sw * 1.6} />
               <path className="dot" d={ball(pr)} transform={`rotate(${BALL_TILT})`} mask={`url(#ehp-pm-${i})`} />
               <text x={pr * 1.25 + 16} y="4">{b.n}</text>
               {!b.id && <text className="say" x={pr * 1.25 + 16} y="23">{b.say}</text>}{/* the plan planets carry their price inside; no caption under the name */}
