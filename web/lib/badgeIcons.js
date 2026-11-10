@@ -1,6 +1,9 @@
 // The badge glyphs, as SVG markup keyed by the achievement's `key` (achievements.js). ONE copy for every place a badge is drawn -- the ticker
 // (TickerTrack.js, 16px) and the opened player's header / compare profiles (BadgeIcon, 30px) -- so they can't drift apart. Each icon's drawn
-// shape (its ink's bounding box, measured by rasterising it) is centred exactly on the badge centre and scaled to the same radius inside the 24-unit box, so every glyph sits in the middle of its circle.
+// shape (its ink's bounding box, measured by rasterising it) is centred exactly on the badge centre and scaled to the same radius inside the 24-unit box, so every glyph sits in the middle of its circle -- EXCEPT the Elite Role mansion
+// and the Elite Player goat, which are centred by eye (Nov 10 2026, founder: "badge is not centered again"): the mansion's thin spire stretches its
+// box upward so its body read ~1.5px low, the goat's horns pull its mass ~1.4px high; each is moved about 1px toward its visual weight, between
+// the box centre and the ink's centroid (measured by rasterising).
 // The Super Hero ball is drawn by lib/dragonBall.js (`symbolSvg` below hands it out with the rest).
 import { dragonBallSvg } from "./dragonBall";
 
@@ -31,9 +34,9 @@ export const BADGE_ICONS = {
   rookie:
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><g transform="translate(12.54 11.59) scale(1.031) translate(-11.62 -11.60)"><path d="M10 3.6h4.2v16.8h-3.4V8.2L8 9.7V6.6Z"/></g></svg>',
   eliteRole:
-    '<svg viewBox="0 0 24 24" fill="currentColor"><g transform="translate(11.99 13.00) scale(0.845) translate(-11.98 -12.88)"><path fill-rule="evenodd" d="M12 3.2 18.2 8.4V10H22V20.2H2V10H5.8V8.4ZM12 6.4a1 1 0 1 0 0 2 1 1 0 0 0 0-2ZM10.6 19.4V15.6a1.4 1.4 0 0 1 2.8 0v3.8ZM4 12.4h2.8v3.2H4ZM17.2 12.4h2.8v3.2h-2.8Z"/></g></svg>',
+    '<svg viewBox="0 0 24 24" fill="currentColor"><g transform="translate(11.99 12.00) scale(0.845) translate(-11.98 -12.88)"><path fill-rule="evenodd" d="M12 3.2 18.2 8.4V10H22V20.2H2V10H5.8V8.4ZM12 6.4a1 1 0 1 0 0 2 1 1 0 0 0 0-2ZM10.6 19.4V15.6a1.4 1.4 0 0 1 2.8 0v3.8ZM4 12.4h2.8v3.2H4ZM17.2 12.4h2.8v3.2h-2.8Z"/></g></svg>',
   elitePlayer:
-    '<svg viewBox="0 0 24 24" fill="currentColor"><g transform="translate(11.97 11.04) scale(0.802) translate(-11.97 -10.81)"><path d="M9.6 9C5.4 9.4 2.4 6.6 2.8 1.6C4.8 4.4 7.6 4.8 11 5.6Z"/><path d="M14.4 9c4.2.4 7.2-2.4 6.8-7.4-2 2.8-4.8 3.2-8.2 4Z"/><path d="M8.4 11 2.4 10C2.6 12.4 4.2 13.8 7 14Z"/><path d="M15.6 11l6-1c-.2 2.4-1.8 3.8-4.6 4Z"/><path fill-rule="evenodd" d="M8.2 8.6h7.6l-.8 7c-.2 1.7-1.3 2.8-3 2.8s-2.8-1.1-3-2.8ZM9.3 11h1.8v1.1H9.3ZM12.9 11h1.8v1.1h-1.8ZM11 15.1a.5.5 0 1 0 0 1 .5.5 0 0 0 0-1ZM13 15.1a.5.5 0 1 0 0 1 .5.5 0 0 0 0-1Z"/><path d="M10.6 18.4h2.8L12 22.4Z"/></g></svg>',
+    '<svg viewBox="0 0 24 24" fill="currentColor"><g transform="translate(11.97 11.94) scale(0.802) translate(-11.97 -10.81)"><path d="M9.6 9C5.4 9.4 2.4 6.6 2.8 1.6C4.8 4.4 7.6 4.8 11 5.6Z"/><path d="M14.4 9c4.2.4 7.2-2.4 6.8-7.4-2 2.8-4.8 3.2-8.2 4Z"/><path d="M8.4 11 2.4 10C2.6 12.4 4.2 13.8 7 14Z"/><path d="M15.6 11l6-1c-.2 2.4-1.8 3.8-4.6 4Z"/><path fill-rule="evenodd" d="M8.2 8.6h7.6l-.8 7c-.2 1.7-1.3 2.8-3 2.8s-2.8-1.1-3-2.8ZM9.3 11h1.8v1.1H9.3ZM12.9 11h1.8v1.1h-1.8ZM11 15.1a.5.5 0 1 0 0 1 .5.5 0 0 0 0-1ZM13 15.1a.5.5 0 1 0 0 1 .5.5 0 0 0 0-1Z"/><path d="M10.6 18.4h2.8L12 22.4Z"/></g></svg>',
   plusValue:
     '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M10.2 3.5h3.6v6.7h6.7v3.6h-6.7v6.7h-3.6v-6.7H3.5v-3.6h6.7Z"/></svg>',
   minusValue:

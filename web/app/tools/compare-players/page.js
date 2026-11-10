@@ -55,12 +55,6 @@ export default async function ComparePlayersPage({ searchParams }) {
       <main id="main-content" className="wrap tool-wrap compare-wrap">
         <div className="eyebrow">{latest ? `Week ${latest.week} · ${latest.season}` : "Compare"}</div>
         <h1>Compare Players</h1>
-        <p className="tool-sub">
-          Pick {maxPlayers > 2 ? `two to ${maxPlayers === 4 ? "four" : maxPlayers === 3 ? "three" : maxPlayers}` : "two"} players from this week&apos;s projections to see them side by side. Looking for full-season outlooks?{" "}
-          <Link href="/tools/compare-player-sims" className="hub-panel-link">
-            Compare season simulations →
-          </Link>
-        </p>
 
         {pool.length === 0 ? (
           <div className="tool-empty">
