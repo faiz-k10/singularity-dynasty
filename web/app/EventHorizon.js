@@ -204,11 +204,8 @@ function Bodies({ size, bodies }) {
                 <path d={ball(pr)} fill="#fff" transform={`rotate(${BALL_TILT})`} />
                 <path d={stripes(pr)} fill="#000" transform={`rotate(${BALL_TILT})`} />
                 {b.price && (
-                  // the price is CUT OUT of the planet (a mask), so it reads as the sky showing through; per month sits under the figure
-                  <>
-                    <text className="pm-n" textAnchor="middle" y={b.price === "Free" ? pr * 0.42 : pr * 0.3} style={{ fontSize: b.price === "Free" ? Math.max(8, pr * 0.62) : pr * 0.72 }} fill="#000">{b.price}</text>
-                    {b.price !== "Free" && <text className="pm-s" textAnchor="middle" y={pr * 0.62} style={{ fontSize: Math.max(9, pr * 0.14) }} fill="#000">PER MONTH</text>}
-                  </>
+                  // the price is CUT OUT of the planet (a mask), so it reads as the sky showing through; centred on the ball and set along its axis
+                  (() => { const fs = b.price === "Free" ? Math.max(8, pr * 0.62) : pr * 0.85; return <text className="pm-n" textAnchor="middle" y={+(fs * 0.36).toFixed(2)} transform={`rotate(${BALL_TILT})`} style={{ fontSize: fs }} fill="#000">{b.price}</text>; })()
                 )}
               </mask>
               <path className="dot" d={ball(pr)} transform={`rotate(${BALL_TILT})`} mask={`url(#ehp-pm-${i})`} />
