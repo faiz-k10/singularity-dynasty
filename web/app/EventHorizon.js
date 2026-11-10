@@ -210,7 +210,8 @@ function Bodies({ size, bodies }) {
                   (() => { const fs = b.price === "Free" ? Math.max(8, pr * 0.62) : pr * 0.78; return <text className="pm-n" textAnchor="middle" y={+(fs * 0.36).toFixed(2)} transform={`rotate(${BALL_TILT})`} style={{ fontSize: fs }} fill="#000">{b.price}</text>; })()
                 )}
               </mask>
-              <path className="dot" d={ball(pr)} transform={`rotate(${BALL_TILT})`} mask={`url(#ehp-pm-${i})`} />
+              {/* the mask sits on an unrotated group: a mask lives in the coordinate system of the element that uses it, so on a rotated path it would be tilted twice and cut the football's tips */}
+              <g mask={`url(#ehp-pm-${i})`}><path className="dot" d={ball(pr)} transform={`rotate(${BALL_TILT})`} /></g>
               <text className="nm" textAnchor="middle" x="0" y={-(pr * 0.8 + 14)}>{b.n}</text>
               {!b.id && <text className="say" textAnchor="middle" x="0" y={pr * 0.8 + 24}>{b.say}</text>}{/* the plan planets carry their price inside; no caption under the name */}
             </svg>
