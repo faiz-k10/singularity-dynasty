@@ -583,6 +583,11 @@ function Plans() {
 
 export default function EventHorizon({ signedIn, member, invited, discountPct, weekly, weekNo, dynasty, nextKickoff, posts }) {
   const stageRef = useRef(null);
+  // arriving from another page always starts at the very top, ticker included (founder, Nov 10 2026: coming back from a scrolled tool page
+  // used to land part-way down); a link to a section (#pricing, #feed ...) still goes to that section
+  useEffect(() => {
+    if (!location.hash) window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, []);
   const bodies = useMemo(() => bodiesFor(member), [member]);
   const [size, setSize] = useState({ w: 1440, h: 900 });
   const [arrived, setArrived] = useState(false);
