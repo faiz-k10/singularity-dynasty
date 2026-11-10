@@ -30,9 +30,9 @@ const TILT = (-7 * Math.PI) / 180;
 // section), each a big planet (`pr` = its radius) that opens the Plans section on click and says its price on hover.
 const TOOL_BODIES = [
   // each planet is its own: Singularity the largest, ringed; Explorer big with the one glow (and pulse) on hover; Stargazer a small, plain speck of a planet
-  { id: "singularity", n: "SINGULARITY", say: "everything, from $20 a month", href: "#pricing", pr: 92, rx: 360, ry: 128, a: -0.7, s: 95 },
-  { id: "explorer", n: "EXPLORER", say: "every player, from $7 a month", href: "#pricing", pr: 68, rx: 500, ry: 178, a: 2.1, s: 130 },
-  { id: "stargazer", n: "STARGAZER", say: "free, no card", href: "#pricing", pr: 14, rx: 640, ry: 228, a: 4.2, s: 170 },
+  { id: "singularity", n: "SINGULARITY", say: "everything, from $20 a month", href: "#pricing", pr: 92, price: "$20", rx: 360, ry: 128, a: -0.7, s: 95 },
+  { id: "explorer", n: "EXPLORER", say: "every player, from $7 a month", href: "#pricing", pr: 68, price: "$7", rx: 500, ry: 178, a: 2.1, s: 130 },
+  { id: "stargazer", n: "STARGAZER", say: "free, no card", href: "#pricing", pr: 14, price: "Free", rx: 640, ry: 228, a: 4.2, s: 170 },
 ];
 
 // What orbits the hole. A visitor sees the three plans. A member with saved leagues sees THIS WEEK'S MATCHUPS instead (as on the
@@ -164,7 +164,15 @@ function Bodies({ size, bodies }) {
           <circle r={pr + 14} fill="transparent" />
           {b.id === "singularity" && <ellipse className="saturn" rx={pr * 1.75} ry={pr * 0.36} transform="rotate(-18)" />}
           <circle className="halo" r={pr + 9} />
-          <circle className="dot" r={pr} />
+          {b.price && (
+            // the price is CUT OUT of the planet (a mask), so it reads as the sky showing through; per month sits under the figure
+            <mask id={`ehp-pm-${i}`}>
+              <circle r={pr} fill="#fff" />
+              <text className="pm-n" textAnchor="middle" y={b.price === "Free" ? pr * 0.3 : pr * 0.2} style={{ fontSize: b.price === "Free" ? Math.max(8, pr * 0.62) : pr * 0.78 }} fill="#000">{b.price}</text>
+              {b.price !== "Free" && <text className="pm-s" textAnchor="middle" y={pr * 0.52} style={{ fontSize: Math.max(9, pr * 0.15) }} fill="#000">PER MONTH</text>}
+            </mask>
+          )}
+          <circle className="dot" r={pr} mask={b.price ? `url(#ehp-pm-${i})` : undefined} />
           <text x={pr + 16} y="4">{b.n}</text>
           <text className="say" x={pr + 16} y="23">{b.say}</text>
         </a>

@@ -6866,3 +6866,8 @@ body:has(.ehp) .ticker-bar{position:absolute;}
 .ehp-body .saturn{fill:none;stroke:#fff;stroke-width:1.4;stroke-opacity:.8;}
 .plan-stargazer .halo{display:none;}
 @media (prefers-reduced-motion:reduce){.ehp-stage:has(.plan-explorer:hover) .ehp-eglow .ep{animation:none;}}
+
+/* the price cut out of each plan planet (EventHorizon.js Bodies): the figure in the display face, "per month" small under it (these override .ehp-body text) */
+.ehp-body .pm-n,.ehp-body .pm-s{fill:#000;fill-opacity:1;} /* black in the mask = cut out */
+.ehp-body .pm-n{font-family:var(--font-display), sans-serif;font-weight:800;letter-spacing:.02em;}
+.ehp-body .pm-s{font-family:var(--font-mono), monospace;font-stretch:82%;letter-spacing:.2em;}
