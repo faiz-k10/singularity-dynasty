@@ -10,6 +10,7 @@ import ThemeToggle from "./ThemeToggle";
 import InteractiveScript from "./InteractiveScript";
 import TickerTrack from "./TickerTrack";
 import ToolLink from "./ToolLink";
+import HeaderNavLink from "./HeaderNavLink";
 import ToolsMenuRows from "./ToolsMenu";
 import BrandMark from "./BrandMark";
 import { getAchievements } from "./tools/achievements";
@@ -223,30 +224,32 @@ export default async function SiteHeader({ scripts = true }) {
         ☰
       </button>
 
+      {/* Same shape as the landing page's bar (founder, Nov 10 2026): the tools on the left, the mark and the name in the middle, Plans /
+          Newsletter / Sign in on the right (the theme switch sits after them), quiet mono links that turn ink on hover and for the open page. */}
       <header className="site-header">
-        <ToolLink href="/" className="brandmark">
-          <BrandMark />Dynasty Singularity
-        </ToolLink>
-        <nav className="top-nav-bar" id="topNavBar" aria-label="Primary">
+        <nav className="top-nav-bar sh-left" id="topNavBar" aria-label="Primary">
           <div className="nav-dropdown">
             <Link href="/#tools">Tools</Link>
-            {/* Foldout: a glass panel that unfolds under the link -- a ladder of tools, one rung each (icon, name, what it does,
-                who it is for). CSS-only (:hover / :focus-within), like the other menus. */}
+            {/* Foldout: a ladder of tools, one rung each (icon, name, what it does, who it is for). CSS-only (:hover / :focus-within). */}
             <div className="nav-foldout tmenu-panel">
               <div className="tmenu-panel-inner">
                 <ToolsMenuRows />
               </div>
             </div>
           </div>
-          <Link href="/#feed">Feed</Link>
-          <ToolLink href="/my-team">My Team</ToolLink>
-          <ToolLink href="/tools/lab">The Observatory</ToolLink>
-          <Link href="/#pricing" className="tn-plans">Plans</Link>
-          <Link href={user ? "/account" : "/login"} className="tn-box tn-account">
-            {user ? "Account" : "Sign In"}
-          </Link>
+          <HeaderNavLink href="/my-team">My Team</HeaderNavLink>
+          <HeaderNavLink href="/tools/lab">The Observatory</HeaderNavLink>
         </nav>
-        <div className="site-header-spacer" aria-hidden="true"></div>
+        <ToolLink href="/" className="brandmark">
+          <BrandMark />Dynasty Singularity
+        </ToolLink>
+        <nav className="top-nav-bar sh-right" aria-label="Account">
+          <Link href="/#pricing">Plans</Link>
+          <Link href="/#feed">Newsletter</Link>
+          <HeaderNavLink href={user ? "/account" : "/login"} className="tn-box tn-account">
+            {user ? "Account" : "Sign in"}
+          </HeaderNavLink>
+        </nav>
       </header>
 
       <div className="radial-menu" id="radialMenu">
