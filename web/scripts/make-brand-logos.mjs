@@ -5,32 +5,29 @@ import { ImageResponse } from "next/og.js";
 import { createElement as h } from "react";
 import { readFile, writeFile } from "node:fs/promises";
 import sharp from "sharp";
-import { MARK_DISC, MARK_SPECK, MARK_STROKE } from "../lib/brandMark.js";
+import { MARK_DISC, MARK_STROKE } from "../lib/brandMark.js";
 
-// the ball sits where the spiral starts, pointing along it (the line's first step heads up and to the right)
+// The spiral for these files: the site's shape (lib/brandMark.js: 1.18 turns from -150 degrees) drawn TIGHTER around the disc (founder, Nov 10
+// 2026: "make the spiral tighter"): radius R_OUT -> R_IN instead of the site's 19.2 -> 14, so the two passes sit closer together and closer to the
+// disc. Its inner end merges into the disc at the TOP: over the last stretch it eases to just under the disc's 12.5 edge, and the disc is drawn on
+// top, so the line flows into the circle there.
+const R_OUT = 17.0, R_IN = 13.7, R_END = 12.0;
+const spiralPoint = (t) => {
+  const q = Math.min(1, Math.max(0, (t - 0.86) / 0.14)), ease = q * q;
+  const r = R_OUT - (R_OUT - R_IN) * Math.pow(t, 0.9) - (R_IN - R_END) * ease;
+  const th = ((-150 + 1.18 * 360 * t) * Math.PI) / 180;
+  return [20 + r * Math.cos(th), 20 + r * Math.sin(th)];
+};
+const SPIRAL = "M" + Array.from({ length: 121 }, (_, i) => spiralPoint(i / 120).map((n) => n.toFixed(2)).join(" ")).join(" L");
+// the football sits just BEHIND the line's outer end, pointing along it, its back tip on the line (the line reads as its flight path)
 const BALL_L = 4.4, BALL_W = 1.85; // length; the curve's control height (the ball is about 1.5x that wide)
-const DIR = [4.29 - 3.37, 9.12 - 10.4], DL = Math.hypot(...DIR), UX = DIR[0] / DL, UY = DIR[1] / DL;
+const [P0, P1] = [spiralPoint(0), spiralPoint(0.01)];
+const DL = Math.hypot(P1[0] - P0[0], P1[1] - P0[1]), UX = (P1[0] - P0[0]) / DL, UY = (P1[1] - P0[1]) / DL;
 const BALL_ANGLE = (Math.atan2(UY, UX) * 180) / Math.PI;
-// the ball sits just BEHIND the line's end, its back tip on the line, so the line reads as its flight path rather than a stem
-const BALL_CX = MARK_SPECK.cx - UX * (BALL_L / 2 + 0.15), BALL_CY = MARK_SPECK.cy - UY * (BALL_L / 2 + 0.15);
-// The spiral for these files: the site's spiral (lib/brandMark.js: radius 19.2 -> 14 over 1.18 turns from -150 degrees) with its INNER end bent
-// down into the disc (founder, Nov 10 2026: "make the other end merging into the circle"): over the last quarter it eases from the site's path to
-// just under the disc's edge only at its very end, which is at the TOP of the disc (where the site's spiral ends), and the disc is drawn on top, so
-// the line flows into the circle there instead of stopping short of it.
-const SPIRAL = (() => {
-  const pts = [];
-  for (let i = 0; i <= 120; i++) {
-    const t = i / 120;
-    const q = Math.min(1, Math.max(0, (t - 0.86) / 0.14)), ease = q * q;
-    const r = 19.2 - 5.2 * Math.pow(t, 0.9) - 2.0 * ease; // reaches 12.0 (just under the disc's 12.5 edge) only at the very end, at the TOP of the disc
-    const th = ((-150 + 1.18 * 360 * t) * Math.PI) / 180;
-    pts.push(`${(20 + r * Math.cos(th)).toFixed(2)} ${(20 + r * Math.sin(th)).toFixed(2)}`);
-  }
-  return "M" + pts.join(" L");
-})();
+const BALL_CX = P0[0] - UX * (BALL_L / 2 + 0.15), BALL_CY = P0[1] - UY * (BALL_L / 2 + 0.15);
 const font = await readFile("assets/og-fonts/BigShoulders-800.ttf");
 const OUT = "../brand";
-const S = 1024, BOX = 760; // the mark's 40-unit box drawn 760px wide, centred (platforms crop to a circle)
+const S = 1024, BOX = 800; // the mark's 40-unit box drawn 760px wide, centred (platforms crop to a circle)
 const u = BOX / 40, off = (S - BOX) / 2;
 const variants = {
   light: { bg: "#ECE7DC", disc: "#0B0B0B", ring: "#C8401E" }, // the site's light mode: bone paper, ink disc, ember
