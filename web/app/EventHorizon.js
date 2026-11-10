@@ -388,6 +388,30 @@ function Matchups({ rows }) {
 
 // The header's Plans link opens a small panel with the three plans and a checkout button each (founder, Nov 10 2026): CSS hover / keyboard focus,
 // the same startCheckout() as the Plans section, Yearly by default.
+// The header's Tools link: the four tools in a hairline panel (name, one line on what it does, what is free), each opening its page. CSS hover / focus.
+function HeaderTools() {
+  const SHORT = { "/tools/redraft-rankings": "Every player's range this week, matchups included.", "/tools/player-simulations": "Where each player's season is heading." };
+  const four = TOOLS.slice(1); // the Game Board lives under My Team, so the four tools proper
+  return (
+    <div className="ehp-pm ehp-tm">
+      <a href="#tools" aria-haspopup="true">Tools</a>
+      <div className="ehp-pm-panel ehp-tm-panel" role="group" aria-label="Tools">
+        {four.map(([name, say, free, href], i) => (
+          <Link key={href} href={href} className="ehp-tm-row">
+            <span className="ehp-tm-n">0{i + 1}</span>
+            <span className="ehp-tm-t">
+              <b>{name}</b>
+              <i>{SHORT[href] || say}</i>
+            </span>
+            <span className="ehp-tm-f">{free}</span>
+            <span className="ehp-tm-a" aria-hidden="true">→</span>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function HeaderPlans() {
   const [yearly, setYearly] = useState(true);
   const [busy, setBusy] = useState(null);
@@ -607,7 +631,7 @@ export default function EventHorizon({ signedIn, member, invited, discountPct, w
       <header className="ehp-header">
         <div className="ehp-wrap ehp-bar">
           <nav>
-            <a href="#tools">Tools</a>
+            <HeaderTools />
             <HeaderPlans />
             <a href="#feed">Letter</a>
           </nav>

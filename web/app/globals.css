@@ -6871,3 +6871,18 @@ body:has(.ehp) .ticker-bar{position:absolute;}
 .ehp-body .pm-n,.ehp-body .pm-s{fill:#000;fill-opacity:1;} /* black in the mask = cut out */
 .ehp-body .pm-n{font-family:var(--font-display), sans-serif;font-weight:800;letter-spacing:.02em;}
 .ehp-body .pm-s{font-family:var(--font-mono), monospace;font-stretch:82%;letter-spacing:.2em;}
+
+/* landing header: the Tools panel (EventHorizon.js HeaderTools), built on the Plans panel's .ehp-pm */
+.ehp-tm-panel{width:590px;padding:6px 20px 8px;}
+.ehp-tm-row{display:grid;grid-template-columns:26px 1fr auto 18px;gap:14px;align-items:center;padding:15px 0;border-bottom:1px solid var(--ehp-rule);color:var(--ehp-ink) !important;position:relative;}
+.ehp-tm-row:last-child{border-bottom:0;}
+.ehp-tm-n{font:11px var(--font-mono), monospace;font-stretch:82%;color:var(--ehp-faint);}
+.ehp-tm-t{display:flex;flex-direction:column;gap:3px;min-width:0;}
+.ehp-tm-t b{font:500 14px var(--font-display), sans-serif;letter-spacing:.18em;text-transform:uppercase;white-space:nowrap;transition:color .2s;}
+.ehp-tm-t i{font:italic 13.5px var(--font-body), serif;color:var(--ehp-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ehp-tm-f{font:10.5px var(--font-mono), monospace;font-stretch:82%;letter-spacing:.06em;color:var(--ehp-faint);white-space:nowrap;text-transform:uppercase;}
+.ehp-tm-a{color:var(--ehp-mark);opacity:0;transform:translateX(-6px);transition:opacity .2s,transform .2s;}
+.ehp-tm-row::before{content:'';position:absolute;left:-20px;top:14px;bottom:14px;width:2px;background:var(--ehp-mark);opacity:0;transition:opacity .2s;}
+.ehp-tm-row:hover::before,.ehp-tm-row:focus-visible::before{opacity:1;}
+.ehp-tm-row:hover .ehp-tm-a,.ehp-tm-row:focus-visible .ehp-tm-a{opacity:1;transform:none;}
+.ehp-tm-row:hover .ehp-tm-t b,.ehp-tm-row:focus-visible .ehp-tm-t b{color:var(--ehp-mark);}
