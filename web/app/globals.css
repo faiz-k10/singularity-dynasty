@@ -2098,7 +2098,7 @@ a.export-csv-btn{text-decoration:none;}
    the last column -- explicit ask, mirrors how .shape-finder-list
    centers its own cards below. */
 .stat-detail-grid{
-  display:grid; grid-template-columns:minmax(0,224px) minmax(0,280px) minmax(0,600px) minmax(0,340px); /* the season / pace column was 150px and felt cramped (founder, Nov 9 2026); the stat table gave 80px to the percentile panel so its bar labels fit on ONE line (founder, Nov 10 2026) */
+  display:grid; grid-template-columns:minmax(0,224px) minmax(0,272px) minmax(0,600px) minmax(0,340px); /* the season / pace column was 150px and felt cramped (founder, Nov 9 2026); the stat table gave 80px to the percentile panel so its bar labels fit on ONE line (founder, Nov 10 2026) */
   grid-template-areas:"season table percentile radar" "finder finder finder finder";
   column-gap:20px; row-gap:20px; align-items:stretch; justify-content:center;
 }
@@ -2164,7 +2164,7 @@ a.export-csv-btn{text-decoration:none;}
    own padding. Matches the grid's own column-2 track cap exactly (see
    .stat-detail-grid above) so there's no leftover space trapped inside
    the track beyond what the panel itself uses. */
-.stat-panel-table{grid-area:table; max-width:280px; display:flex; flex-direction:column; justify-content:center;}
+.stat-panel-table{grid-area:table; max-width:272px; display:flex; flex-direction:column; justify-content:center;}
 /* max-width:520px -- matches the grid's own column-3 track cap, for the
    same reason .stat-panel-table's does: without it, this panel (no
    natural max-width of its own) just stretches to fill the whole track,
@@ -6944,8 +6944,9 @@ body:has(.ehp) .ticker-bar{position:absolute;}
 @media (prefers-color-scheme: light){:root:not([data-theme="dark"]){--pos-ink:#FFFFFF;}}
 :root[data-theme="light"]{--pos-ink:#FFFFFF;}
 /* the stat table is 280px wide now (its 80px went to the percentile panel so the bar labels fit on one line); a slimmer stat-name column keeps all four columns inside it (founder, Nov 10 2026) */
-.stat-detail-grid .stat-detail-table th:first-child, .stat-detail-grid .stat-detail-table td:first-child{padding-left:6px; padding-right:6px;}
-.stat-detail-grid .stat-detail-table th:first-child{width:92px;}
-.stat-detail-grid .stat-detail-table th{letter-spacing:0.03em;}
+.stat-detail-grid .stat-detail-table th:first-child, .stat-detail-grid .stat-detail-table td:first-child{padding-left:4px; padding-right:4px;}
+.stat-detail-grid .stat-detail-table td:first-child{white-space:nowrap;} /* a stat name is ONE line ("Target Share") */
+.stat-detail-grid .stat-detail-table th:first-child{width:96px;}
+.stat-detail-grid .stat-detail-table th{letter-spacing:0.02em;}
 .stat-detail-grid .stat-detail-table .stat-header-trigger{padding:4px 1px;}
 .stat-detail-grid .stat-detail-table td:first-child .stat-row-trigger{padding:4px 2px;}
