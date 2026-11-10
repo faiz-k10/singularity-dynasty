@@ -15,7 +15,7 @@ export const SIZES = { wide: { width: 1200, height: 630 }, tall: { width: 1080, 
 export const sizeOf = (f) => (f === "tall" ? "tall" : "wide");
 
 import { MarkSvg } from "./markSvg";
-const C = { void: "#0B0B0B", panel: "#131210", panel2: "#1A1915", rule: "#27251F", star: "#ECE7DC", steel: "#A39E92", mint: "#E8643F", red: "#6E9BD8", onBrand: "#120804" }; // Event Horizon dark set (Nov 9 2026); "mint" = the accent (ember), "red" = the floor / down colour (cold blue)
+const C = { void: "#0B0B0B", panel: "#131210", panel2: "#1A1915", rule: "#27251F", star: "#ECE7DC", steel: "#A39E92", mint: "#6E9BD8", red: "#E8643F", ember: "#E8643F", onBrand: "#120804" }; // Event Horizon dark set; since Nov 10 2026 "mint" = GOOD / ceiling (blue -- a blue star is the hot one) and "red" = BAD / floor (ember red); "ember" = the brand accent (the top rule, the eyebrow plate)
 // Badge medallion colours, dark theme (globals.css --cape, --fire, ...); Established keeps the old gold.
 const BADGE = {
   gold: "#FFC773", silver: "#A0AAB9", rookie: "#BF8A5C", boulder: "#869550", cloud: "#EBADB7", heat: "#FF2400", ice: "#4F8EF7", icarus: "#A78BFA", eddy: "#4ADE80", sprout: "#A3E635",
@@ -86,13 +86,13 @@ export function Frame({ f, eyebrow, host, tool, children }) {
   const tall = sizeOf(f) === "tall";
   const pad = tall ? 64 : 52;
   return (
-    <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", background: C.void, color: C.star, fontFamily: MONO, borderTop: `8px solid ${C.mint}`, padding: `${pad - 14}px ${pad}px ${pad - 18}px` }}>
+    <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", background: C.void, color: C.star, fontFamily: MONO, borderTop: `8px solid ${C.ember}`, padding: `${pad - 14}px ${pad}px ${pad - 18}px` }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div style={{ display: "flex", alignItems: "center" }}>
           <MarkSvg size={46} ink={C.star} ember="#4C7DF0" bold={1.1} />
           <div style={{ display: "flex", marginLeft: 14, fontFamily: DISPLAY, fontSize: tall ? 34 : 30, letterSpacing: 5, textTransform: "uppercase" }}>Dynasty Singularity</div>
         </div>
-        {eyebrow && <div style={{ display: "flex", flexShrink: 0, whiteSpace: "nowrap", background: C.mint, color: C.onBrand, fontWeight: 700, fontSize: tall ? 20 : 18, letterSpacing: 2, padding: "7px 14px", textTransform: "uppercase" }}>{eyebrow}</div>}
+        {eyebrow && <div style={{ display: "flex", flexShrink: 0, whiteSpace: "nowrap", background: C.ember, color: C.onBrand, fontWeight: 700, fontSize: tall ? 20 : 18, letterSpacing: 2, padding: "7px 14px", textTransform: "uppercase" }}>{eyebrow}</div>}
       </div>
       <div style={{ display: "flex", flexDirection: "column", flexGrow: 1, marginTop: tall ? 40 : 26 }}>{children}</div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: `2px solid ${C.rule}`, paddingTop: 14, fontSize: tall ? 19 : 17, color: C.steel, letterSpacing: 1 }}>

@@ -37,7 +37,7 @@ export function renderDigest({ items, week, siteUrl, address = "", max = 8 }) {
       <div style="font:12px monospace;color:#a39e92;margin:2px 0 6px">${esc(i.teams.map((t) => t.label).join(" · "))}</div>
       ${i.lines
         .slice(0, 2)
-        .map((l) => `<div style="font:13px Georgia,serif;color:${l.dir === "up" ? "#e8643f" : l.dir === "down" ? "#6e9bd8" : "#ece7dc"}">${esc(lineText(l))}</div>`)
+        .map((l) => `<div style="font:13px Georgia,serif;color:${l.dir === "up" ? "#6e9bd8" : l.dir === "down" ? "#e8643f" : "#ece7dc"}">${esc(lineText(l))}</div>`)
         .join("")}
     </td></tr>`
     )

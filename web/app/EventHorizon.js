@@ -392,7 +392,7 @@ function Alerts({ items, sample }) {
   );
 }
 
-// A tiny outcome curve for the weekly table: the hump, a cold-blue tick at the floor, an ink line at the median, an ember tick at the ceiling.
+// A tiny outcome curve for the weekly table: the hump, a red tick at the floor, an ink line at the median, a blue tick at the ceiling (blue = good).
 function MiniCurve({ floor: fl, median: m, ceiling: c }) {
   const w = 120, h = 28, x = (v) => +(2 + (v / 45) * (w - 4)).toFixed(1);
   let d = "";
@@ -407,7 +407,7 @@ function MiniCurve({ floor: fl, median: m, ceiling: c }) {
       <path d={d} fill="none" stroke="currentColor" strokeWidth="1" />
       <line x1={x(fl)} x2={x(fl)} y1={h - 9} y2={h - 1} stroke="var(--down)" strokeWidth="1.2" />
       <line x1={x(m)} x2={x(m)} y1="3" y2={h - 1} stroke="currentColor" strokeWidth="1" />
-      <line x1={x(c)} x2={x(c)} y1={h - 9} y2={h - 1} stroke="var(--ehp-mark)" strokeWidth="1.2" />
+      <line x1={x(c)} x2={x(c)} y1={h - 9} y2={h - 1} stroke="var(--up)" strokeWidth="1.2" />
     </svg>
   );
 }

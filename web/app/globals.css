@@ -5,14 +5,15 @@
   --line:#27251F;
   --star:#ECE7DC;
   --star-dim:#A39E92;
-  --horizon:#E8643F;
-  --horizon-rgb:232,100,63;
-  --horizon-gold:#E8643F;
+  --ember:#E8643F; --ember-rgb:232,100,63; /* the brand accent (ember): chrome only -- good / bad colours are --up (blue, good) and --down (red, bad) since Nov 10 2026 */
+  --horizon:#6E9BD8;
+  --horizon-rgb:110,155,216;
+  --horizon-gold:#6E9BD8;
   --neon-blue:#8E897E;
   --neon-blue-dim:#6B675E;
   --neon-blue-glow:rgba(142,137,126,0.28);
-  --up:#E8643F;
-  --down:#6E9BD8;
+  --up:#6E9BD8;
+  --down:#E8643F;
   --purple:#B18AFF;
   --frost:#4F8EF7;
   /* Badge palette (cape/fire/peak/sprout/eddy/scholar/frost/icarus/menace): nine badge hues spread around the color wheel (red, orange, yellow, lime, green, cyan, blue, violet, magenta), tuned separately for dark and light mode so no two read as the same color in either. Used by the badge dots/medallions/ticker AND Portfolio Pulse's Badges tab. */
@@ -44,9 +45,9 @@
   --star-dot-rgb:236,231,220;
   --shadow-rgb:0,0,0;
   --neon-blue-rgb:142,137,126;
-  --horizon-gold-rgb:232,100,63;
-  --up-rgb:232,100,63;
-  --down-rgb:110,155,216;
+  --horizon-gold-rgb:110,155,216;
+  --up-rgb:110,155,216;
+  --down-rgb:232,100,63;
   --purple-rgb:177,138,255;
   --frost-rgb:79,142,247;
   --cape-rgb:229,56,79;
@@ -89,8 +90,9 @@
 @media (prefers-color-scheme: light){
   :root:not([data-theme="dark"]){
     --on-down:#FFFFFF;
-    --horizon:#AE3516;
-    --horizon-rgb:174,53,22;
+    --ember:#AE3516; --ember-rgb:174,53,22;
+  --horizon:#2F5E9E;
+    --horizon-rgb:47,94,158;
     --inj-ok:#16A34A; --inj-q:#A16207; --inj-d:#C2410C; --inj-out:#B91C1C;
     --on-brand:#FFF6EE;
     --on-cold:#ECE7DC;
@@ -102,12 +104,12 @@
     --line:#D5CEBF;
     --star:#121212;
     --star-dim:#5C5850;
-    --horizon-gold:#AE3516;
+    --horizon-gold:#2F5E9E;
     --neon-blue:#615D55;
     --neon-blue-dim:#57534B;
-    --up:#AE3516;
+    --up:#2F5E9E;
     --purple:#7C3AED;
-    --down:#2F5E9E;
+    --down:#AE3516;
     --frost:#2563EB;
     --cape:#C41E3A;
     --scholar:#0D9488;
@@ -124,10 +126,10 @@
     --star-dot-rgb:18,18,18;
     --shadow-rgb:80,70,50;
     --neon-blue-rgb:97,93,85;
-    --horizon-gold-rgb:174,53,22;
-    --up-rgb:174,53,22;
+    --horizon-gold-rgb:47,94,158;
+    --up-rgb:47,94,158;
     --purple-rgb:124,58,237;
-    --down-rgb:47,94,158;
+    --down-rgb:174,53,22;
     --frost-rgb:37,99,235;
     --cape-rgb:196,30,58;
     --scholar-rgb:13,148,136;
@@ -159,9 +161,10 @@
 }
 :root[data-theme="light"]{
   --on-down:#FFFFFF;
+  --ember:#AE3516; --ember-rgb:174,53,22;
   --star-dim-rgb:92,88,80;
-  --horizon:#AE3516;
-  --horizon-rgb:174,53,22;
+  --horizon:#2F5E9E;
+  --horizon-rgb:47,94,158;
   --inj-ok:#16A34A; --inj-q:#A16207; --inj-d:#C2410C; --inj-out:#B91C1C;
   --on-brand:#FFF6EE;
   --on-cold:#ECE7DC;
@@ -173,12 +176,12 @@
   --line:#D5CEBF;
   --star:#121212;
   --star-dim:#5C5850;
-  --horizon-gold:#AE3516;
+  --horizon-gold:#2F5E9E;
   --neon-blue:#615D55;
   --neon-blue-dim:#57534B;
-  --up:#AE3516;
+  --up:#2F5E9E;
   --purple:#7C3AED;
-  --down:#2F5E9E;
+  --down:#AE3516;
   --frost:#2563EB;
   --cape:#C41E3A;
   --scholar:#0D9488;
@@ -195,10 +198,10 @@
   --star-dot-rgb:18,18,18;
   --shadow-rgb:80,70,50;
   --neon-blue-rgb:97,93,85;
-  --horizon-gold-rgb:174,53,22;
-  --up-rgb:174,53,22;
+  --horizon-gold-rgb:47,94,158;
+  --up-rgb:47,94,158;
   --purple-rgb:124,58,237;
-  --down-rgb:47,94,158;
+  --down-rgb:174,53,22;
   --frost-rgb:37,99,235;
   --cape-rgb:196,30,58;
   --scholar-rgb:13,148,136;
@@ -2626,7 +2629,7 @@ a.export-csv-btn{text-decoration:none;}
 }
 .weekly-panel-title::after, .dp-sec .board-panel-title::after{
   content:''; flex:1; height:6px; min-width:16px;
-  background:linear-gradient(var(--rule), var(--rule)) left center / 100% 1px no-repeat, linear-gradient(var(--horizon-gold), var(--horizon-gold)) right center / 6px 6px no-repeat;
+  background:linear-gradient(var(--rule), var(--rule)) left center / 100% 1px no-repeat, linear-gradient(var(--ember), var(--ember)) right center / 6px 6px no-repeat;
 }
 /* label column widened (70 -> 100) and the bar column now a fixed 80px
    instead of 1fr -- 1fr let the bar claim every pixel of spare row
@@ -3899,8 +3902,8 @@ h1, h2, h3, .tool-sub{text-wrap:balance;}
 p, li{text-wrap:pretty;}
 
 /* Brand-tinted selection + form accents + themed thin scrollbars. */
-::selection{background:color-mix(in srgb, var(--horizon) 38%, transparent); color:inherit;}
-:root{accent-color:var(--horizon);}
+::selection{background:color-mix(in srgb, var(--ember) 38%, transparent); color:inherit;}
+:root{accent-color:var(--ember);}
 /* Slim scrollbars everywhere (founder: thinner). Chrome / Safari get an explicit 6px bar with a rounded, softly tinted thumb through
    the ::-webkit-scrollbar pieces -- Chrome ignores those as soon as the standard `scrollbar-width` / `scrollbar-color` are set,
    so the standard pair is given to Firefox only, where `thin` is as slim as it gets. Note `scrollbar-width` is not inherited,
@@ -6730,7 +6733,7 @@ body:has(.ehp) .site-footer .fsmall,body:has(.ehp) .site-footer .fsmall a,body:h
 .top-nav-bar a,.top-nav-bar .nav-fold-trigger{font-family:var(--font-mono), monospace !important;font-stretch:82%;font-size:15px !important;font-weight:400 !important;letter-spacing:.02em !important;text-transform:none !important;color:var(--star-dim) !important;}
 .top-nav-bar a:hover,.top-nav-bar a.active{color:var(--star) !important;}
 .top-nav-bar a:not(.tn-cta):not(.tn-box)::after{height:1px;background:var(--star);}
-.top-nav-bar a.tn-box,.top-nav-bar a.tn-account{border:0 !important;background:none !important;padding:0 0 1px !important;color:var(--star) !important;border-bottom:1px solid var(--horizon) !important;border-radius:0 !important;}
+.top-nav-bar a.tn-box,.top-nav-bar a.tn-account{border:0 !important;background:none !important;padding:0 0 1px !important;color:var(--star) !important;border-bottom:1px solid var(--ember) !important;border-radius:0 !important;}
 .theme-toggle{height:26px !important;border-radius:13px !important;background:none !important;border:1px solid var(--line) !important;color:var(--star-dim) !important;overflow:hidden;}
 .theme-toggle .tt-cell{width:24px;height:24px;border-radius:50%;background:none !important;color:inherit !important;opacity:.45;}
 .theme-toggle .tt-cell svg{width:12px;height:12px;}
@@ -6744,7 +6747,7 @@ body:has(.ehp) .site-footer .fsmall,body:has(.ehp) .site-footer .fsmall a,body:h
 
 /* section labels: a dot and small mono text, not a filled plate */
 .eyebrow,.eyebrow.blue{background:none !important;color:var(--star-dim) !important;padding:0 !important;font-weight:400 !important;letter-spacing:.2em !important;font-size:10.5px !important;display:inline-flex;align-items:center;gap:10px;}
-.eyebrow::before,.eyebrow.blue::before{content:"" !important;display:inline-block !important;width:6px;height:6px;border-radius:50%;background:var(--horizon);position:static;}
+.eyebrow::before,.eyebrow.blue::before{content:"" !important;display:inline-block !important;width:6px;height:6px;border-radius:50%;background:var(--ember);position:static;}
 
 /* buttons: outlined ink, filled ink on hover (the landing page's "go" button) */
 .btn-primary,.btn-ghost{background:none !important;color:var(--star) !important;border:1px solid var(--star) !important;border-radius:0 !important;box-shadow:none !important;filter:none !important;font-family:var(--font-mono), monospace !important;font-stretch:82%;font-size:12.5px !important;font-weight:400 !important;letter-spacing:.04em !important;text-transform:none !important;}
@@ -6779,16 +6782,16 @@ body:has(.ehp) .site-footer .fsmall,body:has(.ehp) .site-footer .fsmall a,body:h
 .ehp-mt .sub i{font-style:normal;border:1px solid color-mix(in srgb, var(--ehp-holeink) 25%, transparent);padding:0 5px;}
 .ehp-mt .num{font:400 30px/1 var(--font-display), sans-serif;}
 .ehp-mt .num.proj{opacity:.55;}
-.ehp-mt .num.is-lead{color:var(--ehp-holemark);} /* ahead = ember (the site's good colour), in the shade that reads on the hole colour */
-.ehp-mt .num.is-trail{color:var(--ehp-holecold);} /* behind = cold blue (the site's bad colour), likewise */
+.ehp-mt .num.is-lead{color:var(--ehp-holecold);} /* ahead = blue (the site's good colour since Nov 10 2026), in the shade that reads on the hole colour */
+.ehp-mt .num.is-trail{color:var(--ehp-holemark);} /* behind = red (the site's bad colour), likewise */
 .ehp-mt .ch{min-width:150px;font:11px var(--font-mono), monospace;font-stretch:82%;}
 .ehp-mt .ch b{font-weight:400;letter-spacing:.14em;text-transform:uppercase;}
-.ehp-mt .ch.is-mint b{color:var(--ehp-holemark);}
+.ehp-mt .ch.is-mint b{color:var(--ehp-holecold);}
 /* the classic page's dial (ArcGauge), recoloured for the hole: ember when favoured, cold blue for a long shot / loss, ink otherwise */
 .ehp-mt .ch{--tone:var(--ehp-holeink);}
-.ehp-mt .ch.is-mint{--tone:var(--ehp-holemark);}
-.ehp-mt .ch.is-red{--tone:var(--ehp-holecold);}
-.ehp-mt .ch.is-red b{color:var(--ehp-holecold);}
+.ehp-mt .ch.is-mint{--tone:var(--ehp-holecold);}
+.ehp-mt .ch.is-red{--tone:var(--ehp-holemark);}
+.ehp-mt .ch.is-red b{color:var(--ehp-holemark);}
 .ehp-mt .chrow{display:inline-flex;align-items:center;gap:12px;}
 .ehp-mt .chtx{display:flex;flex-direction:column;gap:3px;}
 .ehp-mt .chtx span{color:var(--ehp-holedim);}
@@ -6817,7 +6820,7 @@ body:has(.ehp) .site-footer .fsmall,body:has(.ehp) .site-footer .fsmall a,body:h
 .ehp-wk .sub{display:block;margin-top:2px;font:11px var(--font-mono), monospace;color:var(--ehp-faint);}
 .ehp-wk .fl{color:var(--down);}
 .ehp-wk .md{font:400 24px/1 var(--font-display), sans-serif;}
-.ehp-wk .ce{color:var(--ehp-mark);}
+.ehp-wk .ce{color:var(--up);} /* ceiling = blue, the good colour (Nov 10 2026) */
 .ehp-mini{display:block;color:var(--ehp-ink);}
 
 /* 4 · Dynasty Draft Board (the hole's colour again) */
@@ -6937,17 +6940,17 @@ body:has(.ehp) .ticker-bar{position:absolute;}
 .tmenu-t b{font:500 14px var(--font-display), sans-serif;letter-spacing:.18em;text-transform:uppercase;white-space:nowrap;color:var(--ehp-ink, var(--star));transition:color .2s;}
 .tmenu-t i{font:italic 13.5px var(--font-body), serif;letter-spacing:0;color:var(--ehp-dim, var(--star-dim));white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .tmenu-f{font:10.5px var(--font-mono), monospace;font-stretch:82%;letter-spacing:.06em;color:var(--ehp-faint, var(--star-dim));white-space:nowrap;text-transform:uppercase;}
-.tmenu-a{color:var(--ehp-mark, var(--horizon));opacity:0;transform:translateX(-6px);transition:opacity .2s,transform .2s;}
-.tmenu-row::before{content:'';position:absolute;left:-20px;top:14px;bottom:14px;width:2px;background:var(--ehp-mark, var(--horizon));opacity:0;transition:opacity .2s;}
+.tmenu-a{color:var(--ehp-mark, var(--ember));opacity:0;transform:translateX(-6px);transition:opacity .2s,transform .2s;}
+.tmenu-row::before{content:'';position:absolute;left:-20px;top:14px;bottom:14px;width:2px;background:var(--ehp-mark, var(--ember));opacity:0;transition:opacity .2s;}
 .tmenu-row:hover::before,.tmenu-row:focus-visible::before{opacity:1;}
 .tmenu-row:hover .tmenu-a,.tmenu-row:focus-visible .tmenu-a{opacity:1;transform:none;}
-.tmenu-row:hover .tmenu-t b,.tmenu-row:focus-visible .tmenu-t b{color:var(--ehp-mark, var(--horizon));}
-.tmenu-row:hover .tmenu-n,.tmenu-row:focus-visible .tmenu-n{color:var(--ehp-mark, var(--horizon));transform:rotate(18deg);}
+.tmenu-row:hover .tmenu-t b,.tmenu-row:focus-visible .tmenu-t b{color:var(--ehp-mark, var(--ember));}
+.tmenu-row:hover .tmenu-n,.tmenu-row:focus-visible .tmenu-n{color:var(--ehp-mark, var(--ember));transform:rotate(18deg);}
 
 /* the logo's line colour: ember on the light theme, cobalt on the dark (founder, Nov 10 2026) */
 :root{--mark-accent:var(--cobalt);}
-@media (prefers-color-scheme: light){:root:not([data-theme="dark"]){--mark-accent:var(--horizon);}}
-:root[data-theme="light"]{--mark-accent:var(--horizon);}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]){--mark-accent:var(--ember);}}
+:root[data-theme="light"]{--mark-accent:var(--ember);}
 
 /* /brand: the logo downloads */
 .brand-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:22px;margin-top:34px;}
