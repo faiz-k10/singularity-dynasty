@@ -81,7 +81,7 @@ export default function OpengraphImage() {
             color: "#5C5850",
           }}
         >
-          Where the data reaches its endpoint.
+          Where data reaches its endpoint.
         </div>
       </div>
     ),

@@ -182,7 +182,7 @@ function Ring({ R, nextKickoff }) {
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
   }, [nextKickoff]);
-  const piece = clock ? ["Dynasty Singularity · kickoff in ", clock, " · "] : ["Dynasty Singularity · where the data reaches its endpoint · ", "", ""];
+  const piece = clock ? ["Dynasty Singularity · kickoff in ", clock, " · "] : ["Dynasty Singularity · where data reaches its endpoint · ", "", ""];
   return (
     <svg className="ehp-reveal ehp-spin" viewBox={`${-S} ${-S} ${2 * S} ${2 * S}`} style={{ width: 2 * S, height: 2 * S, marginLeft: -S, marginTop: -S, transitionDelay: "1.6s" }}>
       <circle r={R + 12} fill="none" stroke="currentColor" strokeOpacity=".45" strokeWidth=".6" />

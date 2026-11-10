@@ -16,7 +16,7 @@ export default function SiteFooter() {
         <div className="sf-top">
           <div className="sf-brand">
             <div className="fbrand">Dynasty Singularity</div>
-            <p className="sf-tag">Where the data reaches its endpoint.</p>
+            <p className="sf-tag">Where data reaches its endpoint.</p>
           </div>
           <nav className="sf-cols" aria-label="Footer">
             {COLUMNS.map(([title, links]) => (
