@@ -6886,3 +6886,7 @@ body:has(.ehp) .ticker-bar{position:absolute;}
 .ehp-tm-row:hover::before,.ehp-tm-row:focus-visible::before{opacity:1;}
 .ehp-tm-row:hover .ehp-tm-a,.ehp-tm-row:focus-visible .ehp-tm-a{opacity:1;transform:none;}
 .ehp-tm-row:hover .ehp-tm-t b,.ehp-tm-row:focus-visible .ehp-tm-t b{color:var(--ehp-mark);}
+
+/* planets that overlap cancel out (founder, Nov 10 2026: "create the black in between"): each planet is its own difference layer inside the bodies svg, so where two white discs meet
+   white-on-white = black, and the sky shows through. The svg itself still blends against the sky as before. */
+.ehp-body{mix-blend-mode:difference;}
