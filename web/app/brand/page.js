@@ -8,10 +8,10 @@ export const metadata = {
 // The logo files to download (founder, Nov 10 2026). The images live in public/brand/ and are drawn by scripts/make-brand-logos.mjs from the same
 // geometry as the site's own logo (lib/brandMark.js) -- rerun that script after any change to the mark.
 const LOGOS = [
-  { file: "logo-light", name: "Light", note: "Ink disc, ember line, on bone paper." },
-  { file: "logo-dark", name: "Dark", note: "Bone disc, cobalt line, on black." },
-  { file: "logo-light-sd", name: "Light · SD", note: "With the SD initials." },
-  { file: "logo-dark-sd", name: "Dark · SD", note: "With the SD initials." },
+  { file: "logo-light", name: "Light", note: "The football in the disc, SD for its laces. Ember line on bone." },
+  { file: "logo-dark", name: "Dark", note: "The football in the disc, SD for its laces. Cobalt line on black." },
+  { file: "logo-light-sd", name: "Light · Initials", note: "Just the SD initials in the disc." },
+  { file: "logo-dark-sd", name: "Dark · Initials", note: "Just the SD initials in the disc." },
 ];
 
 export default function BrandPage() {

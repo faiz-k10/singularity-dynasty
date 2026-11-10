@@ -1,13 +1,12 @@
 // Renders the profile-picture logos into brand/ AND web/public/brand/ (the downloads on /brand) from the SAME mark as the site (lib/brandMark.js): light = ink disc + ember, dark = bone disc +
-// cobalt, each plain and with "SD" in the disc (Big Shoulders 800). Run from web/: node scripts/make-brand-logos.mjs
+// cobalt, each with the SD-laced football in the disc and, the "-sd" files, with just the initials (both use the SD outline in brandMark.js). Run from web/: node scripts/make-brand-logos.mjs
 
 import { ImageResponse } from "next/og.js";
 import { createElement as h } from "react";
-import { readFile, writeFile } from "node:fs/promises";
+import { writeFile } from "node:fs/promises";
 import sharp from "sharp";
-import { MARK_DISC, MARK_SPIRAL, MARK_BALL, MARK_CENTER_BALL, MARK_STROKE } from "../lib/brandMark.js";
+import { MARK_DISC, MARK_SPIRAL, MARK_BALL, MARK_CENTER_BALL, MARK_SD, MARK_DISC_SD, MARK_STROKE } from "../lib/brandMark.js";
 
-const font = await readFile("assets/og-fonts/BigShoulders-800.ttf");
 const OUT = "../brand";
 const S = 2048, BOX = 1600; // drawn natively at 2048px (the sharpest file; 1024 and 400 are scaled down from it); the mark's 40-unit box 1600px wide, centred (platforms crop to a circle)
 const u = BOX / 40, off = (S - BOX) / 2;
@@ -21,19 +20,18 @@ for (const [name, v] of Object.entries(variants)) {
     const mark = h("svg", { width: BOX, height: BOX, viewBox: "0 0 40 40", style: { position: "absolute", left: off, top: off } },
       h("path", { d: MARK_SPIRAL, fill: "none", stroke: v.ring, strokeWidth: MARK_STROKE * bold, strokeLinecap: "round" }),
       h("circle", { cx: MARK_DISC.cx, cy: MARK_DISC.cy, r: MARK_DISC.r, fill: v.disc }),
-      // the plain logo carries a football in the middle of the disc (the SD one carries the letters)
-      sd ? null : h("g", { transform: MARK_CENTER_BALL.transform },
-        h("path", { d: MARK_CENTER_BALL.d, fill: v.bg }),
-        h("path", { d: MARK_CENTER_BALL.laces, stroke: v.disc, strokeWidth: MARK_CENTER_BALL.lacesWidth, strokeLinecap: "round", fill: "none" })),
+      // the main logo carries a football in the middle of the disc whose laces are SD; the "-sd" files carry just the initials, upright and large
+      sd
+        ? h("path", { d: MARK_SD, transform: MARK_DISC_SD.transform, fill: v.bg })
+        : h("g", { transform: MARK_CENTER_BALL.transform },
+            h("path", { d: MARK_CENTER_BALL.d, fill: v.bg }),
+            h("path", { d: MARK_SD, transform: MARK_CENTER_BALL.sdTransform, fill: v.disc }),
+            h("path", { d: MARK_CENTER_BALL.seam, stroke: v.disc, strokeWidth: MARK_CENTER_BALL.seamWidth, strokeLinecap: "round", fill: "none" })),
       // the point at the end is a FOOTBALL (founder, Nov 10 2026): a pointed oval laid along the line, with laces in the background colour
       h("g", { transform: MARK_BALL.transform },
         h("path", { d: MARK_BALL.d, fill: v.ring }),
         h("path", { d: MARK_BALL.laces, stroke: v.bg, strokeWidth: 0.16, strokeLinecap: "round", fill: "none" })));
-    const dCx = off + MARK_DISC.cx * u, dCy = off + MARK_DISC.cy * u, dR = MARK_DISC.r * u;
-    const letters = sd
-      ? h("div", { style: { position: "absolute", left: dCx - dR, top: dCy - dR, width: dR * 2, height: dR * 2, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "BS", fontSize: dR * 1.12, letterSpacing: dR * 0.02, color: v.bg, paddingTop: dR * 0.06 } }, "SD")
-      : null;
-    const img = new ImageResponse(h("div", { style: { width: S, height: S, display: "flex", position: "relative", background: v.bg } }, mark, letters), { width: S, height: S, fonts: [{ name: "BS", data: font, weight: 800, style: "normal" }] });
+    const img = new ImageResponse(h("div", { style: { width: S, height: S, display: "flex", position: "relative", background: v.bg } }, mark), { width: S, height: S });
     const buf = Buffer.from(await img.arrayBuffer());
     const base = `${OUT}/logo-${name}${sd ? "-sd" : ""}`;
     for (const dir of [OUT, "public/brand"]) {
