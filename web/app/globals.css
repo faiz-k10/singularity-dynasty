@@ -6884,6 +6884,11 @@ body:has(.ehp) .ticker-bar{position:absolute;}
 /* landing motion layers (EventHorizon.js Sky / Ring / Bodies): each moves by transform only, on its own compositor layer */
 .ehp-starfield,.ehp-orbitsky,.ehp-ringlayer{will-change:transform,opacity;}
 .ehp-ringlayer svg{position:absolute;left:50%;top:50%;overflow:visible;transform-origin:center;}
+.ehp-meteor{position:absolute;left:50%;top:50%;width:120px;height:1.5px;margin:-1px 0 0 -120px;transform-origin:120px 50%;background:linear-gradient(90deg, transparent, var(--ehp-ink));opacity:0;will-change:transform,opacity;pointer-events:none;z-index:1;} /* a meteor: the head is its right end */
+.ehp-ripple{position:absolute;left:50%;top:50%;box-sizing:border-box;width:calc(var(--ehp-r, 150px) * 2);height:calc(var(--ehp-r, 150px) * 2);margin:calc(var(--ehp-r, 150px) * -1) 0 0 calc(var(--ehp-r, 150px) * -1);border-radius:50%;border:.7px solid var(--ehp-ink);opacity:0;will-change:transform,opacity;pointer-events:none;z-index:1;} /* a ring of bent light leaving the hole */
+.ehp-pulsar{position:absolute;left:50%;top:50%;width:0;height:0;opacity:0;will-change:transform,opacity;pointer-events:none;z-index:1;}
+.ehp-pulsar-star{position:absolute;left:-1.5px;top:-1.5px;width:3px;height:3px;border-radius:50%;background:var(--ehp-ink);}
+.ehp-pulsar-beam{position:absolute;left:-150px;top:-1px;width:300px;height:2px;background:linear-gradient(90deg, transparent, var(--cobalt) 46%, var(--cobalt) 54%, transparent);opacity:0;} /* both arms of the beam, centred on the star */
 .ehp-speck{position:absolute;left:50%;top:50%;width:4px;height:4px;margin:-2px 0 0 -2px;border-radius:50%;background:var(--ehp-mark);opacity:0;will-change:transform,opacity;pointer-events:none;z-index:1;}
 
 /* client-side page changes (the ViewTransition in layout.js): a quick crossfade; none at all for reduced motion */
