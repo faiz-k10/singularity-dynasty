@@ -136,19 +136,32 @@ function Sky({ size, nextKickoff, bodies }) {
 // retrograde star chart) and stays clickable.
 function Bodies({ size, bodies }) {
   const { w, h } = size;
+  const kk = Math.max(0.5, Math.min(1, w / 1300));
   return (
+    <>
+    {/* Explorer's hover glow is EMBER, so it can't live in the white difference-blended layer below (it would invert): its own plain layer, moved with the planet by the same loop */}
+    <svg className="ehp-sky ehp-eglows" viewBox={`${-w / 2} ${-h / 2} ${w} ${h}`} aria-hidden="true">
+      <defs>
+        <radialGradient id="ehp-eg">
+          <stop offset="0" style={{ stopColor: "var(--ehp-mark)", stopOpacity: 0 }} />
+          <stop offset=".6" style={{ stopColor: "var(--ehp-mark)", stopOpacity: 0 }} />
+          <stop offset=".66" style={{ stopColor: "var(--ehp-mark)", stopOpacity: .75 }} />
+          <stop offset="1" style={{ stopColor: "var(--ehp-mark)", stopOpacity: 0 }} />
+        </radialGradient>
+      </defs>
+      {bodies.map((b, i) => b.id === "explorer" && (
+        <g key={b.n} className="ehp-eglow" data-i={i}>
+          <circle className="eg" r={+(b.pr * kk * 1.7).toFixed(1)} fill="url(#ehp-eg)" />
+          <circle className="ep" r={+(b.pr * kk + 6).toFixed(1)} />
+        </g>
+      ))}
+    </svg>
     <svg className="ehp-sky ehp-bodies" viewBox={`${-w / 2} ${-h / 2} ${w} ${h}`}>
       {bodies.map((b, i) => {
         const pr = b.pr ? +(b.pr * Math.max(0.5, Math.min(1, w / 1300))).toFixed(1) : 5.5; // a plan planet is big, and shrinks with the sky on a phone
         return (
         <a key={b.n + i} href={b.href} className={`ehp-body${b.id ? ` plan-${b.id}` : ""}`} data-i={i} style={{ transitionDelay: `${2 + i * 0.25}s` }} aria-label={`${b.n.toLowerCase()}: ${b.say}`}>
           <circle r={pr + 14} fill="transparent" />
-          {b.id === "explorer" && (
-            <>
-              <circle className="glow" r={pr * 1.25} />
-              <circle className="pulse" r={pr + 6} />
-            </>
-          )}
           {b.id === "singularity" && <ellipse className="saturn" rx={pr * 1.75} ry={pr * 0.36} transform="rotate(-18)" />}
           <circle className="halo" r={pr + 9} />
           <circle className="dot" r={pr} />
@@ -158,6 +171,7 @@ function Bodies({ size, bodies }) {
         );
       })}
     </svg>
+    </>
   );
 }
 
@@ -492,7 +506,7 @@ export default function EventHorizon({ signedIn, member, invited, discountPct, w
     if (!root) return undefined;
     const k = Math.max(0.45, Math.min(1, size.w / 1300));
     const R = radiusFor(size.w);
-    const els = [...root.querySelectorAll(".ehp-body")];
+    const els = [...root.querySelectorAll(".ehp-body, .ehp-eglow")];
     const stars = root.querySelector(".ehp-stars");
     const infall = root.querySelector(".ehp-infall");
     const hz = root.querySelector(".ehp-hz"), hole = root.querySelector(".ehp-hole"), skies = [...root.querySelectorAll(".ehp-sky")], cue = root.querySelector(".ehp-cue");
