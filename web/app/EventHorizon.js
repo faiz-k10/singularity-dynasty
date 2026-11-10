@@ -389,6 +389,14 @@ function Matchups({ rows }) {
 // The header's Plans link opens a small panel with the three plans and a checkout button each (founder, Nov 10 2026): CSS hover / keyboard focus,
 // the same startCheckout() as the Plans section, Yearly by default.
 // The header's Tools link: the four tools in a hairline panel (name, one line on what it does, what is free), each opening its page. CSS hover / focus.
+// One small planet per tool, all different (a plain disc, a ringed planet, a planet with a moon on its orbit, a banded one): 24-unit svgs in currentColor.
+const PLANET_GLYPHS = [
+  <svg key="a" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7.5" fill="currentColor" /></svg>,
+  <svg key="b" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5.6" fill="currentColor" /><ellipse cx="12" cy="12" rx="11" ry="3.4" transform="rotate(-20 12 12)" fill="none" stroke="currentColor" strokeWidth="1.3" /></svg>,
+  <svg key="c" viewBox="0 0 24 24"><circle cx="11" cy="13" r="6" fill="currentColor" /><circle cx="11" cy="13" r="10" fill="none" stroke="currentColor" strokeWidth=".9" strokeDasharray="1.5 2.2" /><circle cx="19.6" cy="6.4" r="1.9" fill="currentColor" /></svg>,
+  <svg key="d" viewBox="0 0 24 24"><defs><clipPath id="ehp-gb"><circle cx="12" cy="12" r="7.5" /></clipPath></defs><circle cx="12" cy="12" r="7.5" fill="none" stroke="currentColor" strokeWidth="1.3" /><g clipPath="url(#ehp-gb)" fill="currentColor"><rect x="3" y="8.4" width="18" height="2.1" /><rect x="3" y="12.2" width="18" height="2.1" /><rect x="3" y="16" width="18" height="2.1" /></g></svg>,
+];
+
 function HeaderTools() {
   const SHORT = { "/tools/redraft-rankings": "Every player's range this week, matchups included.", "/tools/player-simulations": "Where each player's season is heading." };
   const four = TOOLS.slice(1); // the Game Board lives under My Team, so the four tools proper
@@ -398,7 +406,7 @@ function HeaderTools() {
       <div className="ehp-pm-panel ehp-tm-panel" role="group" aria-label="Tools">
         {four.map(([name, say, free, href], i) => (
           <Link key={href} href={href} className="ehp-tm-row">
-            <span className="ehp-tm-n">0{i + 1}</span>
+            <span className="ehp-tm-n" aria-hidden="true">{PLANET_GLYPHS[i]}</span>
             <span className="ehp-tm-t">
               <b>{name}</b>
               <i>{SHORT[href] || say}</i>
