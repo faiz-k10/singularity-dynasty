@@ -711,7 +711,7 @@ export default function EventHorizon({ signedIn, member, invited, discountPct, w
             ) : (
               <>
                 <ToolLink href="/login">Sign in</ToolLink>
-                <ToolLink className="ehp-in" href="/login?next=/my-team">Fall in</ToolLink>
+                <ToolLink className="ehp-in" href="/login?next=/my-team">Dive in</ToolLink>
               </>
             )}
             <ThemeToggle inline />
@@ -734,7 +734,7 @@ export default function EventHorizon({ signedIn, member, invited, discountPct, w
           )}
           <div className="ehp-cue" aria-hidden="true">
             <i />
-            FALL IN
+            DIVE IN
           </div>
         </div>
       </section>
