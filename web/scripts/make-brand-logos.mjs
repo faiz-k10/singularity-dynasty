@@ -17,11 +17,11 @@ const variants = {
 };
 for (const [name, v] of Object.entries(variants)) {
   for (const sd of [false, true]) {
-    const bold = 1.4; // the line and speck a little heavier than the 34px header mark, so they hold up as a small avatar
+    const bold = 0.6; // much thinner than the header's 1.5-unit line: at avatar size the site's own weight reads heavy (founder, Nov 10 2026: "lines are too thick")
     const mark = h("svg", { width: BOX, height: BOX, viewBox: "0 0 40 40", style: { position: "absolute", left: off, top: off } },
       h("circle", { cx: MARK_DISC.cx, cy: MARK_DISC.cy, r: MARK_DISC.r, fill: v.disc }),
       h("path", { d: MARK_SPIRAL, fill: "none", stroke: v.ring, strokeWidth: MARK_STROKE * bold, strokeLinecap: "round" }),
-      h("circle", { cx: MARK_SPECK.cx, cy: MARK_SPECK.cy, r: MARK_SPECK.r * 1.15, fill: v.ring }));
+      h("circle", { cx: MARK_SPECK.cx, cy: MARK_SPECK.cy, r: MARK_SPECK.r * 0.75, fill: v.ring }));
     const dCx = off + MARK_DISC.cx * u, dCy = off + MARK_DISC.cy * u, dR = MARK_DISC.r * u;
     const letters = sd
       ? h("div", { style: { position: "absolute", left: dCx - dR, top: dCy - dR, width: dR * 2, height: dR * 2, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "BS", fontSize: dR * 1.12, letterSpacing: dR * 0.02, color: v.bg, paddingTop: dR * 0.06 } }, "SD")
