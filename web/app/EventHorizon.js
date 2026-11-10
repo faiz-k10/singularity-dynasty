@@ -31,6 +31,9 @@ const radiusFor = (w) => (w < 560 ? Math.max(104, Math.round((w - 120) / 2)) : 1
 // a planet is a FOOTBALL (founder, Nov 10 2026): a full-bodied oval, 2.6 radii long and 1.6 tall, with gently pointed ends -- not a lemon -- tilted a little
 const ball = (r, grow = 0) => { const L = 1.3 * r + grow, H = 0.8 * r + grow; return `M${-L} 0 C${-0.82 * L} ${-0.4 * H} ${-0.45 * L} ${-H} 0 ${-H} C${0.45 * L} ${-H} ${0.82 * L} ${-0.4 * H} ${L} 0 C${0.82 * L} ${0.4 * H} ${0.45 * L} ${H} 0 ${H} C${-0.45 * L} ${H} ${-0.82 * L} ${0.4 * H} ${-L} 0 Z`; };
 const BALL_TILT = -12;
+// the name's path (founder, Nov 10 2026): the top edge of the football, a little above it, stretched wider when the name is longer than the ball
+const NAME_FS = 15, NAME_LS = 3.3;
+const namePath = (r, n) => { const g = 12, L = 1.3 * r + g, H = 0.8 * r + g, f = Math.max(1, (n * (NAME_FS * 0.62 + NAME_LS) + 16) / (2.3 * L)), l = L * f, h = H * f; return `M${-l} 0 C${-0.82 * l} ${-0.4 * h} ${-0.45 * l} ${-h} 0 ${-h} C${0.45 * l} ${-h} ${0.82 * l} ${-0.4 * h} ${l} 0`; };
 // the two white stripes near the ends of the ball, cut out of the planet as curved bands across it, bowing toward the nearer tip. They are clipped to a
 // slightly smaller ball (see Bodies), so a rim of the planet's colour always runs round the outside and the silhouette stays one whole football.
 const stripes = (r) => { const L = 1.3 * r, H = 0.9 * r, c = 0.07 * L; return [-1, 1].map((sg) => { const a = sg * 0.63 * L, b = sg * 0.77 * L; return `M${a} ${-H} Q${a + sg * c} 0 ${a} ${H} L${b} ${H} Q${b + sg * c} 0 ${b} ${-H} Z`; }).join(" "); };
@@ -212,7 +215,8 @@ function Bodies({ size, bodies }) {
               </mask>
               {/* the mask sits on an unrotated group: a mask lives in the coordinate system of the element that uses it, so on a rotated path it would be tilted twice and cut the football's tips */}
               <g mask={`url(#ehp-pm-${i})`}><path className="dot" d={ball(pr)} transform={`rotate(${BALL_TILT})`} /></g>
-              <text className="nm" textAnchor="middle" x="0" y={-(pr * 0.8 + 14)}>{b.n}</text>
+              <path id={`ehp-np-${i}`} d={namePath(pr, b.n.length)} transform={`rotate(${BALL_TILT})`} fill="none" stroke="none" />
+              <text className="nm" textAnchor="middle"><textPath href={`#ehp-np-${i}`} startOffset="50%">{b.n}</textPath></text>
               {!b.id && <text className="say" textAnchor="middle" x="0" y={pr * 0.8 + 24}>{b.say}</text>}{/* the plan planets carry their price inside; no caption under the name */}
             </svg>
           </ToolLink>
