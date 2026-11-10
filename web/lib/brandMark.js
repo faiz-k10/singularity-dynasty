@@ -24,3 +24,13 @@ export const MARK_BALL = {
   d: `M${-BALL_L / 2} 0 C${-BALL_L / 4} ${-BALL_W} ${BALL_L / 4} ${-BALL_W} ${BALL_L / 2} 0 C${BALL_L / 4} ${BALL_W} ${-BALL_L / 4} ${BALL_W} ${-BALL_L / 2} 0 Z`,
   laces: "M-0.75 0 H0.75 M-0.45 -0.32 V0.32 M0 -0.32 V0.32 M0.45 -0.32 V0.32", // stroked 0.16 in the background colour (or cut out)
 };
+
+// the football IN the disc (founder, Nov 10 2026: "for the uninitialed one put a football in the middle as well"): the plain logo (no SD) has a big
+// football cut out of the middle of the disc, tilted like a ball in flight, its laces in the disc's colour. The SD versions keep the letters instead.
+const CB_L = 15, CB_W = 6.4;
+export const MARK_CENTER_BALL = {
+  transform: "translate(20 20) rotate(-35)",
+  d: `M${-CB_L / 2} 0 C${-CB_L / 4} ${-CB_W} ${CB_L / 4} ${-CB_W} ${CB_L / 2} 0 C${CB_L / 4} ${CB_W} ${-CB_L / 4} ${CB_W} ${-CB_L / 2} 0 Z`,
+  laces: "M-2.6 0 H2.6 M-1.6 -1.05 V1.05 M-0.53 -1.05 V1.05 M0.53 -1.05 V1.05 M1.6 -1.05 V1.05",
+  lacesWidth: 0.55,
+};

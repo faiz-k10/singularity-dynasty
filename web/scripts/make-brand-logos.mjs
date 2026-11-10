@@ -5,7 +5,7 @@ import { ImageResponse } from "next/og.js";
 import { createElement as h } from "react";
 import { readFile, writeFile } from "node:fs/promises";
 import sharp from "sharp";
-import { MARK_DISC, MARK_SPIRAL, MARK_BALL, MARK_STROKE } from "../lib/brandMark.js";
+import { MARK_DISC, MARK_SPIRAL, MARK_BALL, MARK_CENTER_BALL, MARK_STROKE } from "../lib/brandMark.js";
 
 const font = await readFile("assets/og-fonts/BigShoulders-800.ttf");
 const OUT = "../brand";
@@ -21,6 +21,10 @@ for (const [name, v] of Object.entries(variants)) {
     const mark = h("svg", { width: BOX, height: BOX, viewBox: "0 0 40 40", style: { position: "absolute", left: off, top: off } },
       h("path", { d: MARK_SPIRAL, fill: "none", stroke: v.ring, strokeWidth: MARK_STROKE * bold, strokeLinecap: "round" }),
       h("circle", { cx: MARK_DISC.cx, cy: MARK_DISC.cy, r: MARK_DISC.r, fill: v.disc }),
+      // the plain logo carries a football in the middle of the disc (the SD one carries the letters)
+      sd ? null : h("g", { transform: MARK_CENTER_BALL.transform },
+        h("path", { d: MARK_CENTER_BALL.d, fill: v.bg }),
+        h("path", { d: MARK_CENTER_BALL.laces, stroke: v.disc, strokeWidth: MARK_CENTER_BALL.lacesWidth, strokeLinecap: "round", fill: "none" })),
       // the point at the end is a FOOTBALL (founder, Nov 10 2026): a pointed oval laid along the line, with laces in the background colour
       h("g", { transform: MARK_BALL.transform },
         h("path", { d: MARK_BALL.d, fill: v.ring }),
