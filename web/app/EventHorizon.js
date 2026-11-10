@@ -176,12 +176,17 @@ function Bodies({ size, bodies }) {
             <svg viewBox={`${-S} ${-S} ${2 * S} ${2 * S}`} style={{ width: 2 * S, height: 2 * S, left: -S, top: -S }}>
               <defs>
                 <filter id={`ehp-gb-${b.id}`} x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation={+(pr * 0.22).toFixed(1)} /></filter>
+                {/* the glow stays OUTSIDE the football: the planet is difference-blended, so ember behind it would tint it blue */}
+                <mask id={`ehp-gm-${b.id}`} maskUnits="userSpaceOnUse" x={-S} y={-S} width={2 * S} height={2 * S}>
+                  <rect x={-S} y={-S} width={2 * S} height={2 * S} fill="#fff" />
+                  <path d={ball(pr)} fill="#000" transform={`rotate(${BALL_TILT})`} />
+                </mask>
               </defs>
               {/* the glow and the pulse follow the football's outline (founder, Nov 10 2026), tilted like the planet */}
-              <g transform={`rotate(${BALL_TILT})`}>
-                <path className="eg" d={ball(pr, pr * 0.28)} fill={col} fillOpacity=".6" filter={`url(#ehp-gb-${b.id})`} />
-                <path className="ep" d={ball(pr, 6)} />
+              <g mask={`url(#ehp-gm-${b.id})`}>
+                <path className="eg" d={ball(pr, pr * 0.28)} fill={col} fillOpacity=".6" filter={`url(#ehp-gb-${b.id})`} transform={`rotate(${BALL_TILT})`} />
               </g>
+              <g transform={`rotate(${BALL_TILT})`}><path className="ep" d={ball(pr, 6)} /></g>
             </svg>
           </div>
         );
