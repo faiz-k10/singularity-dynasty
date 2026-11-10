@@ -224,8 +224,8 @@ export default async function SiteHeader({ scripts = true }) {
         ☰
       </button>
 
-      {/* Same shape as the landing page's bar (founder, Nov 10 2026): the tools on the left, the mark and the name in the middle, Plans /
-          Newsletter / Sign in on the right (the theme switch sits after them), quiet mono links that turn ink on hover and for the open page. */}
+      {/* Same shape as the landing page's bar (founder, Nov 10 2026): Tools / Plans / Newsletter on the left (My Team and The
+          Observatory live in the Tools dropdown), the mark and the name in the middle, Sign in on the right (the theme switch after it), quiet mono links that turn ink on hover and for the open page. */}
       <header className="site-header">
         <nav className="top-nav-bar sh-left" id="topNavBar" aria-label="Primary">
           <div className="nav-dropdown">
@@ -237,15 +237,13 @@ export default async function SiteHeader({ scripts = true }) {
               </div>
             </div>
           </div>
-          <HeaderNavLink href="/my-team">My Team</HeaderNavLink>
-          <HeaderNavLink href="/tools/lab">The Observatory</HeaderNavLink>
+          <Link href="/#pricing">Plans</Link>
+          <Link href="/#feed">Newsletter</Link>
         </nav>
         <ToolLink href="/" className="brandmark">
           <BrandMark />Dynasty Singularity
         </ToolLink>
         <nav className="top-nav-bar sh-right" aria-label="Account">
-          <Link href="/#pricing">Plans</Link>
-          <Link href="/#feed">Newsletter</Link>
           <HeaderNavLink href={user ? "/account" : "/login"} className="tn-box tn-account">
             {user ? "Account" : "Sign in"}
           </HeaderNavLink>
