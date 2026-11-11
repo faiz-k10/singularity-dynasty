@@ -720,6 +720,9 @@ export default function EventHorizon({ signedIn, member, invited, discountPct, w
           const a = b.a + (reduce ? 0 : (T * 2 * Math.PI) / b.s);
           const x = orbitX(b, size.w, radiusFor(size.w), k) * Math.cos(a), y = b.ry * k * Math.sin(a);
           o.style.transform = `translate3d(${((x * c - y * s) * sc).toFixed(1)}px,${((x * s + y * c) * sc).toFixed(1)}px,0) scale(${sc.toFixed(4)})`;
+          // a league football's backing: solid on the NEAR half of its orbit (it passes in front of the hole as a plain football), gone on the far
+          // half (behind it, the planet's difference blend shows it in negative); eased across the turn so it doesn't blink
+          if (o.classList.contains("ehp-shade")) o.style.opacity = (Math.max(0, Math.min(1, 0.5 + Math.sin(a) * 3)) * skyOp).toFixed(2);
         });
         if (!reduce) {
           px += (tx - px) * 0.04;
