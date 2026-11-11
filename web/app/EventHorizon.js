@@ -771,7 +771,7 @@ export default function EventHorizon({ signedIn, member, invited, discountPct, w
           </nav>
           <Link className="ehp-brand" href="/">
             <BrandMark className="ehp-dock" />
-            Dynasty Singularity
+            The Dynasty Singularity
           </Link>
           <div className="ehp-r">
             {signedIn ? (

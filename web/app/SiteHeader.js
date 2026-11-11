@@ -242,7 +242,7 @@ export default async function SiteHeader({ scripts = true }) {
           <HeaderLetter />
         </nav>
         <ToolLink href="/" className="brandmark">
-          <BrandMark />Dynasty Singularity
+          <BrandMark />The Dynasty Singularity
         </ToolLink>
         <nav className="top-nav-bar sh-right" aria-label="Account">
           <HeaderNavLink href={user ? "/account" : "/login"} className="tn-box tn-account">
