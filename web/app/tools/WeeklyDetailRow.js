@@ -9,6 +9,7 @@ import PositionBadge from "./PositionBadge";
 import ConfidenceBadge from "./ConfidenceBadge";
 import { getAchievements } from "./achievements";
 import DragonBall from "./DragonBall";
+import { badgeTitle } from "@/lib/badgeBlurbs";
 import FitBox from "./FitBox";
 import { MyStrip, MyEmpty } from "./MyPlayers";
 import { PANEL_KEYS } from "@/lib/statPanel";
@@ -184,9 +185,10 @@ export function GameLogPanel({ games: all }) {
 // again. One open flag per badge (not shared across the row) so opening
 // one badge doesn't collapse another, e.g. the confidence star.
 // `open` / `onToggle` come from the badge row, which keeps only one label open at a time (founder, Nov 8 2026).
-function ExpandableBadge({ variant, label, children, open, onToggle }) {
+function ExpandableBadge({ variant, label, title, children, open, onToggle }) {
   return (
     <span
+      title={title}
       className={`weekly-achievement-badge ${variant}${open ? " open" : ""}`}
       onClick={onToggle}
       role="button"
@@ -412,7 +414,7 @@ export function PlayerHeaderPanel({ row, share = false, logoByName = false }) {
   const achievementPills = (
     <span className="weekly-player-achievements">
       {achievements.map((a) => (
-        <ExpandableBadge key={a.key} variant={a.variant} label={a.label} open={openBadge === a.key} onToggle={() => toggleBadge(a.key)}>
+        <ExpandableBadge key={a.key} variant={a.variant} label={a.label} title={badgeTitle(a)} open={openBadge === a.key} onToggle={() => toggleBadge(a.key)}>
           {a.node}
         </ExpandableBadge>
       ))}
