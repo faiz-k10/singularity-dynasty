@@ -294,8 +294,7 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
         </section>
       </div>
 
-      <div className="sky-grid">
-        <section className="sky-panel" aria-labelledby="sky-odds">
+      <section className="sky-panel" aria-labelledby="sky-odds">
           <div className="board-panel-title" id="sky-odds">The odds</div>
           <table className="sky-odds mono">
             <tbody>
@@ -310,17 +309,6 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
           </table>
           <p className="sky-small mono">If a find lands on something your constellations haven&apos;t powered, you get the biggest find they have, and you&apos;ll see the bigger one at the edge of the frame. Finish The Singularity and your next find is a stellar event.</p>
         </section>
-        <section className="sky-panel" aria-labelledby="sky-fair">
-          <div className="board-panel-title" id="sky-fair">Why this is not gambling</div>
-          <ul className="sky-fair">
-            <li><b>Nothing goes in.</b> No money, credits or anything of value is bought, staked or wagered. Stars only come from using the site.</li>
-            <li><b>Nothing can be bought.</b> No stars, collapses or finds are for sale, on any plan.</li>
-            <li><b>Every collapse pays.</b> There is no losing outcome.</li>
-            <li><b>Finds are collectibles and site perks.</b> Anything with cash value (plan time, the poster) comes from the orbit milestones, earned by effort, never from chance.</li>
-            <li><b>The odds are published here,</b> and every find is drawn fairly before the telescope shows it.</li>
-          </ul>
-        </section>
-      </div>
 
       <section className="sky-panel" aria-labelledby="sky-log">
         <div className="board-panel-title" id="sky-log">Log</div>
