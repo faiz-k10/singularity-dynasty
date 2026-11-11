@@ -136,7 +136,9 @@
   .find{font:800 34px var(--display);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 2px;min-height:40px}
   .rarity{font:400 11px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--gold);min-height:16px}
   .find-sub{font:400 12px/1.6 var(--mono);color:var(--dim);min-height:38px;margin-top:6px}
-  .tip{font:400 11px/1.6 var(--mono);color:var(--dim);border-left:2px solid var(--line);padding-left:10px;margin-top:8px}
+  .tip{font:400 12px/1.6 var(--serif);color:var(--star);border-left:2px solid var(--gold);padding:2px 0 2px 12px;margin-top:10px}
+  .tip b{font:700 15px/1.3 var(--serif);display:block;color:var(--gold);margin:2px 0}
+  .tip-k{display:block;font:400 9.5px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
   .miss{font:400 12px/1.5 var(--mono);color:var(--gold);min-height:18px;margin-top:8px}
   .card-canvas{width:100%;height:auto;display:block;border:1px solid var(--line)}
   .share-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
@@ -303,10 +305,15 @@ const CAT = {
 const TIER_P = { 1: 0.4, 2: 0.3, 3: 0.2, 5: 0.02 };
 const PTS = { 1: 10, 2: 30, 3: 80, 5: 250 };
 const PRISM = 1 / 12;
-const TIPS = [
-  "Your telescope also caught: a free agent who beats your RB2 by 6.4 points this week in Dynasty Kingdom.",
-  "Your telescope also caught: your QB faces a Smash Spot this week in 3 of your leagues.",
-  "Your telescope also caught: you start the same WR in 4 leagues, and he's trending down.",
+// Not tips: validation. Rosterbating is frowned on in fantasy circles, so the telescope does it for you -- every line is a real, flattering
+// fact from the site's own numbers (projections, the weekly rankings, the dynasty board), about the member's own teams.
+const COMPLIMENTS = [
+  ["Best WR room in Dynasty Kingdom", "By our projections, your receivers outscore every other room in the league this week."],
+  ["Your bench would start in 4 lineups", "In Fantasy Degenerates, your bench projects higher than four other teams' starters."],
+  ["You saw it first", "You rostered Puka Nacua in 3 leagues before he was a top-10 WR. Only 2% of managers did."],
+  ["Youngest contender in the league", "The Goon Squad is the youngest team in its league and still projects top-3. That's a dynasty built right."],
+  ["Your draft is aging well", "Your startup picks in Dynasty Free Play are up 11 spots on the Dynasty Board since the draft."],
+  ["A lineup the model would set", "This week, all 10 of your starters in Fantasy Degenerates are the ones the model would start."],
 ];
 const PICKS = [
   ["Jahmyr Gibbs", "Bijan Robinson", "Gibbs by 1.8"],
@@ -461,7 +468,9 @@ function reveal() {
     $("find").textContent = drawn === 4 ? `${name} + meteor shower` : name;
     $("rarity").textContent = `1 in ${oneIn.toLocaleString()} finds${first ? " · new to your catalogue" : ""}`;
     $("findSub").textContent = `+${pts} orbit points${prism ? " (doubled: prismatic)" : ""}${first ? " · +15 for a first discovery" : ""}${drawn === 4 ? " · for the next 60 seconds every action places two stars" : ""}`;
-    $("tip").textContent = TIPS[Math.floor(Math.random() * TIPS.length)];
+    const [head, body] = COMPLIMENTS[Math.floor(Math.random() * COMPLIMENTS.length)];
+    state.last.compliment = head; save();
+    $("tip").innerHTML = `<span class="tip-k">Seen from up here</span><b>${head}.</b> ${body}`;
     $("miss").textContent = miss;
     log(`Found: ${name} (1 in ${oneIn})${miss ? " · a bigger find was just out of frame" : ""}`);
     drawSky(); renderAll();
@@ -554,6 +563,7 @@ function shareFind() {
   wrapText(ctx, L.name.toUpperCase(), 64, 210, 560, 84);
   ctx.fillStyle = "#E9C46A"; ctx.font = "400 30px 'Martian Mono'"; ctx.fillText(`1 IN ${L.oneIn.toLocaleString()} FINDS`, 64, 430);
   ctx.fillStyle = "#A39E92"; ctx.font = "400 22px 'Martian Mono'"; ctx.fillText(`${Object.keys(state.found).length} of ${catalogueSize()} in my catalogue`, 64, 478);
+  if (L.compliment) { ctx.fillStyle = "#E9C46A"; ctx.font = "italic 700 26px Georgia"; ctx.fillText(`"${L.compliment}."`, 64, 525); } // the flex rides along on the card
   openCard("Share this find", "The rarity is printed on the card, and it carries your referral link.");
 }
 function shareReceipt() {
