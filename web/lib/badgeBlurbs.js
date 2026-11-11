@@ -18,8 +18,8 @@ export const BADGE_BLURBS = {
   conArtist: "Getting chances but not cashing them in.",
   eliteRole: "One of the most featured players at his position.",
   elitePlayer: "One of the most productive players at his position.",
-  plusValue: "Doing more than his role would suggest.",
-  minusValue: "His role is bigger than what he's doing with it.",
+  plusValue: "A better player than his role suggests.",
+  minusValue: "His role is carrying his value.",
   hero: "A star for every top-3 week at his position this season.",
 };
 
