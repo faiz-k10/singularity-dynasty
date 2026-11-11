@@ -7071,3 +7071,88 @@ body:has(.ehp) .ehp-inside,body:has(.ehp) .ehp-dark{--ehp-hole:#0B0B0B;--ehp-hol
 
 /* A Tools menu row was clicked: the dropdown shuts at once (ToolLink closeMenu) and stays shut until the pointer leaves it. */
 .menu-shut .nav-foldout,.menu-shut .ehp-pm-panel{opacity:0 !important;visibility:hidden !important;pointer-events:none !important;transition:none !important;}
+
+/* ============================================================
+   THE NIGHT SKY (/account/sky, app/account/sky/SkyClient.js). Panels follow the mission-control spec: hairline boxes, 16px inside, 12px apart.
+   ============================================================ */
+.sky-wrap{max-width:1240px}
+.sky{display:flex;flex-direction:column;gap:12px}
+.sky-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:12px}
+.sky-col{display:flex;flex-direction:column;gap:12px;min-width:0}
+.sky-panel{border:1px solid var(--line);background:rgba(var(--star-rgb),.02);padding:16px;min-width:0;display:flex;flex-direction:column;gap:12px}
+.sky-svg{width:100%;max-width:560px;aspect-ratio:1;margin:0 auto;display:block}
+.sky-slot{fill:none;stroke:var(--star-dim);stroke-dasharray:2 2;stroke-width:1}
+.sky-pending{fill:none;stroke:var(--star);stroke-width:1.2;stroke-dasharray:1.5 2}
+.sky-clabel{font-family:var(--font-mono);font-size:10px;fill:var(--star-dim);letter-spacing:.06em;text-transform:uppercase}
+.sky-clabel.is-near{fill:var(--ember)}
+.sky-clabel.is-done{fill:var(--up)}
+.sky-heat{font-family:var(--font-mono);font-size:11px;fill:var(--star-dim);text-transform:uppercase;letter-spacing:.1em}
+.sky-scope-btn{align-self:center}
+.sky-note-line,.sky-small{font-size:12px;color:var(--star-dim);margin:0;line-height:1.5}
+.sky-note-line{text-align:center}
+.sky-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center}
+.sky-banner{border:1px solid var(--line);border-left:3px solid var(--ember);padding:10px 14px;margin:0;font-size:12.5px}
+.sky-banner.is-bad{border-left-color:var(--down);color:var(--down)}
+.sky-acts{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.sky-acts li{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:9px 0;border-top:1px solid var(--line)}
+.sky-acts li:first-child{border-top:0}
+.sky-acts a{display:flex;align-items:center;gap:10px;color:var(--star);text-decoration:none}
+.sky-acts a:hover{text-decoration:underline}
+.sky-acts i{width:10px;height:10px;border-radius:50%;flex:none}
+.sky-acts li span{font-size:11.5px;color:var(--star-dim);text-align:right}
+.sky-acts li.is-done a{color:var(--star-dim)}
+.sky-acts li.is-done span{color:var(--up)}
+.sky-boosts{display:flex;flex-wrap:wrap;gap:6px}
+.sky-boosts:empty{display:none}
+.sky-boosts span{font-size:11px;border:1px solid var(--up);color:var(--up);padding:3px 8px}
+.sky-pick{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.sky-pick button{font-family:var(--font-mono);font-size:12.5px;padding:9px 10px;border:1px solid var(--line);background:transparent;color:var(--star);cursor:pointer;border-radius:var(--r-sm)}
+.sky-pick button.is-on{background:var(--star);color:var(--void);border-color:var(--star)}
+.sky-pick button:disabled{cursor:default;opacity:.75}
+.sky-pick .sky-small{grid-column:1/-1}
+.sky-orbit{display:flex;align-items:center;gap:16px}
+.sky-rank{font-family:var(--font-display);font-weight:800;font-size:30px;text-transform:uppercase;letter-spacing:.06em;line-height:1}
+.sky-ladder{list-style:none;margin:0;padding:0}
+.sky-ladder li{display:grid;grid-template-columns:70px 1fr auto;gap:12px;align-items:center;padding:8px 0;border-top:1px solid var(--line);font-size:13.5px;color:var(--star-dim)}
+.sky-ladder li.is-got{color:var(--star)}
+.sky-ladder li.is-got span:first-child{color:var(--up)}
+.sky-ladder li.is-next{color:var(--star)}
+.sky-ladder li.is-next span:first-child{color:var(--ember)}
+.sky-ladder span:first-child{font-size:12px}
+.sky-claim{font-size:11.5px;padding:5px 12px;border:1px solid var(--star);background:transparent;color:var(--star);cursor:pointer;border-radius:var(--r-sm)}
+.sky-claim:hover{background:var(--star);color:var(--void)}
+.sky-sets{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px}
+.sky-set{position:relative;display:flex;justify-content:space-between;gap:8px;border:1px solid var(--line);padding:7px 10px 9px;font-size:12.5px;overflow:hidden}
+.sky-set .mono{font-size:11px;color:var(--star-dim)}
+.sky-set i{position:absolute;left:0;bottom:0;height:2px;background:var(--up)}
+.sky-set.is-near{border-color:var(--ember)}
+.sky-cat{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:6px}
+.sky-cat-h{grid-column:1/-1;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--star-dim);padding-top:6px}
+.sky-obj{border:1px solid var(--line);padding:8px 6px;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;font-size:12px}
+.sky-obj canvas{width:56px;height:56px}
+.sky-obj b{font-weight:700;line-height:1.2}
+.sky-obj .mono{font-size:10px;color:var(--star-dim)}
+.sky-obj.is-unknown b{color:var(--star-dim)}
+.sky-obj.is-rare{border-color:var(--up)}
+.sky-pips{display:flex;gap:3px}
+.sky-pips i{width:7px;height:7px;border-radius:50%;border:1px solid}
+.sky-odds{width:100%;border-collapse:collapse;font-size:12px}
+.sky-odds td{padding:7px 0;border-top:1px solid var(--line);vertical-align:top}
+.sky-odds td:last-child{text-align:right;padding-left:12px;white-space:nowrap}
+.sky-fair{margin:0;padding-left:18px;font-size:14px;line-height:1.55;display:flex;flex-direction:column;gap:6px}
+.sky-log{list-style:none;margin:0;padding:0;font-size:12px;color:var(--star-dim);max-height:220px;overflow:auto}
+.sky-log li{padding:6px 0;border-top:1px solid var(--line)}
+.sky-log li:first-child{border-top:0}
+.sky-ov{position:fixed;inset:0;z-index:300;background:color-mix(in srgb, var(--void) 88%, transparent);display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto}
+.sky-ov-box{width:min(520px,100%);background:var(--void-panel);border:1px solid var(--line);border-top:2px solid var(--star);padding:16px;display:flex;flex-direction:column;gap:12px;max-height:calc(100vh - 32px);overflow:auto}
+.sky-lens{display:flex;justify-content:center}
+.sky-lens canvas{width:min(280px,70vw);height:auto;aspect-ratio:1;border-radius:50%;border:1px solid var(--line)}
+.sky-find{font-family:var(--font-display);font-weight:800;font-size:30px;text-transform:uppercase;letter-spacing:.05em;text-align:center;line-height:1.05}
+.sky-rarity{text-align:center;font-size:12px;color:var(--ember)}
+.sky-find-sub{text-align:center;font-size:12px;color:var(--star-dim);margin:0}
+.sky-note{border:1px solid var(--line);border-left:3px solid var(--up);padding:9px 12px;font-size:14px;line-height:1.45}
+.sky-note.is-gold{border-left-color:var(--ember)}
+.sky-note span{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.12em;color:var(--star-dim);margin-bottom:3px}
+.sky-note b{margin-right:4px}
+.sky-miss{font-size:12px;color:var(--star-dim);text-align:center;margin:0}
+@media (max-width:900px){.sky-grid{grid-template-columns:minmax(0,1fr)}}

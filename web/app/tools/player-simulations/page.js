@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { awardLater } from "@/lib/nightSkyStore";
 import { resolveTier } from "@/lib/tier";
 import { loadMyPlayers } from "@/lib/myPlayers";
 import { createClient } from "@/lib/supabase/server";
@@ -48,7 +49,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
   // and keeping it separate mirrors how redraft-rankings' own expanded
   // row already does this same lookup.
   const st = stageTimer("player-simulations");
-  const [{ tier, mine }, weekData, bioByNamePos] =
+  const [{ tier, mine, user }, weekData, bioByNamePos] =
     await Promise.all([
       // Who the viewer is and what teams they've saved (their own rows only) -- per-visitor,
       // so it sits outside the cached week data, in parallel with it.
@@ -58,6 +59,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
     ]);
   const { latest, lastGameWeek } = weekData;
   const hasFullAccess = PAID_TIERS.includes(tier);
+  awardLater(user?.id, "sims"); // a Night Sky star
 
   const { sims, poolRows, totalCount, maxCeiling, wrTePool, simsWithComputed } = buildSimRows({
     cached: weekData,

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { awardLater } from "@/lib/nightSkyStore";
 import { createClient } from "@/lib/supabase/server";
 import { resolveTier } from "@/lib/tier";
 import { getPlayerBiosByNamePos } from "@/lib/sleeper";
@@ -29,7 +30,7 @@ const TEASER_LIMIT = 50;
 export default async function ComparePlayersPage({ searchParams }) {
   const params = await searchParams;
   const supabase = await createClient();
-  const [{ tier }, cached, bioByNamePos, leanRows, tdProfile, usageProfile] = await Promise.all([
+  const [{ tier, user }, cached, bioByNamePos, leanRows, tdProfile, usageProfile] = await Promise.all([
     resolveTier(supabase),
     getCachedRedraftData(),
     getPlayerBiosByNamePos(),
@@ -38,6 +39,7 @@ export default async function ComparePlayersPage({ searchParams }) {
     getCachedUsageProfile(),
   ]);
   const hasFullAccess = PAID_TIERS.includes(tier);
+  awardLater(user?.id, "compare"); // a Night Sky star
   const { latest } = cached;
 
   const pool = latest ? enrichRankings({ cached, hasFullAccess, tdProfile, usageProfile, leanRows, bioByNamePos }) : [];

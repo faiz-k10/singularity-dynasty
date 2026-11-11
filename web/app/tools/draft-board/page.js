@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { awardLater } from "@/lib/nightSkyStore";
 import { getUserTier } from "@/lib/tier";
 import InteractiveScript from "../../InteractiveScript";
 import DynastyBoard from "./DynastyBoard";
@@ -40,6 +41,7 @@ async function RankingsView({ hasFullAccess }) {
 }
 
 export default async function DraftBoardPage() {
-  const { tier } = await getUserTier();
+  const { tier, user } = await getUserTier();
+  awardLater(user?.id, "dynasty"); // a Night Sky star
   return <RankingsView hasFullAccess={PAID_TIERS.includes(tier)} />;
 }

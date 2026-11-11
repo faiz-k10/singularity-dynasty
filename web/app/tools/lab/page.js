@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { awardLater } from "@/lib/nightSkyStore";
 import { createClient } from "@/lib/supabase/server";
 import { resolveTier } from "@/lib/tier";
 import { loadMyPlayers } from "@/lib/myPlayers";
@@ -24,7 +25,7 @@ const TEASER_LIMIT = 50;
 export default async function LabPage({ searchParams }) {
   const params = await searchParams;
   const supabase = await createClient();
-  const [{ tier, mine }, cached, bioByNamePos, leanRows, tdProfile, usageProfile] = await Promise.all([
+  const [{ tier, mine, user }, cached, bioByNamePos, leanRows, tdProfile, usageProfile] = await Promise.all([
     // Per-visitor like the tier: their saved teams (own rows only) for the My players filter.
     resolveTier(supabase).then(async (r) => ({ ...r, mine: await loadMyPlayers(supabase, r.user) })),
     getCachedRedraftData(),
@@ -34,6 +35,7 @@ export default async function LabPage({ searchParams }) {
     getCachedUsageProfile(),
   ]);
   const { latest } = cached;
+  awardLater(user?.id, "lab"); // a Night Sky star
   const full = PAID_TIERS.includes(tier);
   const simsAccess = tier === "singularity";
 

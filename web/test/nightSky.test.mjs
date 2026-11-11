@@ -1,0 +1,108 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { freshState, normalize, award, findOf, pickPairs, gradePicks, eventFor, CATALOGUE_SIZE, FAMILIES, titleFor, litTier, DAY } from "../lib/nightSky.js";
+
+const seeded = (seed = 7) => () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+const ctx = (now, day = "2026-11-11", event = null) => ({ now, day, event });
+
+test("the catalogue has 1,056 entries and rarity follows the odds", () => {
+  assert.equal(FAMILIES.length, 44);
+  assert.equal(CATALOGUE_SIZE, 1056);
+  assert.equal(findOf(0, "silver", "").oneIn, 94); // tier 1 (0.4) / 10 kinds x silver 0.3 x normal
+  assert.equal(findOf(37, "violet", "mythic").name, "Mythic Violet Black hole");
+  assert.ok(findOf(37, "violet", "mythic").oneIn > 1_000_000);
+});
+
+test("each action counts once a day and places at least one star", () => {
+  const s = freshState();
+  const t0 = Date.UTC(2026, 10, 11, 15);
+  assert.equal(award(s, "rankings", ctx(t0), seeded()).awarded, true);
+  assert.equal(award(s, "rankings", ctx(t0 + 1000), seeded()).awarded, false);
+  assert.equal(award(s, "nope", ctx(t0), seeded()).awarded, false);
+  assert.equal(award(s, "rankings", ctx(t0 + DAY, "2026-11-12"), seeded()).awarded, true); // a new day
+  assert.ok(s.mass >= 0 && s.actions === 2);
+});
+
+test("a new member's first find comes by the second action, and it waits for the telescope", () => {
+  const s = freshState();
+  const t0 = Date.UTC(2026, 10, 11, 15);
+  award(s, "rankings", ctx(t0), () => 0.99); // no collapse on the first
+  const r = award(s, "sims", ctx(t0 + 1), () => 0.99);
+  assert.equal(r.collapsed, true);
+  assert.equal(s.findsTotal, 1);
+  assert.equal(s.pending.length, 1);
+  assert.ok(s.points > 0 && s.found[s.pending[0].key]);
+});
+
+test("about one find every three actions over a long run", () => {
+  const rnd = seeded(11);
+  const s = freshState();
+  let t = Date.UTC(2026, 8, 1, 15);
+  const keys = ["board", "waivers", "rankings", "compare", "sims", "lab"];
+  for (let d = 0; d < 120; d++, t += DAY) {
+    const day = new Date(t).toISOString().slice(0, 10);
+    for (const k of keys.slice(0, 3)) award(s, k, ctx(t, day), rnd);
+  }
+  const perFind = s.actions / s.findsTotal;
+  assert.ok(perFind > 2 && perFind < 4.5, `actions per find ${perFind}`);
+  assert.ok(Object.keys(s.sets).length >= 5, "sets are reachable");
+});
+
+test("the core cools after three quiet days", () => {
+  const s = freshState();
+  s.mass = 8; s.lastActionAt = Date.UTC(2026, 10, 1);
+  award(s, "board", ctx(Date.UTC(2026, 10, 5), "2026-11-05"), () => 0.99);
+  assert.ok(s.mass <= 5);
+});
+
+test("a finished Singularity guarantees a stellar event", () => {
+  const s = freshState();
+  s.filled.singularity = s.filled.singularity.map(() => "gold");
+  assert.equal(litTier(s, null), 5);
+});
+
+test("Beat the Model: three same-position pairs, graded on real points", () => {
+  const rows = [];
+  for (const pos of ["RB", "WR", "TE"]) for (let i = 0; i < 20; i++) rows.push({ player_name: `${pos}${i}`, position: pos, projection: 20 - i });
+  const pairs = pickPairs(rows, 2026, 10);
+  assert.equal(pairs.length, 3);
+  assert.deepEqual(pickPairs(rows, 2026, 10), pairs); // the same for everyone
+  const s = freshState();
+  s.picks["2026-10"] = { pairs, choice: [0, 1, null], graded: false };
+  const pts = {}; for (const p of pairs) { pts[p.a] = 10; pts[p.b] = 5; }
+  const right = gradePicks(s, "2026-10", pts, ctx(Date.UTC(2026, 10, 17)), seeded());
+  assert.equal(right, 1);
+  assert.deepEqual(s.btm, [1, 1]);
+  assert.equal(gradePicks(s, "2026-10", pts, ctx(0), seeded()), 0); // graded once
+});
+
+test("events follow the NFL calendar", () => {
+  assert.equal(eventFor(new Date(Date.UTC(2026, 10, 12)), 10), "tnf"); // a Thursday in week 10
+  assert.equal(eventFor(new Date(Date.UTC(2026, 11, 20)), 16), "eclipse");
+  assert.equal(eventFor(new Date(Date.UTC(2027, 3, 25)), 0), "aurora");
+  assert.equal(eventFor(new Date(Date.UTC(2026, 10, 15)), 10), null);
+});
+
+test("titles and normalising old state", () => {
+  assert.equal(titleFor(0), "Spotter");
+  assert.equal(titleFor(500), "Astronomer");
+  const s = normalize({ points: 5 });
+  assert.equal(s.points, 5);
+  assert.ok(s.filled.singularity.length === 10 && s.boosts.extra === 0);
+});
+
+import { complimentsFor } from "../lib/skyCompliments.js";
+test("compliments are only true, flattering facts from the member's own leagues", () => {
+  const standings = Array.from({ length: 10 }, (_, i) => ({ rank: i + 1, wins: 9 - i, losses: i, pf: 1200 - i * 30, isMe: i === 1 }));
+  const teams = [{ league_name: "Dynasty Kingdom", settings: { season: { standings }, playoffOdds: 0.82, matchupProj: { mine: 120, opp: 100 }, opponent: "Rival", leagueType: "dynasty" },
+    players: [{ name: "Bijan Robinson", isStarter: true, acquired: "pickup", achievements: [{ key: "hero" }] }, { name: "Puka Nacua", isStarter: true, acquired: "pickup", achievements: [{ key: "hero" }, { key: "elitePlayer" }] }] }];
+  const heads = complimentsFor(teams).map((c) => c.head);
+  assert.ok(heads.includes("2nd of 10 in Dynasty Kingdom"));
+  assert.ok(heads.includes("The second-most points in Dynasty Kingdom"));
+  assert.ok(heads.includes("Playoffs 82% in Dynasty Kingdom"));
+  assert.ok(heads.some((h) => h.startsWith("Your starters out-project Rival's by 20")));
+  assert.ok(heads.includes("2 Super Heroes on one roster"));
+  assert.ok(heads.includes("2 of your starters came off waivers"));
+  const losing = [{ league_name: "L", settings: { season: { standings: standings.map((x) => ({ ...x, isMe: x.rank === 9 })) }, playoffOdds: 0.1 }, players: [] }];
+  assert.deepEqual(complimentsFor(losing), []); // nothing flattering is invented
+});

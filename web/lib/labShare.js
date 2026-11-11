@@ -17,13 +17,13 @@ export function shareId(bytes) {
 
 export const isShareId = (id) => typeof id === "string" && /^[a-zA-Z0-9]{10}$/.test(id);
 
-// What may be stored with a share: a title and caption (trimmed, capped) and the Lab view it came from (only a /tools/lab link, so a share
+// What may be stored with a share: a title and caption (trimmed, capped) and the Lab view it came from (only a /tools/lab link, or /account/sky for a Night Sky card, so a share
 // page can never point anywhere else). Null when something is missing or wrong.
 export function cleanShareMeta({ title, caption, view }) {
   const t = String(title || "").trim().slice(0, 160);
   const c = String(caption || "").trim().slice(0, 400);
   const v = String(view || "");
-  if (!t || !/^\/tools\/lab(\?[^\s#]{0,800})?$/.test(v)) return null;
+  if (!t || !(/^\/tools\/lab(\?[^\s#]{0,800})?$/.test(v) || v === "/account/sky")) return null;
   return { title: t, caption: c, view: v };
 }
 

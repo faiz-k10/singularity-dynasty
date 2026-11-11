@@ -11,6 +11,7 @@ import { FRIEND_DISCOUNT_PERCENT, rewardFor } from "@/lib/referralRules";
 import { siteOrigin } from "@/lib/siteOrigin";
 import SiteHeader from "../SiteHeader";
 import { money } from "@/lib/format";
+import { skySummary } from "@/lib/nightSkyStore";
 
 export const metadata = {
   title: "Your Account — Dynasty Singularity",
@@ -106,11 +107,12 @@ export default async function AccountPage({ searchParams }) {
 
   const { data: profile } = await supabase.from("profiles").select("tier, email, stripe_customer_id, email_digest").eq("id", user.id).single();
   const tier = profile?.tier || "stargazer";
-  const [billing, refCode, refSummary, origin] = await Promise.all([
+  const [billing, refCode, refSummary, origin, sky] = await Promise.all([
     profile?.stripe_customer_id ? accountBilling(profile.stripe_customer_id) : null,
     ensureReferralCode(user.id).catch(() => null),
     settleReferrals(user.id).then(() => referralSummary(user.id, profile?.stripe_customer_id)).catch(() => null),
     siteOrigin(),
+    skySummary(user.id),
   ]);
   const notice = NOTICES[params?.notice] || null;
   const joined = user.created_at ? day(Date.parse(user.created_at)) : "";
@@ -176,6 +178,22 @@ export default async function AccountPage({ searchParams }) {
                 rewardLabel={`a free month of ${tier === "singularity" ? "Singularity" : "Explorer"} ($${rewardFor(tier) / 100})`}
                 summary={refSummary}
               />
+            </section>
+          )}
+
+          {sky && (
+            <section className="acct-section" aria-labelledby="acct-sky">
+              <h2 id="acct-sky" className="acct-h mono">Your sky</h2>
+              <p className="acct-line">
+                {sky.fresh
+                  ? "Every useful thing you do on the site places a star in your Night Sky. Collect rare finds, finish sets and earn plan time."
+                  : `${sky.title} · ${sky.points.toLocaleString()} orbit points${sky.waiting ? ` · ${sky.waiting} find${sky.waiting === 1 ? "" : "s"} waiting for the telescope` : ""}`}
+              </p>
+              <div className="auth-actions">
+                <Link href="/account/sky" className={sky.waiting ? "btn-primary" : "btn-ghost"}>
+                  {sky.waiting ? "Point the telescope" : "Open the Night Sky"}
+                </Link>
+              </div>
             </section>
           )}
 

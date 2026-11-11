@@ -1,6 +1,7 @@
 "use server";
 
 import { leagueName } from "@/lib/format";
+import { awardLater } from "@/lib/nightSkyStore";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { allowHit, clientIp } from "@/lib/rateLimit";
@@ -649,6 +650,7 @@ export async function getWaiverWire(teamId) {
     fetchSleeperState().then((st) => getWeekRankRows(createPublicClient(), nflSeason(st))),
   ]);
   if (!rosters?.length || !dict) return { error: "Couldn't read this league from Sleeper right now." };
+  awardLater(user.id, "waivers"); // a Night Sky star
   if (waiverIdx.dict !== dict) waiverIdx = { dict, idx: sleeperIndex(dict) };
   const rostered = new Set();
   for (const r of rosters) for (const id of [...(r.players || []), ...(r.reserve || []), ...(r.taxi || [])]) rostered.add(String(id));

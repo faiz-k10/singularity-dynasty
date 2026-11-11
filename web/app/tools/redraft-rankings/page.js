@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { awardLater } from "@/lib/nightSkyStore";
 import { resolveTier } from "@/lib/tier";
 import { loadMyPlayers } from "@/lib/myPlayers";
 import { createClient } from "@/lib/supabase/server";
@@ -25,7 +26,7 @@ export default async function RedraftRankingsPage({ searchParams }) {
   // bios aren't -- all three run at once.
   const st = stageTimer("redraft-rankings");
   const supabase = await st.time("client", createClient());
-  const [{ tier, mine }, cached, bioByNamePos, leanRows, tdProfile, usageProfile] = await Promise.all([
+  const [{ tier, mine, user }, cached, bioByNamePos, leanRows, tdProfile, usageProfile] = await Promise.all([
     // Per-visitor like the tier: their saved teams (own rows only) for the My players view.
     st.time("tier+mine", resolveTier(supabase).then(async (r) => ({ ...r, mine: await loadMyPlayers(supabase, r.user) }))),
     st.time("data", getCachedRedraftData()),
@@ -35,6 +36,7 @@ export default async function RedraftRankingsPage({ searchParams }) {
     st.time("usage", getCachedUsageProfile()),
   ]);
   const hasFullAccess = PAID_TIERS.includes(tier);
+  awardLater(user?.id, "rankings"); // a Night Sky star
   const { latest } = cached;
 
   let rankings = [];
