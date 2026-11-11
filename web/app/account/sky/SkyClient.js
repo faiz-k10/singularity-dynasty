@@ -373,18 +373,16 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
           </section>
 
           <section className="sky-panel" aria-labelledby="sky-odds">
-          <div className="board-panel-title" id="sky-odds">The odds</div>
-          <table className="sky-odds mono">
-            <tbody>
-              <tr><td>Small bodies (10 kinds)</td><td>40%</td></tr>
-              <tr><td>Comets and dwarf worlds (8) · needs a finished small constellation</td><td>30%</td></tr>
-              <tr><td>Planets and moons (12) · needs a finished large constellation</td><td>20%</td></tr>
-              <tr><td>Meteor showers (4) · plus 10 minutes of double stars</td><td>8%</td></tr>
-              <tr><td>Stellar events (10)</td><td>2%</td></tr>
-              <tr><td>Colour: silver / azure / amber / emerald / crimson / violet</td><td>30 / 20 / 20 / 15 / 10 / 5%</td></tr>
-              <tr><td>Version: prismatic / ancient / mythic</td><td>1 in 12 / 40 / 200</td></tr>
-            </tbody>
-          </table>
+          <div className="board-panel-title" id="sky-odds">What&apos;s out there</div>
+          <ul className="sky-odds mono">
+            <li>Small bodies (10 kinds), the most common</li>
+            <li>Comets and dwarf worlds (8) · need a finished small constellation</li>
+            <li>Planets and moons (12) · need a finished large constellation</li>
+            <li>Meteor showers (4) · plus 10 minutes of double stars</li>
+            <li>Stellar events (10), the rarest</li>
+            <li>Colours, common to rare: silver, azure, amber, emerald, crimson, violet</li>
+            <li>Versions, rarest last: prismatic, ancient, mythic</li>
+          </ul>
           <p className="sky-small mono">If a find lands on something your constellations haven&apos;t powered, you get the biggest find they have, and you&apos;ll see the bigger one at the edge of the frame. Finish The Singularity and your next find is a stellar event.</p>
         </section>
         </div>
