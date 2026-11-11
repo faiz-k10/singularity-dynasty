@@ -115,6 +115,10 @@
   .obj span{font:400 9px var(--mono);color:var(--dim)}
   .obj.unknown b{color:var(--dim)}
   .obj.prism{border-color:var(--gold)}
+  .cat-h{grid-column:1/-1;font:400 9.5px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin:8px 0 0;border-top:1px solid var(--line);padding-top:8px}
+  .cat{max-height:640px;overflow:auto}
+  .pips{display:flex;justify-content:center;gap:3px;margin:2px 0 3px}
+  .pips i{width:6px;height:6px;border-radius:50%;border:1px solid;display:inline-block}
   .cat-sum{font:400 11px var(--mono);color:var(--dim);margin:0 0 10px;letter-spacing:.06em}
 
   .odds{width:100%;border-collapse:collapse;font:400 11px var(--mono)}
@@ -217,12 +221,13 @@
     <div class="panel">
       <div class="ptitle">Odds <i></i></div>
       <table class="odds">
-        <tr><td>Asteroid (4 kinds)</td><td>40%</td></tr>
-        <tr><td>Comet (3 kinds) · needs a finished small constellation</td><td>30%</td></tr>
-        <tr><td>Planet (4 kinds) · needs a finished large constellation</td><td>20%</td></tr>
-        <tr><td>Meteor shower · 60s of double stars</td><td>8%</td></tr>
-        <tr><td>Stellar event: supernova, pulsar or black hole</td><td>2%</td></tr>
-        <tr><td>Prismatic variant of any find</td><td>1 in 12</td></tr>
+        <tr><td>Small bodies (10 kinds: asteroids, a Kuiper object, a dust cloud ...)</td><td>40%</td></tr>
+        <tr><td>Comets and dwarf worlds (8 kinds) · needs a finished small constellation</td><td>30%</td></tr>
+        <tr><td>Planets and moons (12 kinds) · needs a finished large constellation</td><td>20%</td></tr>
+        <tr><td>Meteor showers (4 kinds) · plus 60s of double stars</td><td>8%</td></tr>
+        <tr><td>Stellar events (10 kinds: supernova, magnetar, kilonova, quasar ...)</td><td>2%</td></tr>
+        <tr><td>Colour: silver / azure / amber / emerald / crimson / violet</td><td>30 / 20 / 20 / 15 / 10 / 5%</td></tr>
+        <tr><td>Version: prismatic / ancient / mythic</td><td>1 in 12 / 40 / 200</td></tr>
       </table>
       <p class="note">If the telescope lands on a find your constellations haven't powered, you get the biggest one they have and see the bigger one at the edge of the frame. Finish The Singularity and your next find is a stellar event.</p>
     </div>
@@ -296,17 +301,56 @@ const LADDER = [
 ];
 const TITLES = [[0, "Spotter"], [120, "Astronomer"], [600, "Cartographer"], [2500, "Astrophysicist"], [10000, "Event Horizon"]];
 // the catalogue: tier -> kinds (equal odds within a tier)
-const CAT = {
-  1: ["Iron asteroid", "Rubble pile", "Twin asteroid", "Ceres-class asteroid"],
-  2: ["Long-period comet", "Sungrazer", "Green comet"],
-  3: ["Ringed giant", "Ice world", "Lava world", "Ocean world"],
-  5: ["Supernova", "Pulsar", "Black hole"],
-};
-const TIER_P = { 1: 0.4, 2: 0.3, 3: 0.2, 5: 0.02 };
-const PTS = { 1: 10, 2: 30, 3: 80, 5: 250 };
-const PRISM = 1 / 12;
-// Not tips: validation. Rosterbating is frowned on in fantasy circles, so the telescope does it for you -- every line is a real, flattering
-// fact from the site's own numbers (projections, the weekly rankings, the dynasty board), about the member's own teams.
+// The catalogue is generated from parts (Nov 2026, founder: "a massive variety of objects"): 44 kinds x 6 colours x 4 versions = 1,056
+// entries, and every single find also gets its own catalogue number. Rarity = P(tier) x 1/(kinds in tier) x P(colour) x P(version).
+const FAMILIES = [
+  // tier 1 -- small bodies
+  ["Iron asteroid", 1, "rock"], ["Stony asteroid", 1, "rock"], ["Carbon asteroid", 1, "rock"], ["Rubble pile", 1, "rubble"], ["Contact binary", 1, "twin"],
+  ["Trojan asteroid", 1, "rock"], ["Centaur", 1, "rock"], ["Kuiper object", 1, "rock"], ["Moonlet", 1, "rock"], ["Dust cloud", 1, "dust"],
+  // tier 2 -- comets and dwarf worlds
+  ["Long-period comet", 2, "comet"], ["Sungrazer", 2, "comet"], ["Interstellar comet", 2, "comet"], ["Main-belt comet", 2, "comet"], ["Fragmenting comet", 2, "comet"],
+  ["Ice dwarf", 2, "dwarf"], ["Plutoid", 2, "dwarf"], ["Dwarf world with a moon", 2, "dwarf"],
+  // tier 3 -- planets and moons
+  ["Ringed giant", 3, "ringed"], ["Ice giant", 3, "planet"], ["Lava world", 3, "lava"], ["Ocean world", 3, "planet"], ["Desert world", 3, "planet"], ["Super-Earth", 3, "planet"],
+  ["Hot Jupiter", 3, "banded"], ["Rogue planet", 3, "rogue"], ["Tidally locked world", 3, "locked"], ["Diamond world", 3, "diamond"], ["Volcanic moon", 3, "moon"], ["Ice moon", 3, "moon"],
+  // tier 4 -- meteor showers (the bonus round)
+  ["Leonid shower", 4, "shower"], ["Perseid shower", 4, "shower"], ["Geminid shower", 4, "shower"], ["Draconid shower", 4, "shower"],
+  // tier 5 -- stellar events
+  ["Supernova", 5, "supernova"], ["Pulsar", 5, "pulsar"], ["Magnetar", 5, "pulsar"], ["Black hole", 5, "blackhole"], ["Binary black hole", 5, "blackhole"],
+  ["Kilonova", 5, "supernova"], ["Quasar", 5, "quasar"], ["Nebula", 5, "nebula"], ["Wolf-Rayet star", 5, "star"], ["Red giant", 5, "star"],
+].map(([name, tier, shape], i) => ({ id: i, name, tier, shape }));
+const COLOURS = [
+  { id: "silver", name: "Silver", w: 0.3, c: ["#D8D3C8", "#5C5850"] },
+  { id: "azure", name: "Azure", w: 0.2, c: ["#7FA6F5", "#173572"] },
+  { id: "amber", name: "Amber", w: 0.2, c: ["#F2B45A", "#6B3B0B"] },
+  { id: "emerald", name: "Emerald", w: 0.15, c: ["#6FD9A8", "#0F4A33"] },
+  { id: "crimson", name: "Crimson", w: 0.1, c: ["#F06A5A", "#5E130C"] },
+  { id: "violet", name: "Violet", w: 0.05, c: ["#B48CF2", "#2E1A5A"] },
+];
+const VERSIONS = [
+  { id: "", name: "", p: 1 - 1 / 12 - 1 / 40 - 1 / 200, mult: 1 },
+  { id: "prismatic", name: "Prismatic", p: 1 / 12, mult: 2 },
+  { id: "ancient", name: "Ancient", p: 1 / 40, mult: 4 },
+  { id: "mythic", name: "Mythic", p: 1 / 200, mult: 10 },
+];
+const TIER_P = { 1: 0.4, 2: 0.3, 3: 0.2, 4: 0.08, 5: 0.02 };
+const PTS = { 1: 10, 2: 30, 3: 80, 4: 40, 5: 250 };
+const TIER_NAME = { 1: "Small bodies", 2: "Comets and dwarf worlds", 3: "Planets and moons", 4: "Meteor showers", 5: "Stellar events" };
+const CATALOGUE_SIZE = FAMILIES.length * COLOURS.length * VERSIONS.length;
+const famsIn = (t) => FAMILIES.filter((f) => f.tier === t);
+const pickW = (list) => { let r = Math.random(), a = 0; for (const x of list) { a += x.w ?? x.p; if (r < a) return x; } return list[list.length - 1]; };
+function makeFind(tier) {
+  const fams = famsIn(tier);
+  const fam = fams[Math.floor(Math.random() * fams.length)], colour = pickW(COLOURS), version = pickW(VERSIONS);
+  return findOf(fam.id, colour.id, version.id);
+}
+function findOf(famId, colourId, versionId) {
+  const fam = FAMILIES[famId], colour = COLOURS.find((c) => c.id === colourId), version = VERSIONS.find((v) => v.id === versionId);
+  const oneIn = Math.round(1 / (TIER_P[fam.tier] / famsIn(fam.tier).length * colour.w * version.p));
+  const name = [version.name, colour.name, fam.name].filter(Boolean).join(" ");
+  return { key: `${famId}|${colourId}|${versionId}`, fam: famId, colour: colourId, version: versionId, tier: fam.tier, name, oneIn, mult: version.mult };
+}
+const designation = () => `SD-26-${Math.floor(Math.random() * 0xffff).toString(16).toUpperCase().padStart(4, "0")}`;
 const COMPLIMENTS = [
   ["Best WR room in Dynasty Kingdom", "By our projections, your receivers outscore every other room in the league this week."],
   ["Your bench would start in 4 lineups", "In Fantasy Degenerates, your bench projects higher than four other teams' starters."],
@@ -446,84 +490,79 @@ function reveal() {
   const lit = litTier();
   const drawn = lit === 5 ? 5 : roll();
   let tier = drawn, miss = "";
-  if (drawn === 4) { tier = Math.min(lit, 3); state.shower = Date.now() + 60000; startShower(); }
+  if (drawn === 4) { state.shower = Date.now() + 60000; startShower(); }
   else if ((drawn === 2 || drawn === 3) && drawn > lit) { tier = lit; miss = `A ${drawn === 3 ? "planet" : "comet"} was right at the edge of the frame. Finish ${drawn === 3 ? "The Playbook" : "a small constellation"} to bring it into view.`; }
-  spend(tier);
-  const kinds = CAT[tier];
-  const kind = kinds[Math.floor(Math.random() * kinds.length)];
-  const prism = Math.random() < PRISM;
-  const name = (prism ? "Prismatic " : "") + kind;
-  const oneIn = Math.round(1 / (TIER_P[tier] / kinds.length * (prism ? PRISM : 1 - PRISM)));
-  const key = name;
-  state.found[key] = (state.found[key] || 0) + 1;
-  const first = state.found[key] === 1;
-  const pts = PTS[tier] * (prism ? 2 : 1) + (first ? 15 : 0);
+  spend(Math.min(tier, 3) === tier ? tier : tier === 5 ? 5 : 1);
+  const f = makeFind(tier);
+  const had = state.found[f.key];
+  state.found[f.key] = { n: (had?.n || 0) + 1, name: f.name, oneIn: f.oneIn, fam: f.fam, colour: f.colour, version: f.version };
+  const first = !had;
+  const pts = PTS[tier] * f.mult + (first ? 15 : 0);
   state.points += pts;
   state.mass = 0;
-  state.last = { tier, kind, prism, name, oneIn };
+  const id = designation();
+  state.last = { ...f, id };
   save();
   $("find").textContent = ""; $("rarity").textContent = ""; $("findSub").textContent = "Resolving …"; $("miss").textContent = ""; $("tip").textContent = "";
   $("scope").classList.add("on");
-  sharpen($("lens"), tier, kind, prism, miss ? drawn : null, () => {
-    $("find").textContent = drawn === 4 ? `${name} + meteor shower` : name;
-    $("rarity").textContent = `1 in ${oneIn.toLocaleString()} finds${first ? " · new to your catalogue" : ""}`;
-    $("findSub").textContent = `+${pts} orbit points${prism ? " (doubled: prismatic)" : ""}${first ? " · +15 for a first discovery" : ""}${drawn === 4 ? " · for the next 60 seconds every action places two stars" : ""}`;
+  sharpen($("lens"), f, miss ? drawn : null, () => {
+    $("find").textContent = f.name;
+    $("rarity").textContent = `1 in ${f.oneIn.toLocaleString()} finds · ${id}${first ? " · new to your catalogue" : ""}`;
+    $("findSub").textContent = `+${pts} orbit points${f.mult > 1 ? ` (x${f.mult}: ${f.version})` : ""}${first ? " · +15 for a first discovery" : ""}${drawn === 4 ? " · meteor shower: for the next 60 seconds every action places two stars" : ""}`;
     const [head, body] = COMPLIMENTS[Math.floor(Math.random() * COMPLIMENTS.length)];
     state.last.compliment = head; save();
     $("tip").innerHTML = `<span class="tip-k">Seen from up here</span><b>${head}.</b> ${body}`;
     $("miss").textContent = miss;
-    log(`Found: ${name} (1 in ${oneIn})${miss ? " · a bigger find was just out of frame" : ""}`);
+    log(`Found: ${f.name} (1 in ${f.oneIn.toLocaleString()})${miss ? " · a bigger find was just out of frame" : ""}`);
     drawSky(); renderAll();
   });
 }
 
-// ---- drawing objects (telescope, catalogue thumbnails, share cards) ----
-function drawObject(ctx, W, tier, kind, prism, edge) {
+// ---- drawing objects (telescope, catalogue thumbnails, share cards): one renderer per shape, coloured by the find's colour, finished by its version ----
+function drawObject(ctx, W, find, edge) {
+  const fam = FAMILIES[find.fam], pal = COLOURS.find((c) => c.id === find.colour).c, ver = find.version;
+  let s = 11 + find.fam * 97; const r = () => ((s = (s * 16807) % 2147483647) / 2147483647);
+  ctx.save();
   ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, W);
-  let s = 11; const r = () => ((s = (s * 16807) % 2147483647) / 2147483647);
-  for (let i = 0; i < W * 0.4; i++) { ctx.fillStyle = `rgba(236,231,220,${0.15 + r() * 0.5})`; ctx.fillRect(r() * W, r() * W, W / 260, W / 260); }
+  for (let i = 0; i < W * 0.4; i++) { ctx.fillStyle = `rgba(236,231,220,${0.12 + r() * 0.45})`; ctx.fillRect(r() * W, r() * W, Math.max(1, W / 260), Math.max(1, W / 260)); }
   const C = W / 2, u = W / 320;
-  if (edge) { const g = ctx.createRadialGradient(W - 8 * u, 24 * u, 2, W - 8 * u, 24 * u, 90 * u); g.addColorStop(0, edge === 3 ? "rgba(233,196,106,.9)" : "rgba(76,125,240,.85)"); g.addColorStop(1, "rgba(0,0,0,0)"); ctx.fillStyle = g; ctx.fillRect(0, 0, W, W); }
-  const hue = prism ? ["#7FE3C4", "#B48CF2", "#E9C46A"] : null;
-  if (tier === 1) {
-    const twin = kind === "Twin asteroid";
-    const body = (cx, cy, sc) => { ctx.fillStyle = prism ? hue[1] : kind === "Iron asteroid" ? "#A7A39A" : "#8E897E"; ctx.beginPath(); for (let i = 0; i < 12; i++) { const a = (i / 12) * Math.PI * 2, rr = (34 + Math.sin(i * 2.3) * 9) * u * sc; ctx.lineTo(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr); } ctx.closePath(); ctx.fill(); ctx.fillStyle = "rgba(0,0,0,.35)"; ctx.beginPath(); ctx.arc(cx - 8 * u * sc, cy - 6 * u * sc, 7 * u * sc, 0, 7); ctx.fill(); };
-    if (twin) { body(C - 30 * u, C, 0.8); body(C + 34 * u, C + 10 * u, 0.6); }
-    else if (kind === "Rubble pile") { for (let i = 0; i < 7; i++) body(C + Math.cos(i) * 26 * u, C + Math.sin(i * 1.7) * 22 * u, 0.4); }
-    else body(C, C, kind === "Ceres-class asteroid" ? 1.4 : 1);
-  } else if (tier === 2) {
-    const col = prism ? hue[0] : kind === "Green comet" ? "#7FE3C4" : "#4C7DF0";
-    const g = ctx.createLinearGradient(C + 20 * u, C - 20 * u, C - 120 * u, C + 120 * u); g.addColorStop(0, col); g.addColorStop(1, "rgba(0,0,0,0)");
-    ctx.globalAlpha = 0.9; ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(C + 18 * u, C - 10 * u); ctx.lineTo(C - (kind === "Sungrazer" ? 160 : 140) * u, C + 110 * u); ctx.lineTo(C - 100 * u, C + 140 * u); ctx.lineTo(C + 10 * u, C + 18 * u); ctx.fill(); ctx.globalAlpha = 1;
-    ctx.fillStyle = "#ECE7DC"; ctx.beginPath(); ctx.arc(C + 14 * u, C - 4 * u, 14 * u, 0, 7); ctx.fill();
-  } else if (tier === 3) {
-    const base = prism ? [hue[1], "#2a1a44"] : { "Ringed giant": ["#E8643F", "#5a2414"], "Ice world": ["#BFD8F2", "#2c4a6b"], "Lava world": ["#FF7A2E", "#3a0d05"], "Ocean world": ["#4C7DF0", "#0d1f4a"] }[kind];
-    if (kind === "Ringed giant" || prism) { ctx.strokeStyle = "rgba(233,196,106,.8)"; ctx.lineWidth = 6 * u; ctx.beginPath(); ctx.ellipse(C, C, 110 * u, 30 * u, -0.35, 0, Math.PI * 2); ctx.stroke(); }
-    const g = ctx.createRadialGradient(C - 18 * u, C - 18 * u, 6 * u, C, C, 62 * u); g.addColorStop(0, base[0]); g.addColorStop(1, base[1]);
-    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(C, C, 58 * u, 0, 7); ctx.fill();
-    if (kind === "Lava world" && !prism) { ctx.strokeStyle = "rgba(255,200,80,.7)"; ctx.lineWidth = 2 * u; for (let i = 0; i < 5; i++) { ctx.beginPath(); ctx.moveTo(C - 40 * u + i * 18 * u, C - 30 * u); ctx.lineTo(C - 30 * u + i * 16 * u, C + 35 * u); ctx.stroke(); } }
-    if (kind === "Ringed giant" || prism) { ctx.strokeStyle = "rgba(233,196,106,.9)"; ctx.beginPath(); ctx.ellipse(C, C, 110 * u, 30 * u, -0.35, Math.PI * 0.95, Math.PI * 2.05); ctx.stroke(); }
-  } else {
-    if (kind === "Black hole") {
-      const g = ctx.createRadialGradient(C, C, 30 * u, C, C, 130 * u); g.addColorStop(0, "rgba(233,196,106,.95)"); g.addColorStop(0.35, "rgba(232,100,63,.5)"); g.addColorStop(1, "rgba(0,0,0,0)");
-      ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(C, C, 140 * u, 46 * u, -0.2, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = "#000"; ctx.beginPath(); ctx.arc(C, C, 40 * u, 0, 7); ctx.fill(); ctx.strokeStyle = prism ? hue[0] : "#E9C46A"; ctx.lineWidth = 2 * u; ctx.stroke();
-    } else if (kind === "Pulsar") {
-      ctx.save(); ctx.translate(C, C); ctx.rotate(-0.5);
-      const g = ctx.createLinearGradient(0, -160 * u, 0, 160 * u); g.addColorStop(0, "rgba(76,125,240,0)"); g.addColorStop(0.5, prism ? hue[0] : "rgba(76,125,240,.9)"); g.addColorStop(1, "rgba(76,125,240,0)");
-      ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(-6 * u, 0); ctx.lineTo(-30 * u, -160 * u); ctx.lineTo(30 * u, -160 * u); ctx.lineTo(6 * u, 0); ctx.lineTo(30 * u, 160 * u); ctx.lineTo(-30 * u, 160 * u); ctx.fill(); ctx.restore();
-      ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(C, C, 10 * u, 0, 7); ctx.fill();
-    } else {
-      const g = ctx.createRadialGradient(C, C, 2, C, C, 150 * u); g.addColorStop(0, "#FFFFFF"); g.addColorStop(0.18, prism ? hue[0] : "#E9C46A"); g.addColorStop(0.45, "rgba(232,100,63,.55)"); g.addColorStop(1, "rgba(0,0,0,0)");
-      ctx.fillStyle = g; ctx.fillRect(0, 0, W, W);
-      ctx.strokeStyle = "rgba(255,255,255,.6)"; ctx.lineWidth = 2 * u;
-      for (let i = 0; i < 16; i++) { const a = (i / 16) * Math.PI * 2; ctx.beginPath(); ctx.moveTo(C + Math.cos(a) * 30 * u, C + Math.sin(a) * 30 * u); ctx.lineTo(C + Math.cos(a) * (90 + (i % 3) * 30) * u, C + Math.sin(a) * (90 + (i % 3) * 30) * u); ctx.stroke(); }
-    }
+  if (edge) { const g = ctx.createRadialGradient(W - 8 * u, 24 * u, 2, W - 8 * u, 24 * u, 90 * u); g.addColorStop(0, "rgba(233,196,106,.9)"); g.addColorStop(1, "rgba(0,0,0,0)"); ctx.fillStyle = g; ctx.fillRect(0, 0, W, W); }
+  if (ver === "mythic") { const g = ctx.createRadialGradient(C, C, 20 * u, C, C, 160 * u); g.addColorStop(0, "rgba(233,196,106,.45)"); g.addColorStop(1, "rgba(0,0,0,0)"); ctx.fillStyle = g; ctx.fillRect(0, 0, W, W); }
+  const ball = (x, y, rad, a = pal[0], b = pal[1]) => { const g = ctx.createRadialGradient(x - rad * 0.35, y - rad * 0.35, rad * 0.1, x, y, rad); g.addColorStop(0, a); g.addColorStop(1, b); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, rad, 0, 7); ctx.fill(); };
+  const rock = (x, y, sc) => { ctx.fillStyle = pal[0]; ctx.beginPath(); for (let i = 0; i < 12; i++) { const a = (i / 12) * Math.PI * 2, rr = (34 + Math.sin(i * 2.3 + find.fam) * 9) * u * sc; ctx.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); } ctx.closePath(); ctx.fill(); ctx.fillStyle = pal[1]; ctx.globalAlpha = 0.55; for (let k = 0; k < 3; k++) { ctx.beginPath(); ctx.arc(x + (r() - 0.5) * 36 * u * sc, y + (r() - 0.5) * 30 * u * sc, (4 + r() * 6) * u * sc, 0, 7); ctx.fill(); } ctx.globalAlpha = 1; };
+  const tail = (len, w0) => { const g = ctx.createLinearGradient(C + 20 * u, C - 20 * u, C - len * u, C + len * u); g.addColorStop(0, pal[0]); g.addColorStop(1, "rgba(0,0,0,0)"); ctx.globalAlpha = 0.9; ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(C + 18 * u, C - 10 * u); ctx.lineTo(C - len * u, C + (len - 30) * u); ctx.lineTo(C - (len - 40) * u, C + len * u); ctx.lineTo(C + 10 * u, C + 18 * u); ctx.fill(); ctx.globalAlpha = 1; };
+  switch (fam.shape) {
+    case "rock": rock(C, C, fam.name === "Moonlet" ? 0.6 : fam.name.includes("Kuiper") ? 1.3 : 1); if (fam.name === "Centaur") { ctx.globalAlpha = 0.35; tail(120); ctx.globalAlpha = 1; } break;
+    case "rubble": for (let i = 0; i < 8; i++) rock(C + Math.cos(i * 0.9) * 30 * u, C + Math.sin(i * 1.7) * 24 * u, 0.38); break;
+    case "twin": rock(C - 30 * u, C, 0.8); rock(C + 30 * u, C + 8 * u, 0.7); break;
+    case "dust": for (let i = 0; i < 260; i++) { const a = r() * 7, d = Math.sqrt(r()) * 90 * u; ctx.fillStyle = pal[0]; ctx.globalAlpha = 0.25 + r() * 0.5; ctx.fillRect(C + Math.cos(a) * d * 1.4, C + Math.sin(a) * d * 0.6, 2 * u, 2 * u); } ctx.globalAlpha = 1; break;
+    case "comet": tail(fam.name === "Sungrazer" ? 170 : fam.name === "Interstellar comet" ? 110 : 140); if (fam.name === "Fragmenting comet") { ball(C + 26 * u, C - 18 * u, 7 * u, "#ECE7DC", pal[1]); ball(C - 4 * u, C + 12 * u, 6 * u, "#ECE7DC", pal[1]); } ball(C + 14 * u, C - 4 * u, 14 * u, "#FFFFFF", pal[0]); break;
+    case "dwarf": ball(C, C, 44 * u); if (fam.name.includes("moon")) ball(C + 70 * u, C - 40 * u, 12 * u); break;
+    case "planet": ball(C, C, 60 * u); ctx.globalAlpha = 0.25; ctx.fillStyle = pal[1]; for (let k = 0; k < 4; k++) { ctx.beginPath(); ctx.ellipse(C + (r() - 0.5) * 60 * u, C + (r() - 0.5) * 60 * u, (10 + r() * 20) * u, (6 + r() * 10) * u, r() * 3, 0, 7); ctx.fill(); } ctx.globalAlpha = 1; break;
+    case "banded": ball(C, C, 62 * u); ctx.save(); ctx.beginPath(); ctx.arc(C, C, 62 * u, 0, 7); ctx.clip(); ctx.fillStyle = pal[1]; ctx.globalAlpha = 0.45; for (let k = -3; k <= 3; k++) ctx.fillRect(C - 70 * u, C + k * 16 * u, 140 * u, 6 * u); ctx.restore(); ctx.globalAlpha = 1; break;
+    case "ringed": ctx.strokeStyle = pal[0]; ctx.globalAlpha = 0.8; ctx.lineWidth = 6 * u; ctx.beginPath(); ctx.ellipse(C, C, 110 * u, 30 * u, -0.35, 0, Math.PI * 2); ctx.stroke(); ctx.globalAlpha = 1; ball(C, C, 56 * u); ctx.strokeStyle = pal[0]; ctx.beginPath(); ctx.ellipse(C, C, 110 * u, 30 * u, -0.35, Math.PI * 0.95, Math.PI * 2.05); ctx.stroke(); break;
+    case "lava": ball(C, C, 58 * u, pal[0], "#1a0603"); ctx.strokeStyle = "rgba(255,200,80,.75)"; ctx.lineWidth = 2 * u; for (let i = 0; i < 6; i++) { ctx.beginPath(); ctx.moveTo(C - 40 * u + i * 15 * u, C - 34 * u); ctx.lineTo(C - 30 * u + i * 14 * u + (r() - 0.5) * 10 * u, C + 36 * u); ctx.stroke(); } break;
+    case "rogue": ball(C, C, 56 * u, pal[1], "#000"); ctx.strokeStyle = pal[0]; ctx.globalAlpha = 0.6; ctx.lineWidth = 1.5 * u; ctx.beginPath(); ctx.arc(C, C, 57 * u, 2.2, 4.2); ctx.stroke(); ctx.globalAlpha = 1; break;
+    case "locked": ball(C, C, 58 * u); ctx.fillStyle = "rgba(0,0,0,.75)"; ctx.beginPath(); ctx.arc(C, C, 58 * u, -Math.PI / 2, Math.PI / 2); ctx.fill(); break;
+    case "diamond": ctx.fillStyle = pal[0]; ctx.beginPath(); ctx.moveTo(C, C - 62 * u); ctx.lineTo(C + 54 * u, C - 10 * u); ctx.lineTo(C, C + 62 * u); ctx.lineTo(C - 54 * u, C - 10 * u); ctx.closePath(); ctx.fill(); ctx.strokeStyle = "rgba(255,255,255,.55)"; ctx.lineWidth = 1.5 * u; ctx.beginPath(); ctx.moveTo(C - 54 * u, C - 10 * u); ctx.lineTo(C + 54 * u, C - 10 * u); ctx.moveTo(C, C - 62 * u); ctx.lineTo(C - 20 * u, C - 10 * u); ctx.lineTo(C, C + 62 * u); ctx.lineTo(C + 20 * u, C - 10 * u); ctx.closePath(); ctx.stroke(); break;
+    case "moon": ball(C - 50 * u, C + 40 * u, 70 * u, pal[1], "#000"); ball(C + 30 * u, C - 30 * u, 32 * u); if (fam.name === "Volcanic moon") { ctx.fillStyle = "rgba(255,170,60,.85)"; for (let k = 0; k < 4; k++) { ctx.beginPath(); ctx.arc(C + 30 * u + (r() - 0.5) * 34 * u, C - 30 * u + (r() - 0.5) * 34 * u, 3 * u, 0, 7); ctx.fill(); } } break;
+    case "shower": ctx.strokeStyle = pal[0]; ctx.lineCap = "round"; for (let i = 0; i < 14; i++) { const x = r() * W, y = r() * W * 0.7, l = (30 + r() * 60) * u; ctx.globalAlpha = 0.4 + r() * 0.6; ctx.lineWidth = (1 + r() * 2) * u; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + l, y + l); ctx.stroke(); } ctx.globalAlpha = 1; break;
+    case "supernova": { const g = ctx.createRadialGradient(C, C, 2, C, C, 150 * u); g.addColorStop(0, "#FFFFFF"); g.addColorStop(0.18, pal[0]); g.addColorStop(0.45, pal[1]); g.addColorStop(1, "rgba(0,0,0,0)"); ctx.fillStyle = g; ctx.fillRect(0, 0, W, W); ctx.strokeStyle = "rgba(255,255,255,.55)"; ctx.lineWidth = 2 * u; for (let i = 0; i < 16; i++) { const a = (i / 16) * Math.PI * 2, L = (90 + (i % 3) * 30) * u; ctx.beginPath(); ctx.moveTo(C + Math.cos(a) * 30 * u, C + Math.sin(a) * 30 * u); ctx.lineTo(C + Math.cos(a) * L, C + Math.sin(a) * L); ctx.stroke(); } break; }
+    case "pulsar": { ctx.save(); ctx.translate(C, C); ctx.rotate(-0.5); const g = ctx.createLinearGradient(0, -160 * u, 0, 160 * u); g.addColorStop(0, "rgba(0,0,0,0)"); g.addColorStop(0.5, pal[0]); g.addColorStop(1, "rgba(0,0,0,0)"); ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(-6 * u, 0); ctx.lineTo(-30 * u, -160 * u); ctx.lineTo(30 * u, -160 * u); ctx.lineTo(6 * u, 0); ctx.lineTo(30 * u, 160 * u); ctx.lineTo(-30 * u, 160 * u); ctx.fill(); if (fam.name === "Magnetar") { ctx.strokeStyle = pal[0]; ctx.globalAlpha = 0.6; ctx.lineWidth = 1.5 * u; for (const k of [40, 70]) { ctx.beginPath(); ctx.ellipse(0, 0, k * u, k * 0.45 * u, Math.PI / 2, 0, 7); ctx.stroke(); } } ctx.restore(); ctx.globalAlpha = 1; ball(C, C, 10 * u, "#FFFFFF", pal[0]); break; }
+    case "blackhole": { const disc = (x, y, sc) => { const g = ctx.createRadialGradient(x, y, 30 * u * sc, x, y, 130 * u * sc); g.addColorStop(0, pal[0]); g.addColorStop(0.4, pal[1]); g.addColorStop(1, "rgba(0,0,0,0)"); ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(x, y, 140 * u * sc, 46 * u * sc, -0.2, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = "#000"; ctx.beginPath(); ctx.arc(x, y, 40 * u * sc, 0, 7); ctx.fill(); ctx.strokeStyle = pal[0]; ctx.lineWidth = 2 * u; ctx.stroke(); }; if (fam.name.startsWith("Binary")) { disc(C - 50 * u, C - 20 * u, 0.55); disc(C + 50 * u, C + 20 * u, 0.55); } else disc(C, C, 1); break; }
+    case "quasar": { const g = ctx.createRadialGradient(C, C, 4, C, C, 80 * u); g.addColorStop(0, "#FFFFFF"); g.addColorStop(0.3, pal[0]); g.addColorStop(1, "rgba(0,0,0,0)"); ctx.fillStyle = g; ctx.fillRect(0, 0, W, W); ctx.fillStyle = pal[0]; ctx.globalAlpha = 0.7; ctx.fillRect(C - 3 * u, 0, 6 * u, W); ctx.globalAlpha = 1; break; }
+    case "nebula": for (let i = 0; i < 9; i++) { const g = ctx.createRadialGradient(C + (r() - 0.5) * 140 * u, C + (r() - 0.5) * 140 * u, 4, C, C, (60 + r() * 60) * u); g.addColorStop(0, i % 2 ? pal[0] : pal[1]); g.addColorStop(1, "rgba(0,0,0,0)"); ctx.globalAlpha = 0.35; ctx.fillStyle = g; ctx.fillRect(0, 0, W, W); } ctx.globalAlpha = 1; break;
+    case "star": { const big = fam.name === "Red giant"; const g = ctx.createRadialGradient(C, C, 4, C, C, (big ? 110 : 70) * u); g.addColorStop(0, "#FFFFFF"); g.addColorStop(0.5, pal[0]); g.addColorStop(1, "rgba(0,0,0,0)"); ctx.fillStyle = g; ctx.fillRect(0, 0, W, W); ball(C, C, (big ? 64 : 24) * u, "#FFFFFF", pal[0]); break; }
   }
+  // the version's finish
+  if (ver === "prismatic") { const g = ctx.createConicGradient ? ctx.createConicGradient(0, C, C) : null; if (g) { ["#F06A5A", "#F2B45A", "#6FD9A8", "#7FA6F5", "#B48CF2", "#F06A5A"].forEach((c, i) => g.addColorStop(i / 5, c)); ctx.strokeStyle = g; ctx.lineWidth = 5 * u; ctx.globalAlpha = 0.85; ctx.beginPath(); ctx.arc(C, C, 120 * u, 0, 7); ctx.stroke(); ctx.globalAlpha = 1; } }
+  if (ver === "ancient") { ctx.globalCompositeOperation = "color"; ctx.fillStyle = "rgba(170,120,60,.55)"; ctx.fillRect(0, 0, W, W); ctx.globalCompositeOperation = "source-over"; ctx.strokeStyle = "rgba(233,196,106,.5)"; ctx.lineWidth = 1 * u; for (let i = 0; i < 5; i++) { ctx.beginPath(); ctx.moveTo(C + (r() - 0.5) * 80 * u, C + (r() - 0.5) * 80 * u); ctx.lineTo(C + (r() - 0.5) * 120 * u, C + (r() - 0.5) * 120 * u); ctx.stroke(); } }
+  if (ver === "mythic") { ctx.fillStyle = "#FFF4D6"; for (let i = 0; i < 18; i++) { const x = r() * W, y = r() * W, k = (2 + r() * 3) * u; ctx.beginPath(); ctx.moveTo(x, y - k * 2); ctx.lineTo(x + k * 0.5, y); ctx.lineTo(x, y + k * 2); ctx.lineTo(x - k * 0.5, y); ctx.fill(); } ctx.strokeStyle = "#E9C46A"; ctx.lineWidth = 3 * u; ctx.beginPath(); ctx.arc(C, C, 126 * u, 0, 7); ctx.stroke(); }
+  ctx.restore();
 }
-function sharpen(cv, tier, kind, prism, edge, done) {
+function sharpen(cv, find, edge, done) {
   const off = document.createElement("canvas"); off.width = off.height = 320;
-  drawObject(off.getContext("2d"), 320, tier, kind, prism, edge);
+  drawObject(off.getContext("2d"), 320, find, edge);
   const ctx = cv.getContext("2d"), small = document.createElement("canvas"), sctx = small.getContext("2d");
   const steps = [4, 6, 9, 13, 18, 26, 38, 56, 80, 120, 180, 320];
   let i = 0;
@@ -556,13 +595,13 @@ function shareFind() {
   const cv = $("card"), ctx = cv.getContext("2d");
   cardBase(ctx, `${title()} jaysship7 discovered`);
   const off = document.createElement("canvas"); off.width = off.height = 420;
-  drawObject(off.getContext("2d"), 420, L.tier, L.kind, L.prism);
+  drawObject(off.getContext("2d"), 420, L);
   ctx.save(); ctx.beginPath(); ctx.arc(900, 300, 200, 0, 7); ctx.clip(); ctx.drawImage(off, 690, 90, 420, 420); ctx.restore();
   ctx.strokeStyle = "#27251F"; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(900, 300, 200, 0, 7); ctx.stroke();
   ctx.fillStyle = "#ECE7DC"; ctx.font = "800 84px 'Big Shoulders Display'";
   wrapText(ctx, L.name.toUpperCase(), 64, 210, 560, 84);
-  ctx.fillStyle = "#E9C46A"; ctx.font = "400 30px 'Martian Mono'"; ctx.fillText(`1 IN ${L.oneIn.toLocaleString()} FINDS`, 64, 430);
-  ctx.fillStyle = "#A39E92"; ctx.font = "400 22px 'Martian Mono'"; ctx.fillText(`${Object.keys(state.found).length} of ${catalogueSize()} in my catalogue`, 64, 478);
+  ctx.fillStyle = "#E9C46A"; ctx.font = "400 30px 'Martian Mono'"; ctx.fillText(`1 IN ${L.oneIn.toLocaleString()} FINDS · ${L.id}`, 64, 430);
+  ctx.fillStyle = "#A39E92"; ctx.font = "400 22px 'Martian Mono'"; ctx.fillText(`${Object.keys(state.found).length} of ${CATALOGUE_SIZE.toLocaleString()} in my catalogue`, 64, 478);
   if (L.compliment) { ctx.fillStyle = "#E9C46A"; ctx.font = "italic 700 26px Georgia"; ctx.fillText(`"${L.compliment}."`, 64, 525); } // the flex rides along on the card
   openCard("Share this find", "The rarity is printed on the card, and it carries your referral link.");
 }
@@ -591,23 +630,17 @@ function shareSky() {
   }
   ctx.fillStyle = "#ECE7DC"; ctx.beginPath(); ctx.arc(0, 0, 46, 0, 7); ctx.fill(); ctx.strokeStyle = "#E8643F"; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(0, 0, 56, 0, 7); ctx.stroke();
   ctx.restore();
-  const finds = Object.values(state.found).reduce((a, b) => a + b, 0);
-  const rarest = Object.keys(state.found).sort((a, b) => rarityOf(b) - rarityOf(a))[0];
+  const finds = Object.values(state.found).reduce((a, b) => a + b.n, 0);
+  const rarest = rarestFound();
   ctx.fillStyle = "#ECE7DC"; ctx.font = "800 72px 'Big Shoulders Display'"; ctx.fillText(title().toUpperCase(), 64, 190);
-  const lines = [[`${state.points.toLocaleString()}`, "orbit points"], [`${finds}`, "finds"], [`${Object.keys(state.found).length} / ${catalogueSize()}`, "catalogue"], [`${state.btm[0]}-${state.btm[1]}`, "vs the model"]];
+  const lines = [[`${state.points.toLocaleString()}`, "orbit points"], [`${finds}`, "finds"], [`${Object.keys(state.found).length} / ${CATALOGUE_SIZE.toLocaleString()}`, "catalogue"], [`${state.btm[0]}-${state.btm[1]}`, "vs the model"]];
   lines.forEach(([v, l], i) => { ctx.fillStyle = "#ECE7DC"; ctx.font = "800 54px 'Big Shoulders Display'"; ctx.fillText(v, 64 + (i % 2) * 260, 300 + Math.floor(i / 2) * 110); ctx.fillStyle = "#A39E92"; ctx.font = "400 18px 'Martian Mono'"; ctx.fillText(l.toUpperCase(), 64 + (i % 2) * 260, 330 + Math.floor(i / 2) * 110); });
-  if (rarest) { ctx.fillStyle = "#E9C46A"; ctx.font = "400 20px 'Martian Mono'"; ctx.fillText(`RAREST FIND: ${rarest.toUpperCase()} (1 IN ${rarityOf(rarest).toLocaleString()})`, 64, 520); }
+  if (rarest) { ctx.fillStyle = "#E9C46A"; ctx.font = "400 20px 'Martian Mono'"; ctx.fillText(`RAREST FIND: ${rarest.name.toUpperCase()} (1 IN ${rarest.oneIn.toLocaleString()})`, 64, 520); }
   openCard("Your season sky", "Everyone's sky is different. At the end of the season this is the post, like a year-in-review, and the top orbits get it printed.");
 }
 function wrapText(ctx, text, x, y, maxW, lh) { const words = text.split(" "); let line = ""; for (const w of words) { const t = line ? line + " " + w : w; if (ctx.measureText(t).width > maxW && line) { ctx.fillText(line, x, y); line = w; y += lh; } else line = t; } ctx.fillText(line, x, y); }
 function openCard(t, note) { $("cardTitle").firstChild.textContent = t + " "; $("cardNote").textContent = note + " On the real site this posts to X, Threads, Bluesky, Reddit or Discord with your link, which carries your referral code."; $("cardOv").classList.add("on"); }
-function rarityOf(name) {
-  const prism = name.startsWith("Prismatic ");
-  const kind = prism ? name.slice(10) : name;
-  const tier = +Object.keys(CAT).find((t) => CAT[t].includes(kind));
-  return Math.round(1 / (TIER_P[tier] / CAT[tier].length * (prism ? PRISM : 1 - PRISM)));
-}
-function catalogueSize() { return Object.values(CAT).reduce((a, k) => a + k.length * 2, 0); }
+function rarestFound() { return Object.values(state.found).sort((a, b) => b.oneIn - a.oneIn)[0] || null; }
 
 // ---- Beat the Model ----
 function winnerIdx(i) { return [0, 1, 0][i]; } // the demo's Monday results
@@ -671,26 +704,31 @@ function renderOrbit() {
   $("ladder").innerHTML = LADDER.map(([t, r, k]) => `<li class="${p >= t ? "got" : next && next[0] === t ? "next" : ""}"><span>${t.toLocaleString()}</span><span>${r}<em>${label[k]}</em></span></li>`).join("");
 }
 function renderLeague() {
-  const me = { name: "jaysship7 (you)", pts: state.points, title: title(), rare: Object.keys(state.found).sort((a, b) => rarityOf(b) - rarityOf(a))[0] || "—", btm: `${state.btm[0]}-${state.btm[1]}`, me: true };
+  const me = { name: "jaysship7 (you)", pts: state.points, title: title(), rare: rarestFound()?.name || "—", btm: `${state.btm[0]}-${state.btm[1]}`, me: true };
   const rows = [...RIVALS, me].sort((a, b) => b.pts - a.pts);
   $("league").innerHTML = `<tr><th>Manager</th><th>Orbit</th><th>Rarest find</th><th>Vs model</th></tr>` + rows.map((r) => `<tr class="${r.me ? "me" : ""}"><td>${r.name}<br><span style="color:var(--dim);font-size:9px;letter-spacing:.12em;text-transform:uppercase">${r.title}</span></td><td>${r.pts}</td><td>${r.rare}</td><td>${r.btm}</td></tr>`).join("");
 }
 function renderCatalogue() {
-  const all = [];
-  for (const t of [1, 2, 3, 5]) for (const k of CAT[t]) { all.push([t, k, false]); all.push([t, k, true]); }
-  const have = Object.keys(state.found).length;
-  $("catSum").textContent = `${have} of ${all.length} discovered · prismatic variants are 1 in 12`;
+  const entries = Object.values(state.found);
+  const kinds = new Set(entries.map((e) => e.fam));
+  $("catSum").textContent = `${entries.length.toLocaleString()} of ${CATALOGUE_SIZE.toLocaleString()} discovered · ${kinds.size} of ${FAMILIES.length} kinds · 6 colours · normal, prismatic (1 in 12), ancient (1 in 40), mythic (1 in 200)`;
   const cat = $("cat"); cat.innerHTML = "";
-  for (const [t, k, prism] of all) {
-    const name = (prism ? "Prismatic " : "") + k;
-    const got = state.found[name];
-    const d = document.createElement("div"); d.className = `obj${got ? "" : " unknown"}${got && prism ? " prism" : ""}`;
-    const c = document.createElement("canvas"); c.width = c.height = 112;
-    const ctx = c.getContext("2d"); drawObject(ctx, 112, t, k, prism);
-    if (!got) { ctx.globalCompositeOperation = "source-atop"; ctx.fillStyle = "#1A1915"; ctx.fillRect(0, 0, 112, 112); ctx.globalCompositeOperation = "source-over"; }
-    d.appendChild(c);
-    d.insertAdjacentHTML("beforeend", `<b>${got ? name : "???"}</b><span>1 in ${rarityOf(name).toLocaleString()}${got > 1 ? ` · x${got}` : ""}</span>`);
-    cat.appendChild(d);
+  for (const t of [1, 2, 3, 4, 5]) {
+    cat.insertAdjacentHTML("beforeend", `<div class="cat-h">${TIER_NAME[t]}</div>`);
+    for (const fam of famsIn(t)) {
+      const mine = entries.filter((e) => e.fam === fam.id);
+      const best = mine.sort((a, b) => b.oneIn - a.oneIn)[0];
+      const d = document.createElement("div"); d.className = `obj${best ? "" : " unknown"}${best && best.version ? " prism" : ""}`;
+      const c = document.createElement("canvas"); c.width = c.height = 112;
+      const ctx = c.getContext("2d");
+      drawObject(ctx, 112, best || findOf(fam.id, "silver", ""));
+      if (!best) { ctx.globalCompositeOperation = "source-atop"; ctx.fillStyle = "#1A1915"; ctx.fillRect(0, 0, 112, 112); ctx.globalCompositeOperation = "source-over"; }
+      d.appendChild(c);
+      const pips = COLOURS.map((col) => `<i style="background:${mine.some((e) => e.colour === col.id) ? col.c[0] : "transparent"};border-color:${col.c[0]}"></i>`).join("");
+      const rare = ["prismatic", "ancient", "mythic"].filter((v) => mine.some((e) => e.version === v)).map((v) => v[0].toUpperCase()).join(" ");
+      d.insertAdjacentHTML("beforeend", `<b>${best ? fam.name : "???"}</b><span class="pips">${pips}</span><span>${mine.length} of 24${rare ? ` · ${rare}` : ""}</span>`);
+      cat.appendChild(d);
+    }
   }
 }
 function renderAll() { renderOrbit(); renderLeague(); renderCatalogue(); renderPicks(); }
