@@ -5,7 +5,7 @@ import Link from "next/link";
 import ShareDialog from "../../ShareDialog";
 import { seeFinds, pickPlayer, claim, wearSkin } from "./actions";
 import { SkyBackdrop, CoreSkin, SkinPreview } from "./skins";
-import { drawObject, sharpen, findCard, receiptCard, seasonCard, toBlob, setCardBadge } from "./skyArt";
+import { drawObject, sharpen, findCard, receiptCard, seasonCard, toBlob, setCardBadge, setCardSkin } from "./skyArt";
 import {
   ACTIONS, skyFor, SKINS, hasSkin, equipped, FAMILIES, COLOURS, VERSIONS, TIER_NAME, POWERUPS, LADDER, CATALOGUE_SIZE, SET_COUNT, UNLOCK, EVENT_TEXT,
   famsIn, findOf, setProgress, titleFor, seasonProgress, SEASON_TRACK,
@@ -184,6 +184,7 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
 
   const prepare = useCallback(async ({ onPreview }) => {
     setCardBadge(badge);
+    setCardSkin(equipped(state)); // the member's skins go out on their cards
     const blob = await toBlob(share.make());
     const url = URL.createObjectURL(blob);
     onPreview(url);
@@ -196,7 +197,7 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
     const body = await res.json().catch(() => ({}));
     if (!res.ok || !body.url) throw new Error(body.error || "Couldn't create the share link.");
     return { url: body.url, getFile: async () => new File([blob], "night-sky.png", { type: "image/png" }) };
-  }, [share, badge]);
+  }, [share, badge, state]);
 
   const shareFind = (f, compliment) => setShare({
     title: `${title} discovered: ${f.name}`,

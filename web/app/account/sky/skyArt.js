@@ -70,8 +70,63 @@ export function sharpen(cv, find, edge, done) {
 const font = (name) => (typeof window === "undefined" ? "sans-serif" : getComputedStyle(document.documentElement).getPropertyValue(name).trim() || "sans-serif");
 let badgeText = null; // this season's badge ("2026 · SURVEYOR"), set by the page before drawing a card
 export const setCardBadge = (t) => { badgeText = t || null; };
+let cardSkin = { sky: "deep", core: "classic" }; // the member's equipped skins, set by the page before drawing a card
+export const setCardSkin = (k) => { cardSkin = { sky: "deep", core: "classic", ...(k || {}) }; };
+
+// The canvas versions of the skins in ./skins.js (same colours), for share cards.
+function grad(ctx, x, y, r, color, a) { const g = ctx.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, `rgba(${color},${a})`); g.addColorStop(1, `rgba(${color},0)`); return g; }
+function drawBackdrop(ctx) {
+  const k = cardSkin.sky;
+  ctx.save();
+  if (k === "nebula") {
+    for (const [x, y, rx, ry, c] of [[330, 260, 420, 250, "139,108,240"], [900, 420, 380, 240, "47,182,168"], [700, 90, 260, 150, "208,96,154"]]) {
+      ctx.save(); ctx.translate(x, y); ctx.scale(1, ry / rx); ctx.fillStyle = grad(ctx, 0, 0, rx, c, 0.34); ctx.beginPath(); ctx.arc(0, 0, rx, 0, 7); ctx.fill(); ctx.restore();
+    }
+  } else if (k === "aurora") {
+    const g = ctx.createLinearGradient(0, 0, 1200, 0);
+    g.addColorStop(0, "rgba(62,224,143,0)"); g.addColorStop(0.3, "rgba(62,224,143,.5)"); g.addColorStop(0.7, "rgba(44,201,232,.5)"); g.addColorStop(1, "rgba(139,108,240,0)");
+    ctx.filter = "blur(22px)"; ctx.strokeStyle = g; ctx.lineCap = "round";
+    ctx.lineWidth = 80; ctx.beginPath(); ctx.moveTo(-40, 180); ctx.bezierCurveTo(300, 20, 600, 300, 1240, 120); ctx.stroke();
+    ctx.lineWidth = 44; ctx.globalAlpha = 0.7; ctx.beginPath(); ctx.moveTo(-40, 290); ctx.bezierCurveTo(360, 150, 700, 380, 1240, 230); ctx.stroke();
+  } else if (k === "milkyway") {
+    ctx.translate(600, 315); ctx.rotate(-0.4);
+    const g = ctx.createLinearGradient(0, -160, 0, 160); g.addColorStop(0, "rgba(217,207,192,0)"); g.addColorStop(0.5, "rgba(217,207,192,.18)"); g.addColorStop(1, "rgba(217,207,192,0)");
+    ctx.fillStyle = g; ctx.fillRect(-900, -160, 1800, 320);
+    let s = 11; const r = () => ((s = (s * 16807) % 2147483647) / 2147483647);
+    for (let i = 0; i < 520; i++) { ctx.fillStyle = `rgba(236,231,220,${0.2 + r() * 0.5})`; ctx.fillRect(r() * 1800 - 900, (r() + r() + r() - 1.5) * 120, 2, 2); }
+  } else if (k === "eclipse") {
+    const g = ctx.createRadialGradient(600, 315, 250, 600, 315, 760); g.addColorStop(0, "rgba(179,38,30,0)"); g.addColorStop(1, "rgba(179,38,30,.38)");
+    ctx.fillStyle = g; ctx.fillRect(0, 0, 1200, 630);
+  }
+  ctx.restore();
+}
+// The core with its skin, centred on the current origin. Body radius 46 (the season card's core).
+function drawCore(ctx) {
+  const k = cardSkin.core;
+  const beam = (rot, len, w0, w1, c0, c1) => { ctx.save(); ctx.rotate(rot); const g = ctx.createLinearGradient(0, 0, 0, -len); g.addColorStop(0, c0); g.addColorStop(1, c1); ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(-w0, 0); ctx.lineTo(w0, 0); ctx.lineTo(w1, -len); ctx.lineTo(-w1, -len); ctx.fill(); ctx.restore(); };
+  const ring = (front) => {
+    const disk = k === "horizon"; ctx.save(); ctx.rotate(-0.28);
+    if (front) { ctx.beginPath(); ctx.rect(-220, 0, 440, 120); ctx.clip(); }
+    const g = ctx.createLinearGradient(-120, 0, 120, 0); const [a, b] = disk ? ["#E8643F", "#FFD08A"] : ["#C9B48A", "#EADBB8"]; g.addColorStop(0, a); g.addColorStop(0.5, b); g.addColorStop(1, a);
+    ctx.strokeStyle = g; ctx.lineWidth = disk ? 12 : 4; ctx.beginPath(); ctx.ellipse(0, 0, disk ? 118 : 110, disk ? 25 : 21, 0, 0, 7); ctx.stroke(); ctx.restore();
+  };
+  if (k === "pulsar") { beam(0.45, 260, 5, 18, "rgba(207,224,255,.75)", "rgba(207,224,255,0)"); beam(0.45 + Math.PI, 260, 5, 18, "rgba(207,224,255,.75)", "rgba(207,224,255,0)"); }
+  if (k === "quasar") { beam(0, 270, 7, 3, "rgba(127,166,255,.9)", "rgba(183,140,255,0)"); beam(Math.PI, 270, 7, 3, "rgba(127,166,255,.9)", "rgba(183,140,255,0)"); }
+  if (k === "binary") {
+    ctx.save(); ctx.setLineDash([3, 8]); ctx.strokeStyle = "rgba(159,183,255,.35)"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(0, 0, 100, 0, 7); ctx.stroke(); ctx.restore();
+    const a = -0.6, x = Math.cos(a) * 100, y = Math.sin(a) * 100; ctx.fillStyle = grad(ctx, x, y, 18, "159,183,255", 0.4); ctx.beginPath(); ctx.arc(x, y, 18, 0, 7); ctx.fill(); ctx.fillStyle = "#CFDAFF"; ctx.beginPath(); ctx.arc(x, y, 8, 0, 7); ctx.fill();
+  }
+  if (k === "horizon") { ctx.fillStyle = grad(ctx, 0, 0, 70, "232,100,63", 0.3); ctx.beginPath(); ctx.arc(0, 0, 70, 0, 7); ctx.fill(); }
+  if (k === "ringed" || k === "horizon") ring(false);
+  ctx.fillStyle = k === "horizon" ? "#0B0B0B" : "#ECE7DC"; ctx.beginPath(); ctx.arc(0, 0, 46, 0, 7); ctx.fill();
+  ctx.strokeStyle = "#E8643F"; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(0, 0, 56, 0, 7); ctx.stroke();
+  if (k === "horizon") { ctx.strokeStyle = "#FFE2B0"; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(0, 0, 48, 0, 7); ctx.stroke(); }
+  if (k === "ringed" || k === "horizon") ring(true);
+}
+
 function base(ctx, eyebrow) {
   ctx.fillStyle = "#0B0B0B"; ctx.fillRect(0, 0, 1200, 630);
+  drawBackdrop(ctx);
   let s = 3; const r = () => ((s = (s * 16807) % 2147483647) / 2147483647);
   for (let i = 0; i < 260; i++) { ctx.fillStyle = `rgba(236,231,220,${0.1 + r() * 0.4})`; ctx.fillRect(r() * 1200, r() * 630, 2, 2); }
   ctx.fillStyle = "#E8643F"; ctx.fillRect(0, 0, 1200, 6); ctx.fillRect(64, 70, 10, 10);
@@ -123,7 +178,7 @@ export function seasonCard(state, { title, size, rarest }) {
     c.pts.forEach(([x, y, r], i) => { ctx.fillStyle = f[i] ? STAR[f[i]] : STAR[c.color]; ctx.globalAlpha = f[i] ? 1 : 0.35; ctx.beginPath(); ctx.arc(x, y, r * 1.3, 0, 7); ctx.fill(); });
     ctx.globalAlpha = 1;
   }
-  ctx.fillStyle = "#ECE7DC"; ctx.beginPath(); ctx.arc(0, 0, 46, 0, 7); ctx.fill(); ctx.strokeStyle = "#E8643F"; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(0, 0, 56, 0, 7); ctx.stroke();
+  drawCore(ctx);
   ctx.restore();
   const finds = Object.values(state.found).reduce((a, b) => a + b.n, 0);
   ctx.fillStyle = "#ECE7DC"; ctx.font = `800 72px ${font("--font-display")}`; ctx.fillText(title.toUpperCase(), 64, 190);

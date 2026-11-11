@@ -1,6 +1,6 @@
 // Run: node mockups/night-sky-sim-live.mjs -- the Night Sky as SHIPPED (web/lib/nightSky.js: award, gradePicks, rollSeason, events), not a copy
 // of its rules. Three NFL years (Sept 2026 - Aug 2029) for light / regular / engaged members, in season and offseason, with Beat the Model.
-import { freshState, award, gradePicks, eventFor, seasonProgress, SEASON_TRACK, LADDER, TITLES, CATALOGUE_SIZE, SET_COUNT, DAY } from "../web/lib/nightSky.js";
+import { freshState, award, gradePicks, eventFor, seasonProgress, unlockSkins, SKINS, SEASON_TRACK, LADDER, TITLES, CATALOGUE_SIZE, SET_COUNT, DAY } from "../web/lib/nightSky.js";
 
 const ACTIONS = ["board", "waivers", "rankings", "compare", "sims", "lab", "dynasty"];
 const START = Date.UTC(2026, 8, 9); // the Wednesday before week 1, 2026
@@ -15,7 +15,7 @@ const inSeason = (t) => weekOf(t) > 0 || (new Date(t).getUTCMonth() === 0); // w
 
 function member(perDay, offseasonShare, years = 3) {
   const s = freshState();
-  const out = { years: [], finds: [0, 0, 0, 0, 0], vers: [0, 0, 0, 0], firstTier: {}, earlyTiers: [0, 0, 0, 0, 0], lateTiers: [0, 0, 0, 0, 0] };
+  const out = { skinAt: {}, rewardDays: [], years: [], finds: [0, 0, 0, 0, 0], vers: [0, 0, 0, 0], firstTier: {}, earlyTiers: [0, 0, 0, 0, 0], lateTiers: [0, 0, 0, 0, 0] };
   let year = null, y0 = { points: 0, finds: 0, actions: 0, sets: 0 };
   const close = () => { if (year != null) out.years.push({ season: year, points: s.points - y0.points, finds: s.findsTotal - y0.finds, actions: s.actions - y0.actions, sets: Object.keys(s.sets).length - y0.sets, total: s.points, track: seasonProgress(s).done.filter(Boolean).length }); };
   for (let t = START; t < START + years * 365 * DAY; t += DAY) {
@@ -35,6 +35,13 @@ function member(perDay, offseasonShare, years = 3) {
         out.firstTier[f.tier] ??= (t - START) / (7 * DAY);
       }
     });
+    // what the store does after every action: unlock skins; then note every named reward earned today (ladder rung, season rung, skin)
+    const rungs0 = LADDER.filter((r) => out.lastPts >= r.at).length, track0 = out.lastTrack ?? 0;
+    for (const k of unlockSkins(s, t)) out.skinAt[k.id] = (t - START) / (7 * DAY);
+    const rungs1 = LADDER.filter((r) => s.points >= r.at).length, sp = seasonProgress(s), track1 = sp.done.filter(Boolean).length;
+    const newSkins = Object.values(out.skinAt).filter((w) => w === (t - START) / (7 * DAY)).length;
+    if (rungs1 > rungs0 || (track1 > track0 && s.season === out.lastSeason) || newSkins) out.rewardDays.push((t - START) / DAY);
+    out.lastPts = s.points; out.lastTrack = track1; out.lastSeason = s.season;
     s.pending = []; s.log = []; // the member looks through the telescope
     if (week && date.getUTCDay() === 2 && Math.random() < Math.min(1, perDay / 2)) { // Tuesday: this week's three picks, 55% right
       const key = `${season}-${week}`, pts = {};
@@ -64,6 +71,12 @@ for (const [label, [rate, off]] of Object.entries(profiles)) {
     console.log(`  year ${y + 1}: ${yr((x) => x.actions).toFixed(0)} actions, ${yr((x) => x.finds).toFixed(0)} finds (${(yr((x) => x.actions) / yr((x) => x.finds)).toFixed(2)} actions a find), ${yr((x) => x.sets).toFixed(1)} sets, ${yr((x) => x.points).toFixed(0)} points (total ${yr((x) => x.total).toFixed(0)}, ${(yr((x) => rungAt(x.total))).toFixed(1)} of ${LADDER.length} rungs)`);
   }
   for (let y = 0; y < 3; y++) console.log(`  season track, year ${y + 1} (of ${SEASON_TRACK.length}): ${[0, 1, 2, 3, 4, 5].map((k) => `${k}: ${pct((r) => (r.out.years[y]?.track ?? 0) === k)}`).join("  ")}`);
+  const sk = (kind) => SKINS[kind].filter((k) => k.test).map((k) => { const w = med((r) => r.out.skinAt[k.id]); return `${k.name} ${w == null ? `never for most (${pct((r) => r.out.skinAt[k.id] != null)} in 3 yrs)` : `wk ${w.toFixed(0)}`}`; }).join(", ");
+  console.log(`  skins, median week unlocked: sky: ${sk("sky")}`);
+  console.log(`                               core: ${sk("core")}`);
+  console.log(`  skins owned: after year 1 ${avg((r) => Object.values(r.out.skinAt).filter((w) => w < 52).length).toFixed(1)} of 9, after 3 years ${avg((r) => Object.keys(r.out.skinAt).length).toFixed(1)} of 9`);
+  const drought = (r, y) => { const a = y * 365, b = a + 140; const d = [a, ...r.out.rewardDays.filter((x) => x >= a && x < b), b]; let m = 0; for (let i = 1; i < d.length; i++) m = Math.max(m, d[i] - d[i - 1]); return m / 7; };
+  for (let y = 0; y < 3; y++) console.log(`  year ${y + 1} season (20 wks): longest stretch with no new rung, season reward or skin: median ${med((r) => drought(r, y)).toFixed(1)} wks, 1 in 4 members ${(() => { const v = runs.map((r) => drought(r, y)).sort((a, b) => a - b); return v[Math.floor(N * 0.75)].toFixed(1); })()} wks or more`);
   console.log(`  finds by tier % (small / comet / planet / shower / stellar): ${share(runs.reduce((a, r) => a.map((x, i) => x + r.out.finds[i]), [0, 0, 0, 0, 0]))}`);
   console.log(`  first 4 weeks of a season vs weeks 12-18 (tiers %): ${share(runs.reduce((a, r) => a.map((x, i) => x + r.out.earlyTiers[i]), [0, 0, 0, 0, 0]))}  vs  ${share(runs.reduce((a, r) => a.map((x, i) => x + r.out.lateTiers[i]), [0, 0, 0, 0, 0]))}`);
   console.log(`  weeks to first: comet ${med((r) => r.out.firstTier[2])?.toFixed(1)}, planet ${med((r) => r.out.firstTier[3])?.toFixed(1)}, stellar ${med((r) => r.out.firstTier[5])?.toFixed(1) ?? "most never (3 yrs)"}`);
