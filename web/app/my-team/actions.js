@@ -39,6 +39,7 @@ import { getLeagueSeason } from "@/lib/leagueSeason";
 import { getAcquisitions } from "@/lib/leagueAcquisition";
 import { scoringFrom } from "@/lib/playScoring";
 import { fetchInjuryFeed } from "@/lib/injuryFeed";
+import { nflSeason } from "@/lib/season";
 
 // Sleeper's own player dictionary drops name suffixes ("Luther Burden"
 // instead of "Luther Burden III"), but our hand-published
@@ -175,7 +176,8 @@ async function lookupTeams(username, opts = {}) {
     return { error: `No Sleeper user found for "${trimmed}".` };
   }
 
-  const season = String(new Date().getFullYear());
+  const state = await fetchSleeperState();
+  const season = String(nflSeason(state, { leagues: true })); // Sleeper's season, not the calendar year (January is still last season, lib/season.js)
   // Best-ball leagues are not supported: they are left out of every lookup (no lineup to compare, no head-to-head).
   const leagues = (await fetchSleeperLeagues(sleeperUser.user_id, season)).filter((l) => l.settings?.best_ball !== 1);
   if (!leagues.length) {
@@ -186,7 +188,6 @@ async function lookupTeams(username, opts = {}) {
 
   const players = await getSleeperPlayers().catch(() => ({}));
 
-  const state = await fetchSleeperState();
   // Which week's head-to-head matchup to surface -- in-season, Sleeper's
   // own display_week (the week its app is showing, which rolls to the
   // next matchup once the current week's games finish), falling back to
@@ -508,8 +509,8 @@ export async function pollLiveScores() {
 
   // The league rows, the NFL week and the ESPN scoreboard + projections are independent, so they start together.
   const gameStatesP = fetchGameStates();
-  const projP = getWeekProjections(createPublicClient(), new Date().getFullYear()).catch(() => ({ byName: {} }));
   const stateP = fetchSleeperState();
+  const projP = stateP.then((st) => getWeekProjections(createPublicClient(), nflSeason(st))).catch(() => ({ byName: {} }));
   stateP.catch(() => {}); // no unhandled rejection if we return early below; the await further down still throws
   // Only the two parts of the snapshot the poll reads (the saved lineups and the slots), not the whole ~8.5KB settings blob per league -- this runs
   // every 15-30s for every member watching, so it is most of the site's database traffic on a game day.
@@ -645,7 +646,7 @@ export async function getWaiverWire(teamId) {
   const [rosters, dict, week] = await Promise.all([
     fetchSleeperRosters(row.platform_league_id, { fresh: true }).catch(() => null), // who is free right now, not 5 minutes ago
     getSleeperPlayers().catch(() => null),
-    getWeekRankRows(createPublicClient(), new Date().getFullYear()),
+    fetchSleeperState().then((st) => getWeekRankRows(createPublicClient(), nflSeason(st))),
   ]);
   if (!rosters?.length || !dict) return { error: "Couldn't read this league from Sleeper right now." };
   if (waiverIdx.dict !== dict) waiverIdx = { dict, idx: sleeperIndex(dict) };

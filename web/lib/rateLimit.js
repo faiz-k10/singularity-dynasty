@@ -18,7 +18,9 @@ export function allowHit(hits, key, now, limit, windowMs) {
   return true;
 }
 
-// The caller's address from the proxy headers (Vercel sets x-forwarded-for; the first entry is the client). "local" when there is none (dev).
+// The caller's address. Vercel's own headers first (x-vercel-forwarded-for / x-real-ip are set by Vercel's edge, not the visitor), then the
+// first x-forwarded-for entry (also rewritten by Vercel). "local" when there is none (dev).
 export function clientIp(headerList) {
-  return (headerList.get("x-forwarded-for") || "").split(",")[0].trim() || headerList.get("x-real-ip") || "local";
+  const first = (v) => (v || "").split(",")[0].trim();
+  return first(headerList.get("x-vercel-forwarded-for")) || first(headerList.get("x-real-ip")) || first(headerList.get("x-forwarded-for")) || "local";
 }
