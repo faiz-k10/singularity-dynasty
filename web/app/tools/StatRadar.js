@@ -278,8 +278,8 @@ export default function StatRadar({ entries, selection = null, startDeg = -90, c
       </svg>
       {compareEntries && (
         <div className="radar-cmp-legend" aria-hidden="true">
-          <span className="radar-cmp-key radar-cmp-up">above</span>
-          <span className="radar-cmp-key radar-cmp-down">below</span>
+          <span className="radar-cmp-key radar-cmp-up">higher</span>
+          <span className="radar-cmp-key radar-cmp-down">lower</span>
           <span className="radar-cmp-key radar-cmp-even">tie</span>
         </div>
       )}
