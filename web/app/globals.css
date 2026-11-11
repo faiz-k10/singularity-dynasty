@@ -7076,3 +7076,6 @@ html.theme-switching *, html.theme-switching *::before, html.theme-switching *::
 body:has(.ehp) .ehp-inside,body:has(.ehp) .ehp-dark{--ehp-hole:#0B0B0B;--ehp-holeink:#ECE7DC;--ehp-holedim:#A39E92;--ehp-holemark:#E8643F;--ehp-holecold:#4C7DF0;}
 @media (prefers-color-scheme: light){:root:not([data-theme="dark"]) body:has(.ehp) .ehp-inside,:root:not([data-theme="dark"]) body:has(.ehp) .ehp-dark{--ehp-hole:#ECE7DC;--ehp-holeink:#121212;--ehp-holedim:#5C5850;--ehp-holemark:#AE3516;--ehp-holecold:#1F4FC4;}}
 :root[data-theme="light"] body:has(.ehp) .ehp-inside,:root[data-theme="light"] body:has(.ehp) .ehp-dark{--ehp-hole:#ECE7DC;--ehp-holeink:#121212;--ehp-holedim:#5C5850;--ehp-holemark:#AE3516;--ehp-holecold:#1F4FC4;}
+
+/* The welcome block uses two fonts, not three: the caption is mono like the label and the link (founder, Nov 10 2026). */
+.ehp-line.ehp-line-mono{font:10.5px var(--font-mono), monospace; font-stretch:82%; letter-spacing:.2em; text-transform:uppercase; max-width:none;}

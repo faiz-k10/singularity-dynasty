@@ -360,7 +360,7 @@ function HoleLookup({ signedIn, member }) {
         <p className="ehp-big">
           {member.wins.toFixed(1)} <span className="ehp-of">of {member.of}</span>
         </p>
-        <p className="ehp-line">wins on deck this week</p>
+        <p className="ehp-line ehp-line-mono">wins on deck this week</p>
         <ToolLink className="ehp-holebtn" href="/my-team">Open the Game Board →</ToolLink>
       </div>
     );
