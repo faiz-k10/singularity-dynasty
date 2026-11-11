@@ -291,7 +291,8 @@ function HoleLookup({ signedIn, member }) {
   if (member && !answer) {
     return (
       <div className="ehp-answer">
-        <div className="ehp-k">Welcome back, {member.name}</div>
+        <div className="ehp-k">Welcome back</div>
+        <div className="ehp-who">{member.name}</div>
         <p className="ehp-big">
           {member.wins.toFixed(1)} <span className="ehp-of">of {member.of}</span>
         </p>

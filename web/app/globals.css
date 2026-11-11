@@ -7053,3 +7053,7 @@ html.theme-switching *, html.theme-switching *::before, html.theme-switching *::
 .stat-radar.is-comparing .radar-shape-compare{stroke:var(--cmp-ink);}
 .stat-radar.is-comparing .radar-shape{stroke:var(--cmp-inv);}
 .stat-radar.is-comparing .radar-point{fill:var(--cmp-inv);}
+
+/* Welcome back: two lines, the username larger and below (founder, Nov 10 2026). */
+.ehp-who{font-family:var(--font-display), sans-serif; font-weight:800; font-size:clamp(30px,4.2vw,52px); line-height:1.05; letter-spacing:.05em; text-transform:uppercase; margin:6px 0 10px; color:var(--ehp-ink, var(--star)); overflow-wrap:anywhere;}
+.ehp-hole .ehp-who, .ehp-inside .ehp-who, .ehp-dark .ehp-who{color:var(--ehp-holeink, var(--star));}
