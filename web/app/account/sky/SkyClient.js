@@ -198,24 +198,7 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
             </div>
           </section>
 
-          <section className="sky-panel" aria-labelledby="sky-btm">
-            <div className="board-panel-title" id="sky-btm">Beat the Model</div>
-            {wk ? wk.pairs.map((p, i) => (
-              <div key={i} className="sky-pick">
-                {[p.a, p.b].map((name, k) => (
-                  <button key={k} type="button" disabled={busy || wk.graded} className={wk.choice[i] === k ? "is-on" : ""} onClick={() => run(pickPlayer(weekKey, i, k))}>{name}</button>
-                ))}
-                <span className="sky-small mono">{p.pos} · the model says {p.model === 0 ? p.a : p.b} by {p.gap}</span>
-              </div>
-            )) : <p className="sky-small mono">This week&apos;s picks open when the new rankings are out.</p>}
-            <p className="sky-small mono">Who scores more? Each pick places an unlit star; when the week&apos;s results are in, the right ones light up and earn 20 orbit points.</p>
-            {lastGraded && (
-              <div className="sky-row">
-                <span className="mono sky-small">Week {lastGraded.week}: {lastGraded.right} of {lastGraded.made} right · season {state.btm[0]}-{state.btm[1]}</span>
-                <button type="button" className="btn-ghost" onClick={() => setShare({ title: `Beat the Model: ${lastGraded.right} of ${lastGraded.made}`, caption: `I went ${lastGraded.right} of ${lastGraded.made} against the model in week ${lastGraded.week}. Your turn.`, make: () => receiptCard(lastGraded) })}>Share my receipt</button>
-              </div>
-            )}
-          </section>
+          
         </div>
 
         <div className="sky-col">
@@ -241,6 +224,41 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
             <p className="sky-small mono">Each counts once a day. Leave the core alone for three days and it cools.</p>
           </section>
 
+          <section className="sky-panel" aria-labelledby="sky-log">
+        <div className="board-panel-title" id="sky-log">Log</div>
+        <ul className="sky-log mono">
+          {state.log.length ? state.log.map((l, i) => <li key={i}>{l.text}</li>) : <li>Nothing yet. Open a tool from the list above to place your first star.</li>}
+        </ul>
+      </section>
+
+          
+
+          
+        </div>
+      </div>
+
+      <div className="sky-grid">
+        <div className="sky-col">
+          <section className="sky-panel" aria-labelledby="sky-btm">
+            <div className="board-panel-title" id="sky-btm">Beat the Model</div>
+            {wk ? wk.pairs.map((p, i) => (
+              <div key={i} className="sky-pick">
+                {[p.a, p.b].map((name, k) => (
+                  <button key={k} type="button" disabled={busy || wk.graded} className={wk.choice[i] === k ? "is-on" : ""} onClick={() => run(pickPlayer(weekKey, i, k))}>{name}</button>
+                ))}
+                <span className="sky-small mono">{p.pos} · the model says {p.model === 0 ? p.a : p.b} by {p.gap}</span>
+              </div>
+            )) : <p className="sky-small mono">This week&apos;s picks open when the new rankings are out.</p>}
+            <p className="sky-small mono">Who scores more? Each pick places an unlit star; when the week&apos;s results are in, the right ones light up and earn 20 orbit points.</p>
+            {lastGraded && (
+              <div className="sky-row">
+                <span className="mono sky-small">Week {lastGraded.week}: {lastGraded.right} of {lastGraded.made} right · season {state.btm[0]}-{state.btm[1]}</span>
+                <button type="button" className="btn-ghost" onClick={() => setShare({ title: `Beat the Model: ${lastGraded.right} of ${lastGraded.made}`, caption: `I went ${lastGraded.right} of ${lastGraded.made} against the model in week ${lastGraded.week}. Your turn.`, make: () => receiptCard(lastGraded) })}>Share my receipt</button>
+              </div>
+            )}
+          </section>
+        </div>
+        <div className="sky-col">
           <section className="sky-panel" aria-labelledby="sky-season">
             <div className="board-panel-title" id="sky-season">This season{state.season ? ` · ${state.season}` : ""}</div>
             <div className="sky-season-head">
@@ -260,8 +278,6 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
             </ul>
             <p className="sky-small mono">Starts over every season, with a new set of constellations. Your season title shows on everything you share.</p>
           </section>
-
-          
         </div>
       </div>
 
@@ -291,43 +307,43 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
           <p className="sky-small mono">Claimed rewards are sent to you by hand within a few days.</p>
         </section>
 
-        <section className="sky-panel" aria-labelledby="sky-cat">
-          <div className="board-panel-title" id="sky-cat">The catalogue</div>
-          {!catOpen ? (
-            <p className="sky-small mono">The catalogue and its sets open after {UNLOCK.catalogue} finds ({UNLOCK.catalogue - state.findsTotal} to go).</p>
-          ) : (
-            <>
-              <p className="sky-small mono">{entries.length.toLocaleString()} of {CATALOGUE_SIZE.toLocaleString()} discovered · {new Set(entries.map((e) => e.fam)).size} of {FAMILIES.length} kinds · sets {Object.keys(state.sets).length} of {SET_COUNT}</p>
-              <div className="sky-sets">
-                {close.map((c) => (
-                  <div key={c.label} className={`sky-set${c.of - c.have === 1 ? " is-near" : ""}`}>
-                    <span>{c.label}</span><span className="mono">{c.have}/{c.of} → {c.power}</span><i style={{ width: `${(100 * c.have) / c.of}%` }} />
-                  </div>
-                ))}
-              </div>
-              <div className="sky-cat">
-                {[1, 2, 3, 4, 5].map((t) => [
-                  <div key={`h${t}`} className="sky-cat-h mono">{TIER_NAME[t]}</div>,
-                  ...famsIn(t).map((fam) => {
-                    const mine = entries.filter((e) => e.fam === fam.id);
-                    const best = [...mine].sort((a, c) => c.oneIn - a.oneIn)[0];
-                    return (
-                      <div key={fam.id} className={`sky-obj${best ? "" : " is-unknown"}${best?.version ? " is-rare" : ""}`}>
-                        <Thumb find={best ? findOf(best.fam, best.colour, best.version) : findOf(fam.id, "silver", "")} hidden={!best} />
-                        <b>{best ? fam.name : "???"}</b>
-                        <span className="sky-pips">{COLOURS.map((col) => <i key={col.id} style={{ background: mine.some((e) => e.colour === col.id) ? col.c[0] : "transparent", borderColor: col.c[0] }} />)}</span>
-                        <span className="mono">{mine.length} of {COLOURS.length * VERSIONS.length}</span>
-                      </div>
-                    );
-                  }),
-                ])}
-              </div>
-            </>
-          )}
-        </section>
-      </div>
+        <div className="sky-col">
+          <section className="sky-panel" aria-labelledby="sky-cat">
+            <div className="board-panel-title" id="sky-cat">The catalogue</div>
+            {!catOpen ? (
+              <p className="sky-small mono">The catalogue and its sets open after {UNLOCK.catalogue} finds ({UNLOCK.catalogue - state.findsTotal} to go).</p>
+            ) : (
+              <>
+                <p className="sky-small mono">{entries.length.toLocaleString()} of {CATALOGUE_SIZE.toLocaleString()} discovered · {new Set(entries.map((e) => e.fam)).size} of {FAMILIES.length} kinds · sets {Object.keys(state.sets).length} of {SET_COUNT}</p>
+                <div className="sky-sets">
+                  {close.map((c) => (
+                    <div key={c.label} className={`sky-set${c.of - c.have === 1 ? " is-near" : ""}`}>
+                      <span>{c.label}</span><span className="mono">{c.have}/{c.of} → {c.power}</span><i style={{ width: `${(100 * c.have) / c.of}%` }} />
+                    </div>
+                  ))}
+                </div>
+                <div className="sky-cat">
+                  {[1, 2, 3, 4, 5].map((t) => [
+                    <div key={`h${t}`} className="sky-cat-h mono">{TIER_NAME[t]}</div>,
+                    ...famsIn(t).map((fam) => {
+                      const mine = entries.filter((e) => e.fam === fam.id);
+                      const best = [...mine].sort((a, c) => c.oneIn - a.oneIn)[0];
+                      return (
+                        <div key={fam.id} className={`sky-obj${best ? "" : " is-unknown"}${best?.version ? " is-rare" : ""}`}>
+                          <Thumb find={best ? findOf(best.fam, best.colour, best.version) : findOf(fam.id, "silver", "")} hidden={!best} />
+                          <b>{best ? fam.name : "???"}</b>
+                          <span className="sky-pips">{COLOURS.map((col) => <i key={col.id} style={{ background: mine.some((e) => e.colour === col.id) ? col.c[0] : "transparent", borderColor: col.c[0] }} />)}</span>
+                          <span className="mono">{mine.length} of {COLOURS.length * VERSIONS.length}</span>
+                        </div>
+                      );
+                    }),
+                  ])}
+                </div>
+              </>
+            )}
+          </section>
 
-      <section className="sky-panel" aria-labelledby="sky-odds">
+          <section className="sky-panel" aria-labelledby="sky-odds">
           <div className="board-panel-title" id="sky-odds">The odds</div>
           <table className="sky-odds mono">
             <tbody>
@@ -342,13 +358,12 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
           </table>
           <p className="sky-small mono">If a find lands on something your constellations haven&apos;t powered, you get the biggest find they have, and you&apos;ll see the bigger one at the edge of the frame. Finish The Singularity and your next find is a stellar event.</p>
         </section>
+        </div>
+      </div>
 
-      <section className="sky-panel" aria-labelledby="sky-log">
-        <div className="board-panel-title" id="sky-log">Log</div>
-        <ul className="sky-log mono">
-          {state.log.length ? state.log.map((l, i) => <li key={i}>{l.text}</li>) : <li>Nothing yet. Open a tool from the list above to place your first star.</li>}
-        </ul>
-      </section>
+      
+
+      
 
       {scope && <Telescope queue={state.pending} compliments={compliments} onDone={closeScope} onShare={shareFind} />}
       {share && <ShareDialog prepare={prepare} caption={share.caption} onClose={() => setShare(null)} />}
