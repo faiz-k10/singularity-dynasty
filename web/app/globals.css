@@ -7101,6 +7101,37 @@ body:has(.ehp) .ehp-inside,body:has(.ehp) .ehp-dark{--ehp-hole:#0B0B0B;--ehp-hol
 .sky-creal.is-done{fill:var(--up)}
 .sky-clabel.is-done{fill:var(--up)}
 .sky-heat{font-family:var(--font-mono);font-size:10px;fill:var(--star-dim);text-transform:uppercase;letter-spacing:.08em}
+.sky-heat tspan{fill:var(--star-dim);opacity:.55}
+.sky-heat tspan.is-on{opacity:1}
+.sky-core.is-cool .sky-heat tspan.is-on{fill:var(--star)}
+.sky-core.is-warming .sky-heat tspan.is-on{fill:var(--established)}
+.sky-core.is-unstable .sky-heat tspan.is-on{fill:var(--ember)}
+.sky-core.is-collapsed .sky-heat{fill:var(--ember)}
+/* The core (SkyClient.js Core): cool = pale and still, warming = amber with a turning debris ring, unstable = ember, pulsing and faster,
+   collapsed = a black hole with a bright ring while a find waits. The 12 ticks are the gauge, coloured by the band they sit in. */
+.sky-core-glow{fill:var(--star);opacity:.03;transition:fill .6s,opacity .6s}
+.sky-core-tick{stroke:var(--line);stroke-width:2.2;stroke-linecap:round;transition:stroke .4s}
+.sky-core-tick.is-lit.is-cool{stroke:var(--star-dim)}
+.sky-core-tick.is-lit.is-warming{stroke:var(--established)}
+.sky-core-tick.is-lit.is-unstable{stroke:var(--ember)}
+.sky-core-debris{fill:none;stroke:var(--star-dim);stroke-width:1.4;stroke-dasharray:1 6;opacity:0;transform-box:fill-box;transform-origin:center}
+.sky-core-rim{fill:none;stroke:var(--star-dim);stroke-width:1.5;transition:stroke .6s}
+.sky-core-body{fill:var(--star);transition:fill .6s}
+.sky-core-lens{fill:none;stroke:var(--star);stroke-width:1;opacity:.7}
+.sky-core.is-warming .sky-core-glow{fill:var(--established);opacity:.09}
+.sky-core.is-warming .sky-core-rim{stroke:var(--established)}
+.sky-core.is-warming .sky-core-debris{stroke:var(--established);opacity:.8;animation:sky-spin 24s linear infinite}
+.sky-core.is-unstable .sky-core-glow{fill:var(--ember);opacity:.14;transform-box:fill-box;transform-origin:center;animation:sky-pulse 1.6s ease-in-out infinite}
+.sky-core.is-unstable .sky-core-rim{stroke:var(--ember);stroke-width:2}
+.sky-core.is-unstable .sky-core-debris{stroke:var(--ember);opacity:1;stroke-dasharray:2 5;animation:sky-spin 7s linear infinite}
+.sky-core.is-unstable .sky-core-body{fill:color-mix(in srgb, var(--star) 86%, var(--ember))}
+.sky-core.is-collapsed .sky-core-glow{fill:var(--ember);opacity:.12}
+.sky-core.is-collapsed .sky-core-rim{stroke:var(--ember);stroke-width:2.5}
+.sky-core.is-collapsed .sky-core-body{fill:var(--void)}
+.sky-core.is-collapsed .sky-core-tick.is-lit{stroke:var(--ember)}
+@keyframes sky-spin{to{transform:rotate(360deg)}}
+@keyframes sky-pulse{0%,100%{transform:scale(1);opacity:.1}50%{transform:scale(1.08);opacity:.2}}
+@media (prefers-reduced-motion:reduce){.sky-core-debris,.sky-core-glow{animation:none!important}}
 .sky-scope-btn{align-self:center}
 .sky-note-line,.sky-small{font-size:12px;color:var(--star-dim);margin:0;line-height:1.5}
 .sky-note-line{text-align:center}

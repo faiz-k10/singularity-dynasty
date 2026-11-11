@@ -18,11 +18,42 @@ const seededStars = (() => {
   return Array.from({ length: 140 }, () => [r() * 600 - 300, r() * 600 - 300, 0.4 + r() * 0.9, 0.15 + r() * 0.35]);
 })();
 
-function Sky({ state, pendingPicks }) {
-  const open = state.findsTotal >= UNLOCK.constellations;
-  const scale = 1 + Math.min(state.mass, 12) * 0.018;
+// The core's four stages. Cool / warming / unstable follow its mass (the same thresholds the page has always named); collapsed = a find is
+// waiting for the telescope. The gauge has one tick per unit of mass (12 shown), coloured by the band it sits in.
+const STAGES = [
+  { id: "cool", label: "Cool", from: 0 },
+  { id: "warming", label: "Warming", from: 4 },
+  { id: "unstable", label: "Unstable", from: 8 },
+];
+const stageOf = (mass) => [...STAGES].reverse().find((st) => mass >= st.from);
+function Core({ mass, collapsed }) {
+  const m = Math.min(12, Math.max(0, mass || 0)), st = collapsed ? { id: "collapsed", label: "Collapsed" } : stageOf(m);
+  const ticks = Array.from({ length: 12 }, (_, i) => {
+    const a = ((-90 + i * 30) * Math.PI) / 180, band = i < 3 ? "cool" : i < 7 ? "warming" : "unstable";
+    const r2 = (v) => Math.round(v * 100) / 100; // the same digits on the server and in the browser
+    return { x1: r2(Math.cos(a) * 74), y1: r2(Math.sin(a) * 74), x2: r2(Math.cos(a) * 84), y2: r2(Math.sin(a) * 84), lit: collapsed || i < m, band };
+  });
   return (
-    <svg className="sky-svg" viewBox="-300 -300 600 600" role="img" aria-label={`Your sky: ${state.findsTotal} finds, the core ${state.mass >= 8 ? "unstable" : state.mass >= 4 ? "warming" : "cool"}`}>
+    <g className={`sky-core is-${st.id}`}>
+      <circle className="sky-core-glow" r="70" />
+      {ticks.map((t, i) => <line key={i} className={`sky-core-tick${t.lit ? ` is-lit is-${t.band}` : ""}`} x1={t.x1} y1={t.y1} x2={t.x2} y2={t.y2} />)}
+      <circle className="sky-core-debris" r="62" />
+      <circle className="sky-core-rim" r="54" />
+      <circle className="sky-core-body" r="44" />
+      {collapsed && <circle className="sky-core-lens" r="49" />}
+      <text className="sky-heat" x="0" y="106" textAnchor="middle">
+        {collapsed ? "Collapsed · a find is waiting" : STAGES.map((x, i) => (
+          <tspan key={x.id} className={x.id === st.id ? "is-on" : ""}>{i ? "  ·  " : ""}{x.label}</tspan>
+        ))}
+      </text>
+    </g>
+  );
+}
+
+function Sky({ state, pendingPicks, pending }) {
+  const open = state.findsTotal >= UNLOCK.constellations;
+  return (
+    <svg className="sky-svg" viewBox="-300 -300 600 600" role="img" aria-label={`Your sky: ${state.findsTotal} finds, the core ${pending ? "collapsed" : stageOf(state.mass).label.toLowerCase()}`}>
       {seededStars.map(([x, y, r, o], i) => <circle key={i} cx={x} cy={y} r={r} fill="var(--star)" fillOpacity={o} />)}
       {skyFor(state.season).map((c) => {
         const f = state.filled[c.id] || [];
@@ -45,16 +76,11 @@ function Sky({ state, pendingPicks }) {
       })}
       {pendingPicks.length > 0 && (
         <g>
-          {pendingPicks.map((_, i) => <circle key={`p${i}`} className="sky-pending" cx={(i - (pendingPicks.length - 1) / 2) * 22} cy={122} r="5" />)}
-          <text className="sky-creal" x="0" y="146" textAnchor="middle">{pendingPicks.length} pick{pendingPicks.length === 1 ? "" : "s"} waiting</text>
+          {pendingPicks.map((_, i) => <circle key={`p${i}`} className="sky-pending" cx={(i - (pendingPicks.length - 1) / 2) * 22} cy={138} r="5" />)}
+          <text className="sky-creal" x="0" y="160" textAnchor="middle">{pendingPicks.length} pick{pendingPicks.length === 1 ? "" : "s"} waiting</text>
         </g>
       )}
-      <g>
-        <circle r={62} fill="var(--ember)" fillOpacity={(0.05 + Math.min(state.mass, 12) * 0.02).toFixed(2)} />
-        <circle r={54 * scale} fill="none" stroke="var(--ember)" strokeWidth="1.5" />
-        <circle r={44 * scale} fill="var(--star)" />
-      </g>
-      <text className="sky-heat" x="0" y="92" textAnchor="middle">{state.mass >= 8 ? "The core is unstable" : state.mass >= 4 ? "The core is warming" : "The core is cool"}</text>
+      <Core mass={state.mass} collapsed={pending > 0} />
     </svg>
   );
 }
@@ -188,7 +214,7 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
         <div className="sky-col">
           <section className="sky-panel" aria-labelledby="sky-h">
             <div className="board-panel-title" id="sky-h">The sky</div>
-            <Sky state={state} pendingPicks={pendingPicks} />
+            <Sky state={state} pendingPicks={pendingPicks} pending={state.pending.length} />
             {state.pending.length > 0 ? (
               <button type="button" className="btn-primary sky-scope-btn" onClick={() => setScope(true)}>
                 The core collapsed{state.pending.length > 1 ? ` ${state.pending.length} times` : ""} · point the telescope
