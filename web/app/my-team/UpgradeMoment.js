@@ -2,21 +2,11 @@
 
 import { useState } from "react";
 import { summarizeLeagues } from "@/lib/heroLookup";
+import { startCheckout } from "@/lib/startCheckout";
 
-// Starts a Stripe Checkout session for Explorer and sends the browser there (same endpoint the pricing cards use).
-export async function startExplorerCheckout(billing = "annual") {
-  const res = await fetch("/api/checkout", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ plan: "explorer", billing }),
-  });
-  const data = await res.json();
-  if (res.status === 401 && data.login) {
-    window.location.href = data.login;
-    return;
-  }
-  if (!res.ok || !data.url) throw new Error(data.error || "Checkout failed");
-  window.location.href = data.url;
+// Starts a Stripe Checkout session for Explorer and sends the browser there: the site's one checkout helper (lib/startCheckout.js).
+export function startExplorerCheckout(billing = "annual") {
+  return startCheckout("explorer", billing);
 }
 
 // Shown to a free signed-in user who has used their one saved league and looks up the rest: their own numbers with the

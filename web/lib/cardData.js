@@ -33,7 +33,7 @@ const weekRows = unstable_cache(
       q.eq("season", season).eq("week", week).order("rank", { ascending: true }).order("player_name")
     ),
   ["card-week-rows-v2"],
-  { revalidate: 600 }
+  { revalidate: 3600, tags: ["model-data"] }
 );
 
 // The leans that were SHOWN with a week's rankings: the newest ones published through an earlier week (week 8's rankings carry the leans
@@ -47,7 +47,7 @@ const leansShownWith = unstable_cache(
     return data || [];
   },
   ["card-leans-shown-v1"],
-  { revalidate: 600 }
+  { revalidate: 3600, tags: ["model-data"] }
 );
 
 // The latest published week, enriched once per cached bundle exactly as Weekly Projection Rankings does it (full pool, so ranks and badges match).
@@ -182,7 +182,7 @@ export const latestReceiptsWeek = unstable_cache(
     return data ? { season: data.season, week: data.week } : null;
   },
   ["card-receipts-latest-v1"],
-  { revalidate: 600 }
+  { revalidate: 3600, tags: ["model-data"] }
 );
 
 export const receiptsFor = unstable_cache(
@@ -198,7 +198,7 @@ export const receiptsFor = unstable_cache(
     return { season, week, ...weekReceipts({ rankRows, games, leanRows }) };
   },
   ["card-receipts-v1"],
-  { revalidate: 3600 }
+  { revalidate: 3600, tags: ["model-data"] }
 );
 
 export async function smashFor(season, week) {

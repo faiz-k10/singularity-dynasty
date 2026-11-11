@@ -5,7 +5,7 @@ import { computeReplacementValues } from "@/lib/replacementValue";
 import { computeRegressionScore } from "@/lib/regressionScore";
 import { computeOutcomePercentile } from "@/lib/outcomePercentile";
 import { findBio } from "@/lib/portfolio";
-import { fetchAllRows } from "@/lib/fetchAllRows";
+import { fetchAllRows, must } from "@/lib/fetchAllRows";
 import { ARCHETYPE_NEAR_CONFIDENCE } from "@/lib/archetypes";
 import { seasonLabelsByName } from "@/lib/seasonLabels";
 import { byeWeeks, indexGameLog, missedWeeks, recentWeekRows, settleRecent, teamGamesThrough } from "@/lib/teamGames";
@@ -101,17 +101,19 @@ async function loadGroups(client, latest) {
 export const getCachedWeekData = unstable_cache(
   async () => {
     const publicSupabase = createPublicClient();
-    const { data: latest } = await publicSupabase
-      .from("player_simulations")
-      .select("season, week")
-      .order("season", { ascending: false })
-      .order("week", { ascending: false })
-      .limit(1)
-      .maybeSingle();
+    const latest = must(
+      await publicSupabase
+        .from("player_simulations")
+        .select("season, week")
+        .order("season", { ascending: false })
+        .order("week", { ascending: false })
+        .limit(1)
+        .maybeSingle()
+    );
 
     if (!latest) return { latest: null, rows: [], totalCount: 0, actualProductionByName: {} };
 
-    const [{ data, count }, logRows, archetypeByName, groupsByName, seasonLabelsByName_] = await Promise.all([
+    const [simsRes, logRows, archetypeByName, groupsByName, seasonLabelsByName_] = await Promise.all([
       publicSupabase
         .from("player_simulations")
         .select(
@@ -140,6 +142,8 @@ export const getCachedWeekData = unstable_cache(
       loadGroups(publicSupabase, latest),
       loadSeasonLabels(publicSupabase, latest),
     ]);
+    if (simsRes.error) throw simsRes.error; // never cache an empty table on a database hiccup
+    const { data, count } = simsRes;
 
     const actualProductionByName = {};
     for (const g of logRows || []) {
@@ -168,7 +172,7 @@ export const getCachedWeekData = unstable_cache(
     return { latest, rows: data || [], totalCount: count || 0, actualProductionByName, recentByName, lastGameWeek, teamGamesByName, missedWeeksByName, byeWeeksByName, archetypeByName, groupsByName, seasonLabelsByName: seasonLabelsByName_ };
   },
   ["player-simulations-latest-week-v2"],
-  { revalidate: 60 }
+  { revalidate: 3600, tags: ["model-data"] }
 );
 
 // The season-simulation rows exactly as the Player Season Simulations dashboard builds them (position rank, heat,

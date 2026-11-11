@@ -10,19 +10,20 @@ import { fetchSleeperLeague, fetchSleeperTransactions, fetchSleeperDrafts, fetch
 import { acquiredMap, draftEvents, transactionEvents } from "./acquisition";
 
 const cache = new Map();
-const NOW_TTL = 10 * 60 * 1000;
+const NOW_TTL = 60 * 60 * 1000; // an hour (was 10 minutes): only the DRAFT / TRADE / WAIVERS tag reads it, and every full refresh re-read ~a dozen Sleeper calls per league
 const PAST_TTL = 6 * 60 * 60 * 1000;
 const MAX_SEASONS = 5;
 
-async function leagueEvents(leagueId, rounds, ttl) {
+// openRound: the week still in play (its moves can still change); every earlier week, and a whole past season (openRound 0), is final.
+async function leagueEvents(leagueId, rounds, ttl, openRound = 0) {
   const key = `${leagueId}:${rounds}`;
   const hit = cache.get(key);
   if (hit && Date.now() - hit.at < ttl) return hit.events;
   const [drafts, ...weeks] = await Promise.all([
     fetchSleeperDrafts(leagueId),
-    ...Array.from({ length: rounds }, (_, i) => fetchSleeperTransactions(leagueId, i + 1)),
+    ...Array.from({ length: rounds }, (_, i) => fetchSleeperTransactions(leagueId, i + 1, { final: !openRound || i + 1 < openRound })),
   ]);
-  const picks = await Promise.all(drafts.filter((d) => d.status === "complete" || d.last_picked).map((d) => fetchSleeperDraftPicks(d.draft_id).then((p) => draftEvents(d, p))));
+  const picks = await Promise.all(drafts.filter((d) => d.status === "complete" || d.last_picked).map((d) => fetchSleeperDraftPicks(d.draft_id, { final: d.status === "complete" }).then((p) => draftEvents(d, p))));
   const events = [...picks.flat(), ...weeks.flatMap(transactionEvents)];
   cache.set(key, { at: Date.now(), events });
   return events;
@@ -37,7 +38,7 @@ export async function getAcquisitions({ league, rosterId, playerIds }) {
   for (let depth = 0; cur && depth < MAX_SEASONS; depth++) {
     const current = depth === 0;
     const leg = Number(cur.settings?.leg) || 1;
-    const events = await leagueEvents(cur.league_id, current ? Math.min(18, Math.max(1, leg)) : 18, current ? NOW_TTL : PAST_TTL);
+    const events = await leagueEvents(cur.league_id, current ? Math.min(18, Math.max(1, leg)) : 18, current ? NOW_TTL : PAST_TTL, current ? leg : 0);
     const found = acquiredMap(events, rosterId);
     for (const id of wanted) if (!out[id] && found[id]) out[id] = found[id];
     // Redraft leagues start fresh every year, so there is nothing earlier to find; stop once everyone is explained.

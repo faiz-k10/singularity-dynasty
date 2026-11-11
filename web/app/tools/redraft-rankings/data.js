@@ -1,7 +1,7 @@
 import { unstable_cache } from "next/cache";
 import { indexLeans, flagFor } from "@/lib/defenseLeans";
 import { createPublicClient } from "@/lib/supabase/public";
-import { fetchAllRows } from "@/lib/fetchAllRows";
+import { fetchAllRows, must, cachedOrElse } from "@/lib/fetchAllRows";
 import { percentileRank, INVERTED_STATS } from "@/lib/statPercentiles";
 import { findBio } from "@/lib/portfolio";
 import { groupRanks } from "@/lib/statPanel";
@@ -113,36 +113,26 @@ export function attachStatPercentiles(rows) {
 // publish) -- WeeklyDetailRow already renders "no data" as simply
 // omitting that row, same as every other nullable metric here.
 async function fetchSimsMetrics(supabase) {
-  const { data: latest } = await supabase
-    .from("player_simulations")
-    .select("season, week")
-    .order("season", { ascending: false })
-    .order("week", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  const latest = must(
+    await supabase
+      .from("player_simulations")
+      .select("season, week")
+      .order("season", { ascending: false })
+      .order("week", { ascending: false })
+      .limit(1)
+      .maybeSingle()
+  );
   if (!latest) return {};
 
-  // ryoe/scramble_rate/play_action_rate (migration 0033) may not exist
-  // yet in a given Supabase project until that migration's been run by
-  // hand (this repo has no direct DDL access, see CLAUDE.md) -- selecting
-  // a column that doesn't exist fails the WHOLE query, not just those
-  // fields, so this falls back to the pre-0033 column set rather than
-  // losing wopr/target_share/yac_above_exp too while the migration is
-  // still pending.
-  let { data, error } = await supabase
-    .from("player_simulations")
-    .select("player_name, wopr, ryoe, scramble_rate, play_action_rate, stat_ranges")
-    .eq("season", latest.season)
-    .eq("week", latest.week);
-
-  if (error) {
-    console.error("player_simulations: migration 0033 columns unavailable, falling back:", error.message);
-    ({ data } = await supabase
+  // (Migration 0033's columns are long in place; the old "fall back to the pre-0033 columns on any error" branch is gone -- under load a
+  // TIMEOUT took that branch and cached the page without these numbers, Nov 10 2026. An error now throws, so the cache keeps its last good copy.)
+  const data = must(
+    await supabase
       .from("player_simulations")
-      .select("player_name, wopr, stat_ranges")
+      .select("player_name, wopr, ryoe, scramble_rate, play_action_rate, stat_ranges")
       .eq("season", latest.season)
-      .eq("week", latest.week));
-  }
+      .eq("week", latest.week)
+  );
 
   const byName = {};
   for (const r of data || []) {
@@ -351,13 +341,15 @@ export function sortPositions(positions) {
 export const getCachedRedraftData = unstable_cache(
   async () => {
     const publicSupabase = createPublicClient();
-    const { data: latest } = await publicSupabase
-      .from("redraft_rankings")
-      .select("season, week")
-      .order("season", { ascending: false })
-      .order("week", { ascending: false })
-      .limit(1)
-      .maybeSingle();
+    const latest = must(
+      await publicSupabase
+        .from("redraft_rankings")
+        .select("season, week")
+        .order("season", { ascending: false })
+        .order("week", { ascending: false })
+        .limit(1)
+        .maybeSingle()
+    );
     if (!latest) return { latest: null, rows: [] };
 
     const [rows, floorCeilingByGame, simsByName, gameLogRows] = await Promise.all([
@@ -388,67 +380,58 @@ export const getCachedRedraftData = unstable_cache(
     };
   },
   ["redraft-rankings-latest-week-v3"],
-  { revalidate: 60 }
+  { revalidate: 3600, tags: ["model-data"] }
 );
 
 // Defense-vs-position trends (model/defense_impact.R -> defense_leans), the newest week published.
 // Optional by design: a missing table or an empty result just means no flags, never an error.
-export const getCachedLeans = unstable_cache(
+export const getCachedLeans = cachedOrElse(
   async () => {
-    try {
-      const pub = createPublicClient();
-      const { data: latest } = await pub
-        .from("defense_leans")
-        .select("season, week")
-        .order("season", { ascending: false })
-        .order("week", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      if (!latest) return [];
-      const { data } = await pub
-        .from("defense_leans")
-        .select("defense, position, call, score, effect, rank_now, rank_prior")
-        .eq("season", latest.season)
-        .eq("week", latest.week);
-      return data || [];
-    } catch {
-      return [];
-    }
+    const pub = createPublicClient();
+    const latest = must(
+      await pub.from("defense_leans").select("season, week").order("season", { ascending: false }).order("week", { ascending: false }).limit(1).maybeSingle()
+    );
+    if (!latest) return [];
+    return (
+      must(
+        await pub
+          .from("defense_leans")
+          .select("defense, position, call, score, effect, rank_now, rank_prior")
+          .eq("season", latest.season)
+          .eq("week", latest.week)
+      ) || []
+    );
   },
   ["defense-leans-latest"],
-  { revalidate: 60 }
+  { revalidate: 3600, tags: ["model-data"] },
+  () => []
 );
 
 // The latest published player_groups rows of one kind, as { [player_name]: detail }. Display-only profiles are optional by design:
 // nothing published (or an error) just leaves the panel without them.
 const groupProfileLoader = (kind, cacheKey) =>
-  unstable_cache(
+  cachedOrElse(
     async () => {
-      try {
-        const pub = createPublicClient();
-        const { data: latest } = await pub
+      const pub = createPublicClient();
+      const latest = must(
+        await pub
           .from("player_groups")
           .select("season, week")
           .eq("kind", kind)
           .order("season", { ascending: false })
           .order("week", { ascending: false })
           .limit(1)
-          .maybeSingle();
-        if (!latest) return {};
-        const { data } = await pub
-          .from("player_groups")
-          .select("player_name, detail")
-          .eq("kind", kind)
-          .eq("season", latest.season)
-          .eq("week", latest.week)
-          .limit(1000);
-        return Object.fromEntries((data || []).filter((r) => r.detail).map((r) => [r.player_name, r.detail]));
-      } catch {
-        return {};
-      }
+          .maybeSingle()
+      );
+      if (!latest) return {};
+      const data = must(
+        await pub.from("player_groups").select("player_name, detail").eq("kind", kind).eq("season", latest.season).eq("week", latest.week).limit(1000)
+      );
+      return Object.fromEntries((data || []).filter((r) => r.detail).map((r) => [r.player_name, r.detail]));
     },
     [cacheKey],
-    { revalidate: 60 }
+    { revalidate: 3600, tags: ["model-data"] },
+    () => ({})
   );
 
 // Touchdown profile for WRs and TEs (model/td_profile.R, kind "td_profile"): expected TDs per game, chance of 2+ TDs in a game,

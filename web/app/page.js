@@ -12,6 +12,7 @@ import { expectedWins, weekRows } from "@/lib/briefing";
 import { formatWin } from "@/lib/standing";
 import { createClient } from "@/lib/supabase/server";
 import { resolveTier } from "@/lib/tier";
+import { must } from "@/lib/fetchAllRows";
 import { createPublicClient } from "@/lib/supabase/public";
 
 // The home page is the Event Horizon landing page (app/EventHorizon.js) for everyone (founder, Nov 9 2026). The design before
@@ -24,10 +25,12 @@ export const dynamic = "force-dynamic";
 const getCachedHomeData = unstable_cache(
   async () => {
     const supabase = createPublicClient();
-    const [{ data: posts }, { data: latest }] = await Promise.all([
+    const [postsRes, latestRes] = await Promise.all([
       supabase.from("posts").select("id, title, url, published_at").order("published_at", { ascending: false }).limit(3),
       supabase.from("redraft_rankings").select("season, week").order("season", { ascending: false }).order("week", { ascending: false }).limit(1).maybeSingle(),
     ]);
+    const posts = postsRes.data; // posts are optional (an empty letter list); the rankings week is not
+    const latest = must(latestRes);
     let weekly = [];
     if (latest) {
       const { data } = await supabase
@@ -42,7 +45,7 @@ const getCachedHomeData = unstable_cache(
     return { posts: posts || [], weekly, week: latest?.week ?? null };
   },
   ["landing-page-data-v3"],
-  { revalidate: 60 }
+  { revalidate: 3600, tags: ["model-data"] }
 );
 
 export default async function Home() {

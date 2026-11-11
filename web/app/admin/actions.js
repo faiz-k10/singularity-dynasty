@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/admin";
 import { parseProspects, parseDraftBoard } from "@/lib/boardImport";
@@ -12,6 +12,7 @@ const MAX_FILE = 2_000_000;
 function done(message) {
   revalidatePath("/admin");
   revalidatePath("/", "layout"); // the home page's feed and the tool pages read these tables
+  revalidateTag("model-data", "max"); // ...through hour-long data caches (app/api/revalidate), so refresh those too
   return { ok: true, message, errors: [] };
 }
 const fail = (...errors) => ({ ok: false, message: "", errors });
@@ -34,6 +35,7 @@ export async function deletePost(formData) {
   await createAdminClient().from("posts").delete().eq("id", id);
   revalidatePath("/admin");
   revalidatePath("/", "layout");
+  revalidateTag("model-data", "max");
 }
 
 async function fileText(formData) {

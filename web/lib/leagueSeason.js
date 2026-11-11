@@ -63,7 +63,7 @@ export async function getLeagueSeason({ league, rosters, users, myRosterId, curr
   const projFor = (name) => findProjection(projByName, name);
   const pastNums = [];
   for (let w = 1; w <= Math.min(lastScored, lastRegular); w++) pastNums.push(w);
-  const pastFeeds = await Promise.all(pastNums.map((w) => fetchSleeperMatchups(league.league_id, w).catch(() => null)));
+  const pastFeeds = await Promise.all(pastNums.map((w) => fetchSleeperMatchups(league.league_id, w, { final: w < currentWeek }).catch(() => null)));
   const scores = Object.fromEntries(rosters.map((r) => [r.roster_id, []]));
   for (const feed of pastFeeds) {
     // A week where nobody scored wasn't played (a league that started late) -- it says nothing about anyone.
@@ -77,7 +77,7 @@ export async function getLeagueSeason({ league, rosters, users, myRosterId, curr
   const weekNums = [];
   for (let w = Math.max(lastScored + 1, 1); w <= lastRegular; w++) weekNums.push(w);
   const feeds = await Promise.all(
-    weekNums.map((w) => (w === currentWeek && currentMatchups ? currentMatchups : fetchSleeperMatchups(league.league_id, w).catch(() => null)))
+    weekNums.map((w) => (w === currentWeek && currentMatchups ? currentMatchups : fetchSleeperMatchups(league.league_id, w, { final: w > currentWeek }).catch(() => null))) // a later week is only its schedule
   );
   const weeks = weekNums.map((w, i) => {
     const feed = feeds[i];

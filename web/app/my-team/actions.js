@@ -511,12 +511,15 @@ export async function pollLiveScores() {
   const projP = getWeekProjections(createPublicClient(), new Date().getFullYear()).catch(() => ({ byName: {} }));
   const stateP = fetchSleeperState();
   stateP.catch(() => {}); // no unhandled rejection if we return early below; the await further down still throws
-  const { data: rows } = await supabase
+  // Only the two parts of the snapshot the poll reads (the saved lineups and the slots), not the whole ~8.5KB settings blob per league -- this runs
+  // every 15-30s for every member watching, so it is most of the site's database traffic on a game day.
+  const { data: raw } = await supabase
     .from("saved_teams")
-    .select("id, platform_league_id, platform_roster_id, settings")
+    .select("id, platform_league_id, platform_roster_id, h2h:settings->h2h, slots:settings->slots")
     .eq("user_id", user.id)
     .eq("platform", "sleeper");
-  if (!rows?.length) return { live: {} };
+  const rows = (raw || []).map((r) => ({ ...r, settings: { h2h: r.h2h, slots: r.slots } }));
+  if (!rows.length) return { live: {} };
   const tRows = Date.now() - t0;
   const state = await stateP;
   const tState = Date.now() - t0;
@@ -640,7 +643,7 @@ export async function getWaiverWire(teamId) {
     .maybeSingle();
   if (!row?.platform_league_id) return { error: "League not found." };
   const [rosters, dict, week] = await Promise.all([
-    fetchSleeperRosters(row.platform_league_id).catch(() => null),
+    fetchSleeperRosters(row.platform_league_id, { fresh: true }).catch(() => null), // who is free right now, not 5 minutes ago
     getSleeperPlayers().catch(() => null),
     getWeekRankRows(createPublicClient(), new Date().getFullYear()),
   ]);
@@ -731,7 +734,7 @@ export async function getRosterNews() {
 // A save asks Sleeper how each rostered player was acquired, for that one league (best effort: a failure saves the roster without it).
 async function withAcquired(leagueId, rosterId, players) {
   try {
-    const [league, rosters] = await Promise.all([fetchSleeperLeague(leagueId), fetchSleeperRosters(leagueId)]);
+    const [league, rosters] = await Promise.all([fetchSleeperLeague(leagueId), fetchSleeperRosters(leagueId, { fresh: true })]);
     const roster = rosters.find((r) => String(r.roster_id) === String(rosterId));
     if (!league || !roster) return players;
     const acquired = await getAcquisitions({ league, rosterId: roster.roster_id, playerIds: players.map((p) => p.player_id) });

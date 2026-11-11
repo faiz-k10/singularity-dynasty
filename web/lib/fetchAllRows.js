@@ -1,3 +1,5 @@
+import { unstable_cache } from "next/cache";
+
 // Supabase's project-level API "max rows" setting hard-caps a single
 // request at 1000 regardless of an explicit .limit() asking for more --
 // verified directly against this project (a .limit(5000) on a query over
@@ -41,4 +43,27 @@ export async function fetchAllRows(client, table, select, queryFn) {
     })
   );
   return head.concat(...rest);
+}
+
+// For one-shot reads inside a cached loader (Nov 10 2026, load test): a Supabase error -- a timeout under load, a hiccup -- must THROW, not come
+// back as "no data". unstable_cache stores whatever a loader returns, so an empty answer would be served to everyone until the cache next
+// refreshes ("check back soon" on a page that has data), while a throw keeps serving the last good copy. Usage: const row = must(await q).
+export function must(res) {
+  if (res?.error) throw res.error;
+  return res?.data ?? null;
+}
+
+// An OPTIONAL cached read (a panel that can be missing): the loader throws on any error (use must() inside it), the cache only ever
+// stores a good answer, and `fallback` is what this one request shows when the read fails -- never stored, so the next request
+// tries again and the last good copy stays in use until then.
+export function cachedOrElse(loader, keyParts, options, fallback) {
+  const cached = unstable_cache(loader, keyParts, options);
+  return async (...args) => {
+    try {
+      return await cached(...args);
+    } catch (e) {
+      console.error(`[cache:${keyParts[0]}]`, e?.message || e);
+      return typeof fallback === "function" ? fallback() : fallback;
+    }
+  };
 }

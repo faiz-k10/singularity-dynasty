@@ -20,11 +20,20 @@ let cached = null;
 let cachedAt = 0;
 const FEED_CACHE_MS = 2 * 60 * 1000;
 
+let inflight = null; // members asking while the 12MB feed is being read wait for that one download instead of each starting their own
+
 export async function fetchInjuryFeed() {
   if (cached && Date.now() - cachedAt < FEED_CACHE_MS) return cached;
+  inflight ||= readFeed().finally(() => {
+    inflight = null;
+  });
+  return inflight;
+}
+
+async function readFeed() {
   try {
     const res = await fetch(URL, { cache: "no-store" });
-    if (!res.ok) return null;
+    if (!res.ok) return cached; // stale beats nothing if ESPN hiccups
     const json = await res.json();
     const out = [];
     for (const team of json.injuries || []) {

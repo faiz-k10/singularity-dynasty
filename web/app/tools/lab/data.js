@@ -17,5 +17,5 @@ export const getCachedLabGames = unstable_cache(
     return indexLabGames(rows, season);
   },
   ["lab-game-log-v2"],
-  { revalidate: 600 }
+  { revalidate: 3600, tags: ["model-data"] }
 );

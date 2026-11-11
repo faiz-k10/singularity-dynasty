@@ -1,3 +1,4 @@
+import { must, cachedOrElse } from "@/lib/fetchAllRows";
 import InteractiveScript from "../InteractiveScript";
 import { createClient } from "@/lib/supabase/server";
 import { createPublicClient } from "@/lib/supabase/public";
@@ -5,7 +6,6 @@ import { resolveTier, savedTeamLimit } from "@/lib/tier";
 import { normalizePlayerName, buildPortfolio } from "@/lib/portfolio";
 import { getSleeperPlayers } from "@/lib/sleeper";
 import { fetchGameStates } from "@/lib/gameStatus";
-import { unstable_cache } from "next/cache";
 import { loadInsight, loadTeamInsightForAll, getInsight } from "@/lib/insights";
 import PortfolioOverview from "./PortfolioOverview";
 import ExposureSidebar from "./ExposureSidebar";
@@ -167,7 +167,7 @@ export default async function MyTeamPage({ searchParams }) {
 }
 
 // Same numbers for everyone, so one copy is cached for 5 minutes instead of two queries on every page view.
-const getCachedPlayerSims = unstable_cache(() => loadPlayerSims(), ["my-team-player-sims"], { revalidate: 300 });
+const getCachedPlayerSims = cachedOrElse(() => loadPlayerSims(), ["my-team-player-sims"], { revalidate: 3600, tags: ["model-data"] }, () => ({}));
 
 // Season sim numbers for the My Guys > My Analysis scatter -- public
 // read, no tier gate on these columns (same as the tool pages). Keyed
@@ -176,19 +176,13 @@ const getCachedPlayerSims = unstable_cache(() => loadPlayerSims(), ["my-team-pla
 async function loadPlayerSims() {
   const out = {};
   const pub = createPublicClient();
-  const { data: latest } = await pub
-    .from("player_simulations")
-    .select("season, week")
-    .order("season", { ascending: false })
-    .order("week", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  const latest = must(
+    await pub.from("player_simulations").select("season, week").order("season", { ascending: false }).order("week", { ascending: false }).limit(1).maybeSingle()
+  );
   if (!latest) return out;
-  const { data: sims } = await pub
-    .from("player_simulations")
-    .select("player_name, floor, median, ceiling, wopr, epa")
-    .eq("season", latest.season)
-    .eq("week", latest.week);
+  const sims = must(
+    await pub.from("player_simulations").select("player_name, floor, median, ceiling, wopr, epa").eq("season", latest.season).eq("week", latest.week)
+  );
   for (const s of sims || []) {
     if (s.player_name) out[normalizePlayerName(s.player_name)] = s;
   }

@@ -1,10 +1,9 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { sampleUnique } from "@/lib/sample";
-import { unstable_cache } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createPublicClient } from "@/lib/supabase/public";
-import { fetchAllRows } from "@/lib/fetchAllRows";
+import { fetchAllRows, must, cachedOrElse } from "@/lib/fetchAllRows";
 import ThemeToggle from "./ThemeToggle";
 import InteractiveScript from "./InteractiveScript";
 import TickerTrack from "./TickerTrack";
@@ -37,19 +36,16 @@ import {
 const TICKER_PLAYERS = 36;
 const TICKER_ITEMS = 60;
 
-const getCachedTickerInputs = unstable_cache(
+const EMPTY_TICKER = { topRows: [], paceByName: {}, achievementInputs: null, redraftFieldsByName: {}, woprPercentileByName: {}, groupRankByName: {} };
+const getCachedTickerInputs = cachedOrElse(
   async () => {
     const publicSupabase = createPublicClient();
-    const { data: latestRedraft } = await publicSupabase
-      .from("redraft_rankings")
-      .select("season, week")
-      .order("season", { ascending: false })
-      .order("week", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    if (!latestRedraft) return { topRows: [], paceByName: {}, achievementInputs: null, redraftFieldsByName: {}, woprPercentileByName: {}, groupRankByName: {} };
+    const latestRedraft = must(
+      await publicSupabase.from("redraft_rankings").select("season, week").order("season", { ascending: false }).order("week", { ascending: false }).limit(1).maybeSingle()
+    );
+    if (!latestRedraft) return EMPTY_TICKER;
 
-    const [{ data: topRows }, achievementInputs, redraftFieldsByName, woprPercentileByName, rankingData, tdProfile, usageProfile] = await Promise.all([
+    const [topRes, achievementInputs, redraftFieldsByName, woprPercentileByName, rankingData, tdProfile, usageProfile] = await Promise.all([
       publicSupabase
         .from("redraft_rankings")
         .select("player_name, position")
@@ -66,6 +62,7 @@ const getCachedTickerInputs = unstable_cache(
       getCachedTdProfile(),
       getCachedUsageProfile(),
     ]);
+    const topRows = must(topRes);
     const allGroupRanks = rankingData?.rows?.length ? computeRanks({ cached: rankingData, tdProfile, usageProfile }).groupRank : {};
     const groupRankByName = Object.fromEntries((topRows || []).filter((r) => allGroupRanks[r.player_name]).map((r) => [r.player_name, allGroupRanks[r.player_name]]));
 
@@ -76,17 +73,13 @@ const getCachedTickerInputs = unstable_cache(
     const paceByName = {};
     const names = (topRows || []).map((r) => r.player_name);
     if (names.length) {
-      const { data: latestSim } = await publicSupabase
-        .from("player_simulations")
-        .select("season, week")
-        .order("season", { ascending: false })
-        .order("week", { ascending: false })
-        .limit(1)
-        .maybeSingle();
+      const latestSim = must(
+        await publicSupabase.from("player_simulations").select("season, week").order("season", { ascending: false }).order("week", { ascending: false }).limit(1).maybeSingle()
+      );
       if (latestSim) {
         // Their games from the season's game log (the same points
         // player_actual_production holds -- it is built from this table).
-        const [{ data: sims }, ownRows] = await Promise.all([
+        const [simsRes, ownRows] = await Promise.all([
           publicSupabase
             .from("player_simulations")
             .select("player_name, median")
@@ -97,6 +90,7 @@ const getCachedTickerInputs = unstable_cache(
             q.eq("season", latestSim.season).in("player_name", names).order("week", { ascending: true }).order("player_name", { ascending: true })
           ),
         ]);
+        const sims = must(simsRes);
         const pts = {};
         for (const g of ownRows || []) {
           if (typeof g.fantasy_points_ppr === "number") (pts[g.player_name] ??= []).push(g.fantasy_points_ppr);
@@ -125,7 +119,8 @@ const getCachedTickerInputs = unstable_cache(
   },
   ["site-header-ticker-inputs"],
   // 10 minutes: the picks are re-rolled on every request anyway, and the data underneath only changes when a week is published.
-  { revalidate: 600 }
+  { revalidate: 3600, tags: ["model-data"] },
+  EMPTY_TICKER
 );
 
 // The ticker's picks, worked out from getCachedTickerInputs and handed to TickerTrack. A SEPARATE async component inside a Suspense boundary (SiteHeader below),

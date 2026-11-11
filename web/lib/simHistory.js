@@ -1,6 +1,6 @@
 import { unstable_cache } from "next/cache";
 import { createPublicClient } from "@/lib/supabase/public";
-import { fetchAllRows } from "@/lib/fetchAllRows";
+import { fetchAllRows, must } from "@/lib/fetchAllRows";
 import { buildStatPoolByPos, computeStatPercentiles } from "@/lib/statPercentiles";
 import { computeRegressionScore } from "@/lib/regressionScore";
 import { computeOutcomePercentile } from "@/lib/outcomePercentile";
@@ -19,13 +19,15 @@ const GAMES_PER_SEASON = 17;
 const getLatestInputs = unstable_cache(
   async () => {
     const pub = createPublicClient();
-    const { data: latest } = await pub
-      .from("player_simulations")
-      .select("season, week")
-      .order("season", { ascending: false })
-      .order("week", { ascending: false })
-      .limit(1)
-      .maybeSingle();
+    const latest = must(
+      await pub
+        .from("player_simulations")
+        .select("season, week")
+        .order("season", { ascending: false })
+        .order("week", { ascending: false })
+        .limit(1)
+        .maybeSingle()
+    );
     if (!latest) return { latest: null, latestRows: [] };
     const latestRows = await fetchAllRows(
       pub,
@@ -36,7 +38,7 @@ const getLatestInputs = unstable_cache(
     return { latest, latestRows };
   },
   ["sim-history-latest"],
-  { revalidate: 60 }
+  { revalidate: 3600, tags: ["model-data"] }
 );
 
 const getHistoryRows = unstable_cache(
@@ -47,7 +49,7 @@ const getHistoryRows = unstable_cache(
     );
   },
   ["sim-history-rows"],
-  { revalidate: 60 }
+  { revalidate: 3600, tags: ["model-data"] }
 );
 
 const getGameRows = unstable_cache(
@@ -61,7 +63,7 @@ const getGameRows = unstable_cache(
     );
   },
   ["sim-history-games"],
-  { revalidate: 60 }
+  { revalidate: 3600, tags: ["model-data"] }
 );
 
 // Everything the builders below need, fetched (cached) together. The derived

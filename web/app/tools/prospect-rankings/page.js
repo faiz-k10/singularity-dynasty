@@ -1,3 +1,4 @@
+import { must } from "@/lib/fetchAllRows";
 import Link from "next/link";
 import { unstable_cache } from "next/cache";
 import { createPublicClient } from "@/lib/supabase/public";
@@ -41,12 +42,14 @@ async function fetchPosition(supabase, draftClass, position, hasFullAccess) {
 const getCachedProspects = unstable_cache(
   async (hasFullAccess) => {
     const supabase = createPublicClient();
-    const { data: latest } = await supabase
-      .from("prospect_rankings")
-      .select("draft_class")
-      .order("draft_class", { ascending: false })
-      .limit(1)
-      .maybeSingle();
+    const latest = must(
+      await supabase
+        .from("prospect_rankings")
+        .select("draft_class")
+        .order("draft_class", { ascending: false })
+        .limit(1)
+        .maybeSingle()
+    );
     if (!latest) return { latest: null, wrs: { rows: [], total: 0 }, qbs: { rows: [], total: 0 } };
     const [wrs, qbs] = await Promise.all([
       fetchPosition(supabase, latest.draft_class, "WR", hasFullAccess),
@@ -55,7 +58,7 @@ const getCachedProspects = unstable_cache(
     return { latest, wrs, qbs };
   },
   ["prospect-rankings-board"],
-  { revalidate: 60 }
+  { revalidate: 3600, tags: ["model-data"] }
 );
 
 export default async function ProspectRankingsPage({ searchParams }) {

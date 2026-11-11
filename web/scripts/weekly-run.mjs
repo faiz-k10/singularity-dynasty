@@ -19,6 +19,7 @@
 //
 // Exits non-zero (and prints why) when a check fails, so a scheduled run can
 // report it instead of silently publishing something wrong.
+import { createHmac } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -225,6 +226,19 @@ function backup() {
 }
 
 const mode = process.argv[2];
+async function refreshSite() {
+  const site = (process.env.NEXT_PUBLIC_SITE_URL || "https://web-kohl-ten-94.vercel.app").replace(/\/$/, "");
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!key) return log("Site refresh skipped: no service key.");
+  const token = createHmac("sha256", key).update("revalidate:model-data:v1").digest("hex"); // same as lib/revalidateToken.js
+  try {
+    const res = await fetch(`${site}/api/revalidate`, { method: "POST", headers: { "x-revalidate-token": token } });
+    log(res.ok ? `Site refreshed (${site}).` : `Site refresh answered ${res.status} -- the new week shows within the hour.`);
+  } catch (e) {
+    log(`Site refresh failed (${e.message}) -- the new week shows within the hour.`);
+  }
+}
+
 const started = new Date();
 log(`Weekly run: ${mode} -- ${started.toString()}`);
 // GitHub can drop a scheduled run when it is busy, so the workflow schedules each job two or three times a day with SKIP_IF_DONE_HOURS set:
@@ -256,6 +270,9 @@ try {
   } else {
     fail("usage: weekly-run.mjs game-data | projections | tuesday | backup");
   }
+  // The site keeps its data an hour; tell it the new data is in so it shows at once (app/api/revalidate). Never fatal: at worst the new week
+  // appears within the hour.
+  if (mode !== "backup") await refreshSite();
   log("\nDONE");
 } catch (e) {
   ok = false;
