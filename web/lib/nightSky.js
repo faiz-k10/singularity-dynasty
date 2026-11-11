@@ -131,7 +131,10 @@ export const POWERUPS = {
 // = finish this season's Singularity, which earns that season's limited sky skin (e.g. "Orion 2026", never earnable again). `title`: the
 // season title it gives; `frame`: the share-card frame. `claim`: has cash value or needs the founder to act, so the member claims it and it
 // is fulfilled by hand -- ONLY the top rungs do, and every perk lasts that season only (early access ends at the next kickoff). Spaced with
-// mockups/night-sky-sim-live.mjs: light members earn about 4,300 points a season, regular ~10,000-13,000, engaged ~21,000-26,000.
+// mockups/night-sky-sim-live.mjs (season points, later seasons / a first season, which runs higher): light ~4,000 / 4,500, regular (3 actions a
+// day) ~10,000 / 13,000, upper regular (4 a day) ~14,000 / 17,500, engaged (6 a day) ~21,000 / 26,000, hardcore (all 7 on ~95% of days, all
+// year) ~31,000 / 37,000. Founder, Nov 11 2026: the free month (30,000) is for hardcore members ONLY -- never a regular; the week of plan
+// (14,000) only for the top end of regular members; early access is automatic.
 export const LADDER = [
   { at: 200, reward: "First light: a profile badge for the season", title: "Spotter" },
   { at: 500, reward: "A silver season frame on your share cards", frame: "silver" },
@@ -140,10 +143,11 @@ export const LADDER = [
   { at: 2000, reward: "Season title: Observer", title: "Observer" },
   { at: 3500, reward: "Season title: Tracker", title: "Tracker" },
   { singularity: true, reward: "Finish this season's Singularity: its limited sky skin, never available again" },
-  { at: 6000, reward: "Season title: Surveyor, plus a week of the next plan up", title: "Surveyor", claim: true },
-  { at: 10000, reward: "A gold season frame, plus early access to new tools and features for the rest of the season", frame: "gold", claim: true },
-  { at: 15000, reward: "Your name on a star in this season's sky", title: "Star-namer", claim: true },
-  { at: 24000, reward: "A free month", title: "Event Horizon", claim: true },
+  { at: 6000, reward: "Season title: Surveyor", title: "Surveyor" },
+  { at: 10000, reward: "A gold season frame, plus early access to new tools and features for the rest of the season (automatic)", frame: "gold", early: true },
+  { at: 14000, reward: "A week of the next plan up", claim: true },
+  { at: 20000, reward: "Your name on a star in this season's sky", title: "Star-namer", claim: true },
+  { at: 30000, reward: "A free month, for members who barely miss a day all season", title: "Event Horizon", claim: true },
 ];
 export const rungLabel = (r) => (r.three ? "Charted" : r.singularity ? "Singularity" : r.at.toLocaleString());
 // Skins (Nov 11 2026, founder: "aesthetic rewards, like how real games use skins"). Purely cosmetic: a backdrop for the sky and a design for

@@ -134,6 +134,17 @@ export async function claimReward(userId, index) {
   await write(userId, state);
   return state;
 }
+// Who has early access right now: members who reached the early-access rung THIS season (it is automatic, no claim). For the founder.
+export async function earlyAccessMembers() {
+  try {
+    const { data, error } = await createAdminClient().from(TABLE).select("user_id, state");
+    if (error) throw error;
+    const idx = LADDER.findIndex((r) => r.early);
+    return (data || []).filter((row) => { const s = normalize(row.state); return seasonProgress(s).done[idx]; }).map((row) => row.user_id);
+  } catch {
+    return null;
+  }
+}
 // For /admin: every claimed reward not yet marked fulfilled.
 export async function openClaims() {
   try {

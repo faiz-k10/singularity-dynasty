@@ -139,7 +139,7 @@ test("the ladder is one season long: it counts this season's points and finished
   s.points = 2200;
   const p = seasonProgress(s);
   assert.equal(p.sky, true); // charted needs only the three smaller constellations
-  assert.deepEqual(p.done, [true, true, true, true, true, false, false, false, false, false, false]);
+  assert.deepEqual(p.done, [true, true, true, true, true, false, false, false, false, false, false, false]);
   assert.equal(p.title, "Observer");
   assert.equal(p.frame, "silver");
   assert.equal(p.rungs, 5);

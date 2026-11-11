@@ -56,7 +56,9 @@ function member(perDay, offseasonShare, years = 3) {
   return { s, out };
 }
 
-const profiles = { Light: [1, 0.3], Regular: [3, 0.35], Engaged: [6, 0.5] }; // actions a day in season, offseason share of that
+// actions a day in season, offseason share of that. Hardcore = all 7 actions on ~95% of days, all year (the free month is for them alone).
+const ALL = { Light: [1, 0.3], Regular: [3, 0.35], "Upper regular": [4, 0.4], Engaged: [6, 0.5], Hardcore: [6.65, 0.95] };
+const profiles = process.env.PROFILES ? Object.fromEntries(process.env.PROFILES.split(",").map((k) => [k, ALL[k]])) : ALL;
 const N = Number(process.env.N || 600);
 for (const [label, [rate, off]] of Object.entries(profiles)) {
   const runs = Array.from({ length: N }, () => member(rate, off));
@@ -70,6 +72,8 @@ for (const [label, [rate, off]] of Object.entries(profiles)) {
     const yr = (f) => avg((r) => f(r.out.years[y] || {}));
     console.log(`  season ${y + 1}: ${yr((x) => x.actions).toFixed(0)} actions, ${yr((x) => x.finds).toFixed(0)} finds (${(yr((x) => x.actions) / yr((x) => x.finds)).toFixed(2)} actions a find), ${yr((x) => x.sets).toFixed(1)} sets, ${yr((x) => x.points).toFixed(0)} points, ${yr((x) => x.track).toFixed(1)} of ${LADDER.length} ladder rungs`);
   }
+  const q = (y, p) => { const v = runs.map((r) => r.out.years[y]?.points || 0).sort((a, b) => a - b); return Math.round(v[Math.floor((N - 1) * p)]); };
+  for (let y = 0; y < 3; y++) console.log(`  season ${y + 1} points, 10th / 25th / median / 75th / 90th / 99th percentile: ${[0.1, 0.25, 0.5, 0.75, 0.9, 0.99].map((p) => q(y, p).toLocaleString()).join(" / ")}`);
   for (let y = 0; y < 3; y++) console.log(`  ladder rungs reached, season ${y + 1}: ${LADDER.map((r, i) => `${rungLabel(r)} ${pct((q) => (q.out.years[y]?.doneList || [])[i])}`).join(", ")}`);
   const sk = (kind) => SKINS[kind].filter((k) => k.test).map((k) => { const w = med((r) => r.out.skinAt[k.id]); return `${k.name} ${w == null ? `never for most (${pct((r) => r.out.skinAt[k.id] != null)} in 3 yrs)` : `wk ${w.toFixed(0)}`}`; }).join(", ");
   console.log(`  skins, median week unlocked: sky: ${sk("sky")}`);
@@ -78,8 +82,8 @@ for (const [label, [rate, off]] of Object.entries(profiles)) {
   console.log(`  fixed skins owned (of 9): after year 1 ${avg((r) => fixed(r, 52)).toFixed(1)}, year 2 ${avg((r) => fixed(r, 104)).toFixed(1)}, year 3 ${avg((r) => fixed(r, 999)).toFixed(1)}`);
   console.log(`  limited season skins earned: ${[2026, 2027, 2028].map((y) => `${y}: ${pct((r) => r.out.skinAt["season-" + y] != null)}`).join(", ")}, median week of the season ${med((r) => r.out.skinAt["season-2026"])?.toFixed(0) ?? "-"}`);
   console.log(`  week of the season each rung lands (season 2, median): ${LADDER.map((t, i) => `${rungLabel(t)} ${med((r) => r.out.rungAt?.[`2027:${i}`])?.toFixed(1) ?? "-"}`).join(", ")}`);
-  const cash = (y) => [7, 8, 10].map((i) => `${LADDER[i].reward.split(",")[0].slice(0, 22)} ${pct((q) => (q.out.years[y]?.doneList || [])[i])}`).join(", ");
-  console.log(`  cash-value / claimed rungs, season 1: ${cash(0)}; per 200 members: ${[7, 8, 10, 9].map((i) => `${Math.round(2 * Number(pct((q) => (q.out.years[0]?.doneList || [])[i]).replace("%", "")))}`).join(" / ")} claims (week of plan / early access / free month / named star)`);
+  const at = (n) => LADDER.findIndex((r) => r.at === n);
+  for (let y = 0; y < 3; y++) console.log(`  season ${y + 1} costly rewards: week of plan (14,000) ${pct((q) => q.out.years[y]?.doneList?.[at(14000)])}, free month (30,000) ${pct((q) => q.out.years[y]?.doneList?.[at(30000)])}, early access (10,000, automatic) ${pct((q) => q.out.years[y]?.doneList?.[at(10000)])}`);
   const drought = (r, y) => { const a = y * 365, b = a + 140; const d = [a, ...r.out.rewardDays.filter((x) => x >= a && x < b), b]; let m = 0; for (let i = 1; i < d.length; i++) m = Math.max(m, d[i] - d[i - 1]); return m / 7; };
   for (let y = 0; y < 3; y++) console.log(`  year ${y + 1} season (20 wks): longest stretch with no new rung, season reward or skin: median ${med((r) => drought(r, y)).toFixed(1)} wks, 1 in 4 members ${(() => { const v = runs.map((r) => drought(r, y)).sort((a, b) => a - b); return v[Math.floor(N * 0.75)].toFixed(1); })()} wks or more`);
   console.log(`  finds by tier % (small / comet / planet / shower / stellar): ${share(runs.reduce((a, r) => a.map((x, i) => x + r.out.finds[i]), [0, 0, 0, 0, 0]))}`);
