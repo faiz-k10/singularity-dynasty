@@ -38,14 +38,17 @@ function Sky({ state, pendingPicks }) {
             {c.pts.map(([x, y, r], i) => f[i] ? (
               <g key={i}><circle cx={x} cy={y} r={r * 2.4} fill={COLORS[f[i]]} fillOpacity=".12" /><circle cx={x} cy={y} r={r} fill={COLORS[f[i]]} /></g>
             ) : <circle key={i} className="sky-slot" cx={x} cy={y} r={r + 0.8} />)}
-            <text className={`sky-clabel${done ? " is-done" : near ? " is-near" : ""}`} x={lx} y={ly} textAnchor={anchor}>
-              {c.name} · {have}/{c.pts.length}{done ? " · ready" : near ? " · one star away" : ""}
-            </text>
-            <text className="sky-creal" x={lx} y={ly + 13} textAnchor={anchor}>{c.real}</text>
+<text className={`sky-clabel${done ? " is-done" : near ? " is-near" : ""}`} x={lx} y={ly} textAnchor={anchor}>{c.name} · {have}/{c.pts.length}</text>
+            <text className={`sky-creal${done ? " is-done" : near ? " is-near" : ""}`} x={lx} y={ly + 14} textAnchor={anchor}>{c.real}{done ? " · ready" : near ? " · one star away" : ""}</text>
           </g>
         );
       })}
-      {pendingPicks.map((_, i) => <circle key={`p${i}`} className="sky-pending" cx={-40 + i * 40} cy={-120} r="6" />)}
+      {pendingPicks.length > 0 && (
+        <g>
+          {pendingPicks.map((_, i) => <circle key={`p${i}`} className="sky-pending" cx={(i - (pendingPicks.length - 1) / 2) * 22} cy={122} r="5" />)}
+          <text className="sky-creal" x="0" y="146" textAnchor="middle">{pendingPicks.length} pick{pendingPicks.length === 1 ? "" : "s"} waiting</text>
+        </g>
+      )}
       <g>
         <circle r={62} fill="var(--ember)" fillOpacity={(0.05 + Math.min(state.mass, 12) * 0.02).toFixed(2)} />
         <circle r={54 * scale} fill="none" stroke="var(--ember)" strokeWidth="1.5" />

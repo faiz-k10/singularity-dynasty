@@ -25,12 +25,12 @@ export const ACTIONS = {
 // The four constellations (Nov 11 2026, founder). The GAME uses the four roles below -- colour, size, star count -- and every season draws
 // them as a new set of REAL constellations (SKY_SETS, the same set for every member, `skyFor(season)`): 2026 is Crux, Sagitta, Cassiopeia
 // and Orion, and the sets repeat after the last one. A member's sky starts empty when the NFL season turns over (rollSeason) and the old
-// sky is kept in `skies`. label: [x, y, text-anchor], fixed per corner so every set fits.
+// sky is kept in `skies`. label: [x, y, text-anchor], pinned to the corners of the sky (top labels above the shapes, bottom labels below) so every set reads the same.
 export const CONSTELLATIONS = [
-  { id: "huddle", name: "The Huddle", color: "blue", size: "small", n: 4, label: [-262, -104, "start"] },
-  { id: "blitz", name: "The Blitz", color: "ember", size: "small", n: 4, label: [262, -96, "end"] },
-  { id: "playbook", name: "The Playbook", color: "white", size: "large", n: 5, label: [-262, 202, "start"] },
-  { id: "singularity", name: "The Singularity", color: "gold", size: "gold", n: 10, label: [262, 274, "end"] },
+  { id: "huddle", name: "The Huddle", color: "blue", size: "small", n: 4, label: [-262, -284, "start"] },
+  { id: "blitz", name: "The Blitz", color: "ember", size: "small", n: 4, label: [262, -284, "end"] },
+  { id: "playbook", name: "The Playbook", color: "white", size: "large", n: 5, label: [-262, 270, "start"] },
+  { id: "singularity", name: "The Singularity", color: "gold", size: "gold", n: 10, label: [262, 270, "end"] },
 ];
 // Each shape: real = its name; pts = [x, y, size] in fill order (brighter stars bigger), counts 4 / 4 / 5 / 10; edges = the lines (index pairs).
 // Corners: huddle top left, blitz top right, playbook bottom left, singularity bottom right (the core sits in the middle).
