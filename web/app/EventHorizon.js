@@ -260,7 +260,7 @@ function Bodies({ size, bodies }) {
         );
       })}
       {bodies.map((b, i) => {
-        const pr = b.pr ? +(b.pr * kk).toFixed(1) : 5.5; // a plan planet is big, and shrinks with the sky on a phone
+        const pr = b.pr ? +(b.pr * kk).toFixed(1) : 9; // a plan planet is big, and shrinks with the sky on a phone; a league planet is 9 (about 23 x 14px), big enough to read as a football at arm's length (founder, Nov 10 2026; was 5.5)
         const A = Math.ceil(pr * 1.8 + 320), B = Math.ceil(pr * 1.8 + 30); // room for the ring (Singularity) and the label to the right
         return (
           <ToolLink key={b.n + i} href={b.href} className={`ehp-body${b.id ? ` plan-${b.id}` : ""}`} data-i={i} style={{ transitionDelay: `${2 + i * 0.25}s` }} aria-label={`${b.n.toLowerCase()}: ${b.say}`}>

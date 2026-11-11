@@ -23,7 +23,7 @@ const PLANET_GLYPHS = [
 
 export default function ToolsMenuRows() {
   return TOOLS_MENU.map((t, i) => (
-    <ToolLink key={t.href} href={t.href} className="tmenu-row">
+    <ToolLink key={t.href} href={t.href} className="tmenu-row" closeMenu>
       <span className="tmenu-n" aria-hidden="true">{PLANET_GLYPHS[i]}</span>
       <span className="tmenu-t">
         <b>{t.name}</b>

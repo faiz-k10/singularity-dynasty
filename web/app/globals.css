@@ -7068,3 +7068,6 @@ body:has(.ehp) .ehp-inside,body:has(.ehp) .ehp-dark{--ehp-hole:#0B0B0B;--ehp-hol
 
 /* The welcome block uses two fonts, not three: the caption is mono like the label and the link (founder, Nov 10 2026). */
 .ehp-line.ehp-line-mono{font:10.5px var(--font-mono), monospace; font-stretch:82%; letter-spacing:.2em; text-transform:uppercase; max-width:none;}
+
+/* A Tools menu row was clicked: the dropdown shuts at once (ToolLink closeMenu) and stays shut until the pointer leaves it. */
+.menu-shut .nav-foldout,.menu-shut .ehp-pm-panel{opacity:0 !important;visibility:hidden !important;pointer-events:none !important;transition:none !important;}
