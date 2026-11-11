@@ -7085,6 +7085,7 @@ body:has(.ehp) .ehp-inside,body:has(.ehp) .ehp-dark{--ehp-hole:#0B0B0B;--ehp-hol
 .sky-pending{fill:none;stroke:var(--star);stroke-width:1.2;stroke-dasharray:1.5 2}
 .sky-clabel{font-family:var(--font-mono);font-size:10px;fill:var(--star-dim);letter-spacing:.06em;text-transform:uppercase}
 .sky-clabel.is-near{fill:var(--ember)}
+.sky-creal{font-family:var(--font-body);font-size:11px;fill:var(--star-dim)}
 .sky-clabel.is-done{fill:var(--up)}
 .sky-heat{font-family:var(--font-mono);font-size:11px;fill:var(--star-dim);text-transform:uppercase;letter-spacing:.1em}
 .sky-scope-btn{align-self:center}

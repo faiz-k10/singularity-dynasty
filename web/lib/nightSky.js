@@ -22,11 +22,23 @@ export const ACTIONS = {
   dynasty: { label: "Open the Dynasty Board", tool: "Research", color: "white", href: "/tools/draft-board" },
 };
 
+// Real constellations (Nov 11 2026, founder): each is drawn from its actual star pattern, brighter stars a little bigger. pts: [x, y, size];
+// edges: the lines between stars (pairs of indexes); label: [x, y, text-anchor]. The ORDER of pts is the order stars fill in -- keep the counts
+// (4 / 4 / 5 / 10) or saved skies no longer line up.
 export const CONSTELLATIONS = [
-  { id: "huddle", name: "The Huddle", color: "blue", size: "small", pts: [[-210, -180], [-160, -215], [-120, -165], [-170, -130]] },
-  { id: "blitz", name: "The Blitz", color: "ember", size: "small", pts: [[150, -215], [205, -190], [220, -135], [165, -150]] },
-  { id: "playbook", name: "The Playbook", color: "white", size: "large", pts: [[-230, 120], [-180, 85], [-130, 125], [-160, 195], [-225, 185]] },
-  { id: "singularity", name: "The Singularity", color: "gold", size: "gold", pts: [[110, 95], [150, 80], [195, 90], [228, 120], [238, 160], [220, 200], [180, 222], [138, 218], [108, 190], [100, 140]] },
+  // Crux, the Southern Cross: Gacrux, Acrux, Mimosa, Imai.
+  { id: "huddle", name: "The Huddle", real: "Crux", color: "blue", size: "small",
+    pts: [[-185, -248, 4], [-178, -138, 5], [-228, -200, 4.5], [-148, -182, 3.5]], edges: [[0, 1], [2, 3]], label: [-262, -104, "start"] },
+  // Sagitta, the Arrow: the two tail stars, the shaft, the tip.
+  { id: "blitz", name: "The Blitz", real: "Sagitta", color: "ember", size: "small",
+    pts: [[140, -150, 3.5], [162, -122, 3.5], [192, -180, 4], [245, -235, 4.5]], edges: [[0, 2], [1, 2], [2, 3]], label: [262, -96, "end"] },
+  // Cassiopeia, the W: Caph, Schedar, Gamma Cas, Ruchbah, Segin.
+  { id: "playbook", name: "The Playbook", real: "Cassiopeia", color: "white", size: "large",
+    pts: [[-250, 112, 4.5], [-212, 168, 5], [-176, 126, 5], [-140, 162, 4], [-108, 104, 3.5]], edges: [[0, 1], [1, 2], [2, 3], [3, 4]], label: [-262, 202, "start"] },
+  // Orion: Meissa, Betelgeuse, Bellatrix, the belt (Mintaka, Alnilam, Alnitak), the sword, Saiph, Rigel.
+  { id: "singularity", name: "The Singularity", real: "Orion", color: "gold", size: "gold",
+    pts: [[178, 62, 3.5], [126, 96, 5.5], [224, 106, 4.5], [196, 164, 4], [177, 171, 4.5], [158, 178, 4], [173, 202, 3], [170, 221, 3.5], [138, 250, 4], [234, 240, 5.5]],
+    edges: [[0, 1], [0, 2], [1, 5], [2, 3], [3, 4], [4, 5], [5, 8], [3, 9], [4, 6], [6, 7]], label: [262, 274, "end"] },
 ];
 
 // The catalogue: 44 kinds x 6 colours x 4 versions = 1,056 entries.

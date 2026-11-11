@@ -111,9 +111,10 @@ export function seasonCard(state, { title, size, rarest }) {
   for (const c of CONSTELLATIONS) {
     const f = state.filled[c.id];
     ctx.strokeStyle = STAR[c.color]; ctx.globalAlpha = 0.6; ctx.lineWidth = 2;
-    c.pts.forEach(([x, y], i) => { const [x2, y2] = c.pts[(i + 1) % c.pts.length]; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x2, y2); ctx.stroke(); });
+    c.edges.forEach(([i, j]) => { ctx.beginPath(); ctx.moveTo(c.pts[i][0], c.pts[i][1]); ctx.lineTo(c.pts[j][0], c.pts[j][1]); ctx.stroke(); });
     ctx.globalAlpha = 1;
-    c.pts.forEach(([x, y], i) => { ctx.fillStyle = f[i] ? STAR[f[i]] : STAR[c.color]; ctx.beginPath(); ctx.arc(x, y, 5, 0, 7); ctx.fill(); });
+    c.pts.forEach(([x, y, r], i) => { ctx.fillStyle = f[i] ? STAR[f[i]] : STAR[c.color]; ctx.globalAlpha = f[i] ? 1 : 0.35; ctx.beginPath(); ctx.arc(x, y, r * 1.3, 0, 7); ctx.fill(); });
+    ctx.globalAlpha = 1;
   }
   ctx.fillStyle = "#ECE7DC"; ctx.beginPath(); ctx.arc(0, 0, 46, 0, 7); ctx.fill(); ctx.strokeStyle = "#E8643F"; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(0, 0, 56, 0, 7); ctx.stroke();
   ctx.restore();

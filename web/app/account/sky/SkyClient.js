@@ -28,16 +28,20 @@ function Sky({ state, pendingPicks }) {
         const f = state.filled[c.id] || [];
         if (!open) return <g key={c.id}>{c.pts.map(([x, y], i) => f[i] ? <circle key={i} cx={x} cy={y} r={3} fill="var(--star)" /> : null)}</g>;
         const have = f.filter(Boolean).length, done = have === c.pts.length, near = !done && have === c.pts.length - 1;
-        const cx = c.pts.reduce((s, p) => s + p[0], 0) / c.pts.length, cy = Math.max(...c.pts.map((p) => p[1])) + 26;
+        const [lx, ly, anchor] = c.label;
         return (
           <g key={c.id}>
-            {c.pts.map(([x, y], i) => { const [x2, y2] = c.pts[(i + 1) % c.pts.length]; return f[i] && f[(i + 1) % c.pts.length] ? <line key={`l${i}`} x1={x} y1={y} x2={x2} y2={y2} stroke={COLORS[c.color]} strokeWidth="1.2" opacity=".55" /> : null; })}
-            {c.pts.map(([x, y], i) => f[i] ? (
-              <g key={i}><circle cx={x} cy={y} r="9" fill={COLORS[f[i]]} fillOpacity=".12" /><circle cx={x} cy={y} r="3.6" fill={COLORS[f[i]]} /></g>
-            ) : <circle key={i} className="sky-slot" cx={x} cy={y} r="4.5" />)}
-            <text className={`sky-clabel${done ? " is-done" : near ? " is-near" : ""}`} x={cx} y={cy} textAnchor="middle">
+            {c.edges.map(([i, j]) => {
+              const lit = f[i] && f[j];
+              return <line key={`l${i}-${j}`} x1={c.pts[i][0]} y1={c.pts[i][1]} x2={c.pts[j][0]} y2={c.pts[j][1]} stroke={lit ? COLORS[c.color] : "var(--star)"} strokeWidth={lit ? 1.3 : 0.8} opacity={lit ? 0.7 : 0.14} strokeDasharray={lit ? undefined : "2 3"} />;
+            })}
+            {c.pts.map(([x, y, r], i) => f[i] ? (
+              <g key={i}><circle cx={x} cy={y} r={r * 2.4} fill={COLORS[f[i]]} fillOpacity=".12" /><circle cx={x} cy={y} r={r} fill={COLORS[f[i]]} /></g>
+            ) : <circle key={i} className="sky-slot" cx={x} cy={y} r={r + 0.8} />)}
+            <text className={`sky-clabel${done ? " is-done" : near ? " is-near" : ""}`} x={lx} y={ly} textAnchor={anchor}>
               {c.name} · {have}/{c.pts.length}{done ? " · ready" : near ? " · one star away" : ""}
             </text>
+            <text className="sky-creal" x={lx} y={ly + 13} textAnchor={anchor}>{c.real}</text>
           </g>
         );
       })}
