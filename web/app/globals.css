@@ -7055,5 +7055,6 @@ html.theme-switching *, html.theme-switching *::before, html.theme-switching *::
 .stat-radar.is-comparing .radar-point{fill:var(--cmp-inv);}
 
 /* Welcome back: two lines, the username larger and below (founder, Nov 10 2026). */
-.ehp-who{font-family:var(--font-display), sans-serif; font-weight:800; font-size:clamp(22px,2.3vw,32px); line-height:1.1; letter-spacing:.06em; text-transform:uppercase; margin:4px 0 10px; color:var(--ehp-ink, var(--star)); white-space:nowrap; max-width:100%; overflow:hidden; text-overflow:ellipsis;}
+.ehp-who{font-family:var(--font-display), sans-serif; font-weight:800; line-height:1.1; letter-spacing:.06em; text-transform:uppercase; margin:4px 0 10px; color:var(--ehp-ink, var(--star)); width:0; min-width:100%; overflow:hidden; white-space:nowrap;} /* zero intrinsic width: it fills whatever width the rest of the block sets, never widens it */
+.ehp-who > span{display:inline-block; white-space:nowrap;}
 .ehp-hole .ehp-who, .ehp-inside .ehp-who, .ehp-dark .ehp-who{color:var(--ehp-holeink, var(--star));}

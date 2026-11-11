@@ -266,6 +266,32 @@ function Bodies({ size, bodies }) {
   );
 }
 
+// The member's name, as large as the hole's width allows and never on a second line: measure the real text and scale it to fit
+// (re-fit on resize and when the font finishes loading).
+function FitName({ name }) {
+  const box = useRef(null);
+  const txt = useRef(null);
+  useEffect(() => {
+    const fit = () => {
+      const b = box.current, t = txt.current;
+      if (!b || !t) return;
+      t.style.fontSize = "100px";
+      const w = t.scrollWidth, avail = b.clientWidth;
+      if (w > 0 && avail > 0) t.style.fontSize = `${Math.max(14, Math.min(64, (avail / w) * 100 * 0.94)).toFixed(1)}px`;
+    };
+    fit();
+    const ro = new ResizeObserver(fit);
+    ro.observe(box.current);
+    document.fonts?.ready.then(fit);
+    return () => ro.disconnect();
+  }, [name]);
+  return (
+    <div className="ehp-who" ref={box}>
+      <span ref={txt}>{name}</span>
+    </div>
+  );
+}
+
 // The Sleeper box inside the hole; the answer replaces the question in the same place. A member with saved leagues sees their
 // week there instead (expected wins across their leagues, from the home page's loadYourWeek).
 function HoleLookup({ signedIn, member }) {
@@ -299,11 +325,11 @@ function HoleLookup({ signedIn, member }) {
     return (
       <div className="ehp-answer">
         <div className="ehp-k">Welcome back</div>
-        <div className="ehp-who">{member.name}</div>
+        <FitName name={member.name} />
         <p className="ehp-big">
           {member.wins.toFixed(1)} <span className="ehp-of">of {member.of}</span>
         </p>
-        <p className="ehp-line">wins to expect this week across your {member.leagues} {member.leagues === 1 ? "league" : "leagues"}</p>
+        <p className="ehp-line">wins on deck this week across your {member.leagues} {member.leagues === 1 ? "league" : "leagues"}</p>
         <ToolLink className="ehp-holebtn" href="/my-team">Open the Game Board →</ToolLink>
       </div>
     );
