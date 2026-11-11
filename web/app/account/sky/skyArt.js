@@ -1,6 +1,6 @@
 "use client";
 
-import { FAMILIES, COLOURS, CONSTELLATIONS, COLORS as STAR } from "@/lib/nightSky";
+import { FAMILIES, COLOURS, skyFor, COLORS as STAR } from "@/lib/nightSky";
 
 // The Night Sky's pictures (from mockups/night-sky.html, which the founder approved): one renderer per kind of object, coloured by the find's
 // colour and finished by its version, drawn on a canvas; the telescope reveal (the picture sharpens out of noise); and the share cards.
@@ -108,7 +108,7 @@ export function seasonCard(state, { title, size, rarest }) {
   const cv = canvas(), ctx = cv.getContext("2d");
   base(ctx, "My season sky");
   ctx.save(); ctx.translate(880, 300); ctx.scale(0.95, 0.95);
-  for (const c of CONSTELLATIONS) {
+  for (const c of skyFor(state.season)) {
     const f = state.filled[c.id];
     ctx.strokeStyle = STAR[c.color]; ctx.globalAlpha = 0.6; ctx.lineWidth = 2;
     c.edges.forEach(([i, j]) => { ctx.beginPath(); ctx.moveTo(c.pts[i][0], c.pts[i][1]); ctx.lineTo(c.pts[j][0], c.pts[j][1]); ctx.stroke(); });

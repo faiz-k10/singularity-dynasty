@@ -22,24 +22,65 @@ export const ACTIONS = {
   dynasty: { label: "Open the Dynasty Board", tool: "Research", color: "white", href: "/tools/draft-board" },
 };
 
-// Real constellations (Nov 11 2026, founder): each is drawn from its actual star pattern, brighter stars a little bigger. pts: [x, y, size];
-// edges: the lines between stars (pairs of indexes); label: [x, y, text-anchor]. The ORDER of pts is the order stars fill in -- keep the counts
-// (4 / 4 / 5 / 10) or saved skies no longer line up.
+// The four constellations (Nov 11 2026, founder). The GAME uses the four roles below -- colour, size, star count -- and every season draws
+// them as a new set of REAL constellations (SKY_SETS, the same set for every member, `skyFor(season)`): 2026 is Crux, Sagitta, Cassiopeia
+// and Orion, and the sets repeat after the last one. A member's sky starts empty when the NFL season turns over (rollSeason) and the old
+// sky is kept in `skies`. label: [x, y, text-anchor], fixed per corner so every set fits.
 export const CONSTELLATIONS = [
-  // Crux, the Southern Cross: Gacrux, Acrux, Mimosa, Imai.
-  { id: "huddle", name: "The Huddle", real: "Crux", color: "blue", size: "small",
-    pts: [[-185, -248, 4], [-178, -138, 5], [-228, -200, 4.5], [-148, -182, 3.5]], edges: [[0, 1], [2, 3]], label: [-262, -104, "start"] },
-  // Sagitta, the Arrow: the two tail stars, the shaft, the tip.
-  { id: "blitz", name: "The Blitz", real: "Sagitta", color: "ember", size: "small",
-    pts: [[140, -150, 3.5], [162, -122, 3.5], [192, -180, 4], [245, -235, 4.5]], edges: [[0, 2], [1, 2], [2, 3]], label: [262, -96, "end"] },
-  // Cassiopeia, the W: Caph, Schedar, Gamma Cas, Ruchbah, Segin.
-  { id: "playbook", name: "The Playbook", real: "Cassiopeia", color: "white", size: "large",
-    pts: [[-250, 112, 4.5], [-212, 168, 5], [-176, 126, 5], [-140, 162, 4], [-108, 104, 3.5]], edges: [[0, 1], [1, 2], [2, 3], [3, 4]], label: [-262, 202, "start"] },
-  // Orion: Meissa, Betelgeuse, Bellatrix, the belt (Mintaka, Alnilam, Alnitak), the sword, Saiph, Rigel.
-  { id: "singularity", name: "The Singularity", real: "Orion", color: "gold", size: "gold",
-    pts: [[178, 62, 3.5], [126, 96, 5.5], [224, 106, 4.5], [196, 164, 4], [177, 171, 4.5], [158, 178, 4], [173, 202, 3], [170, 221, 3.5], [138, 250, 4], [234, 240, 5.5]],
-    edges: [[0, 1], [0, 2], [1, 5], [2, 3], [3, 4], [4, 5], [5, 8], [3, 9], [4, 6], [6, 7]], label: [262, 274, "end"] },
+  { id: "huddle", name: "The Huddle", color: "blue", size: "small", n: 4, label: [-262, -104, "start"] },
+  { id: "blitz", name: "The Blitz", color: "ember", size: "small", n: 4, label: [262, -96, "end"] },
+  { id: "playbook", name: "The Playbook", color: "white", size: "large", n: 5, label: [-262, 202, "start"] },
+  { id: "singularity", name: "The Singularity", color: "gold", size: "gold", n: 10, label: [262, 274, "end"] },
 ];
+// Each shape: real = its name; pts = [x, y, size] in fill order (brighter stars bigger), counts 4 / 4 / 5 / 10; edges = the lines (index pairs).
+// Corners: huddle top left, blitz top right, playbook bottom left, singularity bottom right (the core sits in the middle).
+export const SKY_SETS = [
+  { // 2026
+    huddle: { real: "Crux", pts: [[-185, -248, 4], [-178, -138, 5], [-228, -200, 4.5], [-148, -182, 3.5]], edges: [[0, 1], [2, 3]] }, // Gacrux, Acrux, Mimosa, Imai
+    blitz: { real: "Sagitta", pts: [[140, -150, 3.5], [162, -122, 3.5], [192, -180, 4], [245, -235, 4.5]], edges: [[0, 2], [1, 2], [2, 3]] },
+    playbook: { real: "Cassiopeia", pts: [[-250, 112, 4.5], [-212, 168, 5], [-176, 126, 5], [-140, 162, 4], [-108, 104, 3.5]], edges: [[0, 1], [1, 2], [2, 3], [3, 4]] },
+    singularity: { real: "Orion", // Meissa, Betelgeuse, Bellatrix, Mintaka, Alnilam, Alnitak, the sword (2), Saiph, Rigel
+      pts: [[178, 62, 3.5], [126, 96, 5.5], [224, 106, 4.5], [196, 164, 4], [177, 171, 4.5], [158, 178, 4], [173, 202, 3], [170, 221, 3.5], [138, 250, 4], [234, 240, 5.5]],
+      edges: [[0, 1], [0, 2], [1, 5], [2, 3], [3, 4], [4, 5], [5, 8], [3, 9], [4, 6], [6, 7]] },
+  },
+  { // 2027
+    huddle: { real: "Corvus", pts: [[-215, -240, 4], [-140, -222, 4.5], [-150, -150, 3.5], [-232, -158, 4.5]], edges: [[0, 1], [1, 2], [2, 3], [3, 0]] }, // Algorab, Gienah, Minkar, Kraz
+    blitz: { real: "Aries", pts: [[142, -128, 3.5], [198, -172, 5], [232, -196, 4], [246, -226, 3]], edges: [[0, 1], [1, 2], [2, 3]] }, // 41 Ari, Hamal, Sheratan, Mesarthim
+    playbook: { real: "Lyra", pts: [[-248, 98, 5.5], [-202, 118, 3.5], [-172, 128, 3.5], [-150, 178, 4], [-180, 172, 4]], edges: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 1]] }, // Vega, Zeta, Delta, Sulafat, Sheliak
+    singularity: { real: "Leo", // Regulus, Eta, Algieba, Adhafera, Rasalas, Epsilon, Zosma, Denebola, Chertan, Iota
+      pts: [[130, 205, 5.5], [128, 168, 3.5], [138, 130, 5], [158, 104, 3.5], [184, 92, 3.5], [204, 108, 4], [222, 158, 4], [256, 198, 5], [214, 206, 4], [236, 240, 3]],
+      edges: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [2, 6], [6, 7], [7, 8], [8, 0], [8, 9]] },
+  },
+  { // 2028
+    huddle: { real: "Libra", pts: [[-180, -248, 4.5], [-236, -186, 4.5], [-130, -194, 3.5], [-214, -138, 3.5]], edges: [[0, 1], [0, 2], [1, 2], [1, 3]] }, // Zubeneschamali, Zubenelgenubi, Gamma, Sigma
+    blitz: { real: "Pegasus, the Great Square", pts: [[148, -140, 4.5], [158, -216, 4.5], [236, -228, 5], [230, -150, 4]], edges: [[0, 1], [1, 2], [2, 3], [3, 0]] }, // Markab, Scheat, Alpheratz, Algenib
+    playbook: { real: "Cygnus", pts: [[-252, 108, 5.5], [-195, 135, 4.5], [-112, 166, 4], [-186, 94, 3.5], [-206, 180, 4]], edges: [[0, 1], [1, 2], [3, 1], [1, 4]] }, // Deneb, Sadr, Albireo, Delta, Gienah
+    singularity: { real: "Scorpius", // Graffias, Dschubba, Pi, Antares, Tau, Epsilon, Mu, Zeta, Eta, Shaula
+      pts: [[120, 68, 4], [114, 96, 4.5], [118, 124, 3.5], [152, 116, 5.5], [168, 136, 3.5], [182, 166, 4], [186, 196, 3.5], [196, 226, 3.5], [222, 246, 3.5], [252, 228, 5]],
+      edges: [[0, 1], [1, 2], [1, 3], [3, 4], [4, 5], [5, 6], [6, 7], [7, 8], [8, 9]] },
+  },
+  { // 2029
+    huddle: { real: "Hercules, the Keystone", pts: [[-222, -236, 4], [-150, -226, 4.5], [-144, -158, 4], [-226, -150, 3.5]], edges: [[0, 1], [1, 2], [2, 3], [3, 0]] },
+    blitz: { real: "Delphinus", pts: [[168, -172, 4], [196, -202, 4], [228, -182, 4.5], [202, -150, 4.5]], edges: [[0, 1], [1, 2], [2, 3], [3, 0]] }, // the diamond
+    playbook: { real: "Cepheus", pts: [[-230, 176, 5], [-160, 172, 4], [-154, 128, 3.5], [-195, 94, 3.5], [-236, 130, 4]], edges: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 0]] }, // Alderamin, Alfirk, Iota, Errai, Zeta
+    singularity: { real: "Gemini", // Castor, Pollux, Mebsuta, Tejat, Propus, Kappa, Wasat, Mekbuda, Alhena, Alzirr
+      pts: [[130, 70, 5], [176, 62, 5.5], [140, 130, 3.5], [150, 190, 3.5], [138, 226, 3], [194, 92, 3], [190, 132, 3.5], [206, 172, 3.5], [222, 228, 5], [240, 200, 3]],
+      edges: [[0, 1], [0, 2], [2, 3], [3, 4], [1, 5], [5, 6], [6, 7], [7, 8], [7, 9]] },
+  },
+];
+export const FIRST_SKY_SEASON = 2026;
+export function skyFor(season) {
+  const n = SKY_SETS.length, i = ((Math.round(Number(season) || FIRST_SKY_SEASON) - FIRST_SKY_SEASON) % n + n) % n;
+  return CONSTELLATIONS.map((c) => ({ ...c, ...SKY_SETS[i][c.id] }));
+}
+// A new NFL season: keep the old sky (for the season card and a member's past skies) and start an empty one. Returns true when it rolled.
+export function rollSeason(s, season) {
+  if (!season || s.season === season) return false;
+  if (s.season && s.filled) s.skies = { ...(s.skies || {}), [s.season]: s.filled };
+  if (s.season) s.filled = freshState().filled; // a member's first season keeps whatever they already have
+  s.season = season;
+  return true;
+}
 
 // The catalogue: 44 kinds x 6 colours x 4 versions = 1,056 entries.
 export const FAMILIES = [
@@ -107,7 +148,8 @@ export const DAY = 86400e3;
 export function freshState() {
   return {
     v: 1,
-    filled: Object.fromEntries(CONSTELLATIONS.map((c) => [c.id, c.pts.map(() => null)])),
+    filled: Object.fromEntries(CONSTELLATIONS.map((c) => [c.id, Array(c.n).fill(null)])),
+    season: 0, skies: {},
     mass: 0, points: 0, actions: 0, findsTotal: 0, lastActionAt: 0,
     daily: { day: "", done: [] },
     pending: [], found: {}, sets: {}, claimed: {},
@@ -241,6 +283,7 @@ function collapse(s, ctx, rnd) {
 export function award(s, action, ctx, rnd = Math.random) {
   const a = ACTIONS[action];
   if (!a) return { awarded: false };
+  rollSeason(s, ctx.season);
   if (s.daily.day !== ctx.day) s.daily = { day: ctx.day, done: [] };
   if (s.daily.done.includes(action)) return { awarded: false };
   s.daily.done.push(action);

@@ -106,3 +106,28 @@ test("compliments are only true, flattering facts from the member's own leagues"
   const losing = [{ league_name: "L", settings: { season: { standings: standings.map((x) => ({ ...x, isMe: x.rank === 9 })) }, playoffOdds: 0.1 }, players: [] }];
   assert.deepEqual(complimentsFor(losing), []); // nothing flattering is invented
 });
+
+import { skyFor, rollSeason, SKY_SETS, CONSTELLATIONS } from "../lib/nightSky.js";
+test("every season's sky is a real set with the right star counts, the same for everyone", () => {
+  assert.equal(skyFor(2026).map((c) => c.real).join(), "Crux,Sagitta,Cassiopeia,Orion");
+  assert.equal(skyFor(2027)[3].real, "Leo");
+  assert.equal(skyFor(2026 + SKY_SETS.length)[3].real, "Orion"); // the sets repeat
+  for (let y = 2026; y < 2026 + SKY_SETS.length; y++) for (const c of skyFor(y)) {
+    assert.equal(c.pts.length, c.n, `${y} ${c.real}`);
+    for (const [i, j] of c.edges) assert.ok(c.pts[i] && c.pts[j], `${y} ${c.real} edge`);
+    for (const [x, y2] of c.pts) assert.ok(Math.hypot(x, y2) > 95 && Math.abs(x) < 262 && Math.abs(y2) < 262, `${c.real} star clear of the core and inside the sky`);
+  }
+  assert.equal(CONSTELLATIONS.length, 4);
+});
+test("a new NFL season starts an empty sky and keeps the old one", () => {
+  const s = freshState();
+  assert.equal(rollSeason(s, 2026), true);
+  s.filled.huddle[0] = "blue";
+  assert.equal(rollSeason(s, 2026), false);
+  assert.equal(rollSeason(s, 2027), true);
+  assert.equal(s.skies[2026].huddle[0], "blue");
+  assert.ok(s.filled.huddle.every((x) => x === null));
+  const old = normalize({ filled: { huddle: ["blue", null, null, null] } }); // a member from before seasons: keeps their stars this season
+  rollSeason(old, 2026);
+  assert.equal(old.filled.huddle[0], "blue");
+});

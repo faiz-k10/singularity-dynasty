@@ -6,7 +6,7 @@ import ShareDialog from "../../ShareDialog";
 import { seeFinds, pickPlayer, claim } from "./actions";
 import { drawObject, sharpen, findCard, receiptCard, seasonCard, toBlob } from "./skyArt";
 import {
-  ACTIONS, CONSTELLATIONS, COLORS, FAMILIES, COLOURS, VERSIONS, TIER_NAME, POWERUPS, LADDER, CATALOGUE_SIZE, SET_COUNT, UNLOCK, EVENT_TEXT,
+  ACTIONS, COLORS, skyFor, FAMILIES, COLOURS, VERSIONS, TIER_NAME, POWERUPS, LADDER, CATALOGUE_SIZE, SET_COUNT, UNLOCK, EVENT_TEXT,
   famsIn, findOf, setProgress, titleFor,
 } from "@/lib/nightSky";
 
@@ -24,7 +24,7 @@ function Sky({ state, pendingPicks }) {
   return (
     <svg className="sky-svg" viewBox="-300 -300 600 600" role="img" aria-label={`Your sky: ${state.findsTotal} finds, the core ${state.mass >= 8 ? "unstable" : state.mass >= 4 ? "warming" : "cool"}`}>
       {seededStars.map(([x, y, r, o], i) => <circle key={i} cx={x} cy={y} r={r} fill="var(--star)" fillOpacity={o} />)}
-      {CONSTELLATIONS.map((c) => {
+      {skyFor(state.season).map((c) => {
         const f = state.filled[c.id] || [];
         if (!open) return <g key={c.id}>{c.pts.map(([x, y], i) => f[i] ? <circle key={i} cx={x} cy={y} r={3} fill="var(--star)" /> : null)}</g>;
         const have = f.filter(Boolean).length, done = have === c.pts.length, near = !done && have === c.pts.length - 1;
