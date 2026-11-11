@@ -40,7 +40,7 @@ function PercentileBar({ pctile, size }) {
 // One vertical bar per Floor/Median/Ceiling (row mode) or per stat
 // (column mode) -- same shape either way, just a different label + click
 // target, so the two modes share this markup instead of diverging
-// visually. Value + ordinal sit above the bar (what the table itself
+// visually. Value + ordinal sit below the bar, above the label (what the table itself
 // would show), the 50th-percentile reference line runs across the track
 // at its fixed midpoint regardless of the fill's own height, and the
 // stat/layer label sits below -- same information as the old horizontal
@@ -50,15 +50,16 @@ function PercentileVBar({ label, value, pctile, isActive, onClick }) {
   const t = tier(pctile);
   return (
     <button type="button" className={`pctile-vbar${isActive ? " pctile-vbar-active" : ""}`} onClick={onClick}>
-      <span className="pctile-vbar-value">
-        <span className="pctile-row-raw">{formatValue(value)}</span>
-        <span className="pctile-row-ordinal">{ordinal(pctile)}</span>
-      </span>
       <div className="pctile-vbar-track">
         <div className="pctile-vbar-midline" />
         <span className="pctile-vbar-midline-label">50</span>
         <div className={`pctile-vbar-fill pctile-bar-${t.cls}`} style={{ height: `${Math.max(pctile, 2)}%` }} />
       </div>
+      {/* the numbers sit under the bar, above the label (founder, Nov 10 2026) */}
+      <span className="pctile-vbar-value">
+        <span className="pctile-row-raw">{formatValue(value)}</span>
+        <span className="pctile-row-ordinal">{ordinal(pctile)}</span>
+      </span>
       <span className="pctile-vbar-label">{label}</span>
     </button>
   );
