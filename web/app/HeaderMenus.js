@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import NewsletterForm from "./NewsletterForm";
 import { startCheckout } from "@/lib/startCheckout";
@@ -16,7 +17,7 @@ export const PLANS = [
 export function HeaderLetter() {
   return (
     <div className="ehp-pm ehp-nl">
-      <a href="/#feed" aria-haspopup="true">Newsletter</a>
+      <Link href="/#feed" aria-haspopup="true">Newsletter</Link>
       <div className="ehp-pm-panel" role="group" aria-label="Newsletter sign-up">
         <NewsletterForm source="nav" inputId="navEmail" />
       </div>
@@ -38,7 +39,7 @@ export function HeaderPlans() {
   }
   return (
     <div className="ehp-pm">
-      <a href="/#pricing" aria-haspopup="true">Plans</a>
+      <Link href="/#pricing" aria-haspopup="true">Plans</Link>
       <div className="ehp-pm-panel" role="group" aria-label="Plans">
         <div className="ehp-pm-bill" role="group" aria-label="Billing">
           <button type="button" className={yearly ? "" : "on"} onClick={() => setYearly(false)} aria-pressed={!yearly}>Monthly</button>
