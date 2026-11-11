@@ -11,7 +11,7 @@ import { fetchGameStates, nextKickoff } from "@/lib/gameStatus";
 import { expectedWins, weekRows } from "@/lib/briefing";
 import { formatWin } from "@/lib/standing";
 import { createClient } from "@/lib/supabase/server";
-import { getAuthUser } from "@/lib/authUser";
+import { resolveTier } from "@/lib/tier";
 import { createPublicClient } from "@/lib/supabase/public";
 
 // The home page is the Event Horizon landing page (app/EventHorizon.js) for everyone (founder, Nov 9 2026). The design before
@@ -47,9 +47,9 @@ const getCachedHomeData = unstable_cache(
 
 export default async function Home() {
   const supabase = await createClient();
-  const [{ posts, weekly, week: weekNo }, user, states] = await Promise.all([
+  const [{ posts, weekly, week: weekNo }, { user, tier }, states] = await Promise.all([
     getCachedHomeData(),
-    getAuthUser(supabase),
+    resolveTier(supabase),
     Promise.race([fetchGameStates().catch(() => null), new Promise((r) => setTimeout(() => r(null), 1500))]),
   ]);
   // A member with saved leagues: the hole shows their week (leagues, wins to expect) instead of the lookup box.
@@ -78,6 +78,7 @@ export default async function Home() {
     <SiteTicker />
     <EventHorizon
       signedIn={Boolean(user)}
+      tier={tier}
       member={member}
       invited={invited}
       discountPct={FRIEND_DISCOUNT_PERCENT}

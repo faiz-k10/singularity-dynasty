@@ -3,7 +3,6 @@ import { Suspense } from "react";
 import { sampleUnique } from "@/lib/sample";
 import { unstable_cache } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { getAuthUser } from "@/lib/authUser";
 import { createPublicClient } from "@/lib/supabase/public";
 import { fetchAllRows } from "@/lib/fetchAllRows";
 import ThemeToggle from "./ThemeToggle";
@@ -13,6 +12,7 @@ import ToolLink from "./ToolLink";
 import HeaderNavLink from "./HeaderNavLink";
 import { HeaderPlans, HeaderLetter } from "./HeaderMenus";
 import ToolsMenuRows from "./ToolsMenu";
+import { resolveTier } from "@/lib/tier";
 import BrandMark from "./BrandMark";
 import { getAchievements } from "./tools/achievements";
 import { getCachedRedraftData, getCachedTdProfile, getCachedUsageProfile, computeRanks } from "./tools/redraft-rankings/data";
@@ -209,7 +209,7 @@ export function SiteTicker() {
 // tool/auth/legal page (full navigation back to the homepage section).
 export default async function SiteHeader({ scripts = true }) {
   const supabase = await createClient();
-  const user = await getAuthUser(supabase);
+  const { user, tier } = await resolveTier(supabase); // the tier sets what the Tools menu says each tool gives this viewer
 
   return (
     <>
@@ -234,7 +234,7 @@ export default async function SiteHeader({ scripts = true }) {
             {/* Foldout: a ladder of tools, one rung each (icon, name, what it does, who it is for). CSS-only (:hover / :focus-within). */}
             <div className="nav-foldout tmenu-panel">
               <div className="tmenu-panel-inner">
-                <ToolsMenuRows />
+                <ToolsMenuRows tier={tier} />
               </div>
             </div>
           </div>

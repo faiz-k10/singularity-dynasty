@@ -542,12 +542,12 @@ function Matchups({ rows }) {
 // The header's Plans link opens a small panel with the three plans and a checkout button each (founder, Nov 10 2026): CSS hover / keyboard focus,
 // the same startCheckout() as the Plans section, Yearly by default.
 // The header's Tools link: the four tools in a hairline panel (name, one line on what it does, what is free), each opening its page. CSS hover / focus.
-function HeaderTools() {
+function HeaderTools({ tier }) {
   return (
     <div className="ehp-pm ehp-tm">
       <a href="#tools" aria-haspopup="true">Tools</a>
       <div className="ehp-pm-panel tmenu-panel" role="group" aria-label="Tools">
-        <ToolsMenuRows />
+        <ToolsMenuRows tier={tier} />
       </div>
     </div>
   );
@@ -609,7 +609,7 @@ function Plans() {
   );
 }
 
-export default function EventHorizon({ signedIn, member, invited, discountPct, weekly, weekNo, dynasty, nextKickoff, posts }) {
+export default function EventHorizon({ signedIn, tier, member, invited, discountPct, weekly, weekNo, dynasty, nextKickoff, posts }) {
   const stageRef = useRef(null);
   // arriving from another page always starts at the very top, ticker included (founder, Nov 10 2026: coming back from a scrolled tool page
   // used to land part-way down); a link to a section (#pricing, #feed ...) still goes to that section
@@ -780,7 +780,7 @@ export default function EventHorizon({ signedIn, member, invited, discountPct, w
       <header className="ehp-header">
         <div className="ehp-wrap ehp-bar">
           <nav>
-            <HeaderTools />
+            <HeaderTools tier={tier} />
             <HeaderPlans />
             <HeaderLetter />
           </nav>
