@@ -6770,8 +6770,8 @@ body:has(.ehp) .site-footer .fsmall,body:has(.ehp) .site-footer .fsmall a,body:h
 
 /* badges: three colours */
 :is(.weekly-glyph-badge,.sym-badge,.confidence-badge,.player-achv-dot,.weekly-achievement-badge):is(.heat,.sprout,.smash,.honorable,.eliteRole,.elitePlayer,.plusValue,.boulder,.cloud,.cape){--tone:var(--horizon);}
-:is(.weekly-glyph-badge,.sym-badge,.confidence-badge,.player-achv-dot,.weekly-achievement-badge):is(.ice,.tough,.menace,.minusValue){--tone:var(--down);}
-:is(.weekly-glyph-badge,.sym-badge,.confidence-badge,.player-achv-dot,.weekly-achievement-badge):is(.silver,.rookie,.icarus,.eddy,.peak){--tone:var(--star-dim);}
+:is(.weekly-glyph-badge,.sym-badge,.confidence-badge,.player-achv-dot,.weekly-achievement-badge):is(.ice,.tough,.menace,.minusValue,.peak){--tone:var(--down);}
+:is(.weekly-glyph-badge,.sym-badge,.confidence-badge,.player-achv-dot,.weekly-achievement-badge):is(.silver,.rookie,.icarus,.eddy){--tone:var(--star-dim);}
 :is(.weekly-glyph-badge,.sym-badge,.confidence-badge,.player-achv-dot,.weekly-achievement-badge).gold{--tone:var(--star);}
 :is(.weekly-glyph-badge,.confidence-badge):not(.ball){--badge-bg:none !important;background:none !important;box-shadow:none !important;color:var(--tone) !important;border:1px solid var(--tone) !important;border-radius:50% !important;}
 .weekly-glyph-badge.eliteRole,.weekly-glyph-badge.elitePlayer,.weekly-glyph-badge.gold,.confidence-badge.gold{--badge-bg:var(--tone) !important;background:var(--tone) !important;color:var(--void) !important;}
