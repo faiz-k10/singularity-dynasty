@@ -7031,3 +7031,8 @@ body:has(.ehp) .ticker-bar{position:absolute;}
 
 /* Theme flip: no element animates its colours while the theme changes, so the whole page switches at once (ThemeToggle.js). */
 html.theme-switching *, html.theme-switching *::before, html.theme-switching *::after{transition:none !important;}
+
+/* Percentile bars take their column's colour, not a tier colour: floor ember (bad end), median grey, ceiling cobalt (good end) -- founder, Nov 10 2026. */
+.pctile-vbar-fill-floor{background:var(--down);}
+.pctile-vbar-fill-median{background:var(--star-dim);}
+.pctile-vbar-fill-ceiling{background:var(--up);}

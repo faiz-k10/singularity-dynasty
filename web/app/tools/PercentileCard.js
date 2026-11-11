@@ -46,19 +46,19 @@ function PercentileBar({ pctile, size }) {
 // stat/layer label sits below -- same information as the old horizontal
 // row, just read top-to-bottom/bar-height instead of left-to-right/bar-
 // width, closer to how a real bar chart reads.
-function PercentileVBar({ label, value, pctile, isActive, onClick }) {
-  const t = tier(pctile);
+function PercentileVBar({ label, value, pctile, layer, isActive, onClick }) {
   return (
     <button type="button" className={`pctile-vbar${isActive ? " pctile-vbar-active" : ""}`} onClick={onClick}>
+      {/* the percentile sits above the bar, the raw number under it (founder, Nov 10 2026) */}
+      <span className="pctile-row-ordinal pctile-vbar-top">{ordinal(pctile)}</span>
       <div className="pctile-vbar-track">
         <div className="pctile-vbar-midline" />
         <span className="pctile-vbar-midline-label">50</span>
-        <div className={`pctile-vbar-fill pctile-bar-${t.cls}`} style={{ height: `${Math.max(pctile, 2)}%` }} />
+        <div className={`pctile-vbar-fill pctile-vbar-fill-${layer}`} style={{ height: `${Math.max(pctile, 2)}%` }} />
       </div>
       {/* the numbers sit under the bar, above the label (founder, Nov 10 2026) */}
       <span className="pctile-vbar-value">
         <span className="pctile-row-raw">{formatValue(value)}</span>
-        <span className="pctile-row-ordinal">{ordinal(pctile)}</span>
       </span>
       <span className="pctile-vbar-label">{label}</span>
     </button>
@@ -198,6 +198,7 @@ export default function PercentileCard({ stats, position, selection, onSelectCel
             label={stat.label}
             value={stat[`${layer}Value`]}
             pctile={stat[`${layer}Pctile`]}
+            layer={layer}
             onClick={() => onSelectCell(stat.key, layer)}
           />
         ))}
