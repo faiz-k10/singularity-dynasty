@@ -23,8 +23,8 @@ export const BADGE_BLURBS = {
   hero: "A star for every top-3 week at his position this season.",
 };
 
-// the hover text for one achievement from getAchievements(): "Label: phrase"
+// the hover text for one achievement from getAchievements(): just the phrase (the badge's name shows when it is clicked)
 export function badgeTitle(a) {
   const blurb = BADGE_BLURBS[a.key === "confidence" || a.key === "matchup" ? a.variant : a.key];
-  return blurb ? `${a.label}: ${blurb}` : a.label;
+  return blurb || a.label;
 }
