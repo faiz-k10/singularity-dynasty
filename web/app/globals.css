@@ -2234,6 +2234,8 @@ a.export-csv-btn{text-decoration:none;}
 }
 .stat-panel-pace-unit{font-family:var(--font-mono), monospace; font-weight:600; letter-spacing:0.06em; margin-left:4px; text-shadow:none;}
 .stat-panel-pace-actual .stat-panel-pace-unit{font-size:12px;}
+.stat-panel-pace-figure{position:relative; display:inline-block;}
+.stat-panel-pace-figure .stat-panel-pace-unit{position:absolute; left:100%; bottom:.18em; margin-left:5px; white-space:nowrap;} /* out of the flow: only the number is centred */
 .stat-panel-pace-delta .stat-panel-pace-unit{font-size:10.5px; margin-left:3px;}
 .stat-panel-pace-delta.pace-hot{--tone:var(--up);}
 .stat-panel-pace-delta.pace-cold{--tone:var(--down);}

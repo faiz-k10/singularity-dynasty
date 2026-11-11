@@ -275,8 +275,11 @@ function StatDetailRow({ row, colSpan, shapePeers, wrTePool, tagsByName, maxCeil
                     <span className="stat-panel-pace-games">
                       {pv.gamesPlayed} {pv.gamesPlayed === 1 ? "game" : "games"}
                     </span>
-                    {pv.currentPPG != null ? (pv.currentPPG * pv.gamesPlayed).toFixed(1) : "—"}
-                    {pv.currentPPG != null && <span className="stat-panel-pace-unit">pts</span>}
+                    {/* the number alone is centred; "pts" hangs off its right edge (founder, Nov 10 2026) */}
+                    <span className="stat-panel-pace-figure">
+                      {pv.currentPPG != null ? (pv.currentPPG * pv.gamesPlayed).toFixed(1) : "—"}
+                      {pv.currentPPG != null && <span className="stat-panel-pace-unit">pts</span>}
+                    </span>
                   </div>
                   {pv.regressionScore != null && (
                   <div className={`stat-panel-pace-delta ${pv.regressionScore >= 0 ? "pace-hot" : "pace-cold"}`}>
