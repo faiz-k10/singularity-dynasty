@@ -6767,9 +6767,16 @@ body:has(.ehp) .site-footer .fsmall,body:has(.ehp) .site-footer .fsmall a,body:h
 /* badges: three colours */
 :is(.weekly-glyph-badge,.sym-badge,.confidence-badge,.player-achv-dot,.weekly-achievement-badge):is(.heat,.sprout,.smash,.honorable,.eliteRole,.elitePlayer,.plusValue,.boulder,.cloud,.cape){--tone:var(--horizon);}
 :is(.weekly-glyph-badge,.sym-badge,.confidence-badge,.player-achv-dot,.weekly-achievement-badge):is(.ice,.tough,.menace,.minusValue){--tone:var(--down);}
-:is(.weekly-glyph-badge,.sym-badge,.confidence-badge,.player-achv-dot,.weekly-achievement-badge):is(.gold,.silver,.rookie,.icarus,.eddy,.peak){--tone:var(--star-dim);}
+:is(.weekly-glyph-badge,.sym-badge,.confidence-badge,.player-achv-dot,.weekly-achievement-badge):is(.silver,.rookie,.icarus,.eddy,.peak){--tone:var(--star-dim);}
+:is(.weekly-glyph-badge,.sym-badge,.confidence-badge,.player-achv-dot,.weekly-achievement-badge).gold{--tone:var(--star);}
 :is(.weekly-glyph-badge,.confidence-badge):not(.ball){--badge-bg:none !important;background:none !important;box-shadow:none !important;color:var(--tone) !important;border:1px solid var(--tone) !important;border-radius:50% !important;}
-.weekly-glyph-badge.eliteRole,.weekly-glyph-badge.elitePlayer{--badge-bg:var(--tone) !important;background:var(--tone) !important;color:var(--void) !important;}
+.weekly-glyph-badge.eliteRole,.weekly-glyph-badge.elitePlayer,.weekly-glyph-badge.gold,.confidence-badge.gold{--badge-bg:var(--tone) !important;background:var(--tone) !important;color:var(--void) !important;}
+/* Established vs Building (founder, Nov 10 2026: "make a distinction between these two badges"): Established is a SOLID ink disc with the flag cut out
+   (a track record is proven); Building is a hollow DASHED ring in the dim ink (still being built). Same in the header, the Badges filter, the ticker and the dots. */
+.sym-badge.gold{--badge-bg:var(--tone); color:var(--void);}
+.sym-badge.silver svg circle{stroke-dasharray:3.4 2.6;}
+.weekly-glyph-badge.silver,.confidence-badge.silver{border-style:dashed !important;}
+.player-achv-dot.silver{background:none !important;box-shadow:inset 0 0 0 1px var(--tone) !important;}
 .player-achv-dot:not(.ball){background:var(--tone) !important;box-shadow:none !important;}
 .weekly-achievement-badge:not(.ball) .weekly-achievement-label{color:var(--tone) !important;}
 /* the member's matchups table inside the horizon (EventHorizon.js Matchups): on the hole's colour */
