@@ -248,8 +248,15 @@ function Bodies({ size, bodies }) {
               </mask>
               {/* the mask sits on an unrotated group: a mask lives in the coordinate system of the element that uses it, so on a rotated path it would be tilted twice and cut the football's tips */}
               <g mask={`url(#ehp-pm-${i})`}><path className="dot" d={ball(pr)} transform={`rotate(${BALL_TILT})`} /></g>
-              <path id={`ehp-np-${i}`} d={namePath(pr, b.n.length)} transform={`rotate(${BALL_TILT})`} fill="none" stroke="none" />
-              <text className="nm" textAnchor="middle"><textPath href={`#ehp-np-${i}`} startOffset="50%">{b.n}</textPath></text>
+              {b.id ? (
+                <>
+                  <path id={`ehp-np-${i}`} d={namePath(pr, b.n.length)} transform={`rotate(${BALL_TILT})`} fill="none" stroke="none" />
+                  <text className="nm" textAnchor="middle"><textPath href={`#ehp-np-${i}`} startOffset="50%">{b.n}</textPath></text>
+                </>
+              ) : (
+                // a member's league: its name in a straight line right above the planet
+                <text className="nm" textAnchor="middle" x="0" y={-(pr + 14)}>{b.n}</text>
+              )}
               {!b.id && <text className="say" textAnchor="middle" x="0" y={pr * 0.8 + 24}>{b.say}</text>}{/* the plan planets carry their price inside; no caption under the name */}
             </svg>
           </ToolLink>
