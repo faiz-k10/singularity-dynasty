@@ -775,8 +775,8 @@ export default function EventHorizon({ signedIn, member, invited, discountPct, w
           <div className="ehp-r">
             {signedIn ? (
               <>
+                <ToolLink href="/my-team">My Team</ToolLink>
                 <ToolLink href="/account">Account</ToolLink>
-                <ToolLink className="ehp-in" href="/my-team">My Team</ToolLink>
               </>
             ) : (
               <>
