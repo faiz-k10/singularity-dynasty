@@ -14,12 +14,12 @@ const seasonOf = (t) => { const d = new Date(t); return d.getUTCMonth() >= 2 ? d
 const skySeasonOf = (t) => { const d = new Date(t); return d.getUTCMonth() >= 8 ? d.getUTCFullYear() : d.getUTCFullYear() - 1; }; // the sky's season starts at kickoff
 const inSeason = (t) => weekOf(t) > 0 || (new Date(t).getUTCMonth() === 0); // weeks 1-18 + January playoffs
 
-function member(perDay, offseasonShare, years = 3) {
+function member(perDay, offseasonShare, years = 3, startDay = 0) {
   const s = freshState();
   const out = { skinAt: {}, rewardDays: [], years: [], finds: [0, 0, 0, 0, 0], vers: [0, 0, 0, 0], firstTier: {}, earlyTiers: [0, 0, 0, 0, 0], lateTiers: [0, 0, 0, 0, 0] };
   let year = null, y0 = { points: 0, finds: 0, actions: 0, sets: 0 };
   const close = () => { if (year != null) out.years.push({ season: year, points: s.points - y0.points, finds: s.findsTotal - y0.finds, actions: s.actions - y0.actions, sets: Object.keys(s.sets).length - y0.sets, total: s.points, track: seasonProgress(s).done.filter(Boolean).length, doneList: seasonProgress(s).done, season: year }); };
-  for (let t = START; t < START + years * 365 * DAY; t += DAY) {
+  for (let t = START + startDay * DAY; t < START + years * 365 * DAY; t += DAY) {
     const season = seasonOf(t);
     if (skySeasonOf(t) !== year) { close(); year = skySeasonOf(t); y0 = { points: s.points, finds: s.findsTotal, actions: s.actions, sets: Object.keys(s.sets).length }; }
     const week = weekOf(t), date = new Date(t), day = date.toISOString().slice(0, 10);
@@ -91,4 +91,30 @@ for (const [label, [rate, off]] of Object.entries(profiles)) {
   console.log(`  weeks to first: comet ${med((r) => r.out.firstTier[2])?.toFixed(1)}, planet ${med((r) => r.out.firstTier[3])?.toFixed(1)}, stellar ${med((r) => r.out.firstTier[5])?.toFixed(1) ?? "most never (3 yrs)"}`);
   console.log(`  after 3 years: catalogue ${avg((r) => Object.keys(r.s.found).length).toFixed(0)} of ${CATALOGUE_SIZE}, sets ${avg((r) => Object.keys(r.s.sets).length).toFixed(0)} of ${SET_COUNT}, Beat the Model ${avg((r) => r.s.btm[0]).toFixed(0)}-${avg((r) => r.s.btm[1]).toFixed(0)}`);
   console.log(`  ever saw: stellar event ${pct((r) => r.out.finds[4] > 0)}, ancient ${pct((r) => r.out.vers[2] > 0)}, mythic ${pct((r) => r.out.vers[3] > 0)}; best season title over 3 seasons: ${["Spotter", "Charted", "Lookout", "Observer", "Tracker", "Surveyor", "Star-namer", "Event Horizon"].map((n) => `${n} ${pct((r) => r.out.years.map((y) => LADDER.map((t, i) => (y.doneList?.[i] && t.title) || null).filter(Boolean).at(-1) || "Spotter").includes(n) && !r.out.years.some((y) => { const idx = ["Spotter", "Charted", "Lookout", "Observer", "Tracker", "Surveyor", "Star-namer", "Event Horizon"]; const t = LADDER.map((q, i) => (y.doneList?.[i] && q.title) || null).filter(Boolean).at(-1) || "Spotter"; return idx.indexOf(t) > idx.indexOf(n); }))}`).join(", ")}`);
+}
+
+// Viability checks (Nov 11 2026): members who join mid-season, and what a realistic mix of 200 members costs per season.
+if (!process.env.PROFILES) {
+  console.log("\n=== Joining mid-season (regular, 3 a day): ladder rungs reached by the end of that first season ===");
+  for (const [label, day] of [["joins at kickoff", 0], ["joins week 6 (mid-October)", 42], ["joins week 12 (late November)", 84], ["joins in January", 120], ["joins in May (offseason)", 240]]) {
+    const runs = Array.from({ length: 200 }, () => member(3, 0.35, 1, day));
+    const avg = (f) => runs.reduce((a, r) => a + f(r), 0) / runs.length;
+    const pct = (i) => Math.round((100 * runs.filter((r) => r.out.years[0]?.doneList?.[i]).length) / runs.length);
+    console.log(`  ${label}: ${avg((r) => r.out.years[0]?.points || 0).toFixed(0)} season points, ${avg((r) => r.out.years[0]?.track || 0).toFixed(1)} of ${LADDER.length} rungs; Charted ${pct(2)}%, Tracker (3,500) ${pct(5)}%, limited skin ${pct(6)}%, Surveyor (6,000) ${pct(7)}%`);
+  }
+  // A plausible mix of 200 members and the cost of the rewards fulfilled by hand. A week of the next plan up costs at most ~4 dollars
+  // (the Singularity - Explorer gap for a week), a free month at most 25 dollars.
+  const MIX = [["Light", 80], ["Regular", 70], ["Upper regular", 30], ["Engaged", 16], ["Hardcore", 4]];
+  console.log("\n=== 200 members: 80 light, 70 regular, 30 upper regular, 16 engaged, 4 hardcore -- claims and cost per season (season 2, a settled season) ===");
+  let weeks = 0, months = 0, stars = 0, early = 0;
+  const at = (n) => LADDER.findIndex((r) => r.at === n);
+  for (const [k, n] of MIX) {
+    const [rate, off] = ALL[k];
+    const runs = Array.from({ length: 200 }, () => member(rate, off, 2));
+    const share = (i) => runs.filter((r) => r.out.years[1]?.doneList?.[i]).length / runs.length;
+    weeks += n * share(at(14000)); months += n * share(at(30000)); stars += n * share(at(20000)); early += n * share(at(10000));
+  }
+  const usd = (x) => "USD " + Math.round(x);
+  console.log(`  weeks of plan ${weeks.toFixed(0)} (~${usd(weeks * 4)}), free months ${months.toFixed(1)} (~${usd(months * 25)}), named stars ${stars.toFixed(0)} (no cost), early access ${early.toFixed(0)} members (automatic)`);
+  console.log(`  hand-fulfilled claims per season: ${(weeks + months + stars).toFixed(0)}; worst-case reward cost per season ~${usd(weeks * 4 + months * 25)}`);
 }
