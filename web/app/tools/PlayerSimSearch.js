@@ -225,7 +225,14 @@ function StatDetailRow({ row, colSpan, shapePeers, wrTePool, tagsByName, maxCeil
       ? compareRow?.statCeilingPercentiles
       : compareRow?.statPercentiles;
   const compareEntries = compareRow
-    ? radarEntries.map(([key, label]) => [key, label, comparePctiles?.[key]])
+    ? radarEntries.map(([key, label]) => [
+        key,
+        label,
+        comparePctiles?.[key],
+        // the real numbers (his vs the comp's, in the clicked column) decide higher / lower: percentiles top out at 100, so two big seasons tied there
+        compareRow.stat_ranges?.[key]?.[compareLayer || "median"],
+        ranges[key]?.[compareLayer || "median"],
+      ])
     : null;
 
 

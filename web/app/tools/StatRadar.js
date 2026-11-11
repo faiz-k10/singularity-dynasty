@@ -214,10 +214,14 @@ export default function StatRadar({ entries, selection = null, startDeg = -90, c
           const medianR = cellLayer === "median" ? 4.5 : columnLayer === "median" ? 4 : isRowSel ? 3.5 : 0;
           const select = () => onSelectKey?.(key);
           // With a similar player overlaid, each stat NAME is coloured: blue = this player is above the comp, ember = below, plain = level (median percentile). No extra glyphs, so the labels keep their shape.
-          const mine = entries[i][2];
-          const theirs = compareEntries?.[i]?.[2];
+          const cmp = compareEntries?.[i];
+          // raw numbers when both are there (percentiles cap at 100, so two huge seasons would read as a tie); else the median percentiles
+          const hasRaw = cmp && cmp[3] != null && cmp[4] != null;
+          const mine = hasRaw ? cmp[4] : entries[i][2];
+          const theirs = hasRaw ? cmp[3] : cmp?.[2];
+          const level = hasRaw ? mine === theirs : mine != null && theirs != null && Math.round(mine) === Math.round(theirs);
           const cmpMark =
-            compareEntries && mine != null && theirs != null && Math.round(mine) !== Math.round(theirs)
+            compareEntries && mine != null && theirs != null && !level
               ? mine > theirs
                 ? "radar-cmp-up"
                 : "radar-cmp-down"
