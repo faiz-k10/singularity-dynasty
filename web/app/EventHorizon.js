@@ -680,6 +680,7 @@ export default function EventHorizon({ signedIn, member, invited, discountPct, w
       skyOp = 1 - Math.min(1, p * 1.6);
       if (ready) {
         hz.style.transform = `scale(${(1 + (need - 1) * e).toFixed(4)})`;
+        hz.style.opacity = String(Math.max(0, Math.min(1, 1 - (p - 0.35) / 0.5))); // the grown hole gives way to the page's own colour, so every section after it is plain page (no alternating light / dark bands)
         hole.style.opacity = String(Math.max(0, 1 - p * 3.2));
         hole.style.pointerEvents = p > 0.2 ? "none" : "";
         cue.style.opacity = String(Math.max(0, 1 - p * 6));
