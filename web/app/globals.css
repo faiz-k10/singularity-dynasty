@@ -7236,3 +7236,7 @@ body:has(.ehp) .ehp-inside,body:has(.ehp) .ehp-dark{--ehp-hole:#0B0B0B;--ehp-hol
 @keyframes sky-jet{0%,100%{opacity:.7}50%{opacity:1}}
 @keyframes sky-drift{to{transform:translate(18px,10px)}}
 @media (prefers-reduced-motion:reduce){.sky-skin-spin,.sky-skin-pulse,.sky-skin-drift{animation:none!important}}
+
+.sky-past{list-style:none;margin:0;padding:0}
+.sky-past li{display:grid;grid-template-columns:48px 1fr auto;gap:12px;align-items:center;padding:8px 0;border-top:1px solid var(--line);font-size:13.5px}
+.sky-past li:first-child{border-top:0}

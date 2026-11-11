@@ -3,7 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { fetchSleeperState } from "@/lib/sleeper";
 import { nflSeason } from "@/lib/season";
 import { getCachedRedraftData } from "@/app/tools/redraft-rankings/data";
-import { freshState, normalize, award, rollSeason, skySeasonFor, unlockSkins, equipSkin, pickPairs, gradePicks, eventFor, titleFor, LADDER } from "@/lib/nightSky";
+import { freshState, normalize, award, rollSeason, skySeasonFor, unlockSkins, equipSkin, pickPairs, gradePicks, eventFor, titleOf, seasonProgress, LADDER } from "@/lib/nightSky";
 
 // The Night Sky's storage and every roll of the dice (the rules are lib/nightSky.js). One row per member in `night_sky` (migration 0046),
 // read and written only here with the service role. Nothing in this file throws to its caller: the game must never break a page.
@@ -36,8 +36,8 @@ async function write(userId, state) {
 export async function skySummary(userId) {
   try {
     const s = await read(userId);
-    if (!s.actions) return { title: titleFor(0), points: 0, waiting: 0, fresh: true };
-    return { title: titleFor(s.points), points: s.points, waiting: s.pending.length, fresh: false };
+    if (!s.actions) return { title: "Spotter", points: 0, waiting: 0, fresh: true };
+    return { title: titleOf(s), points: seasonProgress(s).points, waiting: s.pending.length, fresh: false };
   } catch {
     return null;
   }
@@ -125,12 +125,12 @@ export async function setSkin(userId, kind, id) {
   if (equipSkin(state, kind, id)) await write(userId, state);
   return state;
 }
-// Claiming a ladder reward the founder fulfils by hand (it shows in /admin).
-export async function claimReward(userId, at) {
+// Claiming a ladder reward the founder fulfils by hand (it shows in /admin). One claim per rung per season: the key is "<season>:<rung index>".
+export async function claimReward(userId, index) {
   const state = await read(userId);
-  const rung = LADDER.find((r) => r.at === at);
-  if (!rung?.claim || state.points < at || state.claimed[at]) return state;
-  state.claimed[at] = { at: Date.now() };
+  const rung = LADDER[index], p = seasonProgress(state), key = `${state.season}:${index}`;
+  if (!rung?.claim || !p.done[index] || state.claimed[key]) return state;
+  state.claimed[key] = { at: Date.now(), season: state.season, index };
   await write(userId, state);
   return state;
 }
@@ -140,7 +140,7 @@ export async function openClaims() {
     const { data, error } = await createAdminClient().from(TABLE).select("user_id, state");
     if (error) throw error;
     const out = [];
-    for (const row of data || []) for (const [at, c] of Object.entries(row.state?.claimed || {})) if (!c.done) out.push({ user_id: row.user_id, at: Number(at), reward: LADDER.find((r) => r.at === Number(at))?.reward, when: c.at });
+    for (const row of data || []) for (const [key, c] of Object.entries(row.state?.claimed || {})) if (!c.done && c.index != null) out.push({ user_id: row.user_id, key, season: c.season, reward: LADDER[c.index]?.reward, when: c.at });
     return out.sort((a, b) => b.when - a.when);
   } catch {
     return null;

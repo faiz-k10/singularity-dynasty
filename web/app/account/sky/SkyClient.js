@@ -7,8 +7,8 @@ import { seeFinds, pickPlayer, claim, wearSkin } from "./actions";
 import { SkyBackdrop, CoreSkin, SkinPreview } from "./skins";
 import { drawObject, sharpen, findCard, receiptCard, seasonCard, toBlob, setCardBadge, setCardSkin, setCardFrame } from "./skyArt";
 import {
-  ACTIONS, skyFor, SKINS, hasSkin, equipped, skySkinsFor, FAMILIES, COLOURS, VERSIONS, TIER_NAME, POWERUPS, LADDER, CATALOGUE_SIZE, SET_COUNT, UNLOCK, EVENT_TEXT,
-  famsIn, findOf, setProgress, titleFor, seasonProgress, SEASON_TRACK,
+  ACTIONS, skyFor, SKINS, hasSkin, equipped, skySkinsFor, FAMILIES, COLOURS, VERSIONS, TIER_NAME, POWERUPS, LADDER, rungLabel, CATALOGUE_SIZE, SET_COUNT, UNLOCK, EVENT_TEXT,
+  famsIn, findOf, setProgress, seasonProgress,
 } from "@/lib/nightSky";
 
 // The Night Sky page (server side: page.js; rules: lib/nightSky.js). Everything here only SHOWS the sky: stars, finds and points are decided on
@@ -161,9 +161,9 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
   const [now, setNow] = useState(serverNow); // ticks once a second so the boost timers count down
   useEffect(() => { const t = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(t); }, []);
 
-  const title = titleFor(state.points);
-  const sp = seasonProgress(state), sky = skyFor(state.season);
-  const badge = sp.title && state.season ? `${state.season} · ${sp.title.toUpperCase()}` : null;
+  const sp = seasonProgress(state), sky = skyFor(state.season), title = sp.title;
+  const badge = state.season ? `${state.season} · ${sp.title.toUpperCase()}` : null;
+  const past = Object.entries(state.skies || {}).sort((a, b) => Number(b[0]) - Number(a[0]));
   const wk = weekKey ? state.picks[weekKey] : null;
   const lastGraded = Object.entries(state.picks).filter(([, w]) => w.graded && w.made).sort((a, b) => (b[1].season - a[1].season) || (b[1].week - a[1].week))[0]?.[1] || null;
   const pendingPicks = wk && !wk.graded ? wk.choice.filter((c) => c != null) : [];
@@ -206,10 +206,10 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
     make: () => findCard(f, { title, compliment: compliment?.head, have: entries.length, size: CATALOGUE_SIZE }),
   });
 
-  const nextRung = LADDER.find((r) => state.points < r.at);
-  const prevAt = [...LADDER].reverse().find((r) => state.points >= r.at)?.at || 0;
-  const frac = nextRung ? (state.points - prevAt) / (nextRung.at - prevAt) : 1;
+  const nextAt = LADDER.find((r) => r.at && sp.points < r.at), prevAt = [...LADDER].reverse().find((r) => r.at && sp.points >= r.at)?.at || 0;
+  const frac = nextAt ? (sp.points - prevAt) / (nextAt.at - prevAt) : 1;
   const C = 2 * Math.PI * 48;
+  const nextIdx = sp.done.indexOf(false);
   const catOpen = state.findsTotal >= UNLOCK.catalogue;
   const close = catOpen ? setProgress(state) : [];
   const done = new Set(state.daily?.day === today ? state.daily.done : []);
@@ -296,91 +296,6 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
               </div>
             )}
           </section>
-        </div>
-        <div className="sky-col">
-          <section className="sky-panel" aria-labelledby="sky-season">
-            <div className="board-panel-title" id="sky-season">This season{state.season ? ` · ${state.season}` : ""}</div>
-            <div className="sky-season-head">
-              <div><div className="sky-rank">{sp.title || "Uncharted"}</div><div className="mono sky-small">{sp.points.toLocaleString()} orbit points this season</div></div>
-              <ul className="sky-season-sky">
-                {sky.map((c) => <li key={c.id} className={(state.seasonDone?.[c.id] || 0) > 0 ? "is-done" : ""}><i style={{ background: STAR[c.color] }} />{c.real}</li>)}
-              </ul>
-            </div>
-            <ul className="sky-ladder is-season">
-              {SEASON_TRACK.map((r, i) => (
-                <li key={i} className={sp.done[i] ? "is-got" : sp.done.indexOf(false) === i ? "is-next" : ""}>
-                  <span className="mono">{r.three ? `${sp.three}/3` : r.singularity ? (sp.singularity ? "1/1" : "0/1") : r.at.toLocaleString()}</span>
-                  <span>{r.singularity ? `Finish The Singularity (${sky[3].real}) this season: the ${state.season || ""} ${sky[3].real} sky skin, never available again` : r.reward}</span>
-                  <span className="mono sky-small">{sp.done[i] ? "Earned" : ""}</span>
-                </li>
-              ))}
-            </ul>
-            <p className="sky-small mono">Starts over every season, with a new set of constellations. Your season title shows on everything you share.</p>
-          </section>
-        </div>
-      </div>
-
-      <div className="sky-grid">
-        <section className="sky-panel" aria-labelledby="sky-orbit">
-          <div className="board-panel-title" id="sky-orbit">Your orbit</div>
-          <div className="sky-orbit">
-            <svg viewBox="-60 -60 120 120" width="110" height="110" aria-hidden="true">
-              <circle r="48" fill="none" stroke="var(--line)" strokeWidth="6" />
-              <circle r="48" fill="none" stroke="var(--ember)" strokeWidth="6" transform="rotate(-90)" strokeDasharray={`${(C * frac).toFixed(1)} ${C}`} />
-              <circle r="18" fill="var(--star)" />
-            </svg>
-            <div><div className="sky-rank">{title}</div><div className="mono sky-small">{state.points.toLocaleString()} orbit points</div></div>
-          </div>
-          <ul className="sky-ladder">
-            {LADDER.map((r) => {
-              const got = state.points >= r.at, claimed = state.claimed?.[r.at];
-              return (
-                <li key={r.at} className={got ? "is-got" : nextRung?.at === r.at ? "is-next" : ""}>
-                  <span className="mono">{r.at.toLocaleString()}</span>
-                  <span>{r.reward}</span>
-                  {got && r.claim ? (claimed ? <span className="mono sky-small">Claimed</span> : <button type="button" className="sky-claim mono" disabled={busy} onClick={() => run(claim(r.at))}>Claim</button>) : <span />}
-                </li>
-              );
-            })}
-          </ul>
-          <p className="sky-small mono">Claimed rewards are sent to you by hand within a few days.</p>
-        </section>
-
-        <div className="sky-col">
-          <section className="sky-panel" aria-labelledby="sky-cat">
-            <div className="board-panel-title" id="sky-cat">The catalogue</div>
-            {!catOpen ? (
-              <p className="sky-small mono">The catalogue and its sets open after {UNLOCK.catalogue} finds ({UNLOCK.catalogue - state.findsTotal} to go).</p>
-            ) : (
-              <>
-                <p className="sky-small mono">{entries.length.toLocaleString()} of {CATALOGUE_SIZE.toLocaleString()} discovered · {new Set(entries.map((e) => e.fam)).size} of {FAMILIES.length} kinds · sets {Object.keys(state.sets).length} of {SET_COUNT}</p>
-                <div className="sky-sets">
-                  {close.map((c) => (
-                    <div key={c.label} className={`sky-set${c.of - c.have === 1 ? " is-near" : ""}`}>
-                      <span>{c.label}</span><span className="mono">{c.have}/{c.of} → {c.power}</span><i style={{ width: `${(100 * c.have) / c.of}%` }} />
-                    </div>
-                  ))}
-                </div>
-                <div className="sky-cat">
-                  {[1, 2, 3, 4, 5].map((t) => [
-                    <div key={`h${t}`} className="sky-cat-h mono">{TIER_NAME[t]}</div>,
-                    ...famsIn(t).map((fam) => {
-                      const mine = entries.filter((e) => e.fam === fam.id);
-                      const best = [...mine].sort((a, c) => c.oneIn - a.oneIn)[0];
-                      return (
-                        <div key={fam.id} className={`sky-obj${best ? "" : " is-unknown"}${best?.version ? " is-rare" : ""}`}>
-                          <Thumb find={best ? findOf(best.fam, best.colour, best.version) : findOf(fam.id, "silver", "")} hidden={!best} />
-                          <b>{best ? fam.name : "???"}</b>
-                          <span className="sky-pips">{COLOURS.map((col) => <i key={col.id} style={{ background: mine.some((e) => e.colour === col.id) ? col.c[0] : "transparent", borderColor: col.c[0] }} />)}</span>
-                          <span className="mono">{mine.length} of {COLOURS.length * VERSIONS.length}</span>
-                        </div>
-                      );
-                    }),
-                  ])}
-                </div>
-              </>
-            )}
-          </section>
 
           <section className="sky-panel" aria-labelledby="sky-odds">
           <div className="board-panel-title" id="sky-odds">What&apos;s out there</div>
@@ -396,7 +311,91 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
           <p className="sky-small mono">If a find lands on something your constellations haven&apos;t powered, you get the biggest find they have, and you&apos;ll see the bigger one at the edge of the frame. Finish The Singularity and your next find is a stellar event.</p>
         </section>
         </div>
+        <div className="sky-col">
+          <section className="sky-panel" aria-labelledby="sky-season">
+            <div className="board-panel-title" id="sky-season">Your season{state.season ? ` · ${state.season}` : ""}</div>
+            <div className="sky-orbit">
+              <svg viewBox="-60 -60 120 120" width="96" height="96" aria-hidden="true">
+                <circle r="48" fill="none" stroke="var(--line)" strokeWidth="6" />
+                <circle r="48" fill="none" stroke="var(--ember)" strokeWidth="6" transform="rotate(-90)" strokeDasharray={`${(C * frac).toFixed(1)} ${C}`} />
+                <circle r="18" fill="var(--star)" />
+              </svg>
+              <div>
+                <div className="sky-rank">{sp.title}</div>
+                <div className="mono sky-small">{sp.points.toLocaleString()} orbit points this season · {sp.rungs} of {LADDER.length} rungs</div>
+              </div>
+            </div>
+            <ul className="sky-season-sky">
+              {sky.map((c) => <li key={c.id} className={(state.seasonDone?.[c.id] || 0) > 0 ? "is-done" : ""}><i style={{ background: STAR[c.color] }} />{c.real}</li>)}
+            </ul>
+            <ul className="sky-ladder is-season">
+              {LADDER.map((r, i) => {
+                const key = `${state.season}:${i}`, claimed = state.claimed?.[key];
+                return (
+                  <li key={i} className={sp.done[i] ? "is-got" : nextIdx === i ? "is-next" : ""}>
+                    <span className="mono">{r.three ? `${sp.three}/3` : r.singularity ? (sp.singularity ? "1/1" : "0/1") : rungLabel(r)}</span>
+                    <span>{r.singularity ? `Finish The Singularity (${sky[3].real}) this season: the ${state.season || ""} ${sky[3].real} sky skin, never available again` : r.reward}</span>
+                    {sp.done[i] && r.claim ? (claimed ? <span className="mono sky-small">Claimed</span> : <button type="button" className="sky-claim mono" disabled={busy} onClick={() => run(claim(i))}>Claim</button>) : <span className="mono sky-small">{sp.done[i] ? "Earned" : ""}</span>}
+                  </li>
+                );
+              })}
+            </ul>
+            <p className="sky-small mono">The whole ladder starts over every September, with a new set of constellations. Your catalogue, sets, skins and past seasons stay. Claimed rewards are sent to you by hand within a few days, and perks last until the next season.</p>
+          </section>
+
+          <section className="sky-panel" aria-labelledby="sky-past">
+            <div className="board-panel-title" id="sky-past">Past seasons</div>
+            {past.length ? (
+              <ul className="sky-past">
+                {past.map(([y, k]) => (
+                  <li key={y}>
+                    <b className="mono">{y}</b>
+                    <span>{k.title || "Spotter"}{k.charted ? " · Charted" : ""}{k.skin ? ` · ${skyFor(Number(y))[3].real} sky skin` : ""}</span>
+                    <span className="mono sky-small">{(k.points || 0).toLocaleString()} pts</span>
+                  </li>
+                ))}
+              </ul>
+            ) : <p className="sky-small mono">Your first season is underway. Each finished season is kept here as a record.</p>}
+            <p className="sky-small mono">{state.points.toLocaleString()} orbit points in total across every season.</p>
+          </section>
+        </div>
       </div>
+
+          <section className="sky-panel" aria-labelledby="sky-cat">
+          <div className="board-panel-title" id="sky-cat">The catalogue</div>
+          {!catOpen ? (
+            <p className="sky-small mono">The catalogue and its sets open after {UNLOCK.catalogue} finds ({UNLOCK.catalogue - state.findsTotal} to go).</p>
+          ) : (
+            <>
+              <p className="sky-small mono">{entries.length.toLocaleString()} of {CATALOGUE_SIZE.toLocaleString()} discovered · {new Set(entries.map((e) => e.fam)).size} of {FAMILIES.length} kinds · sets {Object.keys(state.sets).length} of {SET_COUNT}</p>
+              <div className="sky-sets">
+                {close.map((c) => (
+                  <div key={c.label} className={`sky-set${c.of - c.have === 1 ? " is-near" : ""}`}>
+                    <span>{c.label}</span><span className="mono">{c.have}/{c.of} → {c.power}</span><i style={{ width: `${(100 * c.have) / c.of}%` }} />
+                  </div>
+                ))}
+              </div>
+              <div className="sky-cat">
+                {[1, 2, 3, 4, 5].map((t) => [
+                  <div key={`h${t}`} className="sky-cat-h mono">{TIER_NAME[t]}</div>,
+                  ...famsIn(t).map((fam) => {
+                    const mine = entries.filter((e) => e.fam === fam.id);
+                    const best = [...mine].sort((a, c) => c.oneIn - a.oneIn)[0];
+                    return (
+                      <div key={fam.id} className={`sky-obj${best ? "" : " is-unknown"}${best?.version ? " is-rare" : ""}`}>
+                        <Thumb find={best ? findOf(best.fam, best.colour, best.version) : findOf(fam.id, "silver", "")} hidden={!best} />
+                        <b>{best ? fam.name : "???"}</b>
+                        <span className="sky-pips">{COLOURS.map((col) => <i key={col.id} style={{ background: mine.some((e) => e.colour === col.id) ? col.c[0] : "transparent", borderColor: col.c[0] }} />)}</span>
+                        <span className="mono">{mine.length} of {COLOURS.length * VERSIONS.length}</span>
+                      </div>
+                    );
+                  }),
+                ])}
+              </div>
+            </>
+          )}
+        </section>
+
 
       
 

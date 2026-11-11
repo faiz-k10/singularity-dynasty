@@ -74,7 +74,7 @@ export function skyFor(season) {
   return CONSTELLATIONS.map((c) => ({ ...c, ...SKY_SETS[i][c.id] }));
 }
 // A new NFL season: keep the old sky (for the season card and a member's past skies) and start an empty one. Returns true when it rolled.
-const seasonProgressLite = (s) => { const p = seasonProgress(s); return { points: p.points, title: p.title, charted: p.sky }; };
+const seasonProgressLite = (s) => { const p = seasonProgress(s); return { points: p.points, title: p.title, charted: p.sky, rungs: p.rungs, skin: p.singularity, frame: p.frame }; };
 // The sky's season starts at KICKOFF (Sept 1, Eastern), not when the NFL's league year turns over in the spring: the new constellations and
 // season track arrive with football, and last season's track stays open through the offseason (simulation, Nov 11 2026). day: "YYYY-MM-DD".
 export const skySeasonFor = (day) => { const [y, m] = String(day).split("-").map(Number); return m >= 9 ? y : y - 1; };
@@ -125,57 +125,45 @@ export const POWERUPS = {
   mythic: { name: "Gravity well", text: "a star lands in every unfinished constellation, the core starts half full, every action places triple stars for 30 minutes, and your core can't cool for a week." },
 };
 
-// The lifetime reward ladder (re-spaced Nov 11 2026 with mockups/night-sky-sim-live.mjs, three NFL years incl. the offseason: a light member
-// reaches ~7 rungs in year 1, a regular one early access in year 1 and the free month around year 3, an engaged one the free month in year 2
-// and Event Horizon around year 3). No poster (founder). Rewards with cash value come from effort, never chance. `claim`: the founder fulfils it
-// by hand. The SEASON_TRACK below resets every season, so there is always something to aim for once the ladder is mostly climbed.
+// THE LADDER: one ladder, one season long (founder, Nov 11 2026: "keep it only for 1 season"). It starts over at KICKOFF with that season's
+// constellations (see skySeasonFor); what carries over is the catalogue, sets, skins and the career shelf (`s.skies`: one trophy line per past
+// season). kinds: `at` = orbit points earned this season; `three` = finish The Huddle, The Blitz and The Playbook this season; `singularity`
+// = finish this season's Singularity, which earns that season's limited sky skin (e.g. "Orion 2026", never earnable again). `title`: the
+// season title it gives; `frame`: the share-card frame. `claim`: has cash value or needs the founder to act, so the member claims it and it
+// is fulfilled by hand -- ONLY the top rungs do, and every perk lasts that season only (early access ends at the next kickoff). Spaced with
+// mockups/night-sky-sim-live.mjs: light members earn about 4,300 points a season, regular ~10,000-13,000, engaged ~21,000-26,000.
 export const LADDER = [
-  { at: 80, reward: "First light: a profile badge", kind: "status" },
-  { at: 200, reward: "A frame for your share cards", kind: "status" },
-  { at: 400, reward: "Title: Astronomer", kind: "status" },
-  { at: 650, reward: "Name your constellations (they show on your cards)", kind: "status" },
-  { at: 1100, reward: "A week of the next plan up", kind: "value", claim: true },
-  { at: 1900, reward: "Title: Cartographer + a Discord role", kind: "status", claim: true },
-  { at: 3200, reward: "Your name on the founders' wall", kind: "lasting", claim: true },
-  { at: 9000, reward: "Early access: new tools and features a week before everyone else", kind: "lasting", claim: true },
-  { at: 30000, reward: "A free month", kind: "value", claim: true },
-  { at: 40000, reward: "Name an object in everyone's catalogue", kind: "lasting", claim: true },
-  { at: 65000, reward: "Title: Event Horizon, shown on everything you share", kind: "status" },
-];
-export const TITLES = [[0, "Spotter"], [400, "Astronomer"], [1900, "Cartographer"], [9000, "Astrophysicist"], [65000, "Event Horizon"]];
-// The season track: starts over every NFL season with that season's constellations; nothing on it has cash value. Re-spaced Nov 11 2026 with
-// the simulation so something new lands every few weeks even in a member's third season. kinds: `at` = orbit points earned this season;
-// `three` = finish The Huddle, The Blitz and The Playbook this season; `singularity` = finish this season's Singularity, which earns that
-// season's limited sky skin (e.g. "Orion 2026", never earnable again). `frame`: the share-card frame it gives.
-export const SEASON_TRACK = [
+  { at: 200, reward: "First light: a profile badge for the season", title: "Spotter" },
   { at: 500, reward: "A silver season frame on your share cards", frame: "silver" },
   { three: true, reward: "Charted: finish The Huddle, The Blitz and The Playbook this season. This season's badge on your cards", title: "Charted" },
   { at: 1000, reward: "Season title: Lookout", title: "Lookout" },
   { at: 2000, reward: "Season title: Observer", title: "Observer" },
   { at: 3500, reward: "Season title: Tracker", title: "Tracker" },
   { singularity: true, reward: "Finish this season's Singularity: its limited sky skin, never available again" },
-  { at: 6000, reward: "Season title: Surveyor", title: "Surveyor" },
-  { at: 10000, reward: "A gold season frame on your share cards", frame: "gold" },
-  { at: 15000, reward: "Your name on a star in this season's sky", title: "Star-namer" },
+  { at: 6000, reward: "Season title: Surveyor, plus a week of the next plan up", title: "Surveyor", claim: true },
+  { at: 10000, reward: "A gold season frame, plus early access to new tools and features for the rest of the season", frame: "gold", claim: true },
+  { at: 15000, reward: "Your name on a star in this season's sky", title: "Star-namer", claim: true },
+  { at: 24000, reward: "A free month", title: "Event Horizon", claim: true },
 ];
+export const rungLabel = (r) => (r.three ? "Charted" : r.singularity ? "Singularity" : r.at.toLocaleString());
 // Skins (Nov 11 2026, founder: "aesthetic rewards, like how real games use skins"). Purely cosmetic: a backdrop for the sky and a design for
 // the core, shown on the page and on share cards. Each is unlocked by something the member did (`test`, read from their state) and is kept
 // for good once earned (`s.skins`, filled by unlockSkins); `s.equip` is what they chose. Nothing here can be bought.
 export const SKINS = {
   sky: [
     { id: "deep", name: "Deep field", how: "Yours from the start" },
-    { id: "nebula", name: "Nebula", how: "Reach 200 orbit points", test: (s) => s.points >= 200 },
+    { id: "nebula", name: "Nebula", how: "Reach 200 orbit points in total", test: (s) => s.points >= 200 },
     { id: "aurora", name: "Aurora", how: "Chart a season: finish The Huddle, The Blitz and The Playbook in one season", test: (s) => seasonProgress(s).sky || Object.values(s.skies || {}).some((k) => k.charted) },
-    { id: "milkyway", name: "Milky Way", how: "Reach 6,000 orbit points", test: (s) => s.points >= 6000 },
+    { id: "milkyway", name: "Milky Way", how: "Reach 6,000 orbit points in total", test: (s) => s.points >= 6000 },
     { id: "eclipse", name: "Eclipse", how: "Find a stellar event", test: (s) => Object.values(s.found).some((e) => FAMILIES[e.fam]?.tier === 5) },
   ],
   core: [
     { id: "classic", name: "Classic", how: "Yours from the start" },
-    { id: "pulsar", name: "Pulsar", how: "Reach 1,900 orbit points", test: (s) => s.points >= 1900 },
+    { id: "pulsar", name: "Pulsar", how: "Reach 1,900 orbit points in total", test: (s) => s.points >= 1900 },
     { id: "ringed", name: "Ringed", how: "Complete 25 sets", test: (s) => Object.keys(s.sets).length >= 25 },
     { id: "binary", name: "Binary", how: "Earn a Surveyor season (6,000 points in one season)", test: (s) => seasonProgress(s).points >= 6000 || Object.values(s.skies || {}).some((k) => k.points >= 6000) },
     { id: "quasar", name: "Quasar", how: "Find a mythic version of anything", test: (s) => Object.values(s.found).some((e) => e.version === "mythic") },
-    { id: "horizon", name: "Event Horizon", how: "Reach 65,000 orbit points", test: (s) => s.points >= 65000 },
+    { id: "horizon", name: "Event Horizon", how: "Reach 65,000 orbit points in total", test: (s) => s.points >= 65000 },
   ],
 };
 const DEFAULT_SKIN = { sky: "deep", core: "classic" };
@@ -213,12 +201,13 @@ export function seasonProgress(s) {
   const points = Math.max(0, s.points - (s.seasonBase || 0)), d = s.seasonDone || {};
   const three = ["huddle", "blitz", "playbook"].filter((id) => (d[id] || 0) > 0).length;
   const sing = (d.singularity || 0) > 0;
-  const done = SEASON_TRACK.map((r) => (r.three ? three === 3 : r.singularity ? sing : points >= r.at));
-  const titled = SEASON_TRACK.map((r, i) => (done[i] && r.title ? r.title : null)).filter(Boolean);
-  const frames = SEASON_TRACK.map((r, i) => (done[i] && r.frame ? r.frame : null)).filter(Boolean);
-  return { season: s.season, points, sky: three === 3, three, singularity: sing, done, title: titled.at(-1) || null, frame: frames.at(-1) || null };
+  const done = LADDER.map((r) => (r.three ? three === 3 : r.singularity ? sing : points >= r.at));
+  const titled = LADDER.map((r, i) => (done[i] && r.title ? r.title : null)).filter(Boolean);
+  const frames = LADDER.map((r, i) => (done[i] && r.frame ? r.frame : null)).filter(Boolean);
+  return { season: s.season, points, sky: three === 3, three, singularity: sing, done, rungs: done.filter(Boolean).length, title: titled.at(-1) || "Spotter", frame: frames.at(-1) || null };
 }
-export const titleFor = (points) => [...TITLES].reverse().find(([t]) => points >= t)[1];
+// The title a member is wearing this season ("Spotter" until Charted / a points rung replaces it).
+export const titleOf = (s) => seasonProgress(s).title;
 
 // Systems open gradually (twelve ideas at once is too many): constellations after the first find, the catalogue and sets after 10 finds.
 export const UNLOCK = { constellations: 1, catalogue: 10 };

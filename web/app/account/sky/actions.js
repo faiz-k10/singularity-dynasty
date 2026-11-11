@@ -28,8 +28,8 @@ export async function seeFinds(ids) {
 export async function pickPlayer(key, index, choice) {
   return guard((id) => makePick(id, String(key).slice(0, 12), Number(index), Number(choice)));
 }
-export async function claim(at) {
-  return guard((id) => claimReward(id, Number(at)));
+export async function claim(index) {
+  return guard((id) => claimReward(id, Number(index)));
 }
 export async function wearSkin(kind, id) {
   return guard((uid) => setSkin(uid, String(kind).slice(0, 8), String(id).slice(0, 20)));

@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { freshState, normalize, award, findOf, pickPairs, gradePicks, eventFor, CATALOGUE_SIZE, FAMILIES, titleFor, litTier, DAY } from "../lib/nightSky.js";
+import { freshState, normalize, award, findOf, pickPairs, gradePicks, eventFor, CATALOGUE_SIZE, FAMILIES, titleOf, litTier, DAY } from "../lib/nightSky.js";
 
 const seeded = (seed = 7) => () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
 const ctx = (now, day = "2026-11-11", event = null) => ({ now, day, event });
@@ -84,8 +84,7 @@ test("events follow the NFL calendar", () => {
 });
 
 test("titles and normalising old state", () => {
-  assert.equal(titleFor(0), "Spotter");
-  assert.equal(titleFor(500), "Astronomer");
+  assert.equal(titleOf(freshState()), "Spotter");
   const s = normalize({ points: 5 });
   assert.equal(s.points, 5);
   assert.ok(s.filled.singularity.length === 10 && s.boosts.extra === 0);
@@ -133,24 +132,28 @@ test("a new NFL season starts an empty sky and keeps the old one", () => {
 });
 
 import { seasonProgress } from "../lib/nightSky.js";
-test("the season track counts finished constellations and this season's points, and starts over", () => {
+test("the ladder is one season long: it counts this season's points and finished constellations, then starts over", () => {
   const s = freshState();
   rollSeason(s, 2026);
   for (const id of ["huddle", "blitz", "playbook"]) s.seasonDone[id] = 1;
   s.points = 2200;
   const p = seasonProgress(s);
   assert.equal(p.sky, true); // charted needs only the three smaller constellations
-  assert.deepEqual(p.done, [true, true, true, true, false, false, false, false, false]);
+  assert.deepEqual(p.done, [true, true, true, true, true, false, false, false, false, false, false]);
   assert.equal(p.title, "Observer");
   assert.equal(p.frame, "silver");
+  assert.equal(p.rungs, 5);
   s.seasonDone.singularity = 1;
   assert.deepEqual(unlockSkins(s).map((k) => k.id).filter((id) => id.startsWith("season")), ["season-2026"]); // the limited season skin
   rollSeason(s, 2027);
-  assert.equal(s.skies[2026].title, "Observer");
+  assert.equal(s.skies[2026].title, "Observer"); // the career shelf keeps one line per past season
+  assert.equal(s.skies[2026].rungs, 6);
   assert.equal(seasonProgress(s).points, 0);
-  assert.equal(seasonProgress(s).title, null);
+  assert.equal(seasonProgress(s).title, "Spotter");
+  assert.equal(seasonProgress(s).rungs, 0);
   assert.equal(unlockSkins(s).filter((k) => k.id === "season-2027").length, 0); // next season's must be earned again
   assert.ok(equipSkin(s, "sky", "season-2026")); // last season's stays wearable
+  assert.equal(s.points, 2200); // the lifetime total (used by skins) is never reset
 });
 
 import { unlockSkins, equipSkin, equipped, hasSkin } from "../lib/nightSky.js";
