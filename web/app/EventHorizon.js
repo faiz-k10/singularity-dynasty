@@ -235,6 +235,19 @@ function Bodies({ size, bodies }) {
   return (
     <>
       {/* Explorer's (ember) and Singularity's (cobalt) hover glows: coloured, so they can't sit in the difference-blended planets (they'd invert) -- their own elements, moved with their planets */}
+      {/* a member's league footballs sit IN FRONT of their orbit lines: a ball of the page's own colour under each (difference-blended) planet hides the
+          line where it passes behind; it is an .ehp-eglow so the frame loop moves it with its planet */}
+      {bodies.map((b, i) => {
+        if (b.id) return null;
+        const S = 16;
+        return (
+          <div key={`shade-${b.n}`} className="ehp-eglow ehp-shade" data-i={i} aria-hidden="true">
+            <svg viewBox={`${-S} ${-S} ${2 * S} ${2 * S}`} style={{ width: 2 * S, height: 2 * S, left: -S, top: -S }}>
+              <path d={ball(9, 0.6)} transform={`rotate(${BALL_TILT})`} fill="var(--ehp-bg)" />
+            </svg>
+          </div>
+        );
+      })}
       {bodies.map((b, i) => {
         if (b.id !== "explorer" && b.id !== "singularity") return null;
         const pr = b.pr * kk, S = Math.ceil(pr * 3.4);
