@@ -2789,7 +2789,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
 /* The guides use the text colour at low opacity, not --line (a hairline barely lighter than the panel: invisible on the dark one); --star-dot-rgb flips with the theme. */
 .radar-ring{fill:none; stroke:rgba(var(--star-dot-rgb),0.3); stroke-width:1;}
 .radar-spoke{stroke:rgba(var(--star-dot-rgb),0.38); stroke-width:1;}
-.radar-shape{fill:rgba(var(--neon-blue-rgb),0.18); stroke:var(--horizon-gold); stroke-width:1.25; stroke-linejoin:round; transition:stroke-width .15s ease, opacity .15s ease;}
+.radar-shape{fill:none; stroke:var(--star); stroke-width:1.25; stroke-linejoin:round; transition:stroke-width .15s ease, opacity .15s ease;}
 .radar-shape-active{stroke-width:3.5;}
 /* column mode ("Median" header clicked) picks one layer to emphasize --
    without this, the median line and the floor/ceiling band outlines are
@@ -2799,8 +2799,10 @@ tr.stat-row-selected td{background:var(--void-panel);}
    the unselected outlines then read as equally-prominent shapes instead
    of background context. */
 .radar-shape-dim{opacity:0.3;}
-.radar-point{fill:var(--horizon-gold);}
-.radar-point-active{fill:var(--star); stroke:var(--horizon-gold); stroke-width:2;}
+.radar-outline-floor{--tone:var(--down);}
+.radar-outline-ceiling{--tone:var(--up);}
+.radar-point{fill:var(--star);}
+.radar-point-active{fill:var(--star); stroke:var(--star-dim); stroke-width:2;}
 .radar-axis-label{font-family:var(--font-mono), monospace; font-size:9.5px; fill:var(--star-dim);}
 .radar-axis-label-active{fill:var(--horizon-gold); font-weight:700;}
 /* Clickable vertex -- mirrors .stat-row-trigger so a stat can be
@@ -2815,8 +2817,11 @@ tr.stat-row-selected td{background:var(--void-panel);}
 /* Floor-to-ceiling band around the median shape -- same gold family as
    .radar-shape (this player's own numbers) so it doesn't read as a second
    comp the way the neon-blue .radar-shape-compare overlay does. */
-.radar-band{fill:rgba(var(--horizon-gold-rgb),0.12); stroke:none;}
-.radar-band-outline{fill:none; stroke:var(--horizon-gold); stroke-width:1.25; stroke-linejoin:round; transition:stroke-width .15s ease, opacity .15s ease;}
+.radar-fill{stroke:none;}
+.radar-fill-ceiling{fill:rgba(var(--up-rgb),0.16);}
+.radar-fill-median{fill:rgba(var(--star-dot-rgb),0.13);}
+.radar-fill-floor{fill:rgba(var(--down-rgb),0.26);}
+.radar-band-outline{fill:none; stroke:var(--tone, var(--horizon-gold)); stroke-width:1.25; stroke-linejoin:round; transition:stroke-width .15s ease, opacity .15s ease;}
 .radar-band-outline-active{stroke-width:3.5;}
 .radar-band-outline-dim{opacity:0.3;}
 /* Floor/ceiling markers -- invisible (r:0) until that exact number is
@@ -2824,7 +2829,12 @@ tr.stat-row-selected td{background:var(--void-panel);}
    table points at precisely that value on the radar instead of only
    ever highlighting the median point regardless of which column was
    clicked. */
-.radar-point-floor, .radar-point-ceiling{fill:var(--star); stroke:var(--horizon-gold); stroke-width:2; transition:r .15s ease;}
+.radar-point-floor, .radar-point-ceiling{fill:var(--star); stroke-width:2; transition:r .15s ease;}
+.radar-point-floor{stroke:var(--down);}
+.radar-point-ceiling{stroke:var(--up);}
+/* the chart sits in the middle of whatever room its panel has below the title (founder, Nov 10 2026) */
+.stat-panel-radar .stat-radar{flex:1; display:flex; flex-direction:column;}
+.stat-panel-radar .stat-radar-svg{margin:auto 0;}
 
 /* Similar-shape finder -- ranks the current player's stat-percentile
    pool (same signature of stat keys, so QBs only match QBs but WRs and
@@ -6996,3 +7006,26 @@ body:has(.ehp) .ticker-bar{position:absolute;}
 .stat-detail-grid .stat-detail-table th{letter-spacing:0.02em;}
 .stat-detail-grid .stat-detail-table .stat-header-trigger{padding:4px 1px;}
 .stat-detail-grid .stat-detail-table td:first-child .stat-row-trigger{padding:4px 2px;}
+
+/* Floor / Median / Ceiling each have their own subtle fill (founder, Nov 10 2026: "from a glance"): floor = red (the bad end), median = bone
+   ink (the middle), ceiling = blue (the good end) -- in the selected table column, its header, and the radar's three lines. The tone is
+   set once per layer; the old all-blue echo reads these. */
+.layer-floor{--layer:var(--down);--layer-rgb:var(--down-rgb);}
+.layer-median{--layer:var(--star);--layer-rgb:var(--star-rgb, 236,231,220);}
+.layer-ceiling{--layer:var(--up);--layer-rgb:var(--up-rgb);}
+.stat-header-trigger.layer-floor,.stat-header-trigger.layer-median,.stat-header-trigger.layer-ceiling{border-bottom:2px solid rgba(var(--layer-rgb),.55);}
+.stat-header-trigger-active.layer-floor,.stat-header-trigger-active.layer-median,.stat-header-trigger-active.layer-ceiling{color:var(--layer);border-bottom-color:var(--layer);}
+.stat-row-trigger-column.layer-floor,.stat-row-trigger-column.layer-median,.stat-row-trigger-column.layer-ceiling{color:var(--layer);background:rgba(var(--layer-rgb),.11);}
+.stat-row-trigger-active.layer-floor,.stat-row-trigger-active.layer-median,.stat-row-trigger-active.layer-ceiling{color:var(--layer);background:rgba(var(--layer-rgb),.2);}
+.stat-row-trigger.layer-floor:hover,.stat-row-trigger.layer-median:hover,.stat-row-trigger.layer-ceiling:hover{color:var(--layer);background:rgba(var(--layer-rgb),.08);}
+/* the radar's three lines: floor red, median bone, ceiling blue */
+.radar-band-outline.radar-outline-floor{stroke:var(--down);}
+.radar-band-outline.radar-outline-ceiling{stroke:var(--up);}
+.radar-point-floor{stroke:var(--down);}
+.radar-point-ceiling{stroke:var(--up);}
+.radar-shape{stroke:var(--star);}
+.radar-point{fill:var(--star);}
+.radar-point-active{stroke:var(--star);}
+
+/* Theme flip: no element animates its colours while the theme changes, so the whole page switches at once (ThemeToggle.js). */
+html.theme-switching *, html.theme-switching *::before, html.theme-switching *::after{transition:none !important;}

@@ -81,14 +81,6 @@ function polygonPath(entries, n, frac, startDeg, pctileAt) {
   return pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ") + " Z";
 }
 
-// Two polygon subpaths in one <path fill-rule="evenodd">, so the ring
-// between them (outer minus inner) fills as a band instead of a solid
-// shape -- used to shade the floor-to-ceiling spread around the median.
-function bandPath(entries, n, startDeg, outerAt, innerAt) {
-  return (
-    polygonPath(entries, n, null, startDeg, outerAt) + " " + polygonPath(entries, n, null, startDeg, innerAt)
-  );
-}
 
 // Percentile-vs-position math, one axis per stat -- so a big-play deep
 // threat and a possession-chain WR with similar season totals show up as
@@ -120,7 +112,7 @@ function bandPath(entries, n, startDeg, outerAt, innerAt) {
 // tight (the opened-row panel on Player Season Simulations): crop the viewBox to the chart's real content (measured
 // with getBBox, plus a few units of padding) instead of the roomier square used elsewhere, so the same panel width
 // draws the chart ~15-20% larger and nothing is left as dead space around it.
-const TIGHT_VIEWBOX = { up: [30, 42, 232, 186], down: [21, 58, 244, 185] };
+const TIGHT_VIEWBOX = { up: [18, 42, 244, 186], down: [18, 58, 244, 185] }; // x is symmetric about the polygon's centre (140), so the chart sits in the middle of its panel
 
 export default function StatRadar({ entries, selection = null, startDeg = -90, compareEntries, onSelectKey, tight = false, pool }) {
   if (!entries || entries.length < 3) return null;
@@ -134,7 +126,6 @@ export default function StatRadar({ entries, selection = null, startDeg = -90, c
   const ceilingAt = ([, , medianPctile, , ceilingPctile]) => (ceilingPctile ?? medianPctile ?? 0) / 100;
   const floorPoints = hasBand ? entries.map((entry, i) => pointAt(i, n, floorAt(entry), startDeg)) : null;
   const ceilingPoints = hasBand ? entries.map((entry, i) => pointAt(i, n, ceilingAt(entry), startDeg)) : null;
-  const bandFillPath = hasBand ? bandPath(entries, n, startDeg, ceilingAt, floorAt) : null;
   const floorOutline = hasBand ? polygonPath(entries, n, null, startDeg, floorAt) : null;
   const ceilingOutline = hasBand ? polygonPath(entries, n, null, startDeg, ceilingAt) : null;
   const comparePath = compareEntries
@@ -163,16 +154,19 @@ export default function StatRadar({ entries, selection = null, startDeg = -90, c
             <line key={i} x1={CENTER} y1={CENTER} x2={outer.x} y2={outer.y} className="radar-spoke" />
           );
         })}
-        {bandFillPath && <path d={bandFillPath} fillRule="evenodd" className="radar-band" />}
+        {/* three nested fills, one per layer (founder, Nov 10 2026): the ceiling's reach in blue, the median's in ink, the floor's in red -- each subtle, together readable at a glance */}
+        {ceilingOutline && <path d={ceilingOutline} className="radar-fill radar-fill-ceiling" />}
+        <path d={shapePath} className="radar-fill radar-fill-median" />
+        {floorOutline && <path d={floorOutline} className="radar-fill radar-fill-floor" />}
         {floorOutline && (
           <path
             d={floorOutline}
             className={
               columnLayer === "floor"
-                ? "radar-band-outline radar-band-outline-active"
+                ? "radar-band-outline radar-outline-floor radar-band-outline-active"
                 : columnLayer
-                ? "radar-band-outline radar-band-outline-dim"
-                : "radar-band-outline"
+                ? "radar-band-outline radar-outline-floor radar-band-outline-dim"
+                : "radar-band-outline radar-outline-floor"
             }
           />
         )}
@@ -181,10 +175,10 @@ export default function StatRadar({ entries, selection = null, startDeg = -90, c
             d={ceilingOutline}
             className={
               columnLayer === "ceiling"
-                ? "radar-band-outline radar-band-outline-active"
+                ? "radar-band-outline radar-outline-ceiling radar-band-outline-active"
                 : columnLayer
-                ? "radar-band-outline radar-band-outline-dim"
-                : "radar-band-outline"
+                ? "radar-band-outline radar-outline-ceiling radar-band-outline-dim"
+                : "radar-band-outline radar-outline-ceiling"
             }
           />
         )}

@@ -471,7 +471,7 @@ function StatDetailRow({ row, colSpan, shapePeers, wrTePool, tagsByName, maxCeil
                     <th key={layer}>
                       <button
                         type="button"
-                        className={`stat-header-trigger${selection?.mode === "column" && selection.layer === layer ? " stat-header-trigger-active" : ""}`}
+                        className={`stat-header-trigger layer-${layer}${selection?.mode === "column" && selection.layer === layer ? " stat-header-trigger-active" : ""}`}
                         onClick={() => selectColumn(layer)}
                         aria-pressed={selection?.mode === "column" && selection.layer === layer}
                       >
@@ -496,7 +496,7 @@ function StatDetailRow({ row, colSpan, shapePeers, wrTePool, tagsByName, maxCeil
                     const isColumnDim = selection?.mode === "column" && selection.layer === layer;
                     const isRowDim = isRowMode;
                     return {
-                      className: `stat-row-trigger${
+                      className: `stat-row-trigger layer-${layer}${
                         isCellActive ? " stat-row-trigger-active" : isColumnDim || isRowDim ? " stat-row-trigger-column" : ""
                       }`,
                       onClick: () => selectCell(key, layer),

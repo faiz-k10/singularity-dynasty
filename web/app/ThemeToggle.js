@@ -5,7 +5,10 @@ function flipTheme() {
   const root = document.documentElement;
   const current = root.getAttribute("data-theme") || (window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
   const next = current === "light" ? "dark" : "light";
+  // Freeze every transition for the flip so all colours change in the same frame (elements with their own colour transitions otherwise lag behind, which looks staggered on the big tables).
+  root.classList.add("theme-switching");
   root.setAttribute("data-theme", next);
+  requestAnimationFrame(() => requestAnimationFrame(() => root.classList.remove("theme-switching")));
   try {
     localStorage.setItem("theme", next);
   } catch {
