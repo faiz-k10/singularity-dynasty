@@ -232,7 +232,7 @@
         <tr><td>Colour: silver / azure / amber / emerald / crimson / violet</td><td>30 / 20 / 20 / 15 / 10 / 5%</td></tr>
         <tr><td>Version: prismatic / ancient / mythic</td><td>1 in 12 / 40 / 200</td></tr>
         <tr><td>Power-up: Refraction (+2 stars x 3 actions) / Old light (double stars + gold x3, 10 min) / Gravity well (a star in every constellation, triple stars 30 min, no cooling for a week)</td><td>prismatic / ancient / mythic</td></tr>
-        <tr><td>Sets (93): Spectrum, all 6 colours of a kind → Refraction · Survey, every kind in a tier → Old light or Gravity well · Legend, all 4 versions of a kind → Gravity well</td><td>+100 / 250 / 500</td></tr>
+        <tr><td>Sets (142): Trio, 3 colours of a kind → Refraction · Spectrum, all 6 → Old light · Quartet, 4 kinds in a tier → Refraction · Survey, every kind in a tier → Old light or Gravity well · Legend, all 4 versions of a kind → Gravity well</td><td>+40 / 100 / 60 / 250 / 500</td></tr>
       </table>
       <p class="note">If the telescope lands on a find your constellations haven't powered, you get the biggest one they have and see the bigger one at the edge of the frame. Finish The Singularity and your next find is a stellar event.</p>
     </div>
@@ -251,7 +251,7 @@
   <div class="panel" style="margin-top:12px">
     <div class="ptitle">Log <i></i></div>
     <ul class="log" id="log"></ul>
-    <p style="margin:10px 0 0"><button class="btn small" id="reset">Reset the sky</button></p>
+    <p style="margin:10px 0 0;display:flex;gap:8px"><button class="btn small" id="reset">Reset the sky</button><button class="btn small" id="revealAll">Demo: show everything</button></p>
   </div>
 </div>
 
@@ -286,8 +286,8 @@ const COLORS = { blue: "#4C7DF0", ember: "#E8643F", white: "#ECE7DC", gold: "#E9
 const CONST = [
   { id: "huddle", name: "The Huddle", color: "blue", size: "small", pts: [[-210,-180],[-160,-215],[-120,-165],[-170,-130]] },
   { id: "blitz", name: "The Blitz", color: "ember", size: "small", pts: [[150,-215],[205,-190],[220,-135],[165,-150]] },
-  { id: "playbook", name: "The Playbook", color: "white", size: "large", pts: [[-230,120],[-185,85],[-135,110],[-120,165],[-175,205],[-225,185]] },
-  { id: "singularity", name: "The Singularity", color: "gold", size: "gold", pts: [[120,120],[160,95],[205,110],[225,155],[200,200],[155,215],[120,180]] },
+  { id: "playbook", name: "The Playbook", color: "white", size: "large", pts: [[-230,120],[-180,85],[-130,125],[-160,195],[-225,185]] },
+  { id: "singularity", name: "The Singularity", color: "gold", size: "gold", pts: [[110,95],[150,80],[195,90],[228,120],[238,160],[220,200],[180,222],[138,218],[108,190],[100,140]] },
 ];
 const ACTS = [
   { label: "Fix a lineup alert", tool: "Game Board", color: "blue" },
@@ -298,14 +298,16 @@ const ACTS = [
   { label: "Open a dynasty profile", tool: "Research", color: "white" },
 ];
 // rewards: status people see, things that last, real value earned by effort (milestones) -- early rungs close together
+// spaced with the season simulation (Nov 2026): a light member (about 1 action a day) reaches ~6 rungs in a season, a regular one (~3 a day) the
+// poster, only an engaged one (all 6 a day) the free month, and the free year takes about three engaged seasons
 const LADDER = [
-  [25, "First light: a profile badge", "status"], [60, "A frame for your share cards", "status"], [120, "Title: Astronomer", "status"],
-  [200, "Name your constellations (they show on your cards)", "status"], [350, "A week of the next plan up", "value"],
-  [600, "Title: Cartographer + Discord role", "status"], [1000, "Founders' wall", "lasting"],
-  [1750, "Your season sky, printed and mailed as a poster", "lasting"], [2500, "A free month", "value"],
-  [5000, "Name an object in everyone's catalogue", "lasting"], [10000, "A free year + title: Event Horizon", "value"],
+  [80, "First light: a profile badge", "status"], [200, "A frame for your share cards", "status"], [400, "Title: Astronomer", "status"],
+  [650, "Name your constellations (they show on your cards)", "status"], [1100, "A week of the next plan up", "value"],
+  [1900, "Title: Cartographer + Discord role", "status"], [3200, "Founders' wall", "lasting"],
+  [5500, "Your season sky, printed and mailed as a poster", "lasting"], [12000, "A free month", "value"],
+  [20000, "Name an object in everyone's catalogue", "lasting"], [40000, "A free year + title: Event Horizon", "value"],
 ];
-const TITLES = [[0, "Spotter"], [120, "Astronomer"], [600, "Cartographer"], [2500, "Astrophysicist"], [10000, "Event Horizon"]];
+const TITLES = [[0, "Spotter"], [400, "Astronomer"], [1900, "Cartographer"], [12000, "Astrophysicist"], [40000, "Event Horizon"]];
 // the catalogue: tier -> kinds (equal odds within a tier)
 // The catalogue is generated from parts (Nov 2026, founder: "a massive variety of objects"): 44 kinds x 6 colours x 4 versions = 1,056
 // entries, and every single find also gets its own catalogue number. Rarity = P(tier) x 1/(kinds in tier) x P(colour) x P(version).
@@ -335,9 +337,9 @@ const COLOURS = [
 ];
 const VERSIONS = [
   { id: "", name: "", p: 1 - 1 / 12 - 1 / 40 - 1 / 200, mult: 1 },
-  { id: "prismatic", name: "Prismatic", p: 1 / 12, mult: 2 },
-  { id: "ancient", name: "Ancient", p: 1 / 40, mult: 4 },
-  { id: "mythic", name: "Mythic", p: 1 / 200, mult: 10 },
+  { id: "prismatic", name: "Prismatic", p: 1 / 12, mult: 1.5 },
+  { id: "ancient", name: "Ancient", p: 1 / 40, mult: 2 },
+  { id: "mythic", name: "Mythic", p: 1 / 200, mult: 4 },
 ];
 // Each rare version also gives a power-up: more stars per action, for a number of actions or for a while (times in brackets are this mockup's,
 // shortened so they can be tried). The bigger the version, the stronger and longer the power-up.
@@ -357,16 +359,20 @@ function applyPowerup(version) {
     b.noCoolUntil = now + 7 * 86400e3;
   }
 }
-// Sets: reachable goals inside the huge catalogue, each paying a power-up. Spectrum = all 6 colours of one kind (44 sets), Survey = every kind in
-// a tier (5), Legend = all 4 versions of one kind (44): 93 goals.
-const SET_COUNT = FAMILIES.length * 2 + 5;
-const SET_REWARD = { spectrum: ["prismatic", 100], survey: [null, 250], legend: ["mythic", 500] };
+// Sets: reachable goals inside the huge catalogue, each paying a power-up. Trio = any 3 colours of one kind (44), Spectrum = all 6 colours (44),
+// Quartet = 4 kinds within one tier (5), Survey = every kind in a tier (5), Legend = all 4 versions of one kind (44): 142 goals. The season
+// simulation finishes ~6 a season for a light member, ~23 for a regular one, ~36 for an engaged one.
+const SET_COUNT = FAMILIES.length * 3 + 10;
 function checkSets(f) {
   const got = Object.values(state.found), fam = FAMILIES[f.fam], done = [];
   const mark = (key, label, power, pts) => { if (state.sets[key]) return; state.sets[key] = true; state.points += pts; applyPowerup(power); done.push({ label, power, pts }); };
-  if (COLOURS.every((c) => got.some((e) => e.fam === f.fam && e.colour === c.id))) mark(`spectrum:${f.fam}`, `Spectrum: every colour of ${fam.name}`, "prismatic", SET_REWARD.spectrum[1]);
-  if (VERSIONS.every((v) => got.some((e) => e.fam === f.fam && e.version === v.id))) mark(`legend:${f.fam}`, `Legend: every version of ${fam.name}`, "mythic", SET_REWARD.legend[1]);
-  if (famsIn(fam.tier).every((k) => got.some((e) => e.fam === k.id))) mark(`survey:${fam.tier}`, `Survey: every kind of ${TIER_NAME[fam.tier].toLowerCase()}`, fam.tier <= 2 ? "ancient" : "mythic", SET_REWARD.survey[1]);
+  const cols = new Set(got.filter((e) => e.fam === f.fam).map((e) => e.colour)).size;
+  const kinds = famsIn(fam.tier).filter((k) => got.some((e) => e.fam === k.id)).length;
+  if (cols >= 3) mark(`trio:${f.fam}`, `Trio: 3 colours of ${fam.name}`, "prismatic", 40);
+  if (cols === 6) mark(`spectrum:${f.fam}`, `Spectrum: every colour of ${fam.name}`, "ancient", 100);
+  if (VERSIONS.every((v) => got.some((e) => e.fam === f.fam && e.version === v.id))) mark(`legend:${f.fam}`, `Legend: every version of ${fam.name}`, "mythic", 500);
+  if (kinds >= 4) mark(`quartet:${fam.tier}`, `Quartet: 4 kinds of ${TIER_NAME[fam.tier].toLowerCase()}`, "prismatic", 60);
+  if (kinds === famsIn(fam.tier).length) mark(`survey:${fam.tier}`, `Survey: every kind of ${TIER_NAME[fam.tier].toLowerCase()}`, fam.tier <= 2 ? "ancient" : "mythic", 250);
   return done;
 }
 // how close each set is, for the "closest sets" list (the near miss inside the catalogue)
@@ -375,12 +381,14 @@ function setProgress() {
   for (const fam of FAMILIES) {
     const cols = new Set(got.filter((e) => e.fam === fam.id).map((e) => e.colour)).size;
     const vers = new Set(got.filter((e) => e.fam === fam.id).map((e) => e.version)).size;
-    if (!state.sets[`spectrum:${fam.id}`] && cols) out.push({ label: `Spectrum · ${fam.name}`, have: cols, of: 6, power: "Refraction" });
+    if (!state.sets[`trio:${fam.id}`] && cols) out.push({ label: `Trio · ${fam.name}`, have: cols, of: 3, power: "Refraction" });
+    else if (!state.sets[`spectrum:${fam.id}`] && cols) out.push({ label: `Spectrum · ${fam.name}`, have: cols, of: 6, power: "Old light" });
     if (!state.sets[`legend:${fam.id}`] && vers > 1) out.push({ label: `Legend · ${fam.name}`, have: vers, of: 4, power: "Gravity well" });
   }
   for (const t of [1, 2, 3, 4, 5]) {
-    const have = famsIn(t).filter((k) => got.some((e) => e.fam === k.id)).length;
-    if (!state.sets[`survey:${t}`] && have) out.push({ label: `Survey · ${TIER_NAME[t]}`, have, of: famsIn(t).length, power: t <= 2 ? "Old light" : "Gravity well" });
+    const have = famsIn(t).filter((k) => got.some((e) => e.fam === k.id)).length, all = famsIn(t).length;
+    if (!state.sets[`quartet:${t}`] && have && all > 4) out.push({ label: `Quartet · ${TIER_NAME[t]}`, have, of: 4, power: "Refraction" });
+    else if (!state.sets[`survey:${t}`] && have) out.push({ label: `Survey · ${TIER_NAME[t]}`, have, of: all, power: t <= 2 ? "Old light" : "Gravity well" });
   }
   return out.sort((a, b) => a.of - a.have - (b.of - b.have) || b.have / b.of - a.have / a.of).slice(0, 5);
 }
@@ -450,12 +458,17 @@ const coreDisc = el("circle", { r: 44, fill: "#ECE7DC" }, core);
 const heatT = el("text", { class: "heat", x: 0, y: 92, "text-anchor": "middle" });
 const flash = el("circle", { r: 120, fill: "#E9C46A", opacity: 0 });
 
+// reveal the systems gradually (season simulation, Nov 2026: twelve ideas at once is too many): week one is stars, the core and the telescope;
+// constellations open after the first find, the catalogue and sets after 10 finds; versions and power-ups explain themselves at the first rare find
+const UNLOCK = { constellations: 1, catalogue: 10 };
+const unlocked = (k) => state.revealAll || (state.findsTotal || 0) >= UNLOCK[k];
 function drawSky() {
   consG.innerHTML = "";
   for (const c of CONST) {
     const f = state.filled[c.id];
     const done = f.every(Boolean), have = f.filter(Boolean).length, near = !done && have === f.length - 1;
     const pts = c.pts;
+    if (!unlocked("constellations")) { pts.forEach(([x, y], i) => { if (f[i]) el("circle", { cx: x, cy: y, r: 3, fill: "#ECE7DC" }, consG); }); continue; }
     for (let i = 0; i < pts.length; i++) { const j = (i + 1) % pts.length; if (f[i] && f[j]) el("line", { class: "cline", x1: pts[i][0], y1: pts[i][1], x2: pts[j][0], y2: pts[j][1], stroke: COLORS[c.color] }, consG); }
     pts.forEach(([x, y], i) => {
       if (f[i]) { el("circle", { cx: x, cy: y, r: 9, fill: COLORS[f[i]], "fill-opacity": ".12" }, consG); el("circle", { cx: x, cy: y, r: 3.6, fill: COLORS[f[i]] }, consG); }
@@ -481,7 +494,7 @@ function renderLog() { $("log").innerHTML = state.log.map((m) => `<li>${m}</li>`
 function placeStar(color) {
   let c = color;
   const r = Math.random();
-  const goldChance = (state.event === "aurora" ? 0.1 : 0.03) * (state.boosts.goldUntil > Date.now() ? 3 : 1);
+  const goldChance = (state.event === "aurora" ? 0.045 : 0.015) * (state.boosts.goldUntil > Date.now() ? 3 : 1);
   if (color !== "gold") { if (r < goldChance) c = "gold"; else if (r < goldChance + 0.17) c = ["blue", "ember", "white"].filter((x) => x !== color)[Math.floor(Math.random() * 2)]; }
   if (c === "gold") {
     const target = CONST.filter((k) => k.size !== "gold").map((k) => ({ k, left: state.filled[k.id].filter((x) => !x).length })).filter((o) => o.left > 0).sort((a, b) => a.left - b.left)[0];
@@ -519,7 +532,9 @@ function act(a) {
   if (b.extra > 0) { n += 2; b.extra--; }
   for (let i = 0; i < n; i++) placeStar(a.color);
   state.mass += n;
-  const p = Math.min(0.6, 0.05 + 0.035 * state.mass);
+  state.actions = (state.actions || 0) + 1;
+  // retuned with the season simulation: a find about every 3 actions, and a new member's first find by the second action
+  const p = !state.findsTotal && state.actions >= 2 ? 1 : Math.min(0.7, 0.12 + 0.06 * state.mass);
   const r = Math.random();
   drawSky();
   if (r < p) { busy = true; setTimeout(collapse, 500); }
@@ -545,6 +560,7 @@ function reveal() {
   const had = state.found[f.key];
   state.found[f.key] = { n: (had?.n || 0) + 1, name: f.name, oneIn: f.oneIn, fam: f.fam, colour: f.colour, version: f.version };
   const first = !had;
+  state.findsTotal = (state.findsTotal || 0) + 1;
   if (POWERUPS[f.version]) applyPowerup(f.version);
   const sets = checkSets(f);
   const pts = PTS[tier] * f.mult + (first ? 15 : 0);
@@ -569,6 +585,8 @@ function reveal() {
     for (const d of sets) lines.push(`<span class="tip-k">Set complete · +${d.pts} orbit points</span><b>${d.label}</b>${d.power ? `Power-up: ${POWERUPS[d.power].name}, ${POWERUPS[d.power].text}` : ""}`);
     $("power").innerHTML = lines.join("<br>");
     for (const d of sets) log(`Set complete: ${d.label}`);
+    if (state.findsTotal === UNLOCK.constellations && !state.revealAll) { toast("Constellations unlocked: finish one to power up your finds.", "gold"); log("Constellations unlocked"); }
+    if (state.findsTotal === UNLOCK.catalogue && !state.revealAll) { toast("Your catalogue is open: 1,056 objects and 142 sets to collect.", "gold"); log("Catalogue unlocked"); }
     log(`Found: ${f.name} (1 in ${f.oneIn.toLocaleString()})${miss ? " · a bigger find was just out of frame" : ""}`);
     drawSky(); renderAll();
   });
@@ -760,6 +778,9 @@ function renderOrbit() {
   $("ladder").innerHTML = LADDER.map(([t, r, k]) => `<li class="${p >= t ? "got" : next && next[0] === t ? "next" : ""}"><span>${t.toLocaleString()}</span><span>${r}<em>${label[k]}</em></span></li>`).join("");
 }
 function renderCatalogue() {
+  const locked = !unlocked("catalogue");
+  $("sets").style.display = $("cat").style.display = locked ? "none" : "";
+  if (locked) { $("catSum").textContent = `The catalogue and its sets open after 10 finds (${10 - (state.findsTotal || 0)} to go).`; return; }
   const entries = Object.values(state.found);
   const kinds = new Set(entries.map((e) => e.fam));
   $("catSum").textContent = `${entries.length.toLocaleString()} of ${CATALOGUE_SIZE.toLocaleString()} discovered · ${kinds.size} of ${FAMILIES.length} kinds · 6 colours · normal, prismatic (1 in 12), ancient (1 in 40), mythic (1 in 200)`;
@@ -809,6 +830,7 @@ $("monday").onclick = monday;
 $("skip").onclick = () => { if (state.boosts.noCoolUntil > Date.now()) { toast("Gravity well: your core can't cool this week.", "cold"); return; } const lost = Math.ceil(state.mass / 2); state.mass -= lost; save(); drawSky(); toast(lost ? `Three quiet days. The core cooled and lost ${lost} of its mass.` : "The core was already cool.", "cold"); log(`The core cooled (-${lost})`); };
 document.addEventListener("keydown", (e) => { if (e.key === "Escape") { closeScope(); $("cardOv").classList.remove("on"); } });
 document.querySelectorAll(".events button").forEach((b) => (b.onclick = () => setEvent(b.dataset.ev)));
+$("revealAll").onclick = () => { state.revealAll = true; save(); drawSky(); renderAll(); };
 $("reset").onclick = () => { state = fresh(); save(); setEvent("none"); drawSky(); renderAll(); renderLog(); };
 
 drawSky(); renderAll(); renderLog(); setEvent(state.event || "none");
