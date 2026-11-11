@@ -2813,7 +2813,9 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .radar-vertex-hit{fill:transparent;}
 .radar-vertex:hover .radar-point{fill:var(--star);}
 .radar-vertex:hover .radar-axis-label{fill:var(--horizon-gold);}
-.radar-shape-compare{fill:none; stroke:var(--scholar); stroke-width:2; stroke-dasharray:5 3; stroke-linejoin:round;} /* similar player: the site teal (--scholar), a colour the main radar never uses */
+.radar-shape-compare{fill:none; stroke:#000; stroke-width:2; stroke-dasharray:5 3; stroke-linejoin:round;} /* similar player: black in dark mode, white in light mode (founder, Nov 10 2026) */
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]) .radar-shape-compare{stroke:#fff;}}
+:root[data-theme="light"] .radar-shape-compare{stroke:#fff;}
 /* Floor-to-ceiling band around the median shape -- same gold family as
    .radar-shape (this player's own numbers) so it doesn't read as a second
    comp the way the neon-blue .radar-shape-compare overlay does. */
