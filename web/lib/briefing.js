@@ -1,19 +1,23 @@
 import { leagueName, round1 } from "./format.js";
 import { standing } from "./standing.js";
+import { matchupState } from "./matchupState.js";
 
 // The signed-in home page's briefing (app/hub/YourWeek.js) and its gravity map (app/hub/GravityMap.js): each saved league's matchup as one
 // row, the plain-English summary of the week, and where each league sits in the map. Pure; tested in test/briefing.test.mjs.
 
 // One row per saved league from the saved snapshot: live score once anyone has scored, else the projections; win chance and its word. Best chance first
 // (leagues with no win chance last), so the table and the map read from your strongest matchup down.
-export function weekRows(teams) {
+export function weekRows(teams, gameStates = null) {
   const rows = (teams || []).map((t) => {
     const s = t.settings || {};
     const live = Boolean(s.matchupActual && (s.matchupActual.mine > 0 || s.matchupActual.opp > 0));
     const src = live ? s.matchupActual : s.matchupProj;
-    const p = s.isBye ? null : typeof s.winChance === "number" ? s.winChance : null;
-    const st = standing(p, false);
+    // With the live scoreboard the league is read the way the Game Board reads it: a finished matchup is Won / Lost (and sits at 100% / 0%), a locked one You win / Out of reach.
+    const ms = gameStates && !s.isBye ? matchupState(s, gameStates) : null;
+    const p = s.isBye ? null : ms ? (ms.done && ms.pct != null ? (ms.pct >= 0.5 ? 1 : 0) : ms.pct) : typeof s.winChance === "number" ? s.winChance : null;
+    const st = ms ? ms.st : standing(p, false);
     return {
+      done: Boolean(ms?.done),
       id: t.id,
       name: leagueName(t, "League"),
       record: s.record || null,

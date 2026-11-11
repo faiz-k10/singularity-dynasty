@@ -7058,3 +7058,10 @@ html.theme-switching *, html.theme-switching *::before, html.theme-switching *::
 .ehp-who{font-family:var(--font-display), sans-serif; font-weight:800; line-height:1.1; letter-spacing:.06em; text-transform:uppercase; margin:4px 0 10px; color:var(--ehp-ink, var(--star)); width:0; min-width:100%; overflow:hidden; white-space:nowrap;} /* zero intrinsic width: it fills whatever width the rest of the block sets, never widens it */
 .ehp-who > span{display:inline-block; white-space:nowrap;}
 .ehp-hole .ehp-who, .ehp-inside .ehp-who, .ehp-dark .ehp-who{color:var(--ehp-holeink, var(--star));}
+
+/* Asteroid belts on a member's landing sky: rocks on the orbit scale's two edges, drifting slowly round the hole (transform only). */
+.ehp-beltsky{color:var(--ehp-dim);} .ehp-beltsky ellipse{fill:currentColor;}
+.ehp-belt{animation:ehp-belt-spin linear infinite; transform-origin:0 0;}
+.ehp-belt.is-rev{animation-direction:reverse;}
+@keyframes ehp-belt-spin{to{transform:rotate(360deg);}}
+@media (prefers-reduced-motion: reduce){.ehp-belt{animation:none;}}

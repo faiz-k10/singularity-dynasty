@@ -8,7 +8,7 @@ import { buildBoard, scoreRows } from "@/lib/dynastyBoard";
 import { isLiveReferralCode } from "@/lib/referrals";
 import { REF_COOKIE, FRIEND_DISCOUNT_PERCENT } from "@/lib/referralRules";
 import { fetchGameStates, nextKickoff } from "@/lib/gameStatus";
-import { expectedWins } from "@/lib/briefing";
+import { expectedWins, weekRows } from "@/lib/briefing";
 import { formatWin } from "@/lib/standing";
 import { createClient } from "@/lib/supabase/server";
 import { getAuthUser } from "@/lib/authUser";
@@ -56,8 +56,9 @@ export default async function Home() {
   const week = user ? await loadYourWeek(supabase, user).catch(() => null) : null;
   let member = null;
   if (week) {
+    week.rows = weekRows(week.teams, states); // read against the live scoreboard, so a finished matchup says Won / Lost
     const { wins, of } = expectedWins(week.rows);
-    const matchups = week.rows.filter((r) => !r.bye && r.p != null).slice(0, 6).map((r) => ({ id: r.id, name: r.name, p: r.p, say: `${r.label.toLowerCase()} · ${formatWin(r.p)}` }));
+    const matchups = week.rows.filter((r) => !r.bye && r.p != null).slice(0, 6).map((r) => ({ id: r.id, name: r.name, p: r.p, say: r.done ? r.label.toLowerCase() : `${r.label.toLowerCase()} · ${formatWin(r.p)}` }));
     // the matchups table shown inside the horizon (the classic page's "Your matchups"); plain values only, the client formats them
     const rows = week.rows.map((r) => ({ id: r.id, name: r.name, record: r.record, opponent: r.opponent, bye: r.bye, live: r.live, mine: r.mine, opp: r.opp, p: r.p, label: r.label, tone: r.tone }));
     member = { name: week.name, leagues: week.teams.length, wins, of, matchups, rows };

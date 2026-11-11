@@ -61,7 +61,7 @@ function bodiesFor(member) {
     .sort((a, b) => b.p - a.p)
     .map((x, i, all) => {
       const rx = 250 + (1 - x.p) * 420; // p = 1 at 250, p = 0 at 670
-      return { n: x.name.length > 22 ? `${x.name.slice(0, 21)}…`.toUpperCase() : x.name.toUpperCase(), say: x.say, href: "/my-team", rx, ry: rx * 0.36, a: (i / all.length) * Math.PI * 2 - 0.6, s: 70 + i * 22 };
+      return { n: x.name.toUpperCase(), say: x.say, href: "/my-team", rx, ry: rx * 0.36, a: (i / all.length) * Math.PI * 2 - 0.6, s: 70 + i * 22 };
     });
 }
 const TOOLS = [
@@ -93,6 +93,23 @@ function Sky({ size, nextKickoff, bodies }) {
   const { w, h } = size;
   const R = radiusFor(w);
   const k = Math.max(0.45, Math.min(1, w / 1300)); // orbits shrink on small screens
+  const isMember = bodies.length > 0 && !bodies[0].id;
+  const belts = useMemo(() => {
+    if (!isMember) return null;
+    const rnd = seeded(23);
+    // p = 1 (won) at radius 250, p = 0 (lost) at 670, the same scale the planets use (see bodiesFor); a belt is a ring of rocks, squashed to the orbit's shape by its group
+    return [
+      { rad: 250, n: 150, s: 150 },
+      { rad: 670, n: 240, s: -230 },
+    ].map(({ rad, n, s }) => ({
+      s: Math.abs(s),
+      rev: s < 0,
+      rocks: Array.from({ length: n }, () => {
+        const a = rnd() * Math.PI * 2, d = (rnd() + rnd() - 1) * 16 * k, rr = rad * k + d;
+        return { x: rr * Math.cos(a), y: rr * Math.sin(a), r: (0.7 + rnd() * rnd() * 2.2) * Math.max(0.7, k), o: 0.3 + rnd() * 0.5 };
+      }),
+    }));
+  }, [isMember, k]);
   const stars = useMemo(() => {
     const rnd = seeded(5);
     const out = [];
@@ -150,6 +167,20 @@ function Sky({ size, nextKickoff, bodies }) {
           return <ellipse key={b.n} className="ehp-orbit" style={{ "--c": c.toFixed(0), transitionDelay: `${1.4 + i * 0.25}s` }} rx={rx} ry={ry} transform="rotate(-7)" />;
         })}
       </svg>
+      {/* a member's sky: asteroid belts on the two edges of the win-chance scale -- the inner one where a matchup is 100% won, the outer where it is 0% (lost) */}
+      {belts && (
+        <svg className="ehp-sky ehp-beltsky" viewBox={vb} aria-hidden="true">
+          {belts.map((bt, i) => (
+            <g key={i} transform="rotate(-7) scale(1 0.36)">
+              <g className={`ehp-belt${bt.rev ? " is-rev" : ""}`} style={{ animationDuration: `${bt.s}s` }}>
+                {bt.rocks.map((r, j) => (
+                  <ellipse key={j} cx={r.x.toFixed(1)} cy={r.y.toFixed(1)} rx={r.r.toFixed(2)} ry={(r.r / 0.36).toFixed(2)} fillOpacity={r.o.toFixed(2)} />
+                ))}
+              </g>
+            </g>
+          ))}
+        </svg>
+      )}
       <div className="ehp-sky ehp-ringlayer" aria-hidden="true">
         <Ring R={R} nextKickoff={nextKickoff} />
       </div>

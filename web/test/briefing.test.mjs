@@ -51,3 +51,13 @@ test("splitNames cuts a sentence at league names, longest first", async () => {
   assert.deepEqual(parts.filter((p) => p.name).map((p) => p.text), ["Dynasty Kingdom", "Dynasty"]);
   assert.equal(parts.map((p) => p.text).join(""), "Dynasty Kingdom and Dynasty will need a miracle.");
 });
+
+test("weekRows with the scoreboard: a finished matchup is Won / Lost at 100% / 0%, not a long shot", () => {
+  const post = { SF: { state: "post" }, KC: { state: "post" } };
+  const P = (id, team, pts) => ({ id, name: id, pos: "WR", team, proj: 12, floor: 4, ceiling: 22, slot: "WR", pts });
+  const lost = { id: "L", league_name: "Lost League", settings: { week: 7, opponent: "R", winChance: 0.004, matchupActual: { mine: 40, opp: 90 }, h2h: { mine: [P("a", "SF", 40)], opp: [P("b", "KC", 90)] } } };
+  const [row] = weekRows([lost], post);
+  assert.equal(row.label, "Lost");
+  assert.equal(row.p, 0);
+  assert.equal(row.done, true);
+});
