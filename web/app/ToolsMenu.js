@@ -4,11 +4,11 @@ import ToolLink from "./ToolLink";
 // Nov 10 2026: "this dropdown doesn't look like the one on the main landing page"). Each tool has its own small planet, a name, one line on what it
 // does and what is free; the page is fetched on hover (ToolLink). Styles: the `.tmenu-*` block at the end of globals.css.
 export const TOOLS_MENU = [
-  { href: "/my-team", name: "My Team", say: "Every league you play, live, on one screen.", free: "1 league free" },
-  { href: "/tools/redraft-rankings", name: "Weekly Projection Rankings", say: "Every player's range this week, matchups included.", free: "Top 50 free" },
-  { href: "/tools/draft-board", name: "Dynasty Board", say: "Production against age, tiered by who is truly ahead.", free: "Top 20 free" },
-  { href: "/tools/player-simulations", name: "Player Season Simulations", say: "Where each player's season is heading.", free: "Top 10 free" },
-  { href: "/tools/lab", name: "The Observatory", say: "Any two numbers, every player, one chart.", free: "Top 50 free" },
+  { href: "/my-team", name: "My Team", free: "1 league free" },
+  { href: "/tools/redraft-rankings", name: "Weekly Projection Rankings", free: "Top 50 free" },
+  { href: "/tools/draft-board", name: "Dynasty Board", free: "Top 20 free" },
+  { href: "/tools/player-simulations", name: "Player Season Simulations", free: "Top 10 free" },
+  { href: "/tools/lab", name: "The Observatory", free: "Top 50 free" },
 ];
 
 // a planet with two moons, a plain disc, a ringed planet, a planet with a moon on its orbit, a banded one (24-unit svgs in currentColor)
@@ -27,7 +27,6 @@ export default function ToolsMenuRows() {
       <span className="tmenu-n" aria-hidden="true">{PLANET_GLYPHS[i]}</span>
       <span className="tmenu-t">
         <b>{t.name}</b>
-        <i>{t.say}</i>
       </span>
       <span className="tmenu-f">{t.free}</span>
       <span className="tmenu-a" aria-hidden="true">→</span>
