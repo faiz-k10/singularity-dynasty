@@ -171,7 +171,7 @@ function Sky({ size, nextKickoff, bodies }) {
       {belts && (
         <svg className="ehp-sky ehp-beltsky" viewBox={vb} aria-hidden="true">
           {belts.map((bt, i) => (
-            <g key={i} transform="rotate(-7) scale(1 0.36)">
+            <g key={i} className={i === 0 ? "ehp-belt-won" : "ehp-belt-lost"} transform="rotate(-7) scale(1 0.36)">
               <g className={`ehp-belt${bt.rev ? " is-rev" : ""}`} style={{ animationDuration: `${bt.s}s` }}>
                 {bt.rocks.map((r, j) => (
                   <ellipse key={j} cx={r.x.toFixed(1)} cy={r.y.toFixed(1)} rx={r.r.toFixed(2)} ry={(r.r / 0.36).toFixed(2)} fillOpacity={r.o.toFixed(2)} />

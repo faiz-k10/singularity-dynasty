@@ -7065,3 +7065,6 @@ html.theme-switching *, html.theme-switching *::before, html.theme-switching *::
 .ehp-belt.is-rev{animation-direction:reverse;}
 @keyframes ehp-belt-spin{to{transform:rotate(360deg);}}
 @media (prefers-reduced-motion: reduce){.ehp-belt{animation:none;}}
+
+/* Belt colours: the 100%-won belt is cobalt (good), the 0%-lost belt ember (bad) -- founder, Nov 10 2026. */
+.ehp-beltsky .ehp-belt-won{color:var(--up);} .ehp-beltsky .ehp-belt-lost{color:var(--down);}
