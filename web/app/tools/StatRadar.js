@@ -213,15 +213,17 @@ export default function StatRadar({ entries, selection = null, startDeg = -90, c
           const ceilingR = cellLayer === "ceiling" ? 4.5 : columnLayer === "ceiling" ? 4 : isRowSel ? 3.5 : 0;
           const medianR = cellLayer === "median" ? 4.5 : columnLayer === "median" ? 4 : isRowSel ? 3.5 : 0;
           const select = () => onSelectKey?.(key);
-          // With a similar player overlaid, each stat says whether THIS player is above (blue up arrow) or below (ember down arrow) the comp (median percentile)
+          // With a similar player overlaid, each stat NAME is coloured: blue = this player is above the comp, ember = below, plain = level (median percentile). No extra glyphs, so the labels keep their shape.
           const mine = entries[i][2];
           const theirs = compareEntries?.[i]?.[2];
           const cmpMark =
             compareEntries && mine != null && theirs != null && Math.round(mine) !== Math.round(theirs)
               ? mine > theirs
-                ? { glyph: "▲", cls: "radar-cmp-up" }
-                : { glyph: "▼", cls: "radar-cmp-down" }
-              : null;
+                ? "radar-cmp-up"
+                : "radar-cmp-down"
+              : compareEntries
+              ? "radar-cmp-even"
+              : "";
           return (
             <g
               key={key}
@@ -258,7 +260,7 @@ export default function StatRadar({ entries, selection = null, startDeg = -90, c
                 y={labelPos.y}
                 textAnchor={labelAnchor(i, n, startDeg)}
                 dominantBaseline="middle"
-                className={isActive ? "radar-axis-label radar-axis-label-active" : "radar-axis-label"}
+                className={`${isActive ? "radar-axis-label radar-axis-label-active" : "radar-axis-label"} ${cmpMark}`}
               >
                 {labelWords(label).map((word, wi, words) => (
                   <tspan
@@ -267,11 +269,6 @@ export default function StatRadar({ entries, selection = null, startDeg = -90, c
                     dy={wi === 0 ? `${-(words.length - 1) * (LABEL_LINE_EM / 2)}em` : `${LABEL_LINE_EM}em`}
                   >
                     {word}
-                    {wi === words.length - 1 && cmpMark && (
-                      <tspan className={cmpMark.cls} dx="0.35em">
-                        {cmpMark.glyph}
-                      </tspan>
-                    )}
                   </tspan>
                 ))}
               </text>
@@ -279,6 +276,13 @@ export default function StatRadar({ entries, selection = null, startDeg = -90, c
           );
         })}
       </svg>
+      {compareEntries && (
+        <div className="radar-cmp-legend" aria-hidden="true">
+          <span className="radar-cmp-key radar-cmp-up">above</span>
+          <span className="radar-cmp-key radar-cmp-down">below</span>
+          <span className="radar-cmp-note">the similar player, by stat</span>
+        </div>
+      )}
     </div>
   );
 }

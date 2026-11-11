@@ -7037,6 +7037,10 @@ html.theme-switching *, html.theme-switching *::before, html.theme-switching *::
 .pctile-vbar-fill-median{background:var(--star-dim);}
 .pctile-vbar-fill-ceiling{background:var(--up);}
 
-/* Radar labels with a similar player overlaid: blue up arrow = he is above the comp on that stat, ember down arrow = below (founder, Nov 10 2026). */
-.radar-cmp-up{fill:var(--up);}
-.radar-cmp-down{fill:var(--down);}
+/* Radar labels with a similar player overlaid: the stat NAME is blue when he is above the comp on it, ember when below (founder, Nov 10 2026); a small legend under the chart says so. */
+.radar-axis-label.radar-cmp-up{fill:var(--up);}
+.radar-axis-label.radar-cmp-down{fill:var(--down);}
+.radar-cmp-legend{display:flex; justify-content:center; align-items:baseline; gap:14px; margin-top:6px; font-family:var(--font-mono), monospace; font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--star-dim);}
+.radar-cmp-key::before{content:""; display:inline-block; width:8px; height:8px; margin-right:6px; background:currentColor;}
+.radar-cmp-key.radar-cmp-up{color:var(--up);}
+.radar-cmp-key.radar-cmp-down{color:var(--down);}
