@@ -182,41 +182,44 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
       {msg && <p className="sky-banner mono is-bad">{msg}</p>}
 
       <div className="sky-grid">
-        <section className="sky-panel" aria-labelledby="sky-h">
-          <div className="board-panel-title" id="sky-h">The sky</div>
-          <Sky state={state} pendingPicks={pendingPicks} />
-          {state.pending.length > 0 ? (
-            <button type="button" className="btn-primary sky-scope-btn" onClick={() => setScope(true)}>
-              The core collapsed{state.pending.length > 1 ? ` ${state.pending.length} times` : ""} · point the telescope
-            </button>
-          ) : (
-            <p className="sky-note-line mono">{state.strains ? `The core strained ${state.strains} time${state.strains === 1 ? "" : "s"} since your last look … and held.` : "Earn stars below. The core collapses at a moment nobody knows."}</p>
-          )}
-          <div className="sky-row">
-            <button type="button" className="btn-ghost" onClick={() => setShare({ title: `My season sky: ${title}`, caption: `My Night Sky this season: ${title}, ${state.points.toLocaleString()} orbit points, ${entries.length} of ${CATALOGUE_SIZE.toLocaleString()} in my catalogue.`, make: () => seasonCard(state, { title, size: CATALOGUE_SIZE, rarest }) })}>Share my season sky</button>
-          </div>
-        </section>
+        <div className="sky-col">
+          <section className="sky-panel" aria-labelledby="sky-h">
+            <div className="board-panel-title" id="sky-h">The sky</div>
+            <Sky state={state} pendingPicks={pendingPicks} />
+            {state.pending.length > 0 ? (
+              <button type="button" className="btn-primary sky-scope-btn" onClick={() => setScope(true)}>
+                The core collapsed{state.pending.length > 1 ? ` ${state.pending.length} times` : ""} · point the telescope
+              </button>
+            ) : (
+              <p className="sky-note-line mono">{state.strains ? `The core strained ${state.strains} time${state.strains === 1 ? "" : "s"} since your last look … and held.` : "Earn stars below. The core collapses at a moment nobody knows."}</p>
+            )}
+            <div className="sky-row">
+              <button type="button" className="btn-ghost" onClick={() => setShare({ title: `My season sky: ${title}`, caption: `My Night Sky this season: ${title}, ${state.points.toLocaleString()} orbit points, ${entries.length} of ${CATALOGUE_SIZE.toLocaleString()} in my catalogue.`, make: () => seasonCard(state, { title, size: CATALOGUE_SIZE, rarest }) })}>Share my season sky</button>
+            </div>
+          </section>
+
+          <section className="sky-panel" aria-labelledby="sky-btm">
+            <div className="board-panel-title" id="sky-btm">Beat the Model</div>
+            {wk ? wk.pairs.map((p, i) => (
+              <div key={i} className="sky-pick">
+                {[p.a, p.b].map((name, k) => (
+                  <button key={k} type="button" disabled={busy || wk.graded} className={wk.choice[i] === k ? "is-on" : ""} onClick={() => run(pickPlayer(weekKey, i, k))}>{name}</button>
+                ))}
+                <span className="sky-small mono">{p.pos} · the model says {p.model === 0 ? p.a : p.b} by {p.gap}</span>
+              </div>
+            )) : <p className="sky-small mono">This week&apos;s picks open when the new rankings are out.</p>}
+            <p className="sky-small mono">Who scores more? Each pick places an unlit star; when the week&apos;s results are in, the right ones light up and earn 20 orbit points.</p>
+            {lastGraded && (
+              <div className="sky-row">
+                <span className="mono sky-small">Week {lastGraded.week}: {lastGraded.right} of {lastGraded.made} right · season {state.btm[0]}-{state.btm[1]}</span>
+                <button type="button" className="btn-ghost" onClick={() => setShare({ title: `Beat the Model: ${lastGraded.right} of ${lastGraded.made}`, caption: `I went ${lastGraded.right} of ${lastGraded.made} against the model in week ${lastGraded.week}. Your turn.`, make: () => receiptCard(lastGraded) })}>Share my receipt</button>
+              </div>
+            )}
+          </section>
+        </div>
 
         <div className="sky-col">
-          <section className="sky-panel" aria-labelledby="sky-season">
-            <div className="board-panel-title" id="sky-season">This season{state.season ? ` · ${state.season}` : ""}</div>
-            <div className="sky-season-head">
-              <div><div className="sky-rank">{sp.title || "Uncharted"}</div><div className="mono sky-small">{sp.points.toLocaleString()} orbit points this season</div></div>
-              <ul className="sky-season-sky">
-                {sky.map((c) => <li key={c.id} className={(state.seasonDone?.[c.id] || 0) > 0 ? "is-done" : ""}><i style={{ background: COLORS[c.color] }} />{c.real}</li>)}
-              </ul>
-            </div>
-            <ul className="sky-ladder is-season">
-              {SEASON_TRACK.map((r, i) => (
-                <li key={i} className={sp.done[i] ? "is-got" : sp.done.indexOf(false) === i ? "is-next" : ""}>
-                  <span className="mono">{r.sky ? `${sp.doneCount}/4` : r.at.toLocaleString()}</span>
-                  <span>{r.sky ? `Finish all four of this season's constellations. ${r.reward}` : r.reward}</span>
-                  <span className="mono sky-small">{sp.done[i] ? "Earned" : ""}</span>
-                </li>
-              ))}
-            </ul>
-            <p className="sky-small mono">Starts over every season, with a new set of constellations. Your season title shows on everything you share.</p>
-          </section>
+          
 
           <section className="sky-panel" aria-labelledby="sky-earn">
             <div className="board-panel-title" id="sky-earn">Earn stars today</div>
@@ -238,24 +241,27 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
             <p className="sky-small mono">Each counts once a day. Leave the core alone for three days and it cools.</p>
           </section>
 
-          <section className="sky-panel" aria-labelledby="sky-btm">
-            <div className="board-panel-title" id="sky-btm">Beat the Model</div>
-            {wk ? wk.pairs.map((p, i) => (
-              <div key={i} className="sky-pick">
-                {[p.a, p.b].map((name, k) => (
-                  <button key={k} type="button" disabled={busy || wk.graded} className={wk.choice[i] === k ? "is-on" : ""} onClick={() => run(pickPlayer(weekKey, i, k))}>{name}</button>
-                ))}
-                <span className="sky-small mono">{p.pos} · the model says {p.model === 0 ? p.a : p.b} by {p.gap}</span>
-              </div>
-            )) : <p className="sky-small mono">This week&apos;s picks open when the new rankings are out.</p>}
-            <p className="sky-small mono">Who scores more? Each pick places an unlit star; when the week&apos;s results are in, the right ones light up and earn 20 orbit points.</p>
-            {lastGraded && (
-              <div className="sky-row">
-                <span className="mono sky-small">Week {lastGraded.week}: {lastGraded.right} of {lastGraded.made} right · season {state.btm[0]}-{state.btm[1]}</span>
-                <button type="button" className="btn-ghost" onClick={() => setShare({ title: `Beat the Model: ${lastGraded.right} of ${lastGraded.made}`, caption: `I went ${lastGraded.right} of ${lastGraded.made} against the model in week ${lastGraded.week}. Your turn.`, make: () => receiptCard(lastGraded) })}>Share my receipt</button>
-              </div>
-            )}
+          <section className="sky-panel" aria-labelledby="sky-season">
+            <div className="board-panel-title" id="sky-season">This season{state.season ? ` · ${state.season}` : ""}</div>
+            <div className="sky-season-head">
+              <div><div className="sky-rank">{sp.title || "Uncharted"}</div><div className="mono sky-small">{sp.points.toLocaleString()} orbit points this season</div></div>
+              <ul className="sky-season-sky">
+                {sky.map((c) => <li key={c.id} className={(state.seasonDone?.[c.id] || 0) > 0 ? "is-done" : ""}><i style={{ background: COLORS[c.color] }} />{c.real}</li>)}
+              </ul>
+            </div>
+            <ul className="sky-ladder is-season">
+              {SEASON_TRACK.map((r, i) => (
+                <li key={i} className={sp.done[i] ? "is-got" : sp.done.indexOf(false) === i ? "is-next" : ""}>
+                  <span className="mono">{r.sky ? `${sp.doneCount}/4` : r.at.toLocaleString()}</span>
+                  <span>{r.sky ? `Finish all four of this season's constellations. ${r.reward}` : r.reward}</span>
+                  <span className="mono sky-small">{sp.done[i] ? "Earned" : ""}</span>
+                </li>
+              ))}
+            </ul>
+            <p className="sky-small mono">Starts over every season, with a new set of constellations. Your season title shows on everything you share.</p>
           </section>
+
+          
         </div>
       </div>
 
