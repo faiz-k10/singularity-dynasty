@@ -7044,3 +7044,12 @@ html.theme-switching *, html.theme-switching *::before, html.theme-switching *::
 .radar-cmp-key::before{content:""; display:inline-block; width:8px; height:8px; margin-right:6px; background:currentColor;}
 .radar-cmp-key.radar-cmp-up{color:var(--up);}
 .radar-cmp-key.radar-cmp-down{color:var(--down);}
+.radar-cmp-key.radar-cmp-even{color:var(--star);}
+.radar-axis-label.radar-cmp-even{fill:var(--star);}
+/* With a similar player overlaid: the comp's dashed line is ink (black in light mode, white in dark) and the player's own median line + dots are the opposite, so the two read apart (founder, Nov 10 2026). */
+.stat-radar.is-comparing{--cmp-ink:#fff; --cmp-inv:#000;}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]) .stat-radar.is-comparing{--cmp-ink:#000; --cmp-inv:#fff;}}
+:root[data-theme="light"] .stat-radar.is-comparing{--cmp-ink:#000; --cmp-inv:#fff;}
+.stat-radar.is-comparing .radar-shape-compare{stroke:var(--cmp-ink);}
+.stat-radar.is-comparing .radar-shape{stroke:var(--cmp-inv);}
+.stat-radar.is-comparing .radar-point{fill:var(--cmp-inv);}

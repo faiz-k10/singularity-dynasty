@@ -136,7 +136,7 @@ export default function StatRadar({ entries, selection = null, startDeg = -90, c
   const viewBox = tight ? TIGHT_VIEWBOX[startDeg === 90 ? "down" : "up"].join(" ") : `0 ${cropTop} ${SIZE} ${SIZE - cropTop - cropBottom}`;
 
   return (
-    <div className="stat-radar">
+    <div className={`stat-radar${compareEntries ? " is-comparing" : ""}`}>
       <div className="weekly-panel-title stat-radar-title">Percentile Shape</div>
       {pool && <div className="stat-radar-sub">vs. {pool} pool</div>}
       <svg
@@ -280,7 +280,7 @@ export default function StatRadar({ entries, selection = null, startDeg = -90, c
         <div className="radar-cmp-legend" aria-hidden="true">
           <span className="radar-cmp-key radar-cmp-up">above</span>
           <span className="radar-cmp-key radar-cmp-down">below</span>
-          <span className="radar-cmp-note">the similar player, by stat</span>
+          <span className="radar-cmp-key radar-cmp-even">tie</span>
         </div>
       )}
     </div>
