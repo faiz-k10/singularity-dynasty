@@ -3,7 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { fetchSleeperState } from "@/lib/sleeper";
 import { nflSeason } from "@/lib/season";
 import { getCachedRedraftData } from "@/app/tools/redraft-rankings/data";
-import { freshState, normalize, award, rollSeason, pickPairs, gradePicks, eventFor, titleFor, LADDER } from "@/lib/nightSky";
+import { freshState, normalize, award, rollSeason, unlockSkins, equipSkin, pickPairs, gradePicks, eventFor, titleFor, LADDER } from "@/lib/nightSky";
 
 // The Night Sky's storage and every roll of the dice (the rules are lib/nightSky.js). One row per member in `night_sky` (migration 0046),
 // read and written only here with the service role. Nothing in this file throws to its caller: the game must never break a page.
@@ -49,7 +49,7 @@ export async function awardAction(userId, action) {
   try {
     const [state, ctx] = await Promise.all([read(userId), context()]);
     const r = award(state, action, ctx);
-    if (r.awarded) await write(userId, state);
+    if (r.awarded) { unlockSkins(state, ctx.now); await write(userId, state); }
     return r;
   } catch (e) {
     console.error("[night-sky] award failed:", e?.message || e);
@@ -90,7 +90,8 @@ export async function loadSky(userId) {
     await gradeFinished(state, ctx);
     const wk = await weekPairs(ctx);
     if (wk && !state.picks[wk.key]) state.picks[wk.key] = { season: wk.season, week: wk.week, pairs: wk.pairs, choice: wk.pairs.map(() => null), graded: false };
-    if (rolled || JSON.stringify(state.picks) !== before) await write(userId, state);
+    const newSkins = unlockSkins(state, ctx.now).length; // e.g. earned before skins existed, or by graded picks
+    if (rolled || newSkins || JSON.stringify(state.picks) !== before) await write(userId, state);
     return { ready: true, state, ctx, weekKey: wk?.key || null };
   } catch (e) {
     console.error("[night-sky] load failed:", e?.message || e);
@@ -116,6 +117,12 @@ export async function makePick(userId, key, index, choice) {
   wk.choice[index] = choice;
   if (!had) state.log.unshift({ t: Date.now(), text: "Pick made: an unlit star waits for the week's results" });
   await write(userId, state);
+  return state;
+}
+// Choosing a skin the member has earned.
+export async function setSkin(userId, kind, id) {
+  const state = await read(userId);
+  if (equipSkin(state, kind, id)) await write(userId, state);
   return state;
 }
 // Claiming a ladder reward the founder fulfils by hand (it shows in /admin).

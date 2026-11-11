@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { markSeen, makePick, claimReward } from "@/lib/nightSkyStore";
+import { markSeen, makePick, claimReward, setSkin } from "@/lib/nightSkyStore";
 
 // The Night Sky's three member actions. Each confirms the account (these change data, so getUser, not the local token check) and returns the
 // updated sky, or { error }.
@@ -30,4 +30,7 @@ export async function pickPlayer(key, index, choice) {
 }
 export async function claim(at) {
   return guard((id) => claimReward(id, Number(at)));
+}
+export async function wearSkin(kind, id) {
+  return guard((uid) => setSkin(uid, String(kind).slice(0, 8), String(id).slice(0, 20)));
 }

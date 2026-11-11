@@ -149,6 +149,45 @@ export const SEASON_TRACK = [
   { at: 7000, reward: "Season title: Surveyor", title: "Surveyor" },
   { at: 14000, reward: "Your name on a star in this season's sky", title: "Star-namer" },
 ];
+// Skins (Nov 11 2026, founder: "aesthetic rewards, like how real games use skins"). Purely cosmetic: a backdrop for the sky and a design for
+// the core, shown on the page and on share cards. Each is unlocked by something the member did (`test`, read from their state) and is kept
+// for good once earned (`s.skins`, filled by unlockSkins); `s.equip` is what they chose. Nothing here can be bought.
+export const SKINS = {
+  sky: [
+    { id: "deep", name: "Deep field", how: "Yours from the start" },
+    { id: "nebula", name: "Nebula", how: "Reach 200 orbit points", test: (s) => s.points >= 200 },
+    { id: "aurora", name: "Aurora", how: "Chart a season: finish all four of its constellations", test: (s) => seasonProgress(s).sky },
+    { id: "milkyway", name: "Milky Way", how: "Reach 3,200 orbit points", test: (s) => s.points >= 3200 },
+    { id: "eclipse", name: "Eclipse", how: "Find a stellar event", test: (s) => Object.values(s.found).some((e) => FAMILIES[e.fam]?.tier === 5) },
+  ],
+  core: [
+    { id: "classic", name: "Classic", how: "Yours from the start" },
+    { id: "pulsar", name: "Pulsar", how: "Reach 1,900 orbit points", test: (s) => s.points >= 1900 },
+    { id: "ringed", name: "Ringed", how: "Complete 10 sets", test: (s) => Object.keys(s.sets).length >= 10 },
+    { id: "binary", name: "Binary", how: "Earn a Surveyor season (7,000 points in one season)", test: (s) => seasonProgress(s).points >= 7000 || Object.values(s.skies || {}).some((k) => k.points >= 7000) },
+    { id: "quasar", name: "Quasar", how: "Find a mythic version of anything", test: (s) => Object.values(s.found).some((e) => e.version === "mythic") },
+    { id: "horizon", name: "Event Horizon", how: "Reach 65,000 orbit points", test: (s) => s.points >= 65000 },
+  ],
+};
+const DEFAULT_SKIN = { sky: "deep", core: "classic" };
+export const hasSkin = (s, kind, id) => id === DEFAULT_SKIN[kind] || (s.skins || []).includes(`${kind}:${id}`);
+// Adds every skin the member has now earned; returns the newly unlocked ones (for the log).
+export function unlockSkins(s, now = 0) {
+  const got = [];
+  for (const kind of ["sky", "core"]) for (const k of SKINS[kind]) {
+    if (!k.test || hasSkin(s, kind, k.id) || !k.test(s)) continue;
+    s.skins = [...(s.skins || []), `${kind}:${k.id}`];
+    got.push(k);
+    log(s, `New ${kind === "sky" ? "sky" : "core"} skin unlocked: ${k.name}`, now);
+  }
+  return got;
+}
+export function equipSkin(s, kind, id) {
+  if (!SKINS[kind]?.some((k) => k.id === id) || !hasSkin(s, kind, id)) return false;
+  s.equip = { ...DEFAULT_SKIN, ...(s.equip || {}), [kind]: id };
+  return true;
+}
+export const equipped = (s) => ({ ...DEFAULT_SKIN, ...(s.equip || {}) });
 export function seasonProgress(s) {
   const points = Math.max(0, s.points - (s.seasonBase || 0));
   const sky = CONSTELLATIONS.every((c) => (s.seasonDone?.[c.id] || 0) > 0);
@@ -167,7 +206,7 @@ export function freshState() {
   return {
     v: 1,
     filled: Object.fromEntries(CONSTELLATIONS.map((c) => [c.id, Array(c.n).fill(null)])),
-    season: 0, skies: {}, seasonDone: {}, seasonBase: 0,
+    season: 0, skies: {}, seasonDone: {}, seasonBase: 0, skins: [], equip: {},
     mass: 0, points: 0, actions: 0, findsTotal: 0, lastActionAt: 0,
     daily: { day: "", done: [] },
     pending: [], found: {}, sets: {}, claimed: {},

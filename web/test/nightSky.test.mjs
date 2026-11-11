@@ -147,3 +147,18 @@ test("the season track counts finished constellations and this season's points, 
   assert.equal(seasonProgress(s).points, 0);
   assert.equal(seasonProgress(s).title, null);
 });
+
+import { unlockSkins, equipSkin, equipped, hasSkin } from "../lib/nightSky.js";
+test("skins unlock from what the member did, stay unlocked, and only earned ones can be worn", () => {
+  const s = freshState();
+  assert.equal(equipSkin(s, "sky", "nebula"), false);
+  s.points = 2000;
+  const got = unlockSkins(s).map((k) => k.id);
+  assert.deepEqual(got.sort(), ["nebula", "pulsar"]);
+  assert.equal(unlockSkins(s).length, 0); // only once
+  s.points = 0; // spending never happens, but a skin stays earned regardless
+  assert.ok(hasSkin(s, "core", "pulsar"));
+  assert.equal(equipSkin(s, "core", "pulsar"), true);
+  assert.equal(equipSkin(s, "core", "quasar"), false);
+  assert.deepEqual(equipped(s), { sky: "deep", core: "pulsar" });
+});

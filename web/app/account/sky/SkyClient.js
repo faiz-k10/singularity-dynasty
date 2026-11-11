@@ -3,15 +3,20 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import ShareDialog from "../../ShareDialog";
-import { seeFinds, pickPlayer, claim } from "./actions";
+import { seeFinds, pickPlayer, claim, wearSkin } from "./actions";
+import { SkyBackdrop, CoreSkin, SkinPreview } from "./skins";
 import { drawObject, sharpen, findCard, receiptCard, seasonCard, toBlob, setCardBadge } from "./skyArt";
 import {
-  ACTIONS, COLORS, skyFor, FAMILIES, COLOURS, VERSIONS, TIER_NAME, POWERUPS, LADDER, CATALOGUE_SIZE, SET_COUNT, UNLOCK, EVENT_TEXT,
+  ACTIONS, skyFor, SKINS, hasSkin, equipped, FAMILIES, COLOURS, VERSIONS, TIER_NAME, POWERUPS, LADDER, CATALOGUE_SIZE, SET_COUNT, UNLOCK, EVENT_TEXT,
   famsIn, findOf, setProgress, titleFor, seasonProgress, SEASON_TRACK,
 } from "@/lib/nightSky";
 
 // The Night Sky page (server side: page.js; rules: lib/nightSky.js). Everything here only SHOWS the sky: stars, finds and points are decided on
 // the server, and the three things a member does here (open finds, pick, claim) go through ./actions.
+
+// Star colours follow the theme (white stars are ink on the light sky, gold a deeper amber): --sky-* in globals.css. Share cards keep the
+// dark-sky hexes (COLORS in lib/nightSky.js).
+const STAR = { blue: "var(--sky-blue)", ember: "var(--sky-ember)", white: "var(--sky-white)", gold: "var(--sky-gold)" };
 
 const seededStars = (() => {
   let s = 7; const r = () => ((s = (s * 16807) % 2147483647) / 2147483647);
@@ -26,7 +31,7 @@ const STAGES = [
   { id: "unstable", label: "Unstable", from: 8 },
 ];
 const stageOf = (mass) => [...STAGES].reverse().find((st) => mass >= st.from);
-function Core({ mass, collapsed }) {
+function Core({ mass, collapsed, skin }) {
   const m = Math.min(12, Math.max(0, mass || 0)), st = collapsed ? { id: "collapsed", label: "Collapsed" } : stageOf(m);
   const ticks = Array.from({ length: 12 }, (_, i) => {
     const a = ((-90 + i * 30) * Math.PI) / 180, band = i < 3 ? "cool" : i < 7 ? "warming" : "unstable";
@@ -34,12 +39,14 @@ function Core({ mass, collapsed }) {
     return { x1: r2(Math.cos(a) * 74), y1: r2(Math.sin(a) * 74), x2: r2(Math.cos(a) * 84), y2: r2(Math.sin(a) * 84), lit: collapsed || i < m, band };
   });
   return (
-    <g className={`sky-core is-${st.id}`}>
+    <g className={`sky-core is-${st.id} skin-${skin}`}>
       <circle className="sky-core-glow" r="70" />
       {ticks.map((t, i) => <line key={i} className={`sky-core-tick${t.lit ? ` is-lit is-${t.band}` : ""}`} x1={t.x1} y1={t.y1} x2={t.x2} y2={t.y2} />)}
       <circle className="sky-core-debris" r="62" />
+      <CoreSkin skin={skin} layer="back" />
       <circle className="sky-core-rim" r="54" />
       <circle className="sky-core-body" r="44" />
+      <CoreSkin skin={skin} layer="front" />
       {collapsed && <circle className="sky-core-lens" r="49" />}
       <text className="sky-heat" x="0" y="106" textAnchor="middle">
         {collapsed ? "Collapsed · a find is waiting" : STAGES.map((x, i) => (
@@ -54,6 +61,7 @@ function Sky({ state, pendingPicks, pending }) {
   const open = state.findsTotal >= UNLOCK.constellations;
   return (
     <svg className="sky-svg" viewBox="-300 -300 600 600" role="img" aria-label={`Your sky: ${state.findsTotal} finds, the core ${pending ? "collapsed" : stageOf(state.mass).label.toLowerCase()}`}>
+      <SkyBackdrop skin={equipped(state).sky} />
       {seededStars.map(([x, y, r, o], i) => <circle key={i} cx={x} cy={y} r={r} fill="var(--star)" fillOpacity={o} />)}
       {skyFor(state.season).map((c) => {
         const f = state.filled[c.id] || [];
@@ -64,10 +72,10 @@ function Sky({ state, pendingPicks, pending }) {
           <g key={c.id}>
             {c.edges.map(([i, j]) => {
               const lit = f[i] && f[j];
-              return <line key={`l${i}-${j}`} x1={c.pts[i][0]} y1={c.pts[i][1]} x2={c.pts[j][0]} y2={c.pts[j][1]} stroke={lit ? COLORS[c.color] : "var(--star)"} strokeWidth={lit ? 1.3 : 0.8} opacity={lit ? 0.7 : 0.14} strokeDasharray={lit ? undefined : "2 3"} />;
+              return <line key={`l${i}-${j}`} x1={c.pts[i][0]} y1={c.pts[i][1]} x2={c.pts[j][0]} y2={c.pts[j][1]} stroke={lit ? STAR[c.color] : "var(--star)"} strokeWidth={lit ? 1.3 : 0.8} opacity={lit ? 0.7 : 0.14} strokeDasharray={lit ? undefined : "2 3"} />;
             })}
             {c.pts.map(([x, y, r], i) => f[i] ? (
-              <g key={i}><circle cx={x} cy={y} r={r * 2.4} fill={COLORS[f[i]]} fillOpacity=".12" /><circle cx={x} cy={y} r={r} fill={COLORS[f[i]]} /></g>
+              <g key={i}><circle cx={x} cy={y} r={r * 2.4} fill={STAR[f[i]]} fillOpacity=".14" /><circle cx={x} cy={y} r={r} fill={STAR[f[i]]} /></g>
             ) : <circle key={i} className="sky-slot" cx={x} cy={y} r={r + 0.8} />)}
 <text className={`sky-clabel${done ? " is-done" : near ? " is-near" : ""}`} x={lx} y={ly} textAnchor={anchor}>{c.name} · {have}/{c.pts.length}</text>
             <text className={`sky-creal${done ? " is-done" : near ? " is-near" : ""}`} x={lx} y={ly + 14} textAnchor={anchor}>{c.real}{done ? " · ready" : near ? " · one star away" : ""}</text>
@@ -80,7 +88,7 @@ function Sky({ state, pendingPicks, pending }) {
           <text className="sky-creal" x="0" y="160" textAnchor="middle">{pendingPicks.length} pick{pendingPicks.length === 1 ? "" : "s"} waiting</text>
         </g>
       )}
-      <Core mass={state.mass} collapsed={pending > 0} />
+      <Core mass={state.mass} collapsed={pending > 0} skin={equipped(state).core} />
     </svg>
   );
 }
@@ -238,7 +246,7 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
             <ul className="sky-acts">
               {Object.entries(ACTIONS).map(([k, a]) => (
                 <li key={k} className={done.has(k) ? "is-done" : ""}>
-                  <Link href={a.href}><i style={{ background: COLORS[a.color] }} />{a.label}</Link>
+                  <Link href={a.href}><i style={{ background: STAR[a.color] }} />{a.label}</Link>
                   <span className="mono">{done.has(k) ? "Done today" : a.tool}</span>
                 </li>
               ))}
@@ -293,7 +301,7 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
             <div className="sky-season-head">
               <div><div className="sky-rank">{sp.title || "Uncharted"}</div><div className="mono sky-small">{sp.points.toLocaleString()} orbit points this season</div></div>
               <ul className="sky-season-sky">
-                {sky.map((c) => <li key={c.id} className={(state.seasonDone?.[c.id] || 0) > 0 ? "is-done" : ""}><i style={{ background: COLORS[c.color] }} />{c.real}</li>)}
+                {sky.map((c) => <li key={c.id} className={(state.seasonDone?.[c.id] || 0) > 0 ? "is-done" : ""}><i style={{ background: STAR[c.color] }} />{c.real}</li>)}
               </ul>
             </div>
             <ul className="sky-ladder is-season">
@@ -391,6 +399,27 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
       
 
       
+
+      <section className="sky-panel" aria-labelledby="sky-skins">
+        <div className="board-panel-title" id="sky-skins">Skins</div>
+        {["sky", "core"].map((kind) => (
+          <div key={kind} className="sky-skins-row">
+            <div className="sky-skins-h mono">{kind === "sky" ? "Sky" : "Core"}</div>
+            <div className="sky-skins">
+              {SKINS[kind].map((k) => {
+                const have = hasSkin(state, kind, k.id), on = equipped(state)[kind] === k.id;
+                return (
+                  <button key={k.id} type="button" className={`sky-skin${on ? " is-on" : ""}${have ? "" : " is-locked"}`} disabled={!have || on || busy} onClick={() => run(wearSkin(kind, k.id))} aria-pressed={on}>
+                    <SkinPreview kind={kind} id={k.id} />
+                    <b>{k.name}</b>
+                    <span className="mono">{on ? "Wearing" : have ? "Wear" : k.how}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </section>
 
       {scope && <Telescope queue={state.pending} compliments={compliments} onDone={closeScope} onShare={shareFind} />}
       {share && <ShareDialog prepare={prepare} caption={share.caption} onClose={() => setShare(null)} />}
