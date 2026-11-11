@@ -7036,3 +7036,7 @@ html.theme-switching *, html.theme-switching *::before, html.theme-switching *::
 .pctile-vbar-fill-floor{background:var(--down);}
 .pctile-vbar-fill-median{background:var(--star-dim);}
 .pctile-vbar-fill-ceiling{background:var(--up);}
+
+/* Radar labels with a similar player overlaid: blue up arrow = he is above the comp on that stat, ember down arrow = below (founder, Nov 10 2026). */
+.radar-cmp-up{fill:var(--up);}
+.radar-cmp-down{fill:var(--down);}

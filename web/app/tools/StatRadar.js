@@ -213,6 +213,15 @@ export default function StatRadar({ entries, selection = null, startDeg = -90, c
           const ceilingR = cellLayer === "ceiling" ? 4.5 : columnLayer === "ceiling" ? 4 : isRowSel ? 3.5 : 0;
           const medianR = cellLayer === "median" ? 4.5 : columnLayer === "median" ? 4 : isRowSel ? 3.5 : 0;
           const select = () => onSelectKey?.(key);
+          // With a similar player overlaid, each stat says whether THIS player is above (blue up arrow) or below (ember down arrow) the comp (median percentile)
+          const mine = entries[i][2];
+          const theirs = compareEntries?.[i]?.[2];
+          const cmpMark =
+            compareEntries && mine != null && theirs != null && Math.round(mine) !== Math.round(theirs)
+              ? mine > theirs
+                ? { glyph: "▲", cls: "radar-cmp-up" }
+                : { glyph: "▼", cls: "radar-cmp-down" }
+              : null;
           return (
             <g
               key={key}
@@ -258,6 +267,11 @@ export default function StatRadar({ entries, selection = null, startDeg = -90, c
                     dy={wi === 0 ? `${-(words.length - 1) * (LABEL_LINE_EM / 2)}em` : `${LABEL_LINE_EM}em`}
                   >
                     {word}
+                    {wi === words.length - 1 && cmpMark && (
+                      <tspan className={cmpMark.cls} dx="0.35em">
+                        {cmpMark.glyph}
+                      </tspan>
+                    )}
                   </tspan>
                 ))}
               </text>
