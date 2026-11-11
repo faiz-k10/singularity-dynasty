@@ -7,7 +7,7 @@ import { matchesBadgeFilters } from "./badgeFilters";
 import { getAchievementsCached } from "./achievements";
 import { MyPlayersFilter, MyPlayersNote, useMyView } from "./MyPlayers";
 
-// The Weekly Projection Rankings page's top block and table: title row (title left, Compare Players / Export CSV
+// The Weekly Projection Rankings page's top block and table: title row (title left, Compare Players
 // right), one filter toolbar (search, position pills, All players / My players), then the table. Sorting happens in
 // the browser (the parent's useClientSort, passed as onSort); the search text is the only state owned here -- which positions are
 // selected is owned by the parent (RedraftRankingsClient) and passed in as `selected` / `onTogglePosition`.
@@ -26,7 +26,7 @@ export default function RankingsSearch({
   showNotes = true,
   maxSpread,
   header, // the title block (eyebrow + h1), left of the top row
-  actions, // the links/buttons at the right of the top row (Compare Players, Export CSV)
+  actions, // the links/buttons at the right of the top row (Compare Players)
   mine, // the viewer's saved teams (lib/myPlayers.js) -- adds the My players view
   gated, // true when the viewer only sees a teaser slice of the table
   compareHref, // a Compare Players button at the end of the toolbar (Weekly Projection Rankings)

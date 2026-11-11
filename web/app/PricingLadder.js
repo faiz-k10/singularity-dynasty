@@ -134,7 +134,6 @@ export default function PricingLadder({ singularityRemaining }) {
             <li>
               Personal Team Analysis <em className="round-soon">Soon</em>
             </li>
-            <li>CSV export of every list</li>
             <li>Priority Discord, early beta access</li>
           </ul>
         </Hull>

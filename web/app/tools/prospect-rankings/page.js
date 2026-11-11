@@ -5,7 +5,6 @@ import { getUserTier } from "@/lib/tier";
 import { resolveSort, sortRows } from "@/lib/sortLink";
 import InteractiveScript from "../../InteractiveScript";
 import SortableTh from "../SortableTh";
-import ExportCsvButton from "../ExportCsvButton";
 
 export const metadata = {
   title: "WR/QB Rookie Prospect Rankings & Comparisons — Dynasty Singularity",
@@ -15,7 +14,7 @@ export const metadata = {
 
 const TEASER_LIMIT_PER_POSITION = 5;
 // Full board for Explorer and up (rookie boards are dynasty-player territory, which is who Explorer is for); everyone else sees
-// the top 5 per position. CSV export stays Singularity-only (canExport below).
+// the top 5 per position.
 const PAID_TIERS = ["explorer", "singularity"];
 const COLUMN_TYPES = { rank: "number", player_name: "string", school: "string" };
 
@@ -69,7 +68,6 @@ export default async function ProspectRankingsPage({ searchParams }) {
   const totalRows = wrs.rows.length + qbs.rows.length;
   const totalCount = wrs.total + qbs.total;
   const isTeaser = !hasFullAccess && totalCount > totalRows;
-  const canExport = tier === "singularity" && totalRows > 0;
 
   // Each group (WR/QB) sorts independently via a namespaced sort/dir param
   // pair so sorting one table doesn't re-sort the other.
@@ -134,14 +132,6 @@ export default async function ProspectRankingsPage({ searchParams }) {
           </div>
         ) : (
           <>
-            {canExport && (
-              <div className="tool-export-row">
-                <ExportCsvButton
-                  filename={`prospect-rankings-${latest.draft_class}.csv`}
-                  href="/api/prospect-rankings/csv"
-                />
-              </div>
-            )}
             {renderGroup("Wide Receivers", wrs.rows, wrSort, "wr_sort", "wr_dir")}
             {renderGroup("Quarterbacks", qbs.rows, qbSort, "qb_sort", "qb_dir")}
 

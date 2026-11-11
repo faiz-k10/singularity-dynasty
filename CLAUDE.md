@@ -455,6 +455,10 @@ The site's name is now **Dynasty Singularity** everywhere visible (headers, titl
 
 - **Established vs Building look different (Nov 10 2026, founder):** Established = a SOLID ink disc with the flag cut out (tone `--star`); Building = a hollow DASHED ring in the dim ink. Same in the opened-player header (`.confidence-badge` / `.weekly-glyph-badge`), the Badges filter pills and ticker (`.sym-badge`, the svg ring's `stroke-dasharray`), and the rank-cell dots (Building's dot is a ring). CSS at the end of the "badges: three colours" block in `globals.css`.
 
+## CSV export removed, sims toolbar (Nov 10 2026, founder)
+- **Export CSV is gone for now:** the button (`ExportCsvButton.js`), the four product CSV routes (`app/api/{redraft-rankings,player-simulations,prospect-rankings,draft-board}/csv`), the click handler in `InteractiveScript.js`, its CSS and every mention (Singularity plan list, header plan menu, account page) were removed. Kept: `lib/csv.js` / `lib/csvDownload.js` (the admin email-list download and board CSV uploads still use them). To bring it back, restore from git history (the commit that removed it) and re-add the mentions.
+- **Player Season Simulations:** "Player Comparison" is a button in the toolbar (the shared `RankingsToolbar` `compareHref`, beside the search box); the title row's "How to read this" and "Player Comparison" links are gone.
+
 ## Next steps
 1. **Team Analysis** — the analysis layer. The saved-roster system now exists (`app/my-team/`, `saved_teams`, per-tier save caps) and the model-side metadata helper is built (`model/player_meta.R`, `age_curve_analysis.R`). Still to do: a `player_metadata` Supabase table (or a build step that joins metadata into the saved snapshot), and the actual age-curve / positional-depth / contention-window computation + UI. Scope the analysis as its own feature, not a copy of the other five's pattern.
 2. Publish real data into the five live `/tools/*` tables (Supabase Table Editor) — they're all wired up correctly but currently empty, showing "check back soon" placeholders. Also still true for the `posts` table (Feed section).

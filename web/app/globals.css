@@ -1211,15 +1211,6 @@ footer .fcoord{font-size:10.5px; color:var(--star-dim); letter-spacing:0.08em;}
 }
 .rankings-table th button.th-sort-btn:hover{color:var(--neon-blue);}
 .rankings-table th button.th-sort-btn.sort-active{color:var(--horizon-gold);}
-.tool-export-row{display:flex; justify-content:flex-end; margin-bottom:20px;}
-.export-csv-btn{
-  background:transparent; color:var(--neon-blue); border:1px solid rgba(var(--neon-blue-rgb),0.4); border-radius:2px;
-  padding:8px 16px; font-family:var(--font-mono), monospace; font-size:12px; font-weight:600; letter-spacing:0.02em;
-  cursor:pointer; display:inline-flex; align-items:center; white-space:nowrap;
-  transition:border-color .2s ease, color .2s ease, box-shadow .2s ease;
-}
-a.export-csv-btn{text-decoration:none;}
-.export-csv-btn:hover{border-color:var(--neon-blue); box-shadow:0 0 0 1px rgba(var(--neon-blue-rgb),0.15); color:var(--star);}
 .rankings-table td{padding:12px 18px; border-bottom:1px dashed var(--line); color:var(--star); white-space:nowrap; text-align:center;}
 .rankings-table td.player-cell, .rankings-table td.align-left{text-align:left;}
 .pos-rank{color:var(--star-dim); font-size:11px; margin-left:2px;}
@@ -4231,7 +4222,6 @@ summary:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible{
   .tool-header-left, .tool-header-right{flex:1 1 100%; min-width:0;}
   .tool-wrap h1{font-size:26px; margin-bottom:8px;}
   .tool-sub{font-size:13.5px; margin-bottom:16px;}
-  .tool-export-row{margin-bottom:10px;}
   .filter-accordion{width:100%; margin-bottom:12px;}
   .filter-row-header{padding:11px 14px;}
   .filter-row .tier-toggle{margin:0 14px 14px;}

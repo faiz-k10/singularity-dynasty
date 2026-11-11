@@ -10,7 +10,7 @@ import { startCheckout } from "@/lib/startCheckout";
 export const PLANS = [
   { id: "stargazer", name: "Stargazer", r: 230, say: "The top of every board and one saved league.", month: 0, year: 0 },
   { id: "explorer", name: "Explorer", r: 150, say: "Every player, ten leagues watched live, the Tuesday email.", month: 9, year: 7 },
-  { id: "singularity", name: "Singularity", r: 76, say: "Every simulation, unlimited leagues, exports.", month: 25, year: 20 },
+  { id: "singularity", name: "Singularity", r: 76, say: "Every simulation, unlimited leagues.", month: 25, year: 20 },
 ];
 
 // the header's Newsletter link opens a dropdown with the sign-up right there (founder, Nov 10 2026); the link still jumps to the section

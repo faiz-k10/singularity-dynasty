@@ -7,7 +7,6 @@ import { SIM_COLUMN_TYPES as COLUMN_TYPES } from "@/lib/simColumns";
 import { getPlayerBiosByNamePos } from "@/lib/sleeper";
 import { stageTimer } from "@/lib/stageTimer";
 import InteractiveScript from "../../InteractiveScript";
-import ExportCsvButton from "../ExportCsvButton";
 import PlayerSimSearch from "../PlayerSimSearch";
 import { TEASER_LIMIT, PAID_TIERS, getCachedWeekData, buildSimRows } from "./data";
 
@@ -69,7 +68,6 @@ export default async function PlayerSimulationsPage({ searchParams }) {
   });
   const isTeaser = !hasFullAccess && totalCount > sims.length;
   const { sortKey, sortDir } = resolveSort(params, "median", "desc");
-  const canExport = tier === "singularity" && sims.length > 0;
   const positions = sortPositions([...new Set(sims.map((r) => r.position))]);
 
   st.done();
@@ -116,22 +114,6 @@ export default async function PlayerSimulationsPage({ searchParams }) {
                     {latest ? `${latest.season} Season · Updated Week ${latest.week}` : "Simulations"}
                   </div>
                   <h1>Player Season Simulations</h1>
-                </>
-              }
-              actions={
-                <>
-                  <Link href="/how-it-works#read" className="hub-panel-link">
-                    How to read this →
-                  </Link>
-                  <Link href="/tools/compare-player-sims" className="hub-panel-link">
-                    Player Comparison →
-                  </Link>
-                  {canExport && (
-                    <ExportCsvButton
-                      filename={`player-simulations-week${latest.week}-${latest.season}.csv`}
-                      href="/api/player-simulations/csv"
-                    />
-                  )}
                 </>
               }
             />

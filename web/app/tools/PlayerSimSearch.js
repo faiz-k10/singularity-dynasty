@@ -982,6 +982,7 @@ export default function PlayerSimSearch({ rows: sortedRows, sortKey: initialKey,
       teamIds={teamIds}
       onToggleTeam={toggleTeam}
       onClearTeams={() => setTeamIds(new Set())}
+      compareHref="/tools/compare-player-sims"
     />
   );
 

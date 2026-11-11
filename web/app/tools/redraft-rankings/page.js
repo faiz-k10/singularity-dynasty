@@ -6,7 +6,6 @@ import { resolveSort, sortRows } from "@/lib/sortLink";
 import { getPlayerBiosByNamePos } from "@/lib/sleeper";
 import { stageTimer } from "@/lib/stageTimer";
 import InteractiveScript from "../../InteractiveScript";
-import ExportCsvButton from "../ExportCsvButton";
 import RedraftRankingsClient from "./RedraftRankingsClient";
 import { PAID_TIERS, OVERALL_COLUMN_TYPES, sortPositions, getCachedRedraftData, getCachedLeans, getCachedTdProfile, getCachedUsageProfile, enrichRankings } from "./data";
 
@@ -64,7 +63,6 @@ export default async function RedraftRankingsPage({ searchParams }) {
     sortDir,
     OVERALL_COLUMN_TYPES
   );
-  const canExport = tier === "singularity" && rankings.length > 0;
   const isTeaser = !hasFullAccess && totalCount > 50;
 
   return (
@@ -107,16 +105,6 @@ export default async function RedraftRankingsPage({ searchParams }) {
                     {latest ? `Week ${latest.week} · ${latest.season}` : "Projections"}
                   </div>
                   <h1>Weekly Projection Rankings</h1>
-                </>
-              }
-              actions={
-                <>
-                  {canExport && (
-                    <ExportCsvButton
-                      filename={`redraft-rankings-week${latest.week}-${latest.season}.csv`}
-                      href="/api/redraft-rankings/csv"
-                    />
-                  )}
                 </>
               }
             />
