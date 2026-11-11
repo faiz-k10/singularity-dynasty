@@ -1,6 +1,6 @@
 // Run: node mockups/night-sky-sim-live.mjs -- the Night Sky as SHIPPED (web/lib/nightSky.js: award, gradePicks, rollSeason, events), not a copy
 // of its rules. Three NFL years (Sept 2026 - Aug 2029) for light / regular / engaged members, in season and offseason, with Beat the Model.
-import { freshState, award, gradePicks, eventFor, LADDER, TITLES, CATALOGUE_SIZE, SET_COUNT, DAY } from "../web/lib/nightSky.js";
+import { freshState, award, gradePicks, eventFor, seasonProgress, SEASON_TRACK, LADDER, TITLES, CATALOGUE_SIZE, SET_COUNT, DAY } from "../web/lib/nightSky.js";
 
 const ACTIONS = ["board", "waivers", "rankings", "compare", "sims", "lab", "dynasty"];
 const START = Date.UTC(2026, 8, 9); // the Wednesday before week 1, 2026
@@ -17,7 +17,7 @@ function member(perDay, offseasonShare, years = 3) {
   const s = freshState();
   const out = { years: [], finds: [0, 0, 0, 0, 0], vers: [0, 0, 0, 0], firstTier: {}, earlyTiers: [0, 0, 0, 0, 0], lateTiers: [0, 0, 0, 0, 0] };
   let year = null, y0 = { points: 0, finds: 0, actions: 0, sets: 0 };
-  const close = () => { if (year != null) out.years.push({ season: year, points: s.points - y0.points, finds: s.findsTotal - y0.finds, actions: s.actions - y0.actions, sets: Object.keys(s.sets).length - y0.sets, total: s.points }); };
+  const close = () => { if (year != null) out.years.push({ season: year, points: s.points - y0.points, finds: s.findsTotal - y0.finds, actions: s.actions - y0.actions, sets: Object.keys(s.sets).length - y0.sets, total: s.points, track: seasonProgress(s).done.filter(Boolean).length }); };
   for (let t = START; t < START + years * 365 * DAY; t += DAY) {
     const season = seasonOf(t);
     if (season !== year) { close(); year = season; y0 = { points: s.points, finds: s.findsTotal, actions: s.actions, sets: Object.keys(s.sets).length }; }
@@ -63,10 +63,11 @@ for (const [label, [rate, off]] of Object.entries(profiles)) {
     const yr = (f) => avg((r) => f(r.out.years[y] || {}));
     console.log(`  year ${y + 1}: ${yr((x) => x.actions).toFixed(0)} actions, ${yr((x) => x.finds).toFixed(0)} finds (${(yr((x) => x.actions) / yr((x) => x.finds)).toFixed(2)} actions a find), ${yr((x) => x.sets).toFixed(1)} sets, ${yr((x) => x.points).toFixed(0)} points (total ${yr((x) => x.total).toFixed(0)}, ${(yr((x) => rungAt(x.total))).toFixed(1)} of ${LADDER.length} rungs)`);
   }
+  for (let y = 0; y < 3; y++) console.log(`  season track, year ${y + 1} (of ${SEASON_TRACK.length}): ${[0, 1, 2, 3, 4, 5].map((k) => `${k}: ${pct((r) => (r.out.years[y]?.track ?? 0) === k)}`).join("  ")}`);
   console.log(`  finds by tier % (small / comet / planet / shower / stellar): ${share(runs.reduce((a, r) => a.map((x, i) => x + r.out.finds[i]), [0, 0, 0, 0, 0]))}`);
   console.log(`  first 4 weeks of a season vs weeks 12-18 (tiers %): ${share(runs.reduce((a, r) => a.map((x, i) => x + r.out.earlyTiers[i]), [0, 0, 0, 0, 0]))}  vs  ${share(runs.reduce((a, r) => a.map((x, i) => x + r.out.lateTiers[i]), [0, 0, 0, 0, 0]))}`);
   console.log(`  weeks to first: comet ${med((r) => r.out.firstTier[2])?.toFixed(1)}, planet ${med((r) => r.out.firstTier[3])?.toFixed(1)}, stellar ${med((r) => r.out.firstTier[5])?.toFixed(1) ?? "most never (3 yrs)"}`);
   console.log(`  after 3 years: catalogue ${avg((r) => Object.keys(r.s.found).length).toFixed(0)} of ${CATALOGUE_SIZE}, sets ${avg((r) => Object.keys(r.s.sets).length).toFixed(0)} of ${SET_COUNT}, Beat the Model ${avg((r) => r.s.btm[0]).toFixed(0)}-${avg((r) => r.s.btm[1]).toFixed(0)}`);
-  console.log(`  reach (ever, 3 yrs): week of plan time ${pct((r) => r.s.points >= 1100)}, poster ${pct((r) => r.s.points >= 5500)}, free month ${pct((r) => r.s.points >= 12000)}, Event Horizon ${pct((r) => r.s.points >= 40000)}; year 1 poster ${pct((r) => r.out.years[0].total >= 5500)}, year 1 free month ${pct((r) => r.out.years[0].total >= 12000)}`);
+  console.log(`  reach (ever, 3 yrs): week of plan time ${pct((r) => r.s.points >= 1100)}, early access ${pct((r) => r.s.points >= 9000)}, free month ${pct((r) => r.s.points >= 25000)}, Event Horizon ${pct((r) => r.s.points >= 65000)}; early access in year 1 ${pct((r) => r.out.years[0].total >= 9000)}, free month in year 1 / by year 2 ${pct((r) => r.out.years[0].total >= 25000)} / ${pct((r) => r.out.years[1].total >= 25000)}, Event Horizon by year 2 ${pct((r) => r.out.years[1].total >= 65000)}`);
   console.log(`  ever saw: stellar event ${pct((r) => r.out.finds[4] > 0)}, ancient ${pct((r) => r.out.vers[2] > 0)}, mythic ${pct((r) => r.out.vers[3] > 0)}; titles at 3 yrs: ${TITLES.map(([at, name]) => `${name} ${pct((r) => r.s.points >= at && !TITLES.some(([b]) => b > at && r.s.points >= b))}`).join(", ")}`);
 }

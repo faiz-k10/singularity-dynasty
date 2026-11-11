@@ -68,13 +68,20 @@ export function sharpen(cv, find, edge, done) {
 
 // ---- share cards (1200 x 630, the link-preview size; uploaded through /api/lab-share as /s/<id>) ----
 const font = (name) => (typeof window === "undefined" ? "sans-serif" : getComputedStyle(document.documentElement).getPropertyValue(name).trim() || "sans-serif");
+let badgeText = null; // this season's badge ("2026 · SURVEYOR"), set by the page before drawing a card
+export const setCardBadge = (t) => { badgeText = t || null; };
 function base(ctx, eyebrow) {
   ctx.fillStyle = "#0B0B0B"; ctx.fillRect(0, 0, 1200, 630);
   let s = 3; const r = () => ((s = (s * 16807) % 2147483647) / 2147483647);
   for (let i = 0; i < 260; i++) { ctx.fillStyle = `rgba(236,231,220,${0.1 + r() * 0.4})`; ctx.fillRect(r() * 1200, r() * 630, 2, 2); }
   ctx.fillStyle = "#E8643F"; ctx.fillRect(0, 0, 1200, 6); ctx.fillRect(64, 70, 10, 10);
   ctx.fillStyle = "#A39E92"; ctx.font = `400 20px ${font("--font-mono")}`; ctx.fillText(eyebrow.toUpperCase(), 88, 81);
-  ctx.textAlign = "right"; ctx.font = `400 18px ${font("--font-mono")}`; ctx.fillText("THE DYNASTY SINGULARITY · THE NIGHT SKY", 1136, 590); ctx.textAlign = "left";
+  ctx.textAlign = "right"; ctx.font = `400 18px ${font("--font-mono")}`; ctx.fillText("THE DYNASTY SINGULARITY · THE NIGHT SKY", 1136, 590);
+  if (badgeText) {
+    ctx.font = `700 18px ${font("--font-mono")}`; const w = ctx.measureText(badgeText).width + 28;
+    ctx.strokeStyle = "#E9C46A"; ctx.lineWidth = 2; ctx.strokeRect(1136 - w, 58, w, 34); ctx.fillStyle = "#E9C46A"; ctx.fillText(badgeText, 1122, 81);
+  }
+  ctx.textAlign = "left";
 }
 function wrap(ctx, text, x, y, maxW, lh) { const words = text.split(" "); let line = ""; for (const w of words) { const t = line ? `${line} ${w}` : w; if (ctx.measureText(t).width > maxW && line) { ctx.fillText(line, x, y); line = w; y += lh; } else line = t; } ctx.fillText(line, x, y); return y; }
 const canvas = () => { const c = document.createElement("canvas"); c.width = 1200; c.height = 630; return c; };

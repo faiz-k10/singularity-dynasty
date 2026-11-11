@@ -74,10 +74,11 @@ export function skyFor(season) {
   return CONSTELLATIONS.map((c) => ({ ...c, ...SKY_SETS[i][c.id] }));
 }
 // A new NFL season: keep the old sky (for the season card and a member's past skies) and start an empty one. Returns true when it rolled.
+const seasonProgressLite = (s) => { const p = seasonProgress(s); return { points: p.points, title: p.title }; };
 export function rollSeason(s, season) {
   if (!season || s.season === season) return false;
-  if (s.season && s.filled) s.skies = { ...(s.skies || {}), [s.season]: s.filled };
-  if (s.season) s.filled = freshState().filled; // a member's first season keeps whatever they already have
+  if (s.season && s.filled) s.skies = { ...(s.skies || {}), [s.season]: { filled: s.filled, done: s.seasonDone || {}, ...seasonProgressLite(s) } };
+  if (s.season) { s.filled = freshState().filled; s.seasonDone = {}; s.seasonBase = s.points; } // a member's first season keeps what they have
   s.season = season;
   return true;
 }
@@ -121,9 +122,10 @@ export const POWERUPS = {
   mythic: { name: "Gravity well", text: "a star lands in every unfinished constellation, the core starts half full, every action places triple stars for 30 minutes, and your core can't cool for a week." },
 };
 
-// The reward ladder (spaced with the season simulation: a light member reaches ~6 rungs a season, a regular one the poster, only an engaged
-// one the free month; the top title takes ~3 engaged seasons). Rewards with cash value come from effort, never chance. `claim`: the founder
-// fulfils it by hand (they are listed in /admin once claimed).
+// The lifetime reward ladder (re-spaced Nov 11 2026 with mockups/night-sky-sim-live.mjs, three NFL years incl. the offseason: a light member
+// reaches ~7 rungs in year 1, a regular one early access in year 1 and the free month around year 3, an engaged one the free month in year 2
+// and Event Horizon around year 3). No poster (founder). Rewards with cash value come from effort, never chance. `claim`: the founder fulfils it
+// by hand. The SEASON_TRACK below resets every season, so there is always something to aim for once the ladder is mostly climbed.
 export const LADDER = [
   { at: 80, reward: "First light: a profile badge", kind: "status" },
   { at: 200, reward: "A frame for your share cards", kind: "status" },
@@ -132,12 +134,28 @@ export const LADDER = [
   { at: 1100, reward: "A week of the next plan up", kind: "value", claim: true },
   { at: 1900, reward: "Title: Cartographer + a Discord role", kind: "status", claim: true },
   { at: 3200, reward: "Your name on the founders' wall", kind: "lasting", claim: true },
-  { at: 5500, reward: "Your season sky, printed and mailed as a poster", kind: "lasting", claim: true },
-  { at: 12000, reward: "A free month", kind: "value", claim: true },
-  { at: 20000, reward: "Name an object in everyone's catalogue", kind: "lasting", claim: true },
-  { at: 40000, reward: "Title: Event Horizon, shown on everything you share", kind: "status" },
+  { at: 9000, reward: "Early access: new tools and features a week before everyone else", kind: "lasting", claim: true },
+  { at: 25000, reward: "A free month", kind: "value", claim: true },
+  { at: 40000, reward: "Name an object in everyone's catalogue", kind: "lasting", claim: true },
+  { at: 65000, reward: "Title: Event Horizon, shown on everything you share", kind: "status" },
 ];
-export const TITLES = [[0, "Spotter"], [400, "Astronomer"], [1900, "Cartographer"], [12000, "Astrophysicist"], [40000, "Event Horizon"]];
+export const TITLES = [[0, "Spotter"], [400, "Astronomer"], [1900, "Cartographer"], [9000, "Astrophysicist"], [65000, "Event Horizon"]];
+// The season track: starts over every NFL season with that season's constellations; nothing on it has cash value. `sky`: finish all four of
+// this season's constellations at least once; `at`: orbit points earned this season.
+export const SEASON_TRACK = [
+  { sky: true, reward: "Charted: this season's badge on your cards", title: "Charted" },
+  { at: 1000, reward: "A season frame for your share cards", title: "Charted" },
+  { at: 3000, reward: "Season title: Observer", title: "Observer" },
+  { at: 7000, reward: "Season title: Surveyor", title: "Surveyor" },
+  { at: 14000, reward: "Your name on a star in this season's sky", title: "Star-namer" },
+];
+export function seasonProgress(s) {
+  const points = Math.max(0, s.points - (s.seasonBase || 0));
+  const sky = CONSTELLATIONS.every((c) => (s.seasonDone?.[c.id] || 0) > 0);
+  const done = SEASON_TRACK.map((r) => (r.sky ? sky : points >= r.at));
+  const last = done.lastIndexOf(true);
+  return { season: s.season, points, sky, doneCount: CONSTELLATIONS.filter((c) => (s.seasonDone?.[c.id] || 0) > 0).length, done, title: last >= 0 ? SEASON_TRACK[last].title : null };
+}
 export const titleFor = (points) => [...TITLES].reverse().find(([t]) => points >= t)[1];
 
 // Systems open gradually (twelve ideas at once is too many): constellations after the first find, the catalogue and sets after 10 finds.
@@ -149,7 +167,7 @@ export function freshState() {
   return {
     v: 1,
     filled: Object.fromEntries(CONSTELLATIONS.map((c) => [c.id, Array(c.n).fill(null)])),
-    season: 0, skies: {},
+    season: 0, skies: {}, seasonDone: {}, seasonBase: 0,
     mass: 0, points: 0, actions: 0, findsTotal: 0, lastActionAt: 0,
     daily: { day: "", done: [] },
     pending: [], found: {}, sets: {}, claimed: {},
@@ -181,6 +199,7 @@ function fill(s, id, color, rnd) {
   const empty = f.map((x, i) => (x ? -1 : i)).filter((i) => i >= 0);
   if (!empty.length) return false;
   f[empty[Math.floor(rnd() * empty.length)]] = color;
+  if (empty.length === 1) s.seasonDone = { ...(s.seasonDone || {}), [id]: ((s.seasonDone || {})[id] || 0) + 1 }; // finished this season
   return true;
 }
 // one star: mostly the action's own colour, sometimes another, rarely gold (a wildcard that also lights The Singularity)

@@ -4,10 +4,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import ShareDialog from "../../ShareDialog";
 import { seeFinds, pickPlayer, claim } from "./actions";
-import { drawObject, sharpen, findCard, receiptCard, seasonCard, toBlob } from "./skyArt";
+import { drawObject, sharpen, findCard, receiptCard, seasonCard, toBlob, setCardBadge } from "./skyArt";
 import {
   ACTIONS, COLORS, skyFor, FAMILIES, COLOURS, VERSIONS, TIER_NAME, POWERUPS, LADDER, CATALOGUE_SIZE, SET_COUNT, UNLOCK, EVENT_TEXT,
-  famsIn, findOf, setProgress, titleFor,
+  famsIn, findOf, setProgress, titleFor, seasonProgress, SEASON_TRACK,
 } from "@/lib/nightSky";
 
 // The Night Sky page (server side: page.js; rules: lib/nightSky.js). Everything here only SHOWS the sky: stars, finds and points are decided on
@@ -125,6 +125,8 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
   useEffect(() => { const t = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(t); }, []);
 
   const title = titleFor(state.points);
+  const sp = seasonProgress(state), sky = skyFor(state.season);
+  const badge = sp.title && state.season ? `${state.season} · ${sp.title.toUpperCase()}` : null;
   const wk = weekKey ? state.picks[weekKey] : null;
   const lastGraded = Object.entries(state.picks).filter(([, w]) => w.graded && w.made).sort((a, b) => (b[1].season - a[1].season) || (b[1].week - a[1].week))[0]?.[1] || null;
   const pendingPicks = wk && !wk.graded ? wk.choice.filter((c) => c != null) : [];
@@ -144,6 +146,7 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
   }, [state.pending]);
 
   const prepare = useCallback(async ({ onPreview }) => {
+    setCardBadge(badge);
     const blob = await toBlob(share.make());
     const url = URL.createObjectURL(blob);
     onPreview(url);
@@ -156,7 +159,7 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
     const body = await res.json().catch(() => ({}));
     if (!res.ok || !body.url) throw new Error(body.error || "Couldn't create the share link.");
     return { url: body.url, getFile: async () => new File([blob], "night-sky.png", { type: "image/png" }) };
-  }, [share]);
+  }, [share, badge]);
 
   const shareFind = (f, compliment) => setShare({
     title: `${title} discovered: ${f.name}`,
@@ -195,6 +198,26 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
         </section>
 
         <div className="sky-col">
+          <section className="sky-panel" aria-labelledby="sky-season">
+            <div className="board-panel-title" id="sky-season">This season{state.season ? ` · ${state.season}` : ""}</div>
+            <div className="sky-season-head">
+              <div><div className="sky-rank">{sp.title || "Uncharted"}</div><div className="mono sky-small">{sp.points.toLocaleString()} orbit points this season</div></div>
+              <ul className="sky-season-sky">
+                {sky.map((c) => <li key={c.id} className={(state.seasonDone?.[c.id] || 0) > 0 ? "is-done" : ""}><i style={{ background: COLORS[c.color] }} />{c.real}</li>)}
+              </ul>
+            </div>
+            <ul className="sky-ladder is-season">
+              {SEASON_TRACK.map((r, i) => (
+                <li key={i} className={sp.done[i] ? "is-got" : sp.done.indexOf(false) === i ? "is-next" : ""}>
+                  <span className="mono">{r.sky ? `${sp.doneCount}/4` : r.at.toLocaleString()}</span>
+                  <span>{r.sky ? `Finish all four of this season's constellations. ${r.reward}` : r.reward}</span>
+                  <span className="mono sky-small">{sp.done[i] ? "Earned" : ""}</span>
+                </li>
+              ))}
+            </ul>
+            <p className="sky-small mono">Starts over every season, with a new set of constellations. Your season title shows on everything you share.</p>
+          </section>
+
           <section className="sky-panel" aria-labelledby="sky-earn">
             <div className="board-panel-title" id="sky-earn">Earn stars today</div>
             <ul className="sky-acts">

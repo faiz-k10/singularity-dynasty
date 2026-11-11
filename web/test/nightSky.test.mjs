@@ -125,9 +125,25 @@ test("a new NFL season starts an empty sky and keeps the old one", () => {
   s.filled.huddle[0] = "blue";
   assert.equal(rollSeason(s, 2026), false);
   assert.equal(rollSeason(s, 2027), true);
-  assert.equal(s.skies[2026].huddle[0], "blue");
+  assert.equal(s.skies[2026].filled.huddle[0], "blue");
   assert.ok(s.filled.huddle.every((x) => x === null));
   const old = normalize({ filled: { huddle: ["blue", null, null, null] } }); // a member from before seasons: keeps their stars this season
   rollSeason(old, 2026);
   assert.equal(old.filled.huddle[0], "blue");
+});
+
+import { seasonProgress } from "../lib/nightSky.js";
+test("the season track counts finished constellations and this season's points, and starts over", () => {
+  const s = freshState();
+  rollSeason(s, 2026);
+  for (const id of ["huddle", "blitz", "playbook", "singularity"]) s.seasonDone[id] = 1;
+  s.points = 3200;
+  const p = seasonProgress(s);
+  assert.equal(p.sky, true);
+  assert.deepEqual(p.done, [true, true, true, false, false]);
+  assert.equal(p.title, "Observer");
+  rollSeason(s, 2027);
+  assert.equal(s.skies[2026].title, "Observer");
+  assert.equal(seasonProgress(s).points, 0);
+  assert.equal(seasonProgress(s).title, null);
 });

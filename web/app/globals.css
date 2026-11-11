@@ -7120,6 +7120,13 @@ body:has(.ehp) .ehp-inside,body:has(.ehp) .ehp-dark{--ehp-hole:#0B0B0B;--ehp-hol
 .sky-ladder li.is-next{color:var(--star)}
 .sky-ladder li.is-next span:first-child{color:var(--ember)}
 .sky-ladder span:first-child{font-size:12px}
+.sky-season-head{display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap}
+.sky-season-sky{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px}
+.sky-season-sky li{display:flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:11.5px;color:var(--star-dim);border:1px solid var(--line);padding:4px 8px}
+.sky-season-sky li i{width:8px;height:8px;border-radius:50%;opacity:.35}
+.sky-season-sky li.is-done{color:var(--star);border-color:var(--star-dim)}
+.sky-season-sky li.is-done i{opacity:1}
+.sky-ladder.is-season li{grid-template-columns:56px 1fr auto}
 .sky-claim{font-size:11.5px;padding:5px 12px;border:1px solid var(--star);background:transparent;color:var(--star);cursor:pointer;border-radius:var(--r-sm)}
 .sky-claim:hover{background:var(--star);color:var(--void)}
 .sky-sets{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px}
