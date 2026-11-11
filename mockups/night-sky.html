@@ -1,0 +1,455 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Night Sky — mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&family=Martian+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void:#0B0B0B; --panel:#131210; --panel2:#1A1915; --line:#27251F;
+    --star:#ECE7DC; --dim:#A39E92; --ember:#E8643F; --cobalt:#4C7DF0; --gold:#E9C46A;
+    --display:"Big Shoulders Display", Impact, sans-serif; --mono:"Martian Mono", ui-monospace, monospace; --serif:Georgia, "Times New Roman", serif;
+  }
+  *{box-sizing:border-box}
+  html{font-stretch:82%}
+  body{margin:0;background:var(--void);color:var(--star);font-family:var(--serif);}
+  .wrap{max-width:1240px;margin:0 auto;padding:28px 16px 60px}
+  .eyebrow{font:400 10.5px var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--dim);display:flex;align-items:center;gap:10px}
+  .eyebrow::before{content:"";width:6px;height:6px;background:var(--ember)}
+  h1{font:800 44px/1 var(--display);text-transform:uppercase;letter-spacing:.04em;margin:10px 0 6px}
+  .lede{color:var(--dim);max-width:720px;margin:0 0 22px;font-size:16px;line-height:1.5}
+  .grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:12px}
+  @media (max-width:900px){.grid{grid-template-columns:1fr}}
+  .panel{background:var(--panel);border:1px solid var(--line);padding:16px;position:relative}
+  .ptitle{font:700 17px var(--display);letter-spacing:.12em;text-transform:uppercase;display:flex;align-items:center;gap:10px;margin:0 0 12px}
+  .ptitle::after{content:"";flex:1;height:1px;background:var(--line)}
+  .ptitle i{width:6px;height:6px;background:var(--ember);display:inline-block;order:3}
+  .col{display:flex;flex-direction:column;gap:12px}
+
+  /* sky */
+  .sky{width:100%;aspect-ratio:1/1;display:block;background:radial-gradient(circle at 50% 50%, #12110E 0%, #0B0B0B 70%)}
+  .slot{fill:none;stroke:rgba(236,231,220,.22);stroke-width:1;stroke-dasharray:2 3}
+  .star{transition:r .35s ease}
+  .cline{stroke-width:1.2;opacity:.55}
+  .clabel{font:400 9px var(--mono);letter-spacing:.14em;text-transform:uppercase;fill:var(--dim)}
+  .clabel.done{fill:var(--star)}
+  .clabel.near{fill:var(--gold)}
+  .core{transform-box:fill-box;transform-origin:center}
+  .core.strain{animation:strain .9s ease}
+  @keyframes strain{0%,100%{transform:scale(1)}20%{transform:scale(1.09)}40%{transform:scale(.97)}60%{transform:scale(1.07)}80%{transform:scale(.99)}}
+  .core.collapse{animation:collapse 1s ease forwards}
+  @keyframes collapse{0%{transform:scale(1)}55%{transform:scale(.35)}100%{transform:scale(1)}}
+  .ring{fill:none;stroke:var(--ember);stroke-width:1.5}
+  .flash{animation:flash .8s ease}
+  @keyframes flash{0%{opacity:0}30%{opacity:.9}100%{opacity:0}}
+  .meteor{stroke:var(--star);stroke-width:1.4;stroke-linecap:round;opacity:0}
+  .shower .meteor{animation:fall 1.6s linear infinite}
+  @keyframes fall{0%{opacity:0;transform:translate(0,0)}10%{opacity:.9}100%{opacity:0;transform:translate(160px,160px)}}
+
+  .toast{position:absolute;left:16px;right:16px;bottom:16px;font:400 12px var(--mono);letter-spacing:.06em;color:var(--star);background:rgba(11,11,11,.88);border:1px solid var(--line);padding:10px 12px;opacity:0;transition:opacity .3s;pointer-events:none}
+  .toast.on{opacity:1}
+  .toast.gold{border-color:var(--gold);color:var(--gold)}
+
+  /* actions */
+  .acts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .act{font:400 12px var(--mono);letter-spacing:.04em;text-align:left;background:var(--panel2);color:var(--star);border:1px solid var(--line);padding:12px;cursor:pointer;display:flex;flex-direction:column;gap:6px}
+  .act:hover{border-color:var(--star)}
+  .act small{color:var(--dim);font-size:10px;letter-spacing:.12em;text-transform:uppercase;display:flex;align-items:center;gap:6px}
+  .act small b{width:8px;height:8px;border-radius:50%;display:inline-block}
+  .act:disabled{opacity:.4;cursor:default}
+  .note{font:400 11px/1.6 var(--mono);color:var(--dim);margin:10px 0 0}
+  .shower-tag{display:none;font:400 11px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-top:8px}
+  .shower-on .shower-tag{display:block}
+
+  /* orbit */
+  .orbit{display:grid;grid-template-columns:120px 1fr;gap:14px;align-items:center}
+  .ladder{list-style:none;margin:0;padding:0;font:400 11px/1.4 var(--mono)}
+  .ladder li{display:grid;grid-template-columns:52px 1fr;gap:8px;padding:5px 0;border-bottom:1px solid var(--line);color:var(--dim)}
+  .ladder li.got{color:var(--star)}
+  .ladder li.next{color:var(--gold)}
+  .rank{font:800 26px var(--display);letter-spacing:.06em;text-transform:uppercase}
+  .pts{font:400 11px var(--mono);color:var(--dim);letter-spacing:.1em}
+
+  .odds{width:100%;border-collapse:collapse;font:400 11px var(--mono)}
+  .odds td{padding:6px 0;border-bottom:1px solid var(--line)}
+  .odds td:last-child{text-align:right;color:var(--dim)}
+  .fair{font:400 13px/1.55 var(--serif);color:var(--star);margin:0;padding-left:18px}
+  .fair li{margin:0 0 6px}
+  .log{font:400 11px/1.6 var(--mono);color:var(--dim);max-height:140px;overflow:auto;margin:0;padding:0;list-style:none}
+  .log li{border-bottom:1px solid var(--line);padding:4px 0}
+
+  /* telescope */
+  .scope{position:fixed;inset:0;background:rgba(5,5,5,.86);display:none;align-items:center;justify-content:center;z-index:9;padding:16px}
+  .scope.on{display:flex}
+  .scope-box{width:min(560px,100%);background:var(--panel);border:1px solid var(--line);padding:18px}
+  .lens{width:100%;aspect-ratio:1/1;border-radius:50%;overflow:hidden;border:1px solid var(--line);background:#000;position:relative}
+  .lens canvas{width:100%;height:100%;display:block;image-rendering:pixelated}
+  .lens::after{content:"";position:absolute;inset:0;border-radius:50%;box-shadow:inset 0 0 60px 20px rgba(0,0,0,.9);pointer-events:none}
+  .find{font:800 34px var(--display);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 2px;min-height:40px}
+  .find-sub{font:400 12px/1.6 var(--mono);color:var(--dim);min-height:38px}
+  .miss{font:400 12px/1.5 var(--mono);color:var(--gold);min-height:18px;margin-top:6px}
+  .close{margin-top:14px;font:400 12px var(--mono);letter-spacing:.12em;text-transform:uppercase;background:none;color:var(--star);border:1px solid var(--star);padding:10px 16px;cursor:pointer}
+  .reset{font:400 10px var(--mono);letter-spacing:.14em;text-transform:uppercase;background:none;color:var(--dim);border:1px solid var(--line);padding:6px 10px;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">Mockup · The Night Sky</div>
+  <h1>Your sky this week</h1>
+  <p class="lede">Every useful thing you do on the site places a star. Finish a constellation to power up your next find. Feed the core, and at some point it collapses: point the telescope and see what you discovered.</p>
+
+  <div class="grid">
+    <div class="panel" id="skyPanel">
+      <div class="ptitle">The sky <i></i></div>
+      <svg class="sky" id="sky" viewBox="-300 -300 600 600" aria-label="Your sky"></svg>
+      <div class="toast" id="toast"></div>
+    </div>
+
+    <div class="col">
+      <div class="panel" id="actPanel">
+        <div class="ptitle">Do something useful <i></i></div>
+        <div class="acts" id="acts"></div>
+        <div class="shower-tag" id="showerTag">Meteor shower · every action places two stars · <span id="showerClock">60</span>s</div>
+        <p class="note">In the real site these are the actions themselves (fixing a lineup alert, checking a matchup ...), not buttons. Each one counts once a day.</p>
+      </div>
+
+      <div class="panel">
+        <div class="ptitle">Your orbit <i></i></div>
+        <div class="orbit">
+          <svg viewBox="-60 -60 120 120" width="120" height="120" aria-label="Orbit progress">
+            <circle r="48" fill="none" stroke="#27251F" stroke-width="6"/>
+            <circle id="orbitArc" r="48" fill="none" stroke="#E8643F" stroke-width="6" stroke-linecap="butt" transform="rotate(-90)" stroke-dasharray="0 999"/>
+            <circle r="18" fill="#ECE7DC"/>
+          </svg>
+          <div>
+            <div class="rank" id="rank">Moon</div>
+            <div class="pts" id="pts">0 orbit points</div>
+          </div>
+        </div>
+        <ul class="ladder" id="ladder"></ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid" style="margin-top:12px">
+    <div class="panel">
+      <div class="ptitle">What you can find <i></i></div>
+      <table class="odds">
+        <tr><td>Asteroid · small find</td><td>40%</td></tr>
+        <tr><td>Comet · needs a finished small constellation</td><td>30%</td></tr>
+        <tr><td>Ringed planet · needs a finished large constellation</td><td>20%</td></tr>
+        <tr><td>Meteor shower · 60s of double stars</td><td>8%</td></tr>
+        <tr><td>Supernova</td><td>2%</td></tr>
+      </table>
+      <p class="note">If the telescope lands on a find your constellations haven't powered, you get the biggest one they have, and you see the bigger one at the edge of the frame. Finish the gold Singularity constellation and your next find is a supernova.</p>
+    </div>
+    <div class="panel">
+      <div class="ptitle">Why this is not gambling <i></i></div>
+      <ul class="fair">
+        <li><b>Nothing goes in.</b> No money, credits or anything of value is bought, staked or wagered. Stars only come from using the site.</li>
+        <li><b>Nothing can be bought.</b> No stars, collapses or finds are for sale, at any plan.</li>
+        <li><b>Every collapse pays.</b> There is no losing outcome.</li>
+        <li><b>Prizes are site perks</b> (cosmetics, early access, short unlocks). Anything with cash value, like a free month, only comes from the orbit milestones, which are earned by effort, not chance.</li>
+        <li><b>Odds are published</b> and the find is drawn fairly before the telescope shows it.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-top:12px">
+    <div class="ptitle">Log <i></i></div>
+    <ul class="log" id="log"></ul>
+    <p style="margin:10px 0 0"><button class="reset" id="reset">Reset the sky</button></p>
+  </div>
+</div>
+
+<div class="scope" id="scope" role="dialog" aria-modal="true" aria-label="Telescope">
+  <div class="scope-box">
+    <div class="ptitle">The telescope <i></i></div>
+    <div class="lens"><canvas id="lens" width="320" height="320"></canvas></div>
+    <div class="find" id="find"></div>
+    <div class="find-sub" id="findSub"></div>
+    <div class="miss" id="miss"></div>
+    <button class="close" id="closeScope">Back to the sky</button>
+  </div>
+</div>
+
+<script>
+const COLORS = { blue: "#4C7DF0", ember: "#E8643F", white: "#ECE7DC", gold: "#E9C46A" };
+// constellations: colour, size class (small lights comets, large lights ringed planets), star positions
+const CONST = [
+  { id: "huddle", name: "The Huddle", color: "blue", size: "small", pts: [[-210,-180],[-160,-215],[-120,-165],[-170,-130]] },
+  { id: "blitz", name: "The Blitz", color: "ember", size: "small", pts: [[150,-215],[205,-190],[220,-135],[165,-150]] },
+  { id: "playbook", name: "The Playbook", color: "white", size: "large", pts: [[-230,120],[-185,85],[-135,110],[-120,165],[-175,205],[-225,185]] },
+  { id: "singularity", name: "The Singularity", color: "gold", size: "gold", pts: [[120,120],[160,95],[205,110],[225,155],[200,200],[155,215],[120,180]] },
+];
+const ACTS = [
+  { label: "Fix a lineup alert", tool: "Game Board", color: "blue" },
+  { label: "Check a matchup", tool: "Game Board", color: "blue" },
+  { label: "Open the weekly rankings", tool: "Rankings", color: "ember" },
+  { label: "Check the waiver wire", tool: "Rankings", color: "ember" },
+  { label: "Study a player in The Observatory", tool: "Research", color: "white" },
+  { label: "Make a Beat the Model pick", tool: "Predictions", color: "gold" },
+];
+const LADDER = [
+  [100, "Profile badge + a share-card style"], [300, "Coloured logo theme"], [600, "A week of the next plan up"],
+  [1000, "Discord role + founders' wall"], [2500, "A free month"], [5000, "Lifetime price lock"], [10000, "A free year + a 1-on-1 league review"],
+];
+const RANKS = [[0, "Moon"], [300, "Comet"], [1000, "Pulsar"], [2500, "Quasar"], [5000, "Event Horizon"]];
+const FINDS = {
+  1: { name: "Asteroid", pts: 10, sub: "+10 orbit points · a small find: “Rico Dowdle is a Smash Spot sitting on your bench in 2 leagues.”" },
+  2: { name: "Comet", pts: 30, sub: "+30 orbit points · this Tuesday's projections an hour before everyone else." },
+  3: { name: "Ringed planet", pts: 80, sub: "+80 orbit points · 24 hours of every Singularity tool (free members) or a new share-card style." },
+  5: { name: "Supernova", pts: 250, sub: "+250 orbit points · a supernova badge on your profile, and a double-star day." },
+};
+
+let state;
+function fresh() { return { filled: Object.fromEntries(CONST.map((c) => [c.id, c.pts.map(() => null)])), mass: 0, points: 0, shower: 0, log: [] }; }
+function load() { try { state = JSON.parse(localStorage.getItem("nightSky")) || fresh(); } catch { state = fresh(); } }
+function save() { try { localStorage.setItem("nightSky", JSON.stringify(state)); } catch {} }
+load();
+
+const svg = document.getElementById("sky");
+const NS = "http://www.w3.org/2000/svg";
+const el = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); (parent || svg).appendChild(e); return e; };
+
+// faint background stars (fixed seed so they never move)
+let seed = 7; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+const bg = el("g", {});
+for (let i = 0; i < 140; i++) el("circle", { cx: (rnd() * 600 - 300).toFixed(1), cy: (rnd() * 600 - 300).toFixed(1), r: (0.4 + rnd() * 0.9).toFixed(2), fill: "#ECE7DC", "fill-opacity": (0.15 + rnd() * 0.35).toFixed(2) }, bg);
+const meteors = el("g", { id: "meteors" });
+for (let i = 0; i < 6; i++) el("line", { class: "meteor", x1: -260 + i * 70, y1: -280 + (i % 3) * 30, x2: -240 + i * 70, y2: -260 + (i % 3) * 30, style: `animation-delay:${i * 0.27}s` }, meteors);
+const consG = el("g", {});
+const core = el("g", { class: "core" });
+el("circle", { r: 62, fill: "#E8643F", "fill-opacity": ".08" }, core);
+const coreRing = el("circle", { class: "ring", r: 54 }, core);
+const coreDisc = el("circle", { r: 44, fill: "#ECE7DC" }, core);
+const flash = el("circle", { r: 120, fill: "#E9C46A", opacity: 0 });
+
+function drawSky() {
+  consG.innerHTML = "";
+  for (const c of CONST) {
+    const f = state.filled[c.id];
+    const done = f.every(Boolean), have = f.filter(Boolean).length, near = !done && have === f.length - 1;
+    const pts = c.pts;
+    for (let i = 0; i < pts.length; i++) {
+      const j = (i + 1) % pts.length;
+      if (f[i] && f[j]) el("line", { class: "cline", x1: pts[i][0], y1: pts[i][1], x2: pts[j][0], y2: pts[j][1], stroke: COLORS[c.color] }, consG);
+    }
+    pts.forEach(([x, y], i) => {
+      if (f[i]) {
+        el("circle", { cx: x, cy: y, r: 9, fill: COLORS[f[i]], "fill-opacity": ".12" }, consG);
+        el("circle", { class: "star", cx: x, cy: y, r: 3.6, fill: COLORS[f[i]] }, consG);
+      } else el("circle", { class: "slot", cx: x, cy: y, r: 4.5 }, consG);
+    });
+    const cx = pts.reduce((s, p) => s + p[0], 0) / pts.length, cy = Math.max(...pts.map((p) => p[1])) + 26;
+    const t = el("text", { class: `clabel${done ? " done" : near ? " near" : ""}`, x: cx, y: cy, "text-anchor": "middle" }, consG);
+    t.textContent = `${c.name} · ${have}/${pts.length}${done ? " · ready" : near ? " · one star away" : ""}`;
+  }
+  // the core grows a little with its mass
+  const s = 1 + Math.min(state.mass, 12) * 0.018;
+  coreDisc.setAttribute("r", (44 * s).toFixed(1));
+  coreRing.setAttribute("r", (54 * s).toFixed(1));
+}
+
+function toast(msg, gold) {
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.className = `toast on${gold ? " gold" : ""}`;
+  clearTimeout(toast.t); toast.t = setTimeout(() => (t.className = "toast"), 2600);
+}
+function log(msg) { state.log.unshift(msg); state.log = state.log.slice(0, 40); renderLog(); }
+function renderLog() { document.getElementById("log").innerHTML = state.log.map((m) => `<li>${m}</li>`).join(""); }
+
+// one star: 80% the action's own colour, 17% another, 3% gold; it goes into a random empty slot of its colour's constellation
+function placeStar(color) {
+  let c = color;
+  const r = Math.random();
+  // a Beat the Model pick: a gold star a quarter of the time, otherwise a star of any colour
+  if (color === "gold") c = r < 0.25 ? "gold" : ["blue", "ember", "white"][Math.floor(Math.random() * 3)];
+  else { if (r < 0.03) c = "gold"; else if (r < 0.2) c = ["blue", "ember", "white"].filter((x) => x !== color)[Math.floor(Math.random() * 2)]; }
+  if (c === "gold") {
+    // a gold star is a wildcard: it fills the most-finished colour constellation, and lights a star of The Singularity
+    const target = CONST.filter((k) => k.size !== "gold").map((k) => ({ k, left: state.filled[k.id].filter((x) => !x).length })).filter((o) => o.left > 0).sort((a, b) => a.left - b.left)[0];
+    if (target) fill(target.k, "gold");
+    const sing = CONST.find((k) => k.id === "singularity");
+    fill(sing, "gold");
+    toast("A gold star. It fills a gap and lights The Singularity.", true);
+    log("Gold star");
+    return;
+  }
+  const k = CONST.find((x) => x.color === c);
+  if (!fill(k, c)) { log(`${c} star (constellation already full)`); return; }
+  log(`${c[0].toUpperCase() + c.slice(1)} star → ${k.name}`);
+}
+function fill(k, color) {
+  const f = state.filled[k.id];
+  const empty = f.map((x, i) => (x ? -1 : i)).filter((i) => i >= 0);
+  if (!empty.length) return false;
+  f[empty[Math.floor(Math.random() * empty.length)]] = color;
+  return true;
+}
+
+function litTier() {
+  if (state.filled.singularity.every(Boolean)) return 5;
+  if (state.filled.playbook.every(Boolean)) return 3;
+  if (state.filled.huddle.every(Boolean) || state.filled.blitz.every(Boolean)) return 2;
+  return 1;
+}
+function spend(tier) {
+  // the constellation that powered the find is used up, like cashing in the paper clips
+  const use = tier === 5 ? "singularity" : tier === 3 ? "playbook" : tier === 2 ? (state.filled.huddle.every(Boolean) ? "huddle" : "blitz") : null;
+  if (use) state.filled[use] = state.filled[use].map(() => null);
+}
+
+let busy = false; // a collapse and its reveal run one at a time
+function act(a) {
+  if (busy) return;
+  const n = state.shower > Date.now() ? 2 : 1;
+  for (let i = 0; i < n; i++) placeStar(a.color);
+  state.mass += n;
+  // the core: a small chance to collapse on every action, growing with the mass fed since the last collapse
+  const p = Math.min(0.6, 0.05 + 0.035 * state.mass);
+  const r = Math.random();
+  drawSky();
+  if (r < p) { busy = true; setTimeout(collapse, 500); }
+  else if (r < p + 0.14) { core.classList.remove("strain"); void core.getBBox(); core.classList.add("strain"); toast("The core strained … and held."); log("The core almost collapsed"); }
+  save();
+}
+
+function collapse() {
+  core.classList.remove("collapse"); void core.getBBox(); core.classList.add("collapse");
+  flash.classList.remove("flash"); void flash.getBBox(); flash.classList.add("flash");
+  log("The core collapsed");
+  setTimeout(reveal, 900);
+}
+
+function roll() {
+  const r = Math.random();
+  return r < 0.4 ? 1 : r < 0.7 ? 2 : r < 0.9 ? 3 : r < 0.98 ? 4 : 5;
+}
+
+function reveal() {
+  const lit = litTier();
+  let drawn = lit === 5 ? 5 : roll(); // a finished Singularity guarantees the supernova
+  let got = drawn, miss = "";
+  if (drawn === 4) {
+    got = Math.min(lit, 3);
+    state.shower = Date.now() + 60000;
+    startShower();
+  } else if ((drawn === 2 || drawn === 3) && drawn > lit) {
+    got = lit;
+    miss = `A ${FINDS[drawn].name.toLowerCase()} was right at the edge of the frame. Finish ${drawn === 3 ? "The Playbook" : "a small constellation"} to bring it into view.`;
+  }
+  spend(got === 5 ? 5 : got);
+  const f = FINDS[got];
+  state.points += f.pts;
+  state.mass = 0;
+  save();
+  const scope = document.getElementById("scope");
+  document.getElementById("find").textContent = "";
+  document.getElementById("findSub").textContent = "Resolving …";
+  document.getElementById("miss").textContent = "";
+  scope.classList.add("on");
+  sharpen(got, miss ? drawn : null, () => {
+    document.getElementById("find").textContent = drawn === 4 ? `${f.name} + meteor shower` : f.name;
+    document.getElementById("findSub").textContent = f.sub + (drawn === 4 ? " And for the next 60 seconds every action places two stars." : "");
+    document.getElementById("miss").textContent = miss;
+    log(`Found: ${f.name}${drawn === 4 ? " + meteor shower" : ""}${miss ? " (a bigger find was just out of frame)" : ""}`);
+    drawSky(); renderOrbit();
+  });
+}
+
+// the telescope: the object is drawn once, then shown through ever finer pixels and fading noise
+function drawObject(ctx, tier, edge) {
+  const W = 320;
+  ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, W);
+  let s = 11; const r = () => ((s = (s * 16807) % 2147483647) / 2147483647);
+  for (let i = 0; i < 120; i++) { ctx.fillStyle = `rgba(236,231,220,${0.15 + r() * 0.5})`; ctx.fillRect(r() * W, r() * W, 1.2, 1.2); }
+  const C = W / 2;
+  if (edge) { // the bigger find, glowing just out of frame
+    const g = ctx.createRadialGradient(W - 8, 24, 2, W - 8, 24, 90);
+    g.addColorStop(0, edge === 3 ? "rgba(233,196,106,.9)" : "rgba(76,125,240,.85)"); g.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, W);
+  }
+  if (tier === 1) {
+    ctx.fillStyle = "#8E897E"; ctx.beginPath();
+    for (let i = 0; i < 12; i++) { const a = (i / 12) * Math.PI * 2, rr = 34 + Math.sin(i * 2.3) * 9; ctx.lineTo(C + Math.cos(a) * rr, C + Math.sin(a) * rr); }
+    ctx.closePath(); ctx.fill(); ctx.fillStyle = "#5C5850"; ctx.beginPath(); ctx.arc(C - 8, C - 6, 7, 0, 7); ctx.fill(); ctx.beginPath(); ctx.arc(C + 12, C + 10, 5, 0, 7); ctx.fill();
+  } else if (tier === 2) {
+    const g = ctx.createLinearGradient(C + 20, C - 20, C - 120, C + 120); g.addColorStop(0, "rgba(76,125,240,.9)"); g.addColorStop(1, "rgba(76,125,240,0)");
+    ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(C + 18, C - 10); ctx.lineTo(C - 140, C + 110); ctx.lineTo(C - 100, C + 140); ctx.lineTo(C + 10, C + 18); ctx.fill();
+    ctx.fillStyle = "#ECE7DC"; ctx.beginPath(); ctx.arc(C + 14, C - 4, 14, 0, 7); ctx.fill();
+  } else if (tier === 3) {
+    ctx.strokeStyle = "rgba(233,196,106,.8)"; ctx.lineWidth = 6; ctx.beginPath(); ctx.ellipse(C, C, 110, 30, -0.35, 0, Math.PI * 2); ctx.stroke();
+    const g = ctx.createRadialGradient(C - 18, C - 18, 6, C, C, 62); g.addColorStop(0, "#E8643F"); g.addColorStop(1, "#5a2414");
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(C, C, 58, 0, 7); ctx.fill();
+    ctx.strokeStyle = "rgba(233,196,106,.9)"; ctx.beginPath(); ctx.ellipse(C, C, 110, 30, -0.35, Math.PI * 0.95, Math.PI * 2.05); ctx.stroke();
+  } else {
+    const g = ctx.createRadialGradient(C, C, 2, C, C, 150); g.addColorStop(0, "#FFFFFF"); g.addColorStop(0.18, "#E9C46A"); g.addColorStop(0.45, "rgba(232,100,63,.55)"); g.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, W);
+    ctx.strokeStyle = "rgba(255,255,255,.6)"; ctx.lineWidth = 2;
+    for (let i = 0; i < 16; i++) { const a = (i / 16) * Math.PI * 2; ctx.beginPath(); ctx.moveTo(C + Math.cos(a) * 30, C + Math.sin(a) * 30); ctx.lineTo(C + Math.cos(a) * (90 + (i % 3) * 30), C + Math.sin(a) * (90 + (i % 3) * 30)); ctx.stroke(); }
+  }
+}
+function sharpen(tier, edge, done) {
+  const off = document.createElement("canvas"); off.width = off.height = 320;
+  drawObject(off.getContext("2d"), tier === 5 ? 5 : tier, edge);
+  const cv = document.getElementById("lens"), ctx = cv.getContext("2d"), small = document.createElement("canvas"), sctx = small.getContext("2d");
+  const steps = [4, 6, 9, 13, 18, 26, 38, 56, 80, 120, 180, 320];
+  let i = 0;
+  const tick = () => {
+    const n = steps[i];
+    small.width = small.height = n;
+    sctx.imageSmoothingEnabled = true; sctx.drawImage(off, 0, 0, n, n);
+    ctx.imageSmoothingEnabled = false; ctx.clearRect(0, 0, 320, 320); ctx.drawImage(small, 0, 0, 320, 320);
+    const noise = 1 - i / (steps.length - 1);
+    if (noise > 0) { for (let k = 0; k < 900 * noise; k++) { ctx.fillStyle = `rgba(236,231,220,${Math.random() * 0.35 * noise})`; ctx.fillRect(Math.random() * 320, Math.random() * 320, 2, 2); } }
+    i++;
+    if (i < steps.length) setTimeout(tick, i < 6 ? 260 : 170); else done();
+  };
+  tick();
+}
+
+function startShower() {
+  const tag = document.getElementById("actPanel");
+  svg.classList.add("shower"); tag.classList.add("shower-on");
+  clearInterval(startShower.t);
+  startShower.t = setInterval(() => {
+    const left = Math.max(0, Math.ceil((state.shower - Date.now()) / 1000));
+    document.getElementById("showerClock").textContent = left;
+    if (!left) { clearInterval(startShower.t); svg.classList.remove("shower"); tag.classList.remove("shower-on"); }
+  }, 250);
+}
+
+function renderOrbit() {
+  const p = state.points;
+  const rank = [...RANKS].reverse().find(([t]) => p >= t)[1];
+  document.getElementById("rank").textContent = rank;
+  document.getElementById("pts").textContent = `${p.toLocaleString()} orbit points`;
+  const next = LADDER.find(([t]) => p < t);
+  const prev = [...LADDER].reverse().find(([t]) => p >= t)?.[0] || 0;
+  const frac = next ? (p - prev) / (next[0] - prev) : 1;
+  const C = 2 * Math.PI * 48;
+  document.getElementById("orbitArc").setAttribute("stroke-dasharray", `${(C * frac).toFixed(1)} ${C}`);
+  document.getElementById("ladder").innerHTML = LADDER.map(([t, r]) => `<li class="${p >= t ? "got" : next && next[0] === t ? "next" : ""}"><span>${t.toLocaleString()}</span><span>${r}</span></li>`).join("");
+}
+
+const acts = document.getElementById("acts");
+for (const a of ACTS) {
+  const b = document.createElement("button");
+  b.className = "act"; b.type = "button";
+  b.innerHTML = `${a.label}<small><b style="background:${COLORS[a.color]}"></b>${a.tool}</small>`;
+  b.onclick = () => act(a);
+  acts.appendChild(b);
+}
+const closeScope = () => { document.getElementById("scope").classList.remove("on"); busy = false; };
+document.getElementById("closeScope").onclick = closeScope;
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeScope(); });
+document.getElementById("reset").onclick = () => { state = fresh(); save(); drawSky(); renderOrbit(); renderLog(); };
+
+drawSky(); renderOrbit(); renderLog();
+if (state.shower > Date.now()) startShower();
+</script>
+</body>
+</html>
