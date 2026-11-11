@@ -1,6 +1,7 @@
 "use client";
 
 import { FAMILIES, COLOURS, skyFor, COLORS as STAR } from "@/lib/nightSky";
+import { seasonGhost } from "./skins";
 
 // The Night Sky's pictures (from mockups/night-sky.html, which the founder approved): one renderer per kind of object, coloured by the find's
 // colour and finished by its version, drawn on a canvas; the telescope reveal (the picture sharpens out of noise); and the share cards.
@@ -72,6 +73,8 @@ let badgeText = null; // this season's badge ("2026 · SURVEYOR"), set by the pa
 export const setCardBadge = (t) => { badgeText = t || null; };
 let cardSkin = { sky: "deep", core: "classic" }; // the member's equipped skins, set by the page before drawing a card
 export const setCardSkin = (k) => { cardSkin = { sky: "deep", core: "classic", ...(k || {}) }; };
+let cardFrame = null; // "silver" | "gold": the season frame the member has earned
+export const setCardFrame = (f) => { cardFrame = f || null; };
 
 // The canvas versions of the skins in ./skins.js (same colours), for share cards.
 function grad(ctx, x, y, r, color, a) { const g = ctx.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, `rgba(${color},${a})`); g.addColorStop(1, `rgba(${color},0)`); return g; }
@@ -94,6 +97,12 @@ function drawBackdrop(ctx) {
     ctx.fillStyle = g; ctx.fillRect(-900, -160, 1800, 320);
     let s = 11; const r = () => ((s = (s * 16807) % 2147483647) / 2147483647);
     for (let i = 0; i < 520; i++) { ctx.fillStyle = `rgba(236,231,220,${0.2 + r() * 0.5})`; ctx.fillRect(r() * 1800 - 900, (r() + r() + r() - 1.5) * 120, 2, 2); }
+  } else if (String(k).startsWith("season-")) {
+    const g = seasonGhost(k); ctx.translate(780, 315);
+    ctx.fillStyle = grad(ctx, 0, 0, 520, "233,196,106", 0.14); ctx.fillRect(-780, -315, 1200, 630);
+    ctx.strokeStyle = "rgba(233,196,106,.28)"; ctx.lineWidth = 3;
+    for (const [i, j] of g.edges) { ctx.beginPath(); ctx.moveTo(g.pts[i][0] * 1.05, g.pts[i][1] * 1.05); ctx.lineTo(g.pts[j][0] * 1.05, g.pts[j][1] * 1.05); ctx.stroke(); }
+    ctx.fillStyle = "rgba(233,196,106,.5)"; for (const [x, y, r] of g.pts) { ctx.beginPath(); ctx.arc(x * 1.05, y * 1.05, r, 0, 7); ctx.fill(); }
   } else if (k === "eclipse") {
     const g = ctx.createRadialGradient(600, 315, 250, 600, 315, 760); g.addColorStop(0, "rgba(179,38,30,0)"); g.addColorStop(1, "rgba(179,38,30,.38)");
     ctx.fillStyle = g; ctx.fillRect(0, 0, 1200, 630);
@@ -129,6 +138,7 @@ function base(ctx, eyebrow) {
   drawBackdrop(ctx);
   let s = 3; const r = () => ((s = (s * 16807) % 2147483647) / 2147483647);
   for (let i = 0; i < 260; i++) { ctx.fillStyle = `rgba(236,231,220,${0.1 + r() * 0.4})`; ctx.fillRect(r() * 1200, r() * 630, 2, 2); }
+  if (cardFrame) { ctx.strokeStyle = cardFrame === "gold" ? "#E9C46A" : "#C9CED6"; ctx.lineWidth = 10; ctx.strokeRect(5, 5, 1190, 620); ctx.lineWidth = 1.5; ctx.strokeRect(20, 20, 1160, 590); }
   ctx.fillStyle = "#E8643F"; ctx.fillRect(0, 0, 1200, 6); ctx.fillRect(64, 70, 10, 10);
   ctx.fillStyle = "#A39E92"; ctx.font = `400 20px ${font("--font-mono")}`; ctx.fillText(eyebrow.toUpperCase(), 88, 81);
   ctx.textAlign = "right"; ctx.font = `400 18px ${font("--font-mono")}`; ctx.fillText("THE DYNASTY SINGULARITY · THE NIGHT SKY", 1136, 590);

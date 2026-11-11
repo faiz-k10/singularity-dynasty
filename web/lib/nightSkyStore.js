@@ -3,7 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { fetchSleeperState } from "@/lib/sleeper";
 import { nflSeason } from "@/lib/season";
 import { getCachedRedraftData } from "@/app/tools/redraft-rankings/data";
-import { freshState, normalize, award, rollSeason, unlockSkins, equipSkin, pickPairs, gradePicks, eventFor, titleFor, LADDER } from "@/lib/nightSky";
+import { freshState, normalize, award, rollSeason, skySeasonFor, unlockSkins, equipSkin, pickPairs, gradePicks, eventFor, titleFor, LADDER } from "@/lib/nightSky";
 
 // The Night Sky's storage and every roll of the dice (the rules are lib/nightSky.js). One row per member in `night_sky` (migration 0046),
 // read and written only here with the service role. Nothing in this file throws to its caller: the game must never break a page.
@@ -19,7 +19,7 @@ async function context(now = Date.now()) {
   const state = await fetchSleeperState().catch(() => ({}));
   const { day, date } = easternDay(now);
   const week = state.season_type === "regular" ? Number(state.display_week || state.week) || 0 : 0;
-  return { now, day, event: eventFor(date, week), week, season: nflSeason(state) };
+  return { now, day, event: eventFor(date, week), week, season: nflSeason(state), skySeason: skySeasonFor(day) };
 }
 
 async function read(userId) {
@@ -85,7 +85,7 @@ async function gradeFinished(state, ctx) {
 export async function loadSky(userId) {
   try {
     const [state, ctx] = await Promise.all([read(userId), context()]);
-    const rolled = rollSeason(state, ctx.season); // a new NFL season: a new set of constellations
+    const rolled = rollSeason(state, ctx.skySeason); // a new NFL season: a new set of constellations
     const before = JSON.stringify(state.picks);
     await gradeFinished(state, ctx);
     const wk = await weekPairs(ctx);

@@ -1,6 +1,14 @@
 "use client";
 
 import { useId } from "react";
+import { skyFor } from "@/lib/nightSky";
+
+// A season skin's art: that season's Singularity constellation drawn huge and faint across the whole sky (shared with the share cards).
+export function seasonGhost(skin) {
+  const y = Number(String(skin).slice(7)), c = skyFor(y)[3];
+  const cx = c.pts.reduce((a, p) => a + p[0], 0) / c.pts.length, cy = c.pts.reduce((a, p) => a + p[1], 0) / c.pts.length;
+  return { pts: c.pts.map(([x, py, r]) => [(x - cx) * 2.6, (py - cy) * 2.6, r * 2]), edges: c.edges };
+}
 
 // The Night Sky's skins (rules and unlocks: SKINS in lib/nightSky.js). Drawn in the sky's own coordinates (-300..300, the core at 0,0, its
 // body r 44, the gauge r 74-84) so the same pieces serve the sky, the small previews in the Skins panel and nothing else. Cosmetic art, so
@@ -54,6 +62,17 @@ export function SkyBackdrop({ skin }) {
       <circle r="120" fill={`url(#${id}c)`} />
     </g>
   );
+  if (String(skin).startsWith("season-")) {
+    const g = seasonGhost(skin);
+    return (
+      <g aria-hidden="true">
+        <defs><radialGradient id={`${id}s`}><stop offset="0" style={{ stopColor: "var(--sky-gold)" }} stopOpacity=".16" /><stop offset="1" style={{ stopColor: "var(--sky-gold)" }} stopOpacity="0" /></radialGradient></defs>
+        <circle r="300" fill={`url(#${id}s)`} />
+        {g.edges.map(([i, j]) => <line key={`${i}-${j}`} x1={g.pts[i][0]} y1={g.pts[i][1]} x2={g.pts[j][0]} y2={g.pts[j][1]} style={{ stroke: "var(--sky-gold)" }} strokeOpacity=".28" strokeWidth="2.5" />)}
+        {g.pts.map(([x, y, r], i) => <circle key={i} cx={x} cy={y} r={r} style={{ fill: "var(--sky-gold)" }} fillOpacity=".45" />)}
+      </g>
+    );
+  }
   return null; // deep field: the plain sky
 }
 

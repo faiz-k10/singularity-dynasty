@@ -136,16 +136,21 @@ import { seasonProgress } from "../lib/nightSky.js";
 test("the season track counts finished constellations and this season's points, and starts over", () => {
   const s = freshState();
   rollSeason(s, 2026);
-  for (const id of ["huddle", "blitz", "playbook", "singularity"]) s.seasonDone[id] = 1;
-  s.points = 3200;
+  for (const id of ["huddle", "blitz", "playbook"]) s.seasonDone[id] = 1;
+  s.points = 2200;
   const p = seasonProgress(s);
-  assert.equal(p.sky, true);
-  assert.deepEqual(p.done, [true, true, true, false, false]);
+  assert.equal(p.sky, true); // charted needs only the three smaller constellations
+  assert.deepEqual(p.done, [true, true, true, true, false, false, false, false, false]);
   assert.equal(p.title, "Observer");
+  assert.equal(p.frame, "silver");
+  s.seasonDone.singularity = 1;
+  assert.deepEqual(unlockSkins(s).map((k) => k.id).filter((id) => id.startsWith("season")), ["season-2026"]); // the limited season skin
   rollSeason(s, 2027);
   assert.equal(s.skies[2026].title, "Observer");
   assert.equal(seasonProgress(s).points, 0);
   assert.equal(seasonProgress(s).title, null);
+  assert.equal(unlockSkins(s).filter((k) => k.id === "season-2027").length, 0); // next season's must be earned again
+  assert.ok(equipSkin(s, "sky", "season-2026")); // last season's stays wearable
 });
 
 import { unlockSkins, equipSkin, equipped, hasSkin } from "../lib/nightSky.js";

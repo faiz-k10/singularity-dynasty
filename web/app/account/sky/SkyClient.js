@@ -5,9 +5,9 @@ import Link from "next/link";
 import ShareDialog from "../../ShareDialog";
 import { seeFinds, pickPlayer, claim, wearSkin } from "./actions";
 import { SkyBackdrop, CoreSkin, SkinPreview } from "./skins";
-import { drawObject, sharpen, findCard, receiptCard, seasonCard, toBlob, setCardBadge, setCardSkin } from "./skyArt";
+import { drawObject, sharpen, findCard, receiptCard, seasonCard, toBlob, setCardBadge, setCardSkin, setCardFrame } from "./skyArt";
 import {
-  ACTIONS, skyFor, SKINS, hasSkin, equipped, FAMILIES, COLOURS, VERSIONS, TIER_NAME, POWERUPS, LADDER, CATALOGUE_SIZE, SET_COUNT, UNLOCK, EVENT_TEXT,
+  ACTIONS, skyFor, SKINS, hasSkin, equipped, skySkinsFor, FAMILIES, COLOURS, VERSIONS, TIER_NAME, POWERUPS, LADDER, CATALOGUE_SIZE, SET_COUNT, UNLOCK, EVENT_TEXT,
   famsIn, findOf, setProgress, titleFor, seasonProgress, SEASON_TRACK,
 } from "@/lib/nightSky";
 
@@ -185,6 +185,7 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
   const prepare = useCallback(async ({ onPreview }) => {
     setCardBadge(badge);
     setCardSkin(equipped(state)); // the member's skins go out on their cards
+    setCardFrame(seasonProgress(state).frame);
     const blob = await toBlob(share.make());
     const url = URL.createObjectURL(blob);
     onPreview(url);
@@ -308,8 +309,8 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
             <ul className="sky-ladder is-season">
               {SEASON_TRACK.map((r, i) => (
                 <li key={i} className={sp.done[i] ? "is-got" : sp.done.indexOf(false) === i ? "is-next" : ""}>
-                  <span className="mono">{r.sky ? `${sp.doneCount}/4` : r.at.toLocaleString()}</span>
-                  <span>{r.sky ? `Finish all four of this season's constellations. ${r.reward}` : r.reward}</span>
+                  <span className="mono">{r.three ? `${sp.three}/3` : r.singularity ? (sp.singularity ? "1/1" : "0/1") : r.at.toLocaleString()}</span>
+                  <span>{r.singularity ? `Finish The Singularity (${sky[3].real}) this season: the ${state.season || ""} ${sky[3].real} sky skin, never available again` : r.reward}</span>
                   <span className="mono sky-small">{sp.done[i] ? "Earned" : ""}</span>
                 </li>
               ))}
@@ -407,7 +408,7 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
           <div key={kind} className="sky-skins-row">
             <div className="sky-skins-h mono">{kind === "sky" ? "Sky" : "Core"}</div>
             <div className="sky-skins">
-              {SKINS[kind].map((k) => {
+              {(kind === "sky" ? skySkinsFor(state) : SKINS.core).map((k) => {
                 const have = hasSkin(state, kind, k.id), on = equipped(state)[kind] === k.id;
                 return (
                   <button key={k.id} type="button" className={`sky-skin${on ? " is-on" : ""}${have ? "" : " is-locked"}`} disabled={!have || on || busy} onClick={() => run(wearSkin(kind, k.id))} aria-pressed={on}>
