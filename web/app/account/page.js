@@ -145,8 +145,24 @@ export default async function AccountPage({ searchParams }) {
             </p>
           )}
 
-          <section className="acct-section" aria-labelledby="acct-plan">
-            <h2 id="acct-plan" className="acct-h mono">Plan</h2>
+          {sky && (
+            <details className="acct-section">
+              <summary className="acct-h mono" id="acct-sky"><span>The Night Sky</span><span className="acct-hint">{sky.fresh ? "New" : `${sky.title} · ${sky.points.toLocaleString()} pts${sky.waiting ? ` · ${sky.waiting} find${sky.waiting === 1 ? "" : "s"} waiting` : ""}`}</span></summary>
+              <p className="acct-line">
+                {sky.fresh
+                  ? "Every useful thing you do on the site places a star in your Night Sky. Collect rare finds, finish sets and earn plan time."
+                  : `${sky.title} · ${sky.points.toLocaleString()} orbit points${sky.waiting ? ` · ${sky.waiting} find${sky.waiting === 1 ? "" : "s"} waiting for the telescope` : ""}`}
+              </p>
+              <div className="auth-actions">
+                <Link href="/account/sky" className={sky.waiting ? "btn-primary" : "btn-ghost"}>
+                  {sky.waiting ? "Point the telescope" : "Open the Night Sky"}
+                </Link>
+              </div>
+            </details>
+          )}
+
+          <details className="acct-section">
+            <summary className="acct-h mono" id="acct-plan"><span>Plan</span><span className="acct-hint">{TIER_LABELS[tier]}</span></summary>
             <div className="account-tier">
               <div className="account-tier-name">{TIER_LABELS[tier]}</div>
               <p className="acct-line">{TIER_LINES[tier]}</p>
@@ -167,44 +183,28 @@ export default async function AccountPage({ searchParams }) {
               )}
             </div>
             {profile?.stripe_customer_id && <p className="acct-small">Change plan, update your card, download invoices or cancel in Manage Billing. Cancelling keeps your plan until the end of the period you paid for.</p>}
-          </section>
+          </details>
 
           {refCode && (
-            <section className="acct-section" aria-labelledby="acct-refer">
-              <h2 id="acct-refer" className="acct-h mono">Refer a friend</h2>
+            <details className="acct-section">
+              <summary className="acct-h mono" id="acct-refer"><span>Refer a friend</span><span className="acct-hint">{FRIEND_DISCOUNT_PERCENT}% off for friends</span></summary>
               <ReferralCard
                 link={`${origin}/?ref=${refCode}`}
                 discountPct={FRIEND_DISCOUNT_PERCENT}
                 rewardLabel={`a free month of ${tier === "singularity" ? "Singularity" : "Explorer"} ($${rewardFor(tier) / 100})`}
                 summary={refSummary}
               />
-            </section>
+            </details>
           )}
 
-          {sky && (
-            <section className="acct-section" aria-labelledby="acct-sky">
-              <h2 id="acct-sky" className="acct-h mono">Your sky</h2>
-              <p className="acct-line">
-                {sky.fresh
-                  ? "Every useful thing you do on the site places a star in your Night Sky. Collect rare finds, finish sets and earn plan time."
-                  : `${sky.title} · ${sky.points.toLocaleString()} orbit points${sky.waiting ? ` · ${sky.waiting} find${sky.waiting === 1 ? "" : "s"} waiting for the telescope` : ""}`}
-              </p>
-              <div className="auth-actions">
-                <Link href="/account/sky" className={sky.waiting ? "btn-primary" : "btn-ghost"}>
-                  {sky.waiting ? "Point the telescope" : "Open the Night Sky"}
-                </Link>
-              </div>
-            </section>
-          )}
-
-          <section className="acct-section" aria-labelledby="acct-email">
-            <h2 id="acct-email" className="acct-h mono">Email</h2>
+          <details className="acct-section">
+            <summary className="acct-h mono" id="acct-email"><span>Email</span><span className="acct-hint">{profile?.email_digest ? "Weekly email on" : "Weekly email off"}</span></summary>
             <EmailDigestToggle tier={tier} enabled={profile?.email_digest} />
             <p className="acct-small">The weekly email covers the players on your saved leagues: what moved, who&apos;s out, and this week&apos;s outlook. Account emails (sign-in links, receipts) are always sent.</p>
-          </section>
+          </details>
 
-          <section className="acct-section" aria-labelledby="acct-security">
-            <h2 id="acct-security" className="acct-h mono">Sign-in</h2>
+          <details className="acct-section">
+            <summary className="acct-h mono" id="acct-security"><span>Sign-in</span><span className="acct-hint">Password, sign out</span></summary>
             <div className="auth-actions">
               <Link href="/account/password" className="btn-ghost">
                 Change Password
@@ -215,12 +215,10 @@ export default async function AccountPage({ searchParams }) {
                 </button>
               </form>
             </div>
-          </section>
+          </details>
 
-          <section className="acct-section acct-danger" aria-labelledby="acct-delete">
-            <h2 id="acct-delete" className="acct-h mono">Delete account</h2>
-            <details>
-              <summary>Permanently delete this account</summary>
+          <details className="acct-section acct-danger">
+            <summary className="acct-h mono" id="acct-delete"><span>Delete account</span></summary>
               <p className="acct-small">
                 This deletes your login, saved leagues and settings for good. {billing && !billing.error ? "Your subscription is cancelled immediately and you won't be charged again (unused time isn't refunded automatically; within 14 days of a payment, contact us for a refund). " : ""}
                 It can&apos;t be undone.
@@ -232,8 +230,7 @@ export default async function AccountPage({ searchParams }) {
                 <input id="confirm-delete" name="confirm" required pattern="DELETE" autoComplete="off" className="feed-input auth-input" />
                 <button className="btn-ghost acct-delete-btn">Delete My Account</button>
               </form>
-            </details>
-          </section>
+          </details>
         </div>
       </main>
     </div>

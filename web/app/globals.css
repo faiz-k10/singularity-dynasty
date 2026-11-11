@@ -6178,6 +6178,16 @@ select.lab-select{min-width:200px;}
 .acct-section{padding:22px 0; border-top:1px solid var(--rule);}
 .acct-section:first-of-type{border-top:0; padding-top:4px;}
 .acct-h{font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--star-dim); margin-bottom:12px; font-weight:400;}
+/* Account sections are collapsed (Nov 11 2026, founder): the summary row is the heading, a hint on the right, a chevron that turns open. */
+details.acct-section > summary.acct-h{display:flex; align-items:center; gap:12px; margin:0; cursor:pointer; list-style:none; color:var(--star); font-size:12px;}
+details.acct-section > summary.acct-h::-webkit-details-marker{display:none}
+details.acct-section > summary.acct-h::after{content:""; width:7px; height:7px; border-right:1.5px solid var(--star-dim); border-bottom:1.5px solid var(--star-dim); transform:rotate(45deg); margin-left:4px; transition:transform .15s}
+details.acct-section[open] > summary.acct-h{margin-bottom:16px}
+details.acct-section[open] > summary.acct-h::after{transform:rotate(225deg)}
+details.acct-section > summary.acct-h > span:first-child{flex:1}
+.acct-hint{color:var(--star-dim); letter-spacing:.06em; text-transform:none; font-size:11.5px; text-align:right}
+details.acct-section:first-of-type{border-top:0}
+details.acct-danger > summary.acct-h{color:var(--down)}
 .acct-line{font-size:14px; line-height:1.6; color:var(--star-dim); margin-top:6px;}
 .acct-small{font-size:12.5px; line-height:1.6; color:var(--star-dim); margin-top:12px;}
 .acct-facts{display:grid; gap:10px; margin:0 0 18px;}
