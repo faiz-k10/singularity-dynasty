@@ -2,7 +2,7 @@
 
 import { useId } from "react";
 import { skyFor } from "@/lib/nightSky";
-import { StarField, Galaxies, Cloud } from "./hubble";
+import { StarField, Galaxies, Cloud, Spikes } from "./hubble";
 
 // The Night Sky's skins (rules, unlocks, rarity and progress: SKINS in lib/nightSky.js). Drawn in the sky's own coordinates (-300..300, the
 // core at 0,0, its body r 44, the gauge r 74-84) so the same pieces serve the sky and the previews in the Skins panel. Cosmetic art, so the
@@ -37,18 +37,25 @@ export function SkyBackdrop({ skin }) {
     </g>
   );
   if (skin === "aurora") return (
+    // "Pillars" (the id stays aurora): tall columns of cold dust rising into glowing teal and gold gas, their tips lit by young stars --
+    // in the spirit of Hubble's Pillars of Creation
     <g aria-hidden="true">
       <defs>
-        <linearGradient id={`${id}g`} x1="0" x2="1"><stop offset="0" stopColor="#22E58A" stopOpacity="0" /><stop offset=".25" stopColor="#22E58A" /><stop offset=".6" stopColor="#22D3EE" /><stop offset="1" stopColor="#A855F7" stopOpacity="0" /></linearGradient>
-        <linearGradient id={`${id}v`} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#22E58A" stopOpacity="0" /><stop offset=".5" stopColor="#22E58A" stopOpacity=".5" /><stop offset="1" stopColor="#A855F7" stopOpacity="0" /></linearGradient>
-        {glow(`${id}f`, 12)}
+        {radial(`${id}bg`, [[0, "#3FC9B4", 0.55], [0.6, "#2BB3A3", 0.25], [1, "#2BB3A3", 0]])}
+        {radial(`${id}t`, [[0, "#FFE3A8", 0.9], [1, "#FFE3A8", 0]])}
       </defs>
-      <g className="sky-skin-drift" filter={`url(#${id}f)`} opacity=".85">
-        <path d="M-320 -160 C -160 -260, -10 -90, 320 -210" stroke={`url(#${id}g)`} strokeWidth="56" fill="none" />
-        <path d="M-320 -90 C -120 -180, 60 -40, 320 -140" stroke={`url(#${id}g)`} strokeWidth="30" fill="none" opacity=".75" />
-        <path d="M-320 -20 C -100 -90, 120 10, 320 -70" stroke={`url(#${id}g)`} strokeWidth="18" fill="none" opacity=".5" />
-      </g>
-      <g className="sky-skin-pulse" opacity=".35">{curtain.map((x, i) => <rect key={i} x={x} y="-280" width="6" height="200" fill={`url(#${id}v)`} />)}</g>
+      <ellipse cx="20" cy="-40" rx="340" ry="300" fill={`url(#${id}bg)`} />
+      <Cloud id={`${id}a`} cx={40} cy={-60} rx={330} ry={260} color="#5FE0C8" freq={0.008} seed={14} strength={1} />
+      <Cloud id={`${id}b`} cx={-60} cy={-150} rx={280} ry={170} rot={-10} color="#F2B860" freq={0.011} seed={19} strength={1} />
+      {[[-175, 110, 52, 230, -6], [-45, 160, 40, 170, 4], [105, 200, 32, 120, 9]].map(([cx, cy, rx, ry, rot], i) => (
+        <g key={i}>
+          {/* the lit edge first (a slightly larger gold column), then the dark column over it */}
+          <Cloud id={`${id}r${i}`} cx={cx} cy={cy - 6} rx={rx * 1.18} ry={ry * 1.04} rot={rot} color="#FFC870" freq={0.024} seed={30 + i} strength={1.1} />
+          <circle cx={cx + Math.sin((rot * Math.PI) / 180) * ry * 0.9} cy={cy - ry * 0.95} r={rx * 0.8} fill={`url(#${id}t)`} />
+          <Cloud id={`${id}p${i}`} cx={cx} cy={cy} rx={rx} ry={ry} rot={rot} color="#0A0603" freq={0.024} seed={30 + i} strength={1.6} />
+        </g>
+      ))}
+      <StarField seed={41} n={18} spikes={3} scale={1.2} />
     </g>
   );
   if (skin === "milkyway") return (
@@ -67,137 +74,142 @@ export function SkyBackdrop({ skin }) {
     </g>
   );
   if (skin === "eclipse") return (
+    // "Supernova" (the id stays eclipse): the glowing shell of a star that exploded -- ember and teal filaments around a hollow centre
     <g aria-hidden="true">
-      <defs>
-        {radial(`${id}e`, [[0.2, "#B3261E", 0], [0.6, "#B3261E", 0.5], [1, "#B3261E", 0.6]])}
-        {radial(`${id}c`, [[0.36, "#FFE6B0", 0], [0.42, "#FFE6B0", 0.95], [0.55, "#F2B04A", 0.5], [1, "#F2B04A", 0]])}
-        {glow(`${id}f`, 6)}
-      </defs>
-      <circle r="520" fill={`url(#${id}e)`} />
-      <circle r="140" fill={`url(#${id}c)`} className="sky-skin-pulse" />
-      {/* the "diamond ring": the last bead of light at the edge of the eclipse */}
-      <circle cx="40" cy="-40" r="10" fill="#FFFFFF" filter={`url(#${id}f)`} />
-      <circle cx="40" cy="-40" r="4" fill="#FFFFFF" />
+      <Cloud id={`${id}a`} rx={250} ry={235} color="#E8643F" freq={0.02} seed={5} strength={1.05} />
+      <Cloud id={`${id}b`} rx={230} ry={215} rot={30} color="#2BB3A3" freq={0.026} seed={9} strength={0.95} />
+      <Cloud id={`${id}c`} rx={210} ry={195} color="#FFE3A8" freq={0.04} seed={15} strength={0.9} />
+      <defs>{radial(`${id}v`, [[0, "#020306", 1], [0.55, "#020306", 0.92], [0.75, "#020306", 0.35], [1, "#020306", 0]])}</defs>
+      <circle r="190" fill={`url(#${id}v)`} />
+      <StarField seed={52} n={20} spikes={2} scale={1.2} />
     </g>
   );
   if (String(skin).startsWith("season-")) {
+    // the season's Singularity constellation drawn huge across the sky, each of its stars a real star: a halo and diffraction spikes
     const g = seasonGhost(skin);
     return (
       <g aria-hidden="true">
         <defs>
-          <radialGradient id={`${id}s`}><stop offset="0" style={{ stopColor: "var(--sky-gold)" }} stopOpacity=".3" /><stop offset="1" style={{ stopColor: "var(--sky-gold)" }} stopOpacity="0" /></radialGradient>
-          {glow(`${id}f`, 7)}
+          <radialGradient id={`${id}s`}><stop offset="0" style={{ stopColor: "var(--sky-gold)" }} stopOpacity=".22" /><stop offset="1" style={{ stopColor: "var(--sky-gold)" }} stopOpacity="0" /></radialGradient>
+          <radialGradient id={`${id}h`}><stop offset="0" style={{ stopColor: "var(--sky-t-gold)" }} stopOpacity=".75" /><stop offset=".35" style={{ stopColor: "var(--sky-gold)" }} stopOpacity=".2" /><stop offset="1" style={{ stopColor: "var(--sky-gold)" }} stopOpacity="0" /></radialGradient>
         </defs>
         <circle r="300" fill={`url(#${id}s)`} />
-        {g.edges.map(([i, j]) => <line key={`${i}-${j}`} x1={g.pts[i][0]} y1={g.pts[i][1]} x2={g.pts[j][0]} y2={g.pts[j][1]} style={{ stroke: "var(--sky-gold)" }} strokeOpacity=".55" strokeWidth="3" />)}
-        {g.pts.map(([x, y, r], i) => <g key={i}><circle cx={x} cy={y} r={r * 2.4} style={{ fill: "var(--sky-gold)" }} fillOpacity=".45" filter={`url(#${id}f)`} /><circle cx={x} cy={y} r={r} style={{ fill: "var(--sky-gold)" }} /></g>)}
+        {g.edges.map(([i, j]) => <line key={`${i}-${j}`} x1={g.pts[i][0]} y1={g.pts[i][1]} x2={g.pts[j][0]} y2={g.pts[j][1]} style={{ stroke: "var(--sky-gold)" }} strokeOpacity=".4" strokeWidth="2" />)}
+        {g.pts.map(([x, y, r], i) => (
+          <g key={i}>
+            <circle cx={x} cy={y} r={r * 4} fill={`url(#${id}h)`} />
+            <circle cx={x} cy={y} r={r * 0.7} style={{ fill: "var(--sky-t-gold)" }} />
+            <Spikes x={x} y={y} len={r * 6} color="var(--sky-t-gold)" width={1} opacity={0.75} />
+          </g>
+        ))}
       </g>
     );
   }
   return null; // deep field: the plain sky
 }
 
-// layer "back" sits behind the core's body, "front" in front of it (rings and disks pass in front on their near side).
+// layer "back" sits behind the core's body, "front" in front of it (rings and disks pass in front on their near side). Hubble-style (Nov 11
+// 2026, founder): textured gas from the Cloud filter, real-looking stars with halos and diffraction spikes, fine ring and disk structure.
+// Nothing that carries the turbulence filter is inside a spinning / pulsing group (it would re-render every frame).
 export function CoreSkin({ skin, layer }) {
-  const id = useId().replace(/:/g, "");
-  if (skin === "pulsar" && layer === "back") return (
-    <g aria-hidden="true">
-      <defs>
-        <linearGradient id={`${id}p`} x1="0" y1="1" x2="0" y2="0"><stop offset="0" stopColor="#E0ECFF" stopOpacity=".95" /><stop offset=".4" stopColor="#7FB0FF" stopOpacity=".55" /><stop offset="1" stopColor="#7FB0FF" stopOpacity="0" /></linearGradient>
-        {glow(`${id}f`, 6)}
-        {radial(`${id}h`, [[0, "#9CC2FF", 0.7], [1, "#9CC2FF", 0]])}
-      </defs>
-      <circle r="90" fill={`url(#${id}h)`} />
-      <g className="sky-skin-spin is-slow">
-        <g filter={`url(#${id}f)`}>
-          <polygon points="-8,0 8,0 30,-260 -30,-260" fill={`url(#${id}p)`} />
-          <polygon points="-8,0 8,0 30,-260 -30,-260" fill={`url(#${id}p)`} transform="rotate(180)" />
-        </g>
-        <polygon points="-3,0 3,0 10,-260 -10,-260" fill={`url(#${id}p)`} />
-        <polygon points="-3,0 3,0 10,-260 -10,-260" fill={`url(#${id}p)`} transform="rotate(180)" />
-      </g>
-    </g>
+  const id = useId().replace(/[^a-zA-Z0-9_-]/g, "");
+  const halo = (key, color, r, a = 0.6) => (
+    <>
+      <defs>{radial(`${id}${key}`, [[0, color, a], [0.35, color, a * 0.3], [1, color, 0]])}</defs>
+      <circle r={r} fill={`url(#${id}${key})`} />
+    </>
   );
-  if (skin === "quasar") {
-    if (layer === "front") return (
-      <g aria-hidden="true" transform="rotate(-8)">
-        <defs><clipPath id={`${id}k`}><rect x="-200" y="0" width="400" height="80" /></clipPath></defs>
-        <ellipse rx="86" ry="14" fill="none" stroke="#C4A6FF" strokeWidth="6" strokeOpacity=".9" clipPath={`url(#${id}k)`} />
-      </g>
-    );
+  const lower = <defs><clipPath id={`${id}k`}><rect x="-260" y="0" width="520" height="140" /></clipPath></defs>;
+
+  if (skin === "pulsar") {
+    if (layer !== "back") return null;
+    // the Crab: a pulsar inside its wind nebula -- teal and violet gas, rust filaments -- with two soft lighthouse beams
     return (
       <g aria-hidden="true">
-        <defs>
-          <linearGradient id={`${id}q`} x1="0" y1="1" x2="0" y2="0"><stop offset="0" stopColor="#FFFFFF" stopOpacity=".95" /><stop offset=".3" stopColor="#7FA6FF" stopOpacity=".85" /><stop offset="1" stopColor="#B78CFF" stopOpacity="0" /></linearGradient>
-          {glow(`${id}f`, 8)}
-          {radial(`${id}h`, [[0, "#B78CFF", 0.6], [1, "#B78CFF", 0]])}
-        </defs>
-        <circle r="100" fill={`url(#${id}h)`} />
-        <g className="sky-skin-pulse">
-          <g filter={`url(#${id}f)`}>
-            <polygon points="-12,0 12,0 6,-285 -6,-285" fill={`url(#${id}q)`} />
-            <polygon points="-12,0 12,0 6,-285 -6,-285" fill={`url(#${id}q)`} transform="rotate(180)" />
-          </g>
-          <polygon points="-4,0 4,0 2,-285 -2,-285" fill={`url(#${id}q)`} />
-          <polygon points="-4,0 4,0 2,-285 -2,-285" fill={`url(#${id}q)`} transform="rotate(180)" />
+        <Cloud id={`${id}a`} rx={170} ry={120} rot={-25} color="#5BC0D8" freq={0.016} seed={4} />
+        <Cloud id={`${id}b`} rx={150} ry={110} rot={30} color="#B86BD8" freq={0.02} seed={11} strength={0.9} />
+        <Cloud id={`${id}c`} rx={175} ry={130} rot={10} color="#D9603B" freq={0.035} seed={17} strength={1.15} />
+        {halo("h", "#CFE0FF", 95, 0.65)}
+        <defs><linearGradient id={`${id}p`} x1="0" y1="1" x2="0" y2="0"><stop offset="0" stopColor="#F4F8FF" stopOpacity=".9" /><stop offset=".35" stopColor="#9CC2FF" stopOpacity=".35" /><stop offset="1" stopColor="#9CC2FF" stopOpacity="0" /></linearGradient></defs>
+        <g className="sky-skin-spin is-slow">
+          <polygon points="-4,0 4,0 22,-250 -22,-250" fill={`url(#${id}p)`} />
+          <polygon points="-4,0 4,0 22,-250 -22,-250" fill={`url(#${id}p)`} transform="rotate(180)" />
         </g>
-        <g transform="rotate(-8)"><ellipse rx="86" ry="14" fill="none" stroke="#C4A6FF" strokeWidth="6" strokeOpacity=".9" /></g>
       </g>
     );
   }
-  if (skin === "binary" && layer === "back") return (
-    <g aria-hidden="true">
-      <defs>{radial(`${id}h`, [[0, "#FFB86B", 0.75], [1, "#FFB86B", 0]])}</defs>
-      <circle r="104" fill="none" stroke="#FFB86B" strokeOpacity=".35" strokeDasharray="3 7" />
-      <g className="sky-skin-spin">
-        <path d="M 104 0 A 104 104 0 0 0 52 -90" fill="none" stroke="#FFB86B" strokeOpacity=".55" strokeWidth="3" strokeLinecap="round" />
-        <circle cx="104" cy="0" r="26" fill={`url(#${id}h)`} />
-        <circle cx="104" cy="0" r="11" fill="#FFD9A8" />
-        <circle cx="100" cy="-4" r="4" fill="#FFFFFF" />
+
+  if (skin === "ringed") {
+    // Saturn as Hubble shows it: many fine rings in cream and tan, the dark Cassini gap, the far half behind the body, the near half in front
+    const rings = [[86, 0.35, "#8C7350"], [92, 0.55, "#C9AE7E"], [98, 0.85, "#EAD9B2"], [104, 0.9, "#F2E2BC"], [110, 0.75, "#D8C194"], [121, 0.65, "#CDB487"], [127, 0.45, "#B89C6C"], [132, 0.25, "#8C7350"]];
+    const set = (
+      <g transform="rotate(-16)">
+        {rings.map(([rx, a, c], i) => <ellipse key={i} rx={rx} ry={rx * 0.21} fill="none" stroke={c} strokeOpacity={a} strokeWidth={i === 3 ? 6 : 4.5} />)}
       </g>
-    </g>
-  );
-  if (skin === "ringed" || skin === "horizon") {
-    const disk = skin === "horizon";
-    const rings = (
-      <>
+    );
+    return layer === "back" ? <g aria-hidden="true">{set}</g> : <g aria-hidden="true">{lower}<g clipPath={`url(#${id}k)`}>{set}</g></g>;
+  }
+
+  if (skin === "binary") {
+    if (layer !== "back") return null;
+    // a close binary: a hot companion star (halo, spikes) feeding a glowing stream of gas into a disk around the core
+    return (
+      <g aria-hidden="true">
         <defs>
-          <linearGradient id={`${id}r`} x1="0" x2="1">
-            <stop offset="0" stopColor={disk ? "#C2410C" : "#B9965E"} /><stop offset=".5" stopColor={disk ? "#FFE2A8" : "#F2E2BC"} /><stop offset="1" stopColor={disk ? "#C2410C" : "#B9965E"} />
-          </linearGradient>
-          <clipPath id={`${id}k`}><rect x="-200" y="0" width="400" height="80" /></clipPath>
+          {radial(`${id}s`, [[0, "#FFE8C2", 0.95], [0.3, "#FFB86B", 0.45], [1, "#FFB86B", 0]])}
+          <linearGradient id={`${id}g`} x1="1" y1="0" x2="0" y2="0"><stop offset="0" stopColor="#FFD9A8" stopOpacity=".9" /><stop offset="1" stopColor="#FFFFFF" stopOpacity=".2" /></linearGradient>
         </defs>
-        {disk ? (
-          <>
-            <ellipse rx="122" ry="27" fill="none" stroke={`url(#${id}r)`} strokeWidth="16" strokeOpacity=".9" />
-            <ellipse rx="100" ry="21" fill="none" stroke="#FFF1D6" strokeWidth="3" strokeOpacity=".8" />
-          </>
-        ) : (
-          <>
-            <ellipse rx="122" ry="25" fill="none" stroke={`url(#${id}r)`} strokeWidth="9" strokeOpacity=".75" />
-            <ellipse rx="104" ry="21" fill="none" stroke={`url(#${id}r)`} strokeWidth="5" strokeOpacity=".95" />
-            <ellipse rx="92" ry="18" fill="none" stroke="#E8D6AE" strokeWidth="2" strokeOpacity=".6" />
-          </>
-        )}
-      </>
+        <circle r="110" fill="none" stroke="#FFB86B" strokeOpacity=".22" strokeDasharray="2 8" />
+        <g transform="rotate(-8)"><ellipse rx="66" ry="14" fill="none" stroke="#FFC98C" strokeOpacity=".55" strokeWidth="5" /></g>
+        <g className="sky-skin-spin">
+          <path d="M 110 0 C 90 -38, 55 -46, 30 -20" fill="none" stroke={`url(#${id}g)`} strokeWidth="7" strokeLinecap="round" opacity=".7" />
+          <circle cx="110" cy="0" r="34" fill={`url(#${id}s)`} />
+          <circle cx="110" cy="0" r="10" fill="#FFF4E0" />
+          <Spikes x={110} y={0} len={34} color="#FFE8C2" width={1} opacity={0.8} />
+        </g>
+      </g>
+    );
+  }
+
+  if (skin === "quasar") {
+    if (layer === "front") return <g aria-hidden="true" transform="rotate(-8)">{lower}<ellipse rx="80" ry="13" fill="none" stroke="#C4A6FF" strokeWidth="5" strokeOpacity=".9" clipPath={`url(#${id}k)`} /></g>;
+    // a quasar in its host galaxy: a warm elliptical glow, jets of knots shooting out of both poles, a violet disk, a spiked point of light
+    const knots = [60, 95, 128, 165, 205, 248];
+    return (
+      <g aria-hidden="true">
+        <Cloud id={`${id}g`} rx={190} ry={95} rot={-30} color="#F2C894" freq={0.02} seed={6} strength={0.75} />
+        {halo("h", "#B78CFF", 110, 0.55)}
+        <defs>{radial(`${id}n`, [[0, "#EAF0FF", 0.95], [0.4, "#8FB0FF", 0.5], [1, "#8FB0FF", 0]])}</defs>
+        <line x1="0" y1="-270" x2="0" y2="270" stroke="#9CB8FF" strokeOpacity=".35" strokeWidth="2" />
+        <g className="sky-skin-pulse">
+          {knots.flatMap((d, i) => [1, -1].map((side) => <circle key={`${i}${side}`} cx={0} cy={side * d} r={11 - i * 1.2} fill={`url(#${id}n)`} />))}
+        </g>
+        <g transform="rotate(-8)"><ellipse rx="80" ry="13" fill="none" stroke="#C4A6FF" strokeWidth="5" strokeOpacity=".9" /></g>
+      </g>
+    );
+  }
+
+  if (skin === "horizon") {
+    // a black hole: a turbulent accretion disk of ember and gold gas, its far side bent up over the hole by gravity, a thin photon ring
+    const disk = (k) => (
+      <g transform="rotate(-12)">
+        <Cloud id={`${id}${k}1`} rx={150} ry={34} color="#FF8A3D" freq={0.03} seed={7} strength={1.25} />
+        <Cloud id={`${id}${k}2`} rx={118} ry={24} color="#FFE2A8" freq={0.045} seed={12} strength={1.1} />
+      </g>
     );
     if (layer === "back") return (
       <g aria-hidden="true">
-        {disk && (
-          <>
-            <defs>{radial(`${id}h`, [[0.3, "#E8643F", 0.55], [1, "#E8643F", 0]])}</defs>
-            <circle r="120" fill={`url(#${id}h)`} />
-            {/* the far side of the disk, bent over the top of the hole by its gravity */}
-            <path d="M -66 -10 C -60 -88, 60 -88, 66 -10" fill="none" stroke="#FFD08A" strokeWidth="10" strokeOpacity=".85" />
-          </>
-        )}
-        <g transform="rotate(-16)">{rings}</g>
+        {halo("h", "#E8643F", 135, 0.45)}
+        {disk("b")}
+        <path d="M -62 -8 C -58 -86, 58 -86, 62 -8" fill="none" stroke="#FFD08A" strokeWidth="9" strokeOpacity=".8" />
+        <path d="M -62 -8 C -58 -86, 58 -86, 62 -8" fill="none" stroke="#FFF1D6" strokeWidth="2" strokeOpacity=".9" />
       </g>
     );
     return (
       <g aria-hidden="true">
-        {disk && <circle r="46.5" fill="none" stroke="#FFF1D6" strokeWidth="2.5" />}
-        <g transform="rotate(-16)"><g clipPath={`url(#${id}k)`}>{rings}</g></g>
+        <circle r="46.5" fill="none" stroke="#FFF1D6" strokeWidth="2.5" />
+        {lower}
+        <g clipPath={`url(#${id}k)`}>{disk("f")}</g>
       </g>
     );
   }

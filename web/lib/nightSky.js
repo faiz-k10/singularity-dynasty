@@ -170,9 +170,9 @@ export const SKINS = {
   sky: [
     { id: "deep", name: "Deep field", how: "Yours from the start", rarity: "standard" },
     { id: "nebula", name: "Nebula", how: "Reach 200 orbit points in total", rarity: "common", test: (s) => s.points >= 200, progress: (s) => [s.points, 200] },
-    { id: "aurora", name: "Aurora", how: "Chart a season: finish The Huddle, The Blitz and The Playbook in one season", rarity: "rare", test: (s) => seasonProgress(s).sky || Object.values(s.skies || {}).some((k) => k.charted), progress: (s) => [seasonProgress(s).three, 3] },
+    { id: "aurora", name: "Pillars", how: "Chart a season: finish The Huddle, The Blitz and The Playbook in one season", rarity: "rare", test: (s) => seasonProgress(s).sky || Object.values(s.skies || {}).some((k) => k.charted), progress: (s) => [seasonProgress(s).three, 3] },
     { id: "milkyway", name: "Milky Way", how: "Reach 6,000 orbit points in total", rarity: "rare", test: (s) => s.points >= 6000, progress: (s) => [s.points, 6000] },
-    { id: "eclipse", name: "Eclipse", how: "Find a stellar event", rarity: "epic", test: stellar, progress: (s) => [stellar(s) ? 1 : 0, 1] },
+    { id: "eclipse", name: "Supernova", how: "Find a stellar event", rarity: "epic", test: stellar, progress: (s) => [stellar(s) ? 1 : 0, 1] },
   ],
   core: [
     { id: "classic", name: "Classic", how: "Yours from the start", rarity: "standard" },
