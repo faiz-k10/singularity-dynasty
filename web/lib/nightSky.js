@@ -20,6 +20,13 @@ export const ACTIONS = {
   sims: { label: "Open the season simulations", tool: "Research", color: "white", href: "/tools/player-simulations" },
   lab: { label: "Study players in The Observatory", tool: "Research", color: "white", href: "/tools/lab" },
   dynasty: { label: "Open the Dynasty Board", tool: "Research", color: "white", href: "/tools/draft-board" },
+  // Founder, Nov 11 2026: a star for sharing. Counts when a share link is made by any Share button (a player card, start / sit, Receipts,
+  // Smash Spots, an Observatory chart, a Night Sky find). We can't see whether the post went out, so the once-a-day rule is the guard.
+  // "lucky" = a random colour with a 1-in-12 gold wildcard (1 in 4 made the limited season skin a sure thing by week 4 for daily sharers).
+  // `quiet`: it places its star but does NOT heat the core or roll for a find (the simulation showed a full action a day added ~45% to a
+  // regular member's season points, enough to reach the week of plan). So sharing fills constellations -- the gold wildcard helps toward The
+  // Singularity and its limited skin -- without adding finds or points.
+  share: { label: "Share a post from any Share button", tool: "Anywhere", color: "lucky", href: "/tools/lab", quiet: true },
 };
 
 // The four constellations (Nov 11 2026, founder). The GAME uses the four roles below -- colour, size, star count -- and every season draws
@@ -263,6 +270,7 @@ function placeStar(s, color, ctx, rnd) {
   const r = rnd();
   const goldChance = (ctx.event === "aurora" ? 0.045 : 0.015) * (s.boosts.goldUntil > ctx.now ? 3 : 1);
   if (color === "gold") c = r < 0.25 ? "gold" : ["blue", "ember", "white"][Math.floor(rnd() * 3)];
+  else if (color === "lucky") c = r < 0.08 ? "gold" : ["blue", "ember", "white"][Math.floor(rnd() * 3)]; // a share: any colour, 1 in 12 gold
   else if (r < goldChance) c = "gold";
   else if (r < goldChance + 0.17) c = ["blue", "ember", "white"].filter((x) => x !== color)[Math.floor(rnd() * 2)];
   if (c === "gold") {
@@ -362,6 +370,11 @@ export function award(s, action, ctx, rnd = Math.random) {
   if (s.daily.done.includes(action)) return { awarded: false };
   s.daily.done.push(action);
   const now = ctx.now, b = s.boosts;
+  if (a.quiet) { // one lucky star, no heat, no find (see ACTIONS.share)
+    placeStar(s, a.color, ctx, rnd);
+    log(s, `${a.label}: 1 star`, now);
+    return { awarded: true, stars: 1 };
+  }
   // the core cools when it's left alone for three days (unless a Gravity well holds it)
   if (s.lastActionAt && now - s.lastActionAt >= 3 * DAY && b.noCoolUntil < now && s.mass > 0) {
     const lost = Math.ceil(s.mass / 2);

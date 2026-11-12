@@ -5,6 +5,7 @@ import { SHARE_BUCKET, SHARE_MAX_BYTES, shareId, cleanShareMeta, isPng } from "@
 import { allowHit, clientIp } from "@/lib/rateLimit";
 import { createClient } from "@/lib/supabase/server";
 import { getAuthUser } from "@/lib/authUser";
+import { awardLater } from "@/lib/nightSkyStore";
 import { withReferral } from "@/lib/referrals";
 
 // Creates a shared chart from The Observatory (LabShare.js): the picture (a PNG, already drawn in the browser with the watermark) and its title, caption
@@ -49,6 +50,7 @@ export async function POST(request) {
     console.error("[lab-share] upload failed:", img.error?.message || json.error?.message);
     return NextResponse.json({ error: "Couldn't create the share link. Try again." }, { status: 500 });
   }
+  awardLater(user.id, "share"); // a Night Sky star, once a day
   console.info("[lab-share]", JSON.stringify({ id, user: user.id })); // who made which share, in the server log only (the bucket is public)
   return NextResponse.json({ id, url: await withReferral(`${new URL(request.url).origin}/s/${id}`, user?.id) });
 }

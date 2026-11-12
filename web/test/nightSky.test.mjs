@@ -170,3 +170,16 @@ test("skins unlock from what the member did, stay unlocked, and only earned ones
   assert.equal(equipSkin(s, "core", "quasar"), false);
   assert.deepEqual(equipped(s), { sky: "deep", core: "pulsar" });
 });
+
+test("sharing places one lucky star but never heats the core or makes a find", () => {
+  const s = freshState();
+  const t0 = Date.UTC(2026, 10, 11, 15);
+  const r = award(s, "share", ctx(t0), () => 0.01);
+  assert.equal(r.awarded, true);
+  assert.equal(r.collapsed, undefined);
+  assert.equal(s.mass, 0);
+  assert.equal(s.findsTotal, 0);
+  const lit = Object.values(s.filled).flat().filter(Boolean).length;
+  assert.ok(lit === 1 || (lit === 2 && s.filled.singularity.some(Boolean))); // a gold wildcard also lights The Singularity
+  assert.equal(award(s, "share", ctx(t0 + 1000), () => 0.01).awarded, false); // once a day
+});

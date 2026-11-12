@@ -8,6 +8,7 @@ import { receiptsWords } from "@/lib/receipts";
 import { smashWords } from "@/lib/smashSpots";
 import { withReferral } from "@/lib/referrals";
 import { allowHit, clientIp } from "@/lib/rateLimit";
+import { awardLater } from "@/lib/nightSkyStore";
 
 // Makes a share link (ShareCardButton.js). Player, dynasty and start / sit cards get a SIGNED link (/c/<token>, lib/cardToken.js), and only for
 // players the viewer may see on that tool (Weekly Projection Rankings: everyone ranked for Explorer+, the top 50 otherwise; the Dynasty Draft
@@ -66,5 +67,6 @@ export async function POST(request) {
   }
 
   const image = `${site}${path}/image`;
+  awardLater(user?.id, "share"); // a Night Sky star, once a day (signed-in members only)
   return NextResponse.json({ url: await withReferral(`${site}${path}`, user?.id), image, tall: `${image}?f=tall`, caption });
 }

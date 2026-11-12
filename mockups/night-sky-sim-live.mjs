@@ -3,6 +3,7 @@
 import { freshState, award, gradePicks, eventFor, seasonProgress, unlockSkins, SKINS, LADDER, rungLabel, CATALOGUE_SIZE, SET_COUNT, DAY } from "../web/lib/nightSky.js";
 
 const ACTIONS = ["board", "waivers", "rankings", "compare", "sims", "lab", "dynasty"];
+const SHARE_RATE = Number(process.env.SHARE || 0); // share of days a member also shares a post (the 8th action, Nov 11 2026)
 const START = Date.UTC(2026, 8, 9); // the Wednesday before week 1, 2026
 const seasonStart = (y) => Date.UTC(y, 8, 9);
 const weekOf = (t) => { // Sleeper's display week (1-18 regular season), 0 outside it
@@ -26,6 +27,7 @@ function member(perDay, offseasonShare, years = 3, startDay = 0) {
     const ctx0 = { day, event: eventFor(date, week), season, skySeason: skySeasonOf(t) };
     const rate = inSeason(t) ? perDay : perDay * offseasonShare;
     const todays = ACTIONS.filter(() => Math.random() < rate / ACTIONS.length);
+    if (Math.random() < SHARE_RATE * (inSeason(t) ? 1 : offseasonShare)) todays.push("share"); // SHARE_RATE: share-a-post days, 0-1
     todays.forEach((a, i) => {
       const before = s.pending.length;
       award(s, a, { ...ctx0, now: t + 20 * 3600e3 + i * 180e3 }, Math.random); // one evening session, actions 3 minutes apart

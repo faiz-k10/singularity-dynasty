@@ -16,7 +16,7 @@ import {
 
 // Star colours follow the theme (white stars are ink on the light sky, gold a deeper amber): --sky-* in globals.css. Share cards keep the
 // dark-sky hexes (COLORS in lib/nightSky.js).
-const STAR = { blue: "var(--sky-blue)", ember: "var(--sky-ember)", white: "var(--sky-white)", gold: "var(--sky-gold)" };
+const STAR = { blue: "var(--sky-blue)", ember: "var(--sky-ember)", white: "var(--sky-white)", gold: "var(--sky-gold)", lucky: "var(--sky-gold)" };
 
 const seededStars = (() => {
   let s = 7; const r = () => ((s = (s * 16807) % 2147483647) / 2147483647);
