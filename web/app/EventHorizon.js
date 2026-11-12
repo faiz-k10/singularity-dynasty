@@ -593,7 +593,8 @@ function Plans() {
         <p className="ehp-fine">{yearly ? "Billed yearly: Explorer $84, Singularity $240." : "Billed monthly."} 14-day refund, cancel any time.</p>
       </div>
       <svg className="ehp-planorbits" viewBox="-280 -280 560 560" aria-hidden="true">
-        <circle r="34" fill="currentColor" />
+        {/* the DS logo in the middle (founder, Nov 11 2026): scaled so its disc is exactly the old centre circle (radius 34), its football and line around it */}
+        <g transform="translate(-54.4 -54.4) scale(2.72)"><BrandMark className="ehp-planmark" width="40" height="40" /></g>
         {PLANS.map((p, i) => {
           const hot = i === on, a = -2.5 + i * 0.36, x = +(p.r * Math.cos(a)).toFixed(1), y = +(p.r * Math.sin(a)).toFixed(1);
           return (

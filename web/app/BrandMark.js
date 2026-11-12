@@ -4,10 +4,10 @@ import { MARK_DISC, MARK_SPIRAL, MARK_BALL, MARK_CENTER_BALL, MARK_DS, MARK_STRO
 // at any size and screen density). Geometry from lib/brandMark.js. Colours come from CSS: the disc is `--mark-disc` (the page's text colour by
 // default), the line and its football `--mark-accent` (ember on the light theme, cobalt on the dark). The football in the disc (its laces are the
 // letters DS) and the small ball's laces are CUT OUT with masks, so they show whatever is behind the logo. Two copies of the mask ids on one page are harmless: they are identical.
-export default function BrandMark({ className = "ring" }) {
+export default function BrandMark({ className = "ring", ...svgProps }) { // svgProps: e.g. width / height when the mark is nested inside another svg (CSS sizing does not apply to a nested svg)
   const { cx, cy, r } = MARK_DISC;
   return (
-    <svg className={className} viewBox="0 0 40 40" aria-hidden="true" focusable="false">
+    <svg className={className} viewBox="0 0 40 40" aria-hidden="true" focusable="false" {...svgProps}>
       <defs>
         <mask id="sd-mark-disc" maskUnits="userSpaceOnUse" x="0" y="0" width="40" height="40">
           <circle cx={cx} cy={cy} r={r} fill="#fff" />
