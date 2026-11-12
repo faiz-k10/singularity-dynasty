@@ -616,8 +616,8 @@ function Plans() {
             </g>
           );
         })}
-        {/* the highlighted plan's name sits at the bottom of the graphic (founder, Nov 11 2026), not beside its planet */}
-        <text className="ehp-planname" x="0" y="268" textAnchor="middle" fill="var(--ehp-mark)">{PLANS[on].name.toUpperCase()}</text>
+        {/* the highlighted plan's name sits at the bottom of the graphic, as wide as the rings themselves (460 units: textLength spreads the letters to fit, so every name spans the visual; founder, Nov 11 2026) */}
+        <text className="ehp-planname" x="-230" y="330" textAnchor="start" textLength="460" lengthAdjust="spacing" fill="var(--ehp-mark)">{PLANS[on].name.toUpperCase()}</text>
       </svg>
     </div>
   );

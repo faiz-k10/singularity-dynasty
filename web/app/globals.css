@@ -6679,6 +6679,8 @@ body:has(.ehp){--ehp-bg:#0B0B0B;--ehp-ink:#ECE7DC;--ehp-dim:#A39E92;--ehp-faint:
 .ehp-planorbits{width:100%;max-width:520px;height:auto;justify-self:center;color:var(--ehp-ink);overflow:visible;}
 .ehp-planorbits .tier{cursor:pointer;}
 .ehp-planorbits text{font:500 15px var(--font-display), sans-serif;letter-spacing:.24em;}
+.ehp-planorbits text.ehp-planname{font:600 66px var(--font-display), sans-serif;letter-spacing:0;}
+.ehp-planorbits{margin-bottom:70px;}
 
 /* the Tuesday letter: the shared sign-up form, restyled to the page */
 .ehp-letter{border-top:1px solid var(--ehp-rule);padding:100px 0 110px !important;}
