@@ -75,11 +75,11 @@ export function SkyBackdrop({ skin }) {
   if (skin === "eclipse") return (
     <g aria-hidden="true">
       <defs>
-        {radial(`${id}e`, [[0.35, "#B3261E", 0], [1, "#B3261E", 0.5]])}
+        {radial(`${id}e`, [[0.2, "#B3261E", 0], [0.6, "#B3261E", 0.5], [1, "#B3261E", 0.6]])}
         {radial(`${id}c`, [[0.36, "#FFE6B0", 0], [0.42, "#FFE6B0", 0.95], [0.55, "#F2B04A", 0.5], [1, "#F2B04A", 0]])}
         {glow(`${id}f`, 6)}
       </defs>
-      <rect x="-300" y="-300" width="600" height="600" fill={`url(#${id}e)`} />
+      <circle r="520" fill={`url(#${id}e)`} />
       <circle r="140" fill={`url(#${id}c)`} className="sky-skin-pulse" />
       {/* the "diamond ring": the last bead of light at the edge of the eclipse */}
       <circle cx="40" cy="-40" r="10" fill="#FFFFFF" filter={`url(#${id}f)`} />

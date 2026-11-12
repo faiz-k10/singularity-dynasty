@@ -135,7 +135,7 @@ export const POWERUPS = {
 // THE LADDER: one ladder, one season long (founder, Nov 11 2026: "keep it only for 1 season"). It starts over at KICKOFF with that season's
 // constellations (see skySeasonFor); what carries over is the catalogue, sets, skins and the career shelf (`s.skies`: one trophy line per past
 // season). kinds: `at` = orbit points earned this season; `three` = finish The Huddle, The Blitz and The Playbook this season; `singularity`
-// = finish this season's Singularity, which earns that season's limited sky skin (e.g. "Orion 2026", never earnable again). `title`: the
+// = finish this season's Singularity, which earns that season's limited sky skin (e.g. "Orion 2026", only available that season). `title`: the
 // season title it gives; `frame`: the share-card frame. `claim`: has cash value or needs the founder to act, so the member claims it and it
 // is fulfilled by hand -- ONLY the top rungs do, and every perk lasts that season only (early access ends at the next kickoff). Spaced with
 // mockups/night-sky-sim-live.mjs (season points, later seasons / a first season, which runs higher): light ~4,000 / 4,500, regular (3 actions a
@@ -149,12 +149,12 @@ export const LADDER = [
   { at: 1000, reward: "Season title: Lookout", title: "Lookout" },
   { at: 2000, reward: "Season title: Observer", title: "Observer" },
   { at: 3500, reward: "Season title: Tracker", title: "Tracker" },
-  { singularity: true, reward: "Finish this season's Singularity: its limited sky skin, never available again" },
+  { singularity: true, reward: "Finish this season's Singularity: its limited sky skin, only available this season" },
   { at: 6000, reward: "Season title: Surveyor", title: "Surveyor" },
   { at: 12000, reward: "A gold season frame, plus early access to new tools and features for the rest of the season (automatic)", frame: "gold", early: true },
   { at: 14000, reward: "A week of the next plan up", claim: true },
   { at: 20000, reward: "Your name on a star in this season's sky", title: "Star-namer", claim: true },
-  { at: 30000, reward: "A free month, for members who barely miss a day all season", title: "Event Horizon", claim: true },
+  { at: 30000, reward: "A free month of your plan (a month of Explorer if you're on the free plan)", title: "Event Horizon", claim: true },
 ];
 export const rungLabel = (r) => (r.three ? "Charted" : r.singularity ? "Singularity" : r.at.toLocaleString());
 // Skins (Nov 11 2026, founder: "aesthetic rewards, like how real games use skins"). Purely cosmetic: a backdrop for the sky and a design for
@@ -192,7 +192,7 @@ export const seasonSkinName = (season) => `${skyFor(season)[3].real} ${season}`;
 export function skySkinsFor(s) {
   const years = new Set((s.skins || []).filter((k) => k.startsWith("sky:season-")).map((k) => Number(k.slice(11))));
   if (s.season) years.add(s.season);
-  const seasonal = [...years].sort().map((y) => ({ id: seasonSkinId(y), name: seasonSkinName(y), season: y, rarity: "limited", how: y === s.season ? `Finish The Singularity (${skyFor(y)[3].real}) this season. Never available again` : `From the ${y} season`, progress: y === s.season ? (x) => [x.filled.singularity.filter(Boolean).length, 10] : null }));
+  const seasonal = [...years].sort().map((y) => ({ id: seasonSkinId(y), name: seasonSkinName(y), season: y, rarity: "limited", how: y === s.season ? `Finish The Singularity (${skyFor(y)[3].real}) this season. Only available in the ${y} season` : `From the ${y} season`, progress: y === s.season ? (x) => [x.filled.singularity.filter(Boolean).length, 10] : null }));
   return [...SKINS.sky, ...seasonal];
 }
 export const hasSkin = (s, kind, id) => id === DEFAULT_SKIN[kind] || (s.skins || []).includes(`${kind}:${id}`);

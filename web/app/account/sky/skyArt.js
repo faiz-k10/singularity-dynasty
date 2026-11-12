@@ -1,7 +1,8 @@
 "use client";
 
-import { FAMILIES, COLOURS, skyFor, COLORS as STAR } from "@/lib/nightSky";
-import { seasonGhost } from "./skins";
+import { renderToStaticMarkup } from "react-dom/server";
+import { FAMILIES, COLOURS, skyFor, seasonProgress, COLORS as STAR } from "@/lib/nightSky";
+import { SkyBackdrop, CoreSkin } from "./skins";
 
 // The Night Sky's pictures (from mockups/night-sky.html, which the founder approved): one renderer per kind of object, coloured by the find's
 // colour and finished by its version, drawn on a canvas; the telescope reveal (the picture sharpens out of noise); and the share cards.
@@ -76,66 +77,42 @@ export const setCardSkin = (k) => { cardSkin = { sky: "deep", core: "classic", .
 let cardFrame = null; // "silver" | "gold": the season frame the member has earned
 export const setCardFrame = (f) => { cardFrame = f || null; };
 
-// The canvas versions of the skins in ./skins.js (same colours), for share cards.
-function grad(ctx, x, y, r, color, a) { const g = ctx.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, `rgba(${color},${a})`); g.addColorStop(1, `rgba(${color},0)`); return g; }
-function drawBackdrop(ctx) {
-  const k = cardSkin.sky;
-  ctx.save();
-  if (k === "nebula") {
-    for (const [x, y, rx, ry, c] of [[330, 260, 420, 250, "139,108,240"], [900, 420, 380, 240, "47,182,168"], [700, 90, 260, 150, "208,96,154"]]) {
-      ctx.save(); ctx.translate(x, y); ctx.scale(1, ry / rx); ctx.fillStyle = grad(ctx, 0, 0, rx, c, 0.34); ctx.beginPath(); ctx.arc(0, 0, rx, 0, 7); ctx.fill(); ctx.restore();
-    }
-  } else if (k === "aurora") {
-    const g = ctx.createLinearGradient(0, 0, 1200, 0);
-    g.addColorStop(0, "rgba(62,224,143,0)"); g.addColorStop(0.3, "rgba(62,224,143,.5)"); g.addColorStop(0.7, "rgba(44,201,232,.5)"); g.addColorStop(1, "rgba(139,108,240,0)");
-    ctx.filter = "blur(22px)"; ctx.strokeStyle = g; ctx.lineCap = "round";
-    ctx.lineWidth = 80; ctx.beginPath(); ctx.moveTo(-40, 180); ctx.bezierCurveTo(300, 20, 600, 300, 1240, 120); ctx.stroke();
-    ctx.lineWidth = 44; ctx.globalAlpha = 0.7; ctx.beginPath(); ctx.moveTo(-40, 290); ctx.bezierCurveTo(360, 150, 700, 380, 1240, 230); ctx.stroke();
-  } else if (k === "milkyway") {
-    ctx.translate(600, 315); ctx.rotate(-0.4);
-    const g = ctx.createLinearGradient(0, -160, 0, 160); g.addColorStop(0, "rgba(217,207,192,0)"); g.addColorStop(0.5, "rgba(217,207,192,.18)"); g.addColorStop(1, "rgba(217,207,192,0)");
-    ctx.fillStyle = g; ctx.fillRect(-900, -160, 1800, 320);
-    let s = 11; const r = () => ((s = (s * 16807) % 2147483647) / 2147483647);
-    for (let i = 0; i < 520; i++) { ctx.fillStyle = `rgba(236,231,220,${0.2 + r() * 0.5})`; ctx.fillRect(r() * 1800 - 900, (r() + r() + r() - 1.5) * 120, 2, 2); }
-  } else if (String(k).startsWith("season-")) {
-    const g = seasonGhost(k); ctx.translate(780, 315);
-    ctx.fillStyle = grad(ctx, 0, 0, 520, "233,196,106", 0.14); ctx.fillRect(-780, -315, 1200, 630);
-    ctx.strokeStyle = "rgba(233,196,106,.28)"; ctx.lineWidth = 3;
-    for (const [i, j] of g.edges) { ctx.beginPath(); ctx.moveTo(g.pts[i][0] * 1.05, g.pts[i][1] * 1.05); ctx.lineTo(g.pts[j][0] * 1.05, g.pts[j][1] * 1.05); ctx.stroke(); }
-    ctx.fillStyle = "rgba(233,196,106,.5)"; for (const [x, y, r] of g.pts) { ctx.beginPath(); ctx.arc(x * 1.05, y * 1.05, r, 0, 7); ctx.fill(); }
-  } else if (k === "eclipse") {
-    const g = ctx.createRadialGradient(600, 315, 250, 600, 315, 760); g.addColorStop(0, "rgba(179,38,30,0)"); g.addColorStop(1, "rgba(179,38,30,.38)");
-    ctx.fillStyle = g; ctx.fillRect(0, 0, 1200, 630);
-  }
-  ctx.restore();
+// The skins on a card are the SAME art as the page (SkyBackdrop / CoreSkin in ./skins.js), rendered to an SVG picture and drawn onto the canvas,
+// so the cards always match what the member sees. Cards are always the dark sky, so the theme-aware colours get their dark values here.
+const DARK_VARS = { "--sky-gold": "#E9C46A", "--sky-band": "#D9CFC0", "--sky-white": "#ECE7DC", "--sky-glow": "#CFE0FF", "--sky-blue": "#4C7DF0", "--sky-ember": "#E8643F", "--star": "#ECE7DC" };
+// Renders a whole <svg> through React (so SVG elements like linearGradient are recognised) and loads it as a picture.
+function svgPicture(children, viewBox, w, h) {
+  const markup = renderToStaticMarkup(<svg xmlns="http://www.w3.org/2000/svg" width={w} height={h} viewBox={viewBox} style={DARK_VARS}>{children}</svg>);
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => resolve(null); // a card without its skin is better than no card
+    img.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(markup)}`;
+  });
 }
-// The core with its skin, centred on the current origin. Body radius 46 (the season card's core).
-function drawCore(ctx) {
-  const k = cardSkin.core;
-  const beam = (rot, len, w0, w1, c0, c1) => { ctx.save(); ctx.rotate(rot); const g = ctx.createLinearGradient(0, 0, 0, -len); g.addColorStop(0, c0); g.addColorStop(1, c1); ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(-w0, 0); ctx.lineTo(w0, 0); ctx.lineTo(w1, -len); ctx.lineTo(-w1, -len); ctx.fill(); ctx.restore(); };
-  const ring = (front) => {
-    const disk = k === "horizon"; ctx.save(); ctx.rotate(-0.28);
-    if (front) { ctx.beginPath(); ctx.rect(-220, 0, 440, 120); ctx.clip(); }
-    const g = ctx.createLinearGradient(-120, 0, 120, 0); const [a, b] = disk ? ["#E8643F", "#FFD08A"] : ["#C9B48A", "#EADBB8"]; g.addColorStop(0, a); g.addColorStop(0.5, b); g.addColorStop(1, a);
-    ctx.strokeStyle = g; ctx.lineWidth = disk ? 12 : 4; ctx.beginPath(); ctx.ellipse(0, 0, disk ? 118 : 110, disk ? 25 : 21, 0, 0, 7); ctx.stroke(); ctx.restore();
-  };
-  if (k === "pulsar") { beam(0.45, 260, 5, 18, "rgba(207,224,255,.75)", "rgba(207,224,255,0)"); beam(0.45 + Math.PI, 260, 5, 18, "rgba(207,224,255,.75)", "rgba(207,224,255,0)"); }
-  if (k === "quasar") { beam(0, 270, 7, 3, "rgba(127,166,255,.9)", "rgba(183,140,255,0)"); beam(Math.PI, 270, 7, 3, "rgba(127,166,255,.9)", "rgba(183,140,255,0)"); }
-  if (k === "binary") {
-    ctx.save(); ctx.setLineDash([3, 8]); ctx.strokeStyle = "rgba(159,183,255,.35)"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(0, 0, 100, 0, 7); ctx.stroke(); ctx.restore();
-    const a = -0.6, x = Math.cos(a) * 100, y = Math.sin(a) * 100; ctx.fillStyle = grad(ctx, x, y, 18, "159,183,255", 0.4); ctx.beginPath(); ctx.arc(x, y, 18, 0, 7); ctx.fill(); ctx.fillStyle = "#CFDAFF"; ctx.beginPath(); ctx.arc(x, y, 8, 0, 7); ctx.fill();
-  }
-  if (k === "horizon") { ctx.fillStyle = grad(ctx, 0, 0, 70, "232,100,63", 0.3); ctx.beginPath(); ctx.arc(0, 0, 70, 0, 7); ctx.fill(); }
-  if (k === "ringed" || k === "horizon") ring(false);
-  ctx.fillStyle = k === "horizon" ? "#0B0B0B" : "#ECE7DC"; ctx.beginPath(); ctx.arc(0, 0, 46, 0, 7); ctx.fill();
-  ctx.strokeStyle = "#E8643F"; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(0, 0, 56, 0, 7); ctx.stroke();
-  if (k === "horizon") { ctx.strokeStyle = "#FFE2B0"; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(0, 0, 48, 0, 7); ctx.stroke(); }
-  if (k === "ringed" || k === "horizon") ring(true);
+async function drawBackdrop(ctx) {
+  if (cardSkin.sky === "deep") return;
+  const img = await svgPicture(<SkyBackdrop skin={cardSkin.sky} />, "-420 -220 840 440", 1200, 630);
+  if (img) ctx.drawImage(img, 0, 0, 1200, 630);
+}
+// The core with its skin, centred on (cx, cy), body radius ~46 at scale 1.
+async function drawCore(ctx, cx, cy, scale = 1) {
+  const k = cardSkin.core, body = k === "horizon" ? "#0B0B0B" : "#ECE7DC";
+  const inner = (
+    <>
+      <CoreSkin skin={k} layer="back" />
+      <circle r="56" fill="none" stroke="#E8643F" strokeWidth="2" />
+      <circle r="46" fill={body} />
+      <CoreSkin skin={k} layer="front" />
+    </>
+  );
+  const size = 640 * scale, img = await svgPicture(inner, "-320 -320 640 640", size, size);
+  if (img) ctx.drawImage(img, cx - size / 2, cy - size / 2, size, size);
 }
 
-function base(ctx, eyebrow) {
+async function base(ctx, eyebrow) {
   ctx.fillStyle = "#0B0B0B"; ctx.fillRect(0, 0, 1200, 630);
-  drawBackdrop(ctx);
+  await drawBackdrop(ctx);
   let s = 3; const r = () => ((s = (s * 16807) % 2147483647) / 2147483647);
   for (let i = 0; i < 260; i++) { ctx.fillStyle = `rgba(236,231,220,${0.1 + r() * 0.4})`; ctx.fillRect(r() * 1200, r() * 630, 2, 2); }
   if (cardFrame) { ctx.strokeStyle = cardFrame === "gold" ? "#E9C46A" : "#C9CED6"; ctx.lineWidth = 10; ctx.strokeRect(5, 5, 1190, 620); ctx.lineWidth = 1.5; ctx.strokeRect(20, 20, 1160, 590); }
@@ -151,9 +128,9 @@ function base(ctx, eyebrow) {
 function wrap(ctx, text, x, y, maxW, lh) { const words = text.split(" "); let line = ""; for (const w of words) { const t = line ? `${line} ${w}` : w; if (ctx.measureText(t).width > maxW && line) { ctx.fillText(line, x, y); line = w; y += lh; } else line = t; } ctx.fillText(line, x, y); return y; }
 const canvas = () => { const c = document.createElement("canvas"); c.width = 1200; c.height = 630; return c; };
 
-export function findCard(find, { title, compliment, have, size }) {
+export async function findCard(find, { title, compliment, have, size }) {
   const cv = canvas(), ctx = cv.getContext("2d");
-  base(ctx, `${title} discovered`);
+  await base(ctx, `${title} discovered`);
   const off = document.createElement("canvas"); off.width = off.height = 420;
   drawObject(off.getContext("2d"), 420, find);
   ctx.save(); ctx.beginPath(); ctx.arc(900, 300, 200, 0, 7); ctx.clip(); ctx.drawImage(off, 690, 90, 420, 420); ctx.restore();
@@ -165,9 +142,9 @@ export function findCard(find, { title, compliment, have, size }) {
   if (compliment) { ctx.fillStyle = "#E9C46A"; ctx.font = `italic 700 26px ${font("--font-body")}`; wrap(ctx, `"${compliment}."`, 64, 525, 600, 30); }
   return cv;
 }
-export function receiptCard(wk) {
+export async function receiptCard(wk) {
   const cv = canvas(), ctx = cv.getContext("2d");
-  base(ctx, `Beat the Model · week ${wk.week}`);
+  await base(ctx, `Beat the Model · week ${wk.week}`);
   ctx.fillStyle = "#ECE7DC"; ctx.font = `800 120px ${font("--font-display")}`; ctx.fillText(`${wk.right} OF ${wk.made}`, 64, 230);
   ctx.fillStyle = "#A39E92"; ctx.font = `400 24px ${font("--font-mono")}`; ctx.fillText(wk.right * 2 > wk.made ? "I BEAT THE MODEL. YOUR TURN." : "THE MODEL GOT ME THIS WEEK.", 64, 290);
   wk.pairs.forEach((p, i) => {
@@ -176,9 +153,9 @@ export function receiptCard(wk) {
   });
   return cv;
 }
-export function seasonCard(state, { title, size, rarest }) {
+export async function seasonCard(state, { title, size, rarest }) {
   const cv = canvas(), ctx = cv.getContext("2d");
-  base(ctx, "My season sky");
+  await base(ctx, "My season sky");
   ctx.save(); ctx.translate(880, 300); ctx.scale(0.95, 0.95);
   for (const c of skyFor(state.season)) {
     const f = state.filled[c.id];
@@ -188,11 +165,11 @@ export function seasonCard(state, { title, size, rarest }) {
     c.pts.forEach(([x, y, r], i) => { ctx.fillStyle = f[i] ? STAR[f[i]] : STAR[c.color]; ctx.globalAlpha = f[i] ? 1 : 0.35; ctx.beginPath(); ctx.arc(x, y, r * 1.3, 0, 7); ctx.fill(); });
     ctx.globalAlpha = 1;
   }
-  drawCore(ctx);
   ctx.restore();
+  await drawCore(ctx, 880, 300, 0.95);
   const finds = Object.values(state.found).reduce((a, b) => a + b.n, 0);
   ctx.fillStyle = "#ECE7DC"; ctx.font = `800 72px ${font("--font-display")}`; ctx.fillText(title.toUpperCase(), 64, 190);
-  const cells = [[state.points.toLocaleString(), "orbit points"], [String(finds), "finds"], [`${Object.keys(state.found).length} / ${size.toLocaleString()}`, "catalogue"], [`${state.btm[0]}-${state.btm[1]}`, "vs the model"]];
+  const cells = [[seasonProgress(state).points.toLocaleString(), "season points"], [String(finds), "finds"], [`${Object.keys(state.found).length} / ${size.toLocaleString()}`, "catalogue"], [`${state.btm[0]}-${state.btm[1]}`, "vs the model"]];
   cells.forEach(([v, l], i) => { const x = 64 + (i % 2) * 260, y = 300 + Math.floor(i / 2) * 110; ctx.fillStyle = "#ECE7DC"; ctx.font = `800 54px ${font("--font-display")}`; ctx.fillText(v, x, y); ctx.fillStyle = "#A39E92"; ctx.font = `400 18px ${font("--font-mono")}`; ctx.fillText(l.toUpperCase(), x, y + 30); });
   if (rarest) { ctx.fillStyle = "#E9C46A"; ctx.font = `400 20px ${font("--font-mono")}`; ctx.fillText(`RAREST FIND: ${rarest.name.toUpperCase()} (1 IN ${rarest.oneIn.toLocaleString()})`, 64, 520); }
   return cv;
