@@ -612,10 +612,12 @@ function Plans() {
                 </defs>
                 <g mask={`url(#ehp-plm-${i})`}><path d={ball(PLAN_BALL)} fill={hot ? "var(--ehp-mark)" : "currentColor"} /></g>
               </g>
-              {hot && <text x={x - 22} y={y - 14} textAnchor="end" fill="var(--ehp-mark)">{p.name.toUpperCase()}</text>}
+              
             </g>
           );
         })}
+        {/* the highlighted plan's name sits at the bottom of the graphic (founder, Nov 11 2026), not beside its planet */}
+        <text className="ehp-planname" x="0" y="268" textAnchor="middle" fill="var(--ehp-mark)">{PLANS[on].name.toUpperCase()}</text>
       </svg>
     </div>
   );
