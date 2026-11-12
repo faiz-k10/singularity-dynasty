@@ -806,7 +806,8 @@ export default function EventHorizon({ signedIn, tier, member, invited, discount
           <div className="ehp-r">
             {signedIn ? (
               <>
-                <ToolLink href="/my-team">My Team</ToolLink>
+                {/* Night Sky (the game) replaced My Team in the bar (founder, Nov 11 2026); My Team stays in the Tools menu */}
+                <ToolLink href="/account/sky">Night Sky</ToolLink>
                 <ToolLink href="/account">Account</ToolLink>
               </>
             ) : (

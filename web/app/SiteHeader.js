@@ -240,6 +240,7 @@ export default async function SiteHeader({ scripts = true }) {
           <BrandMark />The Dynasty Singularity
         </ToolLink>
         <nav className="top-nav-bar sh-right" aria-label="Account">
+          {user && <HeaderNavLink href="/account/sky">Night Sky</HeaderNavLink>}
           <HeaderNavLink href={user ? "/account" : "/login"} className="tn-box tn-account">
             {user ? "Account" : "Sign in"}
           </HeaderNavLink>
@@ -252,6 +253,7 @@ export default async function SiteHeader({ scripts = true }) {
           <Link href="/#pricing">Pricing</Link>
           <Link href="/#feed">Feed</Link>
           <ToolLink href="/my-team">My Team</ToolLink>
+          {user && <ToolLink href="/account/sky">Night Sky</ToolLink>}
           <ToolLink href="/tools/lab">The Observatory</ToolLink>
           <Link href="/how-it-works">How It Works</Link>
           <Link href={user ? "/account" : "/login"}>
