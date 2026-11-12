@@ -85,7 +85,7 @@ for (const [label, [rate, off]] of Object.entries(profiles)) {
   console.log(`  limited season skins earned: ${[2026, 2027, 2028].map((y) => `${y}: ${pct((r) => r.out.skinAt["season-" + y] != null)}`).join(", ")}, median week of the season ${med((r) => r.out.skinAt["season-2026"])?.toFixed(0) ?? "-"}`);
   console.log(`  week of the season each rung lands (season 2, median): ${LADDER.map((t, i) => `${rungLabel(t)} ${med((r) => r.out.rungAt?.[`2027:${i}`])?.toFixed(1) ?? "-"}`).join(", ")}`);
   const at = (n) => LADDER.findIndex((r) => r.at === n);
-  for (let y = 0; y < 3; y++) console.log(`  season ${y + 1} costly rewards: week of plan (14,000) ${pct((q) => q.out.years[y]?.doneList?.[at(14000)])}, free month (30,000) ${pct((q) => q.out.years[y]?.doneList?.[at(30000)])}, early access (10,000, automatic) ${pct((q) => q.out.years[y]?.doneList?.[at(10000)])}`);
+  for (let y = 0; y < 3; y++) console.log(`  season ${y + 1} costly rewards: week of plan (14,000) ${pct((q) => q.out.years[y]?.doneList?.[at(14000)])}, free month (30,000) ${pct((q) => q.out.years[y]?.doneList?.[at(30000)])}, early access (12,000, automatic) ${pct((q) => q.out.years[y]?.doneList?.[at(12000)])}`);
   const drought = (r, y) => { const a = y * 365, b = a + 140; const d = [a, ...r.out.rewardDays.filter((x) => x >= a && x < b), b]; let m = 0; for (let i = 1; i < d.length; i++) m = Math.max(m, d[i] - d[i - 1]); return m / 7; };
   for (let y = 0; y < 3; y++) console.log(`  year ${y + 1} season (20 wks): longest stretch with no new rung, season reward or skin: median ${med((r) => drought(r, y)).toFixed(1)} wks, 1 in 4 members ${(() => { const v = runs.map((r) => drought(r, y)).sort((a, b) => a - b); return v[Math.floor(N * 0.75)].toFixed(1); })()} wks or more`);
   console.log(`  finds by tier % (small / comet / planet / shower / stellar): ${share(runs.reduce((a, r) => a.map((x, i) => x + r.out.finds[i]), [0, 0, 0, 0, 0]))}`);
@@ -114,7 +114,7 @@ if (!process.env.PROFILES) {
     const [rate, off] = ALL[k];
     const runs = Array.from({ length: 200 }, () => member(rate, off, 2));
     const share = (i) => runs.filter((r) => r.out.years[1]?.doneList?.[i]).length / runs.length;
-    weeks += n * share(at(14000)); months += n * share(at(30000)); stars += n * share(at(20000)); early += n * share(at(10000));
+    weeks += n * share(at(14000)); months += n * share(at(30000)); stars += n * share(at(20000)); early += n * share(at(12000));
   }
   const usd = (x) => "USD " + Math.round(x);
   console.log(`  weeks of plan ${weeks.toFixed(0)} (~${usd(weeks * 4)}), free months ${months.toFixed(1)} (~${usd(months * 25)}), named stars ${stars.toFixed(0)} (no cost), early access ${early.toFixed(0)} members (automatic)`);

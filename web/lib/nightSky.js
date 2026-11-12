@@ -141,7 +141,7 @@ export const POWERUPS = {
 // mockups/night-sky-sim-live.mjs (season points, later seasons / a first season, which runs higher): light ~4,000 / 4,500, regular (3 actions a
 // day) ~10,000 / 13,000, upper regular (4 a day) ~14,000 / 17,500, engaged (6 a day) ~21,000 / 26,000, hardcore (all 7 on ~95% of days, all
 // year) ~31,000 / 37,000. Founder, Nov 11 2026: the free month (30,000) is for hardcore members ONLY -- never a regular; the week of plan
-// (14,000) only for the top end of regular members; early access is automatic.
+// (14,000) only for the top end of regular members; early access (12,000, founder: the more active half, not most members) is automatic.
 export const LADDER = [
   { at: 200, reward: "First light: a profile badge for the season", title: "Spotter" },
   { at: 500, reward: "A silver season frame on your share cards", frame: "silver" },
@@ -151,7 +151,7 @@ export const LADDER = [
   { at: 3500, reward: "Season title: Tracker", title: "Tracker" },
   { singularity: true, reward: "Finish this season's Singularity: its limited sky skin, never available again" },
   { at: 6000, reward: "Season title: Surveyor", title: "Surveyor" },
-  { at: 10000, reward: "A gold season frame, plus early access to new tools and features for the rest of the season (automatic)", frame: "gold", early: true },
+  { at: 12000, reward: "A gold season frame, plus early access to new tools and features for the rest of the season (automatic)", frame: "gold", early: true },
   { at: 14000, reward: "A week of the next plan up", claim: true },
   { at: 20000, reward: "Your name on a star in this season's sky", title: "Star-namer", claim: true },
   { at: 30000, reward: "A free month, for members who barely miss a day all season", title: "Event Horizon", claim: true },
