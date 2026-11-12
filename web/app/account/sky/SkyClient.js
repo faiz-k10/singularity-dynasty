@@ -223,7 +223,6 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
 
   return (
     <div className="sky">
-      <p className="tool-sub">Every useful thing you do on the site places a star. Finish constellations to power up your finds, and when the core collapses, point the telescope.</p>
       {event && <p className="sky-banner mono">{EVENT_TEXT[event]}</p>}
       {msg && <p className="sky-banner mono is-bad">{msg}</p>}
 
