@@ -7209,9 +7209,9 @@ body:has(.ehp) .ehp-inside,body:has(.ehp) .ehp-dark{--ehp-hole:#0B0B0B;--ehp-hol
 @media (max-width:900px){.sky-grid{grid-template-columns:minmax(0,1fr)}}
 
 /* Night Sky star colours by theme (SkyClient.js STAR): on the light sky white stars are ink and gold is a deeper amber. */
-.sky{--sky-blue:#4C7DF0;--sky-ember:#E8643F;--sky-white:#ECE7DC;--sky-gold:#E9C46A;--sky-glow:#CFE0FF;--sky-band:#D9CFC0}
-@media (prefers-color-scheme: light){:root:not([data-theme="dark"]) .sky{--sky-blue:#1F4FC4;--sky-ember:#C8401E;--sky-white:#2A2824;--sky-gold:#B07A0C;--sky-glow:#2F5E9E;--sky-band:#5C5850}}
-:root[data-theme="light"] .sky{--sky-blue:#1F4FC4;--sky-ember:#C8401E;--sky-white:#2A2824;--sky-gold:#B07A0C;--sky-glow:#2F5E9E;--sky-band:#5C5850}
+.sky{--sky-blue:#4C7DF0;--sky-ember:#E8643F;--sky-white:#ECE7DC;--sky-gold:#E9C46A;--sky-glow:#CFE0FF;--sky-band:#D9CFC0;--sky-t-blue:#CFE0FF;--sky-t-white:#F4F1EA;--sky-t-gold:#FFE3A8;--sky-t-orange:#FFB57A;--sky-gal-warm:#F2C894;--sky-gal-cool:#A9C4FF}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]) .sky{--sky-blue:#1F4FC4;--sky-ember:#C8401E;--sky-white:#2A2824;--sky-gold:#B07A0C;--sky-glow:#2F5E9E;--sky-band:#5C5850;--sky-t-blue:#2F5E9E;--sky-t-white:#2A2824;--sky-t-gold:#8A6512;--sky-t-orange:#A0461F;--sky-gal-warm:#8A6512;--sky-gal-cool:#2F5E9E}}
+:root[data-theme="light"] .sky{--sky-blue:#1F4FC4;--sky-ember:#C8401E;--sky-white:#2A2824;--sky-gold:#B07A0C;--sky-glow:#2F5E9E;--sky-band:#5C5850;--sky-t-blue:#2F5E9E;--sky-t-white:#2A2824;--sky-t-gold:#8A6512;--sky-t-orange:#A0461F;--sky-gal-warm:#8A6512;--sky-gal-cool:#2F5E9E}
 /* Skins (skins.js; unlocks in lib/nightSky.js SKINS) */
 .sky-skins-row{display:flex;flex-direction:column;gap:8px}
 .sky-skins-h{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--star-dim)}
@@ -7251,3 +7251,11 @@ body:has(.ehp) .ehp-inside,body:has(.ehp) .ehp-dark{--ehp-hole:#0B0B0B;--ehp-hol
 .sky-past{list-style:none;margin:0;padding:0}
 .sky-past li{display:grid;grid-template-columns:48px 1fr auto;gap:12px;align-items:center;padding:8px 0;border-top:1px solid var(--line);font-size:13.5px}
 .sky-past li:first-child{border-top:0}
+
+/* The core as a luminous star (Hubble kit, Nov 11 2026): a highlight falling off to a darkened edge, a halo and four diffraction spikes.
+   Dark theme only -- on the light sky the core stays the flat ink disc of the brand mark; gone while collapsed and under Event Horizon. */
+.sky-core-shine,.sky-core-spikes{pointer-events:none}
+.sky-core.is-collapsed .sky-core-shine,.sky-core.is-collapsed .sky-core-spikes,.sky-core.skin-horizon .sky-core-shine,.sky-core.skin-horizon .sky-core-spikes{display:none}
+.sky-core.is-cool .sky-core-glow{fill:#CFE0FF;opacity:.1}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]) .sky-core-shine,:root:not([data-theme="dark"]) .sky-core-spikes{display:none}}
+:root[data-theme="light"] .sky-core-shine,:root[data-theme="light"] .sky-core-spikes{display:none}

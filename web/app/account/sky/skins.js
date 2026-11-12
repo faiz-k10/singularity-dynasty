@@ -2,6 +2,7 @@
 
 import { useId } from "react";
 import { skyFor } from "@/lib/nightSky";
+import { StarField, Galaxies, Cloud } from "./hubble";
 
 // The Night Sky's skins (rules, unlocks, rarity and progress: SKINS in lib/nightSky.js). Drawn in the sky's own coordinates (-300..300, the
 // core at 0,0, its body r 44, the gauge r 74-84) so the same pieces serve the sky and the previews in the Skins panel. Cosmetic art, so the
@@ -17,9 +18,7 @@ export function seasonGhost(skin) {
 
 const seeded = (seed, n, f) => { let s = seed; const r = () => ((s = (s * 16807) % 2147483647) / 2147483647); return Array.from({ length: n }, () => f(r)); };
 const bandStars = seeded(11, 320, (r) => { const along = r() * 900 - 450, across = (r() + r() + r() - 1.5) * 70; return [along, across, 0.3 + r() * 0.9, 0.25 + r() * 0.6]; });
-const nebulaStars = seeded(23, 14, (r) => [r() * 520 - 260, r() * 520 - 260, 1.5 + r() * 2.5]);
 const curtain = seeded(7, 18, (r) => r() * 600 - 300);
-const field = seeded(5, 40, (r) => [r() * 600 - 300, r() * 600 - 300, 1.5 + r() * 2.5]);
 
 const glow = (id, sd) => <filter id={id} x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation={sd} /></filter>;
 const radial = (id, stops) => <radialGradient id={id}>{stops.map(([o, c, a], i) => <stop key={i} offset={o} stopColor={c} stopOpacity={a} />)}</radialGradient>;
@@ -27,21 +26,14 @@ const radial = (id, stops) => <radialGradient id={id}>{stops.map(([o, c, a], i) 
 export function SkyBackdrop({ skin }) {
   const id = useId().replace(/:/g, "");
   if (skin === "nebula") return (
+    // the "Hubble palette": gold, teal and rust gas in fine filaments, a few young blue stars burning through
     <g aria-hidden="true">
-      <defs>
-        {radial(`${id}a`, [[0, "#8B5CF6", 0.62], [0.55, "#8B5CF6", 0.22], [1, "#8B5CF6", 0]])}
-        {radial(`${id}b`, [[0, "#14B8A6", 0.62], [0.55, "#14B8A6", 0.22], [1, "#14B8A6", 0]])}
-        {radial(`${id}c`, [[0, "#EC4899", 0.62], [0.55, "#EC4899", 0.22], [1, "#EC4899", 0]])}
-        {radial(`${id}d`, [[0, "#3B82F6", 0.62], [0.55, "#3B82F6", 0.22], [1, "#3B82F6", 0]])}
-        {glow(`${id}f`, 6)}
-      </defs>
-      <g className="sky-skin-drift">
-        <ellipse cx="-140" cy="-40" rx="260" ry="160" fill={`url(#${id}a)`} transform="rotate(-20 -140 -40)" />
-        <ellipse cx="170" cy="140" rx="240" ry="150" fill={`url(#${id}b)`} transform="rotate(25 170 140)" />
-        <ellipse cx="80" cy="-200" rx="170" ry="100" fill={`url(#${id}c)`} />
-        <ellipse cx="-180" cy="200" rx="150" ry="90" fill={`url(#${id}d)`} />
-      </g>
-      {nebulaStars.map(([x, y, r], i) => <g key={i}><circle cx={x} cy={y} r={r * 3} fill="#FFFFFF" fillOpacity=".25" filter={`url(#${id}f)`} /><circle cx={x} cy={y} r={r} fill="#FFFFFF" /></g>)}
+      <Cloud id={`${id}a`} cx={-120} cy={-40} rx={300} ry={190} rot={-20} color="#E3A857" freq={0.009} seed={3} />
+      <Cloud id={`${id}b`} cx={150} cy={120} rx={260} ry={170} rot={25} color="#2BB3A3" freq={0.011} seed={8} />
+      <Cloud id={`${id}c`} cx={40} cy={-190} rx={200} ry={120} rot={10} color="#C2543A" freq={0.014} seed={13} strength={0.9} />
+      <Cloud id={`${id}d`} cx={-170} cy={190} rx={180} ry={110} rot={-8} color="#5B8DEF" freq={0.012} seed={21} strength={0.85} />
+      <Cloud id={`${id}e`} cx={20} cy={20} rx={240} ry={90} rot={-30} color="#05060A" freq={0.02} seed={34} strength={1.1} />
+      <StarField seed={23} n={26} spikes={4} scale={1.2} />
     </g>
   );
   if (skin === "aurora") return (
@@ -68,7 +60,9 @@ export function SkyBackdrop({ skin }) {
       </defs>
       <rect x="-460" y="-100" width="920" height="200" fill={`url(#${id}m)`} />
       <ellipse cx="60" cy="0" rx="200" ry="70" fill={`url(#${id}c)`} />
-      <path d="M-460 6 C -200 -24, 40 34, 460 -4" stroke="#05060A" strokeOpacity=".55" strokeWidth="14" fill="none" filter={`url(#${id}f)`} />
+      <Cloud id={`${id}w`} cx={40} cy={0} rx={420} ry={90} color="#F2D3A6" freq={0.016} seed={5} strength={0.8} />
+      <Cloud id={`${id}k`} cx={0} cy={6} rx={460} ry={34} color="#05060A" freq={0.03} seed={9} strength={1.2} />
+      <path d="M-460 6 C -200 -24, 40 34, 460 -4" stroke="#05060A" strokeOpacity=".45" strokeWidth="10" fill="none" filter={`url(#${id}f)`} />
       {bandStars.map(([x, y, r, o], i) => <circle key={i} cx={x} cy={y} r={r} fill="var(--sky-white)" fillOpacity={o} />)}
     </g>
   );
@@ -212,19 +206,23 @@ export function CoreSkin({ skin, layer }) {
 
 // A square preview of one skin for the Skins panel (always in full colour; a locked one gets a lock over it in the panel).
 export function SkinPreview({ kind, id }) {
+  const gid = useId().replace(/:/g, "");
   return (
     <svg viewBox={kind === "sky" ? "-300 -300 600 600" : "-160 -160 320 320"} className={`sky-skin-preview${id === "horizon" ? " is-horizon" : ""}`} aria-hidden="true">
+      <defs><radialGradient id={`${gid}c`} cx=".42" cy=".4"><stop offset="0" stopColor="#FFFFFF" stopOpacity=".95" /><stop offset=".45" stopColor="#FFFFFF" stopOpacity=".25" /><stop offset=".85" stopColor="#000000" stopOpacity="0" /><stop offset="1" stopColor="#000000" stopOpacity=".22" /></radialGradient></defs>
       <rect x="-300" y="-300" width="600" height="600" className="sky-skin-preview-bg" />
-      {field.map(([x, y, r], i) => <circle key={i} cx={x} cy={y} r={r} fill="var(--star)" fillOpacity=".45" />)}
+      {kind === "sky" ? <><Galaxies id={gid} seed={31} n={8} scale={1.6} /><StarField seed={5} n={70} spikes={3} scale={1.6} /></> : <StarField seed={5} n={40} span={320} spikes={2} scale={0.9} />}
       {kind === "sky" ? (
         <>
           <SkyBackdrop skin={id} />
           <circle r="40" className="sky-skin-preview-core" />
+          <circle r="40" className="sky-core-shine" fill={`url(#${gid}c)`} />
         </>
       ) : (
         <>
           <CoreSkin skin={id} layer="back" />
           <circle r="44" className="sky-skin-preview-core" />
+          {id !== "horizon" && <circle r="44" className="sky-core-shine" fill={`url(#${gid}c)`} />}
           <CoreSkin skin={id} layer="front" />
         </>
       )}

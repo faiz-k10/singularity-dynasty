@@ -1,10 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import ShareDialog from "../../ShareDialog";
 import { seeFinds, pickPlayer, claim, wearSkin } from "./actions";
 import { SkyBackdrop, CoreSkin, SkinPreview } from "./skins";
+import { StarField, Galaxies, Spikes } from "./hubble";
 import { drawObject, sharpen, findCard, receiptCard, seasonCard, toBlob, setCardBadge, setCardSkin, setCardFrame } from "./skyArt";
 import {
   ACTIONS, skyFor, SKINS, RARITY, hasSkin, equipped, skySkinsFor, FAMILIES, COLOURS, VERSIONS, TIER_NAME, POWERUPS, LADDER, rungLabel, CATALOGUE_SIZE, SET_COUNT, UNLOCK, EVENT_TEXT,
@@ -18,10 +19,7 @@ import {
 // dark-sky hexes (COLORS in lib/nightSky.js).
 const STAR = { blue: "var(--sky-blue)", ember: "var(--sky-ember)", white: "var(--sky-white)", gold: "var(--sky-gold)", lucky: "var(--sky-gold)" };
 
-const seededStars = (() => {
-  let s = 7; const r = () => ((s = (s * 16807) % 2147483647) / 2147483647);
-  return Array.from({ length: 140 }, () => [r() * 600 - 300, r() * 600 - 300, 0.4 + r() * 0.9, 0.15 + r() * 0.35]);
-})();
+// The field of stars and distant galaxies is the Hubble kit (./hubble.js).
 
 // The core's four stages. Cool / warming / unstable follow its mass (the same thresholds the page has always named); collapsed = a find is
 // waiting for the telescope. The gauge has one tick per unit of mass (12 shown), coloured by the band it sits in.
@@ -38,14 +36,21 @@ function Core({ mass, collapsed, skin }) {
     const r2 = (v) => Math.round(v * 100) / 100; // the same digits on the server and in the browser
     return { x1: r2(Math.cos(a) * 74), y1: r2(Math.sin(a) * 74), x2: r2(Math.cos(a) * 84), y2: r2(Math.sin(a) * 84), lit: collapsed || i < m, band };
   });
+  const gid = useId().replace(/[^a-zA-Z0-9_-]/g, "");
   return (
     <g className={`sky-core is-${st.id} skin-${skin}`}>
+      <defs>
+        <radialGradient id={`${gid}c`} cx=".42" cy=".4"><stop offset="0" stopColor="#FFFFFF" stopOpacity=".95" /><stop offset=".45" stopColor="#FFFFFF" stopOpacity=".25" /><stop offset=".85" stopColor="#000000" stopOpacity="0" /><stop offset="1" stopColor="#000000" stopOpacity=".22" /></radialGradient>
+      </defs>
       <circle className="sky-core-glow" r="70" />
       {ticks.map((t, i) => <line key={i} className={`sky-core-tick${t.lit ? ` is-lit is-${t.band}` : ""}`} x1={t.x1} y1={t.y1} x2={t.x2} y2={t.y2} />)}
       <circle className="sky-core-debris" r="62" />
       <CoreSkin skin={skin} layer="back" />
       <circle className="sky-core-rim" r="54" />
       <circle className="sky-core-body" r="44" />
+      {/* a luminous star, Hubble-style: a bright centre falling off to the edge, a soft halo and four diffraction spikes (dark theme only) */}
+      <circle className="sky-core-shine" r="44" fill={`url(#${gid}c)`} />
+      <g className="sky-core-spikes"><Spikes x={0} y={0} len={92} color="var(--sky-t-white)" width={1.2} opacity={0.45} /></g>
       <CoreSkin skin={skin} layer="front" />
       {collapsed && <circle className="sky-core-lens" r="49" />}
       <text className="sky-heat" x="0" y="106" textAnchor="middle">
@@ -58,11 +63,13 @@ function Core({ mass, collapsed, skin }) {
 }
 
 function Sky({ state, pendingPicks, pending }) {
+  const fid = useId().replace(/[^a-zA-Z0-9_-]/g, "");
   const open = state.findsTotal >= UNLOCK.constellations;
   return (
     <svg className="sky-svg" viewBox="-300 -300 600 600" role="img" aria-label={`Your sky: ${state.findsTotal} finds, the core ${pending ? "collapsed" : stageOf(state.mass).label.toLowerCase()}`}>
       <SkyBackdrop skin={equipped(state).sky} />
-      {seededStars.map(([x, y, r, o], i) => <circle key={i} cx={x} cy={y} r={r} fill="var(--star)" fillOpacity={o} />)}
+      <Galaxies id={fid} seed={31} n={12} />
+      <StarField seed={7} n={170} spikes={6} />
       {skyFor(state.season).map((c) => {
         const f = state.filled[c.id] || [];
         if (!open) return <g key={c.id}>{c.pts.map(([x, y], i) => f[i] ? <circle key={i} cx={x} cy={y} r={3} fill="var(--star)" /> : null)}</g>;
