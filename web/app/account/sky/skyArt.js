@@ -3,6 +3,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { FAMILIES, COLOURS, skyFor, seasonProgress, COLORS as STAR } from "@/lib/nightSky";
 import { SkyBackdrop, CoreSkin } from "./skins";
+import { StarField, Galaxies, Spikes } from "./hubble";
 
 // The Night Sky's pictures (from mockups/night-sky.html, which the founder approved): one renderer per kind of object, coloured by the find's
 // colour and finished by its version, drawn on a canvas; the telescope reveal (the picture sharpens out of noise); and the share cards.
@@ -117,8 +118,15 @@ function svgPicture(children, viewBox, w, h) {
   });
 }
 async function drawBackdrop(ctx) {
-  if (cardSkin.sky === "deep") return;
-  const img = await svgPicture(<SkyBackdrop skin={cardSkin.sky} />, "-420 -220 840 440", 1200, 630);
+  // the Hubble field on every card (stars in colour temperatures with spikes, distant galaxies), with the equipped sky skin over it
+  const img = await svgPicture(
+    <>
+      <Galaxies id="cg" seed={31} n={18} span={840} />
+      <StarField seed={7} n={260} span={840} spikes={8} />
+      <SkyBackdrop skin={cardSkin.sky} />
+    </>,
+    "-420 -220 840 440", 1200, 630,
+  );
   if (img) ctx.drawImage(img, 0, 0, 1200, 630);
 }
 // The core with its skin, centred on (cx, cy), body radius ~46 at scale 1.
@@ -129,6 +137,13 @@ async function drawCore(ctx, cx, cy, scale = 1) {
       <CoreSkin skin={k} layer="back" />
       <circle r="56" fill="none" stroke="#E8643F" strokeWidth="2" />
       <circle r="46" fill={body} />
+      {k !== "horizon" && (
+        <>
+          <defs><radialGradient id="cs" cx=".42" cy=".4"><stop offset="0" stopColor="#FFFFFF" stopOpacity=".95" /><stop offset=".45" stopColor="#FFFFFF" stopOpacity=".25" /><stop offset=".85" stopColor="#000000" stopOpacity="0" /><stop offset="1" stopColor="#000000" stopOpacity=".22" /></radialGradient></defs>
+          <circle r="46" fill="url(#cs)" />
+          <Spikes x={0} y={0} len={92} color="#F4F1EA" width={1.2} opacity={0.45} />
+        </>
+      )}
       <CoreSkin skin={k} layer="front" />
     </>
   );
@@ -139,8 +154,6 @@ async function drawCore(ctx, cx, cy, scale = 1) {
 async function base(ctx, eyebrow) {
   ctx.fillStyle = "#0B0B0B"; ctx.fillRect(0, 0, 1200, 630);
   await drawBackdrop(ctx);
-  let s = 3; const r = () => ((s = (s * 16807) % 2147483647) / 2147483647);
-  for (let i = 0; i < 260; i++) { ctx.fillStyle = `rgba(236,231,220,${0.1 + r() * 0.4})`; ctx.fillRect(r() * 1200, r() * 630, 2, 2); }
   if (cardFrame) { ctx.strokeStyle = cardFrame === "gold" ? "#E9C46A" : "#C9CED6"; ctx.lineWidth = 10; ctx.strokeRect(5, 5, 1190, 620); ctx.lineWidth = 1.5; ctx.strokeRect(20, 20, 1160, 590); }
   ctx.fillStyle = "#E8643F"; ctx.fillRect(0, 0, 1200, 6); ctx.fillRect(64, 70, 10, 10);
   ctx.fillStyle = "#A39E92"; ctx.font = `400 20px ${font("--font-mono")}`; ctx.fillText(eyebrow.toUpperCase(), 88, 81);
@@ -182,16 +195,29 @@ export async function receiptCard(wk) {
 export async function seasonCard(state, { title, size, rarest }) {
   const cv = canvas(), ctx = cv.getContext("2d");
   await base(ctx, "My season sky");
-  ctx.save(); ctx.translate(880, 300); ctx.scale(0.95, 0.95);
-  for (const c of skyFor(state.season)) {
-    const f = state.filled[c.id];
-    ctx.strokeStyle = STAR[c.color]; ctx.globalAlpha = 0.6; ctx.lineWidth = 2;
-    c.edges.forEach(([i, j]) => { ctx.beginPath(); ctx.moveTo(c.pts[i][0], c.pts[i][1]); ctx.lineTo(c.pts[j][0], c.pts[j][1]); ctx.stroke(); });
-    ctx.globalAlpha = 1;
-    c.pts.forEach(([x, y, r], i) => { ctx.fillStyle = f[i] ? STAR[f[i]] : STAR[c.color]; ctx.globalAlpha = f[i] ? 1 : 0.35; ctx.beginPath(); ctx.arc(x, y, r * 1.3, 0, 7); ctx.fill(); });
-    ctx.globalAlpha = 1;
-  }
-  ctx.restore();
+  // the constellations drawn like the page: lit stars with a halo and spikes, unlit ones as faint outlines
+  const sky = skyFor(state.season);
+  const stars = await svgPicture(
+    <>
+      {sky.map((c) => {
+        const f = state.filled[c.id] || [];
+        return (
+          <g key={c.id}>
+            {c.edges.map(([i, j]) => { const lit = f[i] && f[j]; return <line key={`${i}-${j}`} x1={c.pts[i][0]} y1={c.pts[i][1]} x2={c.pts[j][0]} y2={c.pts[j][1]} stroke={lit ? STAR[c.color] : "#ECE7DC"} strokeOpacity={lit ? 0.75 : 0.18} strokeWidth={lit ? 1.6 : 1} strokeDasharray={lit ? undefined : "2 3"} />; })}
+            {c.pts.map(([x, y, r], i) => (f[i] ? (
+              <g key={i}>
+                <circle cx={x} cy={y} r={r * 3.2} fill={STAR[f[i]]} fillOpacity=".18" />
+                <circle cx={x} cy={y} r={r} fill={STAR[f[i]]} />
+                <Spikes x={x} y={y} len={r * 4} color={STAR[f[i]]} width={0.8} opacity={0.8} />
+              </g>
+            ) : <circle key={i} cx={x} cy={y} r={r + 0.8} fill="none" stroke="#ECE7DC" strokeOpacity=".35" strokeDasharray="2 2" />))}
+          </g>
+        );
+      })}
+    </>,
+    "-300 -300 600 600", 570, 570,
+  );
+  if (stars) ctx.drawImage(stars, 880 - 285, 300 - 285, 570, 570);
   await drawCore(ctx, 880, 300, 0.95);
   const finds = Object.values(state.found).reduce((a, b) => a + b.n, 0);
   ctx.fillStyle = "#ECE7DC"; ctx.font = `800 72px ${font("--font-display")}`; ctx.fillText(title.toUpperCase(), 64, 190);

@@ -240,7 +240,7 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
               <p className="sky-note-line mono">{state.strains ? `The core strained ${state.strains} time${state.strains === 1 ? "" : "s"} since your last look … and held.` : "Earn stars below. The core collapses at a moment nobody knows."}</p>
             )}
             <div className="sky-row">
-              <button type="button" className="btn-ghost" onClick={() => setShare({ title: `My season sky: ${title}`, caption: `My Night Sky this season: ${title}, ${state.points.toLocaleString()} orbit points, ${entries.length} of ${CATALOGUE_SIZE.toLocaleString()} in my catalogue.`, make: () => seasonCard(state, { title, size: CATALOGUE_SIZE, rarest }) })}>Share my season sky</button>
+              <button type="button" className="btn-ghost" onClick={() => setShare({ title: `My season sky: ${title}`, caption: `My Night Sky this season: ${title}, ${sp.points.toLocaleString()} season points, ${entries.length} of ${CATALOGUE_SIZE.toLocaleString()} in my catalogue.`, make: () => seasonCard(state, { title, size: CATALOGUE_SIZE, rarest }) })}>Share my season sky</button>
             </div>
           </section>
 
