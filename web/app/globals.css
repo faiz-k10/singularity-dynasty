@@ -7233,7 +7233,7 @@ body:has(.ehp) .ehp-inside,body:has(.ehp) .ehp-dark{--ehp-hole:#0B0B0B;--ehp-hol
 .sky-skin-lock{position:absolute;right:6px;bottom:6px;width:30px;height:30px;display:grid;place-items:center;background:color-mix(in srgb,var(--void) 80%,transparent);color:var(--star);border:1px solid var(--line)}
 .sky-skin.is-locked .sky-skin-preview{filter:saturate(.75) brightness(.7)}
 .sky-skin.is-locked:hover .sky-skin-preview{filter:none}
-.sky-skin-bar{position:relative;display:block;height:16px;background:color-mix(in srgb,var(--star) 8%,transparent);border:1px solid var(--line)}
+.sky-skin-bar{position:relative;display:block;height:16px;margin-top:auto;flex:none;background:color-mix(in srgb,var(--star) 8%,transparent);border:1px solid var(--line)}
 .sky-skin-bar i{position:absolute;left:0;top:0;bottom:0;background:color-mix(in srgb,var(--rar) 55%,transparent)}
 .sky-skin-bar em{position:relative;display:block;font-style:normal;font-size:10px;line-height:14px;text-align:center;color:var(--star)}
 .sky-skin-preview{width:100%;aspect-ratio:1;display:block;border-radius:var(--r-sm)}
