@@ -32,6 +32,7 @@ const radiusFor = (w) => (w < 560 ? Math.max(104, Math.round((w - 120) / 2)) : 1
 // a planet is a FOOTBALL (founder, Nov 10 2026): a full-bodied oval, 2.6 radii long and 1.6 tall, with gently pointed ends -- not a lemon -- tilted a little
 const ball = (r, grow = 0) => { const L = 1.3 * r + grow, H = 0.8 * r + grow; return `M${-L} 0 C${-0.82 * L} ${-0.4 * H} ${-0.45 * L} ${-H} 0 ${-H} C${0.45 * L} ${-H} ${0.82 * L} ${-0.4 * H} ${L} 0 C${0.82 * L} ${0.4 * H} ${0.45 * L} ${H} 0 ${H} C${-0.45 * L} ${H} ${-0.82 * L} ${0.4 * H} ${-L} 0 Z`; };
 const BALL_TILT = -12;
+const PLAN_BALL = 10; // the plan footballs in the Plans section: 26 x 16 units in a 560-unit drawing, so about 24 x 15 px (a league football on the hero is about 23 x 14)
 // the name's path (founder, Nov 10 2026): the top edge of the football, a little above it, stretched wider when the name is longer than the ball
 const NAME_FS = 15, NAME_LS = 3.3;
 const namePath = (r, n) => { const g = 12, L = 1.3 * r + g, H = 0.8 * r + g, f = Math.max(1, (n * (NAME_FS * 0.62 + NAME_LS) + 16) / (2.3 * L)), l = L * f, h = H * f; return `M${-l} 0 C${-0.82 * l} ${-0.4 * h} ${-0.45 * l} ${-h} 0 ${-h} C${0.45 * l} ${-h} ${0.82 * l} ${-0.4 * h} ${l} 0`; };
@@ -599,8 +600,19 @@ function Plans() {
             <g key={p.id} className="tier" onMouseEnter={() => setOn(i)}>
               <circle r={p.r} fill="none" stroke={hot ? "var(--ehp-mark)" : "currentColor"} strokeWidth={hot ? 1.6 : 0.7} strokeOpacity={hot ? 1 : 0.45} />
               <circle r={p.r} fill="none" stroke="transparent" strokeWidth="26" />
-              <circle cx={x} cy={y} r="5" fill={hot ? "var(--ehp-mark)" : "currentColor"} />
-              {hot && <text x={x - 14} y={y - 12} textAnchor="end" fill="var(--ehp-mark)">{p.name.toUpperCase()}</text>}
+              {/* each plan's planet is a football, like the hero's (founder, Nov 11 2026): the same ball() / stripes() shape, its two white stripes cut out
+                  by a mask, turned to point along its orbit */}
+              <g transform={`translate(${x} ${y}) rotate(${+((a * 180) / Math.PI + 90).toFixed(1)})`}>
+                <defs>
+                  <clipPath id={`ehp-plc-${i}`}><path d={ball(PLAN_BALL * 0.88)} /></clipPath>
+                  <mask id={`ehp-plm-${i}`}>
+                    <path d={ball(PLAN_BALL)} fill="#fff" />
+                    <g clipPath={`url(#ehp-plc-${i})`}><path d={stripes(PLAN_BALL)} fill="#000" /></g>
+                  </mask>
+                </defs>
+                <g mask={`url(#ehp-plm-${i})`}><path d={ball(PLAN_BALL)} fill={hot ? "var(--ehp-mark)" : "currentColor"} /></g>
+              </g>
+              {hot && <text x={x - 22} y={y - 14} textAnchor="end" fill="var(--ehp-mark)">{p.name.toUpperCase()}</text>}
             </g>
           );
         })}
