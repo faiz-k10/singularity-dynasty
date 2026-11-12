@@ -160,23 +160,30 @@ export const rungLabel = (r) => (r.three ? "Charted" : r.singularity ? "Singular
 // Skins (Nov 11 2026, founder: "aesthetic rewards, like how real games use skins"). Purely cosmetic: a backdrop for the sky and a design for
 // the core, shown on the page and on share cards. Each is unlocked by something the member did (`test`, read from their state) and is kept
 // for good once earned (`s.skins`, filled by unlockSkins); `s.equip` is what they chose. Nothing here can be bought.
+// rarity: how hard it is to earn (shown as a tier on each skin, the way games label cosmetics); progress(s) -> [have, need] for the bar
+// under a locked skin. Tiers follow the simulation's unlock times: common within weeks, rare within a season, epic a regular member's
+// first season, legendary a year or more, mythic years, limited = that season only.
+const stellar = (s) => Object.values(s.found).some((e) => FAMILIES[e.fam]?.tier === 5);
+const mythicFind = (s) => Object.values(s.found).some((e) => e.version === "mythic");
+const bestSeason = (s) => Math.max(seasonProgress(s).points, ...Object.values(s.skies || {}).map((k) => k.points || 0));
 export const SKINS = {
   sky: [
-    { id: "deep", name: "Deep field", how: "Yours from the start" },
-    { id: "nebula", name: "Nebula", how: "Reach 200 orbit points in total", test: (s) => s.points >= 200 },
-    { id: "aurora", name: "Aurora", how: "Chart a season: finish The Huddle, The Blitz and The Playbook in one season", test: (s) => seasonProgress(s).sky || Object.values(s.skies || {}).some((k) => k.charted) },
-    { id: "milkyway", name: "Milky Way", how: "Reach 6,000 orbit points in total", test: (s) => s.points >= 6000 },
-    { id: "eclipse", name: "Eclipse", how: "Find a stellar event", test: (s) => Object.values(s.found).some((e) => FAMILIES[e.fam]?.tier === 5) },
+    { id: "deep", name: "Deep field", how: "Yours from the start", rarity: "standard" },
+    { id: "nebula", name: "Nebula", how: "Reach 200 orbit points in total", rarity: "common", test: (s) => s.points >= 200, progress: (s) => [s.points, 200] },
+    { id: "aurora", name: "Aurora", how: "Chart a season: finish The Huddle, The Blitz and The Playbook in one season", rarity: "rare", test: (s) => seasonProgress(s).sky || Object.values(s.skies || {}).some((k) => k.charted), progress: (s) => [seasonProgress(s).three, 3] },
+    { id: "milkyway", name: "Milky Way", how: "Reach 6,000 orbit points in total", rarity: "rare", test: (s) => s.points >= 6000, progress: (s) => [s.points, 6000] },
+    { id: "eclipse", name: "Eclipse", how: "Find a stellar event", rarity: "epic", test: stellar, progress: (s) => [stellar(s) ? 1 : 0, 1] },
   ],
   core: [
-    { id: "classic", name: "Classic", how: "Yours from the start" },
-    { id: "pulsar", name: "Pulsar", how: "Reach 1,900 orbit points in total", test: (s) => s.points >= 1900 },
-    { id: "ringed", name: "Ringed", how: "Complete 25 sets", test: (s) => Object.keys(s.sets).length >= 25 },
-    { id: "binary", name: "Binary", how: "Earn a Surveyor season (6,000 points in one season)", test: (s) => seasonProgress(s).points >= 6000 || Object.values(s.skies || {}).some((k) => k.points >= 6000) },
-    { id: "quasar", name: "Quasar", how: "Find a mythic version of anything", test: (s) => Object.values(s.found).some((e) => e.version === "mythic") },
-    { id: "horizon", name: "Event Horizon", how: "Reach 65,000 orbit points in total", test: (s) => s.points >= 65000 },
+    { id: "classic", name: "Classic", how: "Yours from the start", rarity: "standard" },
+    { id: "pulsar", name: "Pulsar", how: "Reach 1,900 orbit points in total", rarity: "common", test: (s) => s.points >= 1900, progress: (s) => [s.points, 1900] },
+    { id: "ringed", name: "Ringed", how: "Complete 25 sets", rarity: "epic", test: (s) => Object.keys(s.sets).length >= 25, progress: (s) => [Object.keys(s.sets).length, 25] },
+    { id: "binary", name: "Binary", how: "Earn 6,000 points in one season", rarity: "epic", test: (s) => bestSeason(s) >= 6000, progress: (s) => [bestSeason(s), 6000] },
+    { id: "quasar", name: "Quasar", how: "Find a mythic version of anything (1 in 200 finds)", rarity: "legendary", test: mythicFind, progress: (s) => [mythicFind(s) ? 1 : 0, 1] },
+    { id: "horizon", name: "Event Horizon", how: "Reach 65,000 orbit points in total", rarity: "mythic", test: (s) => s.points >= 65000, progress: (s) => [s.points, 65000] },
   ],
 };
+export const RARITY = { standard: "Standard", common: "Common", rare: "Rare", epic: "Epic", legendary: "Legendary", mythic: "Mythic", limited: "Limited" };
 const DEFAULT_SKIN = { sky: "deep", core: "classic" };
 // A season's limited sky skin: id "season-2026", named after that season's Singularity constellation.
 export const seasonSkinId = (season) => `season-${season}`;
@@ -185,7 +192,7 @@ export const seasonSkinName = (season) => `${skyFor(season)[3].real} ${season}`;
 export function skySkinsFor(s) {
   const years = new Set((s.skins || []).filter((k) => k.startsWith("sky:season-")).map((k) => Number(k.slice(11))));
   if (s.season) years.add(s.season);
-  const seasonal = [...years].sort().map((y) => ({ id: seasonSkinId(y), name: seasonSkinName(y), season: y, how: y === s.season ? `Finish The Singularity (${skyFor(y)[3].real}) this season. Never available again` : `From the ${y} season` }));
+  const seasonal = [...years].sort().map((y) => ({ id: seasonSkinId(y), name: seasonSkinName(y), season: y, rarity: "limited", how: y === s.season ? `Finish The Singularity (${skyFor(y)[3].real}) this season. Never available again` : `From the ${y} season`, progress: y === s.season ? (x) => [x.filled.singularity.filter(Boolean).length, 10] : null }));
   return [...SKINS.sky, ...seasonal];
 }
 export const hasSkin = (s, kind, id) => id === DEFAULT_SKIN[kind] || (s.skins || []).includes(`${kind}:${id}`);

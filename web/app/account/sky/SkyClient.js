@@ -7,7 +7,7 @@ import { seeFinds, pickPlayer, claim, wearSkin } from "./actions";
 import { SkyBackdrop, CoreSkin, SkinPreview } from "./skins";
 import { drawObject, sharpen, findCard, receiptCard, seasonCard, toBlob, setCardBadge, setCardSkin, setCardFrame } from "./skyArt";
 import {
-  ACTIONS, skyFor, SKINS, hasSkin, equipped, skySkinsFor, FAMILIES, COLOURS, VERSIONS, TIER_NAME, POWERUPS, LADDER, rungLabel, CATALOGUE_SIZE, SET_COUNT, UNLOCK, EVENT_TEXT,
+  ACTIONS, skyFor, SKINS, RARITY, hasSkin, equipped, skySkinsFor, FAMILIES, COLOURS, VERSIONS, TIER_NAME, POWERUPS, LADDER, rungLabel, CATALOGUE_SIZE, SET_COUNT, UNLOCK, EVENT_TEXT,
   famsIn, findOf, setProgress, seasonProgress,
 } from "@/lib/nightSky";
 
@@ -263,21 +263,6 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
             <p className="sky-small mono">Each counts once a day. Leave the core alone for three days and it cools.</p>
           </section>
 
-          <section className="sky-panel" aria-labelledby="sky-log">
-        <div className="board-panel-title" id="sky-log">Log</div>
-        <ul className="sky-log mono">
-          {state.log.length ? state.log.map((l, i) => <li key={i}>{l.text}</li>) : <li>Nothing yet. Open a tool from the list above to place your first star.</li>}
-        </ul>
-      </section>
-
-          
-
-          
-        </div>
-      </div>
-
-      <div className="sky-grid">
-        <div className="sky-col">
           <section className="sky-panel" aria-labelledby="sky-btm">
             <div className="board-panel-title" id="sky-btm">Beat the Model</div>
             {wk ? wk.pairs.map((p, i) => (
@@ -296,6 +281,21 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
               </div>
             )}
           </section>
+
+          
+
+          
+        </div>
+      </div>
+
+      <div className="sky-grid">
+        <div className="sky-col">
+          <section className="sky-panel" aria-labelledby="sky-log">
+        <div className="board-panel-title" id="sky-log">Log</div>
+        <ul className="sky-log mono">
+          {state.log.length ? state.log.map((l, i) => <li key={i}>{l.text}</li>) : <li>Nothing yet. Open a tool from the list above to place your first star.</li>}
+        </ul>
+      </section>
 
           <section className="sky-panel" aria-labelledby="sky-odds">
           <div className="board-panel-title" id="sky-odds">What&apos;s out there</div>
@@ -409,11 +409,22 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
             <div className="sky-skins">
               {(kind === "sky" ? skySkinsFor(state) : SKINS.core).map((k) => {
                 const have = hasSkin(state, kind, k.id), on = equipped(state)[kind] === k.id;
+                const [got, need] = !have && k.progress ? k.progress(state) : [0, 0];
                 return (
-                  <button key={k.id} type="button" className={`sky-skin${on ? " is-on" : ""}${have ? "" : " is-locked"}`} disabled={!have || on || busy} onClick={() => run(wearSkin(kind, k.id))} aria-pressed={on}>
-                    <SkinPreview kind={kind} id={k.id} />
+                  <button key={k.id} type="button" className={`sky-skin rar-${k.rarity}${on ? " is-on" : ""}${have ? "" : " is-locked"}`} disabled={!have || on || busy} onClick={() => run(wearSkin(kind, k.id))} aria-pressed={on}>
+                    <span className="sky-skin-art">
+                      <SkinPreview kind={kind} id={k.id} />
+                      <span className="sky-skin-rarity mono">{RARITY[k.rarity]}</span>
+                      {!have && <span className="sky-skin-lock" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22"><rect x="5" y="11" width="14" height="10" rx="2" fill="currentColor" /><path d="M8 11V8a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" strokeWidth="2.2" /></svg></span>}
+                    </span>
                     <b>{k.name}</b>
-                    <span className="mono">{on ? "Wearing" : have ? "Wear" : k.how}</span>
+                    <span className="sky-skin-how mono">{on ? "Wearing" : have ? "Wear it" : k.how}</span>
+                    {!have && need > 0 && (
+                      <span className="sky-skin-bar" aria-label={`${Math.min(got, need).toLocaleString()} of ${need.toLocaleString()}`}>
+                        <i style={{ width: `${Math.min(100, (100 * got) / need)}%` }} />
+                        <em className="mono">{need > 1 ? `${Math.min(got, need).toLocaleString()} / ${need.toLocaleString()}` : "Not yet"}</em>
+                      </span>
+                    )}
                   </button>
                 );
               })}
