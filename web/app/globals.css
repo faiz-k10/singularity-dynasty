@@ -7237,7 +7237,7 @@ body:has(.ehp) .ehp-inside,body:has(.ehp) .ehp-dark{--ehp-hole:#0B0B0B;--ehp-hol
 .ehp-for span{display:block;margin-top:10px;font-size:15.5px;line-height:1.55;color:var(--ehp-holedim);}
 .ehp-why{margin:20px 0 0;display:grid;grid-template-columns:auto 1fr;gap:10px 18px;max-width:470px;}
 .ehp-why dt{font:10.5px var(--font-mono), monospace;font-stretch:82%;letter-spacing:.16em;text-transform:uppercase;color:var(--ehp-holemark);padding-top:4px;white-space:nowrap;}
-.ehp-why dt:nth-of-type(2){color:var(--ehp-holecold);}
+.ehp-why dt{color:var(--ehp-holecold);}
 .ehp-why dd{margin:0;font-size:16px;line-height:1.55;}
 .ehp-chap .ehp-two{align-items:start;}
 .ehp-trio .ehp-h{margin:0 0 30px;}

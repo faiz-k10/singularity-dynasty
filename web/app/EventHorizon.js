@@ -416,13 +416,11 @@ function HoleLookup({ signedIn, member }) {
 // A small planet with one more orbit ring per tool (1 for the first, 5 for the last), the planet drawn on the outermost ring.
 // what a tool adds, in two lines (lib/landingCopy.js WHY)
 function Why({ k }) {
-  const [info, fun] = WHY[k];
+  const [, edge] = WHY[k];
   return (
     <dl className="ehp-why">
-      <dt>More informative</dt>
-      <dd>{info}</dd>
-      <dt>More fun</dt>
-      <dd>{fun}</dd>
+      <dt>The edge</dt>
+      <dd>{edge}</dd>
     </dl>
   );
 }
