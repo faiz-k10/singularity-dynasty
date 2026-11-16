@@ -22,12 +22,12 @@ export const FOR_YOU = [
 
 // Page 4: what each tool adds, in two plain lines. Keyed by section.
 export const WHY = {
-  board: ["Every score, every win chance and every lineup problem across all your leagues, before you'd have found it yourself.", "Sunday becomes one screen to watch, with the plays that swing your matchups as they happen."],
-  weekly: ["A floor and a ceiling for every player, so a close start / sit has an answer you can see.", "Smash and Tough Spots, On Fire and Super Hero badges: the week's storylines at a glance."],
-  dynasty: ["One score for what a player produces and how many good years he has left, grouped into honest tiers.", "Startup and rookie drafts stop being a list argument: you can see who is really ahead."],
-  sims: ["Each player's season total as a range, updated as games are played, with who he is tracking like.", "Breakouts and collapses get a name before your league notices them."],
-  lab: ["Every published number on one chart, for any position, with the trend line and its strength.", "Settle the group chat: export the chart with one click and post it."],
-  sky: ["Nothing to learn: check in on the tools you already use.", "Collect finds, light constellations and earn real rewards, a new sky every season."],
+  board: ["Every score, win chance and lineup problem across all your leagues, spotted before you'd have found it yourself.", "Sunday turns into one radar screen: every league live, and the plays that swing your matchups the second they happen."],
+  weekly: ["A floor, a likely landing and a ceiling for every player, so every close start / sit has an answer you can see.", "Smash Spots, Tough Spots, On Fire streaks and Super Heroes: the whole week's storylines at a glance."],
+  dynasty: ["One score that weighs what a player produces against how many good years he has left, grouped into tiers so you can see who is a true step above the rest.", "Startup and rookie drafts stop being a shouting match: you see the rising stars and the fading ones before your league does."],
+  sims: ["Each player's whole season as a range that updates after every game, with who he is tracking like.", "Breakouts and collapses get spotted early, so you are the first in your league to see them coming."],
+  lab: ["Every number on the site on one chart: any position, any two stats, with the trend line and how strong it is.", "Settle the group chat with one chart. Export it in a click and post it."],
+  sky: ["Nothing to learn: check in on the tools you already use and the stars add up on their own.", "Collect finds, light constellations and win real rewards, with a brand-new sky every season."],
 };
 
 // Page 5: a week with the site, in order. [day, time, what happens, tool, link]
