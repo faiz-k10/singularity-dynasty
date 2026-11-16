@@ -18,10 +18,10 @@ The weekly jobs run on GitHub's computers. Your Mac can be off.
 
 | When (Eastern) | Job | What it does |
 |---|---|---|
-| Tuesday 1:30 PM | `tuesday` | Loads last week's finished games, then publishes next week's projections and season sims, sends the weekly email (once it's set up) and saves a backup. |
-| Wednesday 9 AM | `game-data` | Picks up stat corrections and late numbers from Monday night. |
-| Thursday 5 PM | `projections` | Republishes with the latest injury news before Thursday night. |
-| Sunday 11 AM | `projections` | Last injury update before the 1 PM games. |
+| Tuesday 1:30 PM | `tuesday-full-run` | Loads last week's finished games, then publishes next week's projections and season sims, sends the weekly email (once it's set up) and saves a backup. |
+| Wednesday 9 AM | `game-results-only` | Picks up stat corrections and late numbers from Monday night. |
+| Thursday 5 PM | `projections-only` | Republishes with the latest injury news before Thursday night. |
+| Sunday 11 AM | `projections-only` | Last injury update before the 1 PM games. |
 
 In summer every time is one hour later (GitHub's clock doesn't change for daylight saving). GitHub sometimes starts a scheduled run late or drops it when it's busy, so each job also has one or two later back-up times. A back-up time does nothing if the job already passed that day, and tries again if it failed.
 
@@ -40,10 +40,10 @@ GitHub emails you when a run fails or the hourly check fails. Open `/admin` firs
 
 | What you see | What it means | What to do |
 |---|---|---|
-| Tuesday **FAILED** with "Week N is not complete" | A game (often Monday night) wasn't final yet, or its stats hadn't posted. Game data was still published; projections were not. | Wait a few hours, then run `tuesday` again by hand (below). |
+| Tuesday **FAILED** with "Week N is not complete" | A game (often Monday night) wasn't final yet, or its stats hadn't posted. Game data was still published; projections were not. | Wait a few hours, then run `tuesday-full-run` again by hand (below). |
 | A run failed with "CSV has only N rows" or "older than what is live" | The model produced something that looked wrong, so nothing was published. The site still shows the last good week. | Run it again once. If it fails again, it needs a developer: the model or a data source changed. |
 | "Add the … repository secrets first" | GitHub doesn't have the database key. | Add the secrets (Setup, below). |
-| Hourly check failed: "not ok" or "data is stale" | Rankings are more than 7.5 days old in season, or errors spiked. | Check *Weekly runs*. If Tuesday failed, run `tuesday` by hand. If errors spiked, look at *Recent errors*. |
+| Hourly check failed: "not ok" or "data is stale" | Rankings are more than 7.5 days old in season, or errors spiked. | Check *Weekly runs*. If Tuesday failed, run `tuesday-full-run` by hand. If errors spiked, look at *Recent errors*. |
 | Hourly check failed: a page "answered 500" | The site itself is down. | Check Vercel → Deployments: if the newest deployment failed, press **Redeploy** on the last good one (⋯ menu → Redeploy). |
 | A member says they paid but still see the free plan | Their payment was processed but their account wasn't upgraded. | Ask them to sign out and back in. Still wrong: find them in Stripe → Customers and check their subscription is Active; tell a developer the email if it is. |
 | A refund | – | Stripe → Payments → the payment → Refund. Then **cancel the subscription** (Customers → them → subscription → Cancel now), so their access ends. |
@@ -61,10 +61,10 @@ Direct link: https://github.com/faiz-k10/singularity-dynasty/actions/workflows/w
 **Fallback if GitHub itself is down:** on your Mac, in Terminal, from the `web` folder, run:
 
 ```
-node --env-file=.env.local scripts/weekly-run.mjs tuesday
+node --env-file=.env.local scripts/weekly-run.mjs tuesday-full-run
 ```
 
-The other job names also work in place of `tuesday`.
+The other job names also work in place of `tuesday-full-run`.
 
 ## Things you publish yourself (in `/admin` → Publish)
 
@@ -96,7 +96,7 @@ The other job names also work in place of `tuesday`.
    - `EMAIL_FROM`
    - `NEXT_PUBLIC_SITE_URL`
    - `EMAIL_FOOTER_ADDRESS`
-2. **Test it.** Run `game-data` by hand (above). It should say Passed in `/admin` within a few minutes.
+2. **Test it.** Run `game-results-only` by hand (above). It should say Passed in `/admin` within a few minutes.
 3. **Turn off the old Claude-run schedules** once a GitHub run has passed (Claude Code desktop app → Scheduled tasks → disable the four weekly ones). Until then they cover for each other:
    - **Tuesday and Sunday:** the Claude task runs first (noon / 10 AM), and GitHub skips if it passed.
    - **Wednesday and Thursday:** GitHub runs first, and the Claude task (renamed "fallback") skips if GitHub passed.

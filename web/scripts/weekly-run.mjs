@@ -253,11 +253,11 @@ if (skipHours > 0) {
 }
 let ok = true;
 try {
-  if (mode === "game-data") {
+  if (mode === "game-results-only") {
     await gameData();
-  } else if (mode === "projections") {
+  } else if (mode === "projections-only") {
     await projections();
-  } else if (mode === "tuesday") {
+  } else if (mode === "tuesday-full-run") {
     const c = await gameData();
     if (!c.complete) {
       fail(`Week ${c.week} is not complete (${c.finished}/${c.games} games final` + (c.missing.length ? `, no rows for ${c.missing.join(", ")}` : "") + `). Game data was published; projections were NOT run. Re-run later.`);
@@ -265,21 +265,21 @@ try {
     await projections();
     await digest();
     backup();
-  } else if (mode === "backup") {
+  } else if (mode === "backup-only") {
     if (!backup()) fail("backup failed");
   } else {
-    fail("usage: weekly-run.mjs game-data | projections | tuesday | backup");
+    fail("usage: weekly-run.mjs game-results-only | projections-only | tuesday-full-run | backup-only");
   }
   // The site keeps its data an hour; tell it the new data is in so it shows at once (app/api/revalidate). Never fatal: at worst the new week
   // appears within the hour.
-  if (mode !== "backup") await refreshSite();
+  if (mode !== "backup-only") await refreshSite();
   log("\nDONE");
 } catch (e) {
   ok = false;
   log(`\nFAILED: ${e instanceof RunFailed ? e.message : e?.stack || e}`);
 }
 // Record the run for /admin (never fatal). A GitHub run links back to its full log.
-if (["game-data", "projections", "tuesday", "backup"].includes(mode)) {
+if (["game-results-only", "projections-only", "tuesday-full-run", "backup-only"].includes(mode)) {
   const gh = process.env.GITHUB_RUN_ID ? `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}` : null;
   await opsWrite(
     `runs/${mode}.json`,

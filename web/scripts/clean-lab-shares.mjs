@@ -1,6 +1,6 @@
 // Removes Observatory share cards older than 90 days from the public `lab-shares` bucket (Nov 11 2026 pre-launch check: nothing ever
 // removed them, ~300KB each, and the bucket counts against the Supabase storage quota). A removed share's link (/s/<id>) shows the
-// "not found" page. Run by `weekly-run.mjs tuesday` (never fatal); by hand: node --env-file=.env.local scripts/clean-lab-shares.mjs [--dry]
+// "not found" page. Run by `weekly-run.mjs tuesday-full-run` (never fatal); by hand: node --env-file=.env.local scripts/clean-lab-shares.mjs [--dry]
 import { createClient } from "@supabase/supabase-js";
 
 const DAYS = 90;

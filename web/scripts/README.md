@@ -12,7 +12,7 @@ Every script's own header comment says exactly what it does and how to call it; 
 
 | Script | What it does |
 |---|---|
-| `weekly-run.mjs` | The one entry point the scheduled tasks call (`tuesday`, `thursday`, `sunday`, `projections`, `backup`): runs the R model, publishes every table below in order, verifies, backs up and sends the digest. Safety checks live here, not in a prompt. |
+| `weekly-run.mjs` | The one entry point the scheduled tasks call (`tuesday-full-run`, `game-results-only`, `projections-only`, `backup-only`): runs the R model, publishes every table below in order, verifies, backs up and sends the digest. Safety checks live here, not in a prompt. |
 
 ## Publishers (called by `weekly-run.mjs`; safe to run by hand after a model run)
 

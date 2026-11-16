@@ -3,10 +3,10 @@ name: Weekly run
 # The site's weekly publishing, on GitHub's computers (no Mac, no Claude needed). Each run calls web/scripts/weekly-run.mjs, which runs the R
 # model, publishes to Supabase, checks the result and records it for /admin (Storage bucket "ops"). A failed run makes GitHub email you.
 #
-#   Tuesday   1:30 PM ET   tuesday       finished week's game data, then next week's projections + sims (only if the week is complete), email, backup
-#   Wednesday 9 AM ET      game-data     late stat corrections and expected points
-#   Thursday  5 PM ET      projections   injury news before Thursday night
-#   Sunday    11 AM ET     projections   last injury news before the 1 PM games
+#   Tuesday   1:30 PM ET   tuesday-full-run     finished week's game data, then next week's projections + sims (only if the week is complete), email, backup
+#   Wednesday 9 AM ET      game-results-only late stat corrections and expected points
+#   Thursday  5 PM ET      projections-only injury news before Thursday night
+#   Sunday    11 AM ET     projections-only last injury news before the 1 PM games
 #
 # Times are UTC and fixed, so the Eastern times above are winter ones; in summer each runs an hour later. While the older Claude-run tasks
 # on the Mac are still on, they and these runs cover for each other: whichever runs second skips itself if the job already passed
@@ -29,10 +29,10 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: Which job to run
+        description: Which job to run (game-results-only is the safe one)
         type: choice
-        options: [tuesday, game-data, projections, backup]
-        default: projections
+        options: [game-results-only, projections-only, tuesday-full-run, backup-only]
+        default: game-results-only
 
 concurrency:
   group: weekly-run # never two publishes at once; a second one waits
@@ -51,9 +51,9 @@ jobs:
           sched="${{ github.event.schedule }}"
           if [ -n "$sched" ]; then
             case "$(echo "$sched" | awk '{print $5}')" in  # the day of the week
-              2) m=tuesday ;;
-              3) m=game-data ;;
-              4|0) m=projections ;;
+              2) m=tuesday-full-run ;;
+              3) m=game-results-only ;;
+              4|0) m=projections-only ;;
             esac
             echo "skip=8" >> "$GITHUB_OUTPUT"  # a scheduled re-trigger skips a job that passed in the last 8 hours
           else
