@@ -4,7 +4,7 @@
 
 import sharp from "sharp";
 import { mkdir, writeFile } from "node:fs/promises";
-import { MARK_DS, MARK_DISC, MARK_DISC_DS } from "../lib/brandMark.js";
+import { MARK_DS, MARK_DISC } from "../lib/brandMark.js";
 
 const W = 3000, H = 1000, CX = W / 2, CY = H / 2, R = 175; // R = the event horizon's radius
 const themes = {
@@ -55,7 +55,7 @@ function svg(name, t) {
   const orbits = [290, 560].map((b, i) =>
     `<path d="${football(b * 1.7, b, false)}" fill="none" stroke="${i === 0 ? t.ring : t.orbit}" stroke-opacity="${i === 0 ? 0.4 : (t.orbitAlpha * 1.3).toFixed(2)}" stroke-width="1.1" stroke-linejoin="round"/>`).join("");
   const k = R / MARK_DISC.r; // the logo's 40-unit box scaled so its disc is the event horizon
-  const initials = `<g transform="translate(${CX} ${CY}) scale(${k}) translate(${-MARK_DISC.cx} ${-MARK_DISC.cy})"><path d="${MARK_DS}" transform="${MARK_DISC_DS.transform}" fill="${t.letters}"/></g>`;
+  const initials = `<g transform="translate(${CX} ${CY}) scale(${k}) translate(${-MARK_DISC.cx} ${-MARK_DISC.cy})"><path d="${MARK_DS}" transform="translate(20 20.2) scale(13.4)" fill="${t.letters}"/></g>`;
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
 <defs>
   <radialGradient id="bloom" cx="50%" cy="50%" r="50%">
