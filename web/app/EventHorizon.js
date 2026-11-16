@@ -980,7 +980,7 @@ export default function EventHorizon({ signedIn, tier, member, invited, discount
           <h2 className="ehp-h">More Leagues? <em>More Power</em></h2>
           <ol>
             {[
-              ["04", "Player Season Simulations", "Where his season is going.", "sims", "/tools/player-simulations"],
+              ["04", "Player Season Simulations", "Map the season. Spot the breakout.", "sims", "/tools/player-simulations"],
               ["05", "The Observatory", "All the numbers. All the charts.", "lab", "/tools/lab"],
               ["06", "The Night Sky", "Chase the stars. Build your sky.", "sky", signedIn ? "/account/sky" : "/login?next=/account/sky"],
             ].map(([no, name, h, k, href], i) => (
