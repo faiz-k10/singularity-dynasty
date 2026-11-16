@@ -103,6 +103,11 @@ The other job names also work in place of `tuesday`.
 
    The email can't send twice either way.
 4. **Lock the paid tables (do once, after the Nov 9 2026 deploy is live).** Supabase → SQL Editor → paste the whole of `web/supabase/migrations/0044_lock_paid_tables.sql` → Run. Then open Weekly Projection Rankings and Player Season Simulations on the live site to check they still load. Before this, anyone holding the project's public key could download every ranking and simulation straight from the database.
+5. **Newsletter quiz names (Nov 16 2026).** Supabase → SQL Editor → paste `web/supabase/migrations/0047_subscriber_quiz.sql` → Run. Until then the quiz still signs people up, but their first / last name and quiz result aren't saved.
+6. **Turn on the CAPTCHA (Cloudflare Turnstile, free).** Cloudflare dashboard → Turnstile → Add widget (your domain + the vercel.app one, mode "Managed") → copy the **site key** and **secret key**. Then:
+   - Vercel → Settings → Environment Variables: add `NEXT_PUBLIC_TURNSTILE_SITE_KEY` (site key) and `TURNSTILE_SECRET_KEY` (secret key), then redeploy.
+   - Supabase → Authentication → Attack Protection → **Enable CAPTCHA protection** → provider Turnstile → paste the **secret key** → Save.
+   Do both together: with only Supabase on, sign-in stops working (no widget sends a token); with only Vercel on, sign-in shows the check but Supabase doesn't enforce it. Until then the site uses its other bot guards (a hidden trap field, a too-fast check and rate limits).
 
 ## Once a year
 

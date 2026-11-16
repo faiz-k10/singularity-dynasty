@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { requestPasswordReset } from "../actions";
+import BotGuard from "@/app/BotGuard";
 import AuthCard from "../AuthCard";
 
 export const metadata = {
@@ -15,6 +16,7 @@ export default async function ResetPage({ searchParams }) {
           EMAIL
         </label>
         <input id="email" name="email" type="email" required maxLength={254} autoComplete="email" className="feed-input auth-input" placeholder="you@domain.com" />
+        <BotGuard action="reset" />
         <div className="auth-actions">
           <button formAction={requestPasswordReset} className="btn-primary">
             Send Reset Link

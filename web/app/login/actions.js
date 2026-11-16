@@ -8,6 +8,7 @@ import { siteOrigin } from "@/lib/siteOrigin";
 import { cookies } from "next/headers";
 import { recordReferral } from "@/lib/referrals";
 import { REF_COOKIE } from "@/lib/referralRules";
+import { TURNSTILE_FIELD, tooFast } from "@/lib/turnstile";
 
 const MIN_PASSWORD = 8;
 
@@ -22,11 +23,19 @@ function fields(formData) {
   return { email, password, next: safeNext(formData.get("next")) };
 }
 
+// Anti-bot (Nov 16 2026): the Turnstile token goes to Supabase Auth (it checks it once captcha is on in the Supabase dashboard);
+// a filled honeypot or a form sent faster than a person types is treated as a bot and quietly gets the normal answer.
+const captcha = (formData) => {
+  const t = String(formData.get(TURNSTILE_FIELD) || "");
+  return t ? { captchaToken: t } : {};
+};
+const isBot = (formData) => Boolean(formData.get("website")) || tooFast(formData.get("t"));
+
 export async function login(formData) {
   const { email, password, next } = fields(formData);
   if (!email || !password) back("/login", "error", "missing-fields", next);
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { error } = await supabase.auth.signInWithPassword({ email, password, options: captcha(formData) });
   if (error) back("/login", "error", authErrorCode(error), next);
   revalidatePath("/", "layout");
   redirect(next || "/my-team");
@@ -36,10 +45,11 @@ export async function signup(formData) {
   const { email, password, next } = fields(formData);
   if (!email || !password) back("/login", "error", "missing-fields", next);
   if (password.length < MIN_PASSWORD) back("/login", "error", "weak-password", next);
+  if (isBot(formData)) back("/login", "message", "check-email", next);
   const supabase = await createClient();
   // The confirmation email links to /auth/confirm, which signs the new account in and continues to `next`.
   const confirm = `${await siteOrigin()}/auth/confirm?next=${encodeURIComponent(next || "/my-team?welcome=1")}`;
-  const { data, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: confirm } });
+  const { data, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: confirm, ...captcha(formData) } });
   if (error) back("/login", "error", authErrorCode(error), next);
   // Came through a friend's link? Record it now (a brand-new account only: Supabase answers an existing email with a user
   // that has no identities, so it can't be claimed by someone typing another person's address).
@@ -52,10 +62,13 @@ export async function signup(formData) {
 export async function requestPasswordReset(formData) {
   const { email } = fields(formData);
   if (!email) back("/login/reset", "error", "missing-fields");
+  if (isBot(formData)) back("/login", "message", "reset-sent");
   const supabase = await createClient();
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
     redirectTo: `${await siteOrigin()}/auth/confirm?next=${encodeURIComponent("/account/password")}`,
+    ...captcha(formData),
   });
+  if (error && authErrorCode(error) === "captcha") back("/login/reset", "error", "captcha");
   if (error && authErrorCode(error) === "rate-limit") back("/login/reset", "error", "rate-limit");
   back("/login", "message", "reset-sent");
 }

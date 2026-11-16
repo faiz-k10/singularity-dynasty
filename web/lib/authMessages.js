@@ -12,6 +12,7 @@ export const AUTH_ERRORS = {
   "passwords-differ": "The two passwords don't match.",
   "same-password": "Choose a password different from your current one.",
   "reset-needs-session": "Open the reset link from your email to set a new password.",
+  captcha: "We couldn't confirm you're a person. Finish the check above the buttons and try again.",
   unknown: "Something went wrong. Please try again.",
 };
 
@@ -30,6 +31,7 @@ export function authErrorCode(error) {
   if (code === "email_not_confirmed" || msg.includes("not confirmed")) return "unconfirmed";
   if (code === "same_password") return "same-password";
   if (code === "weak_password" || msg.includes("password should")) return "weak-password";
+  if (code === "captcha_failed" || msg.includes("captcha")) return "captcha";
   if (code.startsWith("over_") || msg.includes("rate limit") || msg.includes("security purposes")) return "rate-limit";
   return "unknown";
 }

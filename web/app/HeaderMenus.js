@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import NewsletterForm from "./NewsletterForm";
 import { startCheckout } from "@/lib/startCheckout";
 
 // The Plans and Newsletter dropdowns, shared by the landing page's bar (EventHorizon.js) and the site header on every other page
@@ -13,13 +12,16 @@ export const PLANS = [
   { id: "singularity", name: "Singularity", r: 76, say: "Every simulation, unlimited leagues.", month: 25, year: 20 },
 ];
 
-// the header's Newsletter link opens a dropdown with the sign-up right there (founder, Nov 10 2026); the link still jumps to the section
+// The header's Newsletter link (founder, Nov 16 2026: the sign-up is now the Dynasty Manager quiz): the dropdown says what it is and
+// leads to /newsletter, where the quiz is (four questions are too much for a hover menu that closes when the pointer leaves).
 export function HeaderLetter() {
   return (
     <div className="ehp-pm ehp-nl">
-      <Link href="/#feed" aria-haspopup="true">Newsletter</Link>
-      <div className="ehp-pm-panel" role="group" aria-label="Newsletter sign-up">
-        <NewsletterForm source="nav" inputId="navEmail" />
+      <Link href="/newsletter" aria-haspopup="true">Newsletter</Link>
+      <div className="ehp-pm-panel" role="group" aria-label="Newsletter">
+        <p className="ehp-nl-h">What kind of dynasty manager are you?</p>
+        <p>Four questions, one minute. Get your answer and the Tuesday letter: what moved, before waivers.</p>
+        <Link className="ehp-nl-go" href="/newsletter">Take the quiz →</Link>
       </div>
     </div>
   );

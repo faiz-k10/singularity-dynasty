@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { login, signup } from "./actions";
+import BotGuard from "@/app/BotGuard";
 import AuthCard from "./AuthCard";
 import { safeNext } from "@/lib/authMessages";
 
@@ -48,6 +49,7 @@ export default async function LoginPage({ searchParams }) {
           placeholder="••••••••"
         />
 
+        <BotGuard action="login" />
         <div className="auth-actions">
           <button formAction={login} className="btn-primary">
             Sign In

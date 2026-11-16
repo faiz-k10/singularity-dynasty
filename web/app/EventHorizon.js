@@ -6,7 +6,9 @@ import ToolLink from "./ToolLink";
 import ToolsMenuRows from "./ToolsMenu";
 import ThemeToggle from "./ThemeToggle";
 import ArcGauge from "./ArcGauge";
-import NewsletterForm from "./NewsletterForm";
+import ManagerQuiz from "./ManagerQuiz";
+import { FAQ } from "./faqItems";
+import { SUMMARY, FOR_YOU, WHY, WEEK, TESTIMONIALS } from "@/lib/landingCopy";
 import { HeaderPlans, HeaderLetter, PLANS } from "./HeaderMenus";
 import { lookupSleeperTeams } from "./my-team/actions";
 import { summarizeLeagues } from "@/lib/heroLookup";
@@ -65,14 +67,6 @@ function bodiesFor(member) {
       return { n: x.name.toUpperCase(), say: x.say, href: "/my-team", rx, ry: rx * 0.36, a: (i / all.length) * Math.PI * 2 - 0.6, s: 70 + i * 22 };
     });
 }
-const TOOLS = [
-  // most to least valuable to a typical player (founder, Nov 10 2026): the weekly habit first, the analyst tools last
-  ["The Game Board", "Every league you play, live, on one screen.", "1 league free", "/my-team"],
-  ["Weekly Projection Rankings", "Every player's range this week, and the matchups that tilt it.", "Top 50 free", "/tools/redraft-rankings"],
-  ["Dynasty Board", "Production against age, tiered by who is truly ahead.", "Top 20 free", "/tools/draft-board"],
-  ["Player Season Simulations", "Where each player's season is heading, and how it has moved.", "Top 10 free", "/tools/player-simulations"],
-  ["The Observatory", "Any two numbers, every player, one chart.", "Top 50 free", "/tools/lab"],
-];
 
 // a seeded random, so the sky is the same on every visit
 function seeded(s) {
@@ -421,6 +415,19 @@ function HoleLookup({ signedIn, member }) {
 }
 
 // A small planet with one more orbit ring per tool (1 for the first, 5 for the last), the planet drawn on the outermost ring.
+// what a tool adds, in two lines (lib/landingCopy.js WHY)
+function Why({ k }) {
+  const [info, fun] = WHY[k];
+  return (
+    <dl className="ehp-why">
+      <dt>More informative</dt>
+      <dd>{info}</dd>
+      <dt>More fun</dt>
+      <dd>{fun}</dd>
+    </dl>
+  );
+}
+
 function OrbitIcon({ rings }) {
   const rx = (k) => +(8 + k * 4.4).toFixed(1);
   const out = rx(rings - 1);
@@ -840,19 +847,79 @@ export default function EventHorizon({ signedIn, tier, member, invited, discount
         </div>
       </section>
 
-      {/* 2 · the Game Board: a member's own week; a visitor a sample in the same structure, with the lineup alerts the board raises */}
-      <section className="ehp-inside" id="ehp-inside">
+      {/* 2 · the whole site on one page, and a way in (founder, Nov 16 2026) */}
+      <section className="ehp-inside ehp-sum" id="ehp-inside">
+        <div className="ehp-wrap">
+          <div className="ehp-sumhead">
+            <div>
+              <div className="ehp-k">The whole site, on one page</div>
+              <h2 className="ehp-h">
+                Every league, every player, <em>one clear number.</em>
+              </h2>
+            </div>
+            <p className="ehp-lede">
+              Scattered stats, trends and matchups all pulled toward one honest range for every player, then laid next to your own leagues, so the call takes minutes instead of an evening.
+            </p>
+          </div>
+          <ol className="ehp-sumgrid">
+            {SUMMARY.map(([name, say, when, href], i) => (
+              <li key={name}>
+                <ToolLink href={href}>
+                  <span className="no">{String(i + 1).padStart(2, "0")}</span>
+                  <span className="when">{when}</span>
+                  <span className="name">{name}</span>
+                  <span className="say">{say}</span>
+                </ToolLink>
+              </li>
+            ))}
+          </ol>
+          <div className="ehp-cta">
+            {member?.rows?.length ? (
+              <>
+                <ToolLink className="ehp-go" href="/my-team">Open the Game Board →</ToolLink>
+                <a className="ehp-link" href="#pricing">See the plans</a>
+              </>
+            ) : (
+              <>
+                <a className="ehp-go" href="#pricing">Get started →</a>
+                <span className="ehp-ctanote">Free to start. No card.</span>
+              </>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* 3 · the plans */}
+      <section className="ehp-orbits" id="pricing">
+        <Plans />
+      </section>
+
+      {/* 4 · who it's for, then each tool in turn */}
+      <section className="ehp-dark ehp-who4" id="tools">
+        <div className="ehp-wrap">
+          <div className="ehp-k">Who it&apos;s for</div>
+          <h2 className="ehp-h">
+            Built for the manager <em>with more than one league.</em>
+          </h2>
+          <ul className="ehp-for">
+            {FOR_YOU.map(([h, p]) => (
+              <li key={h}>
+                <b>{h}</b>
+                <span>{p}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      <section className="ehp-dark ehp-chap" id="game-board">
         <div className="ehp-wrap ehp-two">
           <div>
-            <div className="ehp-k">{member?.rows?.length ? "The Game Board" : "The Game Board · a sample week"}</div>
+            <div className="ehp-k">01 · {member?.rows?.length ? "The Game Board" : "The Game Board · a sample week"}</div>
             <h2 className="ehp-h">
               {member?.rows?.length ? <>Your week, <em>league by league.</em></> : <>Every league, <em>one screen.</em></>}
             </h2>
-            <p className="ehp-lede">
-              {member?.rows?.length
-                ? "Every matchup you're in, the score so far (or what we expect before kickoff) and how likely you are to win it."
-                : "Every matchup you're in, the score so far (or what we expect before kickoff) and how likely you are to win it, plus a heads-up when a starter in your lineup needs attention."}
-            </p>
+            <Why k="board" />
             <ToolLink className="ehp-link" href="/my-team">Open the Game Board →</ToolLink>
           </div>
           <div>
@@ -862,15 +929,14 @@ export default function EventHorizon({ signedIn, tier, member, invited, discount
         </div>
       </section>
 
-      {/* 3 · Weekly Projection Rankings */}
-      <section className="ehp-weekly" id="weekly">
+      <section className="ehp-dark ehp-chap" id="weekly">
         <div className="ehp-wrap ehp-two">
           <div>
-            <div className="ehp-k">Weekly Projection Rankings{weekNo ? ` · week ${weekNo}` : ""}</div>
+            <div className="ehp-k">02 · Weekly Projection Rankings{weekNo ? ` · week ${weekNo}` : ""}</div>
             <h2 className="ehp-h">
               Not a guess. <em>A range.</em>
             </h2>
-            <p className="ehp-lede">Nobody scores the same every week. For every player we show a bad week, a normal week and a great week, so you can see how high he can go and how low he can fall, and which matchups tilt it.</p>
+            <Why k="weekly" />
             <ToolLink className="ehp-link" href="/tools/redraft-rankings">See every player →</ToolLink>
           </div>
           <table className="ehp-wk">
@@ -901,15 +967,14 @@ export default function EventHorizon({ signedIn, tier, member, invited, discount
         </div>
       </section>
 
-      {/* 4 · Dynasty Board */}
-      <section className="ehp-dynasty ehp-dark" id="dynasty">
+      <section className="ehp-dark ehp-chap" id="dynasty">
         <div className="ehp-wrap ehp-two">
           <div>
-            <div className="ehp-k">Dynasty Board</div>
+            <div className="ehp-k">03 · Dynasty Board</div>
             <h2 className="ehp-h">
               Who is <em>really ahead.</em>
             </h2>
-            <p className="ehp-lede">Every player ranked on what he has produced and how many good years he has left, then grouped into tiers, so you can see who is genuinely a step above the next name on the list.</p>
+            <Why k="dynasty" />
             <ToolLink className="ehp-link" href="/tools/draft-board">Open the board →</ToolLink>
           </div>
           <ol className="ehp-dy">
@@ -928,48 +993,101 @@ export default function EventHorizon({ signedIn, tier, member, invited, discount
         </div>
       </section>
 
-      <section className="ehp-inst" id="tools">
+      <section className="ehp-dark ehp-chap ehp-trio">
         <div className="ehp-wrap">
-          <div className="ehp-head">
-            <div>
-              <div className="ehp-k">Instruments</div>
-              <h2 className="ehp-h">
-                Five ways <em>to look.</em>
-              </h2>
-            </div>
-          </div>
           <ol>
-            {TOOLS.map(([h, p, t, href], i) => (
-              <li key={h}>
-                <ToolLink href={href}>
-                  <span className="no">{String(i + 1).padStart(2, "0")}</span>
-                  <OrbitIcon rings={i + 1} />
-                  <span className="name">{h}</span>
-                  <span className="say">{p}</span>
-                  <span className="t">{t}</span>
-                  <span className="ar" aria-hidden="true">→</span>
-                </ToolLink>
+            {[
+              ["04", "Player Season Simulations", "Where his season is going.", "sims", "/tools/player-simulations"],
+              ["05", "The Observatory", "Any two numbers, one chart.", "lab", "/tools/lab"],
+              ["06", "The Night Sky", "Check in, collect the sky.", "sky", signedIn ? "/account/sky" : "/login?next=/account/sky"],
+            ].map(([no, name, h, k, href], i) => (
+              <li key={k}>
+                <OrbitIcon rings={i + 3} />
+                <div className="ehp-k">{no} · {name}</div>
+                <h3>{h}</h3>
+                <Why k={k} />
+                <ToolLink className="ehp-link" href={href}>Open {name} →</ToolLink>
               </li>
             ))}
           </ol>
         </div>
       </section>
 
-      <section className="ehp-orbits" id="pricing">
-        <Plans />
+      {/* 5 · a week with the site, as a timeline */}
+      <section className="ehp-dark ehp-week" id="week">
+        <div className="ehp-wrap">
+          <div className="ehp-k">A week with Dynasty Singularity</div>
+          <h2 className="ehp-h">
+            Tuesday to Monday, <em>and the offseason.</em>
+          </h2>
+          <ol className="ehp-tl">
+            {WEEK.map(([day, time, say, tool, href]) => (
+              <li key={day}>
+                <div className="when">
+                  <b>{day}</b>
+                  <span>{time}</span>
+                </div>
+                <i className="tl-dot" aria-hidden="true" />
+                <div className="what">
+                  <p>{say}</p>
+                  <ToolLink className="ehp-link" href={href}>{tool} →</ToolLink>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
       </section>
 
-      <section className="ehp-letter" id="feed">
+      {/* 6 · questions, members' words, and the newsletter (the quiz) */}
+      <section className="ehp-dark ehp-faq" id="faq">
+        <div className="ehp-wrap ehp-faqgrid">
+          <div>
+            <div className="ehp-k">Questions</div>
+            <h2 className="ehp-h">
+              Asked <em>and answered.</em>
+            </h2>
+            <div className="ehp-qs">
+              {FAQ.slice(0, 8).map(([q, a]) => (
+                <details key={q}>
+                  <summary>{q}</summary>
+                  <div className="a">{a}</div>
+                </details>
+              ))}
+            </div>
+            <Link className="ehp-link" href="/how-it-works#faq">Every question →</Link>
+          </div>
+          <div>
+            <div className="ehp-k">From members</div>
+            <h2 className="ehp-h">
+              In <em>their words.</em>
+            </h2>
+            {TESTIMONIALS.length ? (
+              <ul className="ehp-quotes">
+                {TESTIMONIALS.map((t) => (
+                  <li key={t.quote}>
+                    <blockquote>“{t.quote}”</blockquote>
+                    <span>{t.name}{t.detail ? ` · ${t.detail}` : ""}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="ehp-quotes-empty">
+                <p>The first season of members is writing these now. Real words from real managers will go here, and only those.</p>
+                <Link className="ehp-link" href="/contact">Tell us what you think →</Link>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      <section className="ehp-dark ehp-letter" id="feed">
         <div className="ehp-wrap ehp-two">
           <div>
             <div className="ehp-k">The Tuesday letter</div>
             <h2 className="ehp-h">
-              What moved, <em>before waivers.</em>
+              What kind of <em>dynasty manager are you?</em>
             </h2>
-            <p className="ehp-lede">Model notes, ranking shifts and rookie comparisons, once a week.</p>
-          </div>
-          <div>
-            <NewsletterForm source="home" />
+            <p className="ehp-lede">Four questions, one minute. You get your answer, and the Tuesday letter: what moved, before waivers, once a week.</p>
             {posts?.length > 0 && (
               <ul className="ehp-posts">
                 {posts.map((p) => (
@@ -983,6 +1101,7 @@ export default function EventHorizon({ signedIn, tier, member, invited, discount
               </ul>
             )}
           </div>
+          <ManagerQuiz source="home" />
         </div>
       </section>
     </div>
