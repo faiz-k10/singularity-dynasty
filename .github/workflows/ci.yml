@@ -19,6 +19,10 @@ defaults:
   run:
     working-directory: web
 
+# Least privilege: the built-in GitHub token can only read this repository (it never needs to push).
+permissions:
+  contents: read
+
 jobs:
   verify:
     runs-on: ubuntu-latest

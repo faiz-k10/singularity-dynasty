@@ -16,6 +16,7 @@ const guard = async (fn) => {
   try {
     return { state: await fn(user.id) };
   } catch (e) {
+    if (e?.closed) return { error: e.message };
     console.error("[night-sky]", e?.message || e);
     return { error: "Couldn't save that. Please try again." };
   }

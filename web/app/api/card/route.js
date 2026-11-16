@@ -16,6 +16,9 @@ import { awardLater } from "@/lib/nightSkyStore";
 // chose to share him. Receipts and Smash Spots are public pages already. A signed-in member's link carries their referral code.
 // Answers { url, image, tall, caption }: the page to post, its wide picture (1200 x 630), the Instagram one (1080 x 1350) and a post caption.
 const hits = new Map();
+// Per account, per day (security pass, Nov 16 2026): a signed card is a permanent public page, so a script on a paid account could otherwise
+// mint one for every player and republish the whole paid board. 40 a day is far more than anyone shares by hand. Per server instance.
+const byUser = new Map();
 const bad = (error, status = 400) => NextResponse.json({ error }, { status });
 
 export async function POST(request) {
@@ -32,6 +35,7 @@ export async function POST(request) {
   const supabase = await createClient();
   const { user, tier } = await resolveTier(supabase);
   const full = PAID_TIERS.includes(tier);
+  if (user && !allowHit(byUser, user.id, Date.now(), 40, 24 * 60 * 60_000)) return bad("That's the card limit for today. Try again tomorrow.", 429);
   const site = request.nextUrl.origin;
   let path = null;
   let token = null;

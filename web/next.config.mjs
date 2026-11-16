@@ -4,7 +4,10 @@
 // (clickjacking the pricing / billing buttons), no MIME sniffing, no plugin objects, no <base> hijack, full URLs never
 // leak to other sites, and browsers stay on https.
 const SECURITY_HEADERS = [
-  { key: "Content-Security-Policy", value: "frame-ancestors 'none'; base-uri 'self'; object-src 'none'" },
+  // form-action: a form (even one injected into a page) can only post to this site, or move on to Stripe's own pages after a billing action.
+  { key: "Content-Security-Policy", value: "frame-ancestors 'none'; base-uri 'self'; object-src 'none'; form-action 'self' https://checkout.stripe.com https://billing.stripe.com" },
+  // another site that opens us in a pop-up can't reach back into our window (share pop-ups we open still work)
+  { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
   { key: "X-Frame-Options", value: "DENY" },
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },

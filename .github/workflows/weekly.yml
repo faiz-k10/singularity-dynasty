@@ -38,6 +38,10 @@ concurrency:
   group: weekly-run # never two publishes at once; a second one waits
   cancel-in-progress: false
 
+# Least privilege: the built-in GitHub token can only read this repository (it never needs to push).
+permissions:
+  contents: read
+
 jobs:
   run:
     runs-on: ubuntu-latest

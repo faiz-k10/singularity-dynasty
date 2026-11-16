@@ -20,3 +20,8 @@ test("safeNext: same-site paths only", () => {
   assert.equal(safeNext("/\\evil.com"), "");
   assert.equal(safeNext(null), "");
 });
+
+test("safeNext: browsers drop tabs and newlines, so they can't sneak in a second slash", () => {
+  for (const v of ["/\t/evil.com", "/\n/evil.com", "/\r/evil.com", "/ /evil.com", "/\u0000/evil.com"]) assert.equal(safeNext(v), "", JSON.stringify(v));
+  assert.equal(safeNext("/my-team?welcome=1"), "/my-team?welcome=1");
+});

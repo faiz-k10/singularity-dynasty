@@ -71,6 +71,10 @@ The other job names also work in place of `tuesday-full-run`.
 - **A drop / post:** title and link. It appears in the home page Feed.
 - **Prospect rankings or a draft board:** upload the CSV. Every line is checked first, and the old board stays up if anything is wrong. The column format is in `csv-upload-formats.html`.
 
+## Security and incidents
+
+Attacks, breakdowns and what to do about each (leaked key, hacked account, data exposure, bill spikes): **`SECURITY.md`** in this folder.
+
 ## Where everything lives
 
 | Service | What it's for | Link |

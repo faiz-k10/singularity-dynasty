@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { stripe, cancelAllNow } from "@/lib/billing";
+import { normalizeEmail } from "@/lib/emailRules";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { siteOrigin } from "@/lib/siteOrigin";
 
@@ -58,6 +59,8 @@ export async function deleteAccount(formData) {
     }
     await stripe.customers.del(customer).catch((e) => console.error("[account] customer delete:", e.message));
   }
+  // the newsletter list is keyed by email, not by account, so it doesn't cascade: remove their entry (name, quiz answers) too
+  if (user.email) await admin.from("subscribers").delete().eq("email", normalizeEmail(user.email) || user.email).then(({ error: e }) => e && console.error("[account] subscriber delete:", e.message));
   const { error } = await admin.auth.admin.deleteUser(user.id);
   if (error) {
     console.error("[account] deleteUser:", error.message);

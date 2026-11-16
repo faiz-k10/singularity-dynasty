@@ -5,7 +5,7 @@ export const AUTH_ERRORS = {
   credentials: "That email and password don't match an account.",
   unconfirmed: "Confirm your email first: open the link we sent you, then sign in. Didn't get it? Use Create Account again to resend it.",
   "weak-password": "Use a password of at least 8 characters.",
-  "rate-limit": "Too many attempts. Wait a minute and try again.",
+  "rate-limit": "Too many attempts. Wait a few minutes and try again.",
   "missing-fields": "Enter your email and a password.",
   "link-expired":
     "That link has expired or was opened on another device. If you were confirming your email, it's confirmed: sign in below. To reset your password, request a new link.",
@@ -37,7 +37,17 @@ export function authErrorCode(error) {
 }
 
 // Only same-site paths ("/my-team"), never an absolute or protocol-relative URL.
+// Security pass Nov 16 2026: browsers silently drop tabs and newlines from an address, so "/\t/evil.com" used to pass the old prefix
+// checks and land on evil.com. Now any control character or space is refused, and the path is resolved the way a browser resolves it
+// and must stay on this site.
+const PROBE = "https://same-site.invalid";
 export function safeNext(value) {
-  const v = typeof value === "string" ? value : "";
-  return v.startsWith("/") && !v.startsWith("//") && !v.includes("\\") ? v : "";
+  const v = typeof value === "string" ? value.slice(0, 500) : "";
+  if (!v.startsWith("/") || v.startsWith("//") || /[\\\s\u0000-\u001f\u007f]/.test(v)) return "";
+  try {
+    const u = new URL(v, PROBE);
+    return u.origin === PROBE ? v : "";
+  } catch {
+    return "";
+  }
 }

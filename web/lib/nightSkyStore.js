@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { fetchSleeperState } from "@/lib/sleeper";
 import { nflSeason } from "@/lib/season";
 import { getCachedRedraftData } from "@/app/tools/redraft-rankings/data";
+import { fetchWeekGameStates, teamCode } from "@/lib/gameStatus";
 import { freshState, normalize, award, rollSeason, skySeasonFor, unlockSkins, equipSkin, pickPairs, gradePicks, eventFor, titleOf, seasonProgress, LADDER } from "@/lib/nightSky";
 
 // The Night Sky's storage and every roll of the dice (the rules are lib/nightSky.js). One row per member in `night_sky` (migration 0046),
@@ -109,10 +110,27 @@ export async function markSeen(userId, ids) {
   return state;
 }
 // A Beat the Model pick for this week (only before the week's games are graded).
+// A pick closes once EITHER player's game has kicked off (security pass, Nov 16 2026: picks used to stay open until the week was graded, after
+// Monday night, so a member could pick the player who had already scored more and farm stars toward the ladder's real rewards). Reads that
+// exact week's scoreboard; anything it can't confirm (an older week, an unknown team, ESPN unreachable) counts as closed.
+export const PICK_CLOSED = "Picks close when either player's game kicks off.";
+async function pickClosed(wk, index, now = Date.now()) {
+  const cached = await getCachedRedraftData().catch(() => null);
+  if (!cached?.latest || cached.latest.season !== wk.season || cached.latest.week !== wk.week) return true;
+  const states = await fetchWeekGameStates(wk.season, wk.week).catch(() => null);
+  if (!states) return true;
+  const pair = wk.pairs[index];
+  return [pair.a, pair.b].some((name) => {
+    const g = states[teamCode(cached.rows.find((r) => r.player_name === name)?.team)];
+    return !g || g.state !== "pre" || (g.start && Date.parse(g.start) <= now);
+  });
+}
+
 export async function makePick(userId, key, index, choice) {
   const state = await read(userId);
   const wk = state.picks[key];
   if (!wk || wk.graded || !wk.pairs[index] || (choice !== 0 && choice !== 1)) return state;
+  if (await pickClosed(wk, index)) throw Object.assign(new Error(PICK_CLOSED), { closed: true });
   const had = wk.choice[index] != null;
   wk.choice[index] = choice;
   if (!had) state.log.unshift({ t: Date.now(), text: "Pick made: an unlit star waits for the week's results" });
