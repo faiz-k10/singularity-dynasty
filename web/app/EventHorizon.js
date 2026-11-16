@@ -898,7 +898,7 @@ export default function EventHorizon({ signedIn, tier, member, invited, discount
         <div className="ehp-wrap">
           <div className="ehp-k">Who it&apos;s for</div>
           <h2 className="ehp-h">
-            Built for the manager <em>with more than one league.</em>
+            The more leagues you run, <em>the more power you get.</em>
           </h2>
           <ul className="ehp-for">
             {FOR_YOU.map(([h, p]) => (
