@@ -10,7 +10,7 @@ export const SUMMARY = [
   ["The Observatory", "Any two stats, every player, one chart. Export it.", "Anytime", "/tools/lab"],
   ["Best Available", "The free agent who beats your weakest starter.", "Waiver day", "/my-team"],
   ["The Night Sky", "Members only. Check in, earn stars, fill a sky.", "Daily", "/account/sky"],
-  ["The Tuesday letter", "What moved before waivers. Tuesdays.", "Tuesdays", "/newsletter"],
+  ["The Tuesday Transmission", "What moved before waivers. Tuesdays.", "Tuesdays", "/newsletter"],
 ];
 
 // Page 4: who it's for.
@@ -32,7 +32,7 @@ export const WHY = {
 
 // Page 5: a week with the site, in order. [day, time, what happens, tool, link]
 export const WEEK = [
-  ["Tuesday", "Afternoon", "Projections drop. See who moved before your league notices. The Tuesday letter lands too.", "Weekly Projection Rankings", "/tools/redraft-rankings"],
+  ["Tuesday", "Afternoon", "Projections drop. See who moved before your league notices. The Tuesday Transmission lands too.", "Weekly Projection Rankings", "/tools/redraft-rankings"],
   ["Wednesday", "Waiver day", "Best Available, league by league. The free agent who beats your weakest starter, ranked.", "Best Available", "/my-team"],
   ["Thursday", "Before kickoff", "Lineup Alerts sweep every league. Injured, out or on bye: flagged, with the bench swap.", "Lineup Alerts", "/my-team"],
   ["Friday – Saturday", "Research", "Run down your doubts. Season range, role, any two stats side by side.", "Season Sims · The Observatory", "/tools/player-simulations"],

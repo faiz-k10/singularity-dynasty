@@ -21,7 +21,7 @@ import { createPublicClient } from "@/lib/supabase/public";
 export const dynamic = "force-dynamic";
 
 // What the page reads that is the same for every visitor: this week's top five (the weekly section) and the
-// three newest posts (the Tuesday letter). Cached 60s.
+// three newest posts (the Tuesday Transmission). Cached 60s.
 const getCachedHomeData = unstable_cache(
   async () => {
     const supabase = createPublicClient();

@@ -6645,7 +6645,7 @@ body:has(.ehp){--ehp-bg:#0B0B0B;--ehp-ink:#ECE7DC;--ehp-dim:#A39E92;--ehp-faint:
 .ehp-planorbits{margin-bottom:70px;}
 .ehp-planorbits .ehp-planmark{width:40px;height:40px;--mark-disc:var(--ehp-ink);overflow:visible;}
 
-/* the Tuesday letter (the manager quiz) */
+/* the Tuesday Transmission (the manager quiz) */
 .ehp-letter{border-top:1px solid var(--ehp-rule);padding:100px 0 110px !important;}
 .ehp-posts{list-style:none;margin:26px 0 0;padding:0;border-top:1px solid var(--ehp-rule);}
 .ehp-posts a{display:flex;justify-content:space-between;gap:20px;padding:12px 0;border-bottom:1px solid var(--ehp-rule);font-size:15px;}
@@ -7211,7 +7211,7 @@ body:has(.ehp) .ehp-inside,body:has(.ehp) .ehp-dark{--ehp-hole:#0B0B0B;--ehp-hol
 .sky-plate{fill:var(--void);fill-opacity:.94}
 
 /* ===== LANDING PAGE BELOW THE HERO (Nov 16 2026, founder): 2 the site on one page + Get started -> 3 plans -> 4 who it's for and
-   each tool -> 5 a week with the site (timeline) -> 6 questions + members' words, then the Tuesday letter (the manager quiz). ===== */
+   each tool -> 5 a week with the site (timeline) -> 6 questions + members' words, then the Tuesday Transmission (the manager quiz). ===== */
 .ehp-dark+.ehp-dark,.ehp-orbits+.ehp-dark{border-top:1px solid var(--ehp-rule);}
 .ehp-sumhead{display:grid;grid-template-columns:1.1fr .9fr;gap:60px;align-items:end;margin-bottom:46px;}
 .ehp-sumhead .ehp-lede{max-width:none;margin:0;}
