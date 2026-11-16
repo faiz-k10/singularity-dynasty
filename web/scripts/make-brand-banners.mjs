@@ -72,6 +72,7 @@ function svg(name, t) {
   </linearGradient>
   <filter id="soft" x="-20%" y="-300%" width="140%" height="700%"><feGaussianBlur stdDeviation="9"/></filter>
   <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="14"/></filter>
+  <clipPath id="front"><rect x="0" y="${CY}" width="${W}" height="${H}"/></clipPath>
 </defs>
 <rect width="${W}" height="${H}" fill="${t.bg}"/>
 <ellipse cx="${CX}" cy="${CY}" rx="1250" ry="520" fill="url(#bloom)"/>
@@ -85,7 +86,9 @@ ${orbits}
 <circle cx="${CX}" cy="${CY}" r="${R + 14}" fill="none" stroke="${t.ring}" stroke-width="3" opacity="0.95"/>
 <!-- the event horizon -->
 <circle cx="${CX}" cy="${CY}" r="${R}" fill="${t.hole}"/>
-<!-- the initials, in the hole -->
+<!-- the near half of the disk crossing in front of the hole (the first banner's horizon, kept exactly) -->
+<g clip-path="url(#front)"><ellipse cx="${CX}" cy="${CY}" rx="1000" ry="30" fill="none" stroke="url(#disk)" stroke-width="5"/></g>
+<!-- the initials, in the hole, on top of that band -->
 ${initials}
 <!-- a speck on its way in -->
 <circle cx="${CX + 330}" cy="${CY - 120}" r="5" fill="${t.warm}"/>
