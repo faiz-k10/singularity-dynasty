@@ -997,7 +997,7 @@ export default function EventHorizon({ signedIn, tier, member, invited, discount
             {[
               ["04", "Player Season Simulations", "Where his season is going.", "sims", "/tools/player-simulations"],
               ["05", "The Observatory", "All the numbers. All the charts.", "lab", "/tools/lab"],
-              ["06", "The Night Sky", "Hunt stars. Build your sky.", "sky", signedIn ? "/account/sky" : "/login?next=/account/sky"],
+              ["06", "The Night Sky", "Chase the stars. Build your sky.", "sky", signedIn ? "/account/sky" : "/login?next=/account/sky"],
             ].map(([no, name, h, k, href], i) => (
               <li key={k}>
                 <OrbitIcon rings={i + 3} />
