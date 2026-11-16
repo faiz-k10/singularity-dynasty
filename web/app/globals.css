@@ -7240,6 +7240,7 @@ body:has(.ehp) .ehp-inside,body:has(.ehp) .ehp-dark{--ehp-hole:#0B0B0B;--ehp-hol
 .ehp-why dt:nth-of-type(2){color:var(--ehp-holecold);}
 .ehp-why dd{margin:0;font-size:16px;line-height:1.55;}
 .ehp-chap .ehp-two{align-items:start;}
+.ehp-trio .ehp-h{margin:0 0 30px;}
 .ehp-trio ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid var(--ehp-holeink);}
 .ehp-trio li{padding:30px 28px 10px 0;display:flex;flex-direction:column;}
 .ehp-trio li+li{padding-left:28px;border-left:1px solid color-mix(in srgb, var(--ehp-holeink) 16%, transparent);}

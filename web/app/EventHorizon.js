@@ -995,6 +995,7 @@ export default function EventHorizon({ signedIn, tier, member, invited, discount
 
       <section className="ehp-dark ehp-chap ehp-trio">
         <div className="ehp-wrap">
+          <h2 className="ehp-h">And more</h2>
           <ol>
             {[
               ["04", "Player Season Simulations", "Where his season is going.", "sims", "/tools/player-simulations"],
