@@ -4,7 +4,8 @@ export const metadata = {
   title: "Contact — Dynasty Singularity",
 };
 
-const SUPPORT_EMAIL = "eremruh11@gmail.com";
+const GENERAL_EMAIL = "hello@dynastysingularity.com";
+const SUPPORT_EMAIL = "support@dynastysingularity.com";
 
 export default function ContactPage() {
   return (
@@ -16,12 +17,15 @@ export default function ContactPage() {
           <h1>Get in touch.</h1>
           <p className="auth-sub">
             Billing questions, refund requests, data corrections, or
-            anything else — reach out and we&apos;ll get back to you.
+            anything else. Write to support for your account or a payment, or to hello for everything else, and we&apos;ll get back to you.
           </p>
 
           <div className="auth-actions center">
             <a href={`mailto:${SUPPORT_EMAIL}`} className="btn-primary">
               {SUPPORT_EMAIL}
+            </a>
+            <a href={`mailto:${GENERAL_EMAIL}`} className="btn-ghost">
+              {GENERAL_EMAIL}
             </a>
           </div>
         </div>
