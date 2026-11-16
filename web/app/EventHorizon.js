@@ -1081,11 +1081,11 @@ export default function EventHorizon({ signedIn, tier, member, invited, discount
       <section className="ehp-dark ehp-letter" id="feed">
         <div className="ehp-wrap ehp-two">
           <div>
-            <div className="ehp-k">The Tuesday Transmission</div>
+            <div className="ehp-k">The Singularity Drive</div>
             <h2 className="ehp-h">
               Find Your <em>Manager Type</em>
             </h2>
-            <p className="ehp-lede">Four questions. One minute. Your type, plus the Tuesday Transmission: what moved before waivers.</p>
+            <p className="ehp-lede">Four questions. One minute. Your type, plus the Singularity Drive: what moved before waivers.</p>
             {posts?.length > 0 && (
               <ul className="ehp-posts">
                 {posts.map((p) => (

@@ -20,7 +20,7 @@ export function HeaderLetter() {
       <Link href="/newsletter" aria-haspopup="true">Newsletter</Link>
       <div className="ehp-pm-panel" role="group" aria-label="Newsletter">
         <p className="ehp-nl-h">What kind of dynasty manager are you?</p>
-        <p>Four questions, one minute. Get your answer and the Tuesday Transmission: what moved, before waivers.</p>
+        <p>Four questions, one minute. Get your answer and the Singularity Drive: what moved, before waivers.</p>
         <Link className="ehp-nl-go" href="/newsletter">Take the quiz →</Link>
       </div>
     </div>

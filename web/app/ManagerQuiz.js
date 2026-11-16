@@ -5,7 +5,7 @@ import BotGuard from "./BotGuard";
 import { GM_ARCHETYPE_QUESTIONS as QS } from "@/lib/insights/gmArchetype";
 
 // The Dynasty Manager quiz = the newsletter sign-up (founder, Nov 16 2026): four questions one at a time, then first name, last
-// name and email; the answer is which kind of dynasty manager you are, and you're on the Tuesday Transmission. Saved by
+// name and email; the answer is which kind of dynasty manager you are, and you're on the Singularity Drive. Saved by
 // app/api/subscribe (the server scores the answers itself). Anti-bot: BotGuard (honeypot, fill time, Turnstile).
 export default function ManagerQuiz({ source = "quiz", compact = false }) {
   const [step, setStep] = useState(0); // 0..QS.length-1 = questions, QS.length = details
@@ -57,7 +57,7 @@ export default function ManagerQuiz({ source = "quiz", compact = false }) {
         <div className="mq-k">You are</div>
         <div className="mq-result">{result.label}</div>
         {result.blurb && <p className="mq-blurb">{result.blurb}</p>}
-        <p className="mq-fine">You&apos;re on the Tuesday Transmission. The first one lands next Tuesday, written for your style.</p>
+        <p className="mq-fine">You&apos;re on the Singularity Drive. The first one lands next Tuesday, written for your style.</p>
       </div>
     );
   }
@@ -85,7 +85,7 @@ export default function ManagerQuiz({ source = "quiz", compact = false }) {
         </fieldset>
       ) : (
         <form className="mq-form" onSubmit={submit}>
-          <p className="mq-prompt">Where should we send your result and the Tuesday Transmission?</p>
+          <p className="mq-prompt">Where should we send your result and the Singularity Drive?</p>
           <div className="mq-names">
             <label>
               <span>First name</span>
