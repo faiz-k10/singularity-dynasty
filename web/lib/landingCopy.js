@@ -25,7 +25,7 @@ export const WHY = {
 
 // Page 5: a week with the site, in order. [day, time, what happens, tool, link]
 export const WEEK = [
-  ["Tuesday", "Afternoon", "Projections drop. See who moved before your league notices. The Singularity Drive lands too.", "Weekly Projection Rankings", "/tools/redraft-rankings"],
+  ["Tuesday", "Afternoon", "Projections drop. See who moved before your league notices. The Singularity Drive Newsletter lands too.", "Weekly Projection Rankings", "/tools/redraft-rankings"],
   ["Wednesday", "Waiver day", "Best Available, league by league. The free agent who beats your weakest starter, ranked.", "Best Available", "/my-team"],
   ["Thursday", "Before kickoff", "Lineup Alerts sweep every league. Injured, out or on bye: flagged, with the bench swap.", "Lineup Alerts", "/my-team"],
   ["Friday – Saturday", "Research", "Run down your doubts. Season range, role, any two stats side by side.", "Season Sims · The Observatory", "/tools/player-simulations"],
