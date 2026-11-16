@@ -6572,7 +6572,7 @@ body:has(.ehp){--ehp-bg:#0B0B0B;--ehp-ink:#ECE7DC;--ehp-dim:#A39E92;--ehp-faint:
 .ehp-title{font:800 30px/1.04 var(--font-display), sans-serif;letter-spacing:.014em;margin:12px 0 20px;color:inherit;text-transform:uppercase;}
 .ehp-form{display:flex;width:206px;border-bottom:1px solid var(--ehp-holedim);transition:border-color .2s;}
 .ehp-form:focus-within{border-color:var(--ehp-holeink);}
-.ehp-form input{flex:1;min-width:0;padding:7px 0;font:12.5px var(--font-mono), monospace;font-stretch:82%;background:none;border:0;outline:none;color:var(--ehp-holeink);}
+.ehp-form input{flex:1;min-width:0;padding:7px 0;font:11.5px var(--font-mono), monospace;font-stretch:82%;background:none;border:0;outline:none;color:var(--ehp-holeink);}
 .ehp-form input::placeholder{color:var(--ehp-holedim);}
 .ehp-form button{font:13px var(--font-mono), monospace;color:var(--ehp-holeink);background:none;border:0;cursor:pointer;padding-left:8px;transition:transform .2s, color .2s;}
 .ehp-form button:hover:not(:disabled){color:var(--ehp-mark);transform:translateX(3px);}
@@ -6670,7 +6670,7 @@ body:has(.ehp){--ehp-bg:#0B0B0B;--ehp-ink:#ECE7DC;--ehp-dim:#A39E92;--ehp-faint:
 @media (max-width:560px){
   .ehp-hole{padding:22px;}
   .ehp-title{font-size:24px;margin:8px 0 14px;}
-  .ehp-form{width:190px;} .ehp-form input{font-size:16px;letter-spacing:-.02em;}
+  .ehp-form{width:190px;} .ehp-form input{font-size:15px;letter-spacing:-.02em;}
   .ehp-big{font-size:32px;} .ehp-line{font-size:12.5px;max-width:170px;}
   .ehp-r>a:first-child{display:none;}
   .ehp-brand{letter-spacing:.14em;font-size:13px;}
