@@ -855,7 +855,7 @@ export default function EventHorizon({ signedIn, tier, member, invited, discount
               </h2>
             </div>
             <p className="ehp-lede">
-              Scattered stats, trends and matchups all pulled toward one honest range for every player, then laid next to your own leagues, so the call takes minutes instead of an evening.
+              Scattered stats, trends and matchups fall toward one honest range per player. Laid over your own leagues. Calls take minutes, not evenings.
             </p>
           </div>
           <ol className="ehp-sumgrid">
@@ -1085,7 +1085,7 @@ export default function EventHorizon({ signedIn, tier, member, invited, discount
             <h2 className="ehp-h">
               Find Your <em>Manager Type</em>
             </h2>
-            <p className="ehp-lede">Four questions, one minute. You get your answer, and the Tuesday letter: what moved, before waivers, once a week.</p>
+            <p className="ehp-lede">Four questions. One minute. Your type, plus the Tuesday letter: what moved before waivers.</p>
             {posts?.length > 0 && (
               <ul className="ehp-posts">
                 {posts.map((p) => (
