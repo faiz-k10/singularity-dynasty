@@ -51,8 +51,9 @@ function stars(t) {
 }
 
 function svg(name, t) {
-  const orbits = [255, 345, 470, 620, 800].map((b, i) =>
-    `<path d="${football(b * 1.7, b, i === 0)}" fill="none" stroke="${i === 0 ? t.ring : t.orbit}" stroke-opacity="${(i === 0 ? 0.95 : t.orbitAlpha * (6.2 - i * 0.85)).toFixed(2)}" stroke-width="${(4.2 - i * 0.5).toFixed(1)}" stroke-linejoin="round"/>`).join("");
+  // Two football outlines, no stripes, both at the thin weight the founder picked (the old outermost ring's 2.2px); the inner one in the accent colour.
+  const orbits = [290, 560].map((b, i) =>
+    `<path d="${football(b * 1.7, b, false)}" fill="none" stroke="${i === 0 ? t.ring : t.orbit}" stroke-opacity="${i === 0 ? 0.9 : (t.orbitAlpha * 2.8).toFixed(2)}" stroke-width="2.2" stroke-linejoin="round"/>`).join("");
   const k = R / MARK_DISC.r; // the logo's 40-unit box scaled so its disc is the event horizon
   const initials = `<g transform="translate(${CX} ${CY}) scale(${k}) translate(${-MARK_DISC.cx} ${-MARK_DISC.cy})"><path d="${MARK_DS}" transform="${MARK_DISC_DS.transform}" fill="${t.letters}"/></g>`;
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
