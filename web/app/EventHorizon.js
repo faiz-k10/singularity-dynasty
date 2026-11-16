@@ -1017,9 +1017,9 @@ export default function EventHorizon({ signedIn, tier, member, invited, discount
       {/* 5 · a week with the site, as a timeline */}
       <section className="ehp-dark ehp-week" id="week">
         <div className="ehp-wrap">
-          <div className="ehp-k">A week with Dynasty Singularity</div>
+          <div className="ehp-k">A week, Tuesday to Monday</div>
           <h2 className="ehp-h">
-            Your mission, Tuesday to Monday
+            Your journey to Dynasty Singularity
           </h2>
           <ol className="ehp-tl">
             {WEEK.map(([day, time, say, tool, href]) => (
