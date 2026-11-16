@@ -578,7 +578,7 @@ function Plans() {
       <div>
         <div className="ehp-k">Plans</div>
         <h2 className="ehp-h">
-          The journey is yours. Choose your launch.
+          Choose Your Launch
         </h2>
         <div className="ehp-bill" role="group" aria-label="Billing">
           <button type="button" className={yearly ? "" : "on"} onClick={() => setYearly(false)} aria-pressed={!yearly}>Monthly</button>
@@ -853,7 +853,7 @@ export default function EventHorizon({ signedIn, tier, member, invited, discount
             <div>
               <div className="ehp-k">The whole site, on one page</div>
               <h2 className="ehp-h">
-                One control room. Every decision. Every league.
+                One Control Room. Every League.
               </h2>
             </div>
             <p className="ehp-lede">
@@ -898,7 +898,7 @@ export default function EventHorizon({ signedIn, tier, member, invited, discount
         <div className="ehp-wrap">
           <div className="ehp-k">Who it&apos;s for</div>
           <h2 className="ehp-h">
-            The more leagues you run, <em>the more power you get.</em>
+            More Leagues? <em>More Power</em>
           </h2>
           <ul className="ehp-for">
             {FOR_YOU.map(([h, p]) => (
@@ -916,7 +916,7 @@ export default function EventHorizon({ signedIn, tier, member, invited, discount
           <div>
             <div className="ehp-k">01 · {member?.rows?.length ? "The Game Board" : "The Game Board · a sample week"}</div>
             <h2 className="ehp-h">
-              Launch Sunday with every league on radar
+              Every League on Radar
             </h2>
             <Why k="board" />
             <ToolLink className="ehp-link" href="/my-team">Open the Game Board →</ToolLink>
@@ -933,7 +933,7 @@ export default function EventHorizon({ signedIn, tier, member, invited, discount
           <div>
             <div className="ehp-k">02 · Weekly Projection Rankings{weekNo ? ` · week ${weekNo}` : ""}</div>
             <h2 className="ehp-h">
-              Every player&apos;s flight path, plotted before kickoff
+              Every Player&apos;s Flight Path, Plotted
             </h2>
             <Why k="weekly" />
             <ToolLink className="ehp-link" href="/tools/redraft-rankings">See every player →</ToolLink>
@@ -971,7 +971,7 @@ export default function EventHorizon({ signedIn, tier, member, invited, discount
           <div>
             <div className="ehp-k">03 · Dynasty Board</div>
             <h2 className="ehp-h">
-              Chart the winning destination of your dynasty
+              Chart Your Dynasty&apos;s Destination
             </h2>
             <Why k="dynasty" />
             <ToolLink className="ehp-link" href="/tools/draft-board">Open the board →</ToolLink>
@@ -1044,7 +1044,7 @@ export default function EventHorizon({ signedIn, tier, member, invited, discount
           <div>
             <div className="ehp-k">Questions</div>
             <h2 className="ehp-h">
-              Asked <em>and answered.</em>
+              Straight <em>Answers</em>
             </h2>
             <div className="ehp-qs">
               {FAQ.slice(0, 8).map(([q, a]) => (
@@ -1059,7 +1059,7 @@ export default function EventHorizon({ signedIn, tier, member, invited, discount
           <div>
             <div className="ehp-k">From members</div>
             <h2 className="ehp-h">
-              In <em>their words.</em>
+              Member <em>Voices</em>
             </h2>
             {TESTIMONIALS.length ? (
               <ul className="ehp-quotes">
@@ -1085,7 +1085,7 @@ export default function EventHorizon({ signedIn, tier, member, invited, discount
           <div>
             <div className="ehp-k">The Tuesday letter</div>
             <h2 className="ehp-h">
-              What kind of <em>dynasty manager are you?</em>
+              Find Your <em>Manager Type</em>
             </h2>
             <p className="ehp-lede">Four questions, one minute. You get your answer, and the Tuesday letter: what moved, before waivers, once a week.</p>
             {posts?.length > 0 && (
