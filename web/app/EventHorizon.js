@@ -873,7 +873,7 @@ export default function EventHorizon({ signedIn, tier, member, invited, discount
           <div className="ehp-cta">
             {member?.rows?.length ? (
               <>
-                <ToolLink className="ehp-go" href="/my-team">Open the Game Board →</ToolLink>
+                <ToolLink className="ehp-go" href="/my-team">Dive into the Game Board →</ToolLink>
                 <a className="ehp-link" href="#pricing">See the plans</a>
               </>
             ) : (
@@ -902,7 +902,7 @@ export default function EventHorizon({ signedIn, tier, member, invited, discount
               Every League on Radar
             </h2>
             <Why k="board" />
-            <ToolLink className="ehp-link" href="/my-team">Open the Game Board →</ToolLink>
+            <ToolLink className="ehp-link" href="/my-team">Dive into the Game Board →</ToolLink>
           </div>
           <div>
             <Matchups rows={member?.rows?.length ? member.rows : SAMPLE_ROWS} />
@@ -957,7 +957,7 @@ export default function EventHorizon({ signedIn, tier, member, invited, discount
               Chart Your Dynasty&apos;s Destination
             </h2>
             <Why k="dynasty" />
-            <ToolLink className="ehp-link" href="/tools/draft-board">Open the board →</ToolLink>
+            <ToolLink className="ehp-link" href="/tools/draft-board">Dive into the board →</ToolLink>
           </div>
           <ol className="ehp-dy">
             {(dynasty || []).map((r, i, all) => (
@@ -989,7 +989,7 @@ export default function EventHorizon({ signedIn, tier, member, invited, discount
                 <div className="ehp-k">{no} · {name}</div>
                 <h3>{h}</h3>
                 <Why k={k} />
-                <ToolLink className="ehp-link" href={href}>Open {name} →</ToolLink>
+                <ToolLink className="ehp-link" href={href}>Dive into {name} →</ToolLink>
               </li>
             ))}
           </ol>
