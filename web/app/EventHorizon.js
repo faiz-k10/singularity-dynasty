@@ -917,7 +917,7 @@ export default function EventHorizon({ signedIn, tier, member, invited, discount
           <div>
             <div className="ehp-k">01 · {member?.rows?.length ? "The Game Board" : "The Game Board · a sample week"}</div>
             <h2 className="ehp-h">
-              {member?.rows?.length ? <>Your week, <em>league by league.</em></> : <>Every league, <em>one screen.</em></>}
+              Launch Sunday with every league on radar
             </h2>
             <Why k="board" />
             <ToolLink className="ehp-link" href="/my-team">Open the Game Board →</ToolLink>
@@ -934,7 +934,7 @@ export default function EventHorizon({ signedIn, tier, member, invited, discount
           <div>
             <div className="ehp-k">02 · Weekly Projection Rankings{weekNo ? ` · week ${weekNo}` : ""}</div>
             <h2 className="ehp-h">
-              Not a guess. <em>A range.</em>
+              Every player&apos;s flight path, plotted before kickoff
             </h2>
             <Why k="weekly" />
             <ToolLink className="ehp-link" href="/tools/redraft-rankings">See every player →</ToolLink>
@@ -972,7 +972,7 @@ export default function EventHorizon({ signedIn, tier, member, invited, discount
           <div>
             <div className="ehp-k">03 · Dynasty Board</div>
             <h2 className="ehp-h">
-              Who is <em>really ahead.</em>
+              Chart the winning destination of your dynasty
             </h2>
             <Why k="dynasty" />
             <ToolLink className="ehp-link" href="/tools/draft-board">Open the board →</ToolLink>
@@ -1018,7 +1018,7 @@ export default function EventHorizon({ signedIn, tier, member, invited, discount
         <div className="ehp-wrap">
           <div className="ehp-k">A week with Dynasty Singularity</div>
           <h2 className="ehp-h">
-            Tuesday to Monday, <em>and the offseason.</em>
+            Your mission, Tuesday to Monday
           </h2>
           <ol className="ehp-tl">
             {WEEK.map(([day, time, say, tool, href]) => (
