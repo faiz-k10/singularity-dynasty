@@ -7251,7 +7251,7 @@ body:has(.ehp) .ehp-inside,body:has(.ehp) .ehp-dark{--ehp-hole:#0B0B0B;--ehp-hol
 .ehp-tl .when b{display:block;font:500 30px/1 var(--font-display), sans-serif;text-align:right;}
 .ehp-tl .when span{display:block;margin-top:6px;font:10.5px var(--font-mono), monospace;font-stretch:82%;letter-spacing:.16em;text-transform:uppercase;color:var(--ehp-holedim);text-align:right;}
 .ehp-tl .tl-dot{justify-self:center;margin-top:8px;width:13px;height:13px;border-radius:50%;background:var(--ehp-hole, var(--ehp-bg));border:2px solid var(--ehp-holeink);position:relative;z-index:1;}
-.ehp-tl li:first-child .tl-dot,.ehp-tl li:hover .tl-dot{background:var(--ehp-holemark);border-color:var(--ehp-holemark);}
+.ehp-tl li:hover .tl-dot{background:var(--ehp-holemark);border-color:var(--ehp-holemark);}
 .ehp-tl li:last-child .tl-dot{border-style:dashed;}
 .ehp-tl .what p{margin:0;font-size:17px;line-height:1.55;max-width:640px;}
 .ehp-tl .what .ehp-link{margin-top:10px;}
