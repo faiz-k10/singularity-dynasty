@@ -8,7 +8,7 @@ import ThemeToggle from "./ThemeToggle";
 import ArcGauge from "./ArcGauge";
 import ManagerQuiz from "./ManagerQuiz";
 import { FAQ } from "./faqItems";
-import { SUMMARY, FOR_YOU, WHY, WEEK, TESTIMONIALS } from "@/lib/landingCopy";
+import { SUMMARY, WHY, WEEK, TESTIMONIALS } from "@/lib/landingCopy";
 import { HeaderPlans, HeaderLetter, PLANS } from "./HeaderMenus";
 import { lookupSleeperTeams } from "./my-team/actions";
 import { summarizeLeagues } from "@/lib/heroLookup";
@@ -891,23 +891,8 @@ export default function EventHorizon({ signedIn, tier, member, invited, discount
         <Plans />
       </section>
 
-      {/* 4 · who it's for, then each tool in turn */}
-      <section className="ehp-dark ehp-who4" id="tools">
-        <div className="ehp-wrap">
-          <div className="ehp-k">Who it&apos;s for</div>
-          <h2 className="ehp-h">
-            More Leagues? <em>More Power</em>
-          </h2>
-          <ul className="ehp-for">
-            {FOR_YOU.map(([h, p]) => (
-              <li key={h}>
-                <b>{h}</b>
-                <span>{p}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
+      {/* 4 · each tool in turn (anchor kept for /#tools links) */}
+      <div id="tools" />
 
       <section className="ehp-dark ehp-chap" id="game-board">
         <div className="ehp-wrap ehp-two">
@@ -992,7 +977,7 @@ export default function EventHorizon({ signedIn, tier, member, invited, discount
 
       <section className="ehp-dark ehp-chap ehp-trio">
         <div className="ehp-wrap">
-          <h2 className="ehp-h">And more</h2>
+          <h2 className="ehp-h">More Leagues? <em>More Power</em></h2>
           <ol>
             {[
               ["04", "Player Season Simulations", "Where his season is going.", "sims", "/tools/player-simulations"],

@@ -13,13 +13,6 @@ export const SUMMARY = [
   ["The Singularity Drive", "What moved before waivers. Tuesdays.", "Tuesdays", "/newsletter"],
 ];
 
-// Page 4: who it's for.
-export const FOR_YOU = [
-  ["More than one league.", "Dynasty and redraft on Sleeper. Too many tabs to check by hand."],
-  ["Numbers over noise.", "Every player's range, plus how often those ranges have held."],
-  ["Years, not weeks.", "Who is rising, who is fading, who has good seasons left. Not just Sunday's scoreboard."],
-];
-
 // Page 4: what each tool adds, in two plain lines. Keyed by section.
 export const WHY = {
   board: ["Every score, win chance and lineup problem across all your leagues, spotted before you'd have found it yourself.", "Sunday becomes one radar screen. Every league live, every swing play as it lands."],
