@@ -53,6 +53,8 @@ function Core({ mass, collapsed, skin }) {
       <g className="sky-core-spikes"><Spikes x={0} y={0} len={92} color="var(--sky-t-white)" width={1.2} opacity={0.45} /></g>
       <CoreSkin skin={skin} layer="front" />
       {collapsed && <circle className="sky-core-lens" r="49" />}
+      {/* a solid plate behind the readout so the star field can't run through the words (founder, Nov 12 2026) */}
+      <rect className="sky-plate" x="-150" y="93" width="300" height="18" />
       <text className="sky-heat" x="0" y="106" textAnchor="middle">
         {collapsed ? "Collapsed · a find is waiting" : STAGES.map((x, i) => (
           <tspan key={x.id} className={x.id === st.id ? "is-on" : ""}>{i ? "  ·  " : ""}{x.label}</tspan>
@@ -91,6 +93,7 @@ function Sky({ state, pendingPicks, pending }) {
       })}
       {pendingPicks.length > 0 && (
         <g>
+          <rect className="sky-plate" x="-80" y="125" width="160" height="42" />
           {pendingPicks.map((_, i) => <circle key={`p${i}`} className="sky-pending" cx={(i - (pendingPicks.length - 1) / 2) * 22} cy={138} r="5" />)}
           <text className="sky-creal" x="0" y="160" textAnchor="middle">{pendingPicks.length} pick{pendingPicks.length === 1 ? "" : "s"} waiting</text>
         </g>

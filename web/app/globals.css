@@ -7262,3 +7262,5 @@ body:has(.ehp) .ehp-inside,body:has(.ehp) .ehp-dark{--ehp-hole:#0B0B0B;--ehp-hol
 .sky-core.is-cool .sky-core-glow{fill:#CFE0FF;opacity:.1}
 @media (prefers-color-scheme: light){:root:not([data-theme="dark"]) .sky-core-shine,:root:not([data-theme="dark"]) .sky-core-spikes{display:none}}
 :root[data-theme="light"] .sky-core-shine,:root[data-theme="light"] .sky-core-spikes{display:none}
+
+.sky-plate{fill:var(--void);fill-opacity:.94}
