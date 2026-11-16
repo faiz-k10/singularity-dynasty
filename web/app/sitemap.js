@@ -1,4 +1,4 @@
-const SITE_URL = "https://web-kohl-ten-94.vercel.app";
+const SITE_URL = "https://dynastysingularity.com";
 
 export default function sitemap() {
   const now = new Date();

@@ -227,7 +227,7 @@ function backup() {
 
 const mode = process.argv[2];
 async function refreshSite() {
-  const site = (process.env.NEXT_PUBLIC_SITE_URL || "https://web-kohl-ten-94.vercel.app").replace(/\/$/, "");
+  const site = (process.env.NEXT_PUBLIC_SITE_URL || "https://dynastysingularity.com").replace(/\/$/, "");
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!key) return log("Site refresh skipped: no service key.");
   const token = createHmac("sha256", key).update("revalidate:model-data:v1").digest("hex"); // same as lib/revalidateToken.js

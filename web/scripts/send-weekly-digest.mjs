@@ -16,7 +16,7 @@ import { renderDigest } from "../lib/digestEmail.js";
 
 const SEND = process.argv.includes("--send");
 const DEMO = process.argv.includes("--demo");
-const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://web-kohl-ten-94.vercel.app").replace(/\/$/, "");
+const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://dynastysingularity.com").replace(/\/$/, "");
 const address = process.env.EMAIL_FOOTER_ADDRESS || "";
 
 const sb = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);

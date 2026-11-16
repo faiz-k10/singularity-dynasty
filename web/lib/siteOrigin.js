@@ -1,6 +1,6 @@
 import { headers } from "next/headers";
 
-// This site's own origin ("https://web-kohl-ten-94.vercel.app", "http://localhost:3000") for links that leave and come
+// This site's own origin ("https://dynastysingularity.com", "http://localhost:3000") for links that leave and come
 // back -- Stripe's return URLs, Supabase's email links. Read from the request's Host; Supabase only follows links on its
 // Redirect URLs allow-list, so a forged Host header can't send an email link anywhere else.
 export async function siteOrigin() {

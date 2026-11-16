@@ -41,7 +41,7 @@ const mono = Martian_Mono({
   axes: ["wdth"],
 });
 
-const SITE_URL = "https://web-kohl-ten-94.vercel.app";
+const SITE_URL = "https://dynastysingularity.com";
 const TITLE = "Dynasty Singularity — Where Data Reaches Its Endpoint";
 const DESCRIPTION =
   "Weekly projection rankings, dynasty rankings, rookie prospect grades, and Monte Carlo season simulations for fantasy football — built on regression models, not gut feel.";

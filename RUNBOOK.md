@@ -4,7 +4,7 @@ How to run the site week to week on your own. No code and no Claude needed for a
 
 ## The one place to look: `/admin`
 
-Sign in with your founder email and open **https://web-kohl-ten-94.vercel.app/admin**. Top to bottom:
+Sign in with your founder email and open **https://dynastysingularity.com/admin**. Top to bottom:
 
 1. **Site health:** green means the numbers are fresh and nothing is erroring.
 2. **Weekly runs:** when each scheduled job last ran, whether it passed, its last lines, and a link to its full log.

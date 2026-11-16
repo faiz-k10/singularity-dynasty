@@ -2,7 +2,7 @@
 
 Subscription website for a dynasty fantasy-football data-science business.
 
-- **Live:** https://web-kohl-ten-94.vercel.app (auto-deploys from `main`)
+- **Live:** https://dynastysingularity.com (auto-deploys from `main`)
 - **Stack:** Next.js 16 (App Router, JS) · Supabase (auth + Postgres) · Stripe · Vercel
 - **Read before changing anything:** [`CLAUDE.md`](CLAUDE.md) — architecture, conventions, product decisions, gotchas.
 

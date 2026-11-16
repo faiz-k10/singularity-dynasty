@@ -2,7 +2,7 @@
 //
 //   1. Stripe dashboard -> switch off "Test mode" -> Developers -> API keys -> copy the live Secret key (sk_live_...).
 //   2. In a terminal, from web/:
-//        STRIPE_SECRET_KEY=sk_live_... SITE_URL=https://web-kohl-ten-94.vercel.app node scripts/stripe-go-live.mjs
+//        STRIPE_SECRET_KEY=sk_live_... SITE_URL=https://dynastysingularity.com node scripts/stripe-go-live.mjs
 //      (use your custom domain for SITE_URL once it is connected)
 //   3. Put the lines it prints into Vercel -> Project "web" -> Settings -> Environment Variables (Production), plus
 //      NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY = your live publishable key (pk_live_...), then redeploy.
@@ -24,7 +24,7 @@ if (!/^(sk|rk)_live_/.test(key)) {
   process.exit(1);
 }
 if (!/^https:\/\//.test(site)) {
-  console.error("Refusing: SITE_URL must be the live https address, e.g. SITE_URL=https://web-kohl-ten-94.vercel.app");
+  console.error("Refusing: SITE_URL must be the live https address, e.g. SITE_URL=https://dynastysingularity.com");
   process.exit(1);
 }
 

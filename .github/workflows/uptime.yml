@@ -13,7 +13,7 @@ on:
   workflow_dispatch:
 
 env:
-  SITE: https://web-kohl-ten-94.vercel.app
+  SITE: https://dynastysingularity.com
 
 jobs:
   check:
