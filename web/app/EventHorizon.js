@@ -403,7 +403,7 @@ function HoleLookup({ signedIn, member }) {
     <>
       <div className="ehp-k">Where the data ends</div>
       <h1 className="ehp-title">
-        Every player falls to <em>one number.</em>
+        Mission control for your entire fantasy empire
       </h1>
       <form className="ehp-form" onSubmit={submit}>
         <input value={name} onChange={(e) => setName(e.target.value)} placeholder={pending ? "reading leagues…" : "Sleeper username"} aria-label="Your Sleeper username" autoComplete="off" autoCapitalize="none" spellCheck={false} disabled={pending} />
@@ -579,7 +579,7 @@ function Plans() {
       <div>
         <div className="ehp-k">Plans</div>
         <h2 className="ehp-h">
-          The closer you orbit, <em>the more you see.</em>
+          The journey is yours. Choose your launch.
         </h2>
         <div className="ehp-bill" role="group" aria-label="Billing">
           <button type="button" className={yearly ? "" : "on"} onClick={() => setYearly(false)} aria-pressed={!yearly}>Monthly</button>
@@ -854,7 +854,7 @@ export default function EventHorizon({ signedIn, tier, member, invited, discount
             <div>
               <div className="ehp-k">The whole site, on one page</div>
               <h2 className="ehp-h">
-                Every league, every player, <em>one clear number.</em>
+                One control room. Every decision. Every league.
               </h2>
             </div>
             <p className="ehp-lede">
