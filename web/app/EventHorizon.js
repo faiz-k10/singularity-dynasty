@@ -401,12 +401,11 @@ function HoleLookup({ signedIn, member }) {
   }
   return (
     <>
-      <div className="ehp-k">For Sleeper managers</div>
       <h1 className="ehp-title">
         Mission control for your fantasy empire
       </h1>
       <form className="ehp-form" onSubmit={submit}>
-        <input value={name} onChange={(e) => setName(e.target.value)} placeholder={pending ? "reading leagues…" : "Sleeper username"} aria-label="Your Sleeper username" autoComplete="off" autoCapitalize="none" spellCheck={false} disabled={pending} />
+        <input value={name} onChange={(e) => setName(e.target.value)} placeholder={pending ? "reading leagues…" : "Enter Your Sleeper Username"} aria-label="Your Sleeper username" autoComplete="off" autoCapitalize="none" spellCheck={false} disabled={pending} />
         <button aria-label="Read my leagues" disabled={pending || !name.trim()}>→</button>
       </form>
       {error && <p className="ehp-err">{error}</p>}
