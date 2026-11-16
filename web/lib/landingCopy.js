@@ -31,7 +31,7 @@ export const WEEK = [
   ["Friday – Saturday", "Research", "Run down your doubts. Season range, role, any two stats side by side.", "Season Sims · The Observatory", "/tools/player-simulations"],
   ["Sunday", "Game day", "Every league on one screen. Scores, odds, players on the field, plays as they land.", "The Game Board", "/my-team"],
   ["Monday", "Wrap-up", "The Game Companion names what decided each matchup. The week's stars go in the Night Sky.", "Game Companion · Night Sky", "/my-team"],
-  ["Offseason", "Draft season", "Startup and rookie tiers. Production against age shows who is really ahead.", "Dynasty Board", "/tools/draft-board"],
+  ["Offseason", "Draft season · Coming soon", "Startup and rookie tiers. Production against age shows who is really ahead.", "Dynasty Board", "/tools/draft-board"],
 ];
 
 // Page 6: members' words. Empty until real ones arrive -- the section then shows a "coming soon" note. NEVER put an invented quote
