@@ -6019,16 +6019,17 @@ select.lab-select{min-width:200px;}
    The pane beside the board's list. Flat scoreboard material, one section per question:
    the read, the recipe, his games, his age, who is close, how his rank moves. Charts are SVG in site tokens. */
 .dp{position:relative; box-sizing:border-box; padding:16px 16px 24px; background:var(--void-panel); border:1px solid var(--rule); border-top:2px solid var(--rule-strong); border-radius:2px;}
-.dp-head{display:flex; gap:16px; align-items:center;}
-.dp-photo{flex:0 0 76px; width:76px; height:76px; border-radius:var(--r-sm); border:1px solid var(--rule); background:var(--void-panel-2); overflow:hidden; display:grid; place-items:center;}
+.dp-head{display:flex; gap:14px; align-items:stretch;} /* the photo's top and bottom line up with the badges and the demographics line */
+.dp-photo{flex:0 0 64px; width:64px; height:64px; border-radius:var(--r-sm); border:1px solid var(--rule); background:var(--void-panel-2); overflow:hidden; display:grid; place-items:center;}
 .dp-photo img{width:100%; height:100%; object-fit:cover; display:block;}
 .dp-photo span{font-family:var(--font-display); font-weight:800; font-size:28px; color:var(--star-dim);}
-.dp-id{min-width:0;}
+.dp-id{flex:1; min-width:0; display:flex; flex-direction:column; justify-content:space-between; gap:8px;}
+.dp-demo{font-size:13px; color:var(--star-dim); line-height:1.3;}
 .dp{container-type:inline-size;}
-.dp-name{margin:0 0 12px; font-family:var(--font-display); font-weight:800; text-transform:uppercase; letter-spacing:.07em; line-height:1; white-space:nowrap; overflow:hidden;
+.dp-name{margin:0 0 12px; text-align:center; font-family:var(--font-display); font-weight:800; text-transform:uppercase; letter-spacing:.07em; line-height:1; white-space:nowrap; overflow:hidden;
   font-size:clamp(20px, calc(100cqw / (var(--chars) * 0.66)), 80px);} /* fills the pane's width: ~0.6em a capital incl. tracking */
 .dp-badges{display:flex; flex-wrap:wrap; align-items:center; gap:6px 8px; font-size:12px; color:var(--star-dim);}
-.dp-links{display:flex; flex-wrap:wrap; align-items:center; gap:6px 16px; margin-top:10px; font-family:var(--font-mono), monospace; font-size:11px; letter-spacing:.04em;}
+.dp-links{display:flex; flex-wrap:wrap; align-items:center; gap:6px 16px; margin-top:12px; font-family:var(--font-mono), monospace; font-size:11px; letter-spacing:.04em;}
 .dp-links > *{white-space:nowrap;}
 .dp-links a{color:var(--horizon-gold); text-decoration:none;} .dp-links a:hover{text-decoration:underline; text-underline-offset:3px;}
 .dp-score{display:flex; flex-direction:column; align-items:stretch; gap:14px; margin:20px 0 4px; padding:16px; border:1px solid var(--rule); border-top:2px solid var(--rule-strong); background:rgba(var(--horizon-gold-rgb), .07);}
@@ -6042,19 +6043,10 @@ select.lab-select{min-width:200px;}
 .dp-facts dd small{font-size:13px; color:var(--star-dim); font-weight:700;}
 .dp-sec{margin-top:24px;}
 .dp-sec .board-panel-title{display:flex; align-items:center; gap:12px; margin-bottom:12px;} /* a section of the profile: the Weekly panel heading, rule and square included */
-.dp-recipe{border:1px solid var(--rule); background:rgba(var(--star-dot-rgb), .02);}
-.dp-r-row{display:flex; align-items:baseline; gap:10px; padding:10px 14px;}
-.dp-r-name{flex:1; font-size:15px; font-weight:700;}
-.dp-r-val{width:44px; text-align:right; font-size:15px;} .dp-r-w{width:52px; text-align:right; font-size:12px; color:var(--star-dim);}
-.dp-r-eq{width:44px; text-align:right; font-size:15px; font-weight:700;}
-.dp-stack{display:flex; height:16px; margin:6px 14px 12px; background:rgba(var(--star-dot-rgb), .08);}
-.dp-stack-prod{background:var(--horizon-gold);} .dp-stack-age{background:var(--neon-blue);}
-.dp-r-row.is-total{border-top:1px solid var(--rule-strong); padding:10px 14px; align-items:center;} .dp-r-row.is-total .dp-r-name{font-family:var(--font-display); text-transform:uppercase; letter-spacing:.06em;}
-.dp-r-row.is-total .dp-r-eq{font-size:20px; color:var(--horizon-gold);}
 .dp-chart{width:100%; height:auto; display:block;}
 .dp-chart-skel{height:240px; display:grid; place-items:center; border:1px dashed var(--rule); font-family:var(--font-mono), monospace; font-size:11px; color:var(--star-dim);}
-.dp-grid{stroke:var(--rule); stroke-width:1;}
-.dp-axis{font-family:var(--font-mono), monospace; font-size:11px; fill:var(--star-dim);}
+.dp-grid{stroke:var(--rule); stroke-width:1;} .dp-axis-line{stroke:var(--star-dim); stroke-width:1;}
+.dp-axis{font-family:var(--font-mono), monospace; font-size:11px; fill:var(--star-dim);} .dp-axis-title{font-family:var(--font-mono), monospace; font-size:11px; letter-spacing:.08em; text-transform:uppercase; fill:var(--star-dim);}
 .dp-bar{fill:rgba(var(--neon-blue-rgb), .55);} .dp-bar.is-above{fill:var(--horizon-gold);}
 .dp-line-level{stroke:var(--star); stroke-width:1.6;} .dp-line-repl{stroke:var(--down); stroke-width:1.2; stroke-dasharray:4 3;}
 .dp-label{font-family:var(--font-mono), monospace; font-size:12px; paint-order:stroke; stroke:var(--void-panel); stroke-width:3px;} .dp-label.is-level{fill:var(--star);} .dp-label.is-repl{fill:var(--down);}

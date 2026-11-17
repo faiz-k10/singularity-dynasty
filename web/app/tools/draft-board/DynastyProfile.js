@@ -75,7 +75,7 @@ function Timeline({ log, level, repl, W }) {
 
 // His position's age value by age, him on it, and the three seasons a buyer is paying for shaded.
 function AgeCurve({ curve, age, value, W }) { // age = his age now; the dot sits on the age he will be in AGE_LOOKAHEAD years
-  const H = Math.round(Math.min(300, Math.max(200, W * 0.55))), L = 26, R = 4, T = 14, B = 24;
+  const H = Math.round(Math.min(320, Math.max(220, W * 0.6))), L = 44, R = 10, T = 14, B = 42; // room for the two axis titles
   const lo = curve[0][0], hi = curve.at(-1)[0];
   const x = (a) => L + ((a - lo) / (hi - lo)) * (W - L - R);
   const y = (v) => T + (1 - (v - 1) / 9) * (H - T - B);
@@ -93,7 +93,11 @@ function AgeCurve({ curve, age, value, W }) { // age = his age now; the dot sits
       <polyline className="dp-curve" points={curve.map(([ag, v]) => `${x(ag)},${y(v)}`).join(" ")} />
       <line x1={x(b)} x2={x(b)} y1={y(value)} y2={H - B} className="dp-drop" />
       <circle cx={x(b)} cy={y(value)} r="6" className="dp-dot" />
-      {[25, 30, 35, 40].filter((t) => t >= lo && t <= hi).map((t) => <text key={t} x={x(t)} y={H - 7} className="dp-axis" textAnchor="middle">{t}</text>)}
+      <line x1={L} x2={L} y1={T} y2={H - B} className="dp-axis-line" />
+      <line x1={L} x2={W - R} y1={H - B} y2={H - B} className="dp-axis-line" />
+      {[25, 30, 35, 40].filter((t) => t >= lo && t <= hi).map((t) => <text key={t} x={x(t)} y={H - B + 16} className="dp-axis" textAnchor={x(t) > W - R - 12 ? "end" : "middle"}>{t}</text>)}
+      <text x={L + (W - L - R) / 2} y={H - 4} className="dp-axis-title" textAnchor="middle">Age</text>
+      <text transform={`translate(12 ${T + (H - T - B) / 2}) rotate(-90)`} className="dp-axis-title" textAnchor="middle">Age value</text>
       <text x={x(b) > W - 110 ? x(b) - 10 : x(b) + 10} y={y(value) - 10} className="dp-label is-level" textAnchor={x(b) > W - 110 ? "end" : "start"}>{(age + AGE_LOOKAHEAD).toFixed(1)} · {value.toFixed(1)}</text>
     </svg>
   );
@@ -165,9 +169,11 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
   const repl = (m.short ? meta.replacementShort : meta.replacement)[format.toUpperCase()][p.pos];
   const win = m.short ? meta.windowShort : meta.window;
   const curve = meta.ageCurve[p.pos];
-  const tierMates = L.slice(tier.a, tier.b + 1); // his tier, him included (founder, Nov 16 2026: only players the board can't separate from him)
+  // his tier, him included (founder, Nov 16 2026: only players the board can't separate from him), at most the 5 nearest by rank
+  const MATES = 5;
+  const start = Math.max(tier.a, Math.min(i - Math.floor(MATES / 2), tier.b + 1 - MATES));
+  const tierMates = L.slice(start, Math.min(tier.b + 1, start + MATES));
   const size = [formatHeight(data?.bio?.height), data?.bio?.weight ? `${data.bio.weight} lbs` : null, data?.bio?.yearsExp != null ? (data.bio.yearsExp === 0 ? "Rookie" : `Year ${data.bio.yearsExp + 1}`) : null].filter(Boolean);
-  const prodC = m.prod * p.prod, ageC = m.age * p.ageValue;
 
   return (
       <aside className="dp" aria-label={`${p.name}, dynasty profile`}>
@@ -175,25 +181,25 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
         {/* the name gets the pane's whole width, on one line: its size comes from its length (--chars) and the pane's width */}
         <h2 className="dp-name" ref={nameRef} style={{ "--chars": p.name.length }}>{p.name}</h2>
         <header className="dp-head">
-          <div className="dp-photo">{data?.bio?.headshot ? <img src={data.bio.headshot} alt="" width="76" height="76" /> : <span>{p.name.split(" ").map((w) => w[0]).slice(0, 2).join("")}</span>}</div>
+          <div className="dp-photo">{data?.bio?.headshot ? <img src={data.bio.headshot} alt="" width="64" height="64" /> : <span>{p.name.split(" ").map((w) => w[0]).slice(0, 2).join("")}</span>}</div>
           <div className="dp-id">
             <div className="dp-badges">
               <PositionBadge position={p.pos} />
               <TeamBadge team={p.team} />
-              <span className="mono">{[`${p.age.toFixed(1)} yrs`, ...size].join(" · ")}</span>
             </div>
-            <div className="dp-links">
-              <Link href={`/tools/lab?p=${encodeURIComponent(p.name)}`}>The Observatory →</Link>
-              <Link href="/tools/redraft-rankings">Weekly rankings →</Link>
-              <ShareCardButton
-                card={{ kind: "d", id: p.id, f: format, m: mode }}
-                caption={`${p.name} in dynasty: ${p.score.toFixed(1)} (${f.label}, ${m.label}).`}
-                file={`dynasty-singularity-${p.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
-                label="Share card"
-              />
-            </div>
+            <div className="dp-demo mono">{[`${p.age.toFixed(1)} yrs`, ...size].join(" · ")}</div>
           </div>
         </header>
+        <div className="dp-links">
+          <Link href={`/tools/lab?p=${encodeURIComponent(p.name)}`}>The Observatory →</Link>
+          <Link href="/tools/redraft-rankings">Weekly rankings →</Link>
+          <ShareCardButton
+            card={{ kind: "d", id: p.id, f: format, m: mode }}
+            caption={`${p.name} in dynasty: ${p.score.toFixed(1)} (${f.label}, ${m.label}).`}
+            file={`dynasty-singularity-${p.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
+            label="Share card"
+          />
+        </div>
 
         <section className="dp-score" ref={chartRef}>
           {/* the dial takes the block's whole width (less its padding); the number grows with it */}
@@ -236,35 +242,6 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
             </dl>
           );
         })()}
-
-        <section className="dp-sec">
-          <h3 className="board-panel-title">The recipe</h3>
-          <div className="dp-recipe">
-            <div className="dp-r-row">
-              <span className="dp-r-name">Production over replacement</span>
-              <span className="dp-r-val mono">{p.prod.toFixed(1)}</span>
-              <span className="dp-r-w mono">× {Math.round(m.prod * 100)}%</span>
-              <span className="dp-r-eq mono">{prodC.toFixed(1)}</span>
-            </div>
-            <div className="dp-r-row">
-              <span className="dp-r-name">Age</span>
-              <span className="dp-r-val mono">{p.ageValue.toFixed(1)}</span>
-              <span className="dp-r-w mono">× {Math.round(m.age * 100)}%</span>
-              <span className="dp-r-eq mono">{ageC.toFixed(1)}</span>
-            </div>
-            <div className="dp-r-row">
-              <span className="dp-r-name">Relative to the board</span>
-              <span className="dp-r-val mono">{p.raw.toFixed(1)}</span>
-              <span className="dp-r-w mono">× {p.scale.toFixed(2)}</span>
-              <span className="dp-r-eq mono">{p.score.toFixed(1)}</span>
-            </div>
-            <div className="dp-stack" role="img" aria-label="Production and age shares of the score">
-              <span className="dp-stack-prod" style={{ width: `${Math.max(0, prodC * p.scale) * 10}%` }} />
-              <span className="dp-stack-age" style={{ width: `${Math.max(0, ageC * p.scale) * 10}%` }} />
-            </div>
-            <div className="dp-r-row is-total"><span className="dp-r-name">Dynasty score</span><span className="dp-r-eq mono">{p.score.toFixed(1)}</span></div>
-          </div>
-        </section>
 
         <section className="dp-sec">
           <h3 className="board-panel-title">Production, game by game</h3>
