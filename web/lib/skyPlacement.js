@@ -53,7 +53,9 @@ export function placeFind(fam, sky, { w = 600, h = 600, avoid = [], stretch = 1 
     if (!best || score > best.score) best = { x, y, score, a };
   }
   if (!best) best = { x: 0, y: -z.r, a: -Math.PI / 2 };
-  // a comet's picture has its tail toward the lower left (135 degrees); turn it so the tail points straight away from the core
-  const rot = z.comet ? (best.a * 180) / Math.PI - 135 : 0;
+  // turn the picture so it faces the core like a real body lit by it: a comet's tail (drawn toward the lower left, 135 degrees) points straight
+  // away, and a planet's lit side (drawn toward the upper left, -135 degrees) faces the core
+  const deg = (best.a * 180) / Math.PI;
+  const rot = z.comet ? deg - 135 : z.orbit === true ? deg + 180 + 135 : 0;
   return { x: Math.round(best.x * 10) / 10, y: Math.round(best.y * 10) / 10, size: z.size, rot, orbit: z.orbit ? z.r : null, belt: z.orbit === "belt" };
 }

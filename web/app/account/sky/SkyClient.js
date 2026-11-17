@@ -85,12 +85,11 @@ function RarestInSky({ state }) {
   const art = place.size * 1.45, shape = FAMILIES[rarest.fam].shape, { x, y } = place;
   const m = still ? {} : MOTION[shape] || MOTION.planet;
   // SMIL animation (not CSS): it turns about real sky coordinates -- the core for an orbit, the object's own centre for a spin or a pulse
-  const turn = (deg, dur, cx, cy) => <animateTransform attributeName="transform" type="rotate" values={`${-deg} ${cx} ${cy}; ${deg} ${cx} ${cy}; ${-deg} ${cx} ${cy}`} dur={`${dur}s`} repeatCount="indefinite" calcMode="spline" keySplines=".45 0 .55 1; .45 0 .55 1" />;
   return (
     <g className="sky-rarest" aria-label={`Your rarest find: ${rarest.name}`}>
       {place.orbit && <circle r={place.orbit} className={place.belt ? "sky-orbit is-belt" : "sky-orbit"} />}
       <g>
-        {m.orbit && turn(m.orbit, m.orbitDur, 0, 0)}
+        {m.orbit && <animateTransform attributeName="transform" type="rotate" from="0 0 0" to="360 0 0" dur={`${m.orbit}s`} repeatCount="indefinite" />}
         {m.wander && <animateTransform attributeName="transform" type="translate" values={`0 0; ${m.wander} ${-m.wander / 2}; ${-m.wander / 2} ${m.wander}; 0 0`} dur={`${m.wanderDur}s`} repeatCount="indefinite" calcMode="spline" keySplines=".45 0 .55 1; .45 0 .55 1; .45 0 .55 1" />}
         <g>
           {m.spin && <animateTransform attributeName="transform" type="rotate" from={`0 ${x} ${y}`} to={`${m.spin > 0 ? 360 : -360} ${x} ${y}`} dur={`${Math.abs(m.spin)}s`} repeatCount="indefinite" />}
@@ -108,21 +107,22 @@ function RarestInSky({ state }) {
   );
 }
 
-// How the rarest find moves (founder, Nov 17 2026: "add motion to the object"), by kind: anything on an orbit sways a few degrees along it
-// around the core (never far enough to reach a constellation), rocks also tumble, comets shimmer, rogue planets wander, meteor showers
-// twinkle, exploding stars breathe, pulsars flicker, black holes and quasars turn their disks, nebulae swell slowly. Still for anyone who
+// How the rarest find moves (founder, Nov 17 2026: "add motion to the object", then "I don't see it moving" -- the first version only
+// swayed 4 degrees over 48s): anything on an orbit really goes round the core (a planet keeps its lit side toward it, a comet its tail
+// away, because the whole picture turns with the orbit), rocks also tumble, rogue planets wander, meteor showers twinkle, exploding stars
+// breathe, pulsars flicker, black holes and quasars turn their disks, nebulae swell. `orbit` = seconds per lap. Still for anyone who
 // asks their device for reduced motion.
-const SWAY = { orbit: 4, orbitDur: 48 };
+const LAP = { orbit: 60 };
 const MOTION = {
-  planet: SWAY, banded: SWAY, ringed: SWAY, lava: SWAY, locked: SWAY, diamond: { ...SWAY, pulse: 1.05, pulseDur: 5 }, moon: SWAY,
-  rock: { ...SWAY, spin: 70 }, rubble: { ...SWAY, spin: 90 }, twin: { ...SWAY, spin: -60 }, dust: { ...SWAY, pulse: 1.06, pulseDur: 9 },
-  comet: { orbit: 3, orbitDur: 40, flicker: "1;.78;1;.9;1", flickerDur: 3.2 },
-  dwarf: { orbit: 3, orbitDur: 70 },
-  rogue: { wander: 10, wanderDur: 42 },
-  shower: { flicker: ".55;1;.7;1;.55", flickerDur: 2.6 },
-  supernova: { pulse: 1.08, pulseDur: 6 }, star: { pulse: 1.06, pulseDur: 7, flicker: "1;.85;1", flickerDur: 7 },
-  pulsar: { flicker: "1;.55;1", flickerDur: 1.1 }, blackhole: { spin: 90 }, quasar: { spin: -120, flicker: "1;.8;1", flickerDur: 4 },
-  nebula: { pulse: 1.04, pulseDur: 14 },
+  planet: LAP, banded: LAP, ringed: { orbit: 70 }, lava: { orbit: 45 }, locked: { orbit: 50 }, diamond: { ...LAP, pulse: 1.08, pulseDur: 4 }, moon: LAP,
+  rock: { orbit: 90, spin: 14 }, rubble: { orbit: 90, spin: 20 }, twin: { orbit: 90, spin: -16 }, dust: { orbit: 90, pulse: 1.1, pulseDur: 6 },
+  comet: { orbit: 80, flicker: "1;.7;1;.85;1", flickerDur: 2.4 },
+  dwarf: { orbit: 120 },
+  rogue: { wander: 30, wanderDur: 24 },
+  shower: { flicker: ".35;1;.55;1;.35", flickerDur: 2 },
+  supernova: { pulse: 1.16, pulseDur: 4 }, star: { pulse: 1.12, pulseDur: 5, flicker: "1;.75;1", flickerDur: 5 },
+  pulsar: { flicker: "1;.35;1", flickerDur: 0.9 }, blackhole: { spin: 30 }, quasar: { spin: -40, flicker: "1;.7;1", flickerDur: 3 },
+  nebula: { pulse: 1.09, pulseDur: 8 },
 };
 const subscribeMotion = (cb) => { const q = window.matchMedia("(prefers-reduced-motion: reduce)"); q.addEventListener("change", cb); return () => q.removeEventListener("change", cb); };
 const useReducedMotion = () => useSyncExternalStore(subscribeMotion, () => window.matchMedia("(prefers-reduced-motion: reduce)").matches, () => false);
