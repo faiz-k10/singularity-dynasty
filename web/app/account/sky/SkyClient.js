@@ -61,9 +61,9 @@ function Core({ mass, collapsed, skin }) {
       {collapsed && <circle className="sky-core-lens" r="49" />}
       {/* no plate: the words sit on the sky with a soft shadow (founder, Nov 17 2026: the black boxes looked out of place) */}
       <g className="sky-label">
-        {collapsed ? <text className="sky-heat" x="0" y="106" textAnchor="middle">Collapsed · a find is waiting</text> : (
+        {collapsed ? <text className="sky-heat" x="0" y="284" textAnchor="middle">Collapsed · a find is waiting</text> : (
           // the middle stage sits exactly under the core's centre, the other two hang off it (founder, Nov 17 2026: centre WARMING)
-          <text className="sky-heat" y="106">
+          <text className="sky-heat" y="284">
             <tspan ref={midRef} x="0" textAnchor="middle" className={STAGES[1].id === st.id ? "is-on" : ""}>{STAGES[1].label}</tspan>
             <tspan x={-(half + 12)} textAnchor="middle">·</tspan>
             <tspan x={half + 12} textAnchor="middle">·</tspan>
@@ -83,7 +83,7 @@ function RarestInSky({ state }) {
   const place = useMemo(() => {
     if (!rarest) return null;
     const sky = skyFor(state.season);
-    const avoid = [[-110, 92, 110, 114], [-92, 244, 92, 292], ...sky.map((c) => {
+    const avoid = [[-120, 270, 120, 292], [-92, 218, 92, 260], ...sky.map((c) => {
       const lx = Math.sign(c.label[0]) * 456, ly = c.label[1];
       return lx > 0 ? [lx - 175, ly - 14, lx, ly + 20] : [lx, ly - 14, lx + 175, ly + 20];
     })];
@@ -148,11 +148,11 @@ function Sky({ state, pendingPicks, pending }) {
         );
       })}
       <RarestInSky state={state} />
-      {/* the picks waiting sit at the bottom edge of the sky (founder, Nov 17 2026) */}
+      {/* the picks waiting sit at the bottom of the sky, just above the core's heat line (founder, Nov 17 2026) */}
       {pendingPicks.length > 0 && (
         <g className="sky-label">
-          {pendingPicks.map((_, i) => <circle key={`p${i}`} className="sky-pending" cx={(i - (pendingPicks.length - 1) / 2) * 22} cy={258} r="5" />)}
-          <text className="sky-creal" x="0" y="282" textAnchor="middle">{pendingPicks.length} pick{pendingPicks.length === 1 ? "" : "s"} waiting</text>
+          {pendingPicks.map((_, i) => <circle key={`p${i}`} className="sky-pending" cx={(i - (pendingPicks.length - 1) / 2) * 22} cy={230} r="5" />)}
+          <text className="sky-creal" x="0" y="252" textAnchor="middle">{pendingPicks.length} pick{pendingPicks.length === 1 ? "" : "s"} waiting</text>
         </g>
       )}
       <Core mass={state.mass} collapsed={pending > 0} skin={equipped(state).core} />
