@@ -167,17 +167,18 @@ export default function DynastyBoard({ rows, meta }) {
 
       <div className="dyb-shell">
         <div className="dyb-list glass-panel">
-          <div className="dyb-head">
-            <span>Rk</span>
-            <span>Player</span>
-            <span className="dyb-ctx">HC was OC</span>
-            <span className="dyb-ctx">GM still there</span>
-            <span>Score</span>
-            <span className="dyb-axis" style={{ "--n": hi - lo }}>
-              {ticks.map((v) => <i key={v} style={{ left: x(v) }}>{v}</i>)}
-            </span>
-          </div>
           <div className="dyb-rows" ref={listRef}>
+            {/* the header scrolls inside the same box as the rows (pinned to its top), so the axis labels are laid out at exactly the rows' width */}
+            <div className="dyb-head">
+              <span>Rk</span>
+              <span>Player</span>
+              <span className="dyb-ctx">HC was OC</span>
+              <span className="dyb-ctx">GM still there</span>
+              <span>Score</span>
+              <span className="dyb-axis" style={{ "--n": hi - lo }}>
+                {ticks.map((v) => <i key={v} style={{ left: x(v) }}>{v}</i>)}
+              </span>
+            </div>
             {L.map((p, i) => {
               const ti = tiers.findIndex((t) => i >= t.a && i <= t.b);
               const t = tiers[ti];

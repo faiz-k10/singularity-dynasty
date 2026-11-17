@@ -6431,13 +6431,14 @@ details.acct-danger > summary.acct-h{color:var(--down)}
   .dyb-pane{overflow:visible;}
 }
 .dyb-head, .dyb-row{display:grid; grid-template-columns:40px minmax(215px,1.5fr) 44px 56px 44px minmax(0,1fr); align-items:center; column-gap:14px; padding:0 16px 0 12px;}
-.dyb-head{height:34px; flex:none; overflow-y:hidden; scrollbar-gutter:stable; border-bottom:1px solid var(--rule-strong); font-family:var(--font-mono), monospace; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--star-dim);}
+.dyb-head{height:34px; position:sticky; top:0; z-index:2; background:var(--void-panel); border-bottom:1px solid var(--rule-strong); font-family:var(--font-mono), monospace; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--star-dim);}
 .dyb-head > span:nth-child(1), .dyb-head > span:nth-child(3){text-align:right;}
 .dyb-axis{position:relative; height:100%; letter-spacing:0;}
 .dyb-axis i{position:absolute; bottom:6px; transform:translateX(-50%); font-style:normal;}
-.dyb-rows{overflow-y:auto; scrollbar-gutter:stable; flex:1; min-height:0;} /* the header reserves the same scrollbar space, so the axis labels sit over the grid lines */
+.dyb-rows{overflow-y:auto; flex:1; min-height:0;}
 .dyb-group{display:flex; align-items:baseline; gap:12px; padding:16px 16px 8px 12px; border-top:3px double var(--rule-strong); border-bottom:1px solid var(--rule-strong);}
-.dyb-group:first-child{border-top:0;}
+.dyb-head + .dyb-group{border-top:0;}
+.dyb-row{scroll-margin-top:34px;} /* a row scrolled into view clears the pinned header */
 .dyb-group b{font-family:var(--font-display); font-weight:800; font-size:20px; letter-spacing:.12em; text-transform:uppercase; color:var(--ember);}
 .dyb-group-ix{font-size:11px; color:var(--star-dim); min-width:44px; text-align:right;}
 .dyb-group-n{margin-left:auto; font-size:11px; color:var(--star-dim);}
