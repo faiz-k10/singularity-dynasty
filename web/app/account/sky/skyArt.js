@@ -240,8 +240,14 @@ export async function seasonCard(state, { title, size, rarest }) {
   });
   rule(448);
   if (rarest) {
-    ctx.fillStyle = "#A39E92"; ctx.font = `400 15px ${mono}`; ctx.fillText(`RAREST FIND · 1 IN ${rarest.oneIn.toLocaleString()}`, L, 482);
-    ctx.fillStyle = "#E9C46A"; ctx.font = `700 22px ${mono}`; wrap(ctx, rarest.name.toUpperCase(), L, 514, R - L, 28);
+    // the find itself, in a round lens beside its name (founder, Nov 17 2026: "include the most rare find in the export")
+    const LR = 40, LX = L + LR, LY = 506, off = document.createElement("canvas"); off.width = off.height = 240;
+    drawObject(off.getContext("2d"), 240, rarest);
+    ctx.save(); ctx.beginPath(); ctx.arc(LX, LY, LR, 0, Math.PI * 2); ctx.clip(); ctx.drawImage(off, LX - LR, LY - LR, LR * 2, LR * 2); ctx.restore();
+    ctx.strokeStyle = "#E9C46A"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(LX, LY, LR + 3, 0, Math.PI * 2); ctx.stroke();
+    const TX = L + LR * 2 + 22;
+    ctx.fillStyle = "#A39E92"; ctx.font = `400 15px ${mono}`; ctx.fillText(`RAREST FIND · 1 IN ${rarest.oneIn.toLocaleString()}`, TX, 490);
+    ctx.fillStyle = "#E9C46A"; ctx.font = `700 22px ${mono}`; wrap(ctx, rarest.name.toUpperCase(), TX, 522, R - TX, 28);
   }
   ctx.fillStyle = "#A39E92"; ctx.font = `400 14px ${mono}`; ctx.fillText("DYNASTY SINGULARITY · THE NIGHT SKY", L, 590);
   return cv;
