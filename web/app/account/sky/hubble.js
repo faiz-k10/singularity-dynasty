@@ -34,7 +34,8 @@ export function Spikes({ x, y, len, color, width = 0.8, opacity = 0.9 }) {
   );
 }
 
-export function StarField({ seed = 7, n = 170, span = 600, w = span, spikes = 6, scale = 1 }) {
+// No diffraction spikes on background stars unless asked (founder, Nov 17 2026: "remove the lines from the background stars").
+export function StarField({ seed = 7, n = 170, span = 600, w = span, spikes = 0, scale = 1 }) {
   const id = useId().replace(/[^a-zA-Z0-9_-]/g, "");
   const stars = fieldFor(seed, n, span, w);
   const bright = [...stars].sort((a, b) => b.m - a.m).slice(0, spikes);

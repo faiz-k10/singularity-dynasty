@@ -33,7 +33,7 @@ export function SkyBackdrop({ skin }) {
       <Cloud id={`${id}c`} cx={40} cy={-190} rx={200} ry={120} rot={10} color="#C2543A" freq={0.014} seed={13} strength={0.9} />
       <Cloud id={`${id}d`} cx={-170} cy={190} rx={180} ry={110} rot={-8} color="#5B8DEF" freq={0.012} seed={21} strength={0.85} />
       <Cloud id={`${id}e`} cx={20} cy={20} rx={240} ry={90} rot={-30} color="#05060A" freq={0.02} seed={34} strength={1.1} />
-      <StarField seed={23} n={26} spikes={4} scale={1.2} />
+      <StarField seed={23} n={26} scale={1.2} />
     </g>
   );
   if (skin === "aurora") return (
@@ -55,7 +55,7 @@ export function SkyBackdrop({ skin }) {
           <Cloud id={`${id}p${i}`} cx={cx} cy={cy} rx={rx} ry={ry} rot={rot} color="#0A0603" freq={0.024} seed={30 + i} strength={1.6} />
         </g>
       ))}
-      <StarField seed={41} n={18} spikes={3} scale={1.2} />
+      <StarField seed={41} n={18} scale={1.2} />
     </g>
   );
   if (skin === "milkyway") return (
@@ -81,11 +81,11 @@ export function SkyBackdrop({ skin }) {
       <Cloud id={`${id}c`} rx={210} ry={195} color="#FFE3A8" freq={0.04} seed={15} strength={0.9} />
       <defs>{radial(`${id}v`, [[0, "#020306", 1], [0.55, "#020306", 0.92], [0.75, "#020306", 0.35], [1, "#020306", 0]])}</defs>
       <circle r="190" fill={`url(#${id}v)`} />
-      <StarField seed={52} n={20} spikes={2} scale={1.2} />
+      <StarField seed={52} n={20} scale={1.2} />
     </g>
   );
   if (String(skin).startsWith("season-")) {
-    // the season's Singularity constellation drawn huge across the sky, each of its stars a real star: a halo and diffraction spikes
+    // the season's Singularity constellation drawn huge across the sky, each of its stars a real star with a halo (no spikes: founder, Nov 17 2026)
     const g = seasonGhost(skin);
     return (
       <g aria-hidden="true">
@@ -99,7 +99,6 @@ export function SkyBackdrop({ skin }) {
           <g key={i}>
             <circle cx={x} cy={y} r={r * 4} fill={`url(#${id}h)`} />
             <circle cx={x} cy={y} r={r * 0.7} style={{ fill: "var(--sky-t-gold)" }} />
-            <Spikes x={x} y={y} len={r * 6} color="var(--sky-t-gold)" width={1} opacity={0.75} />
           </g>
         ))}
       </g>
@@ -223,7 +222,7 @@ export function SkinPreview({ kind, id }) {
     <svg viewBox={kind === "sky" ? "-300 -300 600 600" : "-160 -160 320 320"} className={`sky-skin-preview${id === "horizon" ? " is-horizon" : ""}`} aria-hidden="true">
       <defs><radialGradient id={`${gid}c`} cx=".42" cy=".4"><stop offset="0" stopColor="#FFFFFF" stopOpacity=".95" /><stop offset=".45" stopColor="#FFFFFF" stopOpacity=".25" /><stop offset=".85" stopColor="#000000" stopOpacity="0" /><stop offset="1" stopColor="#000000" stopOpacity=".22" /></radialGradient></defs>
       <rect x="-300" y="-300" width="600" height="600" className="sky-skin-preview-bg" />
-      {kind === "sky" ? <><Galaxies id={gid} seed={31} n={8} scale={1.6} /><StarField seed={5} n={70} spikes={3} scale={1.6} /></> : <StarField seed={5} n={40} span={320} spikes={2} scale={0.9} />}
+      {kind === "sky" ? <><Galaxies id={gid} seed={31} n={8} scale={1.6} /><StarField seed={5} n={70} scale={1.6} /></> : <StarField seed={5} n={40} span={320} scale={0.9} />}
       {kind === "sky" ? (
         <>
           <SkyBackdrop skin={id} />

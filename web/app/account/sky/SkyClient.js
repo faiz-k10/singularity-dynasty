@@ -70,7 +70,7 @@ function Sky({ state, pendingPicks, pending }) {
     <svg className="sky-svg" viewBox="-480 -300 960 600" role="img" aria-label={`Your sky: ${state.findsTotal} finds, the core ${pending ? "collapsed" : stageOf(state.mass).label.toLowerCase()}`}>
       <SkyBackdrop skin={equipped(state).sky} />
       <Galaxies id={fid} seed={31} n={19} w={960} />
-      <StarField seed={7} n={270} w={960} spikes={0} />
+      <StarField seed={7} n={270} w={960} />
       <Scrim id={fid} />
       {/* the glow under a finished constellation's name: an SVG blur (not a CSS filter -- Safari ignores CSS filters on SVG text) */}
       <defs>

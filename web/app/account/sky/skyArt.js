@@ -122,7 +122,7 @@ async function drawBackdrop(ctx) {
   const img = await svgPicture(
     <>
       <Galaxies id="cg" seed={31} n={18} span={840} />
-      <StarField seed={7} n={260} span={840} spikes={0} />
+      <StarField seed={7} n={260} span={840} />
       <SkyBackdrop skin={cardSkin.sky} />
       <Scrim id="cs0" w={840} h={440} />
     </>,
