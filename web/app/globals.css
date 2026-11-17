@@ -6019,11 +6019,12 @@ select.lab-select{min-width:200px;}
    The pane beside the board's list. Flat scoreboard material, one section per question:
    the read, the recipe, his games, his age, who is close, how his rank moves. Charts are SVG in site tokens. */
 .dp{position:relative; box-sizing:border-box; padding:16px 16px 24px; background:var(--void-panel); border:1px solid var(--rule); border-top:2px solid var(--rule-strong); border-radius:2px;}
-.dp-head{display:flex; gap:14px; align-items:flex-start;} /* badges, demographics and the two links stacked right beside the photo */
+.dp-head{display:flex; gap:14px; align-items:stretch;} /* badges, demographics and the two links beside the photo: first row level with its top, last with its bottom, equal gaps */
 .dp-photo{flex:0 0 64px; width:64px; height:64px; border-radius:var(--r-sm); border:1px solid var(--rule); background:var(--void-panel-2); overflow:hidden; display:grid; place-items:center;}
 .dp-photo img{width:100%; height:100%; object-fit:cover; display:block;}
 .dp-photo span{font-family:var(--font-display); font-weight:800; font-size:28px; color:var(--star-dim);}
-.dp-id{flex:1; min-width:0; display:flex; flex-direction:column; gap:6px;}
+.dp-id{flex:1; min-width:0; display:flex; flex-direction:column; justify-content:space-between; gap:4px;}
+.dp-id > *{line-height:1.2;}
 .dp-demo{font-size:13px; color:var(--star-dim); line-height:1.3;}
 .dp{container-type:inline-size;}
 .dp-name{margin:0 0 12px; text-align:center; font-family:var(--font-display); font-weight:800; text-transform:uppercase; letter-spacing:.07em; line-height:1; white-space:nowrap; overflow:hidden;
