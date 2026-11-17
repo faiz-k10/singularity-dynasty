@@ -6,14 +6,16 @@ test("every team has a coach, a GM and a first-draft year", () => {
   assert.equal(Object.keys(STAFF).length, 32);
   for (const [t, s] of Object.entries(STAFF)) {
     assert.ok(s.hc && s.gm, t);
-    assert.equal(typeof s.hcOC, "boolean", t);
+    assert.equal(typeof s.hcOff, "boolean", t);
     assert.ok(Number.isInteger(s.gmFirst) && s.gmFirst > 1980 && s.gmFirst <= 2027, t);
   }
 });
 
 test("coachFor reads the current team, LAR is the same as LA, unknown is null", () => {
-  assert.deepEqual(coachFor("DET"), { hc: "Dan Campbell", oc: false });
-  assert.equal(coachFor("LAR").oc, true);
+  assert.deepEqual(coachFor("DET"), { hc: "Dan Campbell", off: true }); // a TE coach: offensive, never an OC
+  assert.equal(coachFor("KC").off, true); // Andy Reid: O-line / TE, then QB coach
+  assert.equal(coachFor("SEA").off, false);
+  assert.equal(coachFor("LAR").off, true);
   assert.equal(coachFor("XXX"), null);
 });
 

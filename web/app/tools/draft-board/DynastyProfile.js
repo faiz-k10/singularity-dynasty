@@ -357,7 +357,7 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
             <dl className="dp-ctx">
               <div>
                 <dt className="mono">Head coach</dt>
-                <dd>{coach ? <>{coach.hc}: {coach.oc ? "a former offensive coordinator" : "never an offensive coordinator"}</> : "Unknown"}</dd>
+                <dd>{coach ? <>{coach.hc}: {coach.off ? "an offensive coach" : "not an offensive coach"}</> : "Unknown"}</dd>
               </div>
               <div>
                 <dt className="mono">GM who brought him in</dt>

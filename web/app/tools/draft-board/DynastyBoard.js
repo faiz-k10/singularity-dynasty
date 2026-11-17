@@ -221,7 +221,7 @@ export default function DynastyBoard({ rows, meta }) {
             <div className="dyb-head">
               <span>Rk</span>
               <span>Player</span>
-              <span className="dyb-ctx">HC was OC</span>
+              <span className="dyb-ctx">Offensive HC</span>
               <span className="dyb-ctx">GM still there</span>
               <span>Score</span>
               <span className="dyb-axis" style={{ "--n": hi - lo }}>
@@ -277,8 +277,8 @@ export default function DynastyBoard({ rows, meta }) {
                       const c = coachFor(p.team), d = acquiringGm(p);
                       return (
                         <>
-                          <span className={`dyb-ctx mono${c?.oc ? " is-yes" : ""}`} aria-label={c ? `Head coach ${c.hc} ${c.oc ? "was" : "was never"} an offensive coordinator` : "Head coach unknown"}>
-                            {c ? (c.oc ? "Yes" : "No") : "—"}
+                          <span className={`dyb-ctx mono${c?.off ? " is-yes" : ""}`} aria-label={c ? `Head coach ${c.hc} ${c.off ? "is" : "is not"} an offensive coach` : "Head coach unknown"}>
+                            {c ? (c.off ? "Yes" : "No") : "—"}
                           </span>
                           <span className={`dyb-ctx mono${d.state === "yes" ? " is-yes" : ""}`} aria-label={d.state === "yes" ? `${HOW[d.how]} by ${d.gm}, still the GM` : d.state === "no" ? "The GM who brought him in is gone" : d.state === "undrafted" ? "Undrafted" : "Unknown"}>
                             {GM_WORD[d.state]}
@@ -313,9 +313,9 @@ export default function DynastyBoard({ rows, meta }) {
             <span><i className="k-band" /> tier&apos;s score span</span>
             <span><i className="dyb-move is-up k-move" /><i className="dyb-move is-down k-move" /> score over his last 9 games: up / down</span>
             <span><i className="k-tie" /> ≈ too close to call: the order inside is a coin flip</span>
-            <span>HC was OC: his head coach was once an NFL offensive coordinator</span>
+            <span>Offensive HC: his head coach came up on offense in the NFL (coordinator, QB or position coach) or calls the plays</span>
             <span>GM still there: the GM who drafted him, traded for him or signed him still runs his team</span>
-            <span>Same score: HC was OC first, then GM still there (both first of all)</span>
+            <span>Same score: Offensive HC first, then GM still there (both first of all)</span>
           </div>
         </div>
         <div className="dyb-pane">
