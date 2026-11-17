@@ -3,7 +3,7 @@ import ManagerQuiz from "../ManagerQuiz";
 
 export const metadata = {
   title: "The Singularity Drive — Dynasty Singularity",
-  description: "What kind of dynasty manager are you? Four questions, one minute: get your answer and the Singularity Drive, what moved before waivers.",
+  description: "What kind of dynasty manager are you? Four questions, one minute: get your answer and the Singularity Drive: Newsletter to go beyond the data!",
 };
 
 // The newsletter sign-up page: the Dynasty Manager quiz (app/ManagerQuiz.js), linked from the header's Newsletter menu.
