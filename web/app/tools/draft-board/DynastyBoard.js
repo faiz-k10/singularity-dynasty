@@ -4,7 +4,7 @@ import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState } from 
 import PositionBadge from "../PositionBadge";
 import TeamBadge from "../TeamBadge";
 import DynastyProfile from "./DynastyProfile";
-import { FORMATS, MODES, viewBoard } from "@/lib/dynastyBoard";
+import { FORMATS, MODES, MOVE_MIN, viewBoard } from "@/lib/dynastyBoard";
 import { coachFor, acquiringGm } from "@/lib/teamStaff";
 import { normalizePlayerName } from "@/lib/portfolio";
 
@@ -292,7 +292,7 @@ export default function DynastyBoard({ rows, meta }) {
                       <i className="dyb-ci" style={{ left: x(p.lo), width: `calc(${x(p.hi)} - ${x(p.lo)})` }} />
                       <i className="dyb-pt" style={{ left: x(p.score) }} />
                       {/* his move over the last driftGames games, drawn from where his score was to where it is: cobalt right = up, ember left = down */}
-                      {p.move != null && Math.abs(p.move) >= 1 && (
+                      {p.move != null && Math.abs(p.move) >= MOVE_MIN && (
                         <i
                           className={`dyb-move is-${p.move > 0 ? "up" : "down"}`}
                           style={{ left: x(Math.min(p.score, p.score - p.move)), width: `calc(${x(Math.max(p.score, p.score - p.move))} - ${x(Math.min(p.score, p.score - p.move))})` }}

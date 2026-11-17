@@ -4,7 +4,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import PositionBadge from "../PositionBadge";
 import TeamBadge from "../TeamBadge";
-import { FORMATS, MODES, ageValueOf, runwayOf } from "@/lib/dynastyBoard";
+import { FORMATS, MODES, MOVE_MIN, ageValueOf, runwayOf } from "@/lib/dynastyBoard";
 import { formatHeight, ordinal } from "@/lib/format";
 import { coachFor, acquiringGm } from "@/lib/teamStaff";
 import ShareCardButton from "../../ShareCardButton";
@@ -156,6 +156,15 @@ function useFitName(names) {
   return ref;
 }
 
+// How his score has moved over his last driftGames games (production alone, age held): up, down or steady (under MOVE_MIN).
+function moveLine(p) {
+  const n = p.driftGames || 9;
+  if (p.move == null) return `Not enough games yet to say how his score has moved over his last ${n}.`;
+  const d = Math.abs(p.move).toFixed(1);
+  if (Math.abs(p.move) < MOVE_MIN) return `Steady: his score has moved only ${d} over his last ${n} games.`;
+  return p.move > 0 ? `Rising: his score is up ${d} over his last ${n} games.` : `Falling: his score is down ${d} over his last ${n} games.`;
+}
+
 // One step of the story: a numbered node on the spine, the question it answers, the answer from his numbers, then the evidence.
 function Chapter({ n, ask, says, children }) {
   return (
@@ -255,7 +264,7 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
                 </dl>
               </div>
             </div>
-            <p className="dp-next">That score is {Math.round(m.prod * 100)}% what he produces and {Math.round(m.age * 100)}% how long it should last.</p>
+            <p className="dp-next">{moveLine(p)}</p>
           </Chapter>
 
           <Chapter n={2} ask="Where does it come from?" says={`${p.ppg.toFixed(1)} points a game, ${Math.abs(p.ppg - repl).toFixed(1)} ${p.ppg >= repl ? "more" : "fewer"} than a replacement ${p.pos}`}>
@@ -268,7 +277,7 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
                   <li><i className="k-above" />Game above replacement</li>
                   <li><i className="k-below" />Below</li>
                 </ul>
-                <p className="dp-next">Above replacement in {above} of his last {log.p.length} games{p.move != null && Math.abs(p.move) >= 1 ? `, and his score is ${p.move > 0 ? "up" : "down"} ${Math.abs(p.move).toFixed(1)} over his last 9` : ""}.</p>
+                <p className="dp-next">Above replacement in {above} of his last {log.p.length} games.</p>
               </>
             ) : <div className="dp-chart-skel">{data ? "No game log yet." : "Loading his games…"}</div>}
           </Chapter>
