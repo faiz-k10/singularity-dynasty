@@ -4,7 +4,7 @@ import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import PositionBadge from "../PositionBadge";
 import TeamBadge from "../TeamBadge";
 import DynastyProfile from "./DynastyProfile";
-import { FORMATS, MODES, boardRows, buildBoard } from "@/lib/dynastyBoard";
+import { FORMATS, MODES, viewBoard } from "@/lib/dynastyBoard";
 import { coachFor, acquiringGm } from "@/lib/teamStaff";
 
 // the two context columns: short words, the full sentence for screen readers
@@ -100,8 +100,7 @@ export default function DynastyBoard({ rows, meta }) {
   }, [theater]);
 
   const { L, groups, tiers, ties } = useMemo(() => {
-    const L = boardRows(rows, { format, mode, pos });
-    return { L, ...buildBoard(L) };
+    return viewBoard(rows, { format, mode, pos }); // a position view keeps the all-positions groups
   }, [rows, format, mode, pos]);
 
   // one axis for every row's range: whole numbers, so the grid lines are whole points of score

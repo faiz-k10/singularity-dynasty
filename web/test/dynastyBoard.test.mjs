@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { AGE_LOOKAHEAD, SHOW, ageValueAt, boardRows, buildBoard, metaFromData, pBetter, phi, rowsFromData, scoreRows } from "../lib/dynastyBoard.js";
+import { AGE_LOOKAHEAD, SHOW, ageValueAt, boardRows, buildBoard, metaFromData, pBetter, phi, rowsFromData, scoreRows, viewBoard } from "../lib/dynastyBoard.js";
 import data from "../data/dynasty-values.json" with { type: "json" };
 
 const row = (name, pos, p1, ps, age, sd = 2) => ({ id: name, name, pos, team: "AAA", age: 25, games: 17, ppg: 15, ageValue: age, por1qb: p1, porSf: ps, sdProd: sd });
@@ -198,5 +198,21 @@ test("groups: one Replacement group, never split; groups above it under 20 and n
     // contiguous and covering the whole view
     groups.forEach((g, k) => assert.equal(g.a, k ? groups[k - 1].b + 1 : 0));
     assert.equal(groups.at(-1).b, L.length - 1);
+  }
+});
+
+test("a position view keeps every player's group from the all-positions board", () => {
+  const rows = rowsFromData(data);
+  for (const [format, mode] of [["sf", "contender"], ["1qb", "rebuilder"]]) {
+    const A = viewBoard(rows, { format, mode, pos: "ALL" });
+    const name = new Map();
+    A.groups.forEach((g) => { for (let i = g.a; i <= g.b; i++) name.set(A.L[i].id, g.name); });
+    for (const pos of ["QB", "RB", "WR", "TE"]) {
+      const P = viewBoard(rows, { format, mode, pos });
+      P.groups.forEach((g, k) => {
+        assert.equal(g.a, k ? P.groups[k - 1].b + 1 : 0);
+        for (let i = g.a; i <= g.b; i++) if (name.has(P.L[i].id)) assert.equal(g.name, name.get(P.L[i].id));
+      });
+    }
   }
 });

@@ -192,13 +192,9 @@ const superiority = (L, A, B) => {
 // How often player a is really better than player b (scoreRows() rows): Phi of the score gap over both errors.
 export const pBetter = (a, b) => phi((a.score - b.score) / Math.hypot(a.sd, b.sd));
 
-// L: scoreRows() output. Returns { groups, tiers, ties } as index ranges into L ([a, b] inclusive) -- groups hold tiers,
-// tiers hold ties. Each tier carries `beat`: how often one of its players is really better than one of the next tier's
-// (the next GROUP's when it ends a group, with `groupBreak`).
-export function buildBoard(L) {
-  if (!L.length) return { groups: [], tiers: [], ties: [] };
-  const n = L.length, okG = okMatrix(L, Z_GROUP), okT = okMatrix(L, Z_TIER), okX = okMatrix(L, Z_TIE);
-  const groups = [], tiers = [], ties = [];
+// The all-positions grouping (see buildBoard): [[a, b], name] pairs in order.
+function groupPairs(L, okG) {
+  const n = L.length;
   // a group of GROUP_MAX or more ABOVE replacement level is split again (founder, Nov 16 2026: "groups of 20 or more should be split up more"): the same
   // rule with a looser cut, step by step down to the tier cut; still too big there, it is cut at its widest score gap
   const okAt = new Map();
@@ -248,11 +244,45 @@ export function buildBoard(L) {
     under.splice(k, 2, [under[k][0], under[k + 1][1]]);
   }
   const named = (list, names) => list.map((G, k) => [G, names[Math.min(k, names.length - 1)]]);
-  [
+  return [
     ...named(above, GROUP_NAMES.above),
     ...(end >= start ? [[[start, end], GROUP_NAMES.replacement]] : []),
     ...named(under, GROUP_NAMES.below),
-  ].forEach(([G, name], g) => {
+  ];
+}
+
+// A position view keeps each player's group from the all-positions board (founder, Nov 16 2026: "keep the player under the same
+// group title as they originally are"). The view is in the same order as that board, so each group is one run of rows.
+function runsOf(L, groupOf) {
+  const out = [];
+  L.forEach((r, i) => {
+    const name = groupOf.get(r.id) ?? out.at(-1)?.[1] ?? GROUP_NAMES.below.at(-1);
+    if (out.length && out.at(-1)[1] === name) out.at(-1)[0][1] = i;
+    else out.push([[i, i], name]);
+  });
+  return out;
+}
+
+// The board a view draws: its rows and their groups / tiers / ties. A one-position view takes its group names from the
+// all-positions board of the same format and mode; a player past that board's end is in its bottom group.
+export function viewBoard(rows, { format, mode, pos }) {
+  const L = boardRows(rows, { format, mode, pos });
+  if (!pos || pos === "ALL") return { L, ...buildBoard(L) };
+  const A = boardRows(rows, { format, mode, pos: "ALL" });
+  const groupOf = new Map();
+  buildBoard(A).groups.forEach((g) => { for (let i = g.a; i <= g.b; i++) groupOf.set(A[i].id, g.name); });
+  return { L, ...buildBoard(L, groupOf) };
+}
+
+// L: scoreRows() output. Returns { groups, tiers, ties } as index ranges into L ([a, b] inclusive) -- groups hold tiers,
+// tiers hold ties. Each tier carries `beat`: how often one of its players is really better than one of the next tier's
+// (the next GROUP's when it ends a group, with `groupBreak`).
+export function buildBoard(L, groupOf = null) {
+  if (!L.length) return { groups: [], tiers: [], ties: [] };
+  const okT = okMatrix(L, Z_TIER), okX = okMatrix(L, Z_TIE);
+  const groups = [], tiers = [], ties = [];
+  const pairs = groupOf ? runsOf(L, groupOf) : groupPairs(L, okMatrix(L, Z_GROUP));
+  pairs.forEach(([G, name], g) => {
     groups.push({ a: G[0], b: G[1], g, name });
     segment(L, okT, G[0], G[1]).forEach((T) => {
       const ti = tiers.length;
