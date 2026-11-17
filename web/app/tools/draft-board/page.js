@@ -3,7 +3,7 @@ import { awardLater } from "@/lib/nightSkyStore";
 import { getUserTier } from "@/lib/tier";
 import InteractiveScript from "../../InteractiveScript";
 import DynastyBoard from "./DynastyBoard";
-import { FREE_ROWS, getDynastyRows } from "@/lib/dynastyData";
+import { DYNASTY_THROUGH, FREE_ROWS, getDynastyRows } from "@/lib/dynastyData";
 
 export const metadata = {
   title: "Dynasty Board — Dynasty Singularity",
@@ -20,7 +20,7 @@ async function RankingsView({ hasFullAccess }) {
       <main id="main-content" className="wrap tool-wrap dynasty-wrap">
         <div className="tool-header-split">
           <div className="tool-header-left">
-            <div className="eyebrow">{"Dynasty"}</div>
+            <div className="eyebrow">{DYNASTY_THROUGH ? `Dynasty · Through week ${DYNASTY_THROUGH.week} · ${DYNASTY_THROUGH.season}` : "Dynasty"}</div>
             <h1>Dynasty Board</h1>
           </div>
         </div>

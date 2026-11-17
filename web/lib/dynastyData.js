@@ -7,6 +7,10 @@ import { metaFromData, rankGrid, rowsFromData, scoreRows } from "./dynastyBoard"
 // (by the default view, Superflex / Contender), so a free visitor never gets the rest in the page.
 export const FREE_ROWS = 20;
 
+// the newest game the board is built from (season x 100 + week), for the page's caption: { season, week }
+const newest = Math.max(0, ...Object.values(logs).flatMap((l) => l.w || []));
+export const DYNASTY_THROUGH = newest ? { season: Math.floor(newest / 100), week: newest % 100 } : null;
+
 export function getDynastyRows(hasFullAccess) {
   const base = rowsFromData(data);
   const grid = rankGrid(base); // over the whole pool, so the free slice carries true ranks too
