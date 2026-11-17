@@ -1,3 +1,5 @@
+import { acquiringGm, coachFor } from "./teamStaff.js";
+
 // The Dynasty Board's rankings: scoring, ranges and the tier rule. Pure, so it is tested (test/dynastyBoard.test.mjs).
 //
 // A player's dynasty score = prod x (production over replacement, 1-10, for the league format) + age x (age value, 1-10),
@@ -93,6 +95,14 @@ export function phi(z) {
   return z >= 0 ? 0.5 * (1 + erf) : 0.5 * (1 - erf);
 }
 
+// Tiebreak between players with the same score as shown (founder, Nov 16 2026). The two context columns may ONLY break ties: they
+// add nothing to next-season points once production and age are known (model/backtest_staff_context.R), so they never move a
+// score. Head coach was an OC AND the GM who got him is still there = 3, head coach was an OC = 2, GM still there = 1, neither = 0.
+export function staffTiebreak(r) {
+  const oc = !!coachFor(r.team)?.oc, gm = acquiringGm(r).state === "yes";
+  return oc && gm ? 3 : oc ? 2 : gm ? 1 : 0;
+}
+
 // Scores, ranges (80%: 10th to 90th percentile) and sd for the chosen format and mode, best first.
 export function scoreRows(rows, formatKey, modeKey) {
   const f = FORMATS[formatKey] || FORMATS["1qb"], m = MODES[modeKey] || MODES.contender;
@@ -105,7 +115,9 @@ export function scoreRows(rows, formatKey, modeKey) {
       const sd = m.prod * sdProd;
       return { ...r, ppg: s ? r.ppgS : r.ppg, games: s ? r.gamesS : r.games, prod, score, sd, lo: score - 1.2816 * sd, hi: score + 1.2816 * sd };
     })
-    .sort((a, b) => Math.round(b.score * 10) - Math.round(a.score * 10) || b.ageValue - a.ageValue || a.age - b.age || b.score - a.score || b.ppg - a.ppg); // same score as shown (1 decimal): the player earlier on his own position's age curve first (higher age value = more years at this level), then the younger
+    // same score as shown (1 decimal): first the staff tiebreak (staffTiebreak), then the player earlier on his own position's age curve
+    // (higher age value = more years at this level), then the younger
+    .sort((a, b) => Math.round(b.score * 10) - Math.round(a.score * 10) || staffTiebreak(b) - staffTiebreak(a) || b.ageValue - a.ageValue || a.age - b.age || b.score - a.score || b.ppg - a.ppg);
 }
 
 // z of "row i beats row j" for i above j (sorted best first)

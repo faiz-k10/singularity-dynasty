@@ -250,6 +250,7 @@ export default function DynastyBoard({ rows, meta, complete }) {
             <span>T = tied: the order is a coin flip</span>
             <span>HC was OC: his head coach was once an NFL offensive coordinator</span>
             <span>GM still there: the GM who drafted him, traded for him or signed him still runs his team</span>
+            <span>Same score: HC was OC first, then GM still there (both first of all)</span>
           </div>
         </div>
         <div className="dyb-pane">

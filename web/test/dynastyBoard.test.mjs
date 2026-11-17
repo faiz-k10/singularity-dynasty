@@ -158,3 +158,20 @@ test("same displayed score: the player earlier on his position's age curve ranks
   const out = scoreRows([mk("youngRB", 23, 4, 6), mk("olderQB", 29, 6, 4)], "sf", "rebuilder");
   assert.equal(out[0].id, "olderQB");
 });
+
+test("staff tiebreak orders players with the same shown score: both, then HC was OC, then GM still there, then neither", async () => {
+  const { staffTiebreak } = await import("../lib/dynastyBoard.js");
+  // same production and age value, so the same score; the youngest is listed LAST so the old age tiebreak can't explain the order
+  const mk = (id, team, draftTeam, draftYear, age) => ({ id, name: id, pos: "WR", team, draftTeam, draftYear, acqDate: "", acqHow: "", age, ageValue: 5, ppg: 15, porSf: 6, por1qb: 6, sdProd: 1 });
+  const rows = [
+    mk("neither", "MIA", "MIA", 2022, 24), // Hafley never an OC, Grier's pick (Sullivan since 2026)
+    mk("gm", "DET", "DET", 2023, 25),      // Campbell never an OC, Holmes' pick
+    mk("oc", "ATL", "ATL", 2023, 26),      // Stefanski was an OC, Fontenot's pick (Cunningham since 2026)
+    mk("both", "LA", "LA", 2023, 27),      // McVay was an OC, Snead's pick
+  ];
+  assert.deepEqual(rows.map(staffTiebreak), [0, 1, 2, 3]);
+  assert.deepEqual(scoreRows(rows, "sf", "contender").map((r) => r.id), ["both", "oc", "gm", "neither"]);
+  // it never beats a higher shown score
+  rows[0].porSf = 6.2;
+  assert.equal(scoreRows(rows, "sf", "contender")[0].id, "neither");
+});
