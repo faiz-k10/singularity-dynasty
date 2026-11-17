@@ -151,14 +151,17 @@ async function drawCore(ctx, cx, cy, scale = 1) {
   if (img) ctx.drawImage(img, cx - size / 2, cy - size / 2, size, size);
 }
 
-async function base(ctx, eyebrow) {
+// `corners: false` leaves out the top-right badge and the bottom-right signature (the season card sets them in its own text column);
+// `shadeTo` is where the left-hand darkening behind the words fades out.
+async function base(ctx, eyebrow, { corners = true, shadeTo = 760 } = {}) {
   ctx.fillStyle = "#0B0B0B"; ctx.fillRect(0, 0, 1200, 630);
   await drawBackdrop(ctx);
-  const shade = ctx.createLinearGradient(0, 0, 760, 0); shade.addColorStop(0, "rgba(0,0,0,.62)"); shade.addColorStop(1, "rgba(0,0,0,0)");
+  const shade = ctx.createLinearGradient(0, 0, shadeTo, 0); shade.addColorStop(0, "rgba(0,0,0,.62)"); shade.addColorStop(1, "rgba(0,0,0,0)");
   ctx.fillStyle = shade; ctx.fillRect(0, 0, 1200, 630); // keeps the words readable over the nebula
   if (cardFrame) { ctx.strokeStyle = cardFrame === "gold" ? "#E9C46A" : "#C9CED6"; ctx.lineWidth = 10; ctx.strokeRect(5, 5, 1190, 620); ctx.lineWidth = 1.5; ctx.strokeRect(20, 20, 1160, 590); }
   ctx.fillStyle = "#E8643F"; ctx.fillRect(0, 0, 1200, 6); ctx.fillRect(64, 70, 10, 10);
   ctx.fillStyle = "#A39E92"; ctx.font = `400 20px ${font("--font-mono")}`; ctx.fillText(eyebrow.toUpperCase(), 88, 81);
+  if (!corners) return;
   ctx.textAlign = "right"; ctx.font = `400 18px ${font("--font-mono")}`; ctx.fillText("THE DYNASTY SINGULARITY · THE NIGHT SKY", 1136, 590);
   if (badgeText) {
     ctx.font = `700 18px ${font("--font-mono")}`; const w = ctx.measureText(badgeText).width + 28;
@@ -196,8 +199,8 @@ export async function receiptCard(wk) {
 }
 export async function seasonCard(state, { title, size, rarest }) {
   const cv = canvas(), ctx = cv.getContext("2d");
-  await base(ctx, "My season sky");
-  // the constellations drawn like the page: lit stars with a halo and spikes, unlit ones as faint outlines
+  await base(ctx, "My season sky", { corners: false, shadeTo: 620 });
+  // the constellations drawn like the page: lit stars glowing, unlit ones as faint outlines
   const sky = skyFor(state.season);
   const stars = await svgPicture(
     <>
@@ -213,15 +216,39 @@ export async function seasonCard(state, { title, size, rarest }) {
         );
       })}
     </>,
-    "-300 -300 600 600", 570, 570,
+    "-300 -300 600 600", 600, 600,
   );
-  if (stars) ctx.drawImage(stars, 880 - 285, 300 - 285, 570, 570);
-  await drawCore(ctx, 880, 300, 0.95);
+  // The sky has the right of the card to itself (Nov 17 2026, founder: no star hidden or crossed): every constellation point lies within
+  // +-256 of the centre, so at 1:1 around (885, 315) they span x 629-1141, y 59-571 -- clear of the text column (ends at 556) and the frame.
+  const SX = 885, SY = 315;
+  if (stars) ctx.drawImage(stars, SX - 300, SY - 300, 600, 600);
+  await drawCore(ctx, SX, SY, 1);
+
+  // The text column, x 64-556: eyebrow + season badge, title, a hairline, the four figures, a hairline, the rarest find, the signature.
+  const L = 64, R = 556, mono = font("--font-mono"), display = font("--font-display");
+  const rule = (y) => { ctx.fillStyle = "rgba(236,231,220,.16)"; ctx.fillRect(L, y, R - L, 1); };
+  if (badgeText) {
+    ctx.font = `700 15px ${mono}`; const w = ctx.measureText(badgeText).width + 22;
+    ctx.strokeStyle = "#E9C46A"; ctx.lineWidth = 1.5; ctx.strokeRect(R - w, 61, w, 28);
+    ctx.fillStyle = "#E9C46A"; ctx.textAlign = "right"; ctx.fillText(badgeText, R - 11, 80); ctx.textAlign = "left";
+  }
+  let ts = 84; ctx.font = `800 ${ts}px ${display}`;
+  while (ctx.measureText(title.toUpperCase()).width > R - L && ts > 44) { ts -= 2; ctx.font = `800 ${ts}px ${display}`; }
+  ctx.fillStyle = "#ECE7DC"; ctx.fillText(title.toUpperCase(), L, 182);
+  rule(212);
   const finds = Object.values(state.found).reduce((a, b) => a + b.n, 0);
-  ctx.fillStyle = "#ECE7DC"; ctx.font = `800 72px ${font("--font-display")}`; ctx.fillText(title.toUpperCase(), 64, 190);
-  const cells = [[seasonProgress(state).points.toLocaleString(), "season points"], [String(finds), "finds"], [`${Object.keys(state.found).length} / ${size.toLocaleString()}`, "catalogue"], [`${state.btm[0]}-${state.btm[1]}`, "vs the model"]];
-  cells.forEach(([v, l], i) => { const x = 64 + (i % 2) * 260, y = 300 + Math.floor(i / 2) * 110; ctx.fillStyle = "#ECE7DC"; ctx.font = `800 54px ${font("--font-display")}`; ctx.fillText(v, x, y); ctx.fillStyle = "#A39E92"; ctx.font = `400 18px ${font("--font-mono")}`; ctx.fillText(l.toUpperCase(), x, y + 30); });
-  if (rarest) { ctx.fillStyle = "#E9C46A"; ctx.font = `400 20px ${font("--font-mono")}`; ctx.fillText(`RAREST FIND: ${rarest.name.toUpperCase()} (1 IN ${rarest.oneIn.toLocaleString()})`, 64, 520); }
+  const cells = [[seasonProgress(state).points.toLocaleString(), "Season points"], [String(finds), "Finds"], [`${Object.keys(state.found).length} / ${size.toLocaleString()}`, "Catalogue"], [`${state.btm[0]}-${state.btm[1]}`, "Vs the model"]];
+  cells.forEach(([v, l], i) => {
+    const x = L + (i % 2) * 250, y = 292 + Math.floor(i / 2) * 104;
+    ctx.fillStyle = "#ECE7DC"; ctx.font = `800 56px ${display}`; ctx.fillText(v, x, y);
+    ctx.fillStyle = "#A39E92"; ctx.font = `400 15px ${mono}`; ctx.fillText(l.toUpperCase(), x, y + 28);
+  });
+  rule(448);
+  if (rarest) {
+    ctx.fillStyle = "#A39E92"; ctx.font = `400 15px ${mono}`; ctx.fillText(`RAREST FIND · 1 IN ${rarest.oneIn.toLocaleString()}`, L, 482);
+    ctx.fillStyle = "#E9C46A"; ctx.font = `700 22px ${mono}`; wrap(ctx, rarest.name.toUpperCase(), L, 514, R - L, 28);
+  }
+  ctx.fillStyle = "#A39E92"; ctx.font = `400 14px ${mono}`; ctx.fillText("THE DYNASTY SINGULARITY · THE NIGHT SKY", L, 590);
   return cv;
 }
 export const toBlob = (cv) => new Promise((res) => cv.toBlob(res, "image/png"));
