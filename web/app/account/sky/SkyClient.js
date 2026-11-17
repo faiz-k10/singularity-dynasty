@@ -92,10 +92,10 @@ function Sky({ state, pendingPicks, pending }) {
   const fid = useId().replace(/[^a-zA-Z0-9_-]/g, "");
   const open = state.findsTotal >= UNLOCK.constellations;
   return (
-    <svg className="sky-svg" viewBox="-300 -300 600 600" preserveAspectRatio="xMidYMid slice" role="img" aria-label={`Your sky: ${state.findsTotal} finds, the core ${pending ? "collapsed" : stageOf(state.mass).label.toLowerCase()}`}>
+    <svg className="sky-svg" viewBox="-480 -300 960 600" role="img" aria-label={`Your sky: ${state.findsTotal} finds, the core ${pending ? "collapsed" : stageOf(state.mass).label.toLowerCase()}`}>
       <SkyBackdrop skin={equipped(state).sky} />
-      <Galaxies id={fid} seed={31} n={12} />
-      <StarField seed={7} n={170} spikes={6} />
+      <Galaxies id={fid} seed={31} n={19} w={960} />
+      <StarField seed={7} n={270} w={960} spikes={8} />
       {skyFor(state.season).map((c) => {
         const f = state.filled[c.id] || [];
         if (!open) return <g key={c.id}>{c.pts.map(([x, y], i) => f[i] ? <circle key={i} cx={x} cy={y} r={3} fill="var(--star)" /> : null)}</g>;
@@ -352,23 +352,17 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
       {event && <p className="sky-banner mono">{EVENT_TEXT[event]}</p>}
       {msg && <p className="sky-banner mono is-bad">{msg}</p>}
 
+      <section className="sky-panel sky-panel-fill" aria-label="Your sky">
+        <Sky state={state} pendingPicks={pendingPicks} pending={state.pending.length} />
+        {state.pending.length > 0 && (
+          <button type="button" className="btn-primary sky-scope-btn" onClick={() => setScope(true)}>
+            The core collapsed{state.pending.length > 1 ? ` ${state.pending.length} times` : ""} · point the telescope
+          </button>
+        )}
+      </section>
+
       <div className="sky-grid">
         <div className="sky-col">
-          <section className="sky-panel sky-panel-fill" aria-label="Your sky">
-            <Sky state={state} pendingPicks={pendingPicks} pending={state.pending.length} />
-            {state.pending.length > 0 && (
-              <button type="button" className="btn-primary sky-scope-btn" onClick={() => setScope(true)}>
-                The core collapsed{state.pending.length > 1 ? ` ${state.pending.length} times` : ""} · point the telescope
-              </button>
-            )}
-          </section>
-
-          
-        </div>
-
-        <div className="sky-col">
-          
-
           <section className="sky-panel" aria-labelledby="sky-earn">
             <div className="board-panel-title" id="sky-earn">Earn stars today</div>
             <ul className="sky-acts">
@@ -389,6 +383,9 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
             <p className="sky-small mono">Each counts once a day. Leave the core alone for three days and it cools.</p>
           </section>
 
+        </div>
+
+        <div className="sky-col">
           <section className="sky-panel" aria-labelledby="sky-btm">
             <div className="board-panel-title" id="sky-btm">Beat the Model</div>
             {wk ? wk.pairs.map((p, i) => (

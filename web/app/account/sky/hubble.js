@@ -12,14 +12,15 @@ export const seeded = (seed, n, f) => { let s = seed; const r = () => ((s = (s *
 const TEMPS = ["var(--sky-t-blue)", "var(--sky-t-white)", "var(--sky-t-white)", "var(--sky-t-gold)", "var(--sky-t-orange)"];
 
 // A field of stars: most faint, a few bright (a power law, like a real field), the brightest with spikes.
-function makeField(seed, n, span) {
+function makeField(seed, n, span, w) {
   return seeded(seed, n, (r) => {
     const m = Math.pow(r(), 3.2); // brightness 0..1, mostly faint
-    return { x: (r() - 0.5) * span, y: (r() - 0.5) * span, m, t: TEMPS[Math.floor(r() * TEMPS.length)] };
+    return { x: (r() - 0.5) * w, y: (r() - 0.5) * span, m, t: TEMPS[Math.floor(r() * TEMPS.length)] };
   });
 }
 const FIELDS = new Map();
-const fieldFor = (seed, n, span) => { const k = `${seed}:${n}:${span}`; if (!FIELDS.has(k)) FIELDS.set(k, makeField(seed, n, span)); return FIELDS.get(k); };
+// w = the field's width (defaults to span: a square); the Night Sky page uses a landscape field
+const fieldFor = (seed, n, span, w = span) => { const k = `${seed}:${n}:${span}:${w}`; if (!FIELDS.has(k)) FIELDS.set(k, makeField(seed, n, span, w)); return FIELDS.get(k); };
 
 export function Spikes({ x, y, len, color, width = 0.8, opacity = 0.9 }) {
   // Hubble's four diffraction spikes: two thin crossed lines that fade out from the star.
@@ -33,9 +34,9 @@ export function Spikes({ x, y, len, color, width = 0.8, opacity = 0.9 }) {
   );
 }
 
-export function StarField({ seed = 7, n = 170, span = 600, spikes = 6, scale = 1 }) {
+export function StarField({ seed = 7, n = 170, span = 600, w = span, spikes = 6, scale = 1 }) {
   const id = useId().replace(/[^a-zA-Z0-9_-]/g, "");
-  const stars = fieldFor(seed, n, span);
+  const stars = fieldFor(seed, n, span, w);
   const bright = [...stars].sort((a, b) => b.m - a.m).slice(0, spikes);
   const halo = (t) => `url(#${id}h${TEMPS.indexOf(t)})`;
   return (
@@ -58,8 +59,8 @@ export function StarField({ seed = 7, n = 170, span = 600, spikes = 6, scale = 1
 }
 
 // Faint distant galaxies: small tilted ellipses with a bright core, a few spirals.
-export function Galaxies({ seed = 31, n = 14, span = 600, scale = 1, id }) {
-  const gs = seeded(seed, n, (r) => ({ x: (r() - 0.5) * span, y: (r() - 0.5) * span, s: (1.6 + r() * 4.2) * scale, tilt: r() * 180, flat: 0.25 + r() * 0.55, warm: r() < 0.6, spiral: r() < 0.3 }));
+export function Galaxies({ seed = 31, n = 14, span = 600, w = span, scale = 1, id }) {
+  const gs = seeded(seed, n, (r) => ({ x: (r() - 0.5) * w, y: (r() - 0.5) * span, s: (1.6 + r() * 4.2) * scale, tilt: r() * 180, flat: 0.25 + r() * 0.55, warm: r() < 0.6, spiral: r() < 0.3 }));
   return (
     <g aria-hidden="true">
       <defs>

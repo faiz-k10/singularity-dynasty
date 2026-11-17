@@ -7131,9 +7131,9 @@ body:has(.ehp) .ehp-inside,body:has(.ehp) .ehp-dark{--ehp-hole:#0B0B0B;--ehp-hol
 .sky-col > .sky-panel:last-child{flex:1} /* the two columns end on one line */
 .sky-panel{border:1px solid var(--line);background:rgba(var(--star-rgb),.02);padding:16px;min-width:0;display:flex;flex-direction:column;gap:12px}
 .sky-svg{width:100%;max-width:560px;aspect-ratio:1;margin:0 auto;display:block}
-/* the sky panel is all sky: no padding, the drawing covers the whole box (slice), the telescope button floats on it */
-.sky-panel-fill{padding:0;position:relative;overflow:hidden;min-height:min(560px,90vw)}
-.sky-panel-fill .sky-svg{position:absolute;inset:0;width:100%;height:100%;max-width:none;aspect-ratio:auto;margin:0}
+/* the sky panel is all sky, full width above the two columns: no padding, the telescope button floats on it */
+.sky-panel-fill{padding:0;position:relative;overflow:hidden}
+.sky-panel-fill .sky-svg{width:100%;max-width:none;aspect-ratio:8/5;margin:0} /* landscape: the whole drawing, nothing cropped */
 .sky-panel-fill .sky-scope-btn{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);z-index:1}
 .sky-slot{fill:none;stroke:var(--star-dim);stroke-dasharray:2 2;stroke-width:1}
 .sky-pending{fill:none;stroke:var(--star);stroke-width:1.2;stroke-dasharray:1.5 2}
