@@ -29,10 +29,26 @@ function useProfileData(id) {
 }
 
 // ---- charts: plain SVG, every colour a site token ------------------------------------------------------------------
+// Each chart is drawn at its box's REAL width (1 svg unit = 1 css px), so text stays a readable size and the chart grows with the pane
+// instead of shrinking a fixed 480-wide drawing (founder, Nov 16 2026: "plots and graphs as large as possible").
+function useBoxWidth(initial = 420) {
+  const ref = useRef(null);
+  const [w, setW] = useState(initial);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return undefined;
+    const read = () => { const v = Math.floor(el.getBoundingClientRect().width); if (v > 0) setW(v); };
+    read();
+    const ro = new ResizeObserver(read);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  return [ref, w];
+}
 
 // His last games as bars (green-mint above the replacement line, steel below), the line he is rated at, and replacement.
-function Timeline({ log, level, repl }) {
-  const W = 480, H = 150, L = 30, R = 8, T = 10, B = 22;
+function Timeline({ log, level, repl, W }) {
+  const H = Math.round(Math.min(320, Math.max(220, W * 0.6))), L = 30, R = 4, T = 12, B = 24;
   const pts = log.p, n = pts.length;
   const top = Math.max(30, Math.ceil(Math.max(...pts) / 10) * 10);
   const y = (v) => T + (1 - v / top) * (H - T - B);
@@ -53,15 +69,15 @@ function Timeline({ log, level, repl }) {
       <line x1={L} x2={W - R} y1={y(repl)} y2={y(repl)} className="dp-line-repl" />
       <line x1={L} x2={W - R} y1={y(level)} y2={y(level)} className="dp-line-level" />
       <text x={W - R} y={y(level) - 4} className="dp-label is-level" textAnchor="end">his level {level.toFixed(1)}</text>
-      <text x={W - R} y={y(repl) + 11} className="dp-label is-repl" textAnchor="end">replacement {repl.toFixed(1)}</text>
-      {ticks.map(([i, t]) => <text key={t} x={L + i * bw} y={H - 6} className="dp-axis">{t}</text>)}
+      <text x={W - R} y={y(repl) + 14} className="dp-label is-repl" textAnchor="end">replacement {repl.toFixed(1)}</text>
+      {ticks.map(([i, t]) => <text key={t} x={L + i * bw} y={H - 7} className="dp-axis">{t}</text>)}
     </svg>
   );
 }
 
 // His position's age value by age, him on it, and the three seasons a buyer is paying for shaded.
-function AgeCurve({ curve, age, value }) { // age = his age now; the dot sits on the age he will be in AGE_LOOKAHEAD years
-  const W = 480, H = 130, L = 26, R = 8, T = 10, B = 22;
+function AgeCurve({ curve, age, value, W }) { // age = his age now; the dot sits on the age he will be in AGE_LOOKAHEAD years
+  const H = Math.round(Math.min(300, Math.max(200, W * 0.55))), L = 26, R = 4, T = 14, B = 24;
   const lo = curve[0][0], hi = curve.at(-1)[0];
   const x = (a) => L + ((a - lo) / (hi - lo)) * (W - L - R);
   const y = (v) => T + (1 - (v - 1) / 9) * (H - T - B);
@@ -78,9 +94,9 @@ function AgeCurve({ curve, age, value }) { // age = his age now; the dot sits on
       <rect x={x(a)} y={T} width={Math.max(0, x(b) - x(a))} height={H - T - B} className="dp-band" />
       <polyline className="dp-curve" points={curve.map(([ag, v]) => `${x(ag)},${y(v)}`).join(" ")} />
       <line x1={x(b)} x2={x(b)} y1={y(value)} y2={H - B} className="dp-drop" />
-      <circle cx={x(b)} cy={y(value)} r="4.6" className="dp-dot" />
-      {[25, 30, 35, 40].filter((t) => t >= lo && t <= hi).map((t) => <text key={t} x={x(t)} y={H - 6} className="dp-axis" textAnchor="middle">{t}</text>)}
-      <text x={Math.min(x(b) + 8, W - R - 4)} y={y(value) - 8} className="dp-label is-level" textAnchor={x(b) > W - 90 ? "end" : "start"}>{(age + AGE_LOOKAHEAD).toFixed(1)} · {value.toFixed(1)}</text>
+      <circle cx={x(b)} cy={y(value)} r="6" className="dp-dot" />
+      {[25, 30, 35, 40].filter((t) => t >= lo && t <= hi).map((t) => <text key={t} x={x(t)} y={H - 7} className="dp-axis" textAnchor="middle">{t}</text>)}
+      <text x={x(b) > W - 110 ? x(b) - 10 : x(b) + 10} y={y(value) - 10} className="dp-label is-level" textAnchor={x(b) > W - 110 ? "end" : "start"}>{(age + AGE_LOOKAHEAD).toFixed(1)} · {value.toFixed(1)}</text>
     </svg>
   );
 }
@@ -121,6 +137,7 @@ function useFitName(name) {
 export default function DynastyProfile({ player: p, rows, L, board, format, mode, meta, complete }) {
   const data = useProfileData(p.id);
   const nameRef = useFitName(p.name);
+  const [chartRef, chartW] = useBoxWidth(); // the sections' width: the charts and the dial take all of it
   const f = FORMATS[format], m = MODES[mode];
 
   const i = L.findIndex((r) => r.id === p.id);
@@ -154,7 +171,6 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
 
         {/* the name gets the pane's whole width, on one line: its size comes from its length (--chars) and the pane's width */}
         <h2 className="dp-name" ref={nameRef} style={{ "--chars": p.name.length }}>{p.name}</h2>
-        <div className="dp-top">{/* who he is and what he scores: the first column when the profile sits under the board */}
         <header className="dp-head">
           <div className="dp-photo">{data?.bio?.headshot ? <img src={data.bio.headshot} alt="" width="76" height="76" /> : <span>{p.name.split(" ").map((w) => w[0]).slice(0, 2).join("")}</span>}</div>
           <div className="dp-id">
@@ -176,9 +192,10 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
           </div>
         </header>
 
-        <section className="dp-score">
-          <ArcGauge value={p.score / 10} size={150} label={`Dynasty score ${p.score.toFixed(1)} of 10`} className="dp-gauge">
-            <span className="dp-big">{p.score.toFixed(1)}</span>
+        <section className="dp-score" ref={chartRef}>
+          {/* the dial takes the block's whole width (less its padding); the number grows with it */}
+          <ArcGauge value={p.score / 10} size={Math.max(200, chartW - 34)} label={`Dynasty score ${p.score.toFixed(1)} of 10`} className="dp-gauge">
+            <span className="dp-big" style={{ fontSize: Math.round(Math.max(200, chartW - 34) * 0.24) }}>{p.score.toFixed(1)}</span>
           </ArcGauge>
           <div className="dp-score-side">
             <div className="dp-eyebrow mono">Dynasty score · {f.label} · {m.label}</div>
@@ -218,7 +235,6 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
             </dl>
           );
         })()}
-        </div>
 
         <section className="dp-sec">
           <h3 className="board-panel-title">The recipe</h3>
@@ -254,13 +270,13 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
 
         <section className="dp-sec">
           <h3 className="board-panel-title">Production, game by game</h3>
-          {data?.log ? <Timeline log={{ w: data.log.w.slice(-win.games), p: data.log.p.slice(-win.games) }} level={p.ppg} repl={repl} /> : <div className="dp-chart-skel">{data ? "No game log yet." : "Loading his games…"}</div>}
+          {data?.log ? <Timeline log={{ w: data.log.w.slice(-win.games), p: data.log.p.slice(-win.games) }} level={p.ppg} repl={repl} W={chartW} /> : <div className="dp-chart-skel">{data ? "No game log yet." : "Loading his games…"}</div>}
           <p className="dp-cap">Each bar is a game. His level is weighted toward the newest, with a half-life of {win.half_life} games.</p>
         </section>
 
         <section className="dp-sec">
           <h3 className="board-panel-title">His age curve</h3>
-          <AgeCurve curve={curve} age={p.age} value={p.ageValue} />
+          <AgeCurve curve={curve} age={p.age} value={p.ageValue} W={chartW} />
           <p className="dp-cap">Age value for {p.pos}s from 2008–25: how much production players of that age kept over the next three seasons, counting those who dropped out. He is scored on his age three years from now (the dot); the shaded band is the years in between.</p>
         </section>
 

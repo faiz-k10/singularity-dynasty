@@ -6031,7 +6031,7 @@ select.lab-select{min-width:200px;}
 .dp-links{display:flex; flex-wrap:wrap; align-items:center; gap:6px 16px; margin-top:10px; font-family:var(--font-mono), monospace; font-size:11px; letter-spacing:.04em;}
 .dp-links > *{white-space:nowrap;}
 .dp-links a{color:var(--horizon-gold); text-decoration:none;} .dp-links a:hover{text-decoration:underline; text-underline-offset:3px;}
-.dp-score{display:flex; align-items:center; gap:18px; margin:20px 0 4px; padding:14px 16px; border:1px solid var(--rule); border-top:2px solid var(--rule-strong); background:rgba(var(--horizon-gold-rgb), .07);}
+.dp-score{display:flex; flex-direction:column; align-items:stretch; gap:14px; margin:20px 0 4px; padding:16px; border:1px solid var(--rule); border-top:2px solid var(--rule-strong); background:rgba(var(--horizon-gold-rgb), .07);}
 .dp-big{flex:0 0 auto; font-family:var(--font-display); font-weight:800; font-size:84px; line-height:.9; color:var(--horizon-gold);}
 .dp-score-side{min-width:0; display:flex; flex-direction:column; gap:6px;}
 .dp-eyebrow{font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--star-dim);}
@@ -6052,17 +6052,17 @@ select.lab-select{min-width:200px;}
 .dp-r-val{width:44px; text-align:right; font-size:15px;} .dp-r-w{width:52px; text-align:right; font-size:12px; color:var(--star-dim);}
 .dp-r-eq{width:44px; text-align:right; font-size:15px; font-weight:700;}
 .dp-r-sub{padding:0 14px 8px; font-size:10.5px; color:var(--star-dim);}
-.dp-stack{display:flex; height:8px; margin:4px 14px 10px; background:rgba(var(--star-dot-rgb), .08);}
+.dp-stack{display:flex; height:16px; margin:6px 14px 12px; background:rgba(var(--star-dot-rgb), .08);}
 .dp-stack-prod{background:var(--horizon-gold);} .dp-stack-age{background:var(--neon-blue);}
 .dp-r-row.is-total{border-top:1px solid var(--rule-strong); padding:10px 14px; align-items:center;} .dp-r-row.is-total .dp-r-name{font-family:var(--font-display); text-transform:uppercase; letter-spacing:.06em;}
 .dp-r-row.is-total .dp-r-eq{font-size:20px; color:var(--horizon-gold);}
 .dp-chart{width:100%; height:auto; display:block;}
-.dp-chart-skel{height:150px; display:grid; place-items:center; border:1px dashed var(--rule); font-family:var(--font-mono), monospace; font-size:11px; color:var(--star-dim);}
+.dp-chart-skel{height:240px; display:grid; place-items:center; border:1px dashed var(--rule); font-family:var(--font-mono), monospace; font-size:11px; color:var(--star-dim);}
 .dp-grid{stroke:var(--rule); stroke-width:1;}
-.dp-axis{font-family:var(--font-mono), monospace; font-size:9px; fill:var(--star-dim);}
+.dp-axis{font-family:var(--font-mono), monospace; font-size:11px; fill:var(--star-dim);}
 .dp-bar{fill:rgba(var(--neon-blue-rgb), .55);} .dp-bar.is-above{fill:var(--horizon-gold);}
 .dp-line-level{stroke:var(--star); stroke-width:1.6;} .dp-line-repl{stroke:var(--down); stroke-width:1.2; stroke-dasharray:4 3;}
-.dp-label{font-family:var(--font-mono), monospace; font-size:9.5px; paint-order:stroke; stroke:var(--void-panel); stroke-width:3px;} .dp-label.is-level{fill:var(--star);} .dp-label.is-repl{fill:var(--down);}
+.dp-label{font-family:var(--font-mono), monospace; font-size:12px; paint-order:stroke; stroke:var(--void-panel); stroke-width:3px;} .dp-label.is-level{fill:var(--star);} .dp-label.is-repl{fill:var(--down);}
 .dp-curve{fill:none; stroke:var(--neon-blue); stroke-width:2;} .dp-band{fill:rgba(var(--horizon-gold-rgb), .13);}
 .dp-drop{stroke:var(--star); stroke-width:1.2;} .dp-dot{fill:var(--star); stroke:var(--void-panel); stroke-width:2;}
 .dp-table{width:100%; border-collapse:collapse;}
@@ -6406,18 +6406,17 @@ details.acct-danger > summary.acct-h{color:var(--down)}
 .dyb-spread-groups span{position:absolute; top:8px; left:50%; transform:translateX(-50%); font-family:var(--font-mono), monospace; font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--star-dim); white-space:nowrap;}
 .dyb-spread-groups div:first-child span{left:auto; right:0; transform:none;} /* the top group sits at the right edge: its name reads leftward */
 
-/* the list on top (its own scroll), the picked player's profile across the full width UNDER it (founder, Nov 16 2026) */
-.dyb-shell{display:grid; grid-template-columns:minmax(0,1fr); gap:12px; margin-bottom:22px;}
-.dyb-list{display:flex; flex-direction:column; height:min(640px, calc(100vh - 220px)); min-height:420px; overflow:hidden; padding:0;}
-.dyb-pane{min-width:0;}
-/* the profile in columns: the name across the top, who he is + his score first, then the sections, as many columns as fit */
-/* newspaper columns: the sections pack down each column with no gaps under short ones (a grid left a hole beside every tall cell) */
-.dyb-pane .dp{columns:330px; column-gap:28px;}
-.dyb-pane .dp-name{column-span:all; margin-bottom:16px;}
-.dyb-pane .dp-top, .dyb-pane .dp-sec{break-inside:avoid; display:block;}
-.dyb-pane .dp-sec{margin:0 0 24px;}
-.dyb-pane .dp-top{margin-bottom:24px;}
-.dyb-head, .dyb-row{display:grid; grid-template-columns:40px minmax(196px,1.2fr) 44px 56px 44px minmax(0,1fr); align-items:center; column-gap:14px; padding:0 16px 0 12px;}
+/* the list on the left (its own scroll), the picked player's profile in a pane on the right (its own scroll). The profile moved under the
+   list for an hour on Nov 16 2026 and came back here (founder); its charts and dial now take the pane's full width. */
+.dyb-shell{display:grid; grid-template-columns:minmax(0,1fr) minmax(360px, 430px); gap:12px; height:min(860px, calc(100vh - 110px)); min-height:560px; margin-bottom:22px;}
+.dyb-list{display:flex; flex-direction:column; min-height:0; overflow:hidden; padding:0;}
+.dyb-pane{min-height:0; min-width:0; overflow-y:auto;}
+@media (max-width:1100px){
+  .dyb-shell{grid-template-columns:minmax(0,1fr); height:auto;}
+  .dyb-list{height:62vh;}
+  .dyb-pane{overflow:visible;}
+}
+.dyb-head, .dyb-row{display:grid; grid-template-columns:40px minmax(215px,1.5fr) 44px 56px 44px minmax(0,1fr); align-items:center; column-gap:14px; padding:0 16px 0 12px;}
 .dyb-head{height:34px; flex:none; border-bottom:1px solid var(--rule-strong); font-family:var(--font-mono), monospace; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--star-dim);}
 .dyb-head > span:nth-child(1), .dyb-head > span:nth-child(3){text-align:right;}
 .dyb-axis{position:relative; height:100%; letter-spacing:0;}
@@ -6432,7 +6431,7 @@ details.acct-danger > summary.acct-h{color:var(--down)}
 .dyb-tier b{font-family:var(--font-display); font-weight:800; font-size:16px; letter-spacing:.06em; text-transform:uppercase;}
 .dyb-tier span{font-size:11px; color:var(--star-dim);}
 .dyb-tier em{margin-left:auto; font-style:normal; font-size:11px; color:var(--star-dim);}
-.dyb-row{all:unset; box-sizing:border-box; display:grid; grid-template-columns:40px minmax(196px,1.2fr) 44px 56px 44px minmax(0,1fr); align-items:stretch; column-gap:14px; width:100%; min-height:52px; padding:0 16px 0 12px; border-bottom:1px solid var(--rule); cursor:pointer; position:relative;}
+.dyb-row{all:unset; box-sizing:border-box; display:grid; grid-template-columns:40px minmax(215px,1.5fr) 44px 56px 44px minmax(0,1fr); align-items:stretch; column-gap:14px; width:100%; min-height:52px; padding:0 16px 0 12px; border-bottom:1px solid var(--rule); cursor:pointer; position:relative;}
 .dyb-row > span:not(.dyb-plot){align-self:center;}
 .dyb-row:hover{background:rgba(var(--star-dot-rgb), .035);}
 .dyb-row:focus-visible{outline:2px solid var(--horizon-gold); outline-offset:-2px;}
@@ -6530,11 +6529,11 @@ details.acct-danger > summary.acct-h{color:var(--down)}
 .h2h-center .arc-gauge{margin:4px 0 2px;}
 .h2h-win-gauge b{font-family:var(--font-display); font-weight:800; font-size:24px; color:var(--star);}
 .h2h-win-gauge small{font-family:var(--font-mono), monospace; font-size:9.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--star-dim); margin-top:2px;}
-.dp-gauge .dp-big{font-size:42px; line-height:1;}
+.dp-gauge{align-self:center;} .dp-gauge .dp-big{line-height:1;} /* size set inline from the dial's width */
 
 /* Dynasty Draft Board, full screen: only the controls, the list and the profile pane, edge to edge */
 .dyb-theater{position:fixed; inset:0; z-index:200; display:flex; flex-direction:column; padding:12px 16px 16px; background:var(--void); overflow:auto;}
-.dyb-theater .dyb-shell{flex:none; margin-bottom:0;}
+.dyb-theater .dyb-shell{flex:1; height:auto; min-height:0; margin-bottom:0;}
 .dyb-theater .dr-controls{flex:none;}
 .rk-compare{text-decoration:none;}
 /* the compare pickers are type-ahead inputs, not dropdowns: no caret (their own x clears them), a text cursor, room for the x */
