@@ -6,6 +6,7 @@ import PositionBadge from "../PositionBadge";
 import TeamBadge from "../TeamBadge";
 import { AGE_LOOKAHEAD, FORMATS, GROUP_NAMES, MODES, profileRead, scoreRows } from "@/lib/dynastyBoard";
 import { formatHeight } from "@/lib/format";
+import { coachFor, draftGm } from "@/lib/teamStaff";
 import ShareCardButton from "../../ShareCardButton";
 import ArcGauge from "../../ArcGauge";
 
@@ -158,6 +159,28 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
         </section>
 
         <p className="dp-read">{read}</p>
+
+        {(() => {
+          const c = coachFor(p.team), d = draftGm(p);
+          return (
+            <dl className="dp-ctx">
+              <div>
+                <dt className="mono">Head coach</dt>
+                <dd>{c ? <>{c.hc}: {c.oc ? "a former offensive coordinator" : "never an offensive coordinator"}</> : "Unknown"}</dd>
+              </div>
+              <div>
+                <dt className="mono">Drafting GM</dt>
+                <dd>
+                  {d.state === "yes" && <>Drafted in {p.draftYear} by {d.gm}, who still runs the team</>}
+                  {d.state === "no" && <>Drafted by {p.draftTeam} in {p.draftYear}; that GM is gone ({d.gm} runs it now)</>}
+                  {d.state === "moved" && <>Drafted by {d.from} in {p.draftYear}; he plays for {p.team} now</>}
+                  {d.state === "undrafted" && <>Undrafted</>}
+                  {d.state === "unknown" && <>Unknown</>}
+                </dd>
+              </div>
+            </dl>
+          );
+        })()}
 
         <section className="dp-sec">
           <h3 className="board-panel-title">The recipe</h3>

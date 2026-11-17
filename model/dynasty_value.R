@@ -74,11 +74,20 @@ por_s <- function(f) round(1 + 9 * (d$ppg_s - repl_s[cbind(d$position, f)]) / V_
 d$por_1qb_s <- por_s("1QB"); d$por_sf_s <- por_s("SF")
 d$sd_prod_s <- round(sd_prod_s[d$position], 2)
 
+# who drafted him and when (nflverse load_players; franchise codes already current, e.g. LV for an Oakland pick). Undrafted = "" / 0.
+# The site works out "is the GM who drafted him still running that team" from these and web/lib/teamStaff.js.
+dr <- as.data.frame(load_players())[, c("gsis_id", "draft_team", "draft_year")]
+dr <- dr[!duplicated(dr$gsis_id), ]
+d <- merge(d, dr, by.x = "player_id", by.y = "gsis_id", all.x = TRUE)
+d$draft_team <- ifelse(is.na(d$draft_team), "", d$draft_team)
+d$draft_year <- ifelse(is.na(d$draft_year), 0L, as.integer(d$draft_year))
+
 # keep the board to the players who can matter: the top KEEP by his best score under any format / mode
 d$best <- pmax(0.8 * pmax(d$por_1qb, d$por_sf) + 0.2 * d$age_value, 0.5 * pmax(d$por_1qb_s, d$por_sf_s) + 0.5 * d$age_value)
 d <- d[order(-d$best), ][seq_len(min(KEEP, nrow(d))), ]
 out <- d[order(-d$por_sf), c("player_id", "player", "position", "team", "age", "games_in_window", "ppg_weighted",
-                              "age_value", "por_1qb", "por_sf", "sd_prod", "ppg_s", "games_s", "por_1qb_s", "por_sf_s", "sd_prod_s")]
+                              "age_value", "por_1qb", "por_sf", "sd_prod", "ppg_s", "games_s", "por_1qb_s", "por_sf_s", "sd_prod_s",
+                              "draft_team", "draft_year")]
 write.csv(out, "dynasty_value.csv", row.names = FALSE)
 
 # the site's data file: rows as a compact array, plus what the player profile draws

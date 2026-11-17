@@ -6404,10 +6404,10 @@ details.acct-danger > summary.acct-h{color:var(--down)}
 .dyb-spread-groups span{position:absolute; top:8px; left:50%; transform:translateX(-50%); font-family:var(--font-mono), monospace; font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--star-dim); white-space:nowrap;}
 .dyb-spread-groups div:first-child span{left:auto; right:0; transform:none;} /* the top group sits at the right edge: its name reads leftward */
 
-.dyb-shell{display:grid; grid-template-columns:minmax(0,1fr) minmax(360px, 440px); gap:12px; height:min(820px, calc(100vh - 120px)); min-height:540px; margin-bottom:22px;}
+.dyb-shell{display:grid; grid-template-columns:minmax(0,1fr) minmax(340px, 400px); gap:12px; height:min(820px, calc(100vh - 120px)); min-height:540px; margin-bottom:22px;}
 .dyb-list{display:flex; flex-direction:column; min-height:0; overflow:hidden; padding:0;}
 .dyb-pane{min-height:0; overflow-y:auto;}
-.dyb-head, .dyb-row{display:grid; grid-template-columns:44px minmax(210px,1fr) 44px minmax(0,1.1fr); align-items:center; column-gap:14px; padding:0 16px 0 12px;}
+.dyb-head, .dyb-row{display:grid; grid-template-columns:40px minmax(196px,1.2fr) 44px 56px 44px minmax(0,1fr); align-items:center; column-gap:14px; padding:0 16px 0 12px;}
 .dyb-head{height:34px; flex:none; border-bottom:1px solid var(--rule-strong); font-family:var(--font-mono), monospace; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--star-dim);}
 .dyb-head > span:nth-child(1), .dyb-head > span:nth-child(3){text-align:right;}
 .dyb-axis{position:relative; height:100%; letter-spacing:0;}
@@ -6422,7 +6422,7 @@ details.acct-danger > summary.acct-h{color:var(--down)}
 .dyb-tier b{font-family:var(--font-display); font-weight:800; font-size:16px; letter-spacing:.06em; text-transform:uppercase;}
 .dyb-tier span{font-size:11px; color:var(--star-dim);}
 .dyb-tier em{margin-left:auto; font-style:normal; font-size:11px; color:var(--star-dim);}
-.dyb-row{all:unset; box-sizing:border-box; display:grid; grid-template-columns:44px minmax(210px,1fr) 44px minmax(0,1.1fr); align-items:stretch; column-gap:14px; width:100%; min-height:52px; padding:0 16px 0 12px; border-bottom:1px solid var(--rule); cursor:pointer; position:relative;}
+.dyb-row{all:unset; box-sizing:border-box; display:grid; grid-template-columns:40px minmax(196px,1.2fr) 44px 56px 44px minmax(0,1fr); align-items:stretch; column-gap:14px; width:100%; min-height:52px; padding:0 16px 0 12px; border-bottom:1px solid var(--rule); cursor:pointer; position:relative;}
 .dyb-row > span:not(.dyb-plot){align-self:center;}
 .dyb-row:hover{background:rgba(var(--star-dot-rgb), .035);}
 .dyb-row:focus-visible{outline:2px solid var(--horizon-gold); outline-offset:-2px;}
@@ -6436,6 +6436,13 @@ details.acct-danger > summary.acct-h{color:var(--down)}
 .dyb-sub{font-size:11px; color:var(--star-dim); display:flex; gap:10px;}
 .dr-form{white-space:nowrap;}
 .dr-form.is-up{color:var(--up);} .dr-form.is-down{color:var(--down);}
+/* the two context columns (lib/teamStaff.js): short words, centred; "Yes" in ink, the rest dim */
+.dyb-ctx{text-align:center; white-space:normal; line-height:1.15;}
+.dyb-row .dyb-ctx{font-size:11px; color:var(--star-dim);}
+.dyb-row .dyb-ctx.is-yes{color:var(--star); font-weight:700;}
+.dp-ctx{display:grid; gap:8px; margin:14px 0 0; padding:12px 14px; border:1px solid var(--rule);}
+.dp-ctx dt{font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--star-dim);}
+.dp-ctx dd{margin:2px 0 0; font-size:14px; line-height:1.35;}
 .dyb-score{font-family:var(--font-display); font-weight:800; font-size:24px; line-height:1; text-align:right;}
 /* the forest plot: whole-point grid lines (a 1px line every 1/n of the width, plus the right edge), the tier band, the whisker, the score */
 .dyb-plot{position:relative; min-height:52px;
@@ -6467,7 +6474,7 @@ details.acct-danger > summary.acct-h{color:var(--down)}
   .dyb-overview-n{font-size:36px;} .dyb-overview-dl{display:flex; gap:4px 10px; margin:0;}
 }
 @media (max-width:640px){
-  .dyb-head, .dyb-row{grid-template-columns:36px minmax(0,1fr) 42px; column-gap:10px;}
+  .dyb-head, .dyb-row{grid-template-columns:36px minmax(0,1fr) 40px 50px 42px; column-gap:8px;}
   .dyb-plot, .dyb-axis{display:none;}
   .dyb-tier{padding-left:58px;} .dyb-tier em{display:none;}
   .dyb-group-ix{min-width:36px;} .dyb-group-n{white-space:nowrap;}
