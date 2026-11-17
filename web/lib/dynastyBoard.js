@@ -52,15 +52,7 @@ export function ageValueAt(curve, age) {
   return curve.at(-1)[1];
 }
 
-// Form arrow: his last FORM_GAMES games against his weighted level (the 34-game number the score uses). Up / down when the gap is
-// FORM_DELTA points a game or more; needs at least FORM_MIN games. Display only: the score still reads the long memory.
-export const FORM_GAMES = 8, FORM_MIN = 4, FORM_DELTA = 3;
-export function formTrend(points, ppg) {
-  if (!points || points.length < FORM_MIN || !Number.isFinite(ppg)) return null;
-  const last = points.slice(-FORM_GAMES);
-  const recent = last.reduce((a, b) => a + b, 0) / last.length, delta = recent - ppg;
-  return { dir: delta >= FORM_DELTA ? "up" : delta <= -FORM_DELTA ? "down" : "flat", recent, delta, games: last.length };
-}
+const drift = (ppg, vHi) => (Number.isFinite(ppg) && vHi ? (9 * ppg) / vHi : null);
 
 // model/dynasty_value.R writes { columns, rows: [[...]] }; this makes row objects
 export function rowsFromData(data) {
@@ -77,6 +69,8 @@ export function rowsFromData(data) {
     draftTeam: at("draft_team") >= 0 ? r[at("draft_team")] : "", draftYear: at("draft_year") >= 0 ? r[at("draft_year")] : 0,
     // when a player who left his drafting team joined his current one, and how ("trade" / "joined")
     acqDate: at("acq_date") >= 0 ? r[at("acq_date")] : "", acqHow: at("acq_how") >= 0 ? r[at("acq_how")] : "",
+    // drift: his production number now minus DRIFT games ago, in production-over-replacement points (null = too few games)
+    driftPor: drift(r[at("drift")], data.v_hi), driftPorS: drift(r[at("drift_s")], data.v_hi), driftGames: data.drift_games || 0,
   }));
 }
 
@@ -114,15 +108,17 @@ export function scoreRows(rows, formatKey, modeKey) {
   const raw = rows.map((r) => {
     // a mode with `short` reads the 17-game production numbers (ppg, games, production score, sd); the row carries the ones in use
     const s = m.short && r.ppgS != null;
-    const prod = s ? r[f.key + "S"] : r[f.key], sdProd = s ? r.sdProdS : r.sdProd;
-    return { r, s, prod, raw: m.prod * prod + m.age * r.ageValue, rawSd: m.prod * sdProd };
+    const prod = s ? r[f.key + "S"] : r[f.key], sdProd = s ? r.sdProdS : r.sdProd, dp = s ? r.driftPorS : r.driftPor;
+    return { r, s, prod, raw: m.prod * prod + m.age * r.ageValue, rawSd: m.prod * sdProd, rawMove: dp == null ? null : m.prod * dp };
   });
   const top = Math.max(...raw.map((x) => x.raw));
   const scale = top > 0 ? 10 / top : 1;
   return raw
-    .map(({ r, s, prod, raw: rs, rawSd }) => {
+    .map(({ r, s, prod, raw: rs, rawSd, rawMove }) => {
       const score = rs * scale, sd = rawSd * scale;
-      return { ...r, ppg: s ? r.ppgS : r.ppg, games: s ? r.gamesS : r.games, prod, raw: rs, scale, score, sd, lo: score - 1.2816 * sd, hi: score + 1.2816 * sd };
+      // move: how much his score has changed over his last driftGames games from production alone (age held), in score points
+      const move = rawMove == null ? null : rawMove * scale;
+      return { ...r, ppg: s ? r.ppgS : r.ppg, games: s ? r.gamesS : r.games, prod, raw: rs, scale, score, sd, lo: score - 1.2816 * sd, hi: score + 1.2816 * sd, move };
     })
     // same score as shown (1 decimal): first the staff tiebreak (staffTiebreak), then the player earlier on his own position's age curve
     // (higher age value = more years at this level), then the younger

@@ -199,11 +199,11 @@ export default function DynastyBoard({ rows, meta }) {
                   <button
                     type="button"
                     data-id={p.id}
-                    className={`dyb-row${open?.id === p.id ? " is-selected" : ""}`}
+                    className={`dyb-row${open?.id === p.id ? " is-selected" : ""}${tie ? ` is-tie${i === tie.a ? " is-tie-a" : ""}${i === tie.b ? " is-tie-b" : ""}` : ""}`}
                     aria-pressed={open?.id === p.id}
                     onClick={() => setPickedId(p.id)}
                   >
-                    <span className="dyb-rank mono">{tie ? `T${tie.a + 1}` : i + 1}</span>
+                    <span className="dyb-rank mono">{i + 1}</span>
                     <span className="dyb-who">
                       <span className="dyb-name-line">
                         <TeamBadge team={p.team} />
@@ -212,9 +212,9 @@ export default function DynastyBoard({ rows, meta }) {
                       </span>
                       <span className="dyb-sub mono">
                         {p.age.toFixed(1)} yrs
-                        {p.form && p.form.dir !== "flat" && (
-                          <span className={`dr-form is-${p.form.dir}`}>
-                            {p.form.dir === "up" ? "▲" : "▼"} {p.form.delta > 0 ? "+" : "−"}{Math.abs(p.form.delta).toFixed(1)} last {p.form.games}
+                        {p.move != null && Math.abs(p.move) >= 0.05 && (
+                          <span className={`dr-form is-${p.move > 0 ? "up" : "down"}`}>
+                            {p.move > 0 ? "▲ +" : "▼ −"}{Math.abs(p.move).toFixed(1)} last {p.driftGames} games
                           </span>
                         )}
                       </span>
@@ -247,7 +247,7 @@ export default function DynastyBoard({ rows, meta }) {
             <span><i className="k-ci" /> 80% range</span>
             <span><i className="k-pt" /> score (relative: the board&apos;s best = 10)</span>
             <span><i className="k-band" /> tier&apos;s score span</span>
-            <span>T = tied: the order is a coin flip</span>
+            <span><i className="k-tie" /> ≈ too close to call: the order inside is a coin flip</span>
             <span>HC was OC: his head coach was once an NFL offensive coordinator</span>
             <span>GM still there: the GM who drafted him, traded for him or signed him still runs his team</span>
             <span>Same score: HC was OC first, then GM still there (both first of all)</span>

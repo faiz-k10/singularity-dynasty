@@ -1,6 +1,6 @@
 import data from "@/data/dynasty-values.json";
 import logs from "@/data/dynasty-logs.json";
-import { formTrend, metaFromData, rankGrid, rowsFromData, scoreRows } from "./dynastyBoard";
+import { metaFromData, rankGrid, rowsFromData, scoreRows } from "./dynastyBoard";
 
 // The Dynasty Board's player rows (model/dynasty_value.R -> data/dynasty-values.json, refreshed by committing a new file).
 // Server-only: the page hands the client only the rows its tier may see. Everyone sees the same TOP FREE_ROWS players
@@ -10,7 +10,7 @@ export const FREE_ROWS = 20;
 export function getDynastyRows(hasFullAccess) {
   const base = rowsFromData(data);
   const grid = rankGrid(base); // over the whole pool, so the free slice carries true ranks too
-  const all = base.map((r) => ({ ...r, form: formTrend(logs[r.id]?.p, r.ppg), ranks: grid.get(r.id) }));
+  const all = base.map((r) => ({ ...r, ranks: grid.get(r.id) }));
   const meta = metaFromData(data);
   if (hasFullAccess) return { rows: all, built: data.built, total: all.length, meta };
   const ids = new Set(scoreRows(all, "sf", "contender").slice(0, FREE_ROWS).map((r) => r.id));

@@ -110,18 +110,37 @@ d$acq_how  <- ifelse(is.na(d$acq_how), "", d$acq_how)
 # keep the board to the players who can matter: the top KEEP by his best score under any format / mode
 d$best <- pmax(0.8 * pmax(d$por_1qb, d$por_sf) + 0.2 * d$age_value, 0.5 * pmax(d$por_1qb_s, d$por_sf_s) + 0.5 * d$age_value)
 d <- d[order(-d$best), ][seq_len(min(KEEP, nrow(d))), ]
+# each player's regular-season games, oldest first (the drift below and the profile's timeline)
+g <- as.data.frame(load_player_stats((as.integer(format(AGE_DATE, "%Y")) - 4):as.integer(format(AGE_DATE, "%Y"))))
+g <- g[g$season_type == "REG" & !is.na(g$fantasy_points_ppr) & !is.na(g$player_id) & g$player_id %in% d$player_id, ]
+g <- g[order(g$player_id, g$season, g$week), ]
+
+# Drift: how far his weighted PPG has moved over his last DRIFT games (the number now minus the same number DRIFT games ago),
+# for both windows. The board turns it into dynasty-score points (x 9 / V_HI x the mode's production weight x the board scale),
+# so it is the change in his score from production alone, age held. Both ends read the same game source, so they compare.
+DRIFT <- 9
+wppg <- function(pts, hl) { w <- 0.5^((rev(seq_along(pts)) - 1) / hl); sum(w * pts) / sum(w) }
+drift <- function(p, win, hl) {
+  if (length(p) < DRIFT + 4) return(NA_real_)
+  round(wppg(tail(p, win), hl) - wppg(tail(head(p, length(p) - DRIFT), win), hl), 2)
+}
+gp <- split(g$fantasy_points_ppr, g$player_id)
+d$drift   <- vapply(d$player_id, function(id) drift(gp[[id]], WINDOW, HALF_LIFE), 0)
+d$drift_s <- vapply(d$player_id, function(id) drift(gp[[id]], WINDOW_SHORT, HALF_LIFE_SHORT), 0)
+
 out <- d[order(-d$por_sf), c("player_id", "player", "position", "team", "age", "games_in_window", "ppg_weighted",
                               "age_value", "por_1qb", "por_sf", "sd_prod", "ppg_s", "games_s", "por_1qb_s", "por_sf_s", "sd_prod_s",
-                              "draft_team", "draft_year", "acq_date", "acq_how")]
+                              "draft_team", "draft_year", "acq_date", "acq_how", "drift", "drift_s")]
 write.csv(out, "dynasty_value.csv", row.names = FALSE)
 
 # the site's data file: rows as a compact array, plus what the player profile draws
-q <- function(x) if (is.character(x)) paste0('"', gsub('"', '\\\\"', x), '"') else format(x, trim = TRUE)
+q <- function(x) if (length(x) == 1 && is.na(x)) "null" else if (is.character(x)) paste0('"', gsub('"', '\\\\"', x), '"') else format(x, trim = TRUE)
 rows <- vapply(seq_len(nrow(out)), function(i) paste0("[", paste(vapply(out[i, ], q, ""), collapse = ","), "]"), "")
 meta <- toJSON(list(
   built = format(Sys.Date()),
   window = list(games = WINDOW, half_life = HALF_LIFE),
   window_short = list(games = WINDOW_SHORT, half_life = HALF_LIFE_SHORT),
+  drift_games = DRIFT,
   v_hi = V_HI,
   replacement = lapply(setNames(colnames(repl), colnames(repl)), function(f) setNames(as.list(round(repl[, f], 2)), rownames(repl))),
   replacement_short = lapply(setNames(colnames(repl_s), colnames(repl_s)), function(f) setNames(as.list(round(repl_s[, f], 2)), rownames(repl_s))),
@@ -135,9 +154,6 @@ writeLines(json, "../web/data/dynasty-values.json")
 
 # each player's last WINDOW games (season x 100 + week, points): the profile's production timeline. Read on demand by
 # /api/dynasty-profile, never shipped with the page.
-g <- as.data.frame(load_player_stats((as.integer(format(AGE_DATE, "%Y")) - 3):as.integer(format(AGE_DATE, "%Y"))))
-g <- g[g$season_type == "REG" & !is.na(g$fantasy_points_ppr) & !is.na(g$player_id) & g$player_id %in% out$player_id, ]
-g <- g[order(g$player_id, g$season, g$week), ]
 logs <- lapply(split(g, g$player_id), function(d) { d <- tail(d, WINDOW); list(w = d$season * 100 + d$week, p = round(d$fantasy_points_ppr, 1)) })
 write(toJSON(logs, auto_unbox = FALSE, digits = NA), "../web/data/dynasty-logs.json")
 cat("wrote dynasty_value.csv, ../web/data/dynasty-values.json and dynasty-logs.json:", nrow(out), "players\n")
