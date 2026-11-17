@@ -21,6 +21,9 @@ source("dynasty_params.R")   # WINDOW, HALF_LIFE
 
 POSITIONS <- c("QB", "RB", "WR", "TE")
 REPL_RANK <- list(`1QB` = c(QB = 12, RB = 29, WR = 42, TE = 13), SF = c(QB = 24, RB = 29, WR = 42, TE = 13))
+# Rebuilder's superflex replacement QB is QB20 (Nov 17 2026, founder: at QB24 Jared Goff, 31.9, ranked above Colston Loveland,
+# Luther Burden III and Tetairoa McMillan for a rebuilder); Contender keeps QB24.
+REPL_RANK_S <- within(REPL_RANK, SF[["QB"]] <- 20)
 REPL_FROM <- 2018
 V_HI      <- 15
 KEEP      <- 450   # players shipped (founder, Nov 16 2026: rank at least 300); the page shows the top 300 overall and the top 120 of a position
@@ -35,15 +38,15 @@ agev <- read.csv("dynasty_age_value.csv")
 bt   <- readRDS("backtest_production_window_results.rds")   # same window / half-life as dynasty_production_value.R
 
 # replacement PPG: the weighted PPG at that rank in each season's pool, averaged over seasons
-replacement_ppg <- function(ref) sapply(names(REPL_RANK), function(f) sapply(POSITIONS, function(p) {
-  r <- REPL_RANK[[f]][[p]]
+replacement_ppg <- function(ref, ranks = REPL_RANK) sapply(names(ranks), function(f) sapply(POSITIONS, function(p) {
+  r <- ranks[[f]][[p]]
   mean(sapply(unique(ref$season[ref$season >= REPL_FROM]), function(s) {
     x <- sort(ref$ppg[ref$position == p & ref$season == s], decreasing = TRUE)
     x[min(r, length(x))]
   }))
 }))
 repl   <- replacement_ppg(ref)     # Contender: 34-game memory
-repl_s <- replacement_ppg(ref_s)   # Rebuilder: 17-game memory
+repl_s <- replacement_ppg(ref_s, REPL_RANK_S)   # Rebuilder: 17-game memory, its own superflex QB rank
 cat("replacement PPG (34 games, Contender):\n"); print(round(repl, 2))
 cat("replacement PPG (17 games, Rebuilder):\n"); print(round(repl_s, 2))
 
