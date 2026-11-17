@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import ShareDialog from "../../ShareDialog";
@@ -10,7 +10,7 @@ import { StarField, Galaxies, Scrim, LitStar, GlowLine, Bloom, StarSurface } fro
 import { placeFind } from "@/lib/skyPlacement";
 import { drawObject, skyObject, sharpen, findCard, receiptCard, seasonCard, toBlob, setCardBadge, setCardSkin, setCardFrame } from "./skyArt";
 import {
-  ACTIONS, LORE, skyFor, SKINS, RARITY, hasSkin, equipped, skySkinsFor, FAMILIES, COLOURS, VERSIONS, TIER_NAME, POWERUPS, LADDER, rungLabel, CATALOGUE_SIZE, SET_COUNT, UNLOCK, EVENT_TEXT,
+  ACTIONS, loreFor, skyFor, SKINS, RARITY, hasSkin, equipped, skySkinsFor, FAMILIES, COLOURS, VERSIONS, TIER_NAME, POWERUPS, LADDER, rungLabel, CATALOGUE_SIZE, SET_COUNT, UNLOCK, EVENT_TEXT,
   famsIn, findOf, setProgress, seasonProgress,
 } from "@/lib/nightSky";
 
@@ -39,13 +39,6 @@ function Core({ mass, collapsed, skin }) {
     return { x1: r2(Math.cos(a) * 74), y1: r2(Math.sin(a) * 74), x2: r2(Math.cos(a) * 84), y2: r2(Math.sin(a) * 84), lit: collapsed || i < m, band };
   });
   const gid = useId().replace(/[^a-zA-Z0-9_-]/g, "");
-  // half the middle stage word's real width, measured once rendered and again when the fonts arrive
-  const midRef = useRef(null);
-  const [half, setHalf] = useState(26);
-  useLayoutEffect(() => {
-    const m = () => { const w = midRef.current?.getComputedTextLength?.(); if (w) setHalf((h) => (Math.abs(h - w / 2) < 0.1 ? h : w / 2)); };
-    m(); document.fonts?.ready.then(m);
-  });
   return (
     <g className={`sky-core is-${st.id} skin-${skin}`}>
       <Bloom r={190} id={gid} />
@@ -61,16 +54,12 @@ function Core({ mass, collapsed, skin }) {
       {collapsed && <circle className="sky-core-lens" r="49" />}
       {/* no plate: the words sit on the sky with a soft shadow (founder, Nov 17 2026: the black boxes looked out of place) */}
       <g className="sky-label">
-        {collapsed ? <text className="sky-heat" x="0" y="284" textAnchor="middle">Collapsed · a find is waiting</text> : (
-          // the middle stage sits exactly under the core's centre, the other two hang off it (founder, Nov 17 2026: centre WARMING)
-          <text className="sky-heat" y="284">
-            <tspan ref={midRef} x="0" textAnchor="middle" className={STAGES[1].id === st.id ? "is-on" : ""}>{STAGES[1].label}</tspan>
-            <tspan x={-(half + 12)} textAnchor="middle">·</tspan>
-            <tspan x={half + 12} textAnchor="middle">·</tspan>
-            <tspan x={-(half + 24)} textAnchor="end" className={STAGES[0].id === st.id ? "is-on" : ""}>{STAGES[0].label}</tspan>
-            <tspan x={half + 24} textAnchor="start" className={STAGES[2].id === st.id ? "is-on" : ""}>{STAGES[2].label}</tspan>
-          </text>
-        )}
+        {/* at the bottom of the sky the whole line is centred, under the picks (founder, Nov 17 2026) */}
+        <text className="sky-heat" x="0" y="284" textAnchor="middle">
+          {collapsed ? "Collapsed · a find is waiting" : STAGES.map((x, i) => (
+            <tspan key={x.id} className={x.id === st.id ? "is-on" : ""}>{i ? "  ·  " : ""}{x.label}</tspan>
+          ))}
+        </text>
       </g>
     </g>
   );
@@ -190,7 +179,7 @@ function FindCardView({ entry, onBack, onShare }) {
       <div className="sky-lens"><canvas ref={ref} width={320} height={320} aria-hidden="true" /></div>
       <div className="sky-find">{f.name}</div>
       <div className="sky-rarity mono">1 in {f.oneIn.toLocaleString()} finds</div>
-      {LORE[fam.name] && <p className="sky-lore">{LORE[fam.name]}</p>}
+      <p className="sky-lore">{loreFor(entry.fam, entry.colour, entry.version)}</p>
       <dl className="sky-findcard-facts mono">
         <div><dt>Group</dt><dd>{TIER_NAME[fam.tier]}</dd></div>
         <div><dt>Colour</dt><dd>{COLOURS.find((c) => c.id === entry.colour)?.name}</dd></div>
@@ -311,7 +300,7 @@ function Telescope({ queue, compliments, onDone, onShare }) {
           <>
             <div className="sky-find">{f.name}</div>
             <div className="sky-rarity mono">1 in {f.oneIn.toLocaleString()} finds · {f.id}{f.first ? " · new to your catalogue" : ""}</div>
-            {LORE[FAMILIES[f.fam]?.name] && <p className="sky-lore">{LORE[FAMILIES[f.fam].name]}</p>}
+            {f.fam != null && <p className="sky-lore">{loreFor(f.fam, f.colour, f.version)}</p>}
             <div className="sky-find-sub mono">+{f.pts} orbit points{f.first ? " (incl. +15 for a first discovery)" : ""}{f.shower ? " · meteor shower: every action places two stars for 10 minutes" : ""}</div>
             {compliment && <div className="sky-note is-gold"><span className="mono">Seen from up here</span><b>{compliment.head}.</b> {compliment.body}</div>}
             {pu && <div className="sky-note is-blue"><span className="mono">Power-up</span><b>{pu.name}</b> {pu.text[0].toUpperCase() + pu.text.slice(1)}</div>}

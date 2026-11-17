@@ -7236,7 +7236,7 @@ body:has(.ehp) .ehp-inside,body:has(.ehp) .ehp-dark{--ehp-hole:#0B0B0B;--ehp-hol
 .sky-variant{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;color:var(--star-dim);text-align:center}
 .sky-variant canvas{width:100%;max-width:72px;height:auto;aspect-ratio:1}
 .sky-variant.is-unknown canvas{opacity:.55}
-button.sky-variant{background:none;border:1px solid transparent;padding:4px;font:inherit;font-family:var(--font-mono);cursor:pointer}
+button.sky-variant{background:none;border:1px solid transparent;padding:4px;font:inherit;font-family:var(--font-mono);font-size:10px;cursor:pointer} /* same size as a "Not found" tile */
 button.sky-variant:hover{border-color:var(--star-dim);color:var(--star)}
 button.sky-variant:focus-visible{outline:2px solid var(--ember);outline-offset:1px}
 .sky-findcard{display:flex;flex-direction:column;gap:14px;align-items:stretch}

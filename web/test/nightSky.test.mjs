@@ -226,3 +226,10 @@ test("the rarest find takes its astronomical zone and never covers a constellati
   const lava = FAMILIES.find((f) => f.name === "Lava world").id, quasar = FAMILIES.find((f) => f.name === "Quasar").id;
   assert.ok(zoneOf(lava).r < zoneOf(quasar).r, "planets orbit close, deep-sky objects sit far out");
 });
+
+test("every catalogue entry has its own lore", async () => {
+  const { loreFor, COLOURS, VERSIONS } = await import("../lib/nightSky.js");
+  const seen = new Set();
+  for (const f of FAMILIES) for (const c of COLOURS) for (const v of VERSIONS) seen.add(loreFor(f.id, c.id, v.id));
+  assert.equal(seen.size, CATALOGUE_SIZE);
+});

@@ -153,6 +153,57 @@ export const LORE = {
   "Wolf-Rayet star": "It has blown off its own outer layers in a howling wind and is burning through the rest of its life at full speed, no regrets.",
   "Red giant": "An old star swollen to a hundred times its size; in five billion years, our own Sun will look exactly like this.",
 };
+// The lore's second and third lines (founder, Nov 17 2026: two finds of the same kind read the same; "make each one unique based loosely on
+// its characteristics"): one per colour within each tier of kinds, and one per rare version. loreFor() puts them together, so every one of
+// the 1,056 catalogue entries reads differently.
+const COLOUR_LORE = {
+  "1": {
+    "silver": "This one is polished silver, the colour of a coin someone flipped four billion years ago and never caught.",
+    "azure": "Its blue tint is frost that has never once melted, which makes it older than every ocean on Earth.",
+    "amber": "The amber is rust, real rust, so somewhere in its past there was water, air and a very long wait.",
+    "emerald": "Green rock is olivine, the same stone as peridot, so technically you have found a jewellery box with no lid.",
+    "crimson": "Red means radiation has cooked its surface for so long it has turned to something like burnt sugar.",
+    "violet": "Nobody can explain the violet, and three separate observatories have quietly stopped trying."
+  },
+  "2": {
+    "silver": "In silver it looks like moonlight that came loose and wandered off on its own.",
+    "azure": "The blue is frozen gas glowing like a stove flame, only colder than anything you have ever touched.",
+    "amber": "Amber ones carry sodium, so the glow is the exact colour of an old streetlamp on an empty road.",
+    "emerald": "The green is a carbon gas that breaks apart in sunlight, so its colour is always dying and always being reborn.",
+    "crimson": "Red ones are coated in tholins, the cosmic equivalent of the crust at the bottom of a roasting pan.",
+    "violet": "Violet ones turn up so rarely that the last person to log one gave up coffee in case they were seeing things."
+  },
+  "3": {
+    "silver": "In silver its clouds throw back so much light that it would be the brightest thing in its neighbours' night.",
+    "azure": "The blue is methane in the air, and a sunset there would be the colour of a gas flame.",
+    "amber": "An amber sky means haze so thick that every hour of the day feels like golden hour.",
+    "emerald": "Green is the colour astronomers hope for and almost never get, and this one is exactly that shade.",
+    "crimson": "Crimson worlds are full of iron rusting under their own sky: a planet-sized warning light.",
+    "violet": "Under a violet sky like this, any plants would have to be black to drink in enough light."
+  },
+  "4": {
+    "silver": "Silver meteors are the ordinary ones, a strange word for rocks burning up at forty miles a second.",
+    "azure": "Blue streaks are magnesium, the same metal that makes fireworks burn white-hot.",
+    "amber": "Amber streaks are sodium; on a clear night they look like someone striking matches across the sky.",
+    "emerald": "Green meteors are nickel, and anyone who has seen one will tell you about it, at length, for years.",
+    "crimson": "Red streaks are our own air burning around the rock, so this colour is half Earth's doing.",
+    "violet": "Violet meteors are calcium, rare enough that people who chase showers for a living keep a list."
+  },
+  "5": {
+    "silver": "In silver it looks almost calm, which is the most deceptive thing about it.",
+    "azure": "Blue means hot, hotter than any colour has a right to be, hot enough that atoms give up their electrons.",
+    "amber": "Amber is the glow of something cooling, the way a forge looks an hour after the work is done.",
+    "emerald": "Green should not be possible for something like this, and yet the telescope keeps insisting.",
+    "crimson": "Crimson light has been stretched on its long trip here; you are seeing it as it was before Earth had oceans.",
+    "violet": "The violet sits at the very edge of what eyes can see, as if it is only half willing to be found."
+  }
+};
+const VERSION_LORE = {
+  "prismatic": "This copy splits light into a rainbow at its edges, as if it put on every colour at once and still can't decide.",
+  "ancient": "This copy is ancient: the light reaching you set off before the first fossils formed.",
+  "mythic": "Mythic copies are spoken of like perfect seasons: everyone knows someone who swears they saw one."
+};
+export const loreFor = (fam, colour, version) => [LORE[FAMILIES[fam]?.name], COLOUR_LORE[FAMILIES[fam]?.tier]?.[colour], VERSION_LORE[version]].filter(Boolean).join(" ");
 export const COLOURS = [
   { id: "silver", name: "Silver", w: 0.3, c: ["#D8D3C8", "#5C5850"] },
   { id: "azure", name: "Azure", w: 0.2, c: ["#7FA6F5", "#173572"] },
