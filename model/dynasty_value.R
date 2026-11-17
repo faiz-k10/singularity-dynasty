@@ -23,8 +23,8 @@ POSITIONS <- c("QB", "RB", "WR", "TE")
 REPL_RANK <- list(`1QB` = c(QB = 12, RB = 29, WR = 42, TE = 13), SF = c(QB = 24, RB = 29, WR = 42, TE = 13))
 REPL_FROM <- 2018
 V_HI      <- 15
-KEEP      <- 250   # players shipped; the page shows the top 120 overall and the top 60 of a position (below that the
-                   # numbers can't tell players apart: one big tier)
+KEEP      <- 450   # players shipped (founder, Nov 16 2026: rank at least 300); the page shows the top 300 overall and the top 120 of a position
+                   # (every format / mode reorders the pool, so it ships more than it shows)
 AGE_DATE  <- as.Date("2026-09-01")
 
 prod <- read.csv("dynasty_production_value.csv")

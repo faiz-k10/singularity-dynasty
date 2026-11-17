@@ -29,9 +29,9 @@ export const FORMATS = {
 // the groups above replacement level take ABOVE from the top, every player near replacement is ONE group, REPLACEMENT, and
 // the groups below it take BELOW. A section with more groups than names reuses its last name.
 export const GROUP_NAMES = { above: ["Future Legend", "Generational", "Hall of Famer", "The Franchise", "Cornerstone", "Core"], replacement: "Replacement", below: ["Depth", "Fringe", "Taxi Squad", "Waiver Wire"] };
-const REPL_LINE = 2.0, BELOW_LINE = 1.0; // a group's MEDIAN prod: under 2 starts the replacement group (within ~1.7 points a game of replacement), under 1 at the bottom is below it
-// how much of the shipped pool a view shows: the top 120 overall, the top 60 of one position
-export const SHOW = { all: 120, position: 60 };
+const REPL_WINDOW = 9, REPL_LINE = 2.0, BELOW_LINE = 0.0; // local production = the median prod of the REPL_WINDOW players around him (1 point = 15/9 PPG): the replacement group is the band within ~1.7 points a game of replacement either side -- under 2 starts it, under 0 at the bottom is below it
+// how much of the shipped pool a view shows: the top 300 overall, the top 120 of one position (founder, Nov 16 2026)
+export const SHOW = { all: 300, position: 120 };
 
 // The rows a view draws: scored for the format and mode, optionally one position, cut to SHOW.
 export function boardRows(rows, { format, mode, pos }) {
@@ -213,21 +213,26 @@ export function buildBoard(L) {
     for (let k = a + 4; k < b - 4; k++) if (zOf(L, k, k + 1) > zOf(L, cut, cut + 1) || cut === a) cut = k;
     return [[a, cut], [cut + 1, b]].flatMap(split);
   };
-  const stat = segment(L, okG, 0, n - 1).flatMap(split);
-  // where replacement level starts: the first group whose typical player is near replacement; below: the run of groups at the
-  // bottom whose typical player is under it. Everything in between is the one Replacement group (never split).
-  const med = ([a, b]) => { const v = L.slice(a, b + 1).map((r) => r.prod).sort((x, y) => x - y); return v[Math.floor(v.length / 2)]; };
-  const md = stat.map(med);
-  let line = md.findIndex((v) => v < REPL_LINE);
-  if (line < 0) line = stat.length;
-  let below = stat.length;
-  while (below - 1 > line && md[below - 1] < BELOW_LINE) below--;
-  const above = stat.slice(0, line);
+  // REPLACEMENT FIRST (founder, Nov 16 2026: "start with labeling the players who score just at or above and just below replacement
+  // level as REPLACEMENT, then rank the rest into the groups"): walking down the list, each player's local production is the median
+  // prod of the REPL_WINDOW players around him; Replacement runs from the first player whose local production is under REPL_LINE to
+  // the last whose is still at or over BELOW_LINE (the band within ~1.7 points a game of replacement, either side). The players
+  // above it are grouped (and split for size), the players below it are grouped into the BELOW names.
+  const half = Math.floor(REPL_WINDOW / 2);
+  const local = L.map((_, i) => {
+    const v = L.slice(Math.max(0, i - half), i + half + 1).map((r) => r.prod).sort((x, y) => x - y);
+    return v[Math.floor(v.length / 2)];
+  });
+  let start = local.findIndex((v) => v < REPL_LINE);
+  if (start < 0) start = n;
+  let end = n - 1;
+  while (end >= start && !(local[end] >= BELOW_LINE)) end--;
+  const above = start > 0 ? segment(L, okG, 0, start - 1).flatMap(split) : []; // only groups ABOVE replacement are split for size
   // more groups above replacement than names: merge the neighbours with the weakest break, as long as the result stays under GROUP_MAX
   // (what still doesn't fit reuses the last name, Core)
   while (above.length > GROUP_NAMES.above.length) {
     let k = -1, weakest = Infinity;
-    for (let j = 2; j + 1 < above.length; j++) { // the top two (Future Legend, Hall of Famer) are never merged
+    for (let j = 2; j + 1 < above.length; j++) { // the top two (Future Legend, Generational) are never merged
       if (above[j + 1][1] - above[j][0] + 1 >= GROUP_MAX) continue;
       const sup = superiority(L, above[j], above[j + 1]);
       if (sup < weakest) { weakest = sup; k = j; }
@@ -235,11 +240,18 @@ export function buildBoard(L) {
     if (k < 0) break;
     above.splice(k, 2, [above[k][0], above[k + 1][1]]);
   }
+  // below replacement: at most one group per name, merging the neighbours with the weakest break (any size)
+  const under = end + 1 < n ? segment(L, okG, end + 1, n - 1) : [];
+  while (under.length > GROUP_NAMES.below.length) {
+    let k = 0, weakest = Infinity;
+    for (let j = 0; j + 1 < under.length; j++) { const sup = superiority(L, under[j], under[j + 1]); if (sup < weakest) { weakest = sup; k = j; } }
+    under.splice(k, 2, [under[k][0], under[k + 1][1]]);
+  }
   const named = (list, names) => list.map((G, k) => [G, names[Math.min(k, names.length - 1)]]);
   [
     ...named(above, GROUP_NAMES.above),
-    ...(below > line ? [[[stat[line][0], stat[below - 1][1]], GROUP_NAMES.replacement]] : []),
-    ...named(stat.slice(below), GROUP_NAMES.below),
+    ...(end >= start ? [[[start, end], GROUP_NAMES.replacement]] : []),
+    ...named(under, GROUP_NAMES.below),
   ].forEach(([G, name], g) => {
     groups.push({ a: G[0], b: G[1], g, name });
     segment(L, okT, G[0], G[1]).forEach((T) => {
