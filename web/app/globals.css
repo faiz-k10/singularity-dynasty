@@ -2601,7 +2601,7 @@ footer .fcoord{font-size:10.5px; color:var(--star-dim); letter-spacing:0.08em;}
   font-family:var(--font-display), sans-serif; font-weight:700; font-size:17px; line-height:1; letter-spacing:0.12em;
   text-transform:uppercase; color:var(--star);
 }
-.weekly-panel-title::after, .dp-sec .board-panel-title::after{
+.weekly-panel-title::after{
   content:''; flex:1; height:6px; min-width:16px;
   background:linear-gradient(var(--rule), var(--rule)) left center / 100% 1px no-repeat, linear-gradient(var(--ember), var(--ember)) right center / 6px 6px no-repeat;
 }
@@ -6032,7 +6032,7 @@ select.lab-select{min-width:200px;}
 .dp-links{display:flex; flex-wrap:wrap; align-items:center; gap:6px 16px; margin-top:12px; font-family:var(--font-mono), monospace; font-size:11px; letter-spacing:.04em;}
 .dp-links > *{white-space:nowrap;}
 .dp-links a{color:var(--horizon-gold); text-decoration:none;} .dp-links a:hover{text-decoration:underline; text-underline-offset:3px;}
-.dp-score{display:flex; flex-direction:column; align-items:stretch; gap:14px; margin:20px 0 4px; padding:16px; border:1px solid var(--rule); border-top:2px solid var(--rule-strong); background:rgba(var(--horizon-gold-rgb), .07);}
+.dp-score{display:flex; flex-direction:column; align-items:stretch; gap:14px; margin:0; padding:16px; border:1px solid var(--rule); border-top:2px solid var(--rule-strong); background:rgba(var(--horizon-gold-rgb), .07);}
 .dp-big{flex:0 0 auto; font-family:var(--font-display); font-weight:800; font-size:84px; line-height:.9; color:var(--horizon-gold);}
 .dp-score-side{min-width:0; display:flex; flex-direction:column; gap:6px;}
 .dp-eyebrow{font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--star-dim);}
@@ -6041,8 +6041,17 @@ select.lab-select{min-width:200px;}
 .dp-facts dt{font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--star-dim);}
 .dp-facts dd{margin:1px 0 0; font-family:var(--font-display); font-weight:800; font-size:20px; line-height:1.1; letter-spacing:.03em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
 .dp-facts dd small{font-size:13px; color:var(--star-dim); font-weight:700;}
-.dp-sec{margin-top:24px;}
-.dp-sec .board-panel-title{display:flex; align-items:center; gap:12px; margin-bottom:12px;} /* a section of the profile: the Weekly panel heading, rule and square included */
+/* the profile's story: numbered chapters on one spine down the left, the line running from each node to the next */
+.dp-story{list-style:none; margin:22px 0 0; padding:0; counter-reset:none;}
+.dp-ch{position:relative; padding:0 0 26px 34px;}
+.dp-ch::before{content:""; position:absolute; left:10px; top:22px; bottom:0; border-left:1px solid var(--rule-strong);} /* the spine */
+.dp-ch:last-child{padding-bottom:4px;} .dp-ch:last-child::before{display:none;}
+.dp-ch-n{position:absolute; left:0; top:0; width:21px; height:21px; display:grid; place-items:center; box-sizing:border-box; border:1px solid var(--rule-strong); background:var(--void-panel); font-size:10px; color:var(--star-dim);}
+.dp-ch:first-child .dp-ch-n{border-color:var(--ember); color:var(--star);}
+.dp-ch-ask{font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--star-dim); line-height:21px;}
+.dp-ch-says{margin:2px 0 12px; font-family:var(--font-display); font-weight:800; font-size:20px; line-height:1.15; letter-spacing:.02em; text-transform:uppercase; color:var(--star);}
+.dp-next{margin:12px 0 0; font-size:14px; line-height:1.4; color:var(--star-dim);} /* the bridge to the next chapter */
+.dp-next::before{content:"↓ "; color:var(--ember); font-family:var(--font-mono), monospace;}
 .dp-chart{width:100%; height:auto; display:block;}
 .dp-chart-skel{height:240px; display:grid; place-items:center; border:1px dashed var(--rule); font-family:var(--font-mono), monospace; font-size:11px; color:var(--star-dim);}
 .dp-grid{stroke:var(--rule); stroke-width:1;} .dp-axis-line{stroke:var(--star-dim); stroke-width:1;}
@@ -6455,7 +6464,7 @@ details.acct-danger > summary.acct-h{color:var(--down)}
 .dyb-ctx{text-align:center; white-space:normal; line-height:1.15;}
 .dyb-row .dyb-ctx{font-size:11px; color:var(--star-dim);}
 .dyb-row .dyb-ctx.is-yes{color:var(--star); font-weight:700;}
-.dp-ctx{display:grid; gap:8px; margin:14px 0 0; padding:12px 14px; border:1px solid var(--rule);}
+.dp-ctx{display:grid; gap:10px; margin:0;}
 .dp-ctx dt{font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--star-dim);}
 .dp-ctx dd{margin:2px 0 0; font-size:14px; line-height:1.35;}
 .dyb-score{font-family:var(--font-display); font-weight:800; font-size:24px; line-height:1; text-align:right;}

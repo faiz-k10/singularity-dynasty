@@ -155,6 +155,28 @@ function useFitName(names) {
   return ref;
 }
 
+// The share of production players of his position and age keep over the next three seasons (the age curve's third column),
+// straight lines between ages, held at the ends.
+function keptAt(curve, age) {
+  const a = Math.min(Math.max(age, curve[0][0]), curve.at(-1)[0]);
+  const k = curve.findIndex((r) => r[0] >= a);
+  if (k <= 0) return curve[Math.max(0, k)][2];
+  const [a0, , k0] = curve[k - 1], [a1, , k1] = curve[k];
+  return k0 + ((a - a0) / (a1 - a0 || 1)) * (k1 - k0);
+}
+
+// One step of the story: a numbered node on the spine, the question it answers, the answer from his numbers, then the evidence.
+function Chapter({ n, ask, says, children }) {
+  return (
+    <li className="dp-ch">
+      <span className="dp-ch-n mono" aria-hidden="true">{String(n).padStart(2, "0")}</span>
+      <div className="dp-ch-ask mono">{ask}</div>
+      <h3 className="dp-ch-says">{says}</h3>
+      {children}
+    </li>
+  );
+}
+
 // ---- the panel -----------------------------------------------------------------------------------------------------
 // The picked player's profile, in the pane beside the board's list (DynastyBoard.js).
 export default function DynastyProfile({ player: p, rows, L, board, format, mode, meta }) {
@@ -179,6 +201,20 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
   const MATES = 5;
   const start = Math.max(tier.a, Math.min(i - Math.floor(MATES / 2), tier.b + 1 - MATES));
   const tierMates = L.slice(start, Math.min(tier.b + 1, start + MATES));
+  const log = data?.log ? { w: data.log.w.slice(-win.games), p: data.log.p.slice(-win.games) } : null;
+  const above = log ? log.p.filter((v) => v >= repl).length : 0;
+  const kept = keptAt(curve, p.age);
+  const rankLo = grid ? Math.min(...grid.map((c) => c.rank)) : null, rankHi = grid ? Math.max(...grid.map((c) => c.rank)) : null;
+  const coach = coachFor(p.team), staff = acquiringGm(p);
+  const gmLine = (() => {
+    const d = staff;
+    if (d.state === "undrafted") return "Undrafted";
+    if (d.state !== "yes" && d.state !== "no") return "Not known";
+    // a roster-based arrival in week 1 is dated March 15 (model/dynasty_value.R): say "before the season", not a month
+    const when = d.how === "drafted" ? `in the ${d.at} draft` : d.how === "joined" && d.at.endsWith("-03-15") ? `before the ${d.at.slice(0, 4)} season` : `in ${new Date(`${d.at}T12:00:00`).toLocaleDateString("en-US", { month: "long", year: "numeric" })}`;
+    const how = d.how === "drafted" ? `Drafted by ${p.team}` : d.how === "trade" ? `Traded to ${p.team} (drafted by ${d.from})` : `Joined ${p.team} (drafted by ${d.from})`;
+    return d.state === "yes" ? `${how} ${when}, under ${d.gm}, who still runs the team` : `${how} ${when}, before ${d.gm} took over`;
+  })();
   const size = [formatHeight(data?.bio?.height), data?.bio?.weight ? `${data.bio.weight} lbs` : null, data?.bio?.yearsExp != null ? (data.bio.yearsExp === 0 ? "Rookie" : `Year ${data.bio.yearsExp + 1}`) : null].filter(Boolean);
 
   return (
@@ -207,114 +243,108 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
           />
         </div>
 
-        <section className="dp-score" ref={chartRef}>
-          {/* the dial takes the block's whole width (less its padding); the number grows with it */}
-          <ArcGauge value={p.score / 10} size={Math.max(200, chartW - 34)} label={`Dynasty score ${p.score.toFixed(1)} of 10`} className="dp-gauge">
-            <span className="dp-big" style={{ fontSize: Math.round(Math.max(200, chartW - 34) * 0.24) }}>{p.score.toFixed(1)}</span>
-          </ArcGauge>
-          <div className="dp-score-side">
-            <div className="dp-eyebrow mono">Dynasty score · {f.label} · {m.label}</div>
-            <dl className="dp-facts">
-              {here && <div><dt className="mono">Overall</dt><dd>{ord(here.rank)}</dd></div>}
-              {here && <div><dt className="mono">Position</dt><dd>{p.pos}{here.posRank}</dd></div>}
-              <div><dt className="mono">Tier</dt><dd>{tier.ti + 1}<small> / {board.tiers.length}</small></dd></div>
-              <div><dt className="mono">Group</dt><dd>{groupName(group.g)}</dd></div>
-            </dl>
-          </div>
-        </section>
+        {/* The profile reads as ONE story down a spine (founder, Nov 16 2026: "tell a story based on what is already there"):
+            what he's worth, where that comes from, how long it lasts, who he's level with, whether the league changes it, and
+            who is around him. Each chapter's title is a sentence made from his own numbers. */}
+        <ol className="dp-story">
+          <Chapter n={1} ask="What is he worth?" says={here ? `${p.pos}${here.posRank} and #${here.rank} overall: ${groupName(group.g)}` : `${groupName(group.g)}, tier ${tier.ti + 1}`}>
+            <div className="dp-score" ref={chartRef}>
+              {/* the dial takes the block's whole width; the number grows with it */}
+              <ArcGauge value={p.score / 10} size={Math.max(200, chartW - 34)} label={`Dynasty score ${p.score.toFixed(1)} of 10`} className="dp-gauge">
+                <span className="dp-big" style={{ fontSize: Math.round(Math.max(200, chartW - 34) * 0.24) }}>{p.score.toFixed(1)}</span>
+              </ArcGauge>
+              <div className="dp-score-side">
+                <div className="dp-eyebrow mono">Dynasty score · {f.label} · {m.label}</div>
+                <dl className="dp-facts">
+                  {here && <div><dt className="mono">Overall</dt><dd>{ord(here.rank)}</dd></div>}
+                  {here && <div><dt className="mono">Position</dt><dd>{p.pos}{here.posRank}</dd></div>}
+                  <div><dt className="mono">Tier</dt><dd>{tier.ti + 1}<small> / {board.tiers.length}</small></dd></div>
+                  <div><dt className="mono">Group</dt><dd>{groupName(group.g)}</dd></div>
+                </dl>
+              </div>
+            </div>
+            <p className="dp-next">That score is {Math.round(m.prod * 100)}% what he produces and {Math.round(m.age * 100)}% how long it should last.</p>
+          </Chapter>
 
+          <Chapter n={2} ask="Where does it come from?" says={`${p.ppg.toFixed(1)} points a game, ${Math.abs(p.ppg - repl).toFixed(1)} ${p.ppg >= repl ? "more" : "fewer"} than a replacement ${p.pos}`}>
+            {log ? (
+              <>
+                <Timeline log={log} level={p.ppg} repl={repl} W={chartW} />
+                <ul className="dp-legend mono">
+                  <li><i className="k-level" />His level {p.ppg.toFixed(1)}</li>
+                  <li><i className="k-repl" />Replacement {p.pos} {repl.toFixed(1)}</li>
+                  <li><i className="k-above" />Game above replacement</li>
+                  <li><i className="k-below" />Below</li>
+                </ul>
+                <p className="dp-next">Above replacement in {above} of his last {log.p.length} games{p.move != null && Math.abs(p.move) >= 1 ? `, and his score is ${p.move > 0 ? "up" : "down"} ${Math.abs(p.move).toFixed(1)} over his last 9` : ""}.</p>
+              </>
+            ) : <div className="dp-chart-skel">{data ? "No game log yet." : "Loading his games…"}</div>}
+          </Chapter>
 
-        {(() => {
-          const c = coachFor(p.team), d = acquiringGm(p);
-          return (
+          <Chapter n={3} ask="How long will it last?" says={`${p.pos}s his age keep about ${Math.round(kept * 100)}% of their production over the next three seasons`}>
+            <AgeCurve curve={curve} age={p.age} value={p.ageValue} W={chartW} />
+            <p className="dp-next">In three years he will be {(p.age + AGE_LOOKAHEAD).toFixed(1)}: an age value of {p.ageValue.toFixed(1)} of 10.</p>
+          </Chapter>
+
+          <Chapter n={4} ask="Who is he level with?" says={tierMates.length > 1 ? `The board can't separate him from ${tier.b - tier.a} other${tier.b - tier.a === 1 ? "" : "s"} in tier ${tier.ti + 1}` : `Alone in tier ${tier.ti + 1}`}>
+            {tierMates.length > 1 && (
+              <table className="dp-table">
+                <tbody>
+                  {tierMates.map((r) => (
+                    <tr key={r.id} className={r.id === p.id ? "is-him" : undefined}>
+                      <td className="mono dp-t-rank">{L.indexOf(r) + 1}</td>
+                      <td className="dp-t-name">{r.name}</td>
+                      <td className="mono dp-t-p">{r.score.toFixed(1)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </Chapter>
+
+          {grid && (
+            <Chapter n={5} ask="Does the league change it?" says={rankLo === rankHi ? `No: #${rankLo} in every format and mode` : `From #${rankLo} to #${rankHi}, depending on the league`}>
+              {/* the four views as a matrix: league format down the side, team mode across the top; this view's cell lit */}
+              <table className="dp-matrix">
+                <thead>
+                  <tr>
+                    <th aria-hidden="true" />
+                    {Object.keys(MODES).map((mk) => <th key={mk} scope="col" className="mono">{MODES[mk].label}</th>)}
+                  </tr>
+                </thead>
+                <tbody>
+                  {Object.keys(FORMATS).map((fk) => (
+                    <tr key={fk}>
+                      <th scope="row" className="mono">{FORMATS[fk].label}</th>
+                      {Object.keys(MODES).map((mk) => {
+                        const c = grid.find((g) => g.fk === fk && g.mk === mk);
+                        return (
+                          <td key={mk} className={fk === format && mk === mode ? "is-here" : undefined}>
+                            <b>{ord(c.rank)}</b>
+                            <span className="mono">{p.pos}{c.posRank} · {c.score.toFixed(1)}</span>
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </Chapter>
+          )}
+
+          <Chapter n={grid ? 6 : 5} ask="Who is around him?" says={`${p.team}: ${coach ? coach.hc : "coach unknown"}${staff.gm ? ` and ${staff.gm}` : ""}`}>
             <dl className="dp-ctx">
               <div>
                 <dt className="mono">Head coach</dt>
-                <dd>{c ? <>{c.hc}: {c.oc ? "a former offensive coordinator" : "never an offensive coordinator"}</> : "Unknown"}</dd>
+                <dd>{coach ? <>{coach.hc}: {coach.oc ? "a former offensive coordinator" : "never an offensive coordinator"}</> : "Unknown"}</dd>
               </div>
               <div>
                 <dt className="mono">GM who brought him in</dt>
-                <dd>
-                  {(() => {
-                    // a roster-based arrival in week 1 is dated March 15 (model/dynasty_value.R): say "before the season", not a month
-                    const when = d.how === "drafted" ? `in the ${d.at} draft` : d.how === "joined" && d.at.endsWith("-03-15") ? `before the ${d.at.slice(0, 4)} season` : `in ${new Date(`${d.at}T12:00:00`).toLocaleDateString("en-US", { month: "long", year: "numeric" })}`;
-                    const how = d.how === "drafted" ? `Drafted by ${p.team}` : d.how === "trade" ? `Traded to ${p.team} (drafted by ${d.from})` : `Joined ${p.team} (drafted by ${d.from})`;
-                    if (d.state === "yes") return `${how} ${when}, under ${d.gm}, who still runs the team`;
-                    if (d.state === "no") return `${how} ${when}, before ${d.gm} took over`;
-                    return d.state === "undrafted" ? "Undrafted" : "Not known";
-                  })()}
-                </dd>
+                <dd>{gmLine}</dd>
               </div>
             </dl>
-          );
-        })()}
-
-        <section className="dp-sec">
-          <h3 className="board-panel-title">Production, game by game</h3>
-          {data?.log ? <Timeline log={{ w: data.log.w.slice(-win.games), p: data.log.p.slice(-win.games) }} level={p.ppg} repl={repl} W={chartW} /> : <div className="dp-chart-skel">{data ? "No game log yet." : "Loading his games…"}</div>}
-          {/* a legend under the chart instead of labels on the lines (founder, Nov 16 2026: the labels over the bars weren't legible) */}
-          <ul className="dp-legend mono">
-            <li><i className="k-level" />His level {p.ppg.toFixed(1)}</li>
-            <li><i className="k-repl" />Replacement {p.pos} {repl.toFixed(1)}</li>
-            <li><i className="k-above" />Game above replacement</li>
-            <li><i className="k-below" />Below</li>
-          </ul>
-        </section>
-
-        <section className="dp-sec">
-          <h3 className="board-panel-title">His age curve</h3>
-          <AgeCurve curve={curve} age={p.age} value={p.ageValue} W={chartW} />
-        </section>
-
-        <section className="dp-sec">
-          <h3 className="board-panel-title">Tier {tier.ti + 1}</h3>
-          {tierMates.length > 1 ? (
-            <table className="dp-table">
-              <tbody>
-                {tierMates.map((r) => (
-                  <tr key={r.id} className={r.id === p.id ? "is-him" : undefined}>
-                    <td className="mono dp-t-rank">{L.indexOf(r) + 1}</td>
-                    <td className="dp-t-name">{r.name}</td>
-                    <td className="mono dp-t-p">{r.score.toFixed(1)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          ) : (
-            <p className="dp-empty">Alone in his tier.</p>
-          )}
-        </section>
-
-        {grid && (
-          <section className="dp-sec">
-            <h3 className="board-panel-title">Rank by format</h3>
-            {/* the four views as a matrix: league format down the side, team mode across the top; this view's cell lit */}
-            <table className="dp-matrix">
-              <thead>
-                <tr>
-                  <th aria-hidden="true" />
-                  {Object.keys(MODES).map((mk) => <th key={mk} scope="col" className="mono">{MODES[mk].label}</th>)}
-                </tr>
-              </thead>
-              <tbody>
-                {Object.keys(FORMATS).map((fk) => (
-                  <tr key={fk}>
-                    <th scope="row" className="mono">{FORMATS[fk].label}</th>
-                    {Object.keys(MODES).map((mk) => {
-                      const c = grid.find((g) => g.fk === fk && g.mk === mk);
-                      return (
-                        <td key={mk} className={fk === format && mk === mode ? "is-here" : undefined}>
-                          <b>{ord(c.rank)}</b>
-                          <span className="mono">{p.pos}{c.posRank} · {c.score.toFixed(1)}</span>
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </section>
-        )}
+          </Chapter>
+        </ol>
       </aside>
   );
 }
