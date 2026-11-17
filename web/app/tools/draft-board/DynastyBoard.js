@@ -26,55 +26,41 @@ function Toggle({ label, value, options, onChange }) {
   );
 }
 
-// The whole view as a map: every player a dot at his score (across) and his age (down: youngest at the top), coloured by
-// position, the tiers as alternating vertical bands behind them and the groups as brackets under the score axis.
-// Hover or focus a dot for his name; click it to open that player.
-const POS_KEYS = ["QB", "RB", "WR", "TE"];
+// The whole view on one axis (the "spread"): every player a mark at his score, stacked where scores are close, the tiers as
+// alternating bands behind them and the groups as brackets under the axis. Click a mark to open that player.
 function Spread({ L, tiers, groups, openId, onPick }) {
   if (!L.length) return null;
   const lo = Math.floor(Math.min(...L.map((p) => p.score)) * 2) / 2, hi = Math.ceil(Math.max(...L.map((p) => p.score)) * 2) / 2;
-  const ages = L.map((p) => p.age).filter((a) => a != null);
-  const aLo = Math.floor(Math.min(...ages)), aHi = Math.ceil(Math.max(...ages));
-  const x = (v) => 2 + ((v - lo) / (hi - lo || 1)) * 96; // 2% in from each side so an edge dot isn't cut off
-  const y = (a) => ((a - aLo) / (aHi - aLo || 1)) * 100;
+  const x = (v) => ((v - lo) / (hi - lo || 1)) * 100;
+  const stack = new Map();
+  const marks = L.map((p) => {
+    const bin = Math.round(p.score * 10);
+    const k = stack.get(bin) || 0;
+    stack.set(bin, k + 1);
+    return { p, k };
+  });
+  const depth = Math.max(...stack.values());
   const ticks = [];
   for (let v = Math.ceil(lo); v <= hi; v++) ticks.push(v);
-  const aStep = aHi - aLo > 10 ? 4 : 2, aTicks = [];
-  for (let a = Math.ceil(aLo / aStep) * aStep; a <= aHi; a += aStep) aTicks.push(a);
   const span = (a, b) => ({ left: `${x(L[b].score)}%`, width: `${Math.max(0.4, x(L[a].score) - x(L[b].score))}%` });
-  const shown = POS_KEYS.filter((k) => L.some((p) => p.pos === k));
   return (
-    <div className="dyb-spread">
-      <div className="dyb-spread-legend mono" aria-hidden="true">
-        {shown.map((k) => <span key={k}><i style={{ background: `var(--pos-${k.toLowerCase()})` }} />{k}</span>)}
-        <span className="dyb-spread-legend-read">Across: dynasty score · Down: age, youngest at the top</span>
-      </div>
-      <div className="dyb-spread-frame">
-        <div className="dyb-spread-yaxis mono" aria-hidden="true">
-          {aTicks.map((a) => <span key={a} style={{ top: `${y(a)}%` }}>{a}</span>)}
-        </div>
-        <div className="dyb-spread-plot">
-          {tiers.map((t, ti) => (
-            <div key={ti} className={`dyb-spread-tier${ti % 2 ? " is-alt" : ""}`} style={span(t.a, t.b)}>
-              {x(L[t.a].score) - x(L[t.b].score) > 2.5 && <span>{ti + 1}</span>}
-            </div>
-          ))}
-          <div className="dyb-spread-area">
-          {aTicks.map((a) => <div key={a} className="dyb-spread-grid" style={{ top: `${y(a)}%` }} />)}
-          {L.map((p) => p.age != null && (
-            <button
-              key={p.id}
-              type="button"
-              className={`dyb-mark${p.id === openId ? " is-open" : ""}${x(p.score) > 75 ? " is-right" : ""}`}
-              style={{ left: `${x(p.score)}%`, top: `${y(p.age)}%`, "--c": `var(--pos-${String(p.pos).toLowerCase()})` }}
-              aria-label={`${p.name}, ${p.pos}, age ${p.age.toFixed(1)}, score ${p.score.toFixed(1)}`}
-              onClick={() => onPick(p.id)}
-            >
-              <b>{p.name} <em>{p.score.toFixed(1)}</em></b>
-            </button>
-          ))}
+    <div className="dyb-spread" style={{ "--depth": depth }}>
+      <div className="dyb-spread-plot">
+        {tiers.map((t, ti) => (
+          <div key={ti} className={`dyb-spread-tier${ti % 2 ? " is-alt" : ""}`} style={span(t.a, t.b)}>
+            {x(L[t.a].score) - x(L[t.b].score) > 2.5 && <span>{ti + 1}</span>}
           </div>
-        </div>
+        ))}
+        {marks.map(({ p, k }) => (
+          <button
+            key={p.id}
+            type="button"
+            className={`dyb-mark${p.id === openId ? " is-open" : ""}`}
+            style={{ left: `${x(p.score)}%`, bottom: `${k * 6 + 3}px` }}
+            aria-label={`${p.name}, ${p.score.toFixed(1)}`}
+            onClick={() => onPick(p.id)}
+          />
+        ))}
       </div>
       <div className="dyb-spread-axis">
         {ticks.map((v) => <span key={v} style={{ left: `${x(v)}%` }}>{v}</span>)}
@@ -157,7 +143,7 @@ export default function DynastyBoard({ rows, meta }) {
       </div>
 
       {!theater && L.length > 0 && (
-        <section className="dyb-overview glass-panel" aria-label="Every player by score and age">
+        <section className="dyb-overview glass-panel" aria-label="Every player on one axis">
           <div className="dyb-overview-key">
             <div className="dyb-overview-n">{L.length}</div>
             <div className="dyb-overview-l mono">players on the board</div>
