@@ -165,6 +165,20 @@ function moveLine(p) {
   return p.move > 0 ? `Rising: his score is up ${d} over his last ${n} games.` : `Falling: his score is down ${d} over his last ${n} games.`;
 }
 
+// Where he is in his career, in plain words (no numbers, nothing about how the age value is built): from his years left before
+// his position's done age, and for a rebuilder whether he lasts past a rebuild.
+function ageLine(p, m) {
+  const r = p.runway, pos = `${p.pos}s`;
+  if (m.window && r < m.window) return r <= 0
+    ? `Past the age most ${pos} are done: not a piece to rebuild around.`
+    : `His good years are likely over by the time a rebuild pays off.`;
+  if (r <= 0) return `Past the age most ${pos} are done: whatever he gives is short-term.`;
+  if (r < 2) return `Near the end of the usual run for ${pos}: value now, less later.`;
+  if (r < 5) return `In his prime, with a few good seasons left.`;
+  if (r < 8) return `In his prime, with plenty of good seasons ahead.`;
+  return `Young for his position: his best years should still be ahead of him.`;
+}
+
 // One step of the story: a numbered node on the spine, the question it answers, the answer from his numbers, then the evidence.
 function Chapter({ n, ask, says, children }) {
   return (
@@ -284,7 +298,7 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
 
           <Chapter n={3} ask="How long will it last?" says={p.runway > 0 ? `About ${p.runway.toFixed(1)} years until ${p.pos}s are typically done, at ${meta.doneAge[p.pos]}` : `Past the age ${p.pos}s are typically done (${meta.doneAge[p.pos]})`}>
             <AgeCurve doneAge={meta.doneAge} pos={p.pos} age={p.age} value={p.ageValue} W={chartW} />
-            <p className="dp-next">An age value of {p.ageValue.toFixed(1)} of 10{m.window && p.runway < m.window ? `, and a rebuilder counts only ${Math.round((p.runway / m.window) * 100)}% of his production: it runs out before the rebuild is done` : ""}.</p>
+            <p className="dp-next">{ageLine(p, m)}</p>
           </Chapter>
 
           {/* his place inside his tier: the table shows the players nearest him, the bridge says how wide the tier is */}
@@ -304,7 +318,7 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
             )}
             {tierSize > 1 && (
               <p className="dp-next">
-                {tierSize > tierMates.length ? `The ${tierMates.length} nearest him. ` : ""}Tier {tier.ti + 1} runs from {L[tier.a].score.toFixed(1)} down to {L[tier.b].score.toFixed(1)}, close enough that any of them could turn out the better pick.
+                {tierSize > tierMates.length ? `The ${tierMates.length} players nearest him. ` : ""}Tier {tier.ti + 1} runs from {L[tier.a].score.toFixed(1)} down to {L[tier.b].score.toFixed(1)}, close enough that any of them could turn out the better player.
               </p>
             )}
           </Chapter>
