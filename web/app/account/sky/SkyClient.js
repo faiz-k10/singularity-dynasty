@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import ShareDialog from "../../ShareDialog";
@@ -38,6 +38,13 @@ function Core({ mass, collapsed, skin }) {
     return { x1: r2(Math.cos(a) * 74), y1: r2(Math.sin(a) * 74), x2: r2(Math.cos(a) * 84), y2: r2(Math.sin(a) * 84), lit: collapsed || i < m, band };
   });
   const gid = useId().replace(/[^a-zA-Z0-9_-]/g, "");
+  // half the middle stage word's real width, measured once rendered and again when the fonts arrive
+  const midRef = useRef(null);
+  const [half, setHalf] = useState(26);
+  useLayoutEffect(() => {
+    const m = () => { const w = midRef.current?.getComputedTextLength?.(); if (w) setHalf((h) => (Math.abs(h - w / 2) < 0.1 ? h : w / 2)); };
+    m(); document.fonts?.ready.then(m);
+  });
   return (
     <g className={`sky-core is-${st.id} skin-${skin}`}>
       <Bloom r={190} id={gid} />
@@ -53,11 +60,16 @@ function Core({ mass, collapsed, skin }) {
       {collapsed && <circle className="sky-core-lens" r="49" />}
       {/* no plate: the words sit on the sky with a soft shadow (founder, Nov 17 2026: the black boxes looked out of place) */}
       <g className="sky-label">
-        <text className="sky-heat" x="0" y="106" textAnchor="middle">
-          {collapsed ? "Collapsed · a find is waiting" : STAGES.map((x, i) => (
-            <tspan key={x.id} className={x.id === st.id ? "is-on" : ""}>{i ? "  ·  " : ""}{x.label}</tspan>
-          ))}
-        </text>
+        {collapsed ? <text className="sky-heat" x="0" y="106" textAnchor="middle">Collapsed · a find is waiting</text> : (
+          // the middle stage sits exactly under the core's centre, the other two hang off it (founder, Nov 17 2026: centre WARMING)
+          <text className="sky-heat" y="106">
+            <tspan ref={midRef} x="0" textAnchor="middle" className={STAGES[1].id === st.id ? "is-on" : ""}>{STAGES[1].label}</tspan>
+            <tspan x={-(half + 12)} textAnchor="middle">·</tspan>
+            <tspan x={half + 12} textAnchor="middle">·</tspan>
+            <tspan x={-(half + 24)} textAnchor="end" className={STAGES[0].id === st.id ? "is-on" : ""}>{STAGES[0].label}</tspan>
+            <tspan x={half + 24} textAnchor="start" className={STAGES[2].id === st.id ? "is-on" : ""}>{STAGES[2].label}</tspan>
+          </text>
+        )}
       </g>
     </g>
   );
