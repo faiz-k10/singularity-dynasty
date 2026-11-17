@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import PositionBadge from "../PositionBadge";
 import TeamBadge from "../TeamBadge";
@@ -85,10 +85,42 @@ function AgeCurve({ curve, age, value }) { // age = his age now; the dot sits on
   );
 }
 
+// The name fills the pane's width on one line: measured, not guessed (the CSS size from --chars is the first paint and the fallback).
+// Re-measured when the pane resizes and once the display font has loaded.
+const NAME_MAX = 80; // high enough that short names (Josh Allen) still span the pane
+function useFitName(name) {
+  const ref = useRef(null);
+  useLayoutEffect(() => {
+    const h = ref.current;
+    if (!h) return undefined;
+    // text width does not scale exactly with font size (hinting, rounding), so: size from one measurement, then shrink until it fits
+    const width = () => { const r = document.createRange(); r.selectNodeContents(h); return r.getBoundingClientRect().width; };
+    const fit = () => {
+      const room = h.clientWidth;
+      if (!room) return;
+      h.style.fontSize = `${NAME_MAX}px`;
+      let size = Math.min(NAME_MAX, (NAME_MAX * room) / width());
+      for (let i = 0; i < 8; i++) {
+        h.style.fontSize = `${size.toFixed(1)}px`;
+        const w = width();
+        if (w <= room) break;
+        size *= (room / w) * 0.995;
+      }
+    };
+    fit();
+    const ro = new ResizeObserver(fit);
+    ro.observe(h);
+    document.fonts?.ready.then(fit);
+    return () => ro.disconnect();
+  }, [name]);
+  return ref;
+}
+
 // ---- the panel -----------------------------------------------------------------------------------------------------
 // The picked player's profile, in the pane beside the board's list (DynastyBoard.js).
 export default function DynastyProfile({ player: p, rows, L, board, format, mode, meta, complete }) {
   const data = useProfileData(p.id);
+  const nameRef = useFitName(p.name);
   const f = FORMATS[format], m = MODES[mode];
 
   const i = L.findIndex((r) => r.id === p.id);
@@ -120,10 +152,12 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
   return (
       <aside className="dp" aria-label={`${p.name}, dynasty profile`}>
 
+        {/* the name gets the pane's whole width, on one line: its size comes from its length (--chars) and the pane's width */}
+        <h2 className="dp-name" ref={nameRef} style={{ "--chars": p.name.length }}>{p.name}</h2>
+        <div className="dp-top">{/* who he is and what he scores: the first column when the profile sits under the board */}
         <header className="dp-head">
           <div className="dp-photo">{data?.bio?.headshot ? <img src={data.bio.headshot} alt="" width="76" height="76" /> : <span>{p.name.split(" ").map((w) => w[0]).slice(0, 2).join("")}</span>}</div>
           <div className="dp-id">
-            <h2 className="dp-name">{p.name}</h2>
             <div className="dp-badges">
               <PositionBadge position={p.pos} />
               <TeamBadge team={p.team} />
@@ -184,6 +218,7 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
             </dl>
           );
         })()}
+        </div>
 
         <section className="dp-sec">
           <h3 className="board-panel-title">The recipe</h3>

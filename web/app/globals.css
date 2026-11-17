@@ -6024,7 +6024,9 @@ select.lab-select{min-width:200px;}
 .dp-photo img{width:100%; height:100%; object-fit:cover; display:block;}
 .dp-photo span{font-family:var(--font-display); font-weight:800; font-size:28px; color:var(--star-dim);}
 .dp-id{min-width:0;}
-.dp-name{margin:0 0 6px; font-family:var(--font-display); font-weight:800; text-transform:uppercase; letter-spacing:.07em; font-size:30px; line-height:1.05;}
+.dp{container-type:inline-size;}
+.dp-name{margin:0 0 12px; font-family:var(--font-display); font-weight:800; text-transform:uppercase; letter-spacing:.07em; line-height:1; white-space:nowrap; overflow:hidden;
+  font-size:clamp(20px, calc(100cqw / (var(--chars) * 0.66)), 80px);} /* fills the pane's width: ~0.6em a capital incl. tracking */
 .dp-badges{display:flex; flex-wrap:wrap; align-items:center; gap:6px 8px; font-size:12px; color:var(--star-dim);}
 .dp-links{display:flex; flex-wrap:wrap; align-items:center; gap:6px 16px; margin-top:10px; font-family:var(--font-mono), monospace; font-size:11px; letter-spacing:.04em;}
 .dp-links > *{white-space:nowrap;}
@@ -6073,7 +6075,7 @@ select.lab-select{min-width:200px;}
 .dp-cell-v{font-family:var(--font-display); font-weight:800; font-size:34px; line-height:1.1;}
 .dp-cell-s{font-size:11px; color:var(--star-dim);}
 @media (max-width:640px){
-  .dp{padding:18px 16px 32px;} .dp-name{font-size:24px;} .dp-big{font-size:64px;} .dp-score{gap:12px; padding:12px;}
+  .dp{padding:18px 16px 32px;} .dp-big{font-size:64px;} .dp-score{gap:12px; padding:12px;}
   .dp-photo{flex-basis:60px; width:60px; height:60px;}
 }
 
@@ -6404,9 +6406,17 @@ details.acct-danger > summary.acct-h{color:var(--down)}
 .dyb-spread-groups span{position:absolute; top:8px; left:50%; transform:translateX(-50%); font-family:var(--font-mono), monospace; font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--star-dim); white-space:nowrap;}
 .dyb-spread-groups div:first-child span{left:auto; right:0; transform:none;} /* the top group sits at the right edge: its name reads leftward */
 
-.dyb-shell{display:grid; grid-template-columns:minmax(0,1fr) minmax(340px, 400px); gap:12px; height:min(820px, calc(100vh - 120px)); min-height:540px; margin-bottom:22px;}
-.dyb-list{display:flex; flex-direction:column; min-height:0; overflow:hidden; padding:0;}
-.dyb-pane{min-height:0; overflow-y:auto;}
+/* the list on top (its own scroll), the picked player's profile across the full width UNDER it (founder, Nov 16 2026) */
+.dyb-shell{display:grid; grid-template-columns:minmax(0,1fr); gap:12px; margin-bottom:22px;}
+.dyb-list{display:flex; flex-direction:column; height:min(640px, calc(100vh - 220px)); min-height:420px; overflow:hidden; padding:0;}
+.dyb-pane{min-width:0;}
+/* the profile in columns: the name across the top, who he is + his score first, then the sections, as many columns as fit */
+/* newspaper columns: the sections pack down each column with no gaps under short ones (a grid left a hole beside every tall cell) */
+.dyb-pane .dp{columns:330px; column-gap:28px;}
+.dyb-pane .dp-name{column-span:all; margin-bottom:16px;}
+.dyb-pane .dp-top, .dyb-pane .dp-sec{break-inside:avoid; display:block;}
+.dyb-pane .dp-sec{margin:0 0 24px;}
+.dyb-pane .dp-top{margin-bottom:24px;}
 .dyb-head, .dyb-row{display:grid; grid-template-columns:40px minmax(196px,1.2fr) 44px 56px 44px minmax(0,1fr); align-items:center; column-gap:14px; padding:0 16px 0 12px;}
 .dyb-head{height:34px; flex:none; border-bottom:1px solid var(--rule-strong); font-family:var(--font-mono), monospace; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--star-dim);}
 .dyb-head > span:nth-child(1), .dyb-head > span:nth-child(3){text-align:right;}
@@ -6463,11 +6473,7 @@ details.acct-danger > summary.acct-h{color:var(--down)}
 .dyb-key .k-ci::before{left:0;} .dyb-key .k-ci::after{right:0;}
 .dyb-key .k-pt{width:7px; height:7px; background:var(--star); transform:rotate(45deg);}
 .dyb-key .k-band{width:14px; height:12px; background:rgba(var(--star-dot-rgb), .14);}
-@media (max-width:1100px){
-  .dyb-shell{grid-template-columns:minmax(0,1fr); height:auto;}
-  .dyb-list{height:62vh;}
-  .dyb-pane{overflow:visible;}
-}
+
 @media (max-width:760px){
   .dyb-overview{grid-template-columns:minmax(0,1fr); gap:14px;}
   .dyb-overview-key{border-right:0; padding-right:0; flex-direction:row; justify-content:flex-start; align-items:baseline; gap:10px; flex-wrap:wrap;}
@@ -6528,7 +6534,7 @@ details.acct-danger > summary.acct-h{color:var(--down)}
 
 /* Dynasty Draft Board, full screen: only the controls, the list and the profile pane, edge to edge */
 .dyb-theater{position:fixed; inset:0; z-index:200; display:flex; flex-direction:column; padding:12px 16px 16px; background:var(--void); overflow:auto;}
-.dyb-theater .dyb-shell{flex:1; height:auto; min-height:0; margin-bottom:0;}
+.dyb-theater .dyb-shell{flex:none; margin-bottom:0;}
 .dyb-theater .dr-controls{flex:none;}
 .rk-compare{text-decoration:none;}
 /* the compare pickers are type-ahead inputs, not dropdowns: no caret (their own x clears them), a text cursor, room for the x */
