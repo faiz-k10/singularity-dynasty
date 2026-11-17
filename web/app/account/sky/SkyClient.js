@@ -404,7 +404,7 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
             )) : <p className="sky-small mono">This week&apos;s picks open when the new rankings are out.</p>}
             <p className="sky-small mono">Who scores more? Each pick places an unlit star; when the week&apos;s results are in, the right ones light up and earn 20 orbit points.</p>
             {lastGraded && (
-              <div className="sky-row">
+              <div className="sky-row sky-row-stack">
                 <span className="mono sky-small">Week {lastGraded.week}: {lastGraded.right} of {lastGraded.made} right · season {state.btm[0]}-{state.btm[1]}</span>
                 <button type="button" className="btn-ghost" onClick={() => setShare({ title: `Beat the Model: ${lastGraded.right} of ${lastGraded.made}`, caption: `I went ${lastGraded.right} of ${lastGraded.made} against the model in week ${lastGraded.week}. Your turn.`, make: () => receiptCard(lastGraded) })}>Share my receipt</button>
               </div>
