@@ -199,7 +199,7 @@ export async function receiptCard(wk) {
 }
 export async function seasonCard(state, { title, size, rarest }) {
   const cv = canvas(), ctx = cv.getContext("2d");
-  await base(ctx, "My season sky", { corners: false, shadeTo: 620 });
+  await base(ctx, `My ${state.season} season sky`, { corners: false, shadeTo: 620 }); // the year and the eyebrow are one line (founder, Nov 17 2026)
   // the constellations drawn like the page: lit stars glowing, unlit ones as faint outlines
   const sky = skyFor(state.season);
   const stars = await svgPicture(
@@ -224,14 +224,9 @@ export async function seasonCard(state, { title, size, rarest }) {
   if (stars) ctx.drawImage(stars, SX - 300, SY - 300, 600, 600);
   await drawCore(ctx, SX, SY, 1);
 
-  // The text column, x 64-556: eyebrow + season badge, title, a hairline, the four figures, a hairline, the rarest find, the signature.
+  // The text column, x 64-556: eyebrow (with the season's year), title, a hairline, the four figures, a hairline, the rarest find, the signature.
   const L = 64, R = 556, mono = font("--font-mono"), display = font("--font-display");
   const rule = (y) => { ctx.fillStyle = "rgba(236,231,220,.16)"; ctx.fillRect(L, y, R - L, 1); };
-  if (badgeText) {
-    ctx.font = `700 15px ${mono}`; const w = ctx.measureText(badgeText).width + 22;
-    ctx.strokeStyle = "#E9C46A"; ctx.lineWidth = 1.5; ctx.strokeRect(R - w, 61, w, 28);
-    ctx.fillStyle = "#E9C46A"; ctx.textAlign = "right"; ctx.fillText(badgeText, R - 11, 80); ctx.textAlign = "left";
-  }
   let ts = 84; ctx.font = `800 ${ts}px ${display}`;
   while (ctx.measureText(title.toUpperCase()).width > R - L && ts > 44) { ts -= 2; ctx.font = `800 ${ts}px ${display}`; }
   ctx.fillStyle = "#ECE7DC"; ctx.fillText(title.toUpperCase(), L, 182);
