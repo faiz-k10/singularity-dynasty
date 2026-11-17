@@ -10,7 +10,7 @@ import { weekReceipts } from "@/lib/receipts";
 import { smashSpots } from "@/lib/smashSpots";
 import { readCardToken } from "@/lib/cardToken";
 import { pickStart } from "@/lib/startSit";
-import { rowsFromData, scoreRows, boardRows, buildBoard, FORMATS, MODES, GROUP_NAMES } from "@/lib/dynastyBoard";
+import { rowsFromData, scoreRows, boardRows, buildBoard, FORMATS, MODES, groupName } from "@/lib/dynastyBoard";
 import { getDynastyRows } from "@/lib/dynastyData";
 import dynastyData from "@/data/dynasty-values.json";
 import { getAchievements } from "@/app/tools/achievements";
@@ -160,7 +160,7 @@ export function dynastyCardPlayer(id, format, mode) {
       score: p.score, lo: p.lo, hi: p.hi, prod: p.prod, ageValue: p.ageValue,
       rank: i + 1,
       posRank: scored.filter((r) => r.pos === p.pos).findIndex((r) => r.id === id) + 1,
-      tier: tier ? { n: tier.ti + 1, of: tiers.length, group: GROUP_NAMES[tier.g] || null } : null,
+      tier: tier ? { n: tier.ti + 1, of: tiers.length, group: groupName(tier.g) } : null,
     },
   };
 }

@@ -4,7 +4,7 @@ import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import PositionBadge from "../PositionBadge";
 import TeamBadge from "../TeamBadge";
 import DynastyProfile from "./DynastyProfile";
-import { FORMATS, GROUP_NAMES, MODES, boardRows, buildBoard } from "@/lib/dynastyBoard";
+import { FORMATS, groupName, MODES, boardRows, buildBoard } from "@/lib/dynastyBoard";
 import { coachFor, acquiringGm } from "@/lib/teamStaff";
 
 // the two context columns: short words, the full sentence for screen readers
@@ -68,7 +68,7 @@ function Spread({ L, tiers, groups, openId, onPick }) {
       <div className="dyb-spread-groups">
         {groups.map((g, gi) => (
           <div key={gi} style={span(g.a, g.b)}>
-            <span>{GROUP_NAMES[gi] || "Deep"}</span>
+            <span>{groupName(gi)}</span>
           </div>
         ))}
       </div>
@@ -182,7 +182,7 @@ export default function DynastyBoard({ rows, meta }) {
                   {i === t.a && g?.a === i && (
                     <div className="dyb-group">
                       <span className="dyb-group-ix mono">{String(t.g + 1).padStart(2, "0")}</span>
-                      <b>{GROUP_NAMES[t.g] || "Deep"}</b>
+                      <b>{groupName(t.g)}</b>
                       <span className="dyb-group-n mono">{gn} player{gn > 1 ? "s" : ""} · {L[g.b].score.toFixed(1)}–{L[g.a].score.toFixed(1)}</span>
                     </div>
                   )}

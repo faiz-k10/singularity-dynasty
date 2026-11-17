@@ -4,7 +4,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import PositionBadge from "../PositionBadge";
 import TeamBadge from "../TeamBadge";
-import { AGE_LOOKAHEAD, FORMATS, GROUP_NAMES, MODES } from "@/lib/dynastyBoard";
+import { AGE_LOOKAHEAD, FORMATS, groupName, MODES } from "@/lib/dynastyBoard";
 import { formatHeight } from "@/lib/format";
 import { coachFor, acquiringGm } from "@/lib/teamStaff";
 import ShareCardButton from "../../ShareCardButton";
@@ -218,7 +218,7 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
               {here && <div><dt className="mono">Overall</dt><dd>{ord(here.rank)}</dd></div>}
               {here && <div><dt className="mono">Position</dt><dd>{p.pos}{here.posRank}</dd></div>}
               <div><dt className="mono">Tier</dt><dd>{tier.ti + 1}<small> / {board.tiers.length}</small></dd></div>
-              <div><dt className="mono">Group</dt><dd>{GROUP_NAMES[group.g] || "Deep"}</dd></div>
+              <div><dt className="mono">Group</dt><dd>{groupName(group.g)}</dd></div>
             </dl>
           </div>
         </section>

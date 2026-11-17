@@ -11,7 +11,7 @@ import { acquiringGm, coachFor } from "./teamStaff.js";
 // and the board is drawn from it with one rule at three strengths:
 //   TIED  -- nobody inside a box has P >= 0.55 over anyone below him: the order inside is close to a coin flip
 //   TIER  -- nobody inside has P >= 0.65 over anyone below him (about 2 times in 3)
-//   GROUP -- nobody inside has P >= 0.80 (4 times in 5)
+//   GROUP -- nobody inside has P >= 0.70 (was 0.80 until Nov 16 2026, founder: more groups; 6-9 groups a view)
 // (The error is large -- next-season PPG misses by 3-4 points a game -- so a stricter bar, 0.90 / 0.999, can only make a
 // handful of huge boxes; 0.60 / 0.75 / 0.90 still gave only 3-5 tiers. These give 7-9 tiers overall, ~8 in a position, and
 // the red "beat" figure on each break says how sure that break is.)
@@ -25,7 +25,9 @@ export const FORMATS = {
   sf: { label: "Superflex", key: "porSf" },
   "1qb": { label: "1QB", key: "por1qb" },
 };  // toggle order on the page: Superflex, 1QB (the page still opens on 1QB)
-export const GROUP_NAMES = ["Cornerstones", "Core", "Depth", "Fringe", "Deep"];
+// group names, top of the board down (founder, Nov 16 2026); a view with more groups than names reuses the last one
+export const GROUP_NAMES = ["Future Legend", "The Franchise", "Cornerstone", "Core", "Replacement", "Depth", "Fringe", "Taxi Squad", "Waiver Wire"];
+export const groupName = (g) => GROUP_NAMES[Math.min(g, GROUP_NAMES.length - 1)];
 // how much of the shipped pool a view shows: the top 120 overall, the top 60 of one position
 export const SHOW = { all: 120, position: 60 };
 
@@ -37,7 +39,7 @@ export function boardRows(rows, { format, mode, pos }) {
 }
 
 // the probit of each P above: Phi(z) = P
-const Z_TIE = 0.1257, Z_TIER = 0.3853, Z_GROUP = 0.8416;
+const Z_TIE = 0.1257, Z_TIER = 0.3853, Z_GROUP = 0.5244;
 
 // A player is scored on the age he will be AGE_LOOKAHEAD years from now, on his position's age curve (founder, Nov 3 2026:
 // a 24-year-old and a 32-year-old QB were nearly level on today's age, because QBs keep their production until about 31).
