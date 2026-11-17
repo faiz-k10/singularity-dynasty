@@ -75,11 +75,11 @@ function Sky({ state, pendingPicks, pending }) {
       {skyFor(state.season).map((c) => {
         const f = state.filled[c.id] || [];
         if (!open) return <g key={c.id}>{c.pts.map(([x, y], i) => f[i] ? <circle key={i} cx={x} cy={y} r={3} fill="var(--star)" /> : null)}</g>;
-        const have = f.filter(Boolean).length, done = have === c.pts.length, near = !done && have === c.pts.length - 1;
+        const have = f.filter(Boolean).length, done = have === c.pts.length;
         const [cx0, ly, anchor] = c.label;
         const lx = Math.sign(cx0) * 456; // pushed out to the corners of the landscape frame (founder, Nov 17 2026)
         return (
-          <g key={c.id}>
+          <g key={c.id} className={done ? "sky-const is-done" : "sky-const"} style={{ "--c": STAR[c.color] }}>
             {c.edges.map(([i, j]) => {
               const lit = f[i] && f[j];
               return lit
@@ -91,7 +91,7 @@ function Sky({ state, pendingPicks, pending }) {
             ) : <circle key={i} className="sky-slot" cx={x} cy={y} r={r + 0.8} />)}
 {/* both labels in the constellation's own star colour (founder, Nov 17 2026) */}
             <text className="sky-clabel" x={lx} y={ly} textAnchor={anchor} style={{ fill: STAR[c.color] }}>{c.name} · {have}/{c.pts.length}</text>
-            <text className="sky-creal" x={lx} y={ly + 14} textAnchor={anchor} style={{ fill: STAR[c.color] }}>{c.real}{done ? " · ready" : near ? " · one star away" : ""}</text>
+            <text className="sky-creal" x={lx} y={ly + 14} textAnchor={anchor} style={{ fill: STAR[c.color] }}>{c.real}</text>
           </g>
         );
       })}

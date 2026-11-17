@@ -7312,6 +7312,10 @@ body:has(.ehp) .ehp-inside,body:has(.ehp) .ehp-dark{--ehp-hole:#0B0B0B;--ehp-hol
 @media (prefers-color-scheme: light){:root:not([data-theme="dark"]) .sky-core-shine{display:none}}
 :root[data-theme="light"] .sky-core-shine{display:none}
 
+/* a finished constellation glows in its own colour, gently breathing (founder, Nov 17 2026: instead of the word "ready") */
+.sky-const.is-done{filter:drop-shadow(0 0 3px var(--c)) drop-shadow(0 0 10px var(--c));animation:sky-const-glow 3.2s ease-in-out infinite}
+@keyframes sky-const-glow{50%{filter:drop-shadow(0 0 5px var(--c)) drop-shadow(0 0 18px var(--c))}}
+@media (prefers-reduced-motion:reduce){.sky-const.is-done{animation:none}}
 .sky-label,.sky-clabel,.sky-creal{filter:drop-shadow(0 0 2px var(--void)) drop-shadow(0 0 7px var(--void))}
 
 /* ===== LANDING PAGE BELOW THE HERO (Nov 16 2026, founder): 2 the site on one page + Get started -> 3 plans -> 4 who it's for and
