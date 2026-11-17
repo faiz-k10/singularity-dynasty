@@ -6085,7 +6085,7 @@ select.lab-select{min-width:200px;}
 .dp-matrix thead th:first-child{width:28%;}
 .dp-matrix tbody th{text-align:left; padding:0 10px 0 0;}
 .dp-matrix td{border:1px solid var(--rule); padding:12px 8px; text-align:center; vertical-align:middle; background:rgba(var(--star-dot-rgb), .02);}
-.dp-matrix td.is-here{border-color:var(--ember); background:rgba(var(--ember-rgb), .08);}
+.dp-matrix td.is-here{background:rgba(var(--ember-rgb), .08); box-shadow:inset 0 0 0 1.5px var(--ember);} /* drawn inside the cell: the collapsed neighbours' borders can't cover any side */
 .dp-matrix td b{display:block; font-family:var(--font-display); font-weight:800; font-size:40px; line-height:1;}
 .dp-matrix td span{display:block; margin-top:4px; font-size:11px; color:var(--star-dim);}
 @media (max-width:640px){
