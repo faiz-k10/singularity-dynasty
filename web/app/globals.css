@@ -6455,6 +6455,9 @@ details.acct-danger > summary.acct-h{color:var(--down)}
 .dyb-tier em{margin-left:auto; font-style:normal; font-size:11px; color:var(--star-dim);}
 .dyb-row{all:unset; box-sizing:border-box; display:grid; grid-template-columns:40px minmax(215px,1.5fr) 44px 56px 44px minmax(0,1fr); align-items:stretch; column-gap:14px; width:100%; min-height:52px; padding:0 16px 0 12px; border-bottom:1px solid var(--rule); cursor:pointer; position:relative;}
 .dyb-row > span:not(.dyb-plot){align-self:center;}
+/* (after the base .dyb-row rule, whose all:unset would clear it) rows off screen are not laid out or painted until they scroll near the view: a format / mode / position switch reorders all
+   ~300 rows, and repainting every one let a slow machine show old rank numbers beside new ones for a few seconds (founder, Nov 17 2026) */
+.dyb-row{content-visibility:auto; contain-intrinsic-size:auto 52px;}
 .dyb-row:hover{background:rgba(var(--star-dot-rgb), .035);}
 .dyb-row:focus-visible{outline:2px solid var(--horizon-gold); outline-offset:-2px;}
 .dyb-row.is-selected{background:rgba(var(--ember-rgb), .07); box-shadow:inset 3px 0 0 var(--ember);}
