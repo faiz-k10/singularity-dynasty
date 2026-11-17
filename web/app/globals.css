@@ -6040,18 +6040,13 @@ select.lab-select{min-width:200px;}
 .dp-facts dt{font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--star-dim);}
 .dp-facts dd{margin:1px 0 0; font-family:var(--font-display); font-weight:800; font-size:20px; line-height:1.1; letter-spacing:.03em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
 .dp-facts dd small{font-size:13px; color:var(--star-dim); font-weight:700;}
-.dp-range{font-size:10.5px; color:var(--star-dim);}
-.dp-read{margin:12px 0 0; font-size:15px; line-height:1.45; color:var(--star);}
 .dp-sec{margin-top:24px;}
 .dp-sec .board-panel-title{display:flex; align-items:center; gap:12px; margin-bottom:12px;} /* a section of the profile: the Weekly panel heading, rule and square included */
-.dp-cap{margin:8px 0 0; font-size:13px; color:var(--star-dim);}
-.dp-tied{margin:0 0 8px; font-size:14px; color:var(--star);}
 .dp-recipe{border:1px solid var(--rule); background:rgba(var(--star-dot-rgb), .02);}
-.dp-r-row{display:flex; align-items:baseline; gap:10px; padding:10px 14px 2px;}
+.dp-r-row{display:flex; align-items:baseline; gap:10px; padding:10px 14px;}
 .dp-r-name{flex:1; font-size:15px; font-weight:700;}
 .dp-r-val{width:44px; text-align:right; font-size:15px;} .dp-r-w{width:52px; text-align:right; font-size:12px; color:var(--star-dim);}
 .dp-r-eq{width:44px; text-align:right; font-size:15px; font-weight:700;}
-.dp-r-sub{padding:0 14px 8px; font-size:10.5px; color:var(--star-dim);}
 .dp-stack{display:flex; height:16px; margin:6px 14px 12px; background:rgba(var(--star-dot-rgb), .08);}
 .dp-stack-prod{background:var(--horizon-gold);} .dp-stack-age{background:var(--neon-blue);}
 .dp-r-row.is-total{border-top:1px solid var(--rule-strong); padding:10px 14px; align-items:center;} .dp-r-row.is-total .dp-r-name{font-family:var(--font-display); text-transform:uppercase; letter-spacing:.06em;}

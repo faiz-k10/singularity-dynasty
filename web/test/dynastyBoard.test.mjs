@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { AGE_LOOKAHEAD, ageValueAt, boardRows, buildBoard, formTrend, metaFromData, pBetter, phi, profileRead, rowsFromData, scoreRows } from "../lib/dynastyBoard.js";
+import { AGE_LOOKAHEAD, ageValueAt, boardRows, buildBoard, formTrend, metaFromData, pBetter, phi, rowsFromData, scoreRows } from "../lib/dynastyBoard.js";
 import data from "../data/dynasty-values.json" with { type: "json" };
 
 const row = (name, pos, p1, ps, age, sd = 2) => ({ id: name, name, pos, team: "AAA", age: 25, games: 17, ppg: 15, ageValue: age, por1qb: p1, porSf: ps, sdProd: sd });
@@ -101,20 +101,6 @@ test("the published metadata has replacement, an age curve and the memory settin
   assert.ok(meta.replacement["1QB"].QB > meta.replacement.SF.QB, "superflex lowers the QB bar");
   for (const p of ["QB", "RB", "WR", "TE"]) assert.ok(meta.ageCurve[p].length > 15 && meta.ageCurve[p][0].length === 3);
   assert.equal(meta.window.games, 34);
-});
-
-test("profileRead: only facts from his own numbers", () => {
-  const base = { id: "x", name: "A", pos: "WR", ppg: 14, prod: 3, ageValue: 9, score: 5 };
-  const young = profileRead({ p: base, mode: "rebuilder", repl: 11, tied: [], ranks: [8, 9, 20] });
-  assert.match(young, /Young for his position/);
-  assert.match(young, /Ranks #8 to #20/);
-  const below = profileRead({ p: { ...base, ppg: 5 }, mode: "contender", repl: 11, tied: [{ name: "B" }, { name: "C" }, { name: "D" }], ranks: [10, 11] });
-  assert.match(below, /Below replacement/);
-  assert.match(below, /Can't be separated from B or C and 1 more/);
-  assert.match(below, /Holds his rank/);
-  const old = profileRead({ p: { ...base, prod: 8, ageValue: 2 }, mode: "contender", repl: 11, tied: [], ranks: null });
-  assert.match(old, /Age is the drag/);
-  assert.doesNotMatch(old, /Ranks #|Holds his rank/);
 });
 
 test("same displayed score: the younger player ranks first", () => {

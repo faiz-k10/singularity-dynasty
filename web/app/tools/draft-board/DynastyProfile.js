@@ -4,7 +4,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import PositionBadge from "../PositionBadge";
 import TeamBadge from "../TeamBadge";
-import { AGE_LOOKAHEAD, FORMATS, GROUP_NAMES, MODES, profileRead, scoreRows } from "@/lib/dynastyBoard";
+import { AGE_LOOKAHEAD, FORMATS, GROUP_NAMES, MODES, scoreRows } from "@/lib/dynastyBoard";
 import { formatHeight } from "@/lib/format";
 import { coachFor, acquiringGm } from "@/lib/teamStaff";
 import ShareCardButton from "../../ShareCardButton";
@@ -153,8 +153,6 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
   const i = L.findIndex((r) => r.id === p.id);
   const tier = board.tiers.find((t) => i >= t.a && i <= t.b);
   const group = board.groups[tier.g];
-  const tie = board.ties.find((t) => i >= t.a && i <= t.b);
-  const tied = L.slice(tie.a, tie.b + 1).filter((r) => r.id !== p.id);
 
   // rank over the whole shipped pool, in every format and mode (only honest when the pool is the whole board)
   const grid = useMemo(() => {
@@ -169,12 +167,9 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
   const repl = (m.short ? meta.replacementShort : meta.replacement)[format.toUpperCase()][p.pos];
   const win = m.short ? meta.windowShort : meta.window;
   const curve = meta.ageCurve[p.pos];
-  const keptAge = p.age + AGE_LOOKAHEAD;
-  const kept = (() => { const c = curve.reduce((b, r) => (Math.abs(r[0] - keptAge) < Math.abs(b[0] - keptAge) ? r : b), curve[0]); return c[2]; })();
   const neighbours = [...L.slice(Math.max(0, i - 3), i), ...L.slice(i + 1, i + 4)];
   const size = [formatHeight(data?.bio?.height), data?.bio?.weight ? `${data.bio.weight} lbs` : null, data?.bio?.yearsExp != null ? (data.bio.yearsExp === 0 ? "Rookie" : `Year ${data.bio.yearsExp + 1}`) : null].filter(Boolean);
   const prodC = m.prod * p.prod, ageC = m.age * p.ageValue;
-  const read = profileRead({ p, mode, repl, tied, ranks: grid?.map((c) => c.rank) });
 
   return (
       <aside className="dp" aria-label={`${p.name}, dynasty profile`}>
@@ -215,11 +210,9 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
               <div><dt className="mono">Tier</dt><dd>{tier.ti + 1}<small> / {board.tiers.length}</small></dd></div>
               <div><dt className="mono">Group</dt><dd>{GROUP_NAMES[group.g] || "Deep"}</dd></div>
             </dl>
-            <div className="dp-range mono">80% range {p.lo.toFixed(1)}–{p.hi.toFixed(1)}</div>
           </div>
         </section>
 
-        <p className="dp-read">{read}</p>
 
         {(() => {
           const c = coachFor(p.team), d = acquiringGm(p);
@@ -255,21 +248,18 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
               <span className="dp-r-w mono">× {Math.round(m.prod * 100)}%</span>
               <span className="dp-r-eq mono">{prodC.toFixed(1)}</span>
             </div>
-            <div className="dp-r-sub mono">{p.ppg.toFixed(1)} PPG over his last {win.games} games, replacement {p.pos} {repl.toFixed(1)} → {(p.ppg - repl >= 0 ? "+" : "") + (p.ppg - repl).toFixed(1)} a game</div>
             <div className="dp-r-row">
               <span className="dp-r-name">Age</span>
               <span className="dp-r-val mono">{p.ageValue.toFixed(1)}</span>
               <span className="dp-r-w mono">× {Math.round(m.age * 100)}%</span>
               <span className="dp-r-eq mono">{ageC.toFixed(1)}</span>
             </div>
-            <div className="dp-r-sub mono">{p.pos}s of the age he will be in {AGE_LOOKAHEAD} years ({keptAge.toFixed(1)}) keep about {Math.round(kept * 100)}% of their production over the three seasons after that</div>
             <div className="dp-r-row">
               <span className="dp-r-name">Relative to the board</span>
               <span className="dp-r-val mono">{p.raw.toFixed(1)}</span>
               <span className="dp-r-w mono">× {p.scale.toFixed(2)}</span>
               <span className="dp-r-eq mono">{p.score.toFixed(1)}</span>
             </div>
-            <div className="dp-r-sub mono">every score is multiplied by the same number so the best player on the board reads 10.0</div>
             <div className="dp-stack" role="img" aria-label="Production and age shares of the score">
               <span className="dp-stack-prod" style={{ width: `${Math.max(0, prodC * p.scale) * 10}%` }} />
               <span className="dp-stack-age" style={{ width: `${Math.max(0, ageC * p.scale) * 10}%` }} />
@@ -281,18 +271,15 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
         <section className="dp-sec">
           <h3 className="board-panel-title">Production, game by game</h3>
           {data?.log ? <Timeline log={{ w: data.log.w.slice(-win.games), p: data.log.p.slice(-win.games) }} level={p.ppg} repl={repl} W={chartW} /> : <div className="dp-chart-skel">{data ? "No game log yet." : "Loading his games…"}</div>}
-          <p className="dp-cap">Each bar is a game. His level is weighted toward the newest, with a half-life of {win.half_life} games.</p>
         </section>
 
         <section className="dp-sec">
           <h3 className="board-panel-title">His age curve</h3>
           <AgeCurve curve={curve} age={p.age} value={p.ageValue} W={chartW} />
-          <p className="dp-cap">Age value for {p.pos}s from 2008–25: how much production players of that age kept over the next three seasons, counting those who dropped out. He is scored on his age three years from now (the dot); the shaded band is the years in between.</p>
         </section>
 
         <section className="dp-sec">
           <h3 className="board-panel-title">Closest on the board</h3>
-          {tied.length > 0 && <p className="dp-tied">Tied with {tied.map((r) => r.name).join(", ")}: the order inside the box is close to a coin flip.</p>}
           <table className="dp-table">
             <tbody>
               {neighbours.map((r) => {
