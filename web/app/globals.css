@@ -6505,11 +6505,6 @@ details.acct-danger > summary.acct-h{color:var(--down)}
 .dyb-key{flex:none; display:flex; flex-wrap:wrap; gap:6px 20px; padding:9px 16px; border-top:1px solid var(--rule-strong); font-size:10.5px; color:var(--star-dim);}
 .dyb-key span{display:inline-flex; align-items:center; gap:7px;}
 .dyb-key i{display:inline-block; position:relative;}
-.dyb-key .k-ci{width:18px; height:1.5px; background:var(--star); box-shadow:-1px 0 0 0 var(--star);}
-.dyb-key .k-ci::before, .dyb-key .k-ci::after{content:""; position:absolute; top:-4px; height:9px; border-left:1.5px solid var(--star);}
-.dyb-key .k-ci::before{left:0;} .dyb-key .k-ci::after{right:0;}
-.dyb-key .k-pt{width:7px; height:7px; background:var(--star); transform:rotate(45deg);}
-.dyb-key .k-band{width:14px; height:12px; background:rgba(var(--star-dot-rgb), .14);}
 
 @media (max-width:760px){
   .dyb-overview{grid-template-columns:minmax(0,1fr); gap:14px;}

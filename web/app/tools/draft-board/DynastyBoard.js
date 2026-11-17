@@ -334,14 +334,8 @@ export default function DynastyBoard({ rows, meta }) {
             {hit && !hit.includes(true) && <p className="dyb-none mono">No player on this board matches “{query}”.</p>}
           </div>
           <div className="dyb-key mono">
-            <span><i className="k-ci" /> 80% range</span>
-            <span><i className="k-pt" /> score (relative: the board&apos;s best = 10)</span>
-            <span><i className="k-band" /> tier&apos;s score span</span>
             <span><i className="dyb-move is-up k-move" /><i className="dyb-move is-down k-move" /> score over his last 9 games: up / down</span>
             <span><i className="k-tie" /> ≈ too close to call: the order inside is a coin flip</span>
-            <span>Playcaller HC: his head coach calls the offensive plays himself</span>
-            <span>GM still there: the GM who drafted him, traded for him or signed him still runs his team</span>
-            <span>Same score: Playcaller HC first, then GM still there (both first of all)</span>
           </div>
         </div>
         <div className="dyb-pane">
