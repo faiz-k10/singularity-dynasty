@@ -138,6 +138,89 @@ function Thumb({ find, hidden }) {
   return <canvas ref={ref} width={112} height={112} aria-hidden="true" />;
 }
 
+// A catalogue card's detail (founder, Nov 17 2026: "make these clickable"). A kind: its 24 variants, colour by version, the ones found
+// drawn with when and how often, the rest as dark outlines. A set: what it needs, what is already in, and what its power-up does.
+const POWER_TEXT = Object.fromEntries(Object.values(POWERUPS).map((p) => [p.name, p.text]));
+const SET_NEEDS = {
+  trio: "any 3 of its 6 colours", spectrum: "all 6 colours", legend: "all 4 versions: plain, prismatic, ancient and mythic",
+  quartet: "4 different kinds from this group", survey: "every kind in this group",
+};
+const versionName = (v) => VERSIONS.find((x) => x.id === v)?.name || "Plain";
+function CatDetail({ detail, entries, onClose }) {
+  const box = useRef(null);
+  useEffect(() => {
+    box.current?.querySelector("button")?.focus();
+    const k = (e) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", k);
+    return () => window.removeEventListener("keydown", k);
+  }, [onClose]);
+  const set = detail.set, famId = detail.fam ?? set?.fam;
+  const fam = famId != null ? FAMILIES[famId] : null;
+  const mine = fam ? entries.filter((e) => e.fam === fam.id) : [];
+  const title = set ? set.label : fam.name;
+  return (
+    <div className="sky-ov" role="dialog" aria-modal="true" aria-label={title} onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="sky-ov-box sky-detail" ref={box}>
+        <div className="sky-detail-head">
+          <div className="board-panel-title">{title}</div>
+          <button type="button" className="btn-ghost" onClick={onClose}>Close</button>
+        </div>
+        {set && (
+          <p className="sky-small mono">
+            Needs {SET_NEEDS[set.kind]}. You have {set.have} of {set.of}. Finishing it gives <b>{set.power}</b>: {POWER_TEXT[set.power]}
+          </p>
+        )}
+        {fam && (!set || set.kind !== "legend") && !(set && (set.kind === "quartet" || set.kind === "survey")) && (
+          <>
+            {!set && <p className="sky-small mono">{TIER_NAME[fam.tier]} · {mine.length} of {COLOURS.length * VERSIONS.length} found</p>}
+            <div className="sky-variants" style={{ "--cols": VERSIONS.length }}>
+              <span />{VERSIONS.map((v) => <span key={v.id} className="sky-variants-h mono">{versionName(v.id)}</span>)}
+              {COLOURS.map((col) => [
+                <span key={`c${col.id}`} className="sky-variants-h mono" style={{ color: col.c[0] }}>{col.name}</span>,
+                ...VERSIONS.map((v) => {
+                  const e = mine.find((x) => x.colour === col.id && x.version === v.id);
+                  return (
+                    <div key={`${col.id}${v.id}`} className={`sky-variant${e ? "" : " is-unknown"}`}>
+                      <Thumb find={findOf(fam.id, col.id, v.id)} hidden={!e} />
+                      <span className="mono">{e ? `${e.n > 1 ? `${e.n}x · ` : ""}${new Date(e.at).toLocaleDateString(undefined, { month: "short", day: "numeric" })}` : "Not found"}</span>
+                    </div>
+                  );
+                }),
+              ])}
+            </div>
+          </>
+        )}
+        {set?.kind === "legend" && (
+          <div className="sky-variants" style={{ "--cols": VERSIONS.length }}>
+            {VERSIONS.map((v) => {
+              const e = mine.find((x) => x.version === v.id);
+              return (
+                <div key={v.id} className={`sky-variant${e ? "" : " is-unknown"}`}>
+                  <Thumb find={findOf(fam.id, e?.colour || "silver", v.id)} hidden={!e} />
+                  <span className="mono">{versionName(v.id)}{e ? "" : " · not yet"}</span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+        {(set?.kind === "quartet" || set?.kind === "survey") && (
+          <div className="sky-variants" style={{ "--cols": 4 }}>
+            {famsIn(set.tier).map((k) => {
+              const e = entries.filter((x) => x.fam === k.id).sort((a, b) => b.oneIn - a.oneIn)[0];
+              return (
+                <div key={k.id} className={`sky-variant${e ? "" : " is-unknown"}`}>
+                  <Thumb find={e ? findOf(k.id, e.colour, e.version) : findOf(k.id, "silver", "")} hidden={!e} />
+                  <span className="mono">{e ? k.name : "???"}</span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function Telescope({ queue, compliments, onDone, onShare }) {
   const [i, setI] = useState(0);
   const [shown, setShown] = useState(false);
@@ -204,6 +287,8 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
     return () => { clearTimeout(later); document.removeEventListener("visibilitychange", refresh); window.removeEventListener("pageshow", refresh); };
   }, [router]);
   const [scope, setScope] = useState(false);
+  const [detail, setDetail] = useState(null); // a catalogue card opened: { fam } or { set }
+  const closeDetail = useCallback(() => setDetail(null), []);
   const [share, setShare] = useState(null); // { make, title, caption }
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState(null);
@@ -418,9 +503,9 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
               <p className="sky-small mono">{entries.length.toLocaleString()} of {CATALOGUE_SIZE.toLocaleString()} discovered · {new Set(entries.map((e) => e.fam)).size} of {FAMILIES.length} kinds · sets {Object.keys(state.sets).length} of {SET_COUNT}</p>
               <div className="sky-sets">
                 {close.map((c) => (
-                  <div key={c.label} className={`sky-set${c.of - c.have === 1 ? " is-near" : ""}`}>
+                  <button type="button" key={c.label} className={`sky-set${c.of - c.have === 1 ? " is-near" : ""}`} onClick={() => setDetail({ set: c })}>
                     <span>{c.label}</span><span className="mono">{c.have}/{c.of} → {c.power}</span><i style={{ width: `${(100 * c.have) / c.of}%` }} />
-                  </div>
+                  </button>
                 ))}
               </div>
               <div className="sky-cat">
@@ -430,12 +515,12 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
                     const mine = entries.filter((e) => e.fam === fam.id);
                     const best = [...mine].sort((a, c) => c.oneIn - a.oneIn)[0];
                     return (
-                      <div key={fam.id} className={`sky-obj${best ? "" : " is-unknown"}${best?.version ? " is-rare" : ""}`}>
+                      <button type="button" key={fam.id} className={`sky-obj${best ? "" : " is-unknown"}${best?.version ? " is-rare" : ""}`} onClick={() => setDetail({ fam: fam.id })} aria-label={best ? `${fam.name}: ${mine.length} found` : "An undiscovered kind"}>
                         <Thumb find={best ? findOf(best.fam, best.colour, best.version) : findOf(fam.id, "silver", "")} hidden={!best} />
                         <b>{best ? fam.name : "???"}</b>
                         <span className="sky-pips">{COLOURS.map((col) => <i key={col.id} style={{ background: mine.some((e) => e.colour === col.id) ? col.c[0] : "transparent", borderColor: col.c[0] }} />)}</span>
                         <span className="mono">{mine.length} of {COLOURS.length * VERSIONS.length}</span>
-                      </div>
+                      </button>
                     );
                   }),
                 ])}
@@ -482,6 +567,7 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
       </section>
 
       {scope && <Telescope queue={state.pending} compliments={compliments} onDone={closeScope} onShare={shareFind} />}
+      {detail && <CatDetail detail={detail} entries={entries} onClose={closeDetail} />}
       {share && <ShareDialog prepare={prepare} caption={share.caption} onClose={() => setShare(null)} />}
     </div>
   );

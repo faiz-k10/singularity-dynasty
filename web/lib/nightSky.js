@@ -331,14 +331,14 @@ export function setProgress(s) {
   for (const fam of FAMILIES) {
     const cols = new Set(got.filter((e) => e.fam === fam.id).map((e) => e.colour)).size;
     const vers = new Set(got.filter((e) => e.fam === fam.id).map((e) => e.version)).size;
-    if (!s.sets[`trio:${fam.id}`] && cols) out.push({ label: `Trio · ${fam.name}`, have: cols, of: 3, power: "Refraction" });
-    else if (!s.sets[`spectrum:${fam.id}`] && cols) out.push({ label: `Spectrum · ${fam.name}`, have: cols, of: 6, power: "Old light" });
-    if (!s.sets[`legend:${fam.id}`] && vers > 1) out.push({ label: `Legend · ${fam.name}`, have: vers, of: 4, power: "Gravity well" });
+    if (!s.sets[`trio:${fam.id}`] && cols) out.push({ kind: "trio", fam: fam.id, label: `Trio · ${fam.name}`, have: cols, of: 3, power: "Refraction" });
+    else if (!s.sets[`spectrum:${fam.id}`] && cols) out.push({ kind: "spectrum", fam: fam.id, label: `Spectrum · ${fam.name}`, have: cols, of: 6, power: "Old light" });
+    if (!s.sets[`legend:${fam.id}`] && vers > 1) out.push({ kind: "legend", fam: fam.id, label: `Legend · ${fam.name}`, have: vers, of: 4, power: "Gravity well" });
   }
   for (const t of [1, 2, 3, 4, 5]) {
     const all = famsIn(t).length, have = famsIn(t).filter((k) => got.some((e) => e.fam === k.id)).length;
-    if (!s.sets[`quartet:${t}`] && have && all > 4) out.push({ label: `Quartet · ${TIER_NAME[t]}`, have, of: 4, power: "Refraction" });
-    else if (!s.sets[`survey:${t}`] && have) out.push({ label: `Survey · ${TIER_NAME[t]}`, have, of: all, power: t <= 2 ? "Old light" : "Gravity well" });
+    if (!s.sets[`quartet:${t}`] && have && all > 4) out.push({ kind: "quartet", tier: t, label: `Quartet · ${TIER_NAME[t]}`, have, of: 4, power: "Refraction" });
+    else if (!s.sets[`survey:${t}`] && have) out.push({ kind: "survey", tier: t, label: `Survey · ${TIER_NAME[t]}`, have, of: all, power: t <= 2 ? "Old light" : "Gravity well" });
   }
   return out.sort((a, b) => a.of - a.have - (b.of - b.have) || b.have / b.of - a.have / a.of).slice(0, 5);
 }

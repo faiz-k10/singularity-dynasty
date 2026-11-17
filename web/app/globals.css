@@ -7209,13 +7209,24 @@ body:has(.ehp) .ehp-inside,body:has(.ehp) .ehp-dark{--ehp-hole:#0B0B0B;--ehp-hol
 .sky-claim{font-size:11.5px;padding:5px 12px;border:1px solid var(--star);background:transparent;color:var(--star);cursor:pointer;border-radius:var(--r-sm)}
 .sky-claim:hover{background:var(--star);color:var(--void)}
 .sky-sets{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px}
-.sky-set{position:relative;display:flex;justify-content:space-between;gap:8px;border:1px solid var(--line);padding:7px 10px 9px;font-size:12.5px;overflow:hidden}
+.sky-set{position:relative;display:flex;justify-content:space-between;gap:8px;border:1px solid var(--line);padding:7px 10px 9px;font-size:12.5px;overflow:hidden;background:none;color:inherit;font-family:inherit;text-align:left;cursor:pointer}
 .sky-set .mono{font-size:11px;color:var(--star-dim)}
 .sky-set i{position:absolute;left:0;bottom:0;height:2px;background:var(--up)}
 .sky-set.is-near{border-color:var(--ember)}
 .sky-cat{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:6px}
 .sky-cat-h{grid-column:1/-1;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--star-dim);padding-top:6px}
-.sky-obj{border:1px solid var(--line);padding:8px 6px;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;font-size:12px}
+.sky-obj{border:1px solid var(--line);padding:8px 6px;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;font-size:12px;background:none;color:inherit;font-family:inherit;cursor:pointer}
+.sky-obj:hover,.sky-set:hover{border-color:var(--star-dim)}
+.sky-obj:focus-visible,.sky-set:focus-visible{outline:2px solid var(--ember);outline-offset:1px}
+/* a catalogue card's detail (CatDetail) */
+.sky-detail{width:min(640px,100%)}
+.sky-detail-head{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.sky-variants{display:grid;grid-template-columns:auto repeat(var(--cols),minmax(0,1fr));gap:8px;align-items:center}
+.sky-variants:not(:has(> .sky-variants-h)){grid-template-columns:repeat(var(--cols),minmax(0,1fr))}
+.sky-variants-h{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--star-dim);text-align:center}
+.sky-variant{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;color:var(--star-dim);text-align:center}
+.sky-variant canvas{width:100%;max-width:72px;height:auto;aspect-ratio:1}
+.sky-variant.is-unknown canvas{opacity:.55}
 .sky-obj canvas{width:56px;height:56px}
 .sky-obj b{font-weight:700;line-height:1.2}
 .sky-obj .mono{font-size:10px;color:var(--star-dim)}
