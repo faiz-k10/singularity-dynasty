@@ -83,7 +83,7 @@ function RarestInSky({ state }) {
   const place = useMemo(() => {
     if (!rarest) return null;
     const sky = skyFor(state.season);
-    const avoid = [[-110, 92, 110, 114], [-92, 124, 92, 168], ...sky.map((c) => {
+    const avoid = [[-110, 92, 110, 114], [-92, 244, 92, 292], ...sky.map((c) => {
       const lx = Math.sign(c.label[0]) * 456, ly = c.label[1];
       return lx > 0 ? [lx - 175, ly - 14, lx, ly + 20] : [lx, ly - 14, lx + 175, ly + 20];
     })];
@@ -148,10 +148,11 @@ function Sky({ state, pendingPicks, pending }) {
         );
       })}
       <RarestInSky state={state} />
+      {/* the picks waiting sit at the bottom edge of the sky (founder, Nov 17 2026) */}
       {pendingPicks.length > 0 && (
         <g className="sky-label">
-          {pendingPicks.map((_, i) => <circle key={`p${i}`} className="sky-pending" cx={(i - (pendingPicks.length - 1) / 2) * 22} cy={138} r="5" />)}
-          <text className="sky-creal" x="0" y="160" textAnchor="middle">{pendingPicks.length} pick{pendingPicks.length === 1 ? "" : "s"} waiting</text>
+          {pendingPicks.map((_, i) => <circle key={`p${i}`} className="sky-pending" cx={(i - (pendingPicks.length - 1) / 2) * 22} cy={258} r="5" />)}
+          <text className="sky-creal" x="0" y="282" textAnchor="middle">{pendingPicks.length} pick{pendingPicks.length === 1 ? "" : "s"} waiting</text>
         </g>
       )}
       <Core mass={state.mass} collapsed={pending > 0} skin={equipped(state).core} />
