@@ -6462,8 +6462,6 @@ details.acct-danger > summary.acct-h{color:var(--down)}
 .dyb-name-line .team-badge, .dyb-name-line .position-badge{flex:none;}
 .dyb-name{font-family:var(--font-body), Georgia, serif; font-weight:700; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
 .dyb-sub{font-size:11px; color:var(--star-dim); display:flex; gap:10px;}
-.dr-form{white-space:nowrap;}
-.dr-form.is-up{color:var(--up);} .dr-form.is-down{color:var(--down);}
 /* the two context columns (lib/teamStaff.js): short words, centred; "Yes" in ink, the rest dim */
 .dyb-ctx{text-align:center; white-space:normal; line-height:1.15;}
 .dyb-row .dyb-ctx{font-size:11px; color:var(--star-dim);}
@@ -6482,6 +6480,14 @@ details.acct-danger > summary.acct-h{color:var(--down)}
 .dyb-ci::before, .dyb-ci::after{content:""; position:absolute; top:-5px; height:11px; border-left:1.5px solid var(--star);}
 .dyb-ci::before{left:0;} .dyb-ci::after{right:0;}
 .dyb-pt{top:50%; width:9px; height:9px; margin:-4.5px 0 0 -4.5px; background:var(--star); transform:rotate(45deg);}
+/* his score's move over the last 9 games: a line from the old score to the new one, the head at the new one, above the range line */
+.dyb-move{top:50%; height:2px; margin-top:-12px; background:var(--c);}
+.dyb-move.is-up{--c:var(--cobalt);} .dyb-move.is-down{--c:var(--ember);}
+.dyb-move::after{content:""; position:absolute; top:-4px; border:5px solid transparent; border-top-width:5px; border-bottom-width:5px;}
+.dyb-move.is-up::after{right:-7px; border-left:7px solid var(--c); border-right-width:0;}
+.dyb-move.is-down::after{left:-7px; border-right:7px solid var(--c); border-left-width:0;}
+.dyb-key .k-move{position:relative; top:0; width:16px; margin:0 6px 0 0;}
+.dyb-key .k-move.is-down{margin:0 0 0 10px;}
 .dyb-row.is-selected .dyb-pt{background:var(--ember);}
 .dyb-key{flex:none; display:flex; flex-wrap:wrap; gap:6px 20px; padding:9px 16px; border-top:1px solid var(--rule-strong); font-size:10.5px; color:var(--star-dim);}
 .dyb-key span{display:inline-flex; align-items:center; gap:7px;}

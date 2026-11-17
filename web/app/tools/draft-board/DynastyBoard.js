@@ -221,11 +221,6 @@ export default function DynastyBoard({ rows, meta }) {
                       </span>
                       <span className="dyb-sub mono">
                         {p.age.toFixed(1)} yrs
-                        {p.move != null && Math.abs(p.move) >= 1 && (
-                          <span className={`dr-form is-${p.move > 0 ? "up" : "down"}`}>
-                            {p.move > 0 ? "▲ +" : "▼ −"}{Math.abs(p.move).toFixed(1)} last {p.driftGames} games
-                          </span>
-                        )}
                       </span>
                     </span>
                     {(() => {
@@ -246,6 +241,15 @@ export default function DynastyBoard({ rows, meta }) {
                       <i className="dyb-band" style={band} />
                       <i className="dyb-ci" style={{ left: x(p.lo), width: `calc(${x(p.hi)} - ${x(p.lo)})` }} />
                       <i className="dyb-pt" style={{ left: x(p.score) }} />
+                      {/* his move over the last driftGames games, drawn from where his score was to where it is: cobalt right = up, ember left = down */}
+                      {p.move != null && Math.abs(p.move) >= 1 && (
+                        <i
+                          className={`dyb-move is-${p.move > 0 ? "up" : "down"}`}
+                          style={{ left: x(Math.min(p.score, p.score - p.move)), width: `calc(${x(Math.max(p.score, p.score - p.move))} - ${x(Math.min(p.score, p.score - p.move))})` }}
+                          role="img"
+                          aria-label={`Score ${p.move > 0 ? "up" : "down"} ${Math.abs(p.move).toFixed(1)} over his last ${p.driftGames} games`}
+                        />
+                      )}
                     </span>
                   </button>
                 </Fragment>
@@ -257,6 +261,7 @@ export default function DynastyBoard({ rows, meta }) {
             <span><i className="k-ci" /> 80% range</span>
             <span><i className="k-pt" /> score (relative: the board&apos;s best = 10)</span>
             <span><i className="k-band" /> tier&apos;s score span</span>
+            <span><i className="dyb-move is-up k-move" /><i className="dyb-move is-down k-move" /> score over his last 9 games: up / down</span>
             <span><i className="k-tie" /> ≈ too close to call: the order inside is a coin flip</span>
             <span>HC was OC: his head coach was once an NFL offensive coordinator</span>
             <span>GM still there: the GM who drafted him, traded for him or signed him still runs his team</span>
