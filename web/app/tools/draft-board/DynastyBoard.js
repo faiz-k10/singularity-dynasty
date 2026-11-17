@@ -212,7 +212,7 @@ export default function DynastyBoard({ rows, meta }) {
                       </span>
                       <span className="dyb-sub mono">
                         {p.age.toFixed(1)} yrs
-                        {p.move != null && Math.abs(p.move) >= 0.05 && (
+                        {p.move != null && Math.abs(p.move) >= 1 && (
                           <span className={`dr-form is-${p.move > 0 ? "up" : "down"}`}>
                             {p.move > 0 ? "▲ +" : "▼ −"}{Math.abs(p.move).toFixed(1)} last {p.driftGames} games
                           </span>
