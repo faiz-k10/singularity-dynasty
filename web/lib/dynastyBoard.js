@@ -103,7 +103,7 @@ export function phi(z) {
 // add nothing to next-season points once production and age are known (model/backtest_staff_context.R), so they never move a
 // score. Head coach was an OC AND the GM who got him is still there = 3, head coach was an OC = 2, GM still there = 1, neither = 0.
 export function staffTiebreak(r) {
-  const oc = !!coachFor(r.team)?.off, gm = acquiringGm(r).state === "yes";
+  const oc = !!coachFor(r.team)?.calls, gm = acquiringGm(r).state === "yes";
   return oc && gm ? 3 : oc ? 2 : gm ? 1 : 0;
 }
 

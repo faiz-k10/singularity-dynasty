@@ -33,6 +33,7 @@ Other automatic checks:
 
 - **Tuesday evening:** open `/admin`. *Weekly runs → Tuesday* should say **Passed** with today's date, and *Site health* should be green. Open Weekly Projection Rankings and check it shows the new week.
 - **Any other day:** only if you got an email from GitHub (see below).
+- **Every few weeks in season:** check whether any head coach has taken over or handed off offensive play-calling (search "takes over play-calling"). If one has, change that team's `hcCalls` in `web/lib/teamStaff.js` (the Dynasty Board's "Playcaller HC" column) or ask Claude to.
 
 ## When something goes wrong
 
@@ -116,6 +117,7 @@ Attacks, breakdowns and what to do about each (leaked key, hacked account, data 
 ## Once a year
 
 - **New season (August):** nothing to change. The model reads the current season from the NFL schedule. Check the first Tuesday run of week 1 in `/admin`.
+- **Before week 1:** update `web/lib/teamStaff.js` for new head coaches, GMs and play-callers (ESPN publishes "Who calls plays for every NFL team" each preseason).
 - **Before real payments:** follow "Go-live operations" in `CLAUDE.md` (live Stripe keys and the attorney review).
 - **If you connect a custom domain:** update `SITE` in `.github/workflows/uptime.yml` and `SITE_URL` in `web/app/layout.js`, and add the new address to Supabase → Authentication → URL Configuration.
 
