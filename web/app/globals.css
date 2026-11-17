@@ -7323,9 +7323,12 @@ button.sky-variant:focus-visible{outline:2px solid var(--ember);outline-offset:1
 
 .sky-label,.sky-clabel,.sky-creal{filter:drop-shadow(0 0 2px var(--void)) drop-shadow(0 0 7px var(--void))}
 /* a finished constellation's NAME glows in its own colour, gently breathing (founder, Nov 17 2026: instead of the word "ready") */
-.sky-const.is-done :is(.sky-clabel,.sky-creal){filter:drop-shadow(0 0 2px var(--c)) drop-shadow(0 0 6px var(--c)) drop-shadow(0 0 14px var(--c));animation:sky-name-glow 3.2s ease-in-out infinite}
-@keyframes sky-name-glow{50%{filter:drop-shadow(0 0 3px var(--c)) drop-shadow(0 0 10px var(--c)) drop-shadow(0 0 22px var(--c))}}
-@media (prefers-reduced-motion:reduce){.sky-const.is-done :is(.sky-clabel,.sky-creal){animation:none}}
+.sky-const.is-done :is(.sky-clabel,.sky-creal){filter:none} /* the dark shadow would smother the glow */
+.sky-clabel-glow{font-family:var(--font-mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase}
+.sky-creal-glow{font-family:var(--font-mono);font-size:10px;letter-spacing:.04em}
+.sky-name-glow{animation:sky-name-glow 3.2s ease-in-out infinite}
+@keyframes sky-name-glow{0%,100%{opacity:.75}50%{opacity:1}}
+@media (prefers-reduced-motion:reduce){.sky-name-glow{animation:none}}
 
 /* ===== LANDING PAGE BELOW THE HERO (Nov 16 2026, founder): 2 the site on one page + Get started -> 3 plans -> 4 who it's for and
    each tool -> 5 a week with the site (timeline) -> 6 questions + members' words, then the Singularity Drive (the manager quiz). ===== */

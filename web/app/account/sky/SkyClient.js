@@ -72,6 +72,14 @@ function Sky({ state, pendingPicks, pending }) {
       <Galaxies id={fid} seed={31} n={19} w={960} />
       <StarField seed={7} n={270} w={960} spikes={0} />
       <Scrim id={fid} />
+      {/* the glow under a finished constellation's name: an SVG blur (not a CSS filter -- Safari ignores CSS filters on SVG text) */}
+      <defs>
+        <filter id={`${fid}nameglow`} x="-30%" y="-250%" width="160%" height="600%">
+          <feGaussianBlur stdDeviation="2" result="tight" />
+          <feGaussianBlur stdDeviation="6" result="wide" />
+          <feMerge><feMergeNode in="wide" /><feMergeNode in="wide" /><feMergeNode in="tight" /><feMergeNode in="tight" /><feMergeNode in="tight" /></feMerge>
+        </filter>
+      </defs>
       {skyFor(state.season).map((c) => {
         const f = state.filled[c.id] || [];
         if (!open) return <g key={c.id}>{c.pts.map(([x, y], i) => f[i] ? <circle key={i} cx={x} cy={y} r={3} fill="var(--star)" /> : null)}</g>;
@@ -89,7 +97,13 @@ function Sky({ state, pendingPicks, pending }) {
             {c.pts.map(([x, y, r], i) => f[i] ? (
               <LitStar key={i} x={x} y={y} r={r * 1.15} color={STAR[f[i]]} />
             ) : <circle key={i} className="sky-slot" cx={x} cy={y} r={r + 0.8} />)}
-{/* both labels in the constellation's own star colour (founder, Nov 17 2026) */}
+            {/* both labels in the constellation's own star colour; a finished one's name glows (founder, Nov 17 2026) */}
+            {done && (
+              <g className="sky-name-glow" filter={`url(#${fid}nameglow)`} aria-hidden="true" style={{ fill: STAR[c.color] }}>
+                <text className="sky-clabel-glow" x={lx} y={ly} textAnchor={anchor}>{c.name} · {have}/{c.pts.length}</text>
+                <text className="sky-creal-glow" x={lx} y={ly + 14} textAnchor={anchor}>{c.real}</text>
+              </g>
+            )}
             <text className="sky-clabel" x={lx} y={ly} textAnchor={anchor} style={{ fill: STAR[c.color] }}>{c.name} · {have}/{c.pts.length}</text>
             <text className="sky-creal" x={lx} y={ly + 14} textAnchor={anchor} style={{ fill: STAR[c.color] }}>{c.real}</text>
           </g>
