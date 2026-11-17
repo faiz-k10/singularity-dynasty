@@ -105,105 +105,373 @@ export const FAMILIES = [
   ["Supernova", 5, "supernova"], ["Pulsar", 5, "pulsar"], ["Magnetar", 5, "pulsar"], ["Black hole", 5, "blackhole"], ["Binary black hole", 5, "blackhole"],
   ["Kilonova", 5, "supernova"], ["Quasar", 5, "quasar"], ["Nebula", 5, "nebula"], ["Wolf-Rayet star", 5, "star"], ["Red giant", 5, "star"],
 ].map(([name, tier, shape], id) => ({ id, name, tier, shape }));
-// One line of lore per kind, shown on its find card and in the telescope (founder, Nov 17 2026: "make them INTERESTING; they do not have
-// to be factual, they can be serious or silly"). Keyed by the kind's name.
+// The lore: ONE sentence for every catalogue entry (founder, Nov 17 2026: "a single sentence ... all unique and based loosely on its
+// characteristics ... make them all INTERESTING"). One per kind and colour, written for that pairing; a rare version folds a short clause
+// into the same sentence, so all 1,056 entries read differently (tested).
 export const LORE = {
-  "Iron asteroid": "The core of a planet that never finished forming, still carrying the iron it was saving for a heart.",
-  "Stony asteroid": "Four and a half billion years old and it has never once done anything interesting, which is exactly why astronomers trust it.",
-  "Carbon asteroid": "Darker than fresh asphalt and full of the raw ingredients of life; some suspect it was the delivery truck.",
-  "Rubble pile": "Not a rock but a crowd of rocks holding hands by gravity alone; poke it and the whole thing politely rearranges itself.",
-  "Contact binary": "Two bodies that drifted together so slowly they never crashed; they just touched, and decided to stay.",
-  "Trojan asteroid": "It rides sixty degrees ahead of a giant planet, a sentry at a gate nobody has tried to pass in four billion years.",
-  "Centaur": "Half asteroid, half comet, it has never decided what it wants to be and has been sulking between Saturn and Uranus about it ever since.",
-  "Kuiper object": "Out past Neptune, where the Sun is just a bright star, it has been keeping the solar system's oldest secrets on ice.",
-  "Moonlet": "A moon so small you could jump off it, though you would be falling for a very long time before you landed anywhere.",
-  "Dust cloud": "Every grain is older than the Earth, and together they glitter like the ghost of a world that changed its mind.",
-  "Long-period comet": "It last came by when mammoths were alive, and it will be back to see what we did with the place.",
-  "Sungrazer": "It dives straight at its star on purpose; most never come back, and the ones that do become legends.",
-  "Interstellar comet": "A traveller from another star, here for one pass only, ignoring every rule our Sun ever wrote.",
-  "Main-belt comet": "An asteroid that one day started growing a tail, and nobody has had the heart to tell it to stop.",
-  "Fragmenting comet": "It is falling apart in slow motion, and somehow every new piece shines brighter than the last.",
-  "Ice dwarf": "Its mountains are made of water ice frozen harder than granite, standing as tall and as patient as anything on Earth.",
-  "Plutoid": "Demoted, debated and absolutely unbothered; it was never in it for the title.",
-  "Dwarf world with a moon": "A small world with a moon nearly its own size, the two locked face to face in an eternal staring contest.",
-  "Ringed giant": "Its rings are younger than the dinosaurs and won't last forever, so you are catching it at its best.",
-  "Ice giant": "Deep inside, it rains diamonds, and no one will ever be there to catch them.",
-  "Lava world": "So close to its star that its rocks melt by day, and its whole year is shorter than a Sunday afternoon.",
-  "Ocean world": "Every inch of it is sea, thousands of miles deep, with no shore anywhere for anything to crawl out onto.",
-  "Desert world": "Its dunes are taller than Everest and they are moving, very slowly, toward nowhere in particular.",
-  "Super-Earth": "Bigger, heavier, and with gravity that would make every touchdown celebration a genuine feat of strength.",
-  "Hot Jupiter": "A gas giant that wandered far too close to its star and now circles it every few days, glowing like a coal.",
-  "Rogue planet": "Thrown out of its own solar system young, it drifts through the dark with no sun at all, and seems to prefer it that way.",
-  "Tidally locked world": "One side has never known night and the other has never seen day, and everyone who matters lives on the thin line between.",
-  "Diamond world": "A planet pressed mostly into crystal carbon: the most valuable thing in the sky, and no way to get it home.",
-  "Volcanic moon": "Squeezed by its planet's gravity on every orbit, it erupts without pause, the most restless thing for a billion miles.",
-  "Ice moon": "Under its shell of ice lies a dark ocean warmer than you would think, and something about that makes people very quiet.",
-  "Leonid shower": "Every few decades it becomes a storm of thousands of meteors an hour, then spends the next thirty years pretending it never happened.",
-  "Perseid shower": "The warm-night favourite: the dust of a comet that last swung by when your grandparents were young.",
-  "Geminid shower": "Born from a rock instead of a comet, which makes it the shower that technically should not exist.",
-  "Draconid shower": "Most years it barely shows up, and then one evening it fills the whole sky as if it had something to prove.",
-  "Supernova": "For a few weeks one dying star outshines its entire galaxy, then spends a million years scattering the iron that ends up in your blood.",
-  "Pulsar": "The crushed heart of a dead star, spinning hundreds of times a second and keeping better time than any clock on Earth.",
-  "Magnetar": "Its magnetic field could wipe every credit card on Earth from halfway to the Moon, and it has never once apologised.",
-  "Black hole": "Nothing that goes in ever comes back out: not light, not time, and not the waiver claim you swore you submitted.",
-  "Binary black hole": "Two black holes circling closer every orbit until they merge and ring the fabric of space like a struck bell.",
-  "Kilonova": "When two dead stars collide they forge gold and platinum, so every wedding ring began as a crash like this one.",
-  "Quasar": "A black hole feeding so fast it outshines a trillion stars: the brightest bad habit in the universe.",
-  "Nebula": "A cloud so vast that light takes years to cross it, and somewhere deep inside, new stars are quietly being born.",
-  "Wolf-Rayet star": "It has blown off its own outer layers in a howling wind and is burning through the rest of its life at full speed, no regrets.",
-  "Red giant": "An old star swollen to a hundred times its size; in five billion years, our own Sun will look exactly like this.",
-};
-// The lore's second and third lines (founder, Nov 17 2026: two finds of the same kind read the same; "make each one unique based loosely on
-// its characteristics"): one per colour within each tier of kinds, and one per rare version. loreFor() puts them together, so every one of
-// the 1,056 catalogue entries reads differently.
-const COLOUR_LORE = {
-  "1": {
-    "silver": "This one is polished silver, the colour of a coin someone flipped four billion years ago and never caught.",
-    "azure": "Its blue tint is frost that has never once melted, which makes it older than every ocean on Earth.",
-    "amber": "The amber is rust, real rust, so somewhere in its past there was water, air and a very long wait.",
-    "emerald": "Green rock is olivine, the same stone as peridot, so technically you have found a jewellery box with no lid.",
-    "crimson": "Red means radiation has cooked its surface for so long it has turned to something like burnt sugar.",
-    "violet": "Nobody can explain the violet, and three separate observatories have quietly stopped trying."
+  "Iron asteroid": {
+    "silver": "A chunk of a planet's heart polished silver by four billion years of sandblasting, it would make the galaxy's most overqualified frying pan.",
+    "azure": "Frost has settled into its iron pores and turned it a cold steel blue, like a sword left out on the battlefield of the early solar system.",
+    "amber": "Rust has bloomed across it in amber patches, which means it once met water and has been quietly corroding with regret ever since.",
+    "emerald": "Flecked with green crystals, it is the meteorite collectors dream about and the reason a few of them have stopped sleeping.",
+    "crimson": "Still glowing faintly red from a collision a million years ago, it has never quite calmed down about it.",
+    "violet": "Violet iron is not supposed to exist, and the asteroid seems smug about that."
   },
-  "2": {
-    "silver": "In silver it looks like moonlight that came loose and wandered off on its own.",
-    "azure": "The blue is frozen gas glowing like a stove flame, only colder than anything you have ever touched.",
-    "amber": "Amber ones carry sodium, so the glow is the exact colour of an old streetlamp on an empty road.",
-    "emerald": "The green is a carbon gas that breaks apart in sunlight, so its colour is always dying and always being reborn.",
-    "crimson": "Red ones are coated in tholins, the cosmic equivalent of the crust at the bottom of a roasting pan.",
-    "violet": "Violet ones turn up so rarely that the last person to log one gave up coffee in case they were seeing things."
+  "Stony asteroid": {
+    "silver": "Plain grey stone, unchanged since before the Sun lit up, the most honest object you will ever look at.",
+    "azure": "Its blue sheen is sunlight on a dusting of ice crystals, as if the rock were wearing a thin coat of winter.",
+    "amber": "Warm amber stone that looks like a pebble from a riverbed, if the riverbed were four hundred million miles from the nearest river.",
+    "emerald": "Green with olivine, the stone jewellers call peridot, so technically you have found a jewellery box with no lid.",
+    "crimson": "Burnt red by a billion years of radiation, its surface has the colour and texture of toast someone forgot about.",
+    "violet": "Violet stone is so unusual that the astronomer who logged this one named it after her grandmother and refused to explain why."
   },
-  "3": {
-    "silver": "In silver its clouds throw back so much light that it would be the brightest thing in its neighbours' night.",
-    "azure": "The blue is methane in the air, and a sunset there would be the colour of a gas flame.",
-    "amber": "An amber sky means haze so thick that every hour of the day feels like golden hour.",
-    "emerald": "Green is the colour astronomers hope for and almost never get, and this one is exactly that shade.",
-    "crimson": "Crimson worlds are full of iron rusting under their own sky: a planet-sized warning light.",
-    "violet": "Under a violet sky like this, any plants would have to be black to drink in enough light."
+  "Carbon asteroid": {
+    "silver": "A thin silvery glaze over coal-black rock, it looks like burnt toast someone tried very hard to make fancy.",
+    "azure": "Under the blue frost lie amino acids, so this cold little rock carries the alphabet that life spells with.",
+    "amber": "Amber-tinted and full of tar, it is basically the solar system's spilled petrol, still waiting for a match.",
+    "emerald": "The green comes from clays that only form in water, so this bone-dry rock remembers being wet.",
+    "crimson": "A red carbon rock so dark it reflects almost no light, which makes finding one like spotting a black cat at midnight.",
+    "violet": "A violet carbon asteroid is the cosmic equivalent of a four-leaf clover made of coal."
   },
-  "4": {
-    "silver": "Silver meteors are the ordinary ones, a strange word for rocks burning up at forty miles a second.",
-    "azure": "Blue streaks are magnesium, the same metal that makes fireworks burn white-hot.",
-    "amber": "Amber streaks are sodium; on a clear night they look like someone striking matches across the sky.",
-    "emerald": "Green meteors are nickel, and anyone who has seen one will tell you about it, at length, for years.",
-    "crimson": "Red streaks are our own air burning around the rock, so this colour is half Earth's doing.",
-    "violet": "Violet meteors are calcium, rare enough that people who chase showers for a living keep a list."
+  "Rubble pile": {
+    "silver": "A silver heap of boulders packed so loosely that a determined toddler could, in theory, push it apart.",
+    "azure": "Blue-tinged gravel held together by its own gravity and nothing else, like a beanbag chair made of mountains.",
+    "amber": "An amber pile of stones of the kind a spacecraft once poked and sank into like quicksand, to everyone's alarm.",
+    "emerald": "Its green boulders roll over each other so slowly that one rockslide on it has been going since the Romans.",
+    "crimson": "A red heap of wreckage from some ancient crash, still drifting together like survivors who never left the scene.",
+    "violet": "Violet rubble this rare must be the leftovers of something far grander that nobody will ever get to see."
   },
-  "5": {
-    "silver": "In silver it looks almost calm, which is the most deceptive thing about it.",
-    "azure": "Blue means hot, hotter than any colour has a right to be, hot enough that atoms give up their electrons.",
-    "amber": "Amber is the glow of something cooling, the way a forge looks an hour after the work is done.",
-    "emerald": "Green should not be possible for something like this, and yet the telescope keeps insisting.",
-    "crimson": "Crimson light has been stretched on its long trip here; you are seeing it as it was before Earth had oceans.",
-    "violet": "The violet sits at the very edge of what eyes can see, as if it is only half willing to be found."
+  "Contact binary": {
+    "silver": "Two silver lobes joined at a narrow neck, shaped exactly like a snowman someone gave up on halfway.",
+    "azure": "A pair of icy blue bodies that met at walking pace and froze together mid-hug.",
+    "amber": "Two amber rocks fused into a peanut, proof that even in space some things are simply meant to be.",
+    "emerald": "Green twins stuck together for so long that nobody can tell any more which one arrived first.",
+    "crimson": "Two red bodies joined after a slow collision, still tumbling end over end like dancers who forgot to stop.",
+    "violet": "A violet pair so perfectly matched that astronomers argued for a year about whether it was one object or two."
+  },
+  "Trojan asteroid": {
+    "silver": "A silver guard holding its post ahead of Jupiter, loyal to a planet that has never once noticed it.",
+    "azure": "Cold and blue, it marches in Jupiter's wake like a soldier in a war that ended before Earth had a moon.",
+    "amber": "Amber-skinned and patient, it has held the same spot in Jupiter's orbit for longer than the Sun has had planets.",
+    "emerald": "A green Trojan named, like all of them, after a hero of a war fought on a planet it will never see.",
+    "crimson": "Its red face has been baked by sunlight from the same angle for four billion years, like a lizard on a warm rock.",
+    "violet": "A violet Trojan is the one that faces the other way, and nobody can explain what it is looking at."
+  },
+  "Centaur": {
+    "silver": "Silver and indecisive, it flickers between being a rock and a comet depending on how close the Sun feels.",
+    "azure": "A blue centaur shedding ice in sudden bursts, like a sneeze it has been holding in for a thousand years.",
+    "amber": "Amber and moody, it wanders between the giant planets and could be flung out of the solar system on any pass.",
+    "emerald": "A faint green haze switches on and off around it, as if it is shy about admitting it might be a comet.",
+    "crimson": "Red as a brick and about as stubborn, it is one of the reddest objects in the solar system and seems proud of it.",
+    "violet": "A violet centaur is so rare that its discoverer named it, unnamed it and then named it again."
+  },
+  "Kuiper object": {
+    "silver": "A silver iceball so far out that a radio message from home would take five hours to reach it.",
+    "azure": "Blue nitrogen ice glitters on it at a temperature where even air freezes solid and falls like snow.",
+    "amber": "Amber-tinted and never visited, it has been circling in the dark since before the planets had names.",
+    "emerald": "Its green tint is methane ice that has never seen a sunrise warm enough to melt it.",
+    "crimson": "Crusted in red organic gunk, it is the colour of the surface of a planet that never got started.",
+    "violet": "From this violet world the Sun looks no bigger than a streetlight at the far end of the road."
+  },
+  "Moonlet": {
+    "silver": "A silver pebble of a moon, small enough that you could throw a baseball off it and never see it again.",
+    "azure": "A tiny blue moon that wobbles as it goes round, as if it is still learning how to be a moon.",
+    "amber": "An amber moonlet herding a planet's ring, keeping billions of icy grains in line like a sheepdog.",
+    "emerald": "So small and so green that from its surface the planet it circles would fill half the sky.",
+    "crimson": "A red moonlet spiralling slowly inward, its orbit shrinking every year toward a very dramatic ending.",
+    "violet": "A violet moonlet nobody would have found if it hadn't cast a shadow across its planet's rings."
+  },
+  "Dust cloud": {
+    "silver": "Silver dust drifting in a long glittering sheet, the confetti left over from the solar system's birthday party.",
+    "azure": "A blue haze of ice dust that catches sunlight like breath on a winter morning.",
+    "amber": "Amber dust thrown off by colliding asteroids, spiralling slowly toward the Sun like leaves circling a drain.",
+    "emerald": "Each green grain is smaller than a blood cell, and there are more of them in this cloud than there are stars.",
+    "crimson": "A red cloud from an ancient impact, still spreading out like smoke from a shot fired long ago.",
+    "violet": "Some think this violet dust is the last trace of a planet that never got the chance to form."
+  },
+  "Long-period comet": {
+    "silver": "A silver comet on an orbit so long that the last people to see it painted it on cave walls.",
+    "azure": "Its blue gas tail stretches farther than the Earth is from the Sun, and all of it points politely away from the light.",
+    "amber": "An amber comet whose dusty tail curves like a brushstroke, back for the first time in twelve thousand years.",
+    "emerald": "It last came by when mammoths were alive, and its green head is back to see what we did with the place.",
+    "crimson": "A red-tailed wanderer that last passed when the pyramids were new and found nobody waiting up for it.",
+    "violet": "At the far end of this violet comet's orbit, the next star over is almost as close as the Sun."
+  },
+  "Sungrazer": {
+    "silver": "A silver sungrazer skimming so close to the Sun that it boils away by the ton every second.",
+    "azure": "It dives at the Sun trailing a blue tail, a moth that knows exactly what the flame is and goes in anyway.",
+    "amber": "An amber comet that flew straight through the Sun's outer atmosphere and, to the astonishment of everyone watching, came out the other side.",
+    "emerald": "Green with the gas it sheds, it belongs to a family of fragments all following the same doomed road.",
+    "crimson": "Glowing red as its rock begins to melt, it is writing its own obituary in the brightest ink there is.",
+    "violet": "The last violet sungrazer was seen by a single spacecraft and nobody else, which is lonely for something this bright."
+  },
+  "Interstellar comet": {
+    "silver": "A silver visitor from another star, moving too fast for the Sun to keep, gone before we could say hello properly.",
+    "azure": "Its blue glow is a gas no comet from our system makes, a postcard written in a chemistry we don't speak.",
+    "amber": "An amber traveller that has been crossing the dark between stars for longer than our solar system has existed.",
+    "emerald": "Green and in a hurry, it is the cosmic stranger who walks through your party and leaves without a word.",
+    "crimson": "Reddened under some other sun, it carries the dust of a planetary system we will never see.",
+    "violet": "Finding a violet interstellar comet is like getting a letter from another galaxy in your mailbox."
+  },
+  "Main-belt comet": {
+    "silver": "A silver asteroid that one year started sprouting a tail, to the visible confusion of everyone tracking it.",
+    "azure": "Blue ice hidden under its rocky crust escapes in puffs, as if the asteroid were breathing for the first time.",
+    "amber": "An amber rock trailing dust as if it had suddenly decided to become something more interesting.",
+    "emerald": "Its green tail switches on every time it nears the Sun and off again when it leaves, as regular as a porch light.",
+    "crimson": "A red asteroid with a comet's habits, the kind of object that makes astronomers rewrite their categories.",
+    "violet": "Rocks like this violet one may be why Earth has oceans, which is a lot of credit for something this small."
+  },
+  "Fragmenting comet": {
+    "silver": "A silver comet breaking into a string of pearls, each piece following the one ahead like ducklings.",
+    "azure": "Splitting into blue fragments, it brightens with every break as fresh ice meets the Sun for the first time.",
+    "amber": "An amber comet coming apart at the seams, each piece lighting its own tail like fireworks in slow motion.",
+    "emerald": "Green shards drifting apart along one orbit, like a band that broke up but went on separate tours.",
+    "crimson": "A red comet shattering in front of an audience, a farewell show four billion years in the making.",
+    "violet": "A violet comet in pieces, and somehow every piece is rarer than the whole ever was."
+  },
+  "Ice dwarf": {
+    "silver": "Silver ice mountains as tall as the Alps stand on it, frozen harder than granite and twice as patient.",
+    "azure": "Its blue plains of nitrogen ice churn slowly like a lava lamp, warmed by heat leaking from deep inside.",
+    "amber": "An amber dwarf stained by chemistry cooked in faint sunlight over billions of years, like a tea cup never washed.",
+    "emerald": "Green-tinged ice cracked into enormous plates, like a frozen lake that never stopped thinking about moving.",
+    "crimson": "A red ice world wearing a cap of frost that comes and goes with seasons that last for centuries.",
+    "violet": "Violet ice so cold and so still that a footprint left on it would outlast every city on Earth."
+  },
+  "Plutoid": {
+    "silver": "A silver plutoid with a heart-shaped glacier, as if it knew we would need a reason to love it.",
+    "azure": "Under its blue haze sits a tiny world with mountains, glaciers and weather, which is a lot of personality for a dwarf.",
+    "amber": "Demoted, debated and absolutely unbothered, this amber one was never in it for the title.",
+    "emerald": "A green plutoid whose thin air freezes and falls as snow every time it drifts away from the Sun.",
+    "crimson": "Painted red by sunlight on methane ice, it is blushing about something it refuses to discuss.",
+    "violet": "A violet plutoid so far out that a single year there lasts longer than the whole history of the United States."
+  },
+  "Dwarf world with a moon": {
+    "silver": "A silver dwarf and its moon locked face to face, so neither has ever seen the other's back.",
+    "azure": "The blue world and its moon circle a point between them, waltzing in a ballroom nobody else is invited to.",
+    "amber": "An amber pair so close in size that it is considered rude to ask which one is the moon.",
+    "emerald": "A green dwarf world whose moon is slowly stealing its atmosphere, one molecule at a time.",
+    "crimson": "Its moon wears a red cap of gas pinched from the dwarf world, a souvenir of the oldest relationship in the outer dark.",
+    "violet": "A violet double world turning together, like two old friends who stopped needing to talk."
+  },
+  "Ringed giant": {
+    "silver": "Its silver rings are younger than the dinosaurs and won't last forever, so you are catching it at its best.",
+    "azure": "A blue ringed giant that, if you could find a bathtub big enough, would float.",
+    "amber": "Amber bands and golden rings: a planet so pretty it looks designed by committee, and the committee was right.",
+    "emerald": "Its green rings are ice chunks from grains to houses, all orbiting in a sheet thinner than a football field is long.",
+    "crimson": "A red giant planet whose rings throw long shadows across its clouds, so every day there is striped.",
+    "violet": "A violet ringed giant with a six-sided storm at its pole, a shape so neat it looks like a mistake."
+  },
+  "Ice giant": {
+    "silver": "Deep inside this silver giant it rains diamonds, and no one will ever be there to catch them.",
+    "azure": "Its blue is methane, and its winds run faster than the speed of sound with nothing anywhere to slow them down.",
+    "amber": "An amber ice giant tipped on its side, so each pole gets forty-two years of daylight and then forty-two of night.",
+    "emerald": "Pale green and the coldest of its kind, it has lost its inner heat and nobody knows where it went.",
+    "crimson": "A red ice giant with dark storms the size of Earth that appear and vanish like bruises.",
+    "violet": "A violet giant whose magnetic field is tilted and off-centre, as if it was put together in a hurry."
+  },
+  "Lava world": {
+    "silver": "Its silver seas of lava ripple under a sky full of fire, and the rocks melt every morning.",
+    "azure": "On this blue-glowing world it rains molten glass, sideways, in winds of five thousand miles an hour.",
+    "amber": "An amber lava world whose whole year is shorter than a Sunday afternoon, and every hour of it is hot.",
+    "emerald": "Green lava flows under clouds of vaporised rock, and when it rains, it rains pebbles.",
+    "crimson": "Crimson oceans of magma glow so brightly that its night side shines without any help from its star.",
+    "violet": "A violet lava world that resurfaces itself every few days, so no map of it has ever been right twice."
+  },
+  "Ocean world": {
+    "silver": "Every inch of it is silver sea, thousands of miles deep, with no shore anywhere for anything to crawl out onto.",
+    "azure": "A blue ocean so deep that at the bottom the water is squeezed into a kind of ice that is hot to the touch.",
+    "amber": "Its amber seas are tinted by minerals dissolved over billions of years, the colour of very strong tea.",
+    "emerald": "A green ocean world, and if anything in this catalogue is hiding life, it is probably this one.",
+    "crimson": "Red tides sweep its global ocean, and nobody is comfortable guessing what is turning them red.",
+    "violet": "A violet sea under a violet sky, with waves the height of skyscrapers rolling forever with nowhere to break."
+  },
+  "Desert world": {
+    "silver": "Silver dunes taller than Everest roll across it, moving very slowly toward nowhere in particular.",
+    "azure": "A blue desert where the sand is glass and the wind plays it like an instrument.",
+    "amber": "An amber desert planet with two suns, and every film director who ever lived would like a word.",
+    "emerald": "Green sand made of olivine, like a few rare beaches in Hawaii, stretching across an entire planet.",
+    "crimson": "A red desert whose dust storms swallow the whole planet for months, hiding it from its own sun.",
+    "violet": "A violet desert with sunsets so strange that any painter who copied them would be accused of making them up."
+  },
+  "Super-Earth": {
+    "silver": "Bigger, heavier and with gravity that would make every touchdown celebration a genuine feat of strength.",
+    "azure": "A blue super-Earth with gravity so strong that its ocean waves would roll in slow motion.",
+    "amber": "Under its amber skies mountains can't grow very tall, because the planet keeps pulling them back down.",
+    "emerald": "A green super-Earth sitting at just the right distance from its star, the porridge that is finally just right.",
+    "crimson": "Red and heavy, it may be the bare rocky core of a giant planet that lost all its gas long ago.",
+    "violet": "A rocket leaving this violet world would need to be several times bigger than anything we have ever built."
+  },
+  "Hot Jupiter": {
+    "silver": "A silver gas giant so close to its star that its year lasts three days and its clouds are made of metal.",
+    "azure": "It glows blue because it rains glass, sideways, in winds that would strip the paint off a battleship.",
+    "amber": "An amber giant that wandered far too close to its star and now circles it every few days, glowing like a coal.",
+    "emerald": "Its star is boiling the green atmosphere off into space, so it drags a tail behind it like a planet-sized comet.",
+    "crimson": "So hot on its day side that iron evaporates, crosses to the night side and falls there as rain.",
+    "violet": "A violet hot Jupiter darker than coal, reflecting less light than fresh asphalt despite being lit by a star."
+  },
+  "Rogue planet": {
+    "silver": "Thrown out of its own solar system young, this silver world drifts with no sun at all, and seems to prefer it.",
+    "azure": "A blue rogue whose only light comes from its own faint heat, a campfire with no camp.",
+    "amber": "Amber and alone, it may still hide a warm ocean under its ice, heated from inside and lit by nothing.",
+    "emerald": "A green world that has been falling between the stars for longer than Earth has existed and has never once landed.",
+    "crimson": "Red as a dying ember, it glows faintly in the infrared like a coal that refuses to go out.",
+    "violet": "There may be more rogue planets than stars, and this violet one is the only one you will ever get to see."
+  },
+  "Tidally locked world": {
+    "silver": "One silver side has never known night and the other has never seen day, and everyone who matters lives on the line between.",
+    "azure": "On its blue dark side the air itself freezes and falls as snow, then drifts back into the light to thaw.",
+    "amber": "An amber world where the sun never moves in the sky, so noon lasts forever and nobody can be late for it.",
+    "emerald": "Its green band of twilight is the only place anything could live: a ring of endless sunset around a whole planet.",
+    "crimson": "A red world with one scorched face and one frozen one, staring at its star forever like it lost a bet.",
+    "violet": "One violet storm has sat under its sun for millions of years, like a lighthouse that never blinks."
+  },
+  "Diamond world": {
+    "silver": "A silver planet pressed mostly into crystal carbon: the most valuable thing in the sky, and no way to get it home.",
+    "azure": "Its blue glint is diamond plains under an open sky, which would be, to put it mildly, a shoplifting risk.",
+    "amber": "An amber diamond world, and somewhere a jeweller is weeping at how far away it is.",
+    "emerald": "Green diamonds are the rarest kind on Earth, and here is a whole planet of them doing nothing with its life.",
+    "crimson": "A red diamond world worth more than every economy on Earth combined, several times over, and nobody can collect.",
+    "violet": "A violet diamond planet, the one object in this catalogue you could, technically, propose with."
+  },
+  "Volcanic moon": {
+    "silver": "Squeezed by its planet on every orbit, this silver moon erupts without pause, the most restless thing for a billion miles.",
+    "azure": "Its blue volcanoes throw plumes so high that they fall back as snow on the far side of the moon.",
+    "amber": "An amber moon with lava lakes wider than some countries, and not one of them has ever cooled.",
+    "emerald": "Green with sulphur frost around its vents, it looks like a pizza that has been in the fridge far too long.",
+    "crimson": "A crimson moon repaved by lava so often that it has no craters at all.",
+    "violet": "A violet moon whose eruptions shoot clean out into space and feed a glowing ring around its planet."
+  },
+  "Ice moon": {
+    "silver": "Under its silver shell of ice lies a dark ocean warmer than you'd think, and something about that makes people very quiet.",
+    "azure": "A blue ice moon spraying geysers from cracks near its pole, salt water freezing in mid-air as it flies.",
+    "amber": "Amber stains streak its ice where the ocean below has leaked up through the cracks.",
+    "emerald": "A green ice moon with more water under its shell than all of Earth's oceans put together.",
+    "crimson": "Its ice is scored with red lines like scratches on a car door: cracks where the ocean keeps trying to get out.",
+    "violet": "If anything swims in the dark beneath this violet ice, it has never once seen a star."
+  },
+  "Leonid shower": {
+    "silver": "Every few decades it becomes a silver storm of thousands of meteors an hour, then spends thirty years pretending it never happened.",
+    "azure": "Blue Leonids hit the air at forty-four miles a second, the fastest meteors of the year and not ashamed of it.",
+    "amber": "Amber fireballs that leave glowing trails hanging in the sky for minutes, like the smoke from a sparkler.",
+    "emerald": "Green Leonids get their colour from nickel, and anyone who has seen one will tell you about it, at length, for years.",
+    "crimson": "In 1833 a red Leonid storm fell so thick that people woke their neighbours to watch what they thought was the end of the world.",
+    "violet": "A violet Leonid is the shower showing off, which it only does when it thinks nobody important is watching."
+  },
+  "Perseid shower": {
+    "silver": "The warm-night favourite: the silver dust of a comet that last swung by when your grandparents were young.",
+    "azure": "Blue Perseids are best seen lying on a car roof in August, with nowhere to be and nobody asking where you are.",
+    "amber": "Amber Perseids are the slow, bright ones, the meteors that make strangers at a campsite say \"did you see that?\"",
+    "emerald": "Green streaks of comet dust older than the dinosaurs, burning up in the time it takes to point.",
+    "crimson": "Red Perseid fireballs are rare and loud, sometimes leaving a sonic boom on the ground below.",
+    "violet": "A violet Perseid is the one you see while everyone else is looking the other way."
+  },
+  "Geminid shower": {
+    "silver": "Born from a rock instead of a comet, this silver shower is the one that technically should not exist.",
+    "azure": "Blue Geminids are slow and bright, the meteors for people who never manage to catch the fast ones.",
+    "amber": "Amber grit from an asteroid that cracks in the Sun's heat and sheds a trail along its road every year.",
+    "emerald": "Green Geminids light up the coldest nights of December, which is very generous of them.",
+    "crimson": "Red Geminids are the shower's heavy hitters, chunks big enough to leave a glowing scar across half the sky.",
+    "violet": "A violet Geminid comes from a rock that sheds like a dog in spring, every single year without fail."
+  },
+  "Draconid shower": {
+    "silver": "Most years this silver shower barely shows up, and then one evening it fills the whole sky as if it had something to prove.",
+    "azure": "Blue Draconids fall at dusk instead of dawn, the only shower polite enough to keep office hours.",
+    "amber": "Amber streaks pouring from the head of the Dragon, which is exactly as dramatic as it sounds.",
+    "emerald": "In some years green Draconids have poured down at ten thousand an hour, and in most years almost none at all.",
+    "crimson": "A red Draconid outburst once hit so hard that satellite operators turned their spacecraft away to shelter them.",
+    "violet": "A violet Draconid is the dragon breathing, and it does not do that often."
+  },
+  "Supernova": {
+    "silver": "For a few weeks this silver star outshines its whole galaxy, then spends a million years scattering the iron that ends up in your blood.",
+    "azure": "A blue supernova bright enough to see in daylight for a month, as if someone had added a second, smaller sun.",
+    "amber": "An amber shockwave racing outward at a tenth of the speed of light, still growing long after the star is gone.",
+    "emerald": "Its green shell glows with oxygen made inside the star, the same oxygen every breath you take once came from.",
+    "crimson": "A red supernova recorded by astronomers a thousand years ago who had no idea what they were looking at.",
+    "violet": "A violet supernova is the rarest kind of goodbye, a star going out so brightly it rewrites its neighbourhood."
+  },
+  "Pulsar": {
+    "silver": "The silver heart of a dead star, spinning hundreds of times a second and keeping better time than any clock on Earth.",
+    "azure": "Its blue beam sweeps by so regularly that when the first one was found, it was jokingly labelled a message from aliens.",
+    "amber": "An amber pulsar the size of a city and the weight of the Sun, so a teaspoon of it would outweigh a mountain.",
+    "emerald": "A green pulsar with planets around it, the strangest solar system ever found: worlds orbiting a corpse.",
+    "crimson": "A red pulsar slowing by a fraction of a second every million years, the most patient countdown in the galaxy.",
+    "violet": "A violet pulsar so precise that a spacecraft could steer by it across the galaxy."
+  },
+  "Magnetar": {
+    "silver": "Its silver magnetic field could wipe every credit card on Earth from halfway to the Moon, and it has never once apologised.",
+    "azure": "A blue magnetar whose starquakes have shaken Earth's upper atmosphere from fifty thousand light years away.",
+    "amber": "An amber magnetar so magnetic that atoms near it are stretched into needles thinner than pencil lines.",
+    "emerald": "Green flares burst from it without warning, each releasing more energy than the Sun gives off in a hundred thousand years.",
+    "crimson": "A red magnetar, the strongest magnet in the known universe, and it is about twelve miles across.",
+    "violet": "A violet magnetar will lose its fury within ten thousand years, so you have caught it mid-tantrum."
+  },
+  "Black hole": {
+    "silver": "Nothing that goes in ever comes back out: not light, not time, and not the waiver claim you swore you submitted.",
+    "azure": "Its blue disk spins at nearly the speed of light, the last thing anything sees before it isn't seen again.",
+    "amber": "Near this amber black hole time runs so slowly that a minute there would be years back home.",
+    "emerald": "The green glow around it is gas shredded and heated to millions of degrees on its way to nowhere.",
+    "crimson": "A red black hole so heavy it bends starlight around itself, so you can see the stars directly behind it.",
+    "violet": "A violet black hole quietly eating a star, a meal that will take longer than humanity has existed."
+  },
+  "Binary black hole": {
+    "silver": "Two silver black holes circling closer every orbit until they merge and ring the fabric of space like a struck bell.",
+    "azure": "When blue twins like these merge, they shake space itself, and a detector on Earth feels it a billion years later.",
+    "amber": "An amber pair dancing faster and faster, a waltz that ends in the loudest silence in the universe.",
+    "emerald": "These green black holes go round each other a hundred times a second just before the end, which is soon.",
+    "crimson": "A red binary that will turn three Suns' worth of mass into pure energy in the instant they become one.",
+    "violet": "A violet pair so evenly matched that neither can win, so they are simply going to become something new together."
+  },
+  "Kilonova": {
+    "silver": "When two dead stars collide they forge gold and platinum, so every silver ring began as a crash like this one.",
+    "azure": "This blue flash made more gold in one second than exists on Earth, then threw it all away into the dark.",
+    "amber": "An amber kilonova glowing with fresh-made metals, the universe's only goldsmith working one spectacular shift.",
+    "emerald": "Its green afterglow is rare elements decaying, the same kind of atoms inside the screen you are reading this on.",
+    "crimson": "A red kilonova was the first cosmic crash we both saw and felt, in light and in ripples of space.",
+    "violet": "Somewhere in this violet debris is the uranium of a power plant that won't exist for a billion years."
+  },
+  "Quasar": {
+    "silver": "A black hole feeding so fast it outshines a trillion stars: the brightest bad habit in the universe.",
+    "azure": "Its blue light left before the Earth formed, so you are looking at a galaxy that may not exist any more.",
+    "amber": "An amber quasar firing jets millions of light years long, longer than the galaxy it lives in.",
+    "emerald": "A green quasar whose light has been travelling for twelve billion years and is, frankly, exhausted.",
+    "crimson": "Stretched by the expanding universe, its light has turned crimson on the longest journey there is.",
+    "violet": "Up close this violet quasar would be brighter than staring at the Sun from a foot away."
+  },
+  "Nebula": {
+    "silver": "A silver cloud so vast that light takes years to cross it, and somewhere deep inside new stars are quietly being born.",
+    "azure": "Its blue glow is starlight bouncing off dust, a cosmic fog lit from the inside.",
+    "amber": "An amber nebula that looks like something different from every angle, which is why it has eleven nicknames.",
+    "emerald": "Green with glowing oxygen, it is a cosmic nursery somebody left the lights on in.",
+    "crimson": "A crimson nebula of glowing hydrogen, the same element that makes up most of you.",
+    "violet": "A violet nebula: the shell of a dying star breathed out gently, the prettiest way a star can say goodbye."
+  },
+  "Wolf-Rayet star": {
+    "silver": "It has blown off its outer layers in a howling silver wind and is burning through the rest of its life at full speed, no regrets.",
+    "azure": "A blue Wolf-Rayet so fierce that its wind could strip the air off a planet in an afternoon.",
+    "amber": "Its amber winds are carving a bubble in space light years wide, a sculptor who only works in explosions.",
+    "emerald": "A green Wolf-Rayet wrapped in a spiral of dust like a pinwheel, spinning out a new coil every few years.",
+    "crimson": "A crimson star that has already shed half its weight and is about to do something even more dramatic.",
+    "violet": "A violet Wolf-Rayet that will end as a supernova or a black hole, and it is not telling which."
+  },
+  "Red giant": {
+    "silver": "An old silver giant swollen to a hundred times its size; in five billion years our own Sun will look exactly like this.",
+    "azure": "A blue-tinged giant that has already swallowed its innermost planets and is still hungry.",
+    "amber": "If this amber giant took the Sun's place it would reach past Mars, and Earth would be somewhere inside it.",
+    "emerald": "Green-lit by the gas it breathes out, it is seeding space with the carbon future worlds will be made of.",
+    "crimson": "A crimson giant pulsing slowly like a heartbeat, brightening and dimming over months as it breathes.",
+    "violet": "A violet giant near the end, about to shed its skin and leave behind a tiny white star the size of Earth."
   }
 };
-const VERSION_LORE = {
-  "prismatic": "This copy splits light into a rainbow at its edges, as if it put on every colour at once and still can't decide.",
-  "ancient": "This copy is ancient: the light reaching you set off before the first fossils formed.",
-  "mythic": "Mythic copies are spoken of like perfect seasons: everyone knows someone who swears they saw one."
+const VERSION_CLAUSE = {
+  prismatic: "this prismatic one throws a rainbow off every edge, as if it could not choose",
+  ancient: "the light from this ancient one set off before the first fossils formed",
+  mythic: "a mythic one like this is the kind people swear they saw and nobody believes",
 };
-export const loreFor = (fam, colour, version) => [LORE[FAMILIES[fam]?.name], COLOUR_LORE[FAMILIES[fam]?.tier]?.[colour], VERSION_LORE[version]].filter(Boolean).join(" ");
+export function loreFor(fam, colour, version) {
+  const line = LORE[FAMILIES[fam]?.name]?.[colour];
+  if (!line || !VERSION_CLAUSE[version]) return line || "";
+  return `${line.replace(/\.$/, "")}; ${VERSION_CLAUSE[version]}.`;
+}
 export const COLOURS = [
   { id: "silver", name: "Silver", w: 0.3, c: ["#D8D3C8", "#5C5850"] },
   { id: "azure", name: "Azure", w: 0.2, c: ["#7FA6F5", "#173572"] },
