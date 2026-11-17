@@ -231,11 +231,13 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
               <TeamBadge team={p.team} />
             </div>
             <div className="dp-demo mono">{[`${p.age.toFixed(1)} yrs`, ...size].join(" · ")}</div>
+            <div className="dp-links">
+              <Link href={`/tools/lab?p=${encodeURIComponent(p.name)}`}>The Observatory →</Link>
+              <Link href="/tools/redraft-rankings">Weekly rankings →</Link>
+            </div>
           </div>
         </header>
-        <div className="dp-links">
-          <Link href={`/tools/lab?p=${encodeURIComponent(p.name)}`}>The Observatory →</Link>
-          <Link href="/tools/redraft-rankings">Weekly rankings →</Link>
+        <div className="dp-share">
           <ShareCardButton
             card={{ kind: "d", id: p.id, f: format, m: mode }}
             caption={`${p.name} in dynasty: ${p.score.toFixed(1)} (${f.label}, ${m.label}).`}

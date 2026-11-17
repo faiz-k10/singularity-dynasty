@@ -938,7 +938,7 @@ footer .fcoord{font-size:10.5px; color:var(--star-dim); letter-spacing:0.08em;}
    the standard 1140px .tool-wrap width -- widen it the same way so it
    actually benefits from that extra room instead of still being capped
    to the narrower column. */
-.redraft-wrap{max-width:calc(100vw - 48px); padding-left:24px; padding-right:24px;}
+.redraft-wrap, .dynasty-wrap{max-width:calc(100vw - 48px); padding-left:24px; padding-right:24px;}
 .tool-wrap h1{font-size:clamp(30px,4vw,42px); margin-bottom:14px;}
 .tool-sub{color:var(--star-dim); font-size:15px; max-width:560px; margin-bottom:36px;}
 .tool-empty{background:var(--void-panel); border:1px solid var(--line); border-radius:2px; padding:32px; color:var(--star-dim); font-size:14px;}
@@ -4152,7 +4152,7 @@ summary:focus-visible, [tabindex]:focus-visible, [role="button"]:focus-visible{
 
   /* Table pages: use the screen. The desktop gutter (24px margin + 24px padding
      each side) left a 279px table on a 375px phone. */
-  .player-sims-wrap, .redraft-wrap{max-width:100%; padding-left:12px; padding-right:12px;}
+  .player-sims-wrap, .redraft-wrap, .dynasty-wrap{max-width:100%; padding-left:12px; padding-right:12px;}
   .tool-wrap{padding-top:44px; padding-bottom:64px;}
 
   /* Player Sims: freeze only Rank + Player (the desktop freeze of Rank/Player/Pos is
@@ -6019,17 +6019,18 @@ select.lab-select{min-width:200px;}
    The pane beside the board's list. Flat scoreboard material, one section per question:
    the read, the recipe, his games, his age, who is close, how his rank moves. Charts are SVG in site tokens. */
 .dp{position:relative; box-sizing:border-box; padding:16px 16px 24px; background:var(--void-panel); border:1px solid var(--rule); border-top:2px solid var(--rule-strong); border-radius:2px;}
-.dp-head{display:flex; gap:14px; align-items:stretch;} /* the photo's top and bottom line up with the badges and the demographics line */
+.dp-head{display:flex; gap:14px; align-items:flex-start;} /* badges, demographics and the two links stacked right beside the photo */
 .dp-photo{flex:0 0 64px; width:64px; height:64px; border-radius:var(--r-sm); border:1px solid var(--rule); background:var(--void-panel-2); overflow:hidden; display:grid; place-items:center;}
 .dp-photo img{width:100%; height:100%; object-fit:cover; display:block;}
 .dp-photo span{font-family:var(--font-display); font-weight:800; font-size:28px; color:var(--star-dim);}
-.dp-id{flex:1; min-width:0; display:flex; flex-direction:column; justify-content:space-between; gap:8px;}
+.dp-id{flex:1; min-width:0; display:flex; flex-direction:column; gap:6px;}
 .dp-demo{font-size:13px; color:var(--star-dim); line-height:1.3;}
 .dp{container-type:inline-size;}
 .dp-name{margin:0 0 12px; text-align:center; font-family:var(--font-display); font-weight:800; text-transform:uppercase; letter-spacing:.07em; line-height:1; white-space:nowrap; overflow:hidden;
   font-size:clamp(20px, calc(100cqw / (var(--chars) * 0.66)), 80px);} /* fills the pane's width: ~0.6em a capital incl. tracking */
 .dp-badges{display:flex; flex-wrap:wrap; align-items:center; gap:6px 8px; font-size:12px; color:var(--star-dim);}
-.dp-links{display:flex; flex-wrap:wrap; align-items:center; gap:6px 16px; margin-top:12px; font-family:var(--font-mono), monospace; font-size:11px; letter-spacing:.04em;}
+.dp-share{margin-top:12px;}
+.dp-links{display:flex; flex-wrap:wrap; align-items:center; gap:4px 16px; font-family:var(--font-mono), monospace; font-size:11px; letter-spacing:.04em;}
 .dp-links > *{white-space:nowrap;}
 .dp-links a{color:var(--horizon-gold); text-decoration:none;} .dp-links a:hover{text-decoration:underline; text-underline-offset:3px;}
 .dp-score{display:flex; flex-direction:column; align-items:stretch; gap:14px; margin:0; padding:16px; border:1px solid var(--rule); border-top:2px solid var(--rule-strong); background:rgba(var(--horizon-gold-rgb), .07);}

@@ -17,7 +17,7 @@ async function RankingsView({ hasFullAccess }) {
   return (
     <>
       <InteractiveScript />
-      <main id="main-content" className="wrap tool-wrap">
+      <main id="main-content" className="wrap tool-wrap dynasty-wrap">
         <div className="tool-header-split">
           <div className="tool-header-left">
             <div className="eyebrow">{"Dynasty"}</div>
