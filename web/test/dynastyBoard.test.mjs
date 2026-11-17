@@ -184,3 +184,19 @@ test("rankGrid: ranks every player in every format and mode over the whole pool"
     });
   }
 });
+
+test("groups: one Replacement group, never split; groups above it under 20 and named from the top", () => {
+  const rows = rowsFromData(data);
+  for (const [f, m] of [["sf", "contender"], ["sf", "rebuilder"], ["1qb", "contender"], ["1qb", "rebuilder"]]) {
+    const L = boardRows(rows, { format: f, mode: m, pos: "ALL" });
+    const { groups } = buildBoard(L);
+    const r = groups.findIndex((g) => g.name === "Replacement");
+    assert.ok(r > 0, `${f}/${m}: has a Replacement group`);
+    assert.equal(groups.filter((g) => g.name === "Replacement").length, 1);
+    assert.equal(groups[0].name, "Future Legend");
+    groups.slice(0, r).forEach((g) => assert.ok(g.b - g.a + 1 < 20, `${f}/${m}: ${g.name} under 20`));
+    // contiguous and covering the whole view
+    groups.forEach((g, k) => assert.equal(g.a, k ? groups[k - 1].b + 1 : 0));
+    assert.equal(groups.at(-1).b, L.length - 1);
+  }
+});

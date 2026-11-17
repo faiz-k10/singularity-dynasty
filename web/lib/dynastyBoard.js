@@ -25,9 +25,11 @@ export const FORMATS = {
   sf: { label: "Superflex", key: "porSf" },
   "1qb": { label: "1QB", key: "por1qb" },
 };  // toggle order on the page: Superflex, 1QB (the page still opens on 1QB)
-// group names, top of the board down (founder, Nov 16 2026); a view with more groups than names reuses the last one
-export const GROUP_NAMES = ["Future Legend", "Hall of Famer", "The Franchise", "Cornerstone", "Core", "Replacement", "Depth", "Fringe", "Taxi Squad", "Waiver Wire"];
-export const groupName = (g) => GROUP_NAMES[Math.min(g, GROUP_NAMES.length - 1)];
+// group names (founder, Nov 16 2026), set by production over replacement (`prod`, 1.0 = a replacement starter's points a game):
+// the groups above replacement level take ABOVE from the top, every player near replacement is ONE group, REPLACEMENT, and
+// the groups below it take BELOW. A section with more groups than names reuses its last name.
+export const GROUP_NAMES = { above: ["Future Legend", "Hall of Famer", "The Franchise", "Cornerstone", "Core"], replacement: "Replacement", below: ["Depth", "Fringe", "Taxi Squad", "Waiver Wire"] };
+const REPL_LINE = 2.0, BELOW_LINE = 1.0; // a group's MEDIAN prod: under 2 starts the replacement group (within ~1.7 points a game of replacement), under 1 at the bottom is below it
 // how much of the shipped pool a view shows: the top 120 overall, the top 60 of one position
 export const SHOW = { all: 120, position: 60 };
 
@@ -40,6 +42,8 @@ export function boardRows(rows, { format, mode, pos }) {
 
 // the probit of each P above: Phi(z) = P
 const Z_TIE = 0.1257, Z_TIER = 0.3853, Z_GROUP = 0.5244;
+const GROUP_MAX = 20; // a group this big or bigger is split again (buildBoard)
+const GROUP_SPLIT_Z = [0.4677, 0.4399, 0.4125, Z_TIER]; // P 0.68, 0.67, 0.66, then the tier cut (0.65)
 
 // A player is scored on the age he will be AGE_LOOKAHEAD years from now, on his position's age curve (founder, Nov 3 2026:
 // a 24-year-old and a 32-year-old QB were nearly level on today's age, because QBs keep their production until about 31).
@@ -195,8 +199,49 @@ export function buildBoard(L) {
   if (!L.length) return { groups: [], tiers: [], ties: [] };
   const n = L.length, okG = okMatrix(L, Z_GROUP), okT = okMatrix(L, Z_TIER), okX = okMatrix(L, Z_TIE);
   const groups = [], tiers = [], ties = [];
-  segment(L, okG, 0, n - 1).forEach((G, g) => {
-    groups.push({ a: G[0], b: G[1], g });
+  // a group of GROUP_MAX or more ABOVE replacement level is split again (founder, Nov 16 2026: "groups of 20 or more should be split up more"): the same
+  // rule with a looser cut, step by step down to the tier cut; still too big there, it is cut at its widest score gap
+  const okAt = new Map();
+  const ok = (z) => { if (!okAt.has(z)) okAt.set(z, okMatrix(L, z)); return okAt.get(z); };
+  const split = ([a, b]) => {
+    if (b - a + 1 < GROUP_MAX) return [[a, b]];
+    for (const z of GROUP_SPLIT_Z) {
+      const parts = segment(L, ok(z), a, b);
+      if (parts.length > 1) return parts.flatMap(split);
+    }
+    let cut = a; // the widest gap between neighbours, kept away from the ends so neither side is a sliver
+    for (let k = a + 4; k < b - 4; k++) if (zOf(L, k, k + 1) > zOf(L, cut, cut + 1) || cut === a) cut = k;
+    return [[a, cut], [cut + 1, b]].flatMap(split);
+  };
+  const stat = segment(L, okG, 0, n - 1).flatMap(split);
+  // where replacement level starts: the first group whose typical player is near replacement; below: the run of groups at the
+  // bottom whose typical player is under it. Everything in between is the one Replacement group (never split).
+  const med = ([a, b]) => { const v = L.slice(a, b + 1).map((r) => r.prod).sort((x, y) => x - y); return v[Math.floor(v.length / 2)]; };
+  const md = stat.map(med);
+  let line = md.findIndex((v) => v < REPL_LINE);
+  if (line < 0) line = stat.length;
+  let below = stat.length;
+  while (below - 1 > line && md[below - 1] < BELOW_LINE) below--;
+  const above = stat.slice(0, line);
+  // more groups above replacement than names: merge the neighbours with the weakest break, as long as the result stays under GROUP_MAX
+  // (what still doesn't fit reuses the last name, Core)
+  while (above.length > GROUP_NAMES.above.length) {
+    let k = -1, weakest = Infinity;
+    for (let j = 2; j + 1 < above.length; j++) { // the top two (Future Legend, Hall of Famer) are never merged
+      if (above[j + 1][1] - above[j][0] + 1 >= GROUP_MAX) continue;
+      const sup = superiority(L, above[j], above[j + 1]);
+      if (sup < weakest) { weakest = sup; k = j; }
+    }
+    if (k < 0) break;
+    above.splice(k, 2, [above[k][0], above[k + 1][1]]);
+  }
+  const named = (list, names) => list.map((G, k) => [G, names[Math.min(k, names.length - 1)]]);
+  [
+    ...named(above, GROUP_NAMES.above),
+    ...(below > line ? [[[stat[line][0], stat[below - 1][1]], GROUP_NAMES.replacement]] : []),
+    ...named(stat.slice(below), GROUP_NAMES.below),
+  ].forEach(([G, name], g) => {
+    groups.push({ a: G[0], b: G[1], g, name });
     segment(L, okT, G[0], G[1]).forEach((T) => {
       const ti = tiers.length;
       tiers.push({ a: T[0], b: T[1], g, ti });

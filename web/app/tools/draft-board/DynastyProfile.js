@@ -4,7 +4,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import PositionBadge from "../PositionBadge";
 import TeamBadge from "../TeamBadge";
-import { AGE_LOOKAHEAD, FORMATS, groupName, MODES } from "@/lib/dynastyBoard";
+import { AGE_LOOKAHEAD, FORMATS, MODES } from "@/lib/dynastyBoard";
 import { formatHeight, ordinal } from "@/lib/format";
 import { coachFor, acquiringGm } from "@/lib/teamStaff";
 import ShareCardButton from "../../ShareCardButton";
@@ -248,7 +248,7 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
             what he's worth, where that comes from, how long it lasts, who he's level with, whether the league changes it, and
             who is around him. Each chapter's title is a sentence made from his own numbers. */}
         <ol className="dp-story">
-          <Chapter n={1} ask="What is he worth?" says={here ? `${p.pos}${here.posRank} and #${here.rank} overall: ${groupName(group.g)}` : `${groupName(group.g)}, tier ${tier.ti + 1}`}>
+          <Chapter n={1} ask="What is he worth?" says={here ? `${p.pos}${here.posRank} and #${here.rank} overall: ${group.name}` : `${group.name}, tier ${tier.ti + 1}`}>
             <div className="dp-score" ref={chartRef}>
               {/* the dial takes the block's whole width; the number grows with it */}
               <ArcGauge value={p.score / 10} size={Math.max(200, chartW - 34)} label={`Dynasty score ${p.score.toFixed(1)} of 10`} className="dp-gauge">
@@ -260,7 +260,7 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
                   {here && <div><dt className="mono">Overall</dt><dd>{ord(here.rank)}</dd></div>}
                   {here && <div><dt className="mono">Position</dt><dd>{p.pos}{here.posRank}</dd></div>}
                   <div><dt className="mono">Tier</dt><dd>{tier.ti + 1}<small> / {board.tiers.length}</small></dd></div>
-                  <div><dt className="mono">Group</dt><dd>{groupName(group.g)}</dd></div>
+                  <div><dt className="mono">Group</dt><dd>{group.name}</dd></div>
                 </dl>
               </div>
             </div>

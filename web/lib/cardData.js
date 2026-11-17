@@ -10,7 +10,7 @@ import { weekReceipts } from "@/lib/receipts";
 import { smashSpots } from "@/lib/smashSpots";
 import { readCardToken } from "@/lib/cardToken";
 import { pickStart } from "@/lib/startSit";
-import { rowsFromData, scoreRows, boardRows, buildBoard, FORMATS, MODES, groupName } from "@/lib/dynastyBoard";
+import { rowsFromData, scoreRows, boardRows, buildBoard, FORMATS, MODES } from "@/lib/dynastyBoard";
 import { getDynastyRows } from "@/lib/dynastyData";
 import dynastyData from "@/data/dynasty-values.json";
 import { getAchievements } from "@/app/tools/achievements";
@@ -146,7 +146,7 @@ export function dynastyCardPlayer(id, format, mode) {
   if (i < 0) return null;
   const p = scored[i];
   const L = boardRows(all, { format, mode, pos: "ALL" });
-  const { tiers } = buildBoard(L);
+  const { tiers, groups } = buildBoard(L);
   const at = L.findIndex((r) => r.id === id);
   const tier = at < 0 ? null : tiers.find((t) => at >= t.a && at <= t.b);
   const m = MODES[mode];
@@ -160,7 +160,7 @@ export function dynastyCardPlayer(id, format, mode) {
       score: p.score, lo: p.lo, hi: p.hi, prod: p.prod, ageValue: p.ageValue,
       rank: i + 1,
       posRank: scored.filter((r) => r.pos === p.pos).findIndex((r) => r.id === id) + 1,
-      tier: tier ? { n: tier.ti + 1, of: tiers.length, group: groupName(tier.g) } : null,
+      tier: tier ? { n: tier.ti + 1, of: tiers.length, group: groups[tier.g].name } : null,
     },
   };
 }
