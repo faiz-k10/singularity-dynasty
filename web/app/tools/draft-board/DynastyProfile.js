@@ -101,34 +101,43 @@ function AgeCurve({ curve, age, value, W }) { // age = his age now; the dot sits
   );
 }
 
-// The name fills the pane's width on one line: measured, not guessed (the CSS size from --chars is the first paint and the fallback).
-// Re-measured when the pane resizes and once the display font has loaded.
-const NAME_MAX = 80; // high enough that short names (Josh Allen) still span the pane
-function useFitName(name) {
+// Every player's name is the SAME size (founder, Nov 16 2026): the largest size at which the longest name on the board still fits the
+// pane on one line. Measured, not guessed: all names are laid out once at NAME_MAX in a hidden copy of the heading, the widest sets the
+// size, then it shrinks until the widest really fits (text width doesn't scale exactly with font size). Re-run when the pane resizes
+// and once the display font has loaded. The CSS size from --chars is only the first paint.
+const NAME_MAX = 80;
+function useFitName(names) {
   const ref = useRef(null);
+  const key = names.join("|");
   useLayoutEffect(() => {
     const h = ref.current;
     if (!h) return undefined;
-    // text width does not scale exactly with font size (hinting, rounding), so: size from one measurement, then shrink until it fits
-    const width = () => { const r = document.createRange(); r.selectNodeContents(h); return r.getBoundingClientRect().width; };
     const fit = () => {
       const room = h.clientWidth;
-      if (!room) return;
-      h.style.fontSize = `${NAME_MAX}px`;
-      let size = Math.min(NAME_MAX, (NAME_MAX * room) / width());
+      if (!room || !names.length) return;
+      const probe = document.createElement("div");
+      probe.className = h.className;
+      probe.setAttribute("aria-hidden", "true");
+      probe.style.cssText = `position:absolute; visibility:hidden; left:-99999px; top:0; width:auto; font-size:${NAME_MAX}px;`;
+      for (const n of names) { const sp = document.createElement("span"); sp.textContent = n; sp.style.cssText = "display:block; width:max-content;"; probe.appendChild(sp); }
+      h.parentNode.appendChild(probe);
+      const widest = () => Math.max(...[...probe.children].map((c) => c.getBoundingClientRect().width));
+      let size = Math.min(NAME_MAX, (NAME_MAX * room) / widest());
       for (let i = 0; i < 8; i++) {
-        h.style.fontSize = `${size.toFixed(1)}px`;
-        const w = width();
+        probe.style.fontSize = `${size.toFixed(1)}px`;
+        const w = widest();
         if (w <= room) break;
         size *= (room / w) * 0.995;
       }
+      probe.remove();
+      h.style.fontSize = `${size.toFixed(1)}px`;
     };
     fit();
     const ro = new ResizeObserver(fit);
     ro.observe(h);
     document.fonts?.ready.then(fit);
     return () => ro.disconnect();
-  }, [name]);
+  }, [key]); // eslint-disable-line react-hooks/exhaustive-deps -- `key` stands for `names`
   return ref;
 }
 
@@ -136,7 +145,8 @@ function useFitName(name) {
 // The picked player's profile, in the pane beside the board's list (DynastyBoard.js).
 export default function DynastyProfile({ player: p, rows, L, board, format, mode, meta, complete }) {
   const data = useProfileData(p.id);
-  const nameRef = useFitName(p.name);
+  const allNames = useMemo(() => rows.map((r) => r.name), [rows]); // every player shipped to this viewer, not just this view
+  const nameRef = useFitName(allNames);
   const [chartRef, chartW] = useBoxWidth(); // the sections' width: the charts and the dial take all of it
   const f = FORMATS[format], m = MODES[mode];
 
