@@ -7,7 +7,7 @@ import ShareDialog from "../../ShareDialog";
 import { seeFinds, pickPlayer, claim, wearSkin } from "./actions";
 import { SkyBackdrop, CoreSkin, SkinPreview } from "./skins";
 import { StarField, Galaxies, Spikes } from "./hubble";
-import { drawObject, sharpen, findCard, receiptCard, seasonCard, toBlob, setCardBadge, setCardSkin, setCardFrame } from "./skyArt";
+import { drawObject, sharpen, findCard, receiptCard, toBlob, setCardBadge, setCardSkin, setCardFrame } from "./skyArt";
 import {
   ACTIONS, skyFor, SKINS, RARITY, hasSkin, equipped, skySkinsFor, FAMILIES, COLOURS, VERSIONS, TIER_NAME, POWERUPS, LADDER, rungLabel, CATALOGUE_SIZE, SET_COUNT, UNLOCK, EVENT_TEXT,
   famsIn, findOf, setProgress, seasonProgress,
@@ -92,7 +92,7 @@ function Sky({ state, pendingPicks, pending }) {
   const fid = useId().replace(/[^a-zA-Z0-9_-]/g, "");
   const open = state.findsTotal >= UNLOCK.constellations;
   return (
-    <svg className="sky-svg" viewBox="-300 -300 600 600" role="img" aria-label={`Your sky: ${state.findsTotal} finds, the core ${pending ? "collapsed" : stageOf(state.mass).label.toLowerCase()}`}>
+    <svg className="sky-svg" viewBox="-300 -300 600 600" preserveAspectRatio="xMidYMid slice" role="img" aria-label={`Your sky: ${state.findsTotal} finds, the core ${pending ? "collapsed" : stageOf(state.mass).label.toLowerCase()}`}>
       <SkyBackdrop skin={equipped(state).sky} />
       <Galaxies id={fid} seed={31} n={12} />
       <StarField seed={7} n={170} spikes={6} />
@@ -302,7 +302,6 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
   const lastGraded = Object.entries(state.picks).filter(([, w]) => w.graded && w.made).sort((a, b) => (b[1].season - a[1].season) || (b[1].week - a[1].week))[0]?.[1] || null;
   const pendingPicks = wk && !wk.graded ? wk.choice.filter((c) => c != null) : [];
   const entries = Object.values(state.found);
-  const rarest = [...entries].sort((a, b) => b.oneIn - a.oneIn)[0] || null;
   const b = state.boosts;
 
   const run = async (p) => {
@@ -355,19 +354,13 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
 
       <div className="sky-grid">
         <div className="sky-col">
-          <section className="sky-panel" aria-labelledby="sky-h">
-            <div className="board-panel-title" id="sky-h">The sky</div>
+          <section className="sky-panel sky-panel-fill" aria-label="Your sky">
             <Sky state={state} pendingPicks={pendingPicks} pending={state.pending.length} />
-            {state.pending.length > 0 ? (
+            {state.pending.length > 0 && (
               <button type="button" className="btn-primary sky-scope-btn" onClick={() => setScope(true)}>
                 The core collapsed{state.pending.length > 1 ? ` ${state.pending.length} times` : ""} · point the telescope
               </button>
-            ) : (
-              <p className="sky-note-line mono">{state.strains ? `The core strained ${state.strains} time${state.strains === 1 ? "" : "s"} since your last look … and held.` : "Earn stars below. The core collapses at a moment nobody knows."}</p>
             )}
-            <div className="sky-row">
-              <button type="button" className="btn-ghost" onClick={() => setShare({ title: `My season sky: ${title}`, caption: `My Night Sky this season: ${title}, ${sp.points.toLocaleString()} season points, ${entries.length} of ${CATALOGUE_SIZE.toLocaleString()} in my catalogue.`, make: () => seasonCard(state, { title, size: CATALOGUE_SIZE, rarest }) })}>Share my season sky</button>
-            </div>
           </section>
 
           
