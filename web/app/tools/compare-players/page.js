@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { awardLater } from "@/lib/nightSkyStore";
+import SkyCredit from "../../SkyCredit";
 import { createClient } from "@/lib/supabase/server";
 import { resolveTier } from "@/lib/tier";
 import { getPlayerBiosByNamePos } from "@/lib/sleeper";
@@ -39,7 +39,6 @@ export default async function ComparePlayersPage({ searchParams }) {
     getCachedUsageProfile(),
   ]);
   const hasFullAccess = PAID_TIERS.includes(tier);
-  awardLater(user?.id, "compare"); // a Night Sky star
   const { latest } = cached;
 
   const pool = latest ? enrichRankings({ cached, hasFullAccess, tdProfile, usageProfile, leanRows, bioByNamePos }) : [];
@@ -53,6 +52,7 @@ export default async function ComparePlayersPage({ searchParams }) {
   return (
     <>
       <InteractiveScript />
+      {user && <SkyCredit action="compare" />}
 
       <main id="main-content" className="wrap tool-wrap compare-wrap">
         <div className="eyebrow">{latest ? `Week ${latest.week} · ${latest.season}` : "Compare"}</div>

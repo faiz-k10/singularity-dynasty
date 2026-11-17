@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { awardLater } from "@/lib/nightSkyStore";
+import SkyCredit from "../../SkyCredit";
 import { resolveTier } from "@/lib/tier";
 import { loadMyPlayers } from "@/lib/myPlayers";
 import { createClient } from "@/lib/supabase/server";
@@ -36,7 +36,6 @@ export default async function RedraftRankingsPage({ searchParams }) {
     st.time("usage", getCachedUsageProfile()),
   ]);
   const hasFullAccess = PAID_TIERS.includes(tier);
-  awardLater(user?.id, "rankings"); // a Night Sky star
   const { latest } = cached;
 
   let rankings = [];
@@ -70,6 +69,7 @@ export default async function RedraftRankingsPage({ searchParams }) {
   return (
     <>
       <InteractiveScript />
+      {user && <SkyCredit action="rankings" />}
 
       <main id="main-content" className="wrap tool-wrap redraft-wrap">
         {rankings.length === 0 ? (

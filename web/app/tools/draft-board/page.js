@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { awardLater } from "@/lib/nightSkyStore";
+import SkyCredit from "../../SkyCredit";
 import { getUserTier } from "@/lib/tier";
 import InteractiveScript from "../../InteractiveScript";
 import DynastyBoard from "./DynastyBoard";
@@ -12,11 +12,12 @@ export const metadata = {
 };
 
 const PAID_TIERS = ["explorer", "singularity"];
-async function RankingsView({ hasFullAccess }) {
+async function RankingsView({ hasFullAccess, signedIn }) {
   const { rows, total, meta } = getDynastyRows(hasFullAccess);
   return (
     <>
       <InteractiveScript />
+      {signedIn && <SkyCredit action="dynasty" />}
       <main id="main-content" className="wrap tool-wrap dynasty-wrap">
         <div className="tool-header-split">
           <div className="tool-header-left">
@@ -42,6 +43,5 @@ async function RankingsView({ hasFullAccess }) {
 
 export default async function DraftBoardPage() {
   const { tier, user } = await getUserTier();
-  awardLater(user?.id, "dynasty"); // a Night Sky star
-  return <RankingsView hasFullAccess={PAID_TIERS.includes(tier)} />;
+  return <RankingsView hasFullAccess={PAID_TIERS.includes(tier)} signedIn={!!user} />;
 }

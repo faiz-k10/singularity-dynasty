@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { awardLater } from "@/lib/nightSkyStore";
+import SkyCredit from "../../SkyCredit";
 import { resolveTier } from "@/lib/tier";
 import { loadMyPlayers } from "@/lib/myPlayers";
 import { createClient } from "@/lib/supabase/server";
@@ -59,7 +59,6 @@ export default async function PlayerSimulationsPage({ searchParams }) {
     ]);
   const { latest, lastGameWeek } = weekData;
   const hasFullAccess = PAID_TIERS.includes(tier);
-  awardLater(user?.id, "sims"); // a Night Sky star
 
   const { sims, poolRows, totalCount, maxCeiling, wrTePool, simsWithComputed } = buildSimRows({
     cached: weekData,
@@ -77,6 +76,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
   return (
     <>
       <InteractiveScript />
+      {user && <SkyCredit action="sims" />}
 
       <main id="main-content" className="wrap tool-wrap player-sims-wrap">
         {sims.length === 0 ? (

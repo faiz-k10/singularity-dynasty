@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { awardLater } from "@/lib/nightSkyStore";
+import SkyCredit from "../../SkyCredit";
 import { createClient } from "@/lib/supabase/server";
 import { resolveTier } from "@/lib/tier";
 import { loadMyPlayers } from "@/lib/myPlayers";
@@ -35,7 +35,6 @@ export default async function LabPage({ searchParams }) {
     getCachedUsageProfile(),
   ]);
   const { latest } = cached;
-  awardLater(user?.id, "lab"); // a Night Sky star
   const full = PAID_TIERS.includes(tier);
   const simsAccess = tier === "singularity";
 
@@ -55,6 +54,7 @@ export default async function LabPage({ searchParams }) {
   return (
     <>
       <InteractiveScript />
+      {user && <SkyCredit action="lab" />}
       <main id="main-content" className="wrap tool-wrap lab-wrap">
         <div className="eyebrow">{latest ? `Week ${latest.week} · ${latest.season}` : "Research"}</div>
         <h1>The Observatory</h1>

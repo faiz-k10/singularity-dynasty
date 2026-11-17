@@ -1,5 +1,5 @@
 import { must, cachedOrElse } from "@/lib/fetchAllRows";
-import { awardLater } from "@/lib/nightSkyStore";
+import SkyCredit from "../SkyCredit";
 import InteractiveScript from "../InteractiveScript";
 import { createClient } from "@/lib/supabase/server";
 import { createPublicClient } from "@/lib/supabase/public";
@@ -28,7 +28,6 @@ export default async function MyTeamPage({ searchParams }) {
   const welcome = (await searchParams)?.welcome === "1";
   const supabase = await createClient();
   const { user, tier } = await resolveTier(supabase);
-  awardLater(user?.id, "board"); // a Night Sky star
 
   let savedTeams = [];
   if (user) {
@@ -142,6 +141,7 @@ export default async function MyTeamPage({ searchParams }) {
   return (
     <>
       <InteractiveScript />
+      {user && <SkyCredit action="board" />}
 
       <main id="main-content" className="wrap tool-wrap my-team-page-wrap">
         <MyTeamClient
