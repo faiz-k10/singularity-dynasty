@@ -6014,7 +6014,9 @@ select.lab-select{min-width:200px;}
    where a tier starts, heaviest where a group does. The panel surface itself comes from the scoreboard-material list above. */
 .dr-controls{display:flex; flex-wrap:wrap; align-items:center; gap:10px 14px; margin-bottom:14px;}
 .dr-controls .board-toggle{margin-bottom:0;}
-.dr-read{margin-left:auto; font-size:11px; color:var(--star-dim); letter-spacing:.04em;}
+.dyb-search{margin-left:auto;} /* the name search pushed right, the full-screen button after it */
+.dyb-row[hidden]{display:none;}
+.dyb-none{margin:0; padding:24px 16px; font-size:12px; color:var(--star-dim);}
 /* ---- Dynasty Draft Board: the player profile (app/tools/draft-board/DynastyProfile.js) ------------------------------------
    The pane beside the board's list. Flat scoreboard material, one section per question:
    the read, the recipe, his games, his age, who is close, how his rank moves. Charts are SVG in site tokens. */
@@ -6436,11 +6438,11 @@ details.acct-danger > summary.acct-h{color:var(--down)}
 .dyb-rows{overflow-y:auto; flex:1; min-height:0;}
 .dyb-group{display:flex; align-items:baseline; gap:12px; padding:16px 16px 8px 12px; border-top:3px double var(--rule-strong); border-bottom:1px solid var(--rule-strong);}
 .dyb-group:first-child{border-top:0;}
-.dyb-group b{font-family:var(--font-display); font-weight:800; font-size:20px; letter-spacing:.12em; text-transform:uppercase;}
+.dyb-group b{font-family:var(--font-display); font-weight:800; font-size:20px; letter-spacing:.12em; text-transform:uppercase; color:var(--ember);}
 .dyb-group-ix{font-size:11px; color:var(--star-dim); min-width:44px; text-align:right;}
 .dyb-group-n{margin-left:auto; font-size:11px; color:var(--star-dim);}
 .dyb-tier{display:flex; align-items:baseline; gap:12px; padding:8px 16px 6px 68px; border-bottom:1px solid var(--rule);}
-.dyb-tier b{font-family:var(--font-display); font-weight:800; font-size:16px; letter-spacing:.06em; text-transform:uppercase;}
+.dyb-tier b{font-family:var(--font-display); font-weight:800; font-size:16px; letter-spacing:.06em; text-transform:uppercase; color:var(--cobalt);}
 .dyb-tier span{font-size:11px; color:var(--star-dim);}
 .dyb-tier em{margin-left:auto; font-style:normal; font-size:11px; color:var(--star-dim);}
 .dyb-row{all:unset; box-sizing:border-box; display:grid; grid-template-columns:40px minmax(215px,1.5fr) 44px 56px 44px minmax(0,1fr); align-items:stretch; column-gap:14px; width:100%; min-height:52px; padding:0 16px 0 12px; border-bottom:1px solid var(--rule); cursor:pointer; position:relative;}

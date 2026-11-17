@@ -6,6 +6,7 @@ import TeamBadge from "../TeamBadge";
 import DynastyProfile from "./DynastyProfile";
 import { FORMATS, MODES, viewBoard } from "@/lib/dynastyBoard";
 import { coachFor, acquiringGm } from "@/lib/teamStaff";
+import { normalizePlayerName } from "@/lib/portfolio";
 
 // the two context columns: short words, the full sentence for screen readers
 const GM_WORD = { yes: "Yes", no: "No", undrafted: "UDFA", unknown: "—" };
@@ -84,6 +85,7 @@ export default function DynastyBoard({ rows, meta }) {
   const [mode, setMode] = useState("contender");
   const [pos, setPos] = useState("ALL");
   const [pickedId, setPickedId] = useState(null);
+  const [query, setQuery] = useState("");
   const listRef = useRef(null);
   // Full screen: just the controls, the list and the profile -- no page header or spread. Escape leaves it; the page doesn't scroll behind it.
   const [theater, setTheater] = useState(false);
@@ -109,9 +111,13 @@ export default function DynastyBoard({ rows, meta }) {
   const x = (v) => `${Math.max(0, Math.min(100, ((v - lo) / (hi - lo)) * 100))}%`;
   const ticks = []; // labelled every other point when the axis is long; the grid keeps every point
   for (let v = lo; v <= hi; v += hi - lo > 8 ? 2 : 1) ticks.push(v);
-  const m = MODES[mode];
-  // The pane shows the picked player while he is on the list, else the top one.
-  const open = L.find((p) => p.id === pickedId) || L[0] || null;
+  // the name search: rows that don't match are hidden (ranks, groups and tiers stay the board's), a heading shows only above a match
+  const q = normalizePlayerName(query);
+  const hit = q ? L.map((p) => normalizePlayerName(p.name).includes(q)) : null;
+  const shows = (a, b) => !hit || hit.slice(a, b + 1).includes(true);
+  const firstShown = (a, b) => (hit ? a + hit.slice(a, b + 1).indexOf(true) : a);
+  // The pane shows the picked player while he is on the list (and matches the search), else the top one shown.
+  const open = L.find((p, i) => p.id === pickedId && (!hit || hit[i])) || L.find((_, i) => !hit || hit[i]) || L.find((p) => p.id === pickedId) || L[0] || null;
 
   // picking from the spread brings his row into view inside the list
   const pickAndShow = (id) => {
@@ -131,9 +137,13 @@ export default function DynastyBoard({ rows, meta }) {
             </button>
           ))}
         </div>
-        <span className="dr-read mono">
-          Score = {Math.round(m.prod * 100)}% production + {Math.round(m.age * 100)}% age
-        </span>
+        <label className="rk-search dyb-search">
+          <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <circle cx="11" cy="11" r="6.5" />
+            <path d="m20 20-4.2-4.2" />
+          </svg>
+          <input type="search" placeholder="Search a player's name…" value={query} onChange={(e) => setQuery(e.target.value)} aria-label="Search players" />
+        </label>
         <button type="button" className="rankings-theater-btn" onClick={() => setTheater((v) => !v)} aria-label={theater ? "Exit full-screen view" : "Expand to full-screen view"}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             {theater ? <path d="M9 4v3a2 2 0 0 1-2 2H4M20 9h-3a2 2 0 0 1-2-2V4M4 15h3a2 2 0 0 1 2 2v3M15 20v-3a2 2 0 0 1 2-2h3" /> : <path d="M9 4H6a2 2 0 0 0-2 2v3M20 9V6a2 2 0 0 0-2-2h-3M4 15v3a2 2 0 0 0 2 2h3M15 20h3a2 2 0 0 0 2-2v-3" />}
@@ -171,21 +181,21 @@ export default function DynastyBoard({ rows, meta }) {
             {L.map((p, i) => {
               const ti = tiers.findIndex((t) => i >= t.a && i <= t.b);
               const t = tiers[ti];
-              const tie = ties.find((z) => i >= z.a && i <= z.b && z.b > z.a);
+              const tie = !hit && ties.find((z) => i >= z.a && i <= z.b && z.b > z.a); // no tie brackets while searching (the tied rows may be hidden)
               const n = t.b - t.a + 1;
               const g = groups[t.g];
               const gn = g ? g.b - g.a + 1 : 0;
               const band = { left: x(L[t.b].score), width: `calc(${x(L[t.a].score)} - ${x(L[t.b].score)})` };
               return (
                 <Fragment key={p.id}>
-                  {i === t.a && g?.a === i && (
+                  {g && i === firstShown(g.a, g.b) && shows(g.a, g.b) && (
                     <div className="dyb-group">
                       <span className="dyb-group-ix mono">{String(t.g + 1).padStart(2, "0")}</span>
                       <b>{g.name}</b>
                       <span className="dyb-group-n mono">{gn} player{gn > 1 ? "s" : ""} · {L[g.b].score.toFixed(1)}–{L[g.a].score.toFixed(1)}</span>
                     </div>
                   )}
-                  {i === t.a && (
+                  {i === firstShown(t.a, t.b) && shows(t.a, t.b) && (
                     <div className="dyb-tier">
                       <b>Tier {ti + 1}</b>
                       <span className="mono">
@@ -197,6 +207,7 @@ export default function DynastyBoard({ rows, meta }) {
                   <button
                     type="button"
                     data-id={p.id}
+                    hidden={hit ? !hit[i] : undefined}
                     className={`dyb-row${open?.id === p.id ? " is-selected" : ""}${tie ? ` is-tie${i === tie.a ? " is-tie-a" : ""}${i === tie.b ? " is-tie-b" : ""}` : ""}`}
                     aria-pressed={open?.id === p.id}
                     onClick={() => setPickedId(p.id)}
@@ -240,6 +251,7 @@ export default function DynastyBoard({ rows, meta }) {
                 </Fragment>
               );
             })}
+            {hit && !hit.includes(true) && <p className="dyb-none mono">No player on this board matches “{query}”.</p>}
           </div>
           <div className="dyb-key mono">
             <span><i className="k-ci" /> 80% range</span>
