@@ -6405,10 +6405,10 @@ details.acct-danger > summary.acct-h{color:var(--down)}
 .dyb-overview-dl dt{color:var(--star-dim);} .dyb-overview-dl dd{margin:0; text-align:right; color:var(--star);}
 .dyb-spread{position:relative; min-width:0; display:flex; flex-direction:column; justify-content:flex-end; padding-left:34px;} /* the left gutter holds the y axis, inside the same width */
 .dyb-spread-plot{position:relative; height:calc(var(--depth) * 6px + 30px); border-bottom:1px solid var(--rule-strong); border-left:1px solid var(--rule-strong);}
-/* tiers: alternating bands, each with a solid bracket across its top and its number under the bracket */
-.dyb-spread-tier{position:absolute; top:0; bottom:0; background:rgba(var(--star-dot-rgb), .03); border-left:1px solid rgba(var(--star-dot-rgb), .28); border-top:2px solid rgba(var(--star-dot-rgb), .45); box-sizing:border-box;}
+/* tiers: alternating bands starting 14px down the plot, each with a solid bracket across its top and "T<n>" above the bracket */
+.dyb-spread-tier{position:absolute; top:14px; bottom:0; background:rgba(var(--star-dot-rgb), .03); border-left:1px solid rgba(var(--star-dot-rgb), .28); border-top:2px solid rgba(var(--star-dot-rgb), .45); box-sizing:border-box;}
 .dyb-spread-tier.is-alt{background:rgba(var(--star-dot-rgb), .10); border-top-color:rgba(var(--star-dot-rgb), .75);}
-.dyb-spread-tier span{position:absolute; top:3px; left:4px; font-family:var(--font-mono), monospace; font-size:10px; font-weight:700; color:var(--star);}
+.dyb-spread-tier span{position:absolute; bottom:calc(100% + 3px); left:0; font-family:var(--font-mono), monospace; font-size:10px; font-weight:700; line-height:1; color:var(--star); white-space:nowrap;} /* "T7" sits above its tier's bracket */
 .dyb-spread-grid{position:absolute; left:0; right:0; border-top:1px dashed rgba(var(--star-dot-rgb), .14); pointer-events:none;}
 .dyb-spread-y{position:absolute; top:0; bottom:0; right:100%; width:34px;}
 .dyb-spread-y-tick{position:absolute; right:5px; transform:translateY(50%); font-family:var(--font-mono), monospace; font-size:9px; color:var(--star-dim);}

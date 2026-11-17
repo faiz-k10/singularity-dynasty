@@ -58,7 +58,7 @@ function Spread({ L, tiers, groups, openId, onPick }) {
         {yTicks.map((c) => <div key={c} className="dyb-spread-grid" style={{ bottom: `${c * 6 + 2}px` }} aria-hidden="true" />)}
         {tiers.map((t, ti) => (
           <div key={ti} className={`dyb-spread-tier${ti % 2 ? " is-alt" : ""}`} style={span(t.a, t.b)}>
-            {x(L[t.a].score) - x(L[t.b].score) > 2.5 && <span>{ti + 1}</span>}
+            {x(L[t.a].score) - x(L[t.b].score) > 2.5 && <span>T{ti + 1}</span>}
           </div>
         ))}
         {marks.map(({ p, k }) => (
