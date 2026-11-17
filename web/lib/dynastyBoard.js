@@ -26,7 +26,7 @@ export const FORMATS = {
   "1qb": { label: "1QB", key: "por1qb" },
 };  // toggle order on the page: Superflex, 1QB (the page still opens on 1QB)
 // group names, top of the board down (founder, Nov 16 2026); a view with more groups than names reuses the last one
-export const GROUP_NAMES = ["Future Legend", "The Franchise", "Cornerstone", "Core", "Replacement", "Depth", "Fringe", "Taxi Squad", "Waiver Wire"];
+export const GROUP_NAMES = ["Future Legend", "Hall of Famer", "The Franchise", "Cornerstone", "Core", "Replacement", "Depth", "Fringe", "Taxi Squad", "Waiver Wire"];
 export const groupName = (g) => GROUP_NAMES[Math.min(g, GROUP_NAMES.length - 1)];
 // how much of the shipped pool a view shows: the top 120 overall, the top 60 of one position
 export const SHOW = { all: 120, position: 60 };
