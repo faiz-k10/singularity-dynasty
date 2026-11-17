@@ -70,10 +70,13 @@ async function weekPairs(ctx) {
   const { season, week } = cached.latest;
   return { key: `${season}-${week}`, season, week, pairs: pickPairs(cached.rows, season, week) };
 }
-async function gradeFinished(state, ctx) {
+// A week is over once Sleeper has moved past it OR the next week's rankings are published (the Tuesday run only
+// publishes them after every game of the week is final; Sleeper's week only turns on Wednesday).
+async function gradeFinished(state, ctx, latest) {
   const open = Object.entries(state.picks).filter(([, w]) => !w.graded && w.choice?.some((c) => c != null));
+  const before = (season, week, s2, w2) => season < s2 || (season === s2 && week < w2);
   for (const [key, w] of open) {
-    if (!(w.season < ctx.season || (w.season === ctx.season && w.week < ctx.week))) continue; // the week isn't over yet
+    if (!before(w.season, w.week, ctx.season, ctx.week) && !(latest && before(w.season, w.week, latest.season, latest.week))) continue; // the week isn't over yet
     const names = [...new Set(w.pairs.flatMap((p) => [p.a, p.b]))];
     const { data } = await createAdminClient().from("player_game_log").select("player_name, fantasy_points_ppr").eq("season", w.season).eq("week", w.week).in("player_name", names);
     if (!data?.length) continue; // the game log for that week isn't published yet
@@ -88,8 +91,8 @@ export async function loadSky(userId) {
     const [state, ctx] = await Promise.all([read(userId), context()]);
     const rolled = rollSeason(state, ctx.skySeason); // a new NFL season: a new set of constellations
     const before = JSON.stringify(state.picks);
-    await gradeFinished(state, ctx);
     const wk = await weekPairs(ctx);
+    await gradeFinished(state, ctx, wk);
     if (wk && !state.picks[wk.key]) state.picks[wk.key] = { season: wk.season, week: wk.week, pairs: wk.pairs, choice: wk.pairs.map(() => null), graded: false };
     const newSkins = unlockSkins(state, ctx.now).length; // e.g. earned before skins existed, or by graded picks
     if (rolled || newSkins || JSON.stringify(state.picks) !== before) await write(userId, state);
