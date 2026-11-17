@@ -6038,7 +6038,7 @@ select.lab-select{min-width:200px;}
 .dp-links a{color:var(--horizon-gold); text-decoration:none;} .dp-links a:hover{text-decoration:underline; text-underline-offset:3px;}
 .dp-score{display:flex; flex-direction:column; align-items:stretch; gap:14px; margin:0; padding:16px; border:1px solid var(--rule); border-top:2px solid var(--rule-strong); background:rgba(var(--horizon-gold-rgb), .07);}
 .dp-big{flex:0 0 auto; font-family:var(--font-display); font-weight:800; font-size:84px; line-height:.9; color:var(--horizon-gold);}
-.dp-score-side{min-width:0; display:flex; flex-direction:column; gap:6px;}
+.dp-score-side{min-width:0; display:flex; flex-direction:column; gap:6px; text-align:center;} /* eyebrow and facts centred under the dial (founder, Nov 17 2026) */
 .dp-eyebrow{font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--star-dim);}
 .dp-facts{display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:8px 16px; margin:4px 0 2px;}
 .dp-facts > div:last-child{grid-column:1 / -1;} /* the group's name gets the whole row */
