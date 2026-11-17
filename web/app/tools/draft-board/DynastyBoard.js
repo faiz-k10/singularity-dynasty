@@ -245,7 +245,7 @@ export default function DynastyBoard({ rows, meta, complete }) {
           </div>
           <div className="dyb-key mono">
             <span><i className="k-ci" /> 80% range</span>
-            <span><i className="k-pt" /> score</span>
+            <span><i className="k-pt" /> score (relative: the board&apos;s best = 10)</span>
             <span><i className="k-band" /> tier&apos;s score span</span>
             <span>T = tied: the order is a coin flip</span>
             <span>HC was OC: his head coach was once an NFL offensive coordinator</span>

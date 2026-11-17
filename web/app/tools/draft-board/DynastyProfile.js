@@ -202,9 +202,16 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
               <span className="dp-r-eq mono">{ageC.toFixed(1)}</span>
             </div>
             <div className="dp-r-sub mono">{p.pos}s of the age he will be in {AGE_LOOKAHEAD} years ({keptAge.toFixed(1)}) keep about {Math.round(kept * 100)}% of their production over the three seasons after that</div>
+            <div className="dp-r-row">
+              <span className="dp-r-name">Relative to the board</span>
+              <span className="dp-r-val mono">{p.raw.toFixed(1)}</span>
+              <span className="dp-r-w mono">× {p.scale.toFixed(2)}</span>
+              <span className="dp-r-eq mono">{p.score.toFixed(1)}</span>
+            </div>
+            <div className="dp-r-sub mono">every score is multiplied by the same number so the best player on the board reads 10.0</div>
             <div className="dp-stack" role="img" aria-label="Production and age shares of the score">
-              <span className="dp-stack-prod" style={{ width: `${Math.max(0, prodC) * 10}%` }} />
-              <span className="dp-stack-age" style={{ width: `${Math.max(0, ageC) * 10}%` }} />
+              <span className="dp-stack-prod" style={{ width: `${Math.max(0, prodC * p.scale) * 10}%` }} />
+              <span className="dp-stack-age" style={{ width: `${Math.max(0, ageC * p.scale) * 10}%` }} />
             </div>
             <div className="dp-r-row is-total"><span className="dp-r-name">Dynasty score</span><span className="dp-r-eq mono">{p.score.toFixed(1)}</span></div>
           </div>

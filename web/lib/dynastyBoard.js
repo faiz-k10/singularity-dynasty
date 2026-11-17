@@ -31,7 +31,8 @@ export const SHOW = { all: 120, position: 60 };
 
 // The rows a view draws: scored for the format and mode, optionally one position, cut to SHOW.
 export function boardRows(rows, { format, mode, pos }) {
-  const L = scoreRows(pos && pos !== "ALL" ? rows.filter((r) => r.pos === pos) : rows, format, mode);
+  const all = scoreRows(rows, format, mode); // scored over everyone first, so the scale is the whole board's
+  const L = pos && pos !== "ALL" ? all.filter((r) => r.pos === pos) : all;
   return L.slice(0, pos && pos !== "ALL" ? SHOW.position : SHOW.all);
 }
 
@@ -104,16 +105,24 @@ export function staffTiebreak(r) {
 }
 
 // Scores, ranges (80%: 10th to 90th percentile) and sd for the chosen format and mode, best first.
+// RELATIVE (founder, Nov 16 2026: "rescale it, dynasty rankings are always relative"): the recipe (prod x weight + age x weight)
+// gives `raw`; every score, sd and range is then multiplied by `scale` = 10 / the best raw score among the rows passed in, so the
+// best player on the board reads 10.0. A plain multiplication: order, tiers (they read score gaps over sd) and ties are unchanged.
+// Pass the WHOLE pool (boardRows filters positions after scoring), or the top of a position would read 10 too.
 export function scoreRows(rows, formatKey, modeKey) {
   const f = FORMATS[formatKey] || FORMATS["1qb"], m = MODES[modeKey] || MODES.contender;
-  return rows
-    .map((r) => {
-      // a mode with `short` reads the 17-game production numbers (ppg, games, production score, sd); the row carries the ones in use
-      const s = m.short && r.ppgS != null;
-      const prod = s ? r[f.key + "S"] : r[f.key], sdProd = s ? r.sdProdS : r.sdProd;
-      const score = m.prod * prod + m.age * r.ageValue;
-      const sd = m.prod * sdProd;
-      return { ...r, ppg: s ? r.ppgS : r.ppg, games: s ? r.gamesS : r.games, prod, score, sd, lo: score - 1.2816 * sd, hi: score + 1.2816 * sd };
+  const raw = rows.map((r) => {
+    // a mode with `short` reads the 17-game production numbers (ppg, games, production score, sd); the row carries the ones in use
+    const s = m.short && r.ppgS != null;
+    const prod = s ? r[f.key + "S"] : r[f.key], sdProd = s ? r.sdProdS : r.sdProd;
+    return { r, s, prod, raw: m.prod * prod + m.age * r.ageValue, rawSd: m.prod * sdProd };
+  });
+  const top = Math.max(...raw.map((x) => x.raw));
+  const scale = top > 0 ? 10 / top : 1;
+  return raw
+    .map(({ r, s, prod, raw: rs, rawSd }) => {
+      const score = rs * scale, sd = rawSd * scale;
+      return { ...r, ppg: s ? r.ppgS : r.ppg, games: s ? r.gamesS : r.games, prod, raw: rs, scale, score, sd, lo: score - 1.2816 * sd, hi: score + 1.2816 * sd };
     })
     // same score as shown (1 decimal): first the staff tiebreak (staffTiebreak), then the player earlier on his own position's age curve
     // (higher age value = more years at this level), then the younger

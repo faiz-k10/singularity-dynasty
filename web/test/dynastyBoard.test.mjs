@@ -16,8 +16,8 @@ test("phi is the standard normal CDF", () => {
 
 test("mode weights and format pick the score", () => {
   const rows = [row("A", "QB", 4, 9, 8)];
-  assert.ok(Math.abs(scoreRows(rows, "1qb", "contender")[0].score - (0.8 * 4 + 0.2 * 8)) < 1e-9);
-  assert.ok(Math.abs(scoreRows(rows, "sf", "rebuilder")[0].score - (0.5 * 9 + 0.5 * 8)) < 1e-9);
+  assert.ok(Math.abs(scoreRows(rows, "1qb", "contender")[0].raw - (0.8 * 4 + 0.2 * 8)) < 1e-9);
+  assert.ok(Math.abs(scoreRows(rows, "sf", "rebuilder")[0].raw - (0.5 * 9 + 0.5 * 8)) < 1e-9);
 });
 
 test("a quarterback climbs from 1QB to superflex", () => {
@@ -28,8 +28,8 @@ test("a quarterback climbs from 1QB to superflex", () => {
 
 test("ranges are an 80% interval around the score", () => {
   const [r] = scoreRows([row("A", "WR", 9, 9, 9, 3)], "1qb", "contender");
-  assert.ok(Math.abs(r.hi - r.score - 1.2816 * 0.8 * 3) < 1e-9);
-  assert.ok(Math.abs(r.score - r.lo - 1.2816 * 0.8 * 3) < 1e-9);
+  assert.ok(Math.abs(r.hi - r.score - 1.2816 * 0.8 * 3 * r.scale) < 1e-9);
+  assert.ok(Math.abs(r.score - r.lo - 1.2816 * 0.8 * 3 * r.scale) < 1e-9);
 });
 
 test("a player below replacement ranks below one at replacement when their ages are alike", () => {
@@ -119,7 +119,7 @@ test("profileRead: only facts from his own numbers", () => {
 
 test("same displayed score: the younger player ranks first", () => {
   const mk = (id, age, ageValue, por) => ({ id, age, ageValue, ppg: 10, porSf: por, por1qb: por, sdProd: 1 });
-  const out = scoreRows([mk("old", 31, 5, 5.04), mk("young", 24, 5, 5.0)], "sf", "contender");
+  const out = scoreRows([mk("top", 25, 10, 10), mk("old", 31, 5, 5.04), mk("young", 24, 5, 5.0)], "sf", "contender").slice(1); // "top" (raw 10) keeps the scale at 1
   assert.equal(out[0].id, "young");
 });
 
@@ -145,8 +145,8 @@ test("Rebuilder reads the 17-game production numbers, Contender the 34-game ones
   const d = { columns: cols, rows: [["a", "A", "WR", "X", 25, 34, 12, 5, 2, 2, 1, 15, 17, 4, 4, 2]] };
   const [r] = rowsFromData(d);
   const con = scoreRows([r], "1qb", "contender")[0], reb = scoreRows([r], "1qb", "rebuilder")[0];
-  assert.equal(con.ppg, 12); assert.equal(con.games, 34); assert.equal(con.prod, 2); assert.equal(con.sd, 0.8 * 1);
-  assert.equal(reb.ppg, 15); assert.equal(reb.games, 17); assert.equal(reb.prod, 4); assert.equal(reb.sd, 0.5 * 2);
+  assert.equal(con.ppg, 12); assert.equal(con.games, 34); assert.equal(con.prod, 2); assert.equal(con.sd, 0.8 * 1 * con.scale);
+  assert.equal(reb.ppg, 15); assert.equal(reb.games, 17); assert.equal(reb.prod, 4); assert.equal(reb.sd, 0.5 * 2 * reb.scale);
   // an older data file with no short columns: Rebuilder falls back to the long numbers
   const old = rowsFromData({ columns: cols.slice(0, 11), rows: [["a", "A", "WR", "X", 25, 34, 12, 5, 2, 2, 1]] });
   assert.equal(scoreRows(old, "1qb", "rebuilder")[0].ppg, 12);
@@ -174,4 +174,13 @@ test("staff tiebreak orders players with the same shown score: both, then HC was
   // it never beats a higher shown score
   rows[0].porSf = 6.2;
   assert.equal(scoreRows(rows, "sf", "contender")[0].id, "neither");
+});
+
+test("scores are relative: the best on the board reads 10, filtering a position keeps the board's scale", () => {
+  const rows = [row("QB1", "QB", 6, 6, 6), row("WR1", "WR", 4, 4, 6), row("WR2", "WR", 2, 2, 6)];
+  const L = scoreRows(rows, "1qb", "contender");
+  assert.ok(Math.abs(L[0].score - 10) < 1e-9);
+  assert.ok(Math.abs(L[1].score / L[0].score - L[1].raw / L[0].raw) < 1e-9); // a plain multiplication
+  const wr = boardRows(rows, { format: "1qb", mode: "contender", pos: "WR" });
+  assert.ok(wr[0].score < 10 && Math.abs(wr[0].score - L[1].score) < 1e-9);
 });

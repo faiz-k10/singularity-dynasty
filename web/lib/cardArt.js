@@ -290,7 +290,7 @@ export function DynastyCard({ f, host, data, img }) {
           <div style={{ display: "flex", marginTop: tall ? 22 : "auto", marginBottom: 14, fontSize: tall ? 22 : 18, color: C.steel }}>{`${fmt1(p.ppg)} PPR points a game, recency-weighted over his last ${Math.min(p.games, 34)} games`}</div>
         </div>
         <div style={{ display: "flex", flexDirection: "column", ...(tall ? { marginTop: "auto", marginBottom: 40 } : { flexGrow: 1, marginLeft: 40, borderLeft: `2px solid ${C.rule}`, paddingLeft: 36 }) }}>
-          <Label size={tall ? 20 : 17}>Dynasty score · 1 to 10</Label>
+          <Label size={tall ? 20 : 17}>Dynasty score · best on the board = 10</Label>
           <div style={{ display: "flex", alignItems: "flex-end" }}>
             <div style={{ display: "flex", fontFamily: DISPLAY, fontSize: big, lineHeight: 0.95, color: C.mint }}>{p.score.toFixed(1)}</div>
             <div style={{ display: "flex", flexDirection: "column", marginLeft: 22, marginBottom: 22, fontSize: tall ? 22 : 18, color: C.steel }}>
