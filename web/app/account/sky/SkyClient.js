@@ -97,7 +97,6 @@ function RarestInSky({ state }) {
     <g className="sky-rarest" aria-label={`Your rarest find: ${rarest.name}`}>
       {place.orbit && <circle r={place.orbit} className={place.belt ? "sky-orbit is-belt" : "sky-orbit"} />}
       <image ref={img} x={place.x - art / 2} y={place.y - art / 2} width={art} height={art} />
-      <text className="sky-creal" x={place.x} y={place.y + place.size / 2 + 13} textAnchor="middle">{rarest.name}</text>
     </g>
   );
 }

@@ -11,17 +11,18 @@
 // anything. Pure: coordinates are the sky's own (core at 0,0).
 import { FAMILIES } from "./nightSky.js";
 
+// sizes were raised 35% on Nov 17 2026 (founder: "make it a bit bigger")
 const ZONES = {
-  planet: { r: 128, size: 46, orbit: true }, banded: { r: 128, size: 50, orbit: true }, ringed: { r: 132, size: 62, orbit: true },
-  lava: { r: 118, size: 46, orbit: true }, locked: { r: 118, size: 44, orbit: true }, diamond: { r: 128, size: 40, orbit: true },
-  moon: { r: 132, size: 50, orbit: true },
-  rock: { r: 172, size: 30, orbit: "belt" }, rubble: { r: 172, size: 32, orbit: "belt" }, twin: { r: 172, size: 34, orbit: "belt" }, dust: { r: 172, size: 40, orbit: "belt" },
-  comet: { r: 180, size: 70, comet: true },
-  dwarf: { r: 220, size: 34, orbit: true },
-  rogue: { r: 250, size: 40, far: true },
-  shower: { r: 230, size: 84, far: true, prefer: -90 },
-  supernova: { r: 262, size: 78, far: true }, pulsar: { r: 262, size: 70, far: true }, blackhole: { r: 266, size: 80, far: true },
-  quasar: { r: 272, size: 64, far: true }, nebula: { r: 262, size: 90, far: true }, star: { r: 258, size: 66, far: true },
+  planet: { r: 128, size: 62, orbit: true }, banded: { r: 128, size: 68, orbit: true }, ringed: { r: 132, size: 84, orbit: true },
+  lava: { r: 118, size: 62, orbit: true }, locked: { r: 118, size: 59, orbit: true }, diamond: { r: 128, size: 54, orbit: true },
+  moon: { r: 132, size: 68, orbit: true },
+  rock: { r: 172, size: 40, orbit: "belt" }, rubble: { r: 172, size: 43, orbit: "belt" }, twin: { r: 172, size: 46, orbit: "belt" }, dust: { r: 172, size: 54, orbit: "belt" },
+  comet: { r: 180, size: 94, comet: true },
+  dwarf: { r: 220, size: 46, orbit: true },
+  rogue: { r: 250, size: 54, far: true },
+  shower: { r: 230, size: 113, far: true, prefer: -90 },
+  supernova: { r: 262, size: 105, far: true }, pulsar: { r: 262, size: 94, far: true }, blackhole: { r: 266, size: 108, far: true },
+  quasar: { r: 272, size: 86, far: true }, nebula: { r: 262, size: 122, far: true }, star: { r: 258, size: 89, far: true },
 };
 export const zoneOf = (fam) => ZONES[FAMILIES[fam]?.shape] || ZONES.rock;
 
