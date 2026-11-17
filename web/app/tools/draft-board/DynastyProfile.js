@@ -4,7 +4,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import PositionBadge from "../PositionBadge";
 import TeamBadge from "../TeamBadge";
-import { AGE_LOOKAHEAD, FORMATS, GROUP_NAMES, MODES, scoreRows } from "@/lib/dynastyBoard";
+import { AGE_LOOKAHEAD, FORMATS, GROUP_NAMES, MODES } from "@/lib/dynastyBoard";
 import { formatHeight } from "@/lib/format";
 import { coachFor, acquiringGm } from "@/lib/teamStaff";
 import ShareCardButton from "../../ShareCardButton";
@@ -157,7 +157,7 @@ function useFitName(names) {
 
 // ---- the panel -----------------------------------------------------------------------------------------------------
 // The picked player's profile, in the pane beside the board's list (DynastyBoard.js).
-export default function DynastyProfile({ player: p, rows, L, board, format, mode, meta, complete }) {
+export default function DynastyProfile({ player: p, rows, L, board, format, mode, meta }) {
   const data = useProfileData(p.id);
   const allNames = useMemo(() => rows.map((r) => r.name), [rows]); // every player shipped to this viewer, not just this view
   const nameRef = useFitName(allNames);
@@ -168,14 +168,8 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
   const tier = board.tiers.find((t) => i >= t.a && i <= t.b);
   const group = board.groups[tier.g];
 
-  // rank over the whole shipped pool, in every format and mode (only honest when the pool is the whole board)
-  const grid = useMemo(() => {
-    if (!complete) return null;
-    return Object.keys(FORMATS).flatMap((fk) => Object.keys(MODES).map((mk) => {
-      const S = scoreRows(rows, fk, mk), at = S.findIndex((r) => r.id === p.id);
-      return { fk, mk, rank: at + 1, score: S[at].score, posRank: S.filter((r) => r.pos === p.pos).findIndex((r) => r.id === p.id) + 1 };
-    }));
-  }, [complete, rows, p.id, p.pos]);
+  // his rank in every format and mode, worked out on the server over the whole board (rankGrid)
+  const grid = p.ranks ? Object.entries(p.ranks).map(([k, c]) => { const [fk, mk] = k.split(":"); return { fk, mk, ...c }; }) : null;
   const here = grid?.find((c) => c.fk === format && c.mk === mode);
 
   const repl = (m.short ? meta.replacementShort : meta.replacement)[format.toUpperCase()][p.pos];

@@ -79,7 +79,7 @@ function Spread({ L, tiers, groups, openId, onPick }) {
 // The dynasty rankings as a board: the spread on top, then the ranked list (group and tier headings between the rows, each
 // player's 80% range on one shared axis, his tier's score span shaded behind it) and the picked player's profile beside it.
 // Tiers, groups and ties come from lib/dynastyBoard.js.
-export default function DynastyBoard({ rows, meta, complete }) {
+export default function DynastyBoard({ rows, meta }) {
   const [format, setFormat] = useState("sf");
   const [mode, setMode] = useState("contender");
   const [pos, setPos] = useState("ALL");
@@ -254,7 +254,7 @@ export default function DynastyBoard({ rows, meta, complete }) {
           </div>
         </div>
         <div className="dyb-pane">
-          {open && <DynastyProfile key={`${open.id}-${format}-${mode}`} player={open} rows={rows} L={L} board={{ groups, tiers, ties }} format={format} mode={mode} meta={meta} complete={complete} />}
+          {open && <DynastyProfile key={`${open.id}-${format}-${mode}`} player={open} rows={rows} L={L} board={{ groups, tiers, ties }} format={format} mode={mode} meta={meta} />}
         </div>
       </div>
     </div>

@@ -170,3 +170,18 @@ test("scores are relative: the best on the board reads 10, filtering a position 
   const wr = boardRows(rows, { format: "1qb", mode: "contender", pos: "WR" });
   assert.ok(wr[0].score < 10 && Math.abs(wr[0].score - L[1].score) < 1e-9);
 });
+
+test("rankGrid: ranks every player in every format and mode over the whole pool", async () => {
+  const { rankGrid, scoreRows, FORMATS, MODES } = await import("../lib/dynastyBoard.js");
+  const { rowsFromData } = await import("../lib/dynastyBoard.js");
+  const data = (await import("../data/dynasty-values.json", { with: { type: "json" } })).default;
+  const rows = rowsFromData(data), g = rankGrid(rows);
+  for (const fk of Object.keys(FORMATS)) for (const mk of Object.keys(MODES)) {
+    const S = scoreRows(rows, fk, mk);
+    S.forEach((r, i) => {
+      const c = g.get(r.id)[`${fk}:${mk}`];
+      assert.equal(c.rank, i + 1);
+      assert.equal(c.posRank, S.filter((x) => x.pos === r.pos).findIndex((x) => x.id === r.id) + 1);
+    });
+  }
+});

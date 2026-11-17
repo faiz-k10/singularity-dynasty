@@ -129,6 +129,20 @@ export function scoreRows(rows, formatKey, modeKey) {
     .sort((a, b) => Math.round(b.score * 10) - Math.round(a.score * 10) || staffTiebreak(b) - staffTiebreak(a) || b.ageValue - a.ageValue || a.age - b.age || b.score - a.score || b.ppg - a.ppg);
 }
 
+// Each player's overall rank, position rank and score in every format x mode, counted over the WHOLE pool (the profile's
+// rank matrix; worked out on the server so a viewer shown only part of the board still sees true ranks).
+export function rankGrid(rows) {
+  const out = new Map(rows.map((r) => [r.id, {}]));
+  for (const fk of Object.keys(FORMATS)) for (const mk of Object.keys(MODES)) {
+    const pos = {};
+    scoreRows(rows, fk, mk).forEach((r, i) => {
+      pos[r.pos] = (pos[r.pos] || 0) + 1;
+      out.get(r.id)[`${fk}:${mk}`] = { rank: i + 1, posRank: pos[r.pos], score: r.score };
+    });
+  }
+  return out;
+}
+
 // z of "row i beats row j" for i above j (sorted best first)
 const zOf = (L, i, j) => (L[i].score - L[j].score) / Math.hypot(L[i].sd, L[j].sd);
 

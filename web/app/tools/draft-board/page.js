@@ -24,7 +24,7 @@ async function RankingsView({ hasFullAccess }) {
             <h1>Dynasty Board</h1>
           </div>
         </div>
-        <DynastyBoard rows={rows} meta={meta} complete={rows.length === total} />
+        <DynastyBoard rows={rows} meta={meta} />
         {!hasFullAccess && (
           <div className="tool-paywall reveal in" data-wall="dynasty-board">
             <p>
