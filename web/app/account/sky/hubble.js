@@ -97,3 +97,59 @@ export function Cloud({ id, cx = 0, cy = 0, rx, ry, rot = 0, color, freq = 0.012
     </g>
   );
 }
+
+// ---- Foreground polish (Nov 17 2026, founder: the stars and core must stand out from the nebula and the background stars, like a
+// professionally designed poster). `Scrim` dims and vignettes everything drawn BEFORE it (nebula, field stars, galaxies) so what is
+// drawn after reads as the subject; `LitStar` is a catalogue-grade star: wide bloom, a coloured halo, long diffraction spikes, the star
+// itself with a white-hot centre; `Bloom` is a big soft light for the core.
+export function Scrim({ w = 960, h = 600, id }) {
+  const gid = `${id}scrim`;
+  return (
+    <g aria-hidden="true">
+      <defs>
+        <radialGradient id={gid} cx=".5" cy=".5" r=".72"><stop offset="0" style={{ stopColor: "var(--sky-scrim, #000)" }} stopOpacity=".34" /><stop offset=".55" style={{ stopColor: "var(--sky-scrim, #000)" }} stopOpacity=".5" /><stop offset="1" style={{ stopColor: "var(--sky-scrim, #000)" }} stopOpacity=".86" /></radialGradient>
+      </defs>
+      <rect x={-w / 2} y={-h / 2} width={w} height={h} fill={`url(#${gid})`} />
+    </g>
+  );
+}
+
+export function LitStar({ x, y, r, color, spikes = true }) {
+  const id = useId().replace(/[^a-zA-Z0-9_-]/g, "");
+  const c = { stopColor: color };
+  return (
+    <g aria-hidden="true">
+      <defs>
+        <radialGradient id={`${id}b`}><stop offset="0" style={c} stopOpacity=".9" /><stop offset=".22" style={c} stopOpacity=".42" /><stop offset=".55" style={c} stopOpacity=".12" /><stop offset="1" style={c} stopOpacity="0" /></radialGradient>
+      </defs>
+      <circle cx={x} cy={y} r={r * 9} fill={`url(#${id}b)`} />
+      <circle cx={x} cy={y} r={r * 2.3} fill="none" style={{ stroke: color }} strokeOpacity=".55" strokeWidth={Math.max(0.6, r * 0.18)} />
+      {spikes && <Spikes x={x} y={y} len={r * 10} color={color} width={Math.max(0.8, r * 0.22)} opacity={0.95} />}
+      <circle cx={x} cy={y} r={r * 1.3} style={{ fill: color }} />
+      <circle cx={x} cy={y} r={r * 0.6} fill="#FFFFFF" fillOpacity=".95" />
+    </g>
+  );
+}
+
+// A lit constellation line: a wide faint glow under a mid glow under the crisp line.
+export function GlowLine({ x1, y1, x2, y2, color }) {
+  const p = { x1, y1, x2, y2, style: { stroke: color }, strokeLinecap: "round", fill: "none" };
+  return (
+    <g aria-hidden="true">
+      <line {...p} strokeWidth="9" strokeOpacity=".1" />
+      <line {...p} strokeWidth="4.5" strokeOpacity=".22" />
+      <line {...p} strokeWidth="1.6" strokeOpacity=".95" />
+    </g>
+  );
+}
+
+export function Bloom({ r, id, inner = "#FFF4DE", outer = "#CFE0FF" }) {
+  return (
+    <g aria-hidden="true">
+      <defs>
+        <radialGradient id={`${id}bl`}><stop offset="0" stopColor={inner} stopOpacity=".55" /><stop offset=".3" stopColor={outer} stopOpacity=".26" /><stop offset=".65" stopColor={outer} stopOpacity=".07" /><stop offset="1" stopColor={outer} stopOpacity="0" /></radialGradient>
+      </defs>
+      <circle r={r} fill={`url(#${id}bl)`} />
+    </g>
+  );
+}

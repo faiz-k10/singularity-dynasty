@@ -3,7 +3,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { FAMILIES, COLOURS, skyFor, seasonProgress, COLORS as STAR } from "@/lib/nightSky";
 import { SkyBackdrop, CoreSkin } from "./skins";
-import { StarField, Galaxies, Spikes } from "./hubble";
+import { StarField, Galaxies, Spikes, Scrim, LitStar, GlowLine, Bloom } from "./hubble";
 
 // The Night Sky's pictures (from mockups/night-sky.html, which the founder approved): one renderer per kind of object, coloured by the find's
 // colour and finished by its version, drawn on a canvas; the telescope reveal (the picture sharpens out of noise); and the share cards.
@@ -106,7 +106,7 @@ export const setCardFrame = (f) => { cardFrame = f || null; };
 
 // The skins on a card are the SAME art as the page (SkyBackdrop / CoreSkin in ./skins.js), rendered to an SVG picture and drawn onto the canvas,
 // so the cards always match what the member sees. Cards are always the dark sky, so the theme-aware colours get their dark values here.
-const DARK_VARS = { "--sky-gold": "#E9C46A", "--sky-band": "#D9CFC0", "--sky-white": "#ECE7DC", "--sky-glow": "#CFE0FF", "--sky-blue": "#4C7DF0", "--sky-ember": "#E8643F", "--star": "#ECE7DC", "--sky-t-blue": "#CFE0FF", "--sky-t-white": "#F4F1EA", "--sky-t-gold": "#FFE3A8", "--sky-t-orange": "#FFB57A", "--sky-gal-warm": "#F2C894", "--sky-gal-cool": "#A9C4FF" };
+const DARK_VARS = { "--sky-gold": "#E9C46A", "--sky-band": "#D9CFC0", "--sky-white": "#ECE7DC", "--sky-glow": "#CFE0FF", "--sky-blue": "#4C7DF0", "--sky-ember": "#E8643F", "--star": "#ECE7DC", "--sky-t-blue": "#CFE0FF", "--sky-t-white": "#F4F1EA", "--sky-t-gold": "#FFE3A8", "--sky-t-orange": "#FFB57A", "--sky-gal-warm": "#F2C894", "--sky-gal-cool": "#A9C4FF", "--sky-scrim": "#000" };
 // Renders a whole <svg> through React (so SVG elements like linearGradient are recognised) and loads it as a picture.
 function svgPicture(children, viewBox, w, h) {
   const markup = renderToStaticMarkup(<svg xmlns="http://www.w3.org/2000/svg" width={w} height={h} viewBox={viewBox} style={DARK_VARS}>{children}</svg>);
@@ -124,6 +124,7 @@ async function drawBackdrop(ctx) {
       <Galaxies id="cg" seed={31} n={18} span={840} />
       <StarField seed={7} n={260} span={840} spikes={8} />
       <SkyBackdrop skin={cardSkin.sky} />
+      <Scrim id="cs0" w={840} h={440} />
     </>,
     "-420 -220 840 440", 1200, 630,
   );
@@ -134,6 +135,7 @@ async function drawCore(ctx, cx, cy, scale = 1) {
   const k = cardSkin.core, body = k === "horizon" ? "#0B0B0B" : "#ECE7DC";
   const inner = (
     <>
+      <Bloom r={300} id="cb" />
       <CoreSkin skin={k} layer="back" />
       <circle r="56" fill="none" stroke="#E8643F" strokeWidth="2" />
       <circle r="46" fill={body} />
@@ -141,7 +143,7 @@ async function drawCore(ctx, cx, cy, scale = 1) {
         <>
           <defs><radialGradient id="cs" cx=".42" cy=".4"><stop offset="0" stopColor="#FFFFFF" stopOpacity=".95" /><stop offset=".45" stopColor="#FFFFFF" stopOpacity=".25" /><stop offset=".85" stopColor="#000000" stopOpacity="0" /><stop offset="1" stopColor="#000000" stopOpacity=".22" /></radialGradient></defs>
           <circle r="46" fill="url(#cs)" />
-          <Spikes x={0} y={0} len={92} color="#F4F1EA" width={1.2} opacity={0.45} />
+          <Spikes x={0} y={0} len={150} color="#F4F1EA" width={1.4} opacity={0.8} />
         </>
       )}
       <CoreSkin skin={k} layer="front" />
@@ -154,6 +156,8 @@ async function drawCore(ctx, cx, cy, scale = 1) {
 async function base(ctx, eyebrow) {
   ctx.fillStyle = "#0B0B0B"; ctx.fillRect(0, 0, 1200, 630);
   await drawBackdrop(ctx);
+  const shade = ctx.createLinearGradient(0, 0, 760, 0); shade.addColorStop(0, "rgba(0,0,0,.62)"); shade.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.fillStyle = shade; ctx.fillRect(0, 0, 1200, 630); // keeps the words readable over the nebula
   if (cardFrame) { ctx.strokeStyle = cardFrame === "gold" ? "#E9C46A" : "#C9CED6"; ctx.lineWidth = 10; ctx.strokeRect(5, 5, 1190, 620); ctx.lineWidth = 1.5; ctx.strokeRect(20, 20, 1160, 590); }
   ctx.fillStyle = "#E8643F"; ctx.fillRect(0, 0, 1200, 6); ctx.fillRect(64, 70, 10, 10);
   ctx.fillStyle = "#A39E92"; ctx.font = `400 20px ${font("--font-mono")}`; ctx.fillText(eyebrow.toUpperCase(), 88, 81);
@@ -203,13 +207,9 @@ export async function seasonCard(state, { title, size, rarest }) {
         const f = state.filled[c.id] || [];
         return (
           <g key={c.id}>
-            {c.edges.map(([i, j]) => { const lit = f[i] && f[j]; return <line key={`${i}-${j}`} x1={c.pts[i][0]} y1={c.pts[i][1]} x2={c.pts[j][0]} y2={c.pts[j][1]} stroke={lit ? STAR[c.color] : "#ECE7DC"} strokeOpacity={lit ? 0.75 : 0.18} strokeWidth={lit ? 1.6 : 1} strokeDasharray={lit ? undefined : "2 3"} />; })}
+            {c.edges.map(([i, j]) => { const lit = f[i] && f[j]; return lit ? <GlowLine key={`${i}-${j}`} x1={c.pts[i][0]} y1={c.pts[i][1]} x2={c.pts[j][0]} y2={c.pts[j][1]} color={STAR[c.color]} /> : <line key={`${i}-${j}`} x1={c.pts[i][0]} y1={c.pts[i][1]} x2={c.pts[j][0]} y2={c.pts[j][1]} stroke="#ECE7DC" strokeOpacity={0.24} strokeWidth={1} strokeDasharray="2 3" />; })}
             {c.pts.map(([x, y, r], i) => (f[i] ? (
-              <g key={i}>
-                <circle cx={x} cy={y} r={r * 3.2} fill={STAR[f[i]]} fillOpacity=".18" />
-                <circle cx={x} cy={y} r={r} fill={STAR[f[i]]} />
-                <Spikes x={x} y={y} len={r * 4} color={STAR[f[i]]} width={0.8} opacity={0.8} />
-              </g>
+              <LitStar key={i} x={x} y={y} r={r * 1.25} color={STAR[f[i]]} />
             ) : <circle key={i} cx={x} cy={y} r={r + 0.8} fill="none" stroke="#ECE7DC" strokeOpacity=".35" strokeDasharray="2 2" />))}
           </g>
         );

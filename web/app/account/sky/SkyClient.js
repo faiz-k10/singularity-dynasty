@@ -6,7 +6,7 @@ import Link from "next/link";
 import ShareDialog from "../../ShareDialog";
 import { seeFinds, pickPlayer, claim, wearSkin } from "./actions";
 import { SkyBackdrop, CoreSkin, SkinPreview } from "./skins";
-import { StarField, Galaxies, Spikes } from "./hubble";
+import { StarField, Galaxies, Spikes, Scrim, LitStar, GlowLine, Bloom } from "./hubble";
 import { drawObject, sharpen, findCard, receiptCard, seasonCard, toBlob, setCardBadge, setCardSkin, setCardFrame } from "./skyArt";
 import {
   ACTIONS, skyFor, SKINS, RARITY, hasSkin, equipped, skySkinsFor, FAMILIES, COLOURS, VERSIONS, TIER_NAME, POWERUPS, LADDER, rungLabel, CATALOGUE_SIZE, SET_COUNT, UNLOCK, EVENT_TEXT,
@@ -43,6 +43,7 @@ function Core({ mass, collapsed, skin }) {
       <defs>
         <radialGradient id={`${gid}c`} cx=".42" cy=".4"><stop offset="0" stopColor="#FFFFFF" stopOpacity=".95" /><stop offset=".45" stopColor="#FFFFFF" stopOpacity=".25" /><stop offset=".85" stopColor="#000000" stopOpacity="0" /><stop offset="1" stopColor="#000000" stopOpacity=".22" /></radialGradient>
       </defs>
+      <Bloom r={190} id={gid} />
       <circle className="sky-core-glow" r="70" />
       {ticks.map((t, i) => <line key={i} className={`sky-core-tick${t.lit ? ` is-lit is-${t.band}` : ""}`} x1={t.x1} y1={t.y1} x2={t.x2} y2={t.y2} />)}
       <circle className="sky-core-debris" r="62" />
@@ -51,7 +52,7 @@ function Core({ mass, collapsed, skin }) {
       <circle className="sky-core-body" r="44" />
       {/* a luminous star, Hubble-style: a bright centre falling off to the edge, a soft halo and four diffraction spikes (dark theme only) */}
       <circle className="sky-core-shine" r="44" fill={`url(#${gid}c)`} />
-      <g className="sky-core-spikes"><Spikes x={0} y={0} len={92} color="var(--sky-t-white)" width={1.2} opacity={0.45} /></g>
+      <g className="sky-core-spikes"><Spikes x={0} y={0} len={150} color="var(--sky-t-white)" width={1.4} opacity={0.8} /></g>
       <CoreSkin skin={skin} layer="front" />
       {collapsed && <circle className="sky-core-lens" r="49" />}
       {/* a solid plate behind the readout so the star field can't run through the words (founder, Nov 12 2026) */}
@@ -96,6 +97,7 @@ function Sky({ state, pendingPicks, pending }) {
       <SkyBackdrop skin={equipped(state).sky} />
       <Galaxies id={fid} seed={31} n={19} w={960} />
       <StarField seed={7} n={270} w={960} spikes={8} />
+      <Scrim id={fid} />
       {skyFor(state.season).map((c) => {
         const f = state.filled[c.id] || [];
         if (!open) return <g key={c.id}>{c.pts.map(([x, y], i) => f[i] ? <circle key={i} cx={x} cy={y} r={3} fill="var(--star)" /> : null)}</g>;
@@ -106,10 +108,12 @@ function Sky({ state, pendingPicks, pending }) {
           <g key={c.id}>
             {c.edges.map(([i, j]) => {
               const lit = f[i] && f[j];
-              return <line key={`l${i}-${j}`} x1={c.pts[i][0]} y1={c.pts[i][1]} x2={c.pts[j][0]} y2={c.pts[j][1]} stroke={lit ? STAR[c.color] : "var(--star)"} strokeWidth={lit ? 1.3 : 0.8} opacity={lit ? 0.7 : 0.14} strokeDasharray={lit ? undefined : "2 3"} />;
+              return lit
+                ? <GlowLine key={`l${i}-${j}`} x1={c.pts[i][0]} y1={c.pts[i][1]} x2={c.pts[j][0]} y2={c.pts[j][1]} color={STAR[c.color]} />
+                : <line key={`l${i}-${j}`} x1={c.pts[i][0]} y1={c.pts[i][1]} x2={c.pts[j][0]} y2={c.pts[j][1]} stroke="var(--star)" strokeWidth={0.8} opacity={0.22} strokeDasharray="2 3" />;
             })}
             {c.pts.map(([x, y, r], i) => f[i] ? (
-              <g key={i}><circle cx={x} cy={y} r={r * 2.4} fill={STAR[f[i]]} fillOpacity=".14" /><circle cx={x} cy={y} r={r} fill={STAR[f[i]]} /></g>
+              <LitStar key={i} x={x} y={y} r={r * 1.15} color={STAR[f[i]]} />
             ) : <circle key={i} className="sky-slot" cx={x} cy={y} r={r + 0.8} />)}
 {/* both labels in the constellation's own star colour (founder, Nov 17 2026) */}
             <text className="sky-clabel" x={lx} y={ly} textAnchor={anchor} style={{ fill: STAR[c.color] }}>{c.name} · {have}/{c.pts.length}</text>
