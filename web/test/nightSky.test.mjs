@@ -106,6 +106,33 @@ test("compliments are only true, flattering facts from the member's own leagues"
   assert.deepEqual(complimentsFor(losing), []); // nothing flattering is invented
 });
 
+test("the wider set of compliments names his players, reads cleanly and still only says what is true", () => {
+  const hero = (wins) => ({ key: "hero", wins });
+  const teams = [
+    { league_name: "A", settings: { opponent: "Rival", matchupActual: { mine: 110, opp: 90 }, winChance: 0.8, playoffOdds: 0.7 }, players: [
+      { name: "Brock Bowers", position: "TE", isStarter: true, acquired: "drafted", myCeiling: 33, achievements: [hero(5), { key: "onFire" }] },
+      { name: "Jayden Daniels", position: "QB", isStarter: true, acquired: "drafted", myCeiling: 36, achievements: [{ key: "locked" }, { key: "honorable" }] },
+      { name: "Trevor Lawrence", position: "QB", isStarter: true, acquired: "drafted", achievements: [{ key: "locked" }, { key: "honorable" }, { key: "buyLow" }] },
+      { name: "Khalil Shakir", position: "WR", isStarter: true, acquired: "drafted", achievements: [hero(1)] },
+    ] },
+    { league_name: "B", settings: { playoffOdds: 0.9 }, players: [{ name: "Brock Bowers", achievements: [hero(5)] }, { name: "X", achievements: [hero(1)] }, { name: "Y", achievements: [hero(1)] }] },
+    { league_name: "C", settings: {}, players: [{ name: "Brock Bowers", achievements: [hero(5)] }] },
+  ];
+  const heads = complimentsFor(teams).map((c) => c.head);
+  assert.ok(heads.includes("Brock Bowers: 5x Super Hero"));
+  assert.ok(heads.includes("Brock Bowers is on fire"));
+  assert.ok(heads.includes("2 players beating their expected points"));
+  assert.ok(heads.includes("Trevor Lawrence is a Buy Low"));
+  assert.ok(heads.includes("2 Steady Eddys in your lineup"));
+  assert.ok(heads.includes("Jayden Daniels' ceiling this week: 36")); // possessive of a name ending in s
+  assert.ok(heads.includes("Up 20 on Rival"));
+  assert.ok(!heads.some((h) => h.startsWith("Favored"))); // already ahead: no second line saying so
+  assert.ok(heads.includes("You drafted 4 of your starters"));
+  assert.ok(heads.includes("Brock Bowers in 3 of your leagues"));
+  assert.ok(heads.includes("Playoff-bound in 2 of 3 leagues"));
+  assert.ok(heads.includes("4 Super Heroes across your rosters"));
+});
+
 import { skyFor, rollSeason, SKY_SETS, CONSTELLATIONS } from "../lib/nightSky.js";
 test("every season's sky is a real set with the right star counts, the same for everyone", () => {
   assert.equal(skyFor(2026).map((c) => c.real).join(), "Crux,Sagitta,Cassiopeia,Orion");
