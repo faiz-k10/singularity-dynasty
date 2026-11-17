@@ -25,11 +25,12 @@ import { acquiringGm, coachFor } from "./teamStaff.js";
 
 export const MODES = {
   contender: { label: "Contender", prod: 0.9, age: 0.1 },
-  rebuilder: { label: "Rebuilder", prod: 0.7, age: 0.3, short: true, window: 2, minShare: 0.15 }, // short: production from his last 17 games (Contender: 34)
+  rebuilder: { label: "Rebuilder", prod: 0.7, age: 0.3, short: true, window: 2, minShare: 0.15, replLine: 1.21 }, // replLine: Replacement starts lower here (founder, Nov 17 2026: "add tier 8 under cornerstone") // short: production from his last 17 games (Contender: 34)
 };
 // a score change over his last drift games smaller than this reads as steady (no arrow on the board, "steady" in the profile)
 export const MOVE_MIN = 1;
 export const AGE_YEARS = 10; // years of runway that earn the top age value
+const GROUP_AGE = 5.5; // the age value of a player of typical age (about 5 years before his position's done age), for the Replacement band
 
 // years until his position's done age (never below 0), and the age value it gives
 export const runwayOf = (doneAge, pos, age) => Math.max(doneAge[pos] - age, 0);
@@ -130,7 +131,12 @@ export function scoreRows(rows, formatKey, modeKey) {
       const score = rs * scale, sd = rawSd * scale;
       // move: how much his score has changed over his last driftGames games from production alone (age held), in score points
       const move = rawMove == null ? null : rawMove * scale;
-      return { ...r, ppg: s ? r.ppgS : r.ppg, games: s ? r.gamesS : r.games, prod, raw: rs, scale, score, sd, lo: score - 1.2816 * sd, hi: score + 1.2816 * sd, move };
+      // groupProd: his SCORE turned back into production-over-replacement points for a player of typical age (age value
+      // GROUP_AGE): the Replacement group is the band of scores a replacement-level player of typical age would get (groupPairs).
+      // Rebuilder only (Contender, 90% production, keeps grouping by production as approved): there it follows the score, so a young low producer ranked high isn't
+      // "replacement" and every down-weighted veteran isn't either (founder, Nov 17 2026: Rebuilder's Replacement group had 130 players)
+      const groupProd = m.window ? (rs - m.age * GROUP_AGE) / m.prod : prod; // Rebuilder only; Contender keeps its own production
+      return { ...r, ppg: s ? r.ppgS : r.ppg, games: s ? r.gamesS : r.games, prod, groupProd, replLine: m.replLine ?? REPL_LINE, raw: rs, scale, score, sd, lo: score - 1.2816 * sd, hi: score + 1.2816 * sd, move };
     })
     // same score as shown (1 decimal): first the staff tiebreak (staffTiebreak), then the player with more years before his position's done age
     // (higher age value), then the younger
@@ -222,14 +228,17 @@ function groupPairs(L, okG) {
   // above it are grouped (and split for size), the players below it are grouped into the BELOW names.
   const half = Math.floor(REPL_WINDOW / 2);
   const local = L.map((_, i) => {
-    const v = L.slice(Math.max(0, i - half), i + half + 1).map((r) => r.prod).sort((x, y) => x - y);
+    const v = L.slice(Math.max(0, i - half), i + half + 1).map((r) => r.groupProd ?? r.prod).sort((x, y) => x - y);
     return v[Math.floor(v.length / 2)];
   });
-  let start = local.findIndex((v) => v < REPL_LINE);
-  if (start < 0) start = n;
+  // the groups above are drawn down to the usual line (REPL_LINE); a mode with a lower line (Rebuilder) then extends its lowest group
+  // down to where its Replacement starts, so the upper groups don't change (founder, Nov 17 2026: "add tier 8 under cornerstone")
+  const firstUnder = (line) => { const k = local.findIndex((v) => v < line); return k < 0 ? n : k; };
+  const drawn = firstUnder(REPL_LINE);
+  let start = Math.max(drawn, firstUnder(L[0]?.replLine ?? REPL_LINE));
   let end = n - 1;
   while (end >= start && !(local[end] >= BELOW_LINE)) end--;
-  const above = start > 0 ? segment(L, okG, 0, start - 1).flatMap(split) : []; // only groups ABOVE replacement are split for size
+  const above = drawn > 0 ? segment(L, okG, 0, drawn - 1).flatMap(split) : []; // only groups ABOVE replacement are split for size
   // more groups above replacement than names: merge the neighbours with the weakest break, as long as the result stays under GROUP_MAX
   // (what still doesn't fit reuses the last name, Core)
   while (above.length > GROUP_NAMES.above.length) {
@@ -242,6 +251,7 @@ function groupPairs(L, okG) {
     if (k < 0) break;
     above.splice(k, 2, [above[k][0], above[k + 1][1]]);
   }
+  if (start > drawn) { if (above.length) above[above.length - 1] = [above[above.length - 1][0], start - 1]; else above.push([drawn, start - 1]); }
   // below replacement: at most one group per name, merging the neighbours with the weakest break (any size)
   const under = end + 1 < n ? segment(L, okG, end + 1, n - 1) : [];
   while (under.length > GROUP_NAMES.below.length) {
