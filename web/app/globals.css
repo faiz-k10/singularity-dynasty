@@ -6423,9 +6423,11 @@ details.acct-danger > summary.acct-h{color:var(--down)}
 .dyb-spread-axis span{position:absolute; top:3px; transform:translateX(-50%); font-family:var(--font-mono), monospace; font-size:10px; color:var(--star-dim);}
 .dyb-spread-axis span::before{content:""; position:absolute; left:50%; top:-4px; height:4px; border-left:1px solid var(--rule-strong);}
 .dyb-spread-groups{position:relative; height:22px;}
+.dyb-spread-groups.is-two-rows{height:32px;} /* phones only: the group names needed a second line */
 .dyb-spread-groups div{position:absolute; top:3px; height:6px; border:1px solid var(--star-dim); border-top:0; box-sizing:border-box;}
-.dyb-spread-groups span{position:absolute; top:8px; left:50%; transform:translateX(-50%); font-family:var(--font-mono), monospace; font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--star-dim); white-space:nowrap;}
-.dyb-spread-groups div:first-child span{left:auto; right:0; transform:none;} /* the top group sits at the right edge: its name reads leftward */
+.dyb-spread-glabels{position:absolute; left:0; right:0; top:11px; height:12px; font-size:10px; pointer-events:none;} /* group names under their brackets, laid out by useLabelRow (DynastyBoard.js) so none overlap */
+.dyb-spread-groups .dyb-spread-glabels{top:11px; height:12px; border:0;} /* beats the bracket rule (.dyb-spread-groups div) */
+.dyb-spread-glabels span{position:absolute; top:0; font-family:var(--font-mono), monospace; font-size:inherit; letter-spacing:.06em; text-transform:uppercase; color:var(--star-dim); white-space:nowrap; line-height:1;}
 
 /* the list on the left (its own scroll), the picked player's profile in a pane on the right (its own scroll). The profile moved under the
    list for an hour on Nov 16 2026 and came back here (founder); its charts and dial now take the pane's full width. */

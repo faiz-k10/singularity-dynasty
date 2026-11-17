@@ -29,6 +29,62 @@ function Toggle({ label, value, options, onChange }) {
 
 // The whole view on one axis (the "spread"): every player a mark at his score, stacked where scores are close, the tiers as
 // alternating bands behind them and the groups as brackets under the axis. Click a mark to open that player.
+// One row of labels for a row of brackets ([leftPct, rightPct] each), laid out after they render so none overlap: a label starts
+// at its bracket (align "start") or is centred on it, then a pass left to right pushes each past the one before and a pass right
+// to left pulls any that ran off the right edge back. If that still runs off the left edge, the text shrinks step by step (never
+// below `minPx`); if it still doesn't fit and `twoRows`, alternate labels drop to a second line (phones). Returns
+// { left: [px], row: [0 | 1] } (null until measured). Re-runs when the view changes (`key`) or the row resizes.
+function useLabelRow(ref, spans, key, { align, gap, minPx = 6, twoRows = false }) {
+  const [out, setOut] = useState(null);
+  useLayoutEffect(() => {
+    const box = ref.current;
+    if (!box) return undefined;
+    const place = () => {
+      const W = box.clientWidth, els = [...box.children];
+      if (!W || els.length !== spans.length) return;
+      const order = spans.map((_, i) => i).sort((i, j) => spans[i][0] - spans[j][0]);
+      const lay = (idx, w, g) => {
+        const left = [];
+        let edge = -Infinity;
+        for (const i of idx) {
+          const a = (spans[i][0] / 100) * W, b = (spans[i][1] / 100) * W;
+          left[i] = Math.max(align === "start" && b - a >= w[i] ? a : (a + b) / 2 - w[i] / 2, edge + g, 0);
+          edge = left[i] + w[i];
+        }
+        let limit = W;
+        for (const i of [...idx].reverse()) { left[i] = Math.min(left[i], limit - w[i]); limit = left[i] - g; }
+        return { left, fits: idx.every((i) => left[i] >= -0.5) };
+      };
+      box.style.fontSize = "";
+      let px = parseFloat(getComputedStyle(box).fontSize), g = gap, res;
+      for (;;) {
+        const w = els.map((e) => e.offsetWidth);
+        res = lay(order, w, g);
+        if (res.fits || px <= minPx) { res.w = w; break; }
+        g = Math.min(gap, 2);
+        px = Math.max(minPx, px * 0.93);
+        box.style.fontSize = `${px}px`;
+      }
+      const row = spans.map(() => 0);
+      if (!res.fits && twoRows) {
+        const left = [];
+        for (const r of [0, 1]) {
+          const idx = order.filter((_, k) => k % 2 === r);
+          const part = lay(idx, res.w, g);
+          idx.forEach((i) => { left[i] = part.left[i]; row[i] = r; });
+        }
+        res.left = left;
+      }
+      setOut({ left: res.left, row });
+    };
+    place();
+    const ro = new ResizeObserver(place);
+    ro.observe(box);
+    return () => ro.disconnect();
+  }, [key]); // eslint-disable-line react-hooks/exhaustive-deps
+  return out;
+}
+
 function Spread(props) {
   return props.L.length ? <SpreadPlot {...props} /> : null;
 }
@@ -53,43 +109,13 @@ function SpreadPlot({ L, tiers, groups, openId, onPick }) {
   const every = depth <= 6 ? 2 : depth <= 15 ? 5 : 10;
   const yTicks = [];
   for (let c = every; c <= depth; c += every) yTicks.push(c);
-  // every tier gets its "T<n>" label above its bracket, even a tier too narrow to hold it: the labels are laid out after they
-  // render (real widths), each starts at its bracket (a narrow one is centred on it) and is pushed right past the one before it
-  const labelRef = useRef(null);
-  const [labelLeft, setLabelLeft] = useState(null);
-  const tierKey = tiers.map((t) => `${t.a}-${t.b}`).join(",") + `|${lo}|${hi}`;
-  useLayoutEffect(() => {
-    const box = labelRef.current;
-    if (!box) return undefined;
-    const place = () => {
-      const W = box.clientWidth, out = [];
-      const els = [...box.children];
-      // a narrow plot (a phone) can't fit every label at 10px: shrink the labels until the row fits (never below 6px)
-      box.style.fontSize = "";
-      let GAP = 4;
-      const need = () => els.reduce((n, e) => n + e.offsetWidth, 0) + GAP * (els.length - 1);
-      if (W && need() > W) {
-        GAP = 2;
-        box.style.fontSize = `${Math.max(6, 10 * (W / need()) * 0.97)}px`;
-      }
-      // left to right on the axis = from the last tier to the first
-      const order = tiers.map((t, ti) => ti).sort((i, j) => L[tiers[i].b].score - L[tiers[j].b].score);
-      let edge = -Infinity;
-      for (const ti of order) {
-        const t = tiers[ti], w = els[ti].offsetWidth;
-        const a = (x(L[t.b].score) / 100) * W, b = (x(L[t.a].score) / 100) * W;
-        let left = b - a >= w ? a : (a + b) / 2 - w / 2;
-        left = Math.min(Math.max(left, edge + GAP, 0), W - w);
-        out[ti] = left;
-        edge = left + w;
-      }
-      setLabelLeft(out);
-    };
-    place();
-    const ro = new ResizeObserver(place);
-    ro.observe(box);
-    return () => ro.disconnect();
-  }, [tierKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  // every tier gets its "T<n>" label above its bracket and every group its name under its bracket, even when the bracket is too
+  // narrow to hold it (useLabelRow)
+  const tierRef = useRef(null), groupRef = useRef(null);
+  const spanPct = (a, b) => [x(L[b].score), x(L[a].score)];
+  const viewKey = tiers.map((t) => `${t.a}-${t.b}`).join(",") + "|" + groups.map((g) => `${g.a}-${g.b}`).join(",") + `|${lo}|${hi}`;
+  const tierLeft = useLabelRow(tierRef, tiers.map((t) => spanPct(t.a, t.b)), viewKey, { align: "start", gap: 4 });
+  const groupLeft = useLabelRow(groupRef, groups.map((g) => spanPct(g.a, g.b)), viewKey, { align: "center", gap: 10, twoRows: true });
   return (
     <div className="dyb-spread" style={{ "--depth": shown }}>
       <div className="dyb-spread-plot">
@@ -99,10 +125,8 @@ function SpreadPlot({ L, tiers, groups, openId, onPick }) {
         </div>
         {yTicks.map((c) => <div key={c} className="dyb-spread-grid" style={{ bottom: `${c * step + 2}px` }} aria-hidden="true" />)}
         {tiers.map((t, ti) => <div key={ti} className={`dyb-spread-tier${ti % 2 ? " is-alt" : ""}`} style={span(t.a, t.b)} />)}
-        <div className="dyb-spread-tlabels" ref={labelRef} aria-hidden="true">
-          {tiers.map((t, ti) => (
-            <span key={ti} style={labelLeft ? { left: `${labelLeft[ti]}px` } : { left: `${x(L[t.b].score)}%`, visibility: "hidden" }}>T{ti + 1}</span>
-          ))}
+        <div className="dyb-spread-tlabels" ref={tierRef} aria-hidden="true">
+          {tiers.map((t, ti) => <span key={ti} style={tierLeft ? { left: `${tierLeft.left[ti]}px` } : { visibility: "hidden" }}>T{ti + 1}</span>)}
         </div>
         {marks.map(({ p, k }) => (
           <button
@@ -118,12 +142,11 @@ function SpreadPlot({ L, tiers, groups, openId, onPick }) {
       <div className="dyb-spread-axis">
         {ticks.map((v) => <span key={v} style={{ left: `${x(v)}%` }}>{v}</span>)}
       </div>
-      <div className="dyb-spread-groups">
-        {groups.map((g, gi) => (
-          <div key={gi} style={span(g.a, g.b)}>
-            <span>{g.name}</span>
-          </div>
-        ))}
+      <div className={`dyb-spread-groups${groupLeft?.row.some(Boolean) ? " is-two-rows" : ""}`}>
+        {groups.map((g, gi) => <div key={gi} style={span(g.a, g.b)} />)}
+        <div className="dyb-spread-glabels" ref={groupRef}>
+          {groups.map((g, gi) => <span key={gi} style={groupLeft ? { left: `${groupLeft.left[gi]}px`, top: groupLeft.row[gi] ? "1.25em" : 0 } : { visibility: "hidden" }}>{g.name}</span>)}
+        </div>
       </div>
     </div>
   );
