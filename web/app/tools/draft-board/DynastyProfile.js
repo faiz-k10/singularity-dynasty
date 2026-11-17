@@ -4,12 +4,11 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import PositionBadge from "../PositionBadge";
 import TeamBadge from "../TeamBadge";
-import { AGE_LOOKAHEAD, FORMATS, GROUP_NAMES, MODES, pBetter, profileRead, scoreRows } from "@/lib/dynastyBoard";
+import { AGE_LOOKAHEAD, FORMATS, GROUP_NAMES, MODES, profileRead, scoreRows } from "@/lib/dynastyBoard";
 import { formatHeight } from "@/lib/format";
 import ShareCardButton from "../../ShareCardButton";
 import ArcGauge from "../../ArcGauge";
 
-const pct = (p) => (p >= 0.995 ? ">99%" : p < 0.005 ? "<1%" : `${Math.round(p * 100)}%`);
 const ord = (n) => `#${n}`;
 
 // What loads when a profile opens (his last games + bio), kept for the rest of the visit.
@@ -154,7 +153,7 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
               <div><dt className="mono">Tier</dt><dd>{tier.ti + 1}<small> / {board.tiers.length}</small></dd></div>
               <div><dt className="mono">Group</dt><dd>{GROUP_NAMES[group.g] || "Deep"}</dd></div>
             </dl>
-            <div className="dp-range mono">80% range {p.lo.toFixed(1)}–{p.hi.toFixed(1)}{tier.beat != null ? ` · his tier is better than the next ${pct(tier.beat)} of the time` : ""}</div>
+            <div className="dp-range mono">80% range {p.lo.toFixed(1)}–{p.hi.toFixed(1)}</div>
           </div>
         </section>
 
@@ -203,19 +202,16 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
           <table className="dp-table">
             <tbody>
               {neighbours.map((r) => {
-                const pb = pBetter(p, r);
                 return (
                   <tr key={r.id}>
                     <td className="mono dp-t-rank">{L.indexOf(r) + 1}</td>
                     <td className="dp-t-name">{r.name}</td>
-                    <td className="mono">{r.score.toFixed(1)}</td>
-                    <td className="mono dp-t-p">{pct(pb)}</td>
+                    <td className="mono dp-t-p">{r.score.toFixed(1)}</td>
                   </tr>
                 );
               })}
             </tbody>
           </table>
-          <p className="dp-cap">The last column is how often {p.name.split(" ").slice(-1)[0]} is really better than that player, given how far next-season points miss.</p>
         </section>
 
         {grid && (

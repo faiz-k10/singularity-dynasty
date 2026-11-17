@@ -7,7 +7,6 @@ import DynastyProfile from "./DynastyProfile";
 import { FORMATS, GROUP_NAMES, MODES, boardRows, buildBoard } from "@/lib/dynastyBoard";
 
 const POSITIONS = ["ALL", "QB", "RB", "WR", "TE"];
-const pct = (p) => (p >= 0.995 ? ">99%" : `${Math.round(p * 100)}%`);
 
 // One toggle: a recessed track of buttons, the picked one lit (the site's .board-toggle look).
 function Toggle({ label, value, options, onChange }) {
@@ -167,7 +166,6 @@ export default function DynastyBoard({ rows, meta, complete }) {
             {L.map((p, i) => {
               const ti = tiers.findIndex((t) => i >= t.a && i <= t.b);
               const t = tiers[ti];
-              const prev = tiers[ti - 1];
               const tie = ties.find((z) => i >= z.a && i <= z.b && z.b > z.a);
               const n = t.b - t.a + 1;
               const g = groups[t.g];
@@ -189,12 +187,6 @@ export default function DynastyBoard({ rows, meta, complete }) {
                         {n} player{n > 1 ? "s" : ""}
                         {n > 1 && ` · ${L[t.b].score.toFixed(1)}–${L[t.a].score.toFixed(1)}`}
                       </span>
-                      {prev?.beat != null && !prev.groupBreak && (
-                        <em className="mono">Tier {ti} is better {pct(prev.beat)} of the time</em>
-                      )}
-                      {prev?.beat != null && prev.groupBreak && (
-                        <em className="mono">{GROUP_NAMES[prev.g] || "The group above"} is better {pct(prev.beat)} of the time</em>
-                      )}
                     </div>
                   )}
                   <button

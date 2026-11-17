@@ -6379,7 +6379,7 @@ details.acct-danger > summary.acct-h{color:var(--down)}
       groups as brackets under the axis (click a mark to open him);
    2. the LIST as a ruled forest plot: plain rank (T = tied), name, score, and his 80% range as a whisker on ONE shared axis with
       whole-point grid lines running down every row, his tier's score span shaded behind it; group headings are ruled
-      (no filled banner), tier headings carry how often the tier above is better;
+      (no filled banner), tier headings carry the tier's size and score span;
    3. the profile (.dp) in a pane beside it. No filled plates, no outline numerals, no brackets. ===== */
 .dyb-overview{display:grid; grid-template-columns:200px minmax(0,1fr); gap:24px; align-items:stretch; padding:16px; margin-bottom:12px;}
 .dyb-overview-key{display:flex; flex-direction:column; justify-content:flex-end; border-right:1px solid var(--rule); padding-right:20px;}

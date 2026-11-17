@@ -8,7 +8,7 @@ import { FREE_ROWS, getDynastyRows } from "@/lib/dynastyData";
 export const metadata = {
   title: "Dynasty Board — Dynasty Singularity",
   description:
-    "Dynasty rankings built from production over replacement and age, split into tiers by how often one player really beats the next. Superflex or 1QB, contender or rebuilder. Full board with Explorer or Singularity.",
+    "Dynasty rankings built from production over replacement and age, split into tiers of players the numbers can't separate. Superflex or 1QB, contender or rebuilder. Full board with Explorer or Singularity.",
 };
 
 const PAID_TIERS = ["explorer", "singularity"];
