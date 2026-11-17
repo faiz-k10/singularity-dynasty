@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { STAFF, coachFor, draftGm } from "../lib/teamStaff.js";
+import { STAFF, coachFor, acquiringGm } from "../lib/teamStaff.js";
 
 test("every team has a coach, a GM and a first-draft year", () => {
   assert.equal(Object.keys(STAFF).length, 32);
@@ -17,11 +17,18 @@ test("coachFor reads the current team, LAR is the same as LA, unknown is null", 
   assert.equal(coachFor("XXX"), null);
 });
 
-test("draftGm: yes / no / moved / undrafted", () => {
-  assert.equal(draftGm({ team: "DET", draftTeam: "DET", draftYear: 2023 }).state, "yes"); // Holmes from 2021
-  assert.equal(draftGm({ team: "MIA", draftTeam: "MIA", draftYear: 2022 }).state, "no"); // Sullivan from 2026
-  assert.deepEqual(draftGm({ team: "SF", draftTeam: "CAR", draftYear: 2017 }), { state: "moved", from: "CAR" });
-  assert.equal(draftGm({ team: "BUF", draftTeam: "", draftYear: 0 }).state, "undrafted");
-  assert.equal(draftGm({ team: "BUF", draftTeam: "BUF", draftYear: 2017 }).state, "no"); // Beane's first draft was 2018
-  assert.equal(draftGm({ team: "MIN", draftTeam: "MIN", draftYear: 2026 }).state, "no"); // Teasley came after the 2026 draft
+test("acquiringGm: draftees by the first draft the GM ran", () => {
+  assert.equal(acquiringGm({ team: "DET", draftTeam: "DET", draftYear: 2023 }).state, "yes"); // Holmes from 2021
+  assert.equal(acquiringGm({ team: "MIA", draftTeam: "MIA", draftYear: 2022 }).state, "no"); // Sullivan from 2026
+  assert.equal(acquiringGm({ team: "BUF", draftTeam: "BUF", draftYear: 2017 }).state, "no"); // Beane's first draft was 2018
+  assert.equal(acquiringGm({ team: "MIN", draftTeam: "MIN", draftYear: 2026 }).state, "no"); // Teasley came after the 2026 draft
+  assert.equal(acquiringGm({ team: "BUF", draftTeam: "", draftYear: 0 }).state, "undrafted");
+});
+
+test("acquiringGm: players who moved, by when they joined against when the GM took over", () => {
+  const cmc = acquiringGm({ team: "SF", draftTeam: "CAR", draftYear: 2017, acqDate: "2022-10-20", acqHow: "trade" });
+  assert.deepEqual(cmc, { state: "yes", how: "trade", gm: "John Lynch", at: "2022-10-20", from: "CAR" });
+  assert.equal(acquiringGm({ team: "MIA", draftTeam: "BUF", draftYear: 2020, acqDate: "2025-03-15", acqHow: "joined" }).state, "no"); // before Sullivan
+  assert.equal(acquiringGm({ team: "MIA", draftTeam: "BUF", draftYear: 2020, acqDate: "2026-03-15", acqHow: "joined" }).how, "joined");
+  assert.equal(acquiringGm({ team: "SF", draftTeam: "CAR", draftYear: 2017, acqDate: "" }).state, "unknown");
 });

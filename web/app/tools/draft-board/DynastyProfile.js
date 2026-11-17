@@ -6,7 +6,7 @@ import PositionBadge from "../PositionBadge";
 import TeamBadge from "../TeamBadge";
 import { AGE_LOOKAHEAD, FORMATS, GROUP_NAMES, MODES, profileRead, scoreRows } from "@/lib/dynastyBoard";
 import { formatHeight } from "@/lib/format";
-import { coachFor, draftGm } from "@/lib/teamStaff";
+import { coachFor, acquiringGm } from "@/lib/teamStaff";
 import ShareCardButton from "../../ShareCardButton";
 import ArcGauge from "../../ArcGauge";
 
@@ -161,7 +161,7 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
         <p className="dp-read">{read}</p>
 
         {(() => {
-          const c = coachFor(p.team), d = draftGm(p);
+          const c = coachFor(p.team), d = acquiringGm(p);
           return (
             <dl className="dp-ctx">
               <div>
@@ -169,13 +169,16 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
                 <dd>{c ? <>{c.hc}: {c.oc ? "a former offensive coordinator" : "never an offensive coordinator"}</> : "Unknown"}</dd>
               </div>
               <div>
-                <dt className="mono">Drafting GM</dt>
+                <dt className="mono">GM who brought him in</dt>
                 <dd>
-                  {d.state === "yes" && <>Drafted in {p.draftYear} by {d.gm}, who still runs the team</>}
-                  {d.state === "no" && <>Drafted by {p.draftTeam} in {p.draftYear}; that GM is gone ({d.gm} runs it now)</>}
-                  {d.state === "moved" && <>Drafted by {d.from} in {p.draftYear}; he plays for {p.team} now</>}
-                  {d.state === "undrafted" && <>Undrafted</>}
-                  {d.state === "unknown" && <>Unknown</>}
+                  {(() => {
+                    // a roster-based arrival in week 1 is dated March 15 (model/dynasty_value.R): say "before the season", not a month
+                    const when = d.how === "drafted" ? `in the ${d.at} draft` : d.how === "joined" && d.at.endsWith("-03-15") ? `before the ${d.at.slice(0, 4)} season` : `in ${new Date(`${d.at}T12:00:00`).toLocaleDateString("en-US", { month: "long", year: "numeric" })}`;
+                    const how = d.how === "drafted" ? `Drafted by ${p.team}` : d.how === "trade" ? `Traded to ${p.team} (drafted by ${d.from})` : `Joined ${p.team} (drafted by ${d.from})`;
+                    if (d.state === "yes") return `${how} ${when}, under ${d.gm}, who still runs the team`;
+                    if (d.state === "no") return `${how} ${when}, before ${d.gm} took over`;
+                    return d.state === "undrafted" ? "Undrafted" : "Not known";
+                  })()}
                 </dd>
               </div>
             </dl>

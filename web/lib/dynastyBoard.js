@@ -72,6 +72,8 @@ export function rowsFromData(data) {
     por1qb: r[at("por_1qb")], porSf: r[at("por_sf")], sdProd: r[at("sd_prod")],
     // who drafted him (absent in an older data file: then the drafting-GM column reads "undrafted")
     draftTeam: at("draft_team") >= 0 ? r[at("draft_team")] : "", draftYear: at("draft_year") >= 0 ? r[at("draft_year")] : 0,
+    // when a player who left his drafting team joined his current one, and how ("trade" / "joined")
+    acqDate: at("acq_date") >= 0 ? r[at("acq_date")] : "", acqHow: at("acq_how") >= 0 ? r[at("acq_how")] : "",
   }));
 }
 

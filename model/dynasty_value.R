@@ -82,12 +82,37 @@ d <- merge(d, dr, by.x = "player_id", by.y = "gsis_id", all.x = TRUE)
 d$draft_team <- ifelse(is.na(d$draft_team), "", d$draft_team)
 d$draft_year <- ifelse(is.na(d$draft_year), 0L, as.integer(d$draft_year))
 
+# When a player who LEFT his drafting team joined the team he plays for now: the start of his current stint on that team in the
+# weekly rosters (2016 on; a stint starting in week 1 = that offseason, dated March 15), refined to the trade date when nflverse has
+# the trade (load_trades -- an offseason trade can fall any time up to the season, so the window runs to Sept 15 for a week-1 stint -- which ends Aug 2025 -- later trades fall back to the roster date). acq_how: "trade" or "joined" (a
+# signing, or a trade nflverse doesn't list). The site compares acq_date with the current GM's start (web/lib/teamStaff.js).
+moved <- d$player_id[d$draft_team != "" & d$draft_team != d$team]
+rw <- as.data.frame(load_rosters_weekly(2016:as.integer(format(AGE_DATE, "%Y"))))[, c("gsis_id", "pfr_id", "season", "week", "team")]
+rw <- rw[rw$gsis_id %in% moved, ]
+rw <- rw[order(rw$gsis_id, -rw$season, -rw$week), ]
+tr <- as.data.frame(load_trades())
+tr <- tr[!is.na(tr$pfr_id), c("trade_date", "received", "pfr_id")]
+acq <- do.call(rbind, lapply(split(rw, rw$gsis_id), function(x) {
+  cur <- d$team[d$player_id == x$gsis_id[1]][1]
+  run <- cumprod(x$team == cur) == 1
+  if (!any(run)) return(NULL)
+  s <- x[max(which(run)), ]
+  date <- if (s$week <= 1) as.Date(sprintf("%d-03-15", s$season)) else as.Date(sprintf("%d-09-05", s$season)) + 7 * (s$week - 1)
+  pf <- x$pfr_id[!is.na(x$pfr_id)][1]
+  t <- tr[!is.na(pf) & tr$pfr_id == pf & tr$received == cur & tr$trade_date >= date - 300 & tr$trade_date <= (if (s$week <= 1) as.Date(sprintf("%d-09-15", s$season)) else date + 30), ]
+  if (nrow(t)) data.frame(player_id = x$gsis_id[1], acq_date = format(max(t$trade_date)), acq_how = "trade")
+  else data.frame(player_id = x$gsis_id[1], acq_date = format(date), acq_how = "joined")
+}))
+d <- merge(d, acq, by = "player_id", all.x = TRUE)
+d$acq_date <- ifelse(is.na(d$acq_date), "", d$acq_date)
+d$acq_how  <- ifelse(is.na(d$acq_how), "", d$acq_how)
+
 # keep the board to the players who can matter: the top KEEP by his best score under any format / mode
 d$best <- pmax(0.8 * pmax(d$por_1qb, d$por_sf) + 0.2 * d$age_value, 0.5 * pmax(d$por_1qb_s, d$por_sf_s) + 0.5 * d$age_value)
 d <- d[order(-d$best), ][seq_len(min(KEEP, nrow(d))), ]
 out <- d[order(-d$por_sf), c("player_id", "player", "position", "team", "age", "games_in_window", "ppg_weighted",
                               "age_value", "por_1qb", "por_sf", "sd_prod", "ppg_s", "games_s", "por_1qb_s", "por_sf_s", "sd_prod_s",
-                              "draft_team", "draft_year")]
+                              "draft_team", "draft_year", "acq_date", "acq_how")]
 write.csv(out, "dynasty_value.csv", row.names = FALSE)
 
 # the site's data file: rows as a compact array, plus what the player profile draws

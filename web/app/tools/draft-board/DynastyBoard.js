@@ -5,10 +5,11 @@ import PositionBadge from "../PositionBadge";
 import TeamBadge from "../TeamBadge";
 import DynastyProfile from "./DynastyProfile";
 import { FORMATS, GROUP_NAMES, MODES, boardRows, buildBoard } from "@/lib/dynastyBoard";
-import { coachFor, draftGm } from "@/lib/teamStaff";
+import { coachFor, acquiringGm } from "@/lib/teamStaff";
 
 // the two context columns: short words, the full sentence for screen readers
-const GM_WORD = { yes: "Yes", no: "No", moved: "Moved", undrafted: "UDFA", unknown: "—" };
+const GM_WORD = { yes: "Yes", no: "No", undrafted: "UDFA", unknown: "—" };
+const HOW = { drafted: "Drafted", trade: "Traded for", joined: "Brought in" };
 
 const POSITIONS = ["ALL", "QB", "RB", "WR", "TE"];
 
@@ -162,7 +163,7 @@ export default function DynastyBoard({ rows, meta, complete }) {
             <span>Rk</span>
             <span>Player</span>
             <span className="dyb-ctx">HC was OC</span>
-            <span className="dyb-ctx">Drafting GM</span>
+            <span className="dyb-ctx">GM still there</span>
             <span>Score</span>
             <span className="dyb-axis" style={{ "--n": hi - lo }}>
               {ticks.map((v) => <i key={v} style={{ left: x(v) }}>{v}</i>)}
@@ -219,13 +220,13 @@ export default function DynastyBoard({ rows, meta, complete }) {
                       </span>
                     </span>
                     {(() => {
-                      const c = coachFor(p.team), d = draftGm(p);
+                      const c = coachFor(p.team), d = acquiringGm(p);
                       return (
                         <>
                           <span className={`dyb-ctx mono${c?.oc ? " is-yes" : ""}`} aria-label={c ? `Head coach ${c.hc} ${c.oc ? "was" : "was never"} an offensive coordinator` : "Head coach unknown"}>
                             {c ? (c.oc ? "Yes" : "No") : "—"}
                           </span>
-                          <span className={`dyb-ctx mono${d.state === "yes" ? " is-yes" : ""}`} aria-label={d.state === "yes" ? `Drafted by ${d.gm}, still the GM` : d.state === "no" ? "The GM who drafted him is gone" : d.state === "moved" ? `Drafted by ${d.from}, plays elsewhere now` : "Undrafted"}>
+                          <span className={`dyb-ctx mono${d.state === "yes" ? " is-yes" : ""}`} aria-label={d.state === "yes" ? `${HOW[d.how]} by ${d.gm}, still the GM` : d.state === "no" ? "The GM who brought him in is gone" : d.state === "undrafted" ? "Undrafted" : "Unknown"}>
                             {GM_WORD[d.state]}
                           </span>
                         </>
@@ -248,7 +249,7 @@ export default function DynastyBoard({ rows, meta, complete }) {
             <span><i className="k-band" /> tier&apos;s score span</span>
             <span>T = tied: the order is a coin flip</span>
             <span>HC was OC: his head coach was once an NFL offensive coordinator</span>
-            <span>Drafting GM: the GM who picked him still runs his team (Moved = on another team now)</span>
+            <span>GM still there: the GM who drafted him, traded for him or signed him still runs his team</span>
           </div>
         </div>
         <div className="dyb-pane">
