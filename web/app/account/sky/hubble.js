@@ -100,8 +100,8 @@ export function Cloud({ id, cx = 0, cy = 0, rx, ry, rot = 0, color, freq = 0.012
 
 // ---- Foreground polish (Nov 17 2026, founder: the stars and core must stand out from the nebula and the background stars, like a
 // professionally designed poster). `Scrim` dims and vignettes everything drawn BEFORE it (nebula, field stars, galaxies) so what is
-// drawn after reads as the subject; `LitStar` is a catalogue-grade star: wide bloom, a coloured halo, long diffraction spikes, the star
-// itself with a white-hot centre; `Bloom` is a big soft light for the core.
+// drawn after reads as the subject; `LitStar` is a glowing star: wide bloom, a soft coloured halo, the star itself with a white-hot
+// centre (no spikes or rings -- founder, Nov 17 2026: "too many lines for each star"); `Bloom` is a big soft light for the core.
 export function Scrim({ w = 960, h = 600, id }) {
   const gid = `${id}scrim`;
   return (
@@ -114,7 +114,7 @@ export function Scrim({ w = 960, h = 600, id }) {
   );
 }
 
-export function LitStar({ x, y, r, color, spikes = true }) {
+export function LitStar({ x, y, r, color }) {
   const id = useId().replace(/[^a-zA-Z0-9_-]/g, "");
   const c = { stopColor: color };
   return (
@@ -123,8 +123,7 @@ export function LitStar({ x, y, r, color, spikes = true }) {
         <radialGradient id={`${id}b`}><stop offset="0" style={c} stopOpacity=".9" /><stop offset=".22" style={c} stopOpacity=".42" /><stop offset=".55" style={c} stopOpacity=".12" /><stop offset="1" style={c} stopOpacity="0" /></radialGradient>
       </defs>
       <circle cx={x} cy={y} r={r * 9} fill={`url(#${id}b)`} />
-      <circle cx={x} cy={y} r={r * 2.3} fill="none" style={{ stroke: color }} strokeOpacity=".55" strokeWidth={Math.max(0.6, r * 0.18)} />
-      {spikes && <Spikes x={x} y={y} len={r * 10} color={color} width={Math.max(0.8, r * 0.22)} opacity={0.95} />}
+      <circle cx={x} cy={y} r={r * 2.6} style={{ fill: color }} fillOpacity=".16" />
       <circle cx={x} cy={y} r={r * 1.3} style={{ fill: color }} />
       <circle cx={x} cy={y} r={r * 0.6} fill="#FFFFFF" fillOpacity=".95" />
     </g>
@@ -143,13 +142,42 @@ export function GlowLine({ x1, y1, x2, y2, color }) {
   );
 }
 
-export function Bloom({ r, id, inner = "#FFF4DE", outer = "#CFE0FF" }) {
+export function Bloom({ r, id, inner = "#FFF1D6", outer = "#FFC98A" }) {
   return (
     <g aria-hidden="true">
       <defs>
         <radialGradient id={`${id}bl`}><stop offset="0" stopColor={inner} stopOpacity=".55" /><stop offset=".3" stopColor={outer} stopOpacity=".26" /><stop offset=".65" stopColor={outer} stopOpacity=".07" /><stop offset="1" stopColor={outer} stopOpacity="0" /></radialGradient>
       </defs>
       <circle r={r} fill={`url(#${id}bl)`} />
+    </g>
+  );
+}
+
+// The core as a living star (Nov 17 2026, founder: "change the core to look less plain"): a white-hot centre deepening to gold and
+// ember at the limb (limb darkening), a granulated surface (convection cells from fractal noise) and a soft corona. Drawn over the core's
+// body; dark theme only (the page hides it on the light sky, when collapsed and under the Event Horizon skin, like the old shine).
+export function StarSurface({ r, id, className }) {
+  return (
+    <g className={className} aria-hidden="true">
+      <defs>
+        <radialGradient id={`${id}ld`} cx=".44" cy=".42" r=".62">
+          <stop offset="0" stopColor="#FFFEF8" /><stop offset=".42" stopColor="#FFF3DA" /><stop offset=".72" stopColor="#F7D08E" />
+          <stop offset=".9" stopColor="#E59650" /><stop offset="1" stopColor="#C2602E" />
+        </radialGradient>
+        <radialGradient id={`${id}co`}>
+          <stop offset=".6" stopColor="#FFE2AE" stopOpacity=".6" /><stop offset=".72" stopColor="#FFC27A" stopOpacity=".22" /><stop offset="1" stopColor="#FF9F5A" stopOpacity="0" />
+        </radialGradient>
+        <clipPath id={`${id}cp`}><circle r={r} /></clipPath>
+        <filter id={`${id}gr`} x="-5%" y="-5%" width="110%" height="110%" colorInterpolationFilters="sRGB">
+          <feTurbulence type="fractalNoise" baseFrequency=".2" numOctaves="2" seed="4" />
+          <feColorMatrix type="matrix" values="0 0 0 0 .78  0 0 0 0 .42  0 0 0 0 .12  -2.4 0 0 0 1.3" />
+        </filter>
+        <radialGradient id={`${id}hl`} cx=".36" cy=".32" r=".5"><stop offset="0" stopColor="#FFFFFF" stopOpacity=".9" /><stop offset="1" stopColor="#FFFFFF" stopOpacity="0" /></radialGradient>
+      </defs>
+      <circle r={r * 1.7} fill={`url(#${id}co)`} />
+      <circle r={r} fill={`url(#${id}ld)`} />
+      <g clipPath={`url(#${id}cp)`} opacity=".3"><rect x={-r} y={-r} width={r * 2} height={r * 2} filter={`url(#${id}gr)`} /></g>
+      <circle r={r} fill={`url(#${id}hl)`} />
     </g>
   );
 }

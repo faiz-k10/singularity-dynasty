@@ -7306,13 +7306,13 @@ body:has(.ehp) .ehp-inside,body:has(.ehp) .ehp-dark{--ehp-hole:#0B0B0B;--ehp-hol
 
 /* The core as a luminous star (Hubble kit, Nov 11 2026): a highlight falling off to a darkened edge, a halo and four diffraction spikes.
    Dark theme only -- on the light sky the core stays the flat ink disc of the brand mark; gone while collapsed and under Event Horizon. */
-.sky-core-shine,.sky-core-spikes{pointer-events:none}
-.sky-core.is-collapsed .sky-core-shine,.sky-core.is-collapsed .sky-core-spikes,.sky-core.skin-horizon .sky-core-shine,.sky-core.skin-horizon .sky-core-spikes{display:none}
+.sky-core-shine{pointer-events:none}
+.sky-core.is-collapsed .sky-core-shine,.sky-core.skin-horizon .sky-core-shine{display:none}
 .sky-core.is-cool .sky-core-glow{fill:#CFE0FF;opacity:.1}
-@media (prefers-color-scheme: light){:root:not([data-theme="dark"]) .sky-core-shine,:root:not([data-theme="dark"]) .sky-core-spikes{display:none}}
-:root[data-theme="light"] .sky-core-shine,:root[data-theme="light"] .sky-core-spikes{display:none}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]) .sky-core-shine{display:none}}
+:root[data-theme="light"] .sky-core-shine{display:none}
 
-.sky-plate{fill:var(--void);fill-opacity:.94}
+.sky-label,.sky-clabel,.sky-creal{filter:drop-shadow(0 0 2px var(--void)) drop-shadow(0 0 7px var(--void))}
 
 /* ===== LANDING PAGE BELOW THE HERO (Nov 16 2026, founder): 2 the site on one page + Get started -> 3 plans -> 4 who it's for and
    each tool -> 5 a week with the site (timeline) -> 6 questions + members' words, then the Singularity Drive (the manager quiz). ===== */

@@ -1,12 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import ShareDialog from "../../ShareDialog";
 import { seeFinds, pickPlayer, claim, wearSkin } from "./actions";
 import { SkyBackdrop, CoreSkin, SkinPreview } from "./skins";
-import { StarField, Galaxies, Spikes, Scrim, LitStar, GlowLine, Bloom } from "./hubble";
+import { StarField, Galaxies, Scrim, LitStar, GlowLine, Bloom, StarSurface } from "./hubble";
 import { drawObject, sharpen, findCard, receiptCard, seasonCard, toBlob, setCardBadge, setCardSkin, setCardFrame } from "./skyArt";
 import {
   ACTIONS, skyFor, SKINS, RARITY, hasSkin, equipped, skySkinsFor, FAMILIES, COLOURS, VERSIONS, TIER_NAME, POWERUPS, LADDER, rungLabel, CATALOGUE_SIZE, SET_COUNT, UNLOCK, EVENT_TEXT,
@@ -40,9 +40,6 @@ function Core({ mass, collapsed, skin }) {
   const gid = useId().replace(/[^a-zA-Z0-9_-]/g, "");
   return (
     <g className={`sky-core is-${st.id} skin-${skin}`}>
-      <defs>
-        <radialGradient id={`${gid}c`} cx=".42" cy=".4"><stop offset="0" stopColor="#FFFFFF" stopOpacity=".95" /><stop offset=".45" stopColor="#FFFFFF" stopOpacity=".25" /><stop offset=".85" stopColor="#000000" stopOpacity="0" /><stop offset="1" stopColor="#000000" stopOpacity=".22" /></radialGradient>
-      </defs>
       <Bloom r={190} id={gid} />
       <circle className="sky-core-glow" r="70" />
       {ticks.map((t, i) => <line key={i} className={`sky-core-tick${t.lit ? ` is-lit is-${t.band}` : ""}`} x1={t.x1} y1={t.y1} x2={t.x2} y2={t.y2} />)}
@@ -50,41 +47,18 @@ function Core({ mass, collapsed, skin }) {
       <CoreSkin skin={skin} layer="back" />
       <circle className="sky-core-rim" r="54" />
       <circle className="sky-core-body" r="44" />
-      {/* a luminous star, Hubble-style: a bright centre falling off to the edge, a soft halo and four diffraction spikes (dark theme only) */}
-      <circle className="sky-core-shine" r="44" fill={`url(#${gid}c)`} />
-      <g className="sky-core-spikes"><Spikes x={0} y={0} len={150} color="var(--sky-t-white)" width={1.4} opacity={0.8} /></g>
+      {/* a living star: limb-darkened, granulated, with a corona (dark theme only) */}
+      <StarSurface r={44} id={gid} className="sky-core-shine" />
       <CoreSkin skin={skin} layer="front" />
       {collapsed && <circle className="sky-core-lens" r="49" />}
-      {/* a solid plate behind the readout so the star field can't run through the words (founder, Nov 12 2026) */}
-      <Plate>
+      {/* no plate: the words sit on the sky with a soft shadow (founder, Nov 17 2026: the black boxes looked out of place) */}
+      <g className="sky-label">
         <text className="sky-heat" x="0" y="106" textAnchor="middle">
           {collapsed ? "Collapsed · a find is waiting" : STAGES.map((x, i) => (
             <tspan key={x.id} className={x.id === st.id ? "is-on" : ""}>{i ? "  ·  " : ""}{x.label}</tspan>
           ))}
         </text>
-      </Plate>
-    </g>
-  );
-}
-
-// A solid plate behind a readout (so the star field can't run through the words), sized to what it holds plus an even margin
-// (founder, Nov 17 2026: the fixed-width plates had wide empty ends). Measured after render and again once the fonts load.
-function Plate({ padX = 8, padY = 4, children }) {
-  const ref = useRef(null);
-  const [box, setBox] = useState(null);
-  useLayoutEffect(() => {
-    const measure = () => {
-      const r = ref.current?.getBBox();
-      if (!r) return;
-      setBox((b) => (b && b.x === r.x && b.y === r.y && b.width === r.width && b.height === r.height ? b : { x: r.x, y: r.y, width: r.width, height: r.height }));
-    };
-    measure();
-    document.fonts?.ready.then(measure);
-  });
-  return (
-    <g>
-      {box && <rect className="sky-plate" x={box.x - padX} y={box.y - padY} width={box.width + 2 * padX} height={box.height + 2 * padY} />}
-      <g ref={ref}>{children}</g>
+      </g>
     </g>
   );
 }
@@ -96,7 +70,7 @@ function Sky({ state, pendingPicks, pending }) {
     <svg className="sky-svg" viewBox="-480 -300 960 600" role="img" aria-label={`Your sky: ${state.findsTotal} finds, the core ${pending ? "collapsed" : stageOf(state.mass).label.toLowerCase()}`}>
       <SkyBackdrop skin={equipped(state).sky} />
       <Galaxies id={fid} seed={31} n={19} w={960} />
-      <StarField seed={7} n={270} w={960} spikes={8} />
+      <StarField seed={7} n={270} w={960} spikes={0} />
       <Scrim id={fid} />
       {skyFor(state.season).map((c) => {
         const f = state.filled[c.id] || [];
@@ -122,10 +96,10 @@ function Sky({ state, pendingPicks, pending }) {
         );
       })}
       {pendingPicks.length > 0 && (
-        <Plate padY={6}>
+        <g className="sky-label">
           {pendingPicks.map((_, i) => <circle key={`p${i}`} className="sky-pending" cx={(i - (pendingPicks.length - 1) / 2) * 22} cy={138} r="5" />)}
           <text className="sky-creal" x="0" y="160" textAnchor="middle">{pendingPicks.length} pick{pendingPicks.length === 1 ? "" : "s"} waiting</text>
-        </Plate>
+        </g>
       )}
       <Core mass={state.mass} collapsed={pending > 0} skin={equipped(state).core} />
     </svg>

@@ -3,7 +3,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { FAMILIES, COLOURS, skyFor, seasonProgress, COLORS as STAR } from "@/lib/nightSky";
 import { SkyBackdrop, CoreSkin } from "./skins";
-import { StarField, Galaxies, Spikes, Scrim, LitStar, GlowLine, Bloom } from "./hubble";
+import { StarField, Galaxies, Scrim, LitStar, GlowLine, Bloom, StarSurface } from "./hubble";
 
 // The Night Sky's pictures (from mockups/night-sky.html, which the founder approved): one renderer per kind of object, coloured by the find's
 // colour and finished by its version, drawn on a canvas; the telescope reveal (the picture sharpens out of noise); and the share cards.
@@ -122,7 +122,7 @@ async function drawBackdrop(ctx) {
   const img = await svgPicture(
     <>
       <Galaxies id="cg" seed={31} n={18} span={840} />
-      <StarField seed={7} n={260} span={840} spikes={8} />
+      <StarField seed={7} n={260} span={840} spikes={0} />
       <SkyBackdrop skin={cardSkin.sky} />
       <Scrim id="cs0" w={840} h={440} />
     </>,
@@ -141,9 +141,7 @@ async function drawCore(ctx, cx, cy, scale = 1) {
       <circle r="46" fill={body} />
       {k !== "horizon" && (
         <>
-          <defs><radialGradient id="cs" cx=".42" cy=".4"><stop offset="0" stopColor="#FFFFFF" stopOpacity=".95" /><stop offset=".45" stopColor="#FFFFFF" stopOpacity=".25" /><stop offset=".85" stopColor="#000000" stopOpacity="0" /><stop offset="1" stopColor="#000000" stopOpacity=".22" /></radialGradient></defs>
-          <circle r="46" fill="url(#cs)" />
-          <Spikes x={0} y={0} len={150} color="#F4F1EA" width={1.4} opacity={0.8} />
+          <StarSurface r={46} id="css" />
         </>
       )}
       <CoreSkin skin={k} layer="front" />
