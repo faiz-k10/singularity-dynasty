@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import ShareDialog from "../../ShareDialog";
@@ -55,12 +55,35 @@ function Core({ mass, collapsed, skin }) {
       <CoreSkin skin={skin} layer="front" />
       {collapsed && <circle className="sky-core-lens" r="49" />}
       {/* a solid plate behind the readout so the star field can't run through the words (founder, Nov 12 2026) */}
-      <rect className="sky-plate" x="-150" y="93" width="300" height="18" />
-      <text className="sky-heat" x="0" y="106" textAnchor="middle">
-        {collapsed ? "Collapsed · a find is waiting" : STAGES.map((x, i) => (
-          <tspan key={x.id} className={x.id === st.id ? "is-on" : ""}>{i ? "  ·  " : ""}{x.label}</tspan>
-        ))}
-      </text>
+      <Plate>
+        <text className="sky-heat" x="0" y="106" textAnchor="middle">
+          {collapsed ? "Collapsed · a find is waiting" : STAGES.map((x, i) => (
+            <tspan key={x.id} className={x.id === st.id ? "is-on" : ""}>{i ? "  ·  " : ""}{x.label}</tspan>
+          ))}
+        </text>
+      </Plate>
+    </g>
+  );
+}
+
+// A solid plate behind a readout (so the star field can't run through the words), sized to what it holds plus an even margin
+// (founder, Nov 17 2026: the fixed-width plates had wide empty ends). Measured after render and again once the fonts load.
+function Plate({ padX = 8, padY = 4, children }) {
+  const ref = useRef(null);
+  const [box, setBox] = useState(null);
+  useLayoutEffect(() => {
+    const measure = () => {
+      const r = ref.current?.getBBox();
+      if (!r) return;
+      setBox((b) => (b && b.x === r.x && b.y === r.y && b.width === r.width && b.height === r.height ? b : { x: r.x, y: r.y, width: r.width, height: r.height }));
+    };
+    measure();
+    document.fonts?.ready.then(measure);
+  });
+  return (
+    <g>
+      {box && <rect className="sky-plate" x={box.x - padX} y={box.y - padY} width={box.width + 2 * padX} height={box.height + 2 * padY} />}
+      <g ref={ref}>{children}</g>
     </g>
   );
 }
@@ -94,11 +117,10 @@ function Sky({ state, pendingPicks, pending }) {
         );
       })}
       {pendingPicks.length > 0 && (
-        <g>
-          <rect className="sky-plate" x="-80" y="125" width="160" height="42" />
+        <Plate padY={6}>
           {pendingPicks.map((_, i) => <circle key={`p${i}`} className="sky-pending" cx={(i - (pendingPicks.length - 1) / 2) * 22} cy={138} r="5" />)}
           <text className="sky-creal" x="0" y="160" textAnchor="middle">{pendingPicks.length} pick{pendingPicks.length === 1 ? "" : "s"} waiting</text>
-        </g>
+        </Plate>
       )}
       <Core mass={state.mass} collapsed={pending > 0} skin={equipped(state).core} />
     </svg>
