@@ -11,7 +11,7 @@ import { useId } from "react";
 export const seeded = (seed, n, f) => { let s = seed; const r = () => ((s = (s * 16807) % 2147483647) / 2147483647); return Array.from({ length: n }, () => f(r)); };
 const TEMPS = ["var(--sky-t-blue)", "var(--sky-t-white)", "var(--sky-t-white)", "var(--sky-t-gold)", "var(--sky-t-orange)"];
 
-// A field of stars: most faint, a few bright (a power law, like a real field), the brightest with spikes.
+// A field of stars: most faint, a few bright (a power law, like a real field).
 function makeField(seed, n, span, w) {
   return seeded(seed, n, (r) => {
     const m = Math.pow(r(), 3.2); // brightness 0..1, mostly faint
@@ -34,11 +34,10 @@ export function Spikes({ x, y, len, color, width = 0.8, opacity = 0.9 }) {
   );
 }
 
-// No diffraction spikes on background stars unless asked (founder, Nov 17 2026: "remove the lines from the background stars").
-export function StarField({ seed = 7, n = 170, span = 600, w = span, spikes = 0, scale = 1 }) {
+// No diffraction spikes on background stars (founder, Nov 17 2026: "remove the lines from the background stars").
+export function StarField({ seed = 7, n = 170, span = 600, w = span, scale = 1 }) {
   const id = useId().replace(/[^a-zA-Z0-9_-]/g, "");
   const stars = fieldFor(seed, n, span, w);
-  const bright = [...stars].sort((a, b) => b.m - a.m).slice(0, spikes);
   const halo = (t) => `url(#${id}h${TEMPS.indexOf(t)})`;
   return (
     <g aria-hidden="true">
@@ -54,7 +53,6 @@ export function StarField({ seed = 7, n = 170, span = 600, w = span, spikes = 0,
           </g>
         );
       })}
-      {bright.map((s, i) => <Spikes key={`k${i}`} x={s.x} y={s.y} len={(8 + s.m * 18) * scale} color={s.t} width={0.55 * scale} opacity={0.75} />)}
     </g>
   );
 }

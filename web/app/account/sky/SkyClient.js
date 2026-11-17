@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useId, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { memo, useCallback, useEffect, useId, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import ShareDialog from "../../ShareDialog";
@@ -127,7 +127,9 @@ const MOTION = {
 const subscribeMotion = (cb) => { const q = window.matchMedia("(prefers-reduced-motion: reduce)"); q.addEventListener("change", cb); return () => q.removeEventListener("change", cb); };
 const useReducedMotion = () => useSyncExternalStore(subscribeMotion, () => window.matchMedia("(prefers-reduced-motion: reduce)").matches, () => false);
 
-function Sky({ state, pendingPicks, pending }) {
+// Memoised (Nov 17 2026 performance pass): the sky is the heaviest thing on the page (hundreds of stars, skins with noise filters), so it
+// redraws only when its own data changes -- not on the boost timers, menus or messages around it. `picks` is a count so the props compare.
+const Sky = memo(function Sky({ state, picks, pending }) {
   const fid = useId().replace(/[^a-zA-Z0-9_-]/g, "");
   const open = state.findsTotal >= UNLOCK.constellations;
   return (
@@ -175,16 +177,16 @@ function Sky({ state, pendingPicks, pending }) {
       })}
       <RarestInSky state={state} />
       {/* the picks waiting sit at the bottom of the sky, just above the core's heat line (founder, Nov 17 2026) */}
-      {pendingPicks.length > 0 && (
+      {picks > 0 && (
         <g className="sky-label">
-          {pendingPicks.map((_, i) => <circle key={`p${i}`} className="sky-pending" cx={(i - (pendingPicks.length - 1) / 2) * 22} cy={230} r="5" />)}
-          <text className="sky-creal" x="0" y="252" textAnchor="middle">{pendingPicks.length} pick{pendingPicks.length === 1 ? "" : "s"} waiting</text>
+          {Array.from({ length: picks }, (_, i) => <circle key={`p${i}`} className="sky-pending" cx={(i - (picks - 1) / 2) * 22} cy={230} r="5" />)}
+          <text className="sky-creal" x="0" y="252" textAnchor="middle">{picks} pick{picks === 1 ? "" : "s"} waiting</text>
         </g>
       )}
       <Core mass={state.mass} collapsed={pending > 0} skin={equipped(state).core} />
     </svg>
   );
-}
+});
 
 function Thumb({ find, hidden }) {
   const ref = useRef(null);
@@ -377,8 +379,9 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
   const [share, setShare] = useState(null); // { make, title, caption }
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState(null);
-  const [now, setNow] = useState(serverNow); // ticks once a second so the boost timers count down
-  useEffect(() => { const t = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(t); }, []);
+  // the boost timers show whole minutes, so the clock ticks every 15 seconds (it ticked every second, re-rendering the page each time)
+  const [now, setNow] = useState(serverNow);
+  useEffect(() => { const t = setInterval(() => setNow(Date.now()), 15000); return () => clearInterval(t); }, []);
 
   const sp = seasonProgress(state), sky = skyFor(state.season), title = sp.title;
   const badge = state.season ? `${state.season} · ${sp.title.toUpperCase()}` : null;
@@ -443,7 +446,7 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
       {msg && <p className="sky-banner mono is-bad">{msg}</p>}
 
       <section className="sky-panel sky-panel-fill" aria-label="Your sky">
-        <Sky state={state} pendingPicks={pendingPicks} pending={state.pending.length} />
+        <Sky state={state} picks={pendingPicks.length} pending={state.pending.length} />
         {state.pending.length > 0 && (
           <button type="button" className="btn-primary sky-scope-btn" onClick={() => setScope(true)}>
             The core collapsed{state.pending.length > 1 ? ` ${state.pending.length} times` : ""} · point the telescope

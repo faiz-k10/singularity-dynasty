@@ -9,8 +9,8 @@ import { StarField, Galaxies, Cloud, Spikes } from "./hubble";
 // colours are fixed like the badge art (the season skin and the band follow the theme); every animation stops for reduced motion
 // (.sky-skin-* in globals.css). Redrawn Nov 11 2026 (founder: "make the skins more exciting"): brighter, layered, with glows.
 
-// A season skin's art: that season's Singularity constellation drawn huge across the whole sky (shared with the share cards).
-export function seasonGhost(skin) {
+// A season skin's art: that season's Singularity constellation drawn huge across the whole sky.
+function seasonGhost(skin) {
   const y = Number(String(skin).slice(7)), c = skyFor(y)[3];
   const cx = c.pts.reduce((a, p) => a + p[0], 0) / c.pts.length, cy = c.pts.reduce((a, p) => a + p[1], 0) / c.pts.length;
   return { pts: c.pts.map(([x, py, r]) => [(x - cx) * 2.6, (py - cy) * 2.6, r * 2]), edges: c.edges };
