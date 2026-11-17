@@ -105,9 +105,9 @@ export default function DynastyBoard({ rows, meta }) {
     return viewBoard(rows, { format, mode, pos }); // a position view keeps the all-positions groups
   }, [rows, format, mode, pos]);
 
-  // one axis for every row's range: whole numbers, so the grid lines are whole points of score
-  // (from 0 at the lowest: a range reaching below zero runs off the left edge rather than squeezing every row)
-  const lo = L.length ? Math.max(0, Math.floor(Math.min(...L.map((p) => p.lo)))) : 0, hi = L.length ? Math.ceil(Math.max(...L.map((p) => p.hi))) : 1;
+  // one axis for every row's range: whole numbers from 0, so grid line N is a score of N on every view (founder, Nov 16 2026);
+  // a range reaching below zero runs off the left edge rather than squeezing every row
+  const lo = 0, hi = L.length ? Math.ceil(Math.max(...L.map((p) => p.hi))) : 1;
   const x = (v) => `${Math.max(0, Math.min(100, ((v - lo) / (hi - lo)) * 100))}%`;
   const ticks = []; // labelled every other point when the axis is long; the grid keeps every point
   for (let v = lo; v <= hi; v += hi - lo > 8 ? 2 : 1) ticks.push(v);
