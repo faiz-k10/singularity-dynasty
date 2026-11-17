@@ -150,7 +150,6 @@ export default function DynastyBoard({ rows, meta }) {
             <dl className="dyb-overview-dl mono">
               <dt>Tiers</dt><dd>{tiers.length}</dd>
               <dt>Groups</dt><dd>{groups.length}</dd>
-              <dt>Top</dt><dd>{L[0].score.toFixed(1)}</dd>
             </dl>
           </div>
           <Spread L={L} tiers={tiers} groups={groups} openId={open?.id} onPick={pickAndShow} />
