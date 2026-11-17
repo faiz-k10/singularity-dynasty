@@ -2761,7 +2761,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
 /* The guides use the text colour at low opacity, not --line (a hairline barely lighter than the panel: invisible on the dark one); --star-dot-rgb flips with the theme. */
 .radar-ring{fill:none; stroke:rgba(var(--star-dot-rgb),0.3); stroke-width:1;}
 .radar-spoke{stroke:rgba(var(--star-dot-rgb),0.38); stroke-width:1;}
-.radar-shape{fill:none; stroke:var(--star); stroke-width:1.25; stroke-linejoin:round; transition:stroke-width .15s ease, opacity .15s ease;}
+.radar-shape{fill:none; stroke:var(--radar-median); stroke-width:1.25; stroke-linejoin:round; transition:stroke-width .15s ease, opacity .15s ease;}
 .radar-shape-active{stroke-width:3.5;}
 /* column mode ("Median" header clicked) picks one layer to emphasize --
    without this, the median line and the floor/ceiling band outlines are
@@ -2773,8 +2773,8 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .radar-shape-dim{opacity:0.3;}
 .radar-outline-floor{--tone:var(--down);}
 .radar-outline-ceiling{--tone:var(--up);}
-.radar-point{fill:var(--star);}
-.radar-point-active{fill:var(--star); stroke:var(--star-dim); stroke-width:2;}
+.radar-point{fill:var(--radar-median);}
+.radar-point-active{fill:var(--radar-median); stroke:var(--star-dim); stroke-width:2;}
 .radar-axis-label{font-family:var(--font-mono), monospace; font-size:9.5px; fill:var(--star-dim);}
 .radar-axis-label-active{fill:var(--horizon-gold); font-weight:700;}
 /* Clickable vertex -- mirrors .stat-row-trigger so a stat can be
@@ -2783,7 +2783,7 @@ tr.stat-row-selected td{background:var(--void-panel);}
    3px point stays small so the shape itself doesn't look cluttered. */
 .radar-vertex{cursor:pointer;}
 .radar-vertex-hit{fill:transparent;}
-.radar-vertex:hover .radar-point{fill:var(--star);}
+.radar-vertex:hover .radar-point{fill:var(--radar-median);}
 .radar-vertex:hover .radar-axis-label{fill:var(--horizon-gold);}
 .radar-shape-compare{fill:none; stroke:#000; stroke-width:2; stroke-dasharray:5 3; stroke-linejoin:round;} /* similar player: black in dark mode, white in light mode (founder, Nov 10 2026) */
 @media (prefers-color-scheme: light){:root:not([data-theme="dark"]) .radar-shape-compare{stroke:#fff;}}
@@ -7060,13 +7060,13 @@ body:has(.ehp) .ticker-bar{position:absolute;}
 .stat-row-trigger-column.layer-floor,.stat-row-trigger-column.layer-median,.stat-row-trigger-column.layer-ceiling{color:var(--layer);background:rgba(var(--layer-rgb),.11);}
 .stat-row-trigger-active.layer-floor,.stat-row-trigger-active.layer-median,.stat-row-trigger-active.layer-ceiling{color:var(--layer);background:rgba(var(--layer-rgb),.2);}
 .stat-row-trigger.layer-floor:hover,.stat-row-trigger.layer-median:hover,.stat-row-trigger.layer-ceiling:hover{color:var(--layer);background:rgba(var(--layer-rgb),.08);}
-/* the radar's three lines: floor red, median bone, ceiling blue */
+/* the radar's three lines: floor red, median black in dark mode and white in light mode (--radar-median, founder, Nov 17 2026), ceiling blue */
 .radar-band-outline.radar-outline-floor{stroke:var(--down);}
 .radar-band-outline.radar-outline-ceiling{stroke:var(--up);}
 .radar-point-floor{stroke:var(--down);}
 .radar-point-ceiling{stroke:var(--up);}
-.radar-shape{stroke:var(--star);}
-.radar-point{fill:var(--star);}
+.radar-shape{stroke:var(--radar-median);}
+.radar-point{fill:var(--radar-median);}
 .radar-point-active{stroke:var(--star);}
 
 /* Theme flip: no element animates its colours while the theme changes, so the whole page switches at once (ThemeToggle.js). */
@@ -7087,12 +7087,10 @@ html.theme-switching *, html.theme-switching *::before, html.theme-switching *::
 .radar-cmp-key.radar-cmp-even{color:var(--star);}
 .radar-axis-label.radar-cmp-even{fill:var(--star);}
 /* With a similar player overlaid: the comp's dashed line is ink (black in light mode, white in dark) and the player's own median line + dots are the opposite, so the two read apart (founder, Nov 10 2026). */
-.stat-radar.is-comparing{--cmp-ink:#fff; --cmp-inv:#000;}
-@media (prefers-color-scheme: light){:root:not([data-theme="dark"]) .stat-radar.is-comparing{--cmp-ink:#000; --cmp-inv:#fff;}}
-:root[data-theme="light"] .stat-radar.is-comparing{--cmp-ink:#000; --cmp-inv:#fff;}
+.stat-radar{--radar-median:#000; --cmp-ink:#fff;} /* the median line: black in dark mode, white in light mode (founder, Nov 17 2026) */
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]) .stat-radar{--radar-median:#fff; --cmp-ink:#000;}}
+:root[data-theme="light"] .stat-radar{--radar-median:#fff; --cmp-ink:#000;}
 .stat-radar.is-comparing .radar-shape-compare{stroke:var(--cmp-ink);}
-.stat-radar.is-comparing .radar-shape{stroke:var(--cmp-inv);}
-.stat-radar.is-comparing .radar-point{fill:var(--cmp-inv);}
 
 /* Welcome back: two lines, the username larger and below (founder, Nov 10 2026). */
 .ehp-who{font-family:var(--font-display), sans-serif; font-weight:800; line-height:1.1; letter-spacing:.06em; text-transform:uppercase; margin:4px 0 10px; color:var(--ehp-ink, var(--star)); width:0; min-width:100%; overflow:hidden; white-space:nowrap;} /* zero intrinsic width: it fills whatever width the rest of the block sets, never widens it */
