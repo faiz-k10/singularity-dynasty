@@ -7,8 +7,7 @@ import ToolsMenuRows from "./ToolsMenu";
 import ThemeToggle from "./ThemeToggle";
 import ArcGauge from "./ArcGauge";
 import ManagerQuiz from "./ManagerQuiz";
-import { FAQ } from "./faqItems";
-import { SUMMARY, WHY, WEEK, TESTIMONIALS } from "@/lib/landingCopy";
+import { SUMMARY, WHY, WEEK } from "@/lib/landingCopy";
 import { HeaderPlans, HeaderLetter, PLANS } from "./HeaderMenus";
 import { lookupSleeperTeams } from "./my-team/actions";
 import { summarizeLeagues } from "@/lib/heroLookup";
@@ -1021,48 +1020,8 @@ export default function EventHorizon({ signedIn, tier, member, invited, discount
         </div>
       </section>
 
-      {/* 6 · questions, members' words, and the newsletter (the quiz) */}
-      <section className="ehp-dark ehp-faq" id="faq">
-        <div className="ehp-wrap ehp-faqgrid">
-          <div>
-            <div className="ehp-k">Questions</div>
-            <h2 className="ehp-h">
-              Straight <em>Answers</em>
-            </h2>
-            <div className="ehp-qs">
-              {FAQ.slice(0, 8).map(([q, a]) => (
-                <details key={q}>
-                  <summary>{q}</summary>
-                  <div className="a">{a}</div>
-                </details>
-              ))}
-            </div>
-            <Link className="ehp-link" href="/how-it-works#faq">Every question →</Link>
-          </div>
-          <div>
-            <div className="ehp-k">From members</div>
-            <h2 className="ehp-h">
-              Member <em>Voices</em>
-            </h2>
-            {TESTIMONIALS.length ? (
-              <ul className="ehp-quotes">
-                {TESTIMONIALS.map((t) => (
-                  <li key={t.quote}>
-                    <blockquote>“{t.quote}”</blockquote>
-                    <span>{t.name}{t.detail ? ` · ${t.detail}` : ""}</span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <div className="ehp-quotes-empty">
-                <p>The first season of members is writing these now. Real words from real managers will go here, and only those.</p>
-                <Link className="ehp-link" href="/contact">Tell us what you think →</Link>
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
-
+      {/* 6 · the newsletter (the quiz). The FAQ and Member Voices sections were taken out Nov 16 2026 (founder: add later);
+          their copy is still in app/faqItems.js and lib/landingCopy.js (TESTIMONIALS) and their CSS (.ehp-faq*, .ehp-quotes*) is kept. */}
       <section className="ehp-dark ehp-letter" id="feed">
         <div className="ehp-wrap ehp-two">
           <div>
