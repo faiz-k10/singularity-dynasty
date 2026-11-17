@@ -68,8 +68,6 @@ function Timeline({ log, level, repl, W }) {
       ))}
       <line x1={L} x2={W - R} y1={y(repl)} y2={y(repl)} className="dp-line-repl" />
       <line x1={L} x2={W - R} y1={y(level)} y2={y(level)} className="dp-line-level" />
-      <text x={W - R} y={y(level) - 4} className="dp-label is-level" textAnchor="end">his level {level.toFixed(1)}</text>
-      <text x={W - R} y={y(repl) + 14} className="dp-label is-repl" textAnchor="end">replacement {repl.toFixed(1)}</text>
       {ticks.map(([i, t]) => <text key={t} x={L + i * bw} y={H - 7} className="dp-axis">{t}</text>)}
     </svg>
   );
@@ -167,7 +165,7 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
   const repl = (m.short ? meta.replacementShort : meta.replacement)[format.toUpperCase()][p.pos];
   const win = m.short ? meta.windowShort : meta.window;
   const curve = meta.ageCurve[p.pos];
-  const neighbours = [...L.slice(Math.max(0, i - 3), i), ...L.slice(i + 1, i + 4)];
+  const tierMates = L.slice(tier.a, tier.b + 1); // his tier, him included (founder, Nov 16 2026: only players the board can't separate from him)
   const size = [formatHeight(data?.bio?.height), data?.bio?.weight ? `${data.bio.weight} lbs` : null, data?.bio?.yearsExp != null ? (data.bio.yearsExp === 0 ? "Rookie" : `Year ${data.bio.yearsExp + 1}`) : null].filter(Boolean);
   const prodC = m.prod * p.prod, ageC = m.age * p.ageValue;
 
@@ -271,6 +269,13 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
         <section className="dp-sec">
           <h3 className="board-panel-title">Production, game by game</h3>
           {data?.log ? <Timeline log={{ w: data.log.w.slice(-win.games), p: data.log.p.slice(-win.games) }} level={p.ppg} repl={repl} W={chartW} /> : <div className="dp-chart-skel">{data ? "No game log yet." : "Loading his games…"}</div>}
+          {/* a legend under the chart instead of labels on the lines (founder, Nov 16 2026: the labels over the bars weren't legible) */}
+          <ul className="dp-legend mono">
+            <li><i className="k-level" />His level {p.ppg.toFixed(1)}</li>
+            <li><i className="k-repl" />Replacement {p.pos} {repl.toFixed(1)}</li>
+            <li><i className="k-above" />Game above replacement</li>
+            <li><i className="k-below" />Below</li>
+          </ul>
         </section>
 
         <section className="dp-sec">
@@ -279,34 +284,52 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
         </section>
 
         <section className="dp-sec">
-          <h3 className="board-panel-title">Closest on the board</h3>
-          <table className="dp-table">
-            <tbody>
-              {neighbours.map((r) => {
-                return (
-                  <tr key={r.id}>
+          <h3 className="board-panel-title">Tier {tier.ti + 1}</h3>
+          {tierMates.length > 1 ? (
+            <table className="dp-table">
+              <tbody>
+                {tierMates.map((r) => (
+                  <tr key={r.id} className={r.id === p.id ? "is-him" : undefined}>
                     <td className="mono dp-t-rank">{L.indexOf(r) + 1}</td>
                     <td className="dp-t-name">{r.name}</td>
                     <td className="mono dp-t-p">{r.score.toFixed(1)}</td>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <p className="dp-empty">Alone in his tier.</p>
+          )}
         </section>
 
         {grid && (
           <section className="dp-sec">
-            <h3 className="board-panel-title">How his rank moves</h3>
-            <div className="dp-grid4">
-              {grid.map((c) => (
-                <div key={`${c.fk}${c.mk}`} className={`dp-cell${c.fk === format && c.mk === mode ? " is-here" : ""}`}>
-                  <div className="dp-cell-k mono">{FORMATS[c.fk].label} · {MODES[c.mk].label}</div>
-                  <div className="dp-cell-v">{ord(c.rank)}</div>
-                  <div className="dp-cell-s mono">{p.pos}{c.posRank} · {c.score.toFixed(1)}</div>
-                </div>
-              ))}
-            </div>
+            <h3 className="board-panel-title">Rank by format</h3>
+            {/* the four views as a matrix: league format down the side, team mode across the top; this view's cell lit */}
+            <table className="dp-matrix">
+              <thead>
+                <tr>
+                  <th aria-hidden="true" />
+                  {Object.keys(MODES).map((mk) => <th key={mk} scope="col" className="mono">{MODES[mk].label}</th>)}
+                </tr>
+              </thead>
+              <tbody>
+                {Object.keys(FORMATS).map((fk) => (
+                  <tr key={fk}>
+                    <th scope="row" className="mono">{FORMATS[fk].label}</th>
+                    {Object.keys(MODES).map((mk) => {
+                      const c = grid.find((g) => g.fk === fk && g.mk === mk);
+                      return (
+                        <td key={mk} className={fk === format && mk === mode ? "is-here" : undefined}>
+                          <b>{ord(c.rank)}</b>
+                          <span className="mono">{p.pos}{c.posRank} · {c.score.toFixed(1)}</span>
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </section>
         )}
       </aside>
