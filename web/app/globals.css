@@ -7234,6 +7234,14 @@ body:has(.ehp) .ehp-inside,body:has(.ehp) .ehp-dark{--ehp-hole:#0B0B0B;--ehp-hol
 .sky-variant{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;color:var(--star-dim);text-align:center}
 .sky-variant canvas{width:100%;max-width:72px;height:auto;aspect-ratio:1}
 .sky-variant.is-unknown canvas{opacity:.55}
+button.sky-variant{background:none;border:1px solid transparent;padding:4px;font:inherit;font-family:var(--font-mono);cursor:pointer}
+button.sky-variant:hover{border-color:var(--star-dim);color:var(--star)}
+button.sky-variant:focus-visible{outline:2px solid var(--ember);outline-offset:1px}
+.sky-findcard{display:flex;flex-direction:column;gap:14px;align-items:stretch}
+.sky-findcard-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);margin:0}
+.sky-findcard-facts > div{background:var(--void-panel);padding:10px 12px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.sky-findcard-facts dt{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--star-dim)}
+.sky-findcard-facts dd{margin:0;font-size:13px;color:var(--star);overflow-wrap:anywhere}
 .sky-obj canvas{width:56px;height:56px}
 .sky-obj b{font-weight:700;line-height:1.2}
 .sky-obj .mono{font-size:10px;color:var(--star-dim)}

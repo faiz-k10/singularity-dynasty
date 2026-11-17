@@ -125,14 +125,45 @@ const SET_NEEDS = {
   quartet: "4 different kinds from this group", survey: "every kind in this group",
 };
 const versionName = (v) => VERSIONS.find((x) => x.id === v)?.name || "Plain";
-function CatDetail({ detail, entries, onClose }) {
+// One found object as a card (founder, Nov 17 2026: "when I click on the thing it should show me a card with its information").
+function FindCardView({ entry, onBack, onShare }) {
+  const f = findOf(entry.fam, entry.colour, entry.version), fam = FAMILIES[entry.fam], pu = POWERUPS[entry.version];
+  const ref = useRef(null);
+  useEffect(() => { const ctx = ref.current?.getContext("2d"); if (ctx) drawObject(ctx, 320, f); }, [f]);
+  const first = new Date(entry.at).toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" });
+  return (
+    <div className="sky-findcard">
+      <div className="sky-lens"><canvas ref={ref} width={320} height={320} aria-hidden="true" /></div>
+      <div className="sky-find">{f.name}</div>
+      <div className="sky-rarity mono">1 in {f.oneIn.toLocaleString()} finds</div>
+      <dl className="sky-findcard-facts mono">
+        <div><dt>Group</dt><dd>{TIER_NAME[fam.tier]}</dd></div>
+        <div><dt>Colour</dt><dd>{COLOURS.find((c) => c.id === entry.colour)?.name}</dd></div>
+        <div><dt>Version</dt><dd>{versionName(entry.version)}</dd></div>
+        <div><dt>{entry.n > 1 ? `First found · ${entry.n}x` : "Found"}</dt><dd>{first}</dd></div>
+      </dl>
+      {pu && <div className="sky-note is-blue"><span className="mono">Power-up</span><b>{pu.name}</b> {pu.text[0].toUpperCase() + pu.text.slice(1)}</div>}
+      <div className="sky-row">
+        <button type="button" className="btn-primary" onClick={() => onShare(f)}>Share this find</button>
+        <button type="button" className="btn-ghost" onClick={onBack}>Back</button>
+      </div>
+    </div>
+  );
+}
+
+function CatDetail({ detail, entries, onClose, onShare }) {
   const box = useRef(null);
+  const [card, setCard] = useState(null); // the found entry opened as a card
   useEffect(() => {
     box.current?.querySelector("button")?.focus();
-    const k = (e) => { if (e.key === "Escape") onClose(); };
+    const k = (e) => { if (e.key !== "Escape") return; if (card) setCard(null); else onClose(); };
     window.addEventListener("keydown", k);
     return () => window.removeEventListener("keydown", k);
-  }, [onClose]);
+  }, [onClose, card]);
+  // a found variant opens its card; one not found yet stays a plain tile
+  const Tile = ({ e, find, label }) => e
+    ? <button type="button" className="sky-variant is-found" onClick={() => setCard(e)} aria-label={`Open ${find.name}`}><Thumb find={find} /><span className="mono">{label}</span></button>
+    : <div className="sky-variant is-unknown"><Thumb find={find} hidden /><span className="mono">{label}</span></div>;
   const set = detail.set, famId = detail.fam ?? set?.fam;
   const fam = famId != null ? FAMILIES[famId] : null;
   const mine = fam ? entries.filter((e) => e.fam === fam.id) : [];
@@ -144,6 +175,7 @@ function CatDetail({ detail, entries, onClose }) {
           <div className="board-panel-title">{title}</div>
           <button type="button" className="btn-ghost" onClick={onClose}>Close</button>
         </div>
+        {card ? <FindCardView entry={card} onBack={() => setCard(null)} onShare={onShare} /> : <>
         {set && (
           <p className="sky-small mono">
             Needs {SET_NEEDS[set.kind]}. You have {set.have} of {set.of}. Finishing it gives <b>{set.power}</b>: {POWER_TEXT[set.power]}
@@ -159,10 +191,7 @@ function CatDetail({ detail, entries, onClose }) {
                 ...VERSIONS.map((v) => {
                   const e = mine.find((x) => x.colour === col.id && x.version === v.id);
                   return (
-                    <div key={`${col.id}${v.id}`} className={`sky-variant${e ? "" : " is-unknown"}`}>
-                      <Thumb find={findOf(fam.id, col.id, v.id)} hidden={!e} />
-                      <span className="mono">{e ? `${e.n > 1 ? `${e.n}x · ` : ""}${new Date(e.at).toLocaleDateString(undefined, { month: "short", day: "numeric" })}` : "Not found"}</span>
-                    </div>
+                    <Tile key={`${col.id}${v.id}`} e={e} find={findOf(fam.id, col.id, v.id)} label={e ? `${e.n > 1 ? `${e.n}x · ` : ""}${new Date(e.at).toLocaleDateString(undefined, { month: "short", day: "numeric" })}` : "Not found"} />
                   );
                 }),
               ])}
@@ -174,10 +203,7 @@ function CatDetail({ detail, entries, onClose }) {
             {VERSIONS.map((v) => {
               const e = mine.find((x) => x.version === v.id);
               return (
-                <div key={v.id} className={`sky-variant${e ? "" : " is-unknown"}`}>
-                  <Thumb find={findOf(fam.id, e?.colour || "silver", v.id)} hidden={!e} />
-                  <span className="mono">{versionName(v.id)}{e ? "" : " · not yet"}</span>
-                </div>
+                <Tile key={v.id} e={e} find={findOf(fam.id, e?.colour || "silver", v.id)} label={`${versionName(v.id)}${e ? "" : " · not yet"}`} />
               );
             })}
           </div>
@@ -187,14 +213,12 @@ function CatDetail({ detail, entries, onClose }) {
             {famsIn(set.tier).map((k) => {
               const e = entries.filter((x) => x.fam === k.id).sort((a, b) => b.oneIn - a.oneIn)[0];
               return (
-                <div key={k.id} className={`sky-variant${e ? "" : " is-unknown"}`}>
-                  <Thumb find={e ? findOf(k.id, e.colour, e.version) : findOf(k.id, "silver", "")} hidden={!e} />
-                  <span className="mono">{e ? k.name : "???"}</span>
-                </div>
+                <Tile key={k.id} e={e} find={e ? findOf(k.id, e.colour, e.version) : findOf(k.id, "silver", "")} label={e ? k.name : "???"} />
               );
             })}
           </div>
         )}
+        </>}
       </div>
     </div>
   );
@@ -540,7 +564,7 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
       </section>
 
       {scope && <Telescope queue={state.pending} compliments={compliments} onDone={closeScope} onShare={shareFind} />}
-      {detail && <CatDetail detail={detail} entries={entries} onClose={closeDetail} />}
+      {detail && <CatDetail detail={detail} entries={entries} onClose={closeDetail} onShare={(f) => shareFind(f, null)} />}
       {share && <ShareDialog prepare={prepare} caption={share.caption} onClose={() => setShare(null)} />}
     </div>
   );
