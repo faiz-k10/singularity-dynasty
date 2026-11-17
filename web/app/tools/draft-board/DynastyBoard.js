@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import PositionBadge from "../PositionBadge";
 import TeamBadge from "../TeamBadge";
 import DynastyProfile from "./DynastyProfile";
@@ -29,8 +29,10 @@ function Toggle({ label, value, options, onChange }) {
 
 // The whole view on one axis (the "spread"): every player a mark at his score, stacked where scores are close, the tiers as
 // alternating bands behind them and the groups as brackets under the axis. Click a mark to open that player.
-function Spread({ L, tiers, groups, openId, onPick }) {
-  if (!L.length) return null;
+function Spread(props) {
+  return props.L.length ? <SpreadPlot {...props} /> : null;
+}
+function SpreadPlot({ L, tiers, groups, openId, onPick }) {
   const lo = Math.floor(Math.min(...L.map((p) => p.score)) * 2) / 2, hi = Math.ceil(Math.max(...L.map((p) => p.score)) * 2) / 2;
   const x = (v) => ((v - lo) / (hi - lo || 1)) * 100;
   const stack = new Map();
@@ -48,6 +50,43 @@ function Spread({ L, tiers, groups, openId, onPick }) {
   const step = depth <= 6 ? 2 : depth <= 15 ? 5 : 10;
   const yTicks = [];
   for (let c = step; c <= depth; c += step) yTicks.push(c);
+  // every tier gets its "T<n>" label above its bracket, even a tier too narrow to hold it: the labels are laid out after they
+  // render (real widths), each starts at its bracket (a narrow one is centred on it) and is pushed right past the one before it
+  const labelRef = useRef(null);
+  const [labelLeft, setLabelLeft] = useState(null);
+  const tierKey = tiers.map((t) => `${t.a}-${t.b}`).join(",") + `|${lo}|${hi}`;
+  useLayoutEffect(() => {
+    const box = labelRef.current;
+    if (!box) return undefined;
+    const place = () => {
+      const W = box.clientWidth, out = [];
+      const els = [...box.children];
+      // a narrow plot (a phone) can't fit every label at 10px: shrink the labels until the row fits (never below 6px)
+      box.style.fontSize = "";
+      let GAP = 4;
+      const need = () => els.reduce((n, e) => n + e.offsetWidth, 0) + GAP * (els.length - 1);
+      if (W && need() > W) {
+        GAP = 2;
+        box.style.fontSize = `${Math.max(6, 10 * (W / need()) * 0.97)}px`;
+      }
+      // left to right on the axis = from the last tier to the first
+      const order = tiers.map((t, ti) => ti).sort((i, j) => L[tiers[i].b].score - L[tiers[j].b].score);
+      let edge = -Infinity;
+      for (const ti of order) {
+        const t = tiers[ti], w = els[ti].offsetWidth;
+        const a = (x(L[t.b].score) / 100) * W, b = (x(L[t.a].score) / 100) * W;
+        let left = b - a >= w ? a : (a + b) / 2 - w / 2;
+        left = Math.min(Math.max(left, edge + GAP, 0), W - w);
+        out[ti] = left;
+        edge = left + w;
+      }
+      setLabelLeft(out);
+    };
+    place();
+    const ro = new ResizeObserver(place);
+    ro.observe(box);
+    return () => ro.disconnect();
+  }, [tierKey]); // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <div className="dyb-spread" style={{ "--depth": depth }}>
       <div className="dyb-spread-plot">
@@ -56,11 +95,12 @@ function Spread({ L, tiers, groups, openId, onPick }) {
           {yTicks.map((c) => <span key={c} className="dyb-spread-y-tick" style={{ bottom: `${c * 6 + 2}px` }}>{c}</span>)}
         </div>
         {yTicks.map((c) => <div key={c} className="dyb-spread-grid" style={{ bottom: `${c * 6 + 2}px` }} aria-hidden="true" />)}
-        {tiers.map((t, ti) => (
-          <div key={ti} className={`dyb-spread-tier${ti % 2 ? " is-alt" : ""}`} style={span(t.a, t.b)}>
-            {x(L[t.a].score) - x(L[t.b].score) > 2.5 && <span>T{ti + 1}</span>}
-          </div>
-        ))}
+        {tiers.map((t, ti) => <div key={ti} className={`dyb-spread-tier${ti % 2 ? " is-alt" : ""}`} style={span(t.a, t.b)} />)}
+        <div className="dyb-spread-tlabels" ref={labelRef} aria-hidden="true">
+          {tiers.map((t, ti) => (
+            <span key={ti} style={labelLeft ? { left: `${labelLeft[ti]}px` } : { left: `${x(L[t.b].score)}%`, visibility: "hidden" }}>T{ti + 1}</span>
+          ))}
+        </div>
         {marks.map(({ p, k }) => (
           <button
             key={p.id}

@@ -6408,7 +6408,8 @@ details.acct-danger > summary.acct-h{color:var(--down)}
 /* tiers: alternating bands starting 14px down the plot, each with a solid bracket across its top and "T<n>" above the bracket */
 .dyb-spread-tier{position:absolute; top:14px; bottom:0; background:rgba(var(--star-dot-rgb), .03); border-left:1px solid rgba(var(--star-dot-rgb), .28); border-top:2px solid rgba(var(--star-dot-rgb), .45); box-sizing:border-box;}
 .dyb-spread-tier.is-alt{background:rgba(var(--star-dot-rgb), .10); border-top-color:rgba(var(--star-dot-rgb), .75);}
-.dyb-spread-tier span{position:absolute; bottom:calc(100% + 3px); left:0; font-family:var(--font-mono), monospace; font-size:10px; font-weight:700; line-height:1; color:var(--star); white-space:nowrap;} /* "T7" sits above its tier's bracket */
+.dyb-spread-tlabels{position:absolute; left:0; right:0; top:3px; height:10px; font-size:10px; pointer-events:none;} /* "T7" above each tier's bracket, laid out in DynastyBoard.js Spread so none overlap */
+.dyb-spread-tlabels span{position:absolute; top:0; font-family:var(--font-mono), monospace; font-size:inherit; font-weight:700; line-height:1; color:var(--star); white-space:nowrap;}
 .dyb-spread-grid{position:absolute; left:0; right:0; border-top:1px dashed rgba(var(--star-dot-rgb), .14); pointer-events:none;}
 .dyb-spread-y{position:absolute; top:0; bottom:0; right:100%; width:34px;}
 .dyb-spread-y-tick{position:absolute; right:5px; transform:translateY(50%); font-family:var(--font-mono), monospace; font-size:9px; color:var(--star-dim);}
