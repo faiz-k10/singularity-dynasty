@@ -7,9 +7,10 @@ import ShareDialog from "../../ShareDialog";
 import { seeFinds, pickPlayer, claim, wearSkin } from "./actions";
 import { SkyBackdrop, CoreSkin, SkinPreview } from "./skins";
 import { StarField, Galaxies, Scrim, LitStar, GlowLine, Bloom, StarSurface } from "./hubble";
-import { drawObject, sharpen, findCard, receiptCard, seasonCard, toBlob, setCardBadge, setCardSkin, setCardFrame } from "./skyArt";
+import { placeFind } from "@/lib/skyPlacement";
+import { drawObject, skyObject, sharpen, findCard, receiptCard, seasonCard, toBlob, setCardBadge, setCardSkin, setCardFrame } from "./skyArt";
 import {
-  ACTIONS, skyFor, SKINS, RARITY, hasSkin, equipped, skySkinsFor, FAMILIES, COLOURS, VERSIONS, TIER_NAME, POWERUPS, LADDER, rungLabel, CATALOGUE_SIZE, SET_COUNT, UNLOCK, EVENT_TEXT,
+  ACTIONS, LORE, skyFor, SKINS, RARITY, hasSkin, equipped, skySkinsFor, FAMILIES, COLOURS, VERSIONS, TIER_NAME, POWERUPS, LADDER, rungLabel, CATALOGUE_SIZE, SET_COUNT, UNLOCK, EVENT_TEXT,
   famsIn, findOf, setProgress, seasonProgress,
 } from "@/lib/nightSky";
 
@@ -75,6 +76,32 @@ function Core({ mass, collapsed, skin }) {
   );
 }
 
+// The member's rarest find, hung in the sky where its kind belongs (lib/skyPlacement.js): clear of every constellation, its label and the
+// core's words. The picture is drawn in the browser, so it appears just after the sky does.
+function RarestInSky({ state }) {
+  const rarest = useMemo(() => Object.values(state.found).sort((a, b) => b.oneIn - a.oneIn)[0] || null, [state.found]);
+  const place = useMemo(() => {
+    if (!rarest) return null;
+    const sky = skyFor(state.season);
+    const avoid = [[-110, 92, 110, 114], [-92, 124, 92, 168], ...sky.map((c) => {
+      const lx = Math.sign(c.label[0]) * 456, ly = c.label[1];
+      return lx > 0 ? [lx - 175, ly - 14, lx, ly + 20] : [lx, ly - 14, lx + 175, ly + 20];
+    })];
+    return placeFind(rarest.fam, sky, { w: 960, h: 600, avoid, stretch: 1.5 });
+  }, [rarest, state.season]);
+  const img = useRef(null);
+  useEffect(() => { if (rarest && place && img.current) img.current.setAttribute("href", skyObject(rarest, Math.round(place.size * 1.45 * 3), place.rot).toDataURL()); }, [rarest, place]);
+  if (!place) return null;
+  const art = place.size * 1.45;
+  return (
+    <g className="sky-rarest" aria-label={`Your rarest find: ${rarest.name}`}>
+      {place.orbit && <circle r={place.orbit} className={place.belt ? "sky-orbit is-belt" : "sky-orbit"} />}
+      <image ref={img} x={place.x - art / 2} y={place.y - art / 2} width={art} height={art} />
+      <text className="sky-creal" x={place.x} y={place.y + place.size / 2 + 13} textAnchor="middle">{rarest.name}</text>
+    </g>
+  );
+}
+
 function Sky({ state, pendingPicks, pending }) {
   const fid = useId().replace(/[^a-zA-Z0-9_-]/g, "");
   const open = state.findsTotal >= UNLOCK.constellations;
@@ -121,6 +148,7 @@ function Sky({ state, pendingPicks, pending }) {
           </g>
         );
       })}
+      <RarestInSky state={state} />
       {pendingPicks.length > 0 && (
         <g className="sky-label">
           {pendingPicks.map((_, i) => <circle key={`p${i}`} className="sky-pending" cx={(i - (pendingPicks.length - 1) / 2) * 22} cy={138} r="5" />)}
@@ -162,6 +190,7 @@ function FindCardView({ entry, onBack, onShare }) {
       <div className="sky-lens"><canvas ref={ref} width={320} height={320} aria-hidden="true" /></div>
       <div className="sky-find">{f.name}</div>
       <div className="sky-rarity mono">1 in {f.oneIn.toLocaleString()} finds</div>
+      {LORE[fam.name] && <p className="sky-lore">{LORE[fam.name]}</p>}
       <dl className="sky-findcard-facts mono">
         <div><dt>Group</dt><dd>{TIER_NAME[fam.tier]}</dd></div>
         <div><dt>Colour</dt><dd>{COLOURS.find((c) => c.id === entry.colour)?.name}</dd></div>
@@ -282,6 +311,7 @@ function Telescope({ queue, compliments, onDone, onShare }) {
           <>
             <div className="sky-find">{f.name}</div>
             <div className="sky-rarity mono">1 in {f.oneIn.toLocaleString()} finds · {f.id}{f.first ? " · new to your catalogue" : ""}</div>
+            {LORE[FAMILIES[f.fam]?.name] && <p className="sky-lore">{LORE[FAMILIES[f.fam].name]}</p>}
             <div className="sky-find-sub mono">+{f.pts} orbit points{f.first ? " (incl. +15 for a first discovery)" : ""}{f.shower ? " · meteor shower: every action places two stars for 10 minutes" : ""}</div>
             {compliment && <div className="sky-note is-gold"><span className="mono">Seen from up here</span><b>{compliment.head}.</b> {compliment.body}</div>}
             {pu && <div className="sky-note is-blue"><span className="mono">Power-up</span><b>{pu.name}</b> {pu.text[0].toUpperCase() + pu.text.slice(1)}</div>}

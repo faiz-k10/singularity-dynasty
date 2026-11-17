@@ -210,3 +210,19 @@ test("sharing places one lucky star but never heats the core or makes a find", (
   assert.ok(lit === 1 || (lit === 2 && s.filled.singularity.some(Boolean))); // a gold wildcard also lights The Singularity
   assert.equal(award(s, "share", ctx(t0 + 1000), () => 0.01).awarded, false); // once a day
 });
+
+test("the rarest find takes its astronomical zone and never covers a constellation", async () => {
+  const { placeFind, zoneOf } = await import("../lib/skyPlacement.js");
+  const { skyFor } = await import("../lib/nightSky.js");
+  for (const season of [2026, 2027, 2028, 2029]) {
+    const sky = skyFor(season);
+    for (const f of FAMILIES) {
+      const p = placeFind(f.id, sky, { w: 600, h: 600 });
+      const z = zoneOf(f.id);
+      assert.ok(Math.abs(Math.hypot(p.x, p.y) - z.r) < 1, `${f.name} stays on its zone's radius`);
+      for (const c of sky) for (const [x, y] of c.pts) assert.ok(Math.hypot(p.x - x, p.y - y) > z.size / 2, `${f.name} clear of ${c.name} (${season})`);
+    }
+  }
+  const lava = FAMILIES.find((f) => f.name === "Lava world").id, quasar = FAMILIES.find((f) => f.name === "Quasar").id;
+  assert.ok(zoneOf(lava).r < zoneOf(quasar).r, "planets orbit close, deep-sky objects sit far out");
+});

@@ -7138,6 +7138,8 @@ body:has(.ehp) .ehp-inside,body:has(.ehp) .ehp-dark{--ehp-hole:#0B0B0B;--ehp-hol
 .sky-panel-fill{padding:0;position:relative;overflow:hidden}
 .sky-panel-fill .sky-svg{width:100%;max-width:none;aspect-ratio:8/5;margin:0} /* landscape: the whole drawing, nothing cropped */
 .sky-panel-fill .sky-scope-btn{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);z-index:1}
+.sky-orbit{fill:none;stroke:var(--star);stroke-opacity:.16;stroke-width:1;stroke-dasharray:3 5}
+.sky-orbit.is-belt{stroke-width:6;stroke-dasharray:1 5}
 .sky-slot{fill:none;stroke:var(--star-dim);stroke-dasharray:2 2;stroke-width:1}
 .sky-pending{fill:none;stroke:var(--star);stroke-width:1.2;stroke-dasharray:1.5 2}
 .sky-clabel{font-family:var(--font-mono);font-size:10px;fill:var(--star);letter-spacing:.08em;text-transform:uppercase}
@@ -7261,6 +7263,7 @@ button.sky-variant:focus-visible{outline:2px solid var(--ember);outline-offset:1
 .sky-lens canvas{width:min(280px,70vw);height:auto;aspect-ratio:1;border-radius:50%;border:1px solid var(--line)}
 .sky-find{font-family:var(--font-display);font-weight:800;font-size:30px;text-transform:uppercase;letter-spacing:.05em;text-align:center;line-height:1.05}
 .sky-rarity{text-align:center;font-size:12px;color:var(--ember)}
+.sky-lore{font-family:var(--font-body);font-style:italic;font-size:15px;line-height:1.5;color:var(--star);text-align:center;max-width:44ch;margin:0 auto;opacity:.9}
 .sky-find-sub{text-align:center;font-size:12px;color:var(--star-dim);margin:0}
 .sky-note{border:1px solid var(--line);border-left:3px solid var(--up);padding:9px 12px;font-size:14px;line-height:1.45}
 .sky-note.is-gold{border-left-color:var(--ember)}

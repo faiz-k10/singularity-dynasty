@@ -3,11 +3,13 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { FAMILIES, COLOURS, skyFor, seasonProgress, COLORS as STAR } from "@/lib/nightSky";
 import { SkyBackdrop, CoreSkin } from "./skins";
+import { placeFind } from "@/lib/skyPlacement";
 import { StarField, Galaxies, Scrim, LitStar, GlowLine, Bloom, StarSurface } from "./hubble";
 
 // The Night Sky's pictures (from mockups/night-sky.html, which the founder approved): one renderer per kind of object, coloured by the find's
 // colour and finished by its version, drawn on a canvas; the telescope reveal (the picture sharpens out of noise); and the share cards.
-export function drawObject(ctx, W, find, edge) {
+// `bare`: the object alone on a transparent canvas (no field behind it), for placing it in the member's own sky.
+export function drawObject(ctx, W, find, edge, { bare = false } = {}) {
   const fam = FAMILIES[find.fam], pal = COLOURS.find((c) => c.id === find.colour).c, ver = find.version;
   let s = 11 + find.fam * 97; const r = () => ((s = (s * 16807) % 2147483647) / 2147483647);
   ctx.save();
@@ -26,6 +28,7 @@ export function drawObject(ctx, W, find, edge) {
     ctx.fillStyle = `rgba(${t},${0.35 + m * 0.65})`; ctx.beginPath(); ctx.arc(x, y, rad, 0, 7); ctx.fill();
     if (m > 0.62) spikes(x, y, (6 + m * 14) * u, t, 0.7, 0.6);
   }
+  if (bare) ctx.clearRect(0, 0, W, W); // the field above still ran, so the object's own details come out the same as in its thumbnail
   if (edge) { const g = ctx.createRadialGradient(W - 8 * u, 24 * u, 2, W - 8 * u, 24 * u, 90 * u); g.addColorStop(0, "rgba(233,196,106,.9)"); g.addColorStop(1, "rgba(0,0,0,0)"); ctx.fillStyle = g; ctx.fillRect(0, 0, W, W); }
   if (ver === "mythic") { const g = ctx.createRadialGradient(C, C, 20 * u, C, C, 160 * u); g.addColorStop(0, "rgba(233,196,106,.45)"); g.addColorStop(1, "rgba(0,0,0,0)"); ctx.fillStyle = g; ctx.fillRect(0, 0, W, W); }
   const ball = (x, y, rad, a = pal[0], b = pal[1], self = a === "#FFFFFF") => { // self: it makes its own light (stars, comet heads), so no night side
@@ -70,9 +73,23 @@ export function drawObject(ctx, W, find, edge) {
   }
   // the version's finish
   if (ver === "prismatic") { const g = ctx.createConicGradient ? ctx.createConicGradient(0, C, C) : null; if (g) { ["#F06A5A", "#F2B45A", "#6FD9A8", "#7FA6F5", "#B48CF2", "#F06A5A"].forEach((c, i) => g.addColorStop(i / 5, c)); ctx.strokeStyle = g; ctx.lineWidth = 5 * u; ctx.globalAlpha = 0.85; ctx.beginPath(); ctx.arc(C, C, 120 * u, 0, 7); ctx.stroke(); ctx.globalAlpha = 1; } }
-  if (ver === "ancient") { ctx.globalCompositeOperation = "color"; ctx.fillStyle = "rgba(170,120,60,.55)"; ctx.fillRect(0, 0, W, W); ctx.globalCompositeOperation = "source-over"; ctx.strokeStyle = "rgba(233,196,106,.5)"; ctx.lineWidth = 1 * u; for (let i = 0; i < 5; i++) { ctx.beginPath(); ctx.moveTo(C + (r() - 0.5) * 80 * u, C + (r() - 0.5) * 80 * u); ctx.lineTo(C + (r() - 0.5) * 120 * u, C + (r() - 0.5) * 120 * u); ctx.stroke(); } }
+  if (ver === "ancient") { ctx.globalCompositeOperation = bare ? "source-atop" : "color"; ctx.fillStyle = "rgba(170,120,60,.55)"; ctx.fillRect(0, 0, W, W); ctx.globalCompositeOperation = "source-over"; ctx.strokeStyle = "rgba(233,196,106,.5)"; ctx.lineWidth = 1 * u; for (let i = 0; i < 5; i++) { ctx.beginPath(); ctx.moveTo(C + (r() - 0.5) * 80 * u, C + (r() - 0.5) * 80 * u); ctx.lineTo(C + (r() - 0.5) * 120 * u, C + (r() - 0.5) * 120 * u); ctx.stroke(); } }
   if (ver === "mythic") { ctx.fillStyle = "#FFF4D6"; for (let i = 0; i < 18; i++) { const x = r() * W, y = r() * W, k = (2 + r() * 3) * u; ctx.beginPath(); ctx.moveTo(x, y - k * 2); ctx.lineTo(x + k * 0.5, y); ctx.lineTo(x, y + k * 2); ctx.lineTo(x - k * 0.5, y); ctx.fill(); } ctx.strokeStyle = "#E9C46A"; ctx.lineWidth = 3 * u; ctx.beginPath(); ctx.arc(C, C, 126 * u, 0, 7); ctx.stroke(); }
   ctx.restore();
+}
+
+// The member's rarest find as it hangs in their sky: the object alone, turned by `rot` degrees (a comet's tail away from the core), its
+// square edges faded out so it sits in the sky rather than on a tile. Returns a canvas of `px` square.
+export function skyObject(find, px, rot = 0) {
+  const big = document.createElement("canvas"); big.width = big.height = px * 2;
+  drawObject(big.getContext("2d"), px * 2, find, null, { bare: true });
+  const cv = document.createElement("canvas"); cv.width = cv.height = px;
+  const ctx = cv.getContext("2d");
+  ctx.translate(px / 2, px / 2); ctx.rotate((rot * Math.PI) / 180); ctx.drawImage(big, -px / 2, -px / 2, px, px); ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.globalCompositeOperation = "destination-in";
+  const g = ctx.createRadialGradient(px / 2, px / 2, px * 0.3, px / 2, px / 2, px / 2); g.addColorStop(0, "#000"); g.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.fillStyle = g; ctx.fillRect(0, 0, px, px);
+  return cv;
 }
 
 // The telescope: the picture shown through ever finer pixels and fading noise, then done().
@@ -222,6 +239,13 @@ export async function seasonCard(state, { title, size, rarest }) {
   // +-256 of the centre, so at 1:1 around (885, 315) they span x 629-1141, y 59-571 -- clear of the text column (ends at 556) and the frame.
   const SX = 885, SY = 315;
   if (stars) ctx.drawImage(stars, SX - 300, SY - 300, 600, 600);
+  if (rarest) {
+    // the rarest find hangs in the sky where its kind belongs (lib/skyPlacement.js), with its orbit drawn faintly when it has one
+    const p = placeFind(rarest.fam, sky, { w: 600, h: 600 });
+    if (p.orbit) { ctx.save(); ctx.strokeStyle = "rgba(236,231,220,.16)"; ctx.lineWidth = p.belt ? 6 : 1; ctx.setLineDash(p.belt ? [1, 5] : [3, 5]); ctx.beginPath(); ctx.arc(SX, SY, p.orbit, 0, Math.PI * 2); ctx.stroke(); ctx.restore(); }
+    const art = p.size * 1.45, img = skyObject(rarest, Math.round(art * 2), p.rot);
+    ctx.drawImage(img, SX + p.x - art / 2, SY + p.y - art / 2, art, art);
+  }
   await drawCore(ctx, SX, SY, 1);
 
   // The text column, x 64-556: eyebrow (with the season's year), title, a hairline, the four figures, a hairline, the rarest find, the signature.
@@ -240,14 +264,8 @@ export async function seasonCard(state, { title, size, rarest }) {
   });
   rule(448);
   if (rarest) {
-    // the find itself, in a round lens beside its name (founder, Nov 17 2026: "include the most rare find in the export")
-    const LR = 40, LX = L + LR, LY = 506, off = document.createElement("canvas"); off.width = off.height = 240;
-    drawObject(off.getContext("2d"), 240, rarest);
-    ctx.save(); ctx.beginPath(); ctx.arc(LX, LY, LR, 0, Math.PI * 2); ctx.clip(); ctx.drawImage(off, LX - LR, LY - LR, LR * 2, LR * 2); ctx.restore();
-    ctx.strokeStyle = "#E9C46A"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(LX, LY, LR + 3, 0, Math.PI * 2); ctx.stroke();
-    const TX = L + LR * 2 + 22;
-    ctx.fillStyle = "#A39E92"; ctx.font = `400 15px ${mono}`; ctx.fillText(`RAREST FIND · 1 IN ${rarest.oneIn.toLocaleString()}`, TX, 490);
-    ctx.fillStyle = "#E9C46A"; ctx.font = `700 22px ${mono}`; wrap(ctx, rarest.name.toUpperCase(), TX, 522, R - TX, 28);
+    ctx.fillStyle = "#A39E92"; ctx.font = `400 15px ${mono}`; ctx.fillText(`RAREST FIND · 1 IN ${rarest.oneIn.toLocaleString()}`, L, 482);
+    ctx.fillStyle = "#E9C46A"; ctx.font = `700 22px ${mono}`; wrap(ctx, rarest.name.toUpperCase(), L, 514, R - L, 28);
   }
   ctx.fillStyle = "#A39E92"; ctx.font = `400 14px ${mono}`; ctx.fillText("DYNASTY SINGULARITY · THE NIGHT SKY", L, 590);
   return cv;
