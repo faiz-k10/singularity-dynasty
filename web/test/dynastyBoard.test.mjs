@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { AGE_LOOKAHEAD, ageValueAt, boardRows, buildBoard, metaFromData, pBetter, phi, rowsFromData, scoreRows } from "../lib/dynastyBoard.js";
+import { AGE_LOOKAHEAD, SHOW, ageValueAt, boardRows, buildBoard, metaFromData, pBetter, phi, rowsFromData, scoreRows } from "../lib/dynastyBoard.js";
 import data from "../data/dynasty-values.json" with { type: "json" };
 
 const row = (name, pos, p1, ps, age, sd = 2) => ({ id: name, name, pos, team: "AAA", age: 25, games: 17, ppg: 15, ageValue: age, por1qb: p1, porSf: ps, sdProd: sd });
@@ -78,7 +78,7 @@ test("the published data loads and builds a board in every format, mode and posi
   assert.ok(rows.length > 100);
   for (const f of ["1qb", "sf"]) for (const m of ["contender", "rebuilder"]) {
     const L = boardRows(rows, { format: f, mode: m, pos: "ALL" });
-    assert.equal(L.length, 120);
+    assert.equal(L.length, SHOW.all);
     for (const pos of ["QB", "RB", "WR", "TE"]) {
       const P = boardRows(rows, { format: f, mode: m, pos });
       assert.ok(P.length > 10 && P.every((p) => p.pos === pos));
