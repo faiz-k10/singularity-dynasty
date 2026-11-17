@@ -7226,7 +7226,7 @@ body:has(.ehp) .ehp-inside,body:has(.ehp) .ehp-dark{--ehp-hole:#0B0B0B;--ehp-hol
 .sky-odds{list-style:none;margin:0;padding:0;font-size:12px}
 .sky-odds li{padding:7px 0;border-top:1px solid var(--line)}
 .sky-odds li:first-child{border-top:0}
-.sky-log{list-style:none;margin:0;padding:0;font-size:12px;color:var(--star-dim);max-height:220px;overflow:auto}
+.sky-log{list-style:none;margin:0;padding:0;font-size:12px;color:var(--star-dim);flex:1 1 0;min-height:220px;overflow:auto} /* the Log is the column's last panel: it takes the height left over (founder, Nov 17 2026), scrolling inside */
 .sky-log li{padding:6px 0;border-top:1px solid var(--line)}
 .sky-log li:first-child{border-top:0}
 .sky-ov{position:fixed;inset:0;z-index:300;background:color-mix(in srgb, var(--void) 88%, transparent);display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto}

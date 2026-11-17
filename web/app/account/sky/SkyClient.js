@@ -338,13 +338,6 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
 
       <div className="sky-grid">
         <div className="sky-col">
-          <section className="sky-panel" aria-labelledby="sky-log">
-        <div className="board-panel-title" id="sky-log">Log</div>
-        <ul className="sky-log mono">
-          {state.log.length ? state.log.map((l, i) => <li key={i}>{l.text}</li>) : <li>Nothing yet. Open a tool from the list above to place your first star.</li>}
-        </ul>
-      </section>
-
           <section className="sky-panel" aria-labelledby="sky-odds">
           <div className="board-panel-title" id="sky-odds">What&apos;s out there</div>
           <ul className="sky-odds mono">
@@ -358,6 +351,13 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
           </ul>
           <p className="sky-small mono">If a find lands on something your constellations haven&apos;t powered, you get the biggest find they have, and you&apos;ll see the bigger one at the edge of the frame. Finish The Singularity and your next find is a stellar event.</p>
         </section>
+
+          <section className="sky-panel" aria-labelledby="sky-log">
+            <div className="board-panel-title" id="sky-log">Log</div>
+            <ul className="sky-log mono">
+              {state.log.length ? state.log.map((l, i) => <li key={i}>{l.text}</li>) : <li>Nothing yet. Open a tool from the list above to place your first star.</li>}
+            </ul>
+          </section>
         </div>
         <div className="sky-col">
           <section className="sky-panel" aria-labelledby="sky-season">
