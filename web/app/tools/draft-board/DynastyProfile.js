@@ -148,13 +148,13 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
           </ArcGauge>
           <div className="dp-score-side">
             <div className="dp-eyebrow mono">Dynasty score · {f.label} · {m.label}</div>
-            <div className="dp-facts">
-              {here && <span><b>{ord(here.rank)}</b> overall</span>}
-              {here && <span><b>{p.pos}{here.posRank}</b></span>}
-              <span><b>Tier {tier.ti + 1}</b> of {board.tiers.length}</span>
-              <span>{GROUP_NAMES[group.g] || "Deep"}</span>
-            </div>
-            <div className="dp-range mono">80% range {p.lo.toFixed(1)}–{p.hi.toFixed(1)}{tier.beat != null ? ` · tier beats the next ${pct(tier.beat)}` : ""}</div>
+            <dl className="dp-facts">
+              {here && <div><dt className="mono">Overall</dt><dd>{ord(here.rank)}</dd></div>}
+              {here && <div><dt className="mono">Position</dt><dd>{p.pos}{here.posRank}</dd></div>}
+              <div><dt className="mono">Tier</dt><dd>{tier.ti + 1}<small> / {board.tiers.length}</small></dd></div>
+              <div><dt className="mono">Group</dt><dd>{GROUP_NAMES[group.g] || "Deep"}</dd></div>
+            </dl>
+            <div className="dp-range mono">80% range {p.lo.toFixed(1)}–{p.hi.toFixed(1)}{tier.beat != null ? ` · his tier is better than the next ${pct(tier.beat)} of the time` : ""}</div>
           </div>
         </section>
 

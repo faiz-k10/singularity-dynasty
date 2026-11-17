@@ -6018,9 +6018,6 @@ select.lab-select{min-width:200px;}
 /* ---- Dynasty Draft Board: the player profile (app/tools/draft-board/DynastyProfile.js) ------------------------------------
    The pane beside the board's list. Flat scoreboard material, one section per question:
    the read, the recipe, his games, his age, who is close, how his rank moves. Charts are SVG in site tokens. */
-.dr-form{font-size:10px; line-height:1; margin-left:6px; flex:none;}
-.dr-form.is-up{color:var(--horizon-gold);}
-.dr-form.is-down{color:var(--down);}
 .dp{position:relative; box-sizing:border-box; padding:16px 16px 24px; background:var(--void-panel); border:1px solid var(--rule); border-top:2px solid var(--rule-strong); border-radius:2px;}
 .dp-head{display:flex; gap:16px; align-items:center;}
 .dp-photo{flex:0 0 76px; width:76px; height:76px; border-radius:var(--r-sm); border:1px solid var(--rule); background:var(--void-panel-2); overflow:hidden; display:grid; place-items:center;}
@@ -6029,13 +6026,18 @@ select.lab-select{min-width:200px;}
 .dp-id{min-width:0;}
 .dp-name{margin:0 0 6px; font-family:var(--font-display); font-weight:800; text-transform:uppercase; letter-spacing:.07em; font-size:30px; line-height:1.05;}
 .dp-badges{display:flex; flex-wrap:wrap; align-items:center; gap:6px 8px; font-size:12px; color:var(--star-dim);}
-.dp-links{display:flex; gap:14px; margin-top:8px; font-family:var(--font-mono), monospace; font-size:11px; letter-spacing:.04em;}
+.dp-links{display:flex; flex-wrap:wrap; align-items:center; gap:6px 16px; margin-top:10px; font-family:var(--font-mono), monospace; font-size:11px; letter-spacing:.04em;}
+.dp-links > *{white-space:nowrap;}
 .dp-links a{color:var(--horizon-gold); text-decoration:none;} .dp-links a:hover{text-decoration:underline; text-underline-offset:3px;}
 .dp-score{display:flex; align-items:center; gap:18px; margin:20px 0 4px; padding:14px 16px; border:1px solid var(--rule); border-top:2px solid var(--rule-strong); background:rgba(var(--horizon-gold-rgb), .07);}
 .dp-big{flex:0 0 auto; font-family:var(--font-display); font-weight:800; font-size:84px; line-height:.9; color:var(--horizon-gold);}
 .dp-score-side{min-width:0; display:flex; flex-direction:column; gap:6px;}
 .dp-eyebrow{font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--star-dim);}
-.dp-facts{display:flex; flex-wrap:wrap; gap:4px 14px; font-size:14px; color:var(--star-dim);} .dp-facts b{color:var(--star); font-weight:700;}
+.dp-facts{display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:8px 16px; margin:4px 0 2px;}
+.dp-facts > div:last-child{grid-column:1 / -1;} /* the group's name gets the whole row */
+.dp-facts dt{font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--star-dim);}
+.dp-facts dd{margin:1px 0 0; font-family:var(--font-display); font-weight:800; font-size:20px; line-height:1.1; letter-spacing:.03em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.dp-facts dd small{font-size:13px; color:var(--star-dim); font-weight:700;}
 .dp-range{font-size:10.5px; color:var(--star-dim);}
 .dp-read{margin:12px 0 0; font-size:15px; line-height:1.45; color:var(--star);}
 .dp-sec{margin-top:24px;}
@@ -6372,58 +6374,104 @@ details.acct-danger > summary.acct-h{color:var(--down)}
 /* Shared badge glyph wrapper (lib/badgeIcons.js via BadgeIcon / FlagIcon): no box of its own, the svg sizes as the badge child. */
 .badge-icon{display:contents;}
 
-/* ===== Dynasty Draft Board as a board (app/tools/draft-board/DynastyBoard.js): headline strip, ranked list with tier / group headings,
-   the picked player's profile (.dp) in a pane beside it ===== */
-.dyb-strip{display:grid; grid-template-columns:repeat(5, minmax(0,1fr)); background:var(--void-panel); border:1px solid var(--rule); border-top:2px solid var(--rule-strong); border-radius:2px; margin-bottom:14px;}
-.dyb-strip-cell{padding:12px 18px; border-right:1px solid var(--rule); min-width:0;}
-.dyb-strip-cell:last-child{border-right:0;}
-.dyb-strip-n{font-family:var(--font-display); font-weight:800; font-size:clamp(30px, 3.2vw, 46px); line-height:1;}
-.dyb-strip-n.is-up{color:var(--horizon-gold);}
-.dyb-strip-l{font-family:var(--font-mono), monospace; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--star-dim); margin-top:5px;}
-.dyb-strip-s{font-size:12px; color:var(--star-dim); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-.dyb-shell{display:grid; grid-template-columns:minmax(0,1fr) minmax(380px, 480px); gap:12px; height:min(820px, calc(100vh - 120px)); min-height:540px; margin-bottom:22px;}
+/* ===== Dynasty Board (app/tools/draft-board/DynastyBoard.js), Nov 16 2026 (founder: "polish it up, 0/10 similar to other AI-built sites"):
+   1. the OVERVIEW: the whole view on one score axis -- each player a mark, stacked where scores are close, tiers as alternating bands,
+      groups as brackets under the axis (click a mark to open him);
+   2. the LIST as a ruled forest plot: plain rank (T = tied), name, score, and his 80% range as a whisker on ONE shared axis with
+      whole-point grid lines running down every row, his tier's score span shaded behind it; group headings are ruled
+      (no filled banner), tier headings carry how often the tier above is better;
+   3. the profile (.dp) in a pane beside it. No filled plates, no outline numerals, no brackets. ===== */
+.dyb-overview{display:grid; grid-template-columns:200px minmax(0,1fr); gap:24px; align-items:stretch; padding:16px; margin-bottom:12px;}
+.dyb-overview-key{display:flex; flex-direction:column; justify-content:flex-end; border-right:1px solid var(--rule); padding-right:20px;}
+.dyb-overview-n{font-family:var(--font-display); font-weight:800; font-size:56px; line-height:.9;}
+.dyb-overview-l{font-size:11px; letter-spacing:.06em; color:var(--star-dim); margin-top:4px;}
+.dyb-overview-dl{display:grid; grid-template-columns:auto 1fr; gap:3px 12px; margin:14px 0 0; font-size:12px;}
+.dyb-overview-dl dt{color:var(--star-dim);} .dyb-overview-dl dd{margin:0; text-align:right; color:var(--star);}
+.dyb-spread{position:relative; min-width:0; display:flex; flex-direction:column; justify-content:flex-end;}
+.dyb-spread-plot{position:relative; height:calc(var(--depth) * 6px + 30px); border-bottom:1px solid var(--rule-strong);}
+.dyb-spread-tier{position:absolute; top:0; bottom:0; border-left:1px solid var(--rule);}
+.dyb-spread-tier.is-alt{background:rgba(var(--star-dot-rgb), .045);}
+.dyb-spread-tier span{position:absolute; top:3px; left:4px; font-family:var(--font-mono), monospace; font-size:10px; color:var(--star-dim);}
+.dyb-mark{all:unset; position:absolute; width:5px; height:5px; margin-left:-2.5px; background:var(--star); cursor:pointer;}
+.dyb-mark:hover{outline:1px solid var(--star); outline-offset:1px;}
+.dyb-mark:focus-visible{outline:2px solid var(--horizon-gold); outline-offset:1px;}
+.dyb-mark.is-open{background:var(--ember); outline:2px solid var(--ember); outline-offset:1px; z-index:1;}
+.dyb-spread-axis{position:relative; height:16px;}
+.dyb-spread-axis span{position:absolute; top:3px; transform:translateX(-50%); font-family:var(--font-mono), monospace; font-size:10px; color:var(--star-dim);}
+.dyb-spread-axis span::before{content:""; position:absolute; left:50%; top:-4px; height:4px; border-left:1px solid var(--rule-strong);}
+.dyb-spread-groups{position:relative; height:22px;}
+.dyb-spread-groups div{position:absolute; top:3px; height:6px; border:1px solid var(--star-dim); border-top:0; box-sizing:border-box;}
+.dyb-spread-groups span{position:absolute; top:8px; left:50%; transform:translateX(-50%); font-family:var(--font-mono), monospace; font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--star-dim); white-space:nowrap;}
+.dyb-spread-groups div:first-child span{left:auto; right:0; transform:none;} /* the top group sits at the right edge: its name reads leftward */
+
+.dyb-shell{display:grid; grid-template-columns:minmax(0,1fr) minmax(360px, 440px); gap:12px; height:min(820px, calc(100vh - 120px)); min-height:540px; margin-bottom:22px;}
 .dyb-list{display:flex; flex-direction:column; min-height:0; overflow:hidden; padding:0;}
 .dyb-pane{min-height:0; overflow-y:auto;}
-.dyb-head, .dyb-row{display:grid; grid-template-columns:44px minmax(0,1fr) 52px 120px; align-items:center; gap:10px; padding:0 14px;}
-.dyb-head{height:34px; flex:none; border-bottom:1px solid var(--rule); font-family:var(--font-mono), monospace; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--star-dim);}
-.dyb-head span:nth-child(1), .dyb-head span:nth-child(3){text-align:right;}
+.dyb-head, .dyb-row{display:grid; grid-template-columns:44px minmax(210px,1fr) 44px minmax(0,1.1fr); align-items:center; column-gap:14px; padding:0 16px 0 12px;}
+.dyb-head{height:34px; flex:none; border-bottom:1px solid var(--rule-strong); font-family:var(--font-mono), monospace; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--star-dim);}
+.dyb-head > span:nth-child(1), .dyb-head > span:nth-child(3){text-align:right;}
+.dyb-axis{position:relative; height:100%; letter-spacing:0;}
+.dyb-axis i{position:absolute; bottom:6px; transform:translateX(-50%); font-style:normal;}
 .dyb-rows{overflow-y:auto; flex:1; min-height:0;}
-.dyb-group{padding:10px 14px 8px; background:var(--horizon-gold); color:var(--on-brand); font-family:var(--font-display); font-weight:800; font-size:18px; letter-spacing:.1em; text-transform:uppercase;}
-.dyb-tier{display:flex; align-items:baseline; gap:10px; padding:9px 14px 7px; border-bottom:1px solid var(--rule); border-top:2px solid var(--rule-strong); background:rgba(var(--star-dot-rgb), .03);}
-.dyb-tier b{font-family:var(--font-display); font-weight:800; font-size:18px; letter-spacing:.04em;}
-.dyb-tier span{font-family:var(--font-mono), monospace; font-size:10.5px; color:var(--star-dim);}
-.dyb-tier em{margin-left:auto; font-style:normal; font-family:var(--font-mono), monospace; font-size:10.5px; color:var(--down);}
-.dyb-row{all:unset; box-sizing:border-box; display:grid; grid-template-columns:44px minmax(0,1fr) 52px 120px; align-items:center; gap:10px; width:100%; min-height:56px; padding:7px 14px 7px 11px; border-bottom:1px solid var(--rule); border-left:3px solid transparent; cursor:pointer; position:relative;}
-.dyb-row:hover{background:rgba(var(--star-dot-rgb), .04);}
-.dyb-row:focus-visible{outline:2px solid var(--neon-blue); outline-offset:-2px;}
-.dyb-row.is-selected{background:rgba(var(--horizon-gold-rgb), .08); border-left-color:var(--horizon-gold);}
-/* players the board can't separate: a mint bracket down the right edge of the rank */
-.dyb-row.is-tied::after{content:""; position:absolute; left:52px; top:0; bottom:0; border-left:2px solid rgba(var(--horizon-gold-rgb), .55);}
-.dyb-row.is-tied.tie-first::after{top:12px; border-top:2px solid rgba(var(--horizon-gold-rgb), .55); width:5px;}
-.dyb-row.is-tied.tie-last::after{bottom:12px; border-bottom:2px solid rgba(var(--horizon-gold-rgb), .55); width:5px;}
-.dyb-rank{font-family:var(--font-display); font-weight:800; font-size:26px; line-height:1; text-align:right; color:transparent; -webkit-text-stroke:1px var(--star-dim);}
-.dyb-row.is-top .dyb-rank{color:var(--horizon-gold); -webkit-text-stroke:0;}
-.dyb-who{display:flex; flex-direction:column; gap:3px; min-width:0; padding-left:8px;}
+.dyb-group{display:flex; align-items:baseline; gap:12px; padding:16px 16px 8px 12px; border-top:3px double var(--rule-strong); border-bottom:1px solid var(--rule-strong);}
+.dyb-group:first-child{border-top:0;}
+.dyb-group b{font-family:var(--font-display); font-weight:800; font-size:20px; letter-spacing:.12em; text-transform:uppercase;}
+.dyb-group-ix{font-size:11px; color:var(--star-dim); min-width:44px; text-align:right;}
+.dyb-group-n{margin-left:auto; font-size:11px; color:var(--star-dim);}
+.dyb-tier{display:flex; align-items:baseline; gap:12px; padding:8px 16px 6px 68px; border-bottom:1px solid var(--rule);}
+.dyb-tier b{font-family:var(--font-display); font-weight:800; font-size:16px; letter-spacing:.06em; text-transform:uppercase;}
+.dyb-tier span{font-size:11px; color:var(--star-dim);}
+.dyb-tier em{margin-left:auto; font-style:normal; font-size:11px; color:var(--star-dim);}
+.dyb-row{all:unset; box-sizing:border-box; display:grid; grid-template-columns:44px minmax(210px,1fr) 44px minmax(0,1.1fr); align-items:stretch; column-gap:14px; width:100%; min-height:52px; padding:0 16px 0 12px; border-bottom:1px solid var(--rule); cursor:pointer; position:relative;}
+.dyb-row > span:not(.dyb-plot){align-self:center;}
+.dyb-row:hover{background:rgba(var(--star-dot-rgb), .035);}
+.dyb-row:focus-visible{outline:2px solid var(--horizon-gold); outline-offset:-2px;}
+.dyb-row.is-selected{background:rgba(var(--ember-rgb), .07); box-shadow:inset 3px 0 0 var(--ember);}
+.dyb-rank{font-size:13px; text-align:right; color:var(--star-dim); font-variant-numeric:tabular-nums;}
+.dyb-row.is-selected .dyb-rank{color:var(--star);}
+.dyb-who{display:flex; flex-direction:column; gap:3px; min-width:0;}
 .dyb-name-line{display:flex; align-items:center; gap:7px; min-width:0;}
-.dyb-name-line .team-badge{flex:none;}
-.dyb-name{font-family:var(--font-body), Georgia, serif; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-.dyb-sub{font-family:var(--font-mono), monospace; font-size:11px; color:var(--star-dim);}
+.dyb-name-line .team-badge, .dyb-name-line .position-badge{flex:none;}
+.dyb-name{font-family:var(--font-body), Georgia, serif; font-weight:700; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.dyb-sub{font-size:11px; color:var(--star-dim); display:flex; gap:10px;}
+.dr-form{white-space:nowrap;}
+.dr-form.is-up{color:var(--up);} .dr-form.is-down{color:var(--down);}
 .dyb-score{font-family:var(--font-display); font-weight:800; font-size:24px; line-height:1; text-align:right;}
-.dyb-range{display:flex; flex-direction:column; gap:3px;}
-.dyb-led{position:relative; height:9px;}
-.dyb-led i{position:absolute; top:0; bottom:0; background:var(--horizon-gold);}
-.dyb-led b{position:absolute; top:-2px; bottom:-2px; width:3px; margin-left:-1px; background:var(--down);}
-.dyb-led-n{display:flex; justify-content:space-between; font-family:var(--font-mono), monospace; font-size:10px; color:var(--star-dim);}
+/* the forest plot: whole-point grid lines (a 1px line every 1/n of the width, plus the right edge), the tier band, the whisker, the score */
+.dyb-plot{position:relative; min-height:52px;
+  background:linear-gradient(90deg, var(--rule) 1px, transparent 1px) 0 0 / calc(100% / var(--n)) 100% repeat-x,
+             linear-gradient(var(--rule), var(--rule)) right 0 / 1px 100% no-repeat;}
+.dyb-plot i{position:absolute; display:block;}
+.dyb-band{top:0; bottom:0; background:rgba(var(--star-dot-rgb), .07);}
+.dyb-ci{top:50%; height:1.5px; margin-top:-.75px; background:var(--star);}
+.dyb-ci::before, .dyb-ci::after{content:""; position:absolute; top:-5px; height:11px; border-left:1.5px solid var(--star);}
+.dyb-ci::before{left:0;} .dyb-ci::after{right:0;}
+.dyb-pt{top:50%; width:9px; height:9px; margin:-4.5px 0 0 -4.5px; background:var(--star); transform:rotate(45deg);}
+.dyb-row.is-selected .dyb-pt{background:var(--ember);}
+.dyb-key{flex:none; display:flex; flex-wrap:wrap; gap:6px 20px; padding:9px 16px; border-top:1px solid var(--rule-strong); font-size:10.5px; color:var(--star-dim);}
+.dyb-key span{display:inline-flex; align-items:center; gap:7px;}
+.dyb-key i{display:inline-block; position:relative;}
+.dyb-key .k-ci{width:18px; height:1.5px; background:var(--star); box-shadow:-1px 0 0 0 var(--star);}
+.dyb-key .k-ci::before, .dyb-key .k-ci::after{content:""; position:absolute; top:-4px; height:9px; border-left:1.5px solid var(--star);}
+.dyb-key .k-ci::before{left:0;} .dyb-key .k-ci::after{right:0;}
+.dyb-key .k-pt{width:7px; height:7px; background:var(--star); transform:rotate(45deg);}
+.dyb-key .k-band{width:14px; height:12px; background:rgba(var(--star-dot-rgb), .14);}
 @media (max-width:1100px){
   .dyb-shell{grid-template-columns:minmax(0,1fr); height:auto;}
   .dyb-list{height:62vh;}
   .dyb-pane{overflow:visible;}
-  .dyb-strip{grid-template-columns:repeat(2, minmax(0,1fr));}
+}
+@media (max-width:760px){
+  .dyb-overview{grid-template-columns:minmax(0,1fr); gap:14px;}
+  .dyb-overview-key{border-right:0; padding-right:0; flex-direction:row; justify-content:flex-start; align-items:baseline; gap:10px; flex-wrap:wrap;}
+  .dyb-overview-n{font-size:36px;} .dyb-overview-dl{display:flex; gap:4px 10px; margin:0;}
 }
 @media (max-width:640px){
-  .dyb-head, .dyb-row{grid-template-columns:32px minmax(0,1fr) 46px;}
-  .dyb-range, .dyb-head span:nth-child(4){display:none;}
-  .dyb-row.is-tied::after{left:40px;}
+  .dyb-head, .dyb-row{grid-template-columns:36px minmax(0,1fr) 42px; column-gap:10px;}
+  .dyb-plot, .dyb-axis{display:none;}
+  .dyb-tier{padding-left:58px;} .dyb-tier em{display:none;}
+  .dyb-group-ix{min-width:36px;} .dyb-group-n{white-space:nowrap;}
+  .dyb-key{display:none;}
 }
 
 /* ===== Bars: the site's three instrument styles (founder, Nov 7 2026: "I don't want separate bars to be misconstrued as an actual measure").
@@ -6437,12 +6485,12 @@ details.acct-danger > summary.acct-h{color:var(--down)}
    A new bar joins the hazard lists below (track / fill) instead of drawing its own. ===== */
 :root{--hazard:repeating-linear-gradient(45deg, #000 0 4.5px, transparent 4.5px 6px);}
 .sim-bar-track, .stat-panel-pace-progress-track, .weekly-rank-bar, .weekly-gamelog-bar, .shape-compare-track, .pctile-bar, .pctile-scale-track,
-.hub-range-track, .hub-stage-bar, .hub-role-bar, .league-dash-winbar, .lab-cell-pct, .lab-board-track, .dyb-led{
+.hub-range-track, .hub-stage-bar, .hub-role-bar, .league-dash-winbar, .lab-cell-pct, .lab-board-track{
   box-sizing:border-box; min-height:8px; background:none; border-radius:0;
   border:1px solid rgba(var(--star-dot-rgb), .28); border-left:2px solid rgba(var(--star-dot-rgb), .6); border-right:2px solid rgba(var(--star-dot-rgb), .6);
 }
 .sim-bar-typical, .sim-bar-upside, .stat-panel-pace-progress-fill, .weekly-rank-bar > span, .weekly-gamelog-bar em, .shape-compare-fill, .pctile-bar-fill,
-.pctile-scale-fill, .hub-range-span, .hub-stage-seg, .hub-role-fill, .league-dash-winbar > span, .lab-cell-bar, .lab-board-bar, .dyb-led i{
+.pctile-scale-fill, .hub-range-span, .hub-stage-seg, .hub-role-fill, .league-dash-winbar > span, .lab-cell-bar, .lab-board-bar{
   -webkit-mask:var(--hazard); mask:var(--hazard); border-radius:0; opacity:1;
 }
 .pctile-vbar-track, .stat-panel-pace-rangebar{
