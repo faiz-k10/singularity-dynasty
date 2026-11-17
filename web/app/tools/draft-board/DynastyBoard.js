@@ -44,9 +44,18 @@ function Spread({ L, tiers, groups, openId, onPick }) {
   const ticks = [];
   for (let v = Math.ceil(lo); v <= hi; v++) ticks.push(v);
   const span = (a, b) => ({ left: `${x(L[b].score)}%`, width: `${Math.max(0.4, x(L[a].score) - x(L[b].score))}%` });
+  // y axis: how many players share a score (marks stack 6px apart); a few round counts with faint grid lines
+  const step = depth <= 6 ? 2 : depth <= 15 ? 5 : 10;
+  const yTicks = [];
+  for (let c = step; c <= depth; c += step) yTicks.push(c);
   return (
     <div className="dyb-spread" style={{ "--depth": depth }}>
       <div className="dyb-spread-plot">
+        <div className="dyb-spread-y" aria-hidden="true">
+          {depth >= 7 && <span className="dyb-spread-y-title">Players</span>}
+          {yTicks.map((c) => <span key={c} className="dyb-spread-y-tick" style={{ bottom: `${c * 6 + 2}px` }}>{c}</span>)}
+        </div>
+        {yTicks.map((c) => <div key={c} className="dyb-spread-grid" style={{ bottom: `${c * 6 + 2}px` }} aria-hidden="true" />)}
         {tiers.map((t, ti) => (
           <div key={ti} className={`dyb-spread-tier${ti % 2 ? " is-alt" : ""}`} style={span(t.a, t.b)}>
             {x(L[t.a].score) - x(L[t.b].score) > 2.5 && <span>{ti + 1}</span>}
