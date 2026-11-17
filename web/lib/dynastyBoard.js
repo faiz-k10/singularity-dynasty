@@ -28,7 +28,7 @@ export const FORMATS = {
 // group names (founder, Nov 16 2026), set by production over replacement (`prod`, 1.0 = a replacement starter's points a game):
 // the groups above replacement level take ABOVE from the top, every player near replacement is ONE group, REPLACEMENT, and
 // the groups below it take BELOW. A section with more groups than names reuses its last name.
-export const GROUP_NAMES = { above: ["Future Legend", "Hall of Famer", "The Franchise", "Cornerstone", "Core"], replacement: "Replacement", below: ["Depth", "Fringe", "Taxi Squad", "Waiver Wire"] };
+export const GROUP_NAMES = { above: ["Future Legend", "Generational", "Hall of Famer", "The Franchise", "Cornerstone", "Core"], replacement: "Replacement", below: ["Depth", "Fringe", "Taxi Squad", "Waiver Wire"] };
 const REPL_LINE = 2.0, BELOW_LINE = 1.0; // a group's MEDIAN prod: under 2 starts the replacement group (within ~1.7 points a game of replacement), under 1 at the bottom is below it
 // how much of the shipped pool a view shows: the top 120 overall, the top 60 of one position
 export const SHOW = { all: 120, position: 60 };
