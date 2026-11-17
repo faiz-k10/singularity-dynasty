@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import ShareDialog from "../../ShareDialog";
 import { seeFinds, pickPlayer, claim, wearSkin } from "./actions";
@@ -165,6 +166,21 @@ function Telescope({ queue, compliments, onDone, onShare }) {
 
 export default function SkyClient({ initial, weekKey, event, compliments, now: serverNow, today }) {
   const [state, setState] = useState(initial);
+  // Fresh from the server (founder, Nov 17 2026: a task done elsewhere didn't show as "Done today"): a page's star is written just after
+  // that page is sent, and coming back (the back button, another tab) can show a copy from before it. So the sky reloads its data when
+  // it opens, once more a moment later (to catch a star still being written), and whenever the tab comes back into view; each
+  // reload's state replaces the one on screen.
+  const router = useRouter();
+  const [seenInitial, setSeenInitial] = useState(initial);
+  if (initial !== seenInitial) { setSeenInitial(initial); setState(initial); } // a reload's state replaces the one on screen
+  useEffect(() => {
+    const refresh = () => { if (document.visibilityState === "visible") router.refresh(); };
+    refresh();
+    const later = setTimeout(refresh, 2500);
+    document.addEventListener("visibilitychange", refresh);
+    window.addEventListener("pageshow", refresh);
+    return () => { clearTimeout(later); document.removeEventListener("visibilitychange", refresh); window.removeEventListener("pageshow", refresh); };
+  }, [router]);
   const [scope, setScope] = useState(false);
   const [share, setShare] = useState(null); // { make, title, caption }
   const [busy, setBusy] = useState(false);
