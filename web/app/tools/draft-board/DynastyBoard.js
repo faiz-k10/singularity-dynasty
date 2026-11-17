@@ -42,14 +42,17 @@ function SpreadPlot({ L, tiers, groups, openId, onPick }) {
     stack.set(bin, k + 1);
     return { p, k };
   });
+  // the chart is always MAX_STACK marks tall, in every view (founder, Nov 17 2026: same size); a taller pile is drawn with tighter spacing
+  const MAX_STACK = 12;
   const depth = Math.max(...stack.values());
+  const step = depth > MAX_STACK ? (MAX_STACK * 6) / depth : 6, shown = MAX_STACK;
   const ticks = [];
   for (let v = Math.ceil(lo); v <= hi; v++) ticks.push(v);
   const span = (a, b) => ({ left: `${x(L[b].score)}%`, width: `${Math.max(0.4, x(L[a].score) - x(L[b].score))}%` });
-  // y axis: how many players share a score (marks stack 6px apart); a few round counts with faint grid lines
-  const step = depth <= 6 ? 2 : depth <= 15 ? 5 : 10;
+  // y axis: how many players share a score (marks stack `step` px apart); a few round counts with faint grid lines
+  const every = depth <= 6 ? 2 : depth <= 15 ? 5 : 10;
   const yTicks = [];
-  for (let c = step; c <= depth; c += step) yTicks.push(c);
+  for (let c = every; c <= depth; c += every) yTicks.push(c);
   // every tier gets its "T<n>" label above its bracket, even a tier too narrow to hold it: the labels are laid out after they
   // render (real widths), each starts at its bracket (a narrow one is centred on it) and is pushed right past the one before it
   const labelRef = useRef(null);
@@ -88,13 +91,13 @@ function SpreadPlot({ L, tiers, groups, openId, onPick }) {
     return () => ro.disconnect();
   }, [tierKey]); // eslint-disable-line react-hooks/exhaustive-deps
   return (
-    <div className="dyb-spread" style={{ "--depth": depth }}>
+    <div className="dyb-spread" style={{ "--depth": shown }}>
       <div className="dyb-spread-plot">
         <div className="dyb-spread-y" aria-hidden="true">
-          {depth >= 7 && <span className="dyb-spread-y-title">Players</span>}
-          {yTicks.map((c) => <span key={c} className="dyb-spread-y-tick" style={{ bottom: `${c * 6 + 2}px` }}>{c}</span>)}
+          {shown >= 7 && <span className="dyb-spread-y-title">Players</span>}
+          {yTicks.map((c) => <span key={c} className="dyb-spread-y-tick" style={{ bottom: `${c * step + 2}px` }}>{c}</span>)}
         </div>
-        {yTicks.map((c) => <div key={c} className="dyb-spread-grid" style={{ bottom: `${c * 6 + 2}px` }} aria-hidden="true" />)}
+        {yTicks.map((c) => <div key={c} className="dyb-spread-grid" style={{ bottom: `${c * step + 2}px` }} aria-hidden="true" />)}
         {tiers.map((t, ti) => <div key={ti} className={`dyb-spread-tier${ti % 2 ? " is-alt" : ""}`} style={span(t.a, t.b)} />)}
         <div className="dyb-spread-tlabels" ref={labelRef} aria-hidden="true">
           {tiers.map((t, ti) => (
@@ -106,7 +109,7 @@ function SpreadPlot({ L, tiers, groups, openId, onPick }) {
             key={p.id}
             type="button"
             className={`dyb-mark${p.id === openId ? " is-open" : ""}`}
-            style={{ left: `${x(p.score)}%`, bottom: `${k * 6 + 3}px` }}
+            style={{ left: `${x(p.score)}%`, bottom: `${k * step + 3}px` }}
             aria-label={`${p.name}, ${p.score.toFixed(1)}`}
             onClick={() => onPick(p.id)}
           />

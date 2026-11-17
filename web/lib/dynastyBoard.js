@@ -25,7 +25,7 @@ import { acquiringGm, coachFor } from "./teamStaff.js";
 
 export const MODES = {
   contender: { label: "Contender", prod: 0.9, age: 0.1 },
-  rebuilder: { label: "Rebuilder", prod: 0.7, age: 0.3, short: true, window: 2 }, // short: production from his last 17 games (Contender: 34)
+  rebuilder: { label: "Rebuilder", prod: 0.7, age: 0.3, short: true, window: 2, minShare: 0.15 }, // short: production from his last 17 games (Contender: 34)
 };
 // a score change over his last drift games smaller than this reads as steady (no arrow on the board, "steady" in the profile)
 export const MOVE_MIN = 1;
@@ -117,8 +117,9 @@ export function scoreRows(rows, formatKey, modeKey) {
   const raw = rows.map((r) => {
     // a mode with `short` reads the 17-game production numbers (ppg, games, production score, sd); the row carries the ones in use
     const s = m.short && r.ppgS != null;
-    // a mode with `window` counts production only for the share of those seasons he is still before his done age
-    const share = m.window ? Math.min(r.runway, m.window) / m.window : 1;
+    // a mode with `window` counts production only for the share of those seasons he is still before his done age, never less than
+    // `minShare` (at 0 every veteran past his done age scored the same, ~100 identical scores and 112 one-player tiers; Nov 17 2026)
+    const share = m.window ? Math.max(m.minShare || 0, Math.min(r.runway, m.window) / m.window) : 1;
     const prod = (s ? r[f.key + "S"] : r[f.key]) * share, sdProd = (s ? r.sdProdS : r.sdProd) * share, dp = s ? r.driftPorS : r.driftPor;
     return { r, s, prod, raw: m.prod * prod + m.age * r.ageValue, rawSd: m.prod * sdProd, rawMove: dp == null ? null : m.prod * dp * share };
   });

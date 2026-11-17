@@ -120,10 +120,10 @@ test("age value is the years until his position's done age: 10+ years = 10, past
   assert.equal(r.runway, 5); assert.equal(r.ageValue, 5.5);
 });
 
-test("Rebuilder counts production only for the part of its window a player still has (a 30-year-old RB keeps only his youth)", () => {
+test("Rebuilder counts production only for the part of its window a player still has, never under minShare (a 30-year-old RB keeps little)", () => {
   const mk = (id, runway, por) => ({ id, name: id, pos: "RB", age: 25, ppg: 15, ppgS: 15, porSf: por, porSfS: por, por1qb: por, por1qbS: por, sdProd: 1, sdProdS: 1, runway, ageValue: ageValueOf(runway) });
   const [vet] = scoreRows([mk("vet", 0, 9), mk("kid", 4, 3)], "sf", "rebuilder").filter((r) => r.id === "vet");
-  assert.equal(vet.prod, 0);
+  assert.ok(Math.abs(vet.prod - 9 * MODES.rebuilder.minShare) < 1e-9); // past his done age: only the minimum share
   const [half] = scoreRows([mk("half", 1, 8)], "sf", "rebuilder");
   assert.equal(half.prod, 4);
   // Contender counts all of it
