@@ -7218,8 +7218,8 @@ body:has(.ehp) .ehp-inside,body:has(.ehp) .ehp-dark{--ehp-hole:#0B0B0B;--ehp-hol
 .sky-sets{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px}
 .sky-set{position:relative;display:flex;justify-content:space-between;gap:8px;border:1px solid var(--line);padding:7px 10px 9px;font-size:12.5px;overflow:hidden;background:none;color:inherit;font-family:inherit;text-align:left;cursor:pointer}
 .sky-set .mono{font-size:11px;color:var(--star-dim)}
-.sky-set i{position:absolute;left:0;bottom:0;height:2px;background:var(--up)}
-.sky-set.is-near{border-color:var(--ember)}
+.sky-set i{position:absolute;left:0;bottom:0;height:2px;background:var(--ember)}
+.sky-set.is-near i{background:var(--cobalt)} /* one more completes the set (founder, Nov 17 2026: the bar, not the border) */
 .sky-cat{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:6px}
 .sky-cat-h{grid-column:1/-1;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--star-dim);padding-top:6px}
 .sky-obj{border:1px solid var(--line);padding:8px 6px;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;font-size:12px;background:none;color:inherit;font-family:inherit;cursor:pointer}
