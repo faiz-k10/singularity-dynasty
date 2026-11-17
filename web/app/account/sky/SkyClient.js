@@ -86,8 +86,9 @@ function Sky({ state, pendingPicks, pending }) {
             {c.pts.map(([x, y, r], i) => f[i] ? (
               <g key={i}><circle cx={x} cy={y} r={r * 2.4} fill={STAR[f[i]]} fillOpacity=".14" /><circle cx={x} cy={y} r={r} fill={STAR[f[i]]} /></g>
             ) : <circle key={i} className="sky-slot" cx={x} cy={y} r={r + 0.8} />)}
-<text className={`sky-clabel${done ? " is-done" : near ? " is-near" : ""}`} x={lx} y={ly} textAnchor={anchor}>{c.name} · {have}/{c.pts.length}</text>
-            <text className={`sky-creal${done ? " is-done" : near ? " is-near" : ""}`} x={lx} y={ly + 14} textAnchor={anchor}>{c.real}{done ? " · ready" : near ? " · one star away" : ""}</text>
+{/* both labels in the constellation's own star colour (founder, Nov 17 2026) */}
+            <text className="sky-clabel" x={lx} y={ly} textAnchor={anchor} style={{ fill: STAR[c.color] }}>{c.name} · {have}/{c.pts.length}</text>
+            <text className="sky-creal" x={lx} y={ly + 14} textAnchor={anchor} style={{ fill: STAR[c.color] }}>{c.real}{done ? " · ready" : near ? " · one star away" : ""}</text>
           </g>
         );
       })}

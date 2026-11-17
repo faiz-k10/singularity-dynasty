@@ -7129,11 +7129,7 @@ body:has(.ehp) .ehp-inside,body:has(.ehp) .ehp-dark{--ehp-hole:#0B0B0B;--ehp-hol
 .sky-slot{fill:none;stroke:var(--star-dim);stroke-dasharray:2 2;stroke-width:1}
 .sky-pending{fill:none;stroke:var(--star);stroke-width:1.2;stroke-dasharray:1.5 2}
 .sky-clabel{font-family:var(--font-mono);font-size:10px;fill:var(--star);letter-spacing:.08em;text-transform:uppercase}
-.sky-clabel.is-near{fill:var(--ember)}
 .sky-creal{font-family:var(--font-mono);font-size:10px;fill:var(--star-dim);letter-spacing:.04em}
-.sky-creal.is-near{fill:var(--ember)}
-.sky-creal.is-done{fill:var(--up)}
-.sky-clabel.is-done{fill:var(--up)}
 .sky-heat{font-family:var(--font-mono);font-size:10px;fill:var(--star-dim);text-transform:uppercase;letter-spacing:.08em}
 .sky-heat tspan{fill:var(--star-dim);opacity:.55}
 .sky-heat tspan.is-on{opacity:1}
