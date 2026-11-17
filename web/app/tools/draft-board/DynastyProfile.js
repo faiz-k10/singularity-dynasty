@@ -5,7 +5,7 @@ import Link from "next/link";
 import PositionBadge from "../PositionBadge";
 import TeamBadge from "../TeamBadge";
 import { AGE_LOOKAHEAD, FORMATS, groupName, MODES } from "@/lib/dynastyBoard";
-import { formatHeight } from "@/lib/format";
+import { formatHeight, ordinal } from "@/lib/format";
 import { coachFor, acquiringGm } from "@/lib/teamStaff";
 import ShareCardButton from "../../ShareCardButton";
 import ArcGauge from "../../ArcGauge";
@@ -201,6 +201,7 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
   const MATES = 5;
   const start = Math.max(tier.a, Math.min(i - Math.floor(MATES / 2), tier.b + 1 - MATES));
   const tierMates = L.slice(start, Math.min(tier.b + 1, start + MATES));
+  const tierSize = tier.b - tier.a + 1, tierPlace = i - tier.a + 1;
   const log = data?.log ? { w: data.log.w.slice(-win.games), p: data.log.p.slice(-win.games) } : null;
   const above = log ? log.p.filter((v) => v >= repl).length : 0;
   const kept = keptAt(curve, p.age);
@@ -286,7 +287,8 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
             <p className="dp-next">In three years he will be {(p.age + AGE_LOOKAHEAD).toFixed(1)}: an age value of {p.ageValue.toFixed(1)} of 10.</p>
           </Chapter>
 
-          <Chapter n={4} ask="Who is he level with?" says={tierMates.length > 1 ? `The board can't separate him from ${tier.b - tier.a} other${tier.b - tier.a === 1 ? "" : "s"} in tier ${tier.ti + 1}` : `Alone in tier ${tier.ti + 1}`}>
+          {/* his place inside his tier: the table shows the players nearest him, the bridge says how wide the tier is */}
+          <Chapter n={4} ask="Who is he level with?" says={tierSize > 1 ? `${ordinal(tierPlace)} of ${tierSize} in tier ${tier.ti + 1}, too close to call against any of them` : `Alone in tier ${tier.ti + 1}: nobody is close enough to call even`}>
             {tierMates.length > 1 && (
               <table className="dp-table">
                 <tbody>
@@ -299,6 +301,11 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
                   ))}
                 </tbody>
               </table>
+            )}
+            {tierSize > 1 && (
+              <p className="dp-next">
+                {tierSize > tierMates.length ? `The ${tierMates.length} nearest him. ` : ""}Tier {tier.ti + 1} runs from {L[tier.a].score.toFixed(1)} down to {L[tier.b].score.toFixed(1)}, close enough that any of them could turn out the better pick.
+              </p>
             )}
           </Chapter>
 
