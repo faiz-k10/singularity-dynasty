@@ -6,10 +6,11 @@
 #   - production over replacement, 1-10, for each LEAGUE FORMAT: his weighted PPG minus the replacement-level
 #     player at his position, on one scale shared by all positions (1 = replacement, 10 = V_HI points a game over it;
 #     below replacement it keeps going below 1, it is not floored).
-#     Replacement = the player ranked just past the starters a 12-team league needs (REPL_RANK), averaged over
-#     the end of each season REPL_FROM..2025 so it does not move week to week: 1QB: QB12; superflex: QB24 (Nov 3 2026, founder; was QB32,
-#     then QB25, QB30 and QB28 for a few minutes -- mid-range QBs had ranked above elite WRs); both: RB29, WR42, TE13 (1QB / 2RB / 3WR / 1TE / 1FLEX).
-#   - age value, 1-10, on the scale shared by all positions (dynasty_age_value.R, `age_value_cross`).
+#     Replacement = the PPG at a rank (REPL_RANK for Contender, REPL_RANK_S for Rebuilder), averaged over the end of each
+#     season REPL_FROM..2025 so it does not move week to week. The ranks were FIT TO THE FOUNDER'S OWN RANKINGS (Nov 17 2026, a
+#     pairwise quiz per format x mode; see CLAUDE.md "Dynasty Board fit to the founder"): RB29 / WR42 everywhere, TE6 (was TE13:
+#     tight ends' points over a low bar made them look elite), QBs below. Superflex Contender also gives an ELITE-QB premium.
+#   - DONE_AGE: the age a position is typically done (written into the JSON for the site, which turns it into the age value).
 #   - sd_prod: how many production-score points the production number misses by next season (the out-of-sample
 #     RMSE of next-season PPG at his position from backtest_production_window.R, in score units). The site uses it
 #     for the range bars and for tiers: two players are tied when each is about as likely to beat the other as not.
@@ -20,10 +21,14 @@ suppressMessages(library(jsonlite))
 source("dynasty_params.R")   # WINDOW, HALF_LIFE
 
 POSITIONS <- c("QB", "RB", "WR", "TE")
-REPL_RANK <- list(`1QB` = c(QB = 12, RB = 29, WR = 42, TE = 13), SF = c(QB = 24, RB = 29, WR = 42, TE = 13))
-# Rebuilder's superflex replacement QB is QB20 (Nov 17 2026, founder: at QB24 Jared Goff, 31.9, ranked above Colston Loveland,
-# Luther Burden III and Tetairoa McMillan for a rebuilder); Contender keeps QB24.
-REPL_RANK_S <- within(REPL_RANK, SF[["QB"]] <- 20)
+REPL_RANK   <- list(`1QB` = c(QB = 16, RB = 29, WR = 42, TE = 6), SF = c(QB = 24, RB = 29, WR = 42, TE = 6))   # Contender (34 games)
+REPL_RANK_S <- list(`1QB` = c(QB = 5,  RB = 29, WR = 42, TE = 6), SF = c(QB = 20, RB = 29, WR = 42, TE = 6))   # Rebuilder (17 games)
+# Superflex Contender only: a QB above the QB12 level gets ELITE_K extra points a game for each point he is above it, up to ELITE_CAP
+# points (a bonus of up to 3 PPG: the top QBs go first). Capped because an uncapped premium put Josh Allen at 10.0 and the next player at 3.8.
+ELITE_RANK <- 12; ELITE_K <- 3; ELITE_CAP <- 1
+# The age a position is typically done. WR / TE: where the data says it keeps under half its production over the next 3 seasons
+# (age curve, below); QB 35 and RB 28 were set by the founder's rankings (the data says QB ~36, RB ~27).
+DONE_FIXED <- c(QB = 35, RB = 28)
 REPL_FROM <- 2018
 V_HI      <- 15
 KEEP      <- 450   # players shipped (founder, Nov 16 2026: rank at least 300); the page shows the top 300 overall and the top 120 of a position
@@ -46,7 +51,12 @@ replacement_ppg <- function(ref, ranks = REPL_RANK) sapply(names(ranks), functio
   }))
 }))
 repl   <- replacement_ppg(ref)     # Contender: 34-game memory
-repl_s <- replacement_ppg(ref_s, REPL_RANK_S)   # Rebuilder: 17-game memory, its own superflex QB rank
+repl_s <- replacement_ppg(ref_s, REPL_RANK_S)   # Rebuilder: 17-game memory, its own ranks
+elite  <- replacement_ppg(ref, list(SF = c(QB = ELITE_RANK, RB = 1, WR = 1, TE = 1)))["QB", "SF"]   # the QB12 line (34 games)
+done_at <- function(p) { t <- agev[agev$position == p, ]; t <- t[order(t$age), ]; i <- which(t$retained_smooth < 0.5)[1]
+  t$age[i - 1] + (t$retained_smooth[i - 1] - 0.5) / (t$retained_smooth[i - 1] - t$retained_smooth[i]) }
+DONE_AGE <- sapply(POSITIONS, function(p) if (p %in% names(DONE_FIXED)) DONE_FIXED[[p]] else round(done_at(p), 1))
+cat("done ages:", paste(names(DONE_AGE), DONE_AGE), "\n")
 cat("replacement PPG (34 games, Contender):\n"); print(round(repl, 2))
 cat("replacement PPG (17 games, Rebuilder):\n"); print(round(repl_s, 2))
 
@@ -64,14 +74,11 @@ d <- merge(d, prod_s[, c("player_id", "ppg_weighted", "games_in_window")], by = 
 d$ppg_s   <- ifelse(is.na(d$ppg_weighted_s), d$ppg_weighted, d$ppg_weighted_s)
 d$games_s <- ifelse(is.na(d$games_in_window_s), d$games_in_window, d$games_in_window_s)
 d$age <- round(as.numeric(AGE_DATE - as.Date(d$birth_date)) / 365.25, 1)
-d$age_value <- mapply(function(p, a) {
-  t <- agev[agev$position == p, ]
-  round(approx(t$age, t$age_value_cross, xout = min(max(a, min(t$age)), max(t$age)))$y, 2)
-}, d$position, d$age)
 # NOT clipped: a player below replacement is worth LESS than replacement, so his production score goes below 1 (a floor at 1
 # had let a 1.7 PPG rookie and a 6 PPG backup tie, and then his age decided the order)
 por <- function(f) round(1 + 9 * (d$ppg_weighted - repl[cbind(d$position, f)]) / V_HI, 2)
-d$por_1qb <- por("1QB"); d$por_sf <- por("SF")
+d$por_1qb <- por("1QB")
+d$por_sf <- round(por("SF") + ifelse(d$position == "QB", ELITE_K * 9 * pmin(ELITE_CAP, pmax(0, d$ppg_weighted - elite)) / V_HI, 0), 2)
 d$sd_prod <- round(sd_prod[d$position], 2)
 por_s <- function(f) round(1 + 9 * (d$ppg_s - repl_s[cbind(d$position, f)]) / V_HI, 2)
 d$por_1qb_s <- por_s("1QB"); d$por_sf_s <- por_s("SF")
@@ -111,7 +118,9 @@ d$acq_date <- ifelse(is.na(d$acq_date), "", d$acq_date)
 d$acq_how  <- ifelse(is.na(d$acq_how), "", d$acq_how)
 
 # keep the board to the players who can matter: the top KEEP by his best score under any format / mode
-d$best <- pmax(0.8 * pmax(d$por_1qb, d$por_sf) + 0.2 * d$age_value, 0.5 * pmax(d$por_1qb_s, d$por_sf_s) + 0.5 * d$age_value)
+# (the same recipe as the site, web/lib/dynastyBoard.js MODES: Contender 90/10, Rebuilder 70/30 with production over a 2-season window)
+run <- pmax(DONE_AGE[d$position] - d$age, 0); av <- 1 + 9 * pmin(run, 10) / 10
+d$best <- pmax(0.9 * pmax(d$por_1qb, d$por_sf) + 0.1 * av, 0.7 * pmax(d$por_1qb_s, d$por_sf_s) * pmin(run, 2) / 2 + 0.3 * av)
 d <- d[order(-d$best), ][seq_len(min(KEEP, nrow(d))), ]
 # each player's regular-season games, oldest first (the drift below and the profile's timeline)
 g <- as.data.frame(load_player_stats((as.integer(format(AGE_DATE, "%Y")) - 4):as.integer(format(AGE_DATE, "%Y"))))
@@ -132,7 +141,7 @@ d$drift   <- vapply(d$player_id, function(id) drift(gp[[id]], WINDOW, HALF_LIFE)
 d$drift_s <- vapply(d$player_id, function(id) drift(gp[[id]], WINDOW_SHORT, HALF_LIFE_SHORT), 0)
 
 out <- d[order(-d$por_sf), c("player_id", "player", "position", "team", "age", "games_in_window", "ppg_weighted",
-                              "age_value", "por_1qb", "por_sf", "sd_prod", "ppg_s", "games_s", "por_1qb_s", "por_sf_s", "sd_prod_s",
+                              "por_1qb", "por_sf", "sd_prod", "ppg_s", "games_s", "por_1qb_s", "por_sf_s", "sd_prod_s",
                               "draft_team", "draft_year", "acq_date", "acq_how", "drift", "drift_s")]
 write.csv(out, "dynasty_value.csv", row.names = FALSE)
 
@@ -147,8 +156,7 @@ meta <- toJSON(list(
   v_hi = V_HI,
   replacement = lapply(setNames(colnames(repl), colnames(repl)), function(f) setNames(as.list(round(repl[, f], 2)), rownames(repl))),
   replacement_short = lapply(setNames(colnames(repl_s), colnames(repl_s)), function(f) setNames(as.list(round(repl_s[, f], 2)), rownames(repl_s))),
-  age_curve = lapply(setNames(POSITIONS, POSITIONS), function(p) { t <- agev[agev$position == p & agev$age <= 40, ]
-    unname(Map(function(a, v, r) c(a, round(v, 1), round(r, 3)), t$age, t$age_value_cross, t$retained_smooth)) })
+  done_age = as.list(DONE_AGE)
 ), auto_unbox = TRUE, digits = NA)
 meta <- sub("^\\{", "", meta); meta <- sub("\\}$", "", meta)
 json <- sprintf('{%s,"columns":[%s],"rows":[\n%s\n]}\n', meta, paste0('"', names(out), '"', collapse = ","), paste(rows, collapse = ",\n"))

@@ -4,7 +4,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import PositionBadge from "../PositionBadge";
 import TeamBadge from "../TeamBadge";
-import { AGE_LOOKAHEAD, FORMATS, MODES } from "@/lib/dynastyBoard";
+import { FORMATS, MODES, ageValueOf, runwayOf } from "@/lib/dynastyBoard";
 import { formatHeight, ordinal } from "@/lib/format";
 import { coachFor, acquiringGm } from "@/lib/teamStaff";
 import ShareCardButton from "../../ShareCardButton";
@@ -85,14 +85,15 @@ function Timeline({ log, level, repl, W }) {
   );
 }
 
-// His position's age value by age, him on it, and the three seasons a buyer is paying for shaded.
-function AgeCurve({ curve, age, value, W }) { // age = his age now; the dot sits on the age he will be in AGE_LOOKAHEAD years
+// His position's age value by age (years until the age his position is typically done), him on it, his runway shaded.
+function AgeCurve({ doneAge, pos, age, value, W }) {
   const H = Math.round(Math.min(320, Math.max(220, W * 0.6))), L = 44, R = 10, T = 14, B = 42; // room for the two axis titles
-  const lo = curve[0][0], hi = curve.at(-1)[0];
+  const lo = 21, hi = 40, done = doneAge[pos];
   const x = (a) => L + ((a - lo) / (hi - lo)) * (W - L - R);
   const y = (v) => T + (1 - (v - 1) / 9) * (H - T - B);
   const a = Math.min(Math.max(age, lo), hi);
-  const b = Math.min(a + AGE_LOOKAHEAD, hi);
+  const pts = [];
+  for (let ag = lo; ag <= hi; ag += 0.5) pts.push(`${x(ag)},${y(ageValueOf(runwayOf(doneAge, pos, ag)))}`);
   return (
     <svg className="dp-chart" viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Age value by age at his position">
       {[1, 5, 10].map((g) => (
@@ -101,16 +102,16 @@ function AgeCurve({ curve, age, value, W }) { // age = his age now; the dot sits
           <text x={L - 5} y={y(g) + 3} className="dp-axis" textAnchor="end">{g}</text>
         </g>
       ))}
-      <rect x={x(a)} y={T} width={Math.max(0, x(b) - x(a))} height={H - T - B} className="dp-band" />
-      <polyline className="dp-curve" points={curve.map(([ag, v]) => `${x(ag)},${y(v)}`).join(" ")} />
-      <line x1={x(b)} x2={x(b)} y1={y(value)} y2={H - B} className="dp-drop" />
-      <circle cx={x(b)} cy={y(value)} r="6" className="dp-dot" />
+      {done > a && <rect x={x(a)} y={T} width={x(Math.min(done, hi)) - x(a)} height={H - T - B} className="dp-band" />}
+      <polyline className="dp-curve" points={pts.join(" ")} />
+      <line x1={x(a)} x2={x(a)} y1={y(value)} y2={H - B} className="dp-drop" />
+      <circle cx={x(a)} cy={y(value)} r="6" className="dp-dot" />
       <line x1={L} x2={L} y1={T} y2={H - B} className="dp-axis-line" />
       <line x1={L} x2={W - R} y1={H - B} y2={H - B} className="dp-axis-line" />
-      {[25, 30, 35, 40].filter((t) => t >= lo && t <= hi).map((t) => <text key={t} x={x(t)} y={H - B + 16} className="dp-axis" textAnchor={x(t) > W - R - 12 ? "end" : "middle"}>{t}</text>)}
+      {[25, 30, 35, 40].map((t) => <text key={t} x={x(t)} y={H - B + 16} className="dp-axis" textAnchor={x(t) > W - R - 12 ? "end" : "middle"}>{t}</text>)}
       <text x={L + (W - L - R) / 2} y={H - 4} className="dp-axis-title" textAnchor="middle">Age</text>
       <text transform={`translate(12 ${T + (H - T - B) / 2}) rotate(-90)`} className="dp-axis-title" textAnchor="middle">Age value</text>
-      <text x={x(b) > W - 110 ? x(b) - 10 : x(b) + 10} y={y(value) - 10} className="dp-label is-level" textAnchor={x(b) > W - 110 ? "end" : "start"}>{(age + AGE_LOOKAHEAD).toFixed(1)} · {value.toFixed(1)}</text>
+      <text x={x(a) > W - 110 ? x(a) - 10 : x(a) + 10} y={y(value) - 10} className="dp-label is-level" textAnchor={x(a) > W - 110 ? "end" : "start"}>{age.toFixed(1)} · {value.toFixed(1)}</text>
     </svg>
   );
 }
@@ -155,16 +156,6 @@ function useFitName(names) {
   return ref;
 }
 
-// The share of production players of his position and age keep over the next three seasons (the age curve's third column),
-// straight lines between ages, held at the ends.
-function keptAt(curve, age) {
-  const a = Math.min(Math.max(age, curve[0][0]), curve.at(-1)[0]);
-  const k = curve.findIndex((r) => r[0] >= a);
-  if (k <= 0) return curve[Math.max(0, k)][2];
-  const [a0, , k0] = curve[k - 1], [a1, , k1] = curve[k];
-  return k0 + ((a - a0) / (a1 - a0 || 1)) * (k1 - k0);
-}
-
 // One step of the story: a numbered node on the spine, the question it answers, the answer from his numbers, then the evidence.
 function Chapter({ n, ask, says, children }) {
   return (
@@ -196,7 +187,6 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
 
   const repl = (m.short ? meta.replacementShort : meta.replacement)[format.toUpperCase()][p.pos];
   const win = m.short ? meta.windowShort : meta.window;
-  const curve = meta.ageCurve[p.pos];
   // his tier, him included (founder, Nov 16 2026: only players the board can't separate from him), at most the 5 nearest by rank
   const MATES = 5;
   const start = Math.max(tier.a, Math.min(i - Math.floor(MATES / 2), tier.b + 1 - MATES));
@@ -204,7 +194,6 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
   const tierSize = tier.b - tier.a + 1, tierPlace = i - tier.a + 1;
   const log = data?.log ? { w: data.log.w.slice(-win.games), p: data.log.p.slice(-win.games) } : null;
   const above = log ? log.p.filter((v) => v >= repl).length : 0;
-  const kept = keptAt(curve, p.age);
   const rankLo = grid ? Math.min(...grid.map((c) => c.rank)) : null, rankHi = grid ? Math.max(...grid.map((c) => c.rank)) : null;
   const coach = coachFor(p.team), staff = acquiringGm(p);
   const gmLine = (() => {
@@ -284,9 +273,9 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
             ) : <div className="dp-chart-skel">{data ? "No game log yet." : "Loading his games…"}</div>}
           </Chapter>
 
-          <Chapter n={3} ask="How long will it last?" says={`${p.pos}s his age keep about ${Math.round(kept * 100)}% of their production over the next three seasons`}>
-            <AgeCurve curve={curve} age={p.age} value={p.ageValue} W={chartW} />
-            <p className="dp-next">In three years he will be {(p.age + AGE_LOOKAHEAD).toFixed(1)}: an age value of {p.ageValue.toFixed(1)} of 10.</p>
+          <Chapter n={3} ask="How long will it last?" says={p.runway > 0 ? `About ${p.runway.toFixed(1)} years until ${p.pos}s are typically done, at ${meta.doneAge[p.pos]}` : `Past the age ${p.pos}s are typically done (${meta.doneAge[p.pos]})`}>
+            <AgeCurve doneAge={meta.doneAge} pos={p.pos} age={p.age} value={p.ageValue} W={chartW} />
+            <p className="dp-next">An age value of {p.ageValue.toFixed(1)} of 10{m.window && p.runway < m.window ? `, and a rebuilder counts only ${Math.round((p.runway / m.window) * 100)}% of his production: it runs out before the rebuild is done` : ""}.</p>
           </Chapter>
 
           {/* his place inside his tier: the table shows the players nearest him, the bridge says how wide the tier is */}

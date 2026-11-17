@@ -61,9 +61,9 @@ const CORE = [
   {
     group: "Dynasty",
     terms: [
-      ["Dynasty score", "Production over replacement and age value blended into one number (80/20 for a contender, 50/50 for a rebuilder), then scaled so the best player on the board reads 10. It is relative: a 7 is 70% of the best player's value."],
+      ["Dynasty score", "Production over replacement and age value blended into one number (90/10 for a contender, 70/30 for a rebuilder, who counts production only for the part of the next two seasons a player is still before his position's done age), then scaled so the best player on the board reads 10. It is relative: a 7 is 70% of the best player's value."],
       ["Production over replacement", "His recent points a game (last 34 games for a contender, last 17 for a rebuilder, recent ones weighted most) above the player you could pick up to replace him at his position."],
-      ["Age value", "How much of his production players of his position have kept over the three seasons after the age he will be in three years, on a 1-10 scale."],
+      ["Age value", "How many years he has left before the age his position is typically done (QB 35, RB 28, WR about 29, TE about 30), on a 1-10 scale: 10 years or more is a 10, past it is a 1."],
       ["Tier", "Players nobody below can be separated from with real confidence. A tier break is where the numbers say the gap is real."],
     ],
   },

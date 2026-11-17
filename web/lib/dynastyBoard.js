@@ -2,8 +2,14 @@ import { acquiringGm, coachFor } from "./teamStaff.js";
 
 // The Dynasty Board's rankings: scoring, ranges and the tier rule. Pure, so it is tested (test/dynastyBoard.test.mjs).
 //
-// A player's dynasty score = prod x (production over replacement, 1-10, for the league format) + age x (age value, 1-10),
-// with the weights set by the mode. Both inputs come from model/dynasty_value.R (see its header for how they are made).
+// A player's dynasty score = prod x (production over replacement, 1-10, for the league format) x his window share
+// + age x (age value, 1-10), with the weights set by the mode. FIT TO THE FOUNDER'S OWN RANKINGS (Nov 17 2026, a pairwise quiz
+// per format x mode): the replacement ranks and the Superflex Contender elite-QB premium are in model/dynasty_value.R, the weights
+// and the window here, the done ages in the data (`done_age`).
+//   age value = 1 + 9 x (years until his position's done age, 0-AGE_YEARS) / AGE_YEARS -- runway, not a retention curve (the old
+//   curve said a 32-year-old QB keeps more than a 24-year-old RB, which no rebuilder believes)
+//   window share (Rebuilder only) = the share of the next `window` seasons he is still before his done age: production a
+//   rebuilder can't use while rebuilding doesn't count (a 30-year-old RB is worth his youth only, i.e. little)
 //
 // Every score carries an uncertainty: `sdProd` is how far the production number misses next season's PPG, out of sample,
 // in score units (model/backtest_production_blend.R); age is a lookup, so it adds none. A player's score sd is
@@ -18,9 +24,14 @@ import { acquiringGm, coachFor } from "./teamStaff.js";
 // Each level uses the FEWEST boxes the rule allows, and where several splits tie, the breaks go where the drops are biggest.
 
 export const MODES = {
-  contender: { label: "Contender", prod: 0.8, age: 0.2 },
-  rebuilder: { label: "Rebuilder", prod: 0.5, age: 0.5, short: true }, // short: production from his last 17 games (Contender: 34)
+  contender: { label: "Contender", prod: 0.9, age: 0.1 },
+  rebuilder: { label: "Rebuilder", prod: 0.7, age: 0.3, short: true, window: 2 }, // short: production from his last 17 games (Contender: 34)
 };
+export const AGE_YEARS = 10; // years of runway that earn the top age value
+
+// years until his position's done age (never below 0), and the age value it gives
+export const runwayOf = (doneAge, pos, age) => Math.max(doneAge[pos] - age, 0);
+export const ageValueOf = (runway) => 1 + (9 * Math.min(runway, AGE_YEARS)) / AGE_YEARS;
 export const FORMATS = {
   sf: { label: "Superflex", key: "porSf" },
   "1qb": { label: "1QB", key: "por1qb" },
@@ -45,47 +56,37 @@ const Z_TIE = 0.1257, Z_TIER = 0.3853, Z_GROUP = 0.5244;
 const GROUP_MAX = 20; // a group this big or bigger is split again (buildBoard)
 const GROUP_SPLIT_Z = [0.4677, 0.4399, 0.4125, Z_TIER]; // P 0.68, 0.67, 0.66, then the tier cut (0.65)
 
-// A player is scored on the age he will be AGE_LOOKAHEAD years from now, on his position's age curve (founder, Nov 3 2026:
-// a 24-year-old and a 32-year-old QB were nearly level on today's age, because QBs keep their production until about 31).
-export const AGE_LOOKAHEAD = 3;
-
-// age value ([age, age value, share kept] rows, sorted by age) at an age, straight lines between ages, held at the ends
-export function ageValueAt(curve, age) {
-  const a = Math.min(Math.max(age, curve[0][0]), curve.at(-1)[0]);
-  for (let i = 0; i < curve.length - 1; i++) {
-    if (a <= curve[i + 1][0]) return curve[i][1] + ((a - curve[i][0]) / (curve[i + 1][0] - curve[i][0])) * (curve[i + 1][1] - curve[i][1]);
-  }
-  return curve.at(-1)[1];
-}
-
 const drift = (ppg, vHi) => (Number.isFinite(ppg) && vHi ? (9 * ppg) / vHi : null);
 
 // model/dynasty_value.R writes { columns, rows: [[...]] }; this makes row objects
 export function rowsFromData(data) {
   const c = data.columns;
   const at = (n) => c.indexOf(n);
-  return data.rows.map((r) => ({
-    id: r[at("player_id")], name: r[at("player")], pos: r[at("position")], team: r[at("team")], age: r[at("age")],
-    games: r[at("games_in_window")], ppg: r[at("ppg_weighted")],
-    // the Rebuilder's production numbers (last 17 games); absent in an older data file, then scoreRows uses the long ones
-    gamesS: r[at("games_s")], ppgS: r[at("ppg_s")], por1qbS: r[at("por_1qb_s")], porSfS: r[at("por_sf_s")], sdProdS: r[at("sd_prod_s")],
-    ageValue: data.age_curve?.[r[at("position")]] ? ageValueAt(data.age_curve[r[at("position")]], r[at("age")] + AGE_LOOKAHEAD) : r[at("age_value")],
-    por1qb: r[at("por_1qb")], porSf: r[at("por_sf")], sdProd: r[at("sd_prod")],
-    // who drafted him (absent in an older data file: then the drafting-GM column reads "undrafted")
-    draftTeam: at("draft_team") >= 0 ? r[at("draft_team")] : "", draftYear: at("draft_year") >= 0 ? r[at("draft_year")] : 0,
-    // when a player who left his drafting team joined his current one, and how ("trade" / "joined")
-    acqDate: at("acq_date") >= 0 ? r[at("acq_date")] : "", acqHow: at("acq_how") >= 0 ? r[at("acq_how")] : "",
-    // drift: his production number now minus DRIFT games ago, in production-over-replacement points (null = too few games)
-    driftPor: drift(r[at("drift")], data.v_hi), driftPorS: drift(r[at("drift_s")], data.v_hi), driftGames: data.drift_games || 0,
-  }));
+  return data.rows.map((r) => {
+    const runway = runwayOf(data.done_age, r[at("position")], r[at("age")]);
+    return {
+      id: r[at("player_id")], name: r[at("player")], pos: r[at("position")], team: r[at("team")], age: r[at("age")],
+      games: r[at("games_in_window")], ppg: r[at("ppg_weighted")],
+      // the Rebuilder's production numbers (last 17 games); absent in an older data file, then scoreRows uses the long ones
+      gamesS: r[at("games_s")], ppgS: r[at("ppg_s")], por1qbS: r[at("por_1qb_s")], porSfS: r[at("por_sf_s")], sdProdS: r[at("sd_prod_s")],
+      runway, ageValue: ageValueOf(runway),
+      por1qb: r[at("por_1qb")], porSf: r[at("por_sf")], sdProd: r[at("sd_prod")],
+      // who drafted him (absent in an older data file: then the drafting-GM column reads "undrafted")
+      draftTeam: at("draft_team") >= 0 ? r[at("draft_team")] : "", draftYear: at("draft_year") >= 0 ? r[at("draft_year")] : 0,
+      // when a player who left his drafting team joined his current one, and how ("trade" / "joined")
+      acqDate: at("acq_date") >= 0 ? r[at("acq_date")] : "", acqHow: at("acq_how") >= 0 ? r[at("acq_how")] : "",
+      // drift: his production number now minus DRIFT games ago, in production-over-replacement points (null = too few games)
+      driftPor: drift(r[at("drift")], data.v_hi), driftPorS: drift(r[at("drift_s")], data.v_hi), driftGames: data.drift_games || 0,
+    };
+  });
 }
 
 // What the player profile draws besides the rows: replacement PPG per format and position, the top of the production scale,
-// the per-position age curve ([age, age value, share of production kept over the next 3 seasons]) and the memory settings.
+// the age each position is typically done (`doneAge`, the age value counts the years until it) and the memory settings.
 export function metaFromData(data) {
   return {
     built: data.built, window: data.window, windowShort: data.window_short || data.window, vHi: data.v_hi,
-    replacement: data.replacement, replacementShort: data.replacement_short || data.replacement, ageCurve: data.age_curve,
+    replacement: data.replacement, replacementShort: data.replacement_short || data.replacement, doneAge: data.done_age,
   };
 }
 
@@ -114,8 +115,10 @@ export function scoreRows(rows, formatKey, modeKey) {
   const raw = rows.map((r) => {
     // a mode with `short` reads the 17-game production numbers (ppg, games, production score, sd); the row carries the ones in use
     const s = m.short && r.ppgS != null;
-    const prod = s ? r[f.key + "S"] : r[f.key], sdProd = s ? r.sdProdS : r.sdProd, dp = s ? r.driftPorS : r.driftPor;
-    return { r, s, prod, raw: m.prod * prod + m.age * r.ageValue, rawSd: m.prod * sdProd, rawMove: dp == null ? null : m.prod * dp };
+    // a mode with `window` counts production only for the share of those seasons he is still before his done age
+    const share = m.window ? Math.min(r.runway, m.window) / m.window : 1;
+    const prod = (s ? r[f.key + "S"] : r[f.key]) * share, sdProd = (s ? r.sdProdS : r.sdProd) * share, dp = s ? r.driftPorS : r.driftPor;
+    return { r, s, prod, raw: m.prod * prod + m.age * r.ageValue, rawSd: m.prod * sdProd, rawMove: dp == null ? null : m.prod * dp * share };
   });
   const top = Math.max(...raw.map((x) => x.raw));
   const scale = top > 0 ? 10 / top : 1;
@@ -126,8 +129,8 @@ export function scoreRows(rows, formatKey, modeKey) {
       const move = rawMove == null ? null : rawMove * scale;
       return { ...r, ppg: s ? r.ppgS : r.ppg, games: s ? r.gamesS : r.games, prod, raw: rs, scale, score, sd, lo: score - 1.2816 * sd, hi: score + 1.2816 * sd, move };
     })
-    // same score as shown (1 decimal): first the staff tiebreak (staffTiebreak), then the player earlier on his own position's age curve
-    // (higher age value = more years at this level), then the younger
+    // same score as shown (1 decimal): first the staff tiebreak (staffTiebreak), then the player with more years before his position's done age
+    // (higher age value), then the younger
     .sort((a, b) => Math.round(b.score * 10) - Math.round(a.score * 10) || staffTiebreak(b) - staffTiebreak(a) || b.ageValue - a.ageValue || a.age - b.age || b.score - a.score || b.ppg - a.ppg);
 }
 

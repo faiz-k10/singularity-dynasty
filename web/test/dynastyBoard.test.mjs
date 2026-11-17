@@ -1,9 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { AGE_LOOKAHEAD, SHOW, ageValueAt, boardRows, buildBoard, metaFromData, pBetter, phi, rowsFromData, scoreRows, viewBoard } from "../lib/dynastyBoard.js";
+import { MODES, SHOW, ageValueOf, boardRows, buildBoard, metaFromData, pBetter, phi, rowsFromData, runwayOf, scoreRows, viewBoard } from "../lib/dynastyBoard.js";
 import data from "../data/dynasty-values.json" with { type: "json" };
 
-const row = (name, pos, p1, ps, age, sd = 2) => ({ id: name, name, pos, team: "AAA", age: 25, games: 17, ppg: 15, ageValue: age, por1qb: p1, porSf: ps, sdProd: sd });
+const row = (name, pos, p1, ps, age, sd = 2) => ({ id: name, name, pos, team: "AAA", age: 25, games: 17, ppg: 15, ageValue: age, runway: 10, por1qb: p1, porSf: ps, sdProd: sd });
 
 test("phi is the standard normal CDF", () => {
   assert.ok(Math.abs(phi(0) - 0.5) < 1e-7);
@@ -16,8 +16,8 @@ test("phi is the standard normal CDF", () => {
 
 test("mode weights and format pick the score", () => {
   const rows = [row("A", "QB", 4, 9, 8)];
-  assert.ok(Math.abs(scoreRows(rows, "1qb", "contender")[0].raw - (0.8 * 4 + 0.2 * 8)) < 1e-9);
-  assert.ok(Math.abs(scoreRows(rows, "sf", "rebuilder")[0].raw - (0.5 * 9 + 0.5 * 8)) < 1e-9);
+  assert.ok(Math.abs(scoreRows(rows, "1qb", "contender")[0].raw - (MODES.contender.prod * 4 + MODES.contender.age * 8)) < 1e-9);
+  assert.ok(Math.abs(scoreRows(rows, "sf", "rebuilder")[0].raw - (MODES.rebuilder.prod * 9 + MODES.rebuilder.age * 8)) < 1e-9);
 });
 
 test("a quarterback climbs from 1QB to superflex", () => {
@@ -28,13 +28,13 @@ test("a quarterback climbs from 1QB to superflex", () => {
 
 test("ranges are an 80% interval around the score", () => {
   const [r] = scoreRows([row("A", "WR", 9, 9, 9, 3)], "1qb", "contender");
-  assert.ok(Math.abs(r.hi - r.score - 1.2816 * 0.8 * 3 * r.scale) < 1e-9);
-  assert.ok(Math.abs(r.score - r.lo - 1.2816 * 0.8 * 3 * r.scale) < 1e-9);
+  assert.ok(Math.abs(r.hi - r.score - 1.2816 * MODES.contender.prod * 3 * r.scale) < 1e-9);
+  assert.ok(Math.abs(r.score - r.lo - 1.2816 * MODES.contender.prod * 3 * r.scale) < 1e-9);
 });
 
-test("a player below replacement ranks below one at replacement when their ages are alike", () => {
-  // at 50/50 a 21-year-old at 2 PPG (age value 9.5) can pass a replacement-level veteran, so the guard holds for similar ages only
-  const L = scoreRows([row("Vet", "WR", 1, 1, 3), row("Kid", "WR", -4, -4, 4)], "1qb", "rebuilder");
+test("a player below replacement ranks below one at replacement when their ages are the same", () => {
+  // at 35/65 (Rebuilder) age leads: a younger player below replacement can pass a replacement-level veteran, so the guard holds for equal ages
+  const L = scoreRows([row("Vet", "WR", 1, 1, 3), row("Kid", "WR", -4, -4, 3)], "1qb", "rebuilder");
   assert.equal(L[0].name, "Vet");
 });
 
@@ -95,59 +95,72 @@ test("pBetter is 50% for equal scores and rises with the gap", () => {
   assert.ok(pBetter(a, c) > 0.8 && pBetter(c, a) < 0.2);
 });
 
-test("the published metadata has replacement, an age curve and the memory settings", () => {
+test("the published metadata has replacement, the done ages and the memory settings", () => {
   const meta = metaFromData(data);
   for (const f of ["1QB", "SF"]) for (const p of ["QB", "RB", "WR", "TE"]) assert.ok(meta.replacement[f][p] > 5);
   assert.ok(meta.replacement["1QB"].QB > meta.replacement.SF.QB, "superflex lowers the QB bar");
-  for (const p of ["QB", "RB", "WR", "TE"]) assert.ok(meta.ageCurve[p].length > 15 && meta.ageCurve[p][0].length === 3);
+  for (const p of ["QB", "RB", "WR", "TE"]) assert.ok(meta.doneAge[p] > 25 && meta.doneAge[p] < 40);
+  assert.equal(meta.doneAge.QB, 35); assert.equal(meta.doneAge.RB, 28);
   assert.equal(meta.window.games, 34);
 });
 
 test("same displayed score: the younger player ranks first", () => {
-  const mk = (id, age, ageValue, por) => ({ id, age, ageValue, ppg: 10, porSf: por, por1qb: por, sdProd: 1 });
+  const mk = (id, age, ageValue, por) => ({ id, age, ageValue, runway: 10, ppg: 10, porSf: por, por1qb: por, sdProd: 1 });
   const out = scoreRows([mk("top", 25, 10, 10), mk("old", 31, 5, 5.04), mk("young", 24, 5, 5.0)], "sf", "contender").slice(1); // "top" (raw 10) keeps the scale at 1
   assert.equal(out[0].id, "young");
 });
 
-test("age value is read at the age he will be in three years", () => {
-  const curve = [[22, 9, 0.7], [25, 6, 0.7], [28, 3, 0.6], [31, 1, 0.5]];
-  assert.equal(AGE_LOOKAHEAD, 3);
-  assert.equal(ageValueAt(curve, 26.5), 4.5);
-  assert.equal(ageValueAt(curve, 40), 1);
-  const data = { age_curve: { QB: curve }, columns: ["player_id", "player", "position", "team", "age", "games_in_window", "ppg_weighted", "age_value", "por_1qb", "por_sf", "sd_prod"], rows: [["a", "A", "QB", "X", 23.5, 20, 15, 9, 3, 3, 2]] };
-  assert.equal(rowsFromData(data)[0].ageValue, 4.5);
+test("age value is the years until his position's done age: 10+ years = 10, past it = 1", () => {
+  const done = { QB: 35, RB: 28, WR: 29.3, TE: 30.4 };
+  assert.equal(runwayOf(done, "RB", 30.2), 0);
+  assert.equal(runwayOf(done, "QB", 30), 5);
+  assert.equal(ageValueOf(0), 1); assert.equal(ageValueOf(5), 5.5); assert.equal(ageValueOf(14), 10);
+  const d = { done_age: done, columns: ["player_id", "player", "position", "team", "age", "games_in_window", "ppg_weighted", "por_1qb", "por_sf", "sd_prod"], rows: [["a", "A", "QB", "X", 30, 20, 15, 3, 3, 2]] };
+  const [r] = rowsFromData(d);
+  assert.equal(r.runway, 5); assert.equal(r.ageValue, 5.5);
+});
+
+test("Rebuilder counts production only for the part of its window a player still has (a 30-year-old RB keeps only his youth)", () => {
+  const mk = (id, runway, por) => ({ id, name: id, pos: "RB", age: 25, ppg: 15, ppgS: 15, porSf: por, porSfS: por, por1qb: por, por1qbS: por, sdProd: 1, sdProdS: 1, runway, ageValue: ageValueOf(runway) });
+  const [vet] = scoreRows([mk("vet", 0, 9), mk("kid", 4, 3)], "sf", "rebuilder").filter((r) => r.id === "vet");
+  assert.equal(vet.prod, 0);
+  const [half] = scoreRows([mk("half", 1, 8)], "sf", "rebuilder");
+  assert.equal(half.prod, 4);
+  // Contender counts all of it
+  assert.equal(scoreRows([mk("vet", 0, 9)], "sf", "contender")[0].prod, 9);
 });
 
 test("move: the score change over the drift games is the production drift in score points", () => {
   const rows = rowsFromData(data), S = scoreRows(rows, "sf", "contender");
   const r = S.find((x) => x.move != null);
-  assert.ok(Math.abs(r.move - r.scale * 0.8 * r.driftPor) < 1e-9);
+  assert.ok(Math.abs(r.move - r.scale * MODES.contender.prod * r.driftPor) < 1e-9);
   assert.equal(data.drift_games, 9);
 });
 
 test("Rebuilder reads the 17-game production numbers, Contender the 34-game ones", () => {
   const cols = ["player_id", "player", "position", "team", "age", "games_in_window", "ppg_weighted", "age_value", "por_1qb", "por_sf", "sd_prod", "ppg_s", "games_s", "por_1qb_s", "por_sf_s", "sd_prod_s"];
-  const d = { columns: cols, rows: [["a", "A", "WR", "X", 25, 34, 12, 5, 2, 2, 1, 15, 17, 4, 4, 2]] };
+  const d = { done_age: { QB: 35, RB: 28, WR: 29.3, TE: 30.4 }, columns: cols, rows: [["a", "A", "WR", "X", 25, 34, 12, 5, 2, 2, 1, 15, 17, 4, 4, 2]] };
   const [r] = rowsFromData(d);
   const con = scoreRows([r], "1qb", "contender")[0], reb = scoreRows([r], "1qb", "rebuilder")[0];
-  assert.equal(con.ppg, 12); assert.equal(con.games, 34); assert.equal(con.prod, 2); assert.equal(con.sd, 0.8 * 1 * con.scale);
-  assert.equal(reb.ppg, 15); assert.equal(reb.games, 17); assert.equal(reb.prod, 4); assert.equal(reb.sd, 0.5 * 2 * reb.scale);
+  assert.equal(con.ppg, 12); assert.equal(con.games, 34); assert.equal(con.prod, 2); assert.equal(con.sd, MODES.contender.prod * 1 * con.scale);
+  assert.equal(reb.ppg, 15); assert.equal(reb.games, 17); assert.equal(reb.prod, 4); assert.equal(reb.sd, MODES.rebuilder.prod * 2 * reb.scale);
   // an older data file with no short columns: Rebuilder falls back to the long numbers
-  const old = rowsFromData({ columns: cols.slice(0, 11), rows: [["a", "A", "WR", "X", 25, 34, 12, 5, 2, 2, 1]] });
+  const old = rowsFromData({ done_age: d.done_age, columns: cols.slice(0, 11), rows: [["a", "A", "WR", "X", 25, 34, 12, 5, 2, 2, 1]] });
   assert.equal(scoreRows(old, "1qb", "rebuilder")[0].ppg, 12);
 });
 
-test("same displayed score: the player earlier on his position's age curve ranks first, not just the youngest", () => {
-  const mk = (id, age, ageValue, por) => ({ id, age, ageValue, ppg: 10, porSf: por, por1qb: por, sdProd: 1 });
-  // young but late on his curve (RB, age value 4) vs older but early on his (QB, age value 6): the QB goes first
-  const out = scoreRows([mk("youngRB", 23, 4, 6), mk("olderQB", 29, 6, 4)], "sf", "rebuilder");
+test("same displayed score: the player with more years before his position's done age ranks first, not just the youngest", () => {
+  const mk = (id, age, ageValue, por) => ({ id, age, ageValue, runway: 10, ppg: 10, porSf: por, por1qb: por, sdProd: 1 });
+  // young but closer to his position's done age (RB, age value 4) vs older but further from his (QB, age value 6), the same
+  // shown score at 70/30: the QB goes first
+  const out = scoreRows([mk("youngRB", 23, 4, 4.86), mk("olderQB", 29, 6, 4)], "sf", "rebuilder");
   assert.equal(out[0].id, "olderQB");
 });
 
 test("staff tiebreak orders players with the same shown score: both, then HC was OC, then GM still there, then neither", async () => {
   const { staffTiebreak } = await import("../lib/dynastyBoard.js");
   // same production and age value, so the same score; the youngest is listed LAST so the old age tiebreak can't explain the order
-  const mk = (id, team, draftTeam, draftYear, age) => ({ id, name: id, pos: "WR", team, draftTeam, draftYear, acqDate: "", acqHow: "", age, ageValue: 5, ppg: 15, porSf: 6, por1qb: 6, sdProd: 1 });
+  const mk = (id, team, draftTeam, draftYear, age) => ({ id, name: id, pos: "WR", team, draftTeam, draftYear, acqDate: "", acqHow: "", age, ageValue: 5, runway: 10, ppg: 15, porSf: 6, por1qb: 6, sdProd: 1 });
   const rows = [
     mk("neither", "MIA", "MIA", 2022, 24), // Hafley never an OC, Grier's pick (Sullivan since 2026)
     mk("gm", "DET", "DET", 2023, 25),      // Campbell never an OC, Holmes' pick
