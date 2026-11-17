@@ -6048,8 +6048,8 @@ select.lab-select{min-width:200px;}
 .dp-grid{stroke:var(--rule); stroke-width:1;} .dp-axis-line{stroke:var(--star-dim); stroke-width:1;}
 .dp-axis{font-family:var(--font-mono), monospace; font-size:11px; fill:var(--star-dim);} .dp-axis-title{font-family:var(--font-mono), monospace; font-size:11px; letter-spacing:.08em; text-transform:uppercase; fill:var(--star-dim);}
 .dp-bar{fill:rgba(var(--neon-blue-rgb), .55);} .dp-bar.is-above{fill:var(--horizon-gold);}
-.dp-line-level{stroke:var(--star); stroke-width:1.6;} .dp-line-repl{stroke:var(--down); stroke-width:1.2; stroke-dasharray:4 3;}
-.dp-label{font-family:var(--font-mono), monospace; font-size:12px; paint-order:stroke; stroke:var(--void-panel); stroke-width:3px;} .dp-label.is-level{fill:var(--star);} .dp-label.is-repl{fill:var(--down);}
+.dp-line-halo{stroke:var(--void-panel); stroke-width:7;} .dp-line-level{stroke:var(--star); stroke-width:3;} .dp-line-repl{stroke:var(--down); stroke-width:3; stroke-dasharray:8 5;}
+.dp-label{font-family:var(--font-mono), monospace; font-size:12px; font-weight:700; paint-order:stroke; stroke:var(--void-panel); stroke-width:3px;} .dp-label.is-level{fill:var(--star);} .dp-label.is-repl{fill:var(--down);}
 .dp-curve{fill:none; stroke:var(--neon-blue); stroke-width:2;} .dp-band{fill:rgba(var(--horizon-gold-rgb), .13);}
 .dp-drop{stroke:var(--star); stroke-width:1.2;} .dp-dot{fill:var(--star); stroke:var(--void-panel); stroke-width:2;}
 .dp-table{width:100%; border-collapse:collapse;}
@@ -6059,8 +6059,8 @@ select.lab-select{min-width:200px;}
 .dp-legend{display:flex; flex-wrap:wrap; gap:6px 16px; margin:10px 0 0; padding:0; list-style:none; font-size:11px; color:var(--star-dim);}
 .dp-legend li{display:inline-flex; align-items:center; gap:7px;}
 .dp-legend i{display:inline-block; flex:none;}
-.dp-legend .k-level{width:20px; height:0; border-top:1.6px solid var(--star);}
-.dp-legend .k-repl{width:20px; height:0; border-top:1.2px dashed var(--down);}
+.dp-legend .k-level{width:22px; height:0; border-top:3px solid var(--star);}
+.dp-legend .k-repl{width:22px; height:0; border-top:3px dashed var(--down);}
 .dp-legend .k-above{width:10px; height:10px; background:var(--horizon-gold);}
 .dp-legend .k-below{width:10px; height:10px; background:rgba(var(--neon-blue-rgb), .55);}
 /* his tier-mates (him lit) and the format x mode rank matrix */

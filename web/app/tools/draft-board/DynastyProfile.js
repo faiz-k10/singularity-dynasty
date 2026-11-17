@@ -48,7 +48,7 @@ function useBoxWidth(initial = 420) {
 
 // His last games as bars (green-mint above the replacement line, steel below), the line he is rated at, and replacement.
 function Timeline({ log, level, repl, W }) {
-  const H = Math.round(Math.min(320, Math.max(220, W * 0.6))), L = 30, R = 4, T = 12, B = 24;
+  const H = Math.round(Math.min(320, Math.max(220, W * 0.6))), L = 30, R = 40, T = 12, B = 24; // R holds the two line values
   const pts = log.p, n = pts.length;
   const top = Math.max(30, Math.ceil(Math.max(...pts) / 10) * 10);
   const y = (v) => T + (1 - v / top) * (H - T - B);
@@ -66,8 +66,20 @@ function Timeline({ log, level, repl, W }) {
       {pts.map((v, i) => (
         <rect key={i} x={L + i * bw + 1} y={y(v)} width={Math.max(1, bw - 2)} height={Math.max(0.5, y(0) - y(v))} className={v >= repl ? "dp-bar is-above" : "dp-bar"} />
       ))}
-      <line x1={L} x2={W - R} y1={y(repl)} y2={y(repl)} className="dp-line-repl" />
-      <line x1={L} x2={W - R} y1={y(level)} y2={y(level)} className="dp-line-level" />
+      {[[repl, "dp-line-repl"], [level, "dp-line-level"]].map(([v, c]) => (
+        <g key={c}>
+          <line x1={L} x2={W - R + 2} y1={y(v)} y2={y(v)} className="dp-line-halo" />
+          <line x1={L} x2={W - R + 2} y1={y(v)} y2={y(v)} className={c} />
+        </g>
+      ))}
+      {(() => { // the two values at the right end, pushed apart when they would touch
+        let yl = y(level), yr = y(repl);
+        if (Math.abs(yl - yr) < 14) { const mid = (yl + yr) / 2, up = yl <= yr ? -7 : 7; yl = mid + up; yr = mid - up; }
+        return (<>
+          <text x={W - R + 6} y={yl + 4} className="dp-label is-level">{level.toFixed(1)}</text>
+          <text x={W - R + 6} y={yr + 4} className="dp-label is-repl">{repl.toFixed(1)}</text>
+        </>);
+      })()}
       {ticks.map(([i, t]) => <text key={t} x={L + i * bw} y={H - 7} className="dp-axis">{t}</text>)}
     </svg>
   );
