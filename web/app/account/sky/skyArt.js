@@ -192,4 +192,38 @@ export async function receiptCard(wk) {
   });
   return cv;
 }
+export async function seasonCard(state, { title, size, rarest }) {
+  const cv = canvas(), ctx = cv.getContext("2d");
+  await base(ctx, "My season sky");
+  // the constellations drawn like the page: lit stars with a halo and spikes, unlit ones as faint outlines
+  const sky = skyFor(state.season);
+  const stars = await svgPicture(
+    <>
+      {sky.map((c) => {
+        const f = state.filled[c.id] || [];
+        return (
+          <g key={c.id}>
+            {c.edges.map(([i, j]) => { const lit = f[i] && f[j]; return <line key={`${i}-${j}`} x1={c.pts[i][0]} y1={c.pts[i][1]} x2={c.pts[j][0]} y2={c.pts[j][1]} stroke={lit ? STAR[c.color] : "#ECE7DC"} strokeOpacity={lit ? 0.75 : 0.18} strokeWidth={lit ? 1.6 : 1} strokeDasharray={lit ? undefined : "2 3"} />; })}
+            {c.pts.map(([x, y, r], i) => (f[i] ? (
+              <g key={i}>
+                <circle cx={x} cy={y} r={r * 3.2} fill={STAR[f[i]]} fillOpacity=".18" />
+                <circle cx={x} cy={y} r={r} fill={STAR[f[i]]} />
+                <Spikes x={x} y={y} len={r * 4} color={STAR[f[i]]} width={0.8} opacity={0.8} />
+              </g>
+            ) : <circle key={i} cx={x} cy={y} r={r + 0.8} fill="none" stroke="#ECE7DC" strokeOpacity=".35" strokeDasharray="2 2" />))}
+          </g>
+        );
+      })}
+    </>,
+    "-300 -300 600 600", 570, 570,
+  );
+  if (stars) ctx.drawImage(stars, 880 - 285, 300 - 285, 570, 570);
+  await drawCore(ctx, 880, 300, 0.95);
+  const finds = Object.values(state.found).reduce((a, b) => a + b.n, 0);
+  ctx.fillStyle = "#ECE7DC"; ctx.font = `800 72px ${font("--font-display")}`; ctx.fillText(title.toUpperCase(), 64, 190);
+  const cells = [[seasonProgress(state).points.toLocaleString(), "season points"], [String(finds), "finds"], [`${Object.keys(state.found).length} / ${size.toLocaleString()}`, "catalogue"], [`${state.btm[0]}-${state.btm[1]}`, "vs the model"]];
+  cells.forEach(([v, l], i) => { const x = 64 + (i % 2) * 260, y = 300 + Math.floor(i / 2) * 110; ctx.fillStyle = "#ECE7DC"; ctx.font = `800 54px ${font("--font-display")}`; ctx.fillText(v, x, y); ctx.fillStyle = "#A39E92"; ctx.font = `400 18px ${font("--font-mono")}`; ctx.fillText(l.toUpperCase(), x, y + 30); });
+  if (rarest) { ctx.fillStyle = "#E9C46A"; ctx.font = `400 20px ${font("--font-mono")}`; ctx.fillText(`RAREST FIND: ${rarest.name.toUpperCase()} (1 IN ${rarest.oneIn.toLocaleString()})`, 64, 520); }
+  return cv;
+}
 export const toBlob = (cv) => new Promise((res) => cv.toBlob(res, "image/png"));

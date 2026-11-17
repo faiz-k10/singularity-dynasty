@@ -37,11 +37,10 @@ export default async function SkyPage() {
         <div className="eyebrow">
           <Link href="/account">Account</Link> · The Night Sky
         </div>
-        <h1>Your sky</h1>
         {sky.ready ? (
           <SkyClient initial={sky.state} weekKey={sky.weekKey} event={sky.ctx.event} compliments={compliments} now={sky.ctx.now} today={sky.ctx.day} />
         ) : (
-          <p className="tool-sub">The Night Sky is being set up. Check back soon.</p>
+          <><h1>Your sky</h1><p className="tool-sub">The Night Sky is being set up. Check back soon.</p></>
         )}
       </main>
     </div>

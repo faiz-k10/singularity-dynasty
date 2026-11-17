@@ -7,7 +7,7 @@ import ShareDialog from "../../ShareDialog";
 import { seeFinds, pickPlayer, claim, wearSkin } from "./actions";
 import { SkyBackdrop, CoreSkin, SkinPreview } from "./skins";
 import { StarField, Galaxies, Spikes } from "./hubble";
-import { drawObject, sharpen, findCard, receiptCard, toBlob, setCardBadge, setCardSkin, setCardFrame } from "./skyArt";
+import { drawObject, sharpen, findCard, receiptCard, seasonCard, toBlob, setCardBadge, setCardSkin, setCardFrame } from "./skyArt";
 import {
   ACTIONS, skyFor, SKINS, RARITY, hasSkin, equipped, skySkinsFor, FAMILIES, COLOURS, VERSIONS, TIER_NAME, POWERUPS, LADDER, rungLabel, CATALOGUE_SIZE, SET_COUNT, UNLOCK, EVENT_TEXT,
   famsIn, findOf, setProgress, seasonProgress,
@@ -100,7 +100,8 @@ function Sky({ state, pendingPicks, pending }) {
         const f = state.filled[c.id] || [];
         if (!open) return <g key={c.id}>{c.pts.map(([x, y], i) => f[i] ? <circle key={i} cx={x} cy={y} r={3} fill="var(--star)" /> : null)}</g>;
         const have = f.filter(Boolean).length, done = have === c.pts.length, near = !done && have === c.pts.length - 1;
-        const [lx, ly, anchor] = c.label;
+        const [cx0, ly, anchor] = c.label;
+        const lx = Math.sign(cx0) * 456; // pushed out to the corners of the landscape frame (founder, Nov 17 2026)
         return (
           <g key={c.id}>
             {c.edges.map(([i, j]) => {
@@ -339,6 +340,7 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
     make: () => findCard(f, { title, compliment: compliment?.head, have: entries.length, size: CATALOGUE_SIZE }),
   });
 
+  const rarest = [...entries].sort((a, b) => b.oneIn - a.oneIn)[0] || null;
   const nextAt = LADDER.find((r) => r.at && sp.points < r.at), prevAt = [...LADDER].reverse().find((r) => r.at && sp.points >= r.at)?.at || 0;
   const frac = nextAt ? (sp.points - prevAt) / (nextAt.at - prevAt) : 1;
   const C = 2 * Math.PI * 48;
@@ -349,6 +351,10 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
 
   return (
     <div className="sky">
+      <div className="sky-top">
+        <h1>Your sky</h1>
+        <button type="button" className="btn-ghost" onClick={() => setShare({ title: `My season sky: ${title}`, caption: `My Night Sky this season: ${title}, ${sp.points.toLocaleString()} season points, ${entries.length} of ${CATALOGUE_SIZE.toLocaleString()} in my catalogue.`, make: () => seasonCard(state, { title, size: CATALOGUE_SIZE, rarest }) })}>Share my season sky</button>
+      </div>
       {event && <p className="sky-banner mono">{EVENT_TEXT[event]}</p>}
       {msg && <p className="sky-banner mono is-bad">{msg}</p>}
 
