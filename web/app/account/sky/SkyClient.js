@@ -372,6 +372,8 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
         <div className="sky-col">
           <section className="sky-panel" aria-labelledby="sky-btm">
             <div className="board-panel-title" id="sky-btm">Beat the Model</div>
+            {/* the picks, the rule and the result share the panel's whole height (founder, Nov 17 2026: it ended in empty space) */}
+            <div className="sky-btm-body">
             {wk ? wk.pairs.map((p, i) => (
               <div key={i} className="sky-pick">
                 {[p.a, p.b].map((name, k) => (
@@ -387,11 +389,8 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
                 <button type="button" className="btn-ghost" onClick={() => setShare({ title: `Beat the Model: ${lastGraded.right} of ${lastGraded.made}`, caption: `I went ${lastGraded.right} of ${lastGraded.made} against the model in week ${lastGraded.week}. Your turn.`, make: () => receiptCard(lastGraded) })}>Share my receipt</button>
               </div>
             )}
+            </div>
           </section>
-
-          
-
-          
         </div>
       </div>
 
