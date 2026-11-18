@@ -113,12 +113,21 @@ Attacks, breakdowns and what to do about each (leaked key, hacked account, data 
    - Vercel → Settings → Environment Variables: add `NEXT_PUBLIC_TURNSTILE_SITE_KEY` (site key) and `TURNSTILE_SECRET_KEY` (secret key), then redeploy.
    - Supabase → Authentication → Attack Protection → **Enable CAPTCHA protection** → provider Turnstile → paste the **secret key** → Save.
    Do both together: with only Supabase on, sign-in stops working (no widget sends a token); with only Vercel on, sign-in shows the check but Supabase doesn't enforce it. Until then the site uses its other bot guards (a hidden trap field, a too-fast check and rate limits).
+7. **Turn on real payments (Stripe live mode).** Everything in the code is ready and tested in test mode (Nov 17 2026: a real test subscription went through the webhook and was cancelled; checkout refuses signed-out visitors and other websites). The rest needs you, in this order:
+   1. **Activate the account.** Stripe dashboard → switch **Test mode off** → it asks for your business details, bank account and ID. Payouts can't start until this is done.
+   2. **What customers see.** Settings → **Business** → Public details: name `Dynasty Singularity`, website `https://dynastysingularity.com`, a support email. Settings → **Branding**: upload `brand/logo-dark-ds-1024.png` as the icon and pick the ember accent (`#E8643F`). Settings → **Statement descriptor**: `DYNASTY SINGULARITY` (what shows on card statements). Settings → **Customer emails**: turn on receipts for successful payments and refunds.
+   3. **Create the live products, portal and webhook.** Developers → API keys (live) → reveal the **Secret key**. In the Terminal panel, from the `web` folder, run (paste your key in place of `sk_live_...`; never paste it into chat):
+      `STRIPE_SECRET_KEY=sk_live_... SITE_URL=https://dynastysingularity.com node scripts/stripe-go-live.mjs`
+      It prints a `STRIPE_WEBHOOK_SECRET=...` line and four `STRIPE_PRICE_...=` lines. Safe to run twice.
+   4. **Give the live site the live keys.** Vercel → project `web` → Settings → Environment Variables → **Production** only: set `STRIPE_SECRET_KEY` (the live secret key), `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` (Developers → API keys → live **Publishable key**, `pk_live_...`), `STRIPE_WEBHOOK_SECRET` and the four `STRIPE_PRICE_...` lines from step 3. Then Deployments → the latest → **Redeploy**. Leave `web/.env.local` on the test keys so local testing can never charge a real card.
+   5. **Prove it with your own card.** On the live site, sign in, buy Explorer monthly. Your account page should show Explorer within seconds. Then Stripe → Payments → refund it, and Customers → you → subscription → **Cancel now**; your account should go back to Stargazer.
+   6. **Sales tax:** whether you must collect it depends on where your customers live; ask an accountant. Stripe Tax can do it automatically if needed.
 
 ## Once a year
 
 - **New season (August):** nothing to change. The model reads the current season from the NFL schedule. Check the first Tuesday run of week 1 in `/admin`.
 - **Before week 1:** update `web/lib/teamStaff.js` for new head coaches, GMs and play-callers (ESPN publishes "Who calls plays for every NFL team" each preseason).
-- **Before real payments:** follow "Go-live operations" in `CLAUDE.md` (live Stripe keys and the attorney review).
+- **Before real payments:** Setup step 7 above (Stripe live mode), plus the attorney review of the Terms / Privacy / Disclaimer pages and whether NFL logos can be shown.
 - **If you connect a custom domain:** update `SITE` in `.github/workflows/uptime.yml` and `SITE_URL` in `web/app/layout.js`, and add the new address to Supabase → Authentication → URL Configuration.
 
 ## What still needs a developer

@@ -14,13 +14,13 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const PLANS = [
   {
     name: "Explorer",
-    description: "Up to 10 leagues saved and watched live, every player ranked, the full dynasty board.",
+    description: "Every player ranked, up to 10 leagues saved and watched live, the full dynasty board, the Tuesday email.",
     monthly: 900, // $9.00
     annual: 8400, // $7/mo billed annually ($84/yr)
   },
   {
     name: "Singularity",
-    description: "The endpoint. Everything converges here.",
+    description: "Everything in Explorer, plus every player's season simulations and unlimited saved leagues.",
     monthly: 2500, // $25.00
     annual: 24000, // $20/mo billed annually ($240/yr)
   },
@@ -38,6 +38,8 @@ async function main() {
     let product = await findExistingProduct(plan.name);
     if (product) {
       console.log(`Product "${plan.name}" already exists (${product.id}), reusing it.`);
+      // keep the description buyers see at checkout and on receipts in step with the plans page
+      if (product.description !== plan.description) { product = await stripe.products.update(product.id, { description: plan.description }); console.log("  Updated its description."); }
     } else {
       product = await stripe.products.create({
         name: plan.name,
