@@ -5118,7 +5118,9 @@ html{font-stretch:82%;}
 }
 .sb-card:hover{transform:translateY(-2px); border-color:rgba(var(--star-dot-rgb),.2);}
 .sb-card:focus-visible{outline:2px solid var(--neon-blue); outline-offset:2px;}
-.sb-card-head{display:flex; align-items:center; gap:10px; min-height:22px;}
+.sb-card-head{display:flex; align-items:center; gap:10px; min-height:22px; position:relative;}
+/* the playoff odds right under the league name, out of the flow so the card's other lines stay where they are */
+.sb-card-head .sb-card-odds{position:absolute; left:0; top:100%; margin-top:3px; white-space:nowrap; pointer-events:none;}
 .sb-card-league{font-family:var(--font-mono), monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--star-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0;}
 .sb-card-record{flex:none; font-size:11px; letter-spacing:.04em; color:var(--star); padding:1px 6px; box-shadow:inset 0 0 0 1px var(--rule); border-radius:var(--r-sm);}
 .sb-card-status{display:inline-flex; align-items:center; gap:6px; margin-left:auto; font-size:10.5px; letter-spacing:.04em; color:var(--star-dim); white-space:nowrap;}
@@ -5152,7 +5154,6 @@ html{font-stretch:82%;}
 .sb-card-label{font-family:var(--font-mono), monospace; font-size:9.5px; text-transform:uppercase; letter-spacing:.08em; opacity:.8;}
 .sb-card-todo-head{grid-column:1 / -1; display:flex; align-items:baseline; justify-content:space-between; gap:12px;}
 .sb-card-line{display:flex; align-items:baseline; justify-content:space-between; gap:12px;}
-.sb-card-line .sb-card-odds{margin-left:auto;}
 .sb-card-who{font-size:10.5px; letter-spacing:.04em; color:var(--star-dim);}
 .sb-card-chips{display:flex; flex-wrap:wrap; gap:5px; min-width:0;}
 .sb-card-chip{display:inline-flex; align-items:center; padding:2px 9px; border-radius:2px; background:rgba(var(--star-dot-rgb),.07); border:1px solid rgba(var(--star-dot-rgb),.12); color:var(--star); font-size:12px; line-height:1.4; white-space:nowrap;}

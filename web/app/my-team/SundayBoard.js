@@ -59,7 +59,8 @@ function LeagueCard({ team, ms, onOpen }) {
   // The ring closes all the way only for a result that is certain (won, or YOU WIN = locked in); a near-certain percentage stops just short.
   const ringStyle = ringPct == null ? undefined : { "--win": ringPct >= 0.995 ? (done || lock === "win" || oddsRing ? 1 : 0.985) : Math.max(0.02, ringPct) };
   const alerts = row.alertCount.total;
-  // The chance to make the playoffs sits at the right end of the card footer's first line (no line of its own).
+  // The chance to make the playoffs sits right under the league name (founder, Nov 18 2026), laid over the free space above the
+  // one-word reading so nothing else on the card moves; it used to sit at the right end of the footer's first line.
   const odds =
     row.playoffOdds != null ? (
       <span className={`sb-card-odds mono ${oddsTone(row.playoffOdds)}`}>Playoffs {formatOdds(row.playoffOdds, row.playoffSettled)}</span>
@@ -89,6 +90,7 @@ function LeagueCard({ team, ms, onOpen }) {
     >
       <div className="sb-card-head">
         <span className="sb-card-league">{row.league}</span>
+        {odds}
         {row.record !== "—" && (
           <span className="sb-card-record mono">
             {row.record}
@@ -152,17 +154,13 @@ function LeagueCard({ team, ms, onOpen }) {
             {done ? (
               <div className="sb-card-line">
                 <span className="sb-card-final sb-muted">All games final</span>
-                {odds}
               </div>
-            ) : !s.h2h ? (
-              odds && <div className="sb-card-line">{odds}</div> // no lineups to say who is left (a snapshot without them): just the playoff odds
-            ) : (
+            ) : !s.h2h ? null : (
               // Who is still to play, as two aligned rows: yours as name chips (a red dot on anyone playing right now),
               // theirs as a count.
               <div className="sb-card-todo">
                 <span className="sb-card-todo-head">
                   <span className="sb-card-label">Still to play</span>
-                  {odds}
                 </span>
                 <span className="sb-card-who mono">Yours</span>
                 <span className="sb-card-chips">
