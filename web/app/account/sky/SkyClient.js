@@ -633,7 +633,7 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
                       {!have && <span className="sky-skin-lock" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22"><rect x="5" y="11" width="14" height="10" rx="2" fill="currentColor" /><path d="M8 11V8a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" strokeWidth="2.2" /></svg></span>}
                     </span>
                     <b>{k.name}</b>
-                    <span className="sky-skin-how mono">{on ? "Wearing" : have ? "Wear it" : k.how}</span>
+                    <span className="sky-skin-how mono">{on ? "Applied" : have ? "Apply" : k.how}</span>
                     {!have && need > 0 && (
                       <span className="sky-skin-bar" aria-label={`${Math.min(got, need).toLocaleString()} of ${need.toLocaleString()}`}>
                         <i style={{ width: `${Math.min(100, (100 * got) / need)}%` }} />
