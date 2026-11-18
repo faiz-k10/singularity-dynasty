@@ -125,7 +125,10 @@ export function drawObject(ctx, W, find, edge, { bare = false } = {}) {
 
   switch (fam.shape) {
     case "rock":
-      if (fam.name === "Centaur") { ctx.globalAlpha = 0.6; comet(C + 8 * u, C - 8 * u, 170, 0.75); ctx.globalAlpha = 1; } // a faint tail: half comet
+      if (fam.name === "Centaur") { // half comet: a hazy coma and a few small jets of gas from its surface, but no tail
+        glow(C, C, 95 * u, LT, 0.3);
+        for (const a of [-2.2, -1.1, 0.4]) { const x0 = C + Math.cos(a) * 36 * u, y0 = C + Math.sin(a) * 30 * u, x1 = C + Math.cos(a) * 92 * u, y1 = C + Math.sin(a) * 80 * u, g = ctx.createLinearGradient(x0, y0, x1, y1); g.addColorStop(0, rgba(mix(LT, WHITE, 0.4), 0.5)); g.addColorStop(1, rgba(LT, 0)); ctx.strokeStyle = g; ctx.lineCap = "round"; for (const w of [9, 3]) { ctx.lineWidth = w * u; ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke(); } }
+      }
       rock(C, C, fam.name === "Moonlet" ? 0.6 : fam.name.includes("Kuiper") ? 1.25 : 1); break;
     case "rubble": for (let i = 0; i < 7; i++) rock(C + Math.cos(i * 0.9) * 32 * u, C + Math.sin(i * 1.7) * 26 * u, 0.38, i); break;
     case "twin": rock(C - 30 * u, C - 6 * u, 0.78, 1); rock(C + 30 * u, C + 10 * u, 0.66, 2); break;
@@ -135,12 +138,28 @@ export function drawObject(ctx, W, find, edge, { bare = false } = {}) {
       break;
     }
     case "comet": {
-      const len = fam.name === "Sungrazer" ? 200 : fam.name === "Interstellar comet" ? 120 : 160;
-      if (fam.name === "Fragmenting comet") { comet(C + 6 * u, C + 6 * u, 70, 0.45); comet(C - 14 * u, C + 26 * u, 60, 0.35); }
-      comet(C + 32 * u, C - 32 * u, len, fam.name === "Interstellar comet" ? 0.8 : 1);
+      // each comet kind has its own picture, not just a different tail length (founder, Nov 17 2026: "these all look the same")
+      const n = fam.name;
+      if (n === "Sungrazer") { // seconds from its star: the star blazing in the corner, the tail long and brilliant, pointing straight away from it
+        sun(C + 118 * u, C - 118 * u, 30 * u, mix(LT, [255, 236, 190], 0.6), DK, 3.2);
+        comet(C + 52 * u, C - 52 * u, 230, 1.15);
+      } else if (n === "Interstellar Comet") { // a long cigar-shaped body on an open, hyperbolic path through the frame, barely any tail
+        ctx.setLineDash([3 * u, 6 * u]); ctx.strokeStyle = rgba(LT, 0.55); ctx.lineWidth = 1.6 * u;
+        ctx.beginPath(); ctx.moveTo(C - 150 * u, C + 120 * u); ctx.quadraticCurveTo(C + 30 * u, C - 40 * u, C + 150 * u, C - 150 * u); ctx.stroke(); ctx.setLineDash([]);
+        comet(C, C, 60, 0.55);
+        ctx.save(); ctx.translate(C, C); ctx.rotate(-0.85); const g = ctx.createLinearGradient(-26 * u, -8 * u, 20 * u, 8 * u); g.addColorStop(0, rgba(mix(LT, WHITE, 0.4))); g.addColorStop(0.5, rgba(LT)); g.addColorStop(1, rgba(DK));
+        ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(0, 0, 26 * u, 6.5 * u, 0, 0, TAU); ctx.fill(); ctx.restore();
+      } else if (n === "Main-Belt Comet") { // an ordinary asteroid that has grown a thin, straight line of dust
+        ctx.lineCap = "round";
+        for (const [off, w, a] of [[0, 12, 0.2], [0, 4, 0.7], [7, 2, 0.4], [-7, 2, 0.4]]) { const x0 = C + 26 * u + off * Math.SQRT1_2 * u, y0 = C - 26 * u + off * Math.SQRT1_2 * u, x1 = x0 - 150 * Math.SQRT1_2 * u, y1 = y0 + 150 * Math.SQRT1_2 * u, g = ctx.createLinearGradient(x0, y0, x1, y1); g.addColorStop(0, rgba(mix(LT, WHITE, 0.3), a)); g.addColorStop(1, rgba(LT, 0)); ctx.strokeStyle = g; ctx.lineWidth = w * u; ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke(); }
+        rock(C + 26 * u, C - 26 * u, 0.62);
+      } else if (n === "Fragmenting Comet") { // a string of pieces strung out along its orbit, each with its own small tail, in a haze of debris
+        for (let i = 0; i < 60; i++) { const t = r(), x = C + 60 * u - t * 150 * u + (r() - 0.5) * 18 * u, y = C - 60 * u + t * 150 * u + (r() - 0.5) * 18 * u; ctx.fillStyle = rgba(mix(LT, WHITE, 0.3), 0.2 + r() * 0.4); ctx.beginPath(); ctx.arc(x, y, (0.6 + r()) * u, 0, TAU); ctx.fill(); }
+        [[60, 0.75], [22, 0.5], [-8, 0.42], [-34, 0.32], [-56, 0.24]].forEach(([k, sc]) => comet(C + k * u, C - k * u + (k < 0 ? 6 : 0) * u, 90, sc));
+      } else comet(C + 32 * u, C - 32 * u, 175, 1.05); // long-period: the classic, a bright head and a long, double tail
       break;
     }
-    case "dwarf": sphere(C, C, 44 * u, { cells: 7, tex: 0.5, atmo: 0.2 }); if (fam.name.includes("moon")) sphere(C + 72 * u, C - 42 * u, 13 * u, { tex: 0.35, atmo: 0.15 }); break;
+    case "dwarf": sphere(C, C, 44 * u, { cells: 7, tex: 0.5, atmo: 0.2 }); if (fam.name.includes("Moon")) sphere(C + 72 * u, C - 42 * u, 13 * u, { tex: 0.35, atmo: 0.15 }); break;
     case "planet": sphere(C, C, 60 * u, { cells: 6, tex: 0.5, sx: 1.6 }); break;
     case "banded": {
       const p = sphere(C, C, 62 * u, { tex: 0, atmo: 0, night: 0 });
@@ -205,7 +224,7 @@ export function drawObject(ctx, W, find, edge, { bare = false } = {}) {
       // the moon in front of the edge of its giant planet
       sphere(C - 54 * u, C + 46 * u, 80 * u, { light: mix(DK, LT, 0.35), dark: mix(DK, BLACK, 0.5), cells: 5, tex: 0.35, sx: 2, halo: 0.12 });
       const p = sphere(C + 30 * u, C - 30 * u, 32 * u, { cells: 8, tex: 0.55, atmo: 0.2 });
-      if (fam.name === "Volcanic moon") withClip(p, () => { for (let k = 0; k < 5; k++) glow(C + 30 * u + (r() - 0.6) * 40 * u, C - 30 * u + (r() - 0.6) * 40 * u, 5 * u, [255, 180, 70], 0.9); });
+      if (fam.name === "Volcanic Moon") withClip(p, () => { for (let k = 0; k < 5; k++) glow(C + 30 * u + (r() - 0.6) * 40 * u, C - 30 * u + (r() - 0.6) * 40 * u, 5 * u, [255, 180, 70], 0.9); });
       break;
     }
     case "shower": {
@@ -269,7 +288,7 @@ export function drawObject(ctx, W, find, edge, { bare = false } = {}) {
       for (let i = 0; i < 4; i++) { const x = C + (r() - 0.5) * 160 * u, y = C + (r() - 0.5) * 120 * u; glow(x, y, 9 * u, [220, 232, 255], 0.8); ctx.fillStyle = "#F4F8FF"; ctx.beginPath(); ctx.arc(x, y, 1.8 * u, 0, TAU); ctx.fill(); }
       break;
     }
-    case "star": { const big = fam.name === "Red giant"; sun(C, C, (big ? 62 : 26) * u, LT, DK, big ? 1.9 : 3.4); break; }
+    case "star": { const big = fam.name === "Red Giant"; sun(C, C, (big ? 62 : 26) * u, LT, DK, big ? 1.9 : 3.4); break; }
   }
   // the version's finish -- soft light, never lines across the object
   if (ver === "prismatic" && ctx.createConicGradient) {

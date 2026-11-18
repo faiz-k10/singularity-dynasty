@@ -9,7 +9,7 @@ test("the catalogue has 1,056 entries and rarity follows the odds", () => {
   assert.equal(FAMILIES.length, 44);
   assert.equal(CATALOGUE_SIZE, 1056);
   assert.equal(findOf(0, "silver", "").oneIn, 94); // tier 1 (0.4) / 10 kinds x silver 0.3 x normal
-  assert.equal(findOf(37, "violet", "mythic").name, "Mythic Violet Black hole");
+  assert.equal(findOf(37, "violet", "mythic").name, "Mythic Violet Black Hole");
   assert.ok(findOf(37, "violet", "mythic").oneIn > 1_000_000);
 });
 
@@ -223,7 +223,7 @@ test("the rarest find takes its astronomical zone and never covers a constellati
       for (const c of sky) for (const [x, y] of c.pts) assert.ok(Math.hypot(p.x - x, p.y - y) > z.size / 2, `${f.name} clear of ${c.name} (${season})`);
     }
   }
-  const lava = FAMILIES.find((f) => f.name === "Lava world").id, quasar = FAMILIES.find((f) => f.name === "Quasar").id;
+  const lava = FAMILIES.find((f) => f.name === "Lava World").id, quasar = FAMILIES.find((f) => f.name === "Quasar").id;
   assert.ok(zoneOf(lava).r < zoneOf(quasar).r, "planets orbit close, deep-sky objects sit far out");
 });
 

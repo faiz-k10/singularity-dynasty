@@ -95,21 +95,21 @@ export function rollSeason(s, season) {
 
 // The catalogue: 44 kinds x 6 colours x 4 versions = 1,056 entries.
 export const FAMILIES = [
-  ["Iron asteroid", 1, "rock"], ["Stony asteroid", 1, "rock"], ["Carbon asteroid", 1, "rock"], ["Rubble pile", 1, "rubble"], ["Contact binary", 1, "twin"],
-  ["Trojan asteroid", 1, "rock"], ["Centaur", 1, "rock"], ["Kuiper object", 1, "rock"], ["Moonlet", 1, "rock"], ["Dust cloud", 1, "dust"],
-  ["Long-period comet", 2, "comet"], ["Sungrazer", 2, "comet"], ["Interstellar comet", 2, "comet"], ["Main-belt comet", 2, "comet"], ["Fragmenting comet", 2, "comet"],
-  ["Ice dwarf", 2, "dwarf"], ["Plutoid", 2, "dwarf"], ["Dwarf world with a moon", 2, "dwarf"],
-  ["Ringed giant", 3, "ringed"], ["Ice giant", 3, "planet"], ["Lava world", 3, "lava"], ["Ocean world", 3, "planet"], ["Desert world", 3, "planet"], ["Super-Earth", 3, "planet"],
-  ["Hot Jupiter", 3, "banded"], ["Rogue planet", 3, "rogue"], ["Tidally locked world", 3, "locked"], ["Diamond world", 3, "diamond"], ["Volcanic moon", 3, "moon"], ["Ice moon", 3, "moon"],
-  ["Leonid shower", 4, "shower"], ["Perseid shower", 4, "shower"], ["Geminid shower", 4, "shower"], ["Draconid shower", 4, "shower"],
-  ["Supernova", 5, "supernova"], ["Pulsar", 5, "pulsar"], ["Magnetar", 5, "pulsar"], ["Black hole", 5, "blackhole"], ["Binary black hole", 5, "blackhole"],
-  ["Kilonova", 5, "supernova"], ["Quasar", 5, "quasar"], ["Nebula", 5, "nebula"], ["Wolf-Rayet star", 5, "star"], ["Red giant", 5, "star"],
+  ["Iron Asteroid", 1, "rock"], ["Stony Asteroid", 1, "rock"], ["Carbon Asteroid", 1, "rock"], ["Rubble Pile", 1, "rubble"], ["Contact Binary", 1, "twin"],
+  ["Trojan Asteroid", 1, "rock"], ["Centaur", 1, "rock"], ["Kuiper Object", 1, "rock"], ["Moonlet", 1, "rock"], ["Dust Cloud", 1, "dust"],
+  ["Long-Period Comet", 2, "comet"], ["Sungrazer", 2, "comet"], ["Interstellar Comet", 2, "comet"], ["Main-Belt Comet", 2, "comet"], ["Fragmenting Comet", 2, "comet"],
+  ["Ice Dwarf", 2, "dwarf"], ["Plutoid", 2, "dwarf"], ["Dwarf World With A Moon", 2, "dwarf"],
+  ["Ringed Giant", 3, "ringed"], ["Ice Giant", 3, "planet"], ["Lava World", 3, "lava"], ["Ocean World", 3, "planet"], ["Desert World", 3, "planet"], ["Super-Earth", 3, "planet"],
+  ["Hot Jupiter", 3, "banded"], ["Rogue Planet", 3, "rogue"], ["Tidally Locked World", 3, "locked"], ["Diamond World", 3, "diamond"], ["Volcanic Moon", 3, "moon"], ["Ice Moon", 3, "moon"],
+  ["Leonid Shower", 4, "shower"], ["Perseid Shower", 4, "shower"], ["Geminid Shower", 4, "shower"], ["Draconid Shower", 4, "shower"],
+  ["Supernova", 5, "supernova"], ["Pulsar", 5, "pulsar"], ["Magnetar", 5, "pulsar"], ["Black Hole", 5, "blackhole"], ["Binary Black Hole", 5, "blackhole"],
+  ["Kilonova", 5, "supernova"], ["Quasar", 5, "quasar"], ["Nebula", 5, "nebula"], ["Wolf-Rayet Star", 5, "star"], ["Red Giant", 5, "star"],
 ].map(([name, tier, shape], id) => ({ id, name, tier, shape }));
 // The lore: ONE sentence for every catalogue entry (founder, Nov 17 2026: "a single sentence ... all unique and based loosely on its
 // characteristics ... make them all INTERESTING"). One per kind and colour, written for that pairing; a rare version folds a short clause
 // into the same sentence, so all 1,056 entries read differently (tested).
 export const LORE = {
-  "Iron asteroid": {
+  "Iron Asteroid": {
     "silver": "A chunk of a planet's heart polished silver by four billion years of sandblasting, it would make the galaxy's most overqualified frying pan.",
     "azure": "Frost has settled into its iron pores and turned it a cold steel blue, like a sword left out on the battlefield of the early solar system.",
     "amber": "Rust has bloomed across it in amber patches, which means it once met water and has been quietly corroding with regret ever since.",
@@ -117,7 +117,7 @@ export const LORE = {
     "crimson": "Still glowing faintly red from a collision a million years ago, it has never quite calmed down about it.",
     "violet": "Violet iron is not supposed to exist, and the asteroid seems smug about that."
   },
-  "Stony asteroid": {
+  "Stony Asteroid": {
     "silver": "Plain grey stone, unchanged since before the Sun lit up, the most honest object you will ever look at.",
     "azure": "Its blue sheen is sunlight on a dusting of ice crystals, as if the rock were wearing a thin coat of winter.",
     "amber": "Warm amber stone that looks like a pebble from a riverbed, if the riverbed were four hundred million miles from the nearest river.",
@@ -125,7 +125,7 @@ export const LORE = {
     "crimson": "Burnt red by a billion years of radiation, its surface has the colour and texture of toast someone forgot about.",
     "violet": "Violet stone is so unusual that the astronomer who logged this one named it after her grandmother and refused to explain why."
   },
-  "Carbon asteroid": {
+  "Carbon Asteroid": {
     "silver": "A thin silvery glaze over coal-black rock, it looks like burnt toast someone tried very hard to make fancy.",
     "azure": "Under the blue frost lie amino acids, so this cold little rock carries the alphabet that life spells with.",
     "amber": "Amber-tinted and full of tar, it is basically the solar system's spilled petrol, still waiting for a match.",
@@ -133,7 +133,7 @@ export const LORE = {
     "crimson": "A red carbon rock so dark it reflects almost no light, which makes finding one like spotting a black cat at midnight.",
     "violet": "A violet carbon asteroid is the cosmic equivalent of a four-leaf clover made of coal."
   },
-  "Rubble pile": {
+  "Rubble Pile": {
     "silver": "A silver heap of boulders packed so loosely that a determined toddler could, in theory, push it apart.",
     "azure": "Blue-tinged gravel held together by its own gravity and nothing else, like a beanbag chair made of mountains.",
     "amber": "An amber pile of stones of the kind a spacecraft once poked and sank into like quicksand, to everyone's alarm.",
@@ -141,7 +141,7 @@ export const LORE = {
     "crimson": "A red heap of wreckage from some ancient crash, still drifting together like survivors who never left the scene.",
     "violet": "Violet rubble this rare must be the leftovers of something far grander that nobody will ever get to see."
   },
-  "Contact binary": {
+  "Contact Binary": {
     "silver": "Two silver lobes joined at a narrow neck, shaped exactly like a snowman someone gave up on halfway.",
     "azure": "A pair of icy blue bodies that met at walking pace and froze together mid-hug.",
     "amber": "Two amber rocks fused into a peanut, proof that even in space some things are simply meant to be.",
@@ -149,7 +149,7 @@ export const LORE = {
     "crimson": "Two red bodies joined after a slow collision, still tumbling end over end like dancers who forgot to stop.",
     "violet": "A violet pair so perfectly matched that astronomers argued for a year about whether it was one object or two."
   },
-  "Trojan asteroid": {
+  "Trojan Asteroid": {
     "silver": "A silver guard holding its post ahead of Jupiter, loyal to a planet that has never once noticed it.",
     "azure": "Cold and blue, it marches in Jupiter's wake like a soldier in a war that ended before Earth had a moon.",
     "amber": "Amber-skinned and patient, it has held the same spot in Jupiter's orbit for longer than the Sun has had planets.",
@@ -165,7 +165,7 @@ export const LORE = {
     "crimson": "Red as a brick and about as stubborn, it is one of the reddest objects in the solar system and seems proud of it.",
     "violet": "A violet centaur is so rare that its discoverer named it, unnamed it and then named it again."
   },
-  "Kuiper object": {
+  "Kuiper Object": {
     "silver": "A silver iceball so far out that a radio message from home would take five hours to reach it.",
     "azure": "Blue nitrogen ice glitters on it at a temperature where even air freezes solid and falls like snow.",
     "amber": "Amber-tinted and never visited, it has been circling in the dark since before the planets had names.",
@@ -181,7 +181,7 @@ export const LORE = {
     "crimson": "A red moonlet spiralling slowly inward, its orbit shrinking every year toward a very dramatic ending.",
     "violet": "A violet moonlet nobody would have found if it hadn't cast a shadow across its planet's rings."
   },
-  "Dust cloud": {
+  "Dust Cloud": {
     "silver": "Silver dust drifting in a long glittering sheet, the confetti left over from the solar system's birthday party.",
     "azure": "A blue haze of ice dust that catches sunlight like breath on a winter morning.",
     "amber": "Amber dust thrown off by colliding asteroids, spiralling slowly toward the Sun like leaves circling a drain.",
@@ -189,7 +189,7 @@ export const LORE = {
     "crimson": "A red cloud from an ancient impact, still spreading out like smoke from a shot fired long ago.",
     "violet": "Some think this violet dust is the last trace of a planet that never got the chance to form."
   },
-  "Long-period comet": {
+  "Long-Period Comet": {
     "silver": "A silver comet on an orbit so long that the last people to see it painted it on cave walls.",
     "azure": "Its blue gas tail stretches farther than the Earth is from the Sun, and all of it points politely away from the light.",
     "amber": "An amber comet whose dusty tail curves like a brushstroke, back for the first time in twelve thousand years.",
@@ -205,7 +205,7 @@ export const LORE = {
     "crimson": "Glowing red as its rock begins to melt, it is writing its own obituary in the brightest ink there is.",
     "violet": "The last violet sungrazer was seen by a single spacecraft and nobody else, which is lonely for something this bright."
   },
-  "Interstellar comet": {
+  "Interstellar Comet": {
     "silver": "A silver visitor from another star, moving too fast for the Sun to keep, gone before we could say hello properly.",
     "azure": "Its blue glow is a gas no comet from our system makes, a postcard written in a chemistry we don't speak.",
     "amber": "An amber traveller that has been crossing the dark between stars for longer than our solar system has existed.",
@@ -213,7 +213,7 @@ export const LORE = {
     "crimson": "Reddened under some other sun, it carries the dust of a planetary system we will never see.",
     "violet": "Finding a violet interstellar comet is like getting a letter from another galaxy in your mailbox."
   },
-  "Main-belt comet": {
+  "Main-Belt Comet": {
     "silver": "A silver asteroid that one year started sprouting a tail, to the visible confusion of everyone tracking it.",
     "azure": "Blue ice hidden under its rocky crust escapes in puffs, as if the asteroid were breathing for the first time.",
     "amber": "An amber rock trailing dust as if it had suddenly decided to become something more interesting.",
@@ -221,7 +221,7 @@ export const LORE = {
     "crimson": "A red asteroid with a comet's habits, the kind of object that makes astronomers rewrite their categories.",
     "violet": "Rocks like this violet one may be why Earth has oceans, which is a lot of credit for something this small."
   },
-  "Fragmenting comet": {
+  "Fragmenting Comet": {
     "silver": "A silver comet breaking into a string of pearls, each piece following the one ahead like ducklings.",
     "azure": "Splitting into blue fragments, it brightens with every break as fresh ice meets the Sun for the first time.",
     "amber": "An amber comet coming apart at the seams, each piece lighting its own tail like fireworks in slow motion.",
@@ -229,7 +229,7 @@ export const LORE = {
     "crimson": "A red comet shattering in front of an audience, a farewell show four billion years in the making.",
     "violet": "A violet comet in pieces, and somehow every piece is rarer than the whole ever was."
   },
-  "Ice dwarf": {
+  "Ice Dwarf": {
     "silver": "Silver ice mountains as tall as the Alps stand on it, frozen harder than granite and twice as patient.",
     "azure": "Its blue plains of nitrogen ice churn slowly like a lava lamp, warmed by heat leaking from deep inside.",
     "amber": "An amber dwarf stained by chemistry cooked in faint sunlight over billions of years, like a tea cup never washed.",
@@ -245,7 +245,7 @@ export const LORE = {
     "crimson": "Painted red by sunlight on methane ice, it is blushing about something it refuses to discuss.",
     "violet": "A violet plutoid so far out that a single year there lasts longer than the whole history of the United States."
   },
-  "Dwarf world with a moon": {
+  "Dwarf World With A Moon": {
     "silver": "A silver dwarf and its moon locked face to face, so neither has ever seen the other's back.",
     "azure": "The blue world and its moon circle a point between them, waltzing in a ballroom nobody else is invited to.",
     "amber": "An amber pair so close in size that it is considered rude to ask which one is the moon.",
@@ -253,7 +253,7 @@ export const LORE = {
     "crimson": "Its moon wears a red cap of gas pinched from the dwarf world, a souvenir of the oldest relationship in the outer dark.",
     "violet": "A violet double world turning together, like two old friends who stopped needing to talk."
   },
-  "Ringed giant": {
+  "Ringed Giant": {
     "silver": "Its silver rings are younger than the dinosaurs and won't last forever, so you are catching it at its best.",
     "azure": "A blue ringed giant that, if you could find a bathtub big enough, would float.",
     "amber": "Amber bands and golden rings: a planet so pretty it looks designed by committee, and the committee was right.",
@@ -261,7 +261,7 @@ export const LORE = {
     "crimson": "A red giant planet whose rings throw long shadows across its clouds, so every day there is striped.",
     "violet": "A violet ringed giant with a six-sided storm at its pole, a shape so neat it looks like a mistake."
   },
-  "Ice giant": {
+  "Ice Giant": {
     "silver": "Deep inside this silver giant it rains diamonds, and no one will ever be there to catch them.",
     "azure": "Its blue is methane, and its winds run faster than the speed of sound with nothing anywhere to slow them down.",
     "amber": "An amber ice giant tipped on its side, so each pole gets forty-two years of daylight and then forty-two of night.",
@@ -269,7 +269,7 @@ export const LORE = {
     "crimson": "A red ice giant with dark storms the size of Earth that appear and vanish like bruises.",
     "violet": "A violet giant whose magnetic field is tilted and off-centre, as if it was put together in a hurry."
   },
-  "Lava world": {
+  "Lava World": {
     "silver": "Its silver seas of lava ripple under a sky full of fire, and the rocks melt every morning.",
     "azure": "On this blue-glowing world it rains molten glass, sideways, in winds of five thousand miles an hour.",
     "amber": "An amber lava world whose whole year is shorter than a Sunday afternoon, and every hour of it is hot.",
@@ -277,7 +277,7 @@ export const LORE = {
     "crimson": "Crimson oceans of magma glow so brightly that its night side shines without any help from its star.",
     "violet": "A violet lava world that resurfaces itself every few days, so no map of it has ever been right twice."
   },
-  "Ocean world": {
+  "Ocean World": {
     "silver": "Every inch of it is silver sea, thousands of miles deep, with no shore anywhere for anything to crawl out onto.",
     "azure": "A blue ocean so deep that at the bottom the water is squeezed into a kind of ice that is hot to the touch.",
     "amber": "Its amber seas are tinted by minerals dissolved over billions of years, the colour of very strong tea.",
@@ -285,7 +285,7 @@ export const LORE = {
     "crimson": "Red tides sweep its global ocean, and nobody is comfortable guessing what is turning them red.",
     "violet": "A violet sea under a violet sky, with waves the height of skyscrapers rolling forever with nowhere to break."
   },
-  "Desert world": {
+  "Desert World": {
     "silver": "Silver dunes taller than Everest roll across it, moving very slowly toward nowhere in particular.",
     "azure": "A blue desert where the sand is glass and the wind plays it like an instrument.",
     "amber": "An amber desert planet with two suns, and every film director who ever lived would like a word.",
@@ -309,7 +309,7 @@ export const LORE = {
     "crimson": "So hot on its day side that iron evaporates, crosses to the night side and falls there as rain.",
     "violet": "A violet hot Jupiter darker than coal, reflecting less light than fresh asphalt despite being lit by a star."
   },
-  "Rogue planet": {
+  "Rogue Planet": {
     "silver": "Thrown out of its own solar system young, this silver world drifts with no sun at all, and seems to prefer it.",
     "azure": "A blue rogue whose only light comes from its own faint heat, a campfire with no camp.",
     "amber": "Amber and alone, it may still hide a warm ocean under its ice, heated from inside and lit by nothing.",
@@ -317,7 +317,7 @@ export const LORE = {
     "crimson": "Red as a dying ember, it glows faintly in the infrared like a coal that refuses to go out.",
     "violet": "There may be more rogue planets than stars, and this violet one is the only one you will ever get to see."
   },
-  "Tidally locked world": {
+  "Tidally Locked World": {
     "silver": "One silver side has never known night and the other has never seen day, and everyone who matters lives on the line between.",
     "azure": "On its blue dark side the air itself freezes and falls as snow, then drifts back into the light to thaw.",
     "amber": "An amber world where the sun never moves in the sky, so noon lasts forever and nobody can be late for it.",
@@ -325,7 +325,7 @@ export const LORE = {
     "crimson": "A red world with one scorched face and one frozen one, staring at its star forever like it lost a bet.",
     "violet": "One violet storm has sat under its sun for millions of years, like a lighthouse that never blinks."
   },
-  "Diamond world": {
+  "Diamond World": {
     "silver": "A silver planet pressed mostly into crystal carbon: the most valuable thing in the sky, and no way to get it home.",
     "azure": "Its blue glint is diamond plains under an open sky, which would be, to put it mildly, a shoplifting risk.",
     "amber": "An amber diamond world, and somewhere a jeweller is weeping at how far away it is.",
@@ -333,7 +333,7 @@ export const LORE = {
     "crimson": "A red diamond world worth more than every economy on Earth combined, several times over, and nobody can collect.",
     "violet": "A violet diamond planet, the one object in this catalogue you could, technically, propose with."
   },
-  "Volcanic moon": {
+  "Volcanic Moon": {
     "silver": "Squeezed by its planet on every orbit, this silver moon erupts without pause, the most restless thing for a billion miles.",
     "azure": "Its blue volcanoes throw plumes so high that they fall back as snow on the far side of the moon.",
     "amber": "An amber moon with lava lakes wider than some countries, and not one of them has ever cooled.",
@@ -341,7 +341,7 @@ export const LORE = {
     "crimson": "A crimson moon repaved by lava so often that it has no craters at all.",
     "violet": "A violet moon whose eruptions shoot clean out into space and feed a glowing ring around its planet."
   },
-  "Ice moon": {
+  "Ice Moon": {
     "silver": "Under its silver shell of ice lies a dark ocean warmer than you'd think, and something about that makes people very quiet.",
     "azure": "A blue ice moon spraying geysers from cracks near its pole, salt water freezing in mid-air as it flies.",
     "amber": "Amber stains streak its ice where the ocean below has leaked up through the cracks.",
@@ -349,7 +349,7 @@ export const LORE = {
     "crimson": "Its ice is scored with red lines like scratches on a car door: cracks where the ocean keeps trying to get out.",
     "violet": "If anything swims in the dark beneath this violet ice, it has never once seen a star."
   },
-  "Leonid shower": {
+  "Leonid Shower": {
     "silver": "Every few decades it becomes a silver storm of thousands of meteors an hour, then spends thirty years pretending it never happened.",
     "azure": "Blue Leonids hit the air at forty-four miles a second, the fastest meteors of the year and not ashamed of it.",
     "amber": "Amber fireballs that leave glowing trails hanging in the sky for minutes, like the smoke from a sparkler.",
@@ -357,7 +357,7 @@ export const LORE = {
     "crimson": "In 1833 a red Leonid storm fell so thick that people woke their neighbours to watch what they thought was the end of the world.",
     "violet": "A violet Leonid is the shower showing off, which it only does when it thinks nobody important is watching."
   },
-  "Perseid shower": {
+  "Perseid Shower": {
     "silver": "The warm-night favourite: the silver dust of a comet that last swung by when your grandparents were young.",
     "azure": "Blue Perseids are best seen lying on a car roof in August, with nowhere to be and nobody asking where you are.",
     "amber": "Amber Perseids are the slow, bright ones, the meteors that make strangers at a campsite say \"did you see that?\"",
@@ -365,7 +365,7 @@ export const LORE = {
     "crimson": "Red Perseid fireballs are rare and loud, sometimes leaving a sonic boom on the ground below.",
     "violet": "A violet Perseid is the one you see while everyone else is looking the other way."
   },
-  "Geminid shower": {
+  "Geminid Shower": {
     "silver": "Born from a rock instead of a comet, this silver shower is the one that technically should not exist.",
     "azure": "Blue Geminids are slow and bright, the meteors for people who never manage to catch the fast ones.",
     "amber": "Amber grit from an asteroid that cracks in the Sun's heat and sheds a trail along its road every year.",
@@ -373,7 +373,7 @@ export const LORE = {
     "crimson": "Red Geminids are the shower's heavy hitters, chunks big enough to leave a glowing scar across half the sky.",
     "violet": "A violet Geminid comes from a rock that sheds like a dog in spring, every single year without fail."
   },
-  "Draconid shower": {
+  "Draconid Shower": {
     "silver": "Most years this silver shower barely shows up, and then one evening it fills the whole sky as if it had something to prove.",
     "azure": "Blue Draconids fall at dusk instead of dawn, the only shower polite enough to keep office hours.",
     "amber": "Amber streaks pouring from the head of the Dragon, which is exactly as dramatic as it sounds.",
@@ -405,7 +405,7 @@ export const LORE = {
     "crimson": "A red magnetar, the strongest magnet in the known universe, and it is about twelve miles across.",
     "violet": "A violet magnetar will lose its fury within ten thousand years, so you have caught it mid-tantrum."
   },
-  "Black hole": {
+  "Black Hole": {
     "silver": "Nothing that goes in ever comes back out: not light, not time, and not the waiver claim you swore you submitted.",
     "azure": "Its blue disk spins at nearly the speed of light, the last thing anything sees before it isn't seen again.",
     "amber": "Near this amber black hole time runs so slowly that a minute there would be years back home.",
@@ -413,7 +413,7 @@ export const LORE = {
     "crimson": "A red black hole so heavy it bends starlight around itself, so you can see the stars directly behind it.",
     "violet": "A violet black hole quietly eating a star, a meal that will take longer than humanity has existed."
   },
-  "Binary black hole": {
+  "Binary Black Hole": {
     "silver": "Two silver black holes circling closer every orbit until they merge and ring the fabric of space like a struck bell.",
     "azure": "When blue twins like these merge, they shake space itself, and a detector on Earth feels it a billion years later.",
     "amber": "An amber pair dancing faster and faster, a waltz that ends in the loudest silence in the universe.",
@@ -445,7 +445,7 @@ export const LORE = {
     "crimson": "A crimson nebula of glowing hydrogen, the same element that makes up most of you.",
     "violet": "A violet nebula: the shell of a dying star breathed out gently, the prettiest way a star can say goodbye."
   },
-  "Wolf-Rayet star": {
+  "Wolf-Rayet Star": {
     "silver": "It has blown off its outer layers in a howling silver wind and is burning through the rest of its life at full speed, no regrets.",
     "azure": "A blue Wolf-Rayet so fierce that its wind could strip the air off a planet in an afternoon.",
     "amber": "Its amber winds are carving a bubble in space light years wide, a sculptor who only works in explosions.",
@@ -453,7 +453,7 @@ export const LORE = {
     "crimson": "A crimson star that has already shed half its weight and is about to do something even more dramatic.",
     "violet": "A violet Wolf-Rayet that will end as a supernova or a black hole, and it is not telling which."
   },
-  "Red giant": {
+  "Red Giant": {
     "silver": "An old silver giant swollen to a hundred times its size; in five billion years our own Sun will look exactly like this.",
     "azure": "A blue-tinged giant that has already swallowed its innermost planets and is still hungry.",
     "amber": "If this amber giant took the Sun's place it would reach past Mars, and Earth would be somewhere inside it.",
@@ -618,6 +618,10 @@ export function normalize(s) {
   out.filled = { ...base.filled, ...(out.filled || {}) };
   out.boosts = { ...base.boosts, ...(out.boosts || {}) };
   out.daily = out.daily?.day != null ? out.daily : base.daily;
+  // saved names follow the catalogue's current spelling (Nov 17 2026: every word capitalised, "Lava world" -> "Lava World")
+  const rename = (e) => (e && FAMILIES[e.fam] && COLOURS.some((c) => c.id === e.colour) ? { ...e, name: findOf(e.fam, e.colour, e.version || "").name } : e);
+  if (out.found) out.found = Object.fromEntries(Object.entries(out.found).map(([k, e]) => [k, rename(e)]));
+  if (Array.isArray(out.pending)) out.pending = out.pending.map(rename);
   return out;
 }
 
