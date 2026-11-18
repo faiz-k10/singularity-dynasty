@@ -80,7 +80,9 @@ export function unionRect(el, selector) {
 }
 export function blockRects(el, selector) {
   const box = el.getBoundingClientRect();
-  return [...el.querySelectorAll(selector)].filter((b) => b.offsetHeight > 0).map((b) => { const r = b.getBoundingClientRect(); return { x: r.left - box.left, y: r.top - box.top, w: r.width, h: r.height }; });
+  const out = [...el.querySelectorAll(selector)].filter((b) => b.offsetHeight > 0).map((b) => { const r = b.getBoundingClientRect(); return { x: r.left - box.left, y: r.top - box.top, w: r.width, h: r.height }; });
+  out.cropW = el.offsetWidth; // the picture's width in page pixels: the scale for every cut (NOT the blocks' own extent, which leaves out the padding)
+  return out;
 }
 function columnsFor(blocks, gap, boxW, boxH) {
   const W0 = Math.max(...blocks.map((b) => b.w)), total = blocks.reduce((a, b) => a + b.h, 0) + gap * (blocks.length - 1);
@@ -116,12 +118,13 @@ export async function toShareCard(blob, head = null, blocks = null) {
   }
   const pad = 48, boxW = SHARE_W - 2 * pad, boxH = SHARE_H - top - pad;
   if (blocks?.length > 1) {
-    const k = img.width / blocks.reduce((a, b) => Math.max(a, b.x + b.w), 0); // picture pixels per CSS pixel
+    const k = img.width / blocks.cropW; // picture pixels per page pixel
     const px = blocks.map((b) => ({ x: b.x * k, y: b.y * k, w: b.w * k, h: b.h * k }));
     const gap = 24 * k, lay = columnsFor(px, gap, boxW, boxH);
     const colW = lay.W0 * lay.s, used = lay.cols.length * colW + (lay.cols.length - 1) * gap * lay.s;
     lay.cols.forEach((col, ci) => {
-      let y = top + (boxH - Math.max(...lay.cols.map((c) => c.reduce((a, b) => a + b.h, 0) + gap * (c.length - 1))) * lay.s) / 2;
+      // each column centred on its own, so a short column sits level with the middle of the tall ones (founder, Nov 17 2026)
+      let y = top + (boxH - (col.reduce((a, b) => a + b.h, 0) + gap * (col.length - 1)) * lay.s) / 2;
       const x0 = (SHARE_W - used) / 2 + ci * (colW + gap * lay.s);
       for (const b of col) { ctx.drawImage(img, b.x, b.y, b.w, b.h, x0, y, b.w * lay.s, b.h * lay.s); y += (b.h + gap) * lay.s; }
     });
