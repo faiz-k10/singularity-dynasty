@@ -107,6 +107,12 @@ export function lineupAdvice(team, gameStates, injuries = []) {
   return r && { ...r, swaps: r.swaps.map((x) => ({ ...x, why: whyFor(x.in, x.out) })) };
 }
 
+// His team has no game this week (the scoreboard is known and has no game for it). THE bye rule for the lineup alerts and the
+// Companion's cards, so they always agree. Team defenses are left out, as before.
+export function onBye(p, gameStates) {
+  return Boolean(p?.team && p.position !== "DEF" && gameStates && Object.keys(gameStates).length > 0 && !gameStates[p.team]);
+}
+
 // What needs fixing in the current lineup, most urgent first: an empty slot, a starter on a bye, one the model projects out / inactive,
 // or one carrying an injury tag (injuries: [{ name, status, severity }] from the injury feed). Each gets the best bench player who
 // can fill that slot, when there is one. Starters whose game has started are left out (nothing to fix).
@@ -138,7 +144,7 @@ export function lineupAlerts(team, gameStates, injuries = []) {
     }
     if (started(cur)) return;
     const tag = tags.get(cur.name);
-    if (known && cur.team && !gameStates[cur.team] && cur.position !== "DEF") out.push({ type: "bye", severity: 3, slot: kind, player: cur, status: "Bye week", replacement: replacementFor(kind) });
+    if (onBye(cur, gameStates)) out.push({ type: "bye", severity: 3, slot: kind, player: cur, status: "Bye week", replacement: replacementFor(kind) });
     else if (h?.out || (tag && tag.severity >= 3)) out.push({ type: "out", severity: 3, slot: kind, player: cur, status: tag?.status || "Out", replacement: replacementFor(kind) });
     else if (tag && tag.severity > 0) out.push({ type: "injury", severity: tag.severity, slot: kind, player: cur, status: tag.status, replacement: replacementFor(kind) });
   });

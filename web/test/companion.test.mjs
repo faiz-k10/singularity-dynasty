@@ -222,3 +222,12 @@ test("fun cards: stacks, NFL record, luck, trivia, and one always reaches the sp
   assert.match(cards.find((c) => c.id === "trivia:q").title, /Qb has finished top 3 at QB 4 times/);
   assert.ok(cards.slice(0, 6).some((c) => c.tone === "fun"));
 });
+
+test("a lineup upgrade never says a benched player will score 'about 0' when his team is on a bye", async () => {
+  const { onBye } = await import("../lib/lineupOptimizer.js");
+  const games = { BUF: { state: "pre" } };
+  assert.equal(onBye({ team: "LAR", position: "RB" }, games), true);
+  assert.equal(onBye({ team: "BUF", position: "RB" }, games), false);
+  assert.equal(onBye({ team: "LAR", position: "RB" }, {}), false, "an unknown scoreboard is never read as a bye");
+  assert.equal(onBye({ team: "LAR", position: "DEF" }, games), false);
+});

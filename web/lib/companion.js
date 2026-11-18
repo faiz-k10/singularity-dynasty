@@ -11,7 +11,7 @@
 // gameStates: lib/gameStatus.js (team -> { state: "pre" | "in" | "post", start }).
 // waivers: { [teamId]: [{ name, pos, team, proj }] } best available per league, optional.
 
-import { lineupAdvice, slotLabel } from "./lineupOptimizer.js";
+import { lineupAdvice, slotLabel, onBye } from "./lineupOptimizer.js";
 import { ELIGIBLE } from "./lineupSlots.js";
 import { num, leagueName, fmt1, ordinal } from "./format.js";
 
@@ -107,8 +107,11 @@ function lineupCards(savedTeams, gameStates, adjusted, injuriesByTeam) {
     const top = a.swaps[0];
     const inn = top.in;
     const out = top.out;
-    const why = out?.unavailable
-      ? ` ${out.name} is listed out.`
+    // Why the player coming out won't score (founder, Nov 18 2026: "check if a player is on bye before saying they are projected to score 0"):
+    // a bye, a listed-out tag, or no projection at all -- said in words, never as "about 0".
+    const idle = out && (onBye(out, gameStates) ? `${out.name}'s team is on a bye this week` : out.unavailable ? `${out.name} is listed out` : !(num(out.myProjPts) > 0) ? `${out.name} isn't expected to play` : null);
+    const why = idle
+      ? ""
       : inn.myLean?.effect > 0
         ? ` ${inn.name} also has an easy matchup this week.`
         : out?.myLean?.effect < 0
@@ -121,7 +124,9 @@ function lineupCards(savedTeams, gameStates, adjusted, injuriesByTeam) {
       label: "Lineup upgrade",
       tone: "mine",
       title: out ? `Start ${inn.name} over ${out.name}` : `Fill your empty ${slotLabel(top.slot)} spot with ${inn.name}`,
-      body: out
+      body: idle
+        ? `${idle}, so he won't score; ${inn.name} should be good for ${about(inn.myProjPts)}.${more}`
+        : out
         ? `We expect ${inn.name} to score ${about(inn.myProjPts)} and ${out.name} ${about(out.myProjPts)}: ${fmt1(top.gain)} more points for one switch.${why}${more}`
         : `An empty spot scores zero; ${inn.name} should be good for ${about(inn.myProjPts)}.${more}`,
       player: chip({ name: inn.name, pos: inn.position, team: inn.team }),
