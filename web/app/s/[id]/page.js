@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import SiteHeader from "../../SiteHeader";
-import { SHARE_BUCKET, SHARE_W, SHARE_H, isShareId } from "@/lib/labShare";
+import { SHARE_BUCKET, SHARE_W, SHARE_H, isShareId, shareSource } from "@/lib/labShare";
 
-// A chart shared from The Observatory. The page exists mostly for its link preview: X, Threads, Bluesky, Facebook, LinkedIn, Reddit and Discord show
-// og:image -- the chart -- when the link is posted. A visitor who clicks through sees the chart, its caption and a way into The Observatory.
+// A shared picture: a chart from The Observatory, a player's dashboard (Weekly Projection Rankings, Season Simulations, the Dynasty Board) or a
+// Night Sky card. The page exists mostly for its link preview: X, Threads, Bluesky, Facebook, LinkedIn, Reddit and Discord show og:image -- the
+// picture -- when the link is posted. A visitor who clicks through sees it, its caption and a way into the tool it came from (lib/labShare.js).
 const fileUrl = (id, ext) => `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${SHARE_BUCKET}/${id}.${ext}`;
 
 async function loadShare(id) {
@@ -24,8 +25,7 @@ export async function generateMetadata({ params }) {
   const { id } = await params;
   const share = await loadShare(id);
   if (!share) return { title: "Chart not found — Dynasty Singularity" };
-  const sky = share.view === "/account/sky";
-  const from = sky ? "The Night Sky" : "The Observatory";
+  const { from } = shareSource(share.view);
   const title = `${share.title} — ${from} · Dynasty Singularity`;
   const description = share.caption || `From ${from} by Dynasty Singularity.`;
   const images = [{ url: share.image, width: SHARE_W, height: SHARE_H, alt: share.title }];
@@ -41,13 +41,12 @@ export default async function SharedChartPage({ params }) {
   const { id } = await params;
   const share = await loadShare(id);
   if (!share) notFound();
-  const sky = share.view === "/account/sky";
-  const from = sky ? "The Night Sky" : "The Observatory";
+  const src = shareSource(share.view), sky = share.view === "/account/sky";
   return (
     <div className="tool-page">
       <SiteHeader />
       <main id="main-content" className="wrap tool-wrap share-wrap">
-        <div className="eyebrow">Shared from {from}</div>
+        <div className="eyebrow">Shared from {src.from}</div>
         <h1>{share.title}</h1>
         {share.caption && <p className="tool-sub">{share.caption}</p>}
         <figure className="share-figure glass-panel">
@@ -56,7 +55,7 @@ export default async function SharedChartPage({ params }) {
         </figure>
         <div className="share-actions">
           <Link href={sky ? "/login?next=%2Faccount%2Fsky" : share.view} className="btn-primary">
-            {sky ? "Start your own sky" : "Open this chart in The Observatory"}
+            {src.cta}
           </Link>
           <Link href="/#pricing" className="btn-ghost">
             See the plans

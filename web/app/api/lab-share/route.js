@@ -24,7 +24,7 @@ export async function POST(request) {
   if (origin && origin !== new URL(request.url).origin) return NextResponse.json({ error: "Invalid request." }, { status: 403 });
   if (!allowHit(hits, clientIp(request.headers), Date.now(), 20, 60 * 60 * 1000)) return NextResponse.json({ error: "Too many shares for now. Try again in a little while." }, { status: 429 });
   const user = await getAuthUser(await createClient()).catch(() => null);
-  if (!user) return NextResponse.json({ error: "Sign in to share a chart (a free account is enough)." }, { status: 401 });
+  if (!user) return NextResponse.json({ error: "Sign in to share (a free account is enough)." }, { status: 401 });
   if (!allowHit(byUser, user.id, Date.now(), 30, 24 * 60 * 60 * 1000)) return NextResponse.json({ error: "That's the share limit for today. Try again tomorrow." }, { status: 429 });
 
   let form;

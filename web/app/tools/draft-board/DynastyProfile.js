@@ -7,7 +7,7 @@ import TeamBadge from "../TeamBadge";
 import { FORMATS, MODES, MOVE_MIN, ageValueOf, runwayOf } from "@/lib/dynastyBoard";
 import { formatHeight, ordinal } from "@/lib/format";
 import { coachFor, acquiringGm } from "@/lib/teamStaff";
-import ShareCardButton from "../../ShareCardButton";
+import DashboardShareButton from "../../DashboardShareButton";
 import ArcGauge from "../../ArcGauge";
 
 const ord = (n) => `#${n}`;
@@ -250,11 +250,13 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
           </div>
         </header>
         <div className="dp-share">
-          <ShareCardButton
-            card={{ kind: "d", id: p.id, f: format, m: mode }}
+          <DashboardShareButton
+            target=".dp"
+            blocks=".dp > .dp-name, .dp > .dp-head, .dp-story > li"
+            title={`${p.name}: dynasty ${p.score.toFixed(1)}`}
+            heading={`Dynasty Board · ${f.label} · ${m.label}`}
             caption={`${p.name} in dynasty: ${p.score.toFixed(1)} (${f.label}, ${m.label}).`}
             file={`dynasty-singularity-${p.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
-            label="Share card"
           />
         </div>
 

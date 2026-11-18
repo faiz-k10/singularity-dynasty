@@ -42,3 +42,10 @@ test("composeUrl writes the post for each platform, nothing for the ones without
   assert.equal(composeUrl("instagram", p), null);
 });
 
+
+test("shares may come from the player dashboards too, and nowhere else", async () => {
+  const { shareSource } = await import("../lib/labShare.js");
+  for (const v of ["/tools/redraft-rankings", "/tools/player-simulations", "/tools/draft-board", "/tools/lab?view=scatter", "/account/sky"]) assert.ok(cleanShareMeta({ title: "t", view: v }), v);
+  for (const v of ["/tools/draft-boardx", "/account/sky?x=1", "//evil.example/tools/lab", "/tools/redraft-rankings#x"]) assert.equal(cleanShareMeta({ title: "t", view: v }), null, v);
+  assert.equal(shareSource("/tools/player-simulations").from, "Season Simulations");
+});

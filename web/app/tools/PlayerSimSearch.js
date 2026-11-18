@@ -32,6 +32,7 @@ import { missedSegments } from "@/lib/teamGames";
 import { scrubStops, nearestStop } from "@/lib/scrubStops";
 import useProgressiveCount from "./useProgressiveCount";
 import { ordinal } from "@/lib/format";
+import DashboardShareButton from "../DashboardShareButton";
 
 // Week-scrubber data comes from /api/player-sim-history, fetched lazily and
 // remembered for the life of the page (one request per player, one for the
@@ -256,6 +257,15 @@ function StatDetailRow({ row, colSpan, shapePeers, wrTePool, tagsByName, maxCeil
           {row.gamesPlayed > 0 && row.currentPPG != null && row.regressionScore != null && (
             <div className="stat-panel stat-panel-pace">
               <span className="weekly-panel-title">Season Pace</span>
+              {/* the whole opened row, as on screen (DashboardShareButton.js) */}
+              <DashboardShareButton
+                target=".stat-detail-grid"
+                title={`${pv.player_name}: season simulation`}
+                heading="Season Simulations"
+                caption={`${pv.player_name}'s season, simulated: ${Math.round(row.median ?? 0)} median points, ${Math.round(row.floor ?? 0)} to ${Math.round(row.ceiling ?? 0)}.`}
+                file={`dynasty-singularity-${pv.player_name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-season`}
+                className="lab-copy stat-panel-share"
+              />
               <div className="stat-panel-pace-top">
                 <div className="stat-panel-pace-info">
                   {pv.headshot && (

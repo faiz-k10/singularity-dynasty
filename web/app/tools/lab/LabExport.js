@@ -2,25 +2,18 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import ShareDialog from "../../ShareDialog";
-import { SHARE_W, SHARE_H } from "@/lib/labShare";
-
-let fontCss = null; // the page's fonts as embeddable CSS, worked out once per visit (the slow part of the first export)
+import { loadLib, fontsFor, bodyColor, toShareCard, uploadShare } from "../../snapshot";
 
 // The library and the font CSS are the heavy first-time costs (a chunk download + parse, then every font file fetched and base64'd). They are
 // fetched when the browser is idle after The Observatory loads, so opening the menu never has to do them while the pointer is on it.
-const loadLib = () => import("html-to-image");
-async function warmFonts(stage) {
-  if (fontCss || !stage) return;
-  const { getFontEmbedCSS } = await loadLib();
-  fontCss ??= await getFontEmbedCSS(stage);
-}
+const warmFonts = (stage) => (stage ? fontsFor(stage) : Promise.resolve());
 
 // The current view as a PNG: a COPY of the stage (`stage`) drawn off screen with its export header and watermark shown and the pickers, notes,
 // hover card and remove buttons hidden (all by `.is-exporting` in the CSS, so the layout closes up around what is left out), at twice the
 // screen's pixels, on the page's own background so it matches the theme. Drawing a copy means the page itself never flickers into its export
 // layout, which is also what lets the picture be drawn in the background before anyone asks for it. html-to-image is loaded when the browser is idle.
 async function renderPng(stage) {
-  const { toBlob, getFontEmbedCSS } = await loadLib();
+  const { toBlob } = await loadLib();
   const holder = document.createElement("div");
   holder.setAttribute("aria-hidden", "true");
   holder.style.cssText = `position:fixed; left:-100000px; top:0; width:${stage.offsetWidth}px; pointer-events:none;`;
@@ -29,11 +22,10 @@ async function renderPng(stage) {
   holder.appendChild(copy);
   document.body.appendChild(holder);
   try {
-    fontCss ??= await getFontEmbedCSS(copy);
     const blob = await toBlob(copy, {
       pixelRatio: 2,
-      backgroundColor: getComputedStyle(document.body).backgroundColor,
-      fontEmbedCSS: fontCss,
+      backgroundColor: bodyColor(),
+      fontEmbedCSS: await fontsFor(copy),
       width: Math.max(copy.scrollWidth, copy.offsetWidth),
       style: { margin: "0" },
     });
@@ -66,24 +58,6 @@ function getPicture(stage) {
   return pictureCache.promise;
 }
 
-// The chart centred on a 1.91 : 1 card in the page's own background colour: the shape every platform uses for a large link preview, so none of them
-// crops the chart.
-async function toCard(blob) {
-  const img = await createImageBitmap(blob);
-  const canvas = document.createElement("canvas");
-  canvas.width = SHARE_W;
-  canvas.height = SHARE_H;
-  const ctx = canvas.getContext("2d");
-  ctx.fillStyle = getComputedStyle(document.body).backgroundColor;
-  ctx.fillRect(0, 0, SHARE_W, SHARE_H);
-  const pad = 40;
-  const s = Math.min((SHARE_W - 2 * pad) / img.width, (SHARE_H - 2 * pad) / img.height);
-  const w = img.width * s;
-  const h = img.height * s;
-  ctx.drawImage(img, (SHARE_W - w) / 2, (SHARE_H - h) / 2, w, h);
-  return new Promise((resolve, reject) => canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("no card"))), "image/png"));
-}
-
 // The Export menu in The Observatory's top bar: copy a link to exactly this view, copy the view as an image, save it as a PNG, or share it to social
 // (the shared ShareDialog: the chart is drawn, fitted on a link-preview card and uploaded as /s/<id>, app/api/lab-share). Closes on an outside click or Escape; the button says what happened for a moment afterwards.
 export default function LabExport({ stageRef, fileName, title, caption }) {
@@ -101,18 +75,11 @@ export default function LabExport({ stageRef, fileName, title, caption }) {
   const prepareShare = useCallback(
     async ({ onPreview }) => {
       const chart = await getPicture(stageRef.current);
-      const card = await toCard(chart);
+      const card = await toShareCard(chart); // the chart carries its own heading, so no strip above it
       previewRef.current = URL.createObjectURL(card);
       onPreview(previewRef.current);
-      const form = new FormData();
-      form.append("image", card, "chart.png");
-      form.append("title", title);
-      form.append("caption", caption);
-      form.append("view", `${window.location.pathname}${window.location.search}`);
-      const res = await fetch("/api/lab-share", { method: "POST", body: form });
-      const body = await res.json().catch(() => ({}));
-      if (!res.ok || !body.url) throw new Error(body.error || "Couldn't create the share link.");
-      return { url: body.url, getFile: async () => new File([chart], "singularity-lab-chart.png", { type: "image/png" }) };
+      const url = await uploadShare(card, { title, caption, view: `${window.location.pathname}${window.location.search}` });
+      return { url, getFile: async () => new File([chart], "singularity-lab-chart.png", { type: "image/png" }) };
     },
     [stageRef, title, caption]
   );

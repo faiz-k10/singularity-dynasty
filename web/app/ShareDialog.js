@@ -204,7 +204,7 @@ export default function ShareDialog({ prepare, heading = "Share to social", capt
         {share?.downloads?.length > 0 && (
           <div className="lab-share-downloads">
             {share.downloads.map((d) => (
-              <a key={d.href} className="lab-copy" href={d.href} download>
+              <a key={d.href} className="lab-copy" href={d.href} download={d.download || true}>
                 {d.label}
               </a>
             ))}

@@ -16,7 +16,7 @@ import { PANEL_KEYS } from "@/lib/statPanel";
 import { ageOn, formatHeight } from "@/lib/format";
 import { PROFILE_METRICS as METRICS } from "@/lib/statMetrics";
 import Define from "../Define";
-import ShareCardButton from "../ShareCardButton";
+import DashboardShareButton from "../DashboardShareButton";
 
 // ROLE = how the offense uses him; PLAYER = what he does with it (which numbers go where: lib/statPanel.js, which also ranks players by group).
 // A number he doesn't have (below the volume gate, or not published) is just left out.
@@ -460,10 +460,12 @@ export function PlayerHeaderPanel({ row, share = false, logoByName = false }) {
         </div>
       </div>
       {share && (
-        <ShareCardButton
-          card={{ kind: "p", name: row.player_name, pos: row.position }}
+        <DashboardShareButton
+          target=".weekly-detail-wrap"
+          title={`${row.player_name} this week`}
+          heading="Weekly Projection Rankings"
           caption={`${row.player_name} this week: ${isBye(row.opponent) ? "on a bye" : `${row.projection?.toFixed(1)} median, ${row.floor?.toFixed(1)} to ${row.ceiling?.toFixed(1)} range`}.`}
-          file={`singularity-${row.player_name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
+          file={`dynasty-singularity-${row.player_name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
           className="lab-copy weekly-player-share"
         />
       )}
