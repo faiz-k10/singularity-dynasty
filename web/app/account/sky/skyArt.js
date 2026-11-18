@@ -9,72 +9,283 @@ import { StarField, Galaxies, Scrim, LitStar, GlowLine, Bloom, StarSurface } fro
 // The Night Sky's pictures (from mockups/night-sky.html, which the founder approved): one renderer per kind of object, coloured by the find's
 // colour and finished by its version, drawn on a canvas; the telescope reveal (the picture sharpens out of noise); and the share cards.
 // `bare`: the object alone on a transparent canvas (no field behind it), for placing it in the member's own sky.
+// The objects are drawn in the core's language (Nov 17 2026, founder: "make the designs a bit more polished ... match the art to the style of
+// the core"): every body is a SPHERE with a hot centre falling off to a darker limb, a soft noise texture (like the core's granulation), a
+// glow, and -- for anything lit by a star rather than shining itself -- a soft night side and an atmosphere rim. No hard strokes, no
+// diffraction spikes, no random lines; comets' tails run exactly along their axis (head upper right, tail toward the lower left, which
+// lib/skyPlacement.js turns away from the core). The random stream is consumed in the same order every time, so a find always looks the same.
 export function drawObject(ctx, W, find, edge, { bare = false } = {}) {
   const fam = FAMILIES[find.fam], pal = COLOURS.find((c) => c.id === find.colour).c, ver = find.version;
   let s = 11 + find.fam * 97; const r = () => ((s = (s * 16807) % 2147483647) / 2147483647);
   ctx.save();
-  const C = W / 2, u = W / 320;
-  // Hubble-style background (Nov 11 2026): a faint deep-blue vignette, stars in colour temperatures (most faint, a few bright with a halo and
-  // four diffraction spikes) and a couple of distant galaxies.
+  const C = W / 2, u = W / 320, TAU = Math.PI * 2;
+  // the field behind it: a faint deep-blue vignette, stars in colour temperatures with soft halos (no spikes), a few distant galaxies
   ctx.fillStyle = "#020306"; ctx.fillRect(0, 0, W, W);
   { const g = ctx.createRadialGradient(C, C, 0, C, C, W * 0.75); g.addColorStop(0, "rgba(22,30,58,.55)"); g.addColorStop(1, "rgba(0,0,0,0)"); ctx.fillStyle = g; ctx.fillRect(0, 0, W, W); }
   const TEMP = ["207,224,255", "244,241,234", "244,241,234", "255,227,168", "255,181,122"];
-  for (let k = 0; k < 3; k++) { const x = r() * W, y = r() * W, sz = (4 + r() * 6) * u, t = r() < 0.6 ? "242,200,148" : "169,196,255"; ctx.save(); ctx.translate(x, y); ctx.rotate(r() * 3); ctx.scale(1, 0.35 + r() * 0.4); const g = ctx.createRadialGradient(0, 0, 0, 0, 0, sz * 2); g.addColorStop(0, `rgba(${t},.8)`); g.addColorStop(0.35, `rgba(${t},.25)`); g.addColorStop(1, `rgba(${t},0)`); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, sz * 2, 0, 7); ctx.fill(); ctx.restore(); }
-  const spikes = (x, y, len, rgb, a = 0.8, w = 1) => { ctx.save(); ctx.lineCap = "round"; ctx.lineWidth = w * u; for (const [dx, dy] of [[1, 0], [0, 1]]) { const g = ctx.createLinearGradient(x - dx * len, y - dy * len, x + dx * len, y + dy * len); g.addColorStop(0, `rgba(${rgb},0)`); g.addColorStop(0.5, `rgba(${rgb},${a})`); g.addColorStop(1, `rgba(${rgb},0)`); ctx.strokeStyle = g; ctx.beginPath(); ctx.moveTo(x - dx * len, y - dy * len); ctx.lineTo(x + dx * len, y + dy * len); ctx.stroke(); } ctx.restore(); };
+  for (let k = 0; k < 3; k++) { const x = r() * W, y = r() * W, sz = (4 + r() * 6) * u, t = r() < 0.6 ? "242,200,148" : "169,196,255"; ctx.save(); ctx.translate(x, y); ctx.rotate(r() * 3); ctx.scale(1, 0.35 + r() * 0.4); const g = ctx.createRadialGradient(0, 0, 0, 0, 0, sz * 2); g.addColorStop(0, `rgba(${t},.8)`); g.addColorStop(0.35, `rgba(${t},.25)`); g.addColorStop(1, `rgba(${t},0)`); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, sz * 2, 0, TAU); ctx.fill(); ctx.restore(); }
   const n = Math.round(W * 0.45);
   for (let i = 0; i < n; i++) {
     const m = Math.pow(r(), 3.2), x = r() * W, y = r() * W, t = TEMP[Math.floor(r() * TEMP.length)], rad = (0.35 + m * 1.6) * u;
-    if (m > 0.4) { const g = ctx.createRadialGradient(x, y, 0, x, y, rad * 5); g.addColorStop(0, `rgba(${t},.5)`); g.addColorStop(1, `rgba(${t},0)`); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, rad * 5, 0, 7); ctx.fill(); }
-    ctx.fillStyle = `rgba(${t},${0.35 + m * 0.65})`; ctx.beginPath(); ctx.arc(x, y, rad, 0, 7); ctx.fill();
-    if (m > 0.62) spikes(x, y, (6 + m * 14) * u, t, 0.7, 0.6);
+    if (m > 0.4) { const g = ctx.createRadialGradient(x, y, 0, x, y, rad * 5); g.addColorStop(0, `rgba(${t},.5)`); g.addColorStop(1, `rgba(${t},0)`); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, rad * 5, 0, TAU); ctx.fill(); }
+    ctx.fillStyle = `rgba(${t},${0.35 + m * 0.65})`; ctx.beginPath(); ctx.arc(x, y, rad, 0, TAU); ctx.fill();
   }
   if (bare) ctx.clearRect(0, 0, W, W); // the field above still ran, so the object's own details come out the same as in its thumbnail
   if (edge) { const g = ctx.createRadialGradient(W - 8 * u, 24 * u, 2, W - 8 * u, 24 * u, 90 * u); g.addColorStop(0, "rgba(233,196,106,.9)"); g.addColorStop(1, "rgba(0,0,0,0)"); ctx.fillStyle = g; ctx.fillRect(0, 0, W, W); }
-  if (ver === "mythic") { const g = ctx.createRadialGradient(C, C, 20 * u, C, C, 160 * u); g.addColorStop(0, "rgba(233,196,106,.45)"); g.addColorStop(1, "rgba(0,0,0,0)"); ctx.fillStyle = g; ctx.fillRect(0, 0, W, W); }
-  const ball = (x, y, rad, a = pal[0], b = pal[1], self = a === "#FFFFFF") => { // self: it makes its own light (stars, comet heads), so no night side
-    // a lit sphere: atmosphere glow, the body, a night side falling into shadow and a thin bright rim on the lit edge
-    const glow = ctx.createRadialGradient(x, y, rad * 0.95, x, y, rad * 1.35); glow.addColorStop(0, a); glow.addColorStop(1, "rgba(0,0,0,0)"); ctx.globalAlpha = 0.35; ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(x, y, rad * 1.35, 0, 7); ctx.fill(); ctx.globalAlpha = 1;
-    const g = ctx.createRadialGradient(x - rad * 0.35, y - rad * 0.35, rad * 0.1, x, y, rad); g.addColorStop(0, a); g.addColorStop(1, b); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, rad, 0, 7); ctx.fill();
-    if (self) return;
-    const night = ctx.createLinearGradient(x - rad * 0.6, y - rad * 0.6, x + rad, y + rad); night.addColorStop(0, "rgba(0,0,0,0)"); night.addColorStop(0.55, "rgba(0,0,0,.15)"); night.addColorStop(1, "rgba(0,0,0,.78)"); ctx.fillStyle = night; ctx.beginPath(); ctx.arc(x, y, rad, 0, 7); ctx.fill();
-    ctx.strokeStyle = "rgba(255,255,255,.55)"; ctx.lineWidth = Math.max(1, rad * 0.05); ctx.beginPath(); ctx.arc(x, y, rad * 0.985, Math.PI * 0.95, Math.PI * 1.55); ctx.stroke();
+
+  // ---- colour and light helpers ----
+  const hex = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+  const mix = (a, b, t) => a.map((v, i) => Math.round(v + (b[i] - v) * t));
+  const rgba = (c, a = 1) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
+  const WHITE = [255, 255, 255], BLACK = [0, 0, 0], LT = hex(pal[0]), DK = hex(pal[1]);
+  const glow = (x, y, rad, c, a) => { const g = ctx.createRadialGradient(x, y, 0, x, y, rad); g.addColorStop(0, rgba(c, a)); g.addColorStop(0.4, rgba(c, a * 0.35)); g.addColorStop(1, rgba(c, 0)); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, rad, 0, TAU); ctx.fill(); };
+  // soft value noise (a small random grid scaled up smoothly), used as surface texture like the core's granulation
+  const noise = (cells, px) => {
+    const sm = document.createElement("canvas"); sm.width = sm.height = cells;
+    const sc = sm.getContext("2d"), img = sc.createImageData(cells, cells);
+    for (let i = 0; i < cells * cells; i++) { const v = Math.floor(r() * 255); img.data.set([v, v, v, 255], i * 4); }
+    sc.putImageData(img, 0, 0);
+    const big = document.createElement("canvas"); big.width = big.height = Math.max(8, Math.round(px));
+    const bc = big.getContext("2d"); bc.imageSmoothingEnabled = true; bc.imageSmoothingQuality = "high"; bc.drawImage(sm, 0, 0, big.width, big.height);
+    return big;
   };
-  const rock = (x, y, sc) => { ctx.fillStyle = pal[0]; ctx.beginPath(); for (let i = 0; i < 12; i++) { const a = (i / 12) * Math.PI * 2, rr = (34 + Math.sin(i * 2.3 + find.fam) * 9) * u * sc; ctx.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); } ctx.closePath(); ctx.fill(); ctx.fillStyle = pal[1]; ctx.globalAlpha = 0.55; for (let k = 0; k < 3; k++) { ctx.beginPath(); ctx.arc(x + (r() - 0.5) * 36 * u * sc, y + (r() - 0.5) * 30 * u * sc, (4 + r() * 6) * u * sc, 0, 7); ctx.fill(); } ctx.globalAlpha = 1; };
-  const tail = (len, w0) => { const g = ctx.createLinearGradient(C + 20 * u, C - 20 * u, C - len * u, C + len * u); g.addColorStop(0, pal[0]); g.addColorStop(1, "rgba(0,0,0,0)"); ctx.globalAlpha = 0.9; ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(C + 18 * u, C - 10 * u); ctx.lineTo(C - len * u, C + (len - 30) * u); ctx.lineTo(C - (len - 40) * u, C + len * u); ctx.lineTo(C + 10 * u, C + 18 * u); ctx.fill(); ctx.globalAlpha = 1; };
+  const withClip = (path, fn) => { ctx.save(); ctx.clip(path); fn(); ctx.restore(); };
+  const texture = (path, x, y, rad, cells, alpha, sx = 1) => withClip(path, () => {
+    ctx.globalCompositeOperation = "overlay"; ctx.globalAlpha = alpha;
+    ctx.drawImage(noise(cells, rad * 2), x - rad * sx, y - rad, rad * 2 * sx, rad * 2);
+    ctx.globalAlpha = alpha * 0.6; ctx.drawImage(noise(cells * 3, rad * 2), x - rad, y - rad, rad * 2, rad * 2);
+    ctx.globalCompositeOperation = "source-over"; ctx.globalAlpha = 1;
+  });
+  const disc = (x, y, rad) => { const p = new Path2D(); p.arc(x, y, rad, 0, TAU); return p; };
+  // a body lit from the upper left: glow, limb-darkened body, texture, atmosphere rim, soft night side, a gentle highlight
+  const sphere = (x, y, rad, { light = LT, dark = DK, cells = 9, tex = 0.4, sx = 1, atmo = 0.35, night = 0.72, halo = 0.22 } = {}) => {
+    const p = disc(x, y, rad);
+    if (halo) glow(x, y, rad * 1.55, light, halo);
+    const g = ctx.createRadialGradient(x - rad * 0.35, y - rad * 0.35, 0, x - rad * 0.1, y - rad * 0.1, rad * 1.15);
+    g.addColorStop(0, rgba(mix(light, WHITE, 0.3))); g.addColorStop(0.45, rgba(light)); g.addColorStop(0.8, rgba(mix(light, dark, 0.65))); g.addColorStop(1, rgba(dark));
+    ctx.fillStyle = g; ctx.fill(p);
+    if (tex) texture(p, x, y, rad, cells, tex, sx);
+    if (atmo) withClip(p, () => { const a = ctx.createRadialGradient(x, y, rad * 0.82, x, y, rad); a.addColorStop(0, rgba(light, 0)); a.addColorStop(1, rgba(mix(light, WHITE, 0.4), atmo)); ctx.fillStyle = a; ctx.fill(p); });
+    if (night) withClip(p, () => { const t = ctx.createLinearGradient(x - rad * 0.7, y - rad * 0.7, x + rad * 0.85, y + rad * 0.85); t.addColorStop(0, "rgba(0,0,0,0)"); t.addColorStop(0.45, "rgba(0,0,0,.04)"); t.addColorStop(0.68, `rgba(0,0,0,${night * 0.55})`); t.addColorStop(1, `rgba(0,0,0,${Math.min(0.92, night * 1.2)})`); ctx.fillStyle = t; ctx.fill(p); });
+    withClip(p, () => glow(x - rad * 0.38, y - rad * 0.42, rad * 0.55, WHITE, 0.18));
+    return p;
+  };
+  // a star or anything that shines itself, drawn like the core: white-hot centre, limb darkening, granulation, corona
+  const sun = (x, y, rad, light = LT, dark = DK, corona = 2.6) => {
+    glow(x, y, rad * corona, light, 0.55); glow(x, y, rad * 1.4, mix(light, WHITE, 0.5), 0.6);
+    const p = disc(x, y, rad), g = ctx.createRadialGradient(x - rad * 0.12, y - rad * 0.12, 0, x, y, rad);
+    g.addColorStop(0, "#FFFFFF"); g.addColorStop(0.42, rgba(mix(light, WHITE, 0.6))); g.addColorStop(0.78, rgba(light)); g.addColorStop(1, rgba(mix(light, dark, 0.5)));
+    ctx.fillStyle = g; ctx.fill(p);
+    texture(p, x, y, rad, 14, 0.28);
+    return p;
+  };
+  // an irregular rock with smooth edges, lit from the upper left, craters with a shadowed rim, a soft night side
+  const rock = (x, y, sc, k = 0) => {
+    const R = 46 * u * sc, N = 16, tilt = r() * TAU, pts = [];
+    for (let i = 0; i < N; i++) {
+      const a = (i / N) * TAU, rr = R * (0.84 + 0.1 * Math.sin(i * 1.7 + find.fam + k) + 0.07 * Math.sin(i * 3.3 + k * 2) + (r() - 0.5) * 0.08);
+      const px = Math.cos(a) * rr * 1.14, py = Math.sin(a) * rr * 0.86;
+      pts.push([x + px * Math.cos(tilt) - py * Math.sin(tilt), y + px * Math.sin(tilt) + py * Math.cos(tilt)]);
+    }
+    const p = new Path2D(); const mid = (a, b) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+    p.moveTo(...mid(pts[N - 1], pts[0])); for (let i = 0; i < N; i++) { const m2 = mid(pts[i], pts[(i + 1) % N]); p.quadraticCurveTo(pts[i][0], pts[i][1], m2[0], m2[1]); }
+    glow(x, y, R * 1.7, LT, 0.1);
+    const g = ctx.createRadialGradient(x - R * 0.4, y - R * 0.45, 0, x, y, R * 1.2);
+    g.addColorStop(0, rgba(mix(LT, WHITE, 0.3))); g.addColorStop(0.4, rgba(LT)); g.addColorStop(0.78, rgba(mix(LT, DK, 0.7))); g.addColorStop(1, rgba(DK));
+    ctx.fillStyle = g; ctx.fill(p);
+    texture(p, x, y, R * 1.1, 6, 0.5);
+    withClip(p, () => {
+      // shallow craters: a soft shadow on the side toward the light and a faint lit rim on the far side
+      for (let c = 0; c < 3; c++) { const cx = x + (r() - 0.5) * R * 0.9, cy = y + (r() - 0.5) * R * 0.7, cr = (0.1 + r() * 0.12) * R;
+        const h = ctx.createRadialGradient(cx - cr * 0.3, cy - cr * 0.3, 0, cx, cy, cr); h.addColorStop(0, rgba(DK, 0.35)); h.addColorStop(0.7, rgba(DK, 0.12)); h.addColorStop(1, rgba(mix(LT, WHITE, 0.3), 0.22));
+        ctx.fillStyle = h; ctx.beginPath(); ctx.arc(cx, cy, cr, 0, TAU); ctx.fill(); }
+      const t = ctx.createLinearGradient(x - R * 0.8, y - R * 0.8, x + R, y + R); t.addColorStop(0, "rgba(0,0,0,0)"); t.addColorStop(0.5, "rgba(0,0,0,.12)"); t.addColorStop(1, "rgba(0,0,0,.8)"); ctx.fillStyle = t; ctx.fill(p);
+      withClip(p, () => glow(x - R * 0.4, y - R * 0.45, R * 0.5, WHITE, 0.15));
+    });
+  };
+  // a comet: coma and nucleus at `head`, a curved dust tail and a straight, cooler ion tail, both centred on the axis toward the lower left
+  const comet = (hx, hy, len, sc = 1) => {
+    const d = [-Math.SQRT1_2, Math.SQRT1_2], q = [Math.SQRT1_2, Math.SQRT1_2], L = len * u * sc;
+    const cone = (w0, w1, bend, col, alpha) => {
+      const ex = hx + d[0] * L, ey = hy + d[1] * L, g = ctx.createLinearGradient(hx, hy, ex, ey);
+      g.addColorStop(0, rgba(col, alpha)); g.addColorStop(0.45, rgba(col, alpha * 0.45)); g.addColorStop(1, rgba(col, 0));
+      ctx.fillStyle = g; ctx.beginPath();
+      ctx.moveTo(hx + q[0] * w0, hy + q[1] * w0);
+      ctx.quadraticCurveTo(hx + d[0] * L * 0.5 + q[0] * (w1 * 0.6 + bend), hy + d[1] * L * 0.5 + q[1] * (w1 * 0.6 + bend), ex + q[0] * (w1 + bend), ey + q[1] * (w1 + bend));
+      ctx.lineTo(ex - q[0] * (w1 - bend), ey - q[1] * (w1 - bend));
+      ctx.quadraticCurveTo(hx + d[0] * L * 0.5 - q[0] * (w1 * 0.6 - bend), hy + d[1] * L * 0.5 - q[1] * (w1 * 0.6 - bend), hx - q[0] * w0, hy - q[1] * w0);
+      ctx.closePath(); ctx.fill();
+    };
+    const ion = mix([191, 216, 255], LT, 0.25);
+    for (const [w, a] of [[1.7, 0.18], [1.15, 0.3], [0.7, 0.55]]) cone(10 * u * sc * w, 34 * u * sc * w, 10 * u * sc, LT, a); // dust tail, feathered
+    for (const [w, a] of [[1.4, 0.16], [0.6, 0.45]]) cone(4 * u * sc * w, 7 * u * sc * w, -3 * u * sc, ion, a); // ion tail, straight and narrow
+    glow(hx, hy, 34 * u * sc, LT, 0.55); glow(hx, hy, 14 * u * sc, WHITE, 0.8);
+    ctx.fillStyle = "#FFFFFF"; ctx.beginPath(); ctx.arc(hx, hy, 4.5 * u * sc, 0, TAU); ctx.fill();
+  };
+
   switch (fam.shape) {
-    case "rock": rock(C, C, fam.name === "Moonlet" ? 0.6 : fam.name.includes("Kuiper") ? 1.3 : 1); if (fam.name === "Centaur") { ctx.globalAlpha = 0.35; tail(120); ctx.globalAlpha = 1; } break;
-    case "rubble": for (let i = 0; i < 8; i++) rock(C + Math.cos(i * 0.9) * 30 * u, C + Math.sin(i * 1.7) * 24 * u, 0.38); break;
-    case "twin": rock(C - 30 * u, C, 0.8); rock(C + 30 * u, C + 8 * u, 0.7); break;
-    case "dust": for (let i = 0; i < 260; i++) { const a = r() * 7, d = Math.sqrt(r()) * 90 * u; ctx.fillStyle = pal[0]; ctx.globalAlpha = 0.25 + r() * 0.5; ctx.fillRect(C + Math.cos(a) * d * 1.4, C + Math.sin(a) * d * 0.6, 2 * u, 2 * u); } ctx.globalAlpha = 1; break;
-    case "comet": tail(fam.name === "Sungrazer" ? 170 : fam.name === "Interstellar comet" ? 110 : 140); if (fam.name === "Fragmenting comet") { ball(C + 26 * u, C - 18 * u, 7 * u, "#ECE7DC", pal[1]); ball(C - 4 * u, C + 12 * u, 6 * u, "#ECE7DC", pal[1]); } ball(C + 14 * u, C - 4 * u, 14 * u, "#FFFFFF", pal[0]); break;
-    case "dwarf": ball(C, C, 44 * u); if (fam.name.includes("moon")) ball(C + 70 * u, C - 40 * u, 12 * u); break;
-    case "planet": ball(C, C, 60 * u); ctx.globalAlpha = 0.25; ctx.fillStyle = pal[1]; for (let k = 0; k < 4; k++) { ctx.beginPath(); ctx.ellipse(C + (r() - 0.5) * 60 * u, C + (r() - 0.5) * 60 * u, (10 + r() * 20) * u, (6 + r() * 10) * u, r() * 3, 0, 7); ctx.fill(); } ctx.globalAlpha = 1; break;
-    case "banded": ball(C, C, 62 * u); ctx.save(); ctx.beginPath(); ctx.arc(C, C, 62 * u, 0, 7); ctx.clip(); ctx.fillStyle = pal[1]; ctx.globalAlpha = 0.45; for (let k = -3; k <= 3; k++) ctx.fillRect(C - 70 * u, C + k * 16 * u, 140 * u, 6 * u); ctx.restore(); ctx.globalAlpha = 1; break;
-    case "ringed": ctx.strokeStyle = pal[0]; ctx.globalAlpha = 0.8; ctx.lineWidth = 6 * u; ctx.beginPath(); ctx.ellipse(C, C, 110 * u, 30 * u, -0.35, 0, Math.PI * 2); ctx.stroke(); ctx.globalAlpha = 1; ball(C, C, 56 * u); ctx.strokeStyle = pal[0]; ctx.beginPath(); ctx.ellipse(C, C, 110 * u, 30 * u, -0.35, Math.PI * 0.95, Math.PI * 2.05); ctx.stroke(); break;
-    case "lava": ball(C, C, 58 * u, pal[0], "#1a0603"); ctx.strokeStyle = "rgba(255,200,80,.75)"; ctx.lineWidth = 2 * u; for (let i = 0; i < 6; i++) { ctx.beginPath(); ctx.moveTo(C - 40 * u + i * 15 * u, C - 34 * u); ctx.lineTo(C - 30 * u + i * 14 * u + (r() - 0.5) * 10 * u, C + 36 * u); ctx.stroke(); } break;
-    case "rogue": ball(C, C, 56 * u, pal[1], "#000"); ctx.strokeStyle = pal[0]; ctx.globalAlpha = 0.6; ctx.lineWidth = 1.5 * u; ctx.beginPath(); ctx.arc(C, C, 57 * u, 2.2, 4.2); ctx.stroke(); ctx.globalAlpha = 1; break;
-    case "locked": ball(C, C, 58 * u); ctx.fillStyle = "rgba(0,0,0,.75)"; ctx.beginPath(); ctx.arc(C, C, 58 * u, -Math.PI / 2, Math.PI / 2); ctx.fill(); break;
-    case "diamond": ctx.fillStyle = pal[0]; ctx.beginPath(); ctx.moveTo(C, C - 62 * u); ctx.lineTo(C + 54 * u, C - 10 * u); ctx.lineTo(C, C + 62 * u); ctx.lineTo(C - 54 * u, C - 10 * u); ctx.closePath(); ctx.fill(); ctx.strokeStyle = "rgba(255,255,255,.55)"; ctx.lineWidth = 1.5 * u; ctx.beginPath(); ctx.moveTo(C - 54 * u, C - 10 * u); ctx.lineTo(C + 54 * u, C - 10 * u); ctx.moveTo(C, C - 62 * u); ctx.lineTo(C - 20 * u, C - 10 * u); ctx.lineTo(C, C + 62 * u); ctx.lineTo(C + 20 * u, C - 10 * u); ctx.closePath(); ctx.stroke(); break;
-    case "moon": ball(C - 50 * u, C + 40 * u, 70 * u, pal[1], "#000"); ball(C + 30 * u, C - 30 * u, 32 * u); if (fam.name === "Volcanic moon") { ctx.fillStyle = "rgba(255,170,60,.85)"; for (let k = 0; k < 4; k++) { ctx.beginPath(); ctx.arc(C + 30 * u + (r() - 0.5) * 34 * u, C - 30 * u + (r() - 0.5) * 34 * u, 3 * u, 0, 7); ctx.fill(); } } break;
-    case "shower": ctx.strokeStyle = pal[0]; ctx.lineCap = "round"; for (let i = 0; i < 14; i++) { const x = r() * W, y = r() * W * 0.7, l = (30 + r() * 60) * u; ctx.globalAlpha = 0.4 + r() * 0.6; ctx.lineWidth = (1 + r() * 2) * u; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + l, y + l); ctx.stroke(); } ctx.globalAlpha = 1; break;
-    case "supernova": { const g = ctx.createRadialGradient(C, C, 2, C, C, 150 * u); g.addColorStop(0, "#FFFFFF"); g.addColorStop(0.18, pal[0]); g.addColorStop(0.45, pal[1]); g.addColorStop(1, "rgba(0,0,0,0)"); ctx.fillStyle = g; ctx.fillRect(0, 0, W, W); ctx.strokeStyle = "rgba(255,255,255,.55)"; ctx.lineWidth = 2 * u; for (let i = 0; i < 16; i++) { const a = (i / 16) * Math.PI * 2, L = (90 + (i % 3) * 30) * u; ctx.beginPath(); ctx.moveTo(C + Math.cos(a) * 30 * u, C + Math.sin(a) * 30 * u); ctx.lineTo(C + Math.cos(a) * L, C + Math.sin(a) * L); ctx.stroke(); } spikes(C, C, 160 * u, "255,255,255", 0.8, 1.8); break; }
-    case "pulsar": { ctx.save(); ctx.translate(C, C); ctx.rotate(-0.5); const g = ctx.createLinearGradient(0, -160 * u, 0, 160 * u); g.addColorStop(0, "rgba(0,0,0,0)"); g.addColorStop(0.5, pal[0]); g.addColorStop(1, "rgba(0,0,0,0)"); ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(-6 * u, 0); ctx.lineTo(-30 * u, -160 * u); ctx.lineTo(30 * u, -160 * u); ctx.lineTo(6 * u, 0); ctx.lineTo(30 * u, 160 * u); ctx.lineTo(-30 * u, 160 * u); ctx.fill(); if (fam.name === "Magnetar") { ctx.strokeStyle = pal[0]; ctx.globalAlpha = 0.6; ctx.lineWidth = 1.5 * u; for (const k of [40, 70]) { ctx.beginPath(); ctx.ellipse(0, 0, k * u, k * 0.45 * u, Math.PI / 2, 0, 7); ctx.stroke(); } } ctx.restore(); ctx.globalAlpha = 1; ball(C, C, 10 * u, "#FFFFFF", pal[0]); spikes(C, C, 70 * u, "255,255,255", 0.7, 1); break; }
-    case "blackhole": { const disc = (x, y, sc) => { const g = ctx.createRadialGradient(x, y, 30 * u * sc, x, y, 130 * u * sc); g.addColorStop(0, pal[0]); g.addColorStop(0.4, pal[1]); g.addColorStop(1, "rgba(0,0,0,0)"); ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(x, y, 140 * u * sc, 46 * u * sc, -0.2, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = "#000"; ctx.beginPath(); ctx.arc(x, y, 40 * u * sc, 0, 7); ctx.fill(); ctx.strokeStyle = pal[0]; ctx.lineWidth = 2 * u; ctx.stroke(); }; if (fam.name.startsWith("Binary")) { disc(C - 50 * u, C - 20 * u, 0.55); disc(C + 50 * u, C + 20 * u, 0.55); } else disc(C, C, 1); break; }
-    case "quasar": { const g = ctx.createRadialGradient(C, C, 4, C, C, 80 * u); g.addColorStop(0, "#FFFFFF"); g.addColorStop(0.3, pal[0]); g.addColorStop(1, "rgba(0,0,0,0)"); ctx.fillStyle = g; ctx.fillRect(0, 0, W, W); ctx.fillStyle = pal[0]; ctx.globalAlpha = 0.7; ctx.fillRect(C - 3 * u, 0, 6 * u, W); ctx.globalAlpha = 1; spikes(C, C, 90 * u, "255,255,255", 0.6, 1.2); break; }
-    case "nebula": {
-      // gas in many soft knots of two colours, cut by dark dust, a few young stars inside (Hubble's emission nebulae)
-      for (let i = 0; i < 90; i++) { const a = r() * 7, d = Math.sqrt(r()) * 120 * u, x = C + Math.cos(a) * d * 1.2, y = C + Math.sin(a) * d * 0.85, rad = (8 + r() * 30) * u; const g = ctx.createRadialGradient(x, y, 0, x, y, rad); g.addColorStop(0, i % 3 ? pal[0] : pal[1]); g.addColorStop(1, "rgba(0,0,0,0)"); ctx.globalAlpha = 0.16 + r() * 0.2; ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, rad, 0, 7); ctx.fill(); }
-      for (let i = 0; i < 22; i++) { const x = C + (r() - 0.5) * 220 * u, y = C + (r() - 0.5) * 160 * u, rad = (6 + r() * 18) * u; const g = ctx.createRadialGradient(x, y, 0, x, y, rad); g.addColorStop(0, "rgba(2,3,6,.85)"); g.addColorStop(1, "rgba(2,3,6,0)"); ctx.globalAlpha = 0.6; ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, rad, 0, 7); ctx.fill(); }
-      ctx.globalAlpha = 1;
-      for (let i = 0; i < 4; i++) { const x = C + (r() - 0.5) * 160 * u, y = C + (r() - 0.5) * 120 * u; ctx.fillStyle = "#EAF2FF"; ctx.beginPath(); ctx.arc(x, y, 1.6 * u, 0, 7); ctx.fill(); spikes(x, y, (10 + r() * 14) * u, "220,232,255", 0.7, 0.7); }
+    case "rock":
+      if (fam.name === "Centaur") { ctx.globalAlpha = 0.6; comet(C + 8 * u, C - 8 * u, 170, 0.75); ctx.globalAlpha = 1; } // a faint tail: half comet
+      rock(C, C, fam.name === "Moonlet" ? 0.6 : fam.name.includes("Kuiper") ? 1.25 : 1); break;
+    case "rubble": for (let i = 0; i < 7; i++) rock(C + Math.cos(i * 0.9) * 32 * u, C + Math.sin(i * 1.7) * 26 * u, 0.38, i); break;
+    case "twin": rock(C - 30 * u, C - 6 * u, 0.78, 1); rock(C + 30 * u, C + 10 * u, 0.66, 2); break;
+    case "dust": {
+      ctx.save(); ctx.translate(C, C); ctx.scale(1.5, 0.6); glow(0, 0, 95 * u, LT, 0.35); ctx.restore();
+      for (let i = 0; i < 260; i++) { const a = r() * TAU, d = Math.sqrt(r()) * 90 * u, x = C + Math.cos(a) * d * 1.4, y = C + Math.sin(a) * d * 0.6, k = r(); ctx.fillStyle = rgba(mix(LT, WHITE, k * 0.5), 0.25 + k * 0.6); ctx.beginPath(); ctx.arc(x, y, (0.6 + k * 1.2) * u, 0, TAU); ctx.fill(); }
       break;
     }
-    case "star": { const big = fam.name === "Red giant"; const g = ctx.createRadialGradient(C, C, 4, C, C, (big ? 110 : 70) * u); g.addColorStop(0, "#FFFFFF"); g.addColorStop(0.5, pal[0]); g.addColorStop(1, "rgba(0,0,0,0)"); ctx.fillStyle = g; ctx.fillRect(0, 0, W, W); ball(C, C, (big ? 64 : 24) * u, "#FFFFFF", pal[0]); spikes(C, C, (big ? 150 : 120) * u, "255,255,255", 0.55, 1.4); break; }
+    case "comet": {
+      const len = fam.name === "Sungrazer" ? 200 : fam.name === "Interstellar comet" ? 120 : 160;
+      if (fam.name === "Fragmenting comet") { comet(C + 6 * u, C + 6 * u, 70, 0.45); comet(C - 14 * u, C + 26 * u, 60, 0.35); }
+      comet(C + 32 * u, C - 32 * u, len, fam.name === "Interstellar comet" ? 0.8 : 1);
+      break;
+    }
+    case "dwarf": sphere(C, C, 44 * u, { cells: 7, tex: 0.5, atmo: 0.2 }); if (fam.name.includes("moon")) sphere(C + 72 * u, C - 42 * u, 13 * u, { tex: 0.35, atmo: 0.15 }); break;
+    case "planet": sphere(C, C, 60 * u, { cells: 6, tex: 0.5, sx: 1.6 }); break;
+    case "banded": {
+      const p = sphere(C, C, 62 * u, { tex: 0, atmo: 0, night: 0 });
+      withClip(p, () => { for (let k = -4; k <= 4; k++) { const y = C + k * 14 * u, g = ctx.createLinearGradient(0, y - 7 * u, 0, y + 7 * u); const c = k % 2 ? DK : mix(LT, WHITE, 0.25); g.addColorStop(0, rgba(c, 0)); g.addColorStop(0.5, rgba(c, 0.45)); g.addColorStop(1, rgba(c, 0)); ctx.fillStyle = g; ctx.fillRect(C - 70 * u, y - 7 * u, 140 * u, 14 * u); } });
+      texture(p, C, C, 62 * u, 5, 0.35, 2.5);
+      withClip(p, () => { const a = ctx.createRadialGradient(C, C, 62 * u * 0.82, C, C, 62 * u); a.addColorStop(0, rgba(LT, 0)); a.addColorStop(1, rgba(mix(LT, WHITE, 0.4), 0.3)); ctx.fillStyle = a; ctx.fill(p); const t = ctx.createLinearGradient(C - 43 * u, C - 43 * u, C + 53 * u, C + 53 * u); t.addColorStop(0, "rgba(0,0,0,0)"); t.addColorStop(1, "rgba(0,0,0,.72)"); ctx.fillStyle = t; ctx.fill(p); });
+      break;
+    }
+    case "ringed": {
+      const ring = (from, to) => { for (let k = 0; k < 7; k++) { const rx = (78 + k * 6) * u; ctx.strokeStyle = rgba(mix(LT, WHITE, 0.2 + (k % 3) * 0.15), k === 3 ? 0.08 : 0.42 - k * 0.03); ctx.lineWidth = (k === 3 ? 1 : 3.4) * u; ctx.beginPath(); ctx.ellipse(C, C, rx, rx * 0.27, -0.35, from, to); ctx.stroke(); } };
+      ring(Math.PI, TAU); // the far half, behind the planet
+      const p = sphere(C, C, 54 * u, { cells: 5, tex: 0.3, sx: 2 });
+      withClip(p, () => { ctx.fillStyle = "rgba(0,0,0,.35)"; ctx.beginPath(); ctx.ellipse(C + 6 * u, C + 12 * u, 80 * u, 9 * u, -0.35, 0, TAU); ctx.fill(); }); // the rings' shadow
+      ring(0, Math.PI); // the near half, in front
+      break;
+    }
+    case "lava": {
+      const R = 58 * u, p = sphere(C, C, R, { light: mix(DK, BLACK, 0.2), dark: [12, 4, 2], tex: 0.55, cells: 8, atmo: 0, night: 0.55, halo: 0 });
+      glow(C, C, R * 1.6, LT, 0.25);
+      // molten seams: branching cracks that glow, following the curve of the globe instead of running straight across it
+      withClip(p, () => {
+        ctx.lineCap = "round"; ctx.lineJoin = "round";
+        const paths = [];
+        for (let k = 0; k < 7; k++) { let x = C + (r() - 0.5) * R * 1.6, y = C + (r() - 0.5) * R * 1.6, a = r() * TAU; const pts = [[x, y]]; for (let j = 0; j < 9; j++) { a += (r() - 0.5) * 0.7; x += Math.cos(a) * R * 0.14; y += Math.sin(a) * R * 0.14; pts.push([x, y]); } paths.push(pts); }
+        for (const [w, col, a] of [[7, LT, 0.18], [3.2, mix(LT, [255, 200, 90], 0.5), 0.55], [1.2, [255, 236, 170], 0.95]]) {
+          ctx.strokeStyle = rgba(col, a); ctx.lineWidth = w * u;
+          for (const pts of paths) { ctx.beginPath(); ctx.moveTo(...pts[0]); for (let j = 1; j < pts.length - 1; j++) ctx.quadraticCurveTo(pts[j][0], pts[j][1], (pts[j][0] + pts[j + 1][0]) / 2, (pts[j][1] + pts[j + 1][1]) / 2); ctx.lineTo(...pts[pts.length - 1]); ctx.stroke(); } // smooth, river-like seams
+        }
+        const t = ctx.createLinearGradient(C - R * 0.7, C - R * 0.7, C + R, C + R); t.addColorStop(0, "rgba(0,0,0,0)"); t.addColorStop(1, "rgba(0,0,0,.45)"); ctx.fillStyle = t; ctx.fill(p);
+      });
+      break;
+    }
+    case "rogue": {
+      // no star to light it: a dark globe seen only by a thin rim of starlight and a faint aurora of its own
+      const R = 56 * u, p = disc(C, C, R);
+      const g = ctx.createRadialGradient(C, C, 0, C, C, R); g.addColorStop(0, rgba(mix(DK, BLACK, 0.55))); g.addColorStop(1, rgba(mix(DK, BLACK, 0.8))); ctx.fillStyle = g; ctx.fill(p);
+      texture(p, C, C, R, 6, 0.25);
+      withClip(p, () => {
+        const a = ctx.createRadialGradient(C, C, R * 0.8, C, C, R); a.addColorStop(0, rgba(LT, 0)); a.addColorStop(1, rgba(LT, 0.6)); ctx.fillStyle = a; ctx.fill(p);
+        const t = ctx.createLinearGradient(C - R, C - R, C + R * 0.6, C + R * 0.6); t.addColorStop(0, "rgba(0,0,0,0)"); t.addColorStop(0.55, "rgba(0,0,0,.6)"); t.addColorStop(1, "rgba(0,0,0,.9)"); ctx.fillStyle = t; ctx.fill(p); // only a thin crescent of starlight shows
+      });
+      ctx.save(); ctx.translate(C, C - R * 0.7); ctx.scale(1, 0.32); glow(0, 0, R * 0.7, mix(LT, [120, 255, 200], 0.4), 0.35); ctx.restore();
+      break;
+    }
+    case "locked": {
+      const R = 58 * u, p = sphere(C, C, R, { night: 0, atmo: 0.25, cells: 7 });
+      // the terminator runs top to bottom: a hard day side, a band of twilight, a frozen night side
+      withClip(p, () => { const t = ctx.createLinearGradient(C - R * 0.25, 0, C + R * 0.35, 0); t.addColorStop(0, "rgba(0,0,0,0)"); t.addColorStop(0.5, "rgba(10,6,20,.55)"); t.addColorStop(1, "rgba(4,6,14,.88)"); ctx.fillStyle = t; ctx.fill(p); glow(C - R * 0.55, C, R * 0.5, mix(LT, WHITE, 0.5), 0.3); });
+      break;
+    }
+    case "diamond": {
+      // a cut gem: a crown of facets in four shades of its colour, a bright table, an inner sparkle
+      const T = [C, C - 62 * u], Lp = [C - 54 * u, C - 10 * u], Rp = [C + 54 * u, C - 10 * u], B = [C, C + 62 * u], tl = [C - 22 * u, C - 10 * u], tr = [C + 22 * u, C - 10 * u];
+      glow(C, C, 120 * u, LT, 0.3);
+      const face = (pts, c) => { ctx.fillStyle = rgba(c); ctx.beginPath(); ctx.moveTo(...pts[0]); for (const q of pts.slice(1)) ctx.lineTo(...q); ctx.closePath(); ctx.fill(); };
+      face([T, Lp, tl], mix(LT, WHITE, 0.45)); face([T, tl, tr], mix(LT, WHITE, 0.7)); face([T, tr, Rp], mix(LT, WHITE, 0.15));
+      face([Lp, tl, B], mix(LT, DK, 0.25)); face([tl, tr, B], LT); face([tr, Rp, B], mix(LT, DK, 0.6));
+      glow(C - 8 * u, C - 22 * u, 22 * u, WHITE, 0.75); glow(C + 14 * u, C + 18 * u, 10 * u, WHITE, 0.5);
+      break;
+    }
+    case "moon": {
+      // the moon in front of the edge of its giant planet
+      sphere(C - 54 * u, C + 46 * u, 80 * u, { light: mix(DK, LT, 0.35), dark: mix(DK, BLACK, 0.5), cells: 5, tex: 0.35, sx: 2, halo: 0.12 });
+      const p = sphere(C + 30 * u, C - 30 * u, 32 * u, { cells: 8, tex: 0.55, atmo: 0.2 });
+      if (fam.name === "Volcanic moon") withClip(p, () => { for (let k = 0; k < 5; k++) glow(C + 30 * u + (r() - 0.6) * 40 * u, C - 30 * u + (r() - 0.6) * 40 * u, 5 * u, [255, 180, 70], 0.9); });
+      break;
+    }
+    case "shower": {
+      // every meteor of a shower streaks away from one radiant point, as in the real sky
+      const rx = C + 34 * u, ry = C - 64 * u; glow(rx, ry, 30 * u, LT, 0.35);
+      ctx.lineCap = "round";
+      for (let i = 0; i < 14; i++) {
+        const a = Math.PI * 0.62 + (r() - 0.5) * 1.5, d0 = (16 + r() * 60) * u, l = (34 + r() * 60) * u, x0 = rx + Math.cos(a) * d0, y0 = ry + Math.sin(a) * d0, x1 = x0 + Math.cos(a) * l, y1 = y0 + Math.sin(a) * l;
+        const g = ctx.createLinearGradient(x0, y0, x1, y1); g.addColorStop(0, rgba(LT, 0)); g.addColorStop(0.85, rgba(mix(LT, WHITE, 0.4), 0.5 + r() * 0.5)); g.addColorStop(1, rgba(WHITE, 0.95));
+        ctx.strokeStyle = g; ctx.lineWidth = (1 + r() * 2) * u; ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+        glow(x1, y1, 4 * u, WHITE, 0.6);
+      }
+      break;
+    }
+    case "supernova": {
+      // a white-hot point inside an expanding shell of glowing knots, brighter at the rim, two colours of gas
+      glow(C, C, 150 * u, LT, 0.35);
+      for (let i = 0; i < 70; i++) { const a = r() * TAU, d = (70 + (r() - 0.5) * 26) * u, x = C + Math.cos(a) * d, y = C + Math.sin(a) * d; glow(x, y, (8 + r() * 14) * u, i % 3 ? LT : mix(DK, LT, 0.4), 0.35 + r() * 0.3); }
+      sun(C, C, 10 * u, LT, DK, 5);
+      break;
+    }
+    case "pulsar": {
+      // a tiny neutron star sweeping two soft beams from its poles; a magnetar wears loops of magnetic field
+      ctx.save(); ctx.translate(C, C); ctx.rotate(-0.5);
+      for (const sgn of [-1, 1]) for (const [w, a] of [[34, 0.12], [20, 0.22], [8, 0.5]]) { const g = ctx.createLinearGradient(0, 0, 0, sgn * 150 * u); g.addColorStop(0, rgba(mix(LT, WHITE, 0.4), a)); g.addColorStop(1, rgba(LT, 0)); ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(-3 * u, 0); ctx.lineTo(-w * u, sgn * 150 * u); ctx.lineTo(w * u, sgn * 150 * u); ctx.lineTo(3 * u, 0); ctx.fill(); }
+      if (fam.name === "Magnetar") for (const k of [38, 62, 86]) { ctx.strokeStyle = rgba(LT, 0.35 - k / 400); ctx.lineWidth = 1.6 * u; ctx.beginPath(); ctx.ellipse(-k * 0.5 * u, 0, k * 0.5 * u, k * 0.22 * u, 0, 0, TAU); ctx.stroke(); ctx.beginPath(); ctx.ellipse(k * 0.5 * u, 0, k * 0.5 * u, k * 0.22 * u, 0, 0, TAU); ctx.stroke(); }
+      ctx.restore();
+      sun(C, C, 9 * u, LT, DK, 4);
+      break;
+    }
+    case "blackhole": {
+      // the shadow, a thin photon ring, and the accretion disk -- its far side bent up over the top by the gravity, the near side in front
+      const hole = (x, y, sc) => {
+        const R = 30 * u * sc, hot = mix(LT, WHITE, 0.55);
+        glow(x, y, R * 4.2, LT, 0.28);
+        const disk = (from, to) => { for (const [w, a, c] of [[24, 0.14, LT], [12, 0.34, LT], [5, 0.7, hot], [1.6, 0.95, WHITE]]) { ctx.strokeStyle = rgba(c, a); ctx.lineWidth = w * u * sc; ctx.beginPath(); ctx.ellipse(x, y, R * 2.9, R * 0.5, -0.12, from, to); ctx.stroke(); } };
+        // the disk's far side, bent by gravity into a bright ring that wraps over and under the shadow
+        for (const [w, a, c] of [[16, 0.16, LT], [7, 0.4, LT], [2.4, 0.9, hot]]) { ctx.strokeStyle = rgba(c, a); ctx.lineWidth = w * u * sc; ctx.beginPath(); ctx.ellipse(x, y, R * 1.42, R * 1.3, -0.12, 0, TAU); ctx.stroke(); }
+        disk(Math.PI, TAU); // the far half of the flat disk, behind
+        ctx.fillStyle = "#000"; ctx.beginPath(); ctx.arc(x, y, R, 0, TAU); ctx.fill();
+        ctx.strokeStyle = rgba(WHITE, 0.8); ctx.lineWidth = 1.1 * u * sc; ctx.beginPath(); ctx.arc(x, y, R * 1.04, 0, TAU); ctx.stroke(); // photon ring
+        disk(0, Math.PI); // the near half, in front of the shadow
+      };
+      if (fam.name.startsWith("Binary")) { hole(C - 48 * u, C - 18 * u, 0.55); hole(C + 48 * u, C + 18 * u, 0.55); } else hole(C, C, 1);
+      break;
+    }
+    case "quasar": {
+      // a blinding core in a faint host galaxy, firing two tapered jets in opposite directions
+      ctx.save(); ctx.translate(C, C); ctx.rotate(-0.4); ctx.scale(1, 0.45); glow(0, 0, 110 * u, mix(DK, LT, 0.4), 0.35); ctx.restore();
+      ctx.save(); ctx.translate(C, C); ctx.rotate(0.35);
+      for (const sgn of [-1, 1]) for (const [w, a] of [[9, 0.18], [3.5, 0.6]]) { const g = ctx.createLinearGradient(0, 0, 0, sgn * 150 * u); g.addColorStop(0, rgba(mix(LT, WHITE, 0.5), a)); g.addColorStop(1, rgba(LT, 0)); ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(-w * 0.3 * u, 0); ctx.lineTo(-w * u, sgn * 150 * u); ctx.lineTo(w * u, sgn * 150 * u); ctx.lineTo(w * 0.3 * u, 0); ctx.fill(); }
+      ctx.restore();
+      sun(C, C, 12 * u, LT, DK, 6);
+      break;
+    }
+    case "nebula": {
+      // gas in many soft knots of two colours, cut by dark dust, a few young stars glowing inside
+      for (let i = 0; i < 90; i++) { const a = r() * TAU, d = Math.sqrt(r()) * 120 * u, x = C + Math.cos(a) * d * 1.2, y = C + Math.sin(a) * d * 0.85, rad = (8 + r() * 30) * u; const g = ctx.createRadialGradient(x, y, 0, x, y, rad); g.addColorStop(0, i % 3 ? pal[0] : pal[1]); g.addColorStop(1, "rgba(0,0,0,0)"); ctx.globalAlpha = 0.16 + r() * 0.2; ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, rad, 0, TAU); ctx.fill(); }
+      for (let i = 0; i < 22; i++) { const x = C + (r() - 0.5) * 220 * u, y = C + (r() - 0.5) * 160 * u, rad = (6 + r() * 18) * u; const g = ctx.createRadialGradient(x, y, 0, x, y, rad); g.addColorStop(0, "rgba(2,3,6,.85)"); g.addColorStop(1, "rgba(2,3,6,0)"); ctx.globalAlpha = 0.6; ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, rad, 0, TAU); ctx.fill(); }
+      ctx.globalAlpha = 1;
+      for (let i = 0; i < 4; i++) { const x = C + (r() - 0.5) * 160 * u, y = C + (r() - 0.5) * 120 * u; glow(x, y, 9 * u, [220, 232, 255], 0.8); ctx.fillStyle = "#F4F8FF"; ctx.beginPath(); ctx.arc(x, y, 1.8 * u, 0, TAU); ctx.fill(); }
+      break;
+    }
+    case "star": { const big = fam.name === "Red giant"; sun(C, C, (big ? 62 : 26) * u, LT, DK, big ? 1.9 : 3.4); break; }
   }
-  // the version's finish
-  if (ver === "prismatic") { const g = ctx.createConicGradient ? ctx.createConicGradient(0, C, C) : null; if (g) { ["#F06A5A", "#F2B45A", "#6FD9A8", "#7FA6F5", "#B48CF2", "#F06A5A"].forEach((c, i) => g.addColorStop(i / 5, c)); ctx.strokeStyle = g; ctx.lineWidth = 5 * u; ctx.globalAlpha = 0.85; ctx.beginPath(); ctx.arc(C, C, 120 * u, 0, 7); ctx.stroke(); ctx.globalAlpha = 1; } }
-  if (ver === "ancient") { ctx.globalCompositeOperation = bare ? "source-atop" : "color"; ctx.fillStyle = "rgba(170,120,60,.55)"; ctx.fillRect(0, 0, W, W); ctx.globalCompositeOperation = "source-over"; ctx.strokeStyle = "rgba(233,196,106,.5)"; ctx.lineWidth = 1 * u; for (let i = 0; i < 5; i++) { ctx.beginPath(); ctx.moveTo(C + (r() - 0.5) * 80 * u, C + (r() - 0.5) * 80 * u); ctx.lineTo(C + (r() - 0.5) * 120 * u, C + (r() - 0.5) * 120 * u); ctx.stroke(); } }
-  if (ver === "mythic") { ctx.fillStyle = "#FFF4D6"; for (let i = 0; i < 18; i++) { const x = r() * W, y = r() * W, k = (2 + r() * 3) * u; ctx.beginPath(); ctx.moveTo(x, y - k * 2); ctx.lineTo(x + k * 0.5, y); ctx.lineTo(x, y + k * 2); ctx.lineTo(x - k * 0.5, y); ctx.fill(); } ctx.strokeStyle = "#E9C46A"; ctx.lineWidth = 3 * u; ctx.beginPath(); ctx.arc(C, C, 126 * u, 0, 7); ctx.stroke(); }
+  // the version's finish -- soft light, never lines across the object
+  if (ver === "prismatic" && ctx.createConicGradient) {
+    const g = ctx.createConicGradient(0, C, C); ["#F06A5A", "#F2B45A", "#6FD9A8", "#7FA6F5", "#B48CF2", "#F06A5A"].forEach((c, i) => g.addColorStop(i / 5, c));
+    ctx.strokeStyle = g; for (const [w, a] of [[16, 0.12], [8, 0.22], [2.5, 0.75]]) { ctx.lineWidth = w * u; ctx.globalAlpha = a; ctx.beginPath(); ctx.arc(C, C, 118 * u, 0, TAU); ctx.stroke(); }
+    ctx.globalAlpha = 1;
+  }
+  if (ver === "ancient") { // aged: a sepia cast over the object and a faint golden halo
+    ctx.globalCompositeOperation = bare ? "source-atop" : "color"; ctx.fillStyle = "rgba(170,120,60,.5)"; ctx.fillRect(0, 0, W, W);
+    ctx.globalCompositeOperation = "destination-over"; glow(C, C, 140 * u, [233, 196, 106], 0.22); ctx.globalCompositeOperation = "source-over";
+  }
+  if (ver === "mythic") { // a golden aura, a soft gold ring and a few twinkles
+    ctx.globalCompositeOperation = "destination-over"; glow(C, C, 150 * u, [233, 196, 106], 0.4); ctx.globalCompositeOperation = "source-over";
+    for (const [w, a] of [[12, 0.15], [5, 0.3], [2, 0.85]]) { ctx.strokeStyle = rgba([233, 196, 106], a); ctx.lineWidth = w * u; ctx.beginPath(); ctx.arc(C, C, 124 * u, 0, TAU); ctx.stroke(); }
+    for (let i = 0; i < 12; i++) { const a = r() * TAU, d = (100 + r() * 50) * u; glow(C + Math.cos(a) * d, C + Math.sin(a) * d, (3 + r() * 4) * u, [255, 244, 214], 0.9); }
+  }
   ctx.restore();
 }
 
