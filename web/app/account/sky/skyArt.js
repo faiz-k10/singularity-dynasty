@@ -143,9 +143,7 @@ export function drawObject(ctx, W, find, edge, { bare = false } = {}) {
       if (n === "Sungrazer") { // seconds from its star: the star blazing in the corner, the tail long and brilliant, pointing straight away from it
         sun(C + 118 * u, C - 118 * u, 30 * u, mix(LT, [255, 236, 190], 0.6), DK, 3.2);
         comet(C + 52 * u, C - 52 * u, 230, 1.15);
-      } else if (n === "Interstellar Comet") { // a long cigar-shaped body on an open, hyperbolic path through the frame, barely any tail
-        ctx.setLineDash([3 * u, 6 * u]); ctx.strokeStyle = rgba(LT, 0.55); ctx.lineWidth = 1.6 * u;
-        ctx.beginPath(); ctx.moveTo(C - 150 * u, C + 120 * u); ctx.quadraticCurveTo(C + 30 * u, C - 40 * u, C + 150 * u, C - 150 * u); ctx.stroke(); ctx.setLineDash([]);
+      } else if (n === "Interstellar Comet") { // a long cigar-shaped body passing through, barely any tail (no path line: founder, Nov 17 2026)
         comet(C, C, 60, 0.55);
         ctx.save(); ctx.translate(C, C); ctx.rotate(-0.85); const g = ctx.createLinearGradient(-26 * u, -8 * u, 20 * u, 8 * u); g.addColorStop(0, rgba(mix(LT, WHITE, 0.4))); g.addColorStop(0.5, rgba(LT)); g.addColorStop(1, rgba(DK));
         ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(0, 0, 26 * u, 6.5 * u, 0, 0, TAU); ctx.fill(); ctx.restore();
