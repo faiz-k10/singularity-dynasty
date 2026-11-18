@@ -14,6 +14,14 @@ p <- as.data.frame(load_players())
 ids <- as.data.frame(load_ff_playerids())
 ids <- ids[!is.na(ids$gsis_id) & !is.na(ids$sleeper_id), c("gsis_id", "sleeper_id")]
 ids <- ids[!duplicated(ids$gsis_id), ]
+# Players the crosswalk hasn't caught up on yet (mostly rookies): a hand-kept list of gsis_id -> Sleeper id (sleeper_id_overrides.csv).
+# Only fills a player the crosswalk has no Sleeper id for, so a later crosswalk update always wins. Without it a rostered player such as
+# CJ Daniels (Sleeper 13270) showed on My Team as "Player 13270". Add a line when a roster shows "Player <id>".
+if (file.exists("sleeper_id_overrides.csv")) {
+  ov <- read.csv("sleeper_id_overrides.csv", colClasses = "character")
+  ov <- ov[!(ov$gsis_id %in% ids$gsis_id) & !(ov$sleeper_id %in% ids$sleeper_id), c("gsis_id", "sleeper_id")]
+  ids <- rbind(ids, ov)
+}
 
 p <- p[!is.na(p$gsis_id) & !is.na(p$last_season) & p$last_season >= SEASON - 1L & !is.na(p$position), ]
 m <- merge(p, ids, by = "gsis_id")

@@ -1,6 +1,7 @@
 "use client";
 
 import { SHARE_W, SHARE_H } from "@/lib/labShare";
+import { drawBrand } from "./brandCanvas";
 
 // Pictures of what is on screen, for sharing: The Observatory's charts (tools/lab/LabExport.js) and the player dashboards (DashboardShareButton.js).
 // html-to-image is loaded on demand; the page's fonts are turned into embeddable CSS once per visit (the slow part of the first picture).
@@ -64,7 +65,7 @@ const font = (name) => getComputedStyle(document.documentElement).getPropertyVal
 const cssVar = (name, fallback) => getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
 
 // The picture on a 1.91 : 1 card (the shape every platform uses for a large link preview, so none of them crops it), in the page's own
-// colours. With `head` = { left, right }: a branded strip across the top (the ember mark, DYNASTY SINGULARITY, and what the picture is),
+// colours. With `head` = { left, right }: a branded strip across the top (the brand lockup -- initials logo + wordmark -- and what the picture is),
 // a hairline under it, and the picture fitted in the rest. Without it (The Observatory's pictures carry their own heading): the picture alone.
 // `blocks` (from blockRects): for a tall, narrow dashboard (the Dynasty Board's profile is ~10x taller than wide and would be a sliver on a
 // wide card), the picture is cut at those sections and laid out in side-by-side columns, in reading order, with the column count chosen to
@@ -109,9 +110,10 @@ export async function toShareCard(blob, head = null, blocks = null) {
   let top = 40;
   if (head) {
     const ink = cssVar("--star", "#ECE7DC"), dim = cssVar("--star-dim", "#A39E92"), ember = cssVar("--ember", "#E8643F"), line = cssVar("--line", "#27251F");
-    ctx.fillStyle = ember; ctx.fillRect(0, 0, SHARE_W, 8); ctx.fillRect(64, 62, 22, 22);
+    ctx.fillStyle = ember; ctx.fillRect(0, 0, SHARE_W, 8);
+    // the brand lockup: the initials logo + DYNASTY SINGULARITY set like the landing page's hero bar (app/brandCanvas.js)
+    await drawBrand(ctx, 64, 74, 66, { ink, accent: cssVar("--mark-accent", "#4C7DF0"), bg: bodyColor() });
     ctx.textBaseline = "middle";
-    ctx.fillStyle = ink; ctx.font = `700 34px ${font("--font-mono")}`; ctx.fillText("DYNASTY SINGULARITY", 104, 74);
     if (head.right) { ctx.textAlign = "right"; ctx.fillStyle = dim; ctx.font = `400 30px ${font("--font-mono")}`; ctx.fillText(String(head.right).toUpperCase(), SHARE_W - 64, 74); ctx.textAlign = "left"; }
     ctx.fillStyle = line; ctx.fillRect(64, 128, SHARE_W - 128, 2);
     top = 156;

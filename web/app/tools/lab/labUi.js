@@ -94,8 +94,8 @@ export function MetricSelect({ label, value, onChange, available, simsAccess, id
 export function Signature({ axis = null }) {
   return (
     <div className={`lab-export-foot${axis ? " is-on-axis" : ""}`} style={axis ? { right: axis.r, bottom: axis.b + 6 } : undefined} aria-hidden="true">
-      <BrandMark />
-      Dynasty Singularity · The Observatory
+      <BrandMark initials />
+      <span className="brand-word">Dynasty Singularity</span> · The Observatory
     </div>
   );
 }

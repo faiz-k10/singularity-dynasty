@@ -4,6 +4,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { FAMILIES, COLOURS, skyFor, seasonProgress, COLORS as STAR } from "@/lib/nightSky";
 import { SkyBackdrop, CoreSkin } from "./skins";
 import { placeFind } from "@/lib/skyPlacement";
+import { drawBrand } from "../../brandCanvas";
 import { StarField, Galaxies, Scrim, LitStar, GlowLine, Bloom, StarSurface } from "./hubble";
 
 // The Night Sky's pictures (from mockups/night-sky.html, which the founder approved): one renderer per kind of object, coloured by the find's
@@ -407,7 +408,10 @@ async function base(ctx, eyebrow, { corners = true, shadeTo = 760 } = {}) {
   ctx.fillStyle = "#E8643F"; ctx.fillRect(0, 0, 1200, 6); ctx.fillRect(64, 70, 10, 10);
   ctx.fillStyle = "#A39E92"; ctx.font = `400 20px ${font("--font-mono")}`; ctx.fillText(eyebrow.toUpperCase(), 88, 81);
   if (!corners) return;
-  ctx.textAlign = "right"; ctx.font = `400 18px ${font("--font-mono")}`; ctx.fillText("DYNASTY SINGULARITY · THE NIGHT SKY", 1136, 590);
+  // signature: the brand lockup (app/brandCanvas.js), then "· THE NIGHT SKY"
+  ctx.textAlign = "right"; ctx.font = `400 18px ${font("--font-mono")}`; ctx.fillText("· THE NIGHT SKY", 1136, 590);
+  const tail = ctx.measureText("· THE NIGHT SKY").width; ctx.textAlign = "left";
+  await drawBrand(ctx, 1136 - tail - 12, 584, 30, { ink: "#ECE7DC", accent: "#4C7DF0", bg: "#0B0B0B", word: "#A39E92", align: "right" });
   if (badgeText) {
     ctx.font = `700 18px ${font("--font-mono")}`; const w = ctx.measureText(badgeText).width + 28;
     ctx.strokeStyle = "#E9C46A"; ctx.lineWidth = 2; ctx.strokeRect(1136 - w, 58, w, 34); ctx.fillStyle = "#E9C46A"; ctx.fillText(badgeText, 1122, 81);
@@ -495,7 +499,8 @@ export async function seasonCard(state, { title, size, rarest }) {
     ctx.fillStyle = "#A39E92"; ctx.font = `400 15px ${mono}`; ctx.fillText(`RAREST FIND · 1 IN ${rarest.oneIn.toLocaleString()}`, L, 482);
     ctx.fillStyle = "#E9C46A"; ctx.font = `700 22px ${mono}`; wrap(ctx, rarest.name.toUpperCase(), L, 514, R - L, 28);
   }
-  ctx.fillStyle = "#A39E92"; ctx.font = `400 14px ${mono}`; ctx.fillText("DYNASTY SINGULARITY · THE NIGHT SKY", L, 590);
+  const bw = await drawBrand(ctx, L, 584, 28, { ink: "#ECE7DC", accent: "#4C7DF0", bg: "#0B0B0B", word: "#A39E92" });
+  ctx.fillStyle = "#A39E92"; ctx.font = `400 14px ${mono}`; ctx.textBaseline = "alphabetic"; ctx.fillText("· THE NIGHT SKY", L + bw + 10, 590);
   return cv;
 }
 export const toBlob = (cv) => new Promise((res) => cv.toBlob(res, "image/png"));

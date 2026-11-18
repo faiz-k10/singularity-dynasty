@@ -5780,6 +5780,10 @@ html{font-stretch:82%;}
 .lab-stage.is-exporting .lab-export-head{display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 16px; margin-bottom:16px; padding-bottom:12px; border-bottom:2px solid var(--rule-strong);}
 .lab-export-brand{display:inline-flex; align-items:center; gap:8px; font-family:var(--font-display), sans-serif; font-size:15px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--star);}
 .lab-export-brand i{font-style:normal; color:var(--horizon-gold);}
+/* The brand in every share picture (Nov 17 2026, founder): the initials logo + DYNASTY SINGULARITY set like the landing page's hero bar
+   (.ehp-brand: Big Shoulders 600, .34em tracking). The canvas cards (app/brandCanvas.js) and server cards (lib/cardArt.js) draw the same. */
+.brand-word{font-family:var(--font-display), sans-serif; font-weight:600; letter-spacing:.34em; text-transform:uppercase;}
+.lab-export-mark .ring{width:1.1em; height:1.1em; flex-shrink:0;}
 .lab-export-title{flex:1 1 auto; font-family:var(--font-display), sans-serif; font-size:24px; font-weight:800; color:var(--star);}
 .lab-export-scope{font-family:var(--font-mono), monospace; font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--star-dim);}
 .lab-stage.is-exporting .lab-table-wrap{overflow:visible;}

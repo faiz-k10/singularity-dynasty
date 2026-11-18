@@ -136,15 +136,15 @@ export default function LabClient({ rows, week, season, simsAccess, mine, gated,
         {/* Shown only in an exported picture (.is-exporting): the brand, what the chart is, and the week. */}
         <div className="lab-export-head" aria-hidden="true">
           <span className="lab-export-brand">
-            <BrandMark />
-            Dynasty Singularity <i>The Observatory</i>
+            <BrandMark initials />
+            <span className="brand-word">Dynasty Singularity</span> <i>The Observatory</i>
           </span>
           <span className="lab-export-title">{title}</span>
           <span className="lab-export-scope">{scope}</span>
         </div>
         {/* The watermark, also only in an exported picture: a faint wordmark across the chart, plus the brand signature (labUi Signature: on a
             chart's x axis, under the view otherwise), so a shared chart always carries where it came from. */}
-        <div className="lab-export-mark" aria-hidden="true">Dynasty Singularity</div>
+        <div className="lab-export-mark" aria-hidden="true"><BrandMark initials /><span className="brand-word">Dynasty Singularity</span></div>
         {view === "scatter" && (
           <LabScatter {...shared} xKey={xKey} yKey={yKey} onX={setX} onY={setY} onSwap={() => (setX(yKey), setY(xKey))} />
         )}

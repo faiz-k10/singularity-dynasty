@@ -28,9 +28,10 @@ const MONO = "Martian Mono";
 let fontsP = null;
 function fonts() {
   const dir = join(process.cwd(), "assets/og-fonts");
-  fontsP ??= Promise.all([readFile(join(dir, "BigShoulders-800.ttf")), readFile(join(dir, "MartianMono-400.ttf")), readFile(join(dir, "MartianMono-700.ttf"))])
-    .then(([d, m4, m7]) => [
+  fontsP ??= Promise.all([readFile(join(dir, "BigShoulders-800.ttf")), readFile(join(dir, "MartianMono-400.ttf")), readFile(join(dir, "MartianMono-700.ttf")), readFile(join(dir, "BigShoulders-600.ttf"))])
+    .then(([d, m4, m7, d6]) => [
       { name: DISPLAY, data: d, weight: 800, style: "normal" },
+      { name: DISPLAY, data: d6, weight: 600, style: "normal" }, // the brand wordmark, as in the landing page's hero bar
       { name: MONO, data: m4, weight: 400, style: "normal" },
       { name: MONO, data: m7, weight: 700, style: "normal" },
     ])
@@ -89,8 +90,9 @@ export function Frame({ f, eyebrow, host, tool, children }) {
     <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", background: C.void, color: C.star, fontFamily: MONO, borderTop: `8px solid ${C.ember}`, padding: `${pad - 14}px ${pad}px ${pad - 18}px` }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div style={{ display: "flex", alignItems: "center" }}>
-          <MarkSvg size={46} ink={C.star} ember="#4C7DF0" bold={1.1} />
-          <div style={{ display: "flex", marginLeft: 14, fontFamily: DISPLAY, fontSize: tall ? 34 : 30, letterSpacing: 5, textTransform: "uppercase" }}>Dynasty Singularity</div>
+          {/* the brand lockup (Nov 17 2026): the initials logo + DYNASTY SINGULARITY in the hero bar's style (600, .34em tracking) */}
+          <MarkSvg size={tall ? 56 : 50} ink={C.star} ember="#4C7DF0" bg={C.void} bold={1.1} initials />
+          <div style={{ display: "flex", marginLeft: 16, fontFamily: DISPLAY, fontWeight: 600, fontSize: tall ? 32 : 28, letterSpacing: (tall ? 32 : 28) * 0.34, textTransform: "uppercase" }}>Dynasty Singularity</div>
         </div>
         {eyebrow && <div style={{ display: "flex", flexShrink: 0, whiteSpace: "nowrap", background: C.ember, color: C.onBrand, fontWeight: 700, fontSize: tall ? 20 : 18, letterSpacing: 2, padding: "7px 14px", textTransform: "uppercase" }}>{eyebrow}</div>}
       </div>
