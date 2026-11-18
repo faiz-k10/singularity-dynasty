@@ -241,6 +241,16 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
             <div className="dp-badges">
               <PositionBadge position={p.pos} />
               <TeamBadge team={p.team} />
+              {/* Share sits beside the team logo, under the name (founder, Nov 17 2026) */}
+              <DashboardShareButton
+                target=".dp"
+                blocks=".dp > .dp-name, .dp > .dp-head, .dp-story > li"
+                title={`${p.name}: dynasty ${p.score.toFixed(1)}`}
+                heading={`Dynasty Board · ${f.label} · ${m.label}`}
+                caption={`${p.name} in dynasty: ${p.score.toFixed(1)} (${f.label}, ${m.label}).`}
+                file={`dynasty-singularity-${p.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
+                className="lab-copy dp-share-btn"
+              />
             </div>
             <div className="dp-demo mono">{[`${p.age.toFixed(1)} yrs`, ...size].join(" · ")}</div>
             <div className="dp-links">
@@ -249,16 +259,6 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
             </div>
           </div>
         </header>
-        <div className="dp-share">
-          <DashboardShareButton
-            target=".dp"
-            blocks=".dp > .dp-name, .dp > .dp-head, .dp-story > li"
-            title={`${p.name}: dynasty ${p.score.toFixed(1)}`}
-            heading={`Dynasty Board · ${f.label} · ${m.label}`}
-            caption={`${p.name} in dynasty: ${p.score.toFixed(1)} (${f.label}, ${m.label}).`}
-            file={`dynasty-singularity-${p.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
-          />
-        </div>
 
         {/* The profile reads as ONE story down a spine (founder, Nov 16 2026: "tell a story based on what is already there"):
             what he's worth, where that comes from, how long it lasts, who he's level with, whether the league changes it, and

@@ -2,14 +2,15 @@
 
 import { useCallback, useRef, useState } from "react";
 import ShareDialog from "./ShareDialog";
-import { snapshotPng, toShareCard, uploadShare, blockRects } from "./snapshot";
+import { snapshotPng, toShareCard, uploadShare, blockRects, unionRect } from "./snapshot";
 
 // "Share" on a player's dashboard (founder, Nov 17 2026: "make it so the shared product shows the player's dashboard and not just a simple
 // truncated version"): the dashboard the button sits in (the nearest ancestor matching `target`) is pictured exactly as it is on screen, put on
 // a link-preview card under a branded strip (`heading`), uploaded (app/api/lab-share -> /s/<id>, whose preview IS the picture) and handed to
 // the usual Share to social pop-up. It pictures what the viewer can already see, so it can never show more than their plan allows.
-// The button itself is left out of the picture. `blocks`: for a tall dashboard, the sections to lay out in columns (app/snapshot.js).
-export default function DashboardShareButton({ target, blocks, title, caption, heading, file = "dynasty-singularity", label = "Share", className = "lab-copy" }) {
+// The button itself is left out of the picture. `blocks`: for a tall dashboard, the sections to lay out in columns;
+// `only`: crop the picture to the region these cover (app/snapshot.js).
+export default function DashboardShareButton({ target, blocks, only, title, caption, heading, file = "dynasty-singularity", label = "Share", className = "lab-copy" }) {
   const btn = useRef(null);
   const [open, setOpen] = useState(false);
   const urls = useRef([]);
@@ -22,7 +23,8 @@ export default function DashboardShareButton({ target, blocks, title, caption, h
     async ({ onPreview }) => {
       const el = btn.current?.closest(target);
       if (!el) throw new Error("Couldn't find the dashboard to share.");
-      const parts = blocks ? blockRects(el, blocks) : null; // measured before the picture is drawn, from the page as it is
+      // measured before the picture is drawn, from the page as it is
+      const parts = only ? unionRect(el, only) : blocks ? blockRects(el, blocks) : null;
       const shot = await snapshotPng(el);
       const card = await toShareCard(shot, { right: heading }, parts);
       const preview = URL.createObjectURL(card), full = URL.createObjectURL(shot);
@@ -31,14 +33,14 @@ export default function DashboardShareButton({ target, blocks, title, caption, h
       const url = await uploadShare(card, { title, caption, view: window.location.pathname });
       return {
         url,
-        getFile: async () => new File([shot], `${file}.png`, { type: "image/png" }),
+        getFile: async () => new File([only ? card : shot], `${file}.png`, { type: "image/png" }),
         downloads: [
-          { label: "Download the dashboard (full size)", href: full, download: `${file}.png` },
+          ...(only ? [] : [{ label: "Download the dashboard (full size)", href: full, download: `${file}.png` }]),
           { label: "Download the link-preview card", href: preview, download: `${file}-card.png` },
         ],
       };
     },
-    [target, blocks, title, caption, heading, file]
+    [target, blocks, only, title, caption, heading, file]
   );
   return (
     <>

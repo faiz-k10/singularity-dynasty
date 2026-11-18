@@ -69,6 +69,15 @@ const cssVar = (name, fallback) => getComputedStyle(document.documentElement).ge
 // `blocks` (from blockRects): for a tall, narrow dashboard (the Dynasty Board's profile is ~10x taller than wide and would be a sliver on a
 // wide card), the picture is cut at those sections and laid out in side-by-side columns, in reading order, with the column count chosen to
 // show it largest.
+// `unionRect(el, selector)`: the one region covering every match, for cropping the picture to part of a dashboard.
+export function unionRect(el, selector) {
+  const r = blockRects(el, selector);
+  if (!r.length) return null;
+  const x = Math.min(...r.map((b) => b.x)), y = Math.min(...r.map((b) => b.y));
+  const out = [{ x, y, w: Math.max(...r.map((b) => b.x + b.w)) - x, h: Math.max(...r.map((b) => b.y + b.h)) - y }];
+  out.cropW = el.offsetWidth; // the picture's width in page pixels, to scale the crop
+  return out;
+}
 export function blockRects(el, selector) {
   const box = el.getBoundingClientRect();
   return [...el.querySelectorAll(selector)].filter((b) => b.offsetHeight > 0).map((b) => { const r = b.getBoundingClientRect(); return { x: r.left - box.left, y: r.top - box.top, w: r.width, h: r.height }; });
@@ -118,9 +127,12 @@ export async function toShareCard(blob, head = null, blocks = null) {
     });
     return new Promise((resolve, reject) => canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("no card"))), "image/png"));
   }
-  const s = Math.min(boxW / img.width, boxH / img.height);
-  const w = img.width * s, h = img.height * s;
-  ctx.drawImage(img, (SHARE_W - w) / 2, top + (boxH - h) / 2, w, h);
+  // one block = crop the picture to that region (DashboardShareButton's `only`); none = the whole picture
+  const k1 = blocks?.length === 1 ? img.width / blocks.cropW : 1;
+  const src = blocks?.length === 1 ? { x: blocks[0].x * k1, y: blocks[0].y * k1, w: blocks[0].w * k1, h: blocks[0].h * k1 } : { x: 0, y: 0, w: img.width, h: img.height };
+  const s = Math.min(boxW / src.w, boxH / src.h);
+  const w = src.w * s, h = src.h * s;
+  ctx.drawImage(img, src.x, src.y, src.w, src.h, (SHARE_W - w) / 2, top + (boxH - h) / 2, w, h);
   return new Promise((resolve, reject) => canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("no card"))), "image/png"));
 }
 

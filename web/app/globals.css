@@ -6033,7 +6033,7 @@ select.lab-select{min-width:200px;}
 .dp-name{margin:0 0 12px; text-align:center; font-family:var(--font-display); font-weight:800; text-transform:uppercase; letter-spacing:.07em; line-height:1; white-space:nowrap; overflow:hidden;
   font-size:clamp(20px, calc(100cqw / (var(--chars) * 0.66)), 80px);} /* fills the pane's width: ~0.6em a capital incl. tracking */
 .dp-badges{display:flex; flex-wrap:wrap; align-items:center; gap:6px 8px; font-size:12px; color:var(--star-dim);}
-.dp-share{margin-top:12px;}
+.dp-share-btn{margin-left:4px; font-size:11px; padding:5px 10px;} /* Share in the badges row under the name (DashboardShareButton.js) */
 .dp-links{display:flex; flex-wrap:wrap; align-items:center; gap:4px 16px; font-family:var(--font-mono), monospace; font-size:11px; letter-spacing:.04em;}
 .dp-links > *{white-space:nowrap;}
 .dp-links a{color:var(--horizon-gold); text-decoration:none;} .dp-links a:hover{text-decoration:underline; text-underline-offset:3px;}

@@ -543,9 +543,10 @@ function StatDetailRow({ row, colSpan, shapePeers, wrTePool, tagsByName, maxCeil
                 })}
               </tbody>
             </table>
-            {/* Share: the whole opened row, as on screen (DashboardShareButton.js); under the table (founder, Nov 17 2026) */}
+            {/* Share: the four panels across the top of the opened row (not the similar players below), as on screen (DashboardShareButton.js); under the table (founder, Nov 17 2026) */}
             <DashboardShareButton
               target=".stat-detail-grid"
+              only=".stat-detail-grid > .stat-panel:not(.stat-panel-finder)"
               title={`${pv.player_name}: season simulation`}
               heading="Season Simulations"
               caption={`${pv.player_name}'s season, simulated: ${Math.round(row.median ?? 0)} median points, ${Math.round(row.floor ?? 0)} to ${Math.round(row.ceiling ?? 0)}.`}
