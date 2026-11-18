@@ -6005,7 +6005,7 @@ select.lab-select{min-width:200px;}
 /* Share buttons for the share cards (ShareCardButton.js) and the pop-up's download links */
 .share-card-btn{display:inline-flex; align-items:center; gap:7px;}
 .weekly-player-share{position:absolute; top:50%; right:14px; transform:translateY(-50%);}
-.stat-panel-pace{position:relative} .stat-panel-share{position:absolute; top:10px; right:12px; z-index:1} /* Share on the opened sims row (DashboardShareButton.js) */
+.stat-panel-share{align-self:center; margin-top:14px} /* Share on the opened sims row, under the Season Simulation table (DashboardShareButton.js) */
 .lab-share-downloads{display:flex; flex-wrap:wrap; gap:8px;}
 .lab-share-downloads .lab-copy{text-decoration:none;}
 @media (max-width:640px){ .weekly-player-share{position:static; transform:none; margin:0 auto;} }
