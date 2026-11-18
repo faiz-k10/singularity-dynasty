@@ -23,3 +23,11 @@ test("clientIp takes the first forwarded address", () => {
   assert.equal(clientIp(h({ "x-real-ip": "8.8.8.8" })), "8.8.8.8");
   assert.equal(clientIp(h({})), "local");
 });
+
+test("return links only ever point at this site", async () => {
+  const { originFor, CANONICAL } = await import("../lib/siteHosts.js");
+  assert.equal(originFor("dynastysingularity.com"), "https://dynastysingularity.com");
+  assert.equal(originFor("web-kohl-ten-94.vercel.app"), "https://web-kohl-ten-94.vercel.app");
+  assert.equal(originFor("localhost:3000"), "http://localhost:3000");
+  for (const bad of ["evil.example", "dynastysingularity.com.evil.example", "", null, "localhost.evil.example"]) assert.equal(originFor(bad), CANONICAL);
+});

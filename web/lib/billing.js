@@ -2,6 +2,7 @@ import { stripe } from "@/lib/stripeClient";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { rewardReferral } from "@/lib/referrals";
 import { subscriptionTier } from "@/lib/subscriptionTier";
+import { logError } from "@/lib/errorLog";
 
 // Server-only: everything that turns a Stripe subscription into a profile's tier. The Stripe webhook
 // (app/api/webhooks/stripe) and the checkout return page (app/account) both go through here, so there is one rule
@@ -45,6 +46,9 @@ export async function syncSubscription(subscriptionId, { userId = null } = {}) {
       : await admin.from("profiles").update(update).eq("stripe_subscription_id", sub.id).select("id");
     check(res);
     matched = res.data?.length || 0;
+    // a safety net: one customer should never be billed for two running subscriptions -- flag it for /admin if it happens
+    const running = await liveSubscriptions(sub.customer).catch(() => []);
+    if (running.length > 1) await logError({ source: "server", route: "billing", message: `Customer ${sub.customer} has ${running.length} running subscriptions (${running.map((r) => r.id).join(", ")}): refund and cancel the extra one in Stripe.` });
   } else {
     const res = await admin
       .from("profiles")
@@ -69,14 +73,9 @@ export async function provisionFromCheckout(sessionOrId, { expectedUserId = null
   const userId = session.client_reference_id || session.metadata?.user_id || null;
   if (expectedUserId && userId !== expectedUserId) return null;
   const subscriptionId = typeof session.subscription === "string" ? session.subscription : session.subscription.id;
-  if (!userId) {
-    // Checkouts from before sign-in was required carry no account id; match the buyer's email once so the subscription id
-    // lands on the profile, after which every later event matches by subscription id.
-    const email = session.customer_details?.email;
-    if (email) {
-      check(await createAdminClient().from("profiles").update({ stripe_subscription_id: subscriptionId }).eq("email", email).select("id"));
-    }
-  }
+  // A session without an account id is not one of ours (checkout always sets it): it unlocks nothing. The old fallback that
+  // matched a profile by the email typed at checkout was removed (security pass, Nov 17 2026) -- that email isn't verified.
+  if (!userId) return null;
   // The referral reward (if this checkout carried one) is settled by syncSubscription once the friend's refund window has passed.
   return syncSubscription(subscriptionId, { userId });
 }
@@ -91,12 +90,17 @@ export async function liveSubscriptions(customerId) {
 }
 
 // What the account page shows about billing, straight from Stripe: the running subscription's plan, price, status, renewal
-// or end date, card, and the next charge (an invoice preview, so discounts / proration are included). null when the account
-// has no running subscription. Never throws (the account page must load even when Stripe doesn't answer).
+// or end date, card, and the next charge (an invoice preview, so discounts / proration are included). { past: true } when it
+// had one that has ended, null when it never subscribed. Never throws (the account page must load even when Stripe doesn't answer).
 export async function accountBilling(customerId) {
   try {
     const [sub] = await liveSubscriptions(customerId);
-    if (!sub) return null;
+    if (!sub) {
+      // nothing running: { past: true } for a former subscriber (their invoices are in the portal), null for someone who never paid
+      // (opening checkout makes a Stripe customer, so having one doesn't mean they ever subscribed)
+      const any = (await stripe.subscriptions.list({ customer: customerId, status: "all", limit: 1 })).data.length > 0;
+      return any ? { past: true } : null;
+    }
     const full = await stripe.subscriptions.retrieve(sub.id, { expand: ["default_payment_method", "items.data.price.product"] });
     const item = full.items.data[0];
     const periodEnd = item?.current_period_end ?? full.current_period_end ?? null;

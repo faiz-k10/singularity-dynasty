@@ -40,11 +40,10 @@ const NOTICES = {
 
 const day = (ms) => (ms ? new Date(ms).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : "");
 
-function Billing({ billing, hasCustomer }) {
+function Billing({ billing }) {
   if (billing?.error) return <p className="acct-line">We couldn&apos;t reach the billing system just now. Manage Billing still works.</p>;
-  if (!billing) {
-    return hasCustomer ? <p className="acct-line">No active subscription. Your invoices are in Manage Billing.</p> : null;
-  }
+  if (!billing) return null;
+  if (billing.past) return <p className="acct-line">No active subscription. Your invoices are in Manage Billing.</p>;
   const per = billing.interval === "year" ? "year" : "month";
   return (
     <dl className="acct-facts">
@@ -114,6 +113,7 @@ export default async function AccountPage({ searchParams }) {
     siteOrigin(),
     skySummary(user.id),
   ]);
+  const portal = Boolean(billing); // Manage Billing only for people who have subscribed (now or before), or when Stripe didn't answer
   const notice = NOTICES[params?.notice] || null;
   const joined = user.created_at ? day(Date.parse(user.created_at)) : "";
 
@@ -167,9 +167,9 @@ export default async function AccountPage({ searchParams }) {
               <div className="account-tier-name">{TIER_LABELS[tier]}</div>
               <p className="acct-line">{TIER_LINES[tier]}</p>
             </div>
-            <Billing billing={billing} hasCustomer={Boolean(profile?.stripe_customer_id)} />
+            <Billing billing={billing} />
             <div className="auth-actions">
-              {profile?.stripe_customer_id ? (
+              {portal ? (
                 <form>
                   <button formAction={openBillingPortal} className="btn-primary">
                     Manage Billing
@@ -177,12 +177,12 @@ export default async function AccountPage({ searchParams }) {
                 </form>
               ) : null}
               {tier !== "singularity" && (
-                <Link href="/#pricing" className={profile?.stripe_customer_id ? "btn-ghost" : "btn-primary"}>
+                <Link href="/#pricing" className={portal ? "btn-ghost" : "btn-primary"}>
                   {tier === "stargazer" ? "See Plans" : "Compare Plans"}
                 </Link>
               )}
             </div>
-            {profile?.stripe_customer_id && <p className="acct-small">Change plan, update your card, download invoices or cancel in Manage Billing. Cancelling keeps your plan until the end of the period you paid for.</p>}
+            {portal && <p className="acct-small">Change plan, update your card, download invoices or cancel in Manage Billing. Cancelling keeps your plan until the end of the period you paid for.</p>}
           </details>
 
           {refCode && (
