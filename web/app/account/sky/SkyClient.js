@@ -53,14 +53,17 @@ function Core({ mass, collapsed, skin }) {
       <CoreSkin skin={skin} layer="front" />
       {collapsed && <circle className="sky-core-lens" r="49" />}
       {/* no plate: the words sit on the sky with a soft shadow (founder, Nov 17 2026: the black boxes looked out of place) */}
-      <g className="sky-label">
-        {/* at the bottom of the sky the whole line is centred, under the picks (founder, Nov 17 2026) */}
-        <text className="sky-heat" x="0" y="284" textAnchor="middle">
-          {collapsed ? "Collapsed · a find is waiting" : STAGES.map((x, i) => (
-            <tspan key={x.id} className={x.id === st.id ? "is-on" : ""}>{i ? "  ·  " : ""}{x.label}</tspan>
-          ))}
-        </text>
-      </g>
+      {/* at the bottom of the sky the whole line is centred, under the picks (founder, Nov 17 2026). While a find is waiting the
+          telescope button below the sky says so, in this same spot, so the line steps aside (founder, Nov 18 2026: "this is messy") */}
+      {!collapsed && (
+        <g className="sky-label">
+          <text className="sky-heat" x="0" y="284" textAnchor="middle">
+            {STAGES.map((x, i) => (
+              <tspan key={x.id} className={x.id === st.id ? "is-on" : ""}>{i ? "  ·  " : ""}{x.label}</tspan>
+            ))}
+          </text>
+        </g>
+      )}
     </g>
   );
 }
@@ -72,7 +75,7 @@ function RarestInSky({ state }) {
   const place = useMemo(() => {
     if (!rarest) return null;
     const sky = skyFor(state.season);
-    const avoid = [[-120, 270, 120, 292], [-92, 218, 92, 260], ...sky.map((c) => {
+    const avoid = [[-200, 240, 200, 300], [-92, 178, 92, 260], /* the heat line or the telescope button; the picks, raised or not */ ...sky.map((c) => {
       const lx = Math.sign(c.label[0]) * 456, ly = c.label[1];
       return lx > 0 ? [lx - 175, ly - 14, lx, ly + 20] : [lx, ly - 14, lx + 175, ly + 20];
     })];
@@ -132,6 +135,7 @@ const useReducedMotion = () => useSyncExternalStore(subscribeMotion, () => windo
 const Sky = memo(function Sky({ state, picks, pending }) {
   const fid = useId().replace(/[^a-zA-Z0-9_-]/g, "");
   const open = state.findsTotal >= UNLOCK.constellations;
+  const lift = pending ? 40 : 0; // while the telescope button sits at the bottom of the sky, the picks waiting move up out of its way
   return (
     <svg className="sky-svg" viewBox="-480 -300 960 600" role="img" aria-label={`Your sky: ${state.findsTotal} finds, the core ${pending ? "collapsed" : stageOf(state.mass).label.toLowerCase()}`}>
       <SkyBackdrop skin={equipped(state).sky} />
@@ -179,8 +183,8 @@ const Sky = memo(function Sky({ state, picks, pending }) {
       {/* the picks waiting sit at the bottom of the sky, just above the core's heat line (founder, Nov 17 2026) */}
       {picks > 0 && (
         <g className="sky-label">
-          {Array.from({ length: picks }, (_, i) => <circle key={`p${i}`} className="sky-pending" cx={(i - (picks - 1) / 2) * 22} cy={230} r="5" />)}
-          <text className="sky-creal" x="0" y="252" textAnchor="middle">{picks} pick{picks === 1 ? "" : "s"} waiting</text>
+          {Array.from({ length: picks }, (_, i) => <circle key={`p${i}`} className="sky-pending" cx={(i - (picks - 1) / 2) * 22} cy={230 - lift} r="5" />)}
+          <text className="sky-creal" x="0" y={252 - lift} textAnchor="middle">{picks} pick{picks === 1 ? "" : "s"} waiting</text>
         </g>
       )}
       <Core mass={state.mass} collapsed={pending > 0} skin={equipped(state).core} />
