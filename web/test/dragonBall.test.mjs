@@ -25,9 +25,11 @@ test("Super Hero badge carries the ball variant and its tier is capped at the 7-
   assert.equal(hero(0), undefined);
 });
 
-test("Super Hero is always the last badge in the row", () => {
+test("badges run Established / Building, grey, red, blue, Elite Role / Elite Player, and the Super Hero ball at the very end", () => {
   const keys = getAchievements({ heroWins: 3, sample_confidence: "established", defLean: { call: "SMASH", text: "x" } }).map((a) => a.key);
-  assert.equal(keys[keys.length - 1], "hero");
+  assert.deepEqual(keys, ["confidence", "matchup", "hero"]);
+  const tough = getAchievements({ heroWins: 1, sample_confidence: "established", bio: { yearsExp: 0 }, defLean: { call: "TOUGH", text: "x" }, groupRank: { role: { rank: 2, of: 30 }, player: { rank: 3, of: 30 } } }).map((a) => a.key);
+  assert.deepEqual(tough, ["confidence", "rookie", "matchup", "eliteRole", "elitePlayer", "hero"]);
 });
 
 test("a player projected for 0 points keeps his past-games badges but not the ones that read this week (range, matchup)", () => {
@@ -46,7 +48,7 @@ test("Elite Role / Elite Player: top 5 in the position's Role / Player group, fr
   assert.ok(keys({ rank: 1, groupRank: { role: { rank: 30, of: 34 } } }).indexOf("eliteRole") === -1, "a #1 weekly rank earns nothing");
   assert.deepEqual(keys({ projection: 0, groupRank: { role: { rank: 2, of: 34 }, player: { rank: 3, of: 34 } } }), ["eliteRole", "elitePlayer"]);
   const row = { heroWins: 2, groupRank: { role: { rank: 1, of: 30 }, player: { rank: 1, of: 30 } } };
-  assert.equal(keys(row).at(-1), "hero", "the ball is still last");
+  assert.equal(keys(row).at(-1), "hero", "the ball is at the very end");
   assert.equal(keys({}).length, 0, "no groupRank, no elite badges");
 });
 

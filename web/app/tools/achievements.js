@@ -301,7 +301,6 @@ export function getAchievements(row) {
     elitePlayer && { key: "elitePlayer", variant: "elitePlayer", label: "Elite Player", rank: row.groupRank.player.rank },
     plusValue && { key: "plusValue", variant: "plusValue", label: "Plus Value", roleRank, playerRank },
     minusValue && { key: "minusValue", variant: "minusValue", label: "Minus Value", roleRank, playerRank },
-    // Always last: the ball badge closes the row.
     heroWins > 0 && {
       key: "hero",
       variant: "ball",
@@ -310,5 +309,22 @@ export function getAchievements(row) {
       weeks: row.heroWinWeeks || [],
       tier: Math.min(heroWins, HERO_MAX_TIER),
     },
-  ].filter(Boolean);
+  ]
+    .filter(Boolean)
+    .map((a, i) => [a, i])
+    .sort((x, y) => badgeRank(x[0]) - badgeRank(y[0]) || x[1] - y[1]) // stable within a group
+    .map(([a]) => a);
 }
+
+// The order badges are shown in, by colour (founder, Nov 18 2026): Established / Building first, then the grey (informational) ones, then the
+// red (bad), then the blue (good), then Elite Role / Elite Player, and the Super Hero ball at the very end. The colours themselves
+// are the "badges: three colours" block in globals.css -- a new badge goes in the same group here as there.
+const BADGE_GROUP = {
+  gold: 0, silver: 0,
+  rookie: 1, icarus: 1, eddy: 1, peak: 1,
+  ice: 2, tough: 2, menace: 2, minusValue: 2,
+  heat: 3, sprout: 3, smash: 3, honorable: 3, plusValue: 3, boulder: 3, cloud: 3,
+  eliteRole: 4, elitePlayer: 4,
+  ball: 5,
+};
+const badgeRank = (a) => BADGE_GROUP[a.variant] ?? 3;
