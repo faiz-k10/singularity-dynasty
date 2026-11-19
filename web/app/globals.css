@@ -3214,9 +3214,11 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .compare-picker-list{
   position:absolute; top:calc(100% + 6px); left:0; right:0; z-index:20;
   background:var(--void-panel-2); border:1px solid var(--line); border-radius:2px;
-  box-shadow:0 20px 40px rgba(var(--shadow-rgb),0.5); max-height:260px; overflow-y:auto;
+  box-shadow:0 20px 40px rgba(var(--shadow-rgb),0.5); max-height:340px; overflow-y:auto;
   list-style:none; margin:0; padding:6px;
 }
+/* the count at the top of the open list (all the players this plan can compare, or the matches), kept in view while the list scrolls */
+.compare-picker-count{position:sticky; top:-6px; margin:-6px -6px 4px; padding:8px 12px; font-size:11px; letter-spacing:.06em; color:var(--star-dim); background:var(--void-panel-2); border-bottom:1px solid var(--line);}
 .compare-picker-list li button{
   all:unset; display:flex; justify-content:space-between; align-items:center; width:100%; box-sizing:border-box;
   padding:9px 12px; border-radius:2px; cursor:pointer; font-size:13.5px; color:var(--star);

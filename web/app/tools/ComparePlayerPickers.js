@@ -4,7 +4,6 @@ import { useMemo, useRef, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 
-const MAX_SUGGESTIONS = 8;
 const SLOTS = [1, 2, 3, 4, 5].map((n) => ({ name: `p${n}`, label: `Player ${n}` }));
 
 function displayFor(player) {
@@ -29,8 +28,9 @@ function PickerField({ slot, players, defaultValue, taken, onChange }) {
   const matches = useMemo(() => {
     const q = typed ? query.trim().toLowerCase() : "";
     const free = players.filter((p) => !taken.has(p.player_name));
-    const pool = q ? free.filter((p) => p.player_name.toLowerCase().includes(q)) : free;
-    return pool.slice(0, MAX_SUGGESTIONS);
+    // Every player this plan can compare, not a short list (founder, Nov 18 2026: showing only the first 8 read as "I can't compare
+    // everyone"); the list scrolls, and typing narrows it.
+    return q ? free.filter((p) => p.player_name.toLowerCase().includes(q)) : free;
   }, [players, query, typed, taken]);
 
   function pick(player) {
@@ -90,6 +90,9 @@ function PickerField({ slot, players, defaultValue, taken, onChange }) {
         <input type="hidden" name={slot.name} value={selected?.player_name || ""} />
         {open && matches.length > 0 && (
           <ul className="compare-picker-list">
+            <li className="compare-picker-count mono" aria-hidden="true">
+              {typed && query.trim() ? `${matches.length} match${matches.length === 1 ? "" : "es"}` : `All ${matches.length} players · type to search`}
+            </li>
             {matches.map((p) => (
               <li key={p.player_name}>
                 <button type="button" onMouseDown={(e) => { e.preventDefault(); pick(p); }}>
