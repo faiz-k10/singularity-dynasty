@@ -74,7 +74,7 @@ function RarestInSky({ state }) {
   const rarest = useMemo(() => Object.values(state.found).sort((a, b) => b.oneIn - a.oneIn)[0] || null, [state.found]);
   const place = useMemo(() => {
     if (!rarest) return null;
-    const sky = skyFor(state.season);
+    const sky = pageSky(state.season);
     const avoid = [[-200, 240, 200, 300], [-92, 178, 92, 260], /* the heat line or the telescope button; the picks, raised or not */ ...sky.map((c) => {
       const lx = Math.sign(c.label[0]) * 456, ly = c.label[1];
       return lx > 0 ? [lx - 175, ly - 14, lx, ly + 20] : [lx, ly - 14, lx + 175, ly + 20];
@@ -130,6 +130,17 @@ const MOTION = {
 const subscribeMotion = (cb) => { const q = window.matchMedia("(prefers-reduced-motion: reduce)"); q.addEventListener("change", cb); return () => q.removeEventListener("change", cb); };
 const useReducedMotion = () => useSyncExternalStore(subscribeMotion, () => window.matchMedia("(prefers-reduced-motion: reduce)").matches, () => false);
 
+// The season's constellations as the PAGE draws them (founder, Nov 18 2026: the telescope button sat on a star of Orion): the sky panel is
+// a wide landscape (+-480 across) while the constellations are laid out in a square (+-256), so each one is shifted SPREAD units further out
+// to its own side -- every star then sits at least 228 from the centre line, clear of the centred telescope button and the words under the
+// core. The share card's square sky keeps the original layout.
+const SPREAD = 120;
+const spreadCache = new Map();
+function pageSky(season) {
+  if (!spreadCache.has(season)) spreadCache.set(season, skyFor(season).map((c) => ({ ...c, pts: c.pts.map(([x, y, r]) => [x + Math.sign(x) * SPREAD, y, r]) })));
+  return spreadCache.get(season);
+}
+
 // Memoised (Nov 17 2026 performance pass): the sky is the heaviest thing on the page (hundreds of stars, skins with noise filters), so it
 // redraws only when its own data changes -- not on the boost timers, menus or messages around it. `picks` is a count so the props compare.
 const Sky = memo(function Sky({ state, picks, pending }) {
@@ -150,7 +161,7 @@ const Sky = memo(function Sky({ state, picks, pending }) {
           <feMerge><feMergeNode in="wide" /><feMergeNode in="wide" /><feMergeNode in="tight" /><feMergeNode in="tight" /><feMergeNode in="tight" /></feMerge>
         </filter>
       </defs>
-      {skyFor(state.season).map((c) => {
+      {pageSky(state.season).map((c) => {
         const f = state.filled[c.id] || [];
         if (!open) return <g key={c.id}>{c.pts.map(([x, y], i) => f[i] ? <circle key={i} cx={x} cy={y} r={3} fill="var(--star)" /> : null)}</g>;
         const have = f.filter(Boolean).length, done = have === c.pts.length;
