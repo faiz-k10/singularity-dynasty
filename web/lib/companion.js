@@ -109,7 +109,7 @@ function lineupCards(savedTeams, gameStates, adjusted, injuriesByTeam) {
     const out = top.out;
     // Why the player coming out won't score (founder, Nov 18 2026: "check if a player is on bye before saying they are projected to score 0"):
     // a bye, a listed-out tag, or no projection at all -- said in words, never as "about 0".
-    const idle = out && (onBye(out, gameStates) ? `${out.name}'s team is on a bye this week` : out.unavailable ? `${out.name} is listed out` : !(num(out.myProjPts) > 0) ? `${out.name} isn't expected to play` : null);
+    const idle = out && (onBye(out, gameStates) ? `${out.name} is on bye this week` : out.unavailable ? `${out.name} is listed out` : !(num(out.myProjPts) > 0) ? `${out.name} isn't expected to play` : null);
     const why = idle
       ? ""
       : inn.myLean?.effect > 0
