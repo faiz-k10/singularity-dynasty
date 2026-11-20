@@ -13,9 +13,9 @@ export default function SignUpGate() {
     <main id="main-content" className="wrap auth-wrap">
       <div className="auth-card reveal in" data-wall="sign-up">
         <div className="eyebrow">Free account</div>
-        <h1>Sign up to open the tools.</h1>
+        <h1>Become a Stargazer.</h1>
         <p className="auth-sub">
-          Every tool is free to use with a Stargazer account: no card, takes a minute. Create one, or sign in if you already have one.
+          Every player, every league, every Sunday is a sky full of signals. Make a free account and start reading the stars.
         </p>
         <div className="auth-actions">
           <Link href={href} className="btn-primary">Create Free Account</Link>
