@@ -1,5 +1,5 @@
 import { PostForm, ProspectUpload, DraftBoardUpload } from "./AdminForms";
-import { deletePost } from "./actions";
+import { deletePost, markClaimSent } from "./actions";
 import ShareCardButton from "../ShareCardButton";
 
 const RUNS_URL = "https://github.com/faiz-k10/singularity-dynasty/actions/workflows/weekly.yml";
@@ -244,7 +244,44 @@ export default function AdminDashboard({ d }) {
             ))}
         </Panel>
 
-        <Panel n={7} title="Publish" error={d.content.error}>
+        <Panel n={7} title="Night Sky rewards to give" error={d.claims.error}>
+          {d.claims.value &&
+            (d.claims.value.length ? (
+              <div className="rankings-table-wrap adm-table">
+                <table className="rankings-table">
+                  <caption className="adm-caption mono">Plan time is given automatically. These need you; oldest first.</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">Claimed</th>
+                      <th scope="col">Member</th>
+                      <th scope="col">Reward</th>
+                      <th scope="col"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {d.claims.value.map((c) => (
+                      <tr key={`${c.user_id}-${c.key}`}>
+                        <td className="mono">{when(c.when ? new Date(c.when).toISOString() : null)}</td>
+                        <td className="mono">{c.email || c.user_id}{c.tier ? ` · ${c.tier}` : ""}</td>
+                        <td>{c.what} ({c.season})</td>
+                        <td>
+                          <form action={markClaimSent}>
+                            <input type="hidden" name="user" value={c.user_id} />
+                            <input type="hidden" name="key" value={c.key} />
+                            <button type="submit" className="btn-ghost">Mark done</button>
+                          </form>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="adm-help">Nothing waiting. Discord roles, newsletter shout-outs and Singularity consults show up here when a member claims them.</p>
+            ))}
+        </Panel>
+
+        <Panel n={8} title="Publish" error={d.content.error}>
           <div className="adm-grid">
             <div>
               <h3 className="adm-sub mono">Post a drop</h3>

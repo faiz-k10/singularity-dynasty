@@ -4,6 +4,7 @@ import { stripe, TIER_BY_PRICE } from "@/lib/billing";
 import { subscriptionTier, monthlyCents } from "@/lib/subscriptionTier";
 import { summarizeWalls } from "@/lib/wallReport";
 import { loadHealth } from "@/lib/health";
+import { openClaims } from "@/lib/nightSkyStore";
 
 // Everything /admin shows, read with the service role (the page itself is founder-only, lib/admin.js). Each section loads
 // on its own and carries `error` instead of failing the page, so one broken source (Stripe down, a table not migrated yet)
@@ -113,7 +114,7 @@ async function growth(admin) {
 
 export async function loadAdminData() {
   const admin = createAdminClient();
-  const [health, memberData, rev, errs, cont, grow, runList] = await Promise.all([settle(loadHealth()), settle(members(admin)), settle(revenue()), settle(errors(admin)), settle(content(admin)), settle(growth(admin)), settle(runs(admin))]);
+  const [health, memberData, rev, errs, cont, grow, runList, claims] = await Promise.all([settle(loadHealth()), settle(members(admin)), settle(revenue()), settle(errors(admin)), settle(content(admin)), settle(growth(admin)), settle(runs(admin)), settle(openClaims())]);
   const wallData = await settle(walls(admin, memberData.value?.paid || new Set()));
-  return { health, runs: runList, members: memberData, revenue: rev, walls: wallData, errors: errs, content: cont, growth: grow };
+  return { health, runs: runList, members: memberData, revenue: rev, walls: wallData, errors: errs, content: cont, growth: grow, claims };
 }

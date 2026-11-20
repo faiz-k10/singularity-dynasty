@@ -3,6 +3,7 @@
 import { revalidatePath, revalidateTag } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/admin";
+import { markClaimDone } from "@/lib/nightSkyStore";
 import { parseProspects, parseDraftBoard } from "@/lib/boardImport";
 
 // /admin's publishing actions. Every one re-checks the founder (requireAdmin -> 404 for anyone else) before touching the
@@ -26,6 +27,15 @@ export async function addPost(_prev, formData) {
   const { error } = await createAdminClient().from("posts").insert({ title, url: url || "#" });
   if (error) return fail(error.message);
   return done(`Posted "${title}". It's on the home page now.`);
+}
+
+// A Night Sky reward given by hand (Discord role, newsletter shout-out, a consult): it leaves the list.
+export async function markClaimSent(formData) {
+  await requireAdmin();
+  const userId = String(formData.get("user") || ""), key = String(formData.get("key") || "");
+  if (!/^[0-9a-f-]{36}$/i.test(userId) || !/^\d{4}:\d{1,2}$/.test(key)) return;
+  await markClaimDone(userId, key);
+  revalidatePath("/admin");
 }
 
 export async function deletePost(formData) {

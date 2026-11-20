@@ -48,12 +48,13 @@ export function effectiveTier(tier, bonusTier, bonusUntil, now = Date.now()) {
 // What a Night Sky plan-time rung gives (founder, Nov 19 2026: automated). kind "week" = a week of the next plan up; "month" = a free month
 // of your plan. `paid` = the member's PAID tier (profiles.tier), `subscribed` = they have a running subscription. Returns
 // { bonus: tier, days } (a time-limited tier, no Stripe) or { credit: cents } (Stripe account credit off their next bill).
-//   week:  Stargazer -> 7 days of Explorer; Explorer -> 7 days of Singularity; Singularity (no plan above) -> a week of Singularity as credit
+//   week:  Stargazer -> 7 days of Explorer; Explorer -> 7 days of Singularity; Singularity (no plan above) -> a 1-on-1 consult with the
+//          founder (founder, Nov 19 2026; { manual: "consult" }, fulfilled by hand from /admin)
 //   month: a subscriber -> a month of their plan as credit (the monthly list price); anyone else -> 30 days of Explorer
 export const PLAN_MONTH_CENTS = { explorer: 900, singularity: 2500 };
 export function skyPlanGrant(kind, paid, subscribed) {
   if (kind === "week") {
-    if (paid === "singularity") return { credit: Math.round((PLAN_MONTH_CENTS.singularity * 7) / 30) };
+    if (paid === "singularity") return { manual: "consult" };
     return { bonus: paid === "explorer" ? "singularity" : "explorer", days: 7 };
   }
   if (kind === "month") {

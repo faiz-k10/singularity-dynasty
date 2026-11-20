@@ -531,7 +531,7 @@ export const LADDER = [
   { at: 6000, reward: "A free pick: any planet or moon you haven't found yet. Season title: Spirit", pick: 3, title: "Spirit" },
   { at: 9000, reward: "The Cobalt frame on your share cards, and a free pick: any meteor shower you haven't found yet. Season title: Opportunity", frame: "cobalt", pick: 4, title: "Opportunity" },
   { at: 12000, reward: "A free pick from any tier but stellar events: whatever you haven't found yet. Season title: Perseverance", pick: [1, 2, 3, 4], title: "Perseverance" },
-  { at: 14000, reward: "A week of the next plan up (Singularity members: a week of Singularity off your next bill)", claim: true, plan: "week" },
+  { at: 14000, reward: "A week of the next plan up (Singularity members: a 1-on-1 consult with the founder)", claim: true, plan: "week" },
   { at: 20000, reward: "A free stellar event pick, your choice of the next locked sky or core skin, and a shout-out in the newsletter's community section", pick: 5, skinChoice: true, claim: true },
   { at: 30000, reward: "A free month of your plan, off your next bill (a month of Explorer if you're on the free plan)", title: "Event Horizon", claim: true, plan: "month" },
 ];

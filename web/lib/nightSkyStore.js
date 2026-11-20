@@ -183,10 +183,11 @@ export async function claimReward(userId, index) {
     state.claimed[key] = { at: Date.now(), season: state.season, index };
     return { write: true, value: state };
   });
-  if (!rung?.plan || state.claimed[key]?.done) return state;
+  if (!rung?.plan || state.claimed[key]?.done || state.claimed[key]?.gave) return state;
   try {
-    const gave = await grantPlanTime(userId, rung.plan, state.season);
-    return await mutate(userId, (s) => { if (s.claimed[key]) s.claimed[key] = { ...s.claimed[key], done: true, gave }; return { write: true, value: s }; });
+    const { gave, manual } = await grantPlanTime(userId, rung.plan, state.season);
+    // a manual one (a Singularity member's consult) stays open for the founder in /admin
+    return await mutate(userId, (s) => { if (s.claimed[key]) s.claimed[key] = { ...s.claimed[key], done: !manual, gave }; return { write: true, value: s }; });
   } catch (e) {
     console.error("[night-sky] plan time failed:", e?.message || e);
     await mutate(userId, (s) => { const { [key]: _gone, ...rest } = s.claimed; s.claimed = rest; return { write: true, value: s }; }).catch(() => {});
@@ -206,15 +207,26 @@ export async function choosePick(userId, key, fam, colour) {
 export async function chooseSkin(userId, key, kind, id) {
   return mutate(userId, (state) => ({ write: makeSkinChoice(state, key, kind, id, Date.now()), value: state }));
 }
-// For /admin: every claimed reward not yet marked fulfilled.
+// For /admin: every claimed reward the founder still has to give by hand (the Discord role, the newsletter shout-out, a Singularity
+// member's consult), oldest first, with the member's email. `what` names the one thing to do.
+const CLAIM_WHAT = (c) => (c.gave?.startsWith("1-on-1") ? "1-on-1 consult" : LADDER[c.index]?.discord ? "Discord season role" : LADDER[c.index]?.skinChoice ? "Newsletter shout-out" : LADDER[c.index]?.reward);
 export async function openClaims() {
-  try {
-    const { data, error } = await createAdminClient().from(TABLE).select("user_id, state");
-    if (error) throw error;
-    const out = [];
-    for (const row of data || []) for (const [key, c] of Object.entries(row.state?.claimed || {})) if (!c.done && c.index != null) out.push({ user_id: row.user_id, key, season: c.season, reward: LADDER[c.index]?.reward, when: c.at });
-    return out.sort((a, b) => b.when - a.when);
-  } catch {
-    return null;
-  }
+  const admin = createAdminClient();
+  const { data, error } = await admin.from(TABLE).select("user_id, state");
+  if (error) throw error;
+  const out = [];
+  for (const row of data || []) for (const [key, c] of Object.entries(row.state?.claimed || {})) if (!c.done && c.index != null) out.push({ user_id: row.user_id, key, season: c.season, what: CLAIM_WHAT(c), when: c.at });
+  const ids = [...new Set(out.map((c) => c.user_id))];
+  const { data: people } = ids.length ? await admin.from("profiles").select("id, email, tier").in("id", ids) : { data: [] };
+  const who = new Map((people || []).map((p) => [p.id, p]));
+  return out.map((c) => ({ ...c, email: who.get(c.user_id)?.email || "", tier: who.get(c.user_id)?.tier || "" })).sort((a, b) => a.when - b.when);
+}
+// The founder gave a hand-fulfilled reward: it leaves /admin's list (and the member's ladder row says "Sent").
+export async function markClaimDone(userId, key) {
+  return mutate(userId, (state) => {
+    const c = state.claimed?.[key];
+    if (!c || c.done) return { write: false, value: null };
+    state.claimed[key] = { ...c, done: true, doneAt: Date.now() };
+    return { write: true, value: null };
+  });
 }

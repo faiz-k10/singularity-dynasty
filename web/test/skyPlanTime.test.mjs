@@ -15,7 +15,7 @@ test("Night Sky plan time: a bonus tier counts only while it lasts and never low
 test("Night Sky plan time: what the week and the month give for each plan", () => {
   assert.deepEqual(skyPlanGrant("week", "stargazer", false), { bonus: "explorer", days: 7 });
   assert.deepEqual(skyPlanGrant("week", "explorer", true), { bonus: "singularity", days: 7 });
-  assert.deepEqual(skyPlanGrant("week", "singularity", true), { credit: 583 });
+  assert.deepEqual(skyPlanGrant("week", "singularity", true), { manual: "consult" });
   assert.deepEqual(skyPlanGrant("month", "stargazer", false), { bonus: "explorer", days: 30 });
   assert.deepEqual(skyPlanGrant("month", "explorer", true), { credit: 900 });
   assert.deepEqual(skyPlanGrant("month", "singularity", true), { credit: 2500 });

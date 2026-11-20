@@ -638,7 +638,7 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
                   <li key={i} className={sp.done[i] ? "is-got" : nextIdx === i ? "is-next" : ""}>
                     <span className="mono">{r.three ? `${sp.three}/3` : r.singularity ? (sp.singularity ? "1/1" : "0/1") : rungLabel(r)}</span>
                     <span>{r.singularity ? `Finish The Singularity (${sky[3].real}) this season: the ${state.season || ""} ${sky[3].real} sky skin, only available this season, and a season role in the Discord` : r.reward}</span>
-                    {sp.done[i] && r.claim ? (claimed ? <span className="mono sky-small">{claimed.gave || "Claimed"}</span> : <button type="button" className="sky-claim mono" disabled={busy} onClick={() => run(claim(i))}>Claim</button>) : <span className="mono sky-small">{sp.done[i] ? "Earned" : ""}</span>}
+                    {sp.done[i] && r.claim ? (claimed ? <span className="mono sky-small">{claimed.doneAt ? "Sent" : claimed.gave || "Claimed"}</span> : <button type="button" className="sky-claim mono" disabled={busy} onClick={() => run(claim(i))}>Claim</button>) : <span className="mono sky-small">{sp.done[i] ? "Earned" : ""}</span>}
                   </li>
                 );
               })}
