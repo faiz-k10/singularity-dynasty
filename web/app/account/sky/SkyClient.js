@@ -457,7 +457,7 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
         <h1>Your sky</h1>
         <button type="button" className="btn-ghost" onClick={() => setShare({ title: `My season sky: ${title}`, caption: `My Night Sky this season: ${title}, ${sp.points.toLocaleString()} season points, ${entries.length} of ${CATALOGUE_SIZE.toLocaleString()} in my catalogue.`, make: () => seasonCard(state, { title, size: CATALOGUE_SIZE, rarest }) })}>Share my season sky</button>
       </div>
-      {event && <p className="sky-banner mono">{EVENT_TEXT[event]}</p>}
+      {event && <p className="sky-banner sky-forecast mono"><b>SPECIAL FORECAST:</b> {EVENT_TEXT[event]}</p>}
       {msg && <p className="sky-banner mono is-bad">{msg}</p>}
 
       <section className="sky-panel sky-panel-fill" aria-label="Your sky">
