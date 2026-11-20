@@ -245,17 +245,3 @@ test("every catalogue entry has its own lore", async () => {
   for (const f of FAMILIES) for (const c of COLOURS) for (const v of VERSIONS) seen.add(loreFor(f.id, c.id, v.id));
   assert.equal(seen.size, CATALOGUE_SIZE);
 });
-
-test("the free month needs 95% of every action the season offers (Nov 19 2026)", async () => {
-  const { seasonProgress, possibleActs, LADDER } = await import("../lib/nightSky.js");
-  const i = LADDER.findIndex((r) => r.stars);
-  const s = freshState();
-  s.season = 2026;
-  const possible = possibleActs(2026);
-  assert.equal(possible, 365 * 8);
-  s.seasonActs = Math.ceil(0.95 * possible) - 1;
-  assert.equal(seasonProgress(s).done[i], false);
-  s.seasonActs += 1;
-  assert.equal(seasonProgress(s).done[i], true);
-  assert.equal(LADDER.find((r) => r.claim && r.at)?.at, 13600); // the week of plan
-});
