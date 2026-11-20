@@ -415,6 +415,12 @@ function Telescope({ queue, compliments, onDone, onShare, colourFirst }) {
   );
 }
 
+// One full sentence per free pick, kept short enough for one line.
+const PICK_NOUN = { 1: "small body", 2: "comet or dwarf world", 3: "planet or moon", 4: "meteor shower", 5: "stellar event" };
+const pickSentence = (pick) => Array.isArray(pick)
+  ? "You've earned a free find of your choice, anything but a stellar event."
+  : `You've earned a free ${PICK_NOUN[pick]} of your choice.`;
+
 export default function SkyClient({ initial, weekKey, event, compliments, now: serverNow, today }) {
   const [state, setState] = useState(initial);
   // Fresh from the server (founder, Nov 17 2026: a task done elsewhere didn't show as "Done today"): a page's star is written just after
@@ -508,14 +514,14 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
           <ul className="sky-gifts">
             {state.choices.map((c) => c.type === "pick" ? (
               <li key={c.key}>
-                <span><b>Free pick</b> · {pickLabel(c.tier)}</span>
+                <span className="sky-gift-line">{pickSentence(c.tier)}</span>
                 {catOpen
                   ? <button type="button" className="btn-primary" disabled={busy} onClick={() => setChoosing(c)}>Choose</button>
                   : <span className="mono sky-small">Opens with your catalogue ({UNLOCK.catalogue - state.findsTotal} more finds)</span>}
               </li>
             ) : (
               <li key={c.key} className="is-skin">
-                <span><b>A skin of your choice</b> · the next locked sky or core skin</span>
+                <span className="sky-gift-line">{"You've earned a skin of your choice. Pick one below."}</span>
                 <span className="sky-gift-skins">
                   {skinChoiceOptions(state).map((o) => (
                     <button key={o.id} type="button" className={`sky-skin rar-${o.rarity}`} disabled={busy} onClick={() => run(pickSkin(c.key, o.kind, o.id))}>

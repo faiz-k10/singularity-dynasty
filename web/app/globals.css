@@ -7481,9 +7481,12 @@ button.sky-variant:focus-visible{outline:2px solid var(--ember);outline-offset:1
 .ehp-qs summary{font-family:var(--font-body), serif;}
 
 /* Night Sky: Rewards waiting = a cobalt banner above the special forecast (Nov 19 2026, founder) */
-.sky-rewards{border:1px solid rgba(var(--cobalt-rgb),.55);border-left:4px solid var(--cobalt);background:rgba(var(--cobalt-rgb),.12);padding:10px 18px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;color:var(--star)}
+.sky-rewards{border:1px solid rgba(var(--cobalt-rgb),.55);border-left:4px solid var(--cobalt);background:rgba(var(--cobalt-rgb),.12);padding:10px 18px;display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--star);text-align:center;container-type:inline-size}
 .sky-rewards-label{color:var(--cobalt);font-weight:700;letter-spacing:.14em;font-size:15px;white-space:nowrap}
-.sky-rewards .sky-gifts{flex:1;min-width:240px}
-.sky-rewards .sky-gifts li{border-top-color:rgba(var(--cobalt-rgb),.3);padding:6px 0}
-.sky-rewards .sky-gifts .btn-primary{border-color:var(--cobalt);color:var(--cobalt)}
+.sky-rewards .sky-gifts{width:100%}
+.sky-rewards .sky-gifts li{justify-content:center;flex-wrap:nowrap;border-top-color:rgba(var(--cobalt-rgb),.3);padding:6px 0}
+.sky-rewards .sky-gifts li.is-skin{flex-direction:column;flex-wrap:nowrap}
+.sky-rewards .sky-gift-skins{justify-content:center}
+.sky-gift-line{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;font-size:clamp(11px,(100cqw - 170px) / 40,17px)}
+.sky-rewards .sky-gifts .btn-primary{flex:none;border-color:var(--cobalt);color:var(--cobalt)}
 .sky-rewards .sky-gifts .btn-primary:hover:not(:disabled){background:var(--cobalt);color:var(--on-down)}
