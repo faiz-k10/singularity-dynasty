@@ -512,7 +512,7 @@ export const POWERUPS = {
 // RECALCULATED Nov 19 2026 with the new forecast days (mockups/night-sky-ladder-sim.mjs): the week of plan stays 14,000 (founder; about half
 // of 4-actions-a-day members in a settled season, nearly all in a first season); the free month stays 30,000 (founder; 33,000 = the median settled season of a
 // member who takes 95% of every star the season offers, was tried and dropped). At 30,000 most of those
-// 95% members reach it, about a quarter of 90% members in a good season, and nobody in the 2026 season (the Night Sky opened Nov 11).
+// 95% members reach it (~95%), most 90% members too (~70-80%), engaged 6-a-day members almost never, and nobody in the 2026 season (the Night Sky opened Nov 11).
 export const LADDER = [
   { at: 200, reward: "First light: a profile badge for the season", title: "Spotter" },
   { at: 500, reward: "A silver season frame on your share cards", frame: "silver" },
