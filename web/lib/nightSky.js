@@ -510,8 +510,8 @@ export const POWERUPS = {
 // year) ~31,000 / 37,000. Founder, Nov 11 2026: the free month (30,000) is for hardcore members ONLY -- never a regular; the week of plan
 // (14,000) only for the top end of regular members; early access (12,000, founder: the more active half, not most members) is automatic.
 // RECALCULATED Nov 19 2026 with the new forecast days (mockups/night-sky-ladder-sim.mjs): the week of plan stays 14,000 (founder; about half
-// of 4-actions-a-day members in a settled season, nearly all in a first season); the free month is 33,000 = the median settled season of a
-// member who takes 95% of every star the season offers (every action, every day, the share included). Points carry luck, so ~half of those
+// of 4-actions-a-day members in a settled season, nearly all in a first season); the free month stays 30,000 (founder; 33,000 = the median settled season of a
+// member who takes 95% of every star the season offers, was tried and dropped). At 30,000 most of those
 // 95% members reach it, about a quarter of 90% members in a good season, and nobody in the 2026 season (the Night Sky opened Nov 11).
 export const LADDER = [
   { at: 200, reward: "First light: a profile badge for the season", title: "Spotter" },
@@ -525,7 +525,7 @@ export const LADDER = [
   { at: 12000, reward: "A gold season frame, plus early access to new tools and features for the rest of the season (automatic)", frame: "gold", early: true },
   { at: 14000, reward: "A week of the next plan up", claim: true },
   { at: 20000, reward: "Your name on a star in this season's sky", title: "Star-namer", claim: true },
-  { at: 33000, reward: "A free month of your plan (a month of Explorer if you're on the free plan)", title: "Event Horizon", claim: true },
+  { at: 30000, reward: "A free month of your plan (a month of Explorer if you're on the free plan)", title: "Event Horizon", claim: true },
 ];
 export const rungLabel = (r) => (r.three ? "Charted" : r.singularity ? "Singularity" : r.at.toLocaleString());
 // Skins (Nov 11 2026, founder: "aesthetic rewards, like how real games use skins"). Purely cosmetic: a backdrop for the sky and a design for
