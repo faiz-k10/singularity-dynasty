@@ -529,8 +529,8 @@ export const LADDER = [
   { at: 3500, reward: "Telescope upgrade: see each find's colour before it resolves, for the rest of the season. Season title: Sojourner", telescope: true, title: "Sojourner" },
   { singularity: true, reward: "Finish this season's Singularity: its limited sky skin, only available this season, and a season role in the Discord", discord: true, claim: true },
   { at: 6000, reward: "A free pick: any planet or moon you haven't found yet. Season title: Spirit", pick: 3, title: "Spirit" },
-  { at: 9000, reward: "The Cobalt frame on your share cards, and another free planet or moon pick. Season title: Opportunity", frame: "cobalt", pick: 3, title: "Opportunity" },
-  { at: 12000, reward: "A free pick: any meteor shower you haven't found yet. Season title: Perseverance", pick: 4, title: "Perseverance" },
+  { at: 9000, reward: "The Cobalt frame on your share cards, and a free pick: any meteor shower you haven't found yet. Season title: Opportunity", frame: "cobalt", pick: 4, title: "Opportunity" },
+  { at: 12000, reward: "A free pick from any tier but stellar events: whatever you haven't found yet. Season title: Perseverance", pick: [1, 2, 3, 4], title: "Perseverance" },
   { at: 14000, reward: "A week of the next plan up", claim: true },
   { at: 20000, reward: "A free stellar event pick, your choice of the next locked sky or core skin, and a shout-out in the newsletter's community section", pick: 5, skinChoice: true, claim: true },
   { at: 30000, reward: "A free month of your plan (a month of Explorer if you're on the free plan)", title: "Event Horizon", claim: true },
@@ -625,14 +625,19 @@ function grantRungs(s, now) {
       if (!hasSkin(s, kind, id)) addSkin(s, kind, id, now, got);
       else if (s.season > FIRST_SKY_SEASON && !hasSkin(s, kind, tintId(id, s.season))) addSkin(s, kind, tintId(id, s.season), now, got);
     }
-    if (r.pick) { s.choices.push({ key: `${key}:pick`, type: "pick", tier: r.pick }); log(s, `Free pick waiting: ${TIER_NAME[r.pick].toLowerCase()}`, now); }
+    if (r.pick) { s.choices.push({ key: `${key}:pick`, type: "pick", tier: r.pick }); log(s, `Free pick waiting: ${pickLabel(r.pick).toLowerCase()}`, now); }
     if (r.skinChoice && skinChoiceOptions(s).length) { s.choices.push({ key: `${key}:skin`, type: "skin" }); log(s, "A skin of your choice is waiting", now); }
   });
   return got;
 }
 // THE FREE PICK ("fill a gap"): every kind x colour of that tier the member hasn't found in any version (all of them once nothing is
 // missing), each marked with the sets it would complete. The member picks kind and colour; the version is rolled on the server.
-export function pickOptions(s, tier) {
+// `pick` is one tier, or a list of tiers to choose across (12,000: every tier but stellar events).
+export const pickTiers = (pick) => (Array.isArray(pick) ? pick : [pick]);
+export const pickLabel = (pick) => (Array.isArray(pick) ? "Any tier but stellar events" : TIER_NAME[pick]);
+export function pickOptions(s, pick) {
+  if (Array.isArray(pick)) return pick.flatMap((t) => pickOptions(s, t));
+  const tier = pick;
   const got = Object.values(s.found);
   const owns = (fam, col) => got.some((e) => e.fam === fam && e.colour === col);
   const kindsHave = famsIn(tier).filter((k) => got.some((e) => e.fam === k.id)).length, all = famsIn(tier).length;

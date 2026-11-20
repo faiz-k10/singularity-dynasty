@@ -11,7 +11,7 @@ import { placeFind } from "@/lib/skyPlacement";
 import { drawObject, skyObject, sharpen, findCard, receiptCard, seasonCard, toBlob, setCardBadge, setCardSkin, setCardFrame } from "./skyArt";
 import {
   ACTIONS, loreFor, skyFor, SKINS, RARITY, hasSkin, equipped, skySkinsFor, FAMILIES, COLOURS, VERSIONS, TIER_NAME, POWERUPS, LADDER, rungLabel, CATALOGUE_SIZE, SET_COUNT, UNLOCK, EVENT_TEXT,
-  famsIn, findOf, setProgress, seasonProgress, coreSkinsFor, pickOptions, skinChoiceOptions, hasTelescope,
+  famsIn, findOf, setProgress, seasonProgress, coreSkinsFor, pickOptions, pickTiers, pickLabel, skinChoiceOptions, hasTelescope,
 } from "@/lib/nightSky";
 
 // The Night Sky page (server side: page.js; rules: lib/nightSky.js). Everything here only SHOWS the sky: stars, finds and points are decided on
@@ -331,14 +331,15 @@ function PickDialog({ state, choice, busy, onClose, onPick }) {
     window.addEventListener("keydown", k);
     return () => window.removeEventListener("keydown", k);
   }, [onClose]);
-  const byFam = famsIn(choice.tier).map((fam) => ({ fam, opts: opts.filter((o) => o.fam === fam.id) })).filter((g) => g.opts.length);
+  const byFam = pickTiers(choice.tier).flatMap((t) => famsIn(t)).map((fam) => ({ fam, opts: opts.filter((o) => o.fam === fam.id) })).filter((g) => g.opts.length);
   return (
-    <div className="sky-ov" role="dialog" aria-modal="true" aria-label={`Free pick: ${TIER_NAME[choice.tier]}`} onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+    <div className="sky-ov" role="dialog" aria-modal="true" aria-label={`Free pick: ${pickLabel(choice.tier)}`} onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="sky-ov-box sky-pick">
-        <div className="board-panel-title">Free pick · {TIER_NAME[choice.tier]}</div>
+        <div className="board-panel-title">Free pick · {pickLabel(choice.tier)}</div>
         <p className="sky-small mono">Choose the kind and colour. Only ones you haven&apos;t found are offered; the version (plain, prismatic, ancient or mythic) is rolled when it arrives.</p>
         <div className="sky-pick-list">
-          {byFam.map(({ fam, opts: list }) => (
+          {byFam.map(({ fam, opts: list }, i) => [
+            pickTiers(choice.tier).length > 1 && byFam[i - 1]?.fam.tier !== fam.tier ? <div key={`t${fam.tier}`} className="sky-cat-h mono">{TIER_NAME[fam.tier]}</div> : null,
             <div key={fam.id} className="sky-pick-row">
               <Thumb find={findOf(fam.id, list[0].colour, "")} />
               <div>
@@ -351,8 +352,8 @@ function PickDialog({ state, choice, busy, onClose, onPick }) {
                   ); })}
                 </div>
               </div>
-            </div>
-          ))}
+            </div>,
+          ])}
         </div>
         <div className="sky-row"><button type="button" className="btn-ghost" onClick={onClose}>Later</button></div>
       </div>
@@ -519,7 +520,7 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
           <ul className="sky-gifts">
             {state.choices.map((c) => c.type === "pick" ? (
               <li key={c.key}>
-                <span><b>Free pick</b> · {TIER_NAME[c.tier]}</span>
+                <span><b>Free pick</b> · {pickLabel(c.tier)}</span>
                 {catOpen
                   ? <button type="button" className="btn-primary" disabled={busy} onClick={() => setChoosing(c)}>Choose</button>
                   : <span className="mono sky-small">Opens with your catalogue ({UNLOCK.catalogue - state.findsTotal} more finds)</span>}

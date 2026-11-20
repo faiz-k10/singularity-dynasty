@@ -290,3 +290,21 @@ test("every catalogue entry has its own lore", async () => {
   for (const f of FAMILIES) for (const c of COLOURS) for (const v of VERSIONS) seen.add(loreFor(f.id, c.id, v.id));
   assert.equal(seen.size, CATALOGUE_SIZE);
 });
+
+test("the 9,000 pick is a meteor shower and the 12,000 pick spans every tier but stellar events", () => {
+  const s = freshState();
+  rollSeason(s, 2026);
+  s.points = 12000; s.findsTotal = 10;
+  unlockSkins(s, 1);
+  const tiers = s.choices.filter((c) => c.type === "pick").map((c) => c.tier);
+  assert.deepEqual(tiers, [2, 3, 4, [1, 2, 3, 4]]);
+  const any = s.choices.at(-1);
+  const opts = pickOptions(s, any.tier);
+  assert.ok([1, 2, 3, 4].every((t) => opts.some((o) => FAMILIES[o.fam].tier === t)));
+  assert.ok(!opts.some((o) => FAMILIES[o.fam].tier === 5));
+  const fam = FAMILIES.find((f) => f.tier === 1).id;
+  assert.ok(makeFreePick(s, any.key, fam, "silver", { now: 2 }, () => 0.5));
+  const star = FAMILIES.find((f) => f.tier === 5).id;
+  s.choices.push({ key: "x", type: "pick", tier: [1, 2, 3, 4] });
+  assert.equal(makeFreePick(s, "x", star, "silver", { now: 3 }), null); // stellar events can't be picked here
+});
