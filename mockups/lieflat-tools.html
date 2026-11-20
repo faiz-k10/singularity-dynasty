@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tools in the lieflat chart style</title>
+<!-- Mockup (Nov 19 2026): the site's tool charts redrawn in the visual language of lieflat-charts
+     (github.com/larashero3-dotcom/lieflat-charts, PolyForm Noncommercial -- its code is NOT used here; this page is our own
+     code copying only the look: paper + charcoal, lightness = data, solid fills, capsule bars, conclusion titles, Inter).
+     Numbers are real (2026 week 11 rankings, the week 11 season sims, Gibbs' game log, the dynasty board) except the Game Board card. -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Big+Shoulders:wght@600;800&family=Martian+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#F0EFEB;--card:#F0EFEB;--ink:#1C1C1A;--muted:#8F8E88;--faint:#C6C5BF;--grid:#DEDDD6;--hero:#1C1C1A;--font:"Inter",system-ui,sans-serif;--num:"Inter",system-ui,sans-serif}
+  body{margin:0;background:#E6E5E0;color:var(--ink);font-family:var(--font)}
+  .bar{position:sticky;top:0;z-index:5;display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:14px 40px;background:#E6E5E0;border-bottom:1px solid var(--grid)}
+  .bar h1{font-size:15px;font-weight:700;margin:0;letter-spacing:-.01em}
+  .bar p{margin:2px 0 0;font-size:11.5px;color:var(--muted)}
+  .seg{display:inline-flex;background:#D8D7D1;border-radius:99px;padding:3px}
+  .seg button{border:0;background:transparent;font:600 11.5px var(--font);padding:7px 14px;border-radius:99px;color:#4A4944;cursor:pointer}
+  .seg button.on{background:var(--ink);color:var(--paper)}
+  .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px;max-width:1400px;margin:0 auto;padding:40px}
+  @media (max-width:980px){.grid{grid-template-columns:1fr;padding:16px}.bar{padding:12px 16px}}
+  .card{background:var(--card);border-radius:24px;padding:28px 28px 20px;display:flex;flex-direction:column;gap:6px}
+  .card.wide{grid-column:1/-1}
+  .card.dark{--card:#1C1C1A;--ink:#F0EFEB;--muted:#8F8E88;--faint:#55554F;--grid:#2E2D29;color:#F0EFEB}
+  .tool{font-size:9.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .card h2{font-size:16.5px;font-weight:700;letter-spacing:-.02em;margin:0}
+  .sub{font-size:11.5px;color:var(--muted);margin:0}
+  .sub i{display:inline-block;width:9px;height:9px;border-radius:50%;vertical-align:-1px;margin:0 4px 0 0}
+  .src{font-size:9.5px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin-top:6px}
+  svg{width:100%;height:auto;display:block;overflow:visible}
+  svg text{font-family:var(--num)}
+  /* entrance animations left out of the mockup (the real version would grow bars in on scroll, 0.9s, no bounce) */
+  .note{max-width:1400px;margin:0 auto;padding:0 40px 40px;font-size:12px;color:#6A6963;line-height:1.6}
+  .note b{color:var(--ink)}
+  /* "our fonts" switch */
+  body.ours{--font:"Big Shoulders",sans-serif;--num:"Martian Mono",monospace}
+  body.ours .card h2{font-size:22px;font-weight:800;letter-spacing:.01em;text-transform:uppercase}
+  body.ours .sub,body.ours .src,body.ours .tool{font-family:"Martian Mono",monospace}
+  /* our type roles: names in a reading serif, numbers and labels in Martian Mono (narrowed like the site), big figures in Big Shoulders */
+  body.ours svg text.r-name{font-family:Georgia,"Times New Roman",serif}
+  body.ours svg text.r-lab{font-family:"Martian Mono",monospace;font-stretch:82%;font-size:8px;letter-spacing:0}
+  body.ours svg text.r-num{font-family:"Martian Mono",monospace;font-stretch:82%;font-size:9.5px}
+  body.ours svg text.r-big{font-family:"Big Shoulders",sans-serif}
+</style>
+</head>
+<body>
+<div class="bar">
+  <div>
+    <h1>Dynasty Singularity tools in the lieflat chart style</h1>
+    <p>Mockup · real week 11 numbers · our own code copying the look only (the library itself is non-commercial)</p>
+  </div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap">
+    <div class="seg" role="group" aria-label="Colour"><button class="on" data-pal="mono">Mono</button><button data-pal="ember">Mono + ember</button></div>
+    <div class="seg" role="group" aria-label="Fonts"><button class="on" data-font="inter">Their font (Inter)</button><button data-font="ours">Our fonts</button></div>
+  </div>
+</div>
+<main class="grid" id="grid"></main>
+<p class="note"><b>What's different from the site today:</b> no blue / red pairs, no glows or gradients, no hairline panels. Importance is shown by how DARK something is (the median and the thing the title is about are darkest), bars have rounded ends, and every chart's title states its conclusion instead of naming the chart. "Mono + ember" keeps everything grey and puts our ember on the ONE thing the title talks about. The Game Board card is sample data.</p>
+
+<script>
+const NS = "http://www.w3.org/2000/svg";
+const PAL = {
+  mono: { ink: "#1C1C1A", L: ["#1C1C1A", "#4A4944", "#6A6963", "#8F8E88", "#B0AFA9", "#C6C5BF", "#D8D7D1"], grid: "#DEDDD6", muted: "#8F8E88", hero: "#1C1C1A", dark: { L: ["#F0EFEB", "#DCDAD2", "#C9C7BD", "#B3B0A4", "#8F8E88", "#6A6963", "#4A4944"], grid: "#2E2D29" , hero: "#F0EFEB"} },
+  ember: { ink: "#1F1E1C", L: ["#22211F", "#4A4944", "#6A6963", "#8F8E86", "#B0AFA9", "#C0BFB7", "#D8D7D1"], grid: "#DEDDD6", muted: "#8F8E86", hero: "#E8643F", dark: { L: ["#F0EFEB", "#DCDAD2", "#C9C7BD", "#B3B0A4", "#8F8E88", "#6A6963", "#4A4944"], grid: "#2E2D29", hero: "#E8643F" } },
+};
+let pal = PAL.mono;
+const el = (tag, a = {}, kids = []) => { const n = document.createElementNS(NS, tag); for (const [k, v] of Object.entries(a)) n.setAttribute(k, v); for (const c of [].concat(kids)) n.append(c); return n; };
+// a text's role decides its font under "Our fonts": big figures (15px+), names (11px+ in the ink colour), numbers (bold 800), labels
+const roleOf = (a) => (a.role ? `r-${a.role}` : a["font-size"] >= 15 ? "r-big" : a["font-weight"] === 800 ? "r-num" : a["font-size"] >= 11 ? "r-name" : "r-lab");
+const txt = (x, y, s, a = {}) => { const at = { "font-size": 9.5, "font-weight": 600, fill: pal.muted, ...a }; const cls = roleOf(at); delete at.role; return el("text", { x, y, class: cls, ...at }, [document.createTextNode(s)]); };
+
+// ---- real data ----
+const RANK = [["Joe Burrow","QB",26.8,8.8,33.7],["Jahmyr Gibbs","RB",23.6,10.8,43.2],["Josh Allen","QB",23.5,11.9,39.7],["Ja'Marr Chase","WR",22.2,5.9,33.8],["Patrick Mahomes","QB",22.2,6.1,29.1],["Dak Prescott","QB",21.6,10.2,29.9],["Trevor Lawrence","QB",21.3,9.6,27.1],["C.J. Stroud","QB",20.8,9.8,23.5],["CeeDee Lamb","WR",20.6,10.3,35],["Christian McCaffrey","RB",20.6,15.4,43.8]];
+const SIMS = [["Jaxon Smith-Njigba",364,407,444],["Ja'Marr Chase",291,351,403],["CeeDee Lamb",294,342,388],["Puka Nacua",272,321,370],["Amon-Ra St. Brown",268,317,363],["Tee Higgins",245,299,350],["Christian Watson",232,278,322],["Matthew Golden",220,263,305]];
+const GAMES = [[1,33.6,30.1],[2,23.3,21.7],[3,41.4,28.7],[4,17.7,22.7],[5,37.7,34.5],[6,null,null],[7,17.3,25],[8,24.8,20.4],[9,13.4,14],[10,44.2,25.5]];
+const DYN = [["Josh Allen","QB",10,7.33,12.67],["Jahmyr Gibbs","RB",9.53,6.3,12.75],["Jaxon Smith-Njigba","WR",8.89,6.14,11.65],["Puka Nacua","WR",8.65,5.9,11.4],["Christian McCaffrey","RB",8.11,4.88,11.33],["Bijan Robinson","RB",8.05,4.83,11.28],["Joe Burrow","QB",7.66,4.99,10.33],["Jayden Daniels","QB",7.5,4.82,10.17],["Drake Maye","QB",7.46,4.79,10.13],["Lamar Jackson","QB",7.24,4.57,9.91],["Brock Purdy","QB",7.2,4.53,9.87],["Trevor Lawrence","QB",7.14,4.47,9.81]];
+const BOARD = [["Dynasty Kingdom","Favored",0.71],["Blue Ridge Ghosts","Favored",0.64],["Dynasty Free Play","Toss-up",0.52],["Olave Garden","Underdog",0.31],["Not An Addiction","Long shot",0.09]];
+
+function card({ tool, title, sub, src, wide, dark }, draw) {
+  const c = document.createElement("section");
+  c.className = `card${wide ? " wide" : ""}${dark ? " dark" : ""}`;
+  c.innerHTML = `<div class="tool">${tool}</div><h2>${title}</h2><p class="sub">${sub}</p>`;
+  c.append(draw(dark));
+  const s = document.createElement("div"); s.className = "src"; s.textContent = src; c.append(s);
+  document.getElementById("grid").append(c);
+}
+
+// 1 Weekly Projection Rankings: floor-to-ceiling capsules, the median a dark bead
+function weekly() {
+  const W = 620, rowH = 30, top = 22, left = 150, right = 48, H = top + RANK.length * rowH + 8, max = 46;
+  const x = (v) => left + (v / max) * (W - left - right);
+  const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "Floor to ceiling for the top ten" });
+  for (let v = 0; v <= 40; v += 10) { svg.append(el("line", { x1: x(v), x2: x(v), y1: top - 6, y2: H - 6, stroke: pal.grid, "stroke-width": .7 })); svg.append(txt(x(v), 10, v, { "text-anchor": "middle" })); }
+  const topCeil = [...RANK].sort((a, b) => b[4] - a[4]).slice(0, 2).map((r) => r[0]);
+  RANK.forEach(([n, pos, m, f, c], i) => {
+    const y = top + i * rowH + rowH / 2, hot = topCeil.includes(n);
+    svg.append(txt(0, y + 3.5, `${i + 1}`, { fill: pal.L[4], "font-weight": 700 }));
+    svg.append(txt(16, y + 3.5, n, { role: "name", fill: pal.L[0], "font-size": 11, "font-weight": 600 }));
+    svg.append(txt(left - 10, y + 3.5, pos, { "text-anchor": "end", fill: pal.L[3] }));
+    svg.append(el("rect", { class: "reveal", style: `animation-delay:${i * 100}ms`, x: x(f), y: y - 5, width: x(c) - x(f), height: 10, rx: 5, fill: hot ? pal.hero : pal.L[5] }));
+    svg.append(el("circle", { cx: x(m), cy: y, r: 5.5, fill: hot && pal.hero !== pal.ink ? "#1F1E1C" : pal.L[0], stroke: "#F0EFEB", "stroke-width": 1.5 }));
+    svg.append(txt(W - right + 10, y + 4, m.toFixed(1), { fill: pal.L[0], "font-size": 12, "font-weight": 800 }));
+  });
+  return svg;
+}
+
+// 2 Opened player: the outcome curve as solid grey zones, the 8-in-10 range darkest
+function curve() {
+  const W = 620, H = 240, l = 20, r = 20, base = 196, peakH = 150, [m, f, c] = [23.6, 10.8, 43.2], max = 56;
+  const s1 = (m - f) / 1.2816, s2 = (c - m) / 1.2816, x = (v) => l + (v / max) * (W - l - r);
+  const dens = (v) => Math.exp(-((v - m) ** 2) / (2 * (v < m ? s1 : s2) ** 2));
+  const area = (a, b) => { let d = `M${x(a)},${base}`; for (let v = a; v <= b + 1e-9; v += 0.25) d += `L${x(v).toFixed(1)},${(base - dens(v) * peakH).toFixed(1)}`; return d + `L${x(b)},${base}Z`; };
+  const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "Gibbs outcome curve" });
+  svg.append(el("path", { d: area(0, f), fill: pal.L[5] }));
+  svg.append(el("path", { d: area(f, c), fill: pal.L[1] }));
+  svg.append(el("path", { d: area(c, max), fill: pal.hero === pal.ink ? pal.L[3] : pal.hero }));
+  svg.append(el("line", { x1: l, x2: W - r, y1: base, y2: base, stroke: pal.L[0], "stroke-width": 1 }));
+  for (let v = 0; v <= 50; v += 10) svg.append(txt(x(v), base + 16, v, { "text-anchor": "middle" }));
+  // side notes with leader lines
+  const note = (v, y, label, val, anchor) => {
+    svg.append(el("line", { x1: x(v), x2: x(v), y1: base, y2: y + 6, stroke: pal.L[3], "stroke-width": .7, "stroke-dasharray": "2 2" }));
+    svg.append(txt(x(v) + (anchor === "end" ? -6 : 6), y, label, { "text-anchor": anchor, fill: pal.L[3] }));
+    svg.append(txt(x(v) + (anchor === "end" ? -6 : 6), y + 16, val, { "text-anchor": anchor, fill: pal.L[0], "font-size": 15, "font-weight": 800 }));
+  };
+  note(f, 70, "FLOOR", "10.8", "end"); note(m, 14, "MEDIAN", "23.6", "start"); note(c, 70, "CEILING", "43.2", "start");
+  return svg;
+}
+
+// 3 Player Season Simulations: barcode lollipops, a dashed rail at the leader's floor
+function sims() {
+  const W = 620, rowH = 32, top = 26, left = 150, right = 20, H = top + SIMS.length * rowH + 10, lo = 200, hi = 460;
+  const x = (v) => left + ((v - lo) / (hi - lo)) * (W - left - right);
+  const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "WR season totals" });
+  for (let v = 200; v <= 450; v += 50) { svg.append(el("line", { x1: x(v), x2: x(v), y1: top - 8, y2: H - 8, stroke: pal.grid, "stroke-width": .7 })); svg.append(txt(x(v), 12, v, { "text-anchor": "middle" })); }
+  svg.append(el("line", { x1: x(364), x2: x(364), y1: top - 8, y2: H - 8, stroke: pal.hero === pal.ink ? pal.L[0] : pal.hero, "stroke-width": 1, "stroke-dasharray": "3 3" }));
+  svg.append(txt(x(364) + 5, H - 2, "JSN's floor", { fill: pal.hero === pal.ink ? pal.L[0] : pal.hero, "font-weight": 700 }));
+  SIMS.forEach(([n, f, m, c], i) => {
+    const y = top + i * rowH + rowH / 2, hot = i === 0, col = hot ? pal.hero : pal.L[2];
+    svg.append(txt(0, y + 4, n, { role: "name", fill: pal.L[0], "font-size": 11, "font-weight": hot ? 800 : 600 }));
+    svg.append(el("line", { class: "reveal", style: `animation-delay:${i * 100}ms`, x1: x(f), x2: x(c), y1: y, y2: y, stroke: col, "stroke-width": 2, "stroke-linecap": "round" }));
+    for (const v of [f, c]) svg.append(el("line", { x1: x(v), x2: x(v), y1: y - 6, y2: y + 6, stroke: col, "stroke-width": 2, "stroke-linecap": "round" }));
+    svg.append(el("circle", { cx: x(m), cy: y, r: 5.5, fill: hot ? pal.hero : pal.L[0] }));
+    svg.append(txt(x(m), y - 9, m, { "text-anchor": "middle", fill: pal.L[0], "font-weight": 800, "font-size": 10 }));
+  });
+  return svg;
+}
+
+// 4 Recent games: capsule columns (darkest when he beat his expected points), xFP as a tick
+function games() {
+  const W = 620, H = 230, l = 26, r = 10, base = 190, top = 20, max = 50, n = GAMES.length, slot = (W - l - r) / n, bw = slot * 0.5;
+  const y = (v) => base - (v / max) * (base - top);
+  const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "Gibbs game log" });
+  for (let v = 0; v <= 50; v += 10) { svg.append(el("line", { x1: l, x2: W - r, y1: y(v), y2: y(v), stroke: pal.grid, "stroke-width": .7 })); svg.append(txt(0, y(v) + 3, v)); }
+  GAMES.forEach(([wk, pts, xfp], i) => {
+    const cx = l + slot * i + slot / 2;
+    svg.append(txt(cx, base + 16, `W${wk}`, { "text-anchor": "middle" }));
+    if (pts == null) { svg.append(txt(cx, base - 8, "BYE", { "text-anchor": "middle", fill: pal.L[4] })); return; }
+    const beat = pts > xfp, hot = wk === 10;
+    const h = base - y(pts), rr = Math.min(bw / 2, h);
+    svg.append(el("path", { class: "rise", style: `animation-delay:${i * 100}ms`, fill: hot ? pal.hero : beat ? pal.L[0] : pal.L[5], d: `M${cx - bw / 2},${base}V${y(pts) + rr}A${rr},${rr} 0 0 1 ${cx + bw / 2},${y(pts) + rr}V${base}Z` }));
+    svg.append(el("line", { x1: cx - bw / 2 - 5, x2: cx + bw / 2 + 5, y1: y(xfp), y2: y(xfp), stroke: pal.L[3], "stroke-width": 2, "stroke-linecap": "round" }));
+    svg.append(txt(cx, y(pts) - 6, pts.toFixed(1), { "text-anchor": "middle", fill: pal.L[0], "font-weight": 800, "font-size": 10 }));
+  });
+  return svg;
+}
+
+// 5 Dynasty board: score beads on whiskers, lightness falls with rank
+function dynasty() {
+  const W = 1300, rowH = 30, top = 26, left = 190, right = 40, H = top + DYN.length * rowH + 6, lo = 4, hi = 13;
+  const x = (v) => left + ((v - lo) / (hi - lo)) * (W - left - right);
+  const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "Dynasty board top twelve" });
+  for (let v = 4; v <= 13; v++) { svg.append(el("line", { x1: x(v), x2: x(v), y1: top - 8, y2: H - 6, stroke: pal.grid, "stroke-width": .7 })); svg.append(txt(x(v), 12, v, { "text-anchor": "middle" })); }
+  DYN.forEach(([n, pos, s, a, b], i) => {
+    const y = top + i * rowH + rowH / 2, shade = pal.L[Math.min(4, Math.floor(i / 3))], hot = i === 0;
+    svg.append(txt(0, y + 4, `${i + 1}`, { fill: pal.L[4], "font-weight": 700 }));
+    svg.append(txt(22, y + 4, n, { role: "name", fill: pal.L[0], "font-size": 12, "font-weight": hot ? 800 : 600 }));
+    svg.append(txt(left - 14, y + 4, pos, { "text-anchor": "end", fill: pal.L[3] }));
+    svg.append(el("rect", { class: "reveal", style: `animation-delay:${i * 80}ms`, x: x(a), y: y - 3, width: x(b) - x(a), height: 6, rx: 3, fill: pal.L[6] }));
+    svg.append(el("circle", { cx: x(s), cy: y, r: 7, fill: hot ? pal.hero : shade }));
+    svg.append(txt(x(s) + 12, y + 4, s.toFixed(1), { fill: pal.L[0], "font-weight": 800, "font-size": 11 }));
+  });
+  return svg;
+}
+
+// 6 Game Board: a dark Glance card -- one big number, one solid block per league (lighter = better chance on the dark card)
+function board(dark) {
+  const P = pal.dark, W = 620, H = 250;
+  const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "This week's leagues" });
+  svg.append(el("text", { class: "r-big", x: 0, y: 70, "font-size": 76, "font-weight": 800, fill: P.L[0] }, [document.createTextNode("2.3")]));
+  svg.append(el("text", { class: "r-lab", x: 150, y: 46, "font-size": 12, "font-weight": 600, fill: P.L[4] }, [document.createTextNode("WINS TO EXPECT")]));
+  svg.append(el("text", { class: "r-lab", x: 150, y: 66, "font-size": 12, "font-weight": 600, fill: P.L[4] }, [document.createTextNode("ACROSS 5 LEAGUES")]));
+  const bw = (W - 4 * 10) / 5;
+  BOARD.forEach(([lg, word, p], i) => {
+    const bx = i * (bw + 10), shade = p >= 0.6 ? P.L[0] : p >= 0.4 ? P.L[3] : P.L[5], hot = i === 2;
+    const fill = hot && pal.hero !== pal.ink ? P.hero : shade;
+    svg.append(el("rect", { class: "rise", style: `animation-delay:${i * 100}ms`, x: bx, y: 100, width: bw, height: 96, rx: 14, fill }));
+    const on = [P.L[0], P.L[3], P.hero].includes(fill) ? "#1C1C1A" : "#F0EFEB"; // dark text on the light and middle blocks
+    svg.append(el("text", { class: "r-big", x: bx + 14, y: 140, "font-size": 26, "font-weight": 800, fill: on }, [document.createTextNode(`${Math.round(p * 100)}%`)]));
+    svg.append(el("text", { class: "r-lab", x: bx + 14, y: 180, "font-size": 10, "font-weight": 700, fill: on, "letter-spacing": ".06em" }, [document.createTextNode(word.toUpperCase())]));
+    svg.append(el("text", { class: "r-name", x: bx, y: 216, "font-size": 10.5, "font-weight": 600, fill: P.L[3] }, [document.createTextNode(lg)]));
+  });
+  return svg;
+}
+
+function render() {
+  const g = document.getElementById("grid"); g.textContent = "";
+  card({ tool: "Weekly Projection Rankings", title: "Gibbs and McCaffrey have the highest ceilings in the top 10", sub: "Week 11 · bar = floor to ceiling · dot = median · number = projection", src: "Source · Dynasty Singularity projections · 2026 week 11" }, weekly);
+  card({ tool: "Opened player · Outcome curve", title: "Gibbs lands between 10.8 and 43.2 in 8 of 10 games", sub: "Jahmyr Gibbs vs TB · darkest = his normal range · light = a bad day · last = a ceiling game", src: "Source · Dynasty Singularity projections · 2026 week 11" }, curve);
+  card({ tool: "Player Season Simulations", title: "Smith-Njigba's floor is higher than every other WR's median", sub: "Top 8 WRs · season PPR points · line = floor to ceiling · dot = median", src: "Source · Dynasty Singularity season simulations · through week 11" }, sims);
+  card({ tool: "Opened player · Recent games", title: "Gibbs beat his expected points in 6 of 9 games", sub: "Jahmyr Gibbs · dark = beat his xFP · light = fell short · tick = expected points", src: "Source · nflverse game log · 2026 weeks 1-10" }, games);
+  card({ tool: "Dynasty Board", title: "Josh Allen leads the board by half a point", sub: "Superflex · Contender · dot = dynasty score · bar = 80% range · darker = higher on the board", src: "Source · Dynasty Singularity dynasty values · best on the board = 10", wide: true }, dynasty);
+  card({ tool: "My Team · Game Board", title: "You're favored in 2 of your 5 matchups", sub: "Sample week · one block per league · lighter = better chance to win", src: "Sample data · not a real week", dark: true }, board);
+}
+document.querySelectorAll("[data-pal]").forEach((b) => b.onclick = () => { document.querySelectorAll("[data-pal]").forEach((x) => x.classList.toggle("on", x === b)); pal = PAL[b.dataset.pal]; render(); });
+document.querySelectorAll("[data-font]").forEach((b) => b.onclick = () => { document.querySelectorAll("[data-font]").forEach((x) => x.classList.toggle("on", x === b)); document.body.classList.toggle("ours", b.dataset.font === "ours"); });
+render();
+</script>
+</body>
+</html>
