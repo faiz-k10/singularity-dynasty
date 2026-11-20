@@ -4,7 +4,7 @@ import { fetchSleeperState } from "@/lib/sleeper";
 import { nflSeason } from "@/lib/season";
 import { getCachedRedraftData } from "@/app/tools/redraft-rankings/data";
 import { fetchWeekGameStates, teamCode } from "@/lib/gameStatus";
-import { freshState, normalize, award, rollSeason, skySeasonFor, unlockSkins, equipSkin, pickPairs, gradePicks, eventFor, titleOf, seasonProgress, LADDER } from "@/lib/nightSky";
+import { freshState, normalize, award, rollSeason, skySeasonFor, unlockSkins, equipSkin, makeFreePick, makeSkinChoice, pickPairs, gradePicks, eventFor, titleOf, seasonProgress, LADDER } from "@/lib/nightSky";
 
 // The Night Sky's storage and every roll of the dice (the rules are lib/nightSky.js). One row per member in `night_sky` (migration 0046),
 // read and written only here with the service role. Nothing in this file throws to its caller: the game must never break a page.
@@ -115,8 +115,10 @@ export async function loadSky(userId) {
       const before = JSON.stringify(state.picks);
       await gradeFinished(state, ctx, wk);
       if (wk && !state.picks[wk.key]) state.picks[wk.key] = { season: wk.season, week: wk.week, pairs: wk.pairs, choice: wk.pairs.map(() => null), graded: false };
-      const newSkins = unlockSkins(state, ctx.now).length; // e.g. earned before skins existed, or by graded picks
-      return { write: !!(rolled || newSkins || JSON.stringify(state.picks) !== before), value: state };
+      const grantsBefore = JSON.stringify([state.granted, state.choices]);
+      const newSkins = unlockSkins(state, ctx.now).length; // e.g. earned before skins existed, or by graded picks; also hands out rung rewards
+      const granted = JSON.stringify([state.granted, state.choices]) !== grantsBefore;
+      return { write: !!(rolled || newSkins || granted || JSON.stringify(state.picks) !== before), value: state };
     });
     return { ready: true, state, ctx, weekKey: wk?.key || null };
   } catch (e) {
@@ -175,16 +177,18 @@ export async function claimReward(userId, index) {
     return { write: true, value: state };
   });
 }
-// Who has early access right now: members who reached the early-access rung THIS season (it is automatic, no claim). For the founder.
-export async function earlyAccessMembers() {
-  try {
-    const { data, error } = await createAdminClient().from(TABLE).select("user_id, state");
-    if (error) throw error;
-    const idx = LADDER.findIndex((r) => r.early);
-    return (data || []).filter((row) => { const s = normalize(row.state); return seasonProgress(s).done[idx]; }).map((row) => row.user_id);
-  } catch {
-    return null;
-  }
+// A free "fill a gap" pick (ladder rungs with `pick`): the member chose a kind and colour; the version is rolled here. Rung rewards it unlocks
+// (a set's points can pass a rung) are handed out in the same write.
+export async function choosePick(userId, key, fam, colour) {
+  return mutate(userId, (state) => {
+    const f = makeFreePick(state, key, fam, colour, { now: Date.now() });
+    if (f) unlockSkins(state, Date.now());
+    return { write: !!f, value: state };
+  });
+}
+// The 20,000 rung's skin of the member's choice: the next locked sky or core skin.
+export async function chooseSkin(userId, key, kind, id) {
+  return mutate(userId, (state) => ({ write: makeSkinChoice(state, key, kind, id, Date.now()), value: state }));
 }
 // For /admin: every claimed reward not yet marked fulfilled.
 export async function openClaims() {

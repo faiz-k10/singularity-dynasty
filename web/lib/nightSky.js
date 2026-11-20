@@ -513,18 +513,24 @@ export const POWERUPS = {
 // of 4-actions-a-day members in a settled season, nearly all in a first season); the free month stays 30,000 (founder; 33,000 = the median settled season of a
 // member who takes 95% of every star the season offers, was tried and dropped). At 30,000 most of those
 // 95% members reach it (~95%), most 90% members too (~70-80%), engaged 6-a-day members almost never, and nobody in the 2026 season (the Night Sky opened Nov 11).
+// NEW LADDER (Nov 19 2026, founder's quiz, one answer per rung). Fields: `skin: [kind, id]` = a skin the rung gives (the base skin the first
+// time, that season's tinted copy if the member already owns it -- see grantRung); `pick: tier` = a free "fill a gap" pick from that catalogue
+// tier; `skinChoice` = choose the next locked sky OR core skin; `telescope` = this season the telescope shows a find's colour before the
+// reveal; `frame` = the share-card frame ("star" ember, "cobalt" cobalt + silver); `title`; `claim` = the founder fulfils it by hand (a Discord
+// role, a newsletter shout-out, plan time). Picks and the skin choice wait in `s.choices` until the member makes them.
 export const LADDER = [
-  { at: 200, reward: "First light: a profile badge for the season", title: "Spotter" },
-  { at: 500, reward: "A silver season frame on your share cards", frame: "silver" },
-  { three: true, reward: "Charted: finish The Huddle, The Blitz and The Playbook this season. This season's badge on your cards", title: "Charted" },
-  { at: 1000, reward: "Season title: Lookout", title: "Lookout" },
-  { at: 2000, reward: "Season title: Observer", title: "Observer" },
-  { at: 3500, reward: "Season title: Tracker", title: "Tracker" },
-  { singularity: true, reward: "Finish this season's Singularity: its limited sky skin, only available this season" },
-  { at: 6000, reward: "Season title: Surveyor", title: "Surveyor" },
-  { at: 12000, reward: "A gold season frame, plus early access to new tools and features for the rest of the season (automatic)", frame: "gold", early: true },
+  { at: 200, reward: "The Nebula sky skin", skin: ["sky", "nebula"] },
+  { at: 500, reward: "The Starlit frame on your share cards: an ember line with stars at the corners", frame: "star" },
+  { three: true, reward: "Charted: finish The Huddle, The Blitz and The Playbook this season. The Pillars sky skin", skin: ["sky", "aurora"] },
+  { at: 1000, reward: "A free pick: any small body you haven't found yet", pick: 1 },
+  { at: 2000, reward: "The Pulsar core skin", skin: ["core", "pulsar"] },
+  { at: 3500, reward: "Telescope upgrade: see each find's colour before it resolves, for the rest of the season. Season title: Sojourner", telescope: true, title: "Sojourner" },
+  { singularity: true, reward: "Finish this season's Singularity: its limited sky skin, only available this season, and a season role in the Discord", discord: true, claim: true },
+  { at: 6000, reward: "A free pick: any planet or moon you haven't found yet", pick: 3 },
+  { at: 9000, reward: "The Cobalt frame on your share cards, and another free planet or moon pick", frame: "cobalt", pick: 3 },
+  { at: 12000, reward: "A free pick: any meteor shower you haven't found yet. Season title: Perseverance", pick: 4, title: "Perseverance" },
   { at: 14000, reward: "A week of the next plan up", claim: true },
-  { at: 20000, reward: "Your name on a star in this season's sky", title: "Star-namer", claim: true },
+  { at: 20000, reward: "A free stellar event pick, your choice of the next locked sky or core skin, and a shout-out in the newsletter's community section", pick: 5, skinChoice: true, claim: true },
   { at: 30000, reward: "A free month of your plan (a month of Explorer if you're on the free plan)", title: "Event Horizon", claim: true },
 ];
 export const rungLabel = (r) => (r.three ? "Charted" : r.singularity ? "Singularity" : r.at.toLocaleString());
@@ -540,14 +546,14 @@ const bestSeason = (s) => Math.max(seasonProgress(s).points, ...Object.values(s.
 export const SKINS = {
   sky: [
     { id: "deep", name: "Deep field", how: "Yours from the start", rarity: "standard" },
-    { id: "nebula", name: "Nebula", how: "Reach 200 orbit points in total", rarity: "common", test: (s) => s.points >= 200, progress: (s) => [s.points, 200] },
-    { id: "aurora", name: "Pillars", how: "Chart a season: finish The Huddle, The Blitz and The Playbook in one season", rarity: "rare", test: (s) => seasonProgress(s).sky || Object.values(s.skies || {}).some((k) => k.charted), progress: (s) => [seasonProgress(s).three, 3] },
+    { id: "nebula", name: "Nebula", how: "Reach 200 points in a season", rarity: "common", rung: true, progress: (s) => [seasonProgress(s).points, 200] },
+    { id: "aurora", name: "Pillars", how: "Chart a season: finish The Huddle, The Blitz and The Playbook in one season", rarity: "rare", rung: true, progress: (s) => [seasonProgress(s).three, 3] },
     { id: "milkyway", name: "Milky Way", how: "Reach 6,000 orbit points in total", rarity: "rare", test: (s) => s.points >= 6000, progress: (s) => [s.points, 6000] },
     { id: "eclipse", name: "Supernova", how: "Find a stellar event", rarity: "epic", test: stellar, progress: (s) => [stellar(s) ? 1 : 0, 1] },
   ],
   core: [
     { id: "classic", name: "Classic", how: "Yours from the start", rarity: "standard" },
-    { id: "pulsar", name: "Pulsar", how: "Reach 1,900 orbit points in total", rarity: "common", test: (s) => s.points >= 1900, progress: (s) => [s.points, 1900] },
+    { id: "pulsar", name: "Pulsar", how: "Reach 2,000 points in a season", rarity: "common", rung: true, progress: (s) => [seasonProgress(s).points, 2000] },
     { id: "ringed", name: "Ringed", how: "Complete 25 sets", rarity: "epic", test: (s) => Object.keys(s.sets).length >= 25, progress: (s) => [Object.keys(s.sets).length, 25] },
     { id: "binary", name: "Binary", how: "Earn 6,000 points in one season", rarity: "epic", test: (s) => bestSeason(s) >= 6000, progress: (s) => [bestSeason(s), 6000] },
     { id: "quasar", name: "Quasar", how: "Find a mythic version of anything (1 in 200 finds)", rarity: "legendary", test: mythicFind, progress: (s) => [mythicFind(s) ? 1 : 0, 1] },
@@ -564,15 +570,25 @@ export function skySkinsFor(s) {
   const years = new Set((s.skins || []).filter((k) => k.startsWith("sky:season-")).map((k) => Number(k.slice(11))));
   if (s.season) years.add(s.season);
   const seasonal = [...years].sort().map((y) => ({ id: seasonSkinId(y), name: seasonSkinName(y), season: y, rarity: "limited", how: y === s.season ? `Finish The Singularity (${skyFor(y)[3].real}) this season. Only available in the ${y} season` : `From the ${y} season`, progress: y === s.season ? (x) => [x.filled.singularity.filter(Boolean).length, 10] : null }));
-  return [...SKINS.sky, ...seasonal];
+  return [...SKINS.sky, ...tintEntries(s, "sky"), ...seasonal];
 }
 export const hasSkin = (s, kind, id) => id === DEFAULT_SKIN[kind] || (s.skins || []).includes(`${kind}:${id}`);
+// A SEASON-TINTED copy of a ladder skin (founder, Nov 19 2026): a member who already owns the Nebula, Pillars or Pulsar skin gets that
+// season's colourway when the rung comes round again, e.g. "nebula~2027" ("Nebula 2027"), so the rung gives something new every year.
+export const tintId = (id, season) => `${id}~${season}`;
+export const tintOf = (id) => { const [base, y] = String(id).split("~"); return { base, season: y ? Number(y) : null }; };
+// how far that season's colourway turns the hue (degrees); 2026 is the original
+export const tintHue = (season) => (season ? (((season - FIRST_SKY_SEASON) * 67) % 360 + 360) % 360 : 0);
+const skinName = (kind, id) => { const { base, season } = tintOf(id); const k = SKINS[kind].find((x) => x.id === base); return k ? (season ? `${k.name} ${season}` : k.name) : id; };
+const ownedTints = (s, kind) => (s.skins || []).filter((k) => k.startsWith(`${kind}:`) && k.includes("~")).map((k) => k.slice(kind.length + 1)).sort();
+const tintEntries = (s, kind) => ownedTints(s, kind).map((id) => { const { base, season } = tintOf(id); const k = SKINS[kind].find((x) => x.id === base); return { ...k, id, name: skinName(kind, id), season, rarity: "limited", how: `The ${season} colourway`, test: null, progress: null }; });
+export const coreSkinsFor = (s) => [...SKINS.core, ...tintEntries(s, "core")];
 // Adds every skin the member has now earned; returns the newly unlocked ones (for the log).
 export function unlockSkins(s, now = 0) {
-  const got = [];
+  const got = grantRungs(s, now);
   const seasonal = s.season ? [{ id: seasonSkinId(s.season), name: seasonSkinName(s.season), test: (x) => seasonProgress(x).singularity }] : [];
   for (const kind of ["sky", "core"]) for (const k of kind === "sky" ? [...SKINS.sky, ...seasonal] : SKINS.core) {
-    if (!k.test || hasSkin(s, kind, k.id) || !k.test(s)) continue;
+    if (k.rung || !k.test || hasSkin(s, kind, k.id) || !k.test(s)) continue;
     s.skins = [...(s.skins || []), `${kind}:${k.id}`];
     got.push(k);
     log(s, `New ${kind === "sky" ? "sky" : "core"} skin unlocked: ${k.name}`, now);
@@ -580,11 +596,91 @@ export function unlockSkins(s, now = 0) {
   return got;
 }
 export function equipSkin(s, kind, id) {
-  const known = SKINS[kind]?.some((k) => k.id === id) || (kind === "sky" && /^season-\d{4}$/.test(id));
+  const known = SKINS[kind]?.some((k) => k.id === tintOf(id).base) || (kind === "sky" && /^season-\d{4}$/.test(id));
   if (!known || !hasSkin(s, kind, id)) return false;
   s.equip = { ...DEFAULT_SKIN, ...(s.equip || {}), [kind]: id };
   return true;
 }
+const addSkin = (s, kind, id, now, got) => {
+  s.skins = [...(s.skins || []), `${kind}:${id}`];
+  got.push({ id, name: skinName(kind, id), kind });
+  log(s, `New ${kind} skin unlocked: ${skinName(kind, id)}`, now);
+};
+// Hands out what this season's finished rungs give, once per rung per season (`s.granted["<season>:<rung>"]`): skins straight away, free
+// picks and the skin choice as `s.choices` the member makes on the page. Called with unlockSkins after every change. Returns new skins.
+function grantRungs(s, now) {
+  const got = [];
+  if (!s.season) return got;
+  const p = seasonProgress(s);
+  s.granted = s.granted || {};
+  s.choices = s.choices || [];
+  LADDER.forEach((r, i) => {
+    const key = `${s.season}:${i}`;
+    if (!p.done[i] || s.granted[key]) return;
+    s.granted[key] = now || 1;
+    if (r.skin) {
+      const [kind, id] = r.skin;
+      if (!hasSkin(s, kind, id)) addSkin(s, kind, id, now, got);
+      else if (s.season > FIRST_SKY_SEASON && !hasSkin(s, kind, tintId(id, s.season))) addSkin(s, kind, tintId(id, s.season), now, got);
+    }
+    if (r.pick) { s.choices.push({ key: `${key}:pick`, type: "pick", tier: r.pick }); log(s, `Free pick waiting: ${TIER_NAME[r.pick].toLowerCase()}`, now); }
+    if (r.skinChoice && skinChoiceOptions(s).length) { s.choices.push({ key: `${key}:skin`, type: "skin" }); log(s, "A skin of your choice is waiting", now); }
+  });
+  return got;
+}
+// THE FREE PICK ("fill a gap"): every kind x colour of that tier the member hasn't found in any version (all of them once nothing is
+// missing), each marked with the sets it would complete. The member picks kind and colour; the version is rolled on the server.
+export function pickOptions(s, tier) {
+  const got = Object.values(s.found);
+  const owns = (fam, col) => got.some((e) => e.fam === fam && e.colour === col);
+  const kindsHave = famsIn(tier).filter((k) => got.some((e) => e.fam === k.id)).length, all = famsIn(tier).length;
+  const out = [];
+  for (const fam of famsIn(tier)) {
+    const cols = new Set(got.filter((e) => e.fam === fam.id).map((e) => e.colour)).size, newKind = cols === 0;
+    for (const c of COLOURS) {
+      if (owns(fam.id, c.id)) continue;
+      const completes = [];
+      if (cols === 2 && !s.sets[`trio:${fam.id}`]) completes.push("Trio");
+      if (cols === 5 && !s.sets[`spectrum:${fam.id}`]) completes.push("Spectrum");
+      if (newKind && kindsHave === 3 && all > 4 && !s.sets[`quartet:${tier}`]) completes.push("Quartet");
+      if (newKind && kindsHave === all - 1 && !s.sets[`survey:${tier}`]) completes.push("Survey");
+      out.push({ fam: fam.id, colour: c.id, completes });
+    }
+  }
+  if (out.length) return out;
+  return famsIn(tier).flatMap((fam) => COLOURS.map((c) => ({ fam: fam.id, colour: c.id, completes: [] })));
+}
+// Makes a free pick: it joins the catalogue (and the telescope queue, so it is revealed like any find) and can complete sets, but it pays
+// no orbit points of its own, so the ladder's rewards can't feed the ladder. Returns the find, or null when the pick isn't allowed.
+export function makeFreePick(s, key, fam, colour, ctx, rnd = Math.random) {
+  const ch = (s.choices || []).find((c) => c.key === key && c.type === "pick");
+  if (!ch || s.findsTotal < UNLOCK.catalogue || !pickOptions(s, ch.tier).some((o) => o.fam === fam && o.colour === colour)) return null; // picks open with the catalogue
+  const f = findOf(fam, colour, pickW(VERSIONS, rnd).id);
+  const had = s.found[f.key];
+  s.found[f.key] = { n: (had?.n || 0) + 1, name: f.name, oneIn: f.oneIn, fam: f.fam, colour: f.colour, version: f.version, at: had?.at || ctx.now };
+  if (f.version) applyPowerup(s, f.version, ctx, rnd);
+  const sets = checkSets(s, f, ctx, rnd);
+  const id = `SD-${String(new Date(ctx.now).getUTCFullYear()).slice(2)}-${Math.floor(rnd() * 0xffff).toString(16).toUpperCase().padStart(4, "0")}`;
+  s.pending.push({ id, ...f, pts: 0, first: !had, gift: true, sets, at: ctx.now });
+  s.pending = s.pending.slice(-20);
+  s.choices = s.choices.filter((c) => c !== ch);
+  log(s, `Free pick: ${f.name}`, ctx.now);
+  return f;
+}
+// THE SKIN CHOICE (20,000): the next locked sky skin OR the next locked core skin, in the order the Skins panel lists them (limited skins never).
+export function skinChoiceOptions(s) {
+  const next = (kind) => SKINS[kind].find((k) => k.rarity !== "standard" && !k.rung && !hasSkin(s, kind, k.id)); // ladder skins come from their own rungs
+  return ["sky", "core"].map((kind) => { const k = next(kind); return k ? { kind, id: k.id, name: k.name, rarity: k.rarity } : null; }).filter(Boolean);
+}
+export function makeSkinChoice(s, key, kind, id, now = 0) {
+  const ch = (s.choices || []).find((c) => c.key === key && c.type === "skin");
+  if (!ch || !skinChoiceOptions(s).some((o) => o.kind === kind && o.id === id)) return false;
+  addSkin(s, kind, id, now, []);
+  s.choices = s.choices.filter((c) => c !== ch);
+  return true;
+}
+// This season's telescope upgrade (the 3,500 rung): finds show their colour before they resolve.
+export const hasTelescope = (s) => { const i = LADDER.findIndex((r) => r.telescope); return !!seasonProgress(s).done[i]; };
 export const equipped = (s) => ({ ...DEFAULT_SKIN, ...(s.equip || {}) });
 export function seasonProgress(s) {
   const points = Math.max(0, s.points - (s.seasonBase || 0)), d = s.seasonDone || {};
@@ -610,7 +706,7 @@ export function freshState() {
     season: 0, skies: {}, seasonDone: {}, seasonBase: 0, skins: [], equip: {},
     mass: 0, points: 0, actions: 0, findsTotal: 0, lastActionAt: 0,
     daily: { day: "", done: [] },
-    pending: [], found: {}, sets: {}, claimed: {},
+    pending: [], found: {}, sets: {}, claimed: {}, granted: {}, choices: [],
     boosts: { extra: 0, doubleUntil: 0, goldUntil: 0, tripleUntil: 0, noCoolUntil: 0 },
     shower: 0, strains: 0, log: [],
     picks: {}, btm: [0, 0],

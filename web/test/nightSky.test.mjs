@@ -170,44 +170,88 @@ test("a new NFL season starts an empty sky and keeps the old one", () => {
   assert.equal(old.filled.huddle[0], "blue");
 });
 
-import { seasonProgress } from "../lib/nightSky.js";
+import { seasonProgress, LADDER, pickOptions, makeFreePick, skinChoiceOptions, makeSkinChoice, hasTelescope, skySkinsFor, coreSkinsFor } from "../lib/nightSky.js";
 test("the ladder is one season long: it counts this season's points and finished constellations, then starts over", () => {
   const s = freshState();
   rollSeason(s, 2026);
   for (const id of ["huddle", "blitz", "playbook"]) s.seasonDone[id] = 1;
-  s.points = 2200;
+  s.points = 3600;
   const p = seasonProgress(s);
   assert.equal(p.sky, true); // charted needs only the three smaller constellations
-  assert.deepEqual(p.done, [true, true, true, true, true, false, false, false, false, false, false, false]);
-  assert.equal(p.title, "Observer");
-  assert.equal(p.frame, "silver");
-  assert.equal(p.rungs, 5);
+  assert.deepEqual(p.done, LADDER.map((r, i) => i < 6));
+  assert.equal(p.title, "Sojourner");
+  assert.equal(p.frame, "star");
+  assert.equal(p.rungs, 6);
+  assert.ok(hasTelescope(s));
   s.seasonDone.singularity = 1;
   assert.deepEqual(unlockSkins(s).map((k) => k.id).filter((id) => id.startsWith("season")), ["season-2026"]); // the limited season skin
   rollSeason(s, 2027);
-  assert.equal(s.skies[2026].title, "Observer"); // the career shelf keeps one line per past season
-  assert.equal(s.skies[2026].rungs, 6);
+  assert.equal(s.skies[2026].title, "Sojourner"); // the career shelf keeps one line per past season
+  assert.equal(s.skies[2026].rungs, 7);
   assert.equal(seasonProgress(s).points, 0);
   assert.equal(seasonProgress(s).title, "Spotter");
-  assert.equal(seasonProgress(s).rungs, 0);
+  assert.equal(hasTelescope(s), false); // perks last one season
   assert.equal(unlockSkins(s).filter((k) => k.id === "season-2027").length, 0); // next season's must be earned again
   assert.ok(equipSkin(s, "sky", "season-2026")); // last season's stays wearable
-  assert.equal(s.points, 2200); // the lifetime total (used by skins) is never reset
+  assert.equal(s.points, 3600); // the lifetime total is never reset
 });
 
 import { unlockSkins, equipSkin, equipped, hasSkin } from "../lib/nightSky.js";
-test("skins unlock from what the member did, stay unlocked, and only earned ones can be worn", () => {
+test("ladder skins come from their rungs; a skin already owned comes back as that season's colourway", () => {
   const s = freshState();
+  rollSeason(s, 2026);
   assert.equal(equipSkin(s, "sky", "nebula"), false);
   s.points = 2000;
-  const got = unlockSkins(s).map((k) => k.id);
-  assert.deepEqual(got.sort(), ["nebula", "pulsar"]);
-  assert.equal(unlockSkins(s).length, 0); // only once
-  s.points = 0; // spending never happens, but a skin stays earned regardless
-  assert.ok(hasSkin(s, "core", "pulsar"));
+  assert.deepEqual(unlockSkins(s, 1).map((k) => k.id).sort(), ["nebula", "pulsar"]);
+  assert.equal(unlockSkins(s, 1).length, 0); // only once
   assert.equal(equipSkin(s, "core", "pulsar"), true);
   assert.equal(equipSkin(s, "core", "quasar"), false);
   assert.deepEqual(equipped(s), { sky: "deep", core: "pulsar" });
+  rollSeason(s, 2027);
+  s.points += 2000;
+  assert.deepEqual(unlockSkins(s, 2).map((k) => k.id).sort(), ["nebula~2027", "pulsar~2027"]);
+  assert.ok(skySkinsFor(s).some((k) => k.name === "Nebula 2027"));
+  assert.ok(coreSkinsFor(s).some((k) => k.name === "Pulsar 2027"));
+  assert.ok(equipSkin(s, "sky", "nebula~2027"));
+  assert.equal(equipSkin(s, "sky", "nebula~2028"), false); // not earned
+});
+
+test("free picks wait for the catalogue, offer only gaps, mark set-completers and pay no orbit points", () => {
+  const s = freshState();
+  rollSeason(s, 2026);
+  s.points = 1000;
+  unlockSkins(s, 1);
+  const ch = s.choices.find((c) => c.type === "pick");
+  assert.equal(ch.tier, 1);
+  const fam = FAMILIES.find((f) => f.tier === 1).id;
+  assert.equal(makeFreePick(s, ch.key, fam, "silver", { now: 1 }, () => 0.5), null); // the catalogue isn't open yet
+  s.findsTotal = 10;
+  for (const col of ["silver", "azure"]) s.found[`${fam}|${col}|`] = { n: 1, fam, colour: col, version: "" };
+  const opts = pickOptions(s, 1);
+  assert.ok(!opts.some((o) => o.fam === fam && o.colour === "silver")); // already found: not offered
+  assert.ok(opts.find((o) => o.fam === fam && o.colour === "emerald").completes.includes("Trio"));
+  const before = s.points;
+  const f = makeFreePick(s, ch.key, fam, "emerald", { now: 2 }, () => 0.5);
+  assert.equal(f.colour, "emerald");
+  assert.equal(s.points - before, 40); // only the Trio's own points
+  assert.equal(s.pending.at(-1).gift, true);
+  assert.equal(s.choices.length, 0);
+  assert.equal(makeFreePick(s, ch.key, fam, "violet", { now: 3 }), null); // used up
+});
+
+test("the 20,000 rung offers the next locked sky or core skin, never a ladder or limited one", () => {
+  const s = freshState();
+  rollSeason(s, 2026);
+  s.points = 20000;
+  unlockSkins(s, 1);
+  const ch = s.choices.find((c) => c.type === "skin");
+  const opts = skinChoiceOptions(s);
+  assert.ok(opts.every((o) => !["nebula", "aurora", "pulsar"].includes(o.id)));
+  assert.equal(makeSkinChoice(s, ch.key, "core", "horizon"), false); // not the next one
+  const o = opts.find((x) => x.kind === "core");
+  assert.ok(makeSkinChoice(s, ch.key, o.kind, o.id, 1));
+  assert.ok(hasSkin(s, o.kind, o.id));
+  assert.equal(s.choices.some((c) => c.type === "skin"), false);
 });
 
 test("sharing places one lucky star but never heats the core or makes a find", () => {

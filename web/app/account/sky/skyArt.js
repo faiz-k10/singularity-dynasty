@@ -347,7 +347,7 @@ let badgeText = null; // this season's badge ("2026 · SURVEYOR"), set by the pa
 export const setCardBadge = (t) => { badgeText = t || null; };
 let cardSkin = { sky: "deep", core: "classic" }; // the member's equipped skins, set by the page before drawing a card
 export const setCardSkin = (k) => { cardSkin = { sky: "deep", core: "classic", ...(k || {}) }; };
-let cardFrame = null; // "silver" | "gold": the season frame the member has earned
+let cardFrame = null; // "star" | "cobalt": the season frame the member has earned (older saves said "silver" / "gold")
 export const setCardFrame = (f) => { cardFrame = f || null; };
 
 // The skins on a card are the SAME art as the page (SkyBackdrop / CoreSkin in ./skins.js), rendered to an SVG picture and drawn onto the canvas,
@@ -397,6 +397,35 @@ async function drawCore(ctx, cx, cy, scale = 1) {
   if (img) ctx.drawImage(img, cx - size / 2, cy - size / 2, size, size);
 }
 
+// The ladder's share-card frames (founder, Nov 19 2026: "more on theme ... than just boring silver"), built from the logo's pieces: a hairline
+// border, a four-pointed star at each corner and a faint orbit arc sweeping across the card. "star" (500 points) is ember; "cobalt" (9,000)
+// is a cobalt line with a silver inner line and silver stars.
+function fourStar(ctx, x, y, r, fill, glow) {
+  if (glow) { const g = ctx.createRadialGradient(x, y, 0, x, y, r * 2.2); g.addColorStop(0, glow); g.addColorStop(1, "rgba(0,0,0,0)"); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r * 2.2, 0, Math.PI * 2); ctx.fill(); }
+  const w = r * 0.22;
+  ctx.fillStyle = fill; ctx.beginPath(); ctx.moveTo(x, y - r);
+  ctx.quadraticCurveTo(x + w, y - w, x + r, y); ctx.quadraticCurveTo(x + w, y + w, x, y + r);
+  ctx.quadraticCurveTo(x - w, y + w, x - r, y); ctx.quadraticCurveTo(x - w, y - w, x, y - r); ctx.fill();
+}
+function drawFrame(ctx, frame) {
+  const f = frame === "gold" ? "cobalt" : frame === "silver" ? "star" : frame;
+  if (f !== "star" && f !== "cobalt") { ctx.fillStyle = "#E8643F"; ctx.fillRect(0, 0, 1200, 6); return; }
+  const cobalt = f === "cobalt", line = cobalt ? "#4C7DF0" : "#E8643F", star = cobalt ? "#DDE3EC" : "#FFD9C9";
+  const glow = cobalt ? "rgba(76,125,240,.55)" : "rgba(232,100,63,.5)";
+  ctx.save();
+  // the orbit: a faint ellipse round the card's centre, clipped to the card
+  ctx.strokeStyle = cobalt ? "rgba(201,206,214,.22)" : "rgba(232,100,63,.22)"; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.ellipse(600, 315, 640, 250, -0.18, 0, Math.PI * 2); ctx.stroke();
+  // the border: one line inset 16 (the cobalt frame adds a silver inner line)
+  ctx.strokeStyle = line; ctx.lineWidth = cobalt ? 3 : 2; ctx.strokeRect(16, 16, 1168, 598);
+  if (cobalt) { ctx.strokeStyle = "rgba(201,206,214,.7)"; ctx.lineWidth = 1; ctx.strokeRect(26, 26, 1148, 578); }
+  for (const [x, y] of [[16, 16], [1184, 16], [16, 614], [1184, 614]]) {
+    ctx.fillStyle = "#0B0B0B"; ctx.fillRect(x - 15, y - 15, 30, 30); // the corner gap the star sits in
+    fourStar(ctx, x, y, 14, star, glow);
+  }
+  ctx.restore();
+}
+
 // `corners: false` leaves out the top-right badge and the bottom-right signature (the season card sets them in its own text column);
 // `shadeTo` is where the left-hand darkening behind the words fades out.
 async function base(ctx, eyebrow, { corners = true, shadeTo = 760 } = {}) {
@@ -404,8 +433,9 @@ async function base(ctx, eyebrow, { corners = true, shadeTo = 760 } = {}) {
   await drawBackdrop(ctx);
   const shade = ctx.createLinearGradient(0, 0, shadeTo, 0); shade.addColorStop(0, "rgba(0,0,0,.62)"); shade.addColorStop(1, "rgba(0,0,0,0)");
   ctx.fillStyle = shade; ctx.fillRect(0, 0, 1200, 630); // keeps the words readable over the nebula
-  if (cardFrame) { ctx.strokeStyle = cardFrame === "gold" ? "#E9C46A" : "#C9CED6"; ctx.lineWidth = 10; ctx.strokeRect(5, 5, 1190, 620); ctx.lineWidth = 1.5; ctx.strokeRect(20, 20, 1160, 590); }
-  ctx.fillStyle = "#E8643F"; ctx.fillRect(0, 0, 1200, 6); ctx.fillRect(64, 70, 10, 10);
+  if (cardFrame) drawFrame(ctx, cardFrame); // a framed card drops the plain ember bar along the top
+  else { ctx.fillStyle = "#E8643F"; ctx.fillRect(0, 0, 1200, 6); }
+  ctx.fillStyle = "#E8643F"; ctx.fillRect(64, 70, 10, 10);
   ctx.fillStyle = "#A39E92"; ctx.font = `400 20px ${font("--font-mono")}`; ctx.fillText(eyebrow.toUpperCase(), 88, 81);
   if (!corners) return;
   // signature: the brand lockup (app/brandCanvas.js), then "· THE NIGHT SKY"

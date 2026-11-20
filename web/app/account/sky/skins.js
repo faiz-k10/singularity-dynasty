@@ -1,7 +1,7 @@
 "use client";
 
 import { useId } from "react";
-import { skyFor } from "@/lib/nightSky";
+import { skyFor, tintOf, tintHue } from "@/lib/nightSky";
 import { StarField, Galaxies, Cloud, Spikes } from "./hubble";
 
 // The Night Sky's skins (rules, unlocks, rarity and progress: SKINS in lib/nightSky.js). Drawn in the sky's own coordinates (-300..300, the
@@ -23,7 +23,7 @@ const curtain = seeded(7, 18, (r) => r() * 600 - 300);
 const glow = (id, sd) => <filter id={id} x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation={sd} /></filter>;
 const radial = (id, stops) => <radialGradient id={id}>{stops.map(([o, c, a], i) => <stop key={i} offset={o} stopColor={c} stopOpacity={a} />)}</radialGradient>;
 
-export function SkyBackdrop({ skin }) {
+function SkyArt({ skin }) {
   const id = useId().replace(/:/g, "");
   if (skin === "nebula") return (
     // the "Hubble palette": gold, teal and rust gas in fine filaments, a few young blue stars burning through
@@ -110,7 +110,7 @@ export function SkyBackdrop({ skin }) {
 // layer "back" sits behind the core's body, "front" in front of it (rings and disks pass in front on their near side). Hubble-style (Nov 11
 // 2026, founder): textured gas from the Cloud filter, real-looking stars with halos and diffraction spikes, fine ring and disk structure.
 // Nothing that carries the turbulence filter is inside a spinning / pulsing group (it would re-render every frame).
-export function CoreSkin({ skin, layer }) {
+function CoreArt({ skin, layer }) {
   const id = useId().replace(/[^a-zA-Z0-9_-]/g, "");
   const halo = (key, color, r, a = 0.6) => (
     <>
@@ -213,6 +213,27 @@ export function CoreSkin({ skin, layer }) {
     );
   }
   return null;
+}
+
+// A season-tinted skin ("nebula~2027", lib/nightSky.js tintId): the same art with its colours turned round the hue wheel for that season.
+function Tinted({ skin, children }) {
+  const id = useId().replace(/[^a-zA-Z0-9_-]/g, "");
+  const { season } = tintOf(skin);
+  if (!season) return children;
+  return (
+    <>
+      <defs><filter id={`${id}t`} filterUnits="userSpaceOnUse" x="-700" y="-700" width="1400" height="1400"><feColorMatrix type="hueRotate" values={tintHue(season)} /></filter></defs>
+      <g filter={`url(#${id}t)`}>{children}</g>
+    </>
+  );
+}
+export function SkyBackdrop({ skin }) {
+  const base = tintOf(skin).base;
+  return <Tinted skin={skin}><SkyArt skin={base} /></Tinted>;
+}
+export function CoreSkin({ skin, layer }) {
+  const base = tintOf(skin).base;
+  return <Tinted skin={skin}><CoreArt skin={base} layer={layer} /></Tinted>;
 }
 
 // A square preview of one skin for the Skins panel (always in full colour; a locked one gets a lock over it in the panel).

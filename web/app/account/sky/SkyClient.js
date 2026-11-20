@@ -4,14 +4,14 @@ import { memo, useCallback, useEffect, useId, useMemo, useRef, useState, useSync
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import ShareDialog from "../../ShareDialog";
-import { seeFinds, pickPlayer, claim, wearSkin } from "./actions";
+import { seeFinds, pickPlayer, claim, wearSkin, freePick, pickSkin } from "./actions";
 import { SkyBackdrop, CoreSkin, SkinPreview } from "./skins";
 import { StarField, Galaxies, Scrim, LitStar, GlowLine, Bloom, StarSurface } from "./hubble";
 import { placeFind } from "@/lib/skyPlacement";
 import { drawObject, skyObject, sharpen, findCard, receiptCard, seasonCard, toBlob, setCardBadge, setCardSkin, setCardFrame } from "./skyArt";
 import {
   ACTIONS, loreFor, skyFor, SKINS, RARITY, hasSkin, equipped, skySkinsFor, FAMILIES, COLOURS, VERSIONS, TIER_NAME, POWERUPS, LADDER, rungLabel, CATALOGUE_SIZE, SET_COUNT, UNLOCK, EVENT_TEXT,
-  famsIn, findOf, setProgress, seasonProgress,
+  famsIn, findOf, setProgress, seasonProgress, coreSkinsFor, pickOptions, skinChoiceOptions, hasTelescope,
 } from "@/lib/nightSky";
 
 // The Night Sky page (server side: page.js; rules: lib/nightSky.js). Everything here only SHOWS the sky: stars, finds and points are decided on
@@ -322,7 +322,45 @@ function CatDetail({ detail, entries, onClose, onShare }) {
   );
 }
 
-function Telescope({ queue, compliments, onDone, onShare }) {
+// The free "fill a gap" pick (ladder rungs with `pick`): every kind and colour of that tier the member hasn't found, the ones that would
+// complete a set marked. The version is rolled on the server and the find goes to the telescope.
+function PickDialog({ state, choice, busy, onClose, onPick }) {
+  const opts = pickOptions(state, choice.tier);
+  useEffect(() => {
+    const k = (e) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", k);
+    return () => window.removeEventListener("keydown", k);
+  }, [onClose]);
+  const byFam = famsIn(choice.tier).map((fam) => ({ fam, opts: opts.filter((o) => o.fam === fam.id) })).filter((g) => g.opts.length);
+  return (
+    <div className="sky-ov" role="dialog" aria-modal="true" aria-label={`Free pick: ${TIER_NAME[choice.tier]}`} onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="sky-ov-box sky-pick">
+        <div className="board-panel-title">Free pick · {TIER_NAME[choice.tier]}</div>
+        <p className="sky-small mono">Choose the kind and colour. Only ones you haven&apos;t found are offered; the version (plain, prismatic, ancient or mythic) is rolled when it arrives.</p>
+        <div className="sky-pick-list">
+          {byFam.map(({ fam, opts: list }) => (
+            <div key={fam.id} className="sky-pick-row">
+              <Thumb find={findOf(fam.id, list[0].colour, "")} />
+              <div>
+                <b>{fam.name}</b>
+                <div className="sky-pick-cols">
+                  {list.map((o) => { const col = COLOURS.find((c) => c.id === o.colour); return (
+                    <button key={o.colour} type="button" className={`sky-pick-col mono${o.completes.length ? " is-set" : ""}`} disabled={busy} onClick={() => onPick(o.fam, o.colour)}>
+                      <i style={{ background: col.c[0] }} />{col.name}{o.completes.length ? <em>completes {o.completes.join(" + ")}</em> : null}
+                    </button>
+                  ); })}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="sky-row"><button type="button" className="btn-ghost" onClick={onClose}>Later</button></div>
+      </div>
+    </div>
+  );
+}
+
+function Telescope({ queue, compliments, onDone, onShare, colourFirst }) {
   const [i, setI] = useState(0);
   const [shown, setShown] = useState(false);
   const lens = useRef(null);
@@ -355,7 +393,7 @@ function Telescope({ queue, compliments, onDone, onShare }) {
             <div className="sky-find">{f.name}</div>
             <div className="sky-rarity mono">1 in {f.oneIn.toLocaleString()} finds · {f.id}{f.first ? " · new to your catalogue" : ""}</div>
             {f.fam != null && <p className="sky-lore">{loreFor(f.fam, f.colour, f.version)}</p>}
-            <div className="sky-find-sub mono">+{f.pts} orbit points{f.first ? " (incl. +15 for a first discovery)" : ""}{f.shower ? " · meteor shower: every action places two stars for 10 minutes" : ""}</div>
+            <div className="sky-find-sub mono">{f.gift ? "Your free pick from the ladder" : `+${f.pts} orbit points${f.first ? " (incl. +15 for a first discovery)" : ""}`}{f.shower ? " · meteor shower: every action places two stars for 10 minutes" : ""}</div>
             {compliment && <div className="sky-note is-gold"><span className="mono">Seen from up here</span><b>{compliment.head}.</b> {compliment.body}</div>}
             {pu && <div className="sky-note is-blue"><span className="mono">Power-up</span><b>{pu.name}</b> {pu.text[0].toUpperCase() + pu.text.slice(1)}</div>}
             {f.sets?.map((d) => <div key={d.label} className="sky-note is-blue"><span className="mono">Set complete · +{d.pts} orbit points</span><b>{d.label}</b>{d.power ? `Power-up: ${POWERUPS[d.power].name}, ${POWERUPS[d.power].text}` : ""}</div>)}
@@ -365,7 +403,12 @@ function Telescope({ queue, compliments, onDone, onShare }) {
               {i < queue.length - 1 ? <button type="button" className="btn-ghost" onClick={() => setI(i + 1)}>Next find</button> : <button type="button" className="btn-ghost" onClick={onDone}>Back to the sky</button>}
             </div>
           </>
-        ) : <p className="sky-find-sub mono">Resolving …</p>}
+        ) : (
+          <>
+            {colourFirst && (() => { const col = COLOURS.find((c) => c.id === f.colour); return col ? <p className="sky-find-sub mono sky-colour-read"><i style={{ background: col.c[0] }} />Colour reading: {col.name}</p> : null; })()}
+            <p className="sky-find-sub mono">Resolving …</p>
+          </>
+        )}
       </div>
     </div>
   );
@@ -393,6 +436,7 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
   const closeDetail = useCallback(() => setDetail(null), []);
   const [share, setShare] = useState(null); // { make, title, caption }
   const [busy, setBusy] = useState(false);
+  const [choosing, setChoosing] = useState(null); // a free pick being made: { key, tier }
   const [msg, setMsg] = useState(null);
   // the boost timers show whole minutes, so the clock ticks every 15 seconds (it ticked every second, re-rendering the page each time)
   const [now, setNow] = useState(serverNow);
@@ -468,6 +512,34 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
           </button>
         )}
       </section>
+
+      {(state.choices || []).length > 0 && (
+        <section className="sky-panel" aria-labelledby="sky-gifts">
+          <div className="board-panel-title" id="sky-gifts">Rewards waiting</div>
+          <ul className="sky-gifts">
+            {state.choices.map((c) => c.type === "pick" ? (
+              <li key={c.key}>
+                <span><b>Free pick</b> · {TIER_NAME[c.tier]}</span>
+                {catOpen
+                  ? <button type="button" className="btn-primary" disabled={busy} onClick={() => setChoosing(c)}>Choose</button>
+                  : <span className="mono sky-small">Opens with your catalogue ({UNLOCK.catalogue - state.findsTotal} more finds)</span>}
+              </li>
+            ) : (
+              <li key={c.key} className="is-skin">
+                <span><b>A skin of your choice</b> · the next locked sky or core skin</span>
+                <span className="sky-gift-skins">
+                  {skinChoiceOptions(state).map((o) => (
+                    <button key={o.id} type="button" className={`sky-skin rar-${o.rarity}`} disabled={busy} onClick={() => run(pickSkin(c.key, o.kind, o.id))}>
+                      <span className="sky-skin-art"><SkinPreview kind={o.kind} id={o.id} /><span className="sky-skin-rarity mono">{RARITY[o.rarity]}</span></span>
+                      <b>{o.name}</b><span className="sky-skin-how mono">{o.kind === "sky" ? "Sky" : "Core"} · Choose</span>
+                    </button>
+                  ))}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <div className="sky-grid">
         <div className="sky-col">
@@ -564,7 +636,7 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
                 return (
                   <li key={i} className={sp.done[i] ? "is-got" : nextIdx === i ? "is-next" : ""}>
                     <span className="mono">{r.three ? `${sp.three}/3` : r.singularity ? (sp.singularity ? "1/1" : "0/1") : rungLabel(r)}</span>
-                    <span>{r.singularity ? `Finish The Singularity (${sky[3].real}) this season: the ${state.season || ""} ${sky[3].real} sky skin, only available this season` : r.reward}</span>
+                    <span>{r.singularity ? `Finish The Singularity (${sky[3].real}) this season: the ${state.season || ""} ${sky[3].real} sky skin, only available this season, and a season role in the Discord` : r.reward}</span>
                     {sp.done[i] && r.claim ? (claimed ? <span className="mono sky-small">Claimed</span> : <button type="button" className="sky-claim mono" disabled={busy} onClick={() => run(claim(i))}>Claim</button>) : <span className="mono sky-small">{sp.done[i] ? "Earned" : ""}</span>}
                   </li>
                 );
@@ -637,7 +709,7 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
           <div key={kind} className="sky-skins-row">
             <div className="sky-skins-h mono">{kind === "sky" ? "Sky" : "Core"}</div>
             <div className="sky-skins">
-              {(kind === "sky" ? skySkinsFor(state) : SKINS.core).map((k) => {
+              {(kind === "sky" ? skySkinsFor(state) : coreSkinsFor(state)).map((k) => {
                 const have = hasSkin(state, kind, k.id), on = equipped(state)[kind] === k.id;
                 const [got, need] = !have && k.progress ? k.progress(state) : [0, 0];
                 return (
@@ -663,7 +735,8 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
         ))}
       </section>
 
-      {scope && <Telescope queue={state.pending} compliments={compliments} onDone={closeScope} onShare={shareFind} />}
+      {scope && <Telescope queue={state.pending} compliments={compliments} onDone={closeScope} onShare={shareFind} colourFirst={hasTelescope(state)} />}
+      {choosing && <PickDialog state={state} choice={choosing} busy={busy} onClose={() => setChoosing(null)} onPick={(fam, colour) => run(freePick(choosing.key, fam, colour)).then(() => setChoosing(null))} />}
       {detail && <CatDetail detail={detail} entries={entries} onClose={closeDetail} onShare={(f) => shareFind(f, null)} />}
       {share && <ShareDialog prepare={prepare} caption={share.caption} onClose={() => setShare(null)} />}
     </div>
