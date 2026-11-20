@@ -513,6 +513,8 @@ export const POWERUPS = {
 // of 4-actions-a-day members in a settled season, nearly all in a first season); the free month stays 30,000 (founder; 33,000 = the median settled season of a
 // member who takes 95% of every star the season offers, was tried and dropped). At 30,000 most of those
 // 95% members reach it (~95%), most 90% members too (~70-80%), engaged 6-a-day members almost never, and nobody in the 2026 season (the Night Sky opened Nov 11).
+// Season titles are Mars rovers (founder, Nov 19 2026): Curiosity 1,000, Sojourner 3,500, Spirit 6,000, Opportunity 9,000, Perseverance 12,000,
+// then Event Horizon at the top -- one every rung from 1,000 to 12,000, where members most often drift off mid-season.
 // NEW LADDER (Nov 19 2026, founder's quiz, one answer per rung). Fields: `skin: [kind, id]` = a skin the rung gives (the base skin the first
 // time, that season's tinted copy if the member already owns it -- see grantRung); `pick: tier` = a free "fill a gap" pick from that catalogue
 // tier; `skinChoice` = choose the next locked sky OR core skin; `telescope` = this season the telescope shows a find's colour before the
@@ -522,12 +524,12 @@ export const LADDER = [
   { at: 200, reward: "The Nebula sky skin", skin: ["sky", "nebula"] },
   { at: 500, reward: "The Starlit frame on your share cards: an ember line with stars at the corners", frame: "star" },
   { three: true, reward: "Charted: finish The Huddle, The Blitz and The Playbook this season. The Pillars sky skin", skin: ["sky", "aurora"] },
-  { at: 1000, reward: "A free pick: any small body you haven't found yet", pick: 1 },
+  { at: 1000, reward: "A free pick: any comet or dwarf world you haven't found yet. Season title: Curiosity", pick: 2, title: "Curiosity" },
   { at: 2000, reward: "The Pulsar core skin", skin: ["core", "pulsar"] },
   { at: 3500, reward: "Telescope upgrade: see each find's colour before it resolves, for the rest of the season. Season title: Sojourner", telescope: true, title: "Sojourner" },
   { singularity: true, reward: "Finish this season's Singularity: its limited sky skin, only available this season, and a season role in the Discord", discord: true, claim: true },
-  { at: 6000, reward: "A free pick: any planet or moon you haven't found yet", pick: 3 },
-  { at: 9000, reward: "The Cobalt frame on your share cards, and another free planet or moon pick", frame: "cobalt", pick: 3 },
+  { at: 6000, reward: "A free pick: any planet or moon you haven't found yet. Season title: Spirit", pick: 3, title: "Spirit" },
+  { at: 9000, reward: "The Cobalt frame on your share cards, and another free planet or moon pick. Season title: Opportunity", frame: "cobalt", pick: 3, title: "Opportunity" },
   { at: 12000, reward: "A free pick: any meteor shower you haven't found yet. Season title: Perseverance", pick: 4, title: "Perseverance" },
   { at: 14000, reward: "A week of the next plan up", claim: true },
   { at: 20000, reward: "A free stellar event pick, your choice of the next locked sky or core skin, and a shout-out in the newsletter's community section", pick: 5, skinChoice: true, claim: true },

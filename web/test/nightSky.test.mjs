@@ -222,12 +222,13 @@ test("free picks wait for the catalogue, offer only gaps, mark set-completers an
   s.points = 1000;
   unlockSkins(s, 1);
   const ch = s.choices.find((c) => c.type === "pick");
-  assert.equal(ch.tier, 1);
-  const fam = FAMILIES.find((f) => f.tier === 1).id;
+  assert.equal(ch.tier, 2);
+  assert.equal(seasonProgress(s).title, "Curiosity");
+  const fam = FAMILIES.find((f) => f.tier === 2).id;
   assert.equal(makeFreePick(s, ch.key, fam, "silver", { now: 1 }, () => 0.5), null); // the catalogue isn't open yet
   s.findsTotal = 10;
   for (const col of ["silver", "azure"]) s.found[`${fam}|${col}|`] = { n: 1, fam, colour: col, version: "" };
-  const opts = pickOptions(s, 1);
+  const opts = pickOptions(s, 2);
   assert.ok(!opts.some((o) => o.fam === fam && o.colour === "silver")); // already found: not offered
   assert.ok(opts.find((o) => o.fam === fam && o.colour === "emerald").completes.includes("Trio"));
   const before = s.points;
