@@ -50,7 +50,18 @@ export async function proxy(request) {
 
   // Reading the session (getClaims) is what triggers a token refresh when one is due -- and, unlike getUser(), it verifies the
   // JWT locally instead of calling Supabase's Auth server on EVERY navigation.
-  await supabase.auth.getClaims();
+  const { data } = await supabase.auth.getClaims();
+
+  // The tools need an account (founder, Nov 19 2026): a signed-out visitor to any tool page gets the sign-up prompt (app/join) at the
+  // same address, and the tool page itself never runs, so none of its data is sent. The tool APIs check sign-in themselves.
+  if (!data?.claims?.sub && /^\/(tools|my-team)(\/|$)/.test(pathname)) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/join";
+    url.search = "";
+    const gate = withRef(NextResponse.rewrite(url));
+    response.cookies.getAll().forEach((c) => gate.cookies.set(c));
+    return gate;
+  }
 
   return response;
 }

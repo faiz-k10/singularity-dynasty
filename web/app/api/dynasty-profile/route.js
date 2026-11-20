@@ -11,7 +11,8 @@ const PAID_TIERS = ["explorer", "singularity"];
 export async function GET(request) {
   const id = request.nextUrl.searchParams.get("id");
   if (!id) return NextResponse.json({ error: "bad request" }, { status: 400 });
-  const { tier } = await getUserTier();
+  const { user, tier } = await getUserTier();
+  if (!user) return NextResponse.json({ error: "sign in" }, { status: 401 }); // the tools need an account (app/SignUpGate.js)
   const found = getDynastyProfile(id, PAID_TIERS.includes(tier));
   if (!found) return NextResponse.json({ error: "not available" }, { status: 403 });
   const bios = await getPlayerBiosByNamePos();

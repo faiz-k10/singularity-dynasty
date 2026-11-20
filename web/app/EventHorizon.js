@@ -50,7 +50,7 @@ const TOOL_BODIES = [
   // each planet is its own: Singularity the largest, ringed; Explorer big with the one glow (and pulse) on hover; Stargazer a small, plain speck of a planet
   { id: "singularity", n: "SINGULARITY", say: "everything, from $20 a month", href: "#pricing", pr: 92, price: "$20", fx: 0.5, rx: 330, ry: 116, a: -0.7, s: 160 },
   { id: "explorer", n: "EXPLORER", say: "every player, from $7 a month", href: "#pricing", pr: 68, price: "$7", fx: 0.68, rx: 420, ry: 148, a: 2.1, s: 105 },
-  { id: "stargazer", n: "STARGAZER", say: "free, no card", href: "#pricing", pr: 14, price: "Free", fx: 0.84, rx: 510, ry: 180, a: 4.2, s: 55 },
+  { id: "stargazer", n: "STARGAZER", say: "free, no card", href: "#pricing", pr: 17, price: "Free", fx: 0.84, rx: 510, ry: 180, a: 4.2, s: 55 },
 ];
 
 // What orbits the hole. A visitor sees the three plans. A member with saved leagues sees THIS WEEK'S MATCHUPS instead (as on the
