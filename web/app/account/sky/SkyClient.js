@@ -502,21 +502,9 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
         <h1>Your sky</h1>
         <button type="button" className="btn-ghost" onClick={() => setShare({ title: `My season sky: ${title}`, caption: `My Night Sky this season: ${title}, ${sp.points.toLocaleString()} season points, ${entries.length} of ${CATALOGUE_SIZE.toLocaleString()} in my catalogue.`, make: () => seasonCard(state, { title, size: CATALOGUE_SIZE, rarest }) })}>Share my season sky</button>
       </div>
-      {event && <div className="sky-forecast-box"><p className="sky-banner sky-forecast mono"><b>SPECIAL FORECAST:</b> {EVENT_TEXT[event]}</p></div>}
-      {msg && <p className="sky-banner mono is-bad">{msg}</p>}
-
-      <section className="sky-panel sky-panel-fill" aria-label="Your sky">
-        <Sky state={state} picks={pendingPicks.length} pending={state.pending.length} />
-        {state.pending.length > 0 && (
-          <button type="button" className="btn-primary sky-scope-btn" onClick={() => setScope(true)}>
-            The core collapsed{state.pending.length > 1 ? ` ${state.pending.length} times` : ""} · point the telescope
-          </button>
-        )}
-      </section>
-
       {(state.choices || []).length > 0 && (
-        <section className="sky-panel" aria-labelledby="sky-gifts">
-          <div className="board-panel-title" id="sky-gifts">Rewards waiting</div>
+        <section className="sky-rewards" aria-labelledby="sky-gifts">
+          <b className="sky-rewards-label mono" id="sky-gifts">REWARDS WAITING:</b>
           <ul className="sky-gifts">
             {state.choices.map((c) => c.type === "pick" ? (
               <li key={c.key}>
@@ -541,6 +529,18 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
           </ul>
         </section>
       )}
+
+      {event && <div className="sky-forecast-box"><p className="sky-banner sky-forecast mono"><b>SPECIAL FORECAST:</b> {EVENT_TEXT[event]}</p></div>}
+      {msg && <p className="sky-banner mono is-bad">{msg}</p>}
+
+      <section className="sky-panel sky-panel-fill" aria-label="Your sky">
+        <Sky state={state} picks={pendingPicks.length} pending={state.pending.length} />
+        {state.pending.length > 0 && (
+          <button type="button" className="btn-primary sky-scope-btn" onClick={() => setScope(true)}>
+            The core collapsed{state.pending.length > 1 ? ` ${state.pending.length} times` : ""} · point the telescope
+          </button>
+        )}
+      </section>
 
       <div className="sky-grid">
         <div className="sky-col">

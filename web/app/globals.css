@@ -7479,3 +7479,11 @@ button.sky-variant:focus-visible{outline:2px solid var(--ember);outline-offset:1
 .ehp-nl .ehp-pm-panel .ehp-nl-h{font:400 21px/1.15 var(--font-display), sans-serif;color:var(--ehp-ink);}
 .ehp-nl-go{display:inline-block;font:12px var(--font-mono), monospace;color:var(--ehp-ink);border-bottom:1px solid var(--ehp-mark);padding-bottom:2px;}
 .ehp-qs summary{font-family:var(--font-body), serif;}
+
+/* Night Sky: Rewards waiting = a cobalt banner above the special forecast (Nov 19 2026, founder) */
+.sky-rewards{border:1px solid rgba(var(--cobalt-rgb),.55);border-left:4px solid var(--cobalt);background:rgba(var(--cobalt-rgb),.12);padding:10px 18px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;color:var(--star)}
+.sky-rewards-label{color:var(--cobalt);font-weight:700;letter-spacing:.14em;font-size:15px;white-space:nowrap}
+.sky-rewards .sky-gifts{flex:1;min-width:240px}
+.sky-rewards .sky-gifts li{border-top-color:rgba(var(--cobalt-rgb),.3);padding:6px 0}
+.sky-rewards .sky-gifts .btn-primary{border-color:var(--cobalt);color:var(--cobalt)}
+.sky-rewards .sky-gifts .btn-primary:hover:not(:disabled){background:var(--cobalt);color:var(--on-down)}
