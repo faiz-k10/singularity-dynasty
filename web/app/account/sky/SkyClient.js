@@ -504,7 +504,7 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
       </div>
       {(state.choices || []).length > 0 && (
         <section className="sky-rewards" aria-labelledby="sky-gifts">
-          <b className="sky-rewards-label mono" id="sky-gifts">REWARDS WAITING:</b>
+          <b className="sky-rewards-label mono" id="sky-gifts">{state.choices.length > 1 ? "REWARDS UNLOCKED!" : "REWARD UNLOCKED!"}</b>
           <ul className="sky-gifts">
             {state.choices.map((c) => c.type === "pick" ? (
               <li key={c.key}>
