@@ -819,8 +819,9 @@ export function eventFor(date, week) {
   if (dow === 4 && week >= 1 && week <= 18) return "tnf"; // Thursday Night Football
   return null;
 }
+// Worded as a formal weather bulletin (founder, Nov 19 2026); shown after "SPECIAL FORECAST:" on the Night Sky page.
 export const EVENT_TEXT = {
-  tnf: "Thursday Night meteor shower: every action places two stars today.",
-  eclipse: "Playoff eclipse: every find is powered one step up during the fantasy playoffs.",
-  aurora: "Draft-week aurora: gold stars are three times as common.",
+  tnf: "A Thursday Night meteor shower is in effect until midnight. Expect two stars to fall with every action. Observers are advised to remain outdoors.",
+  eclipse: "A playoff eclipse is in effect through the end of the fantasy playoffs. Every find will arrive one step more powerful than usual. Conditions are favourable for discovery.",
+  aurora: "A draft-week aurora is in effect through the end of the NFL Draft. Gold stars are three times as likely as usual. Visibility is excellent across the sky.",
 };
