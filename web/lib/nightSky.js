@@ -88,7 +88,7 @@ export const skySeasonFor = (day) => { const [y, m] = String(day).split("-").map
 export function rollSeason(s, season) {
   if (!season || s.season === season) return false;
   if (s.season && s.filled) s.skies = { ...(s.skies || {}), [s.season]: { filled: s.filled, done: s.seasonDone || {}, ...seasonProgressLite(s) } };
-  if (s.season) { s.filled = freshState().filled; s.seasonDone = {}; s.seasonBase = s.points; } // a member's first season keeps what they have
+  if (s.season) { s.filled = freshState().filled; s.seasonDone = {}; s.seasonBase = s.points; s.seasonActs = 0; } // a member's first season keeps what they have
   s.season = season;
   return true;
 }
@@ -507,8 +507,14 @@ export const POWERUPS = {
 // is fulfilled by hand -- ONLY the top rungs do, and every perk lasts that season only (early access ends at the next kickoff). Spaced with
 // mockups/night-sky-sim-live.mjs (season points, later seasons / a first season, which runs higher): light ~4,000 / 4,500, regular (3 actions a
 // day) ~10,000 / 13,000, upper regular (4 a day) ~14,000 / 17,500, engaged (6 a day) ~21,000 / 26,000, hardcore (all 7 on ~95% of days, all
-// year) ~31,000 / 37,000. Founder, Nov 11 2026: the free month (30,000) is for hardcore members ONLY -- never a regular; the week of plan
-// (14,000) only for the top end of regular members; early access (12,000, founder: the more active half, not most members) is automatic.
+// year) ~31,000 / 37,000. Founder, Nov 11 2026: the free month is for hardcore members ONLY -- never a regular; early access (12,000,
+// founder: the more active half, not most members) is automatic.
+// RECALCULATED Nov 19 2026 with the new forecast days (founder): the week of plan is 13,600 = the median season of the most active regular
+// members (4 actions a day, seasons after their first: ~50% reach it; a member's FIRST season runs higher, so nearly all of them do then).
+// The free month is no longer a points total -- points carry too much luck to tell 95% from 90% of every action (their season totals
+// overlap by thousands) -- it is `stars: 0.95`: take 95% of every star the season offers, i.e. 95% of every daily action (the 7 tool actions
+// and the share) on every day from kickoff to the next kickoff. Special days multiply a member's stars and the possible stars alike, so
+// the share of actions is the share of stars. Counted in `s.seasonActs`.
 export const LADDER = [
   { at: 200, reward: "First light: a profile badge for the season", title: "Spotter" },
   { at: 500, reward: "A silver season frame on your share cards", frame: "silver" },
@@ -519,11 +525,11 @@ export const LADDER = [
   { singularity: true, reward: "Finish this season's Singularity: its limited sky skin, only available this season" },
   { at: 6000, reward: "Season title: Surveyor", title: "Surveyor" },
   { at: 12000, reward: "A gold season frame, plus early access to new tools and features for the rest of the season (automatic)", frame: "gold", early: true },
-  { at: 14000, reward: "A week of the next plan up", claim: true },
+  { at: 13600, reward: "A week of the next plan up", claim: true },
   { at: 20000, reward: "Your name on a star in this season's sky", title: "Star-namer", claim: true },
-  { at: 30000, reward: "A free month of your plan (a month of Explorer if you're on the free plan)", title: "Event Horizon", claim: true },
+  { stars: 0.95, reward: "Collect 95% of every star this season can offer: a free month of your plan (a month of Explorer if you're on the free plan)", title: "Event Horizon", claim: true },
 ];
-export const rungLabel = (r) => (r.three ? "Charted" : r.singularity ? "Singularity" : r.at.toLocaleString());
+export const rungLabel = (r) => (r.three ? "Charted" : r.singularity ? "Singularity" : r.stars ? `${Math.round(r.stars * 100)}%` : r.at.toLocaleString());
 // Skins (Nov 11 2026, founder: "aesthetic rewards, like how real games use skins"). Purely cosmetic: a backdrop for the sky and a design for
 // the core, shown on the page and on share cards. Each is unlocked by something the member did (`test`, read from their state) and is kept
 // for good once earned (`s.skins`, filled by unlockSkins); `s.equip` is what they chose. Nothing here can be bought.
@@ -586,12 +592,18 @@ export function seasonProgress(s) {
   const points = Math.max(0, s.points - (s.seasonBase || 0)), d = s.seasonDone || {};
   const three = ["huddle", "blitz", "playbook"].filter((id) => (d[id] || 0) > 0).length;
   const sing = (d.singularity || 0) > 0;
-  const done = LADDER.map((r) => (r.three ? three === 3 : r.singularity ? sing : points >= r.at));
+  const possible = possibleActs(s.season), acts = s.seasonActs || 0;
+  const done = LADDER.map((r) => (r.three ? three === 3 : r.singularity ? sing : r.stars ? possible > 0 && acts >= Math.ceil(r.stars * possible) : points >= r.at));
   const titled = LADDER.map((r, i) => (done[i] && r.title ? r.title : null)).filter(Boolean);
   const frames = LADDER.map((r, i) => (done[i] && r.frame ? r.frame : null)).filter(Boolean);
-  return { season: s.season, points, sky: three === 3, three, singularity: sing, done, rungs: done.filter(Boolean).length, title: titled.at(-1) || "Spotter", frame: frames.at(-1) || null };
+  return { season: s.season, points, acts, possible, sky: three === 3, three, singularity: sing, done, rungs: done.filter(Boolean).length, title: titled.at(-1) || "Spotter", frame: frames.at(-1) || null };
 }
 // The title a member is wearing this season ("Spotter" until Charted / a points rung replaces it).
+// Every action a member could take in a sky season (kickoff Sept 1 to the next): each daily action, every day.
+export function possibleActs(season) {
+  if (!season) return 0;
+  return Math.round((Date.UTC(season + 1, 8, 1) - Date.UTC(season, 8, 1)) / DAY) * Object.keys(ACTIONS).length;
+}
 export const titleOf = (s) => seasonProgress(s).title;
 
 // Systems open gradually (twelve ideas at once is too many): constellations after the first find, the catalogue and sets after 10 finds.
@@ -603,7 +615,7 @@ export function freshState() {
   return {
     v: 1,
     filled: Object.fromEntries(CONSTELLATIONS.map((c) => [c.id, Array(c.n).fill(null)])),
-    season: 0, skies: {}, seasonDone: {}, seasonBase: 0, skins: [], equip: {},
+    season: 0, skies: {}, seasonDone: {}, seasonBase: 0, seasonActs: 0, skins: [], equip: {},
     mass: 0, points: 0, actions: 0, findsTotal: 0, lastActionAt: 0,
     daily: { day: "", done: [] },
     pending: [], found: {}, sets: {}, claimed: {},
@@ -618,6 +630,8 @@ export function normalize(s) {
   out.filled = { ...base.filled, ...(out.filled || {}) };
   out.boosts = { ...base.boosts, ...(out.boosts || {}) };
   out.daily = out.daily?.day != null ? out.daily : base.daily;
+  // members from before the action count (Nov 19 2026) were all in their first season, so their tool actions so far are this season's
+  if (s && typeof s === "object" && s.seasonActs == null) out.seasonActs = (out.season && !out.seasonBase ? out.actions : 0) || 0;
   // saved names follow the catalogue's current spelling (Nov 17 2026: every word capitalised, "Lava world" -> "Lava World")
   const rename = (e) => (e && FAMILIES[e.fam] && COLOURS.some((c) => c.id === e.colour) ? { ...e, name: findOf(e.fam, e.colour, e.version || "").name } : e);
   if (out.found) out.found = Object.fromEntries(Object.entries(out.found).map(([k, e]) => [k, rename(e)]));
@@ -747,6 +761,7 @@ export function award(s, action, ctx, rnd = Math.random) {
   if (s.daily.day !== ctx.day) s.daily = { day: ctx.day, done: [] };
   if (s.daily.done.includes(action)) return { awarded: false };
   s.daily.done.push(action);
+  s.seasonActs = (s.seasonActs || 0) + 1; // every action counts toward the 95% rung, the share included
   const now = ctx.now, b = s.boosts;
   if (a.quiet) { // one lucky star, no heat, no find (see ACTIONS.share)
     placeStar(s, a.color, ctx, rnd);
