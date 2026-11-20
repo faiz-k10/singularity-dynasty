@@ -7191,6 +7191,9 @@ body:has(.ehp) .ehp-inside,body:has(.ehp) .ehp-dark{--ehp-hole:#0B0B0B;--ehp-hol
 .sky-banner{border:1px solid var(--line);border-left:3px solid var(--ember);padding:10px 14px;margin:0;font-size:12.5px}
 /* today's sky event, made to stand out (founder, Nov 19 2026): an ember-tinted plate, bigger text, a bold SPECIAL FORECAST: label */
 .sky-banner.sky-forecast{border-color:rgba(var(--ember-rgb),.55);border-left-width:4px;background:rgba(var(--ember-rgb),.12);padding:14px 18px;font-size:15px;color:var(--star);display:flex;gap:12px;align-items:baseline;flex-wrap:wrap}
+/* one line on a desktop: the text is sized from the box's width (the longest forecast is ~66em wide at its size), wraps on a phone */
+.sky-forecast-box{container-type:inline-size}
+@media (min-width:900px){.sky-banner.sky-forecast{flex-wrap:nowrap;white-space:nowrap;font-size:clamp(10px,(100cqw - 52px) / 68,15px)}}
 .sky-forecast b{color:var(--ember);font-weight:700;letter-spacing:.14em}
 .sky-banner.is-bad{border-left-color:var(--down);color:var(--down)}
 .sky-acts{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}

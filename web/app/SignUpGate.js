@@ -15,7 +15,7 @@ export default function SignUpGate() {
         <div className="eyebrow">Free account</div>
         <h1>Become a Stargazer.</h1>
         <p className="auth-sub">
-          Every player, every league, every Sunday is a sky full of signals. Make a free account and start reading the stars.
+          Every player, every league, every Sunday is a sky full of signals. Make a free account and start your journey here.
         </p>
         <div className="auth-actions">
           <Link href={href} className="btn-primary">Create Free Account</Link>

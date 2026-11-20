@@ -665,7 +665,7 @@ export function litTier(s, event) {
   let t = 1;
   if (full(s, "huddle") || full(s, "blitz")) t = 2;
   if (full(s, "playbook")) t = 3;
-  if (event === "eclipse") t = Math.min(3, t + 1);
+  if (event === "eclipse" || event === "christmas") t = Math.min(3, t + 1);
   return t;
 }
 function spend(s, tier) {
@@ -739,7 +739,7 @@ function collapse(s, ctx, rnd) {
   log(s, `Found: ${f.name} (1 in ${f.oneIn.toLocaleString()})`, ctx.now);
 }
 
-// One action. ctx = { now, day ("YYYY-MM-DD", Eastern), event: "tnf" | "eclipse" | "aurora" | null }. Returns what happened; `s` is changed in place.
+// One action. ctx = { now, day ("YYYY-MM-DD", Eastern), event: "tnf" | "thanksgiving" | "christmas" | "eclipse" | "aurora" | null }. Returns what happened; `s` is changed in place.
 export function award(s, action, ctx, rnd = Math.random) {
   const a = ACTIONS[action];
   if (!a) return { awarded: false };
@@ -761,7 +761,7 @@ export function award(s, action, ctx, rnd = Math.random) {
   }
   s.lastActionAt = now;
   s.actions += 1;
-  let n = b.tripleUntil > now ? 3 : s.shower > now || ctx.event === "tnf" || b.doubleUntil > now ? 2 : 1;
+  let n = b.tripleUntil > now || ctx.event === "thanksgiving" ? 3 : s.shower > now || ctx.event === "christmas" || ctx.event === "tnf" || b.doubleUntil > now ? 2 : 1;
   if (b.extra > 0) { n += 2; b.extra -= 1; }
   for (let i = 0; i < n; i++) placeStar(s, a.color, ctx, rnd);
   s.mass += n;
@@ -814,14 +814,19 @@ export function gradePicks(s, key, points, ctx, rnd = Math.random) {
 // The NFL calendar's events. week: Sleeper's display week; date: the Eastern date.
 export function eventFor(date, week) {
   const m = date.getUTCMonth(), d = date.getUTCDate(), dow = date.getUTCDay();
+  if (m === 10 && dow === 4 && d >= 22 && d <= 28) return "thanksgiving"; // the fourth Thursday of November: three games
+  if (m === 11 && d === 25) return "christmas"; // Christmas Day games
   if (m === 3 && d >= 22 && d <= 30) return "aurora"; // draft week (late April)
   if (week >= 15 && week <= 17) return "eclipse"; // the fantasy playoffs
   if (dow === 4 && week >= 1 && week <= 18) return "tnf"; // Thursday Night Football
   return null;
 }
-// Worded as a formal weather bulletin (founder, Nov 19 2026); shown after "SPECIAL FORECAST:" on the Night Sky page.
+// Worded as a formal weather bulletin and kept to one line after "SPECIAL FORECAST:" (founder, Nov 19 2026).
+// Christmas falls in the fantasy playoffs, so it carries the eclipse's power-up as well as two stars an action.
 export const EVENT_TEXT = {
-  tnf: "A Thursday Night meteor shower is in effect until midnight. Expect two stars to fall with every action. Observers are advised to remain outdoors.",
-  eclipse: "A playoff eclipse is in effect through the end of the fantasy playoffs. Every find will arrive one step more powerful than usual. Conditions are favourable for discovery.",
-  aurora: "A draft-week aurora is in effect through the end of the NFL Draft. Gold stars are three times as likely as usual. Visibility is excellent across the sky.",
+  tnf: "Thursday Night meteor shower in effect until midnight. Two stars fall per action.",
+  thanksgiving: "Thanksgiving meteor storm in effect until midnight. Three stars fall per action.",
+  christmas: "Christmas Day conjunction until midnight. Two stars per action; every find powered up.",
+  eclipse: "Playoff eclipse in effect through the fantasy playoffs. Every find powered up.",
+  aurora: "Draft-week aurora in effect through the NFL Draft. Gold stars three times as likely.",
 };
