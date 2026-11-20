@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { getAuthUser } from "@/lib/authUser";
+import { effectiveTier } from "./subscriptionTier";
 
 // Pure tier-policy bits live in tierLimits.js (no imports -> unit-tested).
 export { SAVED_TEAM_LIMITS, savedTeamLimit } from "./tierLimits";
@@ -15,13 +16,15 @@ export async function resolveTier(supabase) {
     return { user: null, tier: "stargazer" };
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("tier")
-    .eq("id", user.id)
-    .single();
+  return { user, tier: await tierOf(supabase, user.id) };
+}
 
-  return { user, tier: profile?.tier || "stargazer" };
+// The member's tier including a Night Sky plan-time bonus (migration 0048). If those columns aren't there yet the plain tier is
+// read instead, so a missing migration can never drop paying members to the free tier.
+export async function tierOf(supabase, userId) {
+  let { data: profile, error } = await supabase.from("profiles").select("tier, bonus_tier, bonus_until").eq("id", userId).maybeSingle();
+  if (error) ({ data: profile } = await supabase.from("profiles").select("tier").eq("id", userId).maybeSingle());
+  return effectiveTier(profile?.tier || "stargazer", profile?.bonus_tier, profile?.bonus_until);
 }
 
 // Shared by every /tools/* page: returns the signed-in user's tier

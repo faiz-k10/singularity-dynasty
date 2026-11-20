@@ -1,5 +1,6 @@
 import { after } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { grantPlanTime } from "@/lib/skyPlanTime";
 import { fetchSleeperState } from "@/lib/sleeper";
 import { nflSeason } from "@/lib/season";
 import { getCachedRedraftData } from "@/app/tools/redraft-rankings/data";
@@ -168,14 +169,29 @@ export async function makePick(userId, key, index, choice) {
 export async function setSkin(userId, kind, id) {
   return mutate(userId, (state) => ({ write: !!equipSkin(state, kind, id), value: state }));
 }
-// Claiming a ladder reward the founder fulfils by hand (it shows in /admin). One claim per rung per season: the key is "<season>:<rung index>".
+// Claiming a ladder reward. One claim per rung per season: the key is "<season>:<rung index>". Plan time (`plan`) is granted on the spot
+// (lib/skyPlanTime.js) and the claim is marked done with what was given; if the grant fails the claim is taken back so the member can try
+// again. Everything else (the Discord role, the newsletter shout-out) waits for the founder in openClaims().
+export const CLAIM_FAILED = "Couldn't add your plan time just now. Please try again in a minute.";
 export async function claimReward(userId, index) {
-  return mutate(userId, (state) => {
-    const rung = LADDER[index], p = seasonProgress(state), key = `${state.season}:${index}`;
+  const rung = LADDER[index];
+  let key = null;
+  const state = await mutate(userId, (state) => {
+    const p = seasonProgress(state);
+    key = `${state.season}:${index}`;
     if (!rung?.claim || !p.done[index] || state.claimed[key]) return { write: false, value: state };
     state.claimed[key] = { at: Date.now(), season: state.season, index };
     return { write: true, value: state };
   });
+  if (!rung?.plan || state.claimed[key]?.done) return state;
+  try {
+    const gave = await grantPlanTime(userId, rung.plan, state.season);
+    return await mutate(userId, (s) => { if (s.claimed[key]) s.claimed[key] = { ...s.claimed[key], done: true, gave }; return { write: true, value: s }; });
+  } catch (e) {
+    console.error("[night-sky] plan time failed:", e?.message || e);
+    await mutate(userId, (s) => { const { [key]: _gone, ...rest } = s.claimed; s.claimed = rest; return { write: true, value: s }; }).catch(() => {});
+    throw Object.assign(new Error(CLAIM_FAILED), { closed: true });
+  }
 }
 // A free "fill a gap" pick (ladder rungs with `pick`): the member chose a kind and colour; the version is rolled here. Rung rewards it unlocks
 // (a set's points can pass a rung) are handed out in the same write.

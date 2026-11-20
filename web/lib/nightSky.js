@@ -519,7 +519,7 @@ export const POWERUPS = {
 // time, that season's tinted copy if the member already owns it -- see grantRung); `pick: tier` = a free "fill a gap" pick from that catalogue
 // tier; `skinChoice` = choose the next locked sky OR core skin; `telescope` = this season the telescope shows a find's colour before the
 // reveal; `frame` = the share-card frame ("star" ember, "cobalt" cobalt + silver); `title`; `claim` = the founder fulfils it by hand (a Discord
-// role, a newsletter shout-out, plan time). Picks and the skin choice wait in `s.choices` until the member makes them.
+// role, a newsletter shout-out); `plan` ("week" / "month") = plan time granted automatically on Claim (lib/skyPlanTime.js). Picks and the skin choice wait in `s.choices` until the member makes them.
 export const LADDER = [
   { at: 200, reward: "The Nebula sky skin", skin: ["sky", "nebula"] },
   { at: 500, reward: "The Starlit frame on your share cards: an ember line with stars at the corners", frame: "star" },
@@ -531,9 +531,9 @@ export const LADDER = [
   { at: 6000, reward: "A free pick: any planet or moon you haven't found yet. Season title: Spirit", pick: 3, title: "Spirit" },
   { at: 9000, reward: "The Cobalt frame on your share cards, and a free pick: any meteor shower you haven't found yet. Season title: Opportunity", frame: "cobalt", pick: 4, title: "Opportunity" },
   { at: 12000, reward: "A free pick from any tier but stellar events: whatever you haven't found yet. Season title: Perseverance", pick: [1, 2, 3, 4], title: "Perseverance" },
-  { at: 14000, reward: "A week of the next plan up", claim: true },
+  { at: 14000, reward: "A week of the next plan up (Singularity members: a week of Singularity off your next bill)", claim: true, plan: "week" },
   { at: 20000, reward: "A free stellar event pick, your choice of the next locked sky or core skin, and a shout-out in the newsletter's community section", pick: 5, skinChoice: true, claim: true },
-  { at: 30000, reward: "A free month of your plan (a month of Explorer if you're on the free plan)", title: "Event Horizon", claim: true },
+  { at: 30000, reward: "A free month of your plan, off your next bill (a month of Explorer if you're on the free plan)", title: "Event Horizon", claim: true, plan: "month" },
 ];
 export const rungLabel = (r) => (r.three ? "Charted" : r.singularity ? "Singularity" : r.at.toLocaleString());
 // Skins (Nov 11 2026, founder: "aesthetic rewards, like how real games use skins"). Purely cosmetic: a backdrop for the sky and a design for

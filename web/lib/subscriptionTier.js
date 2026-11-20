@@ -37,3 +37,34 @@ export function monthlyCents(sub) {
   }
   return Math.round(total);
 }
+
+// The tier a member actually has: their paid tier, or a Night Sky plan-time bonus while it lasts (whichever is higher).
+export function effectiveTier(tier, bonusTier, bonusUntil, now = Date.now()) {
+  const paid = RANK[tier] != null ? tier : "stargazer";
+  if (!bonusTier || RANK[bonusTier] == null || !(Date.parse(bonusUntil) > now)) return paid;
+  return RANK[bonusTier] > RANK[paid] ? bonusTier : paid;
+}
+
+// What a Night Sky plan-time rung gives (founder, Nov 19 2026: automated). kind "week" = a week of the next plan up; "month" = a free month
+// of your plan. `paid` = the member's PAID tier (profiles.tier), `subscribed` = they have a running subscription. Returns
+// { bonus: tier, days } (a time-limited tier, no Stripe) or { credit: cents } (Stripe account credit off their next bill).
+//   week:  Stargazer -> 7 days of Explorer; Explorer -> 7 days of Singularity; Singularity (no plan above) -> a week of Singularity as credit
+//   month: a subscriber -> a month of their plan as credit (the monthly list price); anyone else -> 30 days of Explorer
+export const PLAN_MONTH_CENTS = { explorer: 900, singularity: 2500 };
+export function skyPlanGrant(kind, paid, subscribed) {
+  if (kind === "week") {
+    if (paid === "singularity") return { credit: Math.round((PLAN_MONTH_CENTS.singularity * 7) / 30) };
+    return { bonus: paid === "explorer" ? "singularity" : "explorer", days: 7 };
+  }
+  if (kind === "month") {
+    if (subscribed && PLAN_MONTH_CENTS[paid]) return { credit: PLAN_MONTH_CENTS[paid] };
+    return { bonus: "explorer", days: 30 };
+  }
+  return null;
+}
+// A new bonus on top of one already running: the same tier extends it, otherwise the new one starts now.
+export function stackBonus(current, grant, now = Date.now()) {
+  const live = current?.bonus_tier && Date.parse(current.bonus_until) > now;
+  const from = live && current.bonus_tier === grant.bonus ? Date.parse(current.bonus_until) : now;
+  return { bonus_tier: grant.bonus, bonus_until: new Date(from + grant.days * 86_400_000).toISOString() };
+}

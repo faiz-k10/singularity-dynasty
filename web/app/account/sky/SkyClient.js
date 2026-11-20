@@ -638,12 +638,12 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
                   <li key={i} className={sp.done[i] ? "is-got" : nextIdx === i ? "is-next" : ""}>
                     <span className="mono">{r.three ? `${sp.three}/3` : r.singularity ? (sp.singularity ? "1/1" : "0/1") : rungLabel(r)}</span>
                     <span>{r.singularity ? `Finish The Singularity (${sky[3].real}) this season: the ${state.season || ""} ${sky[3].real} sky skin, only available this season, and a season role in the Discord` : r.reward}</span>
-                    {sp.done[i] && r.claim ? (claimed ? <span className="mono sky-small">Claimed</span> : <button type="button" className="sky-claim mono" disabled={busy} onClick={() => run(claim(i))}>Claim</button>) : <span className="mono sky-small">{sp.done[i] ? "Earned" : ""}</span>}
+                    {sp.done[i] && r.claim ? (claimed ? <span className="mono sky-small">{claimed.gave || "Claimed"}</span> : <button type="button" className="sky-claim mono" disabled={busy} onClick={() => run(claim(i))}>Claim</button>) : <span className="mono sky-small">{sp.done[i] ? "Earned" : ""}</span>}
                   </li>
                 );
               })}
             </ul>
-            <p className="sky-small mono">The whole ladder starts over every September, with a new set of constellations. Your catalogue, sets, skins and past seasons stay. Claimed rewards are sent to you by hand within a few days, and perks last until the next season.</p>
+            <p className="sky-small mono">The whole ladder starts over every September, with a new set of constellations. Your catalogue, sets, skins and past seasons stay. Plan time is added the moment you claim it; the Discord role and newsletter shout-out are sent by hand within a few days. Perks last until the next season.</p>
           </section>
 
           <section className="sky-panel" aria-labelledby="sky-past">

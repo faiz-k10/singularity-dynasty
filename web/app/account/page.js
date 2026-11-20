@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { tierOf } from "@/lib/tier";
 import { provisionFromCheckout, accountBilling } from "@/lib/billing";
 import { signout } from "../login/actions";
 import { openBillingPortal, deleteAccount } from "./actions";
@@ -105,7 +106,8 @@ export default async function AccountPage({ searchParams }) {
   }
 
   const { data: profile } = await supabase.from("profiles").select("tier, email, stripe_customer_id, email_digest").eq("id", user.id).single();
-  const tier = profile?.tier || "stargazer";
+  const tier = await tierOf(supabase, user.id); // includes Night Sky plan time
+  const skyBonus = tier !== (profile?.tier || "stargazer");
   const [billing, refCode, refSummary, origin, sky] = await Promise.all([
     profile?.stripe_customer_id ? accountBilling(profile.stripe_customer_id) : null,
     ensureReferralCode(user.id).catch(() => null),
@@ -166,6 +168,7 @@ export default async function AccountPage({ searchParams }) {
             <div className="account-tier">
               <div className="account-tier-name">{TIER_LABELS[tier]}</div>
               <p className="acct-line">{TIER_LINES[tier]}</p>
+              {skyBonus && <p className="acct-line acct-dim">Unlocked by your Night Sky reward. Your billing hasn&apos;t changed.</p>}
             </div>
             <Billing billing={billing} />
             <div className="auth-actions">
@@ -191,7 +194,7 @@ export default async function AccountPage({ searchParams }) {
               <ReferralCard
                 link={`${origin}/?ref=${refCode}`}
                 discountPct={FRIEND_DISCOUNT_PERCENT}
-                rewardLabel={`a free month of ${tier === "singularity" ? "Singularity" : "Explorer"} ($${rewardFor(tier) / 100})`}
+                rewardLabel={`a free month of ${profile?.tier === "singularity" ? "Singularity" : "Explorer"} ($${rewardFor(profile?.tier) / 100})`}
                 summary={refSummary}
               />
             </details>
