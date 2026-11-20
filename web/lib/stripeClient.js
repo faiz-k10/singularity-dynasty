@@ -1,3 +1,4 @@
+import "server-only"; // holds a secret key: the build fails if a browser component ever imports this
 import Stripe from "stripe";
 
 // The one Stripe client for the server (secret key; never import from browser code). lib/billing.js and lib/referrals.js

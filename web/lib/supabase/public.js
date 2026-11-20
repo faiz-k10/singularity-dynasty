@@ -1,3 +1,4 @@
+import "server-only"; // holds a secret key: the build fails if a browser component ever imports this
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 
 // A plain, cookie-free anon-key client for data that's readable by

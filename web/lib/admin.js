@@ -1,3 +1,4 @@
+import "server-only"; // holds a secret key: the build fails if a browser component ever imports this
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 

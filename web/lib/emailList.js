@@ -1,3 +1,4 @@
+import "server-only"; // holds a secret key: the build fails if a browser component ever imports this
 import { randomBytes } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { normalizeEmail } from "@/lib/emailRules";

@@ -9,7 +9,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "node --test test/*.test.mjs",
-    "smoke": "node scripts/smoke.mjs"
+    "smoke": "node scripts/smoke.mjs",
+    "check:secrets": "node --env-file-if-exists=.env.local scripts/check-bundle-secrets.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.4",

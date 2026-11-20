@@ -1,3 +1,4 @@
+import "server-only"; // holds a secret key: the build fails if a browser component ever imports this
 import { createAdminClient } from "@/lib/supabase/admin";
 import { stripe } from "@/lib/stripeClient";
 import { skyPlanGrant, stackBonus } from "@/lib/subscriptionTier";

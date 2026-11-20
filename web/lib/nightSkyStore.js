@@ -1,3 +1,4 @@
+import "server-only"; // holds a secret key: the build fails if a browser component ever imports this
 import { after } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { grantPlanTime } from "@/lib/skyPlanTime";

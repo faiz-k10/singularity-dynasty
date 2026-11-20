@@ -43,12 +43,16 @@ permissions:
   contents: read
 
 jobs:
-  run:
+  # MINUTES BUDGET (Nov 19 2026): decide FIRST, in a few seconds, whether there is anything to do. A scheduled back-up trigger whose job
+  # already passed in the last 8 hours stops here, before the 2-3 minutes of installing Node and R packages it used to spend.
+  gate:
     runs-on: ubuntu-latest
-    timeout-minutes: 150
+    timeout-minutes: 3
+    outputs:
+      mode: ${{ steps.mode.outputs.mode }}
+      skip: ${{ steps.mode.outputs.skip }}
+      go: ${{ steps.done.outputs.go }}
     steps:
-      - uses: actions/checkout@v4
-
       - name: Pick the job
         id: mode
         run: |
@@ -66,6 +70,42 @@ jobs:
           fi
           echo "mode=$m" >> "$GITHUB_OUTPUT"
           echo "Job: $m"
+      - name: Already done?
+        id: done
+        env:
+          URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          MODE: ${{ steps.mode.outputs.mode }}
+          SKIP: ${{ steps.mode.outputs.skip }}
+        run: |
+          go=true
+          if [ "$SKIP" != "0" ] && [ -n "$URL" ]; then
+            # the run record weekly-run.mjs writes (private bucket "ops"); anything unreadable means "run it"
+            rec=$(curl -sf --max-time 20 -H "Authorization: Bearer $KEY" -H "apikey: $KEY" "$URL/storage/v1/object/ops/runs/$MODE.json" || true)
+            ok=$(echo "$rec" | jq -r '.ok // false' 2>/dev/null || echo false)
+            fin=$(echo "$rec" | jq -r '.finished // empty' 2>/dev/null || true)
+            if [ "$ok" = "true" ] && [ -n "$fin" ]; then
+              age=$(( $(date -u +%s) - $(date -u -d "$fin" +%s) ))
+              if [ "$age" -lt $(( SKIP * 3600 )) ]; then go=false; echo "Skipped: $MODE already passed at $fin."; fi
+            fi
+          fi
+          echo "go=$go" >> "$GITHUB_OUTPUT"
+
+  run:
+    needs: gate
+    if: needs.gate.outputs.go == 'true'
+    runs-on: ubuntu-latest
+    # A real run takes ~5-20 minutes; 60 is a ceiling so a hung run can never eat hours of the month's minutes (it was 150).
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Pick the job
+        id: mode
+        run: |
+          echo "mode=${{ needs.gate.outputs.mode }}" >> "$GITHUB_OUTPUT"
+          echo "skip=${{ needs.gate.outputs.skip }}" >> "$GITHUB_OUTPUT"
+          echo "Job: ${{ needs.gate.outputs.mode }}"
 
       - uses: actions/setup-node@v4
         with:

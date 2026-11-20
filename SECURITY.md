@@ -89,10 +89,35 @@ In order of importance:
 1. **Two-factor authentication** on your email, GitHub, Vercel, Supabase, Stripe, Cloudflare and Resend.
 2. ~~Supabase captcha~~ **already ON** (verified Nov 16 2026: a sign-in without a Turnstile token is refused by Supabase itself).
 3. **Supabase → Auth:** turn on leaked-password protection, and set custom SMTP (Resend) before launch.
-4. **Spend caps** in Vercel (Spend Management) and Supabase (usage limits).
+4. **Hard spending caps everywhere (a cap, not just an alert)** -- see "Keys and caps" below for each one.
 5. **Stripe Radar rule** against card testing (A5) when you go live.
 6. **Supabase Pro** before paying members: daily restorable backups and leaked-password checks. **Vercel Pro** is required for commercial use.
 7. Replace the personal Gmail on the Contact page with a support address on your domain.
+
+## Keys and caps (audit, Nov 19 2026, after a post about an AI-built app that shipped its Stripe / OpenAI keys to every visitor)
+
+**Checked, nothing found:** no secret key in the JavaScript or pages a visitor downloads (built locally AND the live site's 18 scripts and
+11 pages, compared against the real key values), none anywhere in git history (24 MB of every commit), `/.env`, `/.git/config` and 13 other
+bot paths answer 404 / 403, the public Supabase key is the `anon` role, the Stripe key in the browser is the publishable `pk_` one, and an
+outsider can read none of the private or paid tables or storage buckets. **No key needs rotating** (none was ever exposed).
+
+**Why it can't happen here by accident now:**
+- In Next.js, `NEXT_PUBLIC_*` = Vite's `VITE_*`: it is copied into the browser on purpose. `next.config.mjs` now **refuses to build** if any
+  `NEXT_PUBLIC_*` variable holds a secret (`lib/secretGuard.mjs`, tested), so a mis-named key fails the deploy instead of shipping.
+- Every file that holds a secret key starts with `import "server-only"` -- the build fails if browser code ever imports it (verified).
+- `npm run check:secrets` searches the build for secrets; the nightly CI runs it.
+- `web/.env.local` is readable only by your Mac user (`chmod 600`). Keys otherwise live in Vercel and GitHub's encrypted secret stores --
+  a vault like Infisical isn't needed at this size.
+
+**Caps to set (dashboards, yours):**
+| Service | What to set | Why |
+|---|---|---|
+| GitHub | Settings -> Billing -> Budgets: Actions budget **$0, "stop usage" on** (the default) | Already a hard cap -- that's why runs stopped. Usage is now ~600 of 2,000 free minutes a month (was ~2,800). |
+| Vercel | Pro: Settings -> Billing -> **Spend Management**, a hard limit + "pause projects" | Bandwidth / function bills from a traffic flood |
+| Supabase | Pro: Billing -> **Spend cap ON** | Egress / database overage |
+| Stripe (at go-live) | Use a **restricted key** (`rk_live_`) with only Checkout, Customers, Subscriptions, Billing Portal, Balance transactions, Coupons write and Charges / Invoices / Prices read | A leaked restricted key can't move money out |
+| Resend (when set up) | Free plan's daily limit is the cap; keep it | Email bombing via sign-ups |
+| AI services | None used. If one is ever added: server-only key, a **hard monthly cap**, never `NEXT_PUBLIC_` | The exact failure in the post |
 
 ## 6. Known and accepted (revisit as you grow)
 - **Rate limits are per server instance** (in memory). They stop casual abuse, not a large coordinated attack. The next step would be Vercel Firewall rate-limit rules or a table-backed limit.

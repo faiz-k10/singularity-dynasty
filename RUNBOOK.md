@@ -26,8 +26,10 @@ The weekly jobs run on GitHub's computers. Your Mac can be off.
 In summer every time is one hour later (GitHub's clock doesn't change for daylight saving). GitHub sometimes starts a scheduled run late or drops it when it's busy, so each job also has one or two later back-up times. A back-up time does nothing if the job already passed that day, and tries again if it failed.
 
 Other automatic checks:
-- **About every hour**, GitHub checks that the site is up and the data is fresh. When GitHub is busy this can stretch to every few hours.
-- **Every Monday**, GitHub checks the site's software for security problems.
+- **Every 3 hours**, GitHub checks that the site is up and the data is fresh.
+- **Every night**, if the site's code changed that day, GitHub runs the tests, builds the site and checks that no secret key ends up in what visitors download. **Every Monday** it also checks the site's software for security problems.
+
+**GitHub's free minutes (2,000 a month):** these used to run out because the tests ran on every single change (~2,800 minutes a month). They now run once a night, back-up times stop in seconds when the job already passed, and every job has a time limit, so a month uses roughly 600. GitHub emails you at 75%, 90% and 100%. If the minutes ever run out anyway: the weekly jobs stop until the 1st of next month, so either run the job on the Mac (`cd web` then `node --env-file=.env.local scripts/weekly-run.mjs projections-only`) or add a small budget in GitHub → Settings → Billing → Budgets.
 
 ## Your weekly routine (about 2 minutes)
 
@@ -37,15 +39,15 @@ Other automatic checks:
 
 ## When something goes wrong
 
-GitHub emails you when a run fails or the hourly check fails. Open `/admin` first: the failed job's **Last lines** usually say why.
+GitHub emails you when a run fails or the 3-hourly check fails. Open `/admin` first: the failed job's **Last lines** usually say why.
 
 | What you see | What it means | What to do |
 |---|---|---|
 | Tuesday **FAILED** with "Week N is not complete" | A game (often Monday night) wasn't final yet, or its stats hadn't posted. Game data was still published; projections were not. | Wait a few hours, then run `tuesday-full-run` again by hand (below). |
 | A run failed with "CSV has only N rows" or "older than what is live" | The model produced something that looked wrong, so nothing was published. The site still shows the last good week. | Run it again once. If it fails again, it needs a developer: the model or a data source changed. |
 | "Add the … repository secrets first" | GitHub doesn't have the database key. | Add the secrets (Setup, below). |
-| Hourly check failed: "not ok" or "data is stale" | Rankings are more than 7.5 days old in season, or errors spiked. | Check *Weekly runs*. If Tuesday failed, run `tuesday-full-run` by hand. If errors spiked, look at *Recent errors*. |
-| Hourly check failed: a page "answered 500" | The site itself is down. | Check Vercel → Deployments: if the newest deployment failed, press **Redeploy** on the last good one (⋯ menu → Redeploy). |
+| Uptime check failed: "not ok" or "data is stale" | Rankings are more than 7.5 days old in season, or errors spiked. | Check *Weekly runs*. If Tuesday failed, run `tuesday-full-run` by hand. If errors spiked, look at *Recent errors*. |
+| Uptime check failed: a page "answered 500" | The site itself is down. | Check Vercel → Deployments: if the newest deployment failed, press **Redeploy** on the last good one (⋯ menu → Redeploy). |
 | A member says they paid but still see the free plan | Their payment was processed but their account wasn't upgraded. | Ask them to sign out and back in. Still wrong: find them in Stripe → Customers and check their subscription is Active; tell a developer the email if it is. |
 | A refund | – | Stripe → Payments → the payment → Refund. Then **cancel the subscription** (Customers → them → subscription → Cancel now), so their access ends. |
 | Someone can't sign in | Usually an unconfirmed email or a forgotten password. | Point them to **Forgot your password?** on the sign-in page. |

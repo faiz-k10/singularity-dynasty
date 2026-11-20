@@ -1,4 +1,11 @@
-/** @type {import('next').NextConfig} */
+import { publicEnvProblems } from "./lib/secretGuard.mjs";
+
+// A secret named NEXT_PUBLIC_* would be copied into the JavaScript every visitor downloads: refuse to build at all (lib/secretGuard.mjs).
+const leaks = publicEnvProblems(process.env);
+if (leaks.length) {
+  throw new Error(`Refusing to build: ${leaks.map((l) => `${l.key} (${l.problem})`).join(", ")}. A NEXT_PUBLIC_ variable is sent to every visitor's browser -- rename it without NEXT_PUBLIC_ and read it only on the server.`);
+}
+
 // Security headers on every response. No script-src rule on purpose: Next's inline bootstrap scripts would need per-request
 // nonces (which turn every page dynamic); these cover the attacks that don't depend on that -- the site can't be framed
 // (clickjacking the pricing / billing buttons), no MIME sniffing, no plugin objects, no <base> hijack, full URLs never
@@ -15,6 +22,7 @@ const SECURITY_HEADERS = [
   { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
 ];
 
+/** @type {import('next').NextConfig} */
 const nextConfig = {
   poweredByHeader: false,
   // The share-card pictures (lib/cardArt.js) read their fonts and the team logos from disk; files in public/ aren't part of a server

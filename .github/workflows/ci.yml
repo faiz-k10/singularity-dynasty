@@ -1,17 +1,27 @@
 name: CI
 
+# MINUTES BUDGET (Nov 19 2026): this workflow ran on EVERY push and used ~2,500 of the free plan's 2,000 minutes a month (560 pushes x
+# ~5 minutes, two jobs each), which starved the weekly data runs. It now runs:
+#   - once a night, and only if the site's code changed in the last day (a quick git check first; ~0 minutes on quiet days)
+#   - on pull requests and by hand (Actions tab -> CI -> Run workflow)
+# Vercel still builds every push before it goes live (a broken build never deploys), and the tests run locally before each commit.
+# Worst case ~30 runs x ~4 minutes = ~120 minutes a month. Every job has a timeout, so nothing can hang for hours.
+# The route smoke test was removed from CI: the tool pages now read with the database's service-role key, and that key does not belong
+# in a job that runs on every change. Run it locally instead (npm run build && npm start, then npm run smoke).
 on:
-  push:
-    branches: [main]
-  pull_request:
-  # Weekly, so a newly published security advisory against a dependency fails the audit (and GitHub emails) even in a
-  # week with no pushes.
   schedule:
-    - cron: "23 13 * * 1"
+    - cron: "23 7 * * *" # nightly; Mondays also catch new security advisories even in a quiet week
+  pull_request:
+    paths: ["web/**", ".github/workflows/ci.yml"]
+  workflow_dispatch:
 
-# `next build` imports the Stripe API route modules, which construct a
-# Stripe client from this at module load (no network call). The real key
-# lives in Vercel; this placeholder just has to be a non-empty string.
+# a newer run replaces one still going for the same branch
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+# `next build` imports the Stripe API route modules, which construct a Stripe client from this at module load (no network call). The real
+# key lives in Vercel; this placeholder just has to be a non-empty string.
 env:
   STRIPE_SECRET_KEY: sk_test_ci_build_placeholder
 
@@ -26,49 +36,35 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
         with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: web/package-lock.json
-      - run: npm ci
-      # The packages the site actually runs (not dev tooling) must have no high or critical advisory.
-      - run: npm audit --omit=dev --audit-level=high
-      - run: npm run lint
-      - run: npm test
-      - run: npm run build
-
-  # Renders every route against real Supabase data to catch breaks that
-  # build/lint/tests can't see (a query hitting a dropped column, a Server
-  # Component throwing). Skips itself cleanly if the repo has no Supabase
-  # secrets configured.
-  smoke:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: web/package-lock.json
-      - id: guard
-        run: echo "have_secrets=${{ secrets.NEXT_PUBLIC_SUPABASE_URL != '' }}" >> "$GITHUB_OUTPUT"
-      - if: steps.guard.outputs.have_secrets == 'true'
-        run: npm ci
-      - if: steps.guard.outputs.have_secrets == 'true'
-        run: npm run build
-        env:
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-      - if: steps.guard.outputs.have_secrets == 'true'
+          fetch-depth: 50
+      # Nightly: skip everything (in seconds) unless web/ changed in the last 25 hours -- except Mondays, for the advisory check.
+      - name: Anything to check?
+        id: changed
+        working-directory: .
         run: |
-          npm start &
-          for i in $(seq 1 60); do curl -sf -o /dev/null http://localhost:3000/ && break; sleep 1; done
-          npm run smoke
-        env:
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-      - if: steps.guard.outputs.have_secrets != 'true'
-        run: echo "No NEXT_PUBLIC_SUPABASE_URL secret set — skipping the route smoke test. Add it in repo Settings › Secrets to enable."
+          if [ "${{ github.event_name }}" != "schedule" ] || [ "$(date -u +%u)" = "1" ]; then echo "go=true" >> "$GITHUB_OUTPUT"; exit 0; fi
+          if [ -n "$(git log --since='25 hours ago' --format=%H -- web .github/workflows/ci.yml)" ]; then echo "go=true" >> "$GITHUB_OUTPUT"; else echo "go=false" >> "$GITHUB_OUTPUT"; echo "No code changes since yesterday: nothing to check."; fi
+      - if: steps.changed.outputs.go == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - if: steps.changed.outputs.go == 'true'
+        run: npm ci
+      # The packages the site actually runs (not dev tooling) must have no high or critical advisory.
+      - if: steps.changed.outputs.go == 'true'
+        run: npm audit --omit=dev --audit-level=high
+      - if: steps.changed.outputs.go == 'true'
+        run: npm run lint
+      - if: steps.changed.outputs.go == 'true'
+        run: npm test
+      - if: steps.changed.outputs.go == 'true'
+        run: npm run build
+      # Nothing a visitor downloads may contain a secret key (lib/secretGuard.mjs).
+      - if: steps.changed.outputs.go == 'true'
+        run: npm run check:secrets

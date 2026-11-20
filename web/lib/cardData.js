@@ -1,3 +1,4 @@
+import "server-only"; // holds a secret key: the build fails if a browser component ever imports this
 import { createHash } from "node:crypto";
 import { unstable_cache } from "next/cache";
 import { createPublicClient } from "@/lib/supabase/public";
