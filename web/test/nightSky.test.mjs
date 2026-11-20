@@ -78,12 +78,21 @@ test("Beat the Model: three same-position pairs, graded on real points", () => {
 
 test("events follow the NFL calendar", () => {
   assert.equal(eventFor(new Date(Date.UTC(2026, 10, 12)), 10), "tnf"); // a Thursday in week 10
-  assert.equal(eventFor(new Date(Date.UTC(2026, 11, 20)), 16), "eclipse");
-  assert.equal(eventFor(new Date(Date.UTC(2027, 3, 25)), 0), "aurora");
+  assert.equal(eventFor(new Date(Date.UTC(2027, 3, 25)), 0), null); // no draft-week aurora any more
   assert.equal(eventFor(new Date(Date.UTC(2026, 10, 15)), 10), null);
   assert.equal(eventFor(new Date(Date.UTC(2026, 10, 26)), 12), "thanksgiving"); // Nov 26 2026 = the fourth Thursday
   assert.equal(eventFor(new Date(Date.UTC(2026, 10, 19)), 11), "tnf"); // the third Thursday stays a plain Thursday
-  assert.equal(eventFor(new Date(Date.UTC(2026, 11, 25)), 16), "christmas"); // ahead of the playoff eclipse
+  assert.equal(eventFor(new Date(Date.UTC(2026, 11, 25)), 16), "christmas");
+  // exactly one solar flare in every two NFL weeks, never on a Thursday, never outside the regular season
+  for (let pair = 1; pair <= 9; pair++) {
+    let n = 0;
+    for (const week of [pair * 2 - 1, pair * 2]) for (let dow = 0; dow < 7; dow++) {
+      const date = new Date(Date.UTC(2026, 9, 4 + dow)); // Oct 4 2026 is a Sunday
+      if (eventFor(date, week) === "flare") { n++; assert.notEqual(dow, 4); }
+    }
+    assert.equal(n, 1);
+  }
+  assert.equal(eventFor(new Date(Date.UTC(2026, 9, 4)), 0), null);
 });
 
 test("titles and normalising old state", () => {

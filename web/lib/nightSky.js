@@ -646,7 +646,7 @@ function fill(s, id, color, rnd) {
 function placeStar(s, color, ctx, rnd) {
   let c = color;
   const r = rnd();
-  const goldChance = (ctx.event === "aurora" ? 0.045 : 0.015) * (s.boosts.goldUntil > ctx.now ? 3 : 1);
+  const goldChance = (ctx.event === "flare" ? 0.045 : 0.015) * (s.boosts.goldUntil > ctx.now ? 3 : 1);
   if (color === "gold") c = r < 0.25 ? "gold" : ["blue", "ember", "white"][Math.floor(rnd() * 3)];
   else if (color === "lucky") c = r < 0.08 ? "gold" : ["blue", "ember", "white"][Math.floor(rnd() * 3)]; // a share: any colour, 1 in 12 gold
   else if (r < goldChance) c = "gold";
@@ -665,7 +665,7 @@ export function litTier(s, event) {
   let t = 1;
   if (full(s, "huddle") || full(s, "blitz")) t = 2;
   if (full(s, "playbook")) t = 3;
-  if (event === "eclipse" || event === "christmas") t = Math.min(3, t + 1);
+  if (event === "christmas") t = Math.min(3, t + 1);
   return t;
 }
 function spend(s, tier) {
@@ -739,7 +739,7 @@ function collapse(s, ctx, rnd) {
   log(s, `Found: ${f.name} (1 in ${f.oneIn.toLocaleString()})`, ctx.now);
 }
 
-// One action. ctx = { now, day ("YYYY-MM-DD", Eastern), event: "tnf" | "thanksgiving" | "christmas" | "eclipse" | "aurora" | null }. Returns what happened; `s` is changed in place.
+// One action. ctx = { now, day ("YYYY-MM-DD", Eastern), event: "tnf" | "thanksgiving" | "christmas" | "flare" | null }. Returns what happened; `s` is changed in place.
 export function award(s, action, ctx, rnd = Math.random) {
   const a = ACTIONS[action];
   if (!a) return { awarded: false };
@@ -811,22 +811,37 @@ export function gradePicks(s, key, points, ctx, rnd = Math.random) {
   return right;
 }
 
-// The NFL calendar's events. week: Sleeper's display week; date: the Eastern date.
+// The NFL calendar's events. week: Sleeper's display week (0 outside the regular season); date: the Eastern date.
+// A SOLAR FLARE (founder, Nov 19 2026): one surprise day in every two NFL weeks (weeks 1-2, 3-4, ... 17-18), any day but a Thursday
+// (which has its own shower). Which week of the pair and which weekday is drawn from the season and the pair, so it is the same for
+// every member and can't be predicted from the calendar. The playoff eclipse and draft-week aurora were removed the same day.
+export function flareDay(season, pair) {
+  let x = (season * 2654435761 + pair * 40503) >>> 0; // mulberry32: a well-mixed draw from a small seed
+  const next = () => {
+    x = (x + 0x6d2b79f5) >>> 0;
+    let t = Math.imul(x ^ (x >>> 15), 1 | x);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+  const dows = [0, 1, 2, 3, 5, 6];
+  return { half: Math.floor(next() * 2), dow: dows[Math.floor(next() * dows.length)] };
+}
 export function eventFor(date, week) {
   const m = date.getUTCMonth(), d = date.getUTCDate(), dow = date.getUTCDay();
   if (m === 10 && dow === 4 && d >= 22 && d <= 28) return "thanksgiving"; // the fourth Thursday of November: three games
   if (m === 11 && d === 25) return "christmas"; // Christmas Day games
-  if (m === 3 && d >= 22 && d <= 30) return "aurora"; // draft week (late April)
-  if (week >= 15 && week <= 17) return "eclipse"; // the fantasy playoffs
-  if (dow === 4 && week >= 1 && week <= 18) return "tnf"; // Thursday Night Football
+  if (week >= 1 && week <= 18) {
+    const season = date.getUTCFullYear() - (m < 2 ? 1 : 0); // January belongs to last season
+    const f = flareDay(season, Math.ceil(week / 2));
+    if ((week - 1) % 2 === f.half && dow === f.dow) return "flare";
+    if (dow === 4) return "tnf"; // Thursday Night Football
+  }
   return null;
 }
 // Worded as a formal weather bulletin and kept to one line after "SPECIAL FORECAST:" (founder, Nov 19 2026).
-// Christmas falls in the fantasy playoffs, so it carries the eclipse's power-up as well as two stars an action.
 export const EVENT_TEXT = {
   tnf: "Thursday Night meteor shower in effect until midnight. Two stars fall per action.",
   thanksgiving: "Thanksgiving meteor storm in effect until midnight. Three stars fall per action.",
   christmas: "Christmas Day conjunction until midnight. Two stars per action; every find powered up.",
-  eclipse: "Playoff eclipse in effect through the fantasy playoffs. Every find powered up.",
-  aurora: "Draft-week aurora in effect through the NFL Draft. Gold stars three times as likely.",
+  flare: "Unscheduled solar flare in effect until midnight. Gold stars three times as likely.",
 };
