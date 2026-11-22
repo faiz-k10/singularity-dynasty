@@ -12,7 +12,7 @@ import { normalizePlayerName } from "@/lib/portfolio";
 const GM_WORD = { yes: "Yes", no: "No", undrafted: "UDFA", unknown: "—" };
 const HOW = { drafted: "Drafted", trade: "Traded for", joined: "Brought in" };
 
-const POSITIONS = ["ALL", "QB", "RB", "WR", "TE"];
+const POSITIONS = ["QB", "RB", "WR", "TE"];
 
 // One toggle: a recessed track of buttons, the picked one lit (the site's .board-toggle look).
 function Toggle({ label, value, options, onChange }) {
@@ -176,7 +176,12 @@ function RankCell({ now, was, games }) {
 export default function DynastyBoard({ rows, meta }) {
   const [format, setFormat] = useState("sf");
   const [mode, setMode] = useState("contender");
-  const [pos, setPos] = useState("ALL");
+  // positions work like Weekly Projection Rankings' pills (founder, Nov 22 2026): any combination, none = everyone. Exactly one picked
+  // opens that position's own board (position ranks and tiers); two or three show the overall board with the others hidden.
+  const [picked, setPicked] = useState([]);
+  const togglePos = (p) => setPicked((cur) => (cur.includes(p) ? cur.filter((x) => x !== p) : [...cur, p]));
+  const pos = picked.length === 1 ? picked[0] : "ALL";
+  const posMask = picked.length > 1 && picked.length < POSITIONS.length ? new Set(picked) : null;
   const [pickedId, setPickedId] = useState(null);
   const [query, setQuery] = useState("");
   const listRef = useRef(null);
@@ -206,7 +211,8 @@ export default function DynastyBoard({ rows, meta }) {
   for (let v = lo; v <= hi; v += hi - lo > 8 ? 2 : 1) ticks.push(v);
   // the name search: rows that don't match are hidden (ranks, groups and tiers stay the board's), a heading shows only above a match
   const q = normalizePlayerName(query);
-  const hit = q ? L.map((p) => normalizePlayerName(p.name).includes(q)) : null;
+  // (the same hiding serves the position pills when two or three are picked)
+  const hit = q || posMask ? L.map((p) => (!q || normalizePlayerName(p.name).includes(q)) && (!posMask || posMask.has(p.pos))) : null;
   const shows = (a, b) => !hit || hit.slice(a, b + 1).includes(true);
   const firstShown = (a, b) => (hit ? a + hit.slice(a, b + 1).indexOf(true) : a);
   // The pane shows the picked player while he is on the list (and matches the search), else the top one shown.
@@ -225,8 +231,8 @@ export default function DynastyBoard({ rows, meta }) {
         <Toggle label="League format" value={format} onChange={setFormat} options={Object.entries(FORMATS).map(([k, v]) => [k, v.label])} />
         <div className="rk-positions" role="group" aria-label="Position">
           {POSITIONS.map((p) => (
-            <button key={p} type="button" className={pos === p ? "active" : ""} onClick={() => setPos(p)}>
-              {p === "ALL" ? "All" : p}
+            <button key={p} type="button" className={picked.includes(p) ? "active" : ""} onClick={() => togglePos(p)} aria-pressed={picked.includes(p)}>
+              {p}
             </button>
           ))}
         </div>

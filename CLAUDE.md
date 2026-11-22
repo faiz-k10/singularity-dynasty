@@ -586,3 +586,6 @@ The grey rank is again his rank nine games ago (`withPrevRank` takes each score 
 
 ## Dynasty profile wording pass (Nov 21 2026, founder)
 "Here's where it comes from" now follows a semicolon; the production beat ends after the games-above-replacement sentence (the "clock is running" style closers are gone); the league beat has no closing line any more; the "who is he level with" beat (headline, table, closing line) reads his statistical TIE (the bracket on the board), not his whole tier -- a two-player tie says "ahead of / behind <name>" and "Either one", and a player in no tie gets "Nobody on the board is close enough to call even with him."
+
+## Dynasty Board position pills are multi-select (Nov 22 2026, founder: "make this the same as ... the weekly rankings tool: remove the ALL and allow multi select")
+QB / RB / WR / TE with no "All": none picked = everyone; exactly one = that position's own board (position ranks, tiers, `SHOW.position` -- as before); two or three = the overall board with the other positions hidden (overall ranks / tiers / groups kept, hidden through the same `hit` mask the name search uses, so tie brackets go away while it's on); all four = everyone. State is `picked` in `DynastyBoard.js`.
