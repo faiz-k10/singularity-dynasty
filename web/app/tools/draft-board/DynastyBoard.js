@@ -162,8 +162,9 @@ function RankCell({ now, was, games }) {
   return (
     <span className="dyb-rank dyb-rk mono" aria-label={label}>
       {up ? cur : old}
-      <svg className={`dyb-rk-arrow is-${up ? "up" : "down"}`} viewBox="0 0 8 10" aria-hidden="true">
-        <path d={up ? "M4 9.5V1.5M1 4.5L4 1.5L7 4.5" : "M4 .5V8.5M1 5.5L4 8.5L7 5.5"} />
+      {/* a solid triangle, the same mark as the key under the list */}
+      <svg className={`dyb-rk-arrow is-${up ? "up" : "down"}`} viewBox="0 0 10 8" aria-hidden="true">
+        <path d={up ? "M5 0L10 8H0Z" : "M0 0H10L5 8Z"} />
       </svg>
       {up ? old : cur}
     </span>
