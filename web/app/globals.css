@@ -6040,6 +6040,11 @@ select.lab-select{min-width:200px;}
 .dp-name{margin:0 0 12px; text-align:center; font-family:var(--font-display); font-weight:800; text-transform:uppercase; letter-spacing:.07em; line-height:1; white-space:nowrap; overflow:hidden;
   font-size:clamp(20px, calc(100cqw / (var(--chars) * 0.66)), 80px);} /* fills the pane's width: ~0.6em a capital incl. tracking */
 .dp-badges{display:flex; flex-wrap:wrap; align-items:center; gap:6px 8px; font-size:12px; color:var(--star-dim);}
+/* the position badge and team logo fill the space above the demographics line (founder, Nov 22 2026): 64px photo - 16.9px demographics
+   line (13px x 1.3) - 6px gap = 41px; the badge's text keeps its usual share of its height */
+.dp-badges .position-badge{height:41px; min-width:62px; padding:0 12px; font-size:20px;}
+.dp-badges .team-badge.team-logo{padding:0;}
+.dp-badges .team-logo img{width:41px; height:41px;}
 .dp-share-btn{margin-left:auto; font-size:11px; padding:5px 10px;} /* Share in the badges row under the name (DashboardShareButton.js) */
 .dp-links{display:flex; flex-wrap:nowrap; align-items:center; gap:4px 16px; margin-top:12px; font-family:var(--font-mono), monospace; font-size:11px; letter-spacing:.04em;}
 .dp-links > *{white-space:nowrap;}
