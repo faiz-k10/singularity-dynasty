@@ -143,24 +143,11 @@ gp <- split(g$fantasy_points_ppr, g$player_id)
 d$drift   <- vapply(d$player_id, function(id) drift(gp[[id]], WINDOW, HALF_LIFE), 0)
 d$drift_s <- vapply(d$player_id, function(id) drift(gp[[id]], WINDOW_SHORT, HALF_LIFE_SHORT), 0)
 
-# Week: how far his weighted PPG moved with the board's newest week (the number now minus the same number without that week's
-# game) -- the board turns it into LAST WEEK's score and rank (founder, Nov 21 2026: the grey rank beside each rank is his rank
-# on last week's board). 0 when he didn't play that week; NA with too few games to have had a number a week ago.
-LAST_WK <- max(g$season * 100 + g$week)
-gk <- split(g$season * 100 + g$week, g$player_id)
-week_change <- function(id, win, hl) {
-  p <- gp[[id]]; k <- gk[[id]]
-  if (is.null(p)) return(NA_real_)
-  if (tail(k, 1) != LAST_WK) return(0)
-  if (length(p) < 2) return(NA_real_)
-  round(wppg(tail(p, win), hl) - wppg(tail(head(p, -1), win), hl), 2)
-}
-d$wk   <- vapply(d$player_id, function(id) week_change(id, WINDOW, HALF_LIFE), 0)
-d$wk_s <- vapply(d$player_id, function(id) week_change(id, WINDOW_SHORT, HALF_LIFE_SHORT), 0)
+LAST_WK <- max(g$season * 100 + g$week) # the newest game in the board (the page's "Through week N")
 
 out <- d[order(-d$por_sf), c("player_id", "player", "position", "team", "age", "games_in_window", "ppg_weighted",
                               "por_1qb", "por_sf", "sd_prod", "ppg_s", "games_s", "por_1qb_s", "por_sf_s", "sd_prod_s",
-                              "draft_team", "draft_year", "acq_date", "acq_how", "drift", "drift_s", "wk", "wk_s")]
+                              "draft_team", "draft_year", "acq_date", "acq_how", "drift", "drift_s")]
 write.csv(out, "dynasty_value.csv", row.names = FALSE)
 
 # the site's data file: rows as a compact array, plus what the player profile draws

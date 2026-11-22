@@ -14,7 +14,7 @@ const logs = fs.readFileSync(path.join(DATA, "dynasty-logs.json"), "utf8");
 // sanity: a broken build must not replace a good board
 const v = JSON.parse(values), l = JSON.parse(logs);
 if (!Array.isArray(v.rows) || v.rows.length < 200) throw new Error(`dynasty-values.json has ${v.rows?.length ?? 0} rows; refusing to publish`);
-if (!v.columns?.includes("wk") || !v.last_week) throw new Error("dynasty-values.json has no last-week columns; refusing to publish");
+if (!v.last_week) throw new Error("dynasty-values.json has no last_week; refusing to publish");
 if (Object.keys(l).length < 200) throw new Error("dynasty-logs.json looks empty; refusing to publish");
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);

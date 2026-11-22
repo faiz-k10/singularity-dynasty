@@ -575,3 +575,6 @@ The grey number beside a rank is his rank on LAST WEEK's board. `model/dynasty_v
 - **By hand:** `cd model && ./run_dynasty.sh`, then `cd ../web && node --env-file=.env.local scripts/publish-dynasty.mjs`.
 - `model/backtest_production_window_results.rds` (1.5 KB, read by `dynasty_value.R` for the score spreads) is force-added to git (`*.rds` is ignored) so the GitHub runner has it.
 - **Group size fix:** Rebuilder's stretch of the lowest upper group down to its Replacement line (`groupPairs`) now becomes its own group (split for size, named Core) when joining would make the lowest group 20+; the week-10 rebuild had made Cornerstone 30.
+
+## Rank change back to nine games (Nov 21 2026, founder: "revert the ranking numbers and movements reflect the last 9 weeks as we had it before"; SUPERSEDES "Dynasty Board rank change = last week" above)
+The grey rank is again his rank nine games ago (`withPrevRank` takes each score back by its 9-game `move`); the `wk` / `wk_s` columns were removed from `dynasty_value.R` and the publish check (`last_week` stays: it is the page's "Through week N"); the profile lede says "Nine games ago" again. The Tuesday rebuild and Storage publishing stay, so the nine-game ranks and arrows refresh every week.

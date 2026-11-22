@@ -54,9 +54,9 @@ export function dynastyStory(p, ctx) {
       ? `${p.name} is the best player on this board, and ${last(ctx.next)} isn't especially close behind him.`
       : `${p.name} sits on top of this board, but only just. ${last(ctx.next)} is right on his heels.`;
   } else if (climb >= 5) {
-    lede = `Last week, ${p.name} was ${nth(ctx.prev)} ${ctx.scope}. He's ${nth(ctx.rank)} now.`;
+    lede = `Nine games ago, ${p.name} was ${nth(ctx.prev)} ${ctx.scope}. He's ${nth(ctx.rank)} now.`;
   } else if (climb <= -5) {
-    lede = `Last week, ${p.name} was ${nth(ctx.prev)} ${ctx.scope}. He's slipped to ${nth(ctx.rank)}.`;
+    lede = `Nine games ago, ${p.name} was ${nth(ctx.prev)} ${ctx.scope}. He's slipped to ${nth(ctx.rank)}.`;
   } else if (old && ctx.rank <= 30) {
     lede = `${p.name} is ${yrs(p.age)} and still ranked ${nth(ctx.rank)} ${ctx.scope}. Age is the only thing working against him.`;
   } else if (young && ctx.rank <= 30) {
