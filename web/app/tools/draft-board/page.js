@@ -1,6 +1,8 @@
 import Link from "next/link";
 import SkyCredit from "../../SkyCredit";
 import { getUserTier } from "@/lib/tier";
+import { loadMyPlayers } from "@/lib/myPlayers";
+import { createClient } from "@/lib/supabase/server";
 import InteractiveScript from "../../InteractiveScript";
 import DynastyBoard from "./DynastyBoard";
 import { FREE_ROWS, getDynastyRows, getDynastyThrough } from "@/lib/dynastyData";
@@ -12,8 +14,12 @@ export const metadata = {
 };
 
 const PAID_TIERS = ["explorer", "singularity"];
-async function RankingsView({ hasFullAccess, signedIn }) {
-  const [{ rows, total, meta }, DYNASTY_THROUGH] = await Promise.all([getDynastyRows(hasFullAccess), getDynastyThrough()]);
+async function RankingsView({ hasFullAccess, signedIn, user }) {
+  const [{ rows, total, meta }, DYNASTY_THROUGH, mine] = await Promise.all([
+    getDynastyRows(hasFullAccess),
+    getDynastyThrough(),
+    createClient().then((supabase) => loadMyPlayers(supabase, user)),
+  ]);
   return (
     <>
       <InteractiveScript />
@@ -25,7 +31,7 @@ async function RankingsView({ hasFullAccess, signedIn }) {
             <h1>Dynasty Board</h1>
           </div>
         </div>
-        <DynastyBoard rows={rows} meta={meta} />
+        <DynastyBoard rows={rows} meta={meta} mine={mine} gated={!hasFullAccess} />
         {!hasFullAccess && (
           <div className="tool-paywall reveal in" data-wall="dynasty-board">
             <p>
@@ -43,5 +49,5 @@ async function RankingsView({ hasFullAccess, signedIn }) {
 
 export default async function DraftBoardPage() {
   const { tier, user } = await getUserTier();
-  return <RankingsView hasFullAccess={PAID_TIERS.includes(tier)} signedIn={!!user} />;
+  return <RankingsView hasFullAccess={PAID_TIERS.includes(tier)} signedIn={!!user} user={user} />;
 }

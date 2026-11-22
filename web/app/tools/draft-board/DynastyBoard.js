@@ -6,6 +6,9 @@ import TeamBadge from "../TeamBadge";
 import DynastyProfile from "./DynastyProfile";
 import { FORMATS, MODES, MOVE_MIN, viewBoard } from "@/lib/dynastyBoard";
 import { normalizePlayerName } from "@/lib/portfolio";
+import { MyPlayersFilter, MyPlayersNote, mineClass, useMyView } from "../MyPlayers";
+
+const nameOfRow = (r) => r.name;
 
 // the two context columns: short words, the full sentence for screen readers
 
@@ -171,7 +174,7 @@ function RankCell({ now, was, games }) {
   );
 }
 
-export default function DynastyBoard({ rows, meta }) {
+export default function DynastyBoard({ rows, meta, mine, gated }) {
   const [format, setFormat] = useState("sf");
   const [mode, setMode] = useState("contender");
   // positions work like Weekly Projection Rankings' pills (founder, Nov 22 2026): any combination, none = everyone. Exactly one picked
@@ -200,6 +203,8 @@ export default function DynastyBoard({ rows, meta }) {
   const { L, groups, tiers, ties } = useMemo(() => {
     return viewBoard(rows, { format, mode, pos }); // a position view keeps the all-positions groups
   }, [rows, format, mode, pos]);
+  // All players / My players, like the other tools: hides rows the way the search does; counted over the board on screen
+  const myView = useMyView(mine, L, nameOfRow);
 
   // one axis for every row's range: whole numbers from 0, so grid line N is a score of N on every view (founder, Nov 16 2026);
   // a range reaching below zero runs off the left edge rather than squeezing every row
@@ -210,7 +215,8 @@ export default function DynastyBoard({ rows, meta }) {
   // the name search: rows that don't match are hidden (ranks, groups and tiers stay the board's), a heading shows only above a match
   const q = normalizePlayerName(query);
   // (the same hiding serves the position pills when two or three are picked)
-  const hit = q || posMask ? L.map((p) => (!q || normalizePlayerName(p.name).includes(q)) && (!posMask || posMask.has(p.pos))) : null;
+  const myOnly = myView.on ? myView.ownedByName : null;
+  const hit = q || posMask || myOnly ? L.map((p) => (!q || normalizePlayerName(p.name).includes(q)) && (!posMask || posMask.has(p.pos)) && (!myOnly || myOnly.has(p.name))) : null;
   const shows = (a, b) => !hit || hit.slice(a, b + 1).includes(true);
   const firstShown = (a, b) => (hit ? a + hit.slice(a, b + 1).indexOf(true) : a);
   // The pane shows the picked player while he is on the list (and matches the search), else the top one shown.
@@ -234,6 +240,7 @@ export default function DynastyBoard({ rows, meta }) {
             </button>
           ))}
         </div>
+        <MyPlayersFilter mine={mine} view={myView} gated={gated} compact />
         <label className="rk-search dyb-search">
           <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
             <circle cx="11" cy="11" r="6.5" />
@@ -247,6 +254,11 @@ export default function DynastyBoard({ rows, meta }) {
           </svg>
         </button>
       </div>
+      {myView.on && (
+        <div className="rk-status">
+          <MyPlayersNote mine={mine} view={myView} gated={gated} />
+        </div>
+      )}
 
       {!theater && L.length > 0 && (
         <section className="dyb-overview glass-panel" aria-label="Every player on one axis">
@@ -312,7 +324,7 @@ export default function DynastyBoard({ rows, meta }) {
                     <span className="dyb-who">
                       <span className="dyb-name-line">
                         <TeamBadge team={p.team} />
-                        <b className="dyb-name">{p.name}</b>
+                        <b className={`dyb-name${mineClass(myView.ownedByName.has(p.name))}`}>{p.name}</b>
                         <PositionBadge position={p.pos} />
                       </span>
                       <span className="dyb-sub mono">
@@ -338,7 +350,7 @@ export default function DynastyBoard({ rows, meta }) {
                 </Fragment>
               );
             })}
-            {hit && !hit.includes(true) && <p className="dyb-none mono">No player on this board matches “{query}”.</p>}
+            {hit && !hit.includes(true) && <p className="dyb-none mono">{q ? <>No player on this board matches “{query}”.</> : myOnly ? "None of your players are on this board." : "No player on this board."}</p>}
           </div>
           <div className="dyb-key mono">
             <span><i className="dyb-move is-up k-move" /><i className="dyb-move is-down k-move" /> score over his last 9 games: up / down</span>

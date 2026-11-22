@@ -4291,7 +4291,7 @@ select:focus-visible{outline-offset:1px;}
 }
 .my-filter-cta:hover{border-style:solid; background:rgba(var(--horizon-gold-rgb),0.08);}
 /* A player of yours in a table: his name in the brand colour, and a small "x3" after it when he is on several of your teams. */
-td.player-cell.is-mine, td.player-cell.is-mine .player-hover{color:var(--horizon-gold);}
+td.player-cell.is-mine, td.player-cell.is-mine .player-hover, .dyb-name.is-mine{color:var(--horizon-gold);}
 /* "Your player" strip at the top of an opened player. */
 .mine-strip{display:flex; flex-wrap:wrap; align-items:center; gap:6px 8px; padding:8px 12px; border:1px solid rgba(var(--horizon-gold-rgb),0.35); background:rgba(var(--horizon-gold-rgb),0.07); border-radius:2px; font-size:12px;}
 .mine-strip-star{font-family:var(--font-mono), monospace; font-size:10.5px; letter-spacing:0.08em; text-transform:uppercase; color:var(--horizon-gold); font-weight:700;}
@@ -4561,9 +4561,9 @@ html{font-stretch:82%;}
 .rk-positions button:hover{color:var(--star);}
 .rk-positions button.active{background:var(--horizon-gold); color:var(--on-brand);}
 .rk-positions button:focus-visible, .rk-toolbar .tier-toggle button:focus-visible, .rankings-theater-controls .tier-toggle button:focus-visible{outline:2px solid var(--neon-blue); outline-offset:1px;}
-.rk-controls .my-filter-toggle button{font-size:12px; padding:7px 14px;}
-.rk-controls .my-filter-select{height:38px;}
-.rk-controls .my-filter-cta{margin:0;}
+.rk-controls .my-filter-toggle button, .dr-controls .my-filter-toggle button{font-size:12px; padding:7px 14px;}
+.rk-controls .my-filter-select, .dr-controls .my-filter-select{height:38px;}
+.rk-controls .my-filter-cta, .dr-controls .my-filter-cta{margin:0;}
 .rk-status{display:flex; flex-wrap:wrap; align-items:center; gap:4px 12px; margin:-6px 4px 14px;}
 @media (max-width:640px){
   .rk-top{align-items:flex-start;}

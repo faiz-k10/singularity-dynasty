@@ -9,17 +9,20 @@ import { ACQUIRED_LABEL } from "@/lib/acquisition";
 // Rankings: one hook that owns the My-players view state, the toggle row, the star next to
 // a player's name, and the "you own him" strip inside an opened player.
 
-export function useMyView(mine, rows) {
+const byPlayerName = (r) => r.player_name;
+
+// `nameOf`: how a row names its player (the Dynasty Board's rows say `name`); pass a stable function.
+export function useMyView(mine, rows, nameOf = byPlayerName) {
   const [on, setOn] = useState(false);
   const [league, setLeague] = useState("all");
   const ownedByName = useMemo(() => {
     const m = new Map();
     for (const r of rows) {
-      const o = ownedFor(mine, r.player_name, league);
-      if (o) m.set(r.player_name, o);
+      const o = ownedFor(mine, nameOf(r), league);
+      if (o) m.set(nameOf(r), o);
     }
     return m;
-  }, [mine, rows, league]);
+  }, [mine, rows, league, nameOf]);
   const total = useMemo(() => myPlayerCount(mine, league), [mine, league]);
   return { on, setOn, league, setLeague, ownedByName, matched: ownedByName.size, total };
 }
