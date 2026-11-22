@@ -7521,20 +7521,18 @@ button.sky-variant:focus-visible{outline:2px solid var(--ember);outline-offset:1
 /* Night Sky: Rewards waiting = a cobalt banner above the special forecast (Nov 19 2026, founder) */
 /* A waiting reward = a claim card (SkyClient.js RewardCard; founder, Nov 22 2026, modelled on how games present an unlocked reward):
    the prize as a sealed silhouette in a lit medallion, the headline prize, what it was earned for, one filled button. Cobalt; the
-   bigger prizes (.is-big) in gold. One beat of motion on arrival, nothing after (except a slow breath on the medallion). */
+   bigger prizes (.is-big) in gold. No animation (founder, Nov 22 2026). */
 .sky-rewards{display:flex;flex-direction:column;gap:12px;padding:0} /* padding:0 -- a bare <section> picks up the landing sections' 96px top padding */
 .sky-reward{--rw:var(--cobalt);--rw-rgb:var(--cobalt-rgb);position:relative;overflow:hidden;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:22px;padding:20px 24px;
-  border:1px solid rgba(var(--rw-rgb),.6);background:linear-gradient(90deg,rgba(var(--rw-rgb),.2),rgba(var(--rw-rgb),.06) 55%,rgba(var(--rw-rgb),.12));color:var(--star);animation:sky-rw-in .55s cubic-bezier(.2,.9,.3,1.2) both}
+  border:1px solid rgba(var(--rw-rgb),.6);background:linear-gradient(90deg,rgba(var(--rw-rgb),.2),rgba(var(--rw-rgb),.06) 55%,rgba(var(--rw-rgb),.12));color:var(--star)}
 .sky-reward.is-big{--rw:var(--sky-gold);--rw-rgb:var(--sky-gold-rgb)}
-.sky-reward::before{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.16) 50%,transparent 65%);transform:translateX(-100%);animation:sky-rw-sweep 1.1s .35s ease-out both;pointer-events:none}
 .sky-reward::after{content:"";position:absolute;inset:6px;pointer-events:none;
   background:linear-gradient(var(--rw),var(--rw)) 0 0/14px 2px,linear-gradient(var(--rw),var(--rw)) 0 0/2px 14px,linear-gradient(var(--rw),var(--rw)) 100% 0/14px 2px,linear-gradient(var(--rw),var(--rw)) 100% 0/2px 14px,
     linear-gradient(var(--rw),var(--rw)) 0 100%/14px 2px,linear-gradient(var(--rw),var(--rw)) 0 100%/2px 14px,linear-gradient(var(--rw),var(--rw)) 100% 100%/14px 2px,linear-gradient(var(--rw),var(--rw)) 100% 100%/2px 14px;background-repeat:no-repeat}
-.sky-reward-prize{position:relative;width:92px;height:92px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle,rgba(var(--rw-rgb),.35),rgba(var(--rw-rgb),.05) 62%,transparent 70%);box-shadow:0 0 0 1px rgba(var(--rw-rgb),.7),0 0 26px rgba(var(--rw-rgb),.45);animation:sky-rw-breathe 3.2s 1s ease-in-out infinite}
+.sky-reward-prize{position:relative;width:92px;height:92px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle,rgba(var(--rw-rgb),.35),rgba(var(--rw-rgb),.05) 62%,transparent 70%);box-shadow:0 0 0 1px rgba(var(--rw-rgb),.7),0 0 26px rgba(var(--rw-rgb),.45)}
 .sky-reward-prize canvas{width:78px;height:78px;border-radius:50%;filter:grayscale(1) brightness(.55) blur(1.5px)} /* the prize glimpsed, not shown: it resolves when they choose */
 .sky-reward-q{position:absolute;font-family:var(--font-display);font-weight:800;font-size:34px;color:var(--rw);text-shadow:0 0 12px rgba(var(--rw-rgb),.9)}
 .sky-reward-skinmark{font-size:40px;color:var(--rw);opacity:.35}
-.sky-reward-burst{position:absolute;inset:-6px;border-radius:50%;border:2px solid var(--rw);opacity:0;animation:sky-rw-burst .9s .25s ease-out both}
 .sky-reward-body{display:flex;flex-direction:column;gap:4px;min-width:0}
 .sky-reward-eyebrow{align-self:flex-start;font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--on-down);background:var(--rw);padding:3px 8px}
 .sky-reward-head{font-family:var(--font-display);font-weight:800;font-size:30px;line-height:1.05;letter-spacing:.04em;text-transform:uppercase;color:var(--star);margin-top:4px}
@@ -7548,11 +7546,6 @@ button.sky-variant:focus-visible{outline:2px solid var(--ember);outline-offset:1
 .sky-reward-btn:focus-visible{outline:2px solid var(--star);outline-offset:3px}
 .sky-reward-skins{grid-column:1/-1}
 .sky-reward-skins .sky-gift-skins{justify-content:center}
-@keyframes sky-rw-in{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:none}}
-@keyframes sky-rw-sweep{to{transform:translateX(100%)}}
-@keyframes sky-rw-burst{0%{opacity:.9;transform:scale(.85)}100%{opacity:0;transform:scale(1.45)}}
-@keyframes sky-rw-breathe{50%{box-shadow:0 0 0 1px rgba(var(--rw-rgb),.9),0 0 38px rgba(var(--rw-rgb),.6)}}
-@media (prefers-reduced-motion:reduce){.sky-reward,.sky-reward::before,.sky-reward-burst,.sky-reward-prize{animation:none}.sky-reward::before{display:none}}
 @media (max-width:640px){
   .sky-reward{grid-template-columns:auto minmax(0,1fr);gap:14px;padding:16px}
   .sky-reward-prize{width:68px;height:68px}.sky-reward-prize canvas{width:58px;height:58px}

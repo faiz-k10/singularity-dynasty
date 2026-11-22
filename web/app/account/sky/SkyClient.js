@@ -419,7 +419,7 @@ function Telescope({ queue, compliments, onDone, onShare, colourFirst }) {
 const PICK_NOUN = { 1: "small body", 2: "comet or dwarf world", 3: "planet or moon", 4: "meteor shower", 5: "stellar event" };
 // A waiting reward, presented the way games present a claim (founder, Nov 22 2026: the plain banner "looks too basic"): the prize
 // as a sealed silhouette (anticipation; it resolves when they choose), what they earned it for beside it (the rung and its season
-// title), one beat of motion on arrival (a ring burst and a sweep of light, off for reduced motion) and one filled button. The bigger
+// title) and one filled button; no animation (founder, Nov 22 2026). The bigger
 // prizes (meteor showers, the any-tier pick, stellar events) get the gold frame, like a game's "valuable" frame.
 const PICK_HEAD = { 1: "A free small body", 2: "A free comet or dwarf world", 3: "A free planet or moon", 4: "A free meteor shower", 5: "A free stellar event" };
 const rewardRung = (key) => LADDER[Number(String(key).split(":")[1])] || null;
@@ -434,7 +434,6 @@ function RewardCard({ choice, busy, catOpen, findsLeft, onChoose, children }) {
   return (
     <article className={`sky-reward${big ? " is-big" : ""}${pick ? "" : " is-skin"}`}>
       <div className="sky-reward-prize" aria-hidden="true">
-        <span className="sky-reward-burst" />
         {pick ? <Thumb find={preview} /> : <span className="sky-reward-skinmark">✦</span>}
         <span className="sky-reward-q">?</span>
       </div>
