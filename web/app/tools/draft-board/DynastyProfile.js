@@ -294,7 +294,7 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
         </div>
         <ol className="dp-story">
           <Chapter says={story.worth.head} close={story.worth.close}>
-            <div className={`dp-score is-${dir}`} ref={chartRef}>
+            <div className={`dp-score is-${dir}`} ref={chartRef} style={{ "--big": `${Math.round(Math.max(200, chartW - 34) * 0.24)}px` }}>
               {/* the dial takes the block's whole width; the number grows with it */}
               <ArcGauge value={p.score / 10} curved from={dir === "steady" ? null : (p.score - p.move) / 10} size={Math.max(200, chartW - 34)} label={`Dynasty score ${p.score.toFixed(1)} of 10`} className="dp-gauge">
                 <span className="dp-big" style={{ fontSize: Math.round(Math.max(200, chartW - 34) * 0.24) }}>{p.score.toFixed(1)}</span>
