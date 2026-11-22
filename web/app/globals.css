@@ -6020,9 +6020,13 @@ select.lab-select{min-width:200px;}
 /* ---- Dynasty Draft Board, rankings view (app/tools/draft-board/DynastyBoard.js): the tabular recipe -------------------------
    Player rows on the left; boxes that merge rows on the right -- Tied (col 5), Tier (6), Group (7). A heavier rule across a row
    where a tier starts, heaviest where a group does. The panel surface itself comes from the scoreboard-material list above. */
-.dr-controls{display:flex; flex-wrap:wrap; align-items:center; gap:10px 14px; margin-bottom:14px;}
-.dr-controls .board-toggle{margin-bottom:0;}
-.dyb-search{margin-left:auto;} /* the name search pushed right, the full-screen button after it */
+.dr-controls{display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin-bottom:14px;}
+.dr-controls .board-toggle{margin-bottom:0; flex:none;}
+.dr-controls .board-toggle button{padding-left:16px; padding-right:16px;}
+.dr-controls .my-filter-toggle button{padding-left:10px; padding-right:10px;}
+.dr-controls .my-filter-select{flex:0 1 auto; width:auto; max-width:150px;} /* the team picker is as wide as "All Teams", not the longest team name */
+/* the name search takes what is left and gives way first, so the whole row stays on one line from a ~1280px window up (founder, Nov 22 2026) */
+.dyb-search{flex:1 1 140px; min-width:140px; max-width:300px; margin-left:auto;}
 .dyb-row[hidden]{display:none;}
 .dyb-none{margin:0; padding:24px 16px; font-size:12px; color:var(--star-dim);}
 /* ---- Dynasty Draft Board: the player profile (app/tools/draft-board/DynastyProfile.js) ------------------------------------
