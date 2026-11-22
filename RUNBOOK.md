@@ -127,10 +127,10 @@ Attacks, breakdowns and what to do about each (leaked key, hacked account, data 
    6. **Sales tax:** whether you must collect it depends on where your customers live; ask an accountant. Stripe Tax can do it automatically if needed.
 
 ### The Dynasty Board
-It is rebuilt every Tuesday with the rest (through the newest week whose games are all final) and published to Supabase Storage (bucket `dynasty`). If the Tuesday log says "SKIPPED: dynasty ...", the board just stays on last week's numbers. To redo it by hand, from the project folder:
+It is rebuilt every Tuesday with the rest (through the newest week whose games are all final) and published to Supabase Storage (bucket `dynasty`). If the Tuesday log says "SKIPPED: dynasty ...", the board just stays on last week's numbers. To redo it by hand (works from any folder):
 
 ```bash
-cd model && ./run_dynasty.sh && cd ../web && node --env-file=.env.local scripts/publish-dynasty.mjs
+cd "/Users/mohammedkhan/Records/Business/Singularity/Website/claude files/model" && ./run_dynasty.sh && cd ../web && node --env-file=.env.local scripts/publish-dynasty.mjs
 ```
 
 ## Once a year
