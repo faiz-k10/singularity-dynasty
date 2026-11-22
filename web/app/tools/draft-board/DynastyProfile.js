@@ -173,7 +173,7 @@ function Chapter({ says, close, children }) {
 
 // A fact that changed over his last nine games: the new value coloured, then a small arrow and the old value in grey (lower is better
 // for all three: ranks and tiers). Renders the plain value when nothing changed.
-function Fact({ label, now, was, show = (v) => v, suffix = null }) {
+function Fact({ label, now, was, show = (v) => v }) {
   const moved = was != null && was !== now;
   const up = moved && was > now;
   return (
@@ -181,7 +181,6 @@ function Fact({ label, now, was, show = (v) => v, suffix = null }) {
       <dt className="mono">{label}</dt>
       <dd className={moved ? (up ? "is-up" : "is-down") : undefined}>
         <span className="dp-now">{show(now)}</span>
-        {suffix}
         {moved && (
           <span className="dp-chg" aria-label={`${up ? "up" : "down"} from ${show(was)} half a season ago`}>
             <svg viewBox="0 0 8 10" aria-hidden="true"><path d={up ? "M4 9.5V1.5M1 4.5L4 1.5L7 4.5" : "M4 .5V8.5M1 5.5L4 8.5L7 5.5"} /></svg>
