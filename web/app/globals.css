@@ -6499,7 +6499,7 @@ details.acct-danger > summary.acct-h{color:var(--down)}
 .dyb-rk .dyb-rk-was{color:var(--star-dim); font-size:10px;}
 .dyb-rk-now.is-up{color:var(--cobalt);}
 .dyb-rk-now.is-down{color:var(--ember);}
-.dyb-rk-arrow{display:block; width:9px; height:7px;}
+.dyb-rk-arrow{display:block; width:10px; height:8px;} /* even width: centred in the even 40px rank column on whole pixels (a 9px triangle landed half a pixel right and snapped off centre) */
 .dyb-rk-arrow.is-up{fill:var(--cobalt);}
 .dyb-rk-arrow.is-down{fill:var(--ember);}
 .dyb-who{display:flex; flex-direction:column; gap:3px; min-width:0;}
