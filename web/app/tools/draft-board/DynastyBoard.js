@@ -155,12 +155,12 @@ function SpreadPlot({ L, tiers, groups, openId, onPick }) {
 // The dynasty rankings as a board: the spread on top, then the ranked list (group and tier headings between the rows, each
 // player's 80% range on one shared axis, his tier's score span shaded behind it) and the picked player's profile beside it.
 // Tiers, groups and ties come from lib/dynastyBoard.js.
-// the rank, and when it changed over his last driftGames games: up = the new rank in cobalt over an up arrow from the old
+// the rank, and when it changed since last week's board: up = the new rank in cobalt over an up arrow from the old
 // rank (grey); down = the old rank (grey) over a down arrow to the new rank in ember (founder, Nov 21 2026)
-function RankCell({ now, was, games }) {
+function RankCell({ now, was }) {
   if (!was || was === now) return <span className="dyb-rank mono">{now}</span>;
   const up = was > now;
-  const label = `Rank ${now}, ${up ? "up" : "down"} from ${was} over his last ${games} games`;
+  const label = `Rank ${now}, ${up ? "up" : "down"} from ${was} last week`;
   const cur = <b className={`dyb-rk-now is-${up ? "up" : "down"}`}>{now}</b>, old = <i className="dyb-rk-was">{was}</i>;
   return (
     <span className="dyb-rank dyb-rk mono" aria-label={label}>
@@ -306,7 +306,7 @@ export default function DynastyBoard({ rows, meta }) {
                     aria-pressed={open?.id === p.id}
                     onClick={() => setPickedId(p.id)}
                   >
-                    <RankCell now={i + 1} was={p.prevRank} games={p.driftGames} />
+                    <RankCell now={i + 1} was={p.prevRank} />
                     <span className="dyb-who">
                       <span className="dyb-name-line">
                         <TeamBadge team={p.team} />
@@ -353,7 +353,7 @@ export default function DynastyBoard({ rows, meta }) {
           </div>
           <div className="dyb-key mono">
             <span><i className="dyb-move is-up k-move" /><i className="dyb-move is-down k-move" /> score over his last 9 games: up / down</span>
-            <span><b className="dyb-rk-now is-up">▲</b> <b className="dyb-rk-now is-down">▼</b> rank change over his last 9 games: new rank coloured, old rank grey</span>
+            <span><b className="dyb-rk-now is-up">▲</b> <b className="dyb-rk-now is-down">▼</b> rank since last week: this week coloured, last week grey</span>
             <span><i className="k-tie" /> ≈ too close to call: the order inside is a coin flip</span>
           </div>
         </div>

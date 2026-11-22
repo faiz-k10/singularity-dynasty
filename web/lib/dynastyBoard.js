@@ -61,10 +61,12 @@ export function boardRows(rows, { format, mode, pos }) {
   });
 }
 
-// prevRank: where he stood in this same list driftGames games ago -- every score taken back by its `move` (production alone,
-// age held; no move = unchanged), the list re-sorted (ties keep today's order). The board draws the change beside the rank.
+// prevRank: where he stood in this same list LAST WEEK (founder, Nov 21 2026) -- every score taken back by `week`, what the
+// board's newest week did to it (a player who didn't play that week is unchanged), the list re-sorted (ties keep today's order).
+// The board draws the change beside the rank. No `week` in the data (an older file) = no prevRank.
 export function withPrevRank(L) {
-  const back = L.map((r, i) => ({ i, s: r.score - (r.move ?? 0) })).sort((a, b) => b.s - a.s || a.i - b.i);
+  if (!L.some((r) => r.week !== undefined)) return L;
+  const back = L.map((r, i) => ({ i, s: r.score - (r.week ?? 0) })).sort((a, b) => b.s - a.s || a.i - b.i);
   const prev = new Array(L.length);
   back.forEach((x, k) => { prev[x.i] = k + 1; });
   return L.map((r, i) => ({ ...r, prevRank: prev[i] }));
@@ -96,6 +98,9 @@ export function rowsFromData(data) {
       acqDate: at("acq_date") >= 0 ? r[at("acq_date")] : "", acqHow: at("acq_how") >= 0 ? r[at("acq_how")] : "",
       // drift: his production number now minus DRIFT games ago, in production-over-replacement points (null = too few games)
       driftPor: drift(r[at("drift")], data.v_hi), driftPorS: drift(r[at("drift_s")], data.v_hi), driftGames: data.drift_games || 0,
+      // weekPor: what the board's newest week did to his production number (model/dynasty_value.R `wk`), the same units; it
+      // gives last week's score and rank (withPrevRank). Absent in an older data file: then no rank change is shown.
+      weekPor: at("wk") < 0 ? undefined : drift(r[at("wk")], data.v_hi), weekPorS: at("wk_s") < 0 ? undefined : drift(r[at("wk_s")], data.v_hi),
     };
   });
 }
@@ -137,13 +142,13 @@ export function scoreRows(rows, formatKey, modeKey) {
     // a mode with `window` counts production only for the share of those seasons he is still before his done age, never less than
     // `minShare` (at 0 every veteran past his done age scored the same, ~100 identical scores and 112 one-player tiers; Nov 17 2026)
     const share = m.window ? Math.max(m.minShare || 0, Math.min(r.runway, m.window) / m.window) : 1;
-    const prod = (s ? r[f.key + "S"] : r[f.key]) * share, sdProd = (s ? r.sdProdS : r.sdProd) * share, dp = s ? r.driftPorS : r.driftPor;
-    return { r, s, prod, raw: m.prod * prod + m.age * r.ageValue, rawSd: m.prod * sdProd, rawMove: dp == null ? null : m.prod * dp * share };
+    const prod = (s ? r[f.key + "S"] : r[f.key]) * share, sdProd = (s ? r.sdProdS : r.sdProd) * share, dp = s ? r.driftPorS : r.driftPor, wp = s ? r.weekPorS : r.weekPor;
+    return { r, s, prod, raw: m.prod * prod + m.age * r.ageValue, rawSd: m.prod * sdProd, rawMove: dp == null ? null : m.prod * dp * share, rawWeek: wp === undefined ? undefined : m.prod * (wp ?? 0) * share };
   });
   const top = Math.max(...raw.map((x) => x.raw));
   const scale = top > 0 ? 10 / top : 1;
   return raw
-    .map(({ r, s, prod, raw: rs, rawSd, rawMove }) => {
+    .map(({ r, s, prod, raw: rs, rawSd, rawMove, rawWeek }) => {
       const score = rs * scale, sd = rawSd * scale;
       // move: how much his score has changed over his last driftGames games from production alone (age held), in score points
       const move = rawMove == null ? null : rawMove * scale;
@@ -152,7 +157,7 @@ export function scoreRows(rows, formatKey, modeKey) {
       // Rebuilder only (Contender, 90% production, keeps grouping by production as approved): there it follows the score, so a young low producer ranked high isn't
       // "replacement" and every down-weighted veteran isn't either (founder, Nov 17 2026: Rebuilder's Replacement group had 130 players)
       const groupProd = m.window ? (rs - m.age * GROUP_AGE) / m.prod : prod; // Rebuilder only; Contender keeps its own production
-      return { ...r, ppg: s ? r.ppgS : r.ppg, games: s ? r.gamesS : r.games, prod, groupProd, replLine: m.replLine ?? REPL_LINE, raw: rs, scale, score, sd, lo: score - 1.2816 * sd, hi: score + 1.2816 * sd, move };
+      return { ...r, ppg: s ? r.ppgS : r.ppg, games: s ? r.gamesS : r.games, prod, groupProd, replLine: m.replLine ?? REPL_LINE, raw: rs, scale, score, sd, lo: score - 1.2816 * sd, hi: score + 1.2816 * sd, move, week: rawWeek === undefined ? undefined : rawWeek * scale };
     })
     // same score as shown (1 decimal): first the staff tiebreak (staffTiebreak), then the player with more years before his position's done age
     // (higher age value), then the younger

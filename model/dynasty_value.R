@@ -125,6 +125,10 @@ d <- d[order(-d$best), ][seq_len(min(KEEP, nrow(d))), ]
 # each player's regular-season games, oldest first (the drift below and the profile's timeline)
 g <- as.data.frame(load_player_stats((as.integer(format(AGE_DATE, "%Y")) - 4):as.integer(format(AGE_DATE, "%Y"))))
 g <- g[g$season_type == "REG" & !is.na(g$fantasy_points_ppr) & !is.na(g$player_id) & g$player_id %in% d$player_id, ]
+# DYN_THROUGH (season x 100 + week, optional) builds the board as of that week, so a mid-week re-run can't pull in a week whose
+# games aren't all played
+THROUGH <- suppressWarnings(as.integer(Sys.getenv("DYN_THROUGH", NA)))
+if (!is.na(THROUGH)) g <- g[g$season * 100 + g$week <= THROUGH, ]
 g <- g[order(g$player_id, g$season, g$week), ]
 
 # Drift: how far his weighted PPG has moved over his last DRIFT games (the number now minus the same number DRIFT games ago),
@@ -140,9 +144,24 @@ gp <- split(g$fantasy_points_ppr, g$player_id)
 d$drift   <- vapply(d$player_id, function(id) drift(gp[[id]], WINDOW, HALF_LIFE), 0)
 d$drift_s <- vapply(d$player_id, function(id) drift(gp[[id]], WINDOW_SHORT, HALF_LIFE_SHORT), 0)
 
+# Week: how far his weighted PPG moved with the board's newest week (the number now minus the same number without that week's
+# game) -- the board turns it into LAST WEEK's score and rank (founder, Nov 21 2026: the grey rank beside each rank is his rank
+# on last week's board). 0 when he didn't play that week; NA with too few games to have had a number a week ago.
+LAST_WK <- max(g$season * 100 + g$week)
+gk <- split(g$season * 100 + g$week, g$player_id)
+week_change <- function(id, win, hl) {
+  p <- gp[[id]]; k <- gk[[id]]
+  if (is.null(p)) return(NA_real_)
+  if (tail(k, 1) != LAST_WK) return(0)
+  if (length(p) < 2) return(NA_real_)
+  round(wppg(tail(p, win), hl) - wppg(tail(head(p, -1), win), hl), 2)
+}
+d$wk   <- vapply(d$player_id, function(id) week_change(id, WINDOW, HALF_LIFE), 0)
+d$wk_s <- vapply(d$player_id, function(id) week_change(id, WINDOW_SHORT, HALF_LIFE_SHORT), 0)
+
 out <- d[order(-d$por_sf), c("player_id", "player", "position", "team", "age", "games_in_window", "ppg_weighted",
                               "por_1qb", "por_sf", "sd_prod", "ppg_s", "games_s", "por_1qb_s", "por_sf_s", "sd_prod_s",
-                              "draft_team", "draft_year", "acq_date", "acq_how", "drift", "drift_s")]
+                              "draft_team", "draft_year", "acq_date", "acq_how", "drift", "drift_s", "wk", "wk_s")]
 write.csv(out, "dynasty_value.csv", row.names = FALSE)
 
 # the site's data file: rows as a compact array, plus what the player profile draws
@@ -153,6 +172,7 @@ meta <- toJSON(list(
   window = list(games = WINDOW, half_life = HALF_LIFE),
   window_short = list(games = WINDOW_SHORT, half_life = HALF_LIFE_SHORT),
   drift_games = DRIFT,
+  last_week = LAST_WK,
   v_hi = V_HI,
   replacement = lapply(setNames(colnames(repl), colnames(repl)), function(f) setNames(as.list(round(repl[, f], 2)), rownames(repl))),
   replacement_short = lapply(setNames(colnames(repl_s), colnames(repl_s)), function(f) setNames(as.list(round(repl_s[, f], 2)), rownames(repl_s))),
