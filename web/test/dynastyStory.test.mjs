@@ -18,9 +18,9 @@ test("No. 1 names the runner-up", () => {
   assert.match(s.lede, /best player on this board, and Gibbs isn't/);
 });
 
-test("no generated-text tics: no colons, no dashes, no not-X-but-Y", () => {
+test("no generated-text tics: no mid-sentence colons, no dashes, no not-X-but-Y", () => {
   for (const line of all(dynastyStory(base, ctx))) {
-    assert.doesNotMatch(line, /[:—–]/, line);
+    assert.doesNotMatch(line, /[—–]|:(?!$)/, line); // a colon only as the hand-off into the next beat, at the very end
     assert.doesNotMatch(line, /\bnot just\b|\bisn't just\b/i, line);
   }
 });
