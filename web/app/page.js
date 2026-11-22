@@ -71,7 +71,7 @@ export default async function Home() {
   const invited = !member && refCode ? await isLiveReferralCode(refCode) : false;
 
   // The Dynasty Board's top six (the same default view the free board shows: Superflex, Contender) with the tier each sits in.
-  const { rows: dRows } = getDynastyRows(false);
+  const { rows: dRows } = await getDynastyRows(false);
   const dList = scoreRows(dRows, "sf", "contender").slice(0, 30);
   const tiers = buildBoard(dList).tiers;
   const dynasty = dList.slice(0, 6).map((r, i) => ({ rank: i + 1, name: r.name, pos: r.pos, team: r.team, age: r.age, score: r.score, tier: tiers.findIndex((t) => i >= t.a && i <= t.b) + 1 }));

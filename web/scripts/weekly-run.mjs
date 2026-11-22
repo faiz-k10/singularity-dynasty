@@ -14,6 +14,8 @@
 //              then (never fatal) model/player_groups.R -> publish-player-groups.mjs
 //              then (never fatal) model/defense_impact.R -> publish-defense-leans.mjs  (matchup flags, display only)
 //              then (never fatal) model/player_directory.R -> publish-player-directory.mjs  (names, teams, bios, headshots; Sleeper ids)
+// dynasty      model/run_dynasty.sh -> publish-dynasty.mjs (Storage bucket "dynasty"): the Dynasty Board through the newest finished week,
+//              its last-week rank changes and nine-game score arrows; tuesday-full-run only, never fatal (the last board stays up)
 // digest       scripts/send-weekly-digest.mjs --send, once per published week (marker: ops/digest-sent.txt), only once RESEND_API_KEY and EMAIL_FROM are set; never fatal
 // backup       scripts/backup.mjs: every table + the model's untracked outputs to Website/Backups/auto-* (or $BACKUP_DIR; keeps the newest 8); never fatal after Tuesday
 //
@@ -190,6 +192,17 @@ function groups() {
   log(p.status === 0 ? tail : `SKIPPED: player groups publish failed (exit ${p.status}) -- ${tail}`);
 }
 
+// The Dynasty Board (Tuesday, after the week is complete): rebuilt as of the newest finished week, then published to Storage, where the
+// site reads it. Never fatal -- the previous board stays up.
+function dynasty() {
+  log("\n--- Dynasty Board (optional) ---");
+  const r = spawnSync("sh", ["run_dynasty.sh"], { cwd: MODEL, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
+  if (r.status !== 0) return log(`SKIPPED: dynasty rebuild failed -- ${(r.stderr || "").trim().split("\n").slice(-3).join(" ")}`);
+  const p = spawnSync(process.execPath, ["--env-file=.env.local", "scripts/publish-dynasty.mjs"], { cwd: WEB, encoding: "utf8" });
+  const tail = ((p.stdout || "") + (p.stderr || "")).trim().split("\n").slice(-3).join("\n");
+  log(p.status === 0 ? tail : `SKIPPED: dynasty publish failed (exit ${p.status}) -- ${tail}`);
+}
+
 // Player archetypes (role groups for RB/WR/TE). Deliberately NEVER fatal: the projections above are
 // already published, and nothing on the site depends on archetypes yet, so a problem here (R error,
 // the table not created yet) is reported and skipped instead of failing the run.
@@ -263,6 +276,7 @@ try {
       fail(`Week ${c.week} is not complete (${c.finished}/${c.games} games final` + (c.missing.length ? `, no rows for ${c.missing.join(", ")}` : "") + `). Game data was published; projections were NOT run. Re-run later.`);
     }
     await projections();
+    dynasty();
     await digest();
     backup();
   } else if (mode === "backup-only") {

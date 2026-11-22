@@ -36,9 +36,11 @@ LO_PCT      <- 5      # score 1
 HI_PCT      <- 99     # score 10
 MIN_WINDOW  <- 6      # fewer than this many games in the window -> `thin`
 
+THROUGH <- dyn_through()   # dynasty_params.R: the newest fully finished week (or DYN_THROUGH)
+cat("building through", THROUGH, "\n")
 load_games <- function(seasons) {
   ps <- as.data.frame(load_player_stats(seasons))
-  ps <- ps[ps$season_type == "REG" & ps$position %in% POSITIONS & !is.na(ps$fantasy_points_ppr), ]
+  ps <- ps[ps$season_type == "REG" & ps$position %in% POSITIONS & !is.na(ps$fantasy_points_ppr) & ps$season * 100 + ps$week <= THROUGH, ]
   ps <- ps[order(ps$player_id, ps$season, ps$week), ]
   ps
 }

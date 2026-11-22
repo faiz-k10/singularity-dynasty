@@ -125,10 +125,9 @@ d <- d[order(-d$best), ][seq_len(min(KEEP, nrow(d))), ]
 # each player's regular-season games, oldest first (the drift below and the profile's timeline)
 g <- as.data.frame(load_player_stats((as.integer(format(AGE_DATE, "%Y")) - 4):as.integer(format(AGE_DATE, "%Y"))))
 g <- g[g$season_type == "REG" & !is.na(g$fantasy_points_ppr) & !is.na(g$player_id) & g$player_id %in% d$player_id, ]
-# DYN_THROUGH (season x 100 + week, optional) builds the board as of that week, so a mid-week re-run can't pull in a week whose
-# games aren't all played
-THROUGH <- suppressWarnings(as.integer(Sys.getenv("DYN_THROUGH", NA)))
-if (!is.na(THROUGH)) g <- g[g$season * 100 + g$week <= THROUGH, ]
+# the newest fully finished week (dynasty_params.R dyn_through, or DYN_THROUGH), the same cut dynasty_production_value.R used
+THROUGH <- dyn_through()
+g <- g[g$season * 100 + g$week <= THROUGH, ]
 g <- g[order(g$player_id, g$season, g$week), ]
 
 # Drift: how far his weighted PPG has moved over his last DRIFT games (the number now minus the same number DRIFT games ago),

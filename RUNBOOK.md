@@ -126,6 +126,13 @@ Attacks, breakdowns and what to do about each (leaked key, hacked account, data 
    5. **Prove it with your own card.** On the live site, sign in, buy Explorer monthly. Your account page should show Explorer within seconds. Then Stripe → Payments → refund it, and Customers → you → subscription → **Cancel now**; your account should go back to Stargazer.
    6. **Sales tax:** whether you must collect it depends on where your customers live; ask an accountant. Stripe Tax can do it automatically if needed.
 
+### The Dynasty Board
+It is rebuilt every Tuesday with the rest (through the newest week whose games are all final) and published to Supabase Storage (bucket `dynasty`). If the Tuesday log says "SKIPPED: dynasty ...", the board just stays on last week's numbers. To redo it by hand, from the project folder:
+
+```bash
+cd model && ./run_dynasty.sh && cd ../web && node --env-file=.env.local scripts/publish-dynasty.mjs
+```
+
 ## Once a year
 
 - **New season (August):** nothing to change. The model reads the current season from the NFL schedule. Check the first Tuesday run of week 1 in `/admin`.

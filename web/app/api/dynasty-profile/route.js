@@ -13,7 +13,7 @@ export async function GET(request) {
   if (!id) return NextResponse.json({ error: "bad request" }, { status: 400 });
   const { user, tier } = await getUserTier();
   if (!user) return NextResponse.json({ error: "sign in" }, { status: 401 }); // the tools need an account (app/SignUpGate.js)
-  const found = getDynastyProfile(id, PAID_TIERS.includes(tier));
+  const found = await getDynastyProfile(id, PAID_TIERS.includes(tier));
   if (!found) return NextResponse.json({ error: "not available" }, { status: 403 });
   const bios = await getPlayerBiosByNamePos();
   const bio = findBio(bios, found.row.name, found.row.pos);

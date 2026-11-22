@@ -3,7 +3,7 @@ import SkyCredit from "../../SkyCredit";
 import { getUserTier } from "@/lib/tier";
 import InteractiveScript from "../../InteractiveScript";
 import DynastyBoard from "./DynastyBoard";
-import { DYNASTY_THROUGH, FREE_ROWS, getDynastyRows } from "@/lib/dynastyData";
+import { FREE_ROWS, getDynastyRows, getDynastyThrough } from "@/lib/dynastyData";
 
 export const metadata = {
   title: "Dynasty Board — Dynasty Singularity",
@@ -13,7 +13,7 @@ export const metadata = {
 
 const PAID_TIERS = ["explorer", "singularity"];
 async function RankingsView({ hasFullAccess, signedIn }) {
-  const { rows, total, meta } = getDynastyRows(hasFullAccess);
+  const [{ rows, total, meta }, DYNASTY_THROUGH] = await Promise.all([getDynastyRows(hasFullAccess), getDynastyThrough()]);
   return (
     <>
       <InteractiveScript />

@@ -12,8 +12,7 @@ import { smashSpots } from "@/lib/smashSpots";
 import { readCardToken } from "@/lib/cardToken";
 import { pickStart } from "@/lib/startSit";
 import { rowsFromData, scoreRows, boardRows, buildBoard, FORMATS, MODES } from "@/lib/dynastyBoard";
-import { getDynastyRows } from "@/lib/dynastyData";
-import dynastyData from "@/data/dynasty-values.json";
+import { getDynastyData, getDynastyRows } from "@/lib/dynastyData";
 import { getAchievements } from "@/app/tools/achievements";
 import { getCachedRedraftData, getCachedLeans, getCachedTdProfile, getCachedUsageProfile, enrichRankings } from "@/app/tools/redraft-rankings/data";
 
@@ -140,7 +139,8 @@ export async function canCardPlayer(name, pos, hasFullAccess) {
 // ---- dynasty --------------------------------------------------------------------------------------------------------------------------------
 
 // One player's dynasty card in a format and mode: his score, range, ranks and tier exactly as the Rankings tab of the Dynasty Board draws them.
-export function dynastyCardPlayer(id, format, mode) {
+export async function dynastyCardPlayer(id, format, mode) {
+  const dynastyData = await getDynastyData();
   const all = rowsFromData(dynastyData);
   const scored = scoreRows(all, format, mode);
   const i = scored.findIndex((r) => r.id === id);
@@ -166,8 +166,8 @@ export function dynastyCardPlayer(id, format, mode) {
   };
 }
 
-export function canCardDynasty(id, hasFullAccess) {
-  return getDynastyRows(hasFullAccess).rows.some((r) => r.id === id);
+export async function canCardDynasty(id, hasFullAccess) {
+  return (await getDynastyRows(hasFullAccess)).rows.some((r) => r.id === id);
 }
 
 // ---- receipts and smash spots ----------------------------------------------------------------------------------------------------------------
@@ -242,7 +242,7 @@ export async function cardFromToken(token) {
     };
   }
   if (card.k === "d") {
-    const data = dynastyCardPlayer(card.id, card.f, card.m);
+    const data = await dynastyCardPlayer(card.id, card.f, card.m);
     if (!data) return null;
     const p = data.player;
     return {

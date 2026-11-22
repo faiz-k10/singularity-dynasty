@@ -27,7 +27,7 @@ export default async function SkyPage() {
     loadSky(user.id),
     supabase.from("saved_teams").select("league_name, team_name, settings, players").eq("user_id", user.id),
   ]);
-  const dynastyTop = new Set(scoreRows(getDynastyRows(true).rows, "sf", "contender").slice(0, 50).map((r) => norm(r.name)));
+  const dynastyTop = new Set(scoreRows((await getDynastyRows(true)).rows, "sf", "contender").slice(0, 50).map((r) => norm(r.name)));
   const compliments = complimentsFor(teams || [], dynastyTop);
 
   return (

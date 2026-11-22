@@ -50,7 +50,7 @@ export async function POST(request) {
     const card = body.kind === "p" ? { k: "p", s: latest.season, w: latest.week, n: body.name, pos: body.pos } : { k: "s", s: latest.season, w: latest.week, a: body.a, b: body.b };
     token = signCard(card, cardSecret());
   } else if (body.kind === "d") {
-    if (!canCardDynasty(body.id, full)) return bad("That player isn't on your plan's board.", 403);
+    if (!(await canCardDynasty(body.id, full))) return bad("That player isn't on your plan's board.", 403);
     token = signCard({ k: "d", id: body.id, f: body.f, m: body.m }, cardSecret());
   } else if (body.kind === "token") {
     token = body.token; // re-sharing a card someone else made: the same card, with this viewer's own referral code

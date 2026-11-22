@@ -274,7 +274,13 @@ function groupPairs(L, okG) {
     if (k < 0) break;
     above.splice(k, 2, [above[k][0], above[k + 1][1]]);
   }
-  if (start > drawn) { if (above.length) above[above.length - 1] = [above[above.length - 1][0], start - 1]; else above.push([drawn, start - 1]); }
+  // the stretch joins the lowest group while that stays under GROUP_MAX; otherwise it is a group of its own (split for size like the
+  // others), so no group above Replacement reaches 20 (the Nov 21 2026 rebuild through week 10 made Rebuilder's Cornerstone 30)
+  if (start > drawn) {
+    const lastG = above.at(-1);
+    if (lastG && start - lastG[0] < GROUP_MAX) above[above.length - 1] = [lastG[0], start - 1];
+    else above.push(...split([drawn, start - 1]));
+  }
   // below replacement: at most one group per name, merging the neighbours with the weakest break (any size)
   const under = end + 1 < n ? segment(L, okG, end + 1, n - 1) : [];
   while (under.length > GROUP_NAMES.below.length) {
