@@ -73,10 +73,10 @@ export function dynastyStory(p, ctx) {
     close: p.move == null
       ? `There aren't enough games yet to say which way he's heading. So the number rests on what he's done so far.`
       : Math.abs(p.move) < 1
-        ? `His score has barely moved over his last nine games, so this is who he's been; here's where the number comes from.`
+        ? `His score has barely moved over his last nine games, so this is who he's been; here's where the number comes from:`
         : p.move > 0
-          ? `He's added ${pts(p.move)} to that score over his last nine games, and he's still trending up; here's where it comes from.`
-          : `But his last nine games have taken ${pts(-p.move)} off that score; here's where it comes from.`,
+          ? `He's added ${pts(p.move)} to that score over his last nine games, and he's still trending up; here's where it comes from:`
+          : `But his last nine games have taken ${pts(-p.move)} off that score; here's where it comes from:`,
   };
 
   // ---- 2: where it comes from ----
