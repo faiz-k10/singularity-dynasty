@@ -524,15 +524,15 @@ export const LADDER = [
   { at: 200, reward: "The Nebula sky skin", skin: ["sky", "nebula"] },
   { at: 500, reward: "The Starlit frame on your share cards: an ember line with stars at the corners", frame: "star" },
   { three: true, reward: "Charted: finish The Huddle, The Blitz and The Playbook this season. The Pillars sky skin", skin: ["sky", "aurora"] },
-  { at: 1000, reward: "A free pick: any comet or dwarf world you haven't found yet. Season title: Curiosity", pick: 2, title: "Curiosity" },
+  { at: 1000, reward: "Your pick of any comet or dwarf world you haven't found yet. Season title: Curiosity", pick: 2, title: "Curiosity" },
   { at: 2000, reward: "The Pulsar core skin", skin: ["core", "pulsar"] },
   { at: 3500, reward: "Telescope upgrade: see each find's color before it resolves, for the rest of the season. Season title: Sojourner", telescope: true, title: "Sojourner" },
   { singularity: true, reward: "Finish this season's Singularity: its limited sky skin, only available this season, and a season role in the Discord", discord: true, claim: true },
-  { at: 6000, reward: "A free pick: any planet or moon you haven't found yet. Season title: Spirit", pick: 3, title: "Spirit" },
-  { at: 9000, reward: "The Cobalt frame on your share cards, and a free pick: any meteor shower you haven't found yet. Season title: Opportunity", frame: "cobalt", pick: 4, title: "Opportunity" },
-  { at: 12000, reward: "A free pick from any tier but stellar events: whatever you haven't found yet. Season title: Perseverance", pick: [1, 2, 3, 4], title: "Perseverance" },
+  { at: 6000, reward: "Your pick of any planet or moon you haven't found yet. Season title: Spirit", pick: 3, title: "Spirit" },
+  { at: 9000, reward: "The Cobalt frame on your share cards, and your pick of any meteor shower you haven't found yet. Season title: Opportunity", frame: "cobalt", pick: 4, title: "Opportunity" },
+  { at: 12000, reward: "Your pick of anything you haven't found yet, from any tier but stellar events. Season title: Perseverance", pick: [1, 2, 3, 4], title: "Perseverance" },
   { at: 14000, reward: "A week of the next plan up (Singularity members: something special instead)", claim: true, plan: "week" },
-  { at: 20000, reward: "A free stellar event pick, your choice of the next locked sky or core skin, and a shout-out in the newsletter's community section", pick: 5, skinChoice: true, claim: true },
+  { at: 20000, reward: "A stellar event and the next locked sky or core skin, both your choice, and a shout-out in the newsletter's community section", pick: 5, skinChoice: true, claim: true },
   { at: 30000, reward: "A free month of your plan, off your next bill (a month of Explorer if you're on the free plan)", title: "Event Horizon", claim: true, plan: "month" },
 ];
 export const rungLabel = (r) => (r.three ? "Charted" : r.singularity ? "Singularity" : r.at.toLocaleString());
@@ -625,7 +625,7 @@ function grantRungs(s, now) {
       if (!hasSkin(s, kind, id)) addSkin(s, kind, id, now, got);
       else if (s.season > FIRST_SKY_SEASON && !hasSkin(s, kind, tintId(id, s.season))) addSkin(s, kind, tintId(id, s.season), now, got);
     }
-    if (r.pick) { s.choices.push({ key: `${key}:pick`, type: "pick", tier: r.pick }); log(s, `Free pick waiting: ${pickLabel(r.pick).toLowerCase()}`, now); }
+    if (r.pick) { s.choices.push({ key: `${key}:pick`, type: "pick", tier: r.pick }); log(s, `Pick waiting: ${pickLabel(r.pick).toLowerCase()}`, now); }
     if (r.skinChoice && skinChoiceOptions(s).length) { s.choices.push({ key: `${key}:skin`, type: "skin" }); log(s, "A skin of your choice is waiting", now); }
   });
   return got;
@@ -671,7 +671,7 @@ export function makeFreePick(s, key, fam, colour, ctx, rnd = Math.random) {
   s.pending.push({ id, ...f, pts: 0, first: !had, gift: true, sets, at: ctx.now });
   s.pending = s.pending.slice(-20);
   s.choices = s.choices.filter((c) => c !== ch);
-  log(s, `Free pick: ${f.name}`, ctx.now);
+  log(s, `Picked: ${f.name}`, ctx.now);
   return f;
 }
 // THE SKIN CHOICE (20,000): the next locked sky skin OR the next locked core skin, in the order the Skins panel lists them (limited skins never).

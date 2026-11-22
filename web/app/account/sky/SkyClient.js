@@ -333,9 +333,9 @@ function PickDialog({ state, choice, busy, onClose, onPick }) {
   }, [onClose]);
   const byFam = pickTiers(choice.tier).flatMap((t) => famsIn(t)).map((fam) => ({ fam, opts: opts.filter((o) => o.fam === fam.id) })).filter((g) => g.opts.length);
   return (
-    <div className="sky-ov" role="dialog" aria-modal="true" aria-label={`Free pick: ${pickLabel(choice.tier)}`} onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+    <div className="sky-ov" role="dialog" aria-modal="true" aria-label={`Your pick: ${pickLabel(choice.tier)}`} onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="sky-ov-box sky-pick">
-        <div className="board-panel-title">Free pick · {pickLabel(choice.tier)}</div>
+        <div className="board-panel-title">Your pick · {pickLabel(choice.tier)}</div>
         <p className="sky-small mono">Choose the kind and color. Only ones you haven&apos;t found are offered; the version (plain, prismatic, ancient or mythic) is rolled when it arrives.</p>
         <div className="sky-pick-list">
           {byFam.map(({ fam, opts: list }, i) => [
@@ -394,7 +394,7 @@ function Telescope({ queue, compliments, onDone, onShare, colourFirst }) {
             <div className="sky-find">{f.name}</div>
             <div className="sky-rarity mono">1 in {f.oneIn.toLocaleString()} finds · {f.id}{f.first ? " · new to your catalog" : ""}</div>
             {f.fam != null && <p className="sky-lore">{loreFor(f.fam, f.colour, f.version)}</p>}
-            <div className="sky-find-sub mono">{f.gift ? "Your free pick from the ladder" : `+${f.pts} orbit points${f.first ? " (incl. +15 for a first discovery)" : ""}`}{f.shower ? " · meteor shower: every action places two stars for 10 minutes" : ""}</div>
+            <div className="sky-find-sub mono">{f.gift ? "Your pick from the ladder" : `+${f.pts} orbit points${f.first ? " (incl. +15 for a first discovery)" : ""}`}{f.shower ? " · meteor shower: every action places two stars for 10 minutes" : ""}</div>
             {compliment && <div className="sky-note is-gold"><span className="mono">Seen from up here</span><b>{compliment.head}.</b> {compliment.body}</div>}
             {pu && <div className="sky-note is-blue"><span className="mono">Power-up</span><b>{pu.name}</b> {pu.text[0].toUpperCase() + pu.text.slice(1)}</div>}
             {f.sets?.map((d) => <div key={d.label} className="sky-note is-blue"><span className="mono">Set complete · +{d.pts} orbit points</span><b>{d.label}</b>{d.power ? `Power-up: ${POWERUPS[d.power].name}, ${POWERUPS[d.power].text}` : ""}</div>)}
@@ -421,7 +421,7 @@ const PICK_NOUN = { 1: "asteroid", 2: "comet or dwarf world", 3: "planet or moon
 // as a sealed silhouette (anticipation; it resolves when they choose), what they earned it for beside it (the rung and its season
 // title) and one filled button; no animation (founder, Nov 22 2026). The bigger
 // prizes (meteor showers, the any-tier pick, stellar events) get the gold frame, like a game's "valuable" frame.
-const PICK_HEAD = { 1: "A free asteroid", 2: "A free comet or dwarf world", 3: "A free planet or moon", 4: "A free meteor shower", 5: "A free stellar event" };
+const PICK_HEAD = { 1: "Asteroid of your choice", 2: "Comet or dwarf world of your choice", 3: "Planet or moon of your choice", 4: "Meteor shower of your choice", 5: "Stellar event of your choice" }; // no "free" (founder, Nov 22 2026)
 const rewardRung = (key) => LADDER[Number(String(key).split(":")[1])] || null;
 function RewardCard({ choice, busy, catOpen, findsLeft, onChoose, children }) {
   const pick = choice.type === "pick", any = Array.isArray(choice.tier);
@@ -439,7 +439,7 @@ function RewardCard({ choice, busy, catOpen, findsLeft, onChoose, children }) {
       </div>
       <div className="sky-reward-body">
         <span className="sky-reward-eyebrow mono">Reward unlocked</span>
-        <b className="sky-reward-head">{pick ? (any ? "A free find from any tier" : PICK_HEAD[tier]) : "A skin of your choice"}</b>
+        <b className="sky-reward-head">{pick ? (any ? "Any find of your choice" : PICK_HEAD[tier]) : "A skin of your choice"}</b>
         <span className="sky-reward-what">
           {pick
             ? `${any ? "Pick anything you haven't found yet, from every tier but stellar events." : `Pick any ${PICK_NOUN[tier]} you haven't found yet.`} It goes straight to your telescope.`
