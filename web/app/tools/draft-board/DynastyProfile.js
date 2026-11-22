@@ -279,7 +279,7 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
             </div>
             <div className="dp-demo mono">{[`${p.age.toFixed(1)} yrs`, ...size].join(" · ")}</div>
             <div className="dp-links">
-              <Link href={`/tools/lab?p=${encodeURIComponent(p.name)}`}>The Observatory →</Link>
+              <Link href="/tools/player-simulations">Player Season Simulations →</Link>
               <Link href="/tools/redraft-rankings">Weekly rankings →</Link>
             </div>
           </div>
