@@ -225,6 +225,7 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
   const coach = coachFor(p.team), staff = acquiringGm(p);
   const gmLine = (() => {
     const d = staff;
+    if (p.team === "FA") return "None: he's a free agent";
     if (d.state === "undrafted") return "Undrafted";
     if (d.state !== "yes" && d.state !== "no") return "Not known";
     // a roster-based arrival in week 1 is dated March 15 (model/dynasty_value.R): say "before the season", not a month

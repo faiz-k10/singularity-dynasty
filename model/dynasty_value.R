@@ -86,9 +86,15 @@ d$sd_prod_s <- round(sd_prod_s[d$position], 2)
 
 # who drafted him and when (nflverse load_players; franchise codes already current, e.g. LV for an Oakland pick). Undrafted = "" / 0.
 # The site works out "is the GM who drafted him still running that team" from these and web/lib/teamStaff.js.
-dr <- as.data.frame(load_players())[, c("gsis_id", "draft_team", "draft_year")]
+dr <- as.data.frame(load_players())[, c("gsis_id", "draft_team", "draft_year", "latest_team", "status")]
 dr <- dr[!duplicated(dr$gsis_id), ]
 d <- merge(d, dr, by.x = "player_id", by.y = "gsis_id", all.x = TRUE)
+# his team NOW, by the same rule as the site's player directory (player_directory.R): nflverse's latest team while he is on a roster,
+# practice squad or reserve list, "FA" once he has been released (founder, Nov 22 2026: the team of his last GAME left 15 players on
+# teams they had left -- Andy Dalton PHI, now ATL; Najee Harris NYG, released)
+ON_TEAM <- c("ACT", "RES", "RSR", "RSN", "PUP", "DEV", "SUS", "NWT", "EXE", "INA") # keep in step with player_directory.R
+d$team <- ifelse(!is.na(d$status) & d$status %in% ON_TEAM & !is.na(d$latest_team), d$latest_team, ifelse(is.na(d$status), d$team, "FA"))
+d$latest_team <- NULL; d$status <- NULL
 d$draft_team <- ifelse(is.na(d$draft_team), "", d$draft_team)
 d$draft_year <- ifelse(is.na(d$draft_year), 0L, as.integer(d$draft_year))
 

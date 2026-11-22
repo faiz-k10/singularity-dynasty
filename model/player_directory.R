@@ -31,8 +31,8 @@ m <- m[!duplicated(m$sleeper_id), ]
 team_code <- function(t) ifelse(t == "LA", "LAR", t)
 # Who counts as on a team right now: roster, practice squad and the reserve lists. Released / retired players have no team, like
 # Sleeper's free agents.
-on_team <- c("ACT", "RES", "PUP", "DEV", "SUS", "NWT", "EXE")
-status_label <- c(ACT = "Active", RES = "Injured Reserve", PUP = "PUP", DEV = "Practice Squad", SUS = "Suspended", NWT = "NWT", EXE = "Exempt")
+on_team <- c("ACT", "RES", "RSR", "RSN", "PUP", "DEV", "SUS", "NWT", "EXE", "INA") # RSR / RSN reserve lists, INA inactive: still his team (Nov 22 2026)
+status_label <- c(ACT = "Active", RES = "Injured Reserve", RSR = "Reserve", RSN = "Reserve (non-football)", INA = "Inactive list", PUP = "PUP", DEV = "Practice Squad", SUS = "Suspended", NWT = "NWT", EXE = "Exempt")
 st <- as.character(m$status)
 
 age_now <- function(d) round(as.numeric(Sys.Date() - as.Date(d)) / 365.25, 1)

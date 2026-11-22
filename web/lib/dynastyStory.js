@@ -136,7 +136,9 @@ export function dynastyStory(p, ctx) {
   }
 
   // ---- 6: who's around him ----
-  const staff = ctx.coach
+  const staff = p.team === "FA"
+    ? { head: `He's a free agent right now, without a team.` }
+    : ctx.coach
     ? { head: ctx.coach.calls ? `${ctx.coach.hc} is his head coach, and he calls the plays himself.` : `${ctx.coach.hc} is his head coach, but someone else calls the plays.` }
     : { head: `The coaching picture around him isn't known yet.` };
 

@@ -13,6 +13,13 @@ export default function ArcGauge({ value, from, size = 96, height, label, childr
   const [x, y] = at(0, 0);
   const [x1, y1] = at(-4, -4);
   const [x2, y2] = at(7, 7);
+  // a needle-shaped piece at angle t, w units wide, from the band's INNER edge (its end follows the dial's curve, founder Nov 22 2026)
+  // out to `out` units past the band's middle
+  const sector = (t, w, out) => {
+    const d = w / 2 / rx, rIn = -3.5;
+    const p = (tt, dr) => `${(cx + (rx + dr) * Math.cos(tt)).toFixed(2)} ${(cy - (ry + dr) * Math.sin(tt)).toFixed(2)}`;
+    return `M${p(t + d, rIn)} A${rx + rIn} ${ry + rIn} 0 0 1 ${p(t - d, rIn)} L${p(t - d, out)} A${rx + out} ${ry + out} 0 0 0 ${p(t + d, out)} Z`;
+  };
   // the trail: an arrow along the middle of the band from `from` to just short of the needle, and a tick at `from`
   let trail = null;
   if (from != null && Number.isFinite(from)) {
@@ -27,12 +34,11 @@ export default function ArcGauge({ value, from, size = 96, height, label, childr
       const [sx, sy] = pt(a0 - dir * (1 / rx)), [ex, ey] = pt(a1 + dir * back), [hx, hy] = pt(a1);
       const tx = dir * (rx + R) * Math.sin(a1), ty = dir * (ry + R) * Math.cos(a1), tl = Math.hypot(tx, ty) || 1; // direction of travel
       const ux = tx / tl, uy = ty / tl, nx = -uy, ny = ux, L = 4.5, Wd = 2.6;
-      const tick = (dx, dy) => [(cx + (rx + dx) * Math.cos(a0)).toFixed(2), (cy - (ry + dy) * Math.sin(a0)).toFixed(2)];
-      const [fx1, fy1] = tick(-4, -4), [fx2, fy2] = tick(7, 7);
+
       const head = [[hx, hy], [hx - ux * L + nx * Wd, hy - uy * L + ny * Wd], [hx - ux * L - nx * Wd, hy - uy * L - ny * Wd]];
       trail = (
         <g className="arc-gauge-trail">
-          <line className="arc-gauge-from" x1={fx1} y1={fy1} x2={fx2} y2={fy2} />
+          <path className="arc-gauge-from" d={sector(a0, 2, 7)} />
           <path d={`M${sx.toFixed(2)} ${sy.toFixed(2)} A${rx + R} ${ry + R} 0 0 ${up ? 1 : 0} ${ex.toFixed(2)} ${ey.toFixed(2)}`} />
           <polygon points={head.map(([px, py]) => `${px.toFixed(2)},${py.toFixed(2)}`).join(" ")} />
         </g>
@@ -45,8 +51,15 @@ export default function ArcGauge({ value, from, size = 96, height, label, childr
         <path className="arc-gauge-track" d={`M${cx - rx} ${cy} A${rx} ${ry} 0 0 1 ${cx + rx} ${cy}`} />
         {v > 0 && <path className="arc-gauge-fill" d={`M${cx - rx} ${cy} A${rx} ${ry} 0 0 1 ${x} ${y}`} />}
         {trail}
-        {trail && <line className="arc-gauge-needle-case" x1={x1} y1={y1} x2={x2} y2={y2} />}
-        <line className={`arc-gauge-needle${trail ? " is-toned" : ""}`} x1={x1} y1={y1} x2={x2} y2={y2} />
+        {trail ? (
+          <>
+            {/* the toned needle in a thin white edge; both start on the band's inner edge */}
+            <path className="arc-gauge-needle-case" d={sector(a, 3, 7.5)} />
+            <path className="arc-gauge-needle is-toned" d={sector(a, 2, 7)} />
+          </>
+        ) : (
+          <line className="arc-gauge-needle" x1={x1} y1={y1} x2={x2} y2={y2} />
+        )}
       </svg>
       {children != null && <span className="arc-gauge-mid">{children}</span>}
     </span>
