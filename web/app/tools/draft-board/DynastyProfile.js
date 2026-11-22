@@ -300,7 +300,6 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
                 <span className="dp-big" style={{ fontSize: Math.round(Math.max(200, chartW - 34) * 0.24) }}>{p.score.toFixed(1)}</span>
               </ArcGauge>
               <div className="dp-score-side">
-                <div className="dp-eyebrow mono">Dynasty score · {f.label} · {m.label}</div>
                 <dl className="dp-facts">
                   {here && <Fact label="Overall" now={here.rank} was={here.prev} show={ord} />}
                   {here && <Fact label="Position" now={here.posRank} was={here.prevPos} show={(v) => `${p.pos}${v}`} />}
