@@ -4,7 +4,9 @@
 // by default the dial is a true half circle (height = 0.54 x size). `from` (0-1, optional) marks an earlier reading with a white tick the
 // needle's size and draws an arrow ON the band from it to `value` (the dynasty profile: where his score was nine games ago; the arrow's
 // colour is the parent's --trail); the needle itself then takes the dial's tone with a thin white edge.
-export default function ArcGauge({ value, from, size = 96, height, label, children, className = "" }) {
+// `curved` draws the plain needle as the same band-hugging shape too (a white one whose inner end follows the band), so a dial with no
+// `from` matches one with it (the dynasty profile's steady score).
+export default function ArcGauge({ value, from, curved = false, size = 96, height, label, children, className = "" }) {
   const v = Math.max(0, Math.min(1, Number(value) || 0));
   const h = height || size * 0.54;
   const k = (size / h) * 0.54; // how much wider than a circle
@@ -57,6 +59,8 @@ export default function ArcGauge({ value, from, size = 96, height, label, childr
             <path className="arc-gauge-needle-case" d={sector(a, 3, 7.5)} />
             <path className="arc-gauge-needle is-toned" d={sector(a, 2, 7)} />
           </>
+        ) : curved ? (
+          <path className="arc-gauge-needle-shape" d={sector(a, 2, 7)} />
         ) : (
           <line className="arc-gauge-needle" x1={x1} y1={y1} x2={x2} y2={y2} />
         )}
