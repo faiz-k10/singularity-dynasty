@@ -6585,10 +6585,10 @@ details.acct-danger > summary.acct-h{color:var(--down)}
 .arc-gauge-track{fill:none; stroke:rgba(var(--star-dot-rgb), .12); stroke-width:7;}
 .arc-gauge-fill{fill:none; stroke:var(--tone, var(--horizon-gold)); stroke-width:7;} /* the parent's tone (mint / red / grey), mint when none */
 .arc-gauge-needle{stroke:var(--star); stroke-width:2;}
-.arc-gauge-trail path{fill:none; stroke:var(--trail, var(--star)); stroke-width:1.6; stroke-linecap:round;}
+.arc-gauge-trail path{fill:none; stroke:var(--trail, var(--star)); stroke-width:1.6; stroke-linecap:butt;} /* butt: it meets the tick's edge flush */
 .arc-gauge-trail polygon{fill:var(--trail, var(--star));}
-/* the earlier reading: a tick like the needle, in the dial's tone, cased in the panel colour so it reads on the band of its own colour */
-.arc-gauge-from-case{stroke:var(--void-panel); stroke-width:4;}
+/* the earlier reading: a tick like the needle, in the dial's tone, outlined in white so it reads on the band of its own colour */
+.arc-gauge-from-case{stroke:var(--star); stroke-width:4;}
 .arc-gauge-from{stroke:var(--tone, var(--horizon-gold)); stroke-width:2;}
 .arc-gauge-mid{position:absolute; left:0; right:0; bottom:0; display:flex; flex-direction:column; align-items:center; line-height:1;}
 .h2h-center .arc-gauge{margin:4px 0 2px;}

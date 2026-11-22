@@ -23,7 +23,8 @@ export default function ArcGauge({ value, from, size = 96, height, label, childr
       const pt = (t) => [cx + (rx + R) * Math.cos(t), cy - (ry + R) * Math.sin(t)];
       // stop the line short of the head; the head's tip sits at a1
       const back = Math.min(0.08, Math.abs(a1 - a0) / 2);
-      const [sx, sy] = pt(a0), [ex, ey] = pt(a1 + dir * back), [hx, hy] = pt(a1);
+      // the line starts at the tick's outer edge (half the cased tick's width, 2 units, along the arc) so tick and arrow read as one piece
+      const [sx, sy] = pt(a0 - dir * (2 / rx)), [ex, ey] = pt(a1 + dir * back), [hx, hy] = pt(a1);
       const tx = dir * (rx + R) * Math.sin(a1), ty = dir * (ry + R) * Math.cos(a1), tl = Math.hypot(tx, ty) || 1; // direction of travel
       const ux = tx / tl, uy = ty / tl, nx = -uy, ny = ux, L = 4.5, Wd = 2.6;
       const tick = (dx, dy) => [(cx + (rx + dx) * Math.cos(a0)).toFixed(2), (cy - (ry + dy) * Math.sin(a0)).toFixed(2)];
