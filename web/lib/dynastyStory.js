@@ -42,7 +42,6 @@ const pts = (v) => v.toFixed(1);
 //   viewLabel: "Superflex Contender"; views: [{ label, rank }] for the four league setups (may be null)
 //   coach: { hc, calls } | null
 export function dynastyStory(p, ctx) {
-  const L = last(p.name);
   const climb = ctx.prev ? ctx.prev - ctx.rank : 0;
   const young = p.runway >= 7, old = p.runway <= 1.5;
 
@@ -74,10 +73,10 @@ export function dynastyStory(p, ctx) {
     close: p.move == null
       ? `There aren't enough games yet to say which way he's heading. So the number rests on what he's done so far.`
       : Math.abs(p.move) < 1
-        ? `His score has barely moved over his last nine games, so this is who he's been. Here's where the number comes from.`
+        ? `His score has barely moved over his last nine games, so this is who he's been; here's where the number comes from.`
         : p.move > 0
-          ? `He's added ${pts(p.move)} to that score over his last nine games, and he's still trending up. Here's where it comes from.`
-          : `But his last nine games have taken ${pts(-p.move)} off that score. Here's where it comes from.`,
+          ? `He's added ${pts(p.move)} to that score over his last nine games, and he's still trending up; here's where it comes from.`
+          : `But his last nine games have taken ${pts(-p.move)} off that score; here's where it comes from.`,
   };
 
   // ---- 2: where it comes from ----
@@ -88,10 +87,10 @@ export function dynastyStory(p, ctx) {
       : `He's averaging ${pts(p.ppg)} a game, ${pts(diff)} under what a replacement ${one(p.pos)} gives you.`,
     close: ctx.games
       ? ctx.above / ctx.games >= 0.75
-        ? `He cleared that bar in ${ctx.above} of his last ${ctx.games} games, so the bad weeks are rare. But production only matters for as long as it lasts.`
+        ? `He cleared that bar in ${ctx.above} of his last ${ctx.games} games, so the bad weeks are rare.`
         : ctx.above / ctx.games >= 0.45
-          ? `He cleared that bar in ${ctx.above} of his last ${ctx.games} games. Some weeks he's a starter, some weeks he isn't. And the clock is running on all of it.`
-          : `Only ${ctx.above} of his last ${ctx.games} games cleared that bar, so a few big weeks carry the average. Which makes how long he lasts matter even more.`
+          ? `He cleared that bar in ${ctx.above} of his last ${ctx.games} games. Some weeks he's a starter, some weeks he isn't.`
+          : `Only ${ctx.above} of his last ${ctx.games} games cleared that bar, so a few big weeks carry the average.`
       : null,
   };
 
@@ -119,7 +118,9 @@ export function dynastyStory(p, ctx) {
         : m.length === 1 ? `He's in a dead heat with ${m[0]}.` : `He's in a dead heat with ${m[0]} and ${count(ctx.tierSize - 2)} other${ctx.tierSize - 2 > 1 ? "s" : ""}.`,
       close: ctx.tierSize > 6
         ? `In a group that size the order is close to guesswork, so his spot inside it tells you less than it looks. ${m[0]} is the closest name to him.`
-        : `${ctx.tierPlace === 1 ? "Having him on top of" : `Ranking him ${place(ctx.tierPlace).replace(/^the /, "")} in`} that group is close to a coin flip. Any of them could turn out to be the better player.`,
+        : ctx.tierSize === 2
+          ? `Having him ${ctx.tierPlace === 1 ? "ahead of" : "behind"} ${last(m[0])} is close to a coin flip. Either one could turn out to be the better player.`
+          : `${ctx.tierPlace === 1 ? "Having him on top of" : `Ranking him ${place(ctx.tierPlace).replace(/^the /, "")} in`} that group is close to a coin flip. Any of them could turn out to be the better player.`,
     };
 
   // ---- 5: does the league change it ----
@@ -128,10 +129,10 @@ export function dynastyStory(p, ctx) {
     const ranks = ctx.views.map((v) => v.rank);
     const best = ctx.views.reduce((a, b) => (b.rank < a.rank ? b : a)), worst = ctx.views.reduce((a, b) => (b.rank > a.rank ? b : a));
     league = Math.min(...ranks) === Math.max(...ranks)
-      ? { head: `He's No. ${best.rank} however your league is set up.`, close: `So the league settings don't change the call on ${L}.` }
+      ? { head: `He's No. ${best.rank} however your league is set up.` }
       : Math.max(...ranks) - Math.min(...ranks) <= 3
-        ? { head: `Your league setup barely moves him, from No. ${best.rank} to No. ${worst.rank}.`, close: `So the call on ${L} is the same almost anywhere.` }
-        : { head: `In ${best.label} leagues he's No. ${best.rank}. In ${worst.label} leagues he's No. ${worst.rank}.`, close: `So check which kind of league you're in before you value ${L}.` };
+        ? { head: `Your league setup barely moves him, from No. ${best.rank} to No. ${worst.rank}.` }
+        : { head: `In ${best.label} leagues he's No. ${best.rank}. In ${worst.label} leagues he's No. ${worst.rank}.` };
   }
 
   // ---- 6: who's around him ----

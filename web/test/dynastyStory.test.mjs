@@ -27,7 +27,7 @@ test("no generated-text tics: no colons, no dashes, no not-X-but-Y", () => {
 
 test("each beat hands off to the next one", () => {
   const s = dynastyStory(base, ctx);
-  assert.match(s.worth.close, /Here.s where it comes from/);
+  assert.match(s.worth.close, /; here.s where it comes from/);
   assert.match(s.age.close, /^So /);
 });
 

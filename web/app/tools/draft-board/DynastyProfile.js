@@ -213,10 +213,13 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
   const repl = (m.short ? meta.replacementShort : meta.replacement)[format.toUpperCase()][p.pos];
   const win = m.short ? meta.windowShort : meta.window;
   // his tier, him included (founder, Nov 16 2026: only players the board can't separate from him), at most the 5 nearest by rank
+  // the "who is he level with" beat reads his statistical TIE (the bracket on the board: too close to call), not his whole tier
+  // (founder, Nov 21 2026); at most the 5 players nearest him in it
+  const tie = board.ties.find((z) => i >= z.a && i <= z.b && z.b > z.a) || { a: i, b: i };
   const MATES = 5;
-  const start = Math.max(tier.a, Math.min(i - Math.floor(MATES / 2), tier.b + 1 - MATES));
-  const tierMates = L.slice(start, Math.min(tier.b + 1, start + MATES));
-  const tierSize = tier.b - tier.a + 1, tierPlace = i - tier.a + 1;
+  const start = Math.max(tie.a, Math.min(i - Math.floor(MATES / 2), tie.b + 1 - MATES));
+  const tierMates = L.slice(start, Math.min(tie.b + 1, start + MATES));
+  const tierSize = tie.b - tie.a + 1, tierPlace = i - tie.a + 1;
   const log = data?.log ? { w: data.log.w.slice(-win.games), p: data.log.p.slice(-win.games) } : null;
   const above = log ? log.p.filter((v) => v >= repl).length : 0;
   const coach = coachFor(p.team), staff = acquiringGm(p);
@@ -243,7 +246,7 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
     rank: i + 1, prev: p.prevRank, scope: L.every((r) => r.pos === p.pos) && L.length < rows.length ? `among ${p.pos}s` : "on the board",
     overall: here?.rank, posRank: here?.posRank, next: L[i + 1]?.name, gapBelow: L[i + 1] ? p.score - L[i + 1].score : 0,
     group: group.name, tierSize, tierPlace,
-    mates: L.slice(tier.a, tier.b + 1).filter((r) => r.id !== p.id).sort((a, b) => Math.abs(L.indexOf(a) - i) - Math.abs(L.indexOf(b) - i)).map((r) => r.name),
+    mates: L.slice(tie.a, tie.b + 1).filter((r) => r.id !== p.id).sort((a, b) => Math.abs(L.indexOf(a) - i) - Math.abs(L.indexOf(b) - i)).map((r) => r.name),
     repl, above, games: log?.p.length || 0, doneAge: meta.doneAge[p.pos], rebuild: !!m.window,
     viewLabel: `${f.label} ${m.label}`,
     views: grid?.map((c) => ({ label: `${FORMATS[c.fk].label} ${MODES[c.mk].label}`, rank: c.rank })),
