@@ -417,9 +417,48 @@ function Telescope({ queue, compliments, onDone, onShare, colourFirst }) {
 
 // One full sentence per free pick, kept short enough for one line.
 const PICK_NOUN = { 1: "small body", 2: "comet or dwarf world", 3: "planet or moon", 4: "meteor shower", 5: "stellar event" };
-const pickSentence = (pick) => Array.isArray(pick)
-  ? "You've earned a free find of your choice, anything but a stellar event."
-  : `You've earned a free ${PICK_NOUN[pick]} of your choice.`;
+// A waiting reward, presented the way games present a claim (founder, Nov 22 2026: the plain banner "looks too basic"): the prize
+// as a sealed silhouette (anticipation; it resolves when they choose), what they earned it for beside it (the rung and its season
+// title), one beat of motion on arrival (a ring burst and a sweep of light, off for reduced motion) and one filled button. The bigger
+// prizes (meteor showers, the any-tier pick, stellar events) get the gold frame, like a game's "valuable" frame.
+const PICK_HEAD = { 1: "A free small body", 2: "A free comet or dwarf world", 3: "A free planet or moon", 4: "A free meteor shower", 5: "A free stellar event" };
+const rewardRung = (key) => LADDER[Number(String(key).split(":")[1])] || null;
+function RewardCard({ choice, busy, catOpen, findsLeft, onChoose, children }) {
+  const pick = choice.type === "pick", any = Array.isArray(choice.tier);
+  const tier = pick ? (any ? Math.max(...choice.tier) : choice.tier) : 0;
+  const preview = useMemo(() => (pick ? findOf(famsIn(tier)[0].id, "silver", "") : null), [pick, tier]);
+  const r = rewardRung(choice.key); // a reward from an older ladder may not match today's rung: then say nothing about where it came from
+  const rung = r && (pick ? JSON.stringify(r.pick) === JSON.stringify(choice.tier) : r.skinChoice) ? r : null;
+  const why = rung ? [rung.at ? `${rung.at.toLocaleString()} season points` : rungLabel(rung), rung.title && `Title: ${rung.title}`].filter(Boolean).join(" · ") : null;
+  const big = !pick || any || tier >= 4;
+  return (
+    <article className={`sky-reward${big ? " is-big" : ""}${pick ? "" : " is-skin"}`}>
+      <div className="sky-reward-prize" aria-hidden="true">
+        <span className="sky-reward-burst" />
+        {pick ? <Thumb find={preview} /> : <span className="sky-reward-skinmark">✦</span>}
+        <span className="sky-reward-q">?</span>
+      </div>
+      <div className="sky-reward-body">
+        <span className="sky-reward-eyebrow mono">Reward unlocked</span>
+        <b className="sky-reward-head">{pick ? (any ? "A free find from any tier" : PICK_HEAD[tier]) : "A skin of your choice"}</b>
+        <span className="sky-reward-what">
+          {pick
+            ? `${any ? "Pick anything you haven't found yet, from every tier but stellar events." : `Pick any ${PICK_NOUN[tier]} you haven't found yet.`} It goes straight to your telescope.`
+            : "Pick the next sky or core skin below. It's yours for good."}
+        </span>
+        {why && <span className="sky-reward-why mono">Earned at {why}</span>}
+      </div>
+      {pick && (
+        <div className="sky-reward-cta">
+          {catOpen
+            ? <button type="button" className="sky-reward-btn" disabled={busy} onClick={onChoose}>Choose yours <span aria-hidden="true">→</span></button>
+            : <span className="mono sky-small">Opens with your catalog ({findsLeft} more finds)</span>}
+        </div>
+      )}
+      {children && <div className="sky-reward-skins">{children}</div>}
+    </article>
+  );
+}
 
 export default function SkyClient({ initial, weekKey, event, compliments, now: serverNow, today }) {
   const [state, setState] = useState(initial);
@@ -510,18 +549,11 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
       </div>
       {(state.choices || []).length > 0 && (
         <section className="sky-rewards" aria-labelledby="sky-gifts">
-          <b className="sky-rewards-label mono" id="sky-gifts">{state.choices.length > 1 ? "REWARDS UNLOCKED!" : "REWARD UNLOCKED!"}</b>
-          <ul className="sky-gifts">
-            {state.choices.map((c) => c.type === "pick" ? (
-              <li key={c.key}>
-                <span className="sky-gift-line">{pickSentence(c.tier)}</span>
-                {catOpen
-                  ? <button type="button" className="btn-primary" disabled={busy} onClick={() => setChoosing(c)}>Choose</button>
-                  : <span className="mono sky-small">Opens with your catalog ({UNLOCK.catalogue - state.findsTotal} more finds)</span>}
-              </li>
-            ) : (
-              <li key={c.key} className="is-skin">
-                <span className="sky-gift-line">{"You've earned a skin of your choice. Pick one below."}</span>
+          <h2 className="sr-only" id="sky-gifts">{state.choices.length > 1 ? "Rewards unlocked" : "Reward unlocked"}</h2>
+          {state.choices.map((c) => (
+            <RewardCard key={c.key} choice={c} busy={busy} catOpen={catOpen} findsLeft={UNLOCK.catalogue - state.findsTotal}
+              onChoose={() => setChoosing(c)}>
+              {c.type === "skin" && (
                 <span className="sky-gift-skins">
                   {skinChoiceOptions(state).map((o) => (
                     <button key={o.id} type="button" className={`sky-skin rar-${o.rarity}`} disabled={busy} onClick={() => run(pickSkin(c.key, o.kind, o.id))}>
@@ -530,9 +562,9 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
                     </button>
                   ))}
                 </span>
-              </li>
-            ))}
-          </ul>
+              )}
+            </RewardCard>
+          ))}
         </section>
       )}
 
