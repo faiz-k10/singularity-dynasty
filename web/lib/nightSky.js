@@ -118,11 +118,11 @@ export const LORE = {
     "violet": "Violet iron is not supposed to exist, and the asteroid seems smug about that."
   },
   "Stony Asteroid": {
-    "silver": "Plain grey stone, unchanged since before the Sun lit up, the most honest object you will ever look at.",
+    "silver": "Plain gray stone, unchanged since before the Sun lit up, the most honest object you will ever look at.",
     "azure": "Its blue sheen is sunlight on a dusting of ice crystals, as if the rock were wearing a thin coat of winter.",
     "amber": "Warm amber stone that looks like a pebble from a riverbed, if the riverbed were four hundred million miles from the nearest river.",
     "emerald": "Green with olivine, the stone jewellers call peridot, so technically you have found a jewellery box with no lid.",
-    "crimson": "Burnt red by a billion years of radiation, its surface has the colour and texture of toast someone forgot about.",
+    "crimson": "Burnt red by a billion years of radiation, its surface has the color and texture of toast someone forgot about.",
     "violet": "Violet stone is so unusual that the astronomer who logged this one named it after her grandmother and refused to explain why."
   },
   "Carbon Asteroid": {
@@ -170,7 +170,7 @@ export const LORE = {
     "azure": "Blue nitrogen ice glitters on it at a temperature where even air freezes solid and falls like snow.",
     "amber": "Amber-tinted and never visited, it has been circling in the dark since before the planets had names.",
     "emerald": "Its green tint is methane ice that has never seen a sunrise warm enough to melt it.",
-    "crimson": "Crusted in red organic gunk, it is the colour of the surface of a planet that never got started.",
+    "crimson": "Crusted in red organic gunk, it is the color of the surface of a planet that never got started.",
     "violet": "From this violet world the Sun looks no bigger than a streetlight at the far end of the road."
   },
   "Moonlet": {
@@ -208,7 +208,7 @@ export const LORE = {
   "Interstellar Comet": {
     "silver": "A silver visitor from another star, moving too fast for the Sun to keep, gone before we could say hello properly.",
     "azure": "Its blue glow is a gas no comet from our system makes, a postcard written in a chemistry we don't speak.",
-    "amber": "An amber traveller that has been crossing the dark between stars for longer than our solar system has existed.",
+    "amber": "An amber traveler that has been crossing the dark between stars for longer than our solar system has existed.",
     "emerald": "Green and in a hurry, it is the cosmic stranger who walks through your party and leaves without a word.",
     "crimson": "Reddened under some other sun, it carries the dust of a planetary system we will never see.",
     "violet": "Finding a violet interstellar comet is like getting a letter from another galaxy in your mailbox."
@@ -267,21 +267,21 @@ export const LORE = {
     "amber": "An amber ice giant tipped on its side, so each pole gets forty-two years of daylight and then forty-two of night.",
     "emerald": "Pale green and the coldest of its kind, it has lost its inner heat and nobody knows where it went.",
     "crimson": "A red ice giant with dark storms the size of Earth that appear and vanish like bruises.",
-    "violet": "A violet giant whose magnetic field is tilted and off-centre, as if it was put together in a hurry."
+    "violet": "A violet giant whose magnetic field is tilted and off-center, as if it was put together in a hurry."
   },
   "Lava World": {
     "silver": "Its silver seas of lava ripple under a sky full of fire, and the rocks melt every morning.",
     "azure": "On this blue-glowing world it rains molten glass, sideways, in winds of five thousand miles an hour.",
     "amber": "An amber lava world whose whole year is shorter than a Sunday afternoon, and every hour of it is hot.",
-    "emerald": "Green lava flows under clouds of vaporised rock, and when it rains, it rains pebbles.",
+    "emerald": "Green lava flows under clouds of vaporized rock, and when it rains, it rains pebbles.",
     "crimson": "Crimson oceans of magma glow so brightly that its night side shines without any help from its star.",
     "violet": "A violet lava world that resurfaces itself every few days, so no map of it has ever been right twice."
   },
   "Ocean World": {
     "silver": "Every inch of it is silver sea, thousands of miles deep, with no shore anywhere for anything to crawl out onto.",
     "azure": "A blue ocean so deep that at the bottom the water is squeezed into a kind of ice that is hot to the touch.",
-    "amber": "Its amber seas are tinted by minerals dissolved over billions of years, the colour of very strong tea.",
-    "emerald": "A green ocean world, and if anything in this catalogue is hiding life, it is probably this one.",
+    "amber": "Its amber seas are tinted by minerals dissolved over billions of years, the color of very strong tea.",
+    "emerald": "A green ocean world, and if anything in this catalog is hiding life, it is probably this one.",
     "crimson": "Red tides sweep its global ocean, and nobody is comfortable guessing what is turning them red.",
     "violet": "A violet sea under a violet sky, with waves the height of skyscrapers rolling forever with nowhere to break."
   },
@@ -331,7 +331,7 @@ export const LORE = {
     "amber": "An amber diamond world, and somewhere a jeweller is weeping at how far away it is.",
     "emerald": "Green diamonds are the rarest kind on Earth, and here is a whole planet of them doing nothing with its life.",
     "crimson": "A red diamond world worth more than every economy on Earth combined, several times over, and nobody can collect.",
-    "violet": "A violet diamond planet, the one object in this catalogue you could, technically, propose with."
+    "violet": "A violet diamond planet, the one object in this catalog you could, technically, propose with."
   },
   "Volcanic Moon": {
     "silver": "Squeezed by its planet on every orbit, this silver moon erupts without pause, the most restless thing for a billion miles.",
@@ -353,12 +353,12 @@ export const LORE = {
     "silver": "Every few decades it becomes a silver storm of thousands of meteors an hour, then spends thirty years pretending it never happened.",
     "azure": "Blue Leonids hit the air at forty-four miles a second, the fastest meteors of the year and not ashamed of it.",
     "amber": "Amber fireballs that leave glowing trails hanging in the sky for minutes, like the smoke from a sparkler.",
-    "emerald": "Green Leonids get their colour from nickel, and anyone who has seen one will tell you about it, at length, for years.",
-    "crimson": "In 1833 a red Leonid storm fell so thick that people woke their neighbours to watch what they thought was the end of the world.",
+    "emerald": "Green Leonids get their color from nickel, and anyone who has seen one will tell you about it, at length, for years.",
+    "crimson": "In 1833 a red Leonid storm fell so thick that people woke their neighbors to watch what they thought was the end of the world.",
     "violet": "A violet Leonid is the shower showing off, which it only does when it thinks nobody important is watching."
   },
   "Perseid Shower": {
-    "silver": "The warm-night favourite: the silver dust of a comet that last swung by when your grandparents were young.",
+    "silver": "The warm-night favorite: the silver dust of a comet that last swung by when your grandparents were young.",
     "azure": "Blue Perseids are best seen lying on a car roof in August, with nowhere to be and nobody asking where you are.",
     "amber": "Amber Perseids are the slow, bright ones, the meteors that make strangers at a campsite say \"did you see that?\"",
     "emerald": "Green streaks of comet dust older than the dinosaurs, burning up in the time it takes to point.",
@@ -387,18 +387,18 @@ export const LORE = {
     "amber": "An amber shockwave racing outward at a tenth of the speed of light, still growing long after the star is gone.",
     "emerald": "Its green shell glows with oxygen made inside the star, the same oxygen every breath you take once came from.",
     "crimson": "A red supernova recorded by astronomers a thousand years ago who had no idea what they were looking at.",
-    "violet": "A violet supernova is the rarest kind of goodbye, a star going out so brightly it rewrites its neighbourhood."
+    "violet": "A violet supernova is the rarest kind of goodbye, a star going out so brightly it rewrites its neighborhood."
   },
   "Pulsar": {
     "silver": "The silver heart of a dead star, spinning hundreds of times a second and keeping better time than any clock on Earth.",
-    "azure": "Its blue beam sweeps by so regularly that when the first one was found, it was jokingly labelled a message from aliens.",
+    "azure": "Its blue beam sweeps by so regularly that when the first one was found, it was jokingly labeled a message from aliens.",
     "amber": "An amber pulsar the size of a city and the weight of the Sun, so a teaspoon of it would outweigh a mountain.",
     "emerald": "A green pulsar with planets around it, the strangest solar system ever found: worlds orbiting a corpse.",
     "crimson": "A red pulsar slowing by a fraction of a second every million years, the most patient countdown in the galaxy.",
     "violet": "A violet pulsar so precise that a spacecraft could steer by it across the galaxy."
   },
   "Magnetar": {
-    "silver": "Its silver magnetic field could wipe every credit card on Earth from halfway to the Moon, and it has never once apologised.",
+    "silver": "Its silver magnetic field could wipe every credit card on Earth from halfway to the Moon, and it has never once apologized.",
     "azure": "A blue magnetar whose starquakes have shaken Earth's upper atmosphere from fifty thousand light years away.",
     "amber": "An amber magnetar so magnetic that atoms near it are stretched into needles thinner than pencil lines.",
     "emerald": "Green flares burst from it without warning, each releasing more energy than the Sun gives off in a hundred thousand years.",
@@ -433,7 +433,7 @@ export const LORE = {
     "silver": "A black hole feeding so fast it outshines a trillion stars: the brightest bad habit in the universe.",
     "azure": "Its blue light left before the Earth formed, so you are looking at a galaxy that may not exist any more.",
     "amber": "An amber quasar firing jets millions of light years long, longer than the galaxy it lives in.",
-    "emerald": "A green quasar whose light has been travelling for twelve billion years and is, frankly, exhausted.",
+    "emerald": "A green quasar whose light has been traveling for twelve billion years and is, frankly, exhausted.",
     "crimson": "Stretched by the expanding universe, its light has turned crimson on the longest journey there is.",
     "violet": "Up close this violet quasar would be brighter than staring at the Sun from a foot away."
   },
@@ -526,7 +526,7 @@ export const LADDER = [
   { three: true, reward: "Charted: finish The Huddle, The Blitz and The Playbook this season. The Pillars sky skin", skin: ["sky", "aurora"] },
   { at: 1000, reward: "A free pick: any comet or dwarf world you haven't found yet. Season title: Curiosity", pick: 2, title: "Curiosity" },
   { at: 2000, reward: "The Pulsar core skin", skin: ["core", "pulsar"] },
-  { at: 3500, reward: "Telescope upgrade: see each find's colour before it resolves, for the rest of the season. Season title: Sojourner", telescope: true, title: "Sojourner" },
+  { at: 3500, reward: "Telescope upgrade: see each find's color before it resolves, for the rest of the season. Season title: Sojourner", telescope: true, title: "Sojourner" },
   { singularity: true, reward: "Finish this season's Singularity: its limited sky skin, only available this season, and a season role in the Discord", discord: true, claim: true },
   { at: 6000, reward: "A free pick: any planet or moon you haven't found yet. Season title: Spirit", pick: 3, title: "Spirit" },
   { at: 9000, reward: "The Cobalt frame on your share cards, and a free pick: any meteor shower you haven't found yet. Season title: Opportunity", frame: "cobalt", pick: 4, title: "Opportunity" },
@@ -583,7 +583,7 @@ export const tintOf = (id) => { const [base, y] = String(id).split("~"); return 
 export const tintHue = (season) => (season ? (((season - FIRST_SKY_SEASON) * 67) % 360 + 360) % 360 : 0);
 const skinName = (kind, id) => { const { base, season } = tintOf(id); const k = SKINS[kind].find((x) => x.id === base); return k ? (season ? `${k.name} ${season}` : k.name) : id; };
 const ownedTints = (s, kind) => (s.skins || []).filter((k) => k.startsWith(`${kind}:`) && k.includes("~")).map((k) => k.slice(kind.length + 1)).sort();
-const tintEntries = (s, kind) => ownedTints(s, kind).map((id) => { const { base, season } = tintOf(id); const k = SKINS[kind].find((x) => x.id === base); return { ...k, id, name: skinName(kind, id), season, rarity: "limited", how: `The ${season} colourway`, test: null, progress: null }; });
+const tintEntries = (s, kind) => ownedTints(s, kind).map((id) => { const { base, season } = tintOf(id); const k = SKINS[kind].find((x) => x.id === base); return { ...k, id, name: skinName(kind, id), season, rarity: "limited", how: `The ${season} colorway`, test: null, progress: null }; });
 export const coreSkinsFor = (s) => [...SKINS.core, ...tintEntries(s, "core")];
 // Adds every skin the member has now earned; returns the newly unlocked ones (for the log).
 export function unlockSkins(s, now = 0) {
@@ -797,8 +797,8 @@ function checkSets(s, f, ctx, rnd) {
   const mark = (key, label, power, pts) => { if (s.sets[key]) return; s.sets[key] = true; s.points += pts; applyPowerup(s, power, ctx, rnd); done.push({ label, power, pts }); };
   const cols = new Set(got.filter((e) => e.fam === f.fam).map((e) => e.colour)).size;
   const kinds = famsIn(fam.tier).filter((k) => got.some((e) => e.fam === k.id)).length;
-  if (cols >= 3) mark(`trio:${f.fam}`, `Trio: 3 colours of ${fam.name}`, "prismatic", 40);
-  if (cols === 6) mark(`spectrum:${f.fam}`, `Spectrum: every colour of ${fam.name}`, "ancient", 100);
+  if (cols >= 3) mark(`trio:${f.fam}`, `Trio: 3 colors of ${fam.name}`, "prismatic", 40);
+  if (cols === 6) mark(`spectrum:${f.fam}`, `Spectrum: every color of ${fam.name}`, "ancient", 100);
   if (VERSIONS.every((v) => got.some((e) => e.fam === f.fam && e.version === v.id))) mark(`legend:${f.fam}`, `Legend: every version of ${fam.name}`, "mythic", 500);
   if (kinds >= 4) mark(`quartet:${fam.tier}`, `Quartet: 4 kinds of ${TIER_NAME[fam.tier].toLowerCase()}`, "prismatic", 60);
   if (kinds === famsIn(fam.tier).length) mark(`survey:${fam.tier}`, `Survey: every kind of ${TIER_NAME[fam.tier].toLowerCase()}`, fam.tier <= 2 ? "ancient" : "mythic", 250);

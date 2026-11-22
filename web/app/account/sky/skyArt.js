@@ -461,7 +461,7 @@ export async function findCard(find, { title, compliment, have, size }) {
   ctx.fillStyle = "#ECE7DC"; ctx.font = `800 84px ${font("--font-display")}`;
   wrap(ctx, find.name.toUpperCase(), 64, 210, 560, 84);
   ctx.fillStyle = "#E9C46A"; ctx.font = `400 28px ${font("--font-mono")}`; ctx.fillText(`1 IN ${find.oneIn.toLocaleString()} FINDS · ${find.id}`, 64, 430);
-  ctx.fillStyle = "#A39E92"; ctx.font = `400 22px ${font("--font-mono")}`; ctx.fillText(`${have.toLocaleString()} of ${size.toLocaleString()} in my catalogue`, 64, 478);
+  ctx.fillStyle = "#A39E92"; ctx.font = `400 22px ${font("--font-mono")}`; ctx.fillText(`${have.toLocaleString()} of ${size.toLocaleString()} in my catalog`, 64, 478);
   if (compliment) { ctx.fillStyle = "#E9C46A"; ctx.font = `italic 700 26px ${font("--font-body")}`; wrap(ctx, `"${compliment}."`, 64, 525, 600, 30); }
   return cv;
 }

@@ -22,7 +22,7 @@ export default function BrandPage() {
         <div className="eyebrow">Brand</div>
         <h1 className="doc-h1">Brand Assets</h1>
         <p className="doc-lede">
-          The Dynasty Singularity logo, ready for a profile picture or a write-up. Square PNGs, centred with room to spare so a round crop never cuts the mark.
+          The Dynasty Singularity logo, ready for a profile picture or a write-up. Square PNGs, centered with room to spare so a round crop never cuts the mark.
           The 2048px file is the sharpest; 1024px suits most uploads, and 400px is the size most platforms show.
         </p>
         <div className="brand-grid">

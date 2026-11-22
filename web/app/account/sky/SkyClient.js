@@ -218,7 +218,7 @@ function Thumb({ find, hidden }) {
 // drawn with when and how often, the rest as dark outlines. A set: what it needs, what is already in, and what its power-up does.
 const POWER_TEXT = Object.fromEntries(Object.values(POWERUPS).map((p) => [p.name, p.text]));
 const SET_NEEDS = {
-  trio: "any 3 of its 6 colours", spectrum: "all 6 colours", legend: "all 4 versions: plain, prismatic, ancient and mythic",
+  trio: "any 3 of its 6 colors", spectrum: "all 6 colors", legend: "all 4 versions: plain, prismatic, ancient and mythic",
   quartet: "4 different kinds from this group", survey: "every kind in this group",
 };
 const versionName = (v) => VERSIONS.find((x) => x.id === v)?.name || "Plain";
@@ -236,7 +236,7 @@ function FindCardView({ entry, onBack, onShare }) {
       <p className="sky-lore">{loreFor(entry.fam, entry.colour, entry.version)}</p>
       <dl className="sky-findcard-facts mono">
         <div><dt>Group</dt><dd>{TIER_NAME[fam.tier]}</dd></div>
-        <div><dt>Colour</dt><dd>{COLOURS.find((c) => c.id === entry.colour)?.name}</dd></div>
+        <div><dt>Color</dt><dd>{COLOURS.find((c) => c.id === entry.colour)?.name}</dd></div>
         <div><dt>Version</dt><dd>{versionName(entry.version)}</dd></div>
         <div><dt>{entry.n > 1 ? `First found · ${entry.n}x` : "Found"}</dt><dd>{first}</dd></div>
       </dl>
@@ -336,7 +336,7 @@ function PickDialog({ state, choice, busy, onClose, onPick }) {
     <div className="sky-ov" role="dialog" aria-modal="true" aria-label={`Free pick: ${pickLabel(choice.tier)}`} onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="sky-ov-box sky-pick">
         <div className="board-panel-title">Free pick · {pickLabel(choice.tier)}</div>
-        <p className="sky-small mono">Choose the kind and colour. Only ones you haven&apos;t found are offered; the version (plain, prismatic, ancient or mythic) is rolled when it arrives.</p>
+        <p className="sky-small mono">Choose the kind and color. Only ones you haven&apos;t found are offered; the version (plain, prismatic, ancient or mythic) is rolled when it arrives.</p>
         <div className="sky-pick-list">
           {byFam.map(({ fam, opts: list }, i) => [
             pickTiers(choice.tier).length > 1 && byFam[i - 1]?.fam.tier !== fam.tier ? <div key={`t${fam.tier}`} className="sky-cat-h mono">{TIER_NAME[fam.tier]}</div> : null,
@@ -392,7 +392,7 @@ function Telescope({ queue, compliments, onDone, onShare, colourFirst }) {
         {shown ? (
           <>
             <div className="sky-find">{f.name}</div>
-            <div className="sky-rarity mono">1 in {f.oneIn.toLocaleString()} finds · {f.id}{f.first ? " · new to your catalogue" : ""}</div>
+            <div className="sky-rarity mono">1 in {f.oneIn.toLocaleString()} finds · {f.id}{f.first ? " · new to your catalog" : ""}</div>
             {f.fam != null && <p className="sky-lore">{loreFor(f.fam, f.colour, f.version)}</p>}
             <div className="sky-find-sub mono">{f.gift ? "Your free pick from the ladder" : `+${f.pts} orbit points${f.first ? " (incl. +15 for a first discovery)" : ""}`}{f.shower ? " · meteor shower: every action places two stars for 10 minutes" : ""}</div>
             {compliment && <div className="sky-note is-gold"><span className="mono">Seen from up here</span><b>{compliment.head}.</b> {compliment.body}</div>}
@@ -506,7 +506,7 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
     <div className="sky">
       <div className="sky-top">
         <h1>Your sky</h1>
-        <button type="button" className="btn-ghost" onClick={() => setShare({ title: `My season sky: ${title}`, caption: `My Night Sky this season: ${title}, ${sp.points.toLocaleString()} season points, ${entries.length} of ${CATALOGUE_SIZE.toLocaleString()} in my catalogue.`, make: () => seasonCard(state, { title, size: CATALOGUE_SIZE, rarest }) })}>Share my season sky</button>
+        <button type="button" className="btn-ghost" onClick={() => setShare({ title: `My season sky: ${title}`, caption: `My Night Sky this season: ${title}, ${sp.points.toLocaleString()} season points, ${entries.length} of ${CATALOGUE_SIZE.toLocaleString()} in my catalog.`, make: () => seasonCard(state, { title, size: CATALOGUE_SIZE, rarest }) })}>Share my season sky</button>
       </div>
       {(state.choices || []).length > 0 && (
         <section className="sky-rewards" aria-labelledby="sky-gifts">
@@ -517,7 +517,7 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
                 <span className="sky-gift-line">{pickSentence(c.tier)}</span>
                 {catOpen
                   ? <button type="button" className="btn-primary" disabled={busy} onClick={() => setChoosing(c)}>Choose</button>
-                  : <span className="mono sky-small">Opens with your catalogue ({UNLOCK.catalogue - state.findsTotal} more finds)</span>}
+                  : <span className="mono sky-small">Opens with your catalog ({UNLOCK.catalogue - state.findsTotal} more finds)</span>}
               </li>
             ) : (
               <li key={c.key} className="is-skin">
@@ -649,7 +649,7 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
                 );
               })}
             </ul>
-            <p className="sky-small mono">The whole ladder starts over every September, with a new set of constellations. Your catalogue, sets, skins and past seasons stay. Plan time is added the moment you claim it; the Discord role and newsletter shout-out are sent by hand within a few days. Perks last until the next season.</p>
+            <p className="sky-small mono">The whole ladder starts over every September, with a new set of constellations. Your catalog, sets, skins and past seasons stay. Plan time is added the moment you claim it; the Discord role and newsletter shout-out are sent by hand within a few days. Perks last until the next season.</p>
           </section>
 
           <section className="sky-panel" aria-labelledby="sky-past">
@@ -671,9 +671,9 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
       </div>
 
           <section className="sky-panel" aria-labelledby="sky-cat">
-          <div className="board-panel-title" id="sky-cat">The catalogue</div>
+          <div className="board-panel-title" id="sky-cat">The catalog</div>
           {!catOpen ? (
-            <p className="sky-small mono">The catalogue and its sets open after {UNLOCK.catalogue} finds ({UNLOCK.catalogue - state.findsTotal} to go).</p>
+            <p className="sky-small mono">The catalog and its sets open after {UNLOCK.catalogue} finds ({UNLOCK.catalogue - state.findsTotal} to go).</p>
           ) : (
             <>
               <p className="sky-small mono">{entries.length.toLocaleString()} of {CATALOGUE_SIZE.toLocaleString()} discovered · {new Set(entries.map((e) => e.fam)).size} of {FAMILIES.length} kinds · sets {Object.keys(state.sets).length} of {SET_COUNT}</p>

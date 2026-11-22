@@ -342,7 +342,7 @@ export default function DynastyBoard({ rows, meta }) {
           </div>
           <div className="dyb-key mono">
             <span><i className="dyb-move is-up k-move" /><i className="dyb-move is-down k-move" /> score over his last 9 games: up / down</span>
-            <span><b className="dyb-rk-now is-up">▲</b> <b className="dyb-rk-now is-down">▼</b> rank change over his last 9 games: new rank coloured, old rank grey</span>
+            <span><b className="dyb-rk-now is-up">▲</b> <b className="dyb-rk-now is-down">▼</b> rank change over his last 9 games: new rank colored, old rank gray</span>
             <span><i className="k-tie" /> ≈ too close to call: the order inside is a coin flip</span>
           </div>
         </div>

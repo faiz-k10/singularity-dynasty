@@ -223,7 +223,7 @@ export default async function AccountPage({ searchParams }) {
           <details className="acct-section acct-danger">
             <summary className="acct-h mono" id="acct-delete"><span>Delete account</span></summary>
               <p className="acct-small">
-                This deletes your login, saved leagues and settings for good. {billing && !billing.error ? "Your subscription is cancelled immediately and you won't be charged again (unused time isn't refunded automatically; within 14 days of a payment, contact us for a refund). " : ""}
+                This deletes your login, saved leagues and settings for good. {billing && !billing.error ? "Your subscription is canceled immediately and you won't be charged again (unused time isn't refunded automatically; within 14 days of a payment, contact us for a refund). " : ""}
                 It can&apos;t be undone.
               </p>
               <form action={deleteAccount} className="acct-delete-form">

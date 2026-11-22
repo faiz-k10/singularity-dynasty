@@ -19,7 +19,7 @@ export const ARCHETYPE_BLURB = {
   "Target Alpha": "The offense's top target, drawing a large share of his team's looks.",
   "Outside Starter": "A starting perimeter receiver, working downfield.",
   "Slot / YAC Receiver": "A short-area receiver: shorter routes, with much of his yardage coming after the catch.",
-  "Deep-Threat Depth": "A low-volume downfield option: few targets, each travelling far.",
+  "Deep-Threat Depth": "A low-volume downfield option: few targets, each traveling far.",
   // QB
   "Dual-Threat QB": "A mobile quarterback who adds real rushing production on top of his passing.",
   "Downfield Passer": "A pocket passer who attacks downfield, with little rushing.",
