@@ -6024,7 +6024,8 @@ select.lab-select{min-width:200px;}
 .dr-controls .board-toggle{margin-bottom:0; flex:none;}
 .dr-controls .board-toggle button{padding-left:16px; padding-right:16px;}
 .dr-controls .my-filter-toggle button{padding-left:10px; padding-right:10px;}
-.dr-controls .my-filter-select{flex:0 1 auto; width:auto; max-width:150px;} /* the team picker is as wide as "All Teams", not the longest team name */
+.dr-controls .my-filter-select{flex:0 1 auto; width:auto; max-width:150px;}
+.dyb-theater .dr-controls .my-filter-select{flex:1 1 150px; max-width:none;} /* full screen has the room: the picker fills the gap up to the search, so team names show whole (founder, Nov 22 2026) */ /* the team picker is as wide as "All Teams", not the longest team name */
 /* the name search takes what is left and gives way first, so the whole row stays on one line from a ~1280px window up (founder, Nov 22 2026) */
 .dyb-search{flex:1 1 140px; min-width:140px; max-width:300px; margin-left:auto;}
 .dyb-row[hidden]{display:none;}
