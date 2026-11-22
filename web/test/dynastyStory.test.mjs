@@ -7,7 +7,7 @@ const ctx = { rank: 2, prev: 8, scope: "on the board", overall: 2, posRank: 1, n
   tierSize: 2, tierPlace: 2, mates: ["Josh Allen"], repl: 9.8, above: 30, games: 34, doneAge: 28, rebuild: false, viewLabel: "Superflex Contender",
   views: [{ label: "Superflex Contender", rank: 2 }, { label: "1QB Contender", rank: 1 }, { label: "Superflex Rebuilder", rank: 2 }, { label: "1QB Rebuilder", rank: 2 }],
   coach: { hc: "Dan Campbell", calls: false } };
-const all = (s) => [s.lede, s.nut, ...["worth", "prod", "age", "tier", "league", "staff"].flatMap((k) => [s[k]?.head, s[k]?.close])].filter(Boolean);
+const all = (s) => [s.lede, ...["worth", "prod", "age", "tier", "league", "staff"].flatMap((k) => [s[k]?.head, s[k]?.close])].filter(Boolean);
 
 test("the lede opens on a climb, with real ranks", () => {
   assert.equal(dynastyStory(base, ctx).lede, "Nine games ago, Jahmyr Gibbs was 8th on the board. He's 2nd now.");
@@ -34,7 +34,6 @@ test("each beat hands off to the next one", () => {
 test("rebuilder past his done age is told plainly", () => {
   const s = dynastyStory({ ...base, age: 30.2, runway: -2.2 }, { ...ctx, rebuild: true, prev: 2 });
   assert.match(s.age.close, /problem for a rebuilder/);
-  assert.match(s.nut, /timing is against him/);
 });
 
 test("alone in a tier and a league-proof rank", () => {

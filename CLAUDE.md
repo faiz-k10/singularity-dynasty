@@ -578,3 +578,8 @@ The grey number beside a rank is his rank on LAST WEEK's board. `model/dynasty_v
 
 ## Rank change back to nine games (Nov 21 2026, founder: "revert the ranking numbers and movements reflect the last 9 weeks as we had it before"; SUPERSEDES "Dynasty Board rank change = last week" above)
 The grey rank is again his rank nine games ago (`withPrevRank` takes each score back by its 9-game `move`); the `wk` / `wk_s` columns were removed from `dynasty_value.R` and the publish check (`last_week` stays: it is the page's "Through week N"); the profile lede says "Nine games ago" again. The Tuesday rebuild and Storage publishing stay, so the nine-game ranks and arrows refresh every week.
+
+## Dynasty profile: the dial shows the nine-game move (Nov 21 2026, founder)
+- The "If you're trying to win now..." / "For a rebuild..." line under the lede is gone (removed from `lib/dynastyStory.js` too).
+- The score block (`.dp-score.is-up / is-down / is-steady`) colours the dial and the big number by his score's nine-game `move`: cobalt up, ember down, grey when it moved less than `MOVE_MIN`. `ArcGauge` takes an optional `from` (0-1) and draws an arrow just outside the arc from that reading to the current one in the same `--tone` (used only here so far).
+- Overall, Position and Tier show their change over the same nine games (`Fact` in `DynastyProfile.js`): the new value in cobalt / ember, then a small arrow and the old value in grey; nothing extra when unchanged. Overall / Position come from `rankGrid`'s `prev` / `prevPos`; the old tier is worked out by taking every score in the view back by its move and tiering again. The dial follows the SCORE, so a player can have a grey dial and still a rank change (others moved around him).

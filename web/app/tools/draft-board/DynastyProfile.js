@@ -4,7 +4,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import PositionBadge from "../PositionBadge";
 import TeamBadge from "../TeamBadge";
-import { FORMATS, MODES, ageValueOf, runwayOf } from "@/lib/dynastyBoard";
+import { FORMATS, MODES, MOVE_MIN, ageValueOf, buildBoard, runwayOf } from "@/lib/dynastyBoard";
 import { formatHeight } from "@/lib/format";
 import { coachFor, acquiringGm } from "@/lib/teamStaff";
 import { dynastyStory } from "@/lib/dynastyStory";
@@ -171,6 +171,28 @@ function Chapter({ says, close, children }) {
   );
 }
 
+// A fact that changed over his last nine games: the new value coloured, then a small arrow and the old value in grey (lower is better
+// for all three: ranks and tiers). Renders the plain value when nothing changed.
+function Fact({ label, now, was, show = (v) => v, suffix = null }) {
+  const moved = was != null && was !== now;
+  const up = moved && was > now;
+  return (
+    <div>
+      <dt className="mono">{label}</dt>
+      <dd className={moved ? (up ? "is-up" : "is-down") : undefined}>
+        <span className="dp-now">{show(now)}</span>
+        {suffix}
+        {moved && (
+          <span className="dp-chg" aria-label={`${up ? "up" : "down"} from ${show(was)} nine games ago`}>
+            <svg viewBox="0 0 8 10" aria-hidden="true"><path d={up ? "M4 9.5V1.5M1 4.5L4 1.5L7 4.5" : "M4 .5V8.5M1 5.5L4 8.5L7 5.5"} /></svg>
+            {show(was)}
+          </span>
+        )}
+      </dd>
+    </div>
+  );
+}
+
 // ---- the panel -----------------------------------------------------------------------------------------------------
 // The picked player's profile, in the pane beside the board's list (DynastyBoard.js).
 export default function DynastyProfile({ player: p, rows, L, board, format, mode, meta }) {
@@ -207,6 +229,16 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
     const how = d.how === "drafted" ? `Drafted by ${p.team}` : d.how === "trade" ? `Traded to ${p.team} (drafted by ${d.from})` : `Joined ${p.team} (drafted by ${d.from})`;
     return d.state === "yes" ? `${how} ${when}, under ${d.gm}, who still runs the team` : `${how} ${when}, before ${d.gm} took over`;
   })();
+  // which way his score has gone over his last nine games: cobalt up, ember down, grey when it moved less than MOVE_MIN
+  const dir = p.move == null || Math.abs(p.move) < MOVE_MIN ? "steady" : p.move > 0 ? "up" : "down";
+  // his tier nine games ago: this same list with every score taken back by its move, tiered again
+  const prevTier = useMemo(() => {
+    if (p.move == null) return null;
+    const back = L.map((r) => ({ ...r, score: r.score - (r.move ?? 0) })).sort((a, b) => b.score - a.score);
+    const at = back.findIndex((r) => r.id === p.id);
+    const t = buildBoard(back).tiers.findIndex((x) => at >= x.a && at <= x.b);
+    return t < 0 ? null : t + 1;
+  }, [L, p.id, p.move]);
   const story = dynastyStory(p, {
     rank: i + 1, prev: p.prevRank, scope: L.every((r) => r.pos === p.pos) && L.length < rows.length ? `among ${p.pos}s` : "on the board",
     overall: here?.rank, posRank: here?.posRank, next: L[i + 1]?.name, gapBelow: L[i + 1] ? p.score - L[i + 1].score : 0,
@@ -254,21 +286,20 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
             who is around him. Each chapter's title is a sentence made from his own numbers. */}
         <div className="dp-lede">
           <p>{story.lede}</p>
-          <p className="dp-nut">{story.nut}</p>
         </div>
         <ol className="dp-story">
           <Chapter says={story.worth.head} close={story.worth.close}>
-            <div className="dp-score" ref={chartRef}>
+            <div className={`dp-score is-${dir}`} ref={chartRef}>
               {/* the dial takes the block's whole width; the number grows with it */}
-              <ArcGauge value={p.score / 10} size={Math.max(200, chartW - 34)} label={`Dynasty score ${p.score.toFixed(1)} of 10`} className="dp-gauge">
+              <ArcGauge value={p.score / 10} from={dir === "steady" ? null : (p.score - p.move) / 10} size={Math.max(200, chartW - 34)} label={`Dynasty score ${p.score.toFixed(1)} of 10`} className="dp-gauge">
                 <span className="dp-big" style={{ fontSize: Math.round(Math.max(200, chartW - 34) * 0.24) }}>{p.score.toFixed(1)}</span>
               </ArcGauge>
               <div className="dp-score-side">
                 <div className="dp-eyebrow mono">Dynasty score · {f.label} · {m.label}</div>
                 <dl className="dp-facts">
-                  {here && <div><dt className="mono">Overall</dt><dd>{ord(here.rank)}</dd></div>}
-                  {here && <div><dt className="mono">Position</dt><dd>{p.pos}{here.posRank}</dd></div>}
-                  <div><dt className="mono">Tier</dt><dd>{tier.ti + 1}<small> / {board.tiers.length}</small></dd></div>
+                  {here && <Fact label="Overall" now={here.rank} was={here.prev} show={ord} />}
+                  {here && <Fact label="Position" now={here.posRank} was={here.prevPos} show={(v) => `${p.pos}${v}`} />}
+                  <Fact label="Tier" now={tier.ti + 1} was={prevTier} suffix={<small> / {board.tiers.length}</small>} />
                   <div><dt className="mono">Group</dt><dd>{group.name}</dd></div>
                 </dl>
               </div>

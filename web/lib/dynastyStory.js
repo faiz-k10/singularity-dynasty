@@ -4,7 +4,6 @@
 // The craft it follows, from feature writing:
 //   - a LEDE that opens on the one fact about THIS player worth stopping for (a climb, a fall, his age against his rank, being
 //     No. 1), not on a label;
-//   - a NUT line right after it that says what that means for your roster;
 //   - every chapter's last line hands off to the next one with "but" or "so", never "and then" (the "but / therefore" rule);
 //   - concrete numbers and real names (the players he is tied with, his game count) instead of adjectives;
 //   - plain contractions, sentence case, the player's last name after the first mention;
@@ -66,18 +65,6 @@ export function dynastyStory(p, ctx) {
   } else {
     lede = `${p.name} is ${best(ctx.posRank || ctx.rank)} ${one(p.pos)} on this board, ${ctx.overall ? `${nth(ctx.overall)} overall` : `${nth(ctx.rank)} ${ctx.scope}`}.`;
   }
-
-  // ---- nut: what that means for you ----
-  const top = (ctx.overall || ctx.rank) <= 24;
-  const nut = ctx.rebuild
-    ? p.runway < 3 ? `For a rebuild, though, the timing is against him.`
-      : top ? `For a rebuild, that makes him someone to build around.`
-        : p.ppg < ctx.repl ? `For a rebuild, he's a bet on what's still to come.`
-          : `For a rebuild, he's a useful piece with time on his side.`
-    : p.ppg < ctx.repl ? `If you're trying to win now, he won't help much yet.`
-      : top ? `If you're trying to win now, he's the kind of player you set a lineup around.`
-        : ctx.group === "Replacement" ? `If you're trying to win now, he fills a spot in your lineup and little more.`
-          : `If you're trying to win now, he's a starter you can count on most weeks.`;
 
   // ---- 1: what he's worth ----
   const worth = {
@@ -152,5 +139,5 @@ export function dynastyStory(p, ctx) {
     ? { head: ctx.coach.calls ? `${ctx.coach.hc} is his head coach, and he calls the plays himself.` : `${ctx.coach.hc} is his head coach, but someone else calls the plays.` }
     : { head: `The coaching picture around him isn't known yet.` };
 
-  return { lede, nut, worth, prod, age, tier, league, staff };
+  return { lede, worth, prod, age, tier, league, staff };
 }
