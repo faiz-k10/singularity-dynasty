@@ -10,7 +10,7 @@ const ctx = { rank: 2, prev: 8, scope: "on the board", overall: 2, posRank: 1, n
 const all = (s) => [s.lede, ...["worth", "prod", "age", "tier", "league", "staff"].flatMap((k) => [s[k]?.head, s[k]?.close])].filter(Boolean);
 
 test("the lede opens on a climb, with real ranks", () => {
-  assert.equal(dynastyStory(base, ctx).lede, "Nine games ago, Jahmyr Gibbs was 8th on the board. He's 2nd now.");
+  assert.equal(dynastyStory(base, ctx).lede, "Half a season ago, Jahmyr Gibbs was 8th on the board. He's 2nd now.");
 });
 
 test("No. 1 names the runner-up", () => {

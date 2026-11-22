@@ -183,7 +183,7 @@ function Fact({ label, now, was, show = (v) => v, suffix = null }) {
         <span className="dp-now">{show(now)}</span>
         {suffix}
         {moved && (
-          <span className="dp-chg" aria-label={`${up ? "up" : "down"} from ${show(was)} nine games ago`}>
+          <span className="dp-chg" aria-label={`${up ? "up" : "down"} from ${show(was)} half a season ago`}>
             <svg viewBox="0 0 8 10" aria-hidden="true"><path d={up ? "M4 9.5V1.5M1 4.5L4 1.5L7 4.5" : "M4 .5V8.5M1 5.5L4 8.5L7 5.5"} /></svg>
             {show(was)}
           </span>

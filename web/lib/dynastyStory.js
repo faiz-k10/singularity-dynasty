@@ -52,9 +52,9 @@ export function dynastyStory(p, ctx) {
       ? `${p.name} is the best player on this board, and ${last(ctx.next)} isn't especially close behind him.`
       : `${p.name} sits on top of this board, but only just. ${last(ctx.next)} is right on his heels.`;
   } else if (climb >= 5) {
-    lede = `Nine games ago, ${p.name} was ${nth(ctx.prev)} ${ctx.scope}. He's ${nth(ctx.rank)} now.`;
+    lede = `Half a season ago, ${p.name} was ${nth(ctx.prev)} ${ctx.scope}. He's ${nth(ctx.rank)} now.`;
   } else if (climb <= -5) {
-    lede = `Nine games ago, ${p.name} was ${nth(ctx.prev)} ${ctx.scope}. He's slipped to ${nth(ctx.rank)}.`;
+    lede = `Half a season ago, ${p.name} was ${nth(ctx.prev)} ${ctx.scope}. He's slipped to ${nth(ctx.rank)}.`;
   } else if (old && ctx.rank <= 30) {
     lede = `${p.name} is ${yrs(p.age)} and still ranked ${nth(ctx.rank)} ${ctx.scope}. Age is the only thing working against him.`;
   } else if (young && ctx.rank <= 30) {
@@ -73,10 +73,10 @@ export function dynastyStory(p, ctx) {
     close: p.move == null
       ? `There aren't enough games yet to say which way he's heading. So the number rests on what he's done so far.`
       : Math.abs(p.move) < 1
-        ? `His score has barely moved over his last nine games, so this is who he's been; here's where the number comes from:`
+        ? `His score has barely moved over the last half a season, so this is who he's been; here's where the number comes from:`
         : p.move > 0
-          ? `He's added ${pts(p.move)} to that score over his last nine games, and he's still trending up; here's where it comes from:`
-          : `His last nine games have taken ${pts(-p.move)} off that score; here's where it comes from:`,
+          ? `He's added ${pts(p.move)} to that score over the last half a season, and he's still trending up; here's where it comes from:`
+          : `The last half a season has taken ${pts(-p.move)} off that score; here's where it comes from:`,
   };
 
   // ---- 2: where it comes from ----
