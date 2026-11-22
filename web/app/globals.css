@@ -6476,15 +6476,15 @@ details.acct-danger > summary.acct-h{color:var(--down)}
 .dyb-row.is-tie-a::before{top:12px; border-top:1.5px solid var(--star-dim);}
 .dyb-row.is-tie-b::before{bottom:12px; border-bottom:1.5px solid var(--star-dim);}
 .dyb-key .k-tie{width:5px; height:12px; border:1.5px solid var(--star-dim); border-right:0;}
-.dyb-rank{font-size:13px; text-align:right; color:var(--star-dim); font-variant-numeric:tabular-nums;}
+.dyb-rank{font-size:13px; text-align:center; color:var(--star-dim); font-variant-numeric:tabular-nums;}
 .dyb-row.is-selected .dyb-rank{color:var(--star);}
 /* rank change over his last 9 games (RankCell): new rank coloured (cobalt up / ember down), old rank grey, an arrow between */
-.dyb-rk{display:flex; flex-direction:column; align-items:flex-end; gap:1px; line-height:1;}
-.dyb-rk b, .dyb-rk i{font-style:normal; font-weight:400; font-size:13px; padding-right:1px;}
-.dyb-rk-was{color:var(--star-dim); font-size:11px !important;}
+.dyb-rk{display:flex; flex-direction:column; align-items:center; gap:2px; line-height:1;}
+.dyb-rk b, .dyb-rk i{font-style:normal; font-weight:400; font-size:13px;}
+.dyb-rk .dyb-rk-was{color:var(--star-dim); font-size:10px;}
 .dyb-rk-now.is-up{color:var(--cobalt);}
 .dyb-rk-now.is-down{color:var(--ember);}
-.dyb-rk-arrow{width:8px; height:10px; margin-right:3px; fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round;}
+.dyb-rk-arrow{display:block; width:8px; height:10px; fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round;}
 .dyb-rk-arrow.is-up{stroke:var(--cobalt);}
 .dyb-rk-arrow.is-down{stroke:var(--ember);}
 .dyb-who{display:flex; flex-direction:column; gap:3px; min-width:0;}
