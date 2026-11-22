@@ -6457,7 +6457,7 @@ details.acct-danger > summary.acct-h{color:var(--down)}
   .dyb-list{height:62vh;}
   .dyb-pane{overflow:visible;}
 }
-.dyb-head, .dyb-row{display:grid; grid-template-columns:40px minmax(215px,1.5fr) 44px 56px 44px minmax(0,1fr); align-items:center; column-gap:14px; padding:0 16px 0 12px;}
+.dyb-head, .dyb-row{display:grid; grid-template-columns:40px minmax(215px,1.5fr) 44px minmax(0,1fr); align-items:center; column-gap:14px; padding:0 16px 0 12px;}
 .dyb-head{height:34px; position:sticky; top:0; z-index:2; background:var(--void-panel); border-bottom:1px solid var(--rule-strong); font-family:var(--font-mono), monospace; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--star-dim);}
 .dyb-head > span:nth-child(1), .dyb-head > span:nth-child(3){text-align:right;}
 .dyb-axis{position:relative; height:100%; letter-spacing:0;}
@@ -6473,7 +6473,7 @@ details.acct-danger > summary.acct-h{color:var(--down)}
 .dyb-tier b{font-family:var(--font-display); font-weight:800; font-size:16px; letter-spacing:.06em; text-transform:uppercase; color:var(--cobalt);}
 .dyb-tier span{font-size:11px; color:var(--star-dim);}
 .dyb-tier em{margin-left:auto; font-style:normal; font-size:11px; color:var(--star-dim);}
-.dyb-row{all:unset; box-sizing:border-box; display:grid; grid-template-columns:40px minmax(215px,1.5fr) 44px 56px 44px minmax(0,1fr); align-items:stretch; column-gap:14px; width:100%; min-height:52px; padding:0 16px 0 12px; border-bottom:1px solid var(--rule); cursor:pointer; position:relative;}
+.dyb-row{all:unset; box-sizing:border-box; display:grid; grid-template-columns:40px minmax(215px,1.5fr) 44px minmax(0,1fr); align-items:stretch; column-gap:14px; width:100%; min-height:52px; padding:0 16px 0 12px; border-bottom:1px solid var(--rule); cursor:pointer; position:relative;}
 .dyb-row > span:not(.dyb-plot){align-self:center;}
 /* (after the base .dyb-row rule, whose all:unset would clear it) rows off screen are not laid out or painted until they scroll near the view: a format / mode / position switch reorders all
    ~300 rows, and repainting every one let a slow machine show old rank numbers beside new ones for a few seconds (founder, Nov 17 2026) */
@@ -6503,9 +6503,6 @@ details.acct-danger > summary.acct-h{color:var(--down)}
 .dyb-name{font-family:var(--font-body), Georgia, serif; font-weight:700; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
 .dyb-sub{font-size:11px; color:var(--star-dim); display:flex; gap:10px;}
 /* the two context columns (lib/teamStaff.js): short words, centred; "Yes" in ink, the rest dim */
-.dyb-ctx{text-align:center; white-space:normal; line-height:1.15;}
-.dyb-row .dyb-ctx{font-size:11px; color:var(--star-dim);}
-.dyb-row .dyb-ctx.is-yes{color:var(--star); font-weight:700;}
 .dp-ctx{display:grid; gap:10px; margin:0;}
 .dp-ctx dt{font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--star-dim);}
 .dp-ctx dd{margin:2px 0 0; font-size:14px; line-height:1.35;}
@@ -6539,7 +6536,7 @@ details.acct-danger > summary.acct-h{color:var(--down)}
   .dyb-overview-n{font-size:36px;} .dyb-overview-dl{display:flex; gap:4px 10px; margin:0;}
 }
 @media (max-width:640px){
-  .dyb-head, .dyb-row{grid-template-columns:36px minmax(0,1fr) 40px 50px 42px; column-gap:8px;}
+  .dyb-head, .dyb-row{grid-template-columns:36px minmax(0,1fr) 42px; column-gap:8px;}
   .dyb-plot, .dyb-axis{display:none;}
   .dyb-tier{padding-left:58px;} .dyb-tier em{display:none;}
   .dyb-group-ix{min-width:36px;} .dyb-group-n{white-space:nowrap;}

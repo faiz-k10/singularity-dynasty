@@ -113,7 +113,7 @@ function AgeCurve({ doneAge, pos, age, value, W }) {
       <text x={L + (W - L - R) / 2} y={H - 4} className="dp-axis-title" textAnchor="middle">Age</text>
       <text transform={`translate(12 ${T + (H - T - B) / 2}) rotate(-90)`} className="dp-axis-title" textAnchor="middle">Age value</text>
       {/* his age and value beside the point: above it, or below it when the point is at the top of the chart (a 10.0 was cut off) */}
-      <text x={x(a) > W - 110 ? x(a) - 10 : x(a) + 10} y={y(value) - 10 < 14 ? y(value) + 22 : y(value) - 10} className="dp-label is-level" textAnchor={x(a) > W - 110 ? "end" : "start"}>{age.toFixed(1)} · {value.toFixed(1)}</text>
+      <text x={x(a) > W - 110 ? x(a) - 10 : x(a) + 10} y={y(value) - 10 < 14 ? y(value) + 22 : y(value) - 10} className="dp-label is-level" textAnchor={x(a) > W - 110 ? "end" : "start"}>{age.toFixed(1)} yrs</text>
     </svg>
   );
 }

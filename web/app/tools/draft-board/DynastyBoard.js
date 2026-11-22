@@ -5,12 +5,9 @@ import PositionBadge from "../PositionBadge";
 import TeamBadge from "../TeamBadge";
 import DynastyProfile from "./DynastyProfile";
 import { FORMATS, MODES, MOVE_MIN, viewBoard } from "@/lib/dynastyBoard";
-import { coachFor, acquiringGm } from "@/lib/teamStaff";
 import { normalizePlayerName } from "@/lib/portfolio";
 
 // the two context columns: short words, the full sentence for screen readers
-const GM_WORD = { yes: "Yes", no: "No", undrafted: "UDFA", unknown: "—" };
-const HOW = { drafted: "Drafted", trade: "Traded for", joined: "Brought in" };
 
 const POSITIONS = ["QB", "RB", "WR", "TE"];
 
@@ -271,8 +268,6 @@ export default function DynastyBoard({ rows, meta }) {
             <div className="dyb-head">
               <span>Rk</span>
               <span>Player</span>
-              <span className="dyb-ctx">Playcaller HC</span>
-              <span className="dyb-ctx">GM still there</span>
               <span>Score</span>
               <span className="dyb-axis" style={{ "--n": hi - lo }}>
                 {ticks.map((v) => <i key={v} style={{ left: x(v) }}>{v}</i>)}
@@ -323,19 +318,6 @@ export default function DynastyBoard({ rows, meta }) {
                         {p.age.toFixed(1)} yrs
                       </span>
                     </span>
-                    {(() => {
-                      const c = coachFor(p.team), d = acquiringGm(p);
-                      return (
-                        <>
-                          <span className={`dyb-ctx mono${c?.calls ? " is-yes" : ""}`} aria-label={c ? `Head coach ${c.hc} ${c.calls ? "calls" : "does not call"} the offensive plays` : "Head coach unknown"}>
-                            {c ? (c.calls ? "Yes" : "No") : "—"}
-                          </span>
-                          <span className={`dyb-ctx mono${d.state === "yes" ? " is-yes" : ""}`} aria-label={d.state === "yes" ? `${HOW[d.how]} by ${d.gm}, still the GM` : d.state === "no" ? "The GM who brought him in is gone" : d.state === "undrafted" ? "Undrafted" : "Unknown"}>
-                            {GM_WORD[d.state]}
-                          </span>
-                        </>
-                      );
-                    })()}
                     <span className="dyb-score">{p.score.toFixed(1)}</span>
                     <span className="dyb-plot" style={{ "--n": hi - lo }} role="img" aria-label={`80% range ${p.lo.toFixed(1)} to ${p.hi.toFixed(1)}`}>
                       <i className="dyb-band" style={band} />
