@@ -550,8 +550,8 @@ export const SKINS = {
     { id: "deep", name: "Deep field", how: "Yours from the start", rarity: "standard" },
     { id: "nebula", name: "Nebula", how: "Reach 200 points in a season", rarity: "common", rung: true, progress: (s) => [seasonProgress(s).points, 200] },
     { id: "aurora", name: "Pillars", how: "Chart a season: finish The Huddle, The Blitz and The Playbook in one season", rarity: "rare", rung: true, progress: (s) => [seasonProgress(s).three, 3] },
-    { id: "milkyway", name: "Milky Way", how: "Reach 6,000 orbit points in total", rarity: "rare", test: (s) => s.points >= 6000, progress: (s) => [s.points, 6000] },
-    { id: "eclipse", name: "Supernova", how: "Find a stellar event", rarity: "epic", test: stellar, progress: (s) => [stellar(s) ? 1 : 0, 1] },
+    { id: "milkyway", name: "Milky Way", how: "Reach 6,000 orbit points in total", rarity: "epic", test: (s) => s.points >= 6000, progress: (s) => [s.points, 6000] },
+    { id: "eclipse", name: "Supernova", how: "Find a stellar event", rarity: "rare", test: stellar, progress: (s) => [stellar(s) ? 1 : 0, 1] },
   ],
   core: [
     { id: "classic", name: "Classic", how: "Yours from the start", rarity: "standard" },
