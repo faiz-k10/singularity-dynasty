@@ -304,7 +304,7 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
                 <dl className="dp-facts">
                   {here && <Fact label="Overall" now={here.rank} was={here.prev} show={ord} />}
                   {here && <Fact label="Position" now={here.posRank} was={here.prevPos} show={(v) => `${p.pos}${v}`} />}
-                  <Fact label="Tier" now={tier.ti + 1} was={prevTier} show={(v) => `T${v}`} suffix={<small> / T{board.tiers.length}</small>} />
+                  <Fact label="Tier" now={tier.ti + 1} was={prevTier} show={(v) => `T${v}`} />
                   <div><dt className="mono">Group</dt><dd>{group.name}</dd></div>
                 </dl>
               </div>
