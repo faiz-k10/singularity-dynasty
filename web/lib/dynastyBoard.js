@@ -51,7 +51,23 @@ export const SHOW = { all: 300, position: 120 };
 export function boardRows(rows, { format, mode, pos }) {
   const all = scoreRows(rows, format, mode); // scored over everyone first, so the scale is the whole board's
   const L = pos && pos !== "ALL" ? all.filter((r) => r.pos === pos) : all;
-  return L.slice(0, pos && pos !== "ALL" ? SHOW.position : SHOW.all);
+  const byPos = pos && pos !== "ALL", key = `${format}:${mode}`;
+  // a free viewer is sent only part of the pool, so the local prevRank can't see players who climbed in from below it: where the
+  // server's whole-pool rank (rankGrid) is the rank shown, its whole-pool prevRank is used instead
+  return withPrevRank(L).slice(0, byPos ? SHOW.position : SHOW.all).map((r, i) => {
+    const g = r.ranks?.[key];
+    const prev = g && (byPos ? g.posRank === i + 1 && g.prevPos : g.rank === i + 1 && g.prev);
+    return prev ? { ...r, prevRank: prev } : r;
+  });
+}
+
+// prevRank: where he stood in this same list driftGames games ago -- every score taken back by its `move` (production alone,
+// age held; no move = unchanged), the list re-sorted (ties keep today's order). The board draws the change beside the rank.
+export function withPrevRank(L) {
+  const back = L.map((r, i) => ({ i, s: r.score - (r.move ?? 0) })).sort((a, b) => b.s - a.s || a.i - b.i);
+  const prev = new Array(L.length);
+  back.forEach((x, k) => { prev[x.i] = k + 1; });
+  return L.map((r, i) => ({ ...r, prevRank: prev[i] }));
 }
 
 // the probit of each P above: Phi(z) = P
@@ -148,10 +164,12 @@ export function scoreRows(rows, formatKey, modeKey) {
 export function rankGrid(rows) {
   const out = new Map(rows.map((r) => [r.id, {}]));
   for (const fk of Object.keys(FORMATS)) for (const mk of Object.keys(MODES)) {
-    const pos = {};
-    scoreRows(rows, fk, mk).forEach((r, i) => {
+    const pos = {}, all = withPrevRank(scoreRows(rows, fk, mk));
+    const prevPos = new Map();
+    for (const p of new Set(all.map((r) => r.pos))) withPrevRank(all.filter((r) => r.pos === p)).forEach((r) => prevPos.set(r.id, r.prevRank));
+    all.forEach((r, i) => {
       pos[r.pos] = (pos[r.pos] || 0) + 1;
-      out.get(r.id)[`${fk}:${mk}`] = { rank: i + 1, posRank: pos[r.pos], score: r.score };
+      out.get(r.id)[`${fk}:${mk}`] = { rank: i + 1, posRank: pos[r.pos], score: r.score, prev: r.prevRank, prevPos: prevPos.get(r.id) };
     });
   }
   return out;

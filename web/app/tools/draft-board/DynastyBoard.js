@@ -155,6 +155,24 @@ function SpreadPlot({ L, tiers, groups, openId, onPick }) {
 // The dynasty rankings as a board: the spread on top, then the ranked list (group and tier headings between the rows, each
 // player's 80% range on one shared axis, his tier's score span shaded behind it) and the picked player's profile beside it.
 // Tiers, groups and ties come from lib/dynastyBoard.js.
+// the rank, and when it changed over his last driftGames games: up = the new rank in cobalt over an up arrow from the old
+// rank (grey); down = the old rank (grey) over a down arrow to the new rank in ember (founder, Nov 21 2026)
+function RankCell({ now, was, games }) {
+  if (!was || was === now) return <span className="dyb-rank mono">{now}</span>;
+  const up = was > now;
+  const label = `Rank ${now}, ${up ? "up" : "down"} from ${was} over his last ${games} games`;
+  const cur = <b className={`dyb-rk-now is-${up ? "up" : "down"}`}>{now}</b>, old = <i className="dyb-rk-was">{was}</i>;
+  return (
+    <span className="dyb-rank dyb-rk mono" aria-label={label}>
+      {up ? cur : old}
+      <svg className={`dyb-rk-arrow is-${up ? "up" : "down"}`} viewBox="0 0 8 10" aria-hidden="true">
+        <path d={up ? "M4 9.5V1.5M1 4.5L4 1.5L7 4.5" : "M4 .5V8.5M1 5.5L4 8.5L7 5.5"} />
+      </svg>
+      {up ? old : cur}
+    </span>
+  );
+}
+
 export default function DynastyBoard({ rows, meta }) {
   const [format, setFormat] = useState("sf");
   const [mode, setMode] = useState("contender");
@@ -288,7 +306,7 @@ export default function DynastyBoard({ rows, meta }) {
                     aria-pressed={open?.id === p.id}
                     onClick={() => setPickedId(p.id)}
                   >
-                    <span className="dyb-rank mono">{i + 1}</span>
+                    <RankCell now={i + 1} was={p.prevRank} games={p.driftGames} />
                     <span className="dyb-who">
                       <span className="dyb-name-line">
                         <TeamBadge team={p.team} />
@@ -335,6 +353,7 @@ export default function DynastyBoard({ rows, meta }) {
           </div>
           <div className="dyb-key mono">
             <span><i className="dyb-move is-up k-move" /><i className="dyb-move is-down k-move" /> score over his last 9 games: up / down</span>
+            <span><b className="dyb-rk-now is-up">▲</b> <b className="dyb-rk-now is-down">▼</b> rank change over his last 9 games: new rank coloured, old rank grey</span>
             <span><i className="k-tie" /> ≈ too close to call: the order inside is a coin flip</span>
           </div>
         </div>
