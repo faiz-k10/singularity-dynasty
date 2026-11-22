@@ -6053,9 +6053,9 @@ select.lab-select{min-width:200px;}
 .dp-facts dt{font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--star-dim);}
 .dp-facts dd{margin:1px 0 0; font-family:var(--font-display); font-weight:800; font-size:20px; line-height:1.1; letter-spacing:.03em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
 .dp-facts dd small{font-size:13px; color:var(--star-dim); font-weight:700;}
-/* the dynasty score's direction over his last 9 games (DynastyProfile): the dial, its number and trail arrow are cobalt when his score
+/* the dynasty score's direction over his last 9 games (DynastyProfile): the dial, its number and the tick at his old score are cobalt when his score
    rose, ember when it fell, grey when steady; a fact that changed shows its old value in grey after a small arrow in the same colour */
-.dp-score.is-up{--tone:var(--cobalt);} .dp-score.is-down{--tone:var(--ember);} .dp-score.is-steady{--tone:var(--star-dim);}
+.dp-score.is-up{--tone:var(--cobalt); --trail:var(--star);} .dp-score.is-down{--tone:var(--ember); --trail:var(--ember);} .dp-score.is-steady{--tone:var(--star-dim);}
 .dp-score .dp-big{color:var(--tone, var(--horizon-gold));}
 .dp-chg{display:inline-flex; align-items:center; gap:3px; margin-left:6px; font-family:var(--font-mono), monospace; font-size:12px; font-weight:400; letter-spacing:0; color:var(--star-dim); vertical-align:middle;}
 .dp-chg svg{width:8px; height:10px; fill:none; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round;}
@@ -6585,8 +6585,11 @@ details.acct-danger > summary.acct-h{color:var(--down)}
 .arc-gauge-track{fill:none; stroke:rgba(var(--star-dot-rgb), .12); stroke-width:7;}
 .arc-gauge-fill{fill:none; stroke:var(--tone, var(--horizon-gold)); stroke-width:7;} /* the parent's tone (mint / red / grey), mint when none */
 .arc-gauge-needle{stroke:var(--star); stroke-width:2;}
-.arc-gauge-trail path{fill:none; stroke:var(--tone, var(--horizon-gold)); stroke-width:2; stroke-linecap:round;}
-.arc-gauge-trail polygon{fill:var(--tone, var(--horizon-gold));}
+.arc-gauge-trail path{fill:none; stroke:var(--trail, var(--star)); stroke-width:1.6; stroke-linecap:round;}
+.arc-gauge-trail polygon{fill:var(--trail, var(--star));}
+/* the earlier reading: a tick like the needle, in the dial's tone, cased in the panel colour so it reads on the band of its own colour */
+.arc-gauge-from-case{stroke:var(--void-panel); stroke-width:4;}
+.arc-gauge-from{stroke:var(--tone, var(--horizon-gold)); stroke-width:2;}
 .arc-gauge-mid{position:absolute; left:0; right:0; bottom:0; display:flex; flex-direction:column; align-items:center; line-height:1;}
 .h2h-center .arc-gauge{margin:4px 0 2px;}
 .h2h-win-gauge b{font-family:var(--font-display); font-weight:800; font-size:24px; color:var(--star);}
