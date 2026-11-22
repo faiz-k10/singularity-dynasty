@@ -89,7 +89,7 @@ export function dynastyStory(p, ctx) {
       ? ctx.above / ctx.games >= 0.75
         ? `He cleared that bar in ${ctx.above} of his last ${ctx.games} games, so the bad weeks are rare.`
         : ctx.above / ctx.games >= 0.45
-          ? `He cleared that bar in ${ctx.above} of his last ${ctx.games} games. Some weeks he's a starter, some weeks he isn't.`
+          ? `He cleared that bar in ${ctx.above} of his last ${ctx.games} games. That's a starter-worthy week ${Math.round((100 * ctx.above) / ctx.games)}% of the time.`
           : `Only ${ctx.above} of his last ${ctx.games} games cleared that bar, so a few big weeks carry the average.`
       : null,
   };
