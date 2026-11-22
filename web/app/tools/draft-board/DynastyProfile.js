@@ -4,9 +4,10 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import PositionBadge from "../PositionBadge";
 import TeamBadge from "../TeamBadge";
-import { FORMATS, MODES, MOVE_MIN, ageValueOf, runwayOf } from "@/lib/dynastyBoard";
-import { formatHeight, ordinal } from "@/lib/format";
+import { FORMATS, MODES, ageValueOf, runwayOf } from "@/lib/dynastyBoard";
+import { formatHeight } from "@/lib/format";
 import { coachFor, acquiringGm } from "@/lib/teamStaff";
+import { dynastyStory } from "@/lib/dynastyStory";
 import DashboardShareButton from "../../DashboardShareButton";
 import ArcGauge from "../../ArcGauge";
 
@@ -157,37 +158,15 @@ function useFitName(names) {
   return ref;
 }
 
-// How his score has moved over his last driftGames games (production alone, age held): up, down or steady (under MOVE_MIN).
-function moveLine(p) {
-  const n = p.driftGames || 9;
-  if (p.move == null) return `Not enough games yet to say how his score has moved over his last ${n}.`;
-  const d = Math.abs(p.move).toFixed(1);
-  if (Math.abs(p.move) < MOVE_MIN) return `Steady: his score has moved only ${d} over his last ${n} games.`;
-  return p.move > 0 ? `Rising: his score is up ${d} over his last ${n} games.` : `Falling: his score is down ${d} over his last ${n} games.`;
-}
-
-// Where he is in his career, in plain words (no numbers, nothing about how the age value is built): from his years left before
-// his position's done age, and for a rebuilder whether he lasts past a rebuild.
-function ageLine(p, m) {
-  const r = p.runway, pos = `${p.pos}s`;
-  if (m.window && r < m.window) return r <= 0
-    ? `Past the age most ${pos} are done: not a piece to rebuild around.`
-    : `His good years are likely over by the time a rebuild pays off.`;
-  if (r <= 0) return `Past the age most ${pos} are done: whatever he gives is short-term.`;
-  if (r < 2) return `Near the end of the usual run for ${pos}: value now, less later.`;
-  if (r < 5) return `In his prime, with a few good seasons left.`;
-  if (r < 8) return `In his prime, with plenty of good seasons ahead.`;
-  return `Young for his position: his best years should still be ahead of him.`;
-}
-
-// One step of the story: a numbered node on the spine, the question it answers, the answer from his numbers, then the evidence.
-function Chapter({ n, ask, says, children }) {
+// One beat of the story: a tick on the spine, the beat's headline (a sentence from his numbers), the evidence, and the line
+// that hands off to the next beat (lib/dynastyStory.js writes the words)
+function Chapter({ says, close, children }) {
   return (
     <li className="dp-ch">
-      <span className="dp-ch-n mono" aria-hidden="true">{String(n).padStart(2, "0")}</span>
-      <div className="dp-ch-ask mono">{ask}</div>
+      <span className="dp-ch-n" aria-hidden="true" />
       <h3 className="dp-ch-says">{says}</h3>
       {children}
+      {close && <p className="dp-next">{close}</p>}
     </li>
   );
 }
@@ -218,7 +197,6 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
   const tierSize = tier.b - tier.a + 1, tierPlace = i - tier.a + 1;
   const log = data?.log ? { w: data.log.w.slice(-win.games), p: data.log.p.slice(-win.games) } : null;
   const above = log ? log.p.filter((v) => v >= repl).length : 0;
-  const rankLo = grid ? Math.min(...grid.map((c) => c.rank)) : null, rankHi = grid ? Math.max(...grid.map((c) => c.rank)) : null;
   const coach = coachFor(p.team), staff = acquiringGm(p);
   const gmLine = (() => {
     const d = staff;
@@ -229,6 +207,16 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
     const how = d.how === "drafted" ? `Drafted by ${p.team}` : d.how === "trade" ? `Traded to ${p.team} (drafted by ${d.from})` : `Joined ${p.team} (drafted by ${d.from})`;
     return d.state === "yes" ? `${how} ${when}, under ${d.gm}, who still runs the team` : `${how} ${when}, before ${d.gm} took over`;
   })();
+  const story = dynastyStory(p, {
+    rank: i + 1, prev: p.prevRank, scope: L.every((r) => r.pos === p.pos) && L.length < rows.length ? `among ${p.pos}s` : "on the board",
+    overall: here?.rank, posRank: here?.posRank, next: L[i + 1]?.name, gapBelow: L[i + 1] ? p.score - L[i + 1].score : 0,
+    group: group.name, tierSize, tierPlace,
+    mates: L.slice(tier.a, tier.b + 1).filter((r) => r.id !== p.id).sort((a, b) => Math.abs(L.indexOf(a) - i) - Math.abs(L.indexOf(b) - i)).map((r) => r.name),
+    repl, above, games: log?.p.length || 0, doneAge: meta.doneAge[p.pos], rebuild: !!m.window,
+    viewLabel: `${f.label} ${m.label}`,
+    views: grid?.map((c) => ({ label: `${FORMATS[c.fk].label} ${MODES[c.mk].label}`, rank: c.rank })),
+    coach,
+  });
   const size = [formatHeight(data?.bio?.height), data?.bio?.weight ? `${data.bio.weight} lbs` : null, data?.bio?.yearsExp != null ? (data.bio.yearsExp === 0 ? "Rookie" : `Year ${data.bio.yearsExp + 1}`) : null].filter(Boolean);
 
   return (
@@ -264,8 +252,12 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
         {/* The profile reads as ONE story down a spine (founder, Nov 16 2026: "tell a story based on what is already there"):
             what he's worth, where that comes from, how long it lasts, who he's level with, whether the league changes it, and
             who is around him. Each chapter's title is a sentence made from his own numbers. */}
+        <div className="dp-lede">
+          <p>{story.lede}</p>
+          <p className="dp-nut">{story.nut}</p>
+        </div>
         <ol className="dp-story">
-          <Chapter n={1} ask="What is he worth?" says={here ? `${p.pos}${here.posRank} and #${here.rank} overall: ${group.name}` : `${group.name}, tier ${tier.ti + 1}`}>
+          <Chapter says={story.worth.head} close={story.worth.close}>
             <div className="dp-score" ref={chartRef}>
               {/* the dial takes the block's whole width; the number grows with it */}
               <ArcGauge value={p.score / 10} size={Math.max(200, chartW - 34)} label={`Dynasty score ${p.score.toFixed(1)} of 10`} className="dp-gauge">
@@ -281,10 +273,9 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
                 </dl>
               </div>
             </div>
-            <p className="dp-next">{moveLine(p)}</p>
           </Chapter>
 
-          <Chapter n={2} ask="Where does it come from?" says={`${p.ppg.toFixed(1)} points a game, ${Math.abs(p.ppg - repl).toFixed(1)} ${p.ppg >= repl ? "more" : "fewer"} than a replacement ${p.pos}`}>
+          <Chapter says={story.prod.head} close={log ? story.prod.close : null}>
             {log ? (
               <>
                 <Timeline log={log} level={p.ppg} repl={repl} W={chartW} />
@@ -294,18 +285,16 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
                   <li><i className="k-above" />Game above replacement</li>
                   <li><i className="k-below" />Below</li>
                 </ul>
-                <p className="dp-next">Above replacement in {above} of his last {log.p.length} games.</p>
               </>
             ) : <div className="dp-chart-skel">{data ? "No game log yet." : "Loading his games…"}</div>}
           </Chapter>
 
-          <Chapter n={3} ask="How long will it last?" says={p.runway > 0 ? `About ${p.runway.toFixed(1)} years until ${p.pos}s are typically done, at ${meta.doneAge[p.pos]}` : `Past the age ${p.pos}s are typically done (${meta.doneAge[p.pos]})`}>
+          <Chapter says={story.age.head} close={story.age.close}>
             <AgeCurve doneAge={meta.doneAge} pos={p.pos} age={p.age} value={p.ageValue} W={chartW} />
-            <p className="dp-next">{ageLine(p, m)}</p>
           </Chapter>
 
           {/* his place inside his tier: the table shows the players nearest him, the bridge says how wide the tier is */}
-          <Chapter n={4} ask="Who is he level with?" says={tierSize > 1 ? `${ordinal(tierPlace)} of ${tierSize} in tier ${tier.ti + 1}, too close to call against any of them` : `Alone in tier ${tier.ti + 1}: nobody is close enough to call even`}>
+          <Chapter says={story.tier.head} close={story.tier.close}>
             {tierMates.length > 1 && (
               <table className="dp-table">
                 <tbody>
@@ -319,15 +308,10 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
                 </tbody>
               </table>
             )}
-            {tierSize > 1 && (
-              <p className="dp-next">
-                {tierSize > tierMates.length ? `The ${tierMates.length} players nearest him. ` : ""}Tier {tier.ti + 1} runs from {L[tier.a].score.toFixed(1)} down to {L[tier.b].score.toFixed(1)}, close enough that any of them could turn out the better player.
-              </p>
-            )}
-          </Chapter>
+</Chapter>
 
           {grid && (
-            <Chapter n={5} ask="Does the league change it?" says={rankLo === rankHi ? `No: #${rankLo} in every format and mode` : `From #${rankLo} to #${rankHi}, depending on the league`}>
+            <Chapter says={story.league.head} close={story.league.close}>
               {/* the four views as a matrix: league format down the side, team mode across the top; this view's cell lit */}
               <table className="dp-matrix">
                 <thead>
@@ -356,12 +340,8 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
             </Chapter>
           )}
 
-          <Chapter n={grid ? 6 : 5} ask="Who is around him?" says={`${p.team}: ${coach ? coach.hc : "coach unknown"}${staff.gm ? ` and ${staff.gm}` : ""}`}>
+          <Chapter says={story.staff.head}>
             <dl className="dp-ctx">
-              <div>
-                <dt className="mono">Head coach</dt>
-                <dd>{coach ? <>{coach.hc}: {coach.calls ? "calls the offensive plays" : "doesn't call the offensive plays"}</> : "Unknown"}</dd>
-              </div>
               <div>
                 <dt className="mono">GM who brought him in</dt>
                 <dd>{gmLine}</dd>
