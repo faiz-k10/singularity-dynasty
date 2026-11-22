@@ -7522,7 +7522,7 @@ button.sky-variant:focus-visible{outline:2px solid var(--ember);outline-offset:1
 /* A waiting reward = a claim card (SkyClient.js RewardCard; founder, Nov 22 2026, modelled on how games present an unlocked reward):
    the prize as a sealed silhouette in a lit medallion, the headline prize, what it was earned for, one filled button. Cobalt; the
    bigger prizes (.is-big) in gold. One beat of motion on arrival, nothing after (except a slow breath on the medallion). */
-.sky-rewards{display:flex;flex-direction:column;gap:12px}
+.sky-rewards{display:flex;flex-direction:column;gap:12px;padding:0} /* padding:0 -- a bare <section> picks up the landing sections' 96px top padding */
 .sky-reward{--rw:var(--cobalt);--rw-rgb:var(--cobalt-rgb);position:relative;overflow:hidden;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:22px;padding:20px 24px;
   border:1px solid rgba(var(--rw-rgb),.6);background:linear-gradient(90deg,rgba(var(--rw-rgb),.2),rgba(var(--rw-rgb),.06) 55%,rgba(var(--rw-rgb),.12));color:var(--star);animation:sky-rw-in .55s cubic-bezier(.2,.9,.3,1.2) both}
 .sky-reward.is-big{--rw:var(--sky-gold);--rw-rgb:var(--sky-gold-rgb)}
