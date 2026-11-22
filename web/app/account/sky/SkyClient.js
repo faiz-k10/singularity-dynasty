@@ -416,12 +416,12 @@ function Telescope({ queue, compliments, onDone, onShare, colourFirst }) {
 }
 
 // One full sentence per free pick, kept short enough for one line.
-const PICK_NOUN = { 1: "small body", 2: "comet or dwarf world", 3: "planet or moon", 4: "meteor shower", 5: "stellar event" };
+const PICK_NOUN = { 1: "asteroid", 2: "comet or dwarf world", 3: "planet or moon", 4: "meteor shower", 5: "stellar event" };
 // A waiting reward, presented the way games present a claim (founder, Nov 22 2026: the plain banner "looks too basic"): the prize
 // as a sealed silhouette (anticipation; it resolves when they choose), what they earned it for beside it (the rung and its season
 // title) and one filled button; no animation (founder, Nov 22 2026). The bigger
 // prizes (meteor showers, the any-tier pick, stellar events) get the gold frame, like a game's "valuable" frame.
-const PICK_HEAD = { 1: "A free small body", 2: "A free comet or dwarf world", 3: "A free planet or moon", 4: "A free meteor shower", 5: "A free stellar event" };
+const PICK_HEAD = { 1: "A free asteroid", 2: "A free comet or dwarf world", 3: "A free planet or moon", 4: "A free meteor shower", 5: "A free stellar event" };
 const rewardRung = (key) => LADDER[Number(String(key).split(":")[1])] || null;
 function RewardCard({ choice, busy, catOpen, findsLeft, onChoose, children }) {
   const pick = choice.type === "pick", any = Array.isArray(choice.tier);
@@ -633,7 +633,7 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
           <section className="sky-panel" aria-labelledby="sky-odds">
           <div className="board-panel-title" id="sky-odds">What&apos;s out there</div>
           <ul className="sky-odds mono">
-            <li>Small bodies (10 kinds), the most common</li>
+            <li>Asteroids (10 kinds), the most common</li>
             <li>Comets and dwarf worlds (8) · need a finished small constellation</li>
             <li>Planets and moons (12) · need a finished large constellation</li>
             <li>Meteor showers (4) · plus 10 minutes of double stars</li>

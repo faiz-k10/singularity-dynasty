@@ -487,7 +487,7 @@ export const VERSIONS = [
   { id: "mythic", name: "Mythic", p: 1 / 200, mult: 4 },
 ];
 export const TIER_P = { 1: 0.4, 2: 0.3, 3: 0.2, 4: 0.08, 5: 0.02 };
-export const TIER_NAME = { 1: "Small bodies", 2: "Comets and dwarf worlds", 3: "Planets and moons", 4: "Meteor showers", 5: "Stellar events" };
+export const TIER_NAME = { 1: "Asteroids", 2: "Comets and dwarf worlds", 3: "Planets and moons", 4: "Meteor showers", 5: "Stellar events" };
 const PTS = { 1: 10, 2: 30, 3: 80, 4: 40, 5: 250 };
 export const CATALOGUE_SIZE = FAMILIES.length * COLOURS.length * VERSIONS.length;
 export const famsIn = (t) => FAMILIES.filter((f) => f.tier === t);
