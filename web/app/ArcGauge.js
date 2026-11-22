@@ -39,8 +39,8 @@ export default function ArcGauge({ value, from, size = 96, height, label, childr
       trail = (
         <g className="arc-gauge-trail">
           <path className="arc-gauge-from" d={sector(a0, 2, 7)} />
-          <path d={`M${sx.toFixed(2)} ${sy.toFixed(2)} A${rx + R} ${ry + R} 0 0 ${up ? 1 : 0} ${ex.toFixed(2)} ${ey.toFixed(2)}`} />
-          <polygon points={head.map(([px, py]) => `${px.toFixed(2)},${py.toFixed(2)}`).join(" ")} />
+          <path className="arc-gauge-trail-line" d={`M${sx.toFixed(2)} ${sy.toFixed(2)} A${rx + R} ${ry + R} 0 0 ${up ? 1 : 0} ${ex.toFixed(2)} ${ey.toFixed(2)}`} />
+          <polygon className="arc-gauge-trail-head" points={head.map(([px, py]) => `${px.toFixed(2)},${py.toFixed(2)}`).join(" ")} />
         </g>
       );
     }

@@ -278,12 +278,13 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
               />
             </div>
             <div className="dp-demo mono">{[`${p.age.toFixed(1)} yrs`, ...size].join(" · ")}</div>
-            <div className="dp-links">
-              <Link href="/tools/player-simulations">Player Season Simulations →</Link>
-              <Link href="/tools/redraft-rankings">Weekly rankings →</Link>
-            </div>
           </div>
         </header>
+        {/* on their own full-width line under the header, never wrapping (founder, Nov 22 2026: "all on one line") */}
+        <div className="dp-links">
+          <Link href="/tools/player-simulations">Season Simulations →</Link>
+          <Link href="/tools/redraft-rankings">Weekly rankings →</Link>
+        </div>
 
         {/* The profile reads as ONE story down a spine (founder, Nov 16 2026: "tell a story based on what is already there"):
             what he's worth, where that comes from, how long it lasts, who he's level with, whether the league changes it, and

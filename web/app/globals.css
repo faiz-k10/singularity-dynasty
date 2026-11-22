@@ -6029,7 +6029,7 @@ select.lab-select{min-width:200px;}
    The pane beside the board's list. Flat scoreboard material, one section per question:
    the read, the recipe, his games, his age, who is close, how his rank moves. Charts are SVG in site tokens. */
 .dp{position:relative; box-sizing:border-box; padding:16px 16px 24px; background:var(--void-panel); border:1px solid var(--rule); border-top:2px solid var(--rule-strong); border-radius:2px;}
-.dp-head{display:flex; gap:14px; align-items:stretch;} /* badges, demographics and the two links beside the photo: first row level with its top, last with its bottom, equal gaps */
+.dp-head{display:flex; gap:14px; align-items:stretch;} /* badges and demographics beside the photo: first row level with its top, last with its bottom (the links sit on their own line under it) */
 .dp-photo{flex:0 0 64px; width:64px; height:64px; border-radius:var(--r-sm); border:1px solid var(--rule); background:var(--void-panel-2); overflow:hidden; display:grid; place-items:center;}
 .dp-photo img{width:100%; height:100%; object-fit:cover; display:block;}
 .dp-photo span{font-family:var(--font-display); font-weight:800; font-size:28px; color:var(--star-dim);}
@@ -6041,7 +6041,7 @@ select.lab-select{min-width:200px;}
   font-size:clamp(20px, calc(100cqw / (var(--chars) * 0.66)), 80px);} /* fills the pane's width: ~0.6em a capital incl. tracking */
 .dp-badges{display:flex; flex-wrap:wrap; align-items:center; gap:6px 8px; font-size:12px; color:var(--star-dim);}
 .dp-share-btn{margin-left:4px; font-size:11px; padding:5px 10px;} /* Share in the badges row under the name (DashboardShareButton.js) */
-.dp-links{display:flex; flex-wrap:wrap; align-items:center; gap:4px 16px; font-family:var(--font-mono), monospace; font-size:11px; letter-spacing:.04em;}
+.dp-links{display:flex; flex-wrap:nowrap; align-items:center; gap:4px 16px; margin-top:12px; font-family:var(--font-mono), monospace; font-size:11px; letter-spacing:.04em;}
 .dp-links > *{white-space:nowrap;}
 .dp-links a{color:var(--horizon-gold); text-decoration:none;} .dp-links a:hover{text-decoration:underline; text-underline-offset:3px;}
 .dp-score{display:flex; flex-direction:column; align-items:stretch; gap:14px; margin:0; padding:16px; border:1px solid var(--rule); border-top:2px solid var(--rule-strong); background:rgba(var(--horizon-gold-rgb), .07);}
@@ -6585,8 +6585,9 @@ details.acct-danger > summary.acct-h{color:var(--down)}
 .arc-gauge-track{fill:none; stroke:rgba(var(--star-dot-rgb), .12); stroke-width:7;}
 .arc-gauge-fill{fill:none; stroke:var(--tone, var(--horizon-gold)); stroke-width:7;} /* the parent's tone (mint / red / grey), mint when none */
 .arc-gauge-needle{stroke:var(--star); stroke-width:2;}
-.arc-gauge-trail path{fill:none; stroke:var(--trail, var(--star)); stroke-width:1.6; stroke-linecap:butt;} /* butt: it meets the tick's edge flush */
-.arc-gauge-trail polygon{fill:var(--trail, var(--star));}
+/* own classes, not ".arc-gauge-trail path": the old-score tick is a path in the same group and must not pick these up */
+.arc-gauge-trail-line{fill:none; stroke:var(--trail, var(--star)); stroke-width:1.6; stroke-linecap:butt;} /* butt: it meets the tick's edge flush */
+.arc-gauge-trail-head{fill:var(--trail, var(--star));}
 /* the earlier reading: a plain white tick the needle's size; the needle (now) takes the dial's tone inside a thin white edge */
 .arc-gauge-from{fill:var(--star); stroke:none;}
 .arc-gauge-needle-case{fill:var(--star); stroke:none;}
