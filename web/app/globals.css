@@ -6464,9 +6464,10 @@ details.acct-danger > summary.acct-h{color:var(--down)}
 }
 .dyb-head, .dyb-row{display:grid; grid-template-columns:40px 270px 44px minmax(0,1fr); align-items:center; column-gap:14px; padding:0 16px 0 12px;}
 .dyb-head{height:34px; position:sticky; top:0; z-index:2; background:var(--void-panel); border-bottom:1px solid var(--rule-strong); font-family:var(--font-mono), monospace; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--star-dim);}
-.dyb-head > span:nth-child(1), .dyb-head > span:nth-child(3){text-align:right;}
+.dyb-head > span:nth-child(1){text-align:center; padding-left:.1em;} /* centred over the rank stack (.dyb-rk is centred); the padding balances the trailing letter-space */
+.dyb-head > span:nth-child(3){text-align:right; margin-right:-.1em;} /* the trailing letter-space would leave SCORE short of the scores' right edge */
 .dyb-axis{position:relative; height:100%; letter-spacing:0;}
-.dyb-axis i{position:absolute; bottom:6px; transform:translateX(-50%); font-style:normal;}
+.dyb-axis i{position:absolute; top:50%; transform:translate(-50%,-50%); font-style:normal; line-height:1;} /* on the same centre line as RK / PLAYER / SCORE */
 .dyb-rows{overflow-y:auto; flex:1; min-height:0;}
 .dyb-group{display:flex; align-items:baseline; gap:12px; padding:16px 16px 8px 12px; border-top:3px double var(--rule-strong); border-bottom:1px solid var(--rule-strong);}
 .dyb-head + .dyb-group{border-top:0;}
