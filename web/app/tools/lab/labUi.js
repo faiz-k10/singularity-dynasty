@@ -7,7 +7,7 @@ import BrandMark from "@/app/BrandMark";
 // Pieces shared by The Observatory's views: the colours of the picked players, position colours, a width-measuring hook for the charts and the
 // metric picker.
 
-// One colour per picked player, in the order they were added (theme tokens, so both themes work). Mint, mission red, steel, the old gold and frost blue -- all from the Europa palette, each with a light-mode value.
+// One colour per picked player, in the order they were added (theme tokens, so both themes work): see lib/pickColors.js.
 import { PICK_COLORS } from "@/lib/pickColors";
 export { PICK_COLORS };
 export const MAX_PICKS = PICK_COLORS.length;
