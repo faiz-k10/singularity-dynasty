@@ -7577,3 +7577,7 @@ button.sky-variant:focus-visible{outline:2px solid var(--ember);outline-offset:1
 @media (prefers-reduced-motion:reduce){.ehp-plan-feats > div{transition:none}}
 @media (max-width:640px){.ehp-pd div{grid-template-columns:1fr auto}}
 .auth-hint{color:var(--star-dim);letter-spacing:.04em;text-transform:none}
+/* Sign-up's legal note (app/login/page.js): the gambling disclaimer and the automatic newsletter, beside Create Account. */
+.auth-legal{margin:10px 0 0;padding:10px 12px;border:1px solid var(--rule);font-size:12.5px;line-height:1.5;color:var(--star-dim)}
+.auth-legal strong{color:var(--star)}
+.auth-legal a{color:var(--star);text-decoration:underline;text-underline-offset:2px}

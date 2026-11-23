@@ -76,6 +76,15 @@ export default async function LoginPage({ searchParams }) {
         <p className="auth-foot mono">
           New accounts get 14 days of Explorer free, one per Sleeper account. No card needed.
         </p>
+        {/* Shown next to Create Account so agreeing to it is part of signing up (founder, Nov 22 2026): the gambling disclaimer (the full
+            text is /disclaimer; don't water it down) and the automatic newsletter subscription. */}
+        <p className="auth-legal">
+          By creating an account you agree to our <Link href="/terms">Terms</Link> and <Link href="/disclaimer">Disclaimer</Link>.{" "}
+          <strong>Dynasty Singularity is not a gambling, betting or wagering service, and none of our content is intended for that use.</strong>{" "}
+          Rankings, projections and simulations are for information and entertainment in managing fantasy football rosters; any use of them
+          for betting or cash-prize contests is entirely at your own risk. New accounts are automatically signed up for The Singularity
+          Drive Newsletter.
+        </p>
         <p className="auth-foot mono">
           <Link href="/login/reset">Forgot your password?</Link>
         </p>
