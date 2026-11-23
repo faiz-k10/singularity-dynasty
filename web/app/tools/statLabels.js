@@ -11,7 +11,7 @@ const STAT_LABELS = [
   ["rushing_tds", "Rush TDs"],
   // WR/TE only: raw targets (season total), published from the next projection run on.
   ["targets", "Targets"],
-  ["receptions", "Receptions"],
+  ["receptions", "Rec"], // "Rec" (founder, Nov 23 2026: "Receptions" broke across lines in the compare percentile bars)
   ["receiving_yards", "Rec Yards"],
   ["receiving_tds", "Rec TDs"],
   // YAC Above Exp is still published in stat_ranges but deliberately not shown
