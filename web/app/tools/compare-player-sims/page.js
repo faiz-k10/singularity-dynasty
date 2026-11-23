@@ -13,11 +13,11 @@ import { TEASER_LIMIT, PAID_TIERS, getCachedWeekData, buildSimRows } from "../pl
 export const metadata = {
   title: "Compare Players — Season Simulations — Dynasty Singularity",
   description:
-    "Compare up to three players' full-season simulation outcomes side by side: floor, median and ceiling, season-to-date pace, projected stats, role tags, and percentile shapes.",
+    "Compare up to four players' full-season simulation outcomes side by side: floor, median and ceiling, season-to-date pace, projected stats, role tags, and percentile shapes.",
 };
 
-const SLOTS = ["p1", "p2", "p3"];
-// Stargazer compares 2 players, Explorer and Singularity 3.
+const SLOTS = ["p1", "p2", "p3", "p4"];
+// Stargazer compares 2 players, Explorer and Singularity 4.
 const MAX_COMPARE = { stargazer: 2 };
 
 // Singularity-only, same as Player Season Simulations itself (free viewers get the top 10): the rows are the very ones
@@ -31,7 +31,7 @@ export default async function ComparePlayerSimsPage({ searchParams }) {
 
   const { sims, maxCeiling, simsWithComputed } = buildSimRows({ cached: weekData, hasFullAccess, bioByNamePos });
   const byName = new Map(simsWithComputed.map((r) => [r.player_name, r]));
-  const maxPlayers = MAX_COMPARE[tier] ?? 3;
+  const maxPlayers = MAX_COMPARE[tier] ?? SLOTS.length;
   const selected = [...new Set(SLOTS.slice(0, maxPlayers).map((slot) => byName.get(params?.[slot])).filter(Boolean))]; // the same player twice counts once
   const playerOptions = sims.map((r) => ({ player_name: r.player_name, position: r.position }));
   const gated = !hasFullAccess && weekData.rows.length > sims.length;
@@ -69,13 +69,6 @@ export default async function ComparePlayerSimsPage({ searchParams }) {
       <main id="main-content" className="wrap tool-wrap compare-wrap">
         <div className="eyebrow">{latest ? `${latest.season} Season · Week ${latest.week}` : "Compare"}</div>
         <h1>Compare Players — Season Simulations</h1>
-        <p className="tool-sub">
-          Pick two{maxPlayers > 2 ? " or three" : ""} players from Player Season Simulations to see their full-season outlooks side by side. Looking for this
-          week&apos;s projections?{" "}
-          <Link href="/tools/compare-players" className="hub-panel-link">
-            Compare weekly projections →
-          </Link>
-        </p>
 
         {sims.length === 0 ? (
           <div className="tool-empty">
@@ -97,8 +90,9 @@ export default async function ComparePlayerSimsPage({ searchParams }) {
               <ComparePlayerPickers
                 key={JSON.stringify(params || {})} /* a Back / Forward navigation re-reads the boxes from the address */
                 players={playerOptions}
-                defaults={{ p1: params?.p1 || "", p2: params?.p2 || "", p3: params?.p3 || "" }}
+                defaults={Object.fromEntries(SLOTS.map((k) => [k, params?.[k] || ""]))}
                 maxPlayers={maxPlayers}
+                slots={SLOTS.length}
               />
             </form>
 

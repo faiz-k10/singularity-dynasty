@@ -29,7 +29,7 @@ export const PLANS = [
       "Start / sit swaps and playoff odds in every league",
       "Every player in the weekly rankings and the full Dynasty Board",
       "Your exposure across leagues and desktop alerts",
-      "Compare three players at once",
+      "Compare four players at once",
       "Prospect Deep Dives",
     ],
   },

@@ -107,7 +107,7 @@ function PickerField({ slot, players, defaultValue, taken, onChange }) {
   );
 }
 
-// maxPlayers: how many players this viewer may compare; slots: how many the page offers (Compare Players 5, Compare Simulations 3). When the
+// maxPlayers: how many players this viewer may compare; slots: how many the page offers (Compare Players and Compare Simulations both 4). When the
 // viewer may pick fewer than the page offers, ONE locked slot stands for the rest. There is no Compare button: picking or clearing a player
 // re-runs the comparison straight away (the address changes to ?p1=&p2=..., so it can still be shared), and a player in one box is left out
 // of the others' lists.
