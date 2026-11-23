@@ -5,7 +5,6 @@ import { tierOf } from "@/lib/tier";
 import { provisionFromCheckout, accountBilling } from "@/lib/billing";
 import { signout } from "../login/actions";
 import { openBillingPortal, deleteAccount } from "./actions";
-import EmailDigestToggle from "../my-team/EmailDigestToggle";
 import ReferralCard from "./ReferralCard";
 import { ensureReferralCode, referralSummary, settleReferrals } from "@/lib/referrals";
 import { FRIEND_DISCOUNT_PERCENT, rewardFor } from "@/lib/referralRules";
@@ -26,7 +25,7 @@ const TIER_LABELS = {
 };
 const TIER_LINES = {
   stargazer: "Free: one league live on the Game Board, the top 50 weekly rankings, the top 20 dynasty and the top 10 season simulations.",
-  explorer: "Up to 10 leagues live, start / sit swaps and playoff odds, every player ranked, the full Dynasty Board and the Tuesday email.",
+  explorer: "Up to 10 leagues live, start / sit swaps and playoff odds, every player ranked and the full Dynasty Board.",
   singularity: "Everything: every season simulation, the full Observatory, unlimited leagues and priority Discord.",
 };
 
@@ -105,7 +104,7 @@ export default async function AccountPage({ searchParams }) {
     });
   }
 
-  const { data: profile } = await supabase.from("profiles").select("tier, email, stripe_customer_id, email_digest").eq("id", user.id).single();
+  const { data: profile } = await supabase.from("profiles").select("tier, email, stripe_customer_id").eq("id", user.id).single();
   const tier = await tierOf(supabase, user.id); // includes Night Sky plan time
   const skyBonus = tier !== (profile?.tier || "stargazer");
   const [billing, refCode, refSummary, origin, sky] = await Promise.all([
@@ -201,9 +200,11 @@ export default async function AccountPage({ searchParams }) {
           )}
 
           <details className="acct-section">
-            <summary className="acct-h mono" id="acct-email"><span>Email</span><span className="acct-hint">{profile?.email_digest ? "Weekly email on" : "Weekly email off"}</span></summary>
-            <EmailDigestToggle tier={tier} enabled={profile?.email_digest} />
-            <p className="acct-small">The weekly email covers the players on your saved leagues: what moved, who&apos;s out, and this week&apos;s outlook. Account emails (sign-in links, receipts) are always sent.</p>
+            <summary className="acct-h mono" id="acct-email"><span>Email</span><span className="acct-hint">The Singularity Drive Newsletter</span></summary>
+            <p className="acct-small">
+              Our one email is The Singularity Drive Newsletter, free for every plan. <Link href="/newsletter">Sign up</Link>; every issue has an unsubscribe
+              link. Account emails (sign-in links, receipts) are always sent.
+            </p>
           </details>
 
           <details className="acct-section">

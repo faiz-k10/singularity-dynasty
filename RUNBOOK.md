@@ -18,7 +18,7 @@ The weekly jobs run on GitHub's computers. Your Mac can be off.
 
 | When (Eastern) | Job | What it does |
 |---|---|---|
-| Tuesday 1:30 PM | `tuesday-full-run` | Loads last week's finished games, then publishes next week's projections and season sims, sends the weekly email (once it's set up) and saves a backup. |
+| Tuesday 1:30 PM | `tuesday-full-run` | Loads last week's finished games, then publishes next week's projections and season sims, rebuilds the Dynasty Board and saves a backup. |
 | Wednesday 9 AM | `game-results-only` | Picks up stat corrections and late numbers from Monday night. |
 | Thursday 5 PM | `projections-only` | Republishes with the latest injury news before Thursday night. |
 | Sunday 11 AM | `projections-only` | Last injury update before the 1 PM games. |
@@ -86,7 +86,7 @@ Attacks, breakdowns and what to do about each (leaked key, hacked account, data 
 | Supabase | Database and sign-ins | supabase.com/dashboard/project/nkzazbqjupexwnehkktl |
 | Stripe | Payments, refunds, subscriptions | dashboard.stripe.com |
 | GitHub | The code, the weekly runs, the alerts and the backups | github.com/faiz-k10/singularity-dynasty |
-| Resend (once set up) | Sends the weekly email | resend.com |
+| Resend (once set up) | Sign-up confirmation and password emails (Supabase custom SMTP); the newsletter list is downloaded from /admin | resend.com |
 
 **Backups:**
 - Every Tuesday run saves a copy of every table plus the model files. On GitHub: open that run → **Artifacts** → backup (kept 60 days).

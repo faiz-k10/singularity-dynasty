@@ -4793,13 +4793,6 @@ html{font-stretch:82%;}
 .buyin-done p{margin:0; font-size:14px; color:var(--star);}
 .buyin-done b{color:var(--horizon-gold);}
 
-/* ===== My Team: weekly email switch (EmailDigestToggle.js) ===== */
-.email-digest{display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin:0 0 12px; font-size:13.5px; color:var(--star);}
-.email-digest label{display:inline-flex; align-items:center; gap:9px; cursor:pointer;}
-.email-digest input{accent-color:var(--horizon-gold); width:16px; height:16px;}
-.email-digest-err{font-size:12.5px; color:var(--down);}
-.email-digest-locked{margin:0 0 12px; font-size:13px; color:var(--star-dim);}
-.email-digest-locked a{color:var(--neon-blue);}
 /* Cards in a row share a height: content starts right under the heading and the footnote is pinned to the bottom, so any spare space sits in the middle on purpose. */
 .hub-lead{display:flex; flex-direction:column; gap:2px; margin:2px 0 10px; padding-bottom:10px; border-bottom:1px solid var(--rule);}
 .hub-lead-fig{font-family:var(--font-display), sans-serif; font-weight:800; font-size:68px; line-height:.92; letter-spacing:.01em; color:var(--horizon-gold);}

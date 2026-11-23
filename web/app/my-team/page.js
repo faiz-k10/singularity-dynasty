@@ -67,14 +67,13 @@ export default async function MyTeamPage({ searchParams }) {
   // capped at 3 seconds on a cold server -- past that the page renders without ages / bios rather than stall.
   const many = savedTeams.length >= 2;
   // The live scoreboard (cached 30s, capped at 1.5s) rides along so the first paint already knows which games are on.
-  const [archetypeRow, recordInsights, playerSims, dict, emailDigest, gameStates] = await Promise.all([
+  const [archetypeRow, recordInsights, playerSims, dict, gameStates] = await Promise.all([
     user ? loadInsight(supabase, { key: "gm_archetype_quiz", userId: user.id }).catch(() => null) : null,
     user && savedTeams.length
       ? loadTeamInsightForAll(supabase, { key: "season_record_badge", userId: user.id, savedTeamIds: savedTeams.map((t) => t.id) }).catch(() => new Map())
       : new Map(),
     many ? getCachedPlayerSims().catch(() => ({})) : {},
     many ? Promise.race([getSleeperPlayers().catch(() => ({})), new Promise((r) => setTimeout(() => r({}), 3000))]) : {},
-    user ? loadEmailDigest(supabase, user.id).catch(() => false) : false,
     savedTeams.length ? Promise.race([fetchGameStates().catch(() => null), new Promise((r) => setTimeout(() => r(null), 1500))]) : null,
   ]);
 
@@ -179,7 +178,6 @@ export default async function MyTeamPage({ searchParams }) {
           playerSims={playerSims}
           playerBios={playerBios}
           feed={feed}
-          emailDigest={emailDigest}
           overview={user ? <PortfolioOverview archetype={archetypeResult} summary={portfolioSummary} /> : null}
           exposure={
             exposureRows.length > 0 ? (
@@ -218,11 +216,6 @@ async function loadPlayerSims() {
 
 // (The per-player game log for the Analytics tab is no longer loaded here: it loads on demand, see lib/myGameLogs.js.)
 
-// Weekly email opt-in (migration 0038; a missing column just reads as off).
-async function loadEmailDigest(supabase, userId) {
-  const { data: prof } = await supabase.from("profiles").select("email_digest").eq("id", userId).maybeSingle();
-  return Boolean(prof?.email_digest);
-}
 
 // Days left on a free account's Explorer trial (lib/trial.js), or null when it isn't on one.
 async function trialDaysLeft(supabase, userId) {

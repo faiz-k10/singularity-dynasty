@@ -4,7 +4,6 @@ import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { UpgradeMoment, BuyInPrompt, startExplorerCheckout } from "./UpgradeMoment";
-import EmailDigestToggle from "./EmailDigestToggle";
 import { startBackgroundTimer } from "@/lib/backgroundTimer";
 import { lookupSleeperTeams, saveTeam, deleteTeam, setBuyIn, refreshSavedTeams, pollLiveScores, getRosterNews, getMyGameLogs } from "./actions";
 import TeamBadge from "../tools/TeamBadge";
@@ -1107,7 +1106,6 @@ export default function MyTeamClient({
   overview = null,
   exposure = null,
   feed = null,
-  emailDigest = false,
   heading = "My Team",
   welcome = false,
 }) {
@@ -1715,12 +1713,7 @@ export default function MyTeamClient({
       id: "week",
       title: "Your Players This Week",
       sub: feed?.ready && feed.week != null ? `Week ${feed.week} vs ${feed.prevWeek}` : null,
-      node: (
-        <>
-          <EmailDigestToggle tier={tier} enabled={emailDigest} />
-          <MyWeekFeed feed={feed} />
-        </>
-      ),
+      node: <MyWeekFeed feed={feed} />,
     },
     { id: "teams", title: "Saved Teams", node: teamsNode, sub: teamsSub, actions: teamsActions || null },
     exposure && { id: "exposure", title: "Player Exposure", node: exposure },

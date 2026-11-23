@@ -26,7 +26,6 @@ Every script's own header comment says exactly what it does and how to call it; 
 | `publish-player-groups.mjs` | `player_groups` | Sustainability, career stage, TD and usage profiles (one `kind` each). |
 | `publish-defense-leans.mjs` | `defense_leans` | The Smash / Tough Spot trends. |
 | `publish-player-directory.mjs` | `player_directory` | Names, ids, bios (replaces Sleeper's player list). |
-| `send-weekly-digest.mjs` | email (Resend) | Dry run by default; `--send` only once Resend is set up. |
 | `backup.mjs` | `Website/Backups/` | Every table plus the model files git doesn't keep; keeps the newest 8. |
 
 ## Reports

@@ -1,11 +1,11 @@
 // Weekly publish runner -- the one entry point the schedule calls (.github/workflows/weekly.yml on GitHub Actions; it also runs by hand on
 // the Mac), so the order, the safety checks and the verification live in version control instead of in a prompt.
 // Every run records how it went in the private Storage bucket "ops" (runs/<mode>.json: when, passed or failed, the last lines of output,
-// the GitHub run link) -- /admin shows it -- and the email digest's "already sent this week" marker lives there too (digest-sent.txt).
+// the GitHub run link) -- /admin shows it.
 //
 //   node --env-file=.env.local scripts/weekly-run.mjs game-data
 //   node --env-file=.env.local scripts/weekly-run.mjs projections
-//   node --env-file=.env.local scripts/weekly-run.mjs tuesday      (game-data, then projections only if the week is complete, then the email digest and a backup)
+//   node --env-file=.env.local scripts/weekly-run.mjs tuesday      (game-data, then projections only if the week is complete, then a backup)
 //   node --env-file=.env.local scripts/weekly-run.mjs backup       (scripts/backup.mjs on its own)
 //
 // game-data    model/player_game_log.R -> publish-player-game-log.mjs -> publish-actual-production.mjs
@@ -16,7 +16,6 @@
 //              then (never fatal) model/player_directory.R -> publish-player-directory.mjs  (names, teams, bios, headshots; Sleeper ids)
 // dynasty      model/run_dynasty.sh -> publish-dynasty.mjs (Storage bucket "dynasty"): the Dynasty Board through the newest finished week,
 //              its last-week rank changes and nine-game score arrows; tuesday-full-run only, never fatal (the last board stays up)
-// digest       scripts/send-weekly-digest.mjs --send, once per published week (marker: ops/digest-sent.txt), only once RESEND_API_KEY and EMAIL_FROM are set; never fatal
 // backup       scripts/backup.mjs: every table + the model's untracked outputs to Website/Backups/auto-* (or $BACKUP_DIR; keeps the newest 8); never fatal after Tuesday
 //
 // Exits non-zero (and prints why) when a check fails, so a scheduled run can
@@ -215,20 +214,6 @@ function archetypes() {
   log(p.status === 0 ? tail : `SKIPPED: archetype publish failed (exit ${p.status}) -- ${tail}`);
 }
 
-// The weekly "Your Players This Week" email, sent at most once per published week (a re-run of Tuesday won't email anyone twice). Does nothing
-// until the sender is set up (RESEND_API_KEY + EMAIL_FROM). Never fatal.
-async function digest() {
-  log("\n--- email digest ---");
-  if (!process.env.RESEND_API_KEY || !process.env.EMAIL_FROM) return log("skipped: RESEND_API_KEY / EMAIL_FROM not set yet");
-  const { season, week } = await latestWeek("redraft_rankings");
-  const tag = `${season}-W${week}`;
-  if ((await opsRead("digest-sent.txt")) === tag) return log(`skipped: already sent for ${tag}`);
-  const r = spawnSync(process.execPath, ["--env-file=.env.local", "scripts/send-weekly-digest.mjs", "--send"], { cwd: WEB, encoding: "utf8", maxBuffer: 16 * 1024 * 1024 });
-  const tail = ((r.stdout || "") + (r.stderr || "")).trim().split("\n").slice(-4).join("\n");
-  if (r.status === 0) await opsWrite("digest-sent.txt", tag);
-  log(r.status === 0 ? tail : `DIGEST FAILED (exit ${r.status}) -- ${tail}`);
-}
-
 // Never fatal: a failed backup is reported, the publish it follows still counts.
 function backup() {
   log("\n--- backup ---");
@@ -277,7 +262,6 @@ try {
     }
     await projections();
     dynasty();
-    await digest();
     backup();
   } else if (mode === "backup-only") {
     if (!backup()) fail("backup failed");

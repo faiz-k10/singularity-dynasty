@@ -28,7 +28,7 @@ export const PLANS = [
       "Up to 10 leagues, live on the Game Board",
       "Start / sit swaps and playoff odds in every league",
       "Every player in the weekly rankings and the full Dynasty Board",
-      "Your exposure across leagues, desktop alerts and the Tuesday email",
+      "Your exposure across leagues and desktop alerts",
       "Compare three players at once",
       "Prospect Deep Dives",
     ],
