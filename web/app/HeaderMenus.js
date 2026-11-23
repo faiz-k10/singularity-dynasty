@@ -39,7 +39,7 @@ export const PLANS = [
       "1 league live on the Game Board, with lineup alerts",
       "The top 50 weekly, top 20 dynasty and top 10 season sims",
       "Every prospect ranking, The Night Sky and share cards",
-      "14 days of Explorer when you join, no card",
+      "14 days of Explorer on us when you join, no card necessary",
     ],
   },
 ];
