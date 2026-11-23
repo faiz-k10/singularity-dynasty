@@ -177,6 +177,6 @@ writeLines(json, "../web/data/dynasty-values.json")
 
 # each player's last WINDOW games (season x 100 + week, points): the profile's production timeline. Read on demand by
 # /api/dynasty-profile, never shipped with the page.
-logs <- lapply(split(g, g$player_id), function(d) { d <- tail(d, WINDOW); list(w = d$season * 100 + d$week, p = round(d$fantasy_points_ppr, 1)) })
+logs <- lapply(split(g, g$player_id), function(d) { d <- tail(d, max(WINDOW, WINDOW_SHORT)); list(w = d$season * 100 + d$week, p = round(d$fantasy_points_ppr, 1)) })
 write(toJSON(logs, auto_unbox = FALSE, digits = NA), "../web/data/dynasty-logs.json")
 cat("wrote dynasty_value.csv, ../web/data/dynasty-values.json and dynasty-logs.json:", nrow(out), "players\n")

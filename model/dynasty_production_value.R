@@ -29,6 +29,7 @@ POSITIONS   <- c("QB", "RB", "WR", "TE")
 MIN_GAMES   <- 8      # a real season, for the reference pool
 # WINDOW / HALF_LIFE come from dynasty_params.R (34 / 17, the Contender's number); `DYN_WINDOW=17 DYN_HALF_LIFE=8 DYN_SUFFIX=_short Rscript
 # dynasty_production_value.R` makes the Rebuilder's shorter version into files with that suffix (dynasty_value.R reads both).
+if (Sys.getenv("DYN_SHORT") == "1") { WINDOW <- WINDOW_SHORT; HALF_LIFE <- HALF_LIFE_SHORT }   # the Rebuilder's number
 WINDOW      <- as.integer(Sys.getenv("DYN_WINDOW", WINDOW))
 HALF_LIFE   <- as.numeric(Sys.getenv("DYN_HALF_LIFE", HALF_LIFE))
 SUF         <- Sys.getenv("DYN_SUFFIX", "")

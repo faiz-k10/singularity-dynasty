@@ -25,7 +25,7 @@ import { acquiringGm, coachFor } from "./teamStaff.js";
 
 export const MODES = {
   contender: { label: "Contender", prod: 0.9, age: 0.1 },
-  rebuilder: { label: "Rebuilder", prod: 0.7, age: 0.3, short: true, window: 2, minShare: 0.15, replLine: 1.2 }, // replLine: Replacement starts lower here (founder, Nov 17 2026: "add tier 8 under cornerstone") // short: production from his last 17 games (Contender: 34)
+  rebuilder: { label: "Rebuilder", prod: 0.7, age: 0.3, short: true, window: 2, minShare: 0.15, replLine: 1.2 }, // replLine: Replacement starts lower here (founder, Nov 17 2026: "add tier 8 under cornerstone") // short: the Rebuilder's own production columns (*_s). Windows live in model/dynasty_params.R -- since Nov 23 2026 (founder, trial): Contender 17 games / half-life 8, Rebuilder 34 / 12
 };
 // a score change over his last drift games smaller than this reads as steady (no arrow on the board, "steady" in the profile)
 export const MOVE_MIN = 1;
@@ -87,7 +87,7 @@ export function rowsFromData(data) {
     return {
       id: r[at("player_id")], name: r[at("player")], pos: r[at("position")], team: r[at("team")], age: r[at("age")],
       games: r[at("games_in_window")], ppg: r[at("ppg_weighted")],
-      // the Rebuilder's production numbers (last 17 games); absent in an older data file, then scoreRows uses the long ones
+      // the Rebuilder's production numbers (its own window, model/dynasty_params.R); absent in an older data file, then scoreRows uses the long ones
       gamesS: r[at("games_s")], ppgS: r[at("ppg_s")], por1qbS: r[at("por_1qb_s")], porSfS: r[at("por_sf_s")], sdProdS: r[at("sd_prod_s")],
       runway, ageValue: ageValueOf(runway),
       por1qb: r[at("por_1qb")], porSf: r[at("por_sf")], sdProd: r[at("sd_prod")],
@@ -133,7 +133,7 @@ export function staffTiebreak(r) {
 export function scoreRows(rows, formatKey, modeKey) {
   const f = FORMATS[formatKey] || FORMATS["1qb"], m = MODES[modeKey] || MODES.contender;
   const raw = rows.map((r) => {
-    // a mode with `short` reads the 17-game production numbers (ppg, games, production score, sd); the row carries the ones in use
+    // a mode with `short` reads the Rebuilder's production numbers (ppg, games, production score, sd); the row carries the ones in use
     const s = m.short && r.ppgS != null;
     // a mode with `window` counts production only for the share of those seasons he is still before his done age, never less than
     // `minShare` (at 0 every veteran past his done age scored the same, ~100 identical scores and 112 one-player tiers; Nov 17 2026)

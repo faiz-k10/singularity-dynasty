@@ -1,9 +1,11 @@
 # Constants shared by dynasty_production_value.R (the production number) and dynasty_value.R (the board's data + game logs).
-WINDOW    <- 34   # games of memory; was 17 / half-life 8 until Oct 29 2026 -- backtest_production_window.R: a longer memory predicts
-HALF_LIFE <- 17   # next season better (WR -2.1% RMSE, QB -1.4%, TE -0.3%, RB +0.4% vs 17 / 8); this is the CONTENDER's production number
+WINDOW    <- 17   # SWAPPED Nov 23 2026 (founder, trial): Contender now reads the last 17 games, half-life 8; Rebuilder 34 / 12. Revert: git tag dynasty-windows-before-swap.
+# games of memory; was 17 / half-life 8 until Oct 29 2026 -- backtest_production_window.R: a longer memory predicts
+HALF_LIFE <- 8
+# next season better (WR -2.1% RMSE, QB -1.4%, TE -0.3%, RB +0.4% vs 17 / 8); this is the CONTENDER's production number
 # The REBUILDER's production number is shorter (founder, Nov 3 2026): his last 17 games, half-life 8 (the old setting, in the backtest grid)
-WINDOW_SHORT    <- 17
-HALF_LIFE_SHORT <- 8
+WINDOW_SHORT    <- 34   # the Rebuilder's number (name kept: the site's `short` flag = the Rebuilder's columns)
+HALF_LIFE_SHORT <- 12  # half-life 12: the backtest's best all-round setting for a 34-game window (QB 3.291, RB 3.957, WR 3.394, TE 2.743)
 
 # THROUGH (season x 100 + week): the newest game the board may use. The newest REGULAR-SEASON week whose games are ALL final, so a
 # run between Thursday and Monday night can't half-count a week (founder, Nov 21 2026: a by-hand run with week 11 picked up only
