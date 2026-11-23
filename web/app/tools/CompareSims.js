@@ -101,8 +101,12 @@ export default function CompareSims({ players, maxCeiling }) {
               <th>Position</th>
               {players.map((p) => (
                 <td className="mono" key={p.player_name}>
-                  {p.position}
-                  {p.positionRank} · <TeamBadge team={p.team} />
+                  <span className="compare-pos">
+                    {p.position}
+                    {p.positionRank}
+                    <span aria-hidden="true">·</span>
+                    <TeamBadge team={p.team} />
+                  </span>
                 </td>
               ))}
             </tr>

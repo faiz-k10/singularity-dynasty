@@ -5325,6 +5325,9 @@ html{font-stretch:82%;}
 .compare-tabs{margin:0 0 18px; display:flex; align-items:center; justify-content:flex-end; gap:12px; flex-wrap:wrap;} /* the tab switch sits at the right edge */
 .compare-tabs .compare-share{margin-right:auto;} /* the start / sit Share button, at the left of the same row (.lab-copy resets margins, hence the extra class) */
 .compare-pos{display:inline-flex; align-items:center; justify-content:center; gap:8px;} /* position label, dot and team logo on one centre line */
+/* Compare Simulations' tag rows (Role / Production / Career stage): every pill the same size and centred in its column (founder, Nov 23 2026) */
+.compare-h2h td .archetype-pill-compact{display:inline-block; width:132px; max-width:100%; box-sizing:border-box; padding:4px 8px; font-size:11px; line-height:1.3; text-align:center; vertical-align:middle;}
+.compare-h2h td .compare-pos{font-size:14px; line-height:22px; vertical-align:middle;}
 .lu-gain-label{font-size:10.5px; font-weight:400; letter-spacing:.1em; text-transform:uppercase; color:var(--star-dim); margin-right:4px;}
 .lu-context{margin:0 0 10px; font-size:13px; color:var(--star-dim);}
 .lu-sleeper-logo{width:22px; height:22px; border-radius:4px; display:block;}
