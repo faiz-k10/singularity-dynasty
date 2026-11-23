@@ -456,7 +456,7 @@ function StatDetailRow({ row, colSpan, shapePeers, wrTePool, tagsByName, maxCeil
             <span className="weekly-panel-title">Season Simulation</span>
             {(tagKinds.length > 0 || row.labels?.length > 0) && (
               <div className="role-block">
-                <div className="role-block-caption mono">Seasonal Player Progress</div>
+                <div className="role-block-caption mono">Player Progress</div>
                 <div className="role-block-tags">
                   {tagKinds.map((k) => (
                     <ArchetypePill key={k} name={tagLabel(row, k)} active={openTag === k} onClick={() => clickTag(k)} />
