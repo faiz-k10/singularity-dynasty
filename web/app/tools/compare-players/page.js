@@ -56,7 +56,7 @@ export default async function ComparePlayersPage({ searchParams }) {
 
       <main id="main-content" className="wrap tool-wrap compare-wrap">
         <div className="eyebrow">{latest ? `Week ${latest.week} · ${latest.season}` : "Compare"}</div>
-        <h1>Compare Players</h1>
+        <h1>Compare Players — Weekly Projections</h1>
 
         {pool.length === 0 ? (
           <div className="tool-empty">
