@@ -4647,6 +4647,15 @@ html{font-stretch:82%;}
 .compare-stat{display:inline-flex; flex-direction:column; align-items:center; gap:2px; line-height:1.15;}
 .compare-stat strong{font-size:15px;}
 .compare-stat-range{font-size:10.5px; color:var(--star-dim); font-weight:400;}
+.compare-h2h td .compare-stat{display:flex; width:100%; max-width:220px; margin:0 auto;}
+.cmp-range{display:block; width:100%; margin-top:8px;}
+.cmp-range-track{position:relative; display:block; height:14px; border-bottom:1px solid rgba(var(--star-dot-rgb), .35);}
+.cmp-range-track::before, .cmp-range-track::after{content:""; position:absolute; bottom:-1px; width:1px; height:6px; background:rgba(var(--star-dot-rgb), .5);}
+.cmp-range-track::before{left:0;} .cmp-range-track::after{right:0;}
+.cmp-range-span{position:absolute; top:3px; height:8px; background:color-mix(in srgb, var(--pc) 35%, transparent); border:1px solid var(--pc); box-sizing:border-box;}
+.cmp-range-mid{position:absolute; top:0; width:3px; height:14px; margin-left:-1.5px; background:var(--pc);}
+.cmp-range-other{position:absolute; top:2px; width:1px; height:10px; background:var(--oc); opacity:.7;}
+.cmp-range-ends{display:flex; justify-content:space-between; margin-top:3px; font-size:9.5px; color:var(--star-dim); font-weight:400;}
 
 /* ===== Landing page data hub (app/hub/HubClient.js; what shows is set in lib/hubConfig.js) ===== */
 .hub{padding-top:8px;}

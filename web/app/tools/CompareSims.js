@@ -23,6 +23,31 @@ function Meter({ values, v, best }) {
   );
 }
 
+// A projected stat's range on the row's SHARED scale (lowest floor to highest ceiling of everyone compared): his floor-to-ceiling
+// as the shaded stretch, his median as the solid mark, the other players' medians as faint ticks, the scale's ends written under
+// it -- so overlap and who leads read at a glance (founder, Nov 23 2026: the plain meters "aren't very informative without context").
+function RangeStrip({ ranges, i, fmt }) {
+  const have = ranges.filter(Boolean);
+  const lo = Math.min(...have.map((r) => r.floor)), hi = Math.max(...have.map((r) => r.ceiling));
+  const at = (v) => (hi > lo ? ((v - lo) / (hi - lo)) * 100 : 50);
+  const me = ranges[i];
+  return (
+    <span className="cmp-range" aria-hidden="true">
+      <span className="cmp-range-track">
+        {ranges.map((r, j) =>
+          r && j !== i ? <span key={j} className="cmp-range-other" style={{ left: `${at(r.median)}%`, "--oc": PICK_COLORS[j] }} /> : null
+        )}
+        <span className="cmp-range-span" style={{ left: `${at(me.floor)}%`, width: `${Math.max(at(me.ceiling) - at(me.floor), 1)}%` }} />
+        <span className="cmp-range-mid" style={{ left: `${at(me.median)}%` }} />
+      </span>
+      <span className="cmp-range-ends">
+        <span>{fmt(lo)}</span>
+        <span>{fmt(hi)}</span>
+      </span>
+    </span>
+  );
+}
+
 function SimRow({ r, players }) {
   return (
     <tr>
@@ -172,7 +197,7 @@ export default function CompareSims({ players, maxCeiling }) {
                         <span className="compare-stat-range">
                           {s.fmt(rg.floor)} – {s.fmt(rg.ceiling)}
                         </span>
-                        <Meter values={s.medians} v={rg.median} best={s.best} />
+                        <RangeStrip ranges={s.ranges} i={i} fmt={s.fmt} />
                       </span>
                     ) : (
                       "—"
@@ -184,7 +209,7 @@ export default function CompareSims({ players, maxCeiling }) {
           </tbody>
         </table>
       </div>
-      <p className="compare-legend">Each meter compares the players on that row; a full meter leads it. Season stats are projected totals.</p>
+      <p className="compare-legend">Each meter compares the players on that row; a full meter leads it. Season stats are projected totals: the strip under each one runs from the lowest floor to the highest ceiling among the players compared, with his floor to ceiling shaded, his median marked and the other players&apos; medians as thin ticks in their colours.</p>
 
       {players.some((p) => p.recentGames?.length) && (
         <div className="compare-panels" style={{ "--cmp-n": n }}>
