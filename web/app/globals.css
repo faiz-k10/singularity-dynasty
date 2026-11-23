@@ -7557,7 +7557,7 @@ button.sky-variant:focus-visible{outline:2px solid var(--ember);outline-offset:1
 /* Plan features on the landing Plans section (EventHorizon.js Plans, PLANS in HeaderMenus.js; founder, Nov 22 2026): each plan's tag,
    what it includes (the plan below it "plus" these), and on yearly billing the monthly price struck through beside the yearly one. */
 .ehp-pd b{display:flex;flex-direction:column;align-items:flex-start;gap:6px}
-.ehp-pd-tag{font:10px var(--font-mono), monospace;font-style:normal;letter-spacing:.1em;text-transform:uppercase;color:var(--ehp-ink);border:1px solid var(--ehp-rule);padding:2px 6px;white-space:nowrap}
+.ehp-pd-tag{font:10px var(--font-mono), monospace;font-style:normal;letter-spacing:.1em;text-transform:uppercase;color:var(--ehp-ink);border:1px solid var(--ehp-rule);padding:2px 6px;max-width:100%;box-sizing:border-box} /* wraps inside the name column rather than running into the next one */
 .ehp-pd .on .ehp-pd-tag{border-color:var(--ehp-mark);color:var(--ehp-mark)}
 .ehp-feats{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:5px}
 .ehp-feats li{position:relative;padding-left:16px;font-size:14px;line-height:1.4;color:var(--ehp-ink)}
