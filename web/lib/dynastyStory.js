@@ -82,16 +82,18 @@ export function dynastyStory(p, ctx) {
 
   // ---- 2: where it comes from ----
   const diff = Math.abs(p.ppg - ctx.repl);
+  const pct = (a, n) => `${Math.round((100 * a) / n)}%`;
   const prod = {
     head: p.ppg >= ctx.repl
       ? `He scores ${pts(p.ppg)} a game. A replacement ${one(p.pos)} gives you ${pts(ctx.repl)}.`
       : `He's averaging ${pts(p.ppg)} a game, ${pts(diff)} under what a replacement ${one(p.pos)} gives you.`,
+    // every player gets the share of starter-worthy weeks as a percentage (founder, Nov 23 2026)
     close: ctx.games
       ? ctx.above / ctx.games >= 0.75
-        ? `He cleared that bar in ${ctx.above} of his last ${ctx.games} games, so the bad weeks are rare.`
+        ? `He cleared that bar in ${ctx.above} of his last ${ctx.games} games. That's a starter-worthy week ${pct(ctx.above, ctx.games)} of the time, so the bad weeks are rare.`
         : ctx.above / ctx.games >= 0.45
-          ? `He cleared that bar in ${ctx.above} of his last ${ctx.games} games. That's a starter-worthy week ${Math.round((100 * ctx.above) / ctx.games)}% of the time.`
-          : `Only ${ctx.above} of his last ${ctx.games} games cleared that bar, so a few big weeks carry the average.`
+          ? `He cleared that bar in ${ctx.above} of his last ${ctx.games} games. That's a starter-worthy week ${pct(ctx.above, ctx.games)} of the time.`
+          : `Only ${ctx.above} of his last ${ctx.games} games cleared that bar. That's a starter-worthy week just ${pct(ctx.above, ctx.games)} of the time, so a few big weeks carry the average.`
       : null,
   };
 
