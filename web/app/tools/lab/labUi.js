@@ -8,7 +8,8 @@ import BrandMark from "@/app/BrandMark";
 // metric picker.
 
 // One colour per picked player, in the order they were added (theme tokens, so both themes work). Mint, mission red, steel, the old gold and frost blue -- all from the Europa palette, each with a light-mode value.
-export const PICK_COLORS = ["var(--horizon-gold)", "var(--down)", "var(--neon-blue)", "var(--established)", "var(--frost)"];
+import { PICK_COLORS } from "@/lib/pickColors";
+export { PICK_COLORS };
 export const MAX_PICKS = PICK_COLORS.length;
 export const POS_COLOR = { QB: "var(--pos-qb)", RB: "var(--pos-rb)", WR: "var(--pos-wr)", TE: "var(--pos-te)" };
 

@@ -6558,12 +6558,12 @@ details.acct-danger > summary.acct-h{color:var(--down)}
    A new bar joins the hazard lists below (track / fill) instead of drawing its own. ===== */
 :root{--hazard:repeating-linear-gradient(45deg, #000 0 4.5px, transparent 4.5px 6px);}
 .sim-bar-track, .stat-panel-pace-progress-track, .weekly-rank-bar, .weekly-gamelog-bar, .shape-compare-track, .pctile-bar, .pctile-scale-track,
-.hub-range-track, .hub-stage-bar, .hub-role-bar, .league-dash-winbar, .lab-cell-pct, .lab-board-track{
+.hub-range-track, .hub-stage-bar, .hub-role-bar, .league-dash-winbar, .lab-cell-pct, .lab-board-track, .cmpc-meter{
   box-sizing:border-box; min-height:8px; background:none; border-radius:0;
   border:1px solid rgba(var(--star-dot-rgb), .28); border-left:2px solid rgba(var(--star-dot-rgb), .6); border-right:2px solid rgba(var(--star-dot-rgb), .6);
 }
 .sim-bar-typical, .sim-bar-upside, .stat-panel-pace-progress-fill, .weekly-rank-bar > span, .weekly-gamelog-bar em, .shape-compare-fill, .pctile-bar-fill,
-.pctile-scale-fill, .hub-range-span, .hub-stage-seg, .hub-role-fill, .league-dash-winbar > span, .lab-cell-bar, .lab-board-bar{
+.pctile-scale-fill, .hub-range-span, .hub-stage-seg, .hub-role-fill, .league-dash-winbar > span, .lab-cell-bar, .lab-board-bar, .cmpc-meter-fill{
   -webkit-mask:var(--hazard); mask:var(--hazard); border-radius:0; opacity:1;
 }
 .pctile-vbar-track, .stat-panel-pace-rangebar{
@@ -6616,8 +6616,8 @@ details.acct-danger > summary.acct-h{color:var(--down)}
 .cmpc-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); column-gap:12px; row-gap:0; align-items:start;}
 /* every card shares the grid's rows (subgrid), so the header and each section line up across the players even when one has more badges */
 .cmpc-card{display:grid; grid-template-rows:subgrid; grid-row:span var(--rows); row-gap:0; margin-bottom:12px;}
-.cmpc-card{background:var(--void-panel); border:1px solid var(--rule); border-top:2px solid var(--rule-strong); border-radius:2px; min-width:0;}
-.cmpc-card.is-lead{border-top-color:var(--horizon-gold);}
+.cmpc-card{background:var(--void-panel); border:1px solid var(--rule); border-top:2px solid var(--pc, var(--rule-strong)); border-radius:2px; min-width:0;}
+.cmpc-card.is-lead{border-top-width:4px;}
 .cmpc-head{padding:12px 12px 10px; border-bottom:1px solid var(--rule); display:flex; flex-direction:column; align-items:center; gap:6px;}
 .cmpc-id{margin:0; width:100%;} /* the Player Profiles header, borrowed with its compare-page styling */
 .cmpc-head .weekly-player-header{border:0; background:none; padding:0; margin:0; width:100%;}
@@ -6634,10 +6634,10 @@ details.acct-danger > summary.acct-h{color:var(--down)}
 .cmpc-row:last-child{border-bottom:0;}
 .cmpc-row-l{font-family:var(--font-mono), monospace; font-size:13.5px; color:var(--star-dim); min-width:0;}
 .cmpc-row-v{font-size:17px; font-weight:700; text-align:right;}
-.cmpc-row.is-best{background:rgba(var(--horizon-gold-rgb), .12);}
-.cmpc-row.is-worst{background:rgba(var(--down-rgb), .14);}
-.cmpc-row.is-best .cmpc-row-v{color:var(--horizon-gold);}
-.cmpc-row.is-worst .cmpc-row-v{color:var(--down);}
+.cmpc-row-v{color:var(--pc);}
+.cmpc-row.is-best .cmpc-row-v{font-weight:800;}
+.cmpc-meter{grid-column:1 / -1; display:block; height:8px; margin-top:2px;}
+.cmpc-meter-fill{display:block; height:100%; background:var(--pc);}
 @media (max-width:900px){.cmpc-grid{grid-template-columns:minmax(0, 1fr);}}
 /* Compare pickers: one Clear button at the end of the row empties every box */
 .compare-clear-all{flex:none; align-self:flex-end; height:30px; padding:0 16px; background:transparent; border:1px solid var(--rule); border-radius:2px; color:var(--star-dim); font-size:12px; letter-spacing:.06em; text-transform:uppercase; cursor:pointer;}

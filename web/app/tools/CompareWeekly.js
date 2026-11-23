@@ -4,6 +4,7 @@ import Define from "../Define";
 import ShareCardButton from "../ShareCardButton";
 import { PlayerHeaderPanel, PlayerStatsRow, OutcomeCurvePanel, UsageTdPanel, GameLogPanel } from "./WeeklyDetailRow";
 import { fmt1 } from "@/lib/format";
+import { PICK_COLORS } from "@/lib/pickColors";
 
 // Compare Players (Weekly Projection Rankings), as two tabs: HEAD TO HEAD (a table of the numbers that matter) and PLAYER PROFILES (the same
 // dashboard panels the opened-player row shows (identity + badges, this week / last week, outcome curve, usage or
@@ -56,6 +57,19 @@ function bestIndexes(values, best) {
   return new Set(values.map((v, i) => (v === target ? i : -1)).filter((i) => i >= 0));
 }
 
+// How full a row's meter is for one player (0-1): a higher-is-better number against the row's top value (from zero, or from the lowest
+// when a number can go negative), a lower-is-better one (rank, INT) as the best value over his, so the leader's meter is full.
+function meterShare(values, v, best) {
+  if (v == null) return 0;
+  const have = values.filter((x) => x != null);
+  if (best === "low") {
+    const min = Math.min(...have);
+    return v <= 0 ? 1 : Math.max(0, min) / v;
+  }
+  const lo = Math.min(0, ...have), hi = Math.max(...have);
+  return hi > lo ? (v - lo) / (hi - lo) : 0;
+}
+
 function MatchupCell({ row }) {
   if (!row.opponent || row.opponent === "NA") return <span className="mono">BYE</span>;
   const sep = row.is_home === true ? "vs" : row.is_home === false ? "@" : "·";
@@ -69,8 +83,8 @@ function MatchupCell({ row }) {
 
 // HEAD TO HEAD as cards (founder, Nov 8 2026: the table left too much empty space): one card per player carrying every number the table
 // does -- position, matchup, overall rank, median / floor / ceiling, last week, the projected stat line and the usage profile -- and
-// the player's header (photo, size, badges) on top. In each row the best value is shaded mint and the worst red (founder, Nov 8 2026); the card that leads the most rows
-// gets a mint top edge. (A Table tab with the old grid was removed on Nov 8 2026, founder.)
+// the player's header (photo, size, badges) on top. In each row the player's value has a meter in his Observatory pick colour, full for the row's leader (founder, Nov 22 2026; it
+// replaced best / worst cell shading); the card that leads the most rows gets a heavier top edge in his colour. (A Table tab with the old grid was removed on Nov 8 2026, founder.)
 function HeadToHeadCards({ players, shown }) {
   const n = players.length;
   // The headline numbers (everything above the first section) become their own "This week" section, listed like every other section.
@@ -90,7 +104,7 @@ function HeadToHeadCards({ players, shown }) {
     <>
       <div className="cmpc-grid" style={{ "--cmp-n": n, "--rows": sections.length + 1 }}>
         {players.map((p, i) => (
-          <div key={p.player_name} className={`cmpc-card${leads[i] === most ? " is-lead" : ""}`}>
+          <div key={p.player_name} className={`cmpc-card${leads[i] === most ? " is-lead" : ""}`} style={{ "--pc": PICK_COLORS[i] }}>
             <div className="cmpc-head">
               <div className="compare-panels cmpc-id">
                 <PlayerHeaderPanel row={p} logoByName />
@@ -110,9 +124,12 @@ function HeadToHeadCards({ players, shown }) {
                     </div>
                   )}
                   {sec.rows.map((r) => (
-                    <div key={r.def.label} className={`cmpc-row${r.best.has(i) ? " is-best" : r.worst.has(i) ? " is-worst" : ""}`}>
+                    <div key={r.def.label} className={`cmpc-row${r.best.has(i) ? " is-best" : ""}`}>
                       <span className="cmpc-row-l">{r.def.term ? <Define term={r.def.term}>{r.def.label}</Define> : r.def.label}</span>
                       <span className="cmpc-row-v mono">{val(r, i)}</span>
+                      <span className="cmpc-meter" aria-hidden="true">
+                        <span className="cmpc-meter-fill" style={{ width: `${(meterShare(r.values, r.values[i], r.def.best) * 100).toFixed(1)}%` }} />
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -121,7 +138,7 @@ function HeadToHeadCards({ players, shown }) {
           </div>
         ))}
       </div>
-      <p className="compare-legend">In each row the best value is shaded mint and the worst red. Projected stats are per-game averages.</p>
+      <p className="compare-legend">Each meter compares the players on that row; a full meter leads it. Projected stats are per-game averages.</p>
     </>
   );
 }
