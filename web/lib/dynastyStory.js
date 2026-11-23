@@ -38,7 +38,7 @@ const pts = (v) => v.toFixed(1);
 //   gapBelow: his score minus the next player's
 //   group: group name; tierSize, tierPlace, mates: names of the others in his tier (nearest first)
 //   repl: a replacement player's points a game here; above / games: games above it in his window
-//   doneAge: the age his position usually falls off; rebuild: the mode reads only the next couple of seasons
+//   doneAge: the age his position usually falls off (never printed in the copy); rebuild: the mode reads only the next couple of seasons
 //   viewLabel: "Superflex contender"; views: [{ label, rank }] for the four format x team-direction views (may be null). Contender / rebuilder
 //   describes the TEAM, not the league (founder, Nov 23 2026), so the copy says "for a Superflex contender", never "in Superflex Contender leagues".
 //   coach: { hc, calls } | null
@@ -98,14 +98,16 @@ export function dynastyStory(p, ctx) {
   };
 
   // ---- 3: how long it lasts ----
+  // Only his age and what it means: the age his position falls off at is ours and is not printed (founder, Nov 23 2026).
+  const he = `He's ${yrs(p.age)}`;
   const age = {
-    head: `${many(p.pos)[0].toUpperCase() + many(p.pos).slice(1)} usually fall off around ${ctx.doneAge}. He's ${yrs(p.age)}.`,
-    close: ctx.rebuild && p.runway < 2
-      ? (p.runway <= 0 ? `That's the problem for a rebuilder. He's already past it.` : `That's the problem for a rebuilder. His good years will likely be gone before your team is ready.`)
-      : p.runway <= 0 ? `So whatever he gives you now is borrowed time.`
-        : p.runway < 2 ? `So enjoy the points now. They won't hold their value for long.`
-          : p.runway < 5 ? `So he's in his prime, with a few good seasons still to come.`
-            : `So the production you see now should have years left on it.`,
+    head: ctx.rebuild && p.runway < 2
+      ? (p.runway <= 0 ? `${he}. That's a problem for a rebuilder, because he's already past his best years.` : `${he}. That's a problem for a rebuilder, because his good years will likely be gone before your team is ready.`)
+      : p.runway <= 0 ? `${he}. Whatever he gives you now is borrowed time.`
+        : p.runway < 2 ? `${he}. Enjoy the points now, because they won't hold their value for long.`
+          : p.runway < 5 ? `${he} and in his prime, with a few good seasons still to come.`
+            : `${he}. The production you see now should have years left on it.`,
+    close: null,
   };
 
   // ---- 4: who he's level with ----

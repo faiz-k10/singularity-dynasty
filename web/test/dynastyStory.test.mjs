@@ -28,12 +28,12 @@ test("no generated-text tics: no mid-sentence colons, no dashes, no not-X-but-Y"
 test("each beat hands off to the next one", () => {
   const s = dynastyStory(base, ctx);
   assert.match(s.worth.close, /; here.s where it comes from/);
-  assert.match(s.age.close, /^So /);
+  assert.match(s.age.head, /^He.s [0-9.]+[ .]/); assert.equal(s.age.close, null);
 });
 
 test("rebuilder past his done age is told plainly", () => {
   const s = dynastyStory({ ...base, age: 30.2, runway: -2.2 }, { ...ctx, rebuild: true, prev: 2 });
-  assert.match(s.age.close, /problem for a rebuilder/);
+  assert.match(s.age.head, /problem for a rebuilder/);
 });
 
 test("alone in a tier and a league-proof rank", () => {
