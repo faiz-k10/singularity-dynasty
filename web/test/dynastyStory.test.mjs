@@ -41,3 +41,8 @@ test("alone in a tier and a league-proof rank", () => {
   assert.match(s.tier.head, /Nobody on the board/);
   assert.equal(s.league.head, "He's No. 4 whatever your format and whichever way your team is headed.");
 });
+
+test("a player at replacement level says so instead of 0.0", () => {
+  const s = dynastyStory({ ...base, pos: "QB", ppg: 15.31 }, { ...ctx, repl: 15.33 });
+  assert.equal(s.prod.head, "He's averaging 15.3 a game, the same as a replacement-level quarterback.");
+});

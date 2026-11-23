@@ -84,7 +84,9 @@ export function dynastyStory(p, ctx) {
   const diff = Math.abs(p.ppg - ctx.repl);
   const pct = (a, n) => `${Math.round((100 * a) / n)}%`;
   const prod = {
-    head: p.ppg >= ctx.repl
+    head: pts(diff) === pts(0) // within a rounding of replacement either way (founder, Nov 23 2026)
+      ? `He's averaging ${pts(p.ppg)} a game, the same as a replacement-level ${one(p.pos)}.`
+      : p.ppg >= ctx.repl
       ? `He scores ${pts(p.ppg)} a game. A replacement ${one(p.pos)} gives you ${pts(ctx.repl)}.`
       : `He's averaging ${pts(p.ppg)} a game, ${pts(diff)} under what a replacement ${one(p.pos)} gives you.`,
     // every player gets the share of starter-worthy weeks as a percentage (founder, Nov 23 2026)
