@@ -151,7 +151,7 @@ export default function ComparePlayerPickers({ players, defaults, maxPlayers = 3
           <div className="compare-form-field" key={slot.name} data-wall="compare-third-slot">
             <span className="feed-label mono">{slot.label}</span>
             <Link href="/#pricing" className="compare-select compare-picker-input compare-locked">
-              Add more with Explorer →
+              {maxPlayers < 3 ? "Add more with Explorer →" : "Add a fourth with Singularity →"}
             </Link>
           </div>
         )

@@ -21,8 +21,8 @@ export const metadata = {
 };
 
 const SLOTS = ["p1", "p2", "p3", "p4"];
-// Stargazer compares 2 players, Explorer and Singularity up to 4 (founder, Nov 9 2026: 5 was tried for a day; 3 before that).
-const MAX_COMPARE = { stargazer: 2 };
+// Stargazer compares 2 players, Explorer 3, Singularity 4 (founder, Nov 23 2026; 5 was tried for a day on Nov 9).
+const MAX_COMPARE = { stargazer: 2, explorer: 3 };
 const TEASER_LIMIT = 50;
 
 // Same data and the same access rule as Weekly Projection Rankings: Explorer and Singularity can compare any ranked

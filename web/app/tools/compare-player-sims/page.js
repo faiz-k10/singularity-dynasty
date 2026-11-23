@@ -17,8 +17,8 @@ export const metadata = {
 };
 
 const SLOTS = ["p1", "p2", "p3", "p4"];
-// Stargazer compares 2 players, Explorer and Singularity 4.
-const MAX_COMPARE = { stargazer: 2 };
+// Stargazer compares 2 players, Explorer 3, Singularity 4 (founder, Nov 23 2026).
+const MAX_COMPARE = { stargazer: 2, explorer: 3 };
 
 // Singularity-only, same as Player Season Simulations itself (free viewers get the top 10): the rows are the very ones
 // that dashboard shows (shared buildSimRows), so the tier gate has to match exactly.
