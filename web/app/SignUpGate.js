@@ -12,7 +12,7 @@ export default function SignUpGate() {
   return (
     <main id="main-content" className="wrap auth-wrap">
       <div className="auth-card reveal in" data-wall="sign-up">
-        <div className="eyebrow">14 days of Explorer, free</div>
+        <div className="eyebrow">14 days of Explorer, on us</div>
         <h1>Become an Explorer.</h1>
         <p className="auth-sub">
           Every player, every league, every Sunday is a sky full of signals. Make an account and explore it all with 14 days of Explorer free. No card needed.
