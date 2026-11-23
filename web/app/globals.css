@@ -3286,7 +3286,9 @@ tr.stat-row-selected td{background:var(--void-panel);}
 .compare-radar-card .pctile-card{width:100%; box-sizing:border-box;}
 /* the percentile bars under each compared radar share the card's width (labels wrap instead of running into each other) and fill
    in the player's colour (founder, Nov 22 2026) */
-.compare-radar-card .pctile-card-head{flex-wrap:wrap; row-gap:4px;}
+.compare-radar-card .pctile-card-head{flex-direction:column; align-items:center; justify-content:flex-start; gap:4px; margin-bottom:14px; text-align:center;}
+.compare-radar-card .pctile-card-title{font-size:13px; line-height:1.2;}
+.compare-radar-card .pctile-card-sub{font-size:10px; line-height:1.2;}
 .compare-radar-card .pctile-rows{gap:4px; overflow-x:visible;}
 .compare-radar-card .pctile-vbar{flex:1 1 0; min-width:0; width:auto; max-width:72px; padding:4px 0;}
 .compare-radar-card .pctile-vbar-label{white-space:normal; overflow-wrap:anywhere; min-height:2.4em;}
