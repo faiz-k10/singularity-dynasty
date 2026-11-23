@@ -579,7 +579,7 @@ function Plans() {
         </h2>
         <div className="ehp-bill" role="group" aria-label="Billing">
           <button type="button" className={yearly ? "" : "on"} onClick={() => setYearly(false)} aria-pressed={!yearly}>Monthly</button>
-          <button type="button" className={yearly ? "on" : ""} onClick={() => setYearly(true)} aria-pressed={yearly}>Yearly · save up to 42%</button>
+          <button type="button" className={yearly ? "on" : ""} onClick={() => setYearly(true)} aria-pressed={yearly}>Yearly · save up to 40+%</button>
         </div>
         <div className="ehp-pd">
           {PLANS.map((p, i) => (
