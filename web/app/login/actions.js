@@ -86,8 +86,8 @@ export async function signup(formData) {
   const isNew = Boolean(data?.user?.id && data.user.identities?.length);
   if (ref && isNew) await recordReferral(data.user.id, ref);
   if (isNew) {
-    // Unless the box was unticked, a new account joins The Singularity Drive Newsletter (founder, Nov 22 2026). Neither can stop the sign-up.
-    if (formData.get("newsletter") === "on") await addSubscriber(email, "signup").catch((e) => console.error("[signup] newsletter:", e?.message || e));
+    // Every new account joins The Singularity Drive Newsletter (founder, Nov 22 2026). Can't stop the sign-up.
+    await addSubscriber(email, "signup").catch((e) => console.error("[signup] newsletter:", e?.message || e));
     const trial = await startTrial(data.user.id, sleeper);
     if (trial.trial === "used") back("/login", "message", "check-email-trial-used", next);
   }

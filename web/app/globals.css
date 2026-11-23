@@ -7549,8 +7549,6 @@ button.sky-variant:focus-visible{outline:2px solid var(--ember);outline-offset:1
 /* Start / sit teaser for free accounts (LineupAdvice.js, Nov 22 2026): the swap count and the way to see them, in place of the swap list. */
 .lu-locked-swaps{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:12px;padding:14px 16px;border:1px dashed var(--rule);background:rgba(var(--horizon-rgb),.06)}
 .lu-locked-swaps .mono{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--star-dim)}
-.auth-check{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--star-dim);margin:4px 0 2px;cursor:pointer}
-.auth-check input{accent-color:var(--ember);width:16px;height:16px;margin:0}
 /* The Explorer trial countdown on My Team (app/my-team/page.js, Nov 22 2026). */
 .trial-banner{margin:0 0 12px;padding:10px 14px;border:1px solid rgba(var(--horizon-rgb),.5);background:rgba(var(--horizon-rgb),.08);font-size:12px;color:var(--star-dim)}
 .trial-banner span{color:var(--horizon);font-weight:700}

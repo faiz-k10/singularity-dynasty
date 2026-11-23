@@ -56,7 +56,8 @@ export default function PrivacyPage() {
             <li>To communicate service-related updates to you.</li>
           </ul>
           <p>
-            If you subscribe to our newsletter, we store your email address,
+            Creating an account subscribes you to our newsletter, The Singularity
+            Drive. If you subscribe, or create an account, we store your email address,
             when you signed up and where (for example, the home page), and use
             it only to send the newsletter. Every newsletter has a link to
             unsubscribe in one click; we keep a record that you unsubscribed so

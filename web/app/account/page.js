@@ -202,8 +202,8 @@ export default async function AccountPage({ searchParams }) {
           <details className="acct-section">
             <summary className="acct-h mono" id="acct-email"><span>Email</span><span className="acct-hint">The Singularity Drive Newsletter</span></summary>
             <p className="acct-small">
-              Our one email is The Singularity Drive Newsletter, free for every plan. <Link href="/newsletter">Sign up</Link>; every issue has an unsubscribe
-              link. Account emails (sign-in links, receipts) are always sent.
+              Our one email is The Singularity Drive Newsletter, free for every plan and sent to every member. Account emails (sign-in links,
+              receipts) are always sent.
             </p>
           </details>
 

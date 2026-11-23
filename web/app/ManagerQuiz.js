@@ -106,7 +106,6 @@ export default function ManagerQuiz({ source = "quiz", compact = false }) {
             <button type="submit" className="btn-primary" disabled={state === "sending"}>{state === "sending" ? "Saving…" : "See my result"}</button>
           </div>
           {state === "error" && <p className="auth-error mono" role="alert">{error}</p>}
-          <p className="mq-fine">One email a week. One-click unsubscribe in every email.</p>
         </form>
       )}
     </div>
