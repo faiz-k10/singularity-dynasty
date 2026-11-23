@@ -16,6 +16,7 @@ export const PLANS = [
       "Season simulations for every player, with pace, shapes and comparisons",
       "The full Observatory, simulation numbers included",
       "Unlimited leagues, all live",
+      "Bonus Prospect Data content",
       "Your founding price, locked while you stay (first 50)",
       "Priority Discord",
     ],
@@ -29,6 +30,7 @@ export const PLANS = [
       "Every player in the weekly rankings and the full Dynasty Board",
       "Your exposure across leagues, desktop alerts and the Tuesday email",
       "Compare three players at once",
+      "Prospect Deep Dives",
     ],
   },
   {
