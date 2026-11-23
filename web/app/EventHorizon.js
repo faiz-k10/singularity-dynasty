@@ -585,13 +585,7 @@ function Plans() {
           {PLANS.map((p, i) => (
             <div key={p.id} className={i === on ? "on" : ""} onMouseEnter={() => setOn(i)} onFocus={() => setOn(i)}>
               <b>{p.name}{p.tag && <i className="ehp-pd-tag">{p.tag}</i>}</b>
-              <span>
-                {p.say}
-                <ul className="ehp-feats">
-                  {p.plus && <li className="ehp-feats-plus">{p.plus}</li>}
-                  {p.feats.map((f) => <li key={f}>{f}</li>)}
-                </ul>
-              </span>
+              <span>{p.say}</span>
               <em>
                 {p.month ? <>{yearly && <s>${p.month}</s>}${yearly ? p.year : p.month} / mo</> : "Free"}
               </em>
@@ -603,6 +597,9 @@ function Plans() {
         </div>
         <p className="ehp-fine">{yearly ? "Billed yearly: Explorer $84, Singularity $240." : "Billed monthly."} 14-day refund, cancel any time.</p>
       </div>
+      {/* the orbits and, under them, everything the hovered (or focused) plan includes (founder, Nov 22 2026: the rows stay short, the
+          full feature set lives here); keyed by plan so it fades in fresh on each change */}
+      <div className="ehp-plan-side">
       <svg className="ehp-planorbits" viewBox="-280 -280 560 560" aria-hidden="true">
         {/* the DS-initials logo in the middle (founder, Nov 11 2026: the alternate logo, just the letters DS in the disc): scaled so its disc is exactly the old centre circle (radius 34), its line and football around it */}
         <g transform="translate(-54.4 -54.4) scale(2.72)"><BrandMark className="ehp-planmark" initials width="40" height="40" /></g>
@@ -631,6 +628,13 @@ function Plans() {
         {/* the highlighted plan's name sits at the bottom of the graphic, as wide as the rings themselves (460 units: textLength spreads the letters to fit, so every name spans the visual; founder, Nov 11 2026) */}
         <text className="ehp-planname" x="-230" y="330" textAnchor="start" textLength="460" lengthAdjust="spacing" fill="var(--ehp-mark)">{PLANS[on].name.toUpperCase()}</text>
       </svg>
+      <div className="ehp-plan-feats" key={PLANS[on].id} aria-live="polite">
+        {PLANS[on].plus && <p className="ehp-feats-plus">{PLANS[on].plus}</p>}
+        <ul className="ehp-feats">
+          {PLANS[on].feats.map((f) => <li key={f}>{f}</li>)}
+        </ul>
+      </div>
+      </div>
     </div>
   );
 }
