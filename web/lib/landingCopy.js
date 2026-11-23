@@ -8,7 +8,7 @@ export const SUMMARY = [
   ["Dynasty Board", "Production weighed against age. Tiers show who is truly ahead.", "All year", "/tools/draft-board"],
   ["Player Season Simulations", "Each player's season range, redrawn after every game.", "Weekly", "/tools/player-simulations"],
   ["The Observatory", "Any two stats, every player, one chart. Export it.", "Anytime", "/tools/lab"],
-  ["Compare Players", "Two or three players side by side. Every number lined up, the edge marked.", "Start / sit", "/tools/compare-players"],
+  ["Compare Players", "Compare up to three players side by side. Every number lined up, the edge marked.", "Start / sit", "/tools/compare-players"],
   ["The Night Sky", "Members only. Check in, earn stars, fill a sky.", "Daily", "/account/sky"],
   ["The Singularity Drive", "What moved before waivers. Tuesdays.", "Tuesdays", "/newsletter"],
 ];
