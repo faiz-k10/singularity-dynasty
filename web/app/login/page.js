@@ -14,8 +14,8 @@ export default async function LoginPage({ searchParams }) {
 
   return (
     <AuthCard
-      title="Sign in to your orbit."
-      sub="Track your tier, manage your subscription, and pick up where you left off."
+      title="Claim your orbit."
+      sub="Create an account to start your 14 days of Explorer, or sign in to pick up where you left off."
       error={params?.error}
       message={params?.message}
     >
