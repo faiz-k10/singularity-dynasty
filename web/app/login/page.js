@@ -66,7 +66,7 @@ export default async function LoginPage({ searchParams }) {
 
         <label className="auth-check mono">
           <input type="checkbox" name="newsletter" defaultChecked />
-          New account: send me the Tuesday newsletter
+          New account: send me The Singularity Drive Newsletter
         </label>
         <BotGuard action="login" />
         <div className="auth-actions">
