@@ -67,6 +67,9 @@ export async function signup(formData) {
   const { email, password, next } = fields(formData);
   if (!email || !password) back("/login", "error", "missing-fields", next);
   if (password.length < MIN_PASSWORD) back("/login", "error", "weak-password", next);
+  // A new account types its password twice (founder, Nov 22 2026), so a typo can't lock someone out of an account they just made; sign-in
+  // uses the same form and ignores this field.
+  if (String(formData.get("confirm") || "").slice(0, 200) !== password) back("/login", "error", "passwords-differ", next);
   if (isBot(formData)) back("/login", "message", "check-email", next);
   if (await overLimit("signup", email)) back("/login", "error", "rate-limit", next);
   // A Sleeper username is required to sign up (founder, Nov 22 2026): the 14-day Explorer trial starts now and belongs to that Sleeper

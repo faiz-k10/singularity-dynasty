@@ -32,7 +32,7 @@ export default async function LoginPage({ searchParams }) {
           maxLength={254}
           autoComplete="email"
           className="feed-input auth-input"
-          placeholder="you@domain.com"
+          placeholder="you@email.com"
         />
 
         <label className="feed-label mono" htmlFor="password">
@@ -45,6 +45,19 @@ export default async function LoginPage({ searchParams }) {
           required
           maxLength={200}
           autoComplete="current-password"
+          className="feed-input auth-input"
+          placeholder="••••••••"
+        />
+
+        <label className="feed-label mono" htmlFor="confirm">
+          CONFIRM PASSWORD <span className="auth-hint">(new accounts)</span>
+        </label>
+        <input
+          id="confirm"
+          name="confirm"
+          type="password"
+          maxLength={200}
+          autoComplete="new-password"
           className="feed-input auth-input"
           placeholder="••••••••"
         />

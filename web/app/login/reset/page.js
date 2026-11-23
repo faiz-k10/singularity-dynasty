@@ -15,7 +15,7 @@ export default async function ResetPage({ searchParams }) {
         <label className="feed-label mono" htmlFor="email">
           EMAIL
         </label>
-        <input id="email" name="email" type="email" required maxLength={254} autoComplete="email" className="feed-input auth-input" placeholder="you@domain.com" />
+        <input id="email" name="email" type="email" required maxLength={254} autoComplete="email" className="feed-input auth-input" placeholder="you@email.com" />
         <BotGuard action="reset" />
         <div className="auth-actions">
           <button formAction={requestPasswordReset} className="btn-primary">

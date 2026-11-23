@@ -98,7 +98,7 @@ export default function ManagerQuiz({ source = "quiz", compact = false }) {
           </div>
           <label>
             <span>Email</span>
-            <input name="email" type="email" required maxLength={254} autoComplete="email" placeholder="you@domain.com" />
+            <input name="email" type="email" required maxLength={254} autoComplete="email" placeholder="you@email.com" />
           </label>
           <BotGuard action="newsletter" onToken={setToken} />
           <div className="mq-row">
