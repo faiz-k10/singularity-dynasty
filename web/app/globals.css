@@ -7148,6 +7148,10 @@ html.theme-switching *, html.theme-switching *::before, html.theme-switching *::
 @media (prefers-color-scheme: light){:root:not([data-theme="dark"]) .stat-radar{--radar-median:#fff; --cmp-ink:#000;}}
 :root[data-theme="light"] .stat-radar{--radar-median:#fff; --cmp-ink:#000;}
 .stat-radar.is-comparing .radar-shape-compare{stroke:var(--cmp-ink);}
+/* Compare Simulations only (not Player Season Simulations): the median line is white in dark mode and black in light mode (--star), its dots
+   outlined in the card colour so they still read as dots (founder, Nov 23 2026) */
+.compare-radar-grid .compare-radar-card .stat-radar{--radar-median:var(--star);}
+.compare-radar-grid .compare-radar-card .stat-radar .radar-point-active{stroke:var(--void-panel);}
 
 /* Welcome back: two lines, the username larger and below (founder, Nov 10 2026). */
 .ehp-who{font-family:var(--font-display), sans-serif; font-weight:800; line-height:1.1; letter-spacing:.06em; text-transform:uppercase; margin:4px 0 10px; color:var(--ehp-ink, var(--star)); width:0; min-width:100%; overflow:hidden; white-space:nowrap;} /* zero intrinsic width: it fills whatever width the rest of the block sets, never widens it */
