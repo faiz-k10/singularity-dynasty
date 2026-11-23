@@ -7552,3 +7552,34 @@ button.sky-variant:focus-visible{outline:2px solid var(--ember);outline-offset:1
   .sky-reward-head{font-size:22px}
   .sky-reward-cta{grid-column:1/-1}.sky-reward-btn{width:100%;justify-content:center}
 }
+
+/* Start / sit teaser for free accounts (LineupAdvice.js, Nov 22 2026): the swap count and the way to see them, in place of the swap list. */
+.lu-locked-swaps{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:12px;padding:14px 16px;border:1px dashed var(--rule);background:rgba(var(--horizon-rgb),.06)}
+.lu-locked-swaps .mono{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--star-dim)}
+.auth-check{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--star-dim);margin:4px 0 2px;cursor:pointer}
+.auth-check input{accent-color:var(--ember);width:16px;height:16px;margin:0}
+/* The Explorer trial countdown on My Team (app/my-team/page.js, Nov 22 2026). */
+.trial-banner{margin:0 0 12px;padding:10px 14px;border:1px solid rgba(var(--horizon-rgb),.5);background:rgba(var(--horizon-rgb),.08);font-size:12px;color:var(--star-dim)}
+.trial-banner span{color:var(--horizon);font-weight:700}
+.trial-banner a{color:var(--star);text-decoration:underline;text-underline-offset:3px}
+
+/* Plan features on the landing Plans section (EventHorizon.js Plans, PLANS in HeaderMenus.js; founder, Nov 22 2026): each plan's tag,
+   what it includes (the plan below it "plus" these), and on yearly billing the monthly price struck through beside the yearly one. */
+.ehp-pd b{display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+.ehp-pd-tag{font:10px var(--font-mono), monospace;font-style:normal;letter-spacing:.1em;text-transform:uppercase;color:var(--ehp-ink);border:1px solid var(--ehp-rule);padding:2px 6px;white-space:nowrap}
+.ehp-pd .on .ehp-pd-tag{border-color:var(--ehp-mark);color:var(--ehp-mark)}
+.ehp-feats{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:5px}
+.ehp-feats li{position:relative;padding-left:16px;font-size:14px;line-height:1.4;color:var(--ehp-ink)}
+.ehp-feats li::before{content:"";position:absolute;left:0;top:.6em;width:7px;height:1px;background:var(--ehp-mark)}
+.ehp-feats li.ehp-feats-plus{padding-left:0;font:11px var(--font-mono), monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--ehp-dim)}
+.ehp-feats li.ehp-feats-plus::before{display:none}
+.ehp-pd em s{color:var(--ehp-dim);margin-right:6px;text-decoration-thickness:1px}
+/* With a feature list the plan rows need the width: name (+ tag), price and button across the top, the line and features full width under them. */
+.ehp-pd div{grid-template-columns:minmax(0,1fr) auto 86px;grid-template-areas:"name price go" "body body body";row-gap:10px;align-items:center}
+.ehp-pd div > b{grid-area:name;flex-direction:row;align-items:center;flex-wrap:wrap;gap:6px 12px}
+.ehp-pd div > span{grid-area:body}
+.ehp-pd div > em{grid-area:price}
+.ehp-pd div > button{grid-area:go}
+.ehp-feats{grid-template-columns:repeat(auto-fill,minmax(230px,1fr));column-gap:22px}
+.ehp-feats li.ehp-feats-plus{grid-column:1 / -1}
+@media (max-width:640px){ .ehp-pd div{grid-template-columns:1fr auto;grid-template-areas:"name name" "price go" "body body"} }

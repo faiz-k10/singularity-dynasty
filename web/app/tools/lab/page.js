@@ -8,7 +8,7 @@ import { buildLabRows } from "@/lib/labData";
 import InteractiveScript from "../../InteractiveScript";
 import LabClient from "./LabClient";
 import { getCachedLabGames } from "./data";
-import { PAID_TIERS, getCachedRedraftData, getCachedLeans, getCachedTdProfile, getCachedUsageProfile, enrichRankings } from "../redraft-rankings/data";
+import { getCachedRedraftData, getCachedLeans, getCachedTdProfile, getCachedUsageProfile, enrichRankings } from "../redraft-rankings/data";
 import { getCachedWeekData, buildSimRows } from "../player-simulations/data";
 
 export const metadata = {
@@ -19,9 +19,9 @@ export const metadata = {
 
 const TEASER_LIMIT = 50;
 
-// The Observatory: basic research on the numbers the site already publishes (lib/labMetrics.js). Depth follows the tools it draws from: everyone
-// ranked this week for Explorer and Singularity, the top 50 for everyone else (Weekly Projection Rankings' rule), and the season simulation
-// numbers only for Singularity (Player Season Simulations' rule). The rows are cut server-side, so a page never carries what its viewer can't see.
+// The Observatory: basic research on the numbers the site already publishes (lib/labMetrics.js). It is a research tool, so the whole pool is
+// Singularity's (founder, Nov 22 2026; it was Explorer's): everyone ranked this week plus the season simulation numbers for Singularity, the
+// top 50 for Stargazer and Explorer. The rows are cut server-side, so a page never carries what its viewer can't see.
 export default async function LabPage({ searchParams }) {
   const params = await searchParams;
   const supabase = await createClient();
@@ -35,8 +35,8 @@ export default async function LabPage({ searchParams }) {
     getCachedUsageProfile(),
   ]);
   const { latest } = cached;
-  const full = PAID_TIERS.includes(tier);
-  const simsAccess = tier === "singularity";
+  const full = tier === "singularity";
+  const simsAccess = full;
 
   let lab = { rows: [], total: 0 };
   if (latest) {
@@ -67,7 +67,7 @@ export default async function LabPage({ searchParams }) {
             {!full && (
               <div className="tool-paywall lab-paywall" data-wall="lab">
                 <p>
-                  You&apos;re researching the top {lab.rows.length} of this week&apos;s {lab.total} ranked players. Explorer opens every player; Singularity adds
+                  You&apos;re researching the top {lab.rows.length} of this week&apos;s {lab.total} ranked players. Singularity opens every player and adds
                   the season simulation numbers.
                 </p>
                 <Link href="/#pricing" className="btn-primary">

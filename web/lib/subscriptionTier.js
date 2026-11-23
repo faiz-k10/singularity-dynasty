@@ -51,7 +51,7 @@ export function effectiveTier(tier, bonusTier, bonusUntil, now = Date.now()) {
 //   week:  Stargazer -> 7 days of Explorer; Explorer -> 7 days of Singularity; Singularity (no plan above) -> a 1-on-1 consult with the
 //          founder (founder, Nov 19 2026; { manual: "consult" }, fulfilled by hand from /admin)
 //   month: a subscriber -> a month of their plan as credit (the monthly list price); anyone else -> 30 days of Explorer
-export const PLAN_MONTH_CENTS = { explorer: 900, singularity: 2500 };
+export const PLAN_MONTH_CENTS = { explorer: 1200, singularity: 3000 }; // one month at the monthly price (Nov 22 2026)
 export function skyPlanGrant(kind, paid, subscribed) {
   if (kind === "week") {
     if (paid === "singularity") return { manual: "consult" };

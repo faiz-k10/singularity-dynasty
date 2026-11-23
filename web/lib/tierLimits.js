@@ -19,3 +19,8 @@ export const SAVED_TEAM_LIMITS = {
 export function savedTeamLimit(tier) {
   return tier in SAVED_TEAM_LIMITS ? SAVED_TEAM_LIMITS[tier] : SAVED_TEAM_LIMITS.stargazer;
 }
+
+// The reverse trial (founder, Nov 22 2026): every NEW account gets this many days of Explorer, no card, then drops to Stargazer on its own
+// (a bonus tier, profiles.bonus_tier / bonus_until, read by lib/tier.js tierOf). Leagues past Stargazer's one are then paused, not deleted.
+export const TRIAL_TIER = "explorer";
+export const TRIAL_DAYS = 14;

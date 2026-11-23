@@ -8,6 +8,8 @@ import { siteOrigin } from "@/lib/siteOrigin";
 import { cookies, headers } from "next/headers";
 import { allowHit, clientIp } from "@/lib/rateLimit";
 import { recordReferral } from "@/lib/referrals";
+import { startTrial } from "@/lib/trial";
+import { addSubscriber } from "@/lib/emailList";
 import { REF_COOKIE } from "@/lib/referralRules";
 import { TURNSTILE_FIELD, tooFast } from "@/lib/turnstile";
 
@@ -74,7 +76,14 @@ export async function signup(formData) {
   // Came through a friend's link? Record it now (a brand-new account only: Supabase answers an existing email with a user
   // that has no identities, so it can't be claimed by someone typing another person's address).
   const ref = (await cookies()).get(REF_COOKIE)?.value;
-  if (ref && data?.user?.id && data.user.identities?.length) await recordReferral(data.user.id, ref);
+  const isNew = Boolean(data?.user?.id && data.user.identities?.length);
+  if (ref && isNew) await recordReferral(data.user.id, ref);
+  if (isNew) {
+    // A new account starts its 14 days of Explorer (the reverse trial) and, unless the box was unticked, joins the Tuesday newsletter
+    // (founder, Nov 22 2026), so it keeps hearing from us after the trial. Neither can stop the sign-up.
+    await startTrial(data.user.id);
+    if (formData.get("newsletter") === "on") await addSubscriber(email, "signup").catch((e) => console.error("[signup] newsletter:", e?.message || e));
+  }
   back("/login", "message", "check-email", next);
 }
 

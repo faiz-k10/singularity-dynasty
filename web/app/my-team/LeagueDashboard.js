@@ -5,6 +5,8 @@ import { sleeperMatchupUrl } from "./MatchupPanel";
 import { formatWin } from "@/lib/standing";
 import { formatOdds, oddsTone } from "./Standings";
 import { lineupAlertCount } from "@/lib/lineupOptimizer";
+import Link from "next/link";
+import { useTier } from "./TierContext";
 
 // "Rico Dowdle" -> "R. Dowdle" (first initial, full remaining name incl. suffixes).
 function shortName(name) {
@@ -111,6 +113,7 @@ const STORE_KEY = "myteam.dashboard";
 // Keyboard: j / k (anywhere) or the arrow keys (on a row) move between leagues, Enter opens or closes one, Esc closes
 // it. Which leagues are open and the sort are remembered per browser (localStorage, a convenience).
 export default function LeagueDashboard({ savedTeams, renderExpanded, injuriesByTeam, gameStates = null, refreshing = false }) {
+  const oddsLocked = useTier() === "stargazer"; // playoff odds are an Explorer feature (founder, Nov 22 2026)
   const [sortKey, setSortKey] = useState("alerts");
   const [dir, setDir] = useState("desc");
   const [open, setOpen] = useState(() => new Set());
@@ -237,7 +240,9 @@ export default function LeagueDashboard({ savedTeams, renderExpanded, injuriesBy
                   </div>
                 </td>
                 <td className="mono">{r.record}</td>
-                <td className={`mono standings-odds ${oddsTone(r.playoffOdds)}`}>{formatOdds(r.playoffOdds, r.playoffSettled)}</td>
+                <td className={`mono standings-odds ${oddsTone(r.playoffOdds)}`}>
+                  {oddsLocked ? <Link href="/#pricing" data-wall="playoff-odds" onClick={(e) => e.stopPropagation()}>Explorer</Link> : formatOdds(r.playoffOdds, r.playoffSettled)}
+                </td>
                 <td className="align-left league-dash-opp">{r.opponent}</td>
                 <td className="mono league-dash-score">
                   {r.projMine != null ? (

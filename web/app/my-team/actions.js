@@ -454,23 +454,34 @@ async function lookupTeams(username, opts = {}) {
 const REFRESH_LIMIT = 30;
 const REFRESH_WINDOW_MS = 10 * 60 * 1000;
 const refreshHits = new Map();
+// The leagues a plan keeps live (founder, Nov 22 2026): the oldest `savedTeamLimit(tier)` saved leagues -- 1 for Stargazer, 10 for
+// Explorer, all for Singularity. The rest stay saved but PAUSED (their last snapshot, no refresh, no live scores): what an account sees
+// after its Explorer trial ends, or after a downgrade. Rows must come sorted by created_at.
+function activeRows(rows, tier) {
+  const limit = savedTeamLimit(tier);
+  return limit == null ? rows : rows.slice(0, limit);
+}
+
 export async function refreshSavedTeams() {
   const supabase = await createClient();
-  const user = await getAuthUser(supabase); // read path: local JWT check, no round trip to Supabase Auth
+  const { user, tier } = await resolveTier(supabase); // read path: local JWT check, no round trip to Supabase Auth
   if (!user) return { error: "Sign in to refresh teams." };
   if (!allowHit(refreshHits, user.id, Date.now(), REFRESH_LIMIT, REFRESH_WINDOW_MS)) {
     return { error: "Too many refreshes in a short time. Try again in a few minutes." };
   }
 
-  const { data: rows } = await supabase
+  const { data: allRows } = await supabase
     .from("saved_teams")
     .select("id, platform_username, platform_league_id")
     .eq("user_id", user.id)
-    .eq("platform", "sleeper");
-  if (!rows?.length) return { teams: {} };
+    .eq("platform", "sleeper")
+    .order("created_at", { ascending: true });
+  const rows = activeRows(allRows || [], tier);
+  if (!rows.length) return { teams: {} };
 
+  // Standings and playoff odds (the heavy season run) are part of Explorer and up; a free account's refresh leaves them out.
   const usernames = [...new Set(rows.map((r) => r.platform_username).filter(Boolean))];
-  const looked = await Promise.all(usernames.map((u) => lookupTeams(u, { season: true, acquired: true })));
+  const looked = await Promise.all(usernames.map((u) => lookupTeams(u, { season: tier !== "stargazer", acquired: true })));
   const byLeague = {};
   for (const res of looked) {
     for (const t of res.teams || []) byLeague[t.league_id] = t;
@@ -502,10 +513,10 @@ export async function refreshSavedTeams() {
 export async function pollLiveScores() {
   const t0 = Date.now();
   const supabase = await createClient();
-  // Live scores are part of Explorer and up (a free account sees its saved snapshot); checked here, not only in the browser.
+  // Live scores for every plan, but only for the leagues the plan keeps live (one on Stargazer: the Sunday habit is the free hook,
+  // founder Nov 22 2026); checked here, not only in the browser.
   const { user, tier } = await resolveTier(supabase);
   if (!user) return { error: "Sign in required." };
-  if (tier === "stargazer") return { error: "Live scores are part of Explorer." };
   const tAuth = Date.now() - t0;
 
   // The league rows, the NFL week and the ESPN scoreboard + projections are independent, so they start together.
@@ -519,8 +530,9 @@ export async function pollLiveScores() {
     .from("saved_teams")
     .select("id, platform_league_id, platform_roster_id, h2h:settings->h2h, slots:settings->slots")
     .eq("user_id", user.id)
-    .eq("platform", "sleeper");
-  const rows = (raw || []).map((r) => ({ ...r, settings: { h2h: r.h2h, slots: r.slots } }));
+    .eq("platform", "sleeper")
+    .order("created_at", { ascending: true });
+  const rows = activeRows(raw || [], tier).map((r) => ({ ...r, settings: { h2h: r.h2h, slots: r.slots } }));
   if (!rows.length) return { live: {} };
   const tRows = Date.now() - t0;
   const state = await stateP;

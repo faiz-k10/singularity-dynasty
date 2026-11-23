@@ -49,6 +49,10 @@ export default async function LoginPage({ searchParams }) {
           placeholder="••••••••"
         />
 
+        <label className="auth-check mono">
+          <input type="checkbox" name="newsletter" defaultChecked />
+          New account: send me the Tuesday newsletter
+        </label>
         <BotGuard action="login" />
         <div className="auth-actions">
           <button formAction={login} className="btn-primary">
@@ -58,6 +62,9 @@ export default async function LoginPage({ searchParams }) {
             Create Account
           </button>
         </div>
+        <p className="auth-foot mono">
+          New accounts get 14 days of Explorer free. No card needed.
+        </p>
         <p className="auth-foot mono">
           <Link href="/login/reset">Forgot your password?</Link>
         </p>

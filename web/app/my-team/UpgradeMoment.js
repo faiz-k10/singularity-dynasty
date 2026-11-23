@@ -73,7 +73,7 @@ export function UpgradeMoment({ teams, savedCount, limit }) {
       <p className="um-fine">
         Billed yearly ($84). Prefer monthly?{" "}
         <button type="button" className="um-link" disabled={Boolean(busy)} onClick={() => go("monthly")}>
-          $9/mo
+          $12/mo
         </button>
         . 14-day refund, cancel anytime. You have {savedCount} of {limit} saved.
       </p>

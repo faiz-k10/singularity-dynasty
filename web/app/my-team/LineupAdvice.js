@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo } from "react";
+import Link from "next/link";
+import { useTier } from "./TierContext";
 import PositionBadge from "../tools/PositionBadge";
 import TeamBadge from "../tools/TeamBadge";
 import { fmt1 } from "@/lib/format";
@@ -56,6 +58,9 @@ function SwapList({ swaps }) {
 // adds, plus (when the win chance is lopsided) a version that plays for the ceiling or the floor. lib/lineupOptimizer.js does the
 // work; players whose game has started are locked and left where they are.
 export default function LineupAdvice({ team, gameStates, injuries = [] }) {
+  // Stargazer sees how many points the swaps are worth but not which swaps (founder, Nov 22 2026): the exact number you can't use yet is
+  // the pull to Explorer. The alerts above (injury, bye, empty slot) stay free.
+  const locked = useTier() === "stargazer";
   const count = useMemo(() => lineupAlertCount(team, gameStates, injuries), [team, gameStates, injuries]);
   const { alerts, advice } = count;
   const url = team.platform_league_id ? `https://sleeper.com/leagues/${team.platform_league_id}/matchup` : null;
@@ -106,7 +111,12 @@ export default function LineupAdvice({ team, gameStates, injuries = [] }) {
         </div>
         {advice.lockedStarters > 0 && <div className="lu-line mono"><span className="lu-locked">{advice.lockedStarters} locked</span></div>}
       </div>
-      {better && <SwapList swaps={advice.swaps} />}
+      {better && (locked ? (
+        <div className="lu-locked-swaps" data-wall="start-sit">
+          <span className="mono">{advice.swaps.length} {advice.swaps.length === 1 ? "swap" : "swaps"} found</span>
+          <Link href="/#pricing" className="btn-primary">See the swaps with Explorer</Link>
+        </div>
+      ) : <SwapList swaps={advice.swaps} />)}
     </section>
   );
 }

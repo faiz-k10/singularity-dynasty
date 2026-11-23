@@ -6,10 +6,40 @@ import { startCheckout } from "@/lib/startCheckout";
 
 // The Plans and Newsletter dropdowns, shared by the landing page's bar (EventHorizon.js) and the site header on every other page
 // (SiteHeader.js), so both bars behave the same (founder, Nov 10 2026). Styled by the `.ehp-pm*` rules in globals.css.
+// What each plan includes (founder, Nov 22 2026; the reasoning is in CLAUDE.md "Tier packaging"). Listed dearest first so $84 reads as the
+// sensible middle beside $240; Explorer is marked Most popular. `feats` lists only features that are live, each plan "plus" the one below.
 export const PLANS = [
-  { id: "stargazer", name: "Stargazer", r: 230, say: "The top of every board and one saved league.", month: 0, year: 0 },
-  { id: "explorer", name: "Explorer", r: 150, say: "Every player, ten leagues watched live, the Tuesday email.", month: 9, year: 7 },
-  { id: "singularity", name: "Singularity", r: 76, say: "Every simulation, unlimited leagues.", month: 25, year: 20 },
+  {
+    id: "singularity", name: "Singularity", r: 76, say: "The research edge: every simulation, every league.", month: 30, year: 20, tag: "Founding price, locked",
+    plus: "Everything in Explorer, plus",
+    feats: [
+      "Season simulations for every player, with pace, shapes and comparisons",
+      "The full Observatory, simulation numbers included",
+      "Unlimited leagues, all live",
+      "Your founding price, locked while you stay (first 50)",
+      "Priority Discord",
+    ],
+  },
+  {
+    id: "explorer", name: "Explorer", r: 150, say: "Run every league from one board.", month: 12, year: 7, tag: "Most popular",
+    plus: "Everything in Stargazer, plus",
+    feats: [
+      "Up to 10 leagues, live on the Game Board",
+      "Start / sit swaps and playoff odds in every league",
+      "Every player in the weekly rankings and the full Dynasty Board",
+      "Your exposure across leagues, desktop alerts and the Tuesday email",
+      "Compare three players at once",
+    ],
+  },
+  {
+    id: "stargazer", name: "Stargazer", r: 230, say: "One league, live every Sunday. Free.", month: 0, year: 0,
+    feats: [
+      "1 league live on the Game Board, with lineup alerts",
+      "The top 50 weekly, top 20 dynasty and top 10 season sims",
+      "Every prospect ranking, The Night Sky and share cards",
+      "14 days of Explorer when you join, no card",
+    ],
+  },
 ];
 
 // The header's Newsletter link (founder, Nov 16 2026: the sign-up is now the Dynasty Manager quiz): the dropdown says what it is and

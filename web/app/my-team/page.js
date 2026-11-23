@@ -1,9 +1,11 @@
+import Link from "next/link";
 import { must, cachedOrElse } from "@/lib/fetchAllRows";
 import SkyCredit from "../SkyCredit";
 import InteractiveScript from "../InteractiveScript";
 import { createClient } from "@/lib/supabase/server";
 import { createPublicClient } from "@/lib/supabase/public";
 import { resolveTier, savedTeamLimit } from "@/lib/tier";
+import { TierProvider } from "./TierContext";
 import { normalizePlayerName, buildPortfolio } from "@/lib/portfolio";
 import { getSleeperPlayers } from "@/lib/sleeper";
 import { fetchGameStates } from "@/lib/gameStatus";
@@ -30,6 +32,8 @@ export default async function MyTeamPage({ searchParams }) {
   const { user, tier } = await resolveTier(supabase);
 
   let savedTeams = [];
+  // The Explorer trial's countdown (lib/trial.js): shown while a free account is on its trial, so the end is never a surprise.
+  const trialDays = user ? await trialDaysLeft(supabase, user.id) : null;
   if (user) {
     // select("*") rather than an explicit column list so the page keeps
     // working if a column-adding migration (e.g. 0025 buy_in) hasn't been
@@ -40,6 +44,17 @@ export default async function MyTeamPage({ searchParams }) {
       .eq("user_id", user.id)
       .order("created_at", { ascending: true });
     savedTeams = data || [];
+    // Leagues past the plan's limit are paused (shown from their last snapshot, never refreshed: actions.js activeRows), and the
+    // standings / playoff odds are an Explorer feature, so a free account's copy drops any it kept from a trial (founder, Nov 22 2026).
+    const limit = savedTeamLimit(tier);
+    savedTeams = savedTeams.map((t, i) => {
+      let out = limit != null && i >= limit ? { ...t, paused: true } : t;
+      if (tier === "stargazer" && (out.settings?.season || out.settings?.playoffOdds != null)) {
+        const { season, playoffOdds, playoffSettled, ...rest } = out.settings;
+        out = { ...out, settings: rest };
+      }
+      return out;
+    });
   }
 
   // "Your players this week": the public two-week inputs load in parallel with everything below.
@@ -144,6 +159,13 @@ export default async function MyTeamPage({ searchParams }) {
       {user && <SkyCredit action="board" />}
 
       <main id="main-content" className="wrap tool-wrap my-team-page-wrap">
+        {trialDays != null && (
+          <p className="trial-banner mono" data-wall="trial">
+            <span>Explorer: {trialDays} {trialDays === 1 ? "day" : "days"} left.</span> After it, one league stays live and the rest pause.{" "}
+            <Link href="/#pricing">Keep Explorer</Link>
+          </p>
+        )}
+        <TierProvider tier={tier}>
         <MyTeamClient
           isSignedIn={!!user}
           tier={tier}
@@ -163,6 +185,7 @@ export default async function MyTeamPage({ searchParams }) {
             ) : null
           }
         />
+        </TierProvider>
       </main>
     </>
   );
@@ -197,4 +220,11 @@ async function loadPlayerSims() {
 async function loadEmailDigest(supabase, userId) {
   const { data: prof } = await supabase.from("profiles").select("email_digest").eq("id", userId).maybeSingle();
   return Boolean(prof?.email_digest);
+}
+
+// Days left on a free account's Explorer trial (lib/trial.js), or null when it isn't on one.
+async function trialDaysLeft(supabase, userId) {
+  const { data: prof } = await supabase.from("profiles").select("tier, bonus_tier, bonus_until").eq("id", userId).maybeSingle();
+  const left = prof?.bonus_until ? Date.parse(prof.bonus_until) - Date.now() : 0;
+  return prof?.tier === "stargazer" && prof.bonus_tier === "explorer" && left > 0 ? Math.ceil(left / 86_400_000) : null;
 }

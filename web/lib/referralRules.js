@@ -10,7 +10,7 @@ export const REF_COOKIE = "sd_ref";
 export const REF_DAYS = 30;
 export const FRIEND_DISCOUNT_PERCENT = 20;
 export const COUPON_ID = "sd-referral-20";
-export const REWARD_CENTS = { explorer: 900, singularity: 2500 };
+export const REWARD_CENTS = { explorer: 1200, singularity: 3000 }; // one month at the monthly price (Nov 22 2026)
 export const REWARD_CAP_PER_YEAR = 12;
 
 const ALPHABET = "abcdefghjkmnpqrstuvwxyz23456789"; // no 0/o, 1/l/i: a code read aloud or typed can't be misread

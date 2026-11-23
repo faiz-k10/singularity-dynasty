@@ -579,14 +579,22 @@ function Plans() {
         </h2>
         <div className="ehp-bill" role="group" aria-label="Billing">
           <button type="button" className={yearly ? "" : "on"} onClick={() => setYearly(false)} aria-pressed={!yearly}>Monthly</button>
-          <button type="button" className={yearly ? "on" : ""} onClick={() => setYearly(true)} aria-pressed={yearly}>Yearly · 20% off</button>
+          <button type="button" className={yearly ? "on" : ""} onClick={() => setYearly(true)} aria-pressed={yearly}>Yearly · save up to 42%</button>
         </div>
         <div className="ehp-pd">
           {PLANS.map((p, i) => (
             <div key={p.id} className={i === on ? "on" : ""} onMouseEnter={() => setOn(i)} onFocus={() => setOn(i)}>
-              <b>{p.name}</b>
-              <span>{p.say}</span>
-              <em>{p.month ? `$${yearly ? p.year : p.month} / mo` : "Free"}</em>
+              <b>{p.name}{p.tag && <i className="ehp-pd-tag">{p.tag}</i>}</b>
+              <span>
+                {p.say}
+                <ul className="ehp-feats">
+                  {p.plus && <li className="ehp-feats-plus">{p.plus}</li>}
+                  {p.feats.map((f) => <li key={f}>{f}</li>)}
+                </ul>
+              </span>
+              <em>
+                {p.month ? <>{yearly && <s>${p.month}</s>}${yearly ? p.year : p.month} / mo</> : "Free"}
+              </em>
               <button type="button" onClick={() => choose(p.id)} disabled={busy === p.id}>
                 {busy === p.id ? "…" : p.month ? "Choose →" : "Start →"}
               </button>

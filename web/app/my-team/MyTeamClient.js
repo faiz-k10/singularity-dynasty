@@ -1231,9 +1231,10 @@ export default function MyTeamClient({
     }
   }
 
-  // Keeping saved leagues fresh automatically (refresh on load, live scores every 30s) is part of Explorer and up; a free
-  // account sees its saved snapshot and can refresh by hand.
-  const autoRefresh = tier !== "stargazer";
+  // Every plan refreshes on load and gets live scores (founder, Nov 22 2026: a free account's one league is the Sunday habit); the server
+  // only refreshes and polls the leagues the plan keeps live, and the rest are paused (actions.js activeRows, `paused` from page.js).
+  const autoRefresh = true;
+  const pausedCount = savedTeams.filter((t) => t.paused).length;
   useEffect(() => {
     if (!hasSaved || !autoRefresh) return;
     const first = setTimeout(runFullRefresh, 0);
@@ -1455,7 +1456,7 @@ export default function MyTeamClient({
   const savedCount = savedKeys.size;
   const atLimit = savedTeamLimit != null && savedCount >= savedTeamLimit;
 
-  const alertsToggle = hasSaved ? <DesktopAlertsToggle on={alertsOn} setOn={setAlertsOn} allowed={autoRefresh} /> : null;
+  const alertsToggle = hasSaved ? <DesktopAlertsToggle on={alertsOn} setOn={setAlertsOn} allowed={tier !== "stargazer"} /> : null;
   const teamsActions = (hasSaved || (isSignedIn && savedTeamLimit != null)) && (
     <>
       {alertsToggle}
@@ -1466,10 +1467,12 @@ export default function MyTeamClient({
             : autoRefresh
               ? "Updating…"
               : "Saved snapshot"}
-          {!autoRefresh && (
+          {pausedCount > 0 && (
             <>
               {" · "}
-              <Link href="/#pricing" data-wall="auto-refresh">auto-refresh: Explorer</Link>
+              <Link href="/#pricing" data-wall="paused-leagues">
+                {pausedCount} {pausedCount === 1 ? "league" : "leagues"} paused: keep {tier === "explorer" ? "every league live with Singularity" : "up to 10 live with Explorer"}
+              </Link>
             </>
           )}
         </span>

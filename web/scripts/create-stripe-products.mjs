@@ -15,13 +15,13 @@ const PLANS = [
   {
     name: "Explorer",
     description: "Every player ranked, up to 10 leagues saved and watched live, the full dynasty board, the Tuesday email.",
-    monthly: 900, // $9.00
+    monthly: 1200, // $12.00 (Nov 22 2026: monthly costs more so yearly is "save 42%")
     annual: 8400, // $7/mo billed annually ($84/yr)
   },
   {
     name: "Singularity",
-    description: "Everything in Explorer, plus every player's season simulations and unlimited saved leagues.",
-    monthly: 2500, // $25.00
+    description: "Everything in Explorer, plus every player's season simulations, the full Observatory and unlimited saved leagues.",
+    monthly: 3000, // $30.00 (Nov 22 2026: yearly is "save 33%")
     annual: 24000, // $20/mo billed annually ($240/yr)
   },
 ];

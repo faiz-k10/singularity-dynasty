@@ -17,8 +17,8 @@ test("Night Sky plan time: what the week and the month give for each plan", () =
   assert.deepEqual(skyPlanGrant("week", "explorer", true), { bonus: "singularity", days: 7 });
   assert.deepEqual(skyPlanGrant("week", "singularity", true), { manual: "consult" });
   assert.deepEqual(skyPlanGrant("month", "stargazer", false), { bonus: "explorer", days: 30 });
-  assert.deepEqual(skyPlanGrant("month", "explorer", true), { credit: 900 });
-  assert.deepEqual(skyPlanGrant("month", "singularity", true), { credit: 2500 });
+  assert.deepEqual(skyPlanGrant("month", "explorer", true), { credit: 1200 });
+  assert.deepEqual(skyPlanGrant("month", "singularity", true), { credit: 3000 });
   assert.equal(skyPlanGrant("year", "explorer", true), null);
 });
 

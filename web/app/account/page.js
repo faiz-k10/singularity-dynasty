@@ -25,9 +25,9 @@ const TIER_LABELS = {
   singularity: "Singularity",
 };
 const TIER_LINES = {
-  stargazer: "Free: 1 saved league, the top 50 weekly rankings and the top 10 season simulations.",
-  explorer: "Up to 10 leagues watched live, every player ranked, the full dynasty board and the weekly email.",
-  singularity: "Everything: unlimited leagues, every season simulation and priority Discord.",
+  stargazer: "Free: one league live on the Game Board, the top 50 weekly rankings, the top 20 dynasty and the top 10 season simulations.",
+  explorer: "Up to 10 leagues live, start / sit swaps and playoff odds, every player ranked, the full Dynasty Board and the Tuesday email.",
+  singularity: "Everything: every season simulation, the full Observatory, unlimited leagues and priority Discord.",
 };
 
 // Fixed notices only (never text from the URL), keyed by ?notice=.
