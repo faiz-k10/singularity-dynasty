@@ -50,7 +50,7 @@ export default async function LoginPage({ searchParams }) {
         />
 
         <label className="feed-label mono" htmlFor="confirm">
-          CONFIRM PASSWORD <span className="auth-hint">(new accounts)</span>
+          CONFIRM PASSWORD
         </label>
         <input
           id="confirm"
@@ -63,7 +63,7 @@ export default async function LoginPage({ searchParams }) {
         />
 
         <label className="feed-label mono" htmlFor="sleeper">
-          SLEEPER USERNAME <span className="auth-hint">(new accounts)</span>
+          SLEEPER USERNAME
         </label>
         <input
           id="sleeper"
