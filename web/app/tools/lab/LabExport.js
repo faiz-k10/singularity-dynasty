@@ -75,7 +75,7 @@ export default function LabExport({ stageRef, fileName, title, caption }) {
   const prepareShare = useCallback(
     async ({ onPreview }) => {
       const chart = await getPicture(stageRef.current);
-      const card = await toShareCard(chart); // the chart carries its own heading, so no strip above it
+      const card = await toShareCard(chart, null, null, { type: "image/jpeg" }); // the chart carries its own heading, so no strip above it
       previewRef.current = URL.createObjectURL(card);
       onPreview(previewRef.current);
       const url = await uploadShare(card, { title, caption, view: `${window.location.pathname}${window.location.search}` });

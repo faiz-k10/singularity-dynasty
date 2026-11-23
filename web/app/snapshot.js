@@ -20,19 +20,33 @@ export const bodyColor = () => getComputedStyle(document.body).backgroundColor;
 // matches `skip` (the Share button itself). Drawing blocks the page for a moment, so it first lets the page paint.
 // Images from another site (player photos on Sleeper's server) can't be copied into a picture, so for the moment of the snapshot they are
 // shown through our own relay (app/api/img) -- the same picture, so nothing visibly changes -- and put back afterwards.
+// Each relayed picture is fetched once per visit and kept (warmShare fetches them ahead of time, so the snapshot itself waits on nothing).
+const relayed = new Map(); // original address -> Promise<object URL | null>
+function relay(src) {
+  if (!relayed.has(src)) {
+    relayed.set(src, fetch(`/api/img?u=${encodeURIComponent(src)}`)
+      .then((res) => (res.ok ? res.blob() : null))
+      .then((b) => (b ? URL.createObjectURL(b) : null))
+      .catch(() => null)
+      .then((u) => { if (!u) relayed.delete(src); return u; }));
+  }
+  return relayed.get(src);
+}
+const foreign = (img) => {
+  const src = img.currentSrc || img.src;
+  return src && !src.startsWith("data:") && !src.startsWith("blob:") && new URL(src, location.href).origin !== location.origin ? src : null;
+};
 async function sameSiteImages(el) {
   const swapped = [];
   await Promise.all([...el.querySelectorAll("img")].map(async (img) => {
-    const src = img.currentSrc || img.src;
-    if (!src || src.startsWith("data:") || src.startsWith("blob:") || new URL(src, location.href).origin === location.origin) return;
-    try {
-      const res = await fetch(`/api/img?u=${encodeURIComponent(src)}`);
-      if (!res.ok) throw new Error("relay");
-      const local = URL.createObjectURL(await res.blob());
+    const src = foreign(img);
+    if (!src) return;
+    const local = await relay(src);
+    if (local) {
       const { srcset } = img;
       img.removeAttribute("srcset"); img.src = local; await img.decode().catch(() => {});
-      swapped.push(() => { img.src = src; if (srcset) img.srcset = srcset; URL.revokeObjectURL(local); });
-    } catch {
+      swapped.push(() => { img.src = src; if (srcset) img.srcset = srcset; });
+    } else {
       const keep = img.style.visibility; img.style.visibility = "hidden"; // can't be relayed: left out rather than failing the whole picture
       swapped.push(() => { img.style.visibility = keep; });
     }
@@ -40,9 +54,20 @@ async function sameSiteImages(el) {
   return () => swapped.forEach((undo) => undo());
 }
 
+// Everything a share needs before it can draw -- the library, the page's fonts as embeddable CSS and the relayed photos -- fetched while the
+// browser is idle, so pressing Share only has to draw (founder, Nov 23 2026: "sharing loading takes way too long").
+export function warmShare(el) {
+  const go = () => {
+    loadLib().then(() => fontsFor(el)).catch(() => {});
+    if (el) for (const img of el.querySelectorAll("img")) { const src = foreign(img); if (src) relay(src); }
+  };
+  if (typeof window.requestIdleCallback === "function") window.requestIdleCallback(go, { timeout: 2000 });
+  else setTimeout(go, 300);
+}
+
 export async function snapshotPng(el, { skip = ".share-card-btn, [data-noshot]" } = {}) {
   const { toBlob } = await loadLib();
-  await new Promise((r) => setTimeout(r, 60));
+  await new Promise((r) => setTimeout(r, 20)); // lets the pop-up paint first
   const restore = await sameSiteImages(el);
   try {
     const blob = await toBlob(el, {
@@ -99,7 +124,10 @@ function columnsFor(blocks, gap, boxW, boxH) {
   return best;
 }
 
-export async function toShareCard(blob, head = null, blocks = null) {
+// `type`: "image/jpeg" for an upload (a fifth of a PNG's size at no visible cost on these flat cards, and quicker to encode), PNG otherwise.
+const encode = (canvas, type) => new Promise((resolve, reject) => canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("no card"))), type, 0.9));
+
+export async function toShareCard(blob, head = null, blocks = null, { type = "image/png" } = {}) {
   const img = await createImageBitmap(blob);
   const canvas = document.createElement("canvas");
   canvas.width = SHARE_W;
@@ -130,7 +158,7 @@ export async function toShareCard(blob, head = null, blocks = null) {
       const x0 = (SHARE_W - used) / 2 + ci * (colW + gap * lay.s);
       for (const b of col) { ctx.drawImage(img, b.x, b.y, b.w, b.h, x0, y, b.w * lay.s, b.h * lay.s); y += (b.h + gap) * lay.s; }
     });
-    return new Promise((resolve, reject) => canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("no card"))), "image/png"));
+    return encode(canvas, type);
   }
   // one block = crop the picture to that region (DashboardShareButton's `only`); none = the whole picture
   const k1 = blocks?.length === 1 ? img.width / blocks.cropW : 1;
@@ -138,13 +166,13 @@ export async function toShareCard(blob, head = null, blocks = null) {
   const s = Math.min(boxW / src.w, boxH / src.h);
   const w = src.w * s, h = src.h * s;
   ctx.drawImage(img, src.x, src.y, src.w, src.h, (SHARE_W - w) / 2, top + (boxH - h) / 2, w, h);
-  return new Promise((resolve, reject) => canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("no card"))), "image/png"));
+  return encode(canvas, type);
 }
 
 // Uploads a share picture (app/api/lab-share -> /s/<id>) and returns its link.
 export async function uploadShare(card, { title, caption, view }) {
   const form = new FormData();
-  form.append("image", card, "share.png");
+  form.append("image", card, card.type === "image/jpeg" ? "share.jpg" : "share.png");
   form.append("title", title);
   form.append("caption", caption || "");
   form.append("view", view);

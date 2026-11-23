@@ -54,12 +54,16 @@ export default function ShareDialog({ prepare, heading = "Share to social", capt
   const [note, setNote] = useState(null);
   const dialogRef = useRef(null);
   const edited = useRef(false);
+  const linkRef = useRef(null); // Promise of the link, so a post button can be pressed before the upload finishes
   const sheet = isTouch() && typeof navigator.canShare === "function";
 
   // Make the picture and the link -- once per opening. The preview shows as soon as there is one; the buttons wait for the link.
   useEffect(() => {
     let alive = true;
-    prepare({ onPreview: (preview) => alive && setShare((cur) => ({ ...cur, preview })) })
+    const made = prepare({ onPreview: (preview) => alive && setShare((cur) => ({ ...cur, preview })) });
+    linkRef.current = made.then((r) => r.url);
+    linkRef.current.catch(() => {});
+    made
       .then(({ url, getFile, downloads, caption: suggested }) => {
         if (!alive) return;
         setShare((cur) => ({ ...cur, url, getFile, downloads }));
@@ -117,6 +121,23 @@ export default function ShareDialog({ prepare, heading = "Share to social", capt
     return key === "discord" ? "https://discord.com/app" : null;
   };
   const openPost = (key) => {
+    // Pressed while the link is still uploading (founder, Nov 23 2026: no waiting): the tab is opened now, inside the click (what pop-up
+    // blockers allow), and sent to the ready post the moment the link exists.
+    if (!share?.url && COMPOSE.includes(key) && linkRef.current) {
+      const w = window.open("about:blank", "_blank");
+      if (!w) return setNote(`Your browser blocked the new tab. Allow pop-ups for this site (the icon in the address bar), then click ${NAMES[key]} again.`);
+      setNote(`Opening ${NAMES[key]}…`);
+      const caption = text;
+      linkRef.current.then(
+        (url) => {
+          w.opener = null;
+          w.location.href = composeUrl(key, { url, text: caption });
+          setNote(`${NAMES[key]} opened in a new tab with your post written and the picture as its preview. Just press Post.`);
+        },
+        () => w.close()
+      );
+      return;
+    }
     const href = hrefFor(key);
     if (!href) return;
     const w = window.open(href, "_blank");
@@ -146,7 +167,8 @@ export default function ShareDialog({ prepare, heading = "Share to social", capt
     if (key === "discord") return "Copies the post, opens Discord";
     return sheet ? `Sends the picture to the ${NAMES[key]} app` : "On your phone: sends the picture to the app";
   };
-  const enabled = (key) => Boolean(share?.url) && (COMPOSE.includes(key) || key === "discord" || (sheet && share.getFile));
+  // The compose buttons work as soon as the picture shows (the link follows); Discord and the phone apps need the finished link.
+  const enabled = (key) => (COMPOSE.includes(key) ? Boolean(share?.preview || share?.url) && !failed : Boolean(share?.url) && (key === "discord" || (sheet && share.getFile)));
 
   // Drawn at the end of <body>: opened from inside a table cell or a size container, a fixed pop-up would otherwise be positioned (and clipped)
   // by that container instead of the window.
@@ -171,7 +193,7 @@ export default function ShareDialog({ prepare, heading = "Share to social", capt
 
         <div className="lab-share-grid">
           {Object.keys(NAMES).map((key) => (
-            <button key={key} type="button" className={`lab-share-btn is-${key}`} disabled={!enabled(key)} onClick={() => (hrefFor(key) ? openPost(key) : sendToApp(key))}>
+            <button key={key} type="button" className={`lab-share-btn is-${key}`} disabled={!enabled(key)} onClick={() => (COMPOSE.includes(key) || key === "discord" ? openPost(key) : sendToApp(key))}>
               <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true">
                 {ICONS[key]}
               </svg>

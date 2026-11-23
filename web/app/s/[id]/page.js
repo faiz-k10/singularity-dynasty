@@ -15,7 +15,7 @@ async function loadShare(id) {
     const res = await fetch(fileUrl(id, "json"), { next: { revalidate: 86400 } });
     if (!res.ok) return null;
     const meta = await res.json();
-    return { ...meta, image: fileUrl(id, "png") };
+    return { ...meta, image: fileUrl(id, meta.ext === "jpg" ? "jpg" : "png") }; // older shares are PNG
   } catch {
     return null;
   }

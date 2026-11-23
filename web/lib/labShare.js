@@ -39,6 +39,14 @@ export function cleanShareMeta({ title, caption, view }) {
   return { title: t, caption: c, view: v };
 }
 
+// The picture's format from its first bytes: "png", "jpg" (share cards are sent as JPEG since Nov 23 2026 -- a fifth of the size, so the
+// upload is quick) or null.
+export function imageExt(bytes) {
+  if (isPng(bytes)) return "png";
+  if (bytes && bytes.length > 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) return "jpg";
+  return null;
+}
+
 // A PNG starts with these eight bytes.
 export function isPng(bytes) {
   const sig = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];

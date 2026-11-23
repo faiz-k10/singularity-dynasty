@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { randomBytes } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { SHARE_BUCKET, SHARE_MAX_BYTES, shareId, cleanShareMeta, isPng } from "@/lib/labShare";
+import { SHARE_BUCKET, SHARE_MAX_BYTES, shareId, cleanShareMeta, imageExt } from "@/lib/labShare";
 import { allowHit, clientIp } from "@/lib/rateLimit";
 import { createClient } from "@/lib/supabase/server";
 import { getAuthUser } from "@/lib/authUser";
@@ -38,13 +38,14 @@ export async function POST(request) {
   if (!meta || !file || typeof file.arrayBuffer !== "function") return NextResponse.json({ error: "Invalid request." }, { status: 400 });
   if (file.size > SHARE_MAX_BYTES) return NextResponse.json({ error: "That picture is too large to share." }, { status: 413 });
   const bytes = new Uint8Array(await file.arrayBuffer());
-  if (!isPng(bytes)) return NextResponse.json({ error: "Invalid picture." }, { status: 400 });
+  const ext = imageExt(bytes);
+  if (!ext) return NextResponse.json({ error: "Invalid picture." }, { status: 400 });
 
   const id = shareId(randomBytes(10));
   const storage = createAdminClient().storage.from(SHARE_BUCKET);
   const [img, json] = await Promise.all([
-    storage.upload(`${id}.png`, bytes, { contentType: "image/png", cacheControl: "31536000", upsert: false }),
-    storage.upload(`${id}.json`, JSON.stringify({ ...meta, created: new Date().toISOString() }), { contentType: "application/json", cacheControl: "31536000", upsert: false }),
+    storage.upload(`${id}.${ext}`, bytes, { contentType: ext === "jpg" ? "image/jpeg" : "image/png", cacheControl: "31536000", upsert: false }),
+    storage.upload(`${id}.json`, JSON.stringify({ ...meta, ext, created: new Date().toISOString() }), { contentType: "application/json", cacheControl: "31536000", upsert: false }),
   ]);
   if (img.error || json.error) {
     console.error("[lab-share] upload failed:", img.error?.message || json.error?.message);

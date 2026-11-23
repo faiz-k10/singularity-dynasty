@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { shareId, isShareId, cleanShareMeta, isPng } from "../lib/labShare.js";
+import { shareId, isShareId, cleanShareMeta, isPng, imageExt } from "../lib/labShare.js";
 import { composeUrl } from "../lib/shareLinks.js";
 
 test("shareId: 10 readable characters, accepted by isShareId", () => {
@@ -48,4 +48,10 @@ test("shares may come from the player dashboards too, and nowhere else", async (
   for (const v of ["/tools/redraft-rankings", "/tools/player-simulations", "/tools/draft-board", "/tools/lab?view=scatter", "/account/sky"]) assert.ok(cleanShareMeta({ title: "t", view: v }), v);
   for (const v of ["/tools/draft-boardx", "/account/sky?x=1", "//evil.example/tools/lab", "/tools/redraft-rankings#x"]) assert.equal(cleanShareMeta({ title: "t", view: v }), null, v);
   assert.equal(shareSource("/tools/player-simulations").from, "Season Simulations");
+});
+
+test("imageExt tells PNG from JPEG", () => {
+  assert.equal(imageExt(new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0])), "png");
+  assert.equal(imageExt(new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 0])), "jpg");
+  assert.equal(imageExt(new Uint8Array([0x47, 0x49, 0x46, 0x38, 0])), null);
 });
