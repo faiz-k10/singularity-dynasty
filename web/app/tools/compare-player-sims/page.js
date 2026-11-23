@@ -9,6 +9,8 @@ import CompareSims from "../CompareSims";
 import ComparePlayerRadars from "../ComparePlayerRadars";
 import { radarStartDegFor } from "../radarLayout";
 import { TEASER_LIMIT, PAID_TIERS, getCachedWeekData, buildSimRows } from "../player-simulations/data";
+import { getDynastyStatus } from "@/lib/dynastyData";
+import { findNameKey } from "@/lib/portfolio";
 import { seasonWeek } from "@/lib/format";
 
 export const metadata = {
@@ -26,14 +28,20 @@ const MAX_COMPARE = { stargazer: 2, explorer: 3 };
 export default async function ComparePlayerSimsPage({ searchParams }) {
   const params = await searchParams;
   const supabase = await createClient();
-  const [{ tier }, weekData, bioByNamePos] = await Promise.all([resolveTier(supabase), getCachedWeekData(), getPlayerBiosByNamePos()]);
+  const [{ tier }, weekData, bioByNamePos, dynastyStatus] = await Promise.all([
+    resolveTier(supabase),
+    getCachedWeekData(),
+    getPlayerBiosByNamePos(),
+    getDynastyStatus().catch(() => ({})),
+  ]);
   const hasFullAccess = PAID_TIERS.includes(tier);
   const { latest } = weekData;
 
   const { sims, simsWithComputed } = buildSimRows({ cached: weekData, hasFullAccess, bioByNamePos });
   const byName = new Map(simsWithComputed.map((r) => [r.player_name, r]));
   const maxPlayers = MAX_COMPARE[tier] ?? SLOTS.length;
-  const selected = [...new Set(SLOTS.slice(0, maxPlayers).map((slot) => byName.get(params?.[slot])).filter(Boolean))]; // the same player twice counts once
+  const selected = [...new Set(SLOTS.slice(0, maxPlayers).map((slot) => byName.get(params?.[slot])).filter(Boolean))] // the same player twice counts once
+    .map((row) => ({ ...row, dynasty: dynastyStatus[findNameKey(dynastyStatus, row.player_name)] || null }));
   const playerOptions = sims.map((r) => ({ player_name: r.player_name, position: r.position }));
   const gated = !hasFullAccess && weekData.rows.length > sims.length;
 

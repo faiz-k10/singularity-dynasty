@@ -70,6 +70,18 @@ export const TAG_TONE = {
   Faller: "lose",
   Neutral: "neutral",
   Steady: "neutral",
+  // Dynasty Board groups (lib/dynastyBoard.js GROUP_NAMES), shown as "Dynasty status": blue above replacement, grey at it, red below
+  "Future Legend": "win",
+  Generational: "win",
+  "Hall of Famer": "win",
+  "The Franchise": "win",
+  Cornerstone: "win",
+  Core: "win",
+  Replacement: "neutral",
+  Depth: "lose",
+  Fringe: "lose",
+  "Taxi Squad": "lose",
+  "Waiver Wire": "lose",
 };
 
 // The three kinds of tag a player can carry, in display order, with the small heading shown over the

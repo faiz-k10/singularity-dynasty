@@ -137,7 +137,7 @@ export default function CompareSims({ players }) {
                 </td>
               ))}
             </tr>
-            {players.some((p) => p.archetype || p.sus || p.stage) && (
+            {players.some((p) => p.archetype || p.sus || p.dynasty) && (
               <>
                 <tr>
                   <th>Role</th>
@@ -152,9 +152,9 @@ export default function CompareSims({ players }) {
                   ))}
                 </tr>
                 <tr>
-                  <th>Career stage</th>
+                  <th>Dynasty status</th>
                   {players.map((p) => (
-                    <td key={p.player_name}>{p.stage ? <ArchetypePill name={p.stage} compact /> : "—"}</td>
+                    <td key={p.player_name}>{p.dynasty ? <ArchetypePill name={p.dynasty} compact /> : "—"}</td>
                   ))}
                 </tr>
               </>
