@@ -63,7 +63,7 @@ export default async function LoginPage({ searchParams }) {
           </button>
         </div>
         <p className="auth-foot mono">
-          New accounts get 14 days of Explorer free. No card needed.
+          Save your first league to start 14 days of Explorer free. No card needed.
         </p>
         <p className="auth-foot mono">
           <Link href="/login/reset">Forgot your password?</Link>

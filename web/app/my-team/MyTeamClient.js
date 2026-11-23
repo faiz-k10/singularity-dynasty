@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { UpgradeMoment, BuyInPrompt, startExplorerCheckout } from "./UpgradeMoment";
 import EmailDigestToggle from "./EmailDigestToggle";
@@ -1329,6 +1330,9 @@ export default function MyTeamClient({
   const username = typedUsername ?? rememberedUsername;
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
+  const router = useRouter();
+  // A save that started or ended the Explorer trial reloads the page's plan (league limit, live scores, the countdown).
+  const trialChanged = (res) => res?.trial === "started" || res?.trial === "ended";
   const [savedKeys, setSavedKeys] = useState(
     new Set(savedTeamsProp.map((t) => t.platform_league_id))
   );
@@ -1383,6 +1387,10 @@ export default function MyTeamClient({
       settings: team.settings,
       players: team.players,
     });
+    // The first save starts the Explorer trial (or says this Sleeper account already used it): reload the page's plan so the
+    // league limit, live scores and the countdown follow.
+    if (res.trial === "used") setError("This Sleeper account already used its free Explorer trial, so this account stays on Stargazer.");
+    if (res.trial === "ended") setError("Your Explorer trial ended: that Sleeper account already used a free trial.");
     if (!res.error && res.id) {
       setSavedKeys((prev) => new Set(prev).add(team.league_id));
       setAddedTeams((prev) => [
@@ -1411,6 +1419,7 @@ export default function MyTeamClient({
     startTransition(async () => {
       const res = await saveOne(team, sleeperUsername);
       setSavingKey(null);
+      if (trialChanged(res)) router.refresh();
       if (res.error) setError(res.error);
       else if (res.id) setBuyInPrompt((cur) => cur || { id: res.id, name: team.league_name });
     });
@@ -1421,9 +1430,11 @@ export default function MyTeamClient({
   function handleSaveAll(teams, sleeperUsername) {
     setError(null);
     startTransition(async () => {
+      let changed = false;
       for (const team of teams) {
         setSavingKey(team.league_id);
         const res = await saveOne(team, sleeperUsername);
+        changed ||= trialChanged(res);
         if (res.error) {
           setError(res.error);
           break;
@@ -1431,6 +1442,7 @@ export default function MyTeamClient({
         if (res.id) setBuyInPrompt((cur) => cur || { id: res.id, name: team.league_name });
       }
       setSavingKey(null);
+      if (changed) router.refresh();
     });
   }
 

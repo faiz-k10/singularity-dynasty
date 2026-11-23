@@ -8,6 +8,7 @@ import { allowHit, clientIp } from "@/lib/rateLimit";
 import { createClient } from "@/lib/supabase/server";
 import { createPublicClient } from "@/lib/supabase/public";
 import { resolveTier, savedTeamLimit } from "@/lib/tier";
+import { claimTrial } from "@/lib/trial";
 import { getAuthUser } from "@/lib/authUser";
 import { loadGameLogsFor, namesOnTeams } from "@/lib/myGameLogs";
 import { computeAndSaveInsight } from "@/lib/insights";
@@ -860,7 +861,9 @@ export async function saveTeam({ sleeperUsername, leagueId, leagueName, teamName
   // No revalidatePath here: the client appends the saved team to its own list
   // so several teams can be added back-to-back without the page re-rendering
   // after each one. (deleteTeam / setBuyIn still revalidate.)
-  return { success: true, id: savedRow?.id ?? null };
+  // The first saved league starts the 14-day Explorer trial, once per Sleeper account (lib/trial.js).
+  const trial = savedRow ? await claimTrial(user.id, sleeperUsername) : {};
+  return { success: true, id: savedRow?.id ?? null, trial: trial.trial || null };
 }
 
 // Scores the GM Archetype quiz (see lib/insights/gmArchetype.js) and

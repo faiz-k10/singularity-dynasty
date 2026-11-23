@@ -8,7 +8,6 @@ import { siteOrigin } from "@/lib/siteOrigin";
 import { cookies, headers } from "next/headers";
 import { allowHit, clientIp } from "@/lib/rateLimit";
 import { recordReferral } from "@/lib/referrals";
-import { startTrial } from "@/lib/trial";
 import { addSubscriber } from "@/lib/emailList";
 import { REF_COOKIE } from "@/lib/referralRules";
 import { TURNSTILE_FIELD, tooFast } from "@/lib/turnstile";
@@ -79,9 +78,8 @@ export async function signup(formData) {
   const isNew = Boolean(data?.user?.id && data.user.identities?.length);
   if (ref && isNew) await recordReferral(data.user.id, ref);
   if (isNew) {
-    // A new account starts its 14 days of Explorer (the reverse trial) and, unless the box was unticked, joins the Tuesday newsletter
-    // (founder, Nov 22 2026), so it keeps hearing from us after the trial. Neither can stop the sign-up.
-    await startTrial(data.user.id);
+    // Unless the box was unticked, a new account joins the Tuesday newsletter (founder, Nov 22 2026). The 14-day Explorer trial starts
+    // with its first saved league instead (lib/trial.js: one trial per Sleeper account). Can't stop the sign-up.
     if (formData.get("newsletter") === "on") await addSubscriber(email, "signup").catch((e) => console.error("[signup] newsletter:", e?.message || e));
   }
   back("/login", "message", "check-email", next);
