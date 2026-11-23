@@ -30,7 +30,7 @@ export default async function ComparePlayerSimsPage({ searchParams }) {
   const hasFullAccess = PAID_TIERS.includes(tier);
   const { latest } = weekData;
 
-  const { sims, maxCeiling, simsWithComputed } = buildSimRows({ cached: weekData, hasFullAccess, bioByNamePos });
+  const { sims, simsWithComputed } = buildSimRows({ cached: weekData, hasFullAccess, bioByNamePos });
   const byName = new Map(simsWithComputed.map((r) => [r.player_name, r]));
   const maxPlayers = MAX_COMPARE[tier] ?? SLOTS.length;
   const selected = [...new Set(SLOTS.slice(0, maxPlayers).map((slot) => byName.get(params?.[slot])).filter(Boolean))]; // the same player twice counts once
@@ -99,7 +99,7 @@ export default async function ComparePlayerSimsPage({ searchParams }) {
 
             {selected.length >= 2 ? (
               <>
-                <CompareSims players={selected} maxCeiling={maxCeiling} />
+                <CompareSims players={selected} />
                 <ComparePlayerRadars players={comparePlayers} />
               </>
             ) : (

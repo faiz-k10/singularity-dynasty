@@ -70,8 +70,10 @@ function GroupRow({ label, n }) {
   );
 }
 
-export default function CompareSims({ players, maxCeiling }) {
+export default function CompareSims({ players }) {
   const n = players.length;
+  // season fantasy points per player, for the Range row's shared-scale strip
+  const seasonRanges = players.map((p) => (p.median == null ? null : { floor: p.floor, median: p.median, ceiling: p.ceiling }));
   const statRows = STAT_LABELS.map(([key, label]) => {
     const ranges = players.map((p) => p.stat_ranges?.[key] || null);
     if (!ranges.some(Boolean)) return null;
@@ -164,18 +166,11 @@ export default function CompareSims({ players, maxCeiling }) {
             ))}
             <tr>
               <th>Range</th>
-              {players.map((p) => (
-                <td key={p.player_name}>
-                  <div className="sim-bar-track">
-                    <div
-                      className="sim-bar-typical"
-                      style={{ left: `${(p.floor / maxCeiling) * 100}%`, width: `${((p.median - p.floor) / maxCeiling) * 100}%` }}
-                    ></div>
-                    <div
-                      className="sim-bar-upside"
-                      style={{ left: `${(p.median / maxCeiling) * 100}%`, width: `${((p.ceiling - p.median) / maxCeiling) * 100}%` }}
-                    ></div>
-                  </div>
+              {players.map((p, i) => (
+                <td key={p.player_name} className="mono compare-pc" style={pc(i)}>
+                  <span className="cmp-range-cell">
+                    <RangeStrip ranges={seasonRanges} i={i} fmt={int} />
+                  </span>
                 </td>
               ))}
             </tr>
