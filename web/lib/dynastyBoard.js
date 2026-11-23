@@ -25,7 +25,7 @@ import { acquiringGm, coachFor } from "./teamStaff.js";
 
 export const MODES = {
   contender: { label: "Contender", prod: 0.9, age: 0.1 },
-  rebuilder: { label: "Rebuilder", prod: 0.7, age: 0.3, short: true, window: 2, minShare: 0.15, replLine: 1.2 }, // replLine: Replacement starts lower here (founder, Nov 17 2026: "add tier 8 under cornerstone") // short: the Rebuilder's own production columns (*_s). Windows live in model/dynasty_params.R -- since Nov 23 2026 (founder, trial): Contender 17 games / half-life 8, Rebuilder 34 / 12
+  rebuilder: { label: "Rebuilder", prod: 0.7, age: 0.3, short: true, window: 2, minShare: 0.15, replLine: 1.2 }, // replLine: Replacement starts lower here (founder, Nov 17 2026: "add tier 8 under cornerstone") // short: the Rebuilder's own production columns (*_s). Windows live in model/dynasty_params.R -- since Nov 23 2026 (founder): Contender 17 games / half-life 8, Rebuilder 34 / 12
 };
 // a score change over his last drift games smaller than this reads as steady (no arrow on the board, "steady" in the profile)
 export const MOVE_MIN = 1;

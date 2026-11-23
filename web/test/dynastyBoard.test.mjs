@@ -101,7 +101,7 @@ test("the published metadata has replacement, the done ages and the memory setti
   assert.ok(meta.replacement["1QB"].QB > meta.replacement.SF.QB, "superflex lowers the QB bar");
   for (const p of ["QB", "RB", "WR", "TE"]) assert.ok(meta.doneAge[p] > 25 && meta.doneAge[p] < 40);
   assert.equal(meta.doneAge.QB, 35); assert.equal(meta.doneAge.RB, 28);
-  assert.ok([17, 34].includes(meta.window.games) && [17, 34].includes(meta.windowShort.games)); // Contender / Rebuilder memories (model/dynasty_params.R; swapped as a trial Nov 23 2026)
+  assert.ok([17, 34].includes(meta.window.games) && [17, 34].includes(meta.windowShort.games)); // Contender / Rebuilder memories (model/dynasty_params.R; swapped Nov 23 2026)
 });
 
 test("same displayed score: the younger player ranks first", () => {
