@@ -12,13 +12,13 @@ export default function SignUpGate() {
   return (
     <main id="main-content" className="wrap auth-wrap">
       <div className="auth-card reveal in" data-wall="sign-up">
-        <div className="eyebrow">Free account</div>
-        <h1>Become a Stargazer.</h1>
+        <div className="eyebrow">14 days of Explorer, free</div>
+        <h1>Become an Explorer.</h1>
         <p className="auth-sub">
-          Every player, every league, every Sunday is a sky full of signals. Make a free account and start your journey here.
+          Every player, every league, every Sunday is a sky full of signals. Make an account and explore it all with 14 days of Explorer free. No card needed.
         </p>
         <div className="auth-actions">
-          <Link href={href} className="btn-primary">Create Free Account</Link>
+          <Link href={href} className="btn-primary">Start Free Trial</Link>
           <Link href={href} className="btn-ghost">Sign In</Link>
         </div>
       </div>
