@@ -4,7 +4,7 @@ import { dynastyStory } from "../lib/dynastyStory.js";
 
 const base = { name: "Jahmyr Gibbs", pos: "RB", age: 24.5, score: 9.5, ppg: 21.4, move: 1.8, runway: 3.5, prevRank: 6 };
 const ctx = { rank: 2, prev: 8, scope: "on the board", overall: 2, posRank: 1, next: "Jaxon Smith-Njigba", gapBelow: 0.6, group: "Future Legend",
-  tierSize: 2, tierPlace: 2, mates: ["Josh Allen"], repl: 9.8, above: 30, games: 34, doneAge: 28, rebuild: false, viewLabel: "Superflex Contender",
+  tierSize: 2, tierPlace: 2, mates: ["Josh Allen"], repl: 9.8, above: 30, games: 34, doneAge: 28, rebuild: false, viewLabel: "Superflex contender",
   views: [{ label: "Superflex Contender", rank: 2 }, { label: "1QB Contender", rank: 1 }, { label: "Superflex Rebuilder", rank: 2 }, { label: "1QB Rebuilder", rank: 2 }],
   coach: { hc: "Dan Campbell", calls: false } };
 const all = (s) => [s.lede, ...["worth", "prod", "age", "tier", "league", "staff"].flatMap((k) => [s[k]?.head, s[k]?.close])].filter(Boolean);
@@ -39,5 +39,5 @@ test("rebuilder past his done age is told plainly", () => {
 test("alone in a tier and a league-proof rank", () => {
   const s = dynastyStory(base, { ...ctx, tierSize: 1, mates: [], views: ctx.views.map((v) => ({ ...v, rank: 4 })) });
   assert.match(s.tier.head, /Nobody on the board/);
-  assert.equal(s.league.head, "He's No. 4 however your league is set up.");
+  assert.equal(s.league.head, "He's No. 4 whatever your format and whichever way your team is headed.");
 });

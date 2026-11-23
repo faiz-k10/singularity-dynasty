@@ -39,7 +39,8 @@ const pts = (v) => v.toFixed(1);
 //   group: group name; tierSize, tierPlace, mates: names of the others in his tier (nearest first)
 //   repl: a replacement player's points a game here; above / games: games above it in his window
 //   doneAge: the age his position usually falls off; rebuild: the mode reads only the next couple of seasons
-//   viewLabel: "Superflex Contender"; views: [{ label, rank }] for the four league setups (may be null)
+//   viewLabel: "Superflex contender"; views: [{ label, rank }] for the four format x team-direction views (may be null). Contender / rebuilder
+//   describes the TEAM, not the league (founder, Nov 23 2026), so the copy says "for a Superflex contender", never "in Superflex Contender leagues".
 //   coach: { hc, calls } | null
 export function dynastyStory(p, ctx) {
   const climb = ctx.prev ? ctx.prev - ctx.rank : 0;
@@ -68,7 +69,7 @@ export function dynastyStory(p, ctx) {
   // ---- 1: what he's worth ----
   const worth = {
     head: ctx.overall
-      ? `No. ${ctx.overall} overall and ${best(ctx.posRank)} ${one(p.pos)} in ${ctx.viewLabel} leagues`
+      ? `No. ${ctx.overall} overall and ${best(ctx.posRank)} ${one(p.pos)} for a ${ctx.viewLabel}`
       : `${ctx.group}, ${nth(ctx.rank)} ${ctx.scope}`,
     close: p.move == null
       ? `There aren't enough games yet to say which way he's heading. So the number rests on what he's done so far.`
@@ -129,10 +130,10 @@ export function dynastyStory(p, ctx) {
     const ranks = ctx.views.map((v) => v.rank);
     const best = ctx.views.reduce((a, b) => (b.rank < a.rank ? b : a)), worst = ctx.views.reduce((a, b) => (b.rank > a.rank ? b : a));
     league = Math.min(...ranks) === Math.max(...ranks)
-      ? { head: `He's No. ${best.rank} however your league is set up.` }
+      ? { head: `He's No. ${best.rank} whatever your format and whichever way your team is headed.` }
       : Math.max(...ranks) - Math.min(...ranks) <= 3
-        ? { head: `Your league setup barely moves him, from No. ${best.rank} to No. ${worst.rank}.` }
-        : { head: `In ${best.label} leagues he's No. ${best.rank}. In ${worst.label} leagues he's No. ${worst.rank}.` };
+        ? { head: `Your format and your team's direction barely move him, from No. ${best.rank} to No. ${worst.rank}.` }
+        : { head: `For a ${best.label} he's No. ${best.rank}. For a ${worst.label} he's No. ${worst.rank}.` };
   }
 
   // ---- 6: who's around him ----

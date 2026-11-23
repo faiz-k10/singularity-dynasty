@@ -248,8 +248,8 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
     group: group.name, tierSize, tierPlace,
     mates: L.slice(tie.a, tie.b + 1).filter((r) => r.id !== p.id).sort((a, b) => Math.abs(L.indexOf(a) - i) - Math.abs(L.indexOf(b) - i)).map((r) => r.name),
     repl, above, games: log?.p.length || 0, doneAge: meta.doneAge[p.pos], rebuild: !!m.window,
-    viewLabel: `${f.label} ${m.label}`,
-    views: grid?.map((c) => ({ label: `${FORMATS[c.fk].label} ${MODES[c.mk].label}`, rank: c.rank })),
+    viewLabel: `${f.label} ${m.label.toLowerCase()}`,
+    views: grid?.map((c) => ({ label: `${FORMATS[c.fk].label} ${MODES[c.mk].label.toLowerCase()}`, rank: c.rank })),
     coach,
   });
   const size = [formatHeight(data?.bio?.height), data?.bio?.weight ? `${data.bio.weight} lbs` : null, data?.bio?.yearsExp != null ? (data.bio.yearsExp === 0 ? "Rookie" : `Year ${data.bio.yearsExp + 1}`) : null].filter(Boolean);
