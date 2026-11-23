@@ -34,6 +34,7 @@ export default async function MyTeamPage({ searchParams }) {
   let savedTeams = [];
   // The Explorer trial's countdown (lib/trial.js): shown while a free account is on its trial, so the end is never a surprise.
   const trialDays = user ? await trialDaysLeft(supabase, user.id) : null;
+  const signupSleeper = user ? await signupSleeperName(supabase, user.id) : null;
   if (user) {
     // select("*") rather than an explicit column list so the page keeps
     // working if a column-adding migration (e.g. 0025 buy_in) hasn't been
@@ -169,6 +170,7 @@ export default async function MyTeamPage({ searchParams }) {
         <MyTeamClient
           isSignedIn={!!user}
           tier={tier}
+          signupSleeper={signupSleeper}
           savedTeamLimit={savedTeamLimit(tier)}
           savedTeams={savedTeams}
           initialGameStates={gameStates}
@@ -227,4 +229,10 @@ async function trialDaysLeft(supabase, userId) {
   const { data: prof } = await supabase.from("profiles").select("tier, bonus_tier, bonus_until").eq("id", userId).maybeSingle();
   const left = prof?.bonus_until ? Date.parse(prof.bonus_until) - Date.now() : 0;
   return prof?.tier === "stargazer" && prof.bonus_tier === "explorer" && left > 0 ? Math.ceil(left / 86_400_000) : null;
+}
+
+// The Sleeper username the account signed up with (profiles.sleeper_username, migration 0049), to prefill the league lookup; null if unknown.
+async function signupSleeperName(supabase, userId) {
+  const { data, error } = await supabase.from("profiles").select("sleeper_username").eq("id", userId).maybeSingle();
+  return error ? null : data?.sleeper_username || null;
 }

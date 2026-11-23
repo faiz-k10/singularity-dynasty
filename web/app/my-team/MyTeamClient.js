@@ -1098,6 +1098,7 @@ function Onboarding({ step, signedIn, welcome }) {
 export default function MyTeamClient({
   isSignedIn,
   tier,
+  signupSleeper = null,
   savedTeamLimit,
   savedTeams: savedTeamsProp,
   initialGameStates = null,
@@ -1327,12 +1328,12 @@ export default function MyTeamClient({
     () => ""
   );
   const [typedUsername, setUsername] = useState(null);
-  const username = typedUsername ?? rememberedUsername;
+  const username = typedUsername ?? (rememberedUsername || signupSleeper || "");
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   const router = useRouter();
-  // A save that started or ended the Explorer trial reloads the page's plan (league limit, live scores, the countdown).
-  const trialChanged = (res) => res?.trial === "started" || res?.trial === "ended";
+  // A save that ended the Explorer trial reloads the page's plan (league limit, live scores, the countdown).
+  const trialChanged = (res) => res?.trial === "ended";
   const [savedKeys, setSavedKeys] = useState(
     new Set(savedTeamsProp.map((t) => t.platform_league_id))
   );
@@ -1389,7 +1390,6 @@ export default function MyTeamClient({
     });
     // The first save starts the Explorer trial (or says this Sleeper account already used it): reload the page's plan so the
     // league limit, live scores and the countdown follow.
-    if (res.trial === "used") setError("This Sleeper account already used its free Explorer trial, so this account stays on Stargazer.");
     if (res.trial === "ended") setError("Your Explorer trial ended: that Sleeper account already used a free trial.");
     if (!res.error && res.id) {
       setSavedKeys((prev) => new Set(prev).add(team.league_id));

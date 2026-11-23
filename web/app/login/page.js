@@ -49,6 +49,21 @@ export default async function LoginPage({ searchParams }) {
           placeholder="••••••••"
         />
 
+        <label className="feed-label mono" htmlFor="sleeper">
+          SLEEPER USERNAME <span className="auth-hint">(new accounts)</span>
+        </label>
+        <input
+          id="sleeper"
+          name="sleeper"
+          type="text"
+          maxLength={40}
+          autoComplete="off"
+          autoCapitalize="none"
+          spellCheck={false}
+          className="feed-input auth-input"
+          placeholder="your Sleeper name"
+        />
+
         <label className="auth-check mono">
           <input type="checkbox" name="newsletter" defaultChecked />
           New account: send me the Tuesday newsletter
@@ -63,7 +78,7 @@ export default async function LoginPage({ searchParams }) {
           </button>
         </div>
         <p className="auth-foot mono">
-          Save your first league to start 14 days of Explorer free. No card needed.
+          New accounts get 14 days of Explorer free, one per Sleeper account. No card needed.
         </p>
         <p className="auth-foot mono">
           <Link href="/login/reset">Forgot your password?</Link>

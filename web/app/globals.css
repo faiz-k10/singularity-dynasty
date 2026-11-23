@@ -7583,3 +7583,4 @@ button.sky-variant:focus-visible{outline:2px solid var(--ember);outline-offset:1
 .ehp-feats{grid-template-columns:repeat(auto-fill,minmax(230px,1fr));column-gap:22px}
 .ehp-feats li.ehp-feats-plus{grid-column:1 / -1}
 @media (max-width:640px){ .ehp-pd div{grid-template-columns:1fr auto;grid-template-areas:"name name" "price go" "body body"} }
+.auth-hint{color:var(--star-dim);letter-spacing:.04em;text-transform:none}

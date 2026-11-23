@@ -12,12 +12,15 @@ export const AUTH_ERRORS = {
   "passwords-differ": "The two passwords don't match.",
   "same-password": "Choose a password different from your current one.",
   "reset-needs-session": "Open the reset link from your email to set a new password.",
+  "missing-sleeper": "Enter your Sleeper username to create an account.",
+  "sleeper-not-found": "We couldn't find that Sleeper username. Check the spelling (it's the name on your Sleeper profile) and try again.",
   captcha: "We couldn't confirm you're a person. Finish the check above the buttons and try again.",
   unknown: "Something went wrong. Please try again.",
 };
 
 export const AUTH_MESSAGES = {
-  "check-email": "Check your email to confirm your account, then sign in.",
+  "check-email": "Check your email to confirm your account, then sign in. Your 14 days of Explorer have started.",
+  "check-email-trial-used": "Check your email to confirm your account, then sign in. That Sleeper account already used its free Explorer trial, so this account starts on Stargazer.",
   "reset-sent": "If that email has an account, a link to reset the password is on its way.",
   "signed-out": "You're signed out.",
   "account-deleted": "Your account and everything saved with it have been deleted. Any subscription was canceled.",

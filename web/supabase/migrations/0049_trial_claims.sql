@@ -12,8 +12,11 @@ create table if not exists public.trial_claims (
 );
 alter table public.trial_claims enable row level security;
 
--- 2. When this account's trial started (null = never had one), so a second trial can't start on the same account either.
+-- 2. When this account's trial started (null = never had one), so a second trial can't start on the same account either, and the
+--    Sleeper account it signed up with (required at sign-up).
 alter table public.profiles add column if not exists trial_started_at timestamptz;
+alter table public.profiles add column if not exists sleeper_user_id text;
+alter table public.profiles add column if not exists sleeper_username text;
 
 -- 3. The saved-team cap now counts the plan the member actually has: the higher of the paid tier and a bonus tier that hasn't run out
 --    (a trial or a Night Sky reward, lib/subscriptionTier.js effectiveTier). Before this it read only `tier`, so a trial account was

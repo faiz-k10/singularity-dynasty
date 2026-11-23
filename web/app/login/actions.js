@@ -9,6 +9,8 @@ import { cookies, headers } from "next/headers";
 import { allowHit, clientIp } from "@/lib/rateLimit";
 import { recordReferral } from "@/lib/referrals";
 import { addSubscriber } from "@/lib/emailList";
+import { startTrial } from "@/lib/trial";
+import { fetchSleeperUser } from "@/lib/sleeper";
 import { REF_COOKIE } from "@/lib/referralRules";
 import { TURNSTILE_FIELD, tooFast } from "@/lib/turnstile";
 
@@ -67,6 +69,12 @@ export async function signup(formData) {
   if (password.length < MIN_PASSWORD) back("/login", "error", "weak-password", next);
   if (isBot(formData)) back("/login", "message", "check-email", next);
   if (await overLimit("signup", email)) back("/login", "error", "rate-limit", next);
+  // A Sleeper username is required to sign up (founder, Nov 22 2026): the 14-day Explorer trial starts now and belongs to that Sleeper
+  // account, one trial per Sleeper account (lib/trial.js). It must be a real Sleeper account; checked before the account is made.
+  const sleeperName = String(formData.get("sleeper") || "").trim().slice(0, 40);
+  if (!sleeperName) back("/login", "error", "missing-sleeper", next);
+  const sleeper = await fetchSleeperUser(sleeperName).catch(() => null);
+  if (!sleeper?.user_id) back("/login", "error", "sleeper-not-found", next);
   const supabase = await createClient();
   // The confirmation email links to /auth/confirm, which signs the new account in and continues to `next`.
   const confirm = `${await siteOrigin()}/auth/confirm?next=${encodeURIComponent(next || "/my-team?welcome=1")}`;
@@ -78,9 +86,10 @@ export async function signup(formData) {
   const isNew = Boolean(data?.user?.id && data.user.identities?.length);
   if (ref && isNew) await recordReferral(data.user.id, ref);
   if (isNew) {
-    // Unless the box was unticked, a new account joins the Tuesday newsletter (founder, Nov 22 2026). The 14-day Explorer trial starts
-    // with its first saved league instead (lib/trial.js: one trial per Sleeper account). Can't stop the sign-up.
+    // Unless the box was unticked, a new account joins the Tuesday newsletter (founder, Nov 22 2026). Neither can stop the sign-up.
     if (formData.get("newsletter") === "on") await addSubscriber(email, "signup").catch((e) => console.error("[signup] newsletter:", e?.message || e));
+    const trial = await startTrial(data.user.id, sleeper);
+    if (trial.trial === "used") back("/login", "message", "check-email-trial-used", next);
   }
   back("/login", "message", "check-email", next);
 }
