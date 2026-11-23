@@ -160,10 +160,7 @@ export default function CompareSims({ players }) {
               </>
             )}
 
-            <GroupRow label="Season outlook (fantasy points)" n={n} />
-            {seasonRows.map((r) => (
-              <SimRow key={r.label} r={r} players={players} />
-            ))}
+            <GroupRow label="Season outlook (PPR fantasy points)" n={n} />
             <tr>
               <th>Range</th>
               {players.map((p, i) => (
@@ -174,6 +171,9 @@ export default function CompareSims({ players }) {
                 </td>
               ))}
             </tr>
+            {seasonRows.map((r) => (
+              <SimRow key={r.label} r={r} players={players} />
+            ))}
 
             {paceRows.length > 0 && <GroupRow label="Season to date" n={n} />}
             {paceRows.map((r) => (
