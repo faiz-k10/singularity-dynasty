@@ -3278,11 +3278,19 @@ tr.stat-row-selected td{background:var(--void-panel);}
   background:var(--void-panel); border:1px solid var(--line); border-radius:2px; padding:20px;
   box-shadow:0 30px 70px rgba(var(--shadow-rgb),0.4); display:flex; flex-direction:column; align-items:center; min-width:0;
 }
-.compare-radar-card-head{display:flex; align-items:baseline; gap:8px; justify-content:center; margin-bottom:4px; width:100%;}
-.compare-radar-card-name{font-family:var(--font-display), sans-serif; font-weight:600; font-size:15px; color:var(--star);}
+.compare-radar-card-head{display:flex; align-items:baseline; gap:8px; justify-content:center; margin-bottom:20px; padding-bottom:14px; border-bottom:1px solid var(--rule); width:100%;}
+.compare-radar-card-name{font-family:var(--font-display), sans-serif; font-weight:600; font-size:15px; color:var(--pc, var(--star));}
 .compare-radar-card-pos{font-size:11px; color:var(--star-dim);}
 .compare-radar-card .stat-radar{width:100%;}
+.compare-radar-card{border-top:2px solid var(--pc, var(--line));}
 .compare-radar-card .pctile-card{width:100%; box-sizing:border-box;}
+/* the percentile bars under each compared radar share the card's width (labels wrap instead of running into each other) and fill
+   in the player's colour (founder, Nov 22 2026) */
+.compare-radar-card .pctile-card-head{flex-wrap:wrap; row-gap:4px;}
+.compare-radar-card .pctile-rows{gap:4px; overflow-x:visible;}
+.compare-radar-card .pctile-vbar{flex:1 1 0; min-width:0; width:auto; max-width:72px; padding:4px 0;}
+.compare-radar-card .pctile-vbar-label{white-space:normal; overflow-wrap:anywhere; min-height:2.4em;}
+.compare-radar-card .pctile-vbar-fill, .compare-radar-card .pctile-scale-fill{background:var(--pc);}
 
 /* ---------- MY TEAM (Sleeper import) ---------- */
 .my-team-wrap{display:flex; flex-direction:column; gap:12px; margin-top:0;} /* the tool spec: 12px between panels (Nov 10 2026) */
@@ -4583,7 +4591,10 @@ html{font-stretch:82%;}
 .compare-h2h .compare-table{table-layout:fixed; min-width:calc(150px + var(--cmp-n, 3) * 170px);}
 .compare-h2h .compare-table th:first-child, .compare-h2h .compare-table tbody th{width:150px;}
 .compare-h2h .compare-table td{padding:10px 20px;}
-.compare-table td.compare-best{color:var(--horizon-gold); font-weight:700; background:rgba(var(--horizon-gold-rgb),0.08);}
+/* Compare Simulations: each player's column in his pick colour (founder, Nov 22 2026) */
+.compare-table thead th.compare-pc{color:var(--pc); box-shadow:inset 0 3px 0 var(--pc);}
+.compare-table td.compare-pc{color:var(--pc);}
+.compare-table td.compare-pc .cmp-meter{margin-top:8px;}
 .compare-table td.compare-strong{font-size:16px;}
 .compare-table .compare-group-row th, .lab-compare .compare-group-row th{
   padding:12px 20px; text-transform:capitalize; font-weight:700; background:transparent; color:var(--horizon-gold); letter-spacing:0.1em; font-size:14px;
@@ -4634,7 +4645,6 @@ html{font-stretch:82%;}
 .compare-stat{display:inline-flex; flex-direction:column; align-items:center; gap:2px; line-height:1.15;}
 .compare-stat strong{font-size:15px;}
 .compare-stat-range{font-size:10.5px; color:var(--star-dim); font-weight:400;}
-.compare-table td.compare-best .compare-stat-range{color:var(--star-dim);}
 
 /* ===== Landing page data hub (app/hub/HubClient.js; what shows is set in lib/hubConfig.js) ===== */
 .hub{padding-top:8px;}
@@ -6558,12 +6568,12 @@ details.acct-danger > summary.acct-h{color:var(--down)}
    A new bar joins the hazard lists below (track / fill) instead of drawing its own. ===== */
 :root{--hazard:repeating-linear-gradient(45deg, #000 0 4.5px, transparent 4.5px 6px);}
 .sim-bar-track, .stat-panel-pace-progress-track, .weekly-rank-bar, .weekly-gamelog-bar, .shape-compare-track, .pctile-bar, .pctile-scale-track,
-.hub-range-track, .hub-stage-bar, .hub-role-bar, .league-dash-winbar, .lab-cell-pct, .lab-board-track, .cmpc-meter{
+.hub-range-track, .hub-stage-bar, .hub-role-bar, .league-dash-winbar, .lab-cell-pct, .lab-board-track, .cmp-meter{
   box-sizing:border-box; min-height:8px; background:none; border-radius:0;
   border:1px solid rgba(var(--star-dot-rgb), .28); border-left:2px solid rgba(var(--star-dot-rgb), .6); border-right:2px solid rgba(var(--star-dot-rgb), .6);
 }
 .sim-bar-typical, .sim-bar-upside, .stat-panel-pace-progress-fill, .weekly-rank-bar > span, .weekly-gamelog-bar em, .shape-compare-fill, .pctile-bar-fill,
-.pctile-scale-fill, .hub-range-span, .hub-stage-seg, .hub-role-fill, .league-dash-winbar > span, .lab-cell-bar, .lab-board-bar, .cmpc-meter-fill{
+.pctile-scale-fill, .hub-range-span, .hub-stage-seg, .hub-role-fill, .league-dash-winbar > span, .lab-cell-bar, .lab-board-bar, .cmp-meter-fill{
   -webkit-mask:var(--hazard); mask:var(--hazard); border-radius:0; opacity:1;
 }
 .pctile-vbar-track, .stat-panel-pace-rangebar{
@@ -6636,8 +6646,10 @@ details.acct-danger > summary.acct-h{color:var(--down)}
 .cmpc-row-v{font-size:17px; font-weight:700; text-align:right;}
 .cmpc-row-v{color:var(--pc);}
 .cmpc-row.is-best .cmpc-row-v{font-weight:800;}
-.cmpc-meter{grid-column:1 / -1; display:block; height:8px; margin-top:2px;}
-.cmpc-meter-fill{display:block; height:100%; background:var(--pc);}
+.cmpc-row .cmp-meter{grid-column:1 / -1; margin-top:2px;}
+/* the compare meter (Compare Players cards + Compare Simulations table): one bar per number in the player's pick colour --pc */
+.cmp-meter{display:block; width:100%; height:8px;}
+.cmp-meter-fill{display:block; height:100%; background:var(--pc);}
 @media (max-width:900px){.cmpc-grid{grid-template-columns:minmax(0, 1fr);}}
 /* Compare pickers: one Clear button at the end of the row empties every box */
 .compare-clear-all{flex:none; align-self:flex-end; height:30px; padding:0 16px; background:transparent; border:1px solid var(--rule); border-radius:2px; color:var(--star-dim); font-size:12px; letter-spacing:.06em; text-transform:uppercase; cursor:pointer;}

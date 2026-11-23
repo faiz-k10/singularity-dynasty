@@ -5,6 +5,7 @@ import ShareCardButton from "../ShareCardButton";
 import { PlayerHeaderPanel, PlayerStatsRow, OutcomeCurvePanel, UsageTdPanel, GameLogPanel } from "./WeeklyDetailRow";
 import { fmt1 } from "@/lib/format";
 import { PICK_COLORS } from "@/lib/pickColors";
+import { meterWidth } from "@/lib/meter";
 
 // Compare Players (Weekly Projection Rankings), as two tabs: HEAD TO HEAD (a table of the numbers that matter) and PLAYER PROFILES (the same
 // dashboard panels the opened-player row shows (identity + badges, this week / last week, outcome curve, usage or
@@ -55,19 +56,6 @@ function bestIndexes(values, best) {
   const target = best === "low" ? Math.min(...have) : Math.max(...have);
   if (have.every((v) => v === target)) return new Set();
   return new Set(values.map((v, i) => (v === target ? i : -1)).filter((i) => i >= 0));
-}
-
-// How full a row's meter is for one player (0-1): a higher-is-better number against the row's top value (from zero, or from the lowest
-// when a number can go negative), a lower-is-better one (rank, INT) as the best value over his, so the leader's meter is full.
-function meterShare(values, v, best) {
-  if (v == null) return 0;
-  const have = values.filter((x) => x != null);
-  if (best === "low") {
-    const min = Math.min(...have);
-    return v <= 0 ? 1 : Math.max(0, min) / v;
-  }
-  const lo = Math.min(0, ...have), hi = Math.max(...have);
-  return hi > lo ? (v - lo) / (hi - lo) : 0;
 }
 
 function MatchupCell({ row }) {
@@ -127,8 +115,8 @@ function HeadToHeadCards({ players, shown }) {
                     <div key={r.def.label} className={`cmpc-row${r.best.has(i) ? " is-best" : ""}`}>
                       <span className="cmpc-row-l">{r.def.term ? <Define term={r.def.term}>{r.def.label}</Define> : r.def.label}</span>
                       <span className="cmpc-row-v mono">{val(r, i)}</span>
-                      <span className="cmpc-meter" aria-hidden="true">
-                        <span className="cmpc-meter-fill" style={{ width: `${(meterShare(r.values, r.values[i], r.def.best) * 100).toFixed(1)}%` }} />
+                      <span className="cmp-meter" aria-hidden="true">
+                        <span className="cmp-meter-fill" style={{ width: meterWidth(r.values, r.values[i], r.def.best) }} />
                       </span>
                     </div>
                   ))}

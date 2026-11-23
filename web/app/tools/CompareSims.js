@@ -2,20 +2,25 @@ import TeamBadge from "./TeamBadge";
 import ArchetypePill from "./ArchetypePill";
 import STAT_LABELS from "./statLabels";
 import { GameLogPanel } from "./WeeklyDetailRow";
+import { PICK_COLORS } from "@/lib/pickColors";
+import { meterWidth } from "@/lib/meter";
 
 // Compare Player Season Simulations: a head-to-head table (role tags, season floor / median / ceiling with the range bar,
 // season-to-date pace, and every projected stat as median with its floor-ceiling range), then -- in the page -- the
-// percentile shapes and each player's recent games. The leader in each row is marked in gold.
+// percentile shapes and each player's recent games. Each player's column is in his pick colour (lib/pickColors.js) and every
+// number has a meter, full for the row's leader (founder, Nov 22 2026; replaced the gold leader cell).
 
 const int = (v) => String(Math.round(v));
 const signed1 = (v) => `${v >= 0 ? "+" : ""}${v.toFixed(1)}`;
 
-function bestIndexes(values, best = "high") {
-  const have = values.filter((v) => v != null);
-  if (have.length < 2) return new Set();
-  const target = best === "low" ? Math.min(...have) : Math.max(...have);
-  if (have.every((v) => v === target)) return new Set();
-  return new Set(values.map((v, i) => (v === target ? i : -1)).filter((i) => i >= 0));
+const pc = (i) => ({ "--pc": PICK_COLORS[i] });
+
+function Meter({ values, v, best }) {
+  return (
+    <span className="cmp-meter" aria-hidden="true">
+      <span className="cmp-meter-fill" style={{ width: meterWidth(values, v, best) }} />
+    </span>
+  );
 }
 
 function SimRow({ r, players }) {
@@ -23,8 +28,9 @@ function SimRow({ r, players }) {
     <tr>
       <th>{r.label}</th>
       {r.values.map((v, i) => (
-        <td key={players[i].player_name} className={`mono${r.best.has(i) ? " compare-best" : ""}${r.strong ? " compare-strong" : ""}`}>
+        <td key={players[i].player_name} className={`mono compare-pc${r.strong ? " compare-strong" : ""}`} style={pc(i)}>
           {v == null ? "—" : r.fmt(v)}
+          {v != null && <Meter values={r.values} v={v} best={r.best} />}
         </td>
       ))}
     </tr>
@@ -46,7 +52,7 @@ export default function CompareSims({ players, maxCeiling }) {
     if (!ranges.some(Boolean)) return null;
     const isPct = key === "target_share";
     const fmt = (v) => (isPct ? `${v.toFixed(1)}%` : int(v));
-    return { key, label, ranges, fmt, best: bestIndexes(ranges.map((r) => (r ? r.median : null)), key === "passing_interceptions" ? "low" : "high") };
+    return { key, label, ranges, fmt, medians: ranges.map((r) => (r ? r.median : null)), best: key === "passing_interceptions" ? "low" : "high" };
   }).filter(Boolean);
 
   const simple = (label, get, fmt, opts = {}) => {
@@ -55,7 +61,7 @@ export default function CompareSims({ players, maxCeiling }) {
       return v == null || Number.isNaN(Number(v)) ? null : Number(v);
     });
     if (!values.some((v) => v != null)) return null;
-    return { label, values, fmt, best: bestIndexes(values, opts.best), strong: opts.strong };
+    return { label, values, fmt, best: opts.best || "high", strong: opts.strong };
   };
   const seasonRows = [
     simple("Floor", (p) => p.floor, int),
@@ -77,8 +83,8 @@ export default function CompareSims({ players, maxCeiling }) {
           <thead>
             <tr>
               <th></th>
-              {players.map((p) => (
-                <th key={p.player_name}>
+              {players.map((p, i) => (
+                <th key={p.player_name} className="compare-pc" style={pc(i)}>
                   <span className="compare-sims-head">
                     {p.headshot && (
                       // eslint-disable-next-line @next/next/no-img-element
@@ -155,13 +161,14 @@ export default function CompareSims({ players, maxCeiling }) {
               <tr key={s.key}>
                 <th>{s.label}</th>
                 {s.ranges.map((rg, i) => (
-                  <td key={players[i].player_name} className={`mono${s.best.has(i) ? " compare-best" : ""}`}>
+                  <td key={players[i].player_name} className="mono compare-pc" style={pc(i)}>
                     {rg ? (
                       <span className="compare-stat">
                         <strong>{s.fmt(rg.median)}</strong>
                         <span className="compare-stat-range">
                           {s.fmt(rg.floor)} – {s.fmt(rg.ceiling)}
                         </span>
+                        <Meter values={s.medians} v={rg.median} best={s.best} />
                       </span>
                     ) : (
                       "—"
@@ -173,7 +180,7 @@ export default function CompareSims({ players, maxCeiling }) {
           </tbody>
         </table>
       </div>
-      <p className="compare-legend">Gold marks the leader in each row. Season stats are projected totals.</p>
+      <p className="compare-legend">Each meter compares the players on that row; a full meter leads it. Season stats are projected totals.</p>
 
       {players.some((p) => p.recentGames?.length) && (
         <div className="compare-panels" style={{ "--cmp-n": n }}>

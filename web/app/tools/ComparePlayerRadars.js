@@ -3,6 +3,7 @@
 import { useState } from "react";
 import StatRadar from "./StatRadar";
 import PercentileCard from "./PercentileCard";
+import { PICK_COLORS } from "@/lib/pickColors";
 
 const LAYERS = [
   { key: "floor", label: "Floor" },
@@ -57,19 +58,20 @@ export default function ComparePlayerRadars({ players }) {
         </div>
       </div>
       <div className="compare-radar-grid" style={{ "--compare-radar-count": players.length }}>
-        {players.map((p) => (
-          <div key={p.name} className="compare-radar-card">
+        {players.map((p, i) => (
+          <div key={p.name} className="compare-radar-card" style={{ "--pc": PICK_COLORS[i] }}>
             <div className="compare-radar-card-head">
               <span className="compare-radar-card-name">{p.name}</span>
               <span className="compare-radar-card-pos mono">{p.positionLabel || p.position}</span>
             </div>
             <StatRadar entries={p.radarEntries} startDeg={p.radarStartDeg} selection={selection} onSelectKey={selectRow} pool={p.position} />
-            <PercentileCard
+            {/* no empty "select a stat" box under each radar (founder, Nov 22 2026): the card only appears once something is picked */}
+            {selection && <PercentileCard
               stats={p.percentileStats}
               position={p.position}
               selection={selection}
               onSelectCell={selectCell}
-            />
+            />}
           </div>
         ))}
       </div>
