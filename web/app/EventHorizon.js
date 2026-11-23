@@ -598,7 +598,7 @@ function Plans() {
         <p className="ehp-fine">{yearly ? "Billed yearly: Explorer $84, Singularity $240." : "Billed monthly."} 14-day refund, cancel any time.</p>
       </div>
       {/* the orbits and, under them, everything the hovered (or focused) plan includes (founder, Nov 22 2026: the rows stay short, the
-          full feature set lives here); keyed by plan so it fades in fresh on each change */}
+          full feature set lives here) */}
       <div className="ehp-plan-side">
       <svg className="ehp-planorbits" viewBox="-280 -280 560 560" aria-hidden="true">
         {/* the DS-initials logo in the middle (founder, Nov 11 2026: the alternate logo, just the letters DS in the disc): scaled so its disc is exactly the old centre circle (radius 34), its line and football around it */}
@@ -628,11 +628,17 @@ function Plans() {
         {/* the highlighted plan's name sits at the bottom of the graphic, as wide as the rings themselves (460 units: textLength spreads the letters to fit, so every name spans the visual; founder, Nov 11 2026) */}
         <text className="ehp-planname" x="-230" y="330" textAnchor="start" textLength="460" lengthAdjust="spacing" fill="var(--ehp-mark)">{PLANS[on].name.toUpperCase()}</text>
       </svg>
-      <div className="ehp-plan-feats" key={PLANS[on].id} aria-live="polite">
-        {PLANS[on].plus && <p className="ehp-feats-plus">{PLANS[on].plus}</p>}
-        <ul className="ehp-feats">
-          {PLANS[on].feats.map((f) => <li key={f}>{f}</li>)}
-        </ul>
+      {/* all three lists sit in the same cell, so the box is always as tall as the longest and nothing around it moves (founder,
+          Nov 22 2026); only the hovered plan's list is shown */}
+      <div className="ehp-plan-feats">
+        {PLANS.map((p, i) => (
+          <div key={p.id} className={i === on ? "on" : ""} aria-hidden={i !== on}>
+            {p.plus && <p className="ehp-feats-plus">{p.plus}</p>}
+            <ul className="ehp-feats">
+              {p.feats.map((f) => <li key={f}>{f}</li>)}
+            </ul>
+          </div>
+        ))}
       </div>
       </div>
     </div>
