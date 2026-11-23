@@ -10,6 +10,7 @@ import { stageTimer } from "@/lib/stageTimer";
 import InteractiveScript from "../../InteractiveScript";
 import PlayerSimSearch from "../PlayerSimSearch";
 import { TEASER_LIMIT, PAID_TIERS, getCachedWeekData, buildSimRows } from "./data";
+import { seasonWeek } from "@/lib/format";
 
 export const metadata = {
   title: "Player Season Simulations — Floor/Median/Ceiling Projections — Dynasty Singularity",
@@ -82,7 +83,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
         {sims.length === 0 ? (
           <>
             <div className="eyebrow">
-              {latest ? `${latest.season} Season · Updated Week ${latest.week}` : "Simulations"}
+              {seasonWeek(latest?.season, latest?.week) || "Simulations"}
             </div>
             <h1>Player Season Simulations</h1>
             <p className="tool-sub">
@@ -113,7 +114,7 @@ export default async function PlayerSimulationsPage({ searchParams }) {
               header={
                 <>
                   <div className="eyebrow">
-                    {latest ? `${latest.season} Season · Updated Week ${latest.week}` : "Simulations"}
+                    {seasonWeek(latest?.season, latest?.week) || "Simulations"}
                   </div>
                   <h1>Player Season Simulations</h1>
                 </>

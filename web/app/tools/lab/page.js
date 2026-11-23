@@ -10,6 +10,7 @@ import LabClient from "./LabClient";
 import { getCachedLabGames } from "./data";
 import { getCachedRedraftData, getCachedLeans, getCachedTdProfile, getCachedUsageProfile, enrichRankings } from "../redraft-rankings/data";
 import { getCachedWeekData, buildSimRows } from "../player-simulations/data";
+import { seasonWeek } from "@/lib/format";
 
 export const metadata = {
   title: "The Observatory — Dynasty Singularity",
@@ -56,7 +57,7 @@ export default async function LabPage({ searchParams }) {
       <InteractiveScript />
       {user && <SkyCredit action="lab" />}
       <main id="main-content" className="wrap tool-wrap lab-wrap">
-        <div className="eyebrow">{latest ? `Week ${latest.week} · ${latest.season}` : "Research"}</div>
+        <div className="eyebrow">{seasonWeek(latest?.season, latest?.week) || "Research"}</div>
         <h1>The Observatory</h1>
         {lab.rows.length === 0 ? (
           <div className="tool-empty">

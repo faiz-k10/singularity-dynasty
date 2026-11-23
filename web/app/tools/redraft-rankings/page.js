@@ -9,6 +9,7 @@ import { stageTimer } from "@/lib/stageTimer";
 import InteractiveScript from "../../InteractiveScript";
 import RedraftRankingsClient from "./RedraftRankingsClient";
 import { PAID_TIERS, OVERALL_COLUMN_TYPES, sortPositions, getCachedRedraftData, getCachedLeans, getCachedTdProfile, getCachedUsageProfile, enrichRankings } from "./data";
+import { seasonWeek } from "@/lib/format";
 
 export const metadata = {
   title: "Weekly Projection Rankings (PPR) — Dynasty Singularity",
@@ -75,7 +76,7 @@ export default async function RedraftRankingsPage({ searchParams }) {
         {rankings.length === 0 ? (
           <>
             <div className="eyebrow">
-              {latest ? `Week ${latest.week} · ${latest.season}` : "Projections"}
+              {seasonWeek(latest?.season, latest?.week) || "Projections"}
             </div>
             <h1>Weekly Projection Rankings</h1>
             <p className="tool-sub">
@@ -104,7 +105,7 @@ export default async function RedraftRankingsPage({ searchParams }) {
               header={
                 <>
                   <div className="eyebrow">
-                    {latest ? `Week ${latest.week} · ${latest.season}` : "Projections"}
+                    {seasonWeek(latest?.season, latest?.week) || "Projections"}
                   </div>
                   <h1>Weekly Projection Rankings</h1>
                 </>

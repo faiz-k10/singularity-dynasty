@@ -6,6 +6,7 @@ import { getPlayerBiosByNamePos } from "@/lib/sleeper";
 import InteractiveScript from "../../InteractiveScript";
 import ComparePlayerPickers from "../ComparePlayerPickers";
 import CompareWeekly from "../CompareWeekly";
+import { seasonWeek } from "@/lib/format";
 import {
   PAID_TIERS,
   getCachedRedraftData,
@@ -55,7 +56,7 @@ export default async function ComparePlayersPage({ searchParams }) {
       {user && <SkyCredit action="compare" />}
 
       <main id="main-content" className="wrap tool-wrap compare-wrap">
-        <div className="eyebrow">{latest ? `Week ${latest.week} · ${latest.season}` : "Compare"}</div>
+        <div className="eyebrow">{seasonWeek(latest?.season, latest?.week) || "Compare"}</div>
         <h1>Compare Players — Weekly Projections</h1>
 
         {pool.length === 0 ? (

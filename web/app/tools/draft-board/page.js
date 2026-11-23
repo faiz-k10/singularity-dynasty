@@ -5,6 +5,7 @@ import { loadMyPlayers } from "@/lib/myPlayers";
 import { createClient } from "@/lib/supabase/server";
 import InteractiveScript from "../../InteractiveScript";
 import DynastyBoard from "./DynastyBoard";
+import { seasonWeek } from "@/lib/format";
 import { FREE_ROWS, getDynastyRows, getDynastyThrough } from "@/lib/dynastyData";
 
 export const metadata = {
@@ -27,7 +28,7 @@ async function RankingsView({ hasFullAccess, signedIn, user }) {
       <main id="main-content" className="wrap tool-wrap dynasty-wrap">
         <div className="tool-header-split">
           <div className="tool-header-left">
-            <div className="eyebrow">{DYNASTY_THROUGH ? `Dynasty · Through week ${DYNASTY_THROUGH.week} · ${DYNASTY_THROUGH.season}` : "Dynasty"}</div>
+            <div className="eyebrow">{seasonWeek(DYNASTY_THROUGH?.season, DYNASTY_THROUGH?.week) || "Dynasty"}</div>
             <h1>Dynasty Board</h1>
           </div>
         </div>

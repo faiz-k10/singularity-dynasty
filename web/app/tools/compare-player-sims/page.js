@@ -9,6 +9,7 @@ import CompareSims from "../CompareSims";
 import ComparePlayerRadars from "../ComparePlayerRadars";
 import { radarStartDegFor } from "../radarLayout";
 import { TEASER_LIMIT, PAID_TIERS, getCachedWeekData, buildSimRows } from "../player-simulations/data";
+import { seasonWeek } from "@/lib/format";
 
 export const metadata = {
   title: "Compare Players — Season Simulations — Dynasty Singularity",
@@ -67,7 +68,7 @@ export default async function ComparePlayerSimsPage({ searchParams }) {
       <InteractiveScript />
 
       <main id="main-content" className="wrap tool-wrap compare-wrap">
-        <div className="eyebrow">{latest ? `${latest.season} Season · Week ${latest.week}` : "Compare"}</div>
+        <div className="eyebrow">{seasonWeek(latest?.season, latest?.week) || "Compare"}</div>
         <h1>Compare Players — Season Simulations</h1>
 
         {sims.length === 0 ? (

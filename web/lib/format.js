@@ -62,3 +62,8 @@ export function formatHeight(h) {
 // Pass the row's opponent: a team on a BYE has no status note -- the model used to publish "OUT" for bye players (Sleeper
 // has no projection for them), which read as "ruled out" (Christian McCaffrey, week 8 2026). A bye is said as a bye.
 export const publicNote = (n, opponent) => (isBye(opponent) ? "" : String(n ?? "").replace(/BOUNCEBACK(\s*\(informational only\))?/gi, "").trim());
+
+// The tool pages' eyebrow over the title, one wording everywhere (founder, Nov 23 2026): "2026 Season · Week 11".
+export function seasonWeek(season, week) {
+  return season && week ? `${season} Season · Week ${week}` : null;
+}
