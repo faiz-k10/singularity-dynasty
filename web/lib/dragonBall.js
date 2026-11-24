@@ -1,5 +1,5 @@
 // Super Hero badge art: an orange crystal ball with 1-7 red stars, one asset per count of top-3 finishes
-// this season (capped at 7). Pure geometry so the React badge and any preview/export share one source.
+// this season; past 7 the ball carries the number instead of stars. Pure geometry so the React badge and any preview/export share one source.
 // Coordinates are a 64x64 viewBox with the ball centred at (32,32), radius 29.
 
 export const MAX_BALL_STARS = 7;
@@ -54,9 +54,18 @@ export function ballStars(count) {
 // Colors: the site's own orange ramp (--horizon-gold / --horizon), a neon-blue rim light, red stars.
 // `size` is the diameter of the ball itself (the viewBox is cropped to the ball's edge; the soft halo spills outside it),
 // so a 24px ball fills a 24px badge slot exactly like the other medallions.
+// Past 7 finishes (there are only 7 star layouts) the ball shows the number itself in the stars' red (founder, Nov 24 2026).
 export function dragonBallSvg(count, size = 24) {
+  const wins = Math.floor(count) || 0;
   const { count: n, stars } = ballStars(count);
   const id = `db${n}`;
+  const digits = String(wins);
+  const mark = wins > MAX_BALL_STARS
+    ? `<text x="32" y="33" text-anchor="middle" dominant-baseline="central" font-size="${digits.length > 2 ? 22 : digits.length > 1 ? 30 : 36}" font-weight="800" ` +
+      `style="font-family:var(--font-display),Impact,sans-serif" fill="#D81E14" stroke="#6E0A04" stroke-width="1.1" paint-order="stroke" letter-spacing="-0.5">${digits}</text>`
+    : `<g transform="translate(32 32) scale(.93) translate(-32 -32)">` +
+      stars.map((pts) => `<polygon points="${pts}" fill="#D81E14" stroke="#6E0A04" stroke-width="1.1" stroke-linejoin="round"/>`).join("") +
+      `</g>`;
   return (
     `<svg width="${size}" height="${size}" viewBox="5 5 54 54" style="overflow:visible" aria-hidden="true" focusable="false">` +
     `<defs>` +
@@ -69,9 +78,7 @@ export function dragonBallSvg(count, size = 24) {
     `<circle cx="32" cy="32" r="27" fill="url(#${id}b)" stroke="#5E1D06" stroke-width="1.4"/>` +
     `<circle cx="32" cy="32" r="27" fill="url(#${id}u)"/>` +
     `<circle cx="32" cy="32" r="24.3" fill="none" stroke="#fff" stroke-opacity="0.25" stroke-width="0.8"/>` +
-    `<g transform="translate(32 32) scale(.93) translate(-32 -32)">` +
-    stars.map((pts) => `<polygon points="${pts}" fill="#D81E14" stroke="#6E0A04" stroke-width="1.1" stroke-linejoin="round"/>`).join("") +
-    `</g>` +
+    mark +
     `<ellipse cx="22.5" cy="18.5" rx="10" ry="5.6" transform="rotate(-35 22.5 18.5)" fill="url(#${id}h)"/>` +
     `<path d="M46.5 44a19.5 19.5 0 0 1-15 10.2" fill="none" stroke="#3DDCFF" stroke-opacity="0.65" stroke-width="1.8" stroke-linecap="round"/>` +
     `</svg>`

@@ -14,13 +14,21 @@ test("counts above 7 show the 7-star ball; zero/garbage falls back to 1", () => 
   assert.equal(ballStars(undefined).stars.length, 1);
 });
 
-test("Super Hero badge carries the ball variant and its tier is capped at the 7-star art", () => {
+test("past 7 finishes the ball shows the number instead of stars", () => {
+  const svg = dragonBallSvg(9);
+  assert.equal(svg.split("<polygon").length - 1, 0);
+  assert.match(svg, />9<\/text>/);
+  assert.match(dragonBallSvg(12), />12<\/text>/);
+  assert.equal(dragonBallSvg(7).split("<polygon").length - 1, 7);
+});
+
+test("Super Hero badge carries the ball variant and its tier is the real count", () => {
   assert.equal(HERO_MAX_TIER, MAX_BALL_STARS);
   const hero = (wins) => getAchievements({ heroWins: wins }).find((a) => a.key === "hero");
   assert.equal(hero(2).variant, "ball");
   assert.equal(hero(2).tier, 2);
   assert.equal(hero(7).tier, 7);
-  assert.equal(hero(9).tier, 7);
+  assert.equal(hero(9).tier, 9);
   assert.equal(hero(9).label, "9x Super Hero");
   assert.equal(hero(0), undefined);
 });

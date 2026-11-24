@@ -307,7 +307,7 @@ export function getAchievements(row) {
       label: `${heroWins}x Super Hero`,
       wins: heroWins,
       weeks: row.heroWinWeeks || [],
-      tier: Math.min(heroWins, HERO_MAX_TIER),
+      tier: heroWins, // the ball draws stars up to HERO_MAX_TIER, the number past it
     },
   ]
     .filter(Boolean)
