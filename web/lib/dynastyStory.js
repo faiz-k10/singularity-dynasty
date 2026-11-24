@@ -135,7 +135,10 @@ export function dynastyStory(p, ctx) {
   if (ctx.views?.length) {
     const ranks = ctx.views.map((v) => v.rank);
     const best = ctx.views.reduce((a, b) => (b.rank < a.rank ? b : a)), worst = ctx.views.reduce((a, b) => (b.rank > a.rank ? b : a));
-    league = Math.min(...ranks) === Math.max(...ranks)
+    // partial: a free viewer can't see some views (past the free top 20), so don't claim anything about "every" format
+    league = ctx.partial
+      ? { head: `For a ${best.label} he's No. ${best.rank}. Explorer shows where he ranks in every view.` }
+      : Math.min(...ranks) === Math.max(...ranks)
       ? { head: `He's No. ${best.rank} whatever your format and whichever way your team is headed.` }
       : Math.max(...ranks) - Math.min(...ranks) <= 3
         ? { head: `Your format and your team's direction barely move him, from No. ${best.rank} to No. ${worst.rank}.` }

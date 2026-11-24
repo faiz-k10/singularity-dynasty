@@ -6135,6 +6135,8 @@ select.lab-select{min-width:200px;}
 .dp-matrix td.is-here{background:rgba(var(--ember-rgb), .08); box-shadow:inset 0 0 0 1.5px var(--ember);} /* drawn inside the cell: the collapsed neighbours' borders can't cover any side */
 .dp-matrix td b{display:block; font-family:var(--font-display); font-weight:800; font-size:40px; line-height:1;}
 .dp-matrix td span{display:block; margin-top:4px; font-size:11px; color:var(--star-dim);}
+/* a view where a free viewer's player is past No. 20: a blurred stand-in (the server sends no numbers for it; founder, Nov 23 2026) */
+.dp-matrix td .dp-locked{display:block; filter:blur(7px); user-select:none; pointer-events:none;}
 @media (max-width:640px){
   .dp{padding:18px 16px 32px;} .dp-big{font-size:64px;} .dp-score{gap:12px; padding:12px;}
   .dp-photo{flex-basis:60px; width:60px; height:60px;}

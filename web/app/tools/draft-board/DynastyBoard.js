@@ -359,7 +359,7 @@ export default function DynastyBoard({ rows, meta, mine, gated }) {
           </div>
         </div>
         <div className="dyb-pane">
-          {open && <DynastyProfile key={`${open.id}-${format}-${mode}`} player={open} rows={rows} L={L} board={{ groups, tiers, ties }} format={format} mode={mode} meta={meta} />}
+          {open && <DynastyProfile key={`${open.id}-${format}-${mode}`} player={open} rows={rows} L={L} board={{ groups, tiers, ties }} format={format} mode={mode} meta={meta} gated={gated} />}
         </div>
       </div>
     </div>

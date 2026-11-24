@@ -56,7 +56,10 @@ export async function getDynastyRows(hasFullAccess) {
   const meta = metaFromData(data);
   if (hasFullAccess) return { rows: all, built: data.built, total: all.length, meta };
   const ids = new Set(scoreRows(all, "sf", "contender").slice(0, FREE_ROWS).map((r) => r.id));
-  return { rows: all.filter((r) => ids.has(r.id)), built: data.built, total: all.length, meta };
+  // A free player's rank in the OTHER views can be past the free 20 (founder, Nov 23 2026: blur every box past No. 20): those cells
+  // are replaced by { locked: true } here, so the numbers never reach the page.
+  const lockPast = (ranks) => ranks && Object.fromEntries(Object.entries(ranks).map(([k, c]) => [k, c.rank > FREE_ROWS ? { locked: true } : c]));
+  return { rows: all.filter((r) => ids.has(r.id)).map((r) => ({ ...r, ranks: lockPast(r.ranks) })), built: data.built, total: all.length, meta };
 }
 
 // One player's last games for the profile's production timeline ({ w: [season x 100 + week], p: [points] }), only for a

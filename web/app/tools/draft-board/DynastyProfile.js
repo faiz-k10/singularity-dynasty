@@ -194,7 +194,7 @@ function Fact({ label, now, was, show = (v) => v }) {
 
 // ---- the panel -----------------------------------------------------------------------------------------------------
 // The picked player's profile, in the pane beside the board's list (DynastyBoard.js).
-export default function DynastyProfile({ player: p, rows, L, board, format, mode, meta }) {
+export default function DynastyProfile({ player: p, rows, L, board, format, mode, meta, gated }) {
   const data = useProfileData(p.id);
   const allNames = useMemo(() => rows.map((r) => r.name), [rows]); // every player shipped to this viewer, not just this view
   const nameRef = useFitName(allNames);
@@ -217,7 +217,11 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
   const tie = board.ties.find((z) => i >= z.a && i <= z.b && z.b > z.a) || { a: i, b: i };
   const MATES = 5;
   const start = Math.max(tie.a, Math.min(i - Math.floor(MATES / 2), tie.b + 1 - MATES));
-  const tierMates = L.slice(start, Math.min(tie.b + 1, start + MATES));
+  // free viewers (gated) only see players inside the top 20 of THIS view (founder, Nov 23 2026): a mate whose rank here is past 20
+  // (the server sends { locked: true } for it) is left out of the table and the story; ranks shown are the true ones for this view
+  const viewRank = (r) => r.ranks?.[`${format}:${mode}`];
+  const visible = (r) => !gated || r.id === p.id || (viewRank(r) && !viewRank(r).locked);
+  const tierMates = L.slice(start, Math.min(tie.b + 1, start + MATES)).filter(visible);
   const tierSize = tie.b - tie.a + 1, tierPlace = i - tie.a + 1;
   const log = data?.log ? { w: data.log.w.slice(-win.games), p: data.log.p.slice(-win.games) } : null;
   const above = log ? log.p.filter((v) => v >= repl).length : 0;
@@ -246,10 +250,11 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
     rank: i + 1, prev: p.prevRank, scope: L.every((r) => r.pos === p.pos) && L.length < rows.length ? `among ${p.pos}s` : "on the board",
     overall: here?.rank, posRank: here?.posRank, next: L[i + 1]?.name, gapBelow: L[i + 1] ? p.score - L[i + 1].score : 0,
     group: group.name, tierSize, tierPlace,
-    mates: L.slice(tie.a, tie.b + 1).filter((r) => r.id !== p.id).sort((a, b) => Math.abs(L.indexOf(a) - i) - Math.abs(L.indexOf(b) - i)).map((r) => r.name),
+    mates: L.slice(tie.a, tie.b + 1).filter((r) => r.id !== p.id && visible(r)).sort((a, b) => Math.abs(L.indexOf(a) - i) - Math.abs(L.indexOf(b) - i)).map((r) => r.name),
     repl, above, games: log?.p.length || 0, doneAge: meta.doneAge[p.pos], rebuild: !!m.window,
     viewLabel: `${f.label} ${m.label.toLowerCase()}`,
-    views: grid?.map((c) => ({ label: `${FORMATS[c.fk].label} ${MODES[c.mk].label.toLowerCase()}`, rank: c.rank })),
+    views: grid?.filter((c) => !c.locked).map((c) => ({ label: `${FORMATS[c.fk].label} ${MODES[c.mk].label.toLowerCase()}`, rank: c.rank })),
+    partial: !!grid?.some((c) => c.locked),
     coach,
   });
   const size = [formatHeight(data?.bio?.height), data?.bio?.weight ? `${data.bio.weight} lbs` : null, data?.bio?.yearsExp != null ? (data.bio.yearsExp === 0 ? "Rookie" : `Year ${data.bio.yearsExp + 1}`) : null].filter(Boolean);
@@ -301,8 +306,8 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
               <div className="dp-score-side">
                 <div className="dp-eyebrow mono">{f.label} · {m.label}</div>
                 <dl className="dp-facts">
-                  {here && <Fact label="Overall" now={here.rank} was={here.prev} show={ord} />}
-                  {here && <Fact label="Position" now={here.posRank} was={here.prevPos} show={(v) => `${p.pos}${v}`} />}
+                  {here && !here.locked && <Fact label="Overall" now={here.rank} was={here.prev} show={ord} />}
+                  {here && !here.locked && <Fact label="Position" now={here.posRank} was={here.prevPos} show={(v) => `${p.pos}${v}`} />}
                   <Fact label="Tier" now={tier.ti + 1} was={prevTier} show={(v) => `T${v}`} />
                   <div><dt className="mono">Group</dt><dd>{group.name}</dd></div>
                 </dl>
@@ -335,7 +340,7 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
                 <tbody>
                   {tierMates.map((r) => (
                     <tr key={r.id} className={r.id === p.id ? "is-him" : undefined}>
-                      <td className="mono dp-t-rank">{L.indexOf(r) + 1}</td>
+                      <td className="mono dp-t-rank">{gated ? (viewRank(r)?.locked ? "—" : viewRank(r)?.rank ?? L.indexOf(r) + 1) : L.indexOf(r) + 1}</td>
                       <td className="dp-t-name">{r.name}</td>
                       <td className="mono dp-t-p">{r.score.toFixed(1)}</td>
                     </tr>
@@ -362,9 +367,19 @@ export default function DynastyProfile({ player: p, rows, L, board, format, mode
                       {Object.keys(MODES).map((mk) => {
                         const c = grid.find((g) => g.fk === fk && g.mk === mk);
                         return (
-                          <td key={mk} className={fk === format && mk === mode ? "is-here" : undefined}>
-                            <b>{ord(c.rank)}</b>
-                            <span className="mono">{p.pos}{c.posRank} · {c.score.toFixed(1)}</span>
+                          <td key={mk} className={[fk === format && mk === mode && "is-here", c.locked && "is-locked"].filter(Boolean).join(" ") || undefined}>
+                            {c.locked ? (
+                              // past No. 20 in this view: the real numbers never reach the page, only a blurred stand-in
+                              <span className="dp-locked" aria-label="Past the free top 20. Explorer shows every rank.">
+                                <b aria-hidden="true">#00</b>
+                                <span className="mono" aria-hidden="true">{p.pos}00 · 0.0</span>
+                              </span>
+                            ) : (
+                              <>
+                                <b>{ord(c.rank)}</b>
+                                <span className="mono">{p.pos}{c.posRank} · {c.score.toFixed(1)}</span>
+                              </>
+                            )}
                           </td>
                         );
                       })}
