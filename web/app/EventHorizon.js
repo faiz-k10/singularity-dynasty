@@ -874,7 +874,7 @@ export default function EventHorizon({ signedIn, tier, member, invited, discount
             <div>
               <div className="ehp-k">Overview</div>
               <h2 className="ehp-h">
-                Your Personal Control Room for Navigating Every League
+                Navigate Every League. Your Personal Control Room.
               </h2>
             </div>
           </div>

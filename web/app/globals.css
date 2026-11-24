@@ -7435,7 +7435,7 @@ button.sky-variant:focus-visible{outline:2px solid var(--ember);outline-offset:1
 /* ===== LANDING PAGE BELOW THE HERO (Nov 16 2026, founder): 2 the site on one page + Get started -> 3 plans -> 4 who it's for and
    each tool -> 5 a week with the site (timeline) -> 6 questions + members' words, then the Singularity Drive (the manager quiz). ===== */
 .ehp-dark+.ehp-dark,.ehp-orbits+.ehp-dark{border-top:1px solid var(--ehp-rule);}
-.ehp-sumhead{display:grid;grid-template-columns:1.1fr .9fr;gap:60px;align-items:end;margin-bottom:46px;}
+.ehp-sumhead{display:grid;grid-template-columns:1fr;gap:60px;align-items:end;margin-bottom:46px;}
 .ehp-sumhead .ehp-lede{max-width:none;margin:0;}
 .ehp-sumgrid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid var(--ehp-holeink);border-left:1px solid color-mix(in srgb, var(--ehp-holeink) 16%, transparent);}
 .ehp-sumgrid li{border-right:1px solid color-mix(in srgb, var(--ehp-holeink) 16%, transparent);border-bottom:1px solid color-mix(in srgb, var(--ehp-holeink) 16%, transparent);}
