@@ -6804,6 +6804,9 @@ body:has(.ehp){--ehp-bg:#0B0B0B;--ehp-ink:#ECE7DC;--ehp-dim:#A39E92;--ehp-faint:
 .ehp-planorbits text.ehp-planname{font:600 66px var(--font-display), sans-serif;letter-spacing:0;}
 .ehp-planorbits{margin-bottom:70px;}
 .ehp-planorbits .ehp-planmark{width:40px;height:40px;--mark-disc:var(--ehp-ink);overflow:visible;}
+/* light mode: the plan orbit rings are cobalt (founder, Nov 23 2026); the picked ring stays heavier and solid */
+:root[data-theme="light"] .ehp-planorbits .ring{stroke:var(--cobalt);}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]) .ehp-planorbits .ring{stroke:var(--cobalt);}}
 
 /* the Singularity Drive (the manager quiz) */
 .ehp-letter{border-top:1px solid var(--ehp-rule);padding:100px 0 110px !important;}

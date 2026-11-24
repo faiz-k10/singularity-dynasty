@@ -608,7 +608,7 @@ function Plans() {
           const hot = i === on, a = -2.5 + i * 0.36, x = +(p.r * Math.cos(a)).toFixed(1), y = +(p.r * Math.sin(a)).toFixed(1);
           return (
             <g key={p.id} className="tier" onMouseEnter={() => setOn(i)}>
-              <circle r={p.r} fill="none" stroke={hot ? "var(--ehp-mark)" : "currentColor"} strokeWidth={hot ? 1.6 : 0.7} strokeOpacity={hot ? 1 : 0.45} />
+              <circle className="ring" r={p.r} fill="none" stroke={hot ? "var(--ehp-mark)" : "currentColor"} strokeWidth={hot ? 1.6 : 0.7} strokeOpacity={hot ? 1 : 0.45} />
               <circle r={p.r} fill="none" stroke="transparent" strokeWidth="26" />
               {/* each plan's planet is a football, like the hero's (founder, Nov 11 2026): the same ball() / stripes() shape, its two white stripes cut out
                   by a mask, turned to point along its orbit */}
