@@ -7436,12 +7436,12 @@ button.sky-variant:focus-visible{outline:2px solid var(--ember);outline-offset:1
 .ehp-sumhead .ehp-lede{max-width:none;margin:0;}
 .ehp-sumgrid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid var(--ehp-holeink);border-left:1px solid color-mix(in srgb, var(--ehp-holeink) 16%, transparent);}
 .ehp-sumgrid li{border-right:1px solid color-mix(in srgb, var(--ehp-holeink) 16%, transparent);border-bottom:1px solid color-mix(in srgb, var(--ehp-holeink) 16%, transparent);}
-.ehp-sumgrid a{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto 1fr;gap:10px 12px;height:100%;padding:22px 20px 24px;transition:background .2s;}
+.ehp-sumgrid a{display:flex;flex-wrap:wrap;align-content:flex-start;justify-content:center;text-align:center;gap:10px 12px;height:100%;padding:22px 20px 24px;transition:background .2s;}
 .ehp-sumgrid a:hover{background:color-mix(in srgb, var(--ehp-holeink) 5%, transparent);}
 .ehp-sumgrid .no{font:11px var(--font-mono), monospace;color:var(--ehp-holedim);}
-.ehp-sumgrid .when{font:10.5px var(--font-mono), monospace;font-stretch:82%;letter-spacing:.16em;text-transform:uppercase;color:var(--ehp-holedim);text-align:right;}
-.ehp-sumgrid .name{grid-column:1 / -1;font:500 25px/1.05 var(--font-display), sans-serif;}
-.ehp-sumgrid .say{grid-column:1 / -1;font-size:15px;line-height:1.5;color:var(--ehp-holedim);}
+.ehp-sumgrid .when{font:10.5px var(--font-mono), monospace;font-stretch:82%;letter-spacing:.16em;text-transform:uppercase;color:var(--ehp-holedim);}
+.ehp-sumgrid .name{flex-basis:100%;font:500 25px/1.05 var(--font-display), sans-serif;}
+.ehp-sumgrid .say{flex-basis:100%;font-size:15px;line-height:1.5;color:var(--ehp-holedim);}
 .ehp-sumgrid a:hover .name{color:var(--ehp-holemark);}
 .ehp-cta{display:flex;align-items:center;gap:26px;margin-top:44px;flex-wrap:wrap;}
 .ehp-cta .ehp-link{margin:0;}
