@@ -16,9 +16,10 @@ import { TURNSTILE_FIELD, tooFast } from "@/lib/turnstile";
 
 const MIN_PASSWORD = 8;
 
-// Back to the sign-in page with a fixed message code (lib/authMessages.js), keeping where the visitor was headed.
-function back(path, key, code, next) {
-  redirect(`${path}?${key}=${code}${next ? `&next=${encodeURIComponent(next)}` : ""}`);
+// Back to the sign-in page with a fixed message code (lib/authMessages.js), keeping where the visitor was headed and which form
+// they were on (`mode`: "signin" / "signup", the one-button versions of /login; founder, Nov 23 2026).
+function back(path, key, code, next, mode) {
+  redirect(`${path}?${key}=${code}${mode ? `&mode=${mode}` : ""}${next ? `&next=${encodeURIComponent(next)}` : ""}`);
 }
 
 function fields(formData) {
@@ -54,35 +55,35 @@ async function overLimit(kind, email) {
 
 export async function login(formData) {
   const { email, password, next } = fields(formData);
-  if (!email || !password) back("/login", "error", "missing-fields", next);
-  if (await overLimit("login", email)) back("/login", "error", "rate-limit", next);
+  if (!email || !password) back("/login", "error", "missing-fields", next, "signin");
+  if (await overLimit("login", email)) back("/login", "error", "rate-limit", next, "signin");
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password, options: captcha(formData) });
-  if (error) back("/login", "error", authErrorCode(error), next);
+  if (error) back("/login", "error", authErrorCode(error), next, "signin");
   revalidatePath("/", "layout");
   redirect(next || "/my-team");
 }
 
 export async function signup(formData) {
   const { email, password, next } = fields(formData);
-  if (!email || !password) back("/login", "error", "missing-fields", next);
-  if (password.length < MIN_PASSWORD) back("/login", "error", "weak-password", next);
+  if (!email || !password) back("/login", "error", "missing-fields", next, "signup");
+  if (password.length < MIN_PASSWORD) back("/login", "error", "weak-password", next, "signup");
   // A new account types its password twice (founder, Nov 22 2026), so a typo can't lock someone out of an account they just made; sign-in
   // uses the same form and ignores this field.
-  if (String(formData.get("confirm") || "").slice(0, 200) !== password) back("/login", "error", "passwords-differ", next);
-  if (isBot(formData)) back("/login", "message", "check-email", next);
-  if (await overLimit("signup", email)) back("/login", "error", "rate-limit", next);
+  if (String(formData.get("confirm") || "").slice(0, 200) !== password) back("/login", "error", "passwords-differ", next, "signup");
+  if (isBot(formData)) back("/login", "message", "check-email", next, "signin");
+  if (await overLimit("signup", email)) back("/login", "error", "rate-limit", next, "signup");
   // A Sleeper username is required to sign up (founder, Nov 22 2026): the 14-day Explorer trial starts now and belongs to that Sleeper
   // account, one trial per Sleeper account (lib/trial.js). It must be a real Sleeper account; checked before the account is made.
   const sleeperName = String(formData.get("sleeper") || "").trim().slice(0, 40);
-  if (!sleeperName) back("/login", "error", "missing-sleeper", next);
+  if (!sleeperName) back("/login", "error", "missing-sleeper", next, "signup");
   const sleeper = await fetchSleeperUser(sleeperName).catch(() => null);
-  if (!sleeper?.user_id) back("/login", "error", "sleeper-not-found", next);
+  if (!sleeper?.user_id) back("/login", "error", "sleeper-not-found", next, "signup");
   const supabase = await createClient();
   // The confirmation email links to /auth/confirm, which signs the new account in and continues to `next`.
   const confirm = `${await siteOrigin()}/auth/confirm?next=${encodeURIComponent(next || "/my-team?welcome=1")}`;
   const { data, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: confirm, ...captcha(formData) } });
-  if (error) back("/login", "error", authErrorCode(error), next);
+  if (error) back("/login", "error", authErrorCode(error), next, "signup");
   // Came through a friend's link? Record it now (a brand-new account only: Supabase answers an existing email with a user
   // that has no identities, so it can't be claimed by someone typing another person's address).
   const ref = (await cookies()).get(REF_COOKIE)?.value;
@@ -92,9 +93,9 @@ export async function signup(formData) {
     // Every new account joins The Singularity Drive Newsletter (founder, Nov 22 2026). Can't stop the sign-up.
     await addSubscriber(email, "signup").catch((e) => console.error("[signup] newsletter:", e?.message || e));
     const trial = await startTrial(data.user.id, sleeper);
-    if (trial.trial === "used") back("/login", "message", "check-email-trial-used", next);
+    if (trial.trial === "used") back("/login", "message", "check-email-trial-used", next, "signin");
   }
-  back("/login", "message", "check-email", next);
+  back("/login", "message", "check-email", next, "signin");
 }
 
 // "Forgot password": always answers the same way, so the form can't be used to find out which emails have accounts.

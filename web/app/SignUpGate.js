@@ -8,7 +8,7 @@ import { usePathname } from "next/navigation";
 // the tool page, so none of the tool's data is sent. The link brings them back to this tool after signing up / in.
 export default function SignUpGate() {
   const next = usePathname() || "/"; // the tool's own address (the proxy rewrites, it doesn't redirect);
-  const href = `/login?next=${encodeURIComponent(next)}`;
+  const href = (mode) => `/login?mode=${mode}&next=${encodeURIComponent(next)}`; // each button opens only its own form
   return (
     <main id="main-content" className="wrap auth-wrap">
       <div className="auth-card reveal in" data-wall="sign-up">
@@ -18,8 +18,8 @@ export default function SignUpGate() {
           Every player, every league, every Sunday is a sky full of signals. Make an account and explore it all with 14 days of Explorer free. No card needed.
         </p>
         <div className="auth-actions">
-          <Link href={href} className="btn-primary">Start Free Trial</Link>
-          <Link href={href} className="btn-ghost">Sign In</Link>
+          <Link href={href("signup")} className="btn-primary">Start Free Trial</Link>
+          <Link href={href("signin")} className="btn-ghost">Sign In</Link>
         </div>
       </div>
     </main>
