@@ -877,9 +877,6 @@ export default function EventHorizon({ signedIn, tier, member, invited, discount
                 One Control Room. Every League.
               </h2>
             </div>
-            <p className="ehp-lede">
-              Scattered stats, trends and matchups fall toward one honest range per player. Laid over your own leagues. Calls take minutes, not evenings.
-            </p>
           </div>
           <ol className="ehp-sumgrid">
             {SUMMARY.map(([name, say, when, href], i) => (
