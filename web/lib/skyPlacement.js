@@ -20,7 +20,7 @@ const ZONES = {
   comet: { r: 180, size: 94, comet: true },
   dwarf: { r: 220, size: 46, orbit: true },
   rogue: { r: 250, size: 54, far: true },
-  shower: { r: 230, size: 113, far: true, prefer: -90 },
+  shower: { r: 200, size: 170, far: true, prefer: -90 }, // 1.5x (founder, Nov 23 2026: "too small"); r 200 so it still fits overhead
   supernova: { r: 262, size: 105, far: true }, pulsar: { r: 262, size: 94, far: true }, blackhole: { r: 266, size: 108, far: true },
   quasar: { r: 272, size: 86, far: true }, nebula: { r: 262, size: 122, far: true }, star: { r: 258, size: 89, far: true },
 };
