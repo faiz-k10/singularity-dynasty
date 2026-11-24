@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { resolveTier } from "@/lib/tier";
 import { getPlayerBiosByNamePos } from "@/lib/sleeper";
 import InteractiveScript from "../../InteractiveScript";
+import SkyCredit from "../../SkyCredit";
 import STAT_LABELS from "../statLabels";
 import ComparePlayerPickers from "../ComparePlayerPickers";
 import CompareSims from "../CompareSims";
@@ -26,7 +27,7 @@ const MAX_COMPARE = { stargazer: 2, explorer: 3 };
 export default async function ComparePlayerSimsPage({ searchParams }) {
   const params = await searchParams;
   const supabase = await createClient();
-  const [{ tier }, weekData, bioByNamePos] = await Promise.all([
+  const [{ tier, user }, weekData, bioByNamePos] = await Promise.all([
     resolveTier(supabase),
     getCachedWeekData(),
     getPlayerBiosByNamePos(),
@@ -70,6 +71,7 @@ export default async function ComparePlayerSimsPage({ searchParams }) {
   return (
     <>
       <InteractiveScript />
+      {user && <SkyCredit action="compare" />} {/* either compare page counts for the Night Sky's Compare players (founder, Nov 23 2026) */}
 
       <main id="main-content" className="wrap tool-wrap compare-wrap">
         <div className="eyebrow">{seasonWeek(latest?.season, latest?.week) || "Compare"}</div>

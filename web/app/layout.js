@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import Tooltip from "./Tooltip";
 import WallTracker from "./WallTracker";
+import DailyLogin from "./DailyLogin";
 import SiteFooter from "./SiteFooter";
 
 // Display: Big Shoulders (condensed, scoreboard / jersey-number feel) for headings, the brand name and
@@ -108,6 +109,7 @@ export default function RootLayout({ children }) {
         <SiteFooter />
         <Tooltip />
         <WallTracker />
+        <DailyLogin />
         <Analytics />
       </body>
     </html>

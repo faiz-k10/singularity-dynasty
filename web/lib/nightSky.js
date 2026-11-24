@@ -13,8 +13,8 @@ export const COLORS = { blue: "#4C7DF0", ember: "#E8643F", white: "#ECE7DC", gol
 
 // The actions that place a star (each once a day), and the colour of star each tends to place.
 export const ACTIONS = {
+  login: { label: "Daily log in", tool: "My Team", color: "blue", href: "/my-team" }, // any visit while signed in (app/DailyLogin.js); replaced the waiver-wire task (founder, Nov 23 2026)
   board: { label: "Open the Game Board", tool: "My Team", color: "blue", href: "/my-team" },
-  waivers: { label: "Check a league's waiver wire", tool: "My Team", color: "blue", href: "/my-team" },
   rankings: { label: "Open the weekly rankings", tool: "Rankings", color: "ember", href: "/tools/redraft-rankings" },
   compare: { label: "Compare players", tool: "Rankings", color: "ember", href: "/tools/compare-players" },
   sims: { label: "Open the season simulations", tool: "Research", color: "white", href: "/tools/player-simulations" },
@@ -26,7 +26,7 @@ export const ACTIONS = {
   // `quiet`: it places its star but does NOT heat the core or roll for a find (the simulation showed a full action a day added ~45% to a
   // regular member's season points, enough to reach the week of plan). So sharing fills constellations -- the gold wildcard helps toward The
   // Singularity and its limited skin -- without adding finds or points.
-  share: { label: "Share a post from any Share button", tool: "Anywhere", color: "lucky", href: "/tools/lab", quiet: true },
+  share: { label: "Share a post", tool: "Anywhere", color: "lucky", href: "/tools/lab", quiet: true },
 };
 
 // The four constellations (Nov 11 2026, founder). The GAME uses the four roles below -- colour, size, star count -- and every season draws

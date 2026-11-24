@@ -38,7 +38,7 @@ test("about one find every three actions over a long run", () => {
   const rnd = seeded(11);
   const s = freshState();
   let t = Date.UTC(2026, 8, 1, 15);
-  const keys = ["board", "waivers", "rankings", "compare", "sims", "lab"];
+  const keys = ["board", "login", "rankings", "compare", "sims", "lab"];
   for (let d = 0; d < 120; d++, t += DAY) {
     const day = new Date(t).toISOString().slice(0, 10);
     for (const k of keys.slice(0, 3)) award(s, k, ctx(t, day), rnd);
