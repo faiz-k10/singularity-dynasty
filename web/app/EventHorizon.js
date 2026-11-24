@@ -939,7 +939,7 @@ export default function EventHorizon({ signedIn, tier, member, invited, discount
           <div>
             <div className="ehp-k">02 · Weekly Projection Rankings{weekNo ? ` · week ${weekNo}` : ""}</div>
             <h2 className="ehp-h">
-              Every Player&apos;s Flight Path, Plotted
+              Will Your Superstar Fly High or Crash Land?
             </h2>
             <Why k="weekly" />
             <ToolLink className="ehp-link" href="/tools/redraft-rankings">See every player →</ToolLink>
