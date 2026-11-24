@@ -550,8 +550,8 @@ export const SKINS = {
     { id: "deep", name: "Deep field", how: "Yours from the start", rarity: "standard" },
     { id: "nebula", name: "Nebula", how: "Reach 200 points in a season", rarity: "common", rung: true, progress: (s) => [seasonProgress(s).points, 200] },
     { id: "aurora", name: "Pillars", how: "Chart a season: finish The Huddle, The Blitz and The Playbook in one season", rarity: "rare", rung: true, progress: (s) => [seasonProgress(s).three, 3] },
-    { id: "milkyway", name: "Milky Way", how: "Reach 6,000 orbit points in total", rarity: "epic", test: (s) => s.points >= 6000, progress: (s) => [s.points, 6000] },
     { id: "eclipse", name: "Supernova", how: "Find a stellar event", rarity: "rare", test: stellar, progress: (s) => [stellar(s) ? 1 : 0, 1] },
+    { id: "milkyway", name: "Milky Way", how: "Reach 6,000 orbit points in total", rarity: "epic", test: (s) => s.points >= 6000, progress: (s) => [s.points, 6000] },
   ],
   core: [
     { id: "classic", name: "Classic", how: "Yours from the start", rarity: "standard" },
@@ -676,7 +676,9 @@ export function makeFreePick(s, key, fam, colour, ctx, rnd = Math.random) {
 }
 // THE SKIN CHOICE (20,000): the next locked sky skin OR the next locked core skin, in the order the Skins panel lists them (limited skins never).
 export function skinChoiceOptions(s) {
-  const next = (kind) => SKINS[kind].find((k) => k.rarity !== "standard" && !k.rung && !hasSkin(s, kind, k.id)); // ladder skins come from their own rungs
+  // ladder skins come from their own rungs; Milky Way is offered before Supernova even though the panel shows Supernova first (founder, Nov 23 2026)
+  const order = (k) => (k.id === "milkyway" ? 0 : 1);
+  const next = (kind) => SKINS[kind].filter((k) => k.rarity !== "standard" && !k.rung && !hasSkin(s, kind, k.id)).sort((a, b) => (kind === "sky" ? order(a) - order(b) : 0))[0];
   return ["sky", "core"].map((kind) => { const k = next(kind); return k ? { kind, id: k.id, name: k.name, rarity: k.rarity } : null; }).filter(Boolean);
 }
 export function makeSkinChoice(s, key, kind, id, now = 0) {
