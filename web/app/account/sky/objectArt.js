@@ -328,9 +328,9 @@ export function drawObject(ctx, W, find, edge, { bare = false } = {}) {
       ctx.save(); ctx.lineCap = "round";
       for (const m of streaks) {
         const x0 = rx + m.x0, y0 = ry + m.y0, x1 = rx + m.x1, y1 = ry + m.y1, w = m.w;
-        const g = ctx.createLinearGradient(x0, y0, x1, y1); g.addColorStop(0, rgba(LT, 0)); g.addColorStop(0.75, rgba(mix(LT, WHITE, 0.35), 0.55)); g.addColorStop(1, rgba(WHITE, 1));
+        const g = ctx.createLinearGradient(x0, y0, x1, y1); g.addColorStop(0, rgba(LT, 0)); g.addColorStop(0.7, rgba(LT, 0.8)); g.addColorStop(1, rgba(mix(LT, WHITE, 0.45), 1)); // the trail in the find's colour, only the head runs hot
         ctx.strokeStyle = g; ctx.lineWidth = w; ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
-        ctx.fillStyle = "#FFFFFF"; ctx.beginPath(); ctx.arc(x1, y1, w * 0.8, 0, TAU); ctx.fill();
+        ctx.fillStyle = rgba(mix(LT, WHITE, 0.6), 1); ctx.beginPath(); ctx.arc(x1, y1, w * 0.8, 0, TAU); ctx.fill();
       }
       ctx.restore();
       break;
@@ -406,8 +406,8 @@ export function drawObject(ctx, W, find, edge, { bare = false } = {}) {
     ctx.strokeStyle = g; for (const [w, a] of [[5, 0.16], [1.6, 0.9]]) { ctx.lineWidth = w * u; ctx.globalAlpha = a; ctx.beginPath(); ctx.arc(C, C, 120 * u, 0, TAU); ctx.stroke(); }
     ctx.globalAlpha = 1;
   }
-  if (ver === "ancient") { // aged: a sepia cast over the picture and a thin golden ring
-    ctx.globalCompositeOperation = bare ? "source-atop" : "color"; ctx.fillStyle = "rgba(170,120,60,.5)"; ctx.fillRect(0, 0, W, W); ctx.globalCompositeOperation = "source-over";
+  if (ver === "ancient") { // aged: a light sepia warmth (light enough that the find's own colour still reads -- an Emerald stays green, founder Nov 23 2026; it was .5) and a thin golden ring
+    ctx.globalCompositeOperation = bare ? "source-atop" : "color"; ctx.fillStyle = "rgba(170,120,60,.18)"; ctx.fillRect(0, 0, W, W); ctx.globalCompositeOperation = "source-over";
     ctx.strokeStyle = "rgba(233,196,106,.55)"; ctx.lineWidth = 1.2 * u; ctx.setLineDash([2 * u, 4 * u]); ctx.beginPath(); ctx.arc(C, C, 124 * u, 0, TAU); ctx.stroke(); ctx.setLineDash([]);
   }
   if (ver === "mythic") { // a thin gold ring with a fainter twin and sharp gold glints around it
