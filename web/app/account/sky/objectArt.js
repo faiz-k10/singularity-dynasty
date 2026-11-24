@@ -310,10 +310,20 @@ export function drawObject(ctx, W, find, edge, { bare = false } = {}) {
       break;
     }
     case "shower": { // every meteor streaks away from one radiant point: fine, sharp trails with a hot head
-      const rx = C + 34 * u, ry = C - 64 * u; bloom(rx, ry, 18 * u, LT, 0.25);
+      // the streaks are worked out first, then the whole shower (radiant to the farthest head) is moved so its box is centred in the
+      // picture -- the version rings (Old light, Mythic) are drawn round the centre, and the shower used to sit up and to one side of
+      // them (founder, Nov 23 2026)
+      const streaks = Array.from({ length: 16 }, () => {
+        const a = Math.PI * 0.62 + (r() - 0.5) * 1.5, d0 = (16 + r() * 60) * u, l = (34 + r() * 66) * u, w = (0.8 + r() * 1.6) * u;
+        const x0 = Math.cos(a) * d0, y0 = Math.sin(a) * d0;
+        return { x0, y0, x1: x0 + Math.cos(a) * l, y1: y0 + Math.sin(a) * l, w };
+      });
+      const xs = [0, ...streaks.map((m) => m.x1)], ys = [0, ...streaks.map((m) => m.y1)];
+      const rx = C - (Math.min(...xs) + Math.max(...xs)) / 2, ry = C - (Math.min(...ys) + Math.max(...ys)) / 2;
+      bloom(rx, ry, 18 * u, LT, 0.25);
       ctx.save(); ctx.lineCap = "round";
-      for (let i = 0; i < 16; i++) {
-        const a = Math.PI * 0.62 + (r() - 0.5) * 1.5, d0 = (16 + r() * 60) * u, l = (34 + r() * 66) * u, x0 = rx + Math.cos(a) * d0, y0 = ry + Math.sin(a) * d0, x1 = x0 + Math.cos(a) * l, y1 = y0 + Math.sin(a) * l, w = (0.8 + r() * 1.6) * u;
+      for (const m of streaks) {
+        const x0 = rx + m.x0, y0 = ry + m.y0, x1 = rx + m.x1, y1 = ry + m.y1, w = m.w;
         const g = ctx.createLinearGradient(x0, y0, x1, y1); g.addColorStop(0, rgba(LT, 0)); g.addColorStop(0.75, rgba(mix(LT, WHITE, 0.35), 0.55)); g.addColorStop(1, rgba(WHITE, 1));
         ctx.strokeStyle = g; ctx.lineWidth = w; ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
         ctx.fillStyle = "#FFFFFF"; ctx.beginPath(); ctx.arc(x1, y1, w * 0.8, 0, TAU); ctx.fill();
