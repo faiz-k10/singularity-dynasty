@@ -19,7 +19,7 @@ export const WHY = {
   weekly: ["A floor, a likely landing and a ceiling for every player, so every close start / sit has an answer you can see.", "Smash Spots, Tough Spots, On Fire streaks, Super Heroes. The week's storylines in one glance."],
   dynasty: ["One score that weighs what a player produces against how many good years he has left, grouped into tiers so you can see who is a true step above the rest.", "Startup and rookie drafts, tiered. See the rising stars and the fading ones before your league does."],
   sims: ["Each player's whole season as a range that updates after every game, with who he is tracking like.", "Breakouts and collapses, flagged early. You see them first."],
-  lab: ["Every number on the site on one chart: any position, any two stats, with the trend line and how strong it is.", "Settle the group chat with one chart. Export, post, done."],
+  lab: ["Every number on the site on one chart: any position, any two stats, with the trend line and how strong it is.", "Settle the group chat with one chart. Share, post, done."],
   sky: ["Nothing to learn: check in on the tools you already use and the stars add up on their own.", "Collect finds, light constellations, earn real rewards. A new sky every season."],
 };
 
