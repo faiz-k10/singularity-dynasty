@@ -4,6 +4,7 @@ import STAT_LABELS from "./statLabels";
 import { GameLogPanel } from "./WeeklyDetailRow";
 import { PICK_COLORS } from "@/lib/pickColors";
 import { meterWidth } from "@/lib/meter";
+import { SEASON_LABELS, LEVEL_FAMILY, TREND_FAMILY } from "@/lib/seasonLabels";
 
 // Compare Player Season Simulations: a head-to-head table (role tags, season floor / median / ceiling with the range bar,
 // season-to-date pace, and every projected stat as median with its floor-ceiling range), then -- in the page -- the
@@ -137,26 +138,24 @@ export default function CompareSims({ players }) {
                 </td>
               ))}
             </tr>
-            {players.some((p) => p.archetype || p.sus || p.dynasty) && (
+            {/* The same tags as Player Season Simulations' opened player: his role, then the season-long Level and Trend labels. */}
+            {players.some((p) => p.archetype || p.labels?.length) && (
               <>
                 <tr>
                   <th>Role</th>
                   {players.map((p) => (
-                    <td key={p.player_name}>{p.archetype ? <ArchetypePill name={p.archetype} compact /> : "—"}</td>
+                    <td key={p.player_name}>{p.archetype ? <ArchetypePill name={p.archetype} /> : "—"}</td>
                   ))}
                 </tr>
-                <tr>
-                  <th>Production</th>
-                  {players.map((p) => (
-                    <td key={p.player_name}>{p.sus ? <ArchetypePill name={p.sus} compact /> : "—"}</td>
-                  ))}
-                </tr>
-                <tr>
-                  <th>Dynasty status</th>
-                  {players.map((p) => (
-                    <td key={p.player_name}>{p.dynasty ? <ArchetypePill name={p.dynasty} compact /> : "—"}</td>
-                  ))}
-                </tr>
+                {[["Level", LEVEL_FAMILY], ["Trend", TREND_FAMILY]].map(([label, family]) => (
+                  <tr key={label}>
+                    <th>{label}</th>
+                    {players.map((p) => {
+                      const k = (p.labels || []).find((x) => family.includes(x));
+                      return <td key={p.player_name}>{k ? <ArchetypePill name={SEASON_LABELS[k].name} /> : "—"}</td>;
+                    })}
+                  </tr>
+                ))}
               </>
             )}
 

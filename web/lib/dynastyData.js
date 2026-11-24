@@ -3,8 +3,7 @@ import { unstable_cache } from "next/cache";
 import bundledValues from "@/data/dynasty-values.json";
 import bundledLogs from "@/data/dynasty-logs.json";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { metaFromData, rankGrid, rowsFromData, scoreRows, viewBoard } from "./dynastyBoard";
-import { normalizePlayerName } from "./portfolio";
+import { metaFromData, rankGrid, rowsFromData, scoreRows } from "./dynastyBoard";
 
 // The Dynasty Board's data. The Tuesday run (scripts/weekly-run.mjs -> model/run_dynasty.sh -> scripts/publish-dynasty.mjs) rebuilds it
 // through the newest finished week and puts it in the private Storage bucket "dynasty"; the site reads it from there, cached an hour
@@ -58,17 +57,6 @@ export async function getDynastyRows(hasFullAccess) {
   if (hasFullAccess) return { rows: all, built: data.built, total: all.length, meta };
   const ids = new Set(scoreRows(all, "sf", "contender").slice(0, FREE_ROWS).map((r) => r.id));
   return { rows: all.filter((r) => ids.has(r.id)), built: data.built, total: all.length, meta };
-}
-
-// Each player's dynasty status: his GROUP on the Dynasty Board's default view (Superflex / Contender, all positions), keyed by
-// normalized name -> "Cornerstone", "Replacement", ... A player off the board (too few games, or past its end) has none.
-// Shown as "Dynasty status" on Compare Simulations (founder, Nov 23 2026; replaced the age-based career stage there).
-export async function getDynastyStatus() {
-  const { values } = await files();
-  const { L, groups } = viewBoard(rowsFromData(values), { format: "sf", mode: "contender", pos: "ALL" });
-  const out = {};
-  for (const g of groups) for (let i = g.a; i <= g.b; i++) out[normalizePlayerName(L[i].name)] = g.name;
-  return out;
 }
 
 // One player's last games for the profile's production timeline ({ w: [season x 100 + week], p: [points] }), only for a
