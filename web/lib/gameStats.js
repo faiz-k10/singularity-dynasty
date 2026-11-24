@@ -62,7 +62,9 @@ export function fetchBoxscore(eventId) {
     return parseBoxscore(await res.json());
   });
   value.catch(() => cache.delete(eventId)); // a failure is not remembered
+  cache.delete(eventId);
   cache.set(eventId, { at: Date.now(), value });
+  if (cache.size > 64) cache.delete(cache.keys().next().value); // a week has 16 games: keep a few weeks at most
   return value;
 }
 

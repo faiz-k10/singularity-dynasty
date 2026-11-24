@@ -76,7 +76,7 @@ function weekCompleteness() {
   const code = `
     suppressMessages(library(nflreadr))
     s <- as.data.frame(load_schedules(most_recent_season(roster = FALSE)))
-    s <- s[!is.na(s$week) & as.Date(s$gameday) <= Sys.Date(), ]
+    s <- s[!is.na(s$week) & s$game_type == "REG" & as.Date(s$gameday) <= Sys.Date(), ]
     w <- max(s$week)
     g <- s[s$week == w, ]
     done <- g[!is.na(g$result), ]
@@ -111,7 +111,26 @@ async function gameData() {
   return { ...c, complete };
 }
 
+// Regular-season games not played yet. The engine's week counts the playoff weeks, so without this the Tuesday after week 18 would publish a
+// "week 19" table that treats every team as playing (anticipated Nov 23 2026, before it happened); playoff games are not in the game log either.
+function regularGamesLeft() {
+  const code = `
+    suppressMessages(library(nflreadr))
+    s <- as.data.frame(load_schedules(most_recent_season(roster = FALSE)))
+    s <- s[!is.na(s$week) & s$game_type == "REG", ]
+    cat(sum(is.na(s$result)), "\\n")
+  `;
+  const r = spawnSync("Rscript", ["-e", code], { cwd: MODEL, encoding: "utf8" });
+  if (r.status !== 0) return null; // can't tell: carry on as before
+  const n = Number(r.stdout.trim().split("\n").pop());
+  return Number.isFinite(n) ? n : null;
+}
+
 async function projections() {
+  if (regularGamesLeft() === 0) {
+    log("\nThe regular season is over: no projections to publish until next season (the dynasty board and backups still run).");
+    return { week: null, skipped: true };
+  }
   const before = await latestWeek("redraft_rankings");
   run("Rscript", ["projection_engine.R"], MODEL, "Run projection engine (R)");
   // Sanity-check the CSVs before anything goes to production.

@@ -25,7 +25,9 @@ async function leagueEvents(leagueId, rounds, ttl, openRound = 0) {
   ]);
   const picks = await Promise.all(drafts.filter((d) => d.status === "complete" || d.last_picked).map((d) => fetchSleeperDraftPicks(d.draft_id, { final: d.status === "complete" }).then((p) => draftEvents(d, p))));
   const events = [...picks.flat(), ...weeks.flatMap(transactionEvents)];
+  cache.delete(key); // re-insert so the oldest entry is first
   cache.set(key, { at: Date.now(), events });
+  if (cache.size > 600) cache.delete(cache.keys().next().value); // capped: one entry per league, so a busy instance can't grow it without end
   return events;
 }
 
