@@ -3,7 +3,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { FAMILIES, COLOURS, skyFor, seasonProgress, COLORS as STAR } from "@/lib/nightSky";
 import { SkyBackdrop, CoreSkin } from "./skins";
-import { placeFind } from "@/lib/skyPlacement";
+import { placeShowcase } from "@/lib/skyPlacement";
 import { drawBrand } from "../../brandCanvas";
 import { StarField, Galaxies, Scrim, LitStar, GlowLine, Bloom, StarSurface } from "./hubble";
 
@@ -206,11 +206,11 @@ export async function seasonCard(state, { title, size, rarest }) {
   // +-256 of the centre, so at 1:1 around (885, 315) they span x 629-1141, y 59-571 -- clear of the text column (ends at 556) and the frame.
   const SX = 885, SY = 315;
   if (stars) ctx.drawImage(stars, SX - 300, SY - 300, 600, 600);
-  if (rarest) {
-    // the rarest find hangs in the sky where its kind belongs (lib/skyPlacement.js), with its orbit drawn faintly when it has one
-    const p = placeFind(rarest.fam, sky, { w: 600, h: 600 });
+  // the same finds the page's sky shows (rarest planet / moon, meteor shower, stellar event; placeShowcase), each where its kind belongs,
+  // with its orbit drawn faintly when it has one
+  for (const { find, place: p } of placeShowcase(state.found, sky, { w: 600, h: 600 })) {
     if (p.orbit) { ctx.save(); ctx.strokeStyle = "rgba(236,231,220,.16)"; ctx.lineWidth = p.belt ? 6 : 1; ctx.setLineDash(p.belt ? [1, 5] : [3, 5]); ctx.beginPath(); ctx.arc(SX, SY, p.orbit, 0, Math.PI * 2); ctx.stroke(); ctx.restore(); }
-    const art = p.size * 1.45, img = skyObject(rarest, Math.round(art * 2), p.rot);
+    const art = p.size * 1.45, img = skyObject(find, Math.round(art * 2), p.rot);
     ctx.drawImage(img, SX + p.x - art / 2, SY + p.y - art / 2, art, art);
   }
   await drawCore(ctx, SX, SY, 1);

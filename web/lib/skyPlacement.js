@@ -59,3 +59,19 @@ export function placeFind(fam, sky, { w = 600, h = 600, avoid = [], stretch = 1 
   const rot = z.comet ? deg - 135 : z.orbit === true ? deg + 180 + 135 : 0;
   return { x: Math.round(best.x * 10) / 10, y: Math.round(best.y * 10) / 10, size: z.size, rot, orbit: z.orbit ? z.r : null, belt: z.orbit === "belt" };
 }
+
+// The finds the sky shows (founder, Nov 23 2026): the rarest planet or moon, rarest meteor shower and rarest stellar event, placed stellar
+// first, then the shower, then the planet, each kept clear of the ones before it (an orbiting one moves, so it can't be avoided). A member
+// with none of those three kinds yet gets their single rarest find. Used by the page's sky and the season share card.
+const SHOWCASE_TIERS = [5, 4, 3];
+export function placeShowcase(found, sky, { avoid = [], ...opts } = {}) {
+  const all = Object.values(found || {}).sort((a, b) => b.oneIn - a.oneIn);
+  const list = SHOWCASE_TIERS.map((t) => all.find((f) => FAMILIES[f.fam]?.tier === t)).filter(Boolean);
+  if (!list.length && all[0]) list.push(all[0]);
+  const boxes = [...avoid];
+  return list.map((find) => {
+    const place = placeFind(find.fam, sky, { ...opts, avoid: boxes });
+    if (!place.orbit) { const h = place.size / 2; boxes.push([place.x - h, place.y - h, place.x + h, place.y + h]); }
+    return { find, place };
+  });
+}
