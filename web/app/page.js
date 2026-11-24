@@ -50,7 +50,7 @@ const getCachedHomeData = unstable_cache(
 
 export default async function Home() {
   const supabase = await createClient();
-  const [{ posts, weekly, week: weekNo }, { user, tier }, states] = await Promise.all([
+  const [{ posts, weekly }, { user, tier }, states] = await Promise.all([
     getCachedHomeData(),
     resolveTier(supabase),
     Promise.race([fetchGameStates().catch(() => null), new Promise((r) => setTimeout(() => r(null), 1500))]),
@@ -86,7 +86,6 @@ export default async function Home() {
       invited={invited}
       discountPct={FRIEND_DISCOUNT_PERCENT}
       weekly={weekly}
-      weekNo={weekNo}
       dynasty={dynasty}
       nextKickoff={nextKickoff(states)}
       posts={posts}

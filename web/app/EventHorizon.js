@@ -651,7 +651,7 @@ function Plans() {
   );
 }
 
-export default function EventHorizon({ signedIn, tier, member, invited, discountPct, weekly, weekNo, dynasty, nextKickoff, posts }) {
+export default function EventHorizon({ signedIn, tier, member, invited, discountPct, weekly, dynasty, nextKickoff, posts }) {
   const stageRef = useRef(null);
   // arriving from another page always starts at the very top, ticker included (founder, Nov 10 2026: coming back from a scrolled tool page
   // used to land part-way down); a link to a section (#pricing, #feed ...) still goes to that section
@@ -934,7 +934,7 @@ export default function EventHorizon({ signedIn, tier, member, invited, discount
       <section className="ehp-dark ehp-chap" id="weekly">
         <div className="ehp-wrap ehp-two">
           <div>
-            <div className="ehp-k">02 · Weekly Projection Rankings{weekNo ? ` · week ${weekNo}` : ""}</div>
+            <div className="ehp-k">02 · Weekly Projection Rankings</div>
             <h2 className="ehp-h">
               Will Your Superstar Fly High or Crash Land?
             </h2>
