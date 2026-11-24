@@ -5,7 +5,7 @@
 export const SUMMARY = [
   ["The Game Board", "Every league live on one screen.", "Game day", "/my-team"],
   ["Weekly Projection Rankings", "Where does your favorite player rank? Which badges did he earn?", "Tuesdays", "/tools/redraft-rankings"],
-  ["Dynasty Board", "Production weighed against age. Tiers show who is truly ahead.", "All year", "/tools/draft-board"],
+  ["Dynasty Board", "For all contenders and rebuilders, and that includes you.", "All year", "/tools/draft-board"],
   ["Player Season Simulations", "Each player's season range, redrawn after every game.", "Weekly", "/tools/player-simulations"],
   ["The Observatory", "Stats, players, charts. The football universe is yours.", "Anytime", "/tools/lab"],
   ["Compare Players", "Compare up to four players side by side. Every number lined up, the edge marked.", "Start / sit", "/tools/compare-players"],
