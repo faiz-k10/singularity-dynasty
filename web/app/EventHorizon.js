@@ -623,7 +623,7 @@ function Plans() {
                         <g clipPath={`url(#ehp-plc-${id})`}><path d={stripes(PLAN_BALL)} fill="#000" /></g>
                       </mask>
                     </defs>
-                    <g mask={`url(#ehp-plm-${id})`}><path d={ball(PLAN_BALL)} fill={hot ? "var(--ehp-mark)" : "currentColor"} /></g>
+                    <g mask={`url(#ehp-plm-${id})`}><path d={ball(PLAN_BALL)} fill={hot ? "var(--plan-ball)" : "currentColor"} /></g>
                   </g>
                 );
               })}
