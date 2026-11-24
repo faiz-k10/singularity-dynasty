@@ -10,7 +10,7 @@ export const SUMMARY = [
   ["The Observatory", "Stats, players, charts. The football universe is yours.", "Anytime", "/tools/lab"],
   ["Compare Players", "Compare up to four players side by side. Every number lined up, the edge marked.", "Start / sit", "/tools/compare-players"],
   ["The Night Sky", "Members only. Explore the galaxy, find your stars, fill your sky.", "Daily", "/account/sky"],
-  ["The Singularity Drive", "Reach for the next level with The Singularity Drive Newsletter.", "Tuesdays", "/newsletter"],
+  ["The Singularity Drive", "Reach for the next level with The Singularity Drive Newsletter.", "Inbox", "/newsletter"],
 ];
 
 // Page 4: what each tool adds, in two plain lines. Keyed by section.
