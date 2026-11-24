@@ -4,7 +4,7 @@
 // Page 2: the whole site on one page. [name, what it does, when you'd use it, link]
 export const SUMMARY = [
   ["The Game Board", "Every league live on one screen.", "Game day", "/my-team"],
-  ["Weekly Projection Rankings", "Every player's bad week, normal week and best week. The matchups that tilt them.", "Tuesdays", "/tools/redraft-rankings"],
+  ["Weekly Projection Rankings", "Where does your favorite player rank? Which badges did he earn?", "Tuesdays", "/tools/redraft-rankings"],
   ["Dynasty Board", "Production weighed against age. Tiers show who is truly ahead.", "All year", "/tools/draft-board"],
   ["Player Season Simulations", "Each player's season range, redrawn after every game.", "Weekly", "/tools/player-simulations"],
   ["The Observatory", "Stats, players, charts. The football universe is yours.", "Anytime", "/tools/lab"],
