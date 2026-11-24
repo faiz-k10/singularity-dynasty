@@ -711,7 +711,7 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
               <div className="sky-sets">
                 {close.map((c) => (
                   <button type="button" key={c.label} className={`sky-set${c.of - c.have === 1 ? " is-near" : ""}`} onClick={() => setDetail({ set: c })}>
-                    <span>{c.label}</span><span className="mono">{c.have}/{c.of} → {c.power}</span><i style={{ width: `${(100 * c.have) / c.of}%` }} />
+                    <span>{c.label}</span><span className="mono">{c.have}/{c.of} →<b className="sky-set-pow">{c.power}</b></span><i style={{ width: `${(100 * c.have) / c.of}%` }} />
                   </button>
                 ))}
               </div>

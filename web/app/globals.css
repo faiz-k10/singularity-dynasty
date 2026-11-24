@@ -6834,7 +6834,8 @@ body:has(.ehp) .ehp-inside,body:has(.ehp) .ehp-dark{--ehp-hole:#0B0B0B;--ehp-hol
 .sky-claim:hover{background:var(--star);color:var(--void)}
 .sky-sets{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px}
 .sky-set{position:relative;display:flex;justify-content:space-between;gap:8px;border:1px solid var(--line);padding:7px 10px 9px;font-size:12.5px;overflow:hidden;background:none;color:inherit;font-family:inherit;text-align:left;cursor:pointer}
-.sky-set .mono{font-size:11px;color:var(--star-dim)}
+.sky-set .mono{font-size:11px;color:var(--star-dim);flex:none}
+.sky-set-pow{display:block;font-weight:400;white-space:nowrap} /* the power-up always on its own line, never split (founder, Nov 23 2026) */
 .sky-set i{position:absolute;left:0;bottom:0;height:2px;background:var(--ember)}
 .sky-set.is-near i{background:var(--cobalt)} /* one more completes the set (founder, Nov 17 2026: the bar, not the border) */
 .sky-cat{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:6px}
