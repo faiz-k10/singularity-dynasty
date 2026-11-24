@@ -872,7 +872,7 @@ export default function EventHorizon({ signedIn, tier, member, invited, discount
         <div className="ehp-wrap">
           <div className="ehp-sumhead">
             <div>
-              <div className="ehp-k">The whole site, on one page</div>
+              <div className="ehp-k">Overview</div>
               <h2 className="ehp-h">
                 One Control Room. Every League.
               </h2>
