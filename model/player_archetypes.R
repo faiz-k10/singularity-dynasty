@@ -17,7 +17,7 @@
 suppressMessages(library(nflreadr))
 
 # Seasons of history loaded: enough for the position with the longest window (QB, see `seasons` in ARCH_CONFIG).
-WINDOW_SEASONS <- function(n = 3) { cur <- min(2026, most_recent_season()); (cur - n + 1):cur }
+WINDOW_SEASONS <- function(n = 3) { cur <- most_recent_season(); (cur - n + 1):cur } # the newest season with data (was capped at a hand-set 2026)
 MIN_GAMES <- 4
 
 # Per-position features and eligibility. All are per game or shares/rates -- nothing that is

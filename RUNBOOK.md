@@ -135,7 +135,8 @@ cd "/Users/mohammedkhan/Records/Business/Singularity/Website/claude files/model"
 
 ## Once a year
 
-- **New season (August):** nothing to change. The model reads the current season from the NFL schedule. Check the first Tuesday run of week 1 in `/admin`.
+- **New season (August):** nothing to change. The model and the weekly job take the season from the date (the calendar year from March on; January / February still count as last season) and publish projections only while a regular season is on or week 1 is at most 9 days away, so the offseason runs publish nothing and the Tuesday before the opener publishes week 1. Check that first Tuesday run in `/admin`. To force a season, run the job with `SEASON=<year>`. Do update `web/lib/teamStaff.js` (coaches / GMs / play-callers) each offseason.
+- **End of the regular season (January):** the Tuesday after week 18 publishes week 18's results and the dynasty board but no new projections (there is no week 19 to project). That is expected, not a failure.
 - **Before week 1:** update `web/lib/teamStaff.js` for new head coaches, GMs and play-callers (ESPN publishes "Who calls plays for every NFL team" each preseason).
 - **Before real payments:** Setup step 7 above (Stripe live mode), plus the attorney review of the Terms / Privacy / Disclaimer pages and whether NFL logos can be shown.
 - **If you connect a custom domain:** update `SITE` in `.github/workflows/uptime.yml` and `SITE_URL` in `web/app/layout.js`, and add the new address to Supabase → Authentication → URL Configuration.

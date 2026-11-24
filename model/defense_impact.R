@@ -24,7 +24,7 @@
 # Run: Rscript defense_impact.R          writes defense_impact.csv + upload_defense_leans.csv and prints the summary
 suppressMessages(library(nflreadr))
 
-SEASON <- as.integer(Sys.getenv("DI_SEASON", "2026"))
+SEASON <- local({ o <- suppressWarnings(as.integer(Sys.getenv("DI_SEASON", NA))); if (!is.na(o)) o else { d <- Sys.Date(); y <- as.integer(format(d, "%Y")); if (as.integer(format(d, "%m")) < 3) y - 1L else y } }) # this season (Jan / Feb = last season); was a hand-set 2026
 PRIOR_SEASON <- SEASON - 1
 PRIOR_WEIGHT <- 0.35
 POS <- c("QB", "RB", "WR", "TE")

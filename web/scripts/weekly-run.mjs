@@ -111,14 +111,21 @@ async function gameData() {
   return { ...c, complete };
 }
 
-// Regular-season games not played yet. The engine's week counts the playoff weeks, so without this the Tuesday after week 18 would publish a
-// "week 19" table that treats every team as playing (anticipated Nov 23 2026, before it happened); playoff games are not in the game log either.
+// Is there a regular season to project? Its games not played yet, counted only once the first game is at most 9 days away (so week 1's
+// Tuesday run goes out, but the Thursday / Sunday triggers, which fire all year, publish nothing in the offseason). The engine's week
+// counts the playoff weeks, so without this the Tuesday after week 18 would publish a "week 19" table that treats every team as playing
+// (anticipated Nov 23 2026, before it happened); playoff games are not in the game log either. The season is the engine's own
+// TARGET_SEASON rule: the calendar year from March on, the year before in January / February (SEASON=<year> overrides).
 function regularGamesLeft() {
   const code = `
     suppressMessages(library(nflreadr))
-    s <- as.data.frame(load_schedules(most_recent_season(roster = FALSE)))
+    o <- suppressWarnings(as.integer(Sys.getenv("SEASON", NA)))
+    y <- if (!is.na(o)) o else { d <- Sys.Date(); y <- as.integer(format(d, "%Y")); if (as.integer(format(d, "%m")) < 3) y - 1L else y }
+    s <- try(as.data.frame(load_schedules(y)), silent = TRUE)
+    if (inherits(s, "try-error") || !nrow(s)) { cat(0, "\\n"); quit(save = "no") }
     s <- s[!is.na(s$week) & s$game_type == "REG", ]
-    cat(sum(is.na(s$result)), "\\n")
+    soon <- min(as.Date(s$gameday)) <= Sys.Date() + 9
+    cat(if (soon) sum(is.na(s$result)) else 0, "\\n")
   `;
   const r = spawnSync("Rscript", ["-e", code], { cwd: MODEL, encoding: "utf8" });
   if (r.status !== 0) return null; // can't tell: carry on as before
@@ -128,7 +135,7 @@ function regularGamesLeft() {
 
 async function projections() {
   if (regularGamesLeft() === 0) {
-    log("\nThe regular season is over: no projections to publish until next season (the dynasty board and backups still run).");
+    log("\nNo regular season in play (it is over, or week 1 is more than 9 days away): no projections to publish (the dynasty board and backups still run).");
     return { week: null, skipped: true };
   }
   const before = await latestWeek("redraft_rankings");

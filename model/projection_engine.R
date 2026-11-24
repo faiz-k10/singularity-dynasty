@@ -620,10 +620,14 @@ TARGET_SHARE_FLOOR_Q <- c(WR = 0.004,  TE = 0.0075)
 TARGET_SHARE_CEIL_Q  <- c(WR = 0.99,   TE = 0.98)
 TARGET_SHARE_MIN_GAMES <- 8  # matches the backtest's own eligibility floor (counted within the this-season-and-last window)
 
-# The season we're publishing rankings/projections FOR. Fixed -- does NOT
-# shift automatically when the calendar rolls over; bump it by hand once
-# the 2027 season actually starts being the one to project.
-TARGET_SEASON <- 2026
+# The season we're publishing rankings/projections FOR: the calendar year from March on, the year before in January / February
+# (those months are still last season's playoffs). Automatic since Nov 23 2026 (it was a hand-set 2026, which RUNBOOK said
+# needed no yearly change); SEASON=<year> overrides it. The weekly job only runs the engine while a regular season is on or
+# about to start (web/scripts/weekly-run.mjs), so the offseason never publishes a table.
+TARGET_SEASON <- local({
+  o <- suppressWarnings(as.integer(Sys.getenv("SEASON", NA)))
+  if (!is.na(o)) o else { d <- Sys.Date(); y <- as.integer(format(d, "%Y")); if (as.integer(format(d, "%m")) < 3) y - 1L else y }
+})
 
 # Seasons of history to feed the model: the fixed 3-year lookback, PLUS
 # the target season itself -- but ONLY once nflreadr considers it a real,

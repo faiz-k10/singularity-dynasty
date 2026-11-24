@@ -33,7 +33,7 @@ REPL_FROM <- 2018
 V_HI      <- 15
 KEEP      <- 450   # players shipped (founder, Nov 16 2026: rank at least 300); the page shows the top 300 overall and the top 120 of a position
                    # (every format / mode reorders the pool, so it ships more than it shows)
-AGE_DATE  <- as.Date("2026-09-01")
+AGE_DATE  <- local({ d <- Sys.Date(); y <- as.integer(format(d, "%Y")); if (as.integer(format(d, "%m")) < 3) y <- y - 1L; as.Date(sprintf("%d-09-01", y)) }) # ages as of Sept 1 of this season (from March on, the coming one); was a hand-set 2026-09-01
 
 prod <- read.csv("dynasty_production_value.csv")
 ref  <- read.csv("dynasty_production_reference.csv")
