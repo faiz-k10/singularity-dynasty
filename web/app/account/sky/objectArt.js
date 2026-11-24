@@ -128,7 +128,11 @@ export function drawObject(ctx, W, find, edge, { bare = false } = {}) {
     if (m > 0.8) twinkle(x, y, (3 + m * 5) * u, t, 0.45 + m * 0.35);
     else { ctx.fillStyle = rgba(t, 0.3 + m * 1.2); const z = Math.max(0.6, (0.45 + m * 1.6) * u); ctx.fillRect(x - z / 2, y - z / 2, z, z); }
   }
-  if (bare) ctx.clearRect(0, 0, W, W); // the field above still ran, so the object's own details come out the same as in its thumbnail
+  if (bare) ctx.clearRect(0, 0, W, W);
+  // the object's own random details start from a fresh seed: the field above uses a number of draws that depends on the picture's size
+  // (W x 0.5 stars), so without this the same find came out different in the sky, its thumbnail and its detail view (founder, Nov 23
+  // 2026: the meteor shower's streaks didn't match between the sky and the object's profile)
+  s = 23 + find.fam * 211;
   if (edge) { const g = ctx.createRadialGradient(W - 8 * u, 24 * u, 2, W - 8 * u, 24 * u, 90 * u); g.addColorStop(0, "rgba(233,196,106,.9)"); g.addColorStop(1, "rgba(0,0,0,0)"); ctx.fillStyle = g; ctx.fillRect(0, 0, W, W); }
 
   // ---- surfaces ----
