@@ -585,7 +585,7 @@ function Plans() {
         <div className="ehp-pd">
           {PLANS.map((p, i) => (
             <div key={p.id} className={i === on ? "on" : ""} onMouseEnter={() => setOn(i)} onFocus={() => setOn(i)}>
-              <b>{p.name}{p.tag && <i className="ehp-pd-tag">{p.tag}</i>}</b>
+              <b>{p.name}{p.tag && <i className="ehp-pd-tag">{[].concat(p.tag).map((t) => <span key={t}>{t}</span>)}</i>}</b>
               <span>{p.say}</span>
               <em>
                 {p.month ? <>{yearly && <s>${p.month}</s>}${yearly ? p.year : p.month} / mo</> : "Free"}

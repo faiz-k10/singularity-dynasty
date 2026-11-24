@@ -10,7 +10,7 @@ import { startCheckout } from "@/lib/startCheckout";
 // sensible middle beside $240; Explorer is marked Most popular. `feats` lists only features that are live, each plan "plus" the one below.
 export const PLANS = [
   {
-    id: "singularity", name: "Singularity", r: 76, say: "The research edge: every simulation, every league.", month: 30, year: 20, tag: "Founding price first 50 ONLY",
+    id: "singularity", name: "Singularity", r: 76, say: "The research edge: every simulation, every league.", month: 30, year: 20, tag: ["Founding price", "First 50 only"], // one line each, so the box hugs the text (a wrapped line kept the box full width)
     plus: "Everything in Explorer, plus",
     feats: [
       "Season simulations for every player, with pace, shapes and comparisons",
