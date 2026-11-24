@@ -73,7 +73,15 @@ test("Beat the Model: three same-position pairs, graded on real points", () => {
   const right = gradePicks(s, "2026-10", pts, ctx(Date.UTC(2026, 10, 17)), seeded());
   assert.equal(right, 1);
   assert.deepEqual(s.btm, [1, 1]);
+  assert.deepEqual(s.picks["2026-10"].result, ["right", "wrong", null]);
   assert.equal(gradePicks(s, "2026-10", pts, ctx(0), seeded()), 0); // graded once
+  // a pick whose player had no game is recorded as such, not counted
+  const t = freshState();
+  t.picks["2026-10"] = { pairs, choice: [0, 0, 0], graded: false };
+  const pts2 = { ...pts }; delete pts2[pairs[2].b];
+  gradePicks(t, "2026-10", pts2, ctx(Date.UTC(2026, 10, 17)), seeded());
+  assert.deepEqual(t.picks["2026-10"].result, ["right", "right", "nogame"]);
+  assert.equal(t.picks["2026-10"].made, 2);
 });
 
 test("events follow the NFL calendar", () => {

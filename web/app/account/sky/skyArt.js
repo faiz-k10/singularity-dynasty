@@ -175,10 +175,21 @@ export async function receiptCard(wk) {
   await base(ctx, `Beat the Model · week ${wk.week}`);
   ctx.fillStyle = "#ECE7DC"; ctx.font = `800 120px ${font("--font-display")}`; ctx.fillText(`${wk.right} OF ${wk.made}`, 64, 230);
   ctx.fillStyle = "#A39E92"; ctx.font = `400 24px ${font("--font-mono")}`; ctx.fillText(wk.right * 2 > wk.made ? "I BEAT THE MODEL. YOUR TURN." : "THE MODEL GOT ME THIS WEEK.", 64, 290);
+  // a pick with no decision (a player without a game, or a tie) is listed but marked, so "2 of 2" over three picks reads right
+  const res = wk.result || [];
   wk.pairs.forEach((p, i) => {
     const c = wk.choice[i]; if (c == null) return;
-    ctx.fillStyle = "#ECE7DC"; ctx.font = `400 26px ${font("--font-mono")}`; ctx.fillText(`${p.pos} · ${c === 0 ? p.a : p.b} over ${c === 0 ? p.b : p.a}`, 64, 370 + i * 46);
+    const r = res[i], off = r === "nogame" || r === "tie";
+    const mark = r === "right" ? "✓" : r === "wrong" ? "✗" : off ? "–" : "";
+    ctx.fillStyle = r === "right" ? "#4C7DF0" : r === "wrong" ? "#E8643F" : "#A39E92"; ctx.font = `700 26px ${font("--font-mono")}`; ctx.fillText(mark, 64, 370 + i * 46);
+    ctx.fillStyle = off ? "#A39E92" : "#ECE7DC"; ctx.font = `400 26px ${font("--font-mono")}`;
+    ctx.fillText(`${p.pos} · ${c === 0 ? p.a : p.b} over ${c === 0 ? p.b : p.a}${r === "nogame" ? " (no game)" : r === "tie" ? " (tie)" : ""}`, mark ? 100 : 64, 370 + i * 46);
   });
+  const picked = wk.choice.filter((c) => c != null).length, skipped = picked - wk.made;
+  if (skipped > 0) {
+    ctx.fillStyle = "#A39E92"; ctx.font = `400 20px ${font("--font-mono")}`;
+    ctx.fillText(`${skipped} ${skipped === 1 ? "pick didn't" : "picks didn't"} count: a player didn't play, or they tied.`, 64, 370 + wk.pairs.length * 46 + 10);
+  }
   return cv;
 }
 export async function seasonCard(state, { title, size, rarest }) {

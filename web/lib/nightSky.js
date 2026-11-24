@@ -904,13 +904,16 @@ export function gradePicks(s, key, points, ctx, rnd = Math.random) {
   const wk = s.picks[key];
   if (!wk || wk.graded) return 0;
   let right = 0, made = 0;
-  wk.pairs.forEach((p, i) => {
+  // each pick's outcome, so the page and the receipt can say which pick didn't count (founder, Nov 24 2026: "2 of 2" over three picks)
+  wk.result = wk.pairs.map((p, i) => {
     const c = wk.choice[i];
-    if (c == null) return;
+    if (c == null) return null;
     const pa = points[p.a], pb = points[p.b];
-    if (pa == null || pb == null || pa === pb) return; // a player without a game, or a tie: no decision
+    if (pa == null || pb == null) return "nogame"; // a player without a game: no decision
+    if (pa === pb) return "tie";
     made++;
-    if ((c === 0 ? pa > pb : pb > pa)) { right++; placeStar(s, "gold", ctx, rnd); s.points += 20; }
+    if ((c === 0 ? pa > pb : pb > pa)) { right++; placeStar(s, "gold", ctx, rnd); s.points += 20; return "right"; }
+    return "wrong";
   });
   wk.graded = true;
   wk.right = right;
