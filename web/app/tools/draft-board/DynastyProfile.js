@@ -88,7 +88,7 @@ function Timeline({ log, level, repl, W }) {
 
 // His position's age value by age (years until the age his position is typically done), him on it, his runway shaded.
 function AgeCurve({ doneAge, pos, age, value, W }) {
-  const H = Math.round(Math.min(320, Math.max(220, W * 0.6))), L = 44, R = 10, T = 14, B = 42; // room for the two axis titles
+  const H = Math.round(Math.min(320, Math.max(220, W * 0.6))), L = 44, R = 10, T = 14, B = 8; // no age numbers or "Age" title under the x axis (founder, Nov 23 2026: they gave away the fall-off age); room on the left for the y title
   const lo = 21, hi = 40, done = doneAge[pos];
   const x = (a) => L + ((a - lo) / (hi - lo)) * (W - L - R);
   const y = (v) => T + (1 - (v - 1) / 9) * (H - T - B);
@@ -109,8 +109,6 @@ function AgeCurve({ doneAge, pos, age, value, W }) {
       <circle cx={x(a)} cy={y(value)} r="6" className="dp-dot" />
       <line x1={L} x2={L} y1={T} y2={H - B} className="dp-axis-line" />
       <line x1={L} x2={W - R} y1={H - B} y2={H - B} className="dp-axis-line" />
-      {[25, 30, 35, 40].map((t) => <text key={t} x={x(t)} y={H - B + 16} className="dp-axis" textAnchor={x(t) > W - R - 12 ? "end" : "middle"}>{t}</text>)}
-      <text x={L + (W - L - R) / 2} y={H - 4} className="dp-axis-title" textAnchor="middle">Age</text>
       <text transform={`translate(12 ${T + (H - T - B) / 2}) rotate(-90)`} className="dp-axis-title" textAnchor="middle">Age value</text>
       {/* his age and value beside the point: above it, or below it when the point is at the top of the chart (a 10.0 was cut off) */}
       <text x={x(a) > W - 110 ? x(a) - 10 : x(a) + 10} y={y(value) - 10 < 14 ? y(value) + 22 : y(value) - 10} className="dp-label is-level" textAnchor={x(a) > W - 110 ? "end" : "start"}>{age.toFixed(1)} yrs</text>
