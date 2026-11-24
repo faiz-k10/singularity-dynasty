@@ -7,7 +7,7 @@ export const SUMMARY = [
   ["Weekly Projection Rankings", "Every player's bad week, normal week and best week. The matchups that tilt them.", "Tuesdays", "/tools/redraft-rankings"],
   ["Dynasty Board", "Production weighed against age. Tiers show who is truly ahead.", "All year", "/tools/draft-board"],
   ["Player Season Simulations", "Each player's season range, redrawn after every game.", "Weekly", "/tools/player-simulations"],
-  ["The Observatory", "Any two stats, every player, one chart. Export it.", "Anytime", "/tools/lab"],
+  ["The Observatory", "Stats, players, charts. The football universe is yours.", "Anytime", "/tools/lab"],
   ["Compare Players", "Compare up to four players side by side. Every number lined up, the edge marked.", "Start / sit", "/tools/compare-players"],
   ["The Night Sky", "Members only. Check in, earn stars, fill a sky.", "Daily", "/account/sky"],
   ["The Singularity Drive", "Reach the next level with The Singularity Drive Newsletter.", "Tuesdays", "/newsletter"],
