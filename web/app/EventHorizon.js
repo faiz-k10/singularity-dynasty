@@ -1050,7 +1050,7 @@ export default function EventHorizon({ signedIn, tier, member, invited, discount
             <h2 className="ehp-h">
               Find Your <em>Manager Type</em>
             </h2>
-            <p className="ehp-lede">Four questions. One minute. Your type, plus the Singularity Drive: Newsletter to go beyond the data!</p>
+            <p className="ehp-lede">Four questions. One minute. Your type, plus the Singularity Drive Newsletter to go beyond the data!</p>
             {posts?.length > 0 && (
               <ul className="ehp-posts">
                 {posts.map((p) => (
