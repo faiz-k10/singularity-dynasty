@@ -6895,9 +6895,12 @@ button.sky-variant:focus-visible{outline:2px solid var(--ember);outline-offset:1
 /* Skins (skins.js; unlocks in lib/nightSky.js SKINS) */
 .sky-skins-row{display:flex;flex-direction:column;gap:8px}
 .sky-skins-h{grid-column:1 / -1;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--star-dim)}
-/* one row of cards (--n = how many) up to 260px each, centred in the panel (founder, Nov 23 2026); a narrow panel wraps them instead */
+/* one row of cards (--n = how many) up to 260px each, centred in the panel at every width (founder, Nov 23 2026); a panel too narrow
+   for a row of ~130px cards centres them three, then two, to a row (container queries: the panel's width, not the window's) */
+.sky-skins-row{container-type:inline-size}
 .sky-skins{display:grid;grid-template-columns:repeat(var(--n,6),minmax(0,260px));justify-content:center;gap:8px}
-@media (max-width:1100px){.sky-skins{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}}
+@container (max-width:820px){.sky-skins{grid-template-columns:repeat(3,minmax(0,260px))}}
+@container (max-width:420px){.sky-skins{grid-template-columns:repeat(2,minmax(0,260px))}}
 .sky-skin{--rar:var(--star-dim);display:flex;flex-direction:column;align-items:stretch;gap:6px;padding:10px;border:1px solid var(--line);border-top:2px solid var(--rar);background:transparent;color:var(--star);text-align:left;cursor:pointer;border-radius:var(--r-sm);font:inherit;transition:transform .15s,border-color .15s}
 .sky-skin b{font-family:var(--font-mono);font-size:12.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
 .sky-skin-how{font-size:11px;color:var(--star-dim);line-height:1.4}
