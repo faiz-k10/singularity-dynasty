@@ -745,8 +745,9 @@ export default function SkyClient({ initial, weekKey, event, compliments, now: s
         <div className="board-panel-title" id="sky-skins">Skins</div>
         {["sky", "core"].map((kind) => (
           <div key={kind} className="sky-skins-row">
-            <div className="sky-skins-h mono">{kind === "sky" ? "Sky" : "Core"}</div>
-            <div className="sky-skins">
+            {/* the label is the grid's first row, so it lines up with the first card once the cards are centred in the panel */}
+            <div className="sky-skins" style={{ "--n": (kind === "sky" ? skySkinsFor(state) : coreSkinsFor(state)).length }}>
+              <div className="sky-skins-h mono">{kind === "sky" ? "Sky" : "Core"}</div>
               {(kind === "sky" ? skySkinsFor(state) : coreSkinsFor(state)).map((k) => {
                 const have = hasSkin(state, kind, k.id), on = equipped(state)[kind] === k.id;
                 const [got, need] = !have && k.progress ? k.progress(state) : [0, 0];
