@@ -68,19 +68,31 @@ function Core({ mass, collapsed, skin }) {
   );
 }
 
-// The member's rarest find, hung in the sky where its kind belongs (lib/skyPlacement.js): clear of every constellation, its label and the
-// core's words. The picture is drawn in the browser, so it appears just after the sky does.
+// The member's rarest planet or moon, rarest meteor shower and rarest stellar event (founder, Nov 23 2026: it was only the single rarest
+// find), each hung in the sky where its kind belongs (lib/skyPlacement.js): clear of every constellation, its label, the core's words
+// and the finds placed before it (stellar events first, then showers, then the orbiting planet). A member with none of those three kinds
+// yet sees their rarest find of any kind, as before. The pictures are drawn in the browser, so they appear just after the sky does.
+const SKY_TIERS = [5, 4, 3];
 function RarestInSky({ state }) {
-  const rarest = useMemo(() => Object.values(state.found).sort((a, b) => b.oneIn - a.oneIn)[0] || null, [state.found]);
-  const place = useMemo(() => {
-    if (!rarest) return null;
+  const shown = useMemo(() => {
+    const all = Object.values(state.found).sort((a, b) => b.oneIn - a.oneIn);
+    const list = SKY_TIERS.map((t) => all.find((f) => FAMILIES[f.fam]?.tier === t)).filter(Boolean);
+    if (!list.length && all[0]) list.push(all[0]);
     const sky = pageSky(state.season);
     const avoid = [[-200, 240, 200, 300], [-92, 178, 92, 260], /* the heat line or the telescope button; the picks, raised or not */ ...sky.map((c) => {
       const lx = Math.sign(c.label[0]) * 456, ly = c.label[1];
       return lx > 0 ? [lx - 175, ly - 14, lx, ly + 20] : [lx, ly - 14, lx + 175, ly + 20];
     })];
-    return placeFind(rarest.fam, sky, { w: 960, h: 600, avoid, stretch: 1.5 });
-  }, [rarest, state.season]);
+    return list.map((find) => {
+      const place = placeFind(find.fam, sky, { w: 960, h: 600, avoid, stretch: 1.5 });
+      if (!place.orbit) { const h = place.size / 2; avoid.push([place.x - h, place.y - h, place.x + h, place.y + h]); } // an orbiting one moves, so it can't be avoided
+      return { find, place };
+    });
+  }, [state.found, state.season]);
+  return shown.map(({ find, place }) => <SkyFind key={`${find.fam}|${find.colour}|${find.version}`} rarest={find} place={place} />);
+}
+
+function SkyFind({ rarest, place }) {
   const img = useRef(null);
   useEffect(() => { if (rarest && place && img.current) img.current.setAttribute("href", skyObject(rarest, Math.round(place.size * 1.45 * 3), place.rot).toDataURL()); }, [rarest, place]);
   const still = useReducedMotion();
