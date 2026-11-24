@@ -4,6 +4,7 @@ import { leagueName } from "@/lib/format";
 import { awardLater } from "@/lib/nightSkyStore";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
+import { findRenewals } from "@/lib/leagueRenewal";
 import { allowHit, clientIp } from "@/lib/rateLimit";
 import { createClient } from "@/lib/supabase/server";
 import { createPublicClient } from "@/lib/supabase/public";
@@ -431,6 +432,7 @@ async function lookupTeams(username, opts = {}) {
 
       return {
         league_id: league.league_id,
+        previous_league_id: league.previous_league_id || null, // the league it renewed from (lib/leagueRenewal.js)
         league_name: league.name,
         roster_id: myRoster.roster_id,
         team_name: teamName,
@@ -489,6 +491,48 @@ export async function refreshSavedTeams() {
   }
 
   const teams = {};
+  // Dynasty / keeper leagues that renewed for a new season have a new league id: a saved league this season's lookup doesn't find is
+  // moved to the league that names it as its predecessor (lib/leagueRenewal.js), so members don't have to re-save every February.
+  const unmatched = rows.filter((r) => !byLeague[r.platform_league_id]);
+  if (unmatched.length) {
+    const fresh = Object.values(byLeague);
+    const savedIds = (allRows || []).map((r) => r.platform_league_id);
+    let renewals = findRenewals(savedIds, fresh);
+    if (unmatched.some((r) => !renewals.has(String(r.platform_league_id)))) {
+      // a season skipped (the league renewed twice since it was saved): walk each new league's chain back a few seasons
+      const saved = new Set(savedIds.map(String));
+      const ancestors = {};
+      await Promise.all(
+        fresh.filter((t) => !saved.has(String(t.league_id)) && t.previous_league_id).map(async (t) => {
+          const ids = [];
+          let p = t.previous_league_id;
+          for (let i = 0; i < 3 && p && p !== "0"; i++) {
+            p = (await fetchSleeperLeague(p).catch(() => null))?.previous_league_id;
+            if (p && p !== "0") ids.push(String(p));
+          }
+          ancestors[t.league_id] = ids;
+        })
+      );
+      renewals = findRenewals(savedIds, fresh, (id) => ancestors[id] || []);
+    }
+    await Promise.all(
+      unmatched.map(async (row) => {
+        const t = renewals.get(String(row.platform_league_id));
+        if (!t) return;
+        const move = {
+          platform_league_id: String(t.league_id),
+          platform_roster_id: t.roster_id != null ? String(t.roster_id) : null,
+          league_name: t.league_name,
+          team_name: t.team_name,
+          settings: t.settings,
+          players: t.players,
+        };
+        const { error } = await supabase.from("saved_teams").update(move).eq("id", row.id).eq("user_id", user.id);
+        if (error) return console.error("[refresh] league renewal:", error.message);
+        teams[row.id] = { ...move };
+      })
+    );
+  }
   await Promise.all(
     rows.map(async (row) => {
       const fresh = byLeague[row.platform_league_id];
