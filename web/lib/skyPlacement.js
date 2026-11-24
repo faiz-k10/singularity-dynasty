@@ -38,9 +38,12 @@ export function placeFind(fam, sky, { w = 600, h = 600, avoid = [], stretch = 1 
   const z = zoneOf(fam), half = z.size / 2, pts = sky.flatMap((c) => c.pts.map(([x, y]) => [x, y]));
   const segs = sky.flatMap((c) => c.edges.map(([i, j]) => [c.pts[i], c.pts[j]]));
   let best = null;
-  for (let deg = 0; deg < 360; deg += 4) {
+  // deep-sky finds may also sit a little closer in than their zone, so on a crowded (or square) sky they find an empty spot instead of
+  // landing on a constellation (founder, Nov 23 2026: the Nebula on the share card sat on top of the red constellation)
+  const radii = z.far ? [z.r, z.r * 0.88, z.r * 0.76] : [z.r];
+  for (const zr of radii) for (let deg = 0; deg < 360; deg += 4) {
     const a = (deg * Math.PI) / 180, sx = z.far || z.comet ? stretch : 1; // orbits stay circles
-    const x = Math.cos(a) * z.r * sx, y = Math.sin(a) * z.r;
+    const x = Math.cos(a) * zr * sx, y = Math.sin(a) * zr;
     if (Math.abs(x) > w / 2 - half - 12 || Math.abs(y) > h / 2 - half - 12) continue;
     let clear = Infinity;
     for (const [px, py] of pts) clear = Math.min(clear, Math.hypot(x - px, y - py) - 10);
@@ -49,7 +52,7 @@ export function placeFind(fam, sky, { w = 600, h = 600, avoid = [], stretch = 1 
     clear -= half;
     // a small pull toward the zone's preferred direction (a shower's radiant is overhead), never enough to cover anything
     const pull = z.prefer != null ? -Math.abs(((deg - z.prefer + 540) % 360) - 180) / 18 : 0;
-    const score = Math.min(clear, 60) + pull;
+    const score = Math.min(clear, 60) + pull - (z.r - zr) / 40; // a small preference for the zone's own distance
     if (!best || score > best.score) best = { x, y, score, a };
   }
   if (!best) best = { x: 0, y: -z.r, a: -Math.PI / 2 };
@@ -62,13 +65,14 @@ export function placeFind(fam, sky, { w = 600, h = 600, avoid = [], stretch = 1 
 
 // The finds the sky shows (founder, Nov 23 2026): the rarest planet or moon, rarest meteor shower and rarest stellar event, placed stellar
 // first, then the shower, then the planet, each kept clear of the ones before it (an orbiting one moves, so it can't be avoided). A member
-// with none of those three kinds yet gets their single rarest find. Used by the page's sky and the season share card.
-const SHOWCASE_TIERS = [5, 4, 3];
+// with none of those three kinds yet gets their single rarest find. Used by the page's sky and the season share card. Order: the shower,
+// then the stellar event, then the planet.
+const SHOWCASE_TIERS = [4, 5, 3]; // the shower first, so its radiant always gets the top of the sky (founder, Nov 23 2026)
 export function placeShowcase(found, sky, { avoid = [], ...opts } = {}) {
   const all = Object.values(found || {}).sort((a, b) => b.oneIn - a.oneIn);
   const list = SHOWCASE_TIERS.map((t) => all.find((f) => FAMILIES[f.fam]?.tier === t)).filter(Boolean);
   if (!list.length && all[0]) list.push(all[0]);
-  const boxes = [...avoid];
+  const boxes = [[-90, -90, 90, 90], ...avoid]; // the core and its heat ticks
   return list.map((find) => {
     const place = placeFind(find.fam, sky, { ...opts, avoid: boxes });
     if (!place.orbit) { const h = place.size / 2; boxes.push([place.x - h, place.y - h, place.x + h, place.y + h]); }

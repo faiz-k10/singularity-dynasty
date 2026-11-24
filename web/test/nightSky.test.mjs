@@ -276,7 +276,8 @@ test("the rarest find takes its astronomical zone and never covers a constellati
     for (const f of FAMILIES) {
       const p = placeFind(f.id, sky, { w: 600, h: 600 });
       const z = zoneOf(f.id);
-      assert.ok(Math.abs(Math.hypot(p.x, p.y) - z.r) < 1, `${f.name} stays on its zone's radius`);
+      const d = Math.hypot(p.x, p.y); // a deep-sky find may move in to 0.76 of its zone to find an empty spot
+      assert.ok(z.far ? d > z.r * 0.76 - 1 && d < z.r + 1 : Math.abs(d - z.r) < 1, `${f.name} stays on its zone's radius`);
       for (const c of sky) for (const [x, y] of c.pts) assert.ok(Math.hypot(p.x - x, p.y - y) > z.size / 2, `${f.name} clear of ${c.name} (${season})`);
     }
   }
