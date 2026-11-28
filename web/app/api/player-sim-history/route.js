@@ -11,8 +11,7 @@ const TEASER_LIMIT = 10;
 
 export async function GET(request) {
   const supabase = await createClient();
-  const { user, tier } = await resolveTier(supabase);
-  if (!user) return NextResponse.json({ error: "sign in" }, { status: 401 }); // the tools need an account (app/SignUpGate.js)
+  const { tier } = await resolveTier(supabase); // signed out = Stargazer: the top-10 teaser, like the page
   const full = tier === "singularity";
   const ctx = await loadSimHistoryContext();
   if (!ctx) return NextResponse.json({ snapshots: [], peersByWeek: {} });

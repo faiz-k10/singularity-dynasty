@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { joinHref } from "@/lib/joinLink";
 import { UpgradeMoment, BuyInPrompt, startExplorerCheckout } from "./UpgradeMoment";
 import { startBackgroundTimer } from "@/lib/backgroundTimer";
 import { lookupSleeperTeams, saveTeam, deleteTeam, setBuyIn, refreshSavedTeams, pollLiveScores, getRosterNews, getMyGameLogs } from "./actions";
@@ -1087,7 +1088,7 @@ function Onboarding({ step, signedIn, welcome }) {
       </ol>
       {!signedIn && (
         <p className="onb-foot">
-          You can look up your leagues without an account. <Link href="/login?next=%2Fmy-team">Sign in or create a free account</Link> to save them.
+          You can look up your leagues without an account. <Link href={joinHref("/my-team")}>Sign in or create a free account</Link> to save them.
         </p>
       )}
     </section>
@@ -1649,7 +1650,7 @@ export default function MyTeamClient({
                       </div>
                     </div>
                     {!isSignedIn ? (
-                      <a href="/login" className="round-btn outline my-team-save-btn">
+                      <a href={joinHref("/my-team")} className="round-btn outline my-team-save-btn">
                         Sign In To Save
                       </a>
                     ) : atLimit ? (

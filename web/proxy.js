@@ -50,19 +50,11 @@ export async function proxy(request) {
 
   // Reading the session (getClaims) is what triggers a token refresh when one is due -- and, unlike getUser(), it verifies the
   // JWT locally instead of calling Supabase's Auth server on EVERY navigation.
-  const { data } = await supabase.auth.getClaims();
+  await supabase.auth.getClaims();
 
-  // The tools need an account (founder, Nov 19 2026): a signed-out visitor to any tool page gets the sign-up prompt (app/join) at the
-  // same address, and the tool page itself never runs, so none of its data is sent. The tool APIs check sign-in themselves.
-  if (!data?.claims?.sub && /^\/(tools|my-team)(\/|$)/.test(pathname)) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/join";
-    url.search = "";
-    const gate = withRef(NextResponse.rewrite(url));
-    response.cookies.getAll().forEach((c) => gate.cookies.set(c));
-    return gate;
-  }
-
+  // Signed-out visitors may use the tools at the free Stargazer level (founder, Nov 28 2026; they needed an account Nov 19-28): every
+  // tool page and API cuts its free slice on the server from the tier, and a signed-out visitor is Stargazer (lib/tier.js). Going to
+  // sign up anywhere shows the Explorer trial prompt (/join, app/SignUpGate.js).
   return response;
 }
 

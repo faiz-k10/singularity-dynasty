@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import Link from "next/link";
+import { joinHref } from "@/lib/joinLink";
 import ToolLink from "./ToolLink";
 import ToolsMenuRows from "./ToolsMenu";
 import ThemeToggle from "./ThemeToggle";
@@ -390,7 +391,7 @@ function HoleLookup({ signedIn, member }) {
             Most exposed to <b>{top.name}</b>, in {top.leagues} of {s.leagues}
           </p>
         )}
-        <ToolLink className="ehp-holebtn" href={signedIn ? "/my-team" : "/login?next=/my-team"}>
+        <ToolLink className="ehp-holebtn" href={signedIn ? "/my-team" : joinHref("/my-team")}>
           {signedIn ? "Open my leagues →" : "Save them, free →"}
         </ToolLink>
         <button type="button" className="ehp-again" onClick={() => setAnswer(null)}>
@@ -1002,7 +1003,7 @@ export default function EventHorizon({ signedIn, tier, member, invited, discount
             {[
               ["04", "Player Season Simulations", "Map the season. Spot the breakout.", "sims", "/tools/player-simulations"],
               ["05", "The Observatory", "All the numbers. All the charts.", "lab", "/tools/lab"],
-              ["06", "The Night Sky", "Chase the stars. Build your sky.", "sky", signedIn ? "/account/sky" : "/login?next=/account/sky"],
+              ["06", "The Night Sky", "Chase the stars. Build your sky.", "sky", signedIn ? "/account/sky" : joinHref("/account/sky")],
             ].map(([no, name, h, k, href], i) => (
               <li key={k}>
                 <OrbitIcon rings={i + 3} />

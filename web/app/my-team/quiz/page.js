@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { joinHref } from "@/lib/joinLink";
 import InteractiveScript from "../../InteractiveScript";
 import { createClient } from "@/lib/supabase/server";
 import { loadInsight, GM_ARCHETYPE_QUESTIONS } from "@/lib/insights";
@@ -41,7 +42,7 @@ export default async function GmArchetypeQuizPage() {
         {!user ? (
           <div className="tool-empty">
             <p>
-              <Link href="/login">Sign in</Link> to take the quiz and save your result.
+              <Link href={joinHref("/my-team/quiz")}>Sign in</Link> to take the quiz and save your result.
             </p>
           </div>
         ) : (

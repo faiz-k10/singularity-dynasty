@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { joinHref } from "@/lib/joinLink";
 import { ownedFor, myPlayerCount } from "@/lib/myPlayers";
 import { ACQUIRED_LABEL } from "@/lib/acquisition";
 
@@ -49,9 +51,10 @@ export function MyPlayersNote({ mine, view, gated }) {
 // `compact`: just the All players / My players switch (and the team picker once My players is on), for a toolbar row;
 // the count line is MyPlayersNote.
 export function MyPlayersFilter({ mine, view, gated, compact }) {
+  const here = usePathname();
   if (!mine?.signedIn) {
     return (
-      <Link href="/login" prefetch={false} className="my-filter-cta">
+      <Link href={joinHref(here)} prefetch={false} className="my-filter-cta">
         ★ Sign in to see your players
       </Link>
     );
@@ -134,11 +137,12 @@ export const mineClass = (owned) => (owned ? " is-mine" : "");
 // The far-right panel's empty state, for a player who is on none of the viewer's saved teams (or a viewer with no
 // saved teams / not signed in). `status`: "signedOut" | "noTeams" | "ready".
 export function MyEmpty({ status }) {
+  const here = usePathname();
   return (
     <div className="mine-strip mine-strip-vertical">
       <span className="weekly-panel-title">Your player</span>
       {status === "signedOut" ? (
-        <Link href="/login" prefetch={false} className="mine-empty-note">Sign in to see which of your teams he is on</Link>
+        <Link href={joinHref(here)} prefetch={false} className="mine-empty-note">Sign in to see which of your teams he is on</Link>
       ) : status === "noTeams" ? (
         <Link href="/my-team" prefetch={false} className="mine-empty-note">Add your team to see where he is</Link>
       ) : (

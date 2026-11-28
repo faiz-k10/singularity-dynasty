@@ -1,6 +1,7 @@
 "use client";
 
 import { SHARE_W, SHARE_H } from "@/lib/labShare";
+import { joinHref } from "@/lib/joinLink";
 import { drawBrand } from "./brandCanvas";
 
 // Pictures of what is on screen, for sharing: The Observatory's charts (tools/lab/LabExport.js) and the player dashboards (DashboardShareButton.js).
@@ -178,6 +179,10 @@ export async function uploadShare(card, { title, caption, view }) {
   form.append("view", view);
   const res = await fetch("/api/lab-share", { method: "POST", body: form });
   const body = await res.json().catch(() => ({}));
+  if (res.status === 401) { // sharing needs an account: a signed-out visitor goes to the sign-up prompt and comes back here
+    window.location.assign(joinHref(window.location.pathname + window.location.search));
+    throw new Error("Sign up to share (a free account is enough).");
+  }
   if (!res.ok || !body.url) throw new Error(body.error || "Couldn't create the share link.");
   return body.url;
 }

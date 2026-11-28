@@ -1,13 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 
-// What a signed-out visitor sees in place of any tool (founder, Nov 19 2026: "make all the tools inaccessible and instead show the
-// sign up prompt unless a user has at least signed up for the free account"). proxy.js shows it (app/join) in place of
-// the tool page, so none of the tool's data is sent. The link brings them back to this tool after signing up / in.
-export default function SignUpGate() {
-  const next = usePathname() || "/"; // the tool's own address (the proxy rewrites, it doesn't redirect);
+// The sign-up prompt (app/join): 14 days of Explorer, no card. Signed-out visitors use the tools at the free level; any time they go to
+// sign up they land here (founder, Nov 28 2026). `next` is where the buttons bring them back after signing up / in.
+export default function SignUpGate({ next = "/my-team" }) {
   const href = (mode) => `/login?mode=${mode}&next=${encodeURIComponent(next)}`; // each button opens only its own form
   return (
     <main id="main-content" className="wrap auth-wrap">

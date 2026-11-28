@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { joinHref } from "@/lib/joinLink";
 import { createClient } from "@/lib/supabase/server";
 import { getAuthUser } from "@/lib/authUser";
 import { loadSky } from "@/lib/nightSkyStore";
@@ -21,7 +22,7 @@ const norm = (n) => String(n || "").toLowerCase().replace(/[^a-z]/g, "");
 export default async function SkyPage() {
   const supabase = await createClient();
   const user = await getAuthUser(supabase);
-  if (!user) redirect("/login?next=%2Faccount%2Fsky");
+  if (!user) redirect(joinHref("/account/sky"));
 
   const [sky, { data: teams }] = await Promise.all([
     loadSky(user.id),

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { joinHref } from "@/lib/joinLink";
 import { notFound } from "next/navigation";
 import SiteHeader from "../../SiteHeader";
 import { SHARE_BUCKET, SHARE_W, SHARE_H, isShareId, shareSource } from "@/lib/labShare";
@@ -54,7 +55,7 @@ export default async function SharedChartPage({ params }) {
           <img src={share.image} alt={share.title} width={SHARE_W} height={SHARE_H} />
         </figure>
         <div className="share-actions">
-          <Link href={sky ? "/login?next=%2Faccount%2Fsky" : share.view} className="btn-primary">
+          <Link href={sky ? joinHref("/account/sky") : share.view} className="btn-primary">
             {src.cta}
           </Link>
           <Link href="/#pricing" className="btn-ghost">
