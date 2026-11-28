@@ -22,8 +22,6 @@ function loadScript() {
   return loading;
 }
 
-export const turnstileKey = KEY;
-
 export default function Turnstile({ onToken, action }) {
   const ref = useRef(null);
   const cb = useRef(onToken);

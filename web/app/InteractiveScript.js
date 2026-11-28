@@ -1,8 +1,11 @@
 "use client";
 
-import { startCheckout } from "@/lib/startCheckout";
-
 import { useEffect } from "react";
+
+// Page behaviour shared by the tool, account and legal pages (mounted by SiteHeader and the tool pages; the landing page has its
+// own, EventHorizon.js): landing on a #hash, the phone menu, the fade-in of .reveal blocks, drag-to-scroll on wide tables and the
+// fixed header's height. (The old landing page's scrollspy, scroll meter, tool selector, billing toggle and checkout buttons were
+// removed Nov 28 2026: nothing renders their elements any more.)
 
 export default function InteractiveScript() {
   useEffect(() => {
@@ -90,102 +93,6 @@ export default function InteractiveScript() {
       });
     }
 
-    /* ---- orbit side-nav + top nav bar: smooth scroll + scrollspy ----
-       Top-nav-bar/radial-menu links point at /#section (not bare #section)
-       so they work as a real navigation back to the homepage from any other
-       page. Only intercept + smooth-scroll when the link's path matches
-       where we already are -- otherwise let the browser do a normal
-       cross-page navigation to /#section. */
-    const orbitDots = document.querySelectorAll(".orbit-dot");
-    const topNavLinks = document.querySelectorAll(
-      ".top-nav-bar a[href*='#']:not(.tn-cta)"
-    );
-    const spyLinks = document.querySelectorAll(
-      ".orbit-dot, .top-nav-bar a[href*='#'], .radial-menu a[href*='#']"
-    );
-    spyLinks.forEach((link) => {
-      link.addEventListener(
-        "click",
-        (e) => {
-          const href = link.getAttribute("href");
-          const hashIndex = href.indexOf("#");
-          if (hashIndex === -1) return;
-          const path = href.slice(0, hashIndex) || "/";
-          if (path !== window.location.pathname) return;
-          const target = document.querySelector(href.slice(hashIndex));
-          if (target) {
-            e.preventDefault();
-            target.scrollIntoView({
-              behavior: reducedMotion ? "auto" : "smooth",
-              block: "start",
-            });
-          }
-        },
-        { signal }
-      );
-    });
-    const spySections = ["hero", "tools", "feed", "pricing"]
-      .map((id) => document.getElementById(id))
-      .filter(Boolean);
-    if ("IntersectionObserver" in window && spySections.length) {
-      const spy = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              const id = entry.target.id;
-              orbitDots.forEach((dot) => {
-                dot.classList.toggle(
-                  "active",
-                  dot.getAttribute("href") === "#" + id
-                );
-              });
-              topNavLinks.forEach((link) => {
-                link.classList.toggle(
-                  "active",
-                  link.getAttribute("href") === "#" + id
-                );
-              });
-            }
-          });
-        },
-        { rootMargin: "-45% 0px -45% 0px", threshold: 0 }
-      );
-      spySections.forEach((s) => spy.observe(s));
-      observers.push(spy);
-    }
-
-    /* ---- event horizon scroll meter ---- */
-    const ehFill = document.getElementById("ehFill");
-    const ehPct = document.getElementById("ehPct");
-    const ehCircumference = 2 * Math.PI * 22;
-    if (ehFill) {
-      ehFill.style.strokeDasharray = ehCircumference;
-    }
-    let ehTicking = false;
-    function updateEH() {
-      const maxScroll =
-        document.documentElement.scrollHeight - window.innerHeight;
-      const frac = maxScroll > 0 ? Math.min(1, window.scrollY / maxScroll) : 0;
-      if (ehFill) {
-        ehFill.style.strokeDashoffset = ehCircumference * (1 - frac);
-      }
-      if (ehPct) {
-        ehPct.textContent = Math.round(frac * 100) + "%";
-      }
-      ehTicking = false;
-    }
-    window.addEventListener(
-      "scroll",
-      () => {
-        if (!ehTicking) {
-          requestAnimationFrame(updateEH);
-          ehTicking = true;
-        }
-      },
-      { passive: true, signal }
-    );
-    updateEH();
-
     /* ---- scroll reveal ----
        threshold:0.15 means an element only earns "in" once 15% of ITS
        OWN height has crossed into view -- fine for a user scrolling
@@ -218,76 +125,6 @@ export default function InteractiveScript() {
       revealEls.forEach((el) => ro.observe(el));
       observers.push(ro);
     }
-
-    /* ---- orbital tool selector ---- */
-    const nodes = document.querySelectorAll(".node");
-    const hubPanels = document.querySelectorAll(".hub-panel");
-    nodes.forEach((node) => {
-      node.addEventListener(
-        "click",
-        () => {
-          nodes.forEach((n) => n.classList.remove("active"));
-          node.classList.add("active");
-          const idx = node.getAttribute("data-panel");
-          hubPanels.forEach((p) => p.classList.remove("active"));
-          const match = document.querySelector(
-            `.hub-panel[data-panel="${idx}"]`
-          );
-          if (match) match.classList.add("active");
-        },
-        { signal }
-      );
-    });
-
-    /* ---- billing toggle ---- */
-    // Annual is the default (the page renders with it on): the engaged player plays all year, and it is the cheaper way in.
-    const toggle = document.getElementById("billingToggle");
-    let annual = toggle ? toggle.classList.contains("on") : true;
-    if (toggle) {
-      toggle.addEventListener(
-        "click",
-        () => {
-          annual = !annual;
-          toggle.classList.toggle("on", annual);
-          toggle.setAttribute("aria-pressed", String(annual));
-          document.querySelectorAll(".price-amt").forEach((el) => {
-            el.textContent = annual
-              ? el.dataset.annual
-              : el.dataset.monthly;
-          });
-          document.querySelectorAll(".round-bill").forEach((el) => {
-            el.textContent = annual ? el.dataset.annual : el.dataset.monthly;
-          });
-        },
-        { signal }
-      );
-    }
-
-
-    /* ---- stripe checkout ---- */
-    document.querySelectorAll("[data-plan]").forEach((btn) => {
-      btn.addEventListener(
-        "click",
-        async (e) => {
-          e.preventDefault();
-          const plan = btn.getAttribute("data-plan");
-          const originalText = btn.textContent;
-          if (plan !== "stargazer") {
-            btn.textContent = "Redirecting…";
-            btn.style.pointerEvents = "none";
-          }
-          try {
-            await startCheckout(plan, annual ? "annual" : "monthly");
-          } catch (err) {
-            console.error(err);
-            alert("Something went wrong starting checkout. Please try again.");
-            btn.textContent = originalText;
-            btn.style.pointerEvents = "";
-          }
-        },
-        { signal }
-      );
-    });
 
     /* ---- click-and-drag horizontal scroll for wide data tables ---- */
     // The scroll-affordance problem isn't that these tables can't scroll

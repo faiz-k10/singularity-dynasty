@@ -33,7 +33,6 @@
 // Short labels because the label column is ~110px; the full explanation is in the hover tip.
 export const f1 = (v) => v.toFixed(1);
 export const f2 = (v) => v.toFixed(2);
-export const f3 = (v) => v.toFixed(3);
 export const pc1 = (v) => `${v.toFixed(1)}%`;
 export const signed2 = (v) => `${v >= 0 ? "+" : ""}${v.toFixed(2)}`;
 export const signed3 = (v) => `${v >= 0 ? "+" : ""}${v.toFixed(3)}`;
