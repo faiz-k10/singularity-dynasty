@@ -28,6 +28,15 @@ float noise(vec2 p){
   return mix(mix(hash(i), hash(i + vec2(1, 0)), u.x), mix(hash(i + vec2(0, 1)), hash(i + vec2(1, 1)), u.x), u.y);
 }
 float fbm(vec2 p){ float s = 0.0, a = 0.5; for (int i = 0; i < 5; i++){ s += a * noise(p); p = p * 2.03 + 17.1; a *= 0.5; } return s; }
+float noise3(vec3 p){
+  vec3 i = floor(p), f = fract(p); vec3 u = f * f * (3.0 - 2.0 * f);
+  float a = hash3(i), b = hash3(i + vec3(1, 0, 0)), c = hash3(i + vec3(0, 1, 0)), d = hash3(i + vec3(1, 1, 0));
+  float e = hash3(i + vec3(0, 0, 1)), g = hash3(i + vec3(1, 0, 1)), h = hash3(i + vec3(0, 1, 1)), k = hash3(i + vec3(1, 1, 1));
+  return mix(mix(mix(a, b, u.x), mix(c, d, u.x), u.y), mix(mix(e, g, u.x), mix(h, k, u.x), u.y), u.z);
+}
+float fbm3(vec3 p){ float s = 0.0, a = 0.5; for (int i = 0; i < 5; i++){ s += a * noise3(p); p = p * 2.03 + 17.1; a *= 0.5; } return s; }
+// the disk's gas at (log radius, angle), sampled on a circle so it wraps round with no seam; k = features per radian
+float ringNoise(float lr, float ang, float k, float lk){ return fbm3(vec3(cos(ang) * k, sin(ang) * k, lr * lk)); }
 
 // the stars behind, by direction (so the lensing bends them): sparse sharp points in three sizes and a faint dust band
 vec3 sky(vec3 d){
@@ -45,7 +54,7 @@ vec3 sky(vec3 d){
     }
   }
   float band = exp(-pow(d.z * 2.4 + 0.35 * sin(atan(d.y, d.x) * 2.0), 2.0) * 3.0);
-  c += vec3(0.05, 0.035, 0.03) * band * (0.4 + fbm(vec2(atan(d.y, d.x) * 6.0, d.z * 9.0)));
+  c += vec3(0.05, 0.035, 0.03) * band * (0.4 + fbm3(d * 6.0)); // sampled by direction, so no seam where the angle wraps
   return c;
 }
 
@@ -74,10 +83,9 @@ vec4 disk(vec3 q, vec3 v){
   float phiW = atan(q.y, q.x) - uAz;                                  // the disk's own angle, so its gas turns with the scene
   float omega = 1.6 * pow(r, -1.5);                                   // Keplerian: inner gas laps the outer
   // gas sheared along its orbit: long filaments in angle, broken up by a second warped layer so they never read as plain rings
-  float ang = phiW - uTime * omega * 1.2;
-  vec2 uv = vec2(log(r) * 9.0, ang * 2.0);
-  vec2 warp = vec2(fbm(uv * 0.6 + 7.0), fbm(uv * 0.6 - 3.0)) - 0.5;
-  float turb = fbm(uv + warp * 2.2) * 0.7 + fbm(vec2(log(r) * 22.0, ang * 6.0) + warp * 3.0) * 0.5;
+  float ang = phiW - uTime * omega * 1.2, lr = log(r);
+  float warp = ringNoise(lr + 3.1, ang, 1.2, 5.4) - 0.5;                       // bends the filaments so they never read as rings
+  float turb = ringNoise(lr + warp * 0.25, ang + warp * 1.1, 2.0, 9.0) * 0.7 + ringNoise(lr + warp * 0.35, ang + warp * 1.6, 6.0, 22.0) * 0.5;
   float streaks = 0.28 + 1.35 * smoothstep(0.32, 0.82, turb);           // dark lanes and bright filaments
   float edge = smoothstep(uRin, uRin * 1.08, r) * (1.0 - smoothstep(uRout * 0.45, uRout, r));
   float gg = clamp(g, 0.35, 1.7);
@@ -106,6 +114,7 @@ void main(){
     v = normalize(v + toC * (2.0 / b));
   } else {
     // jump straight to a sphere well outside the disk, then march the bent path
+    vec3 toC0 = normalize(-p - v * dot(-p, v)); // toward the hole, square to the ray
     float tc = dot(-p, v), R0 = uRout * 1.3;
     float t0 = tc - sqrt(max(R0 * R0 - b * b, 0.0));
     if (t0 > 0.0) p += v * t0;
@@ -127,6 +136,9 @@ void main(){
       }
       p = pn;
     }
+    // the march starts and ends on the sphere R0; the weak bend picked up outside it (2/b of it in all, both ends) is added here,
+    // so a star moves smoothly across the switch to straight rays at b = 1.25 uRout instead of jumping
+    if (!hole) v = normalize(normalize(v) + toC0 * (2.0 / b) * (1.0 - sqrt(max(1.0 - (b * b) / (R0 * R0), 0.0))));
     v = normalize(v);
   }
   if (!hole) col += (1.0 - alpha) * sky(v) * 0.9;
