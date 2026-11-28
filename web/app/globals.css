@@ -5970,6 +5970,7 @@ details.acct-danger > summary.acct-h{color:var(--down)}
 /* beside the 3D map: the key moves to the top and the spread stands upright under it (SpreadColumn, DynastyBoard.js) */
 .dyb-overview.is-orbit{grid-template-columns:270px minmax(0,1fr);}
 .dyb-overview.is-orbit .dyb-overview-key{justify-content:flex-start;}
+.dyb-overview.is-orbit .dyb-3d-btn{margin-top:14px;} /* under the upright plot */
 .dyb-col{flex:1; min-height:220px; display:grid; grid-template-columns:20px minmax(0,1fr) 26px 96px; margin-top:18px; padding:6px 0;}
 .dyb-col-y{position:relative;}
 .dyb-col-y span{position:absolute; right:5px; transform:translateY(-50%); font-family:var(--font-mono), monospace; font-size:9px; color:var(--star-dim);}

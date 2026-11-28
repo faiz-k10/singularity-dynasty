@@ -358,13 +358,14 @@ export default function DynastyBoard({ rows, meta, mine, gated }) {
               <dt>Tiers</dt><dd>{tiers.length}</dd>
               <dt>Groups</dt><dd>{groups.length}</dd>
             </dl>
+            {/* 3D mode: the upright plot, then the button under it */}
+            {orbit && <SpreadColumn L={L} tiers={tiers} groups={groups} openId={open?.id} onPick={pickAndShow} />}
             <button type="button" className={`dyb-3d-btn${orbit ? " is-on" : ""}`} aria-pressed={orbit} onClick={() => setOrbitView(!orbit)}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
                 {orbit ? <path d="M3 18h18M6 18V9M10 18v-5M14 18V6M18 18v-8" /> : <><circle cx="12" cy="12" r="2.6" fill="currentColor" stroke="none" /><ellipse cx="12" cy="12" rx="9.5" ry="3.6" transform="rotate(-18 12 12)" /><path d="M12 2.5v4M12 17.5v4" /></>}
               </svg>
               <span>{orbit ? "2D axis view" : "3D orbit view"}</span>
             </button>
-            {orbit && <SpreadColumn L={L} tiers={tiers} groups={groups} openId={open?.id} onPick={pickAndShow} />}
           </div>
           {orbit
             ? <DynastyOrbit L={L} tiers={tiers} groups={groups} hit={hit} openId={open?.id} onPick={pickAndShow} />
