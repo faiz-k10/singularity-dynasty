@@ -35,18 +35,36 @@ float noise3(vec3 p){
   return mix(mix(mix(a, b, u.x), mix(c, d, u.x), u.y), mix(mix(e, g, u.x), mix(h, k, u.x), u.y), u.z);
 }
 float fbm3(vec3 p){ float s = 0.0, a = 0.5; for (int i = 0; i < 5; i++){ s += a * noise3(p); p = p * 2.03 + 17.1; a *= 0.5; } return s; }
-// the disk's swirling gas at (log radius, angle): filaments sheared along the orbit, broken up by a warped second layer
-float gas(float lr, float ang){
-  vec2 uv = vec2(lr * 9.0, ang * 2.0);
-  vec2 warp = vec2(fbm(uv * 0.6 + 7.0), fbm(uv * 0.6 - 3.0)) - 0.5;
-  return fbm(uv + warp * 2.2) * 0.7 + fbm(vec2(lr * 22.0, ang * 6.0) + warp * 3.0) * 0.5;
+// noise that repeats exactly once round the disk: the angle axis is measured in cells per turn and its lattice wraps (mod per),
+// so the gas has no seam where the angle wraps and needs no blending; octaves double both the frequency and the period
+float hashP(vec2 i, float per){ return hash(vec2(i.x, mod(i.y, per))); }
+float noiseP(vec2 p, float per){
+  vec2 i = floor(p), f = fract(p); vec2 u = f * f * (3.0 - 2.0 * f);
+  return mix(mix(hashP(i, per), hashP(i + vec2(1, 0), per), u.x), mix(hashP(i + vec2(0, 1), per), hashP(i + vec2(1, 1), per), u.x), u.y);
 }
-// ...joined round the circle with no seam: the pattern at angle a fades into the same pattern one turn back, so the two ends
-// of the turn are the same value; the contrast lost in the blend is put back so the swirl looks the same everywhere
-float gasRing(float lr, float ang){
-  float a = mod(ang, 6.2831853), t = a / 6.2831853;
-  float b = mix(gas(lr, a), gas(lr, a - 6.2831853), t);
-  return 0.56 + (b - 0.56) / sqrt((1.0 - t) * (1.0 - t) + t * t);
+float fbmP(vec2 p, float per){ float s = 0.0, a = 0.5; for (int i = 0; i < 4; i++){ s += a * noiseP(p, per); p = p * 2.0 + vec2(17.1, 0.0); per *= 2.0; a *= 0.5; } return s; }
+// the disk's swirling gas at (log radius, angle in radians): filaments sheared along the orbit, broken up by a warped second
+// layer; "seed" gives each flow cycle a fresh pattern
+float gas(float lr, float ang, float seed){
+  float y = ang / 6.2831853; // turns
+  vec2 warp = vec2(fbmP(vec2(lr * 5.4 + 7.0 + seed, y * 7.0), 7.0), fbmP(vec2(lr * 5.4 - 3.0 + seed, y * 7.0 + 2.0), 7.0)) - 0.5;
+  float t1 = fbmP(vec2(lr * 9.0 + seed + warp.x * 2.2, y * 12.0 + warp.y * 2.2), 12.0);
+  float t2 = fbmP(vec2(lr * 22.0 + seed + warp.x * 3.0, y * 36.0 + warp.y * 3.0), 36.0);
+  return t1 * 0.7 + t2 * 0.5;
+}
+// ...and kept flowing without winding up. Inner gas laps outer gas (Keplerian), so a pattern carried along for long gets sheared
+// into tight concentric rings within a minute (the "winding problem"). Two copies of the swirl run on cycles of FLOW seconds,
+// half a cycle apart: each is carried round only for its own cycle, fades out before it winds too far and comes back as a fresh
+// pattern while the other one carries the picture (the flow-map trick used for animated fluids)
+const float FLOW = 6.0;
+float gasFlow(float lr, float phi, float omega){
+  float ph = uTime / FLOW;
+  float pA = fract(ph), pB = fract(ph + 0.5);
+  float a1 = gas(lr, phi - pA * FLOW * omega * 1.2, floor(ph) * 7.31);
+  float a2 = gas(lr, phi - pB * FLOW * omega * 1.2, floor(ph + 0.5) * 7.31 + 3.7);
+  float wA = 1.0 - abs(2.0 * pA - 1.0), wB = 1.0 - wA;
+  float b = a1 * wA + a2 * wB;
+  return 0.52 + (b - 0.52) / sqrt(wA * wA + wB * wB);
 }
 
 // the stars behind, by direction (so the lensing bends them): sparse sharp points in three sizes and a faint dust band
@@ -94,7 +112,7 @@ vec4 disk(vec3 q, vec3 v){
   float phiW = atan(q.y, q.x) - uAz;                                  // the disk's own angle, so its gas turns with the scene
   float omega = 1.6 * pow(r, -1.5);                                   // Keplerian: inner gas laps the outer
   // gas sheared along its orbit: long filaments in angle, broken up by a second warped layer so they never read as plain rings
-  float turb = gasRing(log(r), phiW - uTime * omega * 1.2);
+  float turb = gasFlow(log(r), phiW, omega);
   float streaks = 0.28 + 1.35 * smoothstep(0.32, 0.82, turb);           // dark lanes and bright filaments
   float edge = smoothstep(uRin, uRin * 1.08, r) * (1.0 - smoothstep(uRout * 0.45, uRout, r));
   float gg = clamp(g, 0.35, 1.7);
