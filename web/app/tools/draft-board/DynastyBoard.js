@@ -1,9 +1,10 @@
 "use client";
 
-import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import PositionBadge from "../PositionBadge";
 import TeamBadge from "../TeamBadge";
 import DynastyProfile from "./DynastyProfile";
+import DynastyOrbit from "./DynastyOrbit";
 import { FORMATS, MODES, MOVE_MIN, viewBoard } from "@/lib/dynastyBoard";
 import { normalizePlayerName } from "@/lib/portfolio";
 import { MyPlayersFilter, MyPlayersNote, mineClass, useMyView } from "../MyPlayers";
@@ -13,6 +14,20 @@ const nameOfRow = (r) => r.name;
 // the two context columns: short words, the full sentence for screen readers
 
 const POSITIONS = ["QB", "RB", "WR", "TE"];
+
+// 2D spread or 3D accretion map, remembered in this browser (read like My Team's remembered username: no setState in an effect)
+const ORBIT_KEY = "dyb.orbit";
+function readOrbit() {
+  try { return localStorage.getItem(ORBIT_KEY) === "1"; } catch { return false; }
+}
+function subscribeOrbit(fn) {
+  window.addEventListener(ORBIT_KEY, fn);
+  return () => window.removeEventListener(ORBIT_KEY, fn);
+}
+function setOrbitView(on) {
+  try { localStorage.setItem(ORBIT_KEY, on ? "1" : "0"); } catch {}
+  window.dispatchEvent(new Event(ORBIT_KEY));
+}
 
 // One toggle: a recessed track of buttons, the picked one lit (the site's .board-toggle look).
 function Toggle({ label, value, options, onChange }) {
@@ -184,6 +199,8 @@ export default function DynastyBoard({ rows, meta, mine, gated }) {
   const pos = picked.length === 1 ? picked[0] : "ALL";
   const posMask = picked.length > 1 && picked.length < POSITIONS.length ? new Set(picked) : null;
   const [pickedId, setPickedId] = useState(null);
+  // the overview as the 2D spread or the 3D accretion map (DynastyOrbit.js); the choice is remembered in this browser
+  const orbit = useSyncExternalStore(subscribeOrbit, readOrbit, () => false);
   const [query, setQuery] = useState("");
   const listRef = useRef(null);
   // Full screen: just the controls, the list and the profile -- no page header or spread. Escape leaves it; the page doesn't scroll behind it.
@@ -269,8 +286,16 @@ export default function DynastyBoard({ rows, meta, mine, gated }) {
               <dt>Tiers</dt><dd>{tiers.length}</dd>
               <dt>Groups</dt><dd>{groups.length}</dd>
             </dl>
+            <button type="button" className={`dyb-3d-btn${orbit ? " is-on" : ""}`} aria-pressed={orbit} onClick={() => setOrbitView(!orbit)}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
+                {orbit ? <path d="M3 18h18M6 18V9M10 18v-5M14 18V6M18 18v-8" /> : <><circle cx="12" cy="12" r="2.6" fill="currentColor" stroke="none" /><ellipse cx="12" cy="12" rx="9.5" ry="3.6" transform="rotate(-18 12 12)" /><path d="M12 2.5v4M12 17.5v4" /></>}
+              </svg>
+              <span>{orbit ? "2D axis view" : "3D orbit view"}</span>
+            </button>
           </div>
-          <Spread L={L} tiers={tiers} groups={groups} openId={open?.id} onPick={pickAndShow} />
+          {orbit
+            ? <DynastyOrbit L={L} tiers={tiers} groups={groups} hit={hit} openId={open?.id} onPick={pickAndShow} />
+            : <Spread L={L} tiers={tiers} groups={groups} openId={open?.id} onPick={pickAndShow} />}
         </section>
       )}
 

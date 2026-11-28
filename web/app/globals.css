@@ -5992,6 +5992,50 @@ details.acct-danger > summary.acct-h{color:var(--down)}
 .dyb-spread-glabels{position:absolute; left:0; right:0; top:11px; height:12px; font-size:10px; pointer-events:none;} /* group names under their brackets, laid out by useLabelRow (DynastyBoard.js) so none overlap */
 .dyb-spread-groups .dyb-spread-glabels{top:11px; height:12px; border:0;} /* beats the bracket rule (.dyb-spread-groups div) */
 .dyb-spread-glabels span{position:absolute; top:0; font-family:var(--font-mono), monospace; font-size:inherit; letter-spacing:.06em; text-transform:uppercase; color:var(--star-dim); white-space:nowrap; line-height:1;}
+/* the 2D / 3D switch at the foot of the overview's left column, and the 3D accretion map (DynastyOrbit.js) */
+.dyb-3d-btn{display:flex; align-items:center; gap:8px; margin-top:16px; padding:8px 10px; border:1px solid var(--rule); border-radius:var(--r-sm); background:transparent; color:var(--star); font-family:var(--font-mono), monospace; font-size:11.5px; letter-spacing:.04em; text-transform:uppercase; cursor:pointer;}
+.dyb-3d-btn svg{width:18px; height:18px; flex:none;}
+.dyb-3d-btn:hover{border-color:var(--star-dim);}
+.dyb-3d-btn.is-on{background:var(--star); color:var(--void); border-color:var(--star);}
+.dyo{position:relative; min-width:0; height:560px; border:1px solid var(--rule); background:radial-gradient(ellipse at 50% 55%, rgba(var(--ember-rgb), .06), transparent 60%);}
+.dyo-canvas{display:block; width:100%; height:100%; touch-action:none; outline:none;}
+.dyo-canvas:focus-visible{box-shadow:inset 0 0 0 2px var(--horizon-gold);}
+.dyo-hud{position:absolute; pointer-events:none;}
+.dyo-hud-tl{top:10px; left:12px; display:flex; flex-direction:column; gap:3px; font-size:10px; letter-spacing:.05em; color:var(--star-dim); text-transform:uppercase;}
+.dyo-hud-tl b{font-family:var(--font-display); font-size:17px; font-weight:700; letter-spacing:.12em; color:var(--star); margin-bottom:3px; display:flex; align-items:center; gap:8px;}
+.dyo-hud-tl b::before{content:""; width:7px; height:7px; background:var(--ember); animation:dyo-blink 2.4s steps(2, jump-none) infinite;}
+@keyframes dyo-blink{50%{opacity:.25;}}
+.dyo-hud-tr{top:10px; right:12px; display:flex; flex-direction:column; align-items:flex-end; gap:6px; pointer-events:auto;}
+.dyo-presets button{font-family:var(--font-mono), monospace; font-size:11px; padding:5px 10px;}
+.dyo-tools{display:flex; gap:4px;}
+.dyo-btn{min-width:28px; height:26px; padding:0 8px; border:1px solid var(--rule); border-radius:var(--r-sm); background:var(--void-panel); color:var(--star); font-family:var(--font-mono), monospace; font-size:11px; cursor:pointer;}
+.dyo-btn:hover{border-color:var(--star-dim);}
+.dyo-btn.is-on{color:var(--horizon-gold); border-color:var(--horizon-gold);}
+.dyo-legend{bottom:10px; left:12px; margin:0; padding:8px 10px; list-style:none; display:flex; flex-direction:column; gap:4px; font-size:10.5px; color:var(--star); background:color-mix(in srgb, var(--void-panel) 78%, transparent); border:1px solid var(--rule);}
+.dyo-legend li{display:flex; align-items:center; gap:8px;}
+.dyo-k{display:inline-block; width:14px; height:10px; flex:none; position:relative;}
+.dyo-k-r{background:radial-gradient(circle at 0 50%, var(--star) 0 3px, transparent 3.5px), linear-gradient(90deg, var(--star-dim), transparent) 4px 50%/10px 1px no-repeat;}
+.dyo-k-a{border-top:1.5px solid var(--star-dim); border-radius:50% 50% 0 0;}
+.dyo-k-z{background:linear-gradient(var(--horizon-gold) 0 0) 4px 0/2px 50% no-repeat, linear-gradient(var(--down) 0 0) 8px 100%/2px 50% no-repeat;}
+.dyo-k-t{border:1px dashed var(--star-dim); border-radius:50%;}
+.dyo-hud-br{bottom:10px; right:12px; max-width:260px;}
+.dyo-hint{font-size:10px; letter-spacing:.05em; color:var(--star-dim); text-transform:uppercase;}
+.dyo-card{padding:9px 12px; background:var(--void-panel); border:1px solid var(--rule); border-top:2px solid var(--ember); font-size:11px; color:var(--star); min-width:200px;}
+.dyo-card-name{font-family:var(--font-body); font-weight:700; font-size:15px; margin-bottom:2px;}
+.dyo-card-sub{color:var(--star-dim); font-size:10px; margin-bottom:6px;}
+.dyo-card dl{display:grid; grid-template-columns:auto 1fr; gap:2px 14px; margin:0;}
+.dyo-card dt{color:var(--star-dim);} .dyo-card dd{margin:0; text-align:right;}
+.dyo-card .is-up{color:var(--up);} .dyo-card .is-down{color:var(--down);}
+@media (max-width:720px){ /* phones: the controls get their own row under the title and the legend moves under the map */
+  .dyo{height:auto; display:flex; flex-direction:column;}
+  .dyo-canvas{height:400px; order:1;}
+  .dyo-hud-tl span{display:none;}
+  .dyo-hud-tr{top:36px; left:12px; right:12px; flex-direction:row; justify-content:space-between; align-items:center;}
+  .dyo-presets button, .dyo-btn{white-space:nowrap; padding:4px 7px; font-size:10.5px;}
+  .dyo-legend{position:static; order:2; border:0; border-top:1px solid var(--rule); background:none; font-size:10px;}
+  .dyo-hud-br{display:none;}
+  .dyb-3d-btn{margin-top:0;}
+}
 
 /* the list on the left (its own scroll), the picked player's profile in a pane on the right (its own scroll). The profile moved under the
    list for an hour on Nov 16 2026 and came back here (founder); its charts and dial now take the pane's full width. */
