@@ -12,11 +12,15 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { MOVE_MIN } from "@/lib/dynastyBoard";
+import { createBlackHole } from "./blackHoleGL";
 
 const SWEEP = (300 / 180) * Math.PI; // the age arc; the 60-degree gap left over is where the score ruler sits
 const GAP_MID = -Math.PI / 2; // the ruler points at the viewer when the camera's azimuth is 0
 const A0 = GAP_MID + (Math.PI * 2 - SWEEP) / 2; // the arc starts just after the gap and runs anticlockwise
-const R_IN = 0.2, R_OUT = 1, HOLE = 0.1, H_MAX = 0.46, FOCAL = 3.4;
+const R_IN = 0.2, R_OUT = 1, H_MAX = 0.46, FOCAL = 3.4;
+// the ray-traced hole (blackHoleGL.js): Schwarzschild radius in world units, the glowing disk from the innermost stable orbit
+// (3 rs) out to 12 rs, about half the data disk, so its fire fades out under the middle tiers; its shadow is 2.6 rs across, which is where the 2D fallback draws its hole
+const RS = 0.045, DISK_IN = 3, DISK_OUT = 12, HOLE = 2.6 * RS;
 // camera presets: Top reads score (in / out) against age (round the dial) with the ruler at the bottom; Edge-on turns the ruler
 // sideways and looks along the disk, so height (the move) is all you see
 const PRESETS = { orbit: { el: 0.52, az: -0.8, label: "Orbit" }, top: { el: 1.5, az: 0, label: "Top" }, edge: { el: 0.03, az: Math.PI / 2, label: "Edge-on" } };
@@ -24,6 +28,22 @@ const SUFFIX = /\s+(jr\.?|sr\.?|ii|iii|iv|v)$/i;
 const lastName = (n) => n.replace(SUFFIX, "").split(" ").slice(-1)[0].toUpperCase();
 
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+// a star as light, not a dot: a hot core in a soft halo, drawn once per colour and stamped with drawImage
+const SPRITES = new Map();
+function sprite(rgb) {
+  if (SPRITES.has(rgb)) return SPRITES.get(rgb);
+  const c = document.createElement("canvas");
+  c.width = c.height = 64;
+  const g = c.getContext("2d"), r = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+  r.addColorStop(0, "rgba(255,255,255,1)");
+  r.addColorStop(0.12, `rgba(${rgb},0.95)`);
+  r.addColorStop(0.3, `rgba(${rgb},0.32)`);
+  r.addColorStop(1, `rgba(${rgb},0)`);
+  g.fillStyle = r;
+  g.fillRect(0, 0, 64, 64);
+  SPRITES.set(rgb, c);
+  return c;
+}
 const reduced = () => typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
 // theme colours, read from the page (both themes; re-read when the theme changes)
@@ -34,7 +54,7 @@ function readTheme(el) {
     star: v("--star") || "#ECE7DC", dim: v("--star-dim") || "#A39E92", up: v("--up") || "#4C7DF0", down: v("--down") || "#E8643F",
     ember: v("--ember") || "#E8643F", panel: v("--void-panel") || "#131210", dot: v("--star-dot-rgb") || "236,231,220",
     upRgb: v("--up-rgb") || "76,125,240", downRgb: v("--down-rgb") || "232,100,63", emberRgb: v("--ember-rgb") || "232,100,63",
-    mono: v("--font-mono") || "monospace", light: document.documentElement.dataset.theme === "light" || (!document.documentElement.dataset.theme && window.matchMedia("(prefers-color-scheme: light)").matches),
+    mono: v("--font-mono") || "monospace", light: false, // the map is always a dark window onto space (its own palette in the CSS)
   };
 }
 
@@ -49,7 +69,7 @@ const SKY = (() => {
 })();
 
 export default function DynastyOrbit({ L, tiers, groups, hit, openId, onPick }) {
-  const wrapRef = useRef(null), canvasRef = useRef(null), hudRef = useRef(null);
+  const wrapRef = useRef(null), canvasRef = useRef(null), hudRef = useRef(null), hud2Ref = useRef(null), glRef = useRef(null), bloomRef = useRef(null);
   const [hover, setHover] = useState(null); // the player under the pointer (for the readout card)
   const [spin, setSpin] = useState(true);
   const [preset, setPreset] = useState("orbit");
@@ -86,7 +106,7 @@ export default function DynastyOrbit({ L, tiers, groups, hit, openId, onPick }) 
   }, [L, tiers, groups, hit]);
 
   // everything the frame loop reads lives in one ref, so the loop never needs a React render
-  const st = useRef({ az: -0.8, el: 0.52, zoom: 1, elGoal: null, azGoal: null, vAz: 0, drag: null, pos: new Map(), dirty: true, theme: null, w: 0, h: 0, dpr: 1, hoverId: null, openId: null, spin: true, last: 0, onScreen: true, raf: 0, scr: [] });
+  const st = useRef({ az: -0.8, el: 0.52, zoom: 1, elGoal: null, azGoal: null, vAz: 0, drag: null, pos: new Map(), dirty: true, theme: null, w: 0, h: 0, dpr: 1, hoverId: null, openId: null, spin: true, last: 0, bh: null, time: 0, glScale: 1, slow: 0, onScreen: true, raf: 0, scr: [] });
   st.current.openId = openId;
   st.current.spin = spin && !reduced();
 
@@ -110,11 +130,12 @@ export default function DynastyOrbit({ L, tiers, groups, hit, openId, onPick }) 
     const ca = Math.cos(S.az), sa = Math.sin(S.az), ce = Math.cos(S.el), se = Math.sin(S.el);
     const x1 = x * ca - y * sa, y1 = x * sa + y * ca;
     const up = z * ce + y1 * se, toward = -y1 * ce + z * se;
-    const k = FOCAL / (FOCAL - toward);
-    // the disk fills the frame at every tilt: looking down, its full depth is on screen; edge-on, only the jets' height is
-    const sc = Math.min(S.w * (S.w < 560 ? 0.42 : 0.37), (S.h * 0.46) / (1.25 * se + 0.35 * ce)) * S.zoom;
-    return { x: S.w / 2 + x1 * k * sc, y: S.h * (S.w < 560 ? 0.56 : 0.53) - up * k * sc, d: toward, k, sc };
+    const k = FOCAL / (FOCAL - toward), sc = scaleOf(S), cy = centreY(S);
+    return { x: S.w / 2 + x1 * k * sc, y: cy - up * k * sc, d: toward, k, sc };
   }
+  // the disk fills the frame at every tilt: looking down, its full depth is on screen; edge-on, only the jets' height is
+  function scaleOf(S) { return Math.min(S.w * (S.w < 560 ? 0.42 : 0.37), (S.h * 0.46) / (1.25 * Math.sin(S.el) + 0.35 * Math.cos(S.el))) * S.zoom; }
+  function centreY(S) { return S.h * (S.w < 560 ? 0.56 : 0.53); }
 
   function draw() {
     const S = st.current, c = canvasRef.current, T = S.theme;
@@ -127,7 +148,7 @@ export default function DynastyOrbit({ L, tiers, groups, hit, openId, onPick }) 
 
     // the sky: far stars turning with the camera (direction only, so they never get closer)
     const ca = Math.cos(S.az), sa = Math.sin(S.az), ce = Math.cos(S.el), se = Math.sin(S.el), R = Math.hypot(S.w, S.h) * 0.62;
-    for (const s of SKY) {
+    if (!S.bh) for (const s of SKY) { // the ray-traced layer has its own (lensed) sky
       const x1 = s.x * ca - s.y * sa, y1 = s.x * sa + s.y * ca, up = s.z * ce + y1 * se, tw = -y1 * ce + s.z * se;
       if (tw > 0.2) continue; // only the half of the sky behind the map
       ctx.fillStyle = rgba(T.dot, s.a * (T.light ? 0.5 : 1));
@@ -156,6 +177,8 @@ export default function DynastyOrbit({ L, tiers, groups, hit, openId, onPick }) 
       const isOpen = b.p.id === S.openId, isHover = b.p.id === S.hoverId;
       const a = P.a * (dimmed ? 0.55 : 1);
       if (a < 0.02) return;
+      // nothing behind the hole shows through its shadow
+      if (q.d < 0 && Math.hypot(q.x - S.w / 2, q.y - centreY(S)) < HOLE * q.sc * 1.05) return;
       const mv = b.p.move || 0, big = Math.abs(mv) >= MOVE_MIN;
       // the stem down (or up) to the disk, and his shadow on it
       if (Math.abs(P.z) > 0.004) {
@@ -170,6 +193,26 @@ export default function DynastyOrbit({ L, tiers, groups, hit, openId, onPick }) 
         ctx.fillRect(base.x - 1, base.y - 1, 2, 2);
       }
       const rad = clamp(2.3 * q.k, 1.4, 4) * (b.shown ? 1 : 0.7);
+      if (S.bh) { // over the ray-traced disk the players are points of light, added to the light behind them
+        const rgb = isOpen ? T.emberRgb : big ? (mv > 0 ? T.upRgb : T.downRgb) : "236,231,220";
+        const size = rad * (isOpen ? 9 : big ? 6.5 : 4.6) * (b.shown ? 1 : 0.6);
+        ctx.globalCompositeOperation = "lighter";
+        ctx.globalAlpha = a * (b.shown ? 1 : 0.5);
+        ctx.drawImage(sprite(rgb), q.x - size / 2, q.y - size / 2, size, size);
+        if (b.shown && (big || isOpen)) { // diffraction spikes on the movers, like a telescope's bright stars
+          const L2 = size * (isOpen ? 0.9 : 0.6);
+          ctx.strokeStyle = `rgba(${rgb},${0.55 * a})`; ctx.lineWidth = 0.8;
+          ctx.beginPath(); ctx.moveTo(q.x - L2, q.y); ctx.lineTo(q.x + L2, q.y); ctx.moveTo(q.x, q.y - L2); ctx.lineTo(q.x, q.y + L2); ctx.stroke();
+        }
+        ctx.globalAlpha = 1;
+        ctx.globalCompositeOperation = "source-over";
+        if (isOpen || isHover) {
+          ctx.strokeStyle = isOpen ? T.ember : T.star;
+          ctx.lineWidth = 1.2;
+          ctx.strokeRect(q.x - rad - 4, q.y - rad - 4, rad * 2 + 8, rad * 2 + 8);
+        }
+        return;
+      }
       if (b.shown && (isOpen || isHover || big)) { // a soft halo on the movers and the picked player
         const hr = rad * (isOpen ? 5 : 3.2);
         const h = ctx.createRadialGradient(q.x, q.y, 0, q.x, q.y, hr);
@@ -196,15 +239,15 @@ export default function DynastyOrbit({ L, tiers, groups, hit, openId, onPick }) 
       arc(bd.r1, A0, A1);
       arc(bd.r0, A1, A0, 0, 72, false);
       ctx.closePath();
-      ctx.fillStyle = rgba(T.dot, i % 2 ? 0.075 : 0.03);
+      ctx.fillStyle = rgba(T.dot, S.bh ? (i % 2 ? 0.035 : 0.01) : i % 2 ? 0.075 : 0.03);
       ctx.fill();
-      ctx.strokeStyle = rgba(T.dot, 0.16);
+      ctx.strokeStyle = rgba(T.dot, S.bh ? 0.11 : 0.16);
       ctx.beginPath(); arc(bd.r0, A0, A1); ctx.stroke();
     });
     // the groups: brighter orbits at each group's outer edge, named in the gap beside the ruler
     ctx.font = font(9.5);
     const glabels = geo.orbits.map((o) => {
-      ctx.strokeStyle = rgba(T.dot, 0.5);
+      ctx.strokeStyle = rgba(T.dot, S.bh ? 0.32 : 0.5);
       ctx.setLineDash([2, 3]);
       ctx.beginPath(); arc(o.r1, A0 - 0.06, A1 + 0.06, 0, 90); ctx.stroke();
       ctx.setLineDash([]);
@@ -243,7 +286,7 @@ export default function DynastyOrbit({ L, tiers, groups, hit, openId, onPick }) 
     // the hole, its accretion glow and the two jets (the move axis), sorted in with the bodies above the disk
     const drawHole = () => {
       const c0 = project(0, 0, 0);
-      for (let i = 10; i >= 1; i--) { // the glow: projected rings, hottest at the horizon
+      if (!S.bh) for (let i = 10; i >= 1; i--) { // the glow: projected rings, hottest at the horizon (the 2D fallback only)
         const r = HOLE + (i / 10) * 0.085;
         ctx.strokeStyle = rgba(T.emberRgb, 0.05 + (1 - i / 10) * 0.22);
         ctx.lineWidth = 2.2;
@@ -251,10 +294,15 @@ export default function DynastyOrbit({ L, tiers, groups, hit, openId, onPick }) 
       }
       const jet = (dir, rgb, label) => {
         const top = project(0, 0, dir * (H_MAX + 0.12));
-        const g = ctx.createLinearGradient(c0.x, c0.y, top.x, top.y);
-        g.addColorStop(0, rgba(rgb, 0.9)); g.addColorStop(1, rgba(rgb, 0));
-        ctx.strokeStyle = g; ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.moveTo(c0.x, c0.y); ctx.lineTo(top.x, top.y); ctx.stroke();
+        // a relativistic jet: a wide faint sheath and a hot thin core, added as light, fading with height
+        ctx.globalCompositeOperation = "lighter";
+        for (const [wd, al] of S.bh ? [[14, 0.06], [6, 0.16], [2, 0.75], [0.8, 1]] : [[2, 0.9]]) {
+          const g = ctx.createLinearGradient(c0.x, c0.y, top.x, top.y);
+          g.addColorStop(0, rgba(rgb, al)); g.addColorStop(0.7, rgba(rgb, al * 0.35)); g.addColorStop(1, rgba(rgb, 0));
+          ctx.strokeStyle = g; ctx.lineWidth = wd; ctx.lineCap = "round";
+          ctx.beginPath(); ctx.moveTo(c0.x, c0.y); ctx.lineTo(top.x, top.y); ctx.stroke();
+        }
+        ctx.globalCompositeOperation = "source-over"; ctx.lineCap = "butt";
         ctx.font = font(9); ctx.textAlign = "left"; ctx.textBaseline = "middle";
         for (const m of geo.zt) {
           const q = project(0, 0, dir * geo.zOf(m));
@@ -267,10 +315,12 @@ export default function DynastyOrbit({ L, tiers, groups, hit, openId, onPick }) 
       };
       const jets = S.el < 1.3; // looking straight down, the jets collapse onto the hole; the readout card carries the move instead
       if (jets && S.el > 0.06) jet(-1, T.downRgb, "FALLING");
-      ctx.fillStyle = T.light ? "#121212" : "#000";
-      ctx.beginPath(); ctx.arc(c0.x, c0.y, HOLE * c0.k * c0.sc, 0, Math.PI * 2); ctx.fill();
-      ctx.strokeStyle = rgba(T.emberRgb, 0.95); ctx.lineWidth = 1.4;
-      ctx.beginPath(); ctx.arc(c0.x, c0.y, HOLE * c0.k * c0.sc + 1.5, 0, Math.PI * 2); ctx.stroke();
+      if (!S.bh) {
+        ctx.fillStyle = "#000";
+        ctx.beginPath(); ctx.arc(c0.x, c0.y, HOLE * c0.k * c0.sc, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = rgba(T.emberRgb, 0.95); ctx.lineWidth = 1.4;
+        ctx.beginPath(); ctx.arc(c0.x, c0.y, HOLE * c0.k * c0.sc + 1.5, 0, Math.PI * 2); ctx.stroke();
+      }
       if (jets) jet(1, T.upRgb, "CLIMBING");
       if (jets && S.el <= 0.06) jet(-1, T.downRgb, "FALLING");
     };
@@ -305,7 +355,7 @@ export default function DynastyOrbit({ L, tiers, groups, hit, openId, onPick }) 
     S.raf = 0;
     if (!geo || !S.onScreen || document.hidden) { S.last = 0; return; }
     // every motion is per millisecond, so it runs at the same speed on a slow screen or a throttled tab (f = one 60fps frame)
-    const now = performance.now(), dt = Math.min(80, S.last ? now - S.last : 16.7), f = dt / 16.7;
+    const now = performance.now(), raw = S.last ? now - S.last : 16.7, dt = Math.min(80, raw), f = dt / 16.7;
     S.last = now;
     const ease = (tau) => 1 - Math.exp(-dt / tau);
     let moving = false;
@@ -333,14 +383,45 @@ export default function DynastyOrbit({ L, tiers, groups, hit, openId, onPick }) 
         moving = true;
       } else { P.x = b.x; P.y = b.y; P.z = b.z; P.a = ta; }
     }
+    // the ray-traced hole is alive (its disk turns) whenever motion is allowed, so it renders every frame; the data layer only
+    // redraws when the camera or the players move
+    const live = !!S.bh && !reduced();
+    if (live) {
+      S.time += dt / 1000;
+      S.slow++;
+    }
+    // a slow GPU gets a coarser ray-traced layer (the data layer stays sharp). Frame timing can't tell (a screen or tab may cap
+    // the frame rate), so every ~2 seconds one frame is timed for real: over 14ms steps the resolution down, under 5ms back up
+    if (S.bh && live && S.slow >= 120) {
+      S.slow = 0;
+      const ms = renderGL(true);
+      if (ms > 14 && S.glScale > 0.45) { S.glScale *= 0.8; sizeGL(); }
+      else if (ms < 5 && S.glScale < S.glMax) { S.glScale = Math.min(S.glMax, S.glScale * 1.15); sizeGL(); }
+    } else if (S.bh && (live || moving || S.dirty)) renderGL();
     if (moving || S.dirty) {
       draw();
       S.dirty = false;
       const h = hudRef.current;
-      if (h) h.textContent = `AZ ${(((S.az * 180) / Math.PI) % 360 + 360).toFixed(1).padStart(5, "0")}°  EL ${((S.el * 180) / Math.PI).toFixed(1).padStart(4, "0")}°  ZOOM ${S.zoom.toFixed(2)}×`;
+      if (h) h.textContent = `AZ ${(((((S.az * 180) / Math.PI) % 360) + 360) % 360).toFixed(1).padStart(5, "0")}°  EL ${((S.el * 180) / Math.PI).toFixed(1).padStart(4, "0")}°  ZOOM ${S.zoom.toFixed(2)}×`;
+      const h2 = hud2Ref.current;
+      if (h2) h2.textContent = S.bh ? `INCL ${(90 - (S.el * 180) / Math.PI).toFixed(1)}° · LENSING · DOPPLER · RS ${RS.toFixed(3)} · ISCO ${DISK_IN} RS` : "";
     }
-    if (moving) S.raf = requestAnimationFrame(loop.current);
+    if (moving || live) S.raf = requestAnimationFrame(loop.current);
     else S.last = 0; // the next wake starts a fresh clock
+  }
+  function sizeGL() {
+    const S = st.current, g = glRef.current, b = bloomRef.current;
+    if (!g) return;
+    g.width = Math.max(2, Math.round(S.w * S.glScale)); g.height = Math.max(2, Math.round(S.h * S.glScale));
+    if (b) { b.width = Math.max(2, Math.round(S.w / 6)); b.height = Math.max(2, Math.round(S.h / 6)); }
+    S.dirty = true;
+  }
+  function renderGL(timed = false) {
+    const S = st.current;
+    const ms = S.bh[timed ? "timed" : "render"]({ cssW: S.w, cssH: S.h, cx: S.w / 2, cy: centreY(S), sc: scaleOf(S), focal: FOCAL, rs: RS, az: S.az, el: S.el, time: S.time, rin: DISK_IN, rout: DISK_OUT });
+    const b = bloomRef.current; // bloom: a tiny copy of the frame, blurred and screened over it in CSS
+    if (b) b.getContext("2d").drawImage(glRef.current, 0, 0, b.width, b.height);
+    return ms;
   }
   // the scheduled frame always runs the LATEST render's tick (a running loop would otherwise keep drawing an old board)
   const tickRef = useRef(tick);
@@ -354,10 +435,16 @@ export default function DynastyOrbit({ L, tiers, groups, hit, openId, onPick }) 
   // ---- size, theme, visibility
   useEffect(() => {
     const S = st.current, wrap = wrapRef.current, c = canvasRef.current;
+    if (!S.bh && glRef.current) {
+      S.bh = createBlackHole(glRef.current);
+      // render resolution: sharp on a desktop, a little coarser on a high-density phone (the GPU traces every pixel)
+      S.glScale = S.glMax = clamp((window.devicePixelRatio || 1) * 0.75, 0.75, 1.25);
+    }
     const fit = () => {
       const r = c.getBoundingClientRect();
       S.w = r.width; S.h = r.height; S.dpr = Math.min(2, window.devicePixelRatio || 1);
       c.width = Math.round(S.w * S.dpr); c.height = Math.round(S.h * S.dpr);
+      if (S.bh) sizeGL();
       S.dirty = true; wake();
     };
     const retheme = () => { S.theme = readTheme(wrap); S.dirty = true; wake(); };
@@ -368,7 +455,7 @@ export default function DynastyOrbit({ L, tiers, groups, hit, openId, onPick }) 
     const mq = window.matchMedia("(prefers-color-scheme: light)"); mq.addEventListener?.("change", retheme);
     const io = new IntersectionObserver(([e]) => { S.onScreen = e.isIntersecting; if (S.onScreen) wake(); }); io.observe(c);
     const vis = () => !document.hidden && wake(); document.addEventListener("visibilitychange", vis);
-    return () => { ro.disconnect(); mo.disconnect(); io.disconnect(); mq.removeEventListener?.("change", retheme); document.removeEventListener("visibilitychange", vis); cancelAnimationFrame(S.raf); S.raf = 0; };
+    return () => { ro.disconnect(); mo.disconnect(); io.disconnect(); mq.removeEventListener?.("change", retheme); document.removeEventListener("visibilitychange", vis); cancelAnimationFrame(S.raf); S.raf = 0; S.bh?.dispose(); S.bh = null; };
   }, []);  
 
   // ---- pointer: drag to orbit (with a little inertia), hover to read a player, click to open him
@@ -448,6 +535,8 @@ export default function DynastyOrbit({ L, tiers, groups, hit, openId, onPick }) 
 
   return (
     <div className="dyo" ref={wrapRef}>
+      <canvas ref={glRef} className="dyo-gl" aria-hidden="true" />
+      <canvas ref={bloomRef} className="dyo-bloom" aria-hidden="true" />
       <canvas
         ref={canvasRef}
         className="dyo-canvas"
@@ -465,6 +554,7 @@ export default function DynastyOrbit({ L, tiers, groups, hit, openId, onPick }) 
       <div className="dyo-hud dyo-hud-tl mono" aria-hidden="true">
         <b>Accretion map</b>
         <span ref={hudRef} />
+        <span ref={hud2Ref} />
         <span>BODIES {String(geo.nShown).padStart(3, "0")} / {String(geo.bodies.length).padStart(3, "0")} · RINGS {geo.bands.length} · ORBITS {geo.orbits.length}</span>
         <span>HORIZON {geo.sHi.toFixed(1)} · RIM {geo.sLo.toFixed(1)} · AGE {geo.aLo}–{geo.aHi} · MEDIAN {geo.ageMed.toFixed(1)}</span>
       </div>

@@ -5997,8 +5997,16 @@ details.acct-danger > summary.acct-h{color:var(--down)}
 .dyb-3d-btn svg{width:18px; height:18px; flex:none;}
 .dyb-3d-btn:hover{border-color:var(--star-dim);}
 .dyb-3d-btn.is-on{background:var(--star); color:var(--void); border-color:var(--star);}
-.dyo{position:relative; min-width:0; height:560px; border:1px solid var(--rule); background:radial-gradient(ellipse at 50% 55%, rgba(var(--ember-rgb), .06), transparent 60%);}
-.dyo-canvas{display:block; width:100%; height:100%; touch-action:none; outline:none;}
+.dyo{position:relative; min-width:0; --dyo-h:560px; height:var(--dyo-h); border:1px solid var(--rule); background:#000; color-scheme:dark;
+  /* a window onto space: always the dark palette, in both themes, so the void stays black and the labels stay readable */
+  --star:#ECE7DC; --star-dim:#A39E92; --star-dot-rgb:236,231,220; --void:#0B0B0B; --void-panel:#131210; --void-panel-2:#1A1915;
+  --rule:rgba(236,231,220,.16); --rule-strong:rgba(236,231,220,.55);
+  --up:#4C7DF0; --up-rgb:76,125,240; --horizon-gold:#4C7DF0; --down:#E8643F; --down-rgb:232,100,63; --ember:#E8643F; --ember-rgb:232,100,63;}
+/* three layers: the ray-traced hole (blackHoleGL.js), its bloom (a tiny copy, blurred and screened over it), the data on top */
+.dyo-gl, .dyo-bloom{position:absolute; top:0; left:0; width:100%; height:var(--dyo-h); display:block; pointer-events:none;}
+.dyo-bloom{filter:blur(14px) brightness(1.35) saturate(1.2); mix-blend-mode:screen; opacity:.85;}
+.dyo-canvas{position:relative; z-index:1; display:block; width:100%; height:var(--dyo-h); touch-action:none; outline:none;}
+.dyo-hud{z-index:2;}
 .dyo-canvas:focus-visible{box-shadow:inset 0 0 0 2px var(--horizon-gold);}
 .dyo-hud{position:absolute; pointer-events:none;}
 .dyo-hud-tl{top:10px; left:12px; display:flex; flex-direction:column; gap:3px; font-size:10px; letter-spacing:.05em; color:var(--star-dim); text-transform:uppercase;}
@@ -6027,8 +6035,8 @@ details.acct-danger > summary.acct-h{color:var(--down)}
 .dyo-card dt{color:var(--star-dim);} .dyo-card dd{margin:0; text-align:right;}
 .dyo-card .is-up{color:var(--up);} .dyo-card .is-down{color:var(--down);}
 @media (max-width:720px){ /* phones: the controls get their own row under the title and the legend moves under the map */
-  .dyo{height:auto; display:flex; flex-direction:column;}
-  .dyo-canvas{height:400px; order:1;}
+  .dyo{height:auto; --dyo-h:400px; display:flex; flex-direction:column;}
+  .dyo-canvas{order:1;}
   .dyo-hud-tl span{display:none;}
   .dyo-hud-tr{top:36px; left:12px; right:12px; flex-direction:row; justify-content:space-between; align-items:center;}
   .dyo-presets button, .dyo-btn{white-space:nowrap; padding:4px 7px; font-size:10.5px;}
