@@ -5967,6 +5967,20 @@ details.acct-danger > summary.acct-h{color:var(--down)}
 .dyb-overview-l{font-size:11px; letter-spacing:.06em; color:var(--star-dim); margin-top:4px;}
 .dyb-overview-dl{display:grid; grid-template-columns:auto 1fr; gap:3px 12px; margin:14px 0 0; font-size:12px;}
 .dyb-overview-dl dt{color:var(--star-dim);} .dyb-overview-dl dd{margin:0; text-align:right; color:var(--star);}
+/* beside the 3D map: the key moves to the top and the spread stands upright under it (SpreadColumn, DynastyBoard.js) */
+.dyb-overview.is-orbit{grid-template-columns:270px minmax(0,1fr);}
+.dyb-overview.is-orbit .dyb-overview-key{justify-content:flex-start;}
+.dyb-col{flex:1; min-height:220px; display:grid; grid-template-columns:20px minmax(0,1fr) 26px 96px; margin-top:18px; padding:6px 0;}
+.dyb-col-y{position:relative;}
+.dyb-col-y span{position:absolute; right:5px; transform:translateY(-50%); font-family:var(--font-mono), monospace; font-size:9px; color:var(--star-dim);}
+.dyb-col-y span::after{content:""; position:absolute; left:calc(100% + 1px); top:50%; width:4px; border-top:1px solid var(--rule-strong);}
+.dyb-col-plot{position:relative; border-left:1px solid var(--rule-strong);}
+.dyb-col-tier{position:absolute; left:0; right:0; background:rgba(var(--star-dot-rgb), .03); border-top:1px solid rgba(var(--star-dot-rgb), .28); border-right:2px solid rgba(var(--star-dot-rgb), .45); box-sizing:border-box;}
+.dyb-col-tier.is-alt{background:rgba(var(--star-dot-rgb), .10); border-right-color:rgba(var(--star-dot-rgb), .75);}
+.dyb-col-brackets{position:relative;}
+.dyb-col-brackets i{position:absolute; left:3px; width:5px; border:1px solid var(--star-dim); border-left:0; box-sizing:border-box; min-height:2px;}
+.dyb-col-brackets span{position:absolute; left:11px; transform:translateY(-50%); font-family:var(--font-mono), monospace; font-size:9.5px; font-weight:700; line-height:1; color:var(--star); white-space:nowrap;}
+.dyb-col-brackets.is-groups span{font-weight:400; letter-spacing:.05em; text-transform:uppercase; color:var(--star-dim); font-size:9px;}
 .dyb-spread{position:relative; min-width:0; display:flex; flex-direction:column; justify-content:flex-end; padding-left:34px;} /* the left gutter holds the y axis, inside the same width */
 .dyb-spread-plot{position:relative; height:calc(var(--depth) * 6px + 30px); border-bottom:1px solid var(--rule-strong); border-left:1px solid var(--rule-strong);}
 /* tiers: alternating bands starting 14px down the plot, each with a solid bracket across its top and "T<n>" above the bracket */
@@ -6130,7 +6144,8 @@ details.acct-danger > summary.acct-h{color:var(--down)}
 .dyb-key i{display:inline-block; position:relative;}
 
 @media (max-width:760px){
-  .dyb-overview{grid-template-columns:minmax(0,1fr); gap:14px;}
+  .dyb-overview, .dyb-overview.is-orbit{grid-template-columns:minmax(0,1fr); gap:14px;}
+  .dyb-col{display:none;} /* a phone has no room beside the map; the map's own score ruler carries it */
   .dyb-overview-key{border-right:0; padding-right:0; flex-direction:row; justify-content:flex-start; align-items:baseline; gap:10px; flex-wrap:wrap;}
   .dyb-overview-n{font-size:36px;} .dyb-overview-dl{display:flex; gap:4px 10px; margin:0;}
 }

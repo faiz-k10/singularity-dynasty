@@ -167,6 +167,78 @@ function SpreadPlot({ L, tiers, groups, openId, onPick }) {
   );
 }
 
+// The same spread stood upright, for the left column beside the 3D map (founder, Nov 28 2026): score runs up the column (the
+// board's best at the top, like the 2D axis read right to left), players sharing a score stack sideways, the tiers are bands
+// across it with their "T<n>" on brackets to the right, the groups bracketed and named beside those. Marks open the player
+// like the 2D ones. Labels are pushed apart vertically (spreadOut) so none overlap; it measures its own height to do that.
+function spreadOut(centers, gap, H) {
+  const order = centers.map((_, i) => i).sort((a, b) => centers[a] - centers[b]), out = [];
+  let edge = -Infinity;
+  for (const i of order) { out[i] = Math.max(centers[i], edge + gap); edge = out[i]; }
+  let limit = H - gap / 2;
+  for (const i of [...order].reverse()) { out[i] = Math.min(out[i], limit); limit = out[i] - gap; }
+  return out;
+}
+function SpreadColumn({ L, tiers, groups, openId, onPick }) {
+  const plotRef = useRef(null);
+  const [box, setBox] = useState({ w: 90, h: 360 });
+  useLayoutEffect(() => {
+    const el = plotRef.current;
+    if (!el) return undefined;
+    const ro = new ResizeObserver(() => setBox({ w: el.clientWidth || 90, h: el.clientHeight || 360 }));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  if (!L.length) return null;
+  const lo = Math.floor(Math.min(...L.map((p) => p.score)) * 2) / 2, hi = Math.ceil(Math.max(...L.map((p) => p.score)) * 2) / 2;
+  const y = (v) => ((hi - v) / (hi - lo || 1)) * 100; // % from the top
+  const px = (v) => (y(v) / 100) * box.h;
+  // a mark is 5px: players closer than ~6px of score share a row and stack sideways
+  const bin = 6 / (box.h / (hi - lo || 1));
+  const stack = new Map();
+  const marks = L.map((p) => {
+    const k = Math.round(p.score / bin), n = stack.get(k) || 0;
+    stack.set(k, n + 1);
+    return { p, n };
+  });
+  const depth = Math.max(...stack.values());
+  const step = Math.min(6, (box.w - 8) / depth);
+  const ticks = [];
+  const every = box.h / (hi - lo || 1) < 18 ? 2 : 1;
+  for (let v = Math.ceil(lo); v <= hi; v++) if ((v - Math.ceil(lo)) % every === 0) ticks.push(v);
+  const band = (a, b) => ({ top: `${y(L[a].score)}%`, height: `${Math.max(0.4, y(L[b].score) - y(L[a].score))}%` });
+  const tierY = spreadOut(tiers.map((t) => (px(L[t.a].score) + px(L[t.b].score)) / 2), 11, box.h);
+  const groupY = spreadOut(groups.map((g) => (px(L[g.a].score) + px(L[g.b].score)) / 2), 12, box.h);
+  return (
+    <div className="dyb-col" aria-label="Every player on one axis, upright">
+      <div className="dyb-col-y" aria-hidden="true">
+        {ticks.map((v) => <span key={v} style={{ top: `${y(v)}%` }}>{v}</span>)}
+      </div>
+      <div className="dyb-col-plot" ref={plotRef}>
+        {tiers.map((t, ti) => <div key={ti} className={`dyb-col-tier${ti % 2 ? " is-alt" : ""}`} style={band(t.a, t.b)} />)}
+        {marks.map(({ p, n }) => (
+          <button
+            key={p.id}
+            type="button"
+            className={`dyb-mark${p.id === openId ? " is-open" : ""}`}
+            style={{ left: `${n * step + 3}px`, top: `calc(${y(p.score)}% - 2.5px)` }}
+            aria-label={`${p.name}, ${p.score.toFixed(1)}`}
+            onClick={() => onPick(p.id)}
+          />
+        ))}
+      </div>
+      <div className="dyb-col-brackets" aria-hidden="true">
+        {tiers.map((t, ti) => <i key={ti} style={band(t.a, t.b)} />)}
+        {tiers.map((t, ti) => <span key={ti} style={{ top: `${tierY[ti]}px` }}>T{ti + 1}</span>)}
+      </div>
+      <div className="dyb-col-brackets is-groups" aria-hidden="true">
+        {groups.map((g, gi) => <i key={gi} style={band(g.a, g.b)} />)}
+        {groups.map((g, gi) => <span key={gi} style={{ top: `${groupY[gi]}px` }}>{g.name}</span>)}
+      </div>
+    </div>
+  );
+}
+
 // The dynasty rankings as a board: the spread on top, then the ranked list (group and tier headings between the rows, each
 // player's 80% range on one shared axis, his tier's score span shaded behind it) and the picked player's profile beside it.
 // Tiers, groups and ties come from lib/dynastyBoard.js.
@@ -278,7 +350,7 @@ export default function DynastyBoard({ rows, meta, mine, gated }) {
       )}
 
       {!theater && L.length > 0 && (
-        <section className="dyb-overview glass-panel" aria-label="Every player on one axis">
+        <section className={`dyb-overview glass-panel${orbit ? " is-orbit" : ""}`} aria-label="Every player on one axis">
           <div className="dyb-overview-key">
             <div className="dyb-overview-n">{L.length}</div>
             <div className="dyb-overview-l mono">players on the board</div>
@@ -292,6 +364,7 @@ export default function DynastyBoard({ rows, meta, mine, gated }) {
               </svg>
               <span>{orbit ? "2D axis view" : "3D orbit view"}</span>
             </button>
+            {orbit && <SpreadColumn L={L} tiers={tiers} groups={groups} openId={open?.id} onPick={pickAndShow} />}
           </div>
           {orbit
             ? <DynastyOrbit L={L} tiers={tiers} groups={groups} hit={hit} openId={open?.id} onPick={pickAndShow} />
