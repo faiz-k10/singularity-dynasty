@@ -35,8 +35,19 @@ float noise3(vec3 p){
   return mix(mix(mix(a, b, u.x), mix(c, d, u.x), u.y), mix(mix(e, g, u.x), mix(h, k, u.x), u.y), u.z);
 }
 float fbm3(vec3 p){ float s = 0.0, a = 0.5; for (int i = 0; i < 5; i++){ s += a * noise3(p); p = p * 2.03 + 17.1; a *= 0.5; } return s; }
-// the disk's gas at (log radius, angle), sampled on a circle so it wraps round with no seam; k = features per radian
-float ringNoise(float lr, float ang, float k, float lk){ return fbm3(vec3(cos(ang) * k, sin(ang) * k, lr * lk)); }
+// the disk's swirling gas at (log radius, angle): filaments sheared along the orbit, broken up by a warped second layer
+float gas(float lr, float ang){
+  vec2 uv = vec2(lr * 9.0, ang * 2.0);
+  vec2 warp = vec2(fbm(uv * 0.6 + 7.0), fbm(uv * 0.6 - 3.0)) - 0.5;
+  return fbm(uv + warp * 2.2) * 0.7 + fbm(vec2(lr * 22.0, ang * 6.0) + warp * 3.0) * 0.5;
+}
+// ...joined round the circle with no seam: the pattern at angle a fades into the same pattern one turn back, so the two ends
+// of the turn are the same value; the contrast lost in the blend is put back so the swirl looks the same everywhere
+float gasRing(float lr, float ang){
+  float a = mod(ang, 6.2831853), t = a / 6.2831853;
+  float b = mix(gas(lr, a), gas(lr, a - 6.2831853), t);
+  return 0.56 + (b - 0.56) / sqrt((1.0 - t) * (1.0 - t) + t * t);
+}
 
 // the stars behind, by direction (so the lensing bends them): sparse sharp points in three sizes and a faint dust band
 vec3 sky(vec3 d){
@@ -83,9 +94,7 @@ vec4 disk(vec3 q, vec3 v){
   float phiW = atan(q.y, q.x) - uAz;                                  // the disk's own angle, so its gas turns with the scene
   float omega = 1.6 * pow(r, -1.5);                                   // Keplerian: inner gas laps the outer
   // gas sheared along its orbit: long filaments in angle, broken up by a second warped layer so they never read as plain rings
-  float ang = phiW - uTime * omega * 1.2, lr = log(r);
-  float warp = ringNoise(lr + 3.1, ang, 1.2, 5.4) - 0.5;                       // bends the filaments so they never read as rings
-  float turb = ringNoise(lr + warp * 0.25, ang + warp * 1.1, 2.0, 9.0) * 0.7 + ringNoise(lr + warp * 0.35, ang + warp * 1.6, 6.0, 22.0) * 0.5;
+  float turb = gasRing(log(r), phiW - uTime * omega * 1.2);
   float streaks = 0.28 + 1.35 * smoothstep(0.32, 0.82, turb);           // dark lanes and bright filaments
   float edge = smoothstep(uRin, uRin * 1.08, r) * (1.0 - smoothstep(uRout * 0.45, uRout, r));
   float gg = clamp(g, 0.35, 1.7);
